@@ -87,6 +87,8 @@ describe('docs/events.md', () => {
       'word-tapped': true,
       'word-spoken': true,
       'word-help': true,
+      'grammar-term-opened': true,
+      'grammar-term-known': true,
       'reader-requested': true,
     };
     const doc = readFileSync('docs/events.md', 'utf8');

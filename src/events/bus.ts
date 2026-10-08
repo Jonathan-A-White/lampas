@@ -31,6 +31,11 @@ export type AppEvent =
   /** he tapped Grammar or Sound it out on a word's sheet (Help with this word): the Talk sheet opens on `verse` with the question
    * about `form` sent. `help` is what he wants help with */
   | { kind: 'word-help'; help: 'grammar' | 'sound'; form: string; lemma: string; parse: string; chapter: number; verse: number }
+  /** a Grammar sheet opened on `term` (a word of src/data/grammar-concepts.ts), from a grammar word in the Parsing of a word's sheet,
+   * from a related term on another Grammar sheet */
+  | { kind: 'grammar-term-opened'; term: string }
+  /** he marked `term` I know this (`known` true) or took the mark off (false) */
+  | { kind: 'grammar-term-known'; term: string; known: boolean }
   /** another screen asks the Reader, as it opens on `chapter` and `verse`, to show the Ask box holding `question` (action
    * 'ask') or to open the Talk sheet (action 'talk'); `id` counts up, so the Reader can tell a request it has not met */
   | { kind: 'reader-requested'; id: number; action: 'ask'; chapter: number; verse: number; question: string }
