@@ -3,9 +3,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { getStudyResources, setResourceOption, setResourceOn } from '../../src/data/repositories';
-import { RESOURCES, resourceOf, type StudyWord } from '../../src/resources';
+import { RESOURCES, optionOf, resourceOf, type StudyWord } from '../../src/resources';
 
 const WORD: StudyWord = { form: 'συνεργεῖ', lemma: 'συνεργέω', strongs: 'G4903' };
+/** βίβλος, tapped at Acts 19:19 */
+const BIBLOS: StudyWord = { form: 'βίβλους', lemma: 'βίβλος', strongs: 'G976', ref: { book: 'act', chapter: 19, verse: 19 } };
+const BIBLOS_URL = encodeURIComponent('βίβλος');
 
 describe('the registry', () => {
   it('lists Strong\'s, Logos and Accordance with distinct ids and a name and a description each', () => {
@@ -20,7 +23,7 @@ describe('the registry', () => {
 
   it('builds well-formed https or app-scheme links with a label each for a fixture word', () => {
     for (const r of RESOURCES) {
-      const links = r.linksFor(WORD, r.option?.default);
+      const links = r.linksFor(WORD, optionOf(r, undefined));
       expect(links.length).toBeGreaterThan(0);
       for (const link of links) {
         expect(link.label).not.toBe('');
@@ -36,11 +39,49 @@ describe('the registry', () => {
     expect(resourceOf('strongs')?.linksFor({ ...WORD, strongs: 'G25' })[0].url).toBe('https://www.stepbible.org/?q=strong=G0025');
   });
 
-  it('puts the named resource and the encoded lemma into the Logos and Accordance links, and falls back to BDAG when the name is empty', () => {
+  it('builds Logos links by its own scheme first: one Open link per ticked lexicon and the Bible Word Study at the verse', () => {
+    const links = resourceOf('logos')?.linksFor(BIBLOS, 'bdag,louwnida') ?? [];
+    expect(links.map((l) => l.label)).toEqual(['Open in Logos: BDAG', 'Open in Logos: Louw-Nida', 'Bible Word Study in Logos']);
+    expect(links[0].url).toBe(`logosres:bdag;hw=${BIBLOS_URL}`);
+    expect(links[1].url).toBe(`logosres:louwnida;hw=${BIBLOS_URL}`);
+    expect(links[2].url).toBe(`logos4:Guide;t=Bible%20Word%20Study;lemma=${BIBLOS_URL};ref=Bible.Ac19.19`);
+  });
+
+  it('gives every Logos link its https address as the fallback, used only when the scheme cannot open', () => {
+    const links = resourceOf('logos')?.linksFor(BIBLOS, 'bdag') ?? [];
+    expect(links[0].fallback).toBe(`https://ref.ly/logosres/bdag?hw=${BIBLOS_URL}`);
+    expect(links[1].fallback).toBe(`https://ref.ly/logos4/Guide;t=Bible%20Word%20Study;lemma=${BIBLOS_URL};ref=Bible.Ac19.19`);
+    for (const link of links) expect(new URL(link.fallback ?? '').protocol).toBe('https:');
+  });
+
+  it('leaves the verse out of the Bible Word Study link when the word has none, and builds no lexicon link for none ticked', () => {
+    const links = resourceOf('logos')?.linksFor(WORD, '') ?? [];
+    expect(links.map((l) => l.label)).toEqual(['Bible Word Study in Logos']);
+    expect(links[0].url).not.toContain('ref=');
+  });
+
+  it('lists his lexicons as data, in the order Logos shows them, each with a Logos resource id', () => {
+    const items = resourceOf('logos')?.choices?.items ?? [];
+    expect(items.length).toBe(21);
+    expect(items.slice(0, 2).map((i) => i.name)).toEqual(['BDAG', 'Louw-Nida']);
+    expect(new Set(items.map((i) => i.id)).size).toBe(items.length);
+    expect(resourceOf('logos')?.choices?.default).toEqual(['bdag']);
+  });
+
+  it('reads the ticks kept for Logos, and BDAG alone when none were kept', () => {
+    const logos = resourceOf('logos');
+    if (!logos) throw new Error('no Logos');
+    expect(optionOf(logos, undefined)).toBe('bdag');
+    expect(optionOf(logos, JSON.stringify(['louwnida', 'bdag']))).toBe('bdag,louwnida');
+    expect(optionOf(logos, '[]')).toBe('');
+    expect(optionOf(logos, 'not json')).toBe('bdag');
+  });
+
+  it('puts the named module and the encoded word into the Accordance link by its accord: scheme, BDAG when the name is empty', () => {
     const lemma = encodeURIComponent('συνεργέω');
-    expect(resourceOf('logos')?.linksFor(WORD, 'lsj')[0].url).toBe(`https://ref.ly/logosres/lsj?hw=${lemma}`);
-    expect(resourceOf('logos')?.linksFor(WORD, '  ')[0].url).toBe(`https://ref.ly/logosres/bdag?hw=${lemma}`);
     expect(resourceOf('accordance')?.linksFor(WORD, 'LSJ')[0].url).toBe(`accord://search/LSJ?${lemma}`);
+    expect(resourceOf('accordance')?.linksFor(WORD, '  ')[0].url).toBe(`accord://search/BDAG?${lemma}`);
+    expect(resourceOf('accordance')?.linksFor(BIBLOS, 'BDAG')[0].url).toBe(`accord://search/BDAG?${BIBLOS_URL}`);
   });
 });
 
@@ -57,8 +98,8 @@ describe('the kept choices', () => {
   it('keeps a switch and a named option, and turns a switch off again', async () => {
     await setResourceOn('strongs', true);
     await setResourceOn('logos', true);
-    await setResourceOption('logos', 'lsj');
-    expect(await getStudyResources()).toEqual({ on: ['logos', 'strongs'], options: { logos: 'lsj' } });
+    await setResourceOption('logos', '["louwnida"]');
+    expect(await getStudyResources()).toEqual({ on: ['logos', 'strongs'], options: { logos: '["louwnida"]' } });
     await setResourceOn('strongs', false);
     expect((await getStudyResources()).on).toEqual(['logos']);
   });

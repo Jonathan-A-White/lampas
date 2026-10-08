@@ -29,7 +29,7 @@ import { PHONE_VOICE, writeSetting } from './settings/registry';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { speaksLanguage, useVoices, voiceKey } from './speech/greek';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from './speech/languages';
-import { RESOURCES, type StudyResource } from './resources';
+import { RESOURCES, tickedOf, type ResourceChoices, type StudyResource } from './resources';
 import { PRONUNCIATIONS, pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
 
 function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
@@ -218,6 +218,41 @@ function PronunciationList({ chosen }: { chosen: GreekPronunciation }) {
   );
 }
 
+/** The lexicons (or other choices) of a resource, each a 48 px tick row; kept as he taps (a JSON array of ids). */
+function ChoiceList({ resourceId, choices, ticked }: { resourceId: string; choices: ResourceChoices; ticked: string[] }) {
+  const toggle = (id: string): void => {
+    const next = ticked.includes(id) ? ticked.filter((t) => t !== id) : [...ticked, id];
+    void setResourceOption(resourceId, JSON.stringify(choices.items.map((i) => i.id).filter((i) => next.includes(i))));
+  };
+  return (
+    <div role="group" aria-label={choices.label} className="mt-2">
+      <p className="text-base font-medium">{choices.label}</p>
+      <p className="pb-1 text-sm text-muted">{choices.hint}</p>
+      {choices.items.map((item) => {
+        const on = ticked.includes(item.id);
+        return (
+          <button
+            key={item.id}
+            type="button"
+            role="checkbox"
+            aria-checked={on}
+            onClick={() => toggle(item.id)}
+            className="flex min-h-12 w-full items-center gap-3 border-t border-line text-left text-base"
+          >
+            <span
+              aria-hidden="true"
+              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded border border-line ${on ? 'bg-accent text-accent-fg' : ''}`}
+            >
+              {on ? '✓' : ''}
+            </span>
+            {item.name}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 /** One study resource: its switch (a 44 px row), what it adds, and the field it asks for, if any (kept as he types). */
 function ResourceRow({ resource, on, typed }: { resource: StudyResource; on: boolean; typed: string }) {
   const [value, setValue] = useState(typed);
@@ -240,6 +275,7 @@ function ResourceRow({ resource, on, typed }: { resource: StudyResource; on: boo
         </button>
       </div>
       <p className="text-sm text-muted">{resource.describe}</p>
+      {on && resource.choices ? <ChoiceList resourceId={resource.id} choices={resource.choices} ticked={tickedOf(resource, typed)} /> : null}
       {option ? (
         <div className="mt-2">
           <label className="block">

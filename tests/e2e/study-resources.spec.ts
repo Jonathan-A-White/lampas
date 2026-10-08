@@ -23,9 +23,15 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
   }
   await section.getByRole('switch', { name: "Strong's", exact: true }).click();
   await section.getByRole('switch', { name: 'Logos', exact: true }).click();
-  await section.getByRole('textbox', { name: 'Logos resource' }).fill('bdag');
-  const field = await section.getByRole('textbox', { name: 'Logos resource' }).evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
-  expect(field).toBeGreaterThanOrEqual(16);
+  const bdag = section.getByRole('checkbox', { name: 'BDAG', exact: true });
+  await expect(bdag).toHaveAttribute('aria-checked', 'true');
+  const louw = section.getByRole('checkbox', { name: 'Louw-Nida', exact: true });
+  await louw.scrollIntoViewIfNeeded();
+  await louw.click();
+  await expect(louw).toHaveAttribute('aria-checked', 'true');
+  const tick = await louw.boundingBox();
+  expect(tick?.height).toBeGreaterThanOrEqual(43.5);
+  expect((tick?.x ?? 0) + (tick?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
   await shot(page, 'settings-resources');
 
   await page.reload();
@@ -35,8 +41,13 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
   const study = page.getByRole('dialog', { name: 'Word' }).getByRole('group', { name: 'Study' });
   await expect(study).toBeInViewport();
   await expect(study.getByRole('link', { name: 'G4903', exact: true })).toHaveAttribute('href', 'https://www.stepbible.org/?q=strong=G4903');
-  const logos = study.getByRole('link', { name: 'Open in Logos', exact: true });
-  await expect(logos).toHaveAttribute('href', /^https:\/\/ref\.ly\/logosres\/bdag\?hw=/);
+  const logos = study.getByRole('link', { name: 'Open in Logos: BDAG', exact: true });
+  await expect(logos).toHaveAttribute('href', /^logosres:bdag;hw=/);
+  await expect(logos).toHaveAttribute('data-fallback', /^https:\/\/ref\.ly\/logosres\/bdag\?hw=/);
+  await expect(study.getByRole('link', { name: 'Open in Logos: Louw-Nida', exact: true })).toHaveAttribute('href', /^logosres:louwnida;hw=/);
+  await expect(study.getByRole('link', { name: 'Bible Word Study in Logos', exact: true })).toHaveAttribute('href', /;ref=Bible\.Ro8\.28$/);
+  await expect(study.getByText('G4903')).toHaveCount(1);
+  await expect(page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-strongs')).toHaveCount(0);
   const box = await logos.boundingBox();
   expect(box?.height).toBeGreaterThanOrEqual(43.5);
   const fits = await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);

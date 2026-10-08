@@ -12,7 +12,8 @@ import { parseSegments } from './data/parseCode';
 import { getStudyResources, type StudyResources } from './data/repositories';
 import { publish, useLatest } from './events/bus';
 import { GrammarSheet } from './GrammarSheet';
-import { optionOf, RESOURCES, type StudyLink } from './resources';
+import { optionOf, RESOURCES, type StudyLink, type StudyRef } from './resources';
+import { armFallback } from './resources/openApp';
 import { pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
 import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
@@ -80,9 +81,9 @@ function ParseTerms({ parse, known, open }: { parse: string; known: ReadonlySet<
 }
 
 /** The links of every study resource he switched on (Settings > Study resources) for this word. */
-function studyLinks(chosen: StudyResources | undefined, word: GreekWord): StudyLink[] {
+function studyLinks(chosen: StudyResources | undefined, word: GreekWord, ref: StudyRef | undefined): StudyLink[] {
   if (!chosen) return [];
-  const study = { form: word.t, lemma: wordLemma(word), strongs: word.s };
+  const study = { form: word.t, lemma: wordLemma(word), strongs: word.s, ref };
   return RESOURCES.filter((r) => chosen.on.includes(r.id)).flatMap((r) => r.linksFor(study, optionOf(r, chosen.options[r.id])));
 }
 
@@ -97,8 +98,9 @@ function StudyRow({ links }: { links: StudyLink[] }) {
           <a
             key={link.label}
             href={link.url}
-            target="_blank"
-            rel="noreferrer"
+            data-fallback={link.fallback}
+            onClick={() => armFallback(link.fallback)}
+            {...(link.url.startsWith('https:') ? { target: '_blank', rel: 'noreferrer' } : {})}
             className="inline-flex min-h-12 items-center rounded-xl border border-line px-4 text-base font-medium text-accent active:bg-line"
           >
             {link.label}
@@ -140,6 +142,9 @@ function WordCard({ chapter, word, english, pronunciation, known, study, onHelp,
   onTerm: (term: string, word: GreekWord, verse: number | undefined) => void;
 }) {
   const verse = chapter.verses.find((v) => v.g.includes(word))?.n;
+  // The Strong's resource shows the number as its link in the Study row; the plain fact would say it twice.
+  const strongsOn = study?.on.includes('strongs') ?? false;
+  const ref = verse === undefined ? undefined : { book: chapter.code, chapter: chapter.chapter, verse };
   return (
     <section className="border-t border-line py-3 first:border-t-0 first:pt-0">
       <div className="flex items-start justify-between gap-2">
@@ -161,16 +166,18 @@ function WordCard({ chapter, word, english, pronunciation, known, study, onHelp,
         <Fact label="Meaning" testId="sheet-gloss">
           {wordGloss(chapter, word)}
         </Fact>
-        <Fact label="Strong's" testId="sheet-strongs">
-          {word.s}
-        </Fact>
+        {strongsOn ? null : (
+          <Fact label="Strong's" testId="sheet-strongs">
+            {word.s}
+          </Fact>
+        )}
         {english ? (
           <Fact label="English" testId="sheet-english">
             {english}
           </Fact>
         ) : null}
       </dl>
-      <StudyRow links={studyLinks(study, word)} />
+      <StudyRow links={studyLinks(study, word, ref)} />
       {onHelp && verse !== undefined ? (
         <HelpRow help={(kind) => onHelp({ kind, form: word.t, lemma: wordLemma(word), parse: wordParse(chapter, word), verse })} />
       ) : null}

@@ -1,7 +1,7 @@
 // features/steps/study-resources.steps.tsx — runs features/study-resources.feature: the Study resources section of Settings
 // (a switch per registered resource, a name field for Logos' and Accordance's lexicon) and the Study row of the word sheet.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within, fireEvent } from '@testing-library/react';
+import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -65,7 +65,22 @@ const switchOn = async (_: unknown, name: string): Promise<void> => {
   if (control.getAttribute('aria-checked') !== 'true') await user.click(control);
   await waitFor(() => expect(control).toHaveAttribute('aria-checked', 'true'));
 };
-const nameField = (resource: string): Promise<HTMLElement> => screen.findByRole('textbox', { name: `${resource} resource` });
+const lexicon = (name: string): Promise<HTMLElement> => screen.findByRole('checkbox', { name });
+const ticks = async (_: unknown, name: string): Promise<void> => {
+  const box = await lexicon(name);
+  if (box.getAttribute('aria-checked') !== 'true') await user.click(box);
+  await waitFor(() => expect(box).toHaveAttribute('aria-checked', 'true'));
+};
+const link = (label: string): HTMLElement | null => {
+  const row = studyRow();
+  if (!row) throw new Error('no Study row');
+  return within(row).queryByRole('link', { name: label });
+};
+const hasLink = (_: unknown, label: string, href: string): void => {
+  const found = link(label);
+  if (!found) throw new Error(`no link ${label}`);
+  expect(found).toHaveAttribute('href', href);
+};
 const taps = async (_: unknown, text: string, verse: number): Promise<void> => {
   await user.click(within(verseEl(verse)).getByRole('button', { name: text }));
   await screen.findByRole('dialog', { name: 'Word' });
@@ -95,27 +110,58 @@ describeFeature(feature, ({ Scenario }) => {
     And('he switches on the study resource {string}', switchOn);
     And('he taps Back on the Settings screen', goBack);
     And('he taps the word {string} in verse {int}', taps);
-    Then('the Study row has a link {string} to {string}', (_, label: string, href: string) => {
-      const row = studyRow();
-      if (!row) throw new Error('no Study row');
-      expect(within(row).getByRole('link', { name: label })).toHaveAttribute('href', href);
-    });
+    Then('the Study row has a link {string} to {string}', hasLink);
   });
 
-  Scenario('With Logos on and BDAG named, the word sheet shows Open in Logos built from the lemma', ({ Given, When, And, Then }) => {
+  Scenario('With Logos on, BDAG is ticked and the word sheet shows Open in Logos: BDAG and Bible Word Study in Logos', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
     When("he taps the gear in the reader's header", openSettings);
     And('he switches on the study resource {string}', switchOn);
-    And('he names the Logos resource {string}', async (_, name: string) => {
-      fireEvent.change(await nameField('Logos'), { target: { value: name } });
-      await waitFor(async () => expect((await db.settings.get('resourceOption.logos'))?.value).toBe(name));
+    Then('the Logos lexicon {string} is ticked', async (_, name: string) => {
+      expect(await lexicon(name)).toHaveAttribute('aria-checked', 'true');
+    });
+    And('the Logos lexicon {string} is not ticked', async (_, name: string) => {
+      expect(await lexicon(name)).toHaveAttribute('aria-checked', 'false');
     });
     And('he taps Back on the Settings screen', goBack);
     And('he taps the word {string} in verse {int}', taps);
-    Then('the Study row has a link {string} to {string}', (_, label: string, href: string) => {
-      const row = studyRow();
-      if (!row) throw new Error('no Study row');
-      expect(within(row).getByRole('link', { name: label })).toHaveAttribute('href', href);
+    Then('the Study row has a link {string} to {string}', hasLink);
+    And('the Study row also has a link {string} to {string}', hasLink);
+    And('the Study row has no link {string}', (_, label: string) => expect(link(label)).toBeNull());
+  });
+
+  Scenario('Each ticked Logos lexicon gives its own Open link', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
+    When("he taps the gear in the reader's header", openSettings);
+    And('he switches on the study resource {string}', switchOn);
+    And('he ticks the Logos lexicon {string}', ticks);
+    And('he taps Back on the Settings screen', goBack);
+    And('he taps the word {string} in verse {int}', taps);
+    Then('the Study row has a link {string} to {string}', hasLink);
+    And('the Study row also has a link {string} to {string}', hasLink);
+    And('the Study row has one more link {string} to {string}', hasLink);
+  });
+
+  Scenario('A Logos link carries its https address for the case the app cannot be opened', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
+    When("he taps the gear in the reader's header", openSettings);
+    And('he switches on the study resource {string}', switchOn);
+    And('he taps Back on the Settings screen', goBack);
+    And('he taps the word {string} in verse {int}', taps);
+    Then('the Study link {string} has the fallback {string}', (_, label: string, fallback: string) => {
+      expect(link(label)).toHaveAttribute('data-fallback', fallback);
+    });
+  });
+
+  Scenario("With Strong's on, the Strong's number shows once on the word sheet", ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
+    When("he taps the gear in the reader's header", openSettings);
+    And('he switches on the study resource {string}', switchOn);
+    And('he taps Back on the Settings screen', goBack);
+    And('he taps the word {string} in verse {int}', taps);
+    Then('{string} appears once on the word sheet', (_, text: string) => {
+      const sheet = screen.getByRole('dialog', { name: 'Word' });
+      expect(sheet.textContent?.split(text).length).toBe(2);
     });
   });
 
@@ -125,11 +171,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he switches on the study resource {string}', switchOn);
     And('he taps Back on the Settings screen', goBack);
     And('he taps the word {string} in verse {int}', taps);
-    Then('the Study row has a link {string} to {string}', (_, label: string, href: string) => {
-      const row = studyRow();
-      if (!row) throw new Error('no Study row');
-      expect(within(row).getByRole('link', { name: label })).toHaveAttribute('href', href);
-    });
+    Then('the Study row has a link {string} to {string}', hasLink);
   });
 
   Scenario('With none on, the word sheet has no Study row', ({ Given, When, Then }) => {
@@ -142,10 +184,8 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
     When("he taps the gear in the reader's header", openSettings);
     And('he switches on the study resource {string}', switchOn);
-    And('he names the Logos resource {string}', async (_, name: string) => {
-      fireEvent.change(await nameField('Logos'), { target: { value: name } });
-      await waitFor(async () => expect((await db.settings.get('resourceOption.logos'))?.value).toBe(name));
-    });
+    And('he also switches on the study resource {string}', switchOn);
+    And('he ticks the Logos lexicon {string}', ticks);
     And('Lampas is opened again', mount);
     And('he opens Settings again', openSettings);
     Then('the study resource {string} is switched on', async (_, name: string) => {
@@ -154,8 +194,11 @@ describeFeature(feature, ({ Scenario }) => {
     And('the study resource {string} is switched off', async (_, name: string) => {
       expect(await switchOf(name)).toHaveAttribute('aria-checked', 'false');
     });
-    And('the Logos resource is named {string}', async (_, name: string) => {
-      expect(await nameField('Logos')).toHaveValue(name);
+    And('the Logos lexicon {string} is ticked', async (_, name: string) => {
+      expect(await lexicon(name)).toHaveAttribute('aria-checked', 'true');
+    });
+    And('the Logos lexicon {string} stays ticked', async (_, name: string) => {
+      expect(await lexicon(name)).toHaveAttribute('aria-checked', 'true');
     });
   });
 });
