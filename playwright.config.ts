@@ -17,6 +17,12 @@ const browserEnv = existsSync(extraLibDir)
 
 const LIVE_SPEC = '**/tutor-live.spec.ts';
 
+// The live project drives the DEPLOYED app: Postern's CORS allows only https://lampas.allmymind.org, so a
+// localhost preview could never reach the tutor. `npm run e2e:live` sets LAMPAS_E2E=live, and then no preview
+// server is started (and nothing is built).
+const LIVE_BASE_URL = process.env.LAMPAS_LIVE_URL || 'https://lampas.allmymind.org';
+const LIVE_RUN = process.env.LAMPAS_E2E === 'live';
+
 export default defineConfig({
   testDir: './tests/e2e',
   timeout: 60_000,
@@ -47,24 +53,27 @@ export default defineConfig({
         launchOptions: { env: browserEnv },
       },
     },
-    // `npm run e2e:live` (--project=live): the one spec that talks to the real Postern backend. It is in
-    // neither the gate nor `npm run shots`, and it spends a grind of fuel per run.
+    // `npm run e2e:live` (--project=live): the one spec that talks to the real Postern backend, through the
+    // deployed app. It is in neither the gate nor `npm run shots`, and it spends a grind of fuel per run.
     {
       name: 'live',
       testMatch: LIVE_SPEC,
       timeout: 180_000,
       use: {
         ...devices['Desktop Chrome'],
+        baseURL: LIVE_BASE_URL,
         channel: 'chromium',
         viewport: { width: 390, height: 844 },
         launchOptions: { env: browserEnv },
       },
     },
   ],
-  webServer: {
-    command: `npm run preview -- --port ${PREVIEW_PORT} --strictPort`,
-    url: PREVIEW_BASE_URL,
-    reuseExistingServer: reuseExistingPreview(),
-    timeout: 60_000,
-  },
+  webServer: LIVE_RUN
+    ? undefined
+    : {
+        command: `npm run preview -- --port ${PREVIEW_PORT} --strictPort`,
+        url: PREVIEW_BASE_URL,
+        reuseExistingServer: reuseExistingPreview(),
+        timeout: 60_000,
+      },
 });

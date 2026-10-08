@@ -1,6 +1,8 @@
 // tests/e2e/tutor-live.spec.ts — the true end-to-end test of the tutor: the real app (past the real licence gate),
-// the real Postern backend and the real mill. Run by `npm run e2e:live` only (the 'live' Playwright project); it is not
-// in the gate and not in `npm run shots`, and every run spends one grind of fuel.
+// the real Postern backend and the real mill. It drives the DEPLOYED app (playwright.config.ts: LAMPAS_LIVE_URL, default
+// https://lampas.allmymind.org), the one origin Postern's CORS allows.
+// Run by `npm run e2e:live` only (the 'live' Playwright project); it is not in the gate and not in `npm run shots`,
+// and every run spends one grind of fuel.
 //
 // The device key comes from process.env.LAMPAS_TEST_KEY, or the line LAMPAS_TEST_KEY=<hex> in
 // ~/.config/mw/lampas-test.env; that key holds a lampas licence the Governor issued. It is never printed.

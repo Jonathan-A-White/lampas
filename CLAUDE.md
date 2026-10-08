@@ -35,9 +35,11 @@ npm run shots        # Playwright at 390x844 against `vite preview` of dist/ (ru
 npm run icons        # re-render public/icon-192.png and icon-512.png from public/icon.svg
 npm run seed:build   # rebuild src/data/seed-words.ts from docs/example-words.md (plain node, 22.18+)
 npm run check:licence -- <pubkey>  # live testnet licence check, opt-in, not in the gate
-npm run e2e:live     # the ONE live test (tests/e2e/tutor-live.spec.ts, Playwright project 'live'): builds, then asks the real
-                     #   Postern tutor about Romans 8:28 with LAMPAS_TEST_KEY (or ~/.config/mw/lampas-test.env); skips, never
-                     #   passes, with no key or no backend; spends a grind of fuel; not in the gate or `npm run shots`
+npm run e2e:live     # the ONE live test (tests/e2e/tutor-live.spec.ts, Playwright project 'live'): drives the DEPLOYED app
+                     #   (LAMPAS_LIVE_URL, default https://lampas.allmymind.org; no build, no preview server; Postern's CORS allows
+                     #   only that origin) and asks the real Postern tutor about Romans 8:28 with LAMPAS_TEST_KEY (or
+                     #   ~/.config/mw/lampas-test.env); so it proves a landing only after the deploy; skips, never passes, with
+                     #   no key or no backend; spends a grind of fuel; not in the gate or `npm run shots`
 npm run data:build   # data/raw (git-ignored, downloaded if absent) -> public/data/<book>/<chapter>.json + index.json;
                      #   the output is committed and a second run changes nothing (docs/data.md)
 ```

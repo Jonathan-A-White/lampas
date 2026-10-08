@@ -58,6 +58,9 @@ Opt-in live check, not in the gate: `npm run check:licence -- <public key>` asks
 - `tests/e2e/tutor.spec.ts` (in `npm run shots`, shots `ask.png` and `answer.png`) routes Postern's origin to the same fake
   from Playwright (`tests/support/playwright-postern.ts`); the app's real signing and sealing run.
 - `tests/e2e/tutor-live.spec.ts` is the true end-to-end test, Playwright project `live`, run by `npm run e2e:live` only. It
+  tests the **deployed** build: the project's `baseURL` is `LAMPAS_LIVE_URL` or `https://lampas.allmymind.org`, it builds nothing
+  and starts no preview server (`LAMPAS_E2E=live` leaves out the config's `webServer`), because Postern's CORS allows only that
+  origin and a localhost preview ends 'Could not reach the tutor'. It therefore proves a landing only after the deploy. It
   seeds the device key from `process.env.LAMPAS_TEST_KEY`, or the line `LAMPAS_TEST_KEY=<hex>` in
   `~/.config/mw/lampas-test.env`, through the seam above, lets the real gate look the licence up on testnet, asks about
   Romans 8:28 and waits up to 120 s for an answer that mentions συνεργεῖ or συνεργέω. With no key, or a backend that does not
