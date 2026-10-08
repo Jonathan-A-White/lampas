@@ -46,3 +46,27 @@ test('the Import screen previews a pasted list and keeps Add in reach at phone w
 
   await shot(page, 'import');
 });
+
+for (const scheme of ['light', 'dark'] as const) {
+  test(`a Words card shows its memory picture, clear in the ${scheme} theme, at phone width`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: scheme });
+    await openUnlocked(page);
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
+    await page.getByRole('button', { name: 'Words', exact: true }).click();
+    await expect(page.getByTestId('word-counts')).toHaveText('54 solid, 9 learning');
+
+    const card = page.locator('[data-lemma="ἀγαπάω"]');
+    await card.scrollIntoViewIfNeeded();
+    const picture = card.locator('img');
+    await expect(picture).toBeVisible();
+    // The file loaded (a broken image has no natural width) and is big enough to see.
+    await expect.poll(() => picture.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+    expect((await picture.boundingBox())?.width).toBeGreaterThanOrEqual(48);
+    // A word with no picture has no image.
+    await expect(page.locator('[data-lemma="γάρ"] img')).toHaveCount(0);
+    await expectFitsPhone(page);
+
+    await shot(page, scheme === 'light' ? 'words-pictures' : 'words-pictures-dark');
+  });
+}

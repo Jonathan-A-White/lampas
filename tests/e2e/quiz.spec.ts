@@ -50,3 +50,21 @@ test('a Quick test round ends with N of 10 and the words missed at phone width',
 
   await shot(page, 'test-end');
 });
+
+test('a Quick test question shows the picture beside a word that has one, and fits the phone', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/test');
+  const prompt = page.getByTestId('prompt');
+  await expect(prompt).toBeVisible();
+  const lemma = await prompt.getAttribute('data-lemma');
+  const picture = page.getByTestId('picture');
+  // Every word of the seed list asked here but eleven has one; the picture is there or the word has none.
+  if (await picture.count()) {
+    await expect.poll(() => picture.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+    expect((await picture.boundingBox())?.width).toBeGreaterThanOrEqual(64);
+  } else {
+    expect(['ἀλλά', 'ἀμήν', 'γάρ', 'δέ', 'εἰ μή', 'μου', 'ὁ', 'ὅτι', 'οὐδέ', 'οὖν', 'οὔτε']).toContain(lemma);
+  }
+  await expect(page.locator('[data-option]')).toHaveCount(4);
+  await expectFitsPhone(page);
+});

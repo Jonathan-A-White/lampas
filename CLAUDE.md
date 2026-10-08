@@ -98,18 +98,21 @@ src/data/repositories/  # the only way UI reaches Dexie (words.ts: seed on first
 src/data/quiz.ts     # Quick test, pure: nextState (the two-in-a-row rule), drawWords, buildOptions, buildQuestion; the random source is injected (mulberry32 in tests; App's newRandom prop)
 src/data/lemma.ts    # BMA lemma -> headword (the key) + TBESG lexicon lemmas (εἶπεν -> λέγω, εἶπον ...)
 src/data/importWords.ts  # parses pasted 'lemma — gloss' lines and rows of the example table
+src/data/pictures.ts  # memory pictures: headword -> public/pictures/<name>.svg (52 of the 63 seed words); src/WordPicture.tsx shows one on a Words card and beside the Quick test's word; docs/pictures.md
 src/data/seed-words.ts   # GENERATED from docs/example-words.md by scripts/seed-build.ts: 63 words
 src/data/chapter.ts  # chapter types, loadChapter(book, n), wordLemma/wordGloss/wordParse: screens never read the raw keys
 src/data/weave.ts    # the diglot weave: weaveVerse(verse, solidLemmas) -> per English chunk the Greek words shown in its place, or null
 src/data/parseCode.ts # RP parsing code -> plain words (shared by the data build and the app)
 scripts/data-build.ts # the New Testament data build (npx tsx); tests/fixtures/data/ holds small source slices
 public/              # icon.svg (lamp glyph), icon-192.png, icon-512.png
+public/pictures/     # the hand-drawn memory pictures, one SVG each (docs/pictures.md says how to add one)
 public/data/         # generated NT JSON, committed (~30 MB); only index.json and rom/8.json are precached
 features/ tests/     # BDD features + steps; unit tests; e2e + shots; support fakes
 docs/pwa-best-practices.md   # copied verbatim from the vault; the law for every screen
 docs/example-words.md        # the owner's own BMA word list (public, an example template); the seed's source
 docs/testing.md      # the gate's test seam: where the device key lives and how a test seeds it
 docs/events.md       # every event kind on the bus, its payload, who publishes and who listens
+docs/pictures.md     # the memory pictures: the rules for one, how to add one, which seed words have none
 docs/data.md         # the data's JSON shape, its two sources and licences, and what the build changes
 ```
 
