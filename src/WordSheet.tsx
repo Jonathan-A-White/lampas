@@ -1,13 +1,19 @@
 // src/WordSheet.tsx — the bottom sheet a tapped word opens: the Greek word as it stands, how to say it (a respelling
 // in the pronunciation chosen in Settings), lemma, parsing in plain words, gloss and Strong's. Closes by a tap
 // outside, a swipe down on its handle, the Done button or Escape. Each word has a Help with this word row (Grammar, Sound it out)
-// when the screen gives it somewhere to send them: the Talk sheet on the word's verse with the first question sent.
+// when the screen gives it somewhere to send them: the Talk sheet on the word's verse with the first question sent. Every grammar
+// word of the Parsing is a link to its Grammar sheet (src/GrammarSheet.tsx), which opens over this one: underlined until he marks
+// the term I know this, plain after.
+import { useState, type ReactNode } from 'react';
 import { type Chapter, type GreekWord, wordGloss, wordLemma, wordParse } from './data/chapter';
-import { useLatest } from './events/bus';
+import { parseSegments } from './data/parseCode';
+import { publish, useLatest } from './events/bus';
+import { GrammarSheet } from './GrammarSheet';
 import { pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
 import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
+import { useKnownTerms } from './useKnownTerms';
 
 /** What was tapped: Greek words, and the English they stand for. `english` is the tapped chunk, or a Greek word's own chunk. */
 export interface Lookup {
@@ -27,7 +33,13 @@ export interface WordHelp {
   verse: number;
 }
 
-function Fact({ label, children, testId, lang }: { label: string; children: string; testId: string; lang?: string }) {
+/** What a tap on Ask the tutor, on the Grammar sheet of `term`, asks for: the term and the verse of the word whose sheet it was opened from. */
+export interface TermAsk {
+  term: string;
+  verse: number;
+}
+
+function Fact({ label, children, testId, lang }: { label: string; children: ReactNode; testId: string; lang?: string }) {
   return (
     <div className="flex gap-3 py-1">
       <dt className="w-20 shrink-0 text-sm text-muted">{label}</dt>
@@ -35,6 +47,31 @@ function Fact({ label, children, testId, lang }: { label: string; children: stri
         {children}
       </dd>
     </div>
+  );
+}
+
+/** The Parsing in plain words with each grammar word a link (a 44 px tap target): underlined, or plain once he knows it. */
+function ParseTerms({ parse, known, open }: { parse: string; known: ReadonlySet<string>; open: (term: string) => void }) {
+  return (
+    <>
+      {parseSegments(parse).map((segment, i) => {
+        const term = segment.term;
+        if (term === undefined) return segment.text;
+        const isKnown = known.has(term);
+        return (
+          <button
+            key={i}
+            type="button"
+            data-term={term}
+            data-known={isKnown}
+            onClick={() => open(term)}
+            className={`inline-flex min-h-11 items-center px-0.5 align-middle text-left ${isKnown ? '' : 'text-accent underline underline-offset-4'}`}
+          >
+            {term}
+          </button>
+        );
+      })}
+    </>
   );
 }
 
@@ -57,12 +94,15 @@ function HelpRow({ help }: { help: (kind: WordHelp['kind']) => void }) {
   );
 }
 
-function WordCard({ chapter, word, english, pronunciation, onHelp }: {
+function WordCard({ chapter, word, english, pronunciation, known, onHelp, onTerm }: {
   chapter: Chapter;
   word: GreekWord;
   english?: string;
   pronunciation: GreekPronunciation | undefined;
+  known: ReadonlySet<string>;
   onHelp?: (help: WordHelp) => void;
+  /** a grammar word of the Parsing was tapped: the term, and the verse the word stands in */
+  onTerm: (term: string, word: GreekWord, verse: number | undefined) => void;
 }) {
   const verse = chapter.verses.find((v) => v.g.includes(word))?.n;
   return (
@@ -81,7 +121,7 @@ function WordCard({ chapter, word, english, pronunciation, onHelp }: {
           {wordLemma(word)}
         </Fact>
         <Fact label="Parsing" testId="sheet-parse">
-          {wordParse(chapter, word)}
+          <ParseTerms parse={wordParse(chapter, word)} known={known} open={(term) => onTerm(term, word, verse)} />
         </Fact>
         <Fact label="Meaning" testId="sheet-gloss">
           {wordGloss(chapter, word)}
@@ -102,17 +142,43 @@ function WordCard({ chapter, word, english, pronunciation, onHelp }: {
   );
 }
 
-/** `onHelp`, when given, adds the Help with this word row to each word; the sheet closes itself before it is called. */
-export function WordSheet({ chapter, lookup, onClose, onHelp }: { chapter: Chapter; lookup: Lookup; onClose: () => void; onHelp?: (help: WordHelp) => void }) {
+/** `onHelp`, when given, adds the Help with this word row to each word; the sheet closes itself before it is called. `onAskTerm`,
+ * when given, adds Ask the tutor to a Grammar sheet; the sheet closes itself (and the Grammar sheet with it) before it is called. */
+export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: {
+  chapter: Chapter;
+  lookup: Lookup;
+  onClose: () => void;
+  onHelp?: (help: WordHelp) => void;
+  onAskTerm?: (ask: TermAsk) => void;
+}) {
   const { drag, handle } = useSheetDrag(onClose);
-  useEscapeToClose(onClose);
+  // The Grammar sheet takes the Escape while it is open.
+  const [grammar, setGrammar] = useState<{ term: string; word: GreekWord; verse: number | undefined } | null>(null);
+  // An example on a Grammar sheet shows its own word here, until the sheet is opened on something else.
+  const [shown, setShown] = useState<{ base: Lookup; lookup: Lookup } | null>(null);
+  const lookup = shown && shown.base === opened ? shown.lookup : opened;
+  useEscapeToClose(onClose, grammar === null);
   const pronunciation = useLatest('pronunciation-changed')?.pronunciation;
+  const known = useKnownTerms();
   const help = onHelp
     ? (asked: WordHelp): void => {
         onClose();
         onHelp(asked);
       }
     : undefined;
+  const openTerm = (term: string, word: GreekWord, verse: number | undefined): void => {
+    setGrammar({ term, word, verse });
+    publish({ kind: 'grammar-term-opened', term });
+  };
+  const askVerse = grammar?.verse;
+  const ask =
+    onAskTerm && askVerse !== undefined
+      ? (term: string): void => {
+          setGrammar(null);
+          onClose();
+          onAskTerm({ term, verse: askVerse });
+        }
+      : undefined;
 
   return (
     <div className="fixed inset-0 z-10 flex flex-col justify-end">
@@ -146,10 +212,34 @@ export function WordSheet({ chapter, lookup, onClose, onHelp }: { chapter: Chapt
             </p>
           ) : null}
           {lookup.words.map((w, i) => (
-            <WordCard key={i} chapter={chapter} word={w} english={lookup.fromEnglish ? undefined : lookup.english} pronunciation={pronunciation} onHelp={help} />
+            <WordCard
+              key={i}
+              chapter={chapter}
+              word={w}
+              english={lookup.fromEnglish ? undefined : lookup.english}
+              pronunciation={pronunciation}
+              known={known}
+              onHelp={help}
+              onTerm={openTerm}
+            />
           ))}
         </div>
       </div>
+      {grammar ? (
+        <GrammarSheet
+          chapter={chapter}
+          term={grammar.term}
+          word={grammar.word}
+          known={known.has(grammar.term)}
+          onClose={() => setGrammar(null)}
+          onTerm={(term) => openTerm(term, grammar.word, grammar.verse)}
+          onWord={(word) => {
+            setShown({ base: opened, lookup: { words: [word], fromEnglish: false } });
+            setGrammar(null);
+          }}
+          onAsk={ask}
+        />
+      ) : null}
     </div>
   );
 }

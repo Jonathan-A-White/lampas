@@ -20,7 +20,7 @@ import { type HoldHandlers, useHoldPress } from './ui/holdPress';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import type { AskState } from './useAsks';
 import type { Voice } from './useVoice';
-import { WordSheet, type Lookup, type WordHelp } from './WordSheet';
+import { WordSheet, type Lookup, type TermAsk, type WordHelp } from './WordSheet';
 
 function BubbleIcon() {
   return (
@@ -197,7 +197,7 @@ function Turn({ turn, scope, onLook }: { turn: TalkTurn; scope: TalkScope; onLoo
 }
 
 /** The sheet: the conversation `scope` names, the field, Send, and what the last message is doing. */
-export function TalkSheet({ scope, talkRef: ref, state, voice, onSay, onHelp, onClose }: {
+export function TalkSheet({ scope, talkRef: ref, state, voice, onSay, onHelp, onAskTerm, onClose }: {
   scope: TalkScope;
   /** the key the conversation is kept under (src/data/repositories/talks.ts talkRef) */
   talkRef: string;
@@ -208,6 +208,8 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, onSay, onHelp, on
   onSay: (message: string) => void;
   /** a word of an answer was opened and he asked for Grammar or Sound it out on it */
   onHelp: (help: WordHelp) => void;
+  /** a word of an answer was opened, a grammar word of its Parsing too, and he asked the tutor about it */
+  onAskTerm: (ask: TermAsk) => void;
   onClose: () => void;
 }) {
   const title = `Talk about ${scopeTitle(scope)}`;
@@ -336,7 +338,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, onSay, onHelp, on
           </div>
         </div>
       </div>
-      {lookup ? <WordSheet chapter={scope.chapter} lookup={lookup} onClose={closeWord} onHelp={onHelp} /> : null}
+      {lookup ? <WordSheet chapter={scope.chapter} lookup={lookup} onClose={closeWord} onHelp={onHelp} onAskTerm={onAskTerm} /> : null}
     </>
   );
 }

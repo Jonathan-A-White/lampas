@@ -38,7 +38,7 @@ import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
 import { useReadChecks } from './useReadChecks';
 import { useTalk } from './useTalk';
-import { helpQuestion, scopeTitle } from './services/talk';
+import { helpQuestion, scopeTitle, termQuestion } from './services/talk';
 import { useVoice } from './useVoice';
 import { useHoldPress } from './ui/holdPress';
 import { HeaderButton } from './ScreenHeader';
@@ -47,7 +47,7 @@ import { answerRuns, syllableRuns } from './speech/answerRuns';
 import { ReadFromButton, ReadingBar, VersePlay } from './speech/ReadControls';
 import { speakWord, warmVoices } from './speech/greek';
 import type { SpeechLanguage } from './speech/languages';
-import { WordSheet, type Lookup, type WordHelp } from './WordSheet';
+import { WordSheet, type Lookup, type TermAsk, type WordHelp } from './WordSheet';
 
 const { book: BOOK, chapter: CHAPTER, title: TITLE } = READER_CHAPTER;
 // 44 px (--lp-tap) minus 1 em, halved, top and bottom. Every face's content area is taller than 1 em (Gentium Plus
@@ -439,6 +439,20 @@ export function Reader() {
     },
     [chapter, talkStates, voice, say],
   );
+  // Ask the tutor on a Grammar sheet: the Talk sheet on the verse of the word the term was tapped on, the first question sent.
+  const askAboutTerm = useCallback(
+    (ask: TermAsk) => {
+      if (!chapter) return;
+      const verse = chapter.verses.find((v) => v.n === ask.verse) ?? null;
+      const scope = { title: TITLE, chapter, verse };
+      voice.abort();
+      setTalkAbout(ask.verse);
+      const state = talkStates[talkRef(BOOK, CHAPTER, ask.verse)];
+      if (state?.phase === 'sending' || state?.phase === 'waiting') return;
+      say(scope, termQuestion(ask.term, scopeTitle(scope)), { term: ask.term, kind: 'grammar-term' });
+    },
+    [chapter, talkStates, voice, say],
+  );
   const verseTalk: VerseTalk = { onHold: holdTalk, onRelease: () => void voice.release(), onDrop: voice.abort };
   // The Read button of a verse: holding it on a verse that is not selected selects it, so its result shows below it.
   const readOf = (verse: Verse): ReadHold => {
@@ -669,6 +683,7 @@ export function Reader() {
           voice={voice}
           onSay={(message) => say(talkScope, message)}
           onHelp={helpWithWord}
+          onAskTerm={askAboutTerm}
           onClose={() => {
             voice.abort();
             voice.clearNotice();
@@ -676,7 +691,7 @@ export function Reader() {
           }}
         />
       ) : null}
-      {chapter && lookup ? <WordSheet chapter={chapter} lookup={lookup} onClose={closeSheet} onHelp={helpWithWord} /> : null}
+      {chapter && lookup ? <WordSheet chapter={chapter} lookup={lookup} onClose={closeSheet} onHelp={helpWithWord} onAskTerm={askAboutTerm} /> : null}
     </>
   );
 }

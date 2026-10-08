@@ -102,6 +102,12 @@ export const GRAMMAR_HELP_ANSWER = {
   words: [{ greek: 'συνεργεῖ', lemma: 'συνεργέω', note: 'verb, present active indicative, third person singular' }],
 };
 
+/** The answer the fake gives to a question about a grammar term (the Grammar sheet's Ask the tutor): the answer in the app's shape. */
+export const GRAMMAR_TERM_ANSWER = {
+  answer: 'A conjunction joins words or sentences. In Romans 8:2 γὰρ “for” gives the reason for what came before. Check: which two parts does it join here?',
+  words: [{ greek: 'γὰρ', lemma: 'γάρ', note: 'conjunction' }],
+};
+
 /** The answer the fake gives to a Sound it out question about συνεργεῖ: the answer and the syllables to say. */
 export const SOUND_HELP_ANSWER = {
   answer: 'Say it in three parts: sun, er, GEI. The stress is on the last part. Check: which part is stressed?',
