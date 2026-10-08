@@ -71,7 +71,7 @@ build-version.ts     # '<version> · <UTC time> · <commit>' stamp (the commit i
 vite.config.ts       # react, tailwind 4, vite-plugin-pwa (injectManifest, registerType 'prompt')
 src/main.tsx         # scroll guard first, then render, then register the worker
 src/App.tsx          # the shell (data-shell); picks the screen by hash route (src/nav/route.ts); seeds words on first open
-src/Reader.tsx WordsScreen.tsx ImportScreen.tsx QuizScreen.tsx DrillScreen.tsx About.tsx SettingsScreen.tsx  # the screens (#/ , #/words, #/import, #/test, #/drill, #/about, #/settings); the Reader is Romans 8, English | Greek, header = title, English | Greek, the gear;
+src/Reader.tsx WordsScreen.tsx ImportScreen.tsx QuizScreen.tsx ReviewScreen.tsx DrillScreen.tsx About.tsx SettingsScreen.tsx  # the screens (#/ , #/words, #/import, #/test, #/review, #/drill, #/about, #/settings); the Reader is Romans 8, English | Greek, header = title, English | Greek, the gear;
                      #   Settings (opened by the gear) holds the Appearance (Theme Phone | Light | Dark, Text size Small | Normal | Large | Largest), the Layout (Verse by verse | Paragraph), Section headings (On | Off), the Weave, the English and Greek voice pickers, the English and Greek speed sliders, the Greek pronunciation list, and links to Words and About;
                      #   About is built from ATTRIBUTION.md (src/attribution.ts), opened by the About button under the chapter
 src/Ask.tsx          # the Ask box under the selected verse (field, Sending / Waiting, No licence, Could not reach + Retry) and the kept answer cards
@@ -104,6 +104,10 @@ src/nav/             # route.ts: the hash address (screen, and in the reader '?c
 src/HoldToHear.tsx   # the 'Hold to hear' bar under the Quick test word (src/QuizScreen.tsx): holdPress's 500 ms hold says the Greek word with speakWord (the long press's engine), release or a slide off stops it, a tap does nothing, Space / Enter held do the same
 src/QuizScreen.tsx   # after an answer (mw-5r3p30.47) pick() says the word by itself, once (speakWord, the same engine as HoldToHear; not on a Resume of an answered question) and a row of Next | Ask the tutor appears
                      #   (wrong answers never advance by themselves); Ask the tutor is askInReader on the question's verse (Question.chapter/verse from formsOf, data/quiz.ts askAbout; a word the chapter lacks, or a round kept before verses were stored, asks about its meaning on verse 1)
+src/ReviewScreen.tsx review/ WordQuestion.tsx DueBadge.tsx  # Review (mw-bsf54t.6, #/review, reached from Settings > Review or the 'Due: N' strip under the Reader's header, drawn by DueBadge from countDue, hidden at 0):
+                     #   'Due today: N words' and Start; review/round.ts drawReviewRound asks the due items first (listDue, the longest overdue first, at most ten) then fills to ten with words as Quick test draws them;
+                     #   items are of a kind (review/kinds.ts KINDS: how to draw, count, judge and record one; words only today), review/ItemCard.tsx has a renderer per kind (words: WordQuestion.tsx, the question card the Quick test shares);
+                     #   each answer goes through recordAnswer (so the schedule moves); the end card gives the score, 'N come back tomorrow, M later' (the round's items by their new due date; the strip is under the header, not in it: at 360 px the header has no room) and Back to reading
 src/data/roundKeep.ts  # a half-done Quick test round in localStorage (lampas.round); the test screen offers 'Round left unfinished: Resume | New round'
 src/layout/layouts.ts # the reading layouts as a list (Verse by verse, Paragraph): each says where a block of verses starts (a verse with a heading always does); blocksOf cuts a chapter; a new layout is one more entry + how the Reader draws it
 src/WordSheet.tsx    # the bottom sheet a tapped word opens (tap outside, swipe down on the handle, Done or Escape closes it)

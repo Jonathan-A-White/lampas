@@ -46,6 +46,7 @@ describe('the trail of places he visited', () => {
     visit('#/licence');
     expect(savedTrail()).toEqual(['#/words']);
     expect(isKeptHash('#/settings')).toBe(true);
+    expect(isKeptHash('#/review')).toBe(true);
     expect(isKeptHash('#/unlock')).toBe(false);
     expect(isKeptHash('#/licence')).toBe(false);
     expect(readLastRoute()).toBe('#/words');

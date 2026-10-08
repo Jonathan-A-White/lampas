@@ -10,6 +10,7 @@ import { startReaderAddressSync } from './nav/readerAddress';
 import { routeOf, useAddress } from './nav/route';
 import { Reader } from './Reader';
 import { QuizScreen } from './QuizScreen';
+import { ReviewScreen } from './ReviewScreen';
 import { SettingsScreen } from './SettingsScreen';
 import { startSpeechSettingsSync } from './speech/settingsSync';
 import { UpdateBanner } from './UpdateBanner';
@@ -45,6 +46,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <QuizScreen newRandom={newRandom} />
       ) : route === 'drill' ? (
         <DrillScreen newRandom={newRandom} />
+      ) : route === 'review' ? (
+        <ReviewScreen newRandom={newRandom} />
       ) : route === 'about' ? (
         <About />
       ) : route === 'settings' ? (
