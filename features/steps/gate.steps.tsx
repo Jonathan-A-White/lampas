@@ -10,7 +10,9 @@ import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { Gate } from '../../src/gate/Gate';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
+import { fetchLicenceStatus } from '../../src/services/licenceCheck';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { addMint, addRevoke, HOLDER, HOLDER_PUB, ISSUER_PUB, newChain } from '../../tests/support/licence-chain';
 
 afterAll(() => {
   cleanup();
@@ -29,6 +31,7 @@ const outpoint = { txid: 'a'.repeat(64), vout: 0 };
 let answer: Status | Error;
 let clock: number;
 let issuer: string;
+let stubChain: ReturnType<typeof newChain> | undefined;
 let notedKey = '';
 let copied = '';
 
@@ -38,6 +41,7 @@ function reset(): void {
   answer = { state: 'none', checkedAt: '' };
   clock = Date.parse('2026-10-08T12:00:00.000Z');
   issuer = ISSUER;
+  stubChain = undefined;
   notedKey = '';
   cleanup();
 }
@@ -51,7 +55,13 @@ async function open(): Promise<void> {
     <Gate
       issuer={issuer}
       now={() => clock}
-      check={issuer ? async () => { if (answer instanceof Error) throw answer; return answer; } : undefined}
+      check={
+        !issuer
+          ? undefined
+          : stubChain
+            ? (publicKeyHex) => fetchLicenceStatus(publicKeyHex, { issuer, reader: stubChain })
+            : async () => { if (answer instanceof Error) throw answer; return answer; }
+      }
     >
       <App />
     </Gate>,
@@ -126,6 +136,24 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario }) => {
   Scenario('A revoked licence shows Licence revoked', ({ Given, When, Then, And }) => {
     Given("the chain says this phone's licence was revoked", () => {
       answer = { state: 'revoked', outpoint, collection: 'lampas', checkedAt: checkedAt() };
+    });
+    When('Lampas is opened', open);
+    Then('he sees {string}', async (_, text: string) => {
+      expect(await screen.findByText(text)).toBeInTheDocument();
+    });
+    And('the reader is not shown', readerNotShown);
+  });
+
+  Scenario('A licence the issuer minted and then revoked shows Licence revoked', ({ Given, And, When, Then }) => {
+    Given("the issuer minted a licence to this phone's key on a stub chain", () => {
+      issuer = ISSUER_PUB;
+      window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, HOLDER.toHex());
+      stubChain = newChain();
+      addMint(stubChain);
+    });
+    And('the issuer then signed a revoke for it', () => {
+      expect(HOLDER_PUB).toMatch(/^0[23]/);
+      addRevoke(stubChain!);
     });
     When('Lampas is opened', open);
     Then('he sees {string}', async (_, text: string) => {

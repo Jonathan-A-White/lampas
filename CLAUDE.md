@@ -34,6 +34,7 @@ npm run shots        # Playwright at 390x844 against `vite preview` of dist/ (ru
                      #   or use `npm run gate:shots`); writes shots/<name>.png
 npm run icons        # re-render public/icon-192.png and icon-512.png from public/icon.svg
 npm run seed:build   # rebuild src/data/seed-words.ts from docs/example-words.md (plain node, 22.18+)
+npm run check:licence -- <pubkey>  # live testnet licence check, opt-in, not in the gate
 npm run data:build   # data/raw (git-ignored, downloaded if absent) -> public/data/<book>/<chapter>.json + index.json;
                      #   the output is committed and a second run changes nothing (docs/data.md)
 ```
@@ -66,9 +67,9 @@ src/Reader.tsx WordsScreen.tsx ImportScreen.tsx QuizScreen.tsx About.tsx  # the 
                      #   About is built from ATTRIBUTION.md (src/attribution.ts), opened by the About button under the chapter
 src/WordSheet.tsx    # the bottom sheet a tapped word opens (tap outside, swipe down on the handle, Done or Escape closes it)
 src/fonts/           # Gentium Plus (Greek + Greek Extended, 400 and 700 woff2) and its OFL licence; @font-face is in src/index.css
-src/config.ts        # issuer (VITE_LAMPAS_ISSUER), collection 'lampas', chain, Postern door, the device key's storage name
+src/config.ts        # issuer (default the Governor's key; VITE_LAMPAS_ISSUER overrides), collection 'lampas', chain, Postern door, the device key's storage name
 src/gate/            # Gate (wraps App in main.tsx): Unlock until the phone's key holds a lampas licence; 24 h offline grace
-src/services/deviceKey.ts licenceCheck.ts licenceCache.ts  # the key in localStorage; chain lookup + issuer rule; the held memory
+src/services/deviceKey.ts licenceCheck.ts licenceCache.ts  # the key in localStorage; chain lookup (bsv-kit licenceStatus with { issuer }: issuer-signed mint, issuer's revoke); the held memory
 src/UpdateBanner.tsx # 'Update ready, tap to reload'; the tap posts SKIP_WAITING
 src/sw.ts            # the worker: precache, precache guard, SKIP_WAITING, claim on activate
 src/precacheGuard.ts # never serve a .js/.css whose Content-Type does not fit
