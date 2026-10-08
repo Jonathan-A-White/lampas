@@ -185,6 +185,21 @@ export function speakPart(text: string, language: SpeechLanguage, onEnd: () => v
   return true;
 }
 
+/** The key a word said by a long press speaks under (the sheet's and the Words speakers have their own). */
+const WORD_KEY = 'word-press';
+
+/** Says one word in `language`, now: what is playing is cancelled first, and it never toggles (pressing the same word
+ * again says it again). With no Greek voice it still speaks, to the phone's default voice with lang set, as a reading
+ * does; the speaker buttons carry the help line. Returns false when the phone cannot speak at all. */
+export function speakWord(text: string, language: SpeechLanguage): boolean {
+  const synth = synthesis();
+  if (!synth) return false;
+  watchVisibility();
+  if (playing || synth.speaking || synth.pending) synth.cancel();
+  utter(text, WORD_KEY, language, synth, () => {}, () => {});
+  return true;
+}
+
 /** The one line shown when there is no Greek voice: where to get one. */
 export function noVoiceHelp(): string {
   return typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)

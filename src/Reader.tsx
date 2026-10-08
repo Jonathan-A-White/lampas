@@ -29,9 +29,10 @@ import { navigate, readerOf, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
 import { HeaderButton } from './ScreenHeader';
-import { planOf, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
+import { pauseReading, planOf, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
 import { ReadFromButton, ReadingBar, VersePlay } from './speech/ReadControls';
-import { warmVoices } from './speech/greek';
+import { speakWord, warmVoices } from './speech/greek';
+import type { SpeechLanguage } from './speech/languages';
 import { WordSheet, type Lookup } from './WordSheet';
 
 const BOOK = 'rom';
@@ -42,11 +43,18 @@ const TITLE = 'Romans 8';
 // box stays --lp-tap tall, so the spare pixels cost no layout.
 const TAP_PAD = 'py-[calc((var(--lp-tap)-1em)/2)]';
 
+/** How long a finger must stay on a word to say it, and how far it may wander meanwhile. */
+const LONG_PRESS_MS = 500;
+const LONG_PRESS_SLOP_PX = 10;
+
 /** A word he can tap: a span with role button and no chrome. The caller pads it to a 44 px tap height (an inline box
  * is as tall as its font's content area, so the padding is 44 px minus that, which differs by face). The trailing
- * space is inside so the gap between two words is tappable too. */
-function Tap({ onTap, lang, className, children, ...data }: {
+ * space is inside so the gap between two words is tappable too. A finger held on it for half a second (`onLongPress`)
+ * is a press, not a tap: the click that follows is dropped, and so is one after the finger wandered over 10 px. The
+ * word never selects text and never raises the phone's callout menu, so the hold is free for the press. */
+function Tap({ onTap, onLongPress, lang, className, children, ...data }: {
   onTap: () => void;
+  onLongPress: () => void;
   lang?: string;
   className?: string;
   children: string;
@@ -54,20 +62,48 @@ function Tap({ onTap, lang, className, children, ...data }: {
   'data-woven'?: string;
   'data-word'?: string;
 }) {
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const from = useRef({ x: 0, y: 0 });
+  // the press that is going on was a long press or a drag: its click is not a tap
+  const notATap = useRef(false);
+  const stopTimer = () => clearTimeout(timer.current);
+  useEffect(() => stopTimer, []);
   return (
     <span
       role="button"
       tabIndex={0}
       lang={lang}
       {...data}
-      onClick={onTap}
+      onPointerDown={(e) => {
+        if (e.button !== 0) return;
+        notATap.current = false;
+        from.current = { x: e.clientX, y: e.clientY };
+        stopTimer();
+        timer.current = setTimeout(() => {
+          notATap.current = true;
+          navigator.vibrate?.(10);
+          onLongPress();
+        }, LONG_PRESS_MS);
+      }}
+      onPointerMove={(e) => {
+        if (Math.hypot(e.clientX - from.current.x, e.clientY - from.current.y) <= LONG_PRESS_SLOP_PX) return;
+        notATap.current = true;
+        stopTimer();
+      }}
+      onPointerUp={stopTimer}
+      onPointerCancel={stopTimer}
+      onContextMenu={(e) => e.preventDefault()}
+      onClick={() => {
+        if (notATap.current) notATap.current = false;
+        else onTap();
+      }}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           onTap();
         }
       }}
-      className={`cursor-pointer select-none rounded px-[0.1em] active:bg-line ${className ?? ''}`}
+      className={`cursor-pointer select-none [-webkit-touch-callout:none] rounded px-[0.1em] active:bg-line ${className ?? ''}`}
     >
       {children}{' '}
     </span>
@@ -122,11 +158,17 @@ function VerseText({ verse, view, woven, onLook }: Pick<VerseProps, 'verse' | 'v
   const lookGreek = (w: GreekWord) =>
     onLook({ words: [w], english: w.e === undefined ? undefined : verse.e[w.e]?.t, fromEnglish: false });
   const lookEnglish = (c: EnglishChunk) => onLook({ words: c.g.map((i) => verse.g[i]), english: c.t, fromEnglish: true });
+  // A long press says the word alone, in its own language, straight from the press (docs/pwa-best-practices.md section 12).
+  // A reading under way is paused first: it would have the speech taken from it anyway.
+  const say = (text: string, language: SpeechLanguage) => {
+    pauseReading();
+    if (speakWord(text, language)) publish({ kind: 'word-spoken', text, language, verse: verse.n });
+  };
   return (
     <span data-text>
       {view === 'greek'
         ? verse.g.map((w, i) => (
-            <Tap key={i} data-word={String(i)} className={TAP_PAD} onTap={() => lookGreek(w)}>
+            <Tap key={i} data-word={String(i)} className={TAP_PAD} onTap={() => lookGreek(w)} onLongPress={() => say(w.t, 'greek')}>
               {w.t}
             </Tap>
           ))
@@ -140,11 +182,12 @@ function VerseText({ verse, view, woven, onLook }: Pick<VerseProps, 'verse' | 'v
                 lang="grc"
                 className={`font-greek text-[length:var(--lp-greek-size)] text-accent ${TAP_PAD}`}
                 onTap={() => lookEnglish(c)}
+                onLongPress={() => say(words.map((w) => w.t).join(' '), 'greek')}
               >
                 {words.map((w) => w.t).join(' ')}
               </Tap>
             ) : (
-              <Tap key={i} data-chunk={String(i)} className={`${TAP_PAD} ${c.s ? 'italic' : ''}`} onTap={() => lookEnglish(c)}>
+              <Tap key={i} data-chunk={String(i)} className={`${TAP_PAD} ${c.s ? 'italic' : ''}`} onTap={() => lookEnglish(c)} onLongPress={() => say(c.t, 'english')}>
                 {c.t}
               </Tap>
             );

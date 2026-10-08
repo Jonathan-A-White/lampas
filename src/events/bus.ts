@@ -4,7 +4,7 @@
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import type { ReaderView, ReadingLayout, SectionHeadings, Weave } from '../data/repositories';
 import type { Theme } from '../appearance/themes';
-import type { SpeechRates } from '../speech/languages';
+import type { SpeechLanguage, SpeechRates } from '../speech/languages';
 import type { GreekPronunciation } from '../speech/pronunciation';
 
 export type AppEvent =
@@ -25,7 +25,9 @@ export type AppEvent =
   | { kind: 'rates-changed'; rates: SpeechRates }
   | { kind: 'verse-reading'; chapter: number; verse: number }
   | { kind: 'reading-stopped' }
-  | { kind: 'word-tapped'; strongs: string; verse: number };
+  | { kind: 'word-tapped'; strongs: string; verse: number }
+  /** a long press on a word of the reader said that word alone, in its own language */
+  | { kind: 'word-spoken'; text: string; language: SpeechLanguage; verse: number };
 
 export type EventKind = AppEvent['kind'];
 export type EventOf<K extends EventKind> = Extract<AppEvent, { kind: K }>;

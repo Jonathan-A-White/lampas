@@ -31,6 +31,7 @@ useLatest('verse-selected');         // React: the last one, re-rendering when a
 | `rates-changed` | `{ rates }`: how fast each language is spoken, `{ english, greek }`, each 0.5 to 1.5, 1 normal (the languages of `src/speech/languages.ts`) | Settings (a speed slider); `src/speech/settingsSync.ts` (once at start) | `src/speech/settingsSync.ts` (hands each to `src/speech/greek.ts`: the rate of every utterance in that language) |
 | `verse-reading` | `{ chapter, verse }` | `src/speech/readAloud.ts`: as each verse starts being read aloud (a verse's play button, or Read from the top / Read from here); again when Resume reads a verse from its start | nobody yet (the Reader highlights from `useReading()` of the same module) |
 | `reading-stopped` | none | `src/speech/readAloud.ts`: a reading ended (the last verse was read) or was stopped (Stop, or leaving the reader); not on Pause | nobody yet |
+| `word-spoken` | `{ text, language, verse }`: the word said (a Greek word, or an English chunk), its language (`'greek'` \| `'english'`, an id of `src/speech/languages.ts`) and the verse it stands in | Reader: a long press (500 ms, under 10 px of movement) on a word, once the phone has been asked to speak it | nobody yet |
 | `word-tapped` | `{ strongs, verse }` | nobody yet (a later story) | nobody yet |
 
 The reader also reads its own state back from the address when it opens (a reopen, Back): `src/nav/route.ts` `readerOf`, and the reader publishes the verse the address names. The address is `#/?c=8&view=greek&weave=off&v=28` (docs: `src/nav/lastRoute.ts`).
