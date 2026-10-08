@@ -20,7 +20,7 @@ import { type HoldHandlers, useHoldPress } from './ui/holdPress';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import type { AskState } from './useAsks';
 import type { Voice } from './useVoice';
-import { WordSheet, type Lookup } from './WordSheet';
+import { WordSheet, type Lookup, type WordHelp } from './WordSheet';
 
 function BubbleIcon() {
   return (
@@ -197,7 +197,7 @@ function Turn({ turn, scope, onLook }: { turn: TalkTurn; scope: TalkScope; onLoo
 }
 
 /** The sheet: the conversation `scope` names, the field, Send, and what the last message is doing. */
-export function TalkSheet({ scope, talkRef: ref, state, voice, onSay, onClose }: {
+export function TalkSheet({ scope, talkRef: ref, state, voice, onSay, onHelp, onClose }: {
   scope: TalkScope;
   /** the key the conversation is kept under (src/data/repositories/talks.ts talkRef) */
   talkRef: string;
@@ -206,6 +206,8 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, onSay, onClose }:
   /** push-to-talk: his words live while he holds, and what went wrong */
   voice: Voice;
   onSay: (message: string) => void;
+  /** a word of an answer was opened and he asked for Grammar or Sound it out on it */
+  onHelp: (help: WordHelp) => void;
   onClose: () => void;
 }) {
   const title = `Talk about ${scopeTitle(scope)}`;
@@ -334,7 +336,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, onSay, onClose }:
           </div>
         </div>
       </div>
-      {lookup ? <WordSheet chapter={scope.chapter} lookup={lookup} onClose={closeWord} /> : null}
+      {lookup ? <WordSheet chapter={scope.chapter} lookup={lookup} onClose={closeWord} onHelp={onHelp} /> : null}
     </>
   );
 }

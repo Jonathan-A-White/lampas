@@ -38,15 +38,16 @@ import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
 import { useReadChecks } from './useReadChecks';
 import { useTalk } from './useTalk';
+import { helpQuestion, scopeTitle } from './services/talk';
 import { useVoice } from './useVoice';
 import { useHoldPress } from './ui/holdPress';
 import { HeaderButton } from './ScreenHeader';
 import { pauseReading, planOf, startAnswer, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
-import { answerRuns } from './speech/answerRuns';
+import { answerRuns, syllableRuns } from './speech/answerRuns';
 import { ReadFromButton, ReadingBar, VersePlay } from './speech/ReadControls';
 import { speakWord, warmVoices } from './speech/greek';
 import type { SpeechLanguage } from './speech/languages';
-import { WordSheet, type Lookup } from './WordSheet';
+import { WordSheet, type Lookup, type WordHelp } from './WordSheet';
 
 const { book: BOOK, chapter: CHAPTER, title: TITLE } = READER_CHAPTER;
 // 44 px (--lp-tap) minus 1 em, halved, top and bottom. Every face's content area is taller than 1 em (Gentium Plus
@@ -386,9 +387,12 @@ export function Reader() {
   useEffect(() => {
     holding.current = voice.listening;
   });
-  const { states: talkStates, say } = useTalk(BOOK, CHAPTER, (ref, id, answer) => {
+  const { states: talkStates, say } = useTalk(BOOK, CHAPTER, (ref, id, answer, info) => {
     // an answer that comes while he holds waits: page audio can take the microphone from the recogniser
-    if (openTalk.current === ref && !holding.current) startAnswer(id, answerRuns(answer));
+    if (openTalk.current !== ref || holding.current) return;
+    // Sound it out: the word was said before the answer; now each syllable it lists, slowly, one after another.
+    if (info.focus?.kind === 'sound' && info.syllables?.length) startAnswer(id, syllableRuns(info.syllables));
+    else startAnswer(id, answerRuns(answer));
   });
   // The verse he last tapped: its Ask box scrolls into view. A selection put back by a reopen or Back does not, so it
   // leaves the text where the scroll memory put it.
@@ -416,6 +420,24 @@ export function Reader() {
       voice.press();
     },
     [talkStates, voice],
+  );
+  // Help with this word (the word sheet's Grammar | Sound it out): the Talk sheet on the word's verse, the first question sent.
+  // Sound it out says the word, slowly, now (straight from the tap); a conversation still waiting for its answer is only shown.
+  const helpWithWord = useCallback(
+    (help: WordHelp) => {
+      if (!chapter) return;
+      const verse = chapter.verses.find((v) => v.n === help.verse) ?? null;
+      const scope = { title: TITLE, chapter, verse };
+      const focus = { form: help.form, lemma: help.lemma, parse: help.parse, kind: help.kind };
+      publish({ kind: 'word-help', help: help.kind, form: focus.form, lemma: focus.lemma, parse: focus.parse, chapter: CHAPTER, verse: help.verse });
+      voice.abort();
+      setTalkAbout(help.verse);
+      const state = talkStates[talkRef(BOOK, CHAPTER, help.verse)];
+      if (state?.phase === 'sending' || state?.phase === 'waiting') return;
+      if (help.kind === 'sound') speakWord(help.form, 'greek', true);
+      say(scope, helpQuestion(focus, scopeTitle(scope)), focus);
+    },
+    [chapter, talkStates, voice, say],
   );
   const verseTalk: VerseTalk = { onHold: holdTalk, onRelease: () => void voice.release(), onDrop: voice.abort };
   // The Read button of a verse: holding it on a verse that is not selected selects it, so its result shows below it.
@@ -646,6 +668,7 @@ export function Reader() {
           state={talkStates[talkRef(BOOK, CHAPTER, talkAbout)]}
           voice={voice}
           onSay={(message) => say(talkScope, message)}
+          onHelp={helpWithWord}
           onClose={() => {
             voice.abort();
             voice.clearNotice();
@@ -653,7 +676,7 @@ export function Reader() {
           }}
         />
       ) : null}
-      {chapter && lookup ? <WordSheet chapter={chapter} lookup={lookup} onClose={closeSheet} /> : null}
+      {chapter && lookup ? <WordSheet chapter={chapter} lookup={lookup} onClose={closeSheet} onHelp={helpWithWord} /> : null}
     </>
   );
 }

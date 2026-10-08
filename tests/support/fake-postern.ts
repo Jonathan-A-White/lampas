@@ -96,6 +96,19 @@ export const TALK_ANSWER = {
   words: [{ greek: 'συνεργεῖ', lemma: 'συνεργέω', note: 'verb, present active indicative, third person singular' }],
 };
 
+/** The answer the fake gives to a word-help question about συνεργεῖ (grammar), in the app's answer shape. */
+export const GRAMMAR_HELP_ANSWER = {
+  answer: 'συνεργεῖ is present active indicative, third person singular: the ending -εῖ is a contracted -έει. Check: who is the subject here?',
+  words: [{ greek: 'συνεργεῖ', lemma: 'συνεργέω', note: 'verb, present active indicative, third person singular' }],
+};
+
+/** The answer the fake gives to a Sound it out question about συνεργεῖ: the answer and the syllables to say. */
+export const SOUND_HELP_ANSWER = {
+  answer: 'Say it in three parts: sun, er, GEI. The stress is on the last part. Check: which part is stressed?',
+  words: [{ greek: 'συνεργεῖ', lemma: 'συνεργέω', note: 'verb, present active indicative, third person singular' }],
+  syllables: ['συν', 'ερ', 'γεῖ'],
+};
+
 export function makeFakePostern(): FakePostern {
   const issued = new Set<string>();
   const records: { seq: number; txid: string; signer?: string; payload: Record<string, unknown> }[] = [];

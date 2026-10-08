@@ -1,6 +1,7 @@
 // src/WordSheet.tsx — the bottom sheet a tapped word opens: the Greek word as it stands, how to say it (a respelling
 // in the pronunciation chosen in Settings), lemma, parsing in plain words, gloss and Strong's. Closes by a tap
-// outside, a swipe down on its handle, the Done button or Escape.
+// outside, a swipe down on its handle, the Done button or Escape. Each word has a Help with this word row (Grammar, Sound it out)
+// when the screen gives it somewhere to send them: the Talk sheet on the word's verse with the first question sent.
 import { type Chapter, type GreekWord, wordGloss, wordLemma, wordParse } from './data/chapter';
 import { useLatest } from './events/bus';
 import { pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
@@ -16,6 +17,16 @@ export interface Lookup {
   fromEnglish: boolean;
 }
 
+/** What a tap on Grammar or Sound it out asks for: the word as it stands, its lemma, its parsing as the sheet shows it, and
+ * the verse it stands in. */
+export interface WordHelp {
+  kind: 'grammar' | 'sound';
+  form: string;
+  lemma: string;
+  parse: string;
+  verse: number;
+}
+
 function Fact({ label, children, testId, lang }: { label: string; children: string; testId: string; lang?: string }) {
   return (
     <div className="flex gap-3 py-1">
@@ -27,7 +38,33 @@ function Fact({ label, children, testId, lang }: { label: string; children: stri
   );
 }
 
-function WordCard({ chapter, word, english, pronunciation }: { chapter: Chapter; word: GreekWord; english?: string; pronunciation: GreekPronunciation | undefined }) {
+const HELP_BUTTON = 'min-h-12 flex-1 rounded-xl border border-line px-3 text-base font-medium text-accent active:bg-line';
+
+/** Help with this word: Grammar and Sound it out, the two ways a word he struggled with can be helped. */
+function HelpRow({ help }: { help: (kind: WordHelp['kind']) => void }) {
+  return (
+    <div role="group" aria-label="Help with this word" className="mt-3">
+      <p className="mb-1 text-sm text-muted">Help with this word</p>
+      <div className="flex gap-2">
+        <button type="button" onClick={() => help('grammar')} className={HELP_BUTTON}>
+          Grammar
+        </button>
+        <button type="button" onClick={() => help('sound')} className={HELP_BUTTON}>
+          Sound it out
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function WordCard({ chapter, word, english, pronunciation, onHelp }: {
+  chapter: Chapter;
+  word: GreekWord;
+  english?: string;
+  pronunciation: GreekPronunciation | undefined;
+  onHelp?: (help: WordHelp) => void;
+}) {
+  const verse = chapter.verses.find((v) => v.g.includes(word))?.n;
   return (
     <section className="border-t border-line py-3 first:border-t-0 first:pt-0">
       <div className="flex items-start justify-between gap-2">
@@ -58,14 +95,24 @@ function WordCard({ chapter, word, english, pronunciation }: { chapter: Chapter;
           </Fact>
         ) : null}
       </dl>
+      {onHelp && verse !== undefined ? (
+        <HelpRow help={(kind) => onHelp({ kind, form: word.t, lemma: wordLemma(word), parse: wordParse(chapter, word), verse })} />
+      ) : null}
     </section>
   );
 }
 
-export function WordSheet({ chapter, lookup, onClose }: { chapter: Chapter; lookup: Lookup; onClose: () => void }) {
+/** `onHelp`, when given, adds the Help with this word row to each word; the sheet closes itself before it is called. */
+export function WordSheet({ chapter, lookup, onClose, onHelp }: { chapter: Chapter; lookup: Lookup; onClose: () => void; onHelp?: (help: WordHelp) => void }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   const pronunciation = useLatest('pronunciation-changed')?.pronunciation;
+  const help = onHelp
+    ? (asked: WordHelp): void => {
+        onClose();
+        onHelp(asked);
+      }
+    : undefined;
 
   return (
     <div className="fixed inset-0 z-10 flex flex-col justify-end">
@@ -99,7 +146,7 @@ export function WordSheet({ chapter, lookup, onClose }: { chapter: Chapter; look
             </p>
           ) : null}
           {lookup.words.map((w, i) => (
-            <WordCard key={i} chapter={chapter} word={w} english={lookup.fromEnglish ? undefined : lookup.english} pronunciation={pronunciation} />
+            <WordCard key={i} chapter={chapter} word={w} english={lookup.fromEnglish ? undefined : lookup.english} pronunciation={pronunciation} onHelp={help} />
           ))}
         </div>
       </div>
