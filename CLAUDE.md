@@ -62,7 +62,8 @@ build-version.ts     # '<version> · <UTC time> · <commit>' stamp shown on the 
 vite.config.ts       # react, tailwind 4, vite-plugin-pwa (injectManifest, registerType 'prompt')
 src/main.tsx         # scroll guard first, then render, then register the worker
 src/App.tsx          # the shell (data-shell); picks the screen by hash route (src/nav/route.ts); seeds words on first open
-src/Reader.tsx WordsScreen.tsx ImportScreen.tsx QuizScreen.tsx  # the screens (#/ , #/words, #/import, #/test); the Reader is Romans 8, English | Greek
+src/Reader.tsx WordsScreen.tsx ImportScreen.tsx QuizScreen.tsx About.tsx  # the screens (#/ , #/words, #/import, #/test, #/about); the Reader is Romans 8, English | Greek;
+                     #   About is built from ATTRIBUTION.md (src/attribution.ts), opened by the About button under the chapter
 src/WordSheet.tsx    # the bottom sheet a tapped word opens (tap outside, swipe down on the handle, Done or Escape closes it)
 src/fonts/           # Gentium Plus (Greek + Greek Extended, 400 and 700 woff2) and its OFL licence; @font-face is in src/index.css
 src/config.ts        # issuer (VITE_LAMPAS_ISSUER), collection 'lampas', chain, Postern door, the device key's storage name
