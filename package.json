@@ -17,7 +17,8 @@
     "gate:shots": "npm run build && TZ=UTC playwright test --project=shots",
     "icons": "node scripts/make-icons.mjs",
     "seed:build": "node scripts/seed-build.ts",
-    "data:build": "tsx scripts/data-build.ts"
+    "data:build": "tsx scripts/data-build.ts",
+    "check:licence": "tsx scripts/check-licence.ts"
   },
   "dependencies": {
     "@bsv/sdk": "^2.8.11",

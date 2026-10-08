@@ -44,13 +44,15 @@ render(<Gate issuer={ISSUER} check={stub}><App /></Gate>);
 
 `features/gate.feature` has the scenario ("A key stored through the test seam is the device key"); its steps are in
 `features/steps/gate.steps.tsx`. Unit and feature tests give `Gate` a `check` stub and a `now` clock; they never
-touch the network. `fetchLicenceStatus` is tested with bsv-kit's `FakeChainReader` (`tests/unit/licence-check.test.ts`).
+touch the network. `fetchLicenceStatus` is tested with bsv-kit's `FakeChainReader` (`tests/unit/licence-check.test.ts`); `tests/support/licence-chain.ts` builds the mint, transfer and issuer-revoke transactions it reads.
+
+Opt-in live check, not in the gate: `npm run check:licence -- <public key>` asks testnet what the gate would answer (held, revoked, indexing or none).
 
 ## Settings (`src/config.ts`)
 
 | Name | Env var | Default |
 | --- | --- | --- |
-| issuer public key | `VITE_LAMPAS_ISSUER` | empty: the gate stays shut and says "No licence issuer is set" |
+| issuer public key | `VITE_LAMPAS_ISSUER` | the Governor's issuer key `035666d4…44c4` (public); a blank value means the default |
 | collection | none | `lampas` |
 | chain | `VITE_LAMPAS_CHAIN` | `testnet` (bsv-kit reads testnet only so far) |
 | Postern door | `VITE_POSTERN_DOOR` | `https://postern.allmymind.org` |
