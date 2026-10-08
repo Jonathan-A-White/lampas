@@ -1,0 +1,285 @@
+Heb Sort	Greek Sort	MSB Sort	Verse	Language	MT Greek	MT Greek	Translit	Parsing	Parsing	Str Heb	Str Grk	VerseId	Hdg	Crossref	Par	Space	begQ	 MSB version 	pnc	endQ	footnotes	End text
+0	19	19	23147	Greek	9	Ἀβραὰμ	abraam	N-PRI	N-PRI		11	Matthew 1:2			<p class=|indent1stline|>			 Abraham 				
+0	20	20	23147	Greek	10	ἐγέννησεν	egennhsen	V-AAI-3S	V-AAI-3S		1080							 was the father of 				
+0	21	21	23147	Greek	11	τὸν	ton	T-ASM	T-ASM		3588							 - 				
+0	22	22	23147	Greek	12	Ἰσαάκ	isaak	N-PRI	N-PRI		2464							 Isaac 	,			
+0	24	23	23147	Greek	14	δὲ	de	CONJ	CONJ		1161				<p class=|indent1|>			 - 				
+0	23	24	23147	Greek	13	Ἰσαὰκ	isaak	N-PRI	N-PRI		2464							 Isaac 				
+0	25	25	23147	Greek	15	ἐγέννησεν	egennhsen	V-AAI-3S	V-AAI-3S		1080							 the father of 				
+0	26	26	23147	Greek	16	τὸν	ton	T-ASM	T-ASM		3588							 - 				
+0	27	27	23147	Greek	17	Ἰακώβ	iakwb	N-PRI	N-PRI		2384							 Jacob 	,			
+0	29	28	23147	Greek	19	δὲ	de	CONJ	CONJ		1161				<p class=|indent1|>			 and 				
+0	28	29	23147	Greek	18	Ἰακὼβ	iakwb	N-PRI	N-PRI		2384							 Jacob 				
+0	30	30	23147	Greek	20	ἐγέννησεν	egennhsen	V-AAI-3S	V-AAI-3S		1080							 the father of 				
+0	31	31	23147	Greek	21	τὸν	ton	T-ASM	T-ASM		3588							 - 				
+0	32	32	23147	Greek	22	Ἰούδαν	ioudan	N-ASM	N-ASM		2455							 Judah 				
+0	33	33	23147	Greek	23	καὶ	kai	CONJ	CONJ		2532							 and 				
+0	34	34	23147	Greek	24	τοὺς	touv	T-APM	T-APM		3588							 - 				
+0	36	35	23147	Greek	26	αὐτοῦ	autou	P-GSM	P-GSM		846							 his 				
+0	35	36	23147	Greek	25	ἀδελφοὺς	adelfouv	N-APM	N-APM		80							 brothers 	.			
+0	37	37	23147	Greek														 				
+0	38	38	23147	Greek														 				
+0	39	39	23147	Greek														 				
+0	40	40	23147	Greek														 				
+0	41	41	23147	Greek														 				
+0	42	42	23147	Greek														 				
+0	43	43	23147	Greek														 				
+0	44	44	23147	Greek														 				
+0	45	45	23147	Greek														 				
+0	46	46	23147	Greek														 				
+0	409	409	23162	Greek	249	Πᾶσαι	pasai	A-NPF	A-NPF		3956	Matthew 1:17			<p class=|reg|>			 In all 	,			
+0	410	410	23162	Greek	250	οὖν	oun	CONJ	CONJ		3767							 then 	,			
+0	418	411	23162	Greek	258	δεκατέσσαρες	dekatessarev	A-NPF	A-NPF		1180							 [there were] fourteen 				
+0	411	412	23162	Greek	251	αἱ	ai	T-NPF	T-NPF		3588							 . . . 				
+0	412	413	23162	Greek	252	γενεαὶ	geneai	N-NPF	N-NPF		1074							 . . . 				
+0	417	414	23162	Greek	257	γενεαὶ	geneai	N-NPF	N-NPF		1074							 generations 				
+0	413	415	23162	Greek	253	ἀπὸ	apo	PREP	PREP		575							 from 				
+0	414	416	23162	Greek	254	Ἀβραὰμ	abraam	N-PRI	N-PRI		11							 Abraham 				
+0	415	417	23162	Greek	255	ἕως	ewv	ADV	ADV		2193							 to 				
+0	416	418	23162	Greek	256	Δαυὶδ	dauid	N-PRI	N-PRI		1138							 David 	,			
+0	419	419	23162	Greek	259	καὶ	kai	CONJ	CONJ		2532							 - 				
+0	427	420	23162	Greek	267	δεκατέσσαρες	dekatessarev	A-NPF	A-NPF		1180							 fourteen 				
+0	426	421	23162	Greek	266	γενεαὶ	geneai	N-NPF	N-NPF		1074							 - 				
+0	420	422	23162	Greek	260	ἀπὸ	apo	PREP	PREP		575							 from 				
+0	421	423	23162	Greek	261	Δαυὶδ	dauid	N-PRI	N-PRI		1138							 David 				
+0	422	424	23162	Greek	262	ἕως	ewv	ADV	ADV		2193							 to 				
+0	423	425	23162	Greek	263	τῆς	thv	T-GSF	T-GSF		3588							 the 				
+0	424	426	23162	Greek	264	μετοικεσίας	metoikesiav	N-GSF	N-GSF		3350							 exile 				
+0	425	427	23162	Greek	265	Βαβυλῶνος	babulwnov	N-GSF	N-GSF		897							 to Babylon 	,			
+0	428	428	23162	Greek	268	καὶ	kai	CONJ	CONJ		2532							 and 				
+0	437	429	23162	Greek	277	δεκατέσσαρες	dekatessarev	A-NPF	A-NPF		1180							 fourteen 				
+0	436	430	23162	Greek	276	γενεαὶ	geneai	N-NPF	N-NPF		1074							 - 				
+0	429	431	23162	Greek	269	ἀπὸ	apo	PREP	PREP		575							 from 				
+0	430	432	23162	Greek	270	τῆς	thv	T-GSF	T-GSF		3588							 the 				
+0	431	433	23162	Greek	271	μετοικεσίας	metoikesiav	N-GSF	N-GSF		3350							 exile 				
+0	432	434	23162	Greek	272	Βαβυλῶνος	babulwnov	N-GSF	N-GSF		897							 . . . 				
+0	433	435	23162	Greek	273	ἕως	ewv	ADV	ADV		2193							 to 				
+0	434	436	23162	Greek	274	τοῦ	tou	T-GSM	T-GSM		3588							 the 				
+0	435	437	23162	Greek	275	χριστοῦ	cristou	N-GSM	N-GSM		5547							 Christ 	.			
+0	438	438	23162	Greek														 				
+0	439	439	23162	Greek														 				
+0	440	440	23162	Greek														 				
+0	441	441	23162	Greek														 				
+0	442	442	23162	Greek														 				
+0	443	443	23162	Greek														 				
+0	444	444	23162	Greek														 				
+0	445	445	23162	Greek														 				
+0	446	446	23162	Greek														 				
+0	447	447	23162	Greek														 				
+0	16624	16624	23740	Greek	10684	Τί	ti	I-NSN	I-NSN		5101	Matthew 18:12			<p class=|red|>			 What 				
+0	16625	16625	23740	Greek	10685	ὑμῖν	umin	P-2DP	P-2DP		4771							 {do} you 				
+0	16626	16626	23740	Greek	10686	δοκεῖ	dokei	V-PAI-3S	V-PAI-3S		1380							 think 	?			
+0	16627	16627	23740	Greek	10687	Ἐὰν	ean	COND	COND		1437							 If 				
+0	16629	16628	23740	Greek	10689	τινι	tini	X-DSM	X-DSM		5100							 a 				
+0	16630	16629	23740	Greek	10690	ἀνθρώπῳ	anqrwpw	N-DSM	N-DSM		444							 man 				
+0	16628	16630	23740	Greek	10688	γένηταί	genhtai	V-2ADS-3S	V-2ADS-3S		1096							 has 				
+0	16631	16631	23740	Greek	10691	ἑκατὸν	ekaton	A-NUI	A-NUI		1540							 a hundred 				
+0	16632	16632	23740	Greek	10692	πρόβατα	probata	N-NPN	N-NPN		4263							 sheep 				
+0	16633	16633	23740	Greek	10693	καὶ	kai	CONJ	CONJ		2532							 and 				
+0	16635	16634	23740	Greek	10695	ἓν	en	A-NSN	A-NSN		1520							 one 				
+0	16636	16635	23740	Greek	10696	ἐξ	ex	PREP	PREP		1537							 of 				
+0	16637	16636	23740	Greek	10697	αὐτῶν	autwn	P-GPN	P-GPN		846							 them 				
+0	16634	16637	23740	Greek	10694	πλανηθῇ	planhqh	V-APS-3S	V-APS-3S		4105							 goes astray 	,			
+0	16638	16638	23740	Greek	10698	οὐχὶ	ouci	PRT-I	PRT-I		3780							 does he not 			CT <i>will he not</i>	
+0	16639	16639	23740	Greek	10699	ἀφεὶς	afeiv	V-2AAP-NSM	V-2AAP-NSM		863							 leave 				
+0	16640	16640	23740	Greek	10700	τὰ	ta	T-APN	T-APN		3588							 the 				
+0	16641	16641	23740	Greek	10701	ἐνενήκοντα	enenhkonta	A-NUI	A-NUI		0							 ninety-nine 				
+0	16642	16642	23740	Greek	10702	ἐννέα	ennea	A-NUI	A-NUI		1767							 . . . 				
+0	16643	16643	23740	Greek	10703	ἐπὶ	epi	PREP	PREP		1909							 on 				
+0	16644	16644	23740	Greek	10704	τὰ	ta	T-APN	T-APN		3588							 the 				
+0	16645	16645	23740	Greek	10705	ὄρη	orh	N-APN	N-APN		3735							 hills 				
+0	16646	16646	23740	Greek	10706	πορευθεὶς	poreuqeiv	V-AOP-NSM	V-AOP-NSM		4198							 and go out 				
+0	16647	16647	23740	Greek	10707	ζητεῖ	zhtei	V-PAI-3S	V-PAI-3S		2212							 to search for 				
+0	16648	16648	23740	Greek	10708	τὸ	to	T-ASN	T-ASN		3588							 the [one] 				
+0	16649	16649	23740	Greek	10709	πλανώμενον	planwmenon	V-PPP-ASN	V-PPP-ASN		4105							 that is lost 	?			
+0	16650	16650	23740	Greek														 				
+0	16651	16651	23740	Greek														 				
+0	16652	16652	23740	Greek														 				
+0	16653	16653	23740	Greek														 				
+0	16654	16654	23740	Greek														 				
+0	16655	16655	23740	Greek														 				
+0	16656	16656	23740	Greek														 				
+0	16657	16657	23740	Greek														 				
+0	16658	16658	23740	Greek														 				
+0	16659	16659	23740	Greek														 				
+0	137635	137634	28118	Greek	87915	ἄρα	ara	PRT	PRT		686	Romans 8:1	<p class=|hdg|>Walking by the Spirit	<br /><span class=|cross|>(<a href =|../ezekiel/36.htm#16|>Ezekiel 36:16–38</a>; <a href =|../galatians/5.htm#16|>Galatians 5:16–26</a>)</span>	<p class=|reg|>			 Therefore 				
+0	137636	137635	28118	Greek	87916	νῦν	nun	ADV	ADV		3568							 [there is] now 				
+0	137634	137636	28118	Greek	87914	Οὐδὲν	ouden	A-NSN-N	A-NSN-N		3762							 no 				
+0	137637	137637	28118	Greek	87917	κατάκριμα	katakrima	N-NSN	N-NSN		2631							 condemnation 				
+0	137638	137638	28118	Greek	87918	τοῖς	toiv	T-DPM	T-DPM		3588							 for those who [are] 				
+0	137639	137639	28118	Greek	87919	ἐν	en	PREP	PREP		1722							 in 				
+0	137640	137640	28118	Greek	87920	χριστῷ	cristw	N-DSM	N-DSM		5547							 Christ 				
+0	137641	137641	28118	Greek	87921	Ἰησοῦ	ihsou	N-DSM	N-DSM		2424							 Jesus 	,			
+0	137642	137642	28118	Greek	87922	μὴ	mh	PRT-N	PRT-N		3361							 who do not 				
+0	137645	137643	28118	Greek	87925	περιπατοῦσιν	peripatousin	V-PAP-DPM	V-PAP-DPM		4043							 walk 				
+0	137643	137644	28118	Greek	87923	κατὰ	kata	PREP	PREP		2596							 according to 				
+0	137644	137645	28118	Greek	87924	σάρκα	sarka	N-ASF	N-ASF		4561							 [the] flesh 				
+0	137646	137646	28118	Greek	87926	ἀλλὰ	alla	CONJ	CONJ		235							 but 				
+0	137647	137647	28118	Greek	87927	κατὰ	kata	PREP	PREP		2596							 according to 				
+0	137648	137648	28118	Greek	87928	πνεῦμα	pneuma	N-ASN	N-ASN		4151							 [the] Spirit 	.		CT does not include <i>who do not walk according to the flesh but according to the Spirit.</i>	
+0	137649	137649	28118	Greek														 				
+0	137650	137650	28118	Greek														 				
+0	137651	137651	28118	Greek														 				
+0	137652	137652	28118	Greek														 				
+0	137653	137653	28118	Greek														 				
+0	137654	137654	28118	Greek														 				
+0	137655	137655	28118	Greek														 				
+0	137656	137656	28118	Greek														 				
+0	137657	137657	28118	Greek														 				
+0	137658	137658	28118	Greek														 				
+0	137660	137659	28119	Greek	87930	γὰρ	gar	CONJ	CONJ		1063	Romans 8:2						 For 				
+0	137666	137660	28119	Greek	87936	ἐν	en	PREP	PREP		1722							 in 				
+0	137667	137661	28119	Greek	87937	χριστῷ	cristw	N-DSM	N-DSM		5547							 Christ 				
+0	137668	137662	28119	Greek	87938	Ἰησοῦ	ihsou	N-DSM	N-DSM		2424							 Jesus 				
+0	137659	137663	28119	Greek	87929	Ὁ	o	T-NSM	T-NSM		3588							 the 				
+0	137661	137664	28119	Greek	87931	νόμος	nomov	N-NSM	N-NSM		3551							 law 				
+0	137662	137665	28119	Greek	87932	τοῦ	tou	T-GSN	T-GSN		3588							 of the 				
+0	137663	137666	28119	Greek	87933	πνεύματος	pneumatov	N-GSN	N-GSN		4151							 Spirit 				
+0	137664	137667	28119	Greek	87934	τῆς	thv	T-GSF	T-GSF		3588							 of 				
+0	137665	137668	28119	Greek	87935	ζωῆς	zwhv	N-GSF	N-GSF		2222							 life 				
+0	137670	137669	28119	Greek	87940	με	me	P-1AS	P-1AS		1473							 {set} me 			CT <i>you</i>	
+0	137669	137670	28119	Greek	87939	ἠλευθέρωσέν	hleuqerwsen	V-AAI-3S	V-AAI-3S		1659							 free 				
+0	137671	137671	28119	Greek	87941	ἀπὸ	apo	PREP	PREP		575							 from 				
+0	137672	137672	28119	Greek	87942	τοῦ	tou	T-GSM	T-GSM		3588							 the 				
+0	137673	137673	28119	Greek	87943	νόμου	nomou	N-GSM	N-GSM		3551							 law 				
+0	137674	137674	28119	Greek	87944	τῆς	thv	T-GSF	T-GSF		3588							 - 				
+0	137675	137675	28119	Greek	87945	ἁμαρτίας	amartiav	N-GSF	N-GSF		266							 of sin 				
+0	137676	137676	28119	Greek	87946	καὶ	kai	CONJ	CONJ		2532							 and 				
+0	137677	137677	28119	Greek	87947	τοῦ	tou	T-GSM	T-GSM		3588							 - 				
+0	137678	137678	28119	Greek	87948	θανάτου	qanatou	N-GSM	N-GSM		2288							 death 	.			
+0	137679	137679	28119	Greek														 				
+0	137680	137680	28119	Greek														 				
+0	137681	137681	28119	Greek														 				
+0	137682	137682	28119	Greek														 				
+0	137683	137683	28119	Greek														 				
+0	137684	137684	28119	Greek														 				
+0	137685	137685	28119	Greek														 				
+0	137686	137686	28119	Greek														 				
+0	137687	137687	28119	Greek														 				
+0	137688	137688	28119	Greek														 				
+0	79239	79239	26046	Greek	50239	Ἐν	en	PREP	PREP		1722	John 1:1	<p class=|hdg|>The Beginning	<br /><span class=|cross|>(<a href =|../genesis/1.htm|>Genesis 1:1–2</a>; <a href =|../hebrews/11.htm|>Hebrews 11:1–3</a>)</span>	<p class=|reg|>			 In 				
+0	79240	79240	26046	Greek	50240	ἀρχῇ	arch	N-DSF	N-DSF		746							 [the] beginning 				
+0	79241	79241	26046	Greek	50241	ἦν	hn	V-IAI-3S	V-IAI-3S		1510							 was 				
+0	79242	79242	26046	Greek	50242	ὁ	o	T-NSM	T-NSM		3588							 the 				
+0	79243	79243	26046	Greek	50243	λόγος	logov	N-NSM	N-NSM		3056							 Word 	,			
+0	79244	79244	26046	Greek	50244	καὶ	kai	CONJ	CONJ		2532							 and 				
+0	79245	79245	26046	Greek	50245	ὁ	o	T-NSM	T-NSM		3588							 the 				
+0	79246	79246	26046	Greek	50246	λόγος	logov	N-NSM	N-NSM		3056							 Word 				
+0	79247	79247	26046	Greek	50247	ἦν	hn	V-IAI-3S	V-IAI-3S		1510							 was 				
+0	79248	79248	26046	Greek	50248	πρὸς	prov	PREP	PREP		4314							 with 				
+0	79249	79249	26046	Greek	50249	τὸν	ton	T-ASM	T-ASM		3588							 - 				
+0	79250	79250	26046	Greek	50250	θεόν	qeon	N-ASM	N-ASM		2316							 God 	,			
+0	79251	79251	26046	Greek	50251	καὶ	kai	CONJ	CONJ		2532							 and 				
+0	79254	79252	26046	Greek	50254	ὁ	o	T-NSM	T-NSM		3588							 the 				
+0	79255	79253	26046	Greek	50255	λόγος	logov	N-NSM	N-NSM		3056							 Word 				
+0	79253	79254	26046	Greek	50253	ἦν	hn	V-IAI-3S	V-IAI-3S		1510							 was 				
+0	79252	79255	26046	Greek	50252	θεὸς	qeov	N-NSM	N-NSM		2316							 God 	.			
+0	79256	79256	26046	Greek														 				
+0	79257	79257	26046	Greek														 				
+0	79258	79258	26046	Greek														 				
+0	79259	79259	26046	Greek														 				
+0	79260	79260	26046	Greek														 				
+0	79261	79261	26046	Greek														 				
+0	79262	79262	26046	Greek														 				
+0	79263	79263	26046	Greek														 				
+0	79264	79264	26046	Greek														 				
+0	79265	79265	26046	Greek														 				
+0	79266	79266	26047	Greek	50256	Οὗτος	outov	D-NSM	D-NSM		3778	John 1:2						 He 				
+0	79267	79267	26047	Greek	50257	ἦν	hn	V-IAI-3S	V-IAI-3S		1510							 was 				
+0	79270	79268	26047	Greek	50260	πρὸς	prov	PREP	PREP		4314							 with 				
+0	79271	79269	26047	Greek	50261	τὸν	ton	T-ASM	T-ASM		3588							 - 				
+0	79272	79270	26047	Greek	50262	θεόν	qeon	N-ASM	N-ASM		2316							 God 				
+0	79268	79271	26047	Greek	50258	ἐν	en	PREP	PREP		1722							 in 				
+0	79269	79272	26047	Greek	50259	ἀρχῇ	arch	N-DSF	N-DSF		746							 [the] beginning 	.			
+0	79273	79273	26047	Greek														 				
+0	79274	79274	26047	Greek														 				
+0	79275	79275	26047	Greek														 				
+0	79276	79276	26047	Greek														 				
+0	79277	79277	26047	Greek														 				
+0	79278	79278	26047	Greek														 				
+0	79279	79279	26047	Greek														 				
+0	79280	79280	26047	Greek														 				
+0	79281	79281	26047	Greek														 				
+0	79282	79282	26047	Greek														 				
+0	79327	79327	26050	Greek	50287	καὶ	kai	CONJ	CONJ		2532	John 1:5						 - 				
+0	79328	79328	26050	Greek	50288	τὸ	to	T-NSN	T-NSN		3588							 The 				
+0	79329	79329	26050	Greek	50289	φῶς	fwv	N-NSN	N-NSN		5457							 Light 				
+0	79333	79330	26050	Greek	50293	φαίνει	fainei	V-PAI-3S	V-PAI-3S		5316							 shines 				
+0	79330	79331	26050	Greek	50290	ἐν	en	PREP	PREP		1722							 in 				
+0	79331	79332	26050	Greek	50291	τῇ	th	T-DSF	T-DSF		3588							 the 				
+0	79332	79333	26050	Greek	50292	σκοτίᾳ	skotia	N-DSF	N-DSF		4653							 darkness 	,			
+0	79334	79334	26050	Greek	50294	καὶ	kai	CONJ	CONJ		2532							 and 				
+0	79335	79335	26050	Greek	50295	ἡ	h	T-NSF	T-NSF		3588							 the 				
+0	79336	79336	26050	Greek	50296	σκοτία	skotia	N-NSF	N-NSF		4653							 darkness 				
+0	79338	79337	26050	Greek	50298	οὐ	ou	PRT-N	PRT-N		3756							 {has} not 				
+0	79339	79338	26050	Greek	50299	κατέλαβεν	katelaben	V-2AAI-3S	V-2AAI-3S		2638							 overcome 			Or <i>comprehended</i>	
+0	79337	79339	26050	Greek	50297	αὐτὸ	auto	P-ASN	P-ASN		846							 it 	.			
+0	79340	79340	26050	Greek														 				
+0	79341	79341	26050	Greek														 				
+0	79342	79342	26050	Greek														 				
+0	79343	79343	26050	Greek														 				
+0	79344	79344	26050	Greek														 				
+0	79345	79345	26050	Greek														 				
+0	79346	79346	26050	Greek														 				
+0	79347	79347	26050	Greek														 				
+0	79348	79348	26050	Greek														 				
+0	79349	79349	26050	Greek														 				
+0	215628	215628	30984	Greek	137250	Τὸ	(17:8)	T-NSN	T-NSN		to	Revelation 17:8			<p class=|reg|>			 The 				
+0	215629	215629	30984	Greek	137251	θηρίον	qhrion	N-NSN	N-NSN		2342							 beast 				
+0	215630	215630	30984	Greek	137252	ὃ	o	R-ASN	R-ASN		3739							 that 				
+0	215631	215631	30984	Greek	137253	εἶδες	eidev	V-2AAI-2S	V-2AAI-2S		3708							 you saw 	 — 			
+0	215632	215632	30984	Greek	137254	ἦν	hn	V-IAI-3S	V-IAI-3S		1510							 it was 	,			
+0	215633	215633	30984	Greek	137255	καὶ	kai	CONJ	CONJ		2532							 and [now] 				
+0	215635	215634	30984	Greek	137257	ἔστιν	estin	V-PAI-3S	V-PAI-3S		1510							 is 				
+0	215634	215635	30984	Greek	137256	οὐκ	ouk	PRT-N	PRT-N		3756							 no more 	,			
+0	215636	215636	30984	Greek	137258	καὶ	kai	CONJ	CONJ		2532							 [but] 				
+0	215637	215637	30984	Greek	137259	μέλλει	mellei	V-PAI-3S	V-PAI-3S		3195							 is about 				
+0	215638	215638	30984	Greek	137260	ἀναβαίνειν	anabainein	V-PAN	V-PAN		305							 to come up 				
+0	215639	215639	30984	Greek	137261	ἐκ	ek	PREP	PREP		1537							 out of 				
+0	215640	215640	30984	Greek	137262	τῆς	thv	T-GSF	T-GSF		3588							 the 				
+0	215641	215641	30984	Greek	137263	ἀβύσσου	abussou	N-GSF	N-GSF		12							 Abyss 				
+0	215642	215642	30984	Greek	137264	καὶ	kai	CONJ	CONJ		2532							 and 				
+0	215645	215643	30984	Greek	137267	ὑπάγειν	upagein	V-PAN	V-PAN		5217							 go 				
+0	215643	215644	30984	Greek	137265	εἰς	eiv	PREP	PREP		1519							 to [its] 				
+0	215644	215645	30984	Greek	137266	ἀπώλειαν	apwleian	N-ASF	N-ASF		684							 destruction 	.			
+0	215646	215646	30984	Greek	137268	Καὶ	kai	CONJ	CONJ		2532							 And 				
+0	215648	215647	30984	Greek	137270	οἱ	oi	T-NPM	T-NPM		3588							 those who 				
+0	215649	215648	30984	Greek	137271	κατοικοῦντες	katoikountev	V-PAP-NPM	V-PAP-NPM		2730							 dwell 				
+0	215650	215649	30984	Greek	137272	ἐπὶ	epi	PREP	PREP		1909							 on 				
+0	215651	215650	30984	Greek	137273	τῆς	thv	T-GSF	T-GSF		3588							 the 				
+0	215652	215651	30984	Greek	137274	γῆς	ghv	N-GSF	N-GSF		1093							 earth 				
+0	215653	215652	30984	Greek	137275	ὧν	wn	R-GPM	R-GPM		3739							 whose 				
+0	215656	215653	30984	Greek	137278	τὰ	ta	T-NPN	T-NPN		3588							 - 				
+0	215657	215654	30984	Greek	137279	ὀνόματα	onomata	N-NPN	N-NPN		3686							 names 				
+0	215654	215655	30984	Greek	137276	οὐ	ou	PRT-N	PRT-N		3756							 vvv 				
+0	215655	215656	30984	Greek	137277	γέγραπται	gegraptai	V-RPI-3S	V-RPI-3S		1125							 were not written 				
+0	215658	215657	30984	Greek	137280	ἐπὶ	epi	PREP	PREP		1909							 in 				
+0	215659	215658	30984	Greek	137281	τὸ	to	T-ASN	T-ASN		3588							 the 				
+0	215660	215659	30984	Greek	137282	βιβλίον	biblion	N-ASN	N-ASN		975							 Book 				
+0	215661	215660	30984	Greek	137283	τῆς	thv	T-GSF	T-GSF		3588							 - 				
+0	215662	215661	30984	Greek	137284	ζωῆς	zwhv	N-GSF	N-GSF		2222							 of Life 				
+0	215663	215662	30984	Greek	137285	ἀπὸ	apo	PREP	PREP		575							 from 				
+0	215664	215663	30984	Greek	137286	καταβολῆς	katabolhv	N-GSF	N-GSF		2602							 [the] foundation 				
+0	215665	215664	30984	Greek	137287	κόσμου	kosmou	N-GSM	N-GSM		2889							 of [the] world 				
+0	215647	215665	30984	Greek	137269	θαυμάσονται	qaumasontai	V-FDI-3P	V-FDI-3P		2296							 will marvel 				
+0	215666	215666	30984	Greek	137288	βλεπόντων	blepontwn	V-PAP-GPM	V-PAP-GPM		991							 when they see 				
+0	215669	215667	30984	Greek	137291	τὸ	to	T-NSN	T-NSN		3588							 the 				
+0	215670	215668	30984	Greek	137292	θηρίον	qhrion	N-NSN	N-NSN		2342							 beast 				
+0	215667	215669	30984	Greek	137289	ὅτι	oti	CONJ	CONJ		3754							 that 				
+0	215668	215670	30984	Greek	137290	ἦν	hn	V-IAI-3S	V-IAI-3S		1510							 was 	,			
+0	215671	215671	30984	Greek	137293	καὶ	kai	CONJ	CONJ		2532							 and 				
+0	215673	215672	30984	Greek	137295	ἔστιν	estin	V-PAI-3S	V-PAI-3S		1510							 is 				
+0	215672	215673	30984	Greek	137294	οὐκ	ouk	PRT-N	PRT-N		3756							 not 	,			
+0	215674	215674	30984	Greek	137296	καὶ	kai	CONJ	CONJ		2532							 and yet 				
+0	215675	215675	30984	Greek	137297	παρέσται	parestai	V-FDI-3S	V-FDI-3S		3918							 will be 	.			
+0	215676	215676	30984	Greek														 				
+0	215677	215677	30984	Greek														 				
+0	215678	215678	30984	Greek														 				
+0	215679	215679	30984	Greek														 				
+0	215680	215680	30984	Greek														 				
+0	215681	215681	30984	Greek														 				
+0	215682	215682	30984	Greek														 				
+0	215683	215683	30984	Greek														 				
+0	215684	215684	30984	Greek														 				
+0	215685	215685	30984	Greek														 				
+0	218071	218071	31051	31051														 				
