@@ -22,11 +22,18 @@ export interface MetaRow {
   value: string;
 }
 
+/** A saved setting, such as the reader's 'readerView'. */
+export interface SettingRow {
+  key: string;
+  value: string;
+}
+
 // Never edit an old version(): repeat the whole stores map on each bump with a '// vN:' comment
 // (docs/pwa-best-practices.md section 15).
 class LampasDB extends Dexie {
   words!: EntityTable<Word, 'lemma'>;
   meta!: EntityTable<MetaRow, 'key'>;
+  settings!: EntityTable<SettingRow, 'key'>;
 
   constructor() {
     super('lampas');
@@ -34,6 +41,8 @@ class LampasDB extends Dexie {
     this.version(1).stores({});
     // v2: the words he knows (key lemma; lesson and state to list them; *lemmas to find one by lexicon lemma), and meta.
     this.version(2).stores({ words: 'lemma, lesson, state, *lemmas', meta: 'key' });
+    // v3: settings he chooses (key, value), such as the reader's English | Greek view.
+    this.version(3).stores({ words: 'lemma, lesson, state, *lemmas', meta: 'key', settings: 'key' });
   }
 }
 
