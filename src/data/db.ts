@@ -91,6 +91,14 @@ export interface VerseReading {
   when: number;
 }
 
+/** A grammar term he marked I know this on its Grammar sheet ('conjunction'), kept so the word sheet shows it plain. */
+export interface KnownTerm {
+  /** the term, the key: a word of src/data/grammar-concepts.ts */
+  term: string;
+  /** when he marked it (ms since the epoch) */
+  since: number;
+}
+
 /** One-off facts about the store, such as 'wordsSeeded'. */
 export interface MetaRow {
   key: string;
@@ -114,6 +122,7 @@ class LampasDB extends Dexie {
   talks!: EntityTable<TalkTurn, 'id'>;
   drills!: EntityTable<DrillResult, 'id'>;
   readings!: EntityTable<VerseReading, 'ref'>;
+  grammarKnown!: EntityTable<KnownTerm, 'term'>;
 
   constructor() {
     super('lampas');
@@ -167,6 +176,18 @@ class LampasDB extends Dexie {
       talks: '++id, [ref+when]',
       drills: '++id, lemma, [lemma+step]',
       readings: 'ref',
+    });
+    // v9: the grammar terms he knows {term, since}, one row per term (key term).
+    this.version(9).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
     });
   }
 }

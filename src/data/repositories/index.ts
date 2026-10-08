@@ -34,3 +34,4 @@ export { listDrillResults, recordDrillStep } from './drills';
 export type { DrillResult } from './drills';
 export { getVerseReading, keepVerseReading } from './readings';
 export type { FixWord, VerseReading } from './readings';
+export { isTermKnown, listKnownTerms, setTermKnown } from './grammar';
