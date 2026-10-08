@@ -37,9 +37,11 @@ const BOOKS: Record<string, string> = {
   '2pe': '2Pe', '1jn': '1Jn', '2jn': '2Jn', '3jn': '3Jn', jud: 'Jud', rev: 'Re',
 };
 
+/** Logos' own name for a Greek lemma is lbs/el/<lemma>; the slashes must be escaped or Logos rejects the value (a bare lemma opens a search
+ *  'lemma.ιησουσ' that finds nothing). docs/resources.md has the source. */
 const study = (word: StudyWord): { path: string; fallbackPath: string } => {
   const logosRef = word.ref && BOOKS[word.ref.book] ? `;ref=Bible.${BOOKS[word.ref.book]}${word.ref.chapter}.${word.ref.verse}` : '';
-  const guide = `Guide;t=${encodeURIComponent('Bible Word Study')};lemma=${encodeURIComponent(word.lemma)}${logosRef}`;
+  const guide = `Guide;t=${encodeURIComponent('Bible Word Study')};lemma=${encodeURIComponent(`lbs/el/${word.lemma.normalize('NFC')}`)}${logosRef}`;
   return { path: `logos4:${guide}`, fallbackPath: `https://ref.ly/logos4/${guide}` };
 };
 
