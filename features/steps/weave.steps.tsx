@@ -10,6 +10,8 @@ import { readFileSync } from 'node:fs';
 import { App } from '../../src/App';
 import { type Chapter, type GreekWord, type Verse, wordLemma } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
+import { recordAnswer } from '../../src/data/repositories';
+import { SETTINGS } from '../../src/settings/registry';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
@@ -71,15 +73,27 @@ async function solidLemmas(): Promise<Set<string>> {
 }
 
 /** The Weave switch is in Settings: open it from the gear, switch, and come back to the reader. */
-async function setWeave(label: 'Off' | 'Solid words'): Promise<void> {
+type WeaveLabel = 'Off' | 'Solid words' | 'Solid and learning words';
+const WEAVE_VALUE: Record<WeaveLabel, string> = { Off: 'off', 'Solid words': 'solid', 'Solid and learning words': 'solid+learning' };
+async function setWeave(label: WeaveLabel): Promise<void> {
   await user.click(screen.getByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
   await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: label }));
   await user.click(screen.getByRole('button', { name: '‹ Reader' }));
   await waitForReader();
-  await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-weave')).toBe(label === 'Off' ? 'off' : 'solid'));
-  if (label === 'Solid words') await waitFor(() => expect(wovenIn(1).length).toBeGreaterThan(0));
+  await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-weave')).toBe(WEAVE_VALUE[label]));
+  if (label !== 'Off') await waitFor(() => expect(wovenIn(1).length).toBeGreaterThan(0));
 }
+
+const verse18: Verse = chapter.verses[17];
+/** The chunk of verse 18 that stands for the first Greek word of this lemma. */
+function chunkOfLemma18(lemma: string): number {
+  const at = verse18.g.findIndex((w) => nfc(wordLemma(w)) === nfc(lemma));
+  const chunk = verse18.e.findIndex((c) => c.g.includes(at));
+  if (at < 0 || chunk < 0) throw new Error(`no chunk for ${lemma} in verse 18`);
+  return chunk;
+}
+const hintOf = (el: HTMLElement): HTMLElement | null => el.querySelector<HTMLElement>('[data-hint]');
 
 const countLine = (): HTMLElement | null => screen.queryByTestId('weave-count');
 
@@ -219,6 +233,76 @@ describeFeature(feature, ({ Scenario }) => {
     Then('Weave is set to Solid words', async () => {
       await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-weave')).toBe('solid'));
       await waitFor(() => expect(wovenIn(1).length).toBeGreaterThan(0));
+    });
+  });
+
+  Scenario('A learning word stands in Greek with its English beneath', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened with nothing saved', openFresh);
+    When('he sets Weave to Solid and learning words', async () => setWeave('Solid and learning words'));
+    Then('verse 18 shows the Greek of {string} in place of {string} with the English {string} beneath it as a hint', async (_, lemma: string, english: string, hint: string) => {
+      const chunk = chunkOfLemma18(lemma);
+      expect(verse18.e[chunk].t).toBe(english);
+      await waitFor(() => expect(chunkEl(18, chunk)).toHaveAttribute('data-woven'));
+      const el = chunkEl(18, chunk);
+      expect(el).toHaveAttribute('data-woven');
+      expect(el).toHaveAttribute('data-learning');
+      expect(squash(el.querySelector('[data-greek]')?.textContent)).toBe(verse18.g[verse18.g.findIndex((w) => nfc(wordLemma(w)) === nfc(lemma))].t);
+      expect(squash(hintOf(el)?.textContent)).toBe(hint);
+      expect(hintOf(el)).toHaveAttribute('lang', 'en');
+    });
+    And('the solid woven words of verse 1 have no hint', () => {
+      expect(wovenIn(1).length).toBeGreaterThan(0);
+      for (const el of wovenIn(1)) {
+        expect(hintOf(el)).toBeNull();
+        expect(el).not.toHaveAttribute('data-learning');
+      }
+    });
+    And('the count line counts the learning word too', async () => {
+      const woven = document.querySelectorAll('[data-woven]').length;
+      await waitFor(() => expect(countLine()).toHaveTextContent(`${woven} words in Greek`));
+    });
+  });
+
+  Scenario('Solid words alone leave a learning word in English', ({ Given, When, Then }) => {
+    Given('Lampas is opened with nothing saved', openFresh);
+    When('he sets Weave to Solid words', async () => setWeave('Solid words'));
+    Then('{string} in verse {int} is English', (_, english: string, n: number) => {
+      const el = within(verseEl(n)).getByRole('button', { name: english });
+      expect(el).not.toHaveAttribute('data-woven');
+    });
+  });
+
+  Scenario('When it turns solid the English hint goes', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened with nothing saved', openFresh);
+    And('he sets Weave to Solid and learning words', async () => setWeave('Solid and learning words'));
+    When('he answers the word {string} right twice in the Quick test', async (_, lemma: string) => {
+      const chunk = chunkOfLemma18(lemma);
+      await waitFor(() => expect(hintOf(chunkEl(18, chunk))).not.toBeNull());
+      expect(await recordAnswer(lemma, true)).toBe('learning');
+      expect(await recordAnswer(lemma, true)).toBe('solid');
+    });
+    Then('verse 18 shows the Greek of {string} in place of {string} with no hint beneath it', async (_, lemma: string, english: string) => {
+      const chunk = chunkOfLemma18(lemma);
+      expect(verse18.e[chunk].t).toBe(english);
+      await waitFor(() => expect(hintOf(chunkEl(18, chunk))).toBeNull());
+      expect(chunkEl(18, chunk)).toHaveAttribute('data-woven');
+      expect(chunkEl(18, chunk)).not.toHaveAttribute('data-learning');
+    });
+  });
+
+  Scenario('The Weave setting offers Off, Solid, Solid and learning', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened with nothing saved', openFresh);
+    When('he opens Settings', async () => {
+      await user.click(screen.getByRole('button', { name: 'Settings' }));
+      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+    });
+    Then('the Weave setting offers {string}, {string} and {string}', async (_, a: string, b: string, c: string) => {
+      const group = await screen.findByRole('group', { name: 'Weave' });
+      expect(within(group).getAllByRole('button').map((e) => e.textContent)).toEqual([a, b, c]);
+    });
+    And('the Weave setting allows the values {string}, {string} and {string}', (_, a: string, b: string, c: string) => {
+      const allowed = SETTINGS.find((s) => s.key === 'weave')?.allowed;
+      expect(allowed?.kind === 'choice' ? allowed.values.map((v) => v.value) : []).toEqual([a, b, c]);
     });
   });
 });

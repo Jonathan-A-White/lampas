@@ -76,7 +76,7 @@ describeFeature(feature, ({ Scenario }) => {
       }
       expect(files).toBe(260);
       const onDisk = readdirSync('public/data', { recursive: true }).map(String).filter((p) => p.endsWith('.json'));
-      expect(onDisk).toHaveLength(261);
+      expect(onDisk).toHaveLength(262);
     });
   });
 
@@ -187,16 +187,16 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Only the index and Romans 8 are precached', ({ Given, Then, And }) => {
+  Scenario('Only the index, the lemma lexicon and Romans 8 are precached', ({ Given, Then, And }) => {
     Given('the app is built', () => {
       outDir = tmp();
       execFileSync(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--outDir', outDir, '--emptyOutDir', '--logLevel', 'error'], { stdio: 'inherit' });
       swText = readFileSync(join(outDir, 'sw.js'), 'utf8');
     });
-    Then('the service worker precaches data/index.json and data/rom/8.json and no other chapter', () => {
+    Then('the service worker precaches data/index.json, data/lexicon.json and data/rom/8.json and no other chapter', () => {
       const urls = [...swText.matchAll(/"url":"([^"]+)"/g)].map((m) => m[1]);
       const data = urls.filter((u) => u.startsWith('data/')).sort();
-      expect(data).toEqual(['data/index.json', 'data/rom/8.json']);
+      expect(data).toEqual(['data/index.json', 'data/lexicon.json', 'data/rom/8.json']);
       expect(urls.length).toBeGreaterThan(4);
     });
     And('the service worker serves other chapters cache-first from a runtime cache', () => {

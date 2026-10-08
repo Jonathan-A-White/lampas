@@ -1,13 +1,14 @@
 // scripts/data-build.ts — npm run data:build
 // Turns the Majority Standard Bible NT tables (public domain; Byzantine Greek word-aligned to the MSB English,
 // with Strong's and RP parsing codes) and STEPBible's TBESG lexicon (CC BY 4.0) into public/data/index.json
-// and one public/data/<book>/<chapter>.json per chapter. The raw downloads go to data/raw (git-ignored,
+// and one public/data/<book>/<chapter>.json per chapter, and public/data/lexicon.json (every lemma of the text with its gloss). The raw downloads go to data/raw (git-ignored,
 // skipped when present); the JSON is committed. The shape is in docs/data.md and src/data/chapter.ts.
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { decodeParse } from '../src/data/parseCode';
+import { decodeParse, splitParse } from '../src/data/parseCode';
 import type { BookIndex, Chapter, EnglishChunk, GreekWord, LexEntry, Verse } from '../src/data/chapter';
+import type { LemmaLexicon } from '../src/data/lexicon';
 
 export const MSB_URL = 'https://majoritybible.com/msb_nt_tables.tsv';
 export const TBESG_URL =
@@ -290,7 +291,12 @@ export interface BuiltChapter {
 export interface BuiltData {
   index: BookIndex;
   chapters: BuiltChapter[];
+  /** every lemma of the text -> gloss, Strong's number and part of speech: public/data/lexicon.json */
+  lexicon: LemmaLexicon;
 }
+
+const sortedKeys = <T>(o: Record<string, T>): Record<string, T> =>
+  Object.fromEntries(Object.entries(o).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
 
 const numeric = (a: string, b: string) => Number(a.slice(1)) - Number(b.slice(1));
 
@@ -307,6 +313,7 @@ export function buildData(msbTsv: string, lex: Lexicon): BuiltData {
 
   const index: BookIndex = { books: [] };
   const chapters: BuiltChapter[] = [];
+  const lexicon: LemmaLexicon = {};
   for (const [code, name] of BOOKS) {
     const book = byBook.get(name);
     if (!book) continue;
@@ -337,12 +344,16 @@ export function buildData(msbTsv: string, lex: Lexicon): BuiltData {
         parse: Object.fromEntries(codes.map((c) => [c, decodeParse(c)])),
         verses: built,
       };
+      // The first use of a lemma, in canonical order, names its Strong's number and part of speech.
+      for (const w of built.flatMap((v) => v.g)) {
+        if (!(w.l in lexicon)) lexicon[w.l] = { g: chapter.lex[w.s].g, s: w.s, c: splitParse(w.p).pos };
+      }
       counts.push(built.length);
       chapters.push({ path: `${code}/${n}.json`, chapter });
     }
     index.books.push({ code, name, chapters: count, verses: counts });
   }
-  return { index, chapters };
+  return { index, chapters, lexicon: sortedKeys(lexicon) };
 }
 
 // ---------------------------------------------------------------- files
@@ -382,7 +393,7 @@ export async function runBuild(options: BuildOptions): Promise<{ chapters: numbe
   }
   const built = buildData(readFileSync(msbPath, 'utf8'), parseLexicon(readFileSync(tbesgPath, 'utf8')));
 
-  const files = new Map<string, string>([['index.json', JSON.stringify(built.index)]]);
+  const files = new Map<string, string>([['index.json', JSON.stringify(built.index)], ['lexicon.json', JSON.stringify(built.lexicon)]]);
   for (const { path, chapter } of built.chapters) files.set(path, JSON.stringify(chapter));
 
   let written = 0;

@@ -95,7 +95,7 @@ leave `words` empty and `settings_changes` out:
 - `textSize` — Text size. How big the text is, in steps of the phone's own size. Value: "small" (Small), "normal" (Normal), "large" (Large), "largest" (Largest).
 - `layout` — Layout. How the verses are set on the page: one per line, or run together in paragraphs. Value: "verse" (Verse by verse), "paragraph" (Paragraph).
 - `sectionHeadings` — Section headings. Whether the Bible's headings are shown above their verses. Value: "on" (On), "off" (Off).
-- `weave` — Weave. In the English view, whether the Greek of his solid words is shown in place of their English. Value: "off" (Off), "solid" (Solid words).
+- `weave` — Weave. In the English view, whether the Greek of his solid words, and of the words he is learning with their English beneath in small grey, is shown in place of their English. Value: "off" (Off), "solid" (Solid words), "solid+learning" (Solid and learning words).
 - `englishVoice` — English voice. Which voice reads English aloud. Only the phone's own pick can be asked for; the other voices are the phone's. Value: "default" (Phone default).
 - `greekVoice` — Greek voice. Which voice reads Greek aloud. Only the phone's own pick can be asked for; the other voices are the phone's. Value: "default" (Phone default).
 - `englishRate` — English speed. How fast English is read aloud; 1 is normal, smaller is slower. Value: a number from 0.5 to 1.5, in steps of 0.1.

@@ -9,12 +9,13 @@ export const talkRef = (book: string, chapter: number, verse: number | null): st
   verse === null ? `${book}.${chapter}` : `${book}.${chapter}.${verse}`;
 
 /** What an answer did to the app: the settings changed and a sentence for each one ignored, and the words it put on his list
- * (`added`) or found there already (`already`). */
+ * (`added`), found there already (`already`) or could not find in the lexicon (`unknown`). */
 export interface TurnChanges {
   changes: AppliedChange[];
   refused: string[];
   added?: string[];
   already?: string[];
+  unknown?: string[];
 }
 
 /** Keeps one turn and returns its id. */
@@ -24,6 +25,7 @@ export async function addTurn(ref: string, q: string, a: string, words: AnswerWo
   if (done && done.refused.length > 0) turn.refused = done.refused;
   if (done?.added?.length) turn.added = done.added;
   if (done?.already?.length) turn.already = done.already;
+  if (done?.unknown?.length) turn.unknown = done.unknown;
   return (await db.talks.add(turn)) as number;
 }
 

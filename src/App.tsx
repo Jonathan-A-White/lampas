@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect } from 'react';
-import { seedWordsIfFirstOpen } from './data/repositories';
+import { seedScheduleIfFirstOpen, seedWordsIfFirstOpen } from './data/repositories';
 import { About } from './About';
 import { startAppearanceSync } from './appearance/appearanceSync';
 import { DrillScreen } from './DrillScreen';
@@ -10,6 +10,7 @@ import { startReaderAddressSync } from './nav/readerAddress';
 import { routeOf, useAddress } from './nav/route';
 import { Reader } from './Reader';
 import { QuizScreen } from './QuizScreen';
+import { ReviewScreen } from './ReviewScreen';
 import { SettingsScreen } from './SettingsScreen';
 import { startSpeechSettingsSync } from './speech/settingsSync';
 import { UpdateBanner } from './UpdateBanner';
@@ -28,8 +29,11 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
   // The saved voices and pronunciation reach the speaker before the first tap on a speaker button.
   useEffect(() => startSpeechSettingsSync(), []);
   // The first open fills the word list from the example list; every later open finds the flag and does nothing.
+  // Then, once, every solid or learning word goes on the back-off schedule (also the first open after the v10 upgrade).
   useEffect(() => {
-    void seedWordsIfFirstOpen();
+    void seedWordsIfFirstOpen()
+      .then(() => seedScheduleIfFirstOpen())
+      .catch((error: unknown) => console.error('seeding the words and their schedule failed', error));
   }, []);
   return (
     <div data-shell className="flex h-full min-w-0 flex-col overflow-clip">
@@ -42,6 +46,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <QuizScreen newRandom={newRandom} />
       ) : route === 'drill' ? (
         <DrillScreen newRandom={newRandom} />
+      ) : route === 'review' ? (
+        <ReviewScreen newRandom={newRandom} />
       ) : route === 'about' ? (
         <About />
       ) : route === 'settings' ? (

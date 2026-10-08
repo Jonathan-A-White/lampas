@@ -10,9 +10,8 @@ import { askInReader } from './nav/readerRequest';
 import { speakWord } from './speech/greek';
 import { READER_CHAPTER } from './data/readerChapter';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
-import { HoldToHear } from './HoldToHear';
+import { WordQuestion } from './WordQuestion';
 import { focusOnMount } from './ui/focus';
-import { WordPicture } from './WordPicture';
 
 type Round = { status: 'loading' } | { status: 'offer' } | { status: 'ready'; questions: Question[] };
 
@@ -39,14 +38,6 @@ function DrillLink() {
     </button>
   );
 }
-
-const OPTION_BASE = 'block min-h-14 w-full rounded-xl border px-4 py-3 text-left text-lg disabled:opacity-100';
-const OPTION_LOOK = {
-  idle: 'border-line bg-surface',
-  right: 'border-good bg-good/20 font-medium',
-  wrong: 'border-bad bg-bad/20 font-medium',
-  other: 'border-line bg-surface text-muted',
-};
 
 export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
   // A round left half done (the app was closed, or he went back to the reader) is offered again: Resume | New round.
@@ -194,49 +185,11 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
 
   const answered = picked !== null;
   const last = index === total - 1;
-  const lookOf = (option: string): keyof typeof OPTION_LOOK => {
-    if (!answered) return 'idle';
-    if (option === question.gloss) return 'right';
-    return option === picked ? 'wrong' : 'other';
-  };
   return (
     <>
       {header}
       <main className="screen min-h-0 flex-1 px-4 pt-6">
-        <div className="text-center">
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <WordPicture lemma={question.lemma} size={80} testId="picture" />
-            <p data-testid="prompt" data-lemma={question.lemma} lang="grc" className="min-w-0 break-words font-greek text-5xl">
-              {question.prompt}
-            </p>
-          </div>
-          <p className="mt-1 min-h-6 text-base text-muted">{question.reference ?? ''}</p>
-        </div>
-        <div className="mt-4">
-          <HoldToHear text={question.prompt} />
-        </div>
-        <ul className="mt-4 space-y-3">
-          {question.options.map((option) => {
-            const look = lookOf(option);
-            return (
-              <li key={`${index}:${option}`}>
-                <button
-                  type="button"
-                  data-option
-                  data-result={look === 'right' || look === 'wrong' ? look : undefined}
-                  disabled={answered}
-                  onClick={() => pick(option)}
-                  className={`${OPTION_BASE} ${OPTION_LOOK[look]}`}
-                >
-                  {option}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-        <p data-testid="feedback" role="status" className="mt-4 min-h-12 text-center text-lg">
-          {!answered ? '' : picked === question.gloss ? 'Right.' : `Not quite. It means: ${question.gloss}`}
-        </p>
+        <WordQuestion question={question} index={index} picked={picked} onPick={pick} />
         {answered ? (
           <div className="mt-2 grid grid-cols-2 gap-3">
             <button

@@ -166,10 +166,11 @@ export const SETTINGS: readonly SettingEntry[] = [
   choice(
     'weave',
     'Weave',
-    'In the English view, whether the Greek of his solid words is shown in place of their English.',
+    'In the English view, whether the Greek of his solid words, and of the words he is learning with their English beneath in small grey, is shown in place of their English.',
     [
       { value: 'off', label: 'Off' },
       { value: 'solid', label: 'Solid words' },
+      { value: 'solid+learning', label: 'Solid and learning words' },
     ],
     getWeave,
     async (value) => {

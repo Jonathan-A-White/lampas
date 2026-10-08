@@ -72,7 +72,7 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
-            "properties": { "key": { "const": "weave" }, "value": { "type": "string", "enum": ["off", "solid"] } }
+            "properties": { "key": { "const": "weave" }, "value": { "type": "string", "enum": ["off", "solid", "solid+learning"] } }
           },
           {
             "type": "object",

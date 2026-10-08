@@ -20,25 +20,25 @@ const verse: Verse = {
 
 describe('weaveVerse', () => {
   it('weaves a chunk whose every Greek word has a solid lemma, in the chunk order', () => {
-    const woven = weaveVerse(verse, new Set(['ἐν', 'Χριστός']));
-    expect(woven[0]?.map((w) => w.t)).toEqual(['ἐν']);
-    expect(woven[1]?.map((w) => w.t)).toEqual(['χριστῷ']);
+    const woven = weaveVerse(verse, { solid: new Set(['ἐν', 'Χριστός']) });
+    expect(woven[0]?.words.map((w) => w.t)).toEqual(['ἐν']);
+    expect(woven[1]?.words.map((w) => w.t)).toEqual(['χριστῷ']);
   });
 
   it('leaves English a chunk backed by two Greek words of which one is unknown, and its neighbours stay woven', () => {
-    const woven = weaveVerse(verse, new Set(['ἐν', 'Χριστός', 'ὁ']));
+    const woven = weaveVerse(verse, { solid: new Set(['ἐν', 'Χριστός', 'ὁ']) });
     expect(woven[2]).toBeNull();
     expect(woven[0]).not.toBeNull();
     expect(woven[1]).not.toBeNull();
   });
 
   it('weaves a two-word chunk when both lemmas are solid', () => {
-    const woven = weaveVerse(verse, new Set(['ὁ', 'θεός']));
-    expect(woven[2]?.map((w) => w.t)).toEqual(['τοῦ', 'θεοῦ']);
+    const woven = weaveVerse(verse, { solid: new Set(['ὁ', 'θεός']) });
+    expect(woven[2]?.words.map((w) => w.t)).toEqual(['τοῦ', 'θεοῦ']);
   });
 
   it('never weaves a chunk with no Greek word, one that points at a missing word, a dash or a supplied one', () => {
-    const woven = weaveVerse(verse, new Set(['ἐν', 'Χριστός', 'ὁ', 'θεός']));
+    const woven = weaveVerse(verse, { solid: new Set(['ἐν', 'Χριστός', 'ὁ', 'θεός']) });
     expect(woven[3]).toBeNull();
     expect(woven[4]).toBeNull();
     expect(woven[5]).toBeNull();
@@ -46,11 +46,38 @@ describe('weaveVerse', () => {
   });
 
   it('weaves nothing for an empty set', () => {
-    expect(weaveVerse(verse, new Set()).every((w) => w === null)).toBe(true);
+    expect(weaveVerse(verse, { solid: new Set() }).every((w) => w === null)).toBe(true);
   });
 
   it('matches a word whose lemma is written in another normalisation form', () => {
     const decomposed: Verse = { ...verse, g: [word('ἐν', 'ἐν'.normalize('NFD'))] };
-    expect(weaveVerse(decomposed, new Set(['ἐν']))[0]).not.toBeNull();
+    expect(weaveVerse(decomposed, { solid: new Set(['ἐν']) })[0]).not.toBeNull();
+  });
+
+  it('weaves a chunk of learning words with learning: true, and a solid chunk with learning: false', () => {
+    const woven = weaveVerse(verse, { solid: new Set(['ἐν']), learning: new Set(['Χριστός']) });
+    expect(woven[0]).toEqual({ words: [verse.g[0]], learning: false });
+    expect(woven[1]).toEqual({ words: [verse.g[1]], learning: true });
+  });
+
+  it('weaves a chunk mixing solid and learning words and marks it learning', () => {
+    const woven = weaveVerse(verse, { solid: new Set(['ὁ']), learning: new Set(['θεός']) });
+    expect(woven[2]?.words.map((w) => w.t)).toEqual(['τοῦ', 'θεοῦ']);
+    expect(woven[2]?.learning).toBe(true);
+  });
+
+  it('does not weave a chunk with an unknown word, learning words around it or not', () => {
+    const woven = weaveVerse(verse, { solid: new Set(['ἐν']), learning: new Set(['ὁ']) });
+    expect(woven[2]).toBeNull();
+    expect(woven[0]).not.toBeNull();
+  });
+
+  it('weaves a learning lemma only when the learning set is given', () => {
+    expect(weaveVerse(verse, { solid: new Set(['ἐν']) })[1]).toBeNull();
+  });
+
+  it('a lemma that is both solid and learning counts as solid', () => {
+    const woven = weaveVerse(verse, { solid: new Set(['ἐν']), learning: new Set(['ἐν']) });
+    expect(woven[0]?.learning).toBe(false);
   });
 });

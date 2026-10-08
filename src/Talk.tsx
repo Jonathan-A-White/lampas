@@ -7,7 +7,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Waiting } from './Ask';
-import { findGreekWord, glossOf } from './data/answerWord';
+import { addLemmaToLearn, findGreekWord, glossOf } from './data/answerWord';
 import type { AnswerWord } from './data/db';
 import { addWordToLearn, listTurns, markChangeUndone, wordIsListed, type TalkTurn } from './data/repositories';
 import { settingOf, undoChange, type AppliedChange } from './settings/registry';
@@ -113,7 +113,9 @@ function AddWord({ scope, word }: { scope: TalkScope; word: AnswerWord }) {
   const add = async (): Promise<void> => {
     setBusy(true);
     try {
-      await addWordToLearn(word.lemma, glossOf(scope, word));
+      // The lexicon's gloss and part of speech; a word it lacks still goes in with the gloss the chapter has, as he asked.
+      const { result } = await addLemmaToLearn(scope, word.lemma);
+      if (result === 'unknown') await addWordToLearn(word.lemma, glossOf(scope, word));
     } finally {
       setBusy(false);
     }
@@ -157,7 +159,7 @@ function Turn({ turn, scope, onLook }: { turn: TalkTurn; scope: TalkScope; onLoo
       </p>
       <div data-talk-a className="rounded-2xl border border-line px-3 py-2">
         <p className="break-words text-lg leading-snug">{turn.a}</p>
-        {turn.changes?.length || turn.refused?.length || turn.added?.length || turn.already?.length ? (
+        {turn.changes?.length || turn.refused?.length || turn.added?.length || turn.already?.length || turn.unknown?.length ? (
           <ul data-talk-changes className="mt-2 border-t border-line pt-1">
             {turn.changes?.map((c, i) => (
               <ChangeRow key={i} turn={turn} change={c} index={i} />
@@ -169,6 +171,7 @@ function Turn({ turn, scope, onLook }: { turn: TalkTurn; scope: TalkScope; onLoo
             ))}
             {turn.added?.length ? <WordsLine lemmas={turn.added} before="Added " after=" to your words" /> : null}
             {turn.already?.length ? <WordsLine lemmas={turn.already} before="" after={turn.already.length === 1 ? ' is already on your words' : ' are already on your words'} /> : null}
+            {turn.unknown?.length ? <WordsLine lemmas={turn.unknown} before="I do not know " after="" /> : null}
           </ul>
         ) : null}
         {turn.words.length > 0 ? (
