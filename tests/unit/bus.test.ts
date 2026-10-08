@@ -90,6 +90,7 @@ describe('docs/events.md', () => {
       'grammar-term-opened': true,
       'grammar-term-known': true,
       'reader-requested': true,
+      'review-due-changed': true,
     };
     const doc = readFileSync('docs/events.md', 'utf8');
     for (const kind of Object.keys(kinds)) expect(doc, kind).toContain(`\`${kind}\``);

@@ -39,7 +39,9 @@ export type AppEvent =
   /** another screen asks the Reader, as it opens on `chapter` and `verse`, to show the Ask box holding `question` (action
    * 'ask') or to open the Talk sheet (action 'talk'); `id` counts up, so the Reader can tell a request it has not met */
   | { kind: 'reader-requested'; id: number; action: 'ask'; chapter: number; verse: number; question: string }
-  | { kind: 'reader-requested'; id: number; action: 'talk'; chapter: number; verse: number };
+  | { kind: 'reader-requested'; id: number; action: 'talk'; chapter: number; verse: number }
+  /** the schedule changed (an answer, or items added): `due` is how many items are due now (src/data/schedule.ts) */
+  | { kind: 'review-due-changed'; due: number };
 
 export type EventKind = AppEvent['kind'];
 export type EventOf<K extends EventKind> = Extract<AppEvent, { kind: K }>;

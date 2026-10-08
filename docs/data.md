@@ -112,6 +112,23 @@ starts a paragraph whether or not it has `p`; the reader treats it so.
   (`features/data.feature` walks all of them). An unknown code or a Strong's number the lexicon lacks fails the
   build instead of shipping a guess.
 
+## The spaced schedule (Dexie v10)
+
+Not part of the text data: the phone's own store (`src/data/db.ts`, version 10) has a `reviews` table, one row per
+item he reviews, key `[kind+id]` (indexes `due`, `kind`): `{kind, id, step, due, lastWhen, lapses, rights}`. A word
+is kind `'word'` with its NFC headword as the id; the course epic adds other kinds. `src/data/schedule.ts` holds the
+rule (pure) and `src/data/repositories/reviews.ts` the rows (`recordReview`, `listDue`, `countDue`, `ensureScheduled`).
+
+* Steps (provisional, the Governor to confirm): 1, 3, 7, 14, 30, 60 days (`STEP_DAYS`); past the last, a rare check
+  every 90 days.
+* A new item starts at step 0. Right twice in a row (`rights`) moves it up one step; a single right keeps the step and
+  it comes back after that step's gap. One wrong drops it two steps (not below 0), adds a lapse, and it is due tomorrow.
+* A Quick test answer (`recordAnswer`) calls `recordReview('word', lemma, right)`.
+* `seedScheduleIfFirstOpen` runs once after the words are seeded, on a first open and on the first open after the
+  upgrade (meta `reviewsSeeded`): every solid word starts at the 30-day step, due on one of the next 30 days in turn
+  (so about two a day, not a flood); every learning word at step 0, due now; a dropped word is left off.
+* Every change publishes `review-due-changed` (docs/events.md).
+
 ## Offline
 
 Only `data/index.json`, `data/lexicon.json` and `data/rom/8.json` are in the service worker's precache (`pwa-precache.ts`; the

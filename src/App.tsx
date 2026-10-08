@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect } from 'react';
-import { seedWordsIfFirstOpen } from './data/repositories';
+import { seedScheduleIfFirstOpen, seedWordsIfFirstOpen } from './data/repositories';
 import { About } from './About';
 import { startAppearanceSync } from './appearance/appearanceSync';
 import { DrillScreen } from './DrillScreen';
@@ -28,8 +28,11 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
   // The saved voices and pronunciation reach the speaker before the first tap on a speaker button.
   useEffect(() => startSpeechSettingsSync(), []);
   // The first open fills the word list from the example list; every later open finds the flag and does nothing.
+  // Then, once, every solid or learning word goes on the back-off schedule (also the first open after the v10 upgrade).
   useEffect(() => {
-    void seedWordsIfFirstOpen();
+    void seedWordsIfFirstOpen()
+      .then(() => seedScheduleIfFirstOpen())
+      .catch((error: unknown) => console.error('seeding the words and their schedule failed', error));
   }, []);
   return (
     <div data-shell className="flex h-full min-w-0 flex-col overflow-clip">

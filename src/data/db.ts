@@ -107,6 +107,25 @@ export interface KnownTerm {
   since: number;
 }
 
+/**
+ * One item on the back-off schedule (src/data/schedule.ts): a word today, anything he reviews later. The key is
+ * {kind, id}: kind 'word' with the NFC headword as id, or another kind with its own ids.
+ */
+export interface Review {
+  kind: string;
+  id: string;
+  /** the position on the steps of src/data/schedule.ts (0 is the shortest gap) */
+  step: number;
+  /** when it next comes up (ms since the epoch) */
+  due: number;
+  /** when it was last answered (ms since the epoch) */
+  lastWhen: number;
+  /** how many times it was answered wrong */
+  lapses: number;
+  /** rights in a row since it last moved up or was wrong; two move it up a step */
+  rights: number;
+}
+
 /** One-off facts about the store, such as 'wordsSeeded'. */
 export interface MetaRow {
   key: string;
@@ -131,6 +150,7 @@ class LampasDB extends Dexie {
   drills!: EntityTable<DrillResult, 'id'>;
   readings!: EntityTable<VerseReading, 'ref'>;
   grammarKnown!: EntityTable<KnownTerm, 'term'>;
+  reviews!: EntityTable<Review, 'kind' | 'id'>;
 
   constructor() {
     super('lampas');
@@ -196,6 +216,19 @@ class LampasDB extends Dexie {
       drills: '++id, lemma, [lemma+step]',
       readings: 'ref',
       grammarKnown: 'term',
+    });
+    // v10: the back-off schedule {kind, id, step, due, lastWhen, lapses, rights}, one row per item (key [kind+id]); due finds what is due.
+    this.version(10).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
+      reviews: '[kind+id], due, kind',
     });
   }
 }
