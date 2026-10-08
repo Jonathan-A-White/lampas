@@ -27,6 +27,10 @@ export interface EnglishChunk {
 
 export interface Verse {
   n: number;
+  /** the MSB's section heading that comes before this verse (English); absent when none */
+  h?: string;
+  /** 1 when the MSB starts a paragraph at this verse; absent otherwise */
+  p?: 1;
   /** Greek words in Greek order */
   g: GreekWord[];
   /** English chunks in English order */

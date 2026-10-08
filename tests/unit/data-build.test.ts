@@ -222,3 +222,62 @@ describe('writing the files', () => {
     }
   });
 });
+
+describe('section headings and paragraph starts', () => {
+  it('carries the MSB heading on the verse it comes before, as plain English', () => {
+    expect(verse('rom/8.json', 1).h).toBe('Walking by the Spirit');
+    expect(verse('jhn/1.json', 1).h).toBe('The Beginning');
+    expect(verse('rom/8.json', 2).h).toBeUndefined();
+    expect(JSON.stringify(chapter('rom/8.json'))).not.toMatch(/hdg|<p /);
+  });
+
+  it('marks a verse the MSB starts a paragraph at with p = 1, and a verse inside a paragraph with no p', () => {
+    expect(verse('rom/8.json', 1).p).toBe(1);
+    expect(verse('mat/18.json', 12).p).toBe(1);
+    expect(verse('rom/8.json', 2).p).toBeUndefined();
+  });
+
+  it('does not change a verse\'s English chunks or Greek words', () => {
+    const bare = msb
+      .split('\n')
+      .map((line, i) => {
+        if (i === 0) return line;
+        const f = line.split('\t');
+        f[13] = '';
+        f[15] = '';
+        return f.join('\t');
+      })
+      .join('\n');
+    const plain = buildData(bare, lexicon);
+    for (const { path, chapter: c } of plain.chapters) {
+      for (const v of c.verses) {
+        expect(v.h).toBeUndefined();
+        expect(v.p).toBeUndefined();
+        const full = verse(path, v.n);
+        expect(full.e).toEqual(v.e);
+        expect(full.g).toEqual(v.g);
+      }
+    }
+  });
+});
+
+describe('the committed Romans 8', () => {
+  const rom8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
+
+  it('has section headings and paragraph starts from the MSB', () => {
+    const headed = rom8.verses.filter((v) => v.h);
+    expect(headed.length).toBeGreaterThanOrEqual(1);
+    expect(headed[0].n).toBe(1);
+    expect(headed[0].h).toBe('Walking by the Spirit');
+    expect(rom8.verses.filter((v) => v.p === 1).length).toBeGreaterThan(1);
+    expect(rom8.verses[0].p).toBe(1);
+  });
+
+  it('keeps each verse\'s English reading as the MSB has it', () => {
+    const v1 = rom8.verses[0];
+    expect(v1.e.map((c) => c.t).join(' ')).toBe(
+      'Therefore there is now no condemnation for those who are in Christ Jesus, who do not walk according to the flesh but according to the Spirit.',
+    );
+    expect(rom8.verses.every((v) => v.e.length > 0 && v.e.every((c) => c.t.length > 0))).toBe(true);
+  });
+});

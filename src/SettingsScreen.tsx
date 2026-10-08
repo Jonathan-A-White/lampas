@@ -1,19 +1,26 @@
-// src/SettingsScreen.tsx — what he can set, so the reader's front screen stays clear: the weave, the voices that read
+// src/SettingsScreen.tsx — what he can set, so the reader's front screen stays clear: the layout (verse by verse | paragraph), the section headings, the weave, the voices that read
 // English and Greek aloud, and how Greek is pronounced. Each choice is saved in the settings store (src/data/repositories)
 // and told to the bus (src/events/bus.ts); Words and About open from here too.
 import { useLiveQuery } from 'dexie-react-hooks';
 import type { ReactNode } from 'react';
 import {
   getGreekPronunciation,
+  getLayout,
+  getSectionHeadings,
   getVoice,
   getWeave,
   setGreekPronunciation,
+  setLayout,
+  setSectionHeadings,
   setVoice,
   setWeave,
+  type ReadingLayout,
+  type SectionHeadings,
   type VoiceLanguage,
   type Weave,
 } from './data/repositories';
 import { publish } from './events/bus';
+import { LAYOUTS } from './layout/layouts';
 import { navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -45,6 +52,43 @@ function WeaveChoice({ weave }: { weave: Weave }) {
     <div role="group" aria-label="Weave" className="inline-flex rounded-xl border border-line p-0.5">
       {choice('off', 'Off')}
       {choice('solid', 'Solid words')}
+    </div>
+  );
+}
+
+function LayoutChoice({ layout }: { layout: ReadingLayout }) {
+  return (
+    <div role="group" aria-label="Layout" className="inline-flex flex-wrap rounded-xl border border-line p-0.5">
+      {LAYOUTS.map((l) => (
+        <button
+          key={l.id}
+          type="button"
+          aria-pressed={layout === l.id}
+          onClick={() => void setLayout(l.id).then(() => publish({ kind: 'layout-changed', layout: l.id }))}
+          className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${layout === l.id ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+        >
+          {l.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function HeadingsChoice({ headings }: { headings: SectionHeadings }) {
+  const choice = (value: SectionHeadings, label: string) => (
+    <button
+      type="button"
+      aria-pressed={headings === value}
+      onClick={() => void setSectionHeadings(value).then(() => publish({ kind: 'headings-changed', headings: value }))}
+      className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${headings === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <div role="group" aria-label="Section headings" className="inline-flex rounded-xl border border-line p-0.5">
+      {choice('on', 'On')}
+      {choice('off', 'Off')}
     </div>
   );
 }
@@ -125,6 +169,8 @@ function LinkRow({ label, to }: { label: string; to: 'words' | 'about' }) {
 export function SettingsScreen() {
   const scrollRef = useScrollMemory('settings');
   const weave = useLiveQuery(getWeave, []);
+  const layout = useLiveQuery(getLayout, []);
+  const headings = useLiveQuery(getSectionHeadings, []);
   const english = useLiveQuery(() => getVoice('english'), []);
   const greek = useLiveQuery(() => getVoice('greek'), []);
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
@@ -133,6 +179,12 @@ export function SettingsScreen() {
       <ScreenHeader title="Settings" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />
       <main ref={scrollRef} className="screen min-h-0 flex-1 px-4">
         <div>
+          <Section title="Layout" hint="Verse by verse is one verse per line. Paragraph runs the verses of a paragraph together, with small verse numbers.">
+            {layout ? <LayoutChoice layout={layout} /> : null}
+          </Section>
+          <Section title="Section headings" hint="Show the Bible's headings (such as Walking by the Spirit) above their verses.">
+            {headings ? <HeadingsChoice headings={headings} /> : null}
+          </Section>
           <Section title="Weave" hint="In the English view, show the Greek of your solid words in place of their English.">
             {weave ? <WeaveChoice weave={weave} /> : null}
           </Section>
