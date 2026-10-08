@@ -25,6 +25,25 @@ export interface TestResult {
   right: boolean;
 }
 
+/** A word of the tutor's answer: a Greek word of the verse, its lemma and a note with its parsing. */
+export interface AnswerWord {
+  greek: string;
+  lemma: string;
+  note: string;
+}
+
+/** One answer the tutor gave to a question about a verse, kept so it is there on return. */
+export interface TutorAnswer {
+  id?: number;
+  /** the verse it was asked about: 'rom.8.28' */
+  ref: string;
+  question: string;
+  answer: string;
+  words: AnswerWord[];
+  /** when it arrived (ms since the epoch) */
+  when: number;
+}
+
 /** One-off facts about the store, such as 'wordsSeeded'. */
 export interface MetaRow {
   key: string;
@@ -44,6 +63,7 @@ class LampasDB extends Dexie {
   meta!: EntityTable<MetaRow, 'key'>;
   settings!: EntityTable<SettingRow, 'key'>;
   results!: EntityTable<TestResult, 'id'>;
+  answers!: EntityTable<TutorAnswer, 'id'>;
 
   constructor() {
     super('lampas');
@@ -59,6 +79,14 @@ class LampasDB extends Dexie {
       meta: 'key',
       settings: 'key',
       results: '++id, [lemma+when]',
+    });
+    // v5: the tutor's answers {ref, question, answer, words, when}; [ref+when] reads one verse's answers in order.
+    this.version(5).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
     });
   }
 }

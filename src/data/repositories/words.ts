@@ -51,3 +51,9 @@ export async function listSolidLemmas(): Promise<Set<string>> {
   const solid = await db.words.where('state').equals('solid').toArray();
   return new Set(solid.flatMap((w) => [w.lemma, ...w.lemmas]).map((l) => l.normalize('NFC')));
 }
+
+/** The headwords of his solid words, in the order of the list (lesson, then spelling): what the tutor is told he knows. */
+export async function listSolidHeadwords(): Promise<string[]> {
+  const solid = await db.words.where('state').equals('solid').toArray();
+  return solid.sort((a, b) => a.lesson - b.lesson || a.lemma.localeCompare(b.lemma)).map((w) => w.lemma);
+}
