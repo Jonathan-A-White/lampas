@@ -34,6 +34,8 @@ npm run shots        # Playwright at 390x844 against `vite preview` of dist/ (ru
                      #   or use `npm run gate:shots`); writes shots/<name>.png
 npm run icons        # re-render public/icon-192.png and icon-512.png from public/icon.svg
 npm run seed:build   # rebuild src/data/seed-words.ts from docs/example-words.md (plain node, 22.18+)
+npm run data:build   # data/raw (git-ignored, downloaded if absent) -> public/data/<book>/<chapter>.json + index.json;
+                     #   the output is committed and a second run changes nothing (docs/data.md)
 ```
 
 ## Tests
@@ -71,10 +73,15 @@ src/data/repositories/  # the only way UI reaches Dexie (words.ts: seed on first
 src/data/lemma.ts    # BMA lemma -> headword (the key) + TBESG lexicon lemmas (εἶπεν -> λέγω, εἶπον ...)
 src/data/importWords.ts  # parses pasted 'lemma — gloss' lines and rows of the example table
 src/data/seed-words.ts   # GENERATED from docs/example-words.md by scripts/seed-build.ts: 63 words
+src/data/chapter.ts  # chapter types, loadChapter(book, n), wordLemma/wordGloss/wordParse: screens never read the raw keys
+src/data/parseCode.ts # RP parsing code -> plain words (shared by the data build and the app)
+scripts/data-build.ts # the New Testament data build (npx tsx); tests/fixtures/data/ holds small source slices
 public/              # icon.svg (lamp glyph), icon-192.png, icon-512.png
+public/data/         # generated NT JSON, committed (~30 MB); only index.json and rom/8.json are precached
 features/ tests/     # BDD features + steps; unit tests; e2e + shots; support fakes
 docs/pwa-best-practices.md   # copied verbatim from the vault; the law for every screen
 docs/example-words.md        # the owner's own BMA word list (public, an example template); the seed's source
+docs/data.md         # the data's JSON shape, its two sources and licences, and what the build changes
 ```
 
 ## Conventions
