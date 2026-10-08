@@ -16,13 +16,15 @@ import { setReaderView } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
-import { makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, WELL_READ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { GREEK_READING_ANSWER, makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, WELL_READ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse28 = chapter.verses.find((v) => v.n === 28);
 if (!verse28) throw new Error('no verse 28');
 const ENGLISH_28 = verse28.e.map((c) => c.t.trim()).join(' ');
+const GREEK_28 = verse28.g.map((w) => w.t).join(' ');
 
 afterAll(() => {
   cleanup();
@@ -35,6 +37,7 @@ const PHONE_KEY = '00'.repeat(31) + '02';
 const AT = { clientX: 100, clientY: 700 };
 const AWAY = { clientX: 100, clientY: 500 };
 let fake: FakePostern;
+let synth: FakeSynth;
 
 interface Options {
   reply?: 'reading' | 'well-read' | 'held';
@@ -54,7 +57,9 @@ async function open({ reply = 'reading', view = 'english', denied = false, down 
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
   if (reply !== 'held') fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : WELL_READ_ANSWER };
+  fake.greekReply = { status: 'answered', answer: GREEK_READING_ANSWER };
   fake.down = down;
+  synth = stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
   stubChapterFetch();
   const chapterFetch = globalThis.fetch;
   vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) =>
@@ -95,6 +100,9 @@ const marked = () => Array.from(panel().querySelectorAll<HTMLElement>('[data-fix
 const markedShow = async () => {
   await waitFor(() => expect(marked().map((m) => m.textContent)).toEqual(['together', 'purpose']));
 };
+const greekMarkedSteps = async () => {
+  await waitFor(() => expect(marked().map((m) => m.textContent)).toEqual(['συνεργεῖ', 'πρόθεσιν']));
+};
 const noGrist = async () => {
   await new Promise((r) => setTimeout(r, 150));
   expect(fake.received).toHaveLength(0);
@@ -108,6 +116,7 @@ const feature = await loadFeature('features/reading-check.feature');
 
 describeFeature(feature, ({ Scenario }) => {
   const given = 'Lampas is opened on Romans 8 in English with a reading check behind a fake Postern';
+  const greekGiven = 'Lampas is opened on Romans 8 in Greek with a reading check behind a fake Postern';
   const holdRead = 'he holds Read for 2 seconds and lets go';
   const millOne = 'the mill received one grist for the lampas app, kind verse-read';
   const millOneSteps = async () => {
@@ -300,14 +309,108 @@ describeFeature(feature, ({ Scenario }) => {
     And(verseMarked, verseMarkedSteps);
   });
 
-  Scenario('The Greek view says the Greek reading check is coming', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Romans 8 in Greek with a reading check behind a fake Postern', () => open({ view: 'greek' }));
-    When('he selects verse 28', selectVerse28);
-    Then('the reading check says {string}', (_, text: string) => says(text)());
-    And('there is no Read button', () => {
-      expect(within(panel()).queryByRole('button', { name: 'Read', exact: true })).toBeNull();
-      expect(screen.queryByRole('button', { name: 'Read verse 28 aloud' })).toBeNull();
+  Scenario("Holding Read on 8:28 in the Greek view sends a verse-read grist with the verse's Greek as target_text and lang el", ({ Given, And, When, Then }) => {
+    Given(greekGiven, () => open({ view: 'greek' }));
+    And('he selects verse 28', selectVerse28);
+    When(holdRead, async () => holdAndLetGo(readButton(), 2000));
+    Then(millOne, millOneSteps);
+    And('its input carries the reference {string}, the Greek of verse 28 as target_text, and the language {string}', (_, reference: string, lang: string) => {
+      expect(received().input).toEqual({ reference, target_text: GREEK_28, lang });
     });
-    And('the mill received no grist', noGrist);
+    And('the grist carries one audio attachment of type {string}', (_, mime: string) => {
+      expect(received().attachments).toHaveLength(1);
+      expect(received().attachments[0].mime).toBe(mime);
+    });
+  });
+
+  Scenario('A Greek answer marks the Greek words and a tap shows their syllables with a Greek speaker', ({ Given, And, When, Then }) => {
+    Given(greekGiven, () => open({ view: 'greek' }));
+    And('he selects verse 28', selectVerse28);
+    When(holdRead, async () => holdAndLetGo(readButton(), 2000));
+    Then(verseMarked, greekMarkedSteps);
+    And('the other words of the Greek verse are not marked', () => {
+      expect(panel().querySelector('[data-reading-verse]')).toHaveTextContent(GREEK_28);
+      expect(marked()).toHaveLength(2);
+    });
+    When('he taps the marked word {string}', async (_, word: string) => {
+      await user.click(within(panel()).getByRole('button', { name: word, exact: true }));
+    });
+    Then('its chunks show as {string} with a Greek speaker to hear it', (_, chunks: string) => {
+      const detail = panel().querySelector<HTMLElement>('[data-fix-detail]');
+      expect(detail).not.toBeNull();
+      expect(detail?.querySelector('[data-chunks]')).toHaveTextContent(chunks);
+      expect(detail?.querySelector('[data-chunks]')).toHaveAttribute('lang', 'grc');
+      expect(within(detail as HTMLElement).getByRole('button', { name: 'Hear it' })).toBeInTheDocument();
+    });
+    And('the speaker says the word in Greek, el-GR', async () => {
+      const detail = panel().querySelector<HTMLElement>('[data-fix-detail]') as HTMLElement;
+      await user.click(within(detail).getByRole('button', { name: 'Hear it' }));
+      const last = synth.spoken[synth.spoken.length - 1];
+      expect(last.text).toBe('συνεργεῖ');
+      expect(last.lang).toBe('el-GR');
+    });
+  });
+
+  Scenario('Read these again works in the Greek view', ({ Given, And, When, Then }) => {
+    Given(greekGiven, () => open({ view: 'greek' }));
+    And('he selects verse 28', selectVerse28);
+    And(holdRead, async () => holdAndLetGo(readButton(), 2000));
+    When('he taps {string}', async (_, name: string) => {
+      await user.click(await within(panel()).findByRole('button', { name, exact: true }));
+    });
+    Then('the walk shows the word {string} as word 1 of 2 in chunks {string}', async (_, word: string, chunks: string) => {
+      await waitFor(() => expect(walk()).toHaveTextContent('Word 1 of 2'));
+      expect(walk().querySelector('[data-walk-word]')).toHaveTextContent(word);
+      expect(walk().querySelector('[data-chunks]')).toHaveTextContent(chunks);
+    });
+    When('he taps {string} again', async (_, name: string) => {
+      await user.click(within(walk()).getByRole('button', { name, exact: true }));
+    });
+    Then('the walk shows the word {string} as word 2 of 2 in chunks {string}', async (_, word: string, chunks: string) => {
+      await waitFor(() => expect(walk()).toHaveTextContent('Word 2 of 2'));
+      expect(walk().querySelector('[data-walk-word]')).toHaveTextContent(word);
+      expect(walk().querySelector('[data-chunks]')).toHaveTextContent(chunks);
+    });
+    When('he goes on with {string}', async (_, name: string) => {
+      await user.click(within(walk()).getByRole('button', { name, exact: true }));
+    });
+    Then('the walk shows the whole Greek verse with the button {string}', async (_, name: string) => {
+      await waitFor(() => expect(walk()).toHaveTextContent(GREEK_28));
+      expect(walk().querySelector('[data-walk-verse]')).toHaveAttribute('lang', 'grc');
+      expect(within(walk()).getByRole('button', { name, exact: true })).toBeInTheDocument();
+    });
+    When('he holds {string} for 2 seconds and lets go', async (_, name: string) => {
+      await holdAndLetGo(within(walk()).getByRole('button', { name, exact: true }), 2000);
+    });
+    Then('the mill received {int} grists for the lampas app, kind verse-read', async (_, count: number) => {
+      await waitFor(() => expect(fake.received).toHaveLength(count));
+      for (const got of fake.received) expect(got.grist).toMatchObject({ app: 'lampas', kind: 'verse-read' });
+    });
+    And('the second grist is in Greek with lang {string}', (_, lang: string) => {
+      expect(fake.received[1].input).toMatchObject({ target_text: GREEK_28, lang });
+    });
+  });
+
+  Scenario('The English and Greek results of a verse are kept apart', ({ Given, And, When, Then }) => {
+    Given(given, () => open());
+    And('he selects verse 28', selectVerse28);
+    And(holdRead, async () => holdAndLetGo(readButton(), 2000));
+    And(verseMarked, verseMarkedSteps);
+    When('he switches to the Greek view', async () => {
+      await user.click(screen.getByRole('button', { name: 'Greek', exact: true }));
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Greek', exact: true })).toHaveAttribute('aria-pressed', 'true'));
+      await screen.findByRole('region', { name: 'Reading check' });
+    });
+    Then('the reading check has no result yet', async () => {
+      await new Promise((r) => setTimeout(r, 100));
+      expect(panel().querySelector('[data-reading-result]')).toBeNull();
+    });
+    When('he holds Read again in Greek for 2 seconds and lets go', async () => holdAndLetGo(readButton(), 2000));
+    Then(verseMarked, greekMarkedSteps);
+    When('he switches to the English view', async () => {
+      await user.click(screen.getByRole('button', { name: 'English', exact: true }));
+      await waitFor(() => expect(screen.getByRole('button', { name: 'English', exact: true })).toHaveAttribute('aria-pressed', 'true'));
+    });
+    Then('the English result is still there with {string} and {string} marked to fix', verseMarkedSteps);
   });
 });

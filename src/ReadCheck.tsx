@@ -1,12 +1,13 @@
 // src/ReadCheck.tsx — the reading check under the selected verse (the 'Reading check' region) and the Read button on the
 // verse itself. English view: hold Read while reading the verse aloud, let go to send; the verse comes back with the words
 // to fix marked, each tappable for its chunks and a speaker; 'Read these again' walks them one by one and ends on 'Read
-// the whole verse again'. Greek view: the Greek check is a later story, and Read says so. The state is src/useReadChecks.ts's.
+// the whole verse again'. The Greek view is the same check on the verse's Greek: the words to fix are Greek, their chunks are
+// Greek syllables, and the speaker is the Greek voice. The state is src/useReadChecks.ts's.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import type { Verse } from './data/chapter';
 import { getGreekPronunciation, getVerseReading, verseRef, type FixWord, type VerseReading } from './data/repositories';
-import { readingText } from './services/reading';
+import { readingLang, readingText, type ReadingView } from './services/reading';
 import { FAILURE_TITLES } from './services/tutor';
 import { pronunciationOf } from './speech/pronunciation';
 import { SpeakButton } from './speech/SpeakButton';
@@ -15,7 +16,6 @@ import { useElapsed } from './ui/useElapsed';
 import { revealInScrollBox } from './ui/reveal';
 import { DROPPED_NOTE, TAP_HINT, type ReadState, type UseReadChecks } from './useReadChecks';
 
-const GREEK_COMING = 'Greek reading check is coming';
 const CHUNK_JOINER = ' · ';
 
 /** The chunks of a word as he says them: 'to · geth · er'. */
@@ -105,25 +105,43 @@ function Waiting({ state }: { state: Extract<ReadState, { phase: 'sending' | 'wa
   );
 }
 
-/** A word's chunks, big, with the tip and a speaker that says the whole word in the English voice. */
-function Fix({ fix, large }: { fix: FixWord; large?: boolean }) {
+/** What the verse and its words are set in: English in the sans face, Greek (lang grc) in the Greek one at its own size. */
+const typeOf = (view: ReadingView) =>
+  view === 'greek'
+    ? { lang: 'grc', face: 'font-greek text-[length:var(--lp-greek-size)]', chunks: 'font-greek' }
+    : { lang: 'en', face: 'font-sans text-[length:var(--lp-english-size)]', chunks: '' };
+
+/** A word's chunks, big, with the tip and a speaker that says the whole word in the voice of the language read. */
+function Fix({ fix, view, large }: { fix: FixWord; view: ReadingView; large?: boolean }) {
+  const type = typeOf(view);
   return (
     <div className="space-y-1">
-      <p data-chunks lang="en" className={`${large ? 'text-3xl' : 'text-2xl'} font-semibold tracking-wide`}>
+      <p data-chunks lang={type.lang} className={`${large ? 'text-3xl' : 'text-2xl'} ${type.chunks} font-semibold tracking-wide`}>
         {chunksLine(fix.chunks)}
       </p>
       <p className="break-words text-base text-muted">{fix.tip}</p>
-      <SpeakButton text={fix.word} id={`fix-${fix.word}`} label="Hear it" kind="speaker" language="english" className="align-baseline" />
+      <SpeakButton
+        text={fix.word}
+        id={`fix-${view}-${fix.word}`}
+        label="Hear it"
+        kind="speaker"
+        language={view === 'greek' ? 'greek' : 'english'}
+        className="align-baseline"
+      />
     </div>
   );
 }
 
-const WORD_PARTS = /^([^\p{L}\p{N}]*)(.*?)([^\p{L}\p{N}]*)$/u;
-const normal = (word: string): string => word.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+const WORD_PARTS = /^([^\p{L}\p{N}\p{M}]*)(.*?)([^\p{L}\p{N}\p{M}]*)$/u;
+/** A word as it is compared: no case, no accents or breathings, a final sigma as a sigma, no punctuation. The mill may write
+ * a Greek word without its accents, and that must still find the word in the verse. */
+const normal = (word: string): string =>
+  word.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/ς/g, 'σ').replace(/[^\p{L}\p{N}]/gu, '');
 
 /** The verse as he read it, every word of it, with the words the mill marked as buttons. A marked word that cannot be found
  * in the verse (the mill wrote it differently) is offered after it, so no mark is lost. */
-function MarkedVerse({ text, words, open, onOpen }: { text: string; words: FixWord[]; open: string | null; onOpen: (word: string | null) => void }) {
+function MarkedVerse({ text, view, words, open, onOpen }: { text: string; view: ReadingView; words: FixWord[]; open: string | null; onOpen: (word: string | null) => void }) {
+  const type = typeOf(view);
   const tokens = useMemo(() => text.split(/\s+/).filter(Boolean), [text]);
   const marks = useMemo(() => new Set(words.map((w) => normal(w.word))), [words]);
   const found = new Set(tokens.map((t) => normal(t)).filter((t) => marks.has(t)));
@@ -142,7 +160,7 @@ function MarkedVerse({ text, words, open, onOpen }: { text: string; words: FixWo
   );
   return (
     <>
-      <p data-reading-verse lang="en" className="break-words font-sans text-[length:var(--lp-english-size)] leading-(--lp-leading)">
+      <p data-reading-verse lang={type.lang} className={`break-words ${type.face} leading-(--lp-leading)`}>
         {tokens.map((token, i) => {
           const [, before, core, after] = WORD_PARTS.exec(token) ?? ['', '', token, ''];
           return (
@@ -169,7 +187,7 @@ function MarkedVerse({ text, words, open, onOpen }: { text: string; words: FixWo
 }
 
 /** The result of a reading: how it went, the verse with its marked words, a tap shows their chunks, and the walk starts here. */
-function Result({ reading, text, onWalk }: { reading: VerseReading; text: string; onWalk: () => void }) {
+function Result({ reading, text, view, onWalk }: { reading: VerseReading; text: string; view: ReadingView; onWalk: () => void }) {
   const [open, setOpen] = useState<string | null>(null);
   const fix = reading.words.find((w) => normal(w.word) === open);
   return (
@@ -178,10 +196,10 @@ function Result({ reading, text, onWalk }: { reading: VerseReading; text: string
       <p className="break-words text-base">{reading.note}</p>
       {reading.words.length > 0 ? (
         <>
-          <MarkedVerse text={text} words={reading.words} open={open} onOpen={setOpen} />
+          <MarkedVerse text={text} view={view} words={reading.words} open={open} onOpen={setOpen} />
           {fix ? (
             <div data-fix-detail className="rounded-xl border border-line bg-surface p-3">
-              <Fix fix={fix} />
+              <Fix fix={fix} view={view} />
             </div>
           ) : (
             <p className="text-sm text-muted">Tap a marked word to see it in chunks.</p>
@@ -196,7 +214,8 @@ function Result({ reading, text, onWalk }: { reading: VerseReading; text: string
 }
 
 /** 'Read these again': the marked words one at a time, in chunks, then the whole verse with its own hold button. */
-function Walk({ words, text, hold, onDone }: { words: FixWord[]; text: string; hold: ReadHold; onDone: () => void }) {
+function Walk({ words, text, view, hold, onDone }: { words: FixWord[]; text: string; view: ReadingView; hold: ReadHold; onDone: () => void }) {
+  const type = typeOf(view);
   const [step, setStep] = useState(0);
   const last = step >= words.length;
   const word = words[step];
@@ -205,7 +224,7 @@ function Walk({ words, text, hold, onDone }: { words: FixWord[]; text: string; h
     <div role="group" aria-label="Read these again" data-walk className="space-y-3">
       {last || !word ? (
         <>
-          <p data-walk-verse lang="en" className="break-words font-sans text-[length:var(--lp-english-size)] leading-(--lp-leading)">
+          <p data-walk-verse lang={type.lang} className={`break-words ${type.face} leading-(--lp-leading)`}>
             {text}
           </p>
           <HoldButton hold={hold} label="Read the whole verse again" className="flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-accent px-6 text-lg font-medium text-accent-fg active:opacity-80">
@@ -219,10 +238,10 @@ function Walk({ words, text, hold, onDone }: { words: FixWord[]; text: string; h
           <p className="text-sm text-muted">
             Word {step + 1} of {words.length}
           </p>
-          <p data-walk-word lang="en" className="break-words text-4xl font-semibold">
+          <p data-walk-word lang={type.lang} className={`break-words text-4xl font-semibold ${type.chunks}`}>
             {word.word}
           </p>
-          <Fix fix={word} large />
+          <Fix fix={word} view={view} large />
           <p className="text-sm text-muted">Say it out loud, then go on.</p>
           <button type="button" onClick={() => setStep(step + 1)} className={button}>
             {step + 1 < words.length ? 'Next word' : 'On to the whole verse'}
@@ -247,14 +266,15 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
   onRetry: () => void;
 }) {
   const ref = verseRef(book, chapter, verse.n);
-  const reading = useLiveQuery(() => getVerseReading(ref), [ref]);
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
+  const lang = readingLang(view, pronunciation);
+  const reading = useLiveQuery(() => getVerseReading(ref, lang), [ref, lang]);
   const state = checks.states[verse.n];
   const sent = state?.phase === 'sending' || state?.phase === 'waiting';
   const out = state?.phase === 'recording' || sent;
   // The walk belongs to the reading it was started on: a new result closes it, and so does sending the next one.
   const [walkFor, setWalkFor] = useState<number | null>(null);
-  const text = readingText(verse);
+  const text = readingText(verse, view);
   // A result, or a failure, that arrives is brought into view (never while he holds: the page must not move under his finger).
   const section = useRef<HTMLElement>(null);
   const arrived = state?.phase === 'failed' ? 'failed' : reading?.when;
@@ -265,39 +285,31 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
     if (arrived !== undefined) revealInScrollBox(section.current);
   }, [arrived]);
 
-  if (view === 'greek') {
-    return (
-      <section aria-label="Reading check" data-readcheck={verse.n} className="mb-3 space-y-2 rounded-xl border border-line px-3 py-3">
-        <button type="button" disabled className="min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium text-muted disabled:opacity-100">
-          {GREEK_COMING}
-        </button>
-        <p className="text-sm text-muted">
-          It will listen for {pronunciationOf(pronunciation).label} ({pronunciationOf(pronunciation).lang}), the way you chose to hear Greek in Settings.
-        </p>
-      </section>
-    );
-  }
-
   // The walk stays while its last button is held to record (it would lose the let-go if it went), and ends when the clip is sent.
   const walking = reading !== undefined && walkFor === reading.when && !sent;
   return (
     <section ref={section} aria-label="Reading check" data-readcheck={verse.n} className="mb-3 space-y-3 rounded-xl border border-line px-3 py-3">
       {walking && reading ? null : (
         <>
-          <p className="text-sm text-muted">Read verse {verse.n} aloud</p>
+          <p className="text-sm text-muted">Read verse {verse.n} aloud{view === 'greek' ? ' in Greek' : ''}</p>
           <HoldButton hold={hold} label="Read" className="flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-accent px-6 text-lg font-medium text-accent-fg active:opacity-80">
             <MicIcon />
             <span aria-hidden="true">Read</span>
           </HoldButton>
           <p className="text-sm text-muted">Hold Read and read the verse aloud. Let go to send.</p>
+          {view === 'greek' ? (
+            <p className="text-sm text-muted">
+              It listens for {pronunciationOf(pronunciation).label} ({pronunciationOf(pronunciation).lang}), the way you chose to hear Greek in Settings.
+            </p>
+          ) : null}
         </>
       )}
       <Status state={state} onRetry={onRetry} />
       {reading && (walking || !out) ? (
         walking ? (
-          <Walk key={reading.when} words={reading.words} text={text} hold={hold} onDone={() => setWalkFor(null)} />
+          <Walk key={reading.when} words={reading.words} text={text} view={view} hold={hold} onDone={() => setWalkFor(null)} />
         ) : (
-          <Result key={reading.when} reading={reading} text={text} onWalk={() => setWalkFor(reading.when)} />
+          <Result key={reading.when} reading={reading} text={text} view={view} onWalk={() => setWalkFor(reading.when)} />
         )
       ) : null}
     </section>

@@ -1,19 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
-import { existsSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { browserEnv } from './tests/support/browser-env';
 import { previewPort, reuseExistingPreview } from './tests/support/preview-port';
 
 // One preview server per worktree: see tests/support/preview-port.ts.
 const PREVIEW_PORT = previewPort(process.cwd());
 const PREVIEW_BASE_URL = `http://localhost:${PREVIEW_PORT}`;
-
-// Chromium may need libnspr4/libnss3/libasound2 from a local cache dir on a host with no sudo; where
-// the dir is absent this is a no-op.
-const extraLibDir = join(homedir(), '.cache', 'ms-playwright-system-libs', 'usr', 'lib', 'x86_64-linux-gnu');
-const browserEnv = existsSync(extraLibDir)
-  ? { ...process.env, LD_LIBRARY_PATH: [extraLibDir, process.env.LD_LIBRARY_PATH].filter(Boolean).join(':') }
-  : undefined;
 
 const LIVE_SPEC = '**/*-live.spec.ts';
 

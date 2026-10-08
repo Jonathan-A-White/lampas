@@ -2,13 +2,15 @@
 // lets go and the clip goes to the mill (src/services/reading.ts), and the answer is kept in Dexie when it comes. One reading
 // at a time. Pressing stops any reading aloud (page audio could take the microphone); a buzz says the microphone is live;
 // a press under 500 ms is a tap and sends nothing; a slide off the button drops it. A reading keeps waiting when he selects
-// another verse, and all stop when the screen goes away.
-import { useCallback, useEffect, useRef, useState } from 'react';
+// another verse, and all stop when the screen goes away. The view decides what is read and in which language the mill
+// scores it (English, or the Greek in the chosen pronunciation's scoring language); the states returned are those of the
+// language shown, a reading in the other one carries on unseen.
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Verse } from './data/chapter';
 import { keepVerseReading, verseRef } from './data/repositories';
 import { MicUnavailable, recorderSeam, type HoldRecorder, type Recording } from './audio/recorder';
 import { getDeviceKeyBytes } from './services/deviceKey';
-import { askVerseRead, buildReadingRequest } from './services/reading';
+import { askVerseRead, buildReadingRequest, readingLang, type ReadingView } from './services/reading';
 import { TutorError, type TutorFailure } from './services/tutor';
 import { stopReading } from './speech/readAloud';
 import { stopSpeaking } from './speech/greek';
@@ -28,6 +30,10 @@ export type ReadState =
   | { phase: 'failed'; failure: TutorFailure | 'mic'; detail: string; recording?: Recording };
 
 type States = Record<number, ReadState | undefined>;
+type AllStates = Record<string, ReadState | undefined>;
+
+/** A verse's reading state is kept by verse and language. */
+const stateKey = (verse: number, lang: string): string => `${lang}:${verse}`;
 
 export interface UseReadChecks {
   states: States;
@@ -43,6 +49,8 @@ export interface UseReadChecks {
 
 interface Hold {
   verse: Verse;
+  view: ReadingView;
+  lang: string;
   recorder: HoldRecorder;
   started: boolean;
   released: boolean;
@@ -53,8 +61,20 @@ interface Hold {
 
 const buzz = (ms: number) => navigator.vibrate?.(ms);
 
-export function useReadChecks(book: string, chapter: number, title: string): UseReadChecks {
-  const [states, setStates] = useState<States>({});
+export function useReadChecks(book: string, chapter: number, title: string, view: ReadingView = 'english', pronunciation?: string): UseReadChecks {
+  const [all, setAll] = useState<AllStates>({});
+  const lang = readingLang(view, pronunciation);
+  // what a press made now reads: the view and language shown
+  const shown = useRef({ view, lang });
+  useEffect(() => {
+    shown.current = { view, lang };
+  });
+  const states = useMemo(() => {
+    const here: States = {};
+    const prefix = `${lang}:`;
+    for (const [key, state] of Object.entries(all)) if (key.startsWith(prefix)) here[Number(key.slice(prefix.length))] = state;
+    return here;
+  }, [all, lang]);
   const live = useRef<AbortController>(new AbortController());
   const hold = useRef<Hold | null>(null);
 
@@ -69,28 +89,28 @@ export function useReadChecks(book: string, chapter: number, title: string): Use
     };
   }, []);
 
-  const set = useCallback((verse: number, state: ReadState | undefined): void => {
-    if (!live.current.signal.aborted) setStates((all) => ({ ...all, [verse]: state }));
+  const set = useCallback((verse: number, language: string, state: ReadState | undefined): void => {
+    if (!live.current.signal.aborted) setAll((states) => ({ ...states, [stateKey(verse, language)]: state }));
   }, []);
 
   const send = useCallback(
-    (verse: Verse, recording: Recording): void => {
+    (verse: Verse, readView: ReadingView, language: string, recording: Recording): void => {
       const signal = live.current.signal;
       const startedAt = Date.now();
-      set(verse.n, { phase: 'sending', startedAt });
+      set(verse.n, language, { phase: 'sending', startedAt });
       void (async () => {
         try {
-          const answer = await askVerseRead(buildReadingRequest(`${title}:${verse.n}`, verse), recording, {
+          const answer = await askVerseRead(buildReadingRequest(`${title}:${verse.n}`, verse, readView, language), recording, {
             key: getDeviceKeyBytes(),
             signal,
-            onSent: () => set(verse.n, { phase: 'waiting', startedAt }),
+            onSent: () => set(verse.n, language, { phase: 'waiting', startedAt }),
           });
-          await keepVerseReading(verseRef(book, chapter, verse.n), answer.verdict, answer.focus_words, answer.note);
-          set(verse.n, undefined);
+          await keepVerseReading(verseRef(book, chapter, verse.n), answer.verdict, answer.focus_words, answer.note, language);
+          set(verse.n, language, undefined);
         } catch (err) {
           if (signal.aborted) return;
           const failure = err instanceof TutorError ? err.failure : 'unreachable';
-          set(verse.n, { phase: 'failed', failure, detail: err instanceof Error ? err.message : 'Something went wrong.', recording });
+          set(verse.n, language, { phase: 'failed', failure, detail: err instanceof Error ? err.message : 'Something went wrong.', recording });
         }
       })();
     },
@@ -101,8 +121,8 @@ export function useReadChecks(book: string, chapter: number, title: string): Use
   const finish = useCallback(
     (h: Hold, recording: Recording): void => {
       if (hold.current === h) hold.current = null;
-      if (recording.durationMs < MIN_READING_MS) set(h.verse.n, { phase: 'tap' });
-      else send(h.verse, recording);
+      if (recording.durationMs < MIN_READING_MS) set(h.verse.n, h.lang, { phase: 'tap' });
+      else send(h.verse, h.view, h.lang, recording);
     },
     [send, set],
   );
@@ -115,6 +135,8 @@ export function useReadChecks(book: string, chapter: number, title: string): Use
       stopSpeaking();
       const h: Hold = {
         verse,
+        view: shown.current.view,
+        lang: shown.current.lang,
         // the recorder hands the clip on by itself at the one-minute cap
         recorder: recorderSeam.make((recording) => {
           h.over = true;
@@ -127,7 +149,7 @@ export function useReadChecks(book: string, chapter: number, title: string): Use
         over: false,
       };
       hold.current = h;
-      set(verse.n, { phase: 'recording' });
+      set(verse.n, h.lang, { phase: 'recording' });
       h.recorder.start().then(
         () => {
           h.started = true;
@@ -139,7 +161,7 @@ export function useReadChecks(book: string, chapter: number, title: string): Use
           if (hold.current === h) hold.current = null;
           if (h.dropped) return;
           const detail = err instanceof MicUnavailable || err instanceof Error ? err.message : 'The microphone could not be used.';
-          set(verse.n, { phase: 'failed', failure: 'mic', detail });
+          set(verse.n, h.lang, { phase: 'failed', failure: 'mic', detail });
         },
       );
     },
@@ -161,15 +183,15 @@ export function useReadChecks(book: string, chapter: number, title: string): Use
     h.dropped = true;
     hold.current = null;
     if (h.started) h.recorder.cancel();
-    set(h.verse.n, { phase: 'dropped' });
+    set(h.verse.n, h.lang, { phase: 'dropped' });
   }, [set]);
 
   const retry = useCallback(
     (verse: Verse): void => {
       const state = states[verse.n];
-      if (state?.phase === 'failed' && state.recording) send(verse, state.recording);
+      if (state?.phase === 'failed' && state.recording) send(verse, view, lang, state.recording);
     },
-    [states, send],
+    [states, send, view, lang],
   );
 
   return { states, press, release, drop, retry };

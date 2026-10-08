@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { makeFakePostern, READING_ANSWER } from '../support/fake-postern';
+import { GREEK_READING_ANSWER, makeFakePostern, READING_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
@@ -101,13 +101,48 @@ test('holding Read under verse 28 sends the reading and marks the words to fix, 
   await expectFitsPhone(page);
 });
 
-test('the Greek view says the Greek reading check is coming', async ({ page }) => {
+test('holding Read in the Greek view sends the Greek, marks Greek words and shows their syllables, at phone width', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
-  await routePostern(page, makeFakePostern());
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: GREEK_READING_ANSWER };
+  await routePostern(page, fake);
+  await fakeMicrophone(page);
   await openUnlocked(page);
-  await page.goto('/#/?c=8&view=greek&v=28');
+  await page.goto('/#/?c=8&view=greek');
+  await page.getByRole('button', { name: 'Verse 28', exact: true }).click();
   const panel = page.getByRole('region', { name: 'Reading check' });
-  await expect(panel).toContainText('Greek reading check is coming');
-  await expect(panel.getByRole('button', { name: 'Read', exact: true })).toHaveCount(0);
+  const read = panel.getByRole('button', { name: 'Read', exact: true });
+  await expect(panel).toBeInViewport();
+  const readBox = await read.boundingBox();
+  expect(readBox?.height).toBeGreaterThanOrEqual(43.5);
+  expect(readBox?.width).toBeGreaterThanOrEqual(43.5);
+  const inline = page.locator('[data-verse="28"]').getByRole('button', { name: 'Read verse 28 aloud', exact: true });
+  const inlineBox = await inline.boundingBox();
+  expect(inlineBox?.height).toBeGreaterThanOrEqual(43.5);
+  expect(inlineBox?.width).toBeGreaterThanOrEqual(43.5);
+
+  await holdFor(page, read, 800);
+  await expect(panel.locator('[data-fix]')).toHaveText(['συνεργεῖ', 'πρόθεσιν']);
+  expect(fake.received).toHaveLength(1);
+  expect(fake.received[0].input).toMatchObject({ reference: 'Romans 8:28', lang: 'el' });
+  expect(String(fake.received[0].input.target_text)).toContain('συνεργεῖ');
+
+  const word = panel.getByRole('button', { name: 'συνεργεῖ', exact: true });
+  expect((await word.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
+  await word.click();
+  await expect(panel.locator('[data-fix-detail] [data-chunks]')).toHaveText('συν · ερ · γεῖ');
+  await expect(panel.locator('[data-fix-detail] [data-chunks]')).toHaveAttribute('lang', 'grc');
+  await expect(panel.locator('[data-fix-detail]').getByRole('button', { name: 'Hear it', exact: true })).toBeVisible();
+  await expectFitsPhone(page);
+  await panel.locator('[data-fix-detail]').scrollIntoViewIfNeeded();
+  await shot(page, 'reading-check-greek');
+
+  await panel.getByRole('button', { name: 'Read these again', exact: true }).click();
+  const walk = panel.getByRole('group', { name: 'Read these again' });
+  await expect(walk).toContainText('Word 1 of 2');
+  await expect(walk.locator('[data-walk-word]')).toHaveText('συνεργεῖ');
+  await walk.getByRole('button', { name: 'Next word', exact: true }).click();
+  await walk.getByRole('button', { name: 'On to the whole verse', exact: true }).click();
+  await expect(walk.getByRole('button', { name: 'Read the whole verse again', exact: true })).toBeVisible();
   await expectFitsPhone(page);
 });

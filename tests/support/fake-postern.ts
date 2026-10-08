@@ -37,6 +37,8 @@ export interface FakePostern {
   authorizations: string[];
   /** Answers a grist as soon as it arrives with this reply; undefined holds every grist until `answer` is called. */
   autoReply: Reply | undefined;
+  /** What a grist whose input asks for lang 'el' is answered with instead of `autoReply` (a Greek reading check). */
+  greekReply: Reply | undefined;
   /** Refuse every signed call as a backend does a key with no licence. */
   licensed: boolean;
   /** Make every call fail as an unreachable backend does (fetch rejects with a TypeError). */
@@ -75,6 +77,16 @@ export const READING_ANSWER = {
   note: 'Nearly there: two words to say again.',
 };
 
+/** The answer the fake gives to a Greek reading of Romans 8:28: Greek words, their syllables, a tip in English. */
+export const GREEK_READING_ANSWER = {
+  verdict: 'some-to-fix',
+  focus_words: [
+    { word: 'συνεργεῖ', chunks: ['συν', 'ερ', 'γεῖ'], tip: 'The γ before ε is a soft y, and the stress falls on the last part.' },
+    { word: 'πρόθεσιν', chunks: ['πρό', 'θε', 'σιν'], tip: 'The θ is the th of think; stress the first part.' },
+  ],
+  note: 'Nearly there: two Greek words to say again.',
+};
+
 /** The answer the fake gives to a reading with nothing to fix. */
 export const WELL_READ_ANSWER = { verdict: 'well-read', focus_words: [], note: 'Clear and steady. Well read.' };
 
@@ -97,6 +109,7 @@ export function makeFakePostern(): FakePostern {
     blobs: [],
     authorizations: [],
     autoReply: undefined,
+    greekReply: undefined,
     licensed: true,
     down: false,
     answer(reply) {
@@ -153,7 +166,8 @@ export function makeFakePostern(): FakePostern {
       const opened = JSON.parse(grist.openCt(envelope.ct, millBytes)) as ReceivedGrist;
       fake.received.push(opened);
       unanswered.push({ txid, from: pubkey, kind: opened.grist.kind });
-      if (fake.autoReply) fake.answer(fake.autoReply);
+      const greek = fake.greekReply !== undefined && (opened.input as { lang?: unknown } | undefined)?.lang === 'el';
+      if (fake.autoReply) fake.answer(greek && fake.greekReply ? fake.greekReply : fake.autoReply);
       return json(201, { txid, seq: records.length });
     }
     if (url.pathname === '/api/messages' && method === 'GET') {

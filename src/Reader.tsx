@@ -5,7 +5,7 @@
 // Settings also holds the Layout (Verse by verse | Paragraph, src/layout/layouts.ts cuts the verses into blocks) and Section
 // headings (On | Off): the MSB's heading (verses[].h) is drawn above its block in either view, in English.
 // A selected verse shows its reading check (src/ReadCheck.tsx: hold Read, read the verse aloud, the words to fix come back
-// marked; English view only, the Greek view says that check is coming) directly under it, so what the hold is doing is on
+// marked; in either view: the Greek view reads the verse's Greek) directly under it, so what the hold is doing is on
 // screen while he holds; then its kept tutor answers and the Ask box (src/Ask.tsx). The selection, the view and the weave
 // are told to the rest of the app on the event bus (src/events/bus.ts, docs/events.md); the Reader reads the selection back from it.
 // The chapter comes from /data/rom/8.json (precached), the view and the weave are kept in the settings store.
@@ -17,6 +17,7 @@ import { TalkBar, TalkSheet } from './Talk';
 import { type Chapter, type EnglishChunk, type GreekWord, type Verse, loadChapter } from './data/chapter';
 import {
   getLayout,
+  getGreekPronunciation,
   getReaderView,
   getSectionHeadings,
   getWeave,
@@ -369,7 +370,8 @@ export function Reader() {
     if (request) takeRequest(request);
   }, [request]);
   const [prefill, setPrefill] = useState(() => (request?.action === 'ask' ? { verse: request.verse, text: request.question } : null));
-  const checks = useReadChecks(BOOK, CHAPTER, TITLE);
+  const pronunciation = useLiveQuery(getGreekPronunciation, []);
+  const checks = useReadChecks(BOOK, CHAPTER, TITLE, view ?? 'english', pronunciation);
   // The Talk sheet: undefined is closed, a number the verse it was opened on, null the chapter. An answer that arrives while
   // its conversation is open on the sheet is read aloud.
   const [talkAbout, setTalkAbout] = useState<number | null | undefined>(() => (request?.action === 'talk' ? request.verse : undefined));
@@ -571,7 +573,7 @@ export function Reader() {
                       onPlay={(n) => readFrom(n, false)}
                       onLook={setLookup}
                       talk={verseTalk}
-                      readOf={(v) => (view === 'english' ? readOf(v) : null)}
+                      readOf={readOf}
                     />
                   ) : (
                     <VerseView
@@ -584,7 +586,7 @@ export function Reader() {
                       onPlay={() => readFrom(first.n, false)}
                       onLook={setLookup}
                       talk={verseTalk}
-                      read={view === 'english' ? readOf(first) : null}
+                      read={readOf(first)}
                     />
                   )}
                   {withSelection && selected !== null && pick ? (

@@ -1,8 +1,9 @@
-Feature: Reading check, English first
+Feature: Reading check, in English and in Greek
   In the English view he holds Read on a verse and reads it aloud. The recording goes to the mill as a verse-read grist
   (bsv-kit/grist, through Postern); the mill scores it and the verse comes back with the words to fix marked, each broken
-  into chunks to say. 'Read these again' walks the marked words, then the whole verse. The Greek check is a later story:
-  in the Greek view the Read button says so. These scenarios run against a fake Postern whose mill opens the grist
+  into chunks to say. 'Read these again' walks the marked words, then the whole verse. The Greek view reads the same way:
+  the verse's Greek goes as target_text with the language of the Greek pronunciation he chose in Settings (modern: el), the
+  marked words are Greek, broken into Greek syllables with the Greek voice. These scenarios run against a fake Postern whose mill opens the grist
   (its audio attachment included) and answers it, and a fake recorder; the live backend is tried by `npm run e2e:live`.
 
   Scenario: Holding Read on 8:28 and releasing sends a verse-read grist with the verse's English and one audio attachment
@@ -97,9 +98,46 @@ Feature: Reading check, English first
     And the mill received one grist for the lampas app, kind verse-read
     And the verse in the reading check shows "together" and "purpose" marked to fix
 
-  Scenario: The Greek view says the Greek reading check is coming
+  Scenario: Holding Read on 8:28 in the Greek view sends a verse-read grist with the verse's Greek as target_text and lang el
     Given Lampas is opened on Romans 8 in Greek with a reading check behind a fake Postern
-    When he selects verse 28
-    Then the reading check says "Greek reading check is coming"
-    And there is no Read button
-    And the mill received no grist
+    And he selects verse 28
+    When he holds Read for 2 seconds and lets go
+    Then the mill received one grist for the lampas app, kind verse-read
+    And its input carries the reference "Romans 8:28", the Greek of verse 28 as target_text, and the language "el"
+    And the grist carries one audio attachment of type "audio/webm"
+
+  Scenario: A Greek answer marks the Greek words and a tap shows their syllables with a Greek speaker
+    Given Lampas is opened on Romans 8 in Greek with a reading check behind a fake Postern
+    And he selects verse 28
+    When he holds Read for 2 seconds and lets go
+    Then the verse in the reading check shows "συνεργεῖ" and "πρόθεσιν" marked to fix
+    And the other words of the Greek verse are not marked
+    When he taps the marked word "συνεργεῖ"
+    Then its chunks show as "συν · ερ · γεῖ" with a Greek speaker to hear it
+    And the speaker says the word in Greek, el-GR
+
+  Scenario: Read these again works in the Greek view
+    Given Lampas is opened on Romans 8 in Greek with a reading check behind a fake Postern
+    And he selects verse 28
+    And he holds Read for 2 seconds and lets go
+    When he taps "Read these again"
+    Then the walk shows the word "συνεργεῖ" as word 1 of 2 in chunks "συν · ερ · γεῖ"
+    When he taps "Next word" again
+    Then the walk shows the word "πρόθεσιν" as word 2 of 2 in chunks "πρό · θε · σιν"
+    When he goes on with "On to the whole verse"
+    Then the walk shows the whole Greek verse with the button "Read the whole verse again"
+    When he holds "Read the whole verse again" for 2 seconds and lets go
+    Then the mill received 2 grists for the lampas app, kind verse-read
+    And the second grist is in Greek with lang "el"
+
+  Scenario: The English and Greek results of a verse are kept apart
+    Given Lampas is opened on Romans 8 in English with a reading check behind a fake Postern
+    And he selects verse 28
+    And he holds Read for 2 seconds and lets go
+    And the verse in the reading check shows "together" and "purpose" marked to fix
+    When he switches to the Greek view
+    Then the reading check has no result yet
+    When he holds Read again in Greek for 2 seconds and lets go
+    Then the verse in the reading check shows "συνεργεῖ" and "πρόθεσιν" marked to fix
+    When he switches to the English view
+    Then the English result is still there with "together" and "purpose" marked to fix
