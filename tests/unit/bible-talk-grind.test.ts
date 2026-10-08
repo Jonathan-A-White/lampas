@@ -167,3 +167,34 @@ describe('the grammar term focus (mw-5r3p30.35)', () => {
     for (const part of ['grammar-term', '`focus.term`', 'plain words', 'Leave `syllables` out']) expect(text).toContain(part);
   });
 });
+
+describe('words_to_add in the answer (mw-5r3p30.44)', () => {
+  const answer = { answer: 'Adding σάρξ.', words: [] };
+
+  it('is optional in the schema and takes up to 12 lemmas; the app\'s guard agrees', () => {
+    expect((schema.required as string[]).sort()).toEqual(['answer', 'words']);
+    for (const value of [answer, { ...answer, words_to_add: [] }, { ...answer, words_to_add: ['σάρξ'] }, { ...answer, words_to_add: Array.from({ length: 12 }, () => 'α') }]) {
+      expect(validate(value, schema as Schema), JSON.stringify(value)).toEqual([]);
+      expect(isTalkAnswer(value), JSON.stringify(value)).toBe(true);
+    }
+  });
+
+  it('refuses an empty lemma, a number, more than 12, a lemma over 80 characters and a non-list, in both', () => {
+    const bad = [
+      { ...answer, words_to_add: [''] },
+      { ...answer, words_to_add: [4] },
+      { ...answer, words_to_add: Array.from({ length: 13 }, () => 'α') },
+      { ...answer, words_to_add: ['α'.repeat(81)] },
+      { ...answer, words_to_add: 'σάρξ' },
+    ];
+    for (const value of bad) {
+      expect(validate(value, schema as Schema), JSON.stringify(value)).not.toEqual([]);
+      expect(isTalkAnswer(value), JSON.stringify(value)).toBe(false);
+    }
+  });
+
+  it('the instructions tell the companion to use words_to_add for a word he asks to add, and not to claim it otherwise', () => {
+    const text = readFileSync(grind.instructions as string, 'utf8');
+    for (const part of ['`words_to_add`', 'dictionary form', 'words-to-learn list']) expect(text).toContain(part);
+  });
+});

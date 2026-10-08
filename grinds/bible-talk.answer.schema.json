@@ -32,6 +32,12 @@
       "maxItems": 12,
       "items": { "type": "string", "minLength": 1, "maxLength": 40 }
     },
+    "words_to_add": {
+      "description": "Only when he asked to put words on his words-to-learn list ('add σάρξ to my words'): the dictionary form of each word, in Greek letters. Leave it out otherwise.",
+      "type": "array",
+      "maxItems": 12,
+      "items": { "type": "string", "minLength": 1, "maxLength": 80 }
+    },
     "settings_changes": {
       "description": "The settings he asked to change, each applied at once by the app. Only the keys and values the instructions list; leave it out when he asked for no change.",
       "type": "array",

@@ -84,6 +84,8 @@ export interface TalkAnswer {
   words: AnswerWord[];
   /** the settings he asked to change, as the grind wrote them: the registry checks each one before it is applied */
   settings_changes?: unknown[];
+  /** the lemmas he asked to put on his words-to-learn list ('add σάρξ to my words'): at most 12 */
+  words_to_add?: string[];
   /** for a Sound it out question: the syllables of the word, in order (at most 12) */
   syllables?: string[];
 }
@@ -94,8 +96,9 @@ const isText = (value: unknown, max: number): value is string => typeof value ==
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'settings_changes' && k !== 'syllables')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables')) return false;
   if ('settings_changes' in value && !Array.isArray(value.settings_changes)) return false;
+  if ('words_to_add' in value && !(Array.isArray(value.words_to_add) && value.words_to_add.length <= 12 && value.words_to_add.every((l) => isText(l, 80)))) return false;
   if ('syllables' in value && !(Array.isArray(value.syllables) && value.syllables.length <= 12 && value.syllables.every((s) => isText(s, 40)))) return false;
   if (!Array.isArray(value.words) || value.words.length > 12) return false;
   return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));

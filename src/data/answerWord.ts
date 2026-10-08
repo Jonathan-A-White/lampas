@@ -1,5 +1,5 @@
 // src/data/answerWord.ts — a Greek word of an answer, found again in the chapter's text, so a tap can open its word sheet.
-import { type GreekWord, type Verse, wordLemma } from './chapter';
+import { type GreekWord, type Verse, wordGloss, wordLemma } from './chapter';
 import type { AnswerWord } from './db';
 import type { TalkScope } from '../services/talk';
 
@@ -15,4 +15,10 @@ export function findGreekWord(scope: TalkScope, word: AnswerWord): GreekWord | u
   const loose = (w: GreekWord) => plain(w.t) === plain(word.greek);
   const lemma = (w: GreekWord) => plain(wordLemma(w)) === plain(word.lemma);
   return words.find(exact) ?? words.find(loose) ?? words.find(lemma);
+}
+
+/** The lexicon's gloss for an answer's word as the chapter has it ('flesh'), or '' when the chapter has no such word. */
+export function glossOf(scope: TalkScope, word: AnswerWord): string {
+  const found = findGreekWord(scope, word);
+  return found ? wordGloss(scope.chapter, found) : '';
 }
