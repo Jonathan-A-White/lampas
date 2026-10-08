@@ -130,6 +130,8 @@ rule (pure) and `src/data/repositories/reviews.ts` the rows (`recordReview`, `li
 * How Review asks a word follows its step (`modeFor`, `FLASHCARD_STEP` in `schedule.ts`, provisional): multiple choice below
   step 3, a flashcard (see the lemma, Show, grade yourself) from step 3 up; a lapse that drops it below step 3 makes it multiple
   choice again. A word not on the schedule yet is at step 0.
+* What is due counts live words only: `listDue` (and so `countDue`, the Reader's strip, Review's cards and the round) leaves out the
+  row of a dropped or unlisted word. The row is kept, so a word taken up again comes back on the schedule it had (overdue ones are due at once).
 * Every change publishes `review-due-changed` (docs/events.md).
 
 ## Offline

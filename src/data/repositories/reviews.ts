@@ -41,10 +41,23 @@ export async function recordReview(kind: string, id: string, right: boolean, now
   return review;
 }
 
-/** The items due at `now` (of `kind`, or of every kind), the longest overdue first. */
+/**
+ * Whether each row is of something he still has: a word that is listed and not dropped. The row of a dropped word is kept
+ * (taken up again, the word comes back on its schedule) but it is not due while he has dropped it. A kind that is not
+ * words is always live. This is the one source of "what is due" the strip, Review's cards and the round share.
+ */
+async function live(rows: Review[]): Promise<Review[]> {
+  const words = rows.filter((r) => r.kind === 'word');
+  const found = await db.words.bulkGet(words.map((r) => r.id));
+  const liveWords = new Set(words.filter((_, i) => found[i] !== undefined && found[i]?.state !== 'dropped').map((r) => r.id));
+  return rows.filter((r) => r.kind !== 'word' || liveWords.has(r.id));
+}
+
+/** The items due at `now` (of `kind`, or of every kind), the longest overdue first. A word he dropped is not due. */
 export async function listDue(kind?: string, now = Date.now()): Promise<Review[]> {
   const due = await db.reviews.where('due').belowOrEqual(now).toArray();
-  return due.filter((r) => isDue(r, now) && (kind === undefined || r.kind === kind)).sort((a, b) => a.due - b.due);
+  const wanted = due.filter((r) => isDue(r, now) && (kind === undefined || r.kind === kind));
+  return (await live(wanted)).sort((a, b) => a.due - b.due);
 }
 
 /** The schedule rows of these items, for the ones that have one. */
@@ -86,10 +99,10 @@ export async function ensureScheduled(
  * flooded); a learning word starts at step 0, due now. Returns whether it ran. A dropped word is left off.
  */
 export async function seedScheduleIfFirstOpen(now = Date.now()): Promise<boolean> {
-  const due = await db.transaction('rw', db.words, db.meta, db.reviews, async () => {
-    if (await db.meta.get(SEEDED_KEY)) return null;
+  const seeded = await db.transaction('rw', db.words, db.meta, db.reviews, async () => {
+    if (await db.meta.get(SEEDED_KEY)) return false;
     // Before the words are seeded there is nothing to schedule and nothing to mark.
-    if (!(await db.meta.get('wordsSeeded'))) return null;
+    if (!(await db.meta.get('wordsSeeded'))) return false;
     const words = await db.words.toArray();
     const solid = words.filter((w) => w.state === 'solid').sort((a, b) => a.lesson - b.lesson || a.lemma.localeCompare(b.lemma));
     const learning = words.filter((w) => w.state === 'learning');
@@ -101,9 +114,9 @@ export async function seedScheduleIfFirstOpen(now = Date.now()): Promise<boolean
     const there = await scheduled(rows);
     await db.reviews.bulkAdd(rows.filter((r) => !there.has(`${r.kind}\0${r.id}`)));
     await db.meta.put({ key: SEEDED_KEY, value: String(now) });
-    return db.reviews.where('due').belowOrEqual(now).count();
+    return true;
   });
-  if (due === null) return false;
-  publish({ kind: 'review-due-changed', due });
+  if (!seeded) return false;
+  await announceDue(now);
   return true;
 }

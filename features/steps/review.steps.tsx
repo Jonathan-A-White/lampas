@@ -9,7 +9,7 @@ import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { mulberry32 } from '../../src/data/quiz';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
-import { seedWordsIfFirstOpen } from '../../src/data/repositories/words';
+import { seedWordsIfFirstOpen, setWordState } from '../../src/data/repositories/words';
 import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
@@ -120,6 +120,65 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Review screen says {string}', async (_, text: string) => {
       await dueToday();
       await waitFor(() => expect(screen.getByTestId('due-today')).toHaveTextContent(text));
+    });
+  });
+
+  Scenario('A word he drops is no longer counted or asked', ({ Given, When, And, Then }) => {
+    Given('{int} of his words are due', async (_, n: number) => {
+      await freshStore();
+      await makeDue(DUE.slice(0, n));
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he drops the word {string}', async (_, lemma: string) => {
+      await screen.findByRole('button', { name: /^Due: 2/ });
+      await setWordState(lemma, 'dropped');
+    });
+    Then('the Reader shows {string}', async (_, text: string) => {
+      expect(await screen.findByRole('button', { name: text })).toBeVisible();
+    });
+    When('he taps {string}', async (_, text: string) => user.click(await screen.findByRole('button', { name: text })));
+    Then('the Review screen says {string}', async (_, text: string) => {
+      await dueToday();
+      await waitFor(() => expect(screen.getByTestId('due-today')).toHaveTextContent(text));
+    });
+    When('he starts the review', start);
+    Then('the first question is {string} and {string} is never asked', async (_, first: string, dropped: string) => {
+      const asked: string[] = [];
+      for (let i = 0; i < 10; i += 1) {
+        await screen.findByTestId('prompt');
+        asked.push(await answerCurrent(true));
+        await goOn();
+      }
+      await screen.findByTestId('score');
+      expect(asked[0]).toBe(first);
+      expect(asked).not.toContain(dropped);
+      expect(asked).toHaveLength(10);
+    });
+  });
+
+  Scenario('A word taken up again comes back on its schedule', ({ Given, When, And, Then }) => {
+    Given('the word {string} is due on step {int}', async (_, lemma: string, step: number) => {
+      await freshStore();
+      await makeDue([lemma], () => ({ step, rights: 0 }));
+    });
+    And('the word {string} is also due on step {int}', async (_, lemma: string, step: number) => {
+      expect(await db.words.get(lemma), `${lemma} is a seed word`).toBeTruthy();
+      const now = Date.now();
+      await db.reviews.put({ kind: 'word', id: lemma, step, rights: 0, due: now - 30_000, lastWhen: now - 3 * DAY, lapses: 0 });
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he drops the word {string}', async (_, lemma: string) => {
+      await screen.findByRole('button', { name: /^Due: 2/ });
+      await setWordState(lemma, 'dropped');
+    });
+    Then('the Reader shows {string}', async (_, text: string) => {
+      expect(await screen.findByRole('button', { name: text })).toBeVisible();
+    });
+    When('he takes up the word {string} again', async (_, lemma: string) => {
+      await setWordState(lemma, 'learning');
+    });
+    Then('the Reader is back to {string}', async (_, text: string) => {
+      expect(await screen.findByRole('button', { name: text })).toBeVisible();
     });
   });
 
