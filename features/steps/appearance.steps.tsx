@@ -207,9 +207,9 @@ describeFeature(feature, ({ Scenario }) => {
         waitFor(() => expect(latest('rates-changed')?.rates).toEqual({ english, greek })),
       );
       And('a Greek speaker button speaks at {number}', async (_, rate: number) => expect(await greekRateOfAButton()).toBe(rate));
-      And('English is spoken at {number}', (_, rate: number) => expect(englishRate()).toBe(rate));
+      And('English is spoken at {number}', (_, rate: number) => waitFor(() => expect(englishRate()).toBe(rate)));
       When('he sets the English speed to {number} in Settings', (_, value: number) => setSpeed('English speed', String(value)));
-      Then('English is spoken at {number}', (_, rate: number) => expect(englishRate()).toBe(rate));
+      Then('English is spoken at {number}', (_, rate: number) => waitFor(() => expect(englishRate()).toBe(rate)));
       And('a Greek speaker button still speaks at {number}', async (_, rate: number) => expect(await greekRateOfAButton()).toBe(rate));
     },
   );
@@ -240,6 +240,6 @@ describeFeature(feature, ({ Scenario }) => {
       waitFor(() => expect(Math.round(textScale() * 100)).toBe(percent)),
     );
     And('a Greek speaker button speaks at {number}', async (_, rate: number) => expect(await greekRateOfAButton()).toBe(rate));
-    And('English is spoken at {number}', (_, rate: number) => expect(englishRate()).toBe(rate));
+    And('English is spoken at {number}', (_, rate: number) => waitFor(() => expect(englishRate()).toBe(rate)));
   });
 });
