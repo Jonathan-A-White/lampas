@@ -8,10 +8,13 @@ export type { TalkTurn };
 export const talkRef = (book: string, chapter: number, verse: number | null): string =>
   verse === null ? `${book}.${chapter}` : `${book}.${chapter}.${verse}`;
 
-/** What an answer did about the settings he asked for: the changes made and a sentence for each one ignored. */
+/** What an answer did to the app: the settings changed and a sentence for each one ignored, and the words it put on his list
+ * (`added`) or found there already (`already`). */
 export interface TurnChanges {
   changes: AppliedChange[];
   refused: string[];
+  added?: string[];
+  already?: string[];
 }
 
 /** Keeps one turn and returns its id. */
@@ -19,6 +22,8 @@ export async function addTurn(ref: string, q: string, a: string, words: AnswerWo
   const turn: TalkTurn = { ref, q, a, words, when: now };
   if (done && done.changes.length > 0) turn.changes = done.changes;
   if (done && done.refused.length > 0) turn.refused = done.refused;
+  if (done?.added?.length) turn.added = done.added;
+  if (done?.already?.length) turn.already = done.already;
   return (await db.talks.add(turn)) as number;
 }
 

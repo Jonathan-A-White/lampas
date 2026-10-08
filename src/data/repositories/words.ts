@@ -46,6 +46,39 @@ export async function addImportedWords(words: ImportWord[], now = Date.now()): P
   });
 }
 
+/** The word of the list that `lemma` (a headword or a lexicon lemma, as the tutor or the text writes it) stands for, if any. */
+async function findListed(headword: string, lemmas: string[]): Promise<Word | undefined> {
+  return (await db.words.get(headword)) ?? (await db.words.where('lemmas').anyOf(lemmas).first());
+}
+
+/** Whether `lemma` is on his list: a word he is learning or knows. A dropped word is not. */
+export async function wordIsListed(lemma: string): Promise<boolean> {
+  const { headword, lemmas } = normaliseLemma(lemma);
+  if (!headword) return false;
+  const found = await findListed(headword, lemmas);
+  return found !== undefined && found.state !== 'dropped';
+}
+
+/**
+ * Puts a lemma on the list as a word he is learning (the Talk answer's Add to my words, and a words_to_add the tutor sends).
+ * 'already' when it is there (as a learning or solid word, found by headword or lexicon lemma): nothing changes. A dropped word
+ * goes back to learning. 'ignored' for a blank lemma. A new word has no lesson (0) and the gloss given.
+ */
+export async function addWordToLearn(lemma: string, gloss = '', now = Date.now()): Promise<'added' | 'already' | 'ignored'> {
+  const { headword, lemmas } = normaliseLemma(lemma);
+  if (!headword) return 'ignored';
+  return db.transaction('rw', db.words, async () => {
+    const found = await findListed(headword, lemmas);
+    if (!found) {
+      await db.words.add({ lemma: headword, lemmas, gloss, lesson: 0, state: 'learning', since: now });
+      return 'added';
+    }
+    if (found.state !== 'dropped') return 'already';
+    await db.words.update(found.lemma, { state: 'learning', since: now, ...(found.gloss || !gloss ? {} : { gloss }) });
+    return 'added';
+  });
+}
+
 /** Every lemma a solid word goes by (its headword and its lexicon lemmas, NFC): what the weave matches Greek words against. */
 export async function listSolidLemmas(): Promise<Set<string>> {
   const solid = await db.words.where('state').equals('solid').toArray();

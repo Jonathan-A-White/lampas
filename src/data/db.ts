@@ -10,7 +10,7 @@ export interface Word {
   /** The lexicon lemmas that match it (see lemma.ts); indexed so the weave can look a lemma up. */
   lemmas: string[];
   gloss: string;
-  /** The BMA lesson it came from; 0 for a word added by Import with no lesson. */
+  /** The BMA lesson it came from; 0 for a word added by Import or from a Talk answer, with no lesson. */
   lesson: number;
   state: WordState;
   /** When it last got this state (ms since the epoch). */
@@ -59,6 +59,10 @@ export interface TalkTurn {
   changes?: AppliedChange[];
   /** a sentence for each change the answer asked for that was ignored */
   refused?: string[];
+  /** the lemmas the answer put on his words-to-learn list (words_to_add), each one new to it */
+  added?: string[];
+  /** the lemmas the answer asked to add that were on his list already */
+  already?: string[];
 }
 
 /** One step of one word in the Parsing drill: 'tense' of λέγω, answered rightly or not. */
