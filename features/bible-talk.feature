@@ -207,3 +207,36 @@ Feature: Bible talk
     When he sends "add ζζζ to my words"
     Then the answer shows the line "I do not know ζζζ"
     And the word "ζζζ" is not on the list
+
+  Scenario: The tutor's Markdown shows as bold, italics and lists, with no marks left
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that answers in Markdown
+    And he opens Talk
+    When he sends "what is parsing?"
+    Then the answer shows "parsing" in bold and "grammar" in italics
+    And the answer shows a bulleted list of 2 items and a numbered list of 2 items
+    And the answer shows no stars and no hashes
+
+  Scenario: Raw HTML in an answer is shown as text and never rendered
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with raw HTML
+    And he opens Talk
+    When he sends "show me a picture"
+    Then the answer shows the text "<img src=x onerror=alert(1)>"
+    And the answer holds no image
+
+  Scenario: Greek in a rendered answer keeps the sheet's type
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that answers in Markdown
+    And he opens Talk
+    When he sends "what is parsing?"
+    Then the Greek word "συνεργεῖ" in the answer is as large as the rest of the answer
+
+  Scenario: An answer in Markdown is read aloud without its marks
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that answers in Markdown and a phone that speaks English and Greek
+    And he opens Talk
+    When he sends "what is parsing?"
+    Then the answer is read aloud with no stars, hashes or list marks
+
+  Scenario: His own turn stays plain text
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern
+    And he opens Talk
+    When he sends "what is **parsing**?"
+    Then his question shows as "what is **parsing**?" with its stars

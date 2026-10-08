@@ -129,6 +129,25 @@ const wordRow = (lemma: string): HTMLElement => {
   if (!row) throw new Error(`no answer word ${lemma}`);
   return row;
 };
+const MARKDOWN_ANSWER = [
+  "The word you're after is **parsing**, a *grammar* habit with συνεργεῖ.",
+  '',
+  '- find the verb',
+  '- name its tense',
+  '',
+  '1. read the Greek',
+  '2. say the parsing',
+  '',
+  '## A heading',
+].join('\n');
+const markdownAnswer = (f: FakePostern): void => void (f.autoReply = { status: 'answered', answer: { answer: MARKDOWN_ANSWER, words: [] } });
+const htmlAnswer = (f: FakePostern): void =>
+  void (f.autoReply = { status: 'answered', answer: { answer: 'Here it is: <img src=x onerror=alert(1)>', words: [] } });
+const answerBox = (): HTMLElement => {
+  const box = sheet().querySelector<HTMLElement>('[data-talk-a]');
+  if (!box) throw new Error('no answer yet');
+  return box;
+};
 const listed = async (lemma: string) => (await db.words.toArray()).filter((w) => w.lemma === lemma);
 const lines = () => turns().map((t) => t.textContent ?? '').join('\n');
 
@@ -586,6 +605,79 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the word {string} is not on the list', async (_, lemma: string) => {
       expect(await listed(lemma)).toHaveLength(0);
+    });
+  });
+  Scenario("The tutor's Markdown shows as bold, italics and lists, with no marks left", ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern that answers in Markdown', () => open(markdownAnswer));
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('the answer shows {string} in bold and {string} in italics', async (_, bold: string, italic: string) => {
+      await waitFor(() => expect(answerBox().querySelector('strong')).not.toBeNull());
+      expect(answerBox().querySelector('strong')?.textContent).toBe(bold);
+      expect(answerBox().querySelector('em')?.textContent).toBe(italic);
+    });
+    And('the answer shows a bulleted list of {int} items and a numbered list of {int} items', (_, bullets: number, numbers: number) => {
+      expect(answerBox().querySelectorAll('ul > li')).toHaveLength(bullets);
+      expect(answerBox().querySelectorAll('ol > li')).toHaveLength(numbers);
+    });
+    And('the answer shows no stars and no hashes', () => {
+      expect(answerBox().textContent).not.toMatch(/[*#]/);
+    });
+  });
+
+  Scenario('Raw HTML in an answer is shown as text and never rendered', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with raw HTML', () => open(htmlAnswer));
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('the answer shows the text {string}', async (_, text: string) => {
+      await waitFor(() => expect(answerBox()).toHaveTextContent(text));
+    });
+    And('the answer holds no image', () => {
+      expect(answerBox().querySelector('img')).toBeNull();
+    });
+  });
+
+  Scenario("Greek in a rendered answer keeps the sheet's type", ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern that answers in Markdown', () => open(markdownAnswer));
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('the Greek word {string} in the answer is as large as the rest of the answer', async (_, word: string) => {
+      await waitFor(() => expect(answerBox()).toHaveTextContent(word));
+      // The Greek sits in the answer's own text: no wrapper that changes its size, so it has the answer's text-lg.
+      const holder = Array.from(answerBox().querySelectorAll('p')).find((p) => p.textContent?.includes(word));
+      expect(holder?.closest('[data-answer-text]')?.className).toContain('text-lg');
+      expect(holder?.querySelector('[class*="text-"]')).toBeNull();
+    });
+  });
+
+  Scenario('An answer in Markdown is read aloud without its marks', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern that answers in Markdown and a phone that speaks English and Greek', () =>
+      open(markdownAnswer, true),
+    );
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('the answer is read aloud with no stars, hashes or list marks', async () => {
+      const engine = synth as FakeSynth;
+      await waitFor(() => expect(engine.spoken.length).toBeGreaterThan(0));
+      const said: string[] = [];
+      for (let i = 0; i < 6 && engine.spoken.length > said.length; i++) {
+        said.push(engine.spoken[said.length].text);
+        act(() => engine.finish());
+      }
+      expect(said.join(' ')).toContain('parsing');
+      expect(said.join(' ')).not.toMatch(/[*#]|^- /m);
+    });
+  });
+
+  Scenario('His own turn stays plain text', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern', () => open());
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('his question shows as {string} with its stars', async (_, question: string) => {
+      await turnsKept(1);
+      const q = sheet().querySelector('[data-talk-q]');
+      expect(q?.textContent).toBe(question);
+      expect(q?.querySelector('strong')).toBeNull();
     });
   });
 });

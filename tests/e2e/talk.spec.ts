@@ -149,3 +149,28 @@ test('Add to my words under an explained word is thumb-sized, fits the phone and
   await expect(add).toHaveCount(1);
   await shot(page, 'talk-add-word');
 });
+
+test("the tutor's Markdown shows bold and a list in the Talk sheet, with no marks, inside the phone (mw-5r3p30.59)", async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  const fake = makeFakePostern();
+  fake.autoReply = {
+    status: 'answered',
+    answer: { answer: "The word you're after is **parsing**: naming each part of the form, like συνεργεῖ.\n\n- the tense\n- the *person*\n\n1. read the Greek\n2. say its parsing", words: [] },
+  };
+  await routePostern(page, fake);
+  await openUnlocked(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8' });
+  await sheet.getByRole('textbox', { name: 'Your message' }).fill('what is parsing?');
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+
+  const answer = sheet.locator('[data-talk-a]');
+  await expect(answer.locator('strong')).toHaveText('parsing');
+  await expect(answer.locator('ul > li')).toHaveCount(2);
+  await expect(answer.locator('ol > li')).toHaveCount(2);
+  expect(await answer.innerText()).not.toMatch(/[*#]/);
+  expect(await answer.locator('strong').evaluate((el) => Number(getComputedStyle(el).fontWeight))).toBeGreaterThanOrEqual(600);
+  await expectFitsPhone(page);
+  await shot(page, 'talk-markdown');
+});

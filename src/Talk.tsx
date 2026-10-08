@@ -10,6 +10,7 @@ import { Waiting } from './Ask';
 import { addLemmaToLearn, findGreekWord, glossOf } from './data/answerWord';
 import type { AnswerWord } from './data/db';
 import { addWordToLearn, listTurns, markChangeUndone, wordIsListed, type TalkTurn } from './data/repositories';
+import { Markdown } from './markdown/Markdown';
 import { settingOf, undoChange, type AppliedChange } from './settings/registry';
 import { MAX_TALK_CHARS, scopeTitle, type TalkScope } from './services/talk';
 import { FAILURE_TITLES } from './services/tutor';
@@ -159,7 +160,9 @@ function Turn({ turn, scope, onLook }: { turn: TalkTurn; scope: TalkScope; onLoo
         {turn.q}
       </p>
       <div data-talk-a className="rounded-2xl border border-line px-3 py-2">
-        <p className="break-words text-lg leading-snug">{turn.a}</p>
+        <div data-answer-text className="break-words text-lg leading-snug">
+          <Markdown text={turn.a} />
+        </div>
         {turn.changes?.length || turn.refused?.length || turn.added?.length || turn.already?.length || turn.unknown?.length ? (
           <ul data-talk-changes className="mt-2 border-t border-line pt-1">
             {turn.changes?.map((c, i) => (

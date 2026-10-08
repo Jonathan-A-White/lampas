@@ -1,5 +1,6 @@
 // src/speech/answerRuns.ts — an answer of the Bible talk is English with Greek words in it. Read aloud, each stretch of Greek
 // goes to the Greek voice and the rest to the English one (the runs src/speech/readAloud.ts speaks).
+import { markdownToSpeech } from '../markdown/plain';
 import type { Run } from './readAloud';
 
 const GREEK_WORD = '[\\p{Script=Greek}\\p{M}]+';
@@ -8,8 +9,9 @@ const GREEK_STRETCH = new RegExp(`${GREEK_WORD}(?:[ \\u00a0]+${GREEK_WORD})*`, '
 
 const speakable = (text: string): boolean => /[\p{L}\p{N}]/u.test(text);
 
-/** The answer cut into runs of one language each, in the order they come; a run with nothing to say is left out. */
-export function answerRuns(text: string): Run[] {
+/** The answer cut into runs of one language each, in the order they come; a run with nothing to say is left out. Its Markdown marks are never spoken. */
+export function answerRuns(answer: string): Run[] {
+  const text = markdownToSpeech(answer);
   const runs: Run[] = [];
   let at = 0;
   const english = (to: number): void => {

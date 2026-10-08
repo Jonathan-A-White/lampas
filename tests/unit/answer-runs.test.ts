@@ -27,4 +27,19 @@ describe('answerRuns', () => {
   it('drops a run with nothing to say, such as a lone quotation mark', () => {
     expect(answerRuns('"πνεῦμα"')).toEqual([{ text: 'πνεῦμα', language: 'greek' }]);
   });
+
+  it('never speaks Markdown marks: bold, italics, headings, lists, code and links read as their words', () => {
+    expect(answerRuns('The word is **parsing**, a *grammar* habit.')).toEqual([{ text: 'The word is parsing, a grammar habit.', language: 'english' }]);
+    expect(answerRuns('## Steps\n\n- find the verb\n- name `tense`\n\n1. read [the Greek](https://x.org)')).toEqual([
+      { text: 'Steps. find the verb. name tense. read the Greek.', language: 'english' },
+    ]);
+  });
+
+  it('still cuts Greek out of Markdown, bold or not', () => {
+    expect(answerRuns('In this verse **συνεργεῖ** means *works together*.')).toEqual([
+      { text: 'In this verse', language: 'english' },
+      { text: 'συνεργεῖ', language: 'greek' },
+      { text: 'means works together.', language: 'english' },
+    ]);
+  });
 });
