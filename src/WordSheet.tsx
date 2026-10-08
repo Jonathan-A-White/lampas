@@ -1,7 +1,9 @@
-// src/WordSheet.tsx — the bottom sheet a tapped word opens: the Greek word as it stands, its transliteration,
-// lemma, parsing in plain words, gloss and Strong's. Closes by a tap outside, a swipe down on its handle,
-// the Done button or Escape.
+// src/WordSheet.tsx — the bottom sheet a tapped word opens: the Greek word as it stands, how to say it (a respelling
+// in the pronunciation chosen in Settings), lemma, parsing in plain words, gloss and Strong's. Closes by a tap
+// outside, a swipe down on its handle, the Done button or Escape.
 import { type Chapter, type GreekWord, wordGloss, wordLemma, wordParse } from './data/chapter';
+import { useLatest } from './events/bus';
+import { pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
 import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
@@ -25,7 +27,7 @@ function Fact({ label, children, testId, lang }: { label: string; children: stri
   );
 }
 
-function WordCard({ chapter, word, english }: { chapter: Chapter; word: GreekWord; english?: string }) {
+function WordCard({ chapter, word, english, pronunciation }: { chapter: Chapter; word: GreekWord; english?: string; pronunciation: GreekPronunciation | undefined }) {
   return (
     <section className="border-t border-line py-3 first:border-t-0 first:pt-0">
       <div className="flex items-start justify-between gap-2">
@@ -34,8 +36,8 @@ function WordCard({ chapter, word, english }: { chapter: Chapter; word: GreekWor
         </p>
         <SpeakButton text={word.t} id={`word:${word.t}`} label="Hear it" kind="speaker" className="shrink-0" />
       </div>
-      <p data-testid="sheet-translit" className="text-base text-muted">
-        {word.tr}
+      <p data-testid="sheet-respelling" className="text-xl text-muted">
+        {pronunciationOf(pronunciation).respell(word.t)}
       </p>
       <dl className="mt-2">
         <Fact label="Lemma" testId="sheet-lemma" lang="grc">
@@ -63,6 +65,7 @@ function WordCard({ chapter, word, english }: { chapter: Chapter; word: GreekWor
 export function WordSheet({ chapter, lookup, onClose }: { chapter: Chapter; lookup: Lookup; onClose: () => void }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
+  const pronunciation = useLatest('pronunciation-changed')?.pronunciation;
 
   return (
     <div className="fixed inset-0 z-10 flex flex-col justify-end">
@@ -96,7 +99,7 @@ export function WordSheet({ chapter, lookup, onClose }: { chapter: Chapter; look
             </p>
           ) : null}
           {lookup.words.map((w, i) => (
-            <WordCard key={i} chapter={chapter} word={w} english={lookup.fromEnglish ? undefined : lookup.english} />
+            <WordCard key={i} chapter={chapter} word={w} english={lookup.fromEnglish ? undefined : lookup.english} pronunciation={pronunciation} />
           ))}
         </div>
       </div>

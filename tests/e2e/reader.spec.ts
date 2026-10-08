@@ -83,3 +83,18 @@ test('a tap opens the word sheet at the bottom, inside the phone, and a tap outs
   await page.getByTestId('sheet-backdrop').click({ position: { x: 195, y: 100 } });
   await expect(dialog).toBeHidden();
 });
+
+test('the word sheet says how to pronounce the word, in capitals for the stress, and shows no beta-code', async ({ page }) => {
+  await openReader(page);
+  await page.getByRole('button', { name: 'Greek', exact: true }).click();
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'greek');
+  await page.locator('[data-verse="1"]').getByRole('button', { name: 'χριστῷ', exact: true }).click();
+
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByTestId('sheet-word')).toHaveText('χριστῷ');
+  await expect(dialog.getByTestId('sheet-respelling')).toHaveText('hree-STO');
+  await expect(dialog).not.toContainText('cristw');
+  await expect(page.locator('body')).not.toContainText('cristw');
+  await expectFitsPhone(page);
+  await shot(page, 'word-sheet-respelling');
+});

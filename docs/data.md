@@ -56,7 +56,7 @@ Compact: short keys, no indentation, each lexicon entry once per file.
 | `verses[].p` | `1` when the MSB starts a paragraph at this verse; absent otherwise (see below) |
 | `verses[].g` | the Greek words **in Greek order**; a word's position in this array is its index |
 | `g[].t` | the word as the Byzantine text has it (NFC) |
-| `g[].tr` | transliteration |
+| `g[].tr` | transliteration (beta-code, 'cristw'; no screen shows it: the word sheet respells the Greek, docs/pronunciation.md) |
 | `g[].s` | Strong's number without padding, `G686` (the key into `lex`) |
 | `g[].l` | lemma, accents kept, NFC (inline on every word) |
 | `g[].p` | RP parsing code (the key into `parse`) |

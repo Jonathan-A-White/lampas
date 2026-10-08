@@ -91,7 +91,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened with nothing saved', openFresh);
     When('he taps {string} in verse {int}', async (_, text: string, verse: number) => tapWord(text, verse));
     Then('the word sheet shows the Greek word {string}', (_, w: string) => expect(sheetTexts('sheet-word')).toEqual([w]));
-    And('the word sheet shows the transliteration {string}', (_, w: string) => expect(sheetTexts('sheet-translit')).toEqual([w]));
+    And('the word sheet shows the respelling {string}', (_, w: string) => expect(sheetTexts('sheet-respelling')).toEqual([w]));
     And('the word sheet shows the lemma {string}', (_, w: string) => expect(sheetTexts('sheet-lemma')).toEqual([w]));
     And('the word sheet shows the parsing {string}', (_, w: string) => expect(sheetTexts('sheet-parse')).toEqual([w]));
     And('the word sheet shows a gloss containing {string}', (_, w: string) => expect(sheetTexts('sheet-gloss')[0]).toContain(w));
