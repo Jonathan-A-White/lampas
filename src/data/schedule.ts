@@ -24,6 +24,21 @@ export const RARE_CHECK_DAYS = 90;
 /** The step of the rare check: one past the last of STEP_DAYS. */
 export const RARE_STEP = STEP_DAYS.length;
 
+/**
+ * How a word is asked, from its step. PROVISIONAL: the Mayor's pick, the Governor to confirm. Multiple choice while a word
+ * is weak (below FLASHCARD_STEP), a flashcard (see the lemma, recall, grade yourself) once it is stronger; a lapse that drops
+ * the step below the threshold makes it multiple choice again.
+ */
+export type QuestionMode = 'choice' | 'flashcard';
+
+/** The first step asked as a flashcard (step 3: the 14-day gap): the one place the threshold lives. */
+export const FLASHCARD_STEP = 3;
+
+/** The mode a word at `step` is asked in; a word not scheduled yet is at step 0. */
+export function modeFor(step: number): QuestionMode {
+  return step >= FLASHCARD_STEP ? 'flashcard' : 'choice';
+}
+
 /** A wrong answer drops an item this many steps. */
 const DROP_STEPS = 2;
 
