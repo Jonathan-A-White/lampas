@@ -2,6 +2,8 @@
 // word is tappable and opens the word sheet; a verse number selects the verse. The gear opens Settings
 // (src/SettingsScreen.tsx), where the Weave (Off | Solid words) is switched: with it on, the English view shows the
 // Greek of his solid words in place of their English (src/data/weave.ts).
+// Settings also holds the Layout (Verse by verse | Paragraph, src/layout/layouts.ts cuts the verses into blocks) and Section
+// headings (On | Off): the MSB's heading (verses[].h) is drawn above its block in either view, in English.
 // A selected verse shows its kept tutor answers and the Ask box (src/Ask.tsx). The selection, the view and the weave
 // are told to the rest of the app on the event bus (src/events/bus.ts, docs/events.md); the Reader reads the selection back from it.
 // The chapter comes from /data/rom/8.json (precached), the view and the weave are kept in the settings store.
@@ -9,10 +11,20 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnswerCards, AskBox } from './Ask';
 import { type Chapter, type EnglishChunk, type GreekWord, type Verse, loadChapter } from './data/chapter';
-import { getReaderView, getWeave, listSolidLemmas, setReaderView, setWeave, type ReaderView } from './data/repositories';
+import {
+  getLayout,
+  getReaderView,
+  getSectionHeadings,
+  getWeave,
+  listSolidLemmas,
+  setReaderView,
+  setWeave,
+  type ReaderView,
+} from './data/repositories';
 import { weaveVerse, type Woven } from './data/weave';
 import { BuildVersion } from './BuildVersion';
 import { latest, publish, useLatest } from './events/bus';
+import { blocksOf } from './layout/layouts';
 import { navigate, readerOf, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
@@ -90,7 +102,7 @@ function GearIcon() {
   );
 }
 
-function VerseView({ verse, view, woven, selected, onSelect, onLook }: {
+interface VerseProps {
   verse: Verse;
   view: ReaderView;
   /** per English chunk, the Greek words shown in its place or null; null for the whole verse when the weave is off */
@@ -98,19 +110,60 @@ function VerseView({ verse, view, woven, selected, onSelect, onLook }: {
   selected: boolean;
   onSelect: () => void;
   onLook: (lookup: Lookup) => void;
-}) {
-  const greek = view === 'greek';
+}
+
+/** The words of one verse, every one tappable: the Greek in Greek order, or the English chunks (woven or not). */
+function VerseText({ verse, view, woven, onLook }: Pick<VerseProps, 'verse' | 'view' | 'woven' | 'onLook'>) {
   const lookGreek = (w: GreekWord) =>
     onLook({ words: [w], english: w.e === undefined ? undefined : verse.e[w.e]?.t, fromEnglish: false });
   const lookEnglish = (c: EnglishChunk) => onLook({ words: c.g.map((i) => verse.g[i]), english: c.t, fromEnglish: true });
   return (
+    <span data-text>
+      {view === 'greek'
+        ? verse.g.map((w, i) => (
+            <Tap key={i} data-word={String(i)} className={TAP_PAD} onTap={() => lookGreek(w)}>
+              {w.t}
+            </Tap>
+          ))
+        : verse.e.map((c, i) => {
+            const words = woven?.[i];
+            return words ? (
+              <Tap
+                key={i}
+                data-chunk={String(i)}
+                data-woven=""
+                lang="grc"
+                className={`font-greek text-[length:var(--lp-greek-size)] text-accent ${TAP_PAD}`}
+                onTap={() => lookEnglish(c)}
+              >
+                {words.map((w) => w.t).join(' ')}
+              </Tap>
+            ) : (
+              <Tap key={i} data-chunk={String(i)} className={`${TAP_PAD} ${c.s ? 'italic' : ''}`} onTap={() => lookEnglish(c)}>
+                {c.t}
+              </Tap>
+            );
+          })}
+    </span>
+  );
+}
+
+const textClass = (view: ReaderView) =>
+  view === 'greek' ? 'font-greek text-[length:var(--lp-greek-size)]' : 'font-sans text-[length:var(--lp-english-size)]';
+
+const playOf = (verse: Verse, className: string) => (
+  <SpeakButton text={verse.g.map((w) => w.t).join(' ')} id={`verse:${verse.n}`} label="Hear the verse" kind="play" className={className} />
+);
+
+/** Verse by verse: one verse per line, its number a button before it. */
+function VerseView(props: VerseProps) {
+  const { verse, view, selected, onSelect } = props;
+  return (
     <p
       data-verse={verse.n}
       data-selected={selected}
-      lang={greek ? 'grc' : 'en'}
-      className={`mb-1 break-words rounded-xl px-2 leading-(--lp-tap) ${selected ? 'bg-accent/15' : ''} ${
-        greek ? 'font-greek text-[length:var(--lp-greek-size)]' : 'font-sans text-[length:var(--lp-english-size)]'
-      }`}
+      lang={view === 'greek' ? 'grc' : 'en'}
+      className={`mb-1 break-words rounded-xl px-2 leading-(--lp-tap) ${selected ? 'bg-accent/15' : ''} ${textClass(view)}`}
     >
       <button
         type="button"
@@ -121,41 +174,50 @@ function VerseView({ verse, view, woven, selected, onSelect, onLook }: {
       >
         {verse.n}
       </button>
-      <span data-text>
-        {greek
-          ? verse.g.map((w, i) => (
-              <Tap key={i} data-word={String(i)} className={TAP_PAD} onTap={() => lookGreek(w)}>
-                {w.t}
-              </Tap>
-            ))
-          : verse.e.map((c, i) => {
-              const words = woven?.[i];
-              return words ? (
-                <Tap
-                  key={i}
-                  data-chunk={String(i)}
-                  data-woven=""
-                  lang="grc"
-                  className={`font-greek text-[length:var(--lp-greek-size)] text-accent ${TAP_PAD}`}
-                  onTap={() => lookEnglish(c)}
-                >
-                  {words.map((w) => w.t).join(' ')}
-                </Tap>
-              ) : (
-                <Tap key={i} data-chunk={String(i)} className={`${TAP_PAD} ${c.s ? 'italic' : ''}`} onTap={() => lookEnglish(c)}>
-                  {c.t}
-                </Tap>
-              );
-            })}
-      </span>
-      <SpeakButton
-        text={verse.g.map((w) => w.t).join(' ')}
-        id={`verse:${verse.n}`}
-        label="Hear the verse"
-        kind="play"
-        className="align-baseline font-sans"
-      />
+      <VerseText {...props} />
+      {playOf(verse, 'align-baseline font-sans')}
     </p>
+  );
+}
+
+/** Paragraph: the verses of one MSB paragraph run on, each number a small superscript. The button is still 44 px square
+ * (its side margins pull the neighbours back in), and a verse is still selected by its number. The play button of a
+ * verse shows only while it is selected, so a paragraph reads as running text. */
+function ParagraphView({ verses, view, woven, selected, onSelect, onLook }: {
+  verses: Verse[];
+  view: ReaderView;
+  woven: (Woven[] | null)[];
+  selected: number | null;
+  onSelect: (n: number) => void;
+  onLook: (lookup: Lookup) => void;
+}) {
+  return (
+    <p data-paragraph lang={view === 'greek' ? 'grc' : 'en'} className={`mb-2 break-words px-2 leading-(--lp-tap) ${textClass(view)}`}>
+      {verses.map((verse, i) => (
+        <span key={verse.n} data-verse={verse.n} data-selected={selected === verse.n} className={`rounded-xl ${selected === verse.n ? 'bg-accent/15' : ''}`}>
+          <button
+            type="button"
+            aria-label={`Verse ${verse.n}`}
+            aria-pressed={selected === verse.n}
+            onClick={() => onSelect(verse.n)}
+            className="-mx-3 inline-block min-h-(--lp-tap) min-w-(--lp-tap) text-center align-baseline font-sans leading-(--lp-tap)"
+          >
+            <sup className="text-xs font-semibold text-muted">{verse.n}</sup>
+          </button>
+          <VerseText verse={verse} view={view} woven={woven[i]} onLook={onLook} />
+          {selected === verse.n ? playOf(verse, 'align-baseline font-sans') : null}
+        </span>
+      ))}
+    </p>
+  );
+}
+
+/** A section heading: the MSB's own English, whichever view is on. */
+function SectionHeading({ text }: { text: string }) {
+  return (
+    <h2 data-heading lang="en" className="mb-1 mt-5 px-2 font-sans text-lg font-semibold leading-snug text-accent">
+      {text}
+    </h2>
   );
 }
 
@@ -163,6 +225,8 @@ export function Reader() {
   const view = useLiveQuery(getReaderView, []);
   const weave = useLiveQuery(getWeave, []);
   const solid = useLiveQuery(listSolidLemmas, []);
+  const layout = useLiveQuery(getLayout, []);
+  const headings = useLiveQuery(getSectionHeadings, []);
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -199,6 +263,7 @@ export function Reader() {
     () => (chapter && weaving ? chapter.verses.map((v) => weaveVerse(v, solid ?? EMPTY_LEMMAS)) : null),
     [chapter, weaving, solid],
   );
+  const blocks = useMemo(() => (chapter && layout ? blocksOf(chapter.verses, layout) : []), [chapter, layout]);
   const wovenCount = woven ? woven.reduce((n, w) => n + w.filter(Boolean).length, 0) : 0;
 
   // The selection is not kept when the reader goes away; the bus holds it only while the reader is on screen.
@@ -235,6 +300,13 @@ export function Reader() {
   }, [weave]);
 
   useEffect(() => {
+    if (layout) publish({ kind: 'layout-changed', layout });
+  }, [layout]);
+  useEffect(() => {
+    if (headings) publish({ kind: 'headings-changed', headings });
+  }, [headings]);
+
+  useEffect(() => {
     let current = true;
     loadChapter(BOOK, CHAPTER).then(
       (c) => current && (setFailed(false), setChapter(c)),
@@ -264,7 +336,7 @@ export function Reader() {
           {wovenCount} {wovenCount === 1 ? 'word' : 'words'} in Greek
         </p>
       ) : null}
-      <main ref={scrollRef} data-reader data-view={view} data-weave={weave} className="screen min-h-0 flex-1 px-1 pt-2">
+      <main ref={scrollRef} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} className="screen min-h-0 flex-1 px-1 pt-2">
         <div>
         {failed ? (
           <div role="alert" className="px-4 pt-6 text-center">
@@ -277,26 +349,43 @@ export function Reader() {
               Try again
             </button>
           </div>
-        ) : chapter && view ? (
+        ) : chapter && view && layout && headings ? (
           <>
-            {chapter.verses.map((v, vi) => (
-              <Fragment key={v.n}>
-                <VerseView
-                  verse={v}
-                  view={view}
-                  woven={woven?.[vi] ?? null}
-                  selected={selected === v.n}
-                  onSelect={() => selectVerse(v.n)}
-                  onLook={setLookup}
-                />
-                {selected === v.n ? (
-                  <>
-                    <AnswerCards verse={v.n} book={BOOK} chapter={CHAPTER} />
-                    <AskBox chapter={chapter} asks={asks} onAsk={ask} reveal={tapped === v.n} />
-                  </>
-                ) : null}
-              </Fragment>
-            ))}
+            {blocks.map((block) => {
+              const first = block[0];
+              const wovenOf = (v: Verse) => woven?.[chapter.verses.indexOf(v)] ?? null;
+              const withSelection = block.some((v) => v.n === selected);
+              return (
+                <Fragment key={first.n}>
+                  {headings === 'on' && first.h ? <SectionHeading text={first.h} /> : null}
+                  {layout === 'paragraph' ? (
+                    <ParagraphView
+                      verses={block}
+                      view={view}
+                      woven={block.map(wovenOf)}
+                      selected={selected}
+                      onSelect={selectVerse}
+                      onLook={setLookup}
+                    />
+                  ) : (
+                    <VerseView
+                      verse={first}
+                      view={view}
+                      woven={wovenOf(first)}
+                      selected={selected === first.n}
+                      onSelect={() => selectVerse(first.n)}
+                      onLook={setLookup}
+                    />
+                  )}
+                  {withSelection && selected !== null ? (
+                    <>
+                      <AnswerCards verse={selected} book={BOOK} chapter={CHAPTER} />
+                      <AskBox chapter={chapter} asks={asks} onAsk={ask} reveal={tapped === selected} />
+                    </>
+                  ) : null}
+                </Fragment>
+              );
+            })}
             <BuildVersion className="px-3 pt-6" />
             <div className="flex justify-center pb-4">
               <HeaderButton onClick={() => navigate('about')}>About</HeaderButton>

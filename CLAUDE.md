@@ -70,7 +70,7 @@ vite.config.ts       # react, tailwind 4, vite-plugin-pwa (injectManifest, regis
 src/main.tsx         # scroll guard first, then render, then register the worker
 src/App.tsx          # the shell (data-shell); picks the screen by hash route (src/nav/route.ts); seeds words on first open
 src/Reader.tsx WordsScreen.tsx ImportScreen.tsx QuizScreen.tsx About.tsx SettingsScreen.tsx  # the screens (#/ , #/words, #/import, #/test, #/about, #/settings); the Reader is Romans 8, English | Greek, header = title, English | Greek, the gear;
-                     #   Settings (opened by the gear) holds the Weave, the English and Greek voice pickers, the Greek pronunciation list, and links to Words and About;
+                     #   Settings (opened by the gear) holds the Layout (Verse by verse | Paragraph), Section headings (On | Off), the Weave, the English and Greek voice pickers, the Greek pronunciation list, and links to Words and About;
                      #   About is built from ATTRIBUTION.md (src/attribution.ts), opened by the About button under the chapter
 src/Ask.tsx          # the Ask box under the selected verse (field, Sending / Waiting, No licence, Could not reach + Retry) and the kept answer cards
 src/useAsks.ts       # the questions in flight by verse; a question keeps waiting when he selects another verse; the answer is stored when it comes
@@ -82,6 +82,7 @@ src/nav/             # route.ts: the hash address (screen, and in the reader '?c
                      #   a bare open lands on the newest and rebuilds history so Back walks the trail, past the oldest on Home; an open that names a place wins);
                      #   readerAddress.ts: bus events -> address (replaceState); scrollMemory.ts: scroll per address, restored with a ResizeObserver up to 2.5 s
 src/data/roundKeep.ts  # a half-done Quick test round in localStorage (lampas.round); the test screen offers 'Round left unfinished: Resume | New round'
+src/layout/layouts.ts # the reading layouts as a list (Verse by verse, Paragraph): each says where a block of verses starts (a verse with a heading always does); blocksOf cuts a chapter; a new layout is one more entry + how the Reader draws it
 src/WordSheet.tsx    # the bottom sheet a tapped word opens (tap outside, swipe down on the handle, Done or Escape closes it)
 src/speech/          # pronunciation.ts: the registry of Greek pronunciations (only 'modern', el-GR; add an entry for another); settingsSync.ts: saved voices and pronunciation -> bus -> greek.ts; greek.ts: speak(text, key) with speechSynthesis, lang el-GR, the phone's Greek voice, no server; a second tap on the same key stops it; hasGreekVoice() true/false/'unknown'; SpeakButton.tsx: the speaker on a word (aria-label 'Hear it') and the play button on a verse ('Hear the verse'), with the one-line no-Greek-voice help
 src/fonts/           # Gentium Plus (Greek + Greek Extended, 400 and 700 woff2) and its OFL licence; @font-face is in src/index.css
