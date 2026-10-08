@@ -3,16 +3,18 @@
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterAll, expect } from 'vitest';
+import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import type { licence } from 'bsv-kit/bsv';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { Gate } from '../../src/gate/Gate';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
+import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 
 afterAll(() => {
   cleanup();
+  vi.unstubAllGlobals();
   db.close();
 });
 
@@ -44,6 +46,7 @@ const holds = (): Status => ({ state: 'held', outpoint, collection: 'lampas', ch
 
 async function open(): Promise<void> {
   cleanup();
+  stubChapterFetch();
   render(
     <Gate
       issuer={issuer}
@@ -58,7 +61,7 @@ async function open(): Promise<void> {
 const keyText = () => screen.getByTestId('device-key').textContent ?? '';
 
 async function seeReader(): Promise<void> {
-  expect(await screen.findByRole('heading', { name: 'Lampas' })).toBeInTheDocument();
+  expect(await screen.findByRole('heading', { name: 'Romans 8', level: 1 })).toBeInTheDocument();
 }
 
 async function seeUnlock(): Promise<void> {
@@ -66,7 +69,7 @@ async function seeUnlock(): Promise<void> {
 }
 
 function readerNotShown(): void {
-  expect(screen.queryByRole('heading', { name: 'Lampas' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: 'Romans 8', level: 1 })).not.toBeInTheDocument();
 }
 
 const feature = await loadFeature('features/gate.feature');
