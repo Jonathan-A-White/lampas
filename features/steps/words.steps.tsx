@@ -47,7 +47,10 @@ const wordRow = (lemma: string): HTMLElement => {
 const countLine = () => screen.getByTestId('word-counts');
 
 async function tapWord(lemma: string): Promise<void> {
+  const before = wordRow(lemma).getAttribute('data-state');
   await user.click(wordRow(lemma));
+  // A tap on a solid or dropped word is saved, then drawn: a second tap before that would see the old state (a busy store makes it slow).
+  if (before !== 'learning') await waitFor(() => expect(wordRow(lemma).getAttribute('data-state')).not.toBe(before));
 }
 
 async function expectState(lemma: string, state: string): Promise<void> {
