@@ -1,5 +1,6 @@
 // src/data/repositories/settings.ts — what he has chosen. A repository owns its transactions.
 import { db } from '../db';
+import { DEFAULT_LAYOUT, isLayout, type ReadingLayout } from '../../layout/layouts';
 import { DEFAULT_PRONUNCIATION, isPronunciation, type GreekPronunciation } from '../../speech/pronunciation';
 
 export type ReaderView = 'english' | 'greek';
@@ -54,4 +55,32 @@ export async function getGreekPronunciation(): Promise<GreekPronunciation> {
 
 export async function setGreekPronunciation(pronunciation: GreekPronunciation): Promise<void> {
   await db.settings.put({ key: PRONUNCIATION_KEY, value: pronunciation });
+}
+
+export type { ReadingLayout };
+
+const LAYOUT_KEY = 'layout';
+
+/** The saved reading layout; Verse by verse when he has not chosen or the saved value is not in the layout list. */
+export async function getLayout(): Promise<ReadingLayout> {
+  const row = await db.settings.get(LAYOUT_KEY);
+  return isLayout(row?.value) ? row.value : DEFAULT_LAYOUT;
+}
+
+export async function setLayout(layout: ReadingLayout): Promise<void> {
+  await db.settings.put({ key: LAYOUT_KEY, value: layout });
+}
+
+export type SectionHeadings = 'on' | 'off';
+
+const HEADINGS_KEY = 'sectionHeadings';
+
+/** The saved Section headings choice; on when he has not chosen yet or the saved value is not one of the two. */
+export async function getSectionHeadings(): Promise<SectionHeadings> {
+  const row = await db.settings.get(HEADINGS_KEY);
+  return row?.value === 'off' ? 'off' : 'on';
+}
+
+export async function setSectionHeadings(headings: SectionHeadings): Promise<void> {
+  await db.settings.put({ key: HEADINGS_KEY, value: headings });
 }
