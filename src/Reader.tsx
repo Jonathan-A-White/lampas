@@ -14,11 +14,10 @@ import { WordSheet, type Lookup } from './WordSheet';
 const BOOK = 'rom';
 const CHAPTER = 8;
 const TITLE = 'Romans 8';
-// 44 px (--lp-tap) minus the face's content area, halved, top and bottom: Gentium Plus is about 1.18 em tall, a phone's sans about 1.1 em.
-const GREEK_PAD = 'py-[calc((var(--lp-tap)-1.15em)/2)]';
-// A woven word is Greek in an English line; measured here Gentium Plus's content area is 1.107 em, not 1.18, so it pads for 1.05 em.
-const WOVEN_PAD = 'py-[calc((var(--lp-tap)-1.05em)/2)]';
-const ENGLISH_PAD = 'py-[calc((var(--lp-tap)-1.1em)/2)]';
+// 44 px (--lp-tap) minus 1 em, halved, top and bottom. Every face's content area is taller than 1 em (Gentium Plus
+// about 1.11 em, a phone's sans about 1.1 em), so an inline word is never under 44 px whatever the font, and the line
+// box stays --lp-tap tall, so the spare pixels cost no layout.
+const TAP_PAD = 'py-[calc((var(--lp-tap)-1em)/2)]';
 
 /** A word he can tap: a span with role button and no chrome. The caller pads it to a 44 px tap height (an inline box
  * is as tall as its font's content area, so the padding is 44 px minus that, which differs by face). The trailing
@@ -126,7 +125,7 @@ function VerseView({ verse, view, woven, selected, onSelect, onLook }: {
       <span data-text>
         {greek
           ? verse.g.map((w, i) => (
-              <Tap key={i} data-word={String(i)} className={GREEK_PAD} onTap={() => lookGreek(w)}>
+              <Tap key={i} data-word={String(i)} className={TAP_PAD} onTap={() => lookGreek(w)}>
                 {w.t}
               </Tap>
             ))
@@ -138,13 +137,13 @@ function VerseView({ verse, view, woven, selected, onSelect, onLook }: {
                   data-chunk={String(i)}
                   data-woven=""
                   lang="grc"
-                  className={`font-greek text-[length:var(--lp-greek-size)] text-accent ${WOVEN_PAD}`}
+                  className={`font-greek text-[length:var(--lp-greek-size)] text-accent ${TAP_PAD}`}
                   onTap={() => lookEnglish(c)}
                 >
                   {words.map((w) => w.t).join(' ')}
                 </Tap>
               ) : (
-                <Tap key={i} data-chunk={String(i)} className={`${ENGLISH_PAD} ${c.s ? 'italic' : ''}`} onTap={() => lookEnglish(c)}>
+                <Tap key={i} data-chunk={String(i)} className={`${TAP_PAD} ${c.s ? 'italic' : ''}`} onTap={() => lookEnglish(c)}>
                   {c.t}
                 </Tap>
               );

@@ -2,6 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
+// 44 px is the floor; a word must clear it by a pixel so one font's metrics can shave a little and it still holds.
+const TAP_WITH_MARGIN = 45;
+
 // The page never scrolls and never grows wider than the window.
 async function expectFitsPhone(page: Page) {
   const { scrollWidth, clientWidth, scrollTop } = await page.evaluate(() => ({
@@ -26,7 +29,7 @@ test('Romans 8 opens in English at phone width, words with a 44 px tap target', 
 
   const word = page.locator('[data-verse="1"] [data-chunk="0"]');
   const box = await word.boundingBox();
-  expect(box?.height).toBeGreaterThanOrEqual(43.5);
+  expect(box?.height).toBeGreaterThanOrEqual(TAP_WITH_MARGIN);
   const number = await page.getByRole('button', { name: 'Verse 1', exact: true }).boundingBox();
   expect(number?.height).toBeGreaterThanOrEqual(43.5);
   expect(number?.width).toBeGreaterThanOrEqual(43.5);
@@ -55,7 +58,7 @@ test('the Greek view sets verse 1 in Gentium Plus with polytonic accents', async
   expect(size).toBeGreaterThanOrEqual(26);
 
   const word = await page.locator('[data-verse="1"] [data-word="1"]').boundingBox();
-  expect(word?.height).toBeGreaterThanOrEqual(43.5);
+  expect(word?.height).toBeGreaterThanOrEqual(TAP_WITH_MARGIN);
 
   await expectFitsPhone(page);
   await shot(page, 'reader-greek');
