@@ -1,6 +1,6 @@
 // src/WordSheet.tsx — the bottom sheet a tapped word opens: the Greek word as it stands, how to say it (a respelling
 // in the pronunciation chosen in Settings), lemma, parsing in plain words, gloss and Strong's. Closes by a tap
-// outside, a swipe down on its handle, the Done button or Escape. Each word has a Help with this word row (Grammar, Sound it out)
+// outside, a swipe down on its handle, the Done button, Escape or the phone's Back (src/ui/sheetBack.ts). Each word has a Help with this word row (Grammar, Sound it out)
 // when the screen gives it somewhere to send them: the Talk sheet on the word's verse with the first question sent. Every grammar
 // word of the Parsing is a link to its Grammar sheet (src/GrammarSheet.tsx), which opens over this one: underlined until he marks
 // the term I know this, plain after. A Study row holds the links of the study resources he switched on in Settings (src/resources/),
@@ -17,6 +17,7 @@ import { armFallback } from './resources/openApp';
 import { pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
 import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
+import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { useKnownTerms } from './useKnownTerms';
 
@@ -201,6 +202,7 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
   const [shown, setShown] = useState<{ base: Lookup; lookup: Lookup } | null>(null);
   const lookup = shown && shown.base === opened ? shown.lookup : opened;
   useEscapeToClose(onClose, grammar === null);
+  useSheetBack(onClose);
   const pronunciation = useLatest('pronunciation-changed')?.pronunciation;
   const known = useKnownTerms();
   const study = useLiveQuery(getStudyResources, []);
