@@ -46,7 +46,9 @@ async function openLampasFresh(): Promise<void> {
 
 async function openQuickTest(): Promise<void> {
   // The Test button is in the Words header, which the Reader's Words button opens.
-  await user.click(await screen.findByRole('button', { name: 'Words' }));
+  if (!screen.queryByRole('button', { name: 'Test' })) {
+    await user.click(await screen.findByRole('button', { name: 'Words' }));
+  }
   await user.click(await screen.findByRole('button', { name: 'Test' }));
   await screen.findByRole('heading', { name: 'Quick test' });
   await screen.findByTestId('prompt');
