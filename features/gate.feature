@@ -28,6 +28,13 @@ Feature: The licence gate
     Then he sees "Licence revoked"
     And the reader is not shown
 
+  Scenario: A licence the issuer minted and then revoked shows Licence revoked
+    Given the issuer minted a licence to this phone's key on a stub chain
+    And the issuer then signed a revoke for it
+    When Lampas is opened
+    Then he sees "Licence revoked"
+    And the reader is not shown
+
   Scenario: A held result is remembered through an offline open within the grace
     Given the chain says this phone's key holds a licence
     And Lampas is opened
