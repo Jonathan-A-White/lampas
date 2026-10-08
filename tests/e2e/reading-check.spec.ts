@@ -1,0 +1,113 @@
+import { expect, test, type Page } from '@playwright/test';
+import { makeFakePostern, READING_ANSWER } from '../support/fake-postern';
+import { routePostern } from '../support/playwright-postern';
+import { shot } from './shot';
+import { openUnlocked } from './unlocked';
+
+const VIEWPORT = { width: 390, height: 844 };
+
+// The page never scrolls and never grows wider than the window.
+async function expectFitsPhone(page: Page) {
+  const { scrollWidth, clientWidth, scrollTop } = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    clientWidth: document.documentElement.clientWidth,
+    scrollTop: document.documentElement.scrollTop,
+  }));
+  expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+  expect(scrollTop).toBe(0);
+}
+
+// The Chromium of the gate has no microphone: a stream and a MediaRecorder stand in, enough for the recorder to run.
+async function fakeMicrophone(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const stream = { getTracks: () => [{ stop() {} }] };
+    Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: async () => stream } });
+    class FakeMediaRecorder {
+      static isTypeSupported = (mime: string) => mime === 'audio/webm;codecs=opus';
+      mimeType = 'audio/webm;codecs=opus';
+      state = 'inactive';
+      ondataavailable: ((e: { data: Blob }) => void) | null = null;
+      onstop: (() => void) | null = null;
+      start() {
+        this.state = 'recording';
+      }
+      stop() {
+        this.state = 'inactive';
+        this.ondataavailable?.({ data: new Blob([new Uint8Array(2000)], { type: 'audio/webm' }) });
+        this.onstop?.();
+      }
+    }
+    Object.defineProperty(window, 'MediaRecorder', { configurable: true, value: FakeMediaRecorder });
+  });
+}
+
+async function holdFor(page: Page, button: ReturnType<Page['getByRole']>, ms: number): Promise<void> {
+  const box = await button.boundingBox();
+  if (!box) throw new Error('the button is not on the page');
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.waitForTimeout(ms);
+  await page.mouse.up();
+}
+
+test('holding Read under verse 28 sends the reading and marks the words to fix, at phone width', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: READING_ANSWER };
+  await routePostern(page, fake);
+  await fakeMicrophone(page);
+  await openUnlocked(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Verse 28', exact: true }).click();
+
+  const panel = page.getByRole('region', { name: 'Reading check' });
+  const read = panel.getByRole('button', { name: 'Read', exact: true });
+  await expect(panel).toBeInViewport();
+  const readBox = await read.boundingBox();
+  expect(readBox?.height).toBeGreaterThanOrEqual(43.5);
+  expect(readBox?.width).toBeGreaterThanOrEqual(43.5);
+  const inline = page.locator('[data-verse="28"]').getByRole('button', { name: 'Read verse 28 aloud', exact: true });
+  const inlineBox = await inline.boundingBox();
+  expect(inlineBox?.height).toBeGreaterThanOrEqual(43.5);
+  expect(inlineBox?.width).toBeGreaterThanOrEqual(43.5);
+
+  // a quick press is only a tap
+  await holdFor(page, read, 100);
+  await expect(panel).toContainText('Hold while you read');
+  expect(fake.received).toHaveLength(0);
+
+  await holdFor(page, read, 800);
+  await expect(panel.locator('[data-fix]')).toHaveText(['together', 'purpose']);
+  expect(fake.received).toHaveLength(1);
+  expect(fake.received[0].grist.kind).toBe('verse-read');
+  expect(fake.received[0].attachments).toHaveLength(1);
+  expect(fake.received[0].attachments[0].mime).toBe('audio/webm');
+
+  const together = panel.getByRole('button', { name: 'together', exact: true });
+  expect((await together.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
+  await together.click();
+  await expect(panel.locator('[data-fix-detail] [data-chunks]')).toHaveText('to · geth · er');
+  await expectFitsPhone(page);
+  await panel.locator('[data-fix-detail]').scrollIntoViewIfNeeded();
+  await shot(page, 'reading-check');
+
+  await panel.getByRole('button', { name: 'Read these again', exact: true }).click();
+  const walk = panel.getByRole('group', { name: 'Read these again' });
+  await expect(walk).toContainText('Word 1 of 2');
+  await walk.getByRole('button', { name: 'Next word', exact: true }).click();
+  await expect(walk).toContainText('Word 2 of 2');
+  await walk.getByRole('button', { name: 'On to the whole verse', exact: true }).click();
+  await expect(walk.getByRole('button', { name: 'Read the whole verse again', exact: true })).toBeVisible();
+  await expectFitsPhone(page);
+});
+
+test('the Greek view says the Greek reading check is coming', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  await routePostern(page, makeFakePostern());
+  await openUnlocked(page);
+  await page.goto('/#/?c=8&view=greek&v=28');
+  const panel = page.getByRole('region', { name: 'Reading check' });
+  await expect(panel).toContainText('Greek reading check is coming');
+  await expect(panel.getByRole('button', { name: 'Read', exact: true })).toHaveCount(0);
+  await expectFitsPhone(page);
+});
