@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import { registerSW } from 'virtual:pwa-register';
 import { App } from './App';
+import { restoreAppearance } from './appearance/appearanceSync';
 import { Gate } from './gate/Gate';
 import { restoreLastRoute } from './nav/lastRoute';
 import { restoreScrolls } from './nav/scrollMemory';
@@ -10,6 +11,8 @@ import { startAppUpdates } from './services/appUpdate';
 import { installScrollGuard } from './ui/scrollGuard';
 
 installScrollGuard();
+// The last Theme and Text size, painted before the first render.
+restoreAppearance();
 // Reopen where he left it: the address and the scroll offsets, before the first render reads them.
 restoreLastRoute();
 restoreScrolls();

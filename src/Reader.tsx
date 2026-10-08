@@ -78,7 +78,7 @@ function ViewSwitch({ view }: { view: ReaderView }) {
       type="button"
       aria-pressed={view === value}
       onClick={() => void setReaderView(value)}
-      className={`min-h-11 min-w-11 rounded-lg px-3 text-base font-medium ${view === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+      className={`min-h-11 min-w-11 rounded-lg px-3 chrome-text font-medium ${view === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
     >
       {label}
     </button>
@@ -163,7 +163,7 @@ function VerseView(props: VerseProps) {
       data-verse={verse.n}
       data-selected={selected}
       lang={view === 'greek' ? 'grc' : 'en'}
-      className={`mb-1 break-words rounded-xl px-2 leading-(--lp-tap) ${selected ? 'bg-accent/15' : ''} ${textClass(view)}`}
+      className={`mb-1 break-words rounded-xl px-2 leading-(--lp-leading) ${selected ? 'bg-accent/15' : ''} ${textClass(view)}`}
     >
       <button
         type="button"
@@ -192,7 +192,7 @@ function ParagraphView({ verses, view, woven, selected, onSelect, onLook }: {
   onLook: (lookup: Lookup) => void;
 }) {
   return (
-    <p data-paragraph lang={view === 'greek' ? 'grc' : 'en'} className={`mb-2 break-words px-2 leading-(--lp-tap) ${textClass(view)}`}>
+    <p data-paragraph lang={view === 'greek' ? 'grc' : 'en'} className={`mb-2 break-words px-2 leading-(--lp-leading) ${textClass(view)}`}>
       {verses.map((verse, i) => (
         <span key={verse.n} data-verse={verse.n} data-selected={selected === verse.n} className={`rounded-xl ${selected === verse.n ? 'bg-accent/15' : ''}`}>
           <button
@@ -320,7 +320,7 @@ export function Reader() {
   return (
     <>
       <header className="flex shrink-0 items-center gap-2 border-b border-line px-2 py-2">
-        <h1 className="min-w-0 flex-1 truncate px-2 text-lg font-semibold">{TITLE}</h1>
+        <h1 className="chrome-title min-w-0 flex-1 truncate px-2 font-semibold">{TITLE}</h1>
         {view ? <ViewSwitch view={view} /> : null}
         <button
           type="button"

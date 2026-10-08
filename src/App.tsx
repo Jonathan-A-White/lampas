@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect } from 'react';
 import { seedWordsIfFirstOpen } from './data/repositories';
 import { About } from './About';
+import { startAppearanceSync } from './appearance/appearanceSync';
 import { ImportScreen } from './ImportScreen';
 import type { Random } from './data/quiz';
 import { saveLastRoute } from './nav/lastRoute';
@@ -21,6 +22,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
   useEffect(() => saveLastRoute(address), [address]);
   // A layout effect: it listens before the Reader's own effects (children's first) tell the bus the verse, view and weave.
   useLayoutEffect(() => startReaderAddressSync(), []);
+  // The saved Theme and Text size reach the page, and the browser's bar follows the phone's scheme.
+  useEffect(() => startAppearanceSync(), []);
   // The saved voices and pronunciation reach the speaker before the first tap on a speaker button.
   useEffect(() => startSpeechSettingsSync(), []);
   // The first open fills the word list from the example list; every later open finds the flag and does nothing.

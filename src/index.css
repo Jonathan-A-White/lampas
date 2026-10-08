@@ -35,7 +35,10 @@
   unicode-range: U+1F00-1FFF;
 }
 
-/* Design tokens: every colour the app uses is one of these (dark by default, light follows the phone). */
+/* Design tokens: every colour the app uses is one of these (dark by default). Two palettes, picked by html[data-theme]
+ * (src/appearance/appearanceSync.ts): 'dark' and 'light' are chosen; 'phone' (and no attribute yet) follows the phone's
+ * own scheme, live. The light palette is written twice, once for each way into it: tests/unit/themes.test.ts holds
+ * the two the same, and their canvas the same as the browser bar's colour. */
 @theme inline {
   --color-canvas: var(--lp-canvas);
   --color-surface: var(--lp-surface);
@@ -60,17 +63,26 @@
   --lp-muted: #9aa5ba;
   --lp-accent: #f2b544;
   --lp-accent-fg: #1a1204;
-
-  /* Reading size and the smallest thing a thumb is asked to hit. */
-  --lp-greek-size: 1.75rem;
-  --lp-english-size: 1.25rem;
-  --lp-tap: 2.75rem;
   --lp-good: #3fb97a;
   --lp-bad: #ef6a6a;
+
+  /* Text size (Settings): 1 is the phone's own. It scales the root font size, so every rem (type, and the reader's
+   * sizes below) follows; spacing and the tap height are divided by it again, so they stay what they were in pixels:
+   * a thumb is the same size at every text size. */
+  --lp-scale: 1;
+  --spacing: calc(0.25rem / var(--lp-scale));
+
+  /* Reading size and the smallest thing a thumb is asked to hit (44 px at the phone's own text size). */
+  --lp-greek-size: 1.75rem;
+  --lp-english-size: 1.25rem;
+  --lp-tap: calc(2.75rem / var(--lp-scale));
+  /* A line of reading text: 44 px so a tapped word is a thumb tall, or 1.4 lines of larger type when that is taller.
+   * Written with em, so it is worked out on the element that uses it. */
+  --lp-leading: max(var(--lp-tap), 1.4em);
 }
 
 @media (prefers-color-scheme: light) {
-  :root {
+  :root:not([data-theme="dark"]) {
     color-scheme: light;
     --lp-canvas: #f3f5f9;
     --lp-surface: #ffffff;
@@ -82,6 +94,38 @@
     --lp-good: #15803d;
     --lp-bad: #c62828;
   }
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --lp-canvas: #f3f5f9;
+  --lp-surface: #ffffff;
+  --lp-line: #dde2ec;
+  --lp-fg: #111827;
+  --lp-muted: #525c70;
+  --lp-accent: #b7790f;
+  --lp-accent-fg: #ffffff;
+  --lp-good: #15803d;
+  --lp-bad: #c62828;
+}
+
+html {
+  font-size: calc(100% * var(--lp-scale));
+}
+
+/* The bar at the top of a screen is chrome, not reading: it keeps the phone's own size at every Text size, or the
+ * chapter title is squeezed out by the English | Greek switch at 130% and 160%. (rem scales, so these undo it.) */
+@utility chrome-title {
+  font-size: calc(1.125rem / var(--lp-scale));
+  line-height: 1.5;
+}
+@utility chrome-text {
+  font-size: calc(1rem / var(--lp-scale));
+  line-height: 1.5;
+}
+@utility chrome-small {
+  font-size: calc(0.875rem / var(--lp-scale));
+  line-height: 1.4;
 }
 
 /* The page itself never scrolls (docs/pwa-best-practices.md section 7): one scroll box inside #root,
@@ -150,6 +194,7 @@ nav {
   input,
   textarea,
   select {
-    font-size: 16px;
+    /* 16 px at the least, or iOS zooms into the field */
+    font-size: max(16px, 1rem);
   }
 }
