@@ -124,10 +124,12 @@ describeFeature(feature, ({ Scenario }) => {
       expect(within(card).getByText(lemma, { selector: '[lang="grc"]' })).toBeInTheDocument();
       expect(card).toHaveTextContent('third person singular');
     });
-    And('the Ask box is ready for the next question', () => {
-      expect(field()).toHaveValue('');
-      expect(field()).toBeEnabled();
-    });
+    And('the Ask box is ready for the next question', () =>
+      waitFor(() => {
+        expect(field()).toHaveValue('');
+        expect(field()).toBeEnabled();
+      }),
+    );
   });
 
   Scenario('While the tutor has not answered the box says Sending and then Waiting', ({ Given, And, When, Then }) => {
