@@ -185,10 +185,14 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Text size Large makes the verse text larger and every tap target stays at least 44 px tall', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone whose colour scheme is dark, with nothing saved', () => openOnPhone(true));
     Then('the Text size in Settings is Normal', () => expectPressed('Text size', 'Normal'));
-    And("the page text is at 100% of the phone's size", () => expect(textScale()).toBe(1));
+    And("the page text is at 100% of the phone's size", () => waitFor(() => expect(textScale()).toBe(1)));
     When('he sets Text size to Large in Settings', () => user.click(choiceIn('Text size', 'Large')));
-    Then('the bus has heard the text size is {int}', (_, percent: number) => expect(latest('text-size-changed')?.percent).toBe(percent));
-    And("the page text has become {int}% of the phone's size", (_, percent: number) => expect(Math.round(textScale() * 100)).toBe(percent));
+    Then('the bus has heard the text size is {int}', (_, percent: number) =>
+      waitFor(() => expect(latest('text-size-changed')?.percent).toBe(percent)),
+    );
+    And("the page text has become {int}% of the phone's size", (_, percent: number) =>
+      waitFor(() => expect(Math.round(textScale() * 100)).toBe(percent)),
+    );
   });
 
   Scenario(
