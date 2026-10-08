@@ -127,6 +127,9 @@ rule (pure) and `src/data/repositories/reviews.ts` the rows (`recordReview`, `li
 * `seedScheduleIfFirstOpen` runs once after the words are seeded, on a first open and on the first open after the
   upgrade (meta `reviewsSeeded`): every solid word starts at the 30-day step, due on one of the next 30 days in turn
   (so about two a day, not a flood); every learning word at step 0, due now; a dropped word is left off.
+* How Review asks a word follows its step (`modeFor`, `FLASHCARD_STEP` in `schedule.ts`, provisional): multiple choice below
+  step 3, a flashcard (see the lemma, Show, grade yourself) from step 3 up; a lapse that drops it below step 3 makes it multiple
+  choice again. A word not on the schedule yet is at step 0.
 * Every change publishes `review-due-changed` (docs/events.md).
 
 ## Offline
