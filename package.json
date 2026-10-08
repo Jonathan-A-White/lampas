@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@bsv/sdk": "^2.8.11",
-    "bsv-kit": "github:Jonathan-A-White/bsv-kit#13b7e23c311e26edf9979259991e3f4aa356bff0",
+    "bsv-kit": "github:Jonathan-A-White/bsv-kit#20077847f5af718c83d9912f935f644a2cbbe2b0",
     "dexie": "^4.3.0",
     "dexie-react-hooks": "^4.4.0",
     "react": "^19.2.0",
@@ -60,6 +60,6 @@
     "vitest": "^4.0.18"
   },
   "allowScripts": {
-    "github:Jonathan-A-White/bsv-kit#13b7e23c311e26edf9979259991e3f4aa356bff0": true
+    "github:Jonathan-A-White/bsv-kit#20077847f5af718c83d9912f935f644a2cbbe2b0": true
   }
 }

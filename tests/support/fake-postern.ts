@@ -93,11 +93,14 @@ export function makeFakePostern(): FakePostern {
 
     const authorization = new Headers(init?.headers).get('Authorization') ?? '';
     fake.authorizations.push(authorization);
-    const match = /^Postern ([0-9a-f]{66}):([0-9a-f]+):([0-9a-f]+)$/.exec(authorization);
+    const match = /^Postern2 ([0-9a-f]{66}):([0-9a-f]+):([0-9a-f]+)$/.exec(authorization);
     if (!match) return json(401, { error: 'bad header', reason: 'malformed_authorization' });
     const [, pubkey, nonce, signature] = match;
     if (!issued.delete(nonce)) return json(401, { error: 'unknown nonce', reason: 'nonce' });
-    if (!PublicKey.fromString(pubkey).verify(nonce, Signature.fromDER(signature, 'hex'))) {
+    // v2 (docs/protocol.md §1): one request per signature, over the method, the request target and the body's hash.
+    const body = typeof init?.body === 'string' ? init.body : '';
+    const message = `postern-v2\n${method}\n${url.pathname}${url.search}\n${Utils.toHex(Hash.sha256(Utils.toArray(body, 'utf8')))}\n${nonce}`;
+    if (!PublicKey.fromString(pubkey).verify(message, Signature.fromDER(signature, 'hex'))) {
       return json(401, { error: 'bad signature', reason: 'signature' });
     }
     if (!fake.licensed) return json(401, { error: 'no licence', reason: 'no_licence' });
