@@ -5,6 +5,7 @@
 // window posts {type:'SKIP_WAITING'} after his tap on the Update banner (section 10).
 import { createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
+import { CacheFirst } from 'workbox-strategies';
 import { healPrecache, isGuardedAsset, serveAsset } from './precacheGuard';
 
 declare const self: ServiceWorkerGlobalScope;
@@ -26,6 +27,13 @@ self.addEventListener('activate', (event) => {
 
 precacheAndRoute(self.__WB_MANIFEST);
 registerRoute(new NavigationRoute(createHandlerBoundToURL('/index.html')));
+
+// A chapter of the New Testament data (/data/<book>/<n>.json) is fetched when he first opens it and then kept:
+// only the index and Romans 8 are in the precache, so a chapter once read stays readable offline.
+registerRoute(
+  ({ url, request }) => request.method === 'GET' && url.pathname.startsWith('/data/'),
+  new CacheFirst({ cacheName: 'lampas-data' }),
+);
 
 // A tap on the 'Update ready' banner sends {type:'SKIP_WAITING'}: this build takes over at once.
 self.addEventListener('message', (event) => {
