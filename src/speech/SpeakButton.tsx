@@ -7,7 +7,7 @@ import { noVoiceHelp, speak, stopIfSpeaking, useSpeakingKey, warmVoices } from '
 
 const HELP_MS = 7000;
 
-function Icon({ kind }: { kind: 'speaker' | 'play' | 'stop' }) {
+export function Icon({ kind }: { kind: 'speaker' | 'play' | 'stop' }) {
   return (
     <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
       {kind === 'speaker' ? (
