@@ -144,3 +144,109 @@ export function decodeParse(code: string): string {
       return bad(code);
   }
 }
+
+// ---- The same codes as features, for the Parsing drill (mw-5r3p30.31) ----
+// decodeParse above writes a code as one sentence; splitParse names each thing the code says, so a drill can ask
+// them one at a time. tests/unit/drill.test.ts holds the two in agreement over every code of the New Testament.
+
+export type ParseFeatureId = 'tense' | 'voice' | 'mood' | 'person' | 'case' | 'number' | 'gender';
+
+/** One thing a code says: 'tense' is 'present'. `choices` are the values a drill offers for it (always including `value`). */
+export interface ParseFeature {
+  id: ParseFeatureId;
+  value: string;
+  choices: string[];
+}
+
+export interface SplitParse {
+  /** 'verb', 'noun', 'adjective', 'article', 'pronoun' (of any kind), 'preposition' ... */
+  pos: string;
+  /** In the order a drill asks them; none for a word that is only its part of speech. */
+  features: ParseFeature[];
+}
+
+/** The parts of speech a drill offers (a code's own, when it is another such as 'conditional', is added to them). */
+export const PARTS_OF_SPEECH = ['verb', 'noun', 'adjective', 'article', 'pronoun', 'preposition', 'conjunction', 'particle', 'adverb'];
+
+const valuesOf = (table: Record<string, string>, keys: string): string[] => [...keys].map((k) => table[k]);
+const CHOICES: Record<ParseFeatureId, string[]> = {
+  tense: valuesOf(TENSES, 'PIFARL'),
+  // The rarer voices and moods are offered only when the code has one of them.
+  voice: valuesOf(VOICES, 'AMPE'),
+  mood: valuesOf(MOODS, 'IMSONP'),
+  person: valuesOf(PERSONS, '123'),
+  case: valuesOf(CASES, 'NGDAV'),
+  number: valuesOf(NUMBERS, 'SP'),
+  gender: valuesOf(GENDERS, 'MFN'),
+};
+
+function feature(id: ParseFeatureId, value: string): ParseFeature {
+  const choices = CHOICES[id];
+  return { id, value, choices: choices.includes(value) ? choices : [...choices, value] };
+}
+
+function nominalFeatures(code: string, text: string): ParseFeature[] {
+  const m = /^([NGDAV])([SP])([MFN])?$/.exec(text);
+  if (!m) return bad(code);
+  return [feature('case', CASES[m[1]]), feature('number', NUMBERS[m[2]]), ...(m[3] ? [feature('gender', GENDERS[m[3]])] : [])];
+}
+
+function verbFeatures(code: string, parts: string[]): ParseFeature[] {
+  const m = /^(2?)([PIFARL])([AMPEDONQX])([IMSONPR])$/.exec(parts[1] ?? '');
+  if (!m) return bad(code);
+  const [, , tense, voice, mood] = m;
+  const out = [feature('tense', TENSES[tense]), feature('voice', VOICES[voice]), feature('mood', MOODS[mood])];
+  let next = 2;
+  if (mood === 'P' || mood === 'R') {
+    out.push(...nominalFeatures(code, parts[next++] ?? ''));
+  } else if (mood !== 'N') {
+    const pn = /^([123])([SP])$/.exec(parts[next++] ?? '');
+    if (!pn) return bad(code);
+    out.push(feature('person', PERSONS[pn[1]]), feature('number', NUMBERS[pn[2]]));
+  }
+  suffixes(code, parts.slice(next));
+  return out;
+}
+
+function pronounFeatures(code: string, kind: string, parts: string[]): ParseFeature[] {
+  const form = parts[1] ?? '';
+  suffixes(code, parts.slice(2));
+  if (kind === 'S') {
+    // the possessor's person and number are left to the full parsing; the drill asks the thing possessed
+    const m = /^([123])([SP])(.+)$/.exec(form);
+    if (!m) return bad(code);
+    return nominalFeatures(code, m[3]);
+  }
+  const m = kind === 'P' || kind === 'F' ? /^([123])(.+)$/.exec(form) : null;
+  if (!m) return nominalFeatures(code, form);
+  const [caseFeature, ...rest] = nominalFeatures(code, m[2]);
+  return [caseFeature, feature('person', PERSONS[m[1]]), ...rest];
+}
+
+export function splitParse(code: string): SplitParse {
+  const parts = code.split('-');
+  const head = parts[0];
+  if (WORDS[head]) {
+    suffixes(code, parts.slice(1));
+    return { pos: WORDS[head], features: [] };
+  }
+  switch (head) {
+    case 'V':
+      return { pos: 'verb', features: verbFeatures(code, parts) };
+    case 'N': {
+      if (['LI', 'OI', 'PRI'].includes(parts[1])) return { pos: 'noun', features: [] };
+      suffixes(code, parts.slice(2));
+      return { pos: 'noun', features: nominalFeatures(code, parts[1] ?? '') };
+    }
+    case 'A':
+      if (parts[1] === 'NUI') return { pos: 'adjective', features: [] };
+      suffixes(code, parts.slice(2));
+      return { pos: 'adjective', features: nominalFeatures(code, parts[1] ?? '') };
+    case 'T':
+      suffixes(code, parts.slice(2));
+      return { pos: 'article', features: nominalFeatures(code, parts[1] ?? '') };
+    default:
+      if (PRONOUNS[head]) return { pos: 'pronoun', features: pronounFeatures(code, head, parts) };
+      return bad(code);
+  }
+}
