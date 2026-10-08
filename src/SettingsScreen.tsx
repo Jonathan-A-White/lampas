@@ -1,6 +1,6 @@
 // src/SettingsScreen.tsx — what he can set, so the reader's front screen stays clear: the Theme and Text size, the layout (verse by verse | paragraph), the section headings, the weave, the voices that read
 // English and Greek aloud, how fast each is read, and how Greek is pronounced. Each choice is saved in the settings store (src/data/repositories)
-// and told to the bus (src/events/bus.ts); Words and About open from here too.
+// and told to the bus (src/events/bus.ts); the Study resources (src/resources/) are switched on here; Words and About open from here too.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState, type ReactNode } from 'react';
 import { TEXT_SIZES } from './appearance/textSizes';
@@ -12,8 +12,11 @@ import {
   getSpeechRates,
   getTextSize,
   getTheme,
+  getStudyResources,
   getVoice,
   getWeave,
+  setResourceOn,
+  setResourceOption,
   type ReadingLayout,
   type SectionHeadings,
   type VoiceLanguage,
@@ -26,6 +29,7 @@ import { PHONE_VOICE, writeSetting } from './settings/registry';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { speaksLanguage, useVoices, voiceKey } from './speech/greek';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from './speech/languages';
+import { RESOURCES, type StudyResource } from './resources';
 import { PRONUNCIATIONS, pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
 
 function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
@@ -214,6 +218,56 @@ function PronunciationList({ chosen }: { chosen: GreekPronunciation }) {
   );
 }
 
+/** One study resource: its switch (a 44 px row), what it adds, and the field it asks for, if any (kept as he types). */
+function ResourceRow({ resource, on, typed }: { resource: StudyResource; on: boolean; typed: string }) {
+  const [value, setValue] = useState(typed);
+  const option = resource.option;
+  return (
+    <div className="border-b border-line py-2 last:border-b-0">
+      <div className="flex min-h-12 items-center justify-between gap-3">
+        <span id={`resource-${resource.id}`} className="text-base font-medium">
+          {resource.name}
+        </span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={on}
+          aria-label={resource.name}
+          onClick={() => void setResourceOn(resource.id, !on)}
+          className={`min-h-12 min-w-16 rounded-lg px-4 text-base font-medium ${on ? 'bg-accent text-accent-fg' : 'border border-line text-fg'}`}
+        >
+          {on ? 'On' : 'Off'}
+        </button>
+      </div>
+      <p className="text-sm text-muted">{resource.describe}</p>
+      {option ? (
+        <div className="mt-2">
+          <label className="block">
+            <span className="block text-base font-medium">{option.label}</span>
+            <input
+              type="text"
+              value={value}
+              placeholder={option.default}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              aria-describedby={`resource-${resource.id}-hint`}
+              onChange={(e) => {
+                setValue(e.target.value);
+                void setResourceOption(resource.id, e.target.value);
+              }}
+              className="mt-1 min-h-12 w-full rounded-lg border border-line bg-surface px-3 text-base text-fg"
+            />
+          </label>
+          <p id={`resource-${resource.id}-hint`} className="pt-1 text-sm text-muted">
+            {option.hint}
+          </p>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function LinkRow({ label, to }: { label: string; to: 'words' | 'about' }) {
   return (
     <button
@@ -240,6 +294,7 @@ export function SettingsScreen() {
   const english = useLiveQuery(() => getVoice('english'), []);
   const greek = useLiveQuery(() => getVoice('greek'), []);
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
+  const resources = useLiveQuery(getStudyResources, []);
   return (
     <>
       <ScreenHeader title="Settings" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />
@@ -274,6 +329,15 @@ export function SettingsScreen() {
           <Section title="Greek pronunciation" hint="How Greek is read aloud.">
             {pronunciation ? <PronunciationList chosen={pronunciation} /> : null}
           </Section>
+          <section aria-label="Study resources" className="border-b border-line py-4">
+            <h2 className="text-lg font-semibold">Study resources</h2>
+            <p className="pb-2 text-base text-muted">
+              Links from a word to the tools you own. Only links are added; no lexicon text is kept in Lampas. All start off.
+            </p>
+            {resources
+              ? RESOURCES.map((r) => <ResourceRow key={r.id} resource={r} on={resources.on.includes(r.id)} typed={resources.options[r.id] ?? ''} />)
+              : null}
+          </section>
           <Section title="More">
             <LinkRow label="Words" to="words" />
             <LinkRow label="About" to="about" />
