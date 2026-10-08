@@ -32,7 +32,25 @@ export interface TalkHistoryEntry {
   a: string;
 }
 
-/** What the grind is sent (Bible Talk Request 1). */
+/** The word he asked for help with (the word sheet's Help with this word row): the form as it stands, its lemma, its parsing in
+ * plain words, and what he wants: its grammar, or how to sound it out. */
+export interface TalkFocus {
+  form: string;
+  lemma: string;
+  parse: string;
+  kind: 'grammar' | 'sound';
+}
+
+/** The question the word sheet's Help row sends for `focus` in `reference`: it names the word, its lemma, its parsing and the
+ * reference, then asks. */
+export function helpQuestion(focus: TalkFocus, reference: string): string {
+  const word = `${focus.form} (lemma ${focus.lemma}; ${focus.parse}) in ${reference}`;
+  return focus.kind === 'grammar'
+    ? `The word ${word}. Explain the grammar of this form and what I need to know to read it.`
+    : `The word ${word}. Help me pronounce this word: its syllables and how each sounds.`;
+}
+
+/** What the grind is sent (Bible Talk Request 1; grinds/bible-talk.input.schema.json). */
 export interface TalkRequest {
   reference: string;
   greek: string;
@@ -42,6 +60,8 @@ export interface TalkRequest {
   solid_words: string[];
   /** what each of the app's settings holds now (src/settings/registry.ts currentSettings), by key */
   settings: Record<string, SettingValue>;
+  /** present only when the question comes from the word sheet's Help with this word row */
+  focus?: TalkFocus;
 }
 
 /** What the grind answers (grinds/bible-talk.answer.schema.json). */
@@ -50,6 +70,8 @@ export interface TalkAnswer {
   words: AnswerWord[];
   /** the settings he asked to change, as the grind wrote them: the registry checks each one before it is applied */
   settings_changes?: unknown[];
+  /** for a Sound it out question: the syllables of the word, in order (at most 12) */
+  syllables?: string[];
 }
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
@@ -58,8 +80,9 @@ const isText = (value: unknown, max: number): value is string => typeof value ==
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'settings_changes')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'settings_changes' && k !== 'syllables')) return false;
   if ('settings_changes' in value && !Array.isArray(value.settings_changes)) return false;
+  if ('syllables' in value && !(Array.isArray(value.syllables) && value.syllables.length <= 12 && value.syllables.every((s) => isText(s, 40)))) return false;
   if (!Array.isArray(value.words) || value.words.length > 12) return false;
   return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));
 }
@@ -95,13 +118,14 @@ export function fitHistory(request: TalkRequest): TalkRequest {
   return fitted();
 }
 
-/** The request for what he just said: the verse's text, or the chapter's first three verses; the last 10 turns, oldest first; the settings as they stand. */
+/** The request for what he just said: the verse's text, or the chapter's first three verses; the last 10 turns, oldest first; the settings as they stand; the word he asked help with, if he did. */
 export function buildTalkRequest(
   scope: TalkScope,
   question: string,
   turns: { q: string; a: string }[],
   solidWords: string[],
   settings: Record<string, SettingValue> = {},
+  focus?: TalkFocus,
 ): TalkRequest {
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   return {
@@ -112,6 +136,7 @@ export function buildTalkRequest(
     history: turns.slice(-MAX_HISTORY_TURNS).map(({ q, a }) => ({ q, a })),
     solid_words: solidWords,
     settings,
+    ...(focus ? { focus } : {}),
   };
 }
 

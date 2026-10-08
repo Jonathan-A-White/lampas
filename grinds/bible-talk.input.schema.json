@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Bible Talk Request 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["reference", "greek", "english", "question", "history", "solid_words", "settings"],
+  "properties": {
+    "reference": { "description": "What the conversation is about: 'Romans 8:28' or 'Romans 8'.", "type": "string", "minLength": 1, "maxLength": 80 },
+    "greek": { "description": "The Greek of the verse, or of the chapter's first three verses.", "type": "string", "minLength": 1 },
+    "english": { "description": "The same text in English.", "type": "string", "minLength": 1 },
+    "question": { "description": "What he just said.", "type": "string", "minLength": 1, "maxLength": 600 },
+    "history": {
+      "description": "The last turns of the conversation, oldest first.",
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["q", "a"],
+        "properties": { "q": { "type": "string" }, "a": { "type": "string" } }
+      }
+    },
+    "solid_words": { "description": "The Greek lemmas he already knows well.", "type": "array", "items": { "type": "string" } },
+    "settings": { "description": "What each of the app's settings holds now, by key.", "type": "object" },
+    "focus": {
+      "description": "Optional. The word he asked for help with, from the word sheet's Help with this word row: the form as it stands, its lemma, its parsing in plain words, and what he wants help with.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["form", "lemma", "parse", "kind"],
+      "properties": {
+        "form": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "lemma": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "parse": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "kind": { "description": "grammar: the form and what is needed to read it; sound: its syllables and how each sounds.", "type": "string", "enum": ["grammar", "sound"] }
+      }
+    }
+  }
+}

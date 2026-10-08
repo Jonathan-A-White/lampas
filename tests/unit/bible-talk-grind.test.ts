@@ -111,3 +111,40 @@ describe('settings_changes in the answer', () => {
     expect(text).toMatch(/Never claim a change the list does not have/);
   });
 });
+
+describe('the word help focus and the syllables (mw-5r3p30.34)', () => {
+  const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
+  const request = { reference: 'Romans 8:28', greek: 'Οἴδαμεν', english: 'And we know', question: 'Why?', history: [], solid_words: [], settings: {} };
+  const focus = { form: 'συνεργεῖ', lemma: 'συνεργέω', parse: 'verb, present active indicative, third person singular', kind: 'grammar' };
+  const answer = { answer: 'Say it in three parts.', words: [] };
+
+  it("the request schema accepts a focus, and still accepts a request without one", () => {
+    expect(validate(request, input)).toEqual([]);
+    expect(validate({ ...request, focus }, input)).toEqual([]);
+    expect(validate({ ...request, focus: { ...focus, kind: 'sound' } }, input)).toEqual([]);
+    expect((input.required as string[])).not.toContain('focus');
+  });
+
+  it('the request schema refuses a focus that is incomplete, has another kind or another key', () => {
+    for (const bad of [{ ...focus, kind: 'spell' }, { ...focus, extra: 1 }, { form: 'συνεργεῖ', lemma: 'συνεργέω', kind: 'sound' }, { ...focus, form: '' }]) {
+      expect(validate({ ...request, focus: bad }, input), JSON.stringify(bad)).not.toEqual([]);
+    }
+  });
+
+  it('the answer schema and the app guard accept syllables (up to 12), and an answer without them', () => {
+    for (const value of [answer, { ...answer, syllables: ['συν', 'ερ', 'γεῖ'] }, { ...answer, syllables: Array.from({ length: 12 }, () => 'α') }, { ...answer, syllables: [] }]) {
+      expect(validate(value, schema as Schema)).toEqual([]);
+      expect(isTalkAnswer(value)).toBe(true);
+    }
+    expect((schema.required as string[]).sort()).toEqual(['answer', 'words']);
+    for (const bad of [{ ...answer, syllables: Array.from({ length: 13 }, () => 'α') }, { ...answer, syllables: [''] }, { ...answer, syllables: [4] }, { ...answer, syllables: 'συν' }]) {
+      expect(validate(bad, schema as Schema), JSON.stringify(bad)).not.toEqual([]);
+      expect(isTalkAnswer(bad), JSON.stringify(bad)).toBe(false);
+    }
+  });
+
+  it('the instructions tell the companion what the focus is and how to answer it, and to list the syllables for sound', () => {
+    const text = readFileSync(grind.instructions as string, 'utf8');
+    for (const part of ['`focus`', '`syllables`', 'tart from the form', 'ending, the stem change, the accent or breathing', 'same chapter', 'one check question']) expect(text).toContain(part);
+  });
+});

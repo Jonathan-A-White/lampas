@@ -41,6 +41,13 @@ describe('buildTalkRequest', () => {
     expect(buildTalkRequest({ title: 'Romans 8', chapter, verse: null }, 'Why?', [], []).settings).toEqual({});
   });
 
+  it('carries the focus when there is one, and no focus key when there is not', () => {
+    const scope = { title: 'Romans 8', chapter, verse: chapter.verses.find((v) => v.n === 28) ?? null };
+    const focus = { form: 'συνεργεῖ', lemma: 'συνεργέω', parse: 'verb', kind: 'sound' as const };
+    expect(buildTalkRequest(scope, 'Help', [], [], {}, focus).focus).toEqual(focus);
+    expect('focus' in buildTalkRequest(scope, 'Help', [], [], {})).toBe(false);
+  });
+
   it('keeps a question to 600 characters', () => {
     expect(MAX_TALK_CHARS).toBe(600);
   });

@@ -26,6 +26,12 @@
         }
       }
     },
+    "syllables": {
+      "description": "Only when the question asked how to sound a word out (its focus kind is sound): the word's syllables in Greek letters, in order, each one short enough to say alone. Leave it out otherwise.",
+      "type": "array",
+      "maxItems": 12,
+      "items": { "type": "string", "minLength": 1, "maxLength": 40 }
+    },
     "settings_changes": {
       "description": "The settings he asked to change, each applied at once by the app. Only the keys and values the instructions list; leave it out when he asked for no change.",
       "type": "array",

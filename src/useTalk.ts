@@ -6,7 +6,7 @@ import { addTurn, listSolidHeadwords, listTurns, talkRef } from './data/reposito
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { TutorError } from './services/tutor';
 import { applyChanges, currentSettings } from './settings/registry';
-import { askTalk, buildTalkRequest, type TalkScope } from './services/talk';
+import { askTalk, buildTalkRequest, type TalkFocus, type TalkScope } from './services/talk';
 import type { AskState } from './useAsks';
 
 type Talks = Record<string, AskState | undefined>;
@@ -14,15 +14,24 @@ type Talks = Record<string, AskState | undefined>;
 export interface UseTalk {
   /** what the message of each conversation (by its ref) is doing now */
   states: Talks;
-  /** says `message` in the conversation `scope` names */
-  say: (scope: TalkScope, message: string) => void;
+  /** says `message` in the conversation `scope` names; `focus` is the word the message asks help with. A message sent again
+   * unchanged (Retry) keeps the focus it was first sent with. */
+  say: (scope: TalkScope, message: string, focus?: TalkFocus) => void;
 }
 
-/** `onAnswered(ref, turnId, answer)` is called once an answer has been kept. */
-export function useTalk(book: string, chapter: number, onAnswered: (ref: string, turnId: number, answer: string) => void): UseTalk {
+/** What `onAnswered` is told besides the answer's text: the focus the message had and the syllables the answer lists. */
+export interface AnswerInfo {
+  focus?: TalkFocus;
+  syllables?: string[];
+}
+
+/** `onAnswered(ref, turnId, answer, info)` is called once an answer has been kept. */
+export function useTalk(book: string, chapter: number, onAnswered: (ref: string, turnId: number, answer: string, info: AnswerInfo) => void): UseTalk {
   const [states, setStates] = useState<Talks>({});
   const live = useRef<AbortController>(new AbortController());
   const answered = useRef(onAnswered);
+  // The last message of each conversation that carried a focus, so that Retry (the same text again) sends it again.
+  const focused = useRef<Record<string, { text: string; focus: TalkFocus } | undefined>>({});
   useEffect(() => {
     answered.current = onAnswered;
   });
@@ -37,10 +46,13 @@ export function useTalk(book: string, chapter: number, onAnswered: (ref: string,
   }, []);
 
   const say = useCallback(
-    (scope: TalkScope, message: string) => {
+    (scope: TalkScope, message: string, focusOf?: TalkFocus) => {
       const text = message.trim();
       if (!text) return;
       const ref = talkRef(book, chapter, scope.verse?.n ?? null);
+      const kept = focused.current[ref];
+      const focus = focusOf ?? (kept?.text === text ? kept.focus : undefined);
+      focused.current[ref] = focus ? { text, focus } : undefined;
       const signal = live.current.signal;
       const set = (state: AskState | undefined): void => {
         if (!signal.aborted) setStates((all) => ({ ...all, [ref]: state }));
@@ -50,7 +62,7 @@ export function useTalk(book: string, chapter: number, onAnswered: (ref: string,
       void (async () => {
         try {
           const [turns, solid, settings] = await Promise.all([listTurns(ref), listSolidHeadwords(), currentSettings()]);
-          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings), {
+          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus), {
             key: getDeviceKeyBytes(),
             signal,
             onSent: () => set({ phase: 'waiting', question: text, startedAt }),
@@ -59,7 +71,7 @@ export function useTalk(book: string, chapter: number, onAnswered: (ref: string,
           const { applied, refused } = await applyChanges(answer.settings_changes);
           const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { changes: applied, refused });
           set(undefined);
-          if (!signal.aborted) answered.current(ref, id, answer.answer);
+          if (!signal.aborted) answered.current(ref, id, answer.answer, { focus, syllables: answer.syllables });
         } catch (err) {
           if (signal.aborted) return;
           const failure = err instanceof TutorError ? err.failure : 'unreachable';
