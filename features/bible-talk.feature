@@ -1,0 +1,129 @@
+Feature: Bible talk
+  A Talk button at the bottom of the reader opens a sheet for a conversation about the chapter, or about the
+  selected verse, with the bible-talk grind (grinds/bible-talk.json). He types; Lampas sends a grist through
+  Postern (bsv-kit/grist) with the Greek and English, his question, his solid words and the last turns of the
+  conversation, and shows the answer in the sheet and reads it aloud. The turns are kept on the phone, per
+  chapter and per verse. These scenarios run against a fake Postern whose mill opens the grist and answers it;
+  the live backend is tried by `npm run e2e:live`.
+
+  Scenario: A question about 8:28 sends a bible-talk grist with the verse's Greek and English, the question, the solid words and the earlier turns
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern
+    And he selects verse 28
+    And he opens Talk
+    Then the sheet is titled "Talk about Romans 8:28"
+    When he sends "Why does Paul say all things?"
+    And the answer number 1 has arrived
+    And he sends "What does συνεργεῖ mean here?"
+    Then the mill received 2 grists for the lampas app, kind bible-talk
+    And the first grist carries no earlier turns
+    And the second grist carries the reference "Romans 8:28" and the Greek and the English of verse 28
+    And the second grist carries the question "What does συνεργεῖ mean here?"
+    And the second grist carries his solid words, and not the words he is still learning
+    And the second grist carries the first question and its answer as the earlier turn
+
+  Scenario: With no verse selected the talk is about the chapter, with its first three verses
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern
+    When he opens Talk
+    Then the sheet is titled "Talk about Romans 8"
+    When he sends "What is this chapter about?"
+    Then the mill received 1 grists for the lampas app, kind bible-talk
+    And the first grist carries the reference "Romans 8" and the Greek and the English of verses 1 to 3
+    And the first grist carries the question "What is this chapter about?"
+
+  Scenario: The answer shows in the sheet and is read aloud
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern and a phone that speaks English and Greek
+    And he selects verse 28
+    And he opens Talk
+    When he sends "What does συνεργεῖ mean here?"
+    Then the answer shows in the sheet under his question
+    And the answer is read aloud, its Greek word in Greek and the rest in English
+    When he taps Stop on the answer
+    Then the reading stops and the answer can be heard again
+
+  Scenario: The Greek words of an answer open the word sheet
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern
+    And he selects verse 28
+    And he opens Talk
+    And he sends "What does συνεργεῖ mean here?"
+    When he taps the Greek word "συνεργεῖ" in the answer
+    Then the word sheet shows "συνεργεῖ" with its lemma "συνεργέω"
+    When he taps Done on the word sheet
+    Then the word sheet is gone and the Talk sheet is still open
+
+  Scenario: The eleventh turn sends only the last 10 as history
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern
+    And ten turns were already kept for verse 28
+    And he selects verse 28
+    And he opens Talk
+    When he sends "Question eleven"
+    And the answer number 11 has arrived
+    And he sends "Question twelve"
+    Then the mill received 2 grists for the lampas app, kind bible-talk
+    And the first grist carries 10 earlier turns, from "Question 1" to "Question 10"
+    And the second grist carries 10 earlier turns, from "Question 2" to "Question eleven"
+
+  Scenario: A conversation is still there after reload
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern
+    And he selects verse 28
+    And he opens Talk
+    And he sends "What does συνεργεῖ mean here?"
+    And the answer number 1 has arrived
+    When he reopens Lampas, selects verse 28 and opens Talk
+    Then the answer shows in the sheet under his question
+    And the fake Postern was not asked again
+
+  Scenario: A verse's talk and the chapter's talk are kept apart
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern
+    And he selects verse 28
+    And he opens Talk
+    And he sends "What does συνεργεῖ mean here?"
+    And the answer number 1 has arrived
+    When he taps Done on the Talk sheet
+    And he selects verse 28 again, so that no verse is selected
+    And he opens Talk again
+    Then the sheet is titled "Talk about Romans 8"
+    And the sheet shows no turns yet
+
+  Scenario: An unreachable backend shows Could not reach with Retry
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that cannot be reached
+    And he selects verse 28
+    And he opens Talk
+    When he sends "What does συνεργεῖ mean here?"
+    Then the sheet says "Could not reach the tutor" with a Retry button
+    And the sheet shows no answer
+    When the backend comes back and he taps Retry
+    Then the answer shows in the sheet under his question
+
+  Scenario: While the tutor has not answered the sheet says Sending and then Waiting
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that holds its answers
+    And he selects verse 28
+    And he opens Talk
+    When he sends "What does συνεργεῖ mean here?"
+    Then the sheet says Waiting and nothing can be sent until the answer comes
+    When the tutor answers
+    Then the answer shows in the sheet under his question
+
+  Scenario: An unlicensed reply shows No licence
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that holds no licence for this phone
+    And he selects verse 28
+    And he opens Talk
+    When he sends "What does συνεργεῖ mean here?"
+    Then the sheet says "No licence" with a Retry button
+
+  Scenario: Send cannot be tapped with nothing typed
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern
+    When he opens Talk
+    Then the Send button is off
+    When he types "   "
+    Then the Send button is still off
+    When he types "Why?" instead
+    Then the Send button is on
+
+  Scenario: Done closes the sheet and Escape closes it too
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern
+    When he opens Talk
+    And he taps Done on the Talk sheet
+    Then the Talk sheet is gone
+    When he opens Talk again
+    And he presses Escape
+    Then the Talk sheet is gone again

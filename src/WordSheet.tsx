@@ -1,10 +1,10 @@
 // src/WordSheet.tsx — the bottom sheet a tapped word opens: the Greek word as it stands, its transliteration,
 // lemma, parsing in plain words, gloss and Strong's. Closes by a tap outside, a swipe down on its handle,
 // the Done button or Escape.
-import { useEffect, useRef, useState } from 'react';
 import { type Chapter, type GreekWord, wordGloss, wordLemma, wordParse } from './data/chapter';
 import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
+import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 
 /** What was tapped: Greek words, and the English they stand for. `english` is the tapped chunk, or a Greek word's own chunk. */
 export interface Lookup {
@@ -13,9 +13,6 @@ export interface Lookup {
   /** true when the English was what he tapped (the sheet then heads with it) */
   fromEnglish: boolean;
 }
-
-/** A swipe down of at least this many pixels closes the sheet. */
-const CLOSE_DISTANCE = 80;
 
 function Fact({ label, children, testId, lang }: { label: string; children: string; testId: string; lang?: string }) {
   return (
@@ -64,31 +61,8 @@ function WordCard({ chapter, word, english }: { chapter: Chapter; word: GreekWor
 }
 
 export function WordSheet({ chapter, lookup, onClose }: { chapter: Chapter; lookup: Lookup; onClose: () => void }) {
-  const [drag, setDrag] = useState(0);
-  const touch = useRef<{ startY: number; dy: number } | null>(null);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    touch.current = { startY: e.touches[0].clientY, dy: 0 };
-  };
-  const onTouchMove = (e: React.TouchEvent) => {
-    if (!touch.current) return;
-    touch.current.dy = Math.max(0, e.touches[0].clientY - touch.current.startY);
-    setDrag(touch.current.dy);
-  };
-  const onTouchEnd = () => {
-    const dy = touch.current?.dy ?? 0;
-    touch.current = null;
-    setDrag(0);
-    if (dy >= CLOSE_DISTANCE) onClose();
-  };
+  const { drag, handle } = useSheetDrag(onClose);
+  useEscapeToClose(onClose);
 
   return (
     <div className="fixed inset-0 z-10 flex flex-col justify-end">
@@ -102,10 +76,7 @@ export function WordSheet({ chapter, lookup, onClose }: { chapter: Chapter; look
       >
         <div
           data-testid="sheet-handle"
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-          onTouchCancel={onTouchEnd}
+          {...handle}
           className="flex min-h-12 touch-none items-center justify-between gap-3 px-4 pt-2"
         >
           <span aria-hidden="true" className="mx-auto h-1.5 w-10 rounded-full bg-line" />

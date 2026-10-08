@@ -10,6 +10,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnswerCards, AskBox } from './Ask';
+import { TalkBar, TalkSheet } from './Talk';
 import { type Chapter, type EnglishChunk, type GreekWord, type Verse, loadChapter } from './data/chapter';
 import {
   getLayout,
@@ -19,6 +20,7 @@ import {
   listSolidLemmas,
   setReaderView,
   setWeave,
+  talkRef,
   type ReaderView,
 } from './data/repositories';
 import { weaveVerse, type Woven } from './data/weave';
@@ -28,8 +30,10 @@ import { blocksOf } from './layout/layouts';
 import { navigate, readerOf, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
+import { useTalk } from './useTalk';
 import { HeaderButton } from './ScreenHeader';
-import { pauseReading, planOf, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
+import { pauseReading, planOf, startAnswer, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
+import { answerRuns } from './speech/answerRuns';
 import { ReadFromButton, ReadingBar, VersePlay } from './speech/ReadControls';
 import { speakWord, warmVoices } from './speech/greek';
 import type { SpeechLanguage } from './speech/languages';
@@ -309,6 +313,16 @@ export function Reader() {
   const selected = selectedEvent?.chapter === CHAPTER ? selectedEvent.verse : null;
   const [lookup, setLookup] = useState<Lookup | null>(null);
   const { asks, ask } = useAsks(BOOK, CHAPTER, TITLE);
+  // The Talk sheet: undefined is closed, a number the verse it was opened on, null the chapter. An answer that arrives while
+  // its conversation is open on the sheet is read aloud.
+  const [talkAbout, setTalkAbout] = useState<number | null | undefined>(undefined);
+  const openTalk = useRef<string | null>(null);
+  useEffect(() => {
+    openTalk.current = talkAbout === undefined ? null : talkRef(BOOK, CHAPTER, talkAbout);
+  }, [talkAbout]);
+  const { states: talkStates, say } = useTalk(BOOK, CHAPTER, (ref, id, answer) => {
+    if (openTalk.current === ref) startAnswer(id, answerRuns(answer));
+  });
   // The verse he last tapped: its Ask box scrolls into view. A selection put back by a reopen or Back does not, so it
   // leaves the text where the scroll memory put it.
   const [tapped, setTapped] = useState<number | null>(null);
@@ -320,6 +334,7 @@ export function Reader() {
     [selected],
   );
   const closeSheet = useCallback(() => setLookup(null), []);
+  const talkScope = chapter && talkAbout !== undefined ? { title: TITLE, chapter, verse: chapter.verses.find((v) => v.n === talkAbout) ?? null } : null;
   const weaving = view === 'english' && weave === 'solid';
   const woven = useMemo(
     () => (chapter && weaving ? chapter.verses.map((v) => weaveVerse(v, solid ?? EMPTY_LEMMAS)) : null),
@@ -333,7 +348,7 @@ export function Reader() {
     },
     [plan],
   );
-  const readingVerse = reading.status === 'idle' ? null : reading.verse;
+  const readingVerse = reading.status === 'idle' || reading.answer !== null ? null : reading.verse;
   const blocks = useMemo(() => (chapter && layout ? blocksOf(chapter.verses, layout) : []), [chapter, layout]);
   const wovenCount = woven ? woven.reduce((n, w) => n + w.filter(Boolean).length, 0) : 0;
 
@@ -494,6 +509,16 @@ export function Reader() {
         )}
         </div>
       </main>
+      {chapter ? <TalkBar onTalk={() => setTalkAbout(selected)} /> : null}
+      {talkScope && talkAbout !== undefined ? (
+        <TalkSheet
+          scope={talkScope}
+          talkRef={talkRef(BOOK, CHAPTER, talkAbout)}
+          state={talkStates[talkRef(BOOK, CHAPTER, talkAbout)]}
+          onSay={(message) => say(talkScope, message)}
+          onClose={() => setTalkAbout(undefined)}
+        />
+      ) : null}
       {chapter && lookup ? <WordSheet chapter={chapter} lookup={lookup} onClose={closeSheet} /> : null}
     </>
   );

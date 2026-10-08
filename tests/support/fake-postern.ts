@@ -54,10 +54,16 @@ export const SYNERGEI_ANSWER = {
   words: [{ greek: 'συνεργεῖ', lemma: 'συνεργέω', note: 'verb, present active indicative, third person singular' }],
 };
 
+/** The answer the fake gives to a Bible talk question, in the app's answer shape (grinds/bible-talk.answer.schema.json). */
+export const TALK_ANSWER = {
+  answer: 'In this verse συνεργεῖ means "works together": God is the one who weaves every thing toward good for those who love him.',
+  words: [{ greek: 'συνεργεῖ', lemma: 'συνεργέω', note: 'verb, present active indicative, third person singular' }],
+};
+
 export function makeFakePostern(): FakePostern {
   const issued = new Set<string>();
   const records: { seq: number; txid: string; signer?: string; payload: Record<string, unknown> }[] = [];
-  const unanswered: { txid: string; from: string }[] = [];
+  const unanswered: { txid: string; from: string; kind: string }[] = [];
   let counter = 0;
 
   const fake: FakePostern = {
@@ -71,7 +77,7 @@ export function makeFakePostern(): FakePostern {
     answer(reply) {
       const next = unanswered.shift();
       if (!next) throw new Error('no grist is waiting for an answer');
-      const plaintext = { re: next.txid, ...reply, grind: { app: 'lampas', kind: 'verse-ask', v: '1' } };
+      const plaintext = { re: next.txid, ...reply, grind: { app: 'lampas', kind: next.kind, v: '1' } };
       const envelope = grist.sealEnvelope(JSON.stringify(plaintext), millBytes, next.from, 1_790_000_000);
       records.push({ seq: records.length + 1, txid: `direct:${hex(Hash.sha256(Utils.toArray(`answer-${next.txid}`, 'utf8')))}`, signer: MILL_PUBLIC_KEY, payload: { ...envelope } });
     },
@@ -114,8 +120,9 @@ export function makeFakePostern(): FakePostern {
       if (envelope.from !== pubkey || envelope.to !== MILL_PUBLIC_KEY) return json(403, { error: 'not to the mill from you' });
       const txid = `direct:${hex(Hash.sha256(Utils.toArray(scriptHex, 'hex')))}`;
       records.push({ seq: records.length + 1, txid, signer: pubkey, payload: { ...envelope } });
-      fake.received.push(JSON.parse(grist.openCt(envelope.ct, millBytes)) as ReceivedGrist);
-      unanswered.push({ txid, from: pubkey });
+      const opened = JSON.parse(grist.openCt(envelope.ct, millBytes)) as ReceivedGrist;
+      fake.received.push(opened);
+      unanswered.push({ txid, from: pubkey, kind: opened.grist.kind });
       if (fake.autoReply) fake.answer(fake.autoReply);
       return json(201, { txid, seq: records.length });
     }

@@ -5,17 +5,10 @@ import { useEffect, useRef, useState } from 'react';
 import type { Chapter, Verse } from './data/chapter';
 import { useLatest } from './events/bus';
 import { listAnswers, verseRef, type TutorAnswer } from './data/repositories';
-import { MAX_QUESTION_CHARS, type TutorFailure } from './services/tutor';
+import { FAILURE_TITLES, MAX_QUESTION_CHARS } from './services/tutor';
 import type { AskState } from './useAsks';
 import { revealInScrollBox } from './ui/reveal';
 import { setVisibleInterval } from './ui/visibleInterval';
-
-const TITLES: Record<TutorFailure, string> = {
-  'no-licence': 'No licence',
-  unreachable: 'Could not reach the tutor',
-  'not-sent': 'Could not send the question',
-  'no-answer': 'Could not reach the tutor',
-};
 
 /** Whole seconds since `since`, ticking while the page is visible. */
 function useElapsed(since: number): number {
@@ -24,7 +17,7 @@ function useElapsed(since: number): number {
   return Math.max(0, Math.floor((now - since) / 1000));
 }
 
-function Waiting({ state }: { state: Extract<AskState, { phase: 'sending' | 'waiting' }> }) {
+export function Waiting({ state }: { state: Extract<AskState, { phase: 'sending' | 'waiting' }> }) {
   const seconds = useElapsed(state.startedAt);
   return (
     <p role="status" className="text-base text-muted">
@@ -117,7 +110,7 @@ function AskField({ verse, state, reveal, onAsk }: { verse: Verse; state: AskSta
       />
       {state?.phase === 'failed' ? (
         <div role="alert" className="space-y-2">
-          <p className="text-base font-semibold text-bad">{TITLES[state.failure]}</p>
+          <p className="text-base font-semibold text-bad">{FAILURE_TITLES[state.failure]}</p>
           <p className="break-words text-sm text-muted">{state.detail}</p>
           {state.failure === 'not-sent' ? null : (
             <button
