@@ -44,6 +44,18 @@ export interface TutorAnswer {
   when: number;
 }
 
+/** One turn of a Bible talk: what he said and what the companion answered, kept so the conversation is there on return. */
+export interface TalkTurn {
+  id?: number;
+  /** the conversation it belongs to: the chapter 'rom.8', or a verse 'rom.8.28' when it was started on one */
+  ref: string;
+  q: string;
+  a: string;
+  words: AnswerWord[];
+  /** when the answer arrived (ms since the epoch) */
+  when: number;
+}
+
 /** One-off facts about the store, such as 'wordsSeeded'. */
 export interface MetaRow {
   key: string;
@@ -64,6 +76,7 @@ class LampasDB extends Dexie {
   settings!: EntityTable<SettingRow, 'key'>;
   results!: EntityTable<TestResult, 'id'>;
   answers!: EntityTable<TutorAnswer, 'id'>;
+  talks!: EntityTable<TalkTurn, 'id'>;
 
   constructor() {
     super('lampas');
@@ -87,6 +100,15 @@ class LampasDB extends Dexie {
       settings: 'key',
       results: '++id, [lemma+when]',
       answers: '++id, [ref+when]',
+    });
+    // v6: the turns of a Bible talk {ref, q, a, words, when}; [ref+when] reads one conversation's turns in order.
+    this.version(6).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
     });
   }
 }

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Bible Talk Answer 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["answer", "words"],
+  "properties": {
+    "answer": {
+      "description": "The reply to what he said, in short plain English; or the one-sentence refusal for anything outside the Bible.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1500
+    },
+    "words": {
+      "description": "The Greek words the answer speaks about, each with its lemma and a short note that includes its parsing. Empty when the answer is about no particular word.",
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["greek", "lemma", "note"],
+        "properties": {
+          "greek": { "description": "The word as it stands in the text.", "type": "string", "minLength": 1, "maxLength": 80 },
+          "lemma": { "description": "Its dictionary form.", "type": "string", "minLength": 1, "maxLength": 80 },
+          "note": { "description": "Its parsing and what it does here, in plain words.", "type": "string", "minLength": 1, "maxLength": 300 }
+        }
+      }
+    }
+  }
+}

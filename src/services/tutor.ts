@@ -61,6 +61,14 @@ export function buildRequest(reference: string, verse: Verse, question: string, 
 /** Why a question did not come back with an answer. */
 export type TutorFailure = 'no-licence' | 'unreachable' | 'not-sent' | 'no-answer';
 
+/** What each way a question can fail is called in the box (the Bible talk's sheet says the same). */
+export const FAILURE_TITLES: Record<TutorFailure, string> = {
+  'no-licence': 'No licence',
+  unreachable: 'Could not reach the tutor',
+  'not-sent': 'Could not send the question',
+  'no-answer': 'Could not reach the tutor',
+};
+
 export class TutorError extends Error {
   readonly failure: TutorFailure;
   constructor(failure: TutorFailure, message: string) {
@@ -95,11 +103,12 @@ export interface AskOptions {
 }
 
 /**
- * Sends the question and waits for the answer. Throws a TutorError: no-licence, unreachable, not-sent (the grist
- * was refused for its shape, nothing went out) or no-answer (the mill refused or failed, or answered in a shape
- * this app cannot use, or took past the deadline).
+ * Sends `request` to the mill's grind `kind` and waits for its answer, which `isAnswer` must accept. Throws a TutorError:
+ * no-licence, unreachable, not-sent (the grist was refused for its shape, nothing went out) or no-answer (the mill refused
+ * or failed, or answered in a shape this app cannot use, or took past the deadline). The tutor and the Bible talk
+ * (src/services/talk.ts) are two kinds sent this one way.
  */
-export async function askTutor(request: VerseAskRequest, options: AskOptions): Promise<VerseAnswer> {
+export async function askGrind<Answer>(kind: string, request: object, isAnswer: (value: unknown) => value is Answer, options: AskOptions): Promise<Answer> {
   const { key } = options;
   const d = new door.Door({ baseUrl: options.baseUrl ?? POSTERN_DOOR, key });
   const deadline = new AbortController();
@@ -107,13 +116,13 @@ export async function askTutor(request: VerseAskRequest, options: AskOptions): P
   options.signal?.addEventListener('abort', stop, { once: true });
   const timer = setTimeout(stop, tutorTimings.deadlineMs);
   try {
-    const txid = await grist.sendGrist({ door: d, key, app: TUTOR_APP, kind: TUTOR_KIND, v: TUTOR_VERSION, input: request, photos: [] });
+    const txid = await grist.sendGrist({ door: d, key, app: TUTOR_APP, kind, v: TUTOR_VERSION, input: request, photos: [] });
     options.onSent?.();
     const reply = await grist.awaitAnswer(txid, { door: d, key, intervalMs: tutorTimings.pollMs, signal: deadline.signal });
     if (reply.status !== 'answered') {
       throw new TutorError('no-answer', reply.reason ? `The tutor could not answer: ${reply.reason}` : 'The tutor could not answer.');
     }
-    if (!isVerseAnswer(reply.answer)) throw new TutorError('no-answer', 'The tutor sent an answer this app could not read.');
+    if (!isAnswer(reply.answer)) throw new TutorError('no-answer', 'The tutor sent an answer this app could not read.');
     return reply.answer;
   } catch (err) {
     if (err instanceof grist.AwaitAbortedError && !options.signal?.aborted) throw new TutorError('no-answer', 'The tutor took too long to answer.');
@@ -122,4 +131,9 @@ export async function askTutor(request: VerseAskRequest, options: AskOptions): P
     clearTimeout(timer);
     options.signal?.removeEventListener('abort', stop);
   }
+}
+
+/** Sends the question about a verse and waits for the answer (the verse-ask grind). */
+export function askTutor(request: VerseAskRequest, options: AskOptions): Promise<VerseAnswer> {
+  return askGrind(TUTOR_KIND, request, isVerseAnswer, options);
 }
