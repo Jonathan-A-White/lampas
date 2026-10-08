@@ -15,7 +15,7 @@ const browserEnv = existsSync(extraLibDir)
   ? { ...process.env, LD_LIBRARY_PATH: [extraLibDir, process.env.LD_LIBRARY_PATH].filter(Boolean).join(':') }
   : undefined;
 
-const LIVE_SPEC = '**/tutor-live.spec.ts';
+const LIVE_SPEC = '**/*-live.spec.ts';
 
 // The live project drives the DEPLOYED app: Postern's CORS allows only https://lampas.allmymind.org, so a
 // localhost preview could never reach the tutor. `npm run e2e:live` sets LAMPAS_E2E=live, and then no preview
@@ -53,7 +53,7 @@ export default defineConfig({
         launchOptions: { env: browserEnv },
       },
     },
-    // `npm run e2e:live` (--project=live): the one spec that talks to the real Postern backend, through the
+    // `npm run e2e:live` (--project=live): the specs (tests/e2e/*-live.spec.ts) that talk to the real Postern backend, through the
     // deployed app. It is in neither the gate nor `npm run shots`, and it spends a grind of fuel per run.
     {
       name: 'live',
