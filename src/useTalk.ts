@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { addTurn, listSolidHeadwords, listTurns, talkRef } from './data/repositories';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { TutorError } from './services/tutor';
+import { applyChanges, currentSettings } from './settings/registry';
 import { askTalk, buildTalkRequest, type TalkScope } from './services/talk';
 import type { AskState } from './useAsks';
 
@@ -48,13 +49,15 @@ export function useTalk(book: string, chapter: number, onAnswered: (ref: string,
       set({ phase: 'sending', question: text, startedAt });
       void (async () => {
         try {
-          const [turns, solid] = await Promise.all([listTurns(ref), listSolidHeadwords()]);
-          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid), {
+          const [turns, solid, settings] = await Promise.all([listTurns(ref), listSolidHeadwords(), currentSettings()]);
+          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings), {
             key: getDeviceKeyBytes(),
             signal,
             onSent: () => set({ phase: 'waiting', question: text, startedAt }),
           });
-          const id = await addTurn(ref, text, answer.answer, answer.words);
+          // The settings he asked for are applied at once (the registry checks each), then kept with the turn for its Undo.
+          const { applied, refused } = await applyChanges(answer.settings_changes);
+          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { changes: applied, refused });
           set(undefined);
           if (!signal.aborted) answered.current(ref, id, answer.answer);
         } catch (err) {

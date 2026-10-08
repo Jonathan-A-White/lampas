@@ -8,7 +8,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Waiting } from './Ask';
 import { findGreekWord } from './data/answerWord';
-import { listTurns, type TalkTurn } from './data/repositories';
+import { listTurns, markChangeUndone, type TalkTurn } from './data/repositories';
+import { settingOf, undoChange, type AppliedChange } from './settings/registry';
 import { MAX_TALK_CHARS, scopeTitle, type TalkScope } from './services/talk';
 import { FAILURE_TITLES } from './services/tutor';
 import { startAnswer, stopAnswer, useReading } from './speech/readAloud';
@@ -100,6 +101,40 @@ function AnswerSpeaker({ turn }: { turn: TalkTurn }) {
   );
 }
 
+/** One setting the answer changed: 'Changed: Greek speed 0.8x' with Undo, or, once undone, what it was put back to. */
+function ChangeRow({ turn, change, index }: { turn: TalkTurn; change: AppliedChange; index: number }) {
+  const [busy, setBusy] = useState(false);
+  const undo = async (): Promise<void> => {
+    setBusy(true);
+    try {
+      await undoChange(change);
+      if (turn.id !== undefined) await markChangeUndone(turn.id, index);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <li data-talk-change className="flex min-h-11 items-center gap-2">
+      {change.undone ? (
+        <span className="min-w-0 flex-1 break-words text-base text-muted">Put back: {settingOf(change.key)?.show(change.from) ?? change.label}</span>
+      ) : (
+        <>
+          <span className="min-w-0 flex-1 break-words text-base">Changed: {change.shown}</span>
+          <button
+            type="button"
+            aria-label={`Undo ${change.label}`}
+            disabled={busy}
+            onClick={() => void undo()}
+            className="min-h-11 min-w-11 shrink-0 rounded-lg px-3 text-base font-medium text-accent active:bg-line disabled:opacity-40"
+          >
+            Undo
+          </button>
+        </>
+      )}
+    </li>
+  );
+}
+
 function Turn({ turn, scope, onLook }: { turn: TalkTurn; scope: TalkScope; onLook: (lookup: Lookup) => void }) {
   return (
     <article data-turn className="space-y-2">
@@ -108,6 +143,18 @@ function Turn({ turn, scope, onLook }: { turn: TalkTurn; scope: TalkScope; onLoo
       </p>
       <div data-talk-a className="rounded-2xl border border-line px-3 py-2">
         <p className="break-words text-lg leading-snug">{turn.a}</p>
+        {turn.changes?.length || turn.refused?.length ? (
+          <ul data-talk-changes className="mt-2 border-t border-line pt-1">
+            {turn.changes?.map((c, i) => (
+              <ChangeRow key={i} turn={turn} change={c} index={i} />
+            ))}
+            {turn.refused?.map((r, i) => (
+              <li key={`r${i}`} className="py-1 text-base text-muted">
+                {r}
+              </li>
+            ))}
+          </ul>
+        ) : null}
         {turn.words.length > 0 ? (
           <dl data-talk-words className="mt-2 space-y-1 border-t border-line pt-2">
             {turn.words.map((w, i) => {

@@ -127,3 +127,30 @@ Feature: Bible talk
     When he opens Talk again
     And he presses Escape
     Then the Talk sheet is gone again
+
+  Scenario: Asking for a setting changes it at once and the talk says what changed, with an Undo
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the change greekRate 0.8
+    And he opens Talk
+    When he sends "Make the Greek slower"
+    Then the sheet shows "Changed: Greek speed 0.8x" with an Undo button
+    And the Greek speed is saved as 0.8 and the English speed is still 1
+    And the grist carried the settings as they stood, the Greek speed at 1
+    When he taps Undo
+    Then the sheet shows "Put back: Greek speed 1x" and no Undo button
+    And the Greek speed is saved as 1
+
+  Scenario: A change to a setting the app does not have changes nothing and the talk says so
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the change fontColour red
+    And he opens Talk
+    When he sends "Make the text red"
+    Then the answer shows in the sheet under his question
+    And nothing was changed and the sheet shows no Undo button
+    And the sheet says the app has no such setting "fontColour"
+
+  Scenario: A change with a value the setting does not allow is left out, the allowed change beside it is made
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the changes theme purple and greekRate 0.7
+    And he opens Talk
+    When he sends "Purple theme and slower Greek"
+    Then the sheet shows "Changed: Greek speed 0.7x" with an Undo button
+    And the sheet says the Theme does not allow "purple"
+    And the saved Theme is still Phone

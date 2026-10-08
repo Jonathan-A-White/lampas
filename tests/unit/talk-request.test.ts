@@ -35,13 +35,19 @@ describe('buildTalkRequest', () => {
     expect(r.history.map((t) => t.q)).toEqual(Array.from({ length: 10 }, (_, i) => `Question ${i + 4}`));
   });
 
+  it('carries the settings as they stand, so a talk can say "slower" from where they are', () => {
+    const r = buildTalkRequest({ title: 'Romans 8', chapter, verse: null }, 'Why?', [], [], { greekRate: 1, theme: 'phone' });
+    expect(r.settings).toEqual({ greekRate: 1, theme: 'phone' });
+    expect(buildTalkRequest({ title: 'Romans 8', chapter, verse: null }, 'Why?', [], []).settings).toEqual({});
+  });
+
   it('keeps a question to 600 characters', () => {
     expect(MAX_TALK_CHARS).toBe(600);
   });
 });
 
 describe('fitHistory', () => {
-  const base = (history: TalkRequest['history']): TalkRequest => ({ reference: 'Romans 8', greek: 'α'.repeat(300), english: 'x'.repeat(300), question: 'Why?', history, solid_words: [] });
+  const base = (history: TalkRequest['history']): TalkRequest => ({ reference: 'Romans 8', greek: 'α'.repeat(300), english: 'x'.repeat(300), question: 'Why?', history, solid_words: [], settings: { greekRate: 1 } });
 
   it('leaves a request that fits as it is', () => {
     const r = base(Array.from({ length: 10 }, (_, i) => turn(i)));

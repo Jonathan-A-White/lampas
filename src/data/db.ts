@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
+import type { AppliedChange } from '../settings/registry';
 
 export type WordState = 'solid' | 'learning' | 'dropped';
 
@@ -54,6 +55,10 @@ export interface TalkTurn {
   words: AnswerWord[];
   /** when the answer arrived (ms since the epoch) */
   when: number;
+  /** the settings the answer changed, each with what it replaced so Undo can put it back (src/settings/registry.ts) */
+  changes?: AppliedChange[];
+  /** a sentence for each change the answer asked for that was ignored */
+  refused?: string[];
 }
 
 /** One step of one word in the Parsing drill: 'tense' of λέγω, answered rightly or not. */

@@ -80,3 +80,38 @@ test('the Talk bar sits at the bottom of the reader and opens a sheet that fits 
   await expect(sheet).toBeHidden();
   await expectFitsPhone(page);
 });
+
+test('a setting asked for in the talk is applied at once, shown as Changed with a thumb-sized Undo, and Undo puts it back', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  const fake = makeFakePostern();
+  fake.autoReply = {
+    status: 'answered',
+    answer: { answer: 'Done: the Greek is read a little slower.', words: [], settings_changes: [{ key: 'greekRate', value: 0.8 }, { key: 'theme', value: 'dark' }] },
+  };
+  await routePostern(page, fake);
+  await openUnlocked(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8' });
+  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Make the Greek slower, and dark');
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+
+  await expect(sheet.getByText('Changed: Greek speed 0.8x')).toBeVisible();
+  await expect(sheet.getByText('Changed: Theme: Dark')).toBeVisible();
+  expect(fake.received[0].input.settings).toMatchObject({ greekRate: 1, theme: 'phone' });
+  // The dark theme is on the page already.
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  const undo = sheet.getByRole('button', { name: 'Undo Greek speed' });
+  const box = await undo.boundingBox();
+  expect(box?.height).toBeGreaterThanOrEqual(43.5);
+  expect(box?.width).toBeGreaterThanOrEqual(43.5);
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
+  await expectFitsPhone(page);
+  await shot(page, 'talk-changed');
+
+  await undo.click();
+  await expect(sheet.getByText('Put back: Greek speed 1x')).toBeVisible();
+  await expect(undo).toBeHidden();
+  await sheet.getByRole('button', { name: 'Undo Theme' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'phone');
+});

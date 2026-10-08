@@ -12,8 +12,8 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
-import { addTurn, talkRef } from '../../src/data/repositories';
-import { clearBus } from '../../src/events/bus';
+import { addTurn, getSpeechRate, getTheme, talkRef } from '../../src/data/repositories';
+import { clearBus, latest } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -376,6 +376,78 @@ describeFeature(feature, ({ Scenario }) => {
     And('he presses Escape', () => user.keyboard('{Escape}'));
     Then('the Talk sheet is gone again', async () => {
       await waitFor(() => expect(screen.queryByRole('dialog', { name: /^Talk about / })).toBeNull());
+    });
+  });
+
+  const changing = (...changes: { key: string; value: unknown }[]) => (f: FakePostern) =>
+    void (f.autoReply = { status: 'answered', answer: { answer: 'Done.', words: [], settings_changes: changes } });
+  const changeRows = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-talk-change]'));
+
+  Scenario('Asking for a setting changes it at once and the talk says what changed, with an Undo', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the change greekRate 0.8', () =>
+      open(changing({ key: 'greekRate', value: 0.8 })),
+    );
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('the sheet shows {string} with an Undo button', async (_, text: string) => {
+      await waitFor(() => expect(changeRows().some((row) => row.textContent?.includes(text))).toBe(true));
+      const row = changeRows().find((r) => r.textContent?.includes(text)) as HTMLElement;
+      expect(within(row).getByRole('button', { name: 'Undo Greek speed' })).toHaveTextContent('Undo');
+    });
+    And('the Greek speed is saved as 0.8 and the English speed is still 1', async () => {
+      expect(await getSpeechRate('greek')).toBe(0.8);
+      expect(await getSpeechRate('english')).toBe(1);
+      expect(latest('rates-changed')?.rates).toEqual({ english: 1, greek: 0.8 });
+    });
+    And('the grist carried the settings as they stood, the Greek speed at 1', () => {
+      expect(received(0).input.settings).toMatchObject({ greekRate: 1, theme: 'phone', textSize: 'normal' });
+    });
+    When('he taps Undo', () => taps('Undo Greek speed'));
+    Then('the sheet shows {string} and no Undo button', async (_, text: string) => {
+      await waitFor(() => expect(changeRows().some((row) => row.textContent?.includes(text))).toBe(true));
+      expect(within(sheet()).queryByRole('button', { name: /^Undo/ })).toBeNull();
+    });
+    And('the Greek speed is saved as 1', async () => {
+      expect(await getSpeechRate('greek')).toBe(1);
+      expect(latest('rates-changed')?.rates.greek).toBe(1);
+    });
+  });
+
+  Scenario('A change to a setting the app does not have changes nothing and the talk says so', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the change fontColour red', () =>
+      open(changing({ key: 'fontColour', value: 'red' })),
+    );
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('the answer shows in the sheet under his question', async () => {
+      await turnsKept(1);
+      expect(turns()[0]).toHaveTextContent('Done.');
+    });
+    And('nothing was changed and the sheet shows no Undo button', async () => {
+      expect(await db.settings.count()).toBe(0);
+      expect(within(sheet()).queryByRole('button', { name: /^Undo/ })).toBeNull();
+      expect(changeRows()).toHaveLength(0);
+    });
+    And('the sheet says the app has no such setting {string}', (_, key: string) => {
+      expect(turns()[0]).toHaveTextContent(`"${key}": the app has no such setting`);
+    });
+  });
+
+  Scenario('A change with a value the setting does not allow is left out, the allowed change beside it is made', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the changes theme purple and greekRate 0.7', () =>
+      open(changing({ key: 'theme', value: 'purple' }, { key: 'greekRate', value: 0.7 })),
+    );
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('the sheet shows {string} with an Undo button', async (_, text: string) => {
+      await waitFor(() => expect(changeRows().some((row) => row.textContent?.includes(text))).toBe(true));
+      expect(within(sheet()).getByRole('button', { name: 'Undo Greek speed' })).toBeInTheDocument();
+    });
+    And('the sheet says the Theme does not allow {string}', (_, value: string) => {
+      expect(turns()[0]).toHaveTextContent(`Theme: "${value}" is not a value it allows`);
+    });
+    And('the saved Theme is still Phone', async () => {
+      expect(await getTheme()).toBe('phone');
     });
   });
 });

@@ -3,6 +3,7 @@
 // file is the kind's own: the request with the last turns of the conversation, the answer's shape, and the fit to a grist.
 import type { Chapter, Verse } from '../data/chapter';
 import type { AnswerWord } from '../data/db';
+import type { SettingValue } from '../settings/registry';
 import { askGrind, type AskOptions } from './tutor';
 
 /** The kind the mill runs the grind under (grinds/bible-talk.json). */
@@ -23,6 +24,9 @@ const CHAPTER_VERSES = 3;
 /** What the grind says to anything outside the Bible (grinds/bible-talk.instructions.md), word for word. */
 export const REFUSAL = 'I can only talk about the Bible here; ask for app changes in Postern.';
 
+/** What the grind says when he asks for a setting the app does not have (grinds/bible-talk.instructions.md), word for word. */
+export const NO_SETTING = 'The app has no setting for that yet.';
+
 export interface TalkHistoryEntry {
   q: string;
   a: string;
@@ -36,12 +40,16 @@ export interface TalkRequest {
   question: string;
   history: TalkHistoryEntry[];
   solid_words: string[];
+  /** what each of the app's settings holds now (src/settings/registry.ts currentSettings), by key */
+  settings: Record<string, SettingValue>;
 }
 
 /** What the grind answers (grinds/bible-talk.answer.schema.json). */
 export interface TalkAnswer {
   answer: string;
   words: AnswerWord[];
+  /** the settings he asked to change, as the grind wrote them: the registry checks each one before it is applied */
+  settings_changes?: unknown[];
 }
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
@@ -49,7 +57,9 @@ const isText = (value: unknown, max: number): value is string => typeof value ==
 
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
-  if (!isObject(value) || Object.keys(value).length !== 2 || !isText(value.answer, 1500)) return false;
+  if (!isObject(value) || !isText(value.answer, 1500)) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'settings_changes')) return false;
+  if ('settings_changes' in value && !Array.isArray(value.settings_changes)) return false;
   if (!Array.isArray(value.words) || value.words.length > 12) return false;
   return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));
 }
@@ -85,8 +95,14 @@ export function fitHistory(request: TalkRequest): TalkRequest {
   return fitted();
 }
 
-/** The request for what he just said: the verse's text, or the chapter's first three verses; the last 10 turns, oldest first. */
-export function buildTalkRequest(scope: TalkScope, question: string, turns: { q: string; a: string }[], solidWords: string[]): TalkRequest {
+/** The request for what he just said: the verse's text, or the chapter's first three verses; the last 10 turns, oldest first; the settings as they stand. */
+export function buildTalkRequest(
+  scope: TalkScope,
+  question: string,
+  turns: { q: string; a: string }[],
+  solidWords: string[],
+  settings: Record<string, SettingValue> = {},
+): TalkRequest {
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   return {
     reference: scopeTitle(scope),
@@ -95,6 +111,7 @@ export function buildTalkRequest(scope: TalkScope, question: string, turns: { q:
     question: question.trim(),
     history: turns.slice(-MAX_HISTORY_TURNS).map(({ q, a }) => ({ q, a })),
     solid_words: solidWords,
+    settings,
   };
 }
 
