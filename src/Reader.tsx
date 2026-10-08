@@ -706,7 +706,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                   {withSelection && selected !== null && pick ? (
                     <>
                       <ReadCheckPanel
+                        key={pick.n}
                         verse={pick}
+                        title={TITLE}
                         view={view}
                         book={BOOK}
                         chapter={CHAPTER}

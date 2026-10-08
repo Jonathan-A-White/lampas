@@ -88,7 +88,7 @@ function AskField({ verse, state, reveal, initial, onAsk }: { verse: Verse; stat
   const busy = state?.phase === 'sending' || state?.phase === 'waiting';
   const section = useRef<HTMLElement>(null);
   useEffect(() => {
-    if (reveal) revealInScrollBox(section.current);
+    if (reveal) revealInScrollBox(section.current, section.current?.closest('.screen')?.querySelector<HTMLElement>(`[data-readcheck="${verse.n}"]`));
     // Once, as the box appears.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
