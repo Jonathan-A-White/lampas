@@ -19,6 +19,7 @@
     "icons": "node scripts/make-icons.mjs",
     "seed:build": "node scripts/seed-build.ts",
     "data:build": "tsx scripts/data-build.ts",
+    "grind:build": "tsx scripts/grind-build.ts",
     "check:licence": "tsx scripts/check-licence.ts"
   },
   "dependencies": {

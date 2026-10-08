@@ -25,6 +25,75 @@
           "note": { "description": "Its parsing and what it does here, in plain words.", "type": "string", "minLength": 1, "maxLength": 300 }
         }
       }
+    },
+    "settings_changes": {
+      "description": "The settings he asked to change, each applied at once by the app. Only the keys and values the instructions list; leave it out when he asked for no change.",
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "theme" }, "value": { "type": "string", "enum": ["phone", "light", "dark"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "textSize" }, "value": { "type": "string", "enum": ["small", "normal", "large", "largest"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "layout" }, "value": { "type": "string", "enum": ["verse", "paragraph"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sectionHeadings" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "weave" }, "value": { "type": "string", "enum": ["off", "solid"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "englishVoice" }, "value": { "type": "string", "enum": ["default"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "greekVoice" }, "value": { "type": "string", "enum": ["default"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "englishRate" }, "value": { "type": "number", "minimum": 0.5, "maximum": 1.5 } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "greekRate" }, "value": { "type": "number", "minimum": 0.5, "maximum": 1.5 } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "greekPronunciation" }, "value": { "type": "string", "enum": ["modern"] } }
+          }
+        ]
+      }
     }
   }
 }
