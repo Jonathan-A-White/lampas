@@ -313,10 +313,13 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the sheet is titled {string}', (_, title: string) => {
       expect(sheet()).toHaveAccessibleName(title);
     });
-    And('the sheet shows no turns yet', () => {
-      expect(turns()).toHaveLength(0);
-      expect(sheet().querySelector('[data-talk-empty]')).not.toBeNull();
-    });
+    // The turns come from a live Dexie query: on a busy store (the first open is still seeding the schedule) they arrive a moment late.
+    And('the sheet shows no turns yet', () =>
+      waitFor(() => {
+        expect(turns()).toHaveLength(0);
+        expect(sheet().querySelector('[data-talk-empty]')).not.toBeNull();
+      }),
+    );
   });
 
   Scenario('An unreachable backend shows Could not reach with Retry', ({ Given, And, When, Then }) => {
