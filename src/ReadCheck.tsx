@@ -268,8 +268,10 @@ function Walk({ words, text, view, hold, recording, onDone }: { words: FixWord[]
 }
 
 /** The reading check for the selected verse. `hold` is the Read button's hold for this verse; `checks` has the states. */
-export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRetry }: {
+export function ReadCheckPanel({ verse, title, view, book, chapter, checks, hold, onRetry }: {
   verse: Verse;
+  /** the chapter's title ('Romans 8'): the panel is headed by the verse's reference, title and number */
+  title: string;
   view: 'english' | 'greek';
   book: string;
   chapter: number;
@@ -287,6 +289,7 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
   // The walk belongs to the reading it was started on: a new result closes it, and so does sending the next one.
   const [walkFor, setWalkFor] = useState<number | null>(null);
   const text = readingText(verse, view);
+  const shown = typeOf(view);
   // A result, or a failure, that arrives is brought into view (never while he holds: the page must not move under his finger).
   const section = useRef<HTMLElement>(null);
   const arrived = state?.phase === 'failed' ? 'failed' : reading?.when;
@@ -301,6 +304,16 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
   const walking = reading !== undefined && walkFor === reading.when && !sent;
   return (
     <section ref={section} aria-label="Reading check" data-readcheck={verse.n} className="mb-3 space-y-3 rounded-xl border border-line px-3 py-3">
+      <h3 className="text-lg font-semibold">
+        {title}:{verse.n}
+      </h3>
+      <p
+        data-sheet-verse
+        lang={shown.lang}
+        className={`max-h-52 overflow-y-auto break-words ${shown.face} leading-(--lp-leading)`}
+      >
+        {text}
+      </p>
       {walking && reading ? null : (
         <>
           <p className="text-sm text-muted">Read verse {verse.n} aloud{view === 'greek' ? ' in Greek' : ''}</p>

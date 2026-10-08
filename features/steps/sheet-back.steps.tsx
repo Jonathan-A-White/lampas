@@ -80,7 +80,7 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(wordSheet()).toBeNull());
     });
     And('the Reader shows Romans 8 at verse 2', () => {
-      expect(screen.getByRole('heading', { name: /Romans 8/ })).toBeTruthy();
+      expect(screen.getByRole('heading', { level: 1, name: /Romans 8/ })).toBeTruthy();
       expect(window.location.hash).toContain('v=2');
       expect(screen.getByRole('button', { name: 'Verse 2' }).getAttribute('aria-pressed')).toBe('true');
     });
