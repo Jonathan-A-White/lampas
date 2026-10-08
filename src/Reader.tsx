@@ -229,6 +229,9 @@ export function Reader() {
             <p data-testid="build-version" className="break-words px-3 pt-6 text-center text-sm text-muted">
               Lampas {__APP_VERSION__}
             </p>
+            <div className="flex justify-center pb-4">
+              <HeaderButton onClick={() => navigate('about')}>About</HeaderButton>
+            </div>
           </>
         ) : (
           <p role="status" className="px-4 pt-6 text-center text-muted">

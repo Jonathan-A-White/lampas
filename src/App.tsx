@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { seedWordsIfFirstOpen } from './data/repositories';
+import { About } from './About';
 import { ImportScreen } from './ImportScreen';
 import type { Random } from './data/quiz';
 import { useRoute } from './nav/route';
@@ -24,6 +25,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <ImportScreen />
       ) : route === 'test' ? (
         <QuizScreen newRandom={newRandom} />
+      ) : route === 'about' ? (
+        <About />
       ) : (
         <Reader />
       )}
