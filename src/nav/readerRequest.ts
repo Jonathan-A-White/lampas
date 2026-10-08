@@ -10,16 +10,16 @@ export type ReaderRequest = EventOf<'reader-requested'>;
 let lastId = 0;
 let taken = 0;
 
-/** Opens the Reader on `verse` of `chapter`, with the Ask box there holding `question` (he sends it himself). */
-export function askInReader(chapter: number, verse: number, question: string): void {
-  publish({ kind: 'reader-requested', id: ++lastId, action: 'ask', chapter, verse, question });
-  openReader({ chapter, verse });
+/** Opens the Reader on `verse` of `chapter` of `book`, with the Ask box there holding `question` (he sends it himself). */
+export function askInReader(book: string, chapter: number, verse: number, question: string): void {
+  publish({ kind: 'reader-requested', id: ++lastId, action: 'ask', book, chapter, verse, question });
+  openReader({ book, chapter, verse });
 }
 
-/** Opens the Reader on `verse` of `chapter`, with the Talk sheet open on that verse. */
-export function talkInReader(chapter: number, verse: number): void {
-  publish({ kind: 'reader-requested', id: ++lastId, action: 'talk', chapter, verse });
-  openReader({ chapter, verse });
+/** Opens the Reader on `verse` of `chapter` of `book`, with the Talk sheet open on that verse. */
+export function talkInReader(book: string, chapter: number, verse: number): void {
+  publish({ kind: 'reader-requested', id: ++lastId, action: 'talk', book, chapter, verse });
+  openReader({ book, chapter, verse });
 }
 
 /** The request the Reader has not met yet, if any. It does not take it (see `takeRequest`), so it can be called while rendering. */

@@ -1,13 +1,17 @@
 // src/nav/route.ts — eight screens, told apart by the address hash, so the phone's Back button walks them.
-// The reader's own state rides in the same hash after a '?': chapter (c), view, weave and the selected verse (v),
-// e.g. '#/?c=8&view=greek&weave=off&v=28'. src/nav/lastRoute.ts keeps these addresses across a close.
+// The reader's own state rides in the same hash after a '?': book (b, its code as public/data/index.json has it), chapter (c),
+// view, weave and the selected verse (v), e.g. '#/?b=rom&c=8&view=greek&weave=off&v=28'. An address with a chapter and no book
+// is Romans (every address kept before the picker, mw-5r3p30.60, was). src/nav/lastRoute.ts keeps these addresses across a close.
 import { useSyncExternalStore } from 'react';
+import { bookOf } from '../data/books';
 import type { ReaderView, Weave } from '../data/repositories';
 
 export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'about' | 'settings';
 
 /** What the address says about the reader; a key is missing when the address does not say. */
 export interface ReaderAddress {
+  /** the book's code: 'rom', '1jn' */
+  book?: string;
   chapter?: number;
   view?: ReaderView;
   weave?: Weave;
@@ -55,6 +59,8 @@ export function readerOf(hash: string): ReaderAddress {
   const q = hash.indexOf('?');
   const params = new URLSearchParams(q < 0 ? '' : hash.slice(q + 1));
   const address: ReaderAddress = {};
+  const book = params.get('b');
+  if (book !== null && bookOf(book)) address.book = book;
   const chapter = wholeNumber(params.get('c'));
   if (chapter !== undefined) address.chapter = chapter;
   const view = params.get('view');
@@ -67,8 +73,9 @@ export function readerOf(hash: string): ReaderAddress {
 }
 
 /** The reader's address, always in the same order so the same state is the same string. */
-export function readerHash({ chapter, view, weave, verse }: ReaderAddress): string {
+export function readerHash({ book, chapter, view, weave, verse }: ReaderAddress): string {
   const params = new URLSearchParams();
+  if (book !== undefined) params.set('b', book);
   if (chapter !== undefined) params.set('c', String(chapter));
   if (view) params.set('view', view);
   if (weave) params.set('weave', weave);
@@ -89,7 +96,7 @@ export function navigate(route: Route, options: { replace?: boolean } = {}): voi
 }
 
 /** Opens the reader at a chapter and verse, as a new Back step. */
-export function openReader(address: Pick<ReaderAddress, 'chapter' | 'verse'>): void {
+export function openReader(address: Pick<ReaderAddress, 'book' | 'chapter' | 'verse'>): void {
   window.history.pushState(null, '', urlFor(readerHash(address)));
   notify();
 }

@@ -72,7 +72,7 @@ build-version.ts     # '<version> · <UTC time> · <commit>' stamp (the commit i
 vite.config.ts       # react, tailwind 4, vite-plugin-pwa (injectManifest, registerType 'prompt')
 src/main.tsx         # scroll guard first, then render, then register the worker
 src/App.tsx          # the shell (data-shell); picks the screen by hash route (src/nav/route.ts); seeds words on first open
-src/Reader.tsx WordsScreen.tsx ImportScreen.tsx QuizScreen.tsx ReviewScreen.tsx DrillScreen.tsx About.tsx SettingsScreen.tsx  # the screens (#/ , #/words, #/import, #/test, #/review, #/drill, #/about, #/settings); the Reader is Romans 8, English | Greek, header = title, English | Greek, the gear;
+src/Reader.tsx WordsScreen.tsx ImportScreen.tsx QuizScreen.tsx ReviewScreen.tsx DrillScreen.tsx About.tsx SettingsScreen.tsx  # the screens (#/ , #/words, #/import, #/test, #/review, #/drill, #/about, #/settings); the Reader opens Romans 8 on a fresh install (any of the 27 books' chapters through the picker), English | Greek, header = title (a button: it opens src/ChapterPicker.tsx), English | Greek, the gear;
                      #   Settings (opened by the gear) holds the Appearance (Theme Phone | Light | Dark, Text size Small | Normal | Large | Largest), the Layout (Verse by verse | Paragraph), Section headings (On | Off), the Weave, the English and Greek voice pickers, the English and Greek speed sliders, the Greek pronunciation list, and links to Words and About;
                      #   About is built from ATTRIBUTION.md (src/attribution.ts), opened by the About button under the chapter
 src/Ask.tsx          # the Ask box under the selected verse (field, Sending / Waiting, No licence, Could not reach + Retry) and the kept answer cards
@@ -98,7 +98,8 @@ src/settings/        # registry.ts: every Settings item (key, label, allowed val
                      #   (applyChanges checks each settings_changes entry of an answer against it, anything else is refused and said so; undoChange puts one back; currentSettings goes in every talk request);
                      #   a new setting is one entry there plus its Settings control (a test fails if a control has no entry) and `npm run grind:build`; grindText.ts makes the grind's schema and instructions from it
 src/events/bus.ts   # the typed event bus screens talk through: publish, subscribe, latest, useEvent, useLatest; docs/events.md lists every kind, who publishes, who listens
-src/nav/             # route.ts: the hash address (screen, and in the reader '?c=8&view=greek&weave=off&v=28'), navigate, replaceHash, useAddress;
+src/ChapterPicker.tsx # the chapter picker (mw-5r3p30.60), opened by the Reader's title: a bottom sheet (useSheetBack) with the 27 books in canonical order (src/data/books.ts, searchable, in a box of its own) then a 4-column grid of the book's chapters (counts from loadIndex, data/index.json); a chapter opens through openReader({book, chapter}) as a new Back step (the Reader is a ReaderBody keyed by book/chapter, so everything starts afresh); a chapter that cannot be fetched says 'is not on this phone yet, and you are offline' with Try again and Choose another chapter
+src/nav/             # route.ts: the hash address (screen, and in the reader '?b=rom&c=8&view=greek&weave=off&v=28'; b is the book's code, a chapter with no b is Romans), navigate, replaceHash, useAddress;
                      #   lastRoute.ts: reopen where he left it (localStorage lampas.lastRoute, lampas.trail = last 20 addresses, lampas.scrolls; history.state.i;
                      #   a bare open lands on the newest and rebuilds history so Back walks the trail, past the oldest on Home; an open that names a place wins);
                      #   readerAddress.ts: bus events -> address (replaceState); scrollMemory.ts: scroll per address, restored with a ResizeObserver up to 2.5 s
@@ -151,7 +152,8 @@ src/data/lemma.ts    # BMA lemma -> headword (the key) + TBESG lexicon lemmas (�
 src/data/importWords.ts  # parses pasted 'lemma — gloss' lines and rows of the example table
 src/data/pictures.ts  # memory pictures: headword -> public/pictures/<name>.svg (52 of the 63 seed words); src/WordPicture.tsx shows one on a Words card and beside the Quick test's word; docs/pictures.md
 src/data/seed-words.ts   # GENERATED from docs/example-words.md by scripts/seed-build.ts: 63 words
-src/data/readerChapter.ts # the one chapter the Reader and the drill use (Romans 8)
+src/data/readerChapter.ts # the chapter the Reader has open (getOpenChapter / setOpenChapter, localStorage lampas.chapter, default Romans 8): Quick test, the Parsing drill and Review draw their forms from it; words, review rows and results are not per chapter
+src/data/books.ts    # the 27 books (code, name) in canonical order, bookOf, titleOf; tests/unit/books.test.ts holds it equal to public/data/index.json
 src/data/chapter.ts  # chapter types, loadChapter(book, n), wordLemma/wordGloss/wordParse: screens never read the raw keys
 src/data/weave.ts    # the diglot weave: weaveVerse(verse, {solid, learning?}) -> per English chunk {words, learning} (the Greek shown in its place; learning true when any word is still being learned, which the Reader draws with the chunk's English in small grey beneath, [data-hint], until the word turns solid) or null; Weave is Off | Solid words | Solid and learning words ('off' | 'solid' | 'solid+learning')
 src/data/parseCode.ts # RP parsing code -> plain words (decodeParse, shared by the data build and the app) and -> a part of speech + features (splitParse, for the drill)

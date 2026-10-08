@@ -8,7 +8,7 @@ import { loadChapter } from './data/chapter';
 import { drawDrill, type DrillQuestion } from './data/drill';
 import { clearDrill, readDrill, saveDrill, type SavedDrill } from './data/drillKeep';
 import type { Random } from './data/quiz';
-import { READER_CHAPTER } from './data/readerChapter';
+import { getOpenChapter } from './data/readerChapter';
 import { listWords, recordDrillStep, seedWordsIfFirstOpen } from './data/repositories';
 import { askInReader, talkInReader } from './nav/readerRequest';
 import { navigate } from './nav/route';
@@ -57,7 +57,8 @@ const keep = (s: Session, away: number | null = null): void =>
 async function drawRound(random: Random): Promise<DrillQuestion[]> {
   // A first open seeds the words; wait for it so a drill opened straight away has words to ask.
   await seedWordsIfFirstOpen();
-  const [words, chapter] = await Promise.all([listWords(), loadChapter(READER_CHAPTER.book, READER_CHAPTER.chapter)]);
+  const open = getOpenChapter();
+  const [words, chapter] = await Promise.all([listWords(), loadChapter(open.book, open.chapter)]);
   return drawDrill(chapter, words, random);
 }
 
@@ -138,7 +139,7 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
   const finished = s.status === 'ready' && total > 0 && s.question >= total;
   const question = s.questions[s.question];
   const step = question?.steps[s.step];
-  const reader = READER_CHAPTER;
+  const reader = getOpenChapter();
 
   const header = (
     <ScreenHeader
@@ -273,11 +274,11 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
 
   const ask = () => {
     keep(s, Date.now());
-    askInReader(question.chapter, question.verse, `Parse ${question.form} in ${question.reference}: why is it ${question.parsing}?`);
+    askInReader(question.book ?? 'rom', question.chapter, question.verse, `Parse ${question.form} in ${question.reference}: why is it ${question.parsing}?`);
   };
   const talk = () => {
     keep(s, Date.now());
-    talkInReader(question.chapter, question.verse);
+    talkInReader(question.book ?? 'rom', question.chapter, question.verse);
   };
 
   return (

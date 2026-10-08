@@ -89,6 +89,7 @@ describe('docs/events.md', () => {
       'word-help': true,
       'grammar-term-opened': true,
       'grammar-term-known': true,
+      'chapter-opened': true,
       'reader-requested': true,
       'review-due-changed': true,
     };

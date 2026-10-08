@@ -8,15 +8,18 @@ import { askAbout, buildQuestion, drawWords, seedDistractors, type Question, typ
 import { navigate } from './nav/route';
 import { askInReader } from './nav/readerRequest';
 import { speakWord } from './speech/greek';
-import { READER_CHAPTER } from './data/readerChapter';
+import { getOpenChapter } from './data/readerChapter';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { WordQuestion } from './WordQuestion';
 import { focusOnMount } from './ui/focus';
 
 type Round = { status: 'loading' } | { status: 'offer' } | { status: 'ready'; questions: Question[] };
 
-/** The chapter the inflected forms come from. A phone that cannot load it is asked the plain lemmas. */
-const loadForms = (): Promise<Chapter | null> => loadChapter('rom', 8).catch(() => null);
+/** The chapter the inflected forms come from: the one the Reader has open. A phone that cannot load it is asked the plain lemmas. */
+const loadForms = (): Promise<Chapter | null> => {
+  const open = getOpenChapter();
+  return loadChapter(open.book, open.chapter).catch(() => null);
+};
 
 async function drawRound(random: Random): Promise<Question[]> {
   // A first open seeds the words; wait for it so a round opened straight away has words to ask.
@@ -34,7 +37,7 @@ function DrillLink() {
       onClick={() => navigate('drill')}
       className="mt-3 min-h-12 w-full rounded-xl border border-line text-base font-medium"
     >
-      Parsing drill: {READER_CHAPTER.title}
+      Parsing drill: {getOpenChapter().title}
     </button>
   );
 }
@@ -94,8 +97,9 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
 
   const askTutor = () => {
     if (!question) return;
-    const about = askAbout(question, { chapter: READER_CHAPTER.chapter, verse: 1 });
-    askInReader(about.chapter, about.verse, about.text);
+    const open = getOpenChapter();
+    const about = askAbout(question, { book: open.book, chapter: open.chapter, verse: 1 });
+    askInReader(about.book, about.chapter, about.verse, about.text);
   };
 
   const subtitle = question ? `${index + 1} of ${total}` : null;

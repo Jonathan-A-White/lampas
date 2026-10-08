@@ -161,7 +161,7 @@ describeFeature(feature, ({ Scenario }) => {
       const sheets = readdirSync('src')
         .filter((name) => name.endsWith('.tsx'))
         .filter((name) => readFileSync(`src/${name}`, 'utf8').includes('role="dialog"'));
-      expect(sheets.sort()).toEqual(['GrammarSheet.tsx', 'Talk.tsx', 'WordSheet.tsx']);
+      expect(sheets.sort()).toEqual(['ChapterPicker.tsx', 'GrammarSheet.tsx', 'Talk.tsx', 'WordSheet.tsx']);
       for (const name of sheets) expect(readFileSync(`src/${name}`, 'utf8'), name).toMatch(/useSheetBack\(/);
     });
   });

@@ -29,6 +29,8 @@ export interface DrillQuestion {
   form: string;
   /** 'Romans 8:28' */
   reference: string;
+  /** the book's code ('rom', '1jn'); a round kept before the chapter picker (mw-5r3p30.60) has none: it was Romans */
+  book?: string;
   chapter: number;
   verse: number;
   /** the Greek words of the verse, in order; `at` is the one asked */
@@ -181,6 +183,7 @@ export function drawDrill(chapter: Chapter, words: readonly Word[], random: Rand
       lemma: c.word.lemma,
       form: g.t,
       reference: `${chapter.book} ${chapter.chapter}:${verse.n}`,
+      book: chapter.code,
       chapter: chapter.chapter,
       verse: verse.n,
       words: verse.g.map((w) => w.t),

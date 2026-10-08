@@ -60,6 +60,13 @@ describe('the trail of places he visited', () => {
 });
 
 describe('opening the app', () => {
+  it('a bare open returns to the chapter he left, whatever book it is in', () => {
+    localStorage.setItem('lampas.trail', JSON.stringify(['#/?b=1jn&c=1&view=english&weave=off&v=3']));
+    restoreLastRoute();
+    expect(window.location.hash).toBe('#/?b=1jn&c=1&view=english&weave=off&v=3');
+    expect(isKeptHash(window.location.hash)).toBe(true);
+  });
+
   it('a bare open lands on the newest place and rebuilds history so Back walks the trail', () => {
     localStorage.setItem('lampas.trail', JSON.stringify(['#/?c=8&view=greek&v=28', '#/words', '#/test']));
     restoreLastRoute();

@@ -90,7 +90,24 @@ export function loadChapter(book: string, n: number): Promise<Chapter> {
   return request;
 }
 
-/** Drops every chapter held in memory (tests). */
+let index: Promise<BookIndex> | null = null;
+
+/** Fetches /data/index.json (precached) once: the books and how many chapters each has. A failure is not kept. */
+export function loadIndex(): Promise<BookIndex> {
+  if (index) return index;
+  const request = fetch('/data/index.json').then(async (response) => {
+    if (!response.ok) throw new Error(`Could not load the book index: ${response.status}`);
+    return (await response.json()) as BookIndex;
+  });
+  index = request;
+  request.catch(() => {
+    if (index === request) index = null;
+  });
+  return request;
+}
+
+/** Drops every chapter and the index held in memory (tests). */
 export function forgetChapters(): void {
   chapters.clear();
+  index = null;
 }

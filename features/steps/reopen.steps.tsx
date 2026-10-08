@@ -45,13 +45,13 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8', () => openAt(''));
     When('he switches to Greek', () => user.click(screen.getByRole('button', { name: 'Greek' })));
     And('he selects verse 28', () => user.click(screen.getByRole('button', { name: 'Verse 28' })));
-    Then('the address says chapter 8, the Greek view, no weave and verse 28', async () => {
-      await waitFor(() => expect(readerOf(window.location.hash)).toEqual({ chapter: 8, view: 'greek', weave: 'off', verse: 28 }));
-      expect(window.location.hash).toBe('#/?c=8&view=greek&weave=off&v=28');
+    Then('the address says Romans chapter 8, the Greek view, no weave and verse 28', async () => {
+      await waitFor(() => expect(readerOf(window.location.hash)).toEqual({ book: 'rom', chapter: 8, view: 'greek', weave: 'off', verse: 28 }));
+      expect(window.location.hash).toBe('#/?b=rom&c=8&view=greek&weave=off&v=28');
     });
     When('he taps verse 28 again', () => user.click(screen.getByRole('button', { name: 'Verse 28' })));
     Then('the address names no verse', async () => {
-      await waitFor(() => expect(window.location.hash).toBe('#/?c=8&view=greek&weave=off'));
+      await waitFor(() => expect(window.location.hash).toBe('#/?b=rom&c=8&view=greek&weave=off'));
     });
   });
 

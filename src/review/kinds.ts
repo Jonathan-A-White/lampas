@@ -2,6 +2,7 @@
 // how to count itself in words ('3 words'), and where an answer goes. Words are the only kind today; the course epic adds
 // grammar ideas and paradigms as more entries of KINDS, each with a renderer in src/review/ItemCard.tsx.
 import { loadChapter, type Chapter } from '../data/chapter';
+import { getOpenChapter } from '../data/readerChapter';
 import { modeFor, type QuestionMode } from '../data/schedule';
 import { buildQuestion, drawWords, seedDistractors, type Question, type Random } from '../data/quiz';
 import { speakWord } from '../speech/greek';
@@ -38,8 +39,11 @@ export interface ReviewKind {
   record: (item: ReviewItem, right: boolean) => Promise<void>;
 }
 
-/** The chapter the inflected forms come from. A phone that cannot load it is asked the plain lemmas. */
-const loadForms = (): Promise<Chapter | null> => loadChapter('rom', 8).catch(() => null);
+/** The chapter the inflected forms come from: the one the Reader has open. A phone that cannot load it is asked the plain lemmas. */
+const loadForms = (): Promise<Chapter | null> => {
+  const open = getOpenChapter();
+  return loadChapter(open.book, open.chapter).catch(() => null);
+};
 
 export const WORDS: ReviewKind = {
   kind: 'word',
