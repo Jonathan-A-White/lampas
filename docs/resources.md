@@ -12,7 +12,7 @@ settings registry (`src/settings/registry.ts`), so the Bible talk cannot change 
 | id | Switch | Adds to the Study row | Source of the URL form |
 | --- | --- | --- | --- |
 | `strongs` | Strong's | the word's number, such as `G4903`, a link to `https://www.stepbible.org/?q=strong=G0…` | STEPBible's own search address; STEPBible is the lexicon source Lampas already credits (ATTRIBUTION.md) and its data are CC BY 4.0 |
-| `logos` | Logos | `Open in Logos: <lexicon>` per ticked lexicon: `logosres:<resource>;hw=<lemma>`; and `Bible Word Study in Logos`: `logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F<lemma>;ref=Bible.<book><ch>.<v>` | `logosres:` form: Logos forum post pairing `logosres:becnt65ac;ref=Bible.Ac6.3;off=114` with `https://ref.ly/logosres/becnt65ac?ref=Bible.Ac6.3&off=114` (the `Bible.Ac6.3` reference form is from it); `logos4:` is Logos' older scheme, which its release notes say still works. `hw=` is **UNVERIFIED** (below); the Guide's `lbs%2Fel%2F<lemma>` form is Logos' own, see "Bible Word Study's lemma" below |
+| `logos` | Logos | `Open in Logos: <lexicon>` per ticked lexicon: `logosres:<Resource ID>;hw=<lemma>`; and `Bible Word Study in Logos`: `logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F<lemma>;ref=Bible.<book><ch>.<v>` | `logosres:` form: Logos forum post pairing `logosres:becnt65ac;ref=Bible.Ac6.3;off=114` with `https://ref.ly/logosres/becnt65ac?ref=Bible.Ac6.3&off=114` (the `Bible.Ac6.3` reference form is from it); `logos4:` is Logos' older scheme, which its release notes say still works. `hw=` is **UNVERIFIED** (below); the Guide's `lbs%2Fel%2F<lemma>` form is Logos' own, see "Bible Word Study's lemma" below |
 | `accordance` | Accordance | `Open in Accordance`: `accord://search/<module>?<lemma>` | Accordance's help topic "Using Links for Common Tasks": `accord://search/[module];[field]?[query]` |
 
 STEPBible was chosen over Blue Letter Bible because Lampas already takes its lexicon from STEPBible, so the number and the
@@ -50,17 +50,43 @@ and Accordance may have no Android app) and `Turn off <App>` (the resource goes 
 is its accessible name ('Open in Logos: BDAG'); its optional `tile` is the short text on the tile ('BDAG', 'Word Study'; a Logos lexicon's
 is its `short` in `LEXICONS`). A tile never wraps at 360 px: keep a `tile` to about 16 characters.
 
-**Resource ids.** The `resource` of each lexicon is the id the link names. NONE of these ids could be confirmed (Logos' pages
-answer 403; the Logos wiki and forum could not be read); every one is **UNVERIFIED**: `bdag`, `louwnida`, `lexhamtheolwordbk`,
-`dblgreek`, `ednt`, `nasbdictionaries`, `lehlxx`, `liddellscott` (An Intermediate Greek-English Lexicon), `lxgrcanlex`,
-`newstrongsdict`, `tdnta`, `buildingntvocab3`, `lxgntlex`, `lxlxxlex`, `greekenglishlexnt`, `cremerlexicon`,
-`lexhamanalyticallxx`, `abbottsmithmanual`, `pocketlexgnt`, `concisedict`, `thayerlexicon`. Logos names a resource also by its
-`LLS:` code (a forum user reports `LLS:46.30.18` for BDAG, unconfirmed); the Information pane of a resource in Logos shows its true id, and
-the fix for a wrong one is its `resource` in `LEXICONS`.
+**Resource ids.** The `resource` of each lexicon is the **Resource ID** Logos prints on the product's page (the "resourceId" in the page's data; the
+Information pane of a resource in Logos shows the same), such as `LLS:46.10.26` for EDNT. The earlier short names (`bdag`, `ednt`, `dblgreek` ...) were guesses
+and EDNT's opened nothing (the Governor, 2026-10-08, mw-5r3p30.64). Logos' own Links Guide builds book links on the full Resource ID
+(`app.logos.com/books/LLS%3A1.0.710`); here the link is `logosres:LLS:46.10.26;hw=<lemma>` and its https fallback encodes the colon the same way,
+`https://ref.ly/logosres/LLS%3A46.10.26?hw=<lemma>`. Found 2026-10-08 on `https://www.logos.com/product/<n>` (a product page is readable with a browser User-Agent; the Logos wiki and forum answer 403):
 
-**Not verified on a device (no phone with Logos or Accordance was available).** Unverified: that `logosres:<id>;hw=<lemma>`
+| lexicon (`id`) | product | Resource ID |
+| --- | --- | --- |
+| BDAG (`bdag`) | 3878 | `LLS:46.30.18` |
+| Louw-Nida (`louwnida`) | 199 | `LLS:46.30.4` |
+| Lexham Theological Wordbook (`lexhamtheolwordbk`) | 45638 | `LLS:LXTHEOWRDBK` |
+| DBL Greek (`dbl`) | 693 | `LLS:46.30.9` |
+| EDNT (`ednt`) | 5791 | `LLS:46.10.26` |
+| NASB Dictionaries (`nasbdict`; product "New American Standard Exhaustive Concordance, Updated Edition: Hebrew-Aramaic and Greek Dictionaries") | 25731 | `LLS:46.10.12` |
+| LEH LXX (`leh`; "A Greek-English Lexicon of the Septuagint, Revised Edition") | 1797 | `LLS:46.30.22` |
+| An Intermediate Greek-English Lexicon (`intermediategel`; "(LSJI)") | 108 | `LLS:46.30.1` |
+| LXGRCANLEX (`lxgrcanlex`) | 4580 | `LLS:LXGRCANLEX` |
+| New Strong's (`newstrongs`) | 1212 | `LLS:46.10.6` |
+| TDNTA (`tdnta`) | 390 | `LLS:46.10.1` |
+| Building Your NT Greek Vocabulary (`vocab3`) | 2671 | `LLS:NTGRKVOCAB` |
+| LXGNTLEX (`lxgntlex`; matched to "Lexham Research Lexicon of the Greek New Testament") | 197493 | `LLS:FBGNTLEX` |
+| LXLXXLEX (`lxlxxlex`; matched to "Lexham Research Lexicon of the Septuagint") | 197497 | `LLS:FBLXXLEX` |
+| A Greek and English Lexicon to the NT (`gelnt`) | 29722 | `LLS:GRKENGLXCNNTBLMSFIELD` |
+| Cremer (`biblicotheolexicon`) | 15703 | `LLS:LEXNTGRKCREMER` |
+| Lexham Analytical Lexicon of the Septuagint (`lexhamanalyticallxx`; the Swete edition) | 27295 | `LLS:LXGRKOTANLEX` |
+| Abbott-Smith (`manualgreeklex`) | 31160 | `LLS:MNLGRKLXABBOTSMITH` |
+| A Pocket Lexicon to the Greek NT (`pocketlex`) | 41596 | `LLS:PCKTLXCNGRKNWTS` |
+| A Concise Dictionary ... (`concisedict`; "The New Strong's Concise Dictionary of the Words in the Greek Testament and The Hebrew Bible") | 10514 | `LLS:STRNGDICHEBGRK` |
+| Thayer (`gelntthayer`) | 5682 | `LLS:THAYERGELEXNT` |
+
+Two rows are a match by title, not by the abbreviation Logos shows: `lxgntlex` and `lxlxxlex` (the abbreviations are not on the product pages). If either opens the
+wrong book, check the Information pane of that book in Logos. The id is confirmed by the product page; that the Logos app takes a full `LLS:` id in a `logosres:` link
+(rather than only a short file name) is the Governor's check on his phone, see below.
+
+**Not verified on a device (no phone with Logos or Accordance was available).** Unverified: that `logosres:<Resource ID>;hw=<lemma>`
 opens that lexicon at the headword (the `hw` part), that `logos4:Guide;t=Bible%20Word%20Study;lemma=...;ref=...` opens the Bible
-Word Study guide, that the Logos Android app claims `logosres:` and `logos4:` at all, every resource id above, and that the
+Word Study guide, that the Logos Android app claims `logosres:` and `logos4:` at all, and that the
 Accordance `accord://search/<module>?<lemma>` form finds a word in a lexicon module. The https fallback is kept for all of them. If a link does not open the
 entry, the fix is in that resource's file.
 

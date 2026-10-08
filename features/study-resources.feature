@@ -27,7 +27,7 @@ Feature: Study resources
     And the Logos lexicon "Louw-Nida" is not ticked
     And he taps Back on the Settings screen
     And he taps the word "work together" in verse 28
-    Then the Study row has a link "Open in Logos: BDAG" to "logosres:bdag;hw=%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89"
+    Then the Study row has a link "Open in Logos: BDAG" to "logosres:LLS:46.30.18;hw=%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89"
     And the Study row also has a link "Bible Word Study in Logos" to "logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89;ref=Bible.Ro8.28"
     And the Study row has no link "Open in Logos: Louw-Nida"
 
@@ -38,9 +38,19 @@ Feature: Study resources
     And he ticks the Logos lexicon "Louw-Nida"
     And he taps Back on the Settings screen
     And he taps the word "work together" in verse 28
-    Then the Study row has a link "Open in Logos: BDAG" to "logosres:bdag;hw=%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89"
-    And the Study row also has a link "Open in Logos: Louw-Nida" to "logosres:louwnida;hw=%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89"
+    Then the Study row has a link "Open in Logos: BDAG" to "logosres:LLS:46.30.18;hw=%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89"
+    And the Study row also has a link "Open in Logos: Louw-Nida" to "logosres:LLS:46.30.4;hw=%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89"
     And the Study row has one more link "Bible Word Study in Logos" to "logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89;ref=Bible.Ro8.28"
+
+  Scenario: With EDNT ticked, Open in Logos: EDNT carries the Resource ID Logos prints for EDNT
+    Given Lampas is opened on Romans 8 with no study resources on
+    When he taps the gear in the reader's header
+    And he switches on the study resource "Logos"
+    And he ticks the Logos lexicon "EDNT"
+    And he taps Back on the Settings screen
+    And he taps the word "work together" in verse 28
+    Then the Study row has a link "Open in Logos: EDNT" to "logosres:LLS:46.10.26;hw=%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89"
+    And the Study link "Open in Logos: EDNT" has the fallback "https://ref.ly/logosres/LLS%3A46.10.26?hw=%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89"
 
   Scenario: Bible Word Study in Logos names Jesus by his Logos lemma, and the BDAG link is unchanged
     Given Lampas is opened on Romans 8 with no study resources on
@@ -48,7 +58,7 @@ Feature: Study resources
     And he switches on the study resource "Logos"
     And he taps Back on the Settings screen
     And he taps the word "Jesus," in verse 1
-    Then the Study row has a link "Open in Logos: BDAG" to "logosres:bdag;hw=%E1%BC%B8%CE%B7%CF%83%CE%BF%E1%BF%A6%CF%82"
+    Then the Study row has a link "Open in Logos: BDAG" to "logosres:LLS:46.30.18;hw=%E1%BC%B8%CE%B7%CF%83%CE%BF%E1%BF%A6%CF%82"
     And the Study row also has a link "Bible Word Study in Logos" to "logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F%E1%BC%B8%CE%B7%CF%83%CE%BF%E1%BF%A6%CF%82;ref=Bible.Ro8.1"
     And the Study link "Bible Word Study in Logos" has the fallback "https://ref.ly/logos4/Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F%E1%BC%B8%CE%B7%CF%83%CE%BF%E1%BF%A6%CF%82;ref=Bible.Ro8.1"
 
@@ -58,7 +68,7 @@ Feature: Study resources
     And he switches on the study resource "Logos"
     And he taps Back on the Settings screen
     And he taps the word "work together" in verse 28
-    Then the Study link "Open in Logos: BDAG" has the fallback "https://ref.ly/logosres/bdag?hw=%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89"
+    Then the Study link "Open in Logos: BDAG" has the fallback "https://ref.ly/logosres/LLS%3A46.30.18?hw=%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89"
 
   Scenario: With Strong's on, the Strong's number shows once on the word sheet
     Given Lampas is opened on Romans 8 with no study resources on
