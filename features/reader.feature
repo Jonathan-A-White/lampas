@@ -13,7 +13,7 @@ Feature: Read Romans 8
     Given Lampas is opened with nothing saved
     When he taps "Therefore" in verse 1
     Then the word sheet shows the Greek word "ἄρα"
-    And the word sheet shows the transliteration "ara"
+    And the word sheet shows the respelling "A-ra"
     And the word sheet shows the lemma "ἄρα"
     And the word sheet shows the parsing "particle"
     And the word sheet shows a gloss containing "therefore"

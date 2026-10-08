@@ -1,7 +1,7 @@
 Feature: Settings
   A gear in the reader's header opens Settings, so the reader's header keeps only the chapter, English | Greek
   and the gear. Settings holds the weave, the reading voices (English and Greek, from the phone's own list) and
-  the Greek pronunciation (a list; Modern Greek is the only entry for now). Every choice is kept in the settings
+  the Greek pronunciation (a list, from the registry in src/speech/pronunciation.ts; Modern Greek is the only entry for now). Every choice is kept in the settings
   store and survives a close; the screen has an address of its own.
 
   Scenario: The gear opens Settings and Back returns to the reader
