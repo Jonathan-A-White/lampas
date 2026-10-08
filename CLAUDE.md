@@ -35,11 +35,11 @@ npm run shots        # Playwright at 390x844 against `vite preview` of dist/ (ru
 npm run icons        # re-render public/icon-192.png and icon-512.png from public/icon.svg
 npm run seed:build   # rebuild src/data/seed-words.ts from docs/example-words.md (plain node, 22.18+)
 npm run check:licence -- <pubkey>  # live testnet licence check, opt-in, not in the gate
-npm run e2e:live     # the ONE live test (tests/e2e/tutor-live.spec.ts, Playwright project 'live'): drives the DEPLOYED app
+npm run e2e:live     # the live tests (tests/e2e/*-live.spec.ts: tutor-live asks the tutor about Romans 8:28, talk-live asks the Bible talk; Playwright project 'live'): drives the DEPLOYED app
                      #   (LAMPAS_LIVE_URL, default https://lampas.allmymind.org; no build, no preview server; Postern's CORS allows
                      #   only that origin) and asks the real Postern tutor about Romans 8:28 with LAMPAS_TEST_KEY (or
                      #   ~/.config/mw/lampas-test.env); so it proves a landing only after the deploy; skips, never passes, with
-                     #   no key or no backend; spends a grind of fuel; not in the gate or `npm run shots`
+                     #   no key or no backend; spends a grind of fuel per question; not in the gate or `npm run shots`; tests/e2e/live.ts holds the key lookup they share
 npm run data:build   # data/raw (git-ignored, downloaded if absent) -> public/data/<book>/<chapter>.json + index.json;
                      #   the output is committed and a second run changes nothing (docs/data.md)
 ```
@@ -74,8 +74,12 @@ src/Reader.tsx WordsScreen.tsx ImportScreen.tsx QuizScreen.tsx About.tsx Setting
                      #   About is built from ATTRIBUTION.md (src/attribution.ts), opened by the About button under the chapter
 src/Ask.tsx          # the Ask box under the selected verse (field, Sending / Waiting, No licence, Could not reach + Retry) and the kept answer cards
 src/useAsks.ts       # the questions in flight by verse; a question keeps waiting when he selects another verse; the answer is stored when it comes
-src/services/tutor.ts  # askTutor: bsv-kit door + grist.sendGrist + grist.awaitAnswer; the request and answer shapes, isVerseAnswer, tutorTimings (poll 3 s, 180 s deadline)
-grinds/              # the mill's grind for lampas: verse-ask.json + instructions + answer schema (same keys as SpellForge's tutor-turn.json)
+src/services/tutor.ts  # askGrind (bsv-kit door + grist.sendGrist + grist.awaitAnswer, for any grind kind) and askTutor, the verse-ask kind on it; the request and answer shapes, isVerseAnswer, tutorTimings (poll 3 s, 180 s deadline), FAILURE_TITLES
+src/Talk.tsx useTalk.ts services/talk.ts  # Bible talk: the Talk bar pinned under the reader and the bottom sheet it opens ('Talk about Romans 8' or 'Romans 8:28' when a verse is selected);
+                     #   useTalk keeps the messages in flight per conversation (a message keeps waiting when the sheet closes; an answer that comes while its sheet is open is read aloud);
+                     #   services/talk.ts is the bible-talk kind: the request (reference, greek, english of the verse or of the chapter's first 3 verses, question <= 600, history = the last 10 turns {q, a}, solid_words),
+                     #   fitHistory (cuts old answers, then old turns, to fit the grist's 10 KiB record), REFUSAL (the one sentence for anything outside the Bible), isTalkAnswer; data/answerWord.ts finds an answer's Greek word in the chapter for the word sheet
+grinds/              # the mill's grinds for lampas: verse-ask and bible-talk, each .json + instructions + answer schema (same keys as SpellForge's tutor-turn.json; the mill must allow each kind)
 src/events/bus.ts   # the typed event bus screens talk through: publish, subscribe, latest, useEvent, useLatest; docs/events.md lists every kind, who publishes, who listens
 src/nav/             # route.ts: the hash address (screen, and in the reader '?c=8&view=greek&weave=off&v=28'), navigate, replaceHash, useAddress;
                      #   lastRoute.ts: reopen where he left it (localStorage lampas.lastRoute, lampas.trail = last 20 addresses, lampas.scrolls; history.state.i;
@@ -91,7 +95,7 @@ src/appearance/     # themes.ts (Theme list, THEME_COLORS = the browser bar's co
                      #   keeps the phone's own size (chrome-title / chrome-text / chrome-small utilities)
 src/speech/          # languages.ts: the registry of spoken languages (english, greek) and their speeds (RATE_MIN 0.5 to RATE_MAX 1.5, default 1; a new language is one entry);
                      #   pronunciation.ts: the registry of Greek pronunciations (only 'modern', el-GR; add an entry for another); settingsSync.ts: saved voices, speeds and pronunciation -> bus -> greek.ts; greek.ts: speak(text, key, onFail?, language = 'greek') with speechSynthesis, lang el-GR (en-US for English), the language's own rate and voice, the phone's Greek voice, no server; a second tap on the same key stops it; hasGreekVoice() true/false/'unknown'; SpeakButton.tsx: the speaker on a word (aria-label 'Hear it') with the one-line no-Greek-voice help;
-                     #   readAloud.ts: read aloud what is shown (runsOf: English chunks en-US, Greek words el-GR, a woven verse in runs of one language; startReading / pauseReading / resumeReading / stopReading, one epoch so a late utterance starts nothing, verse-reading on the bus per verse, Pause keeps the verse and Resume re-reads it); greek.ts speakPart is its one engine call; speakWord(text, language) says one word now (a long press on a word of the Reader, src/Reader.tsx Tap: 500 ms, under 10 px of movement, vibrate(10), word-spoken on the bus; words are select-none and swallow the contextmenu);
+                     #   readAloud.ts: read aloud what is shown (runsOf: English chunks en-US, Greek words el-GR, a woven verse in runs of one language; startReading / pauseReading / resumeReading / stopReading, one epoch so a late utterance starts nothing, verse-reading on the bus per verse, Pause keeps the verse and Resume re-reads it); greek.ts speakPart is its one engine call; startAnswer / stopAnswer read a Bible talk answer through the same engine (answerRuns.ts cuts it into English and Greek runs; reading.answer is its id, so the reader's highlight and bar stay out of it); speakWord(text, language) says one word now (a long press on a word of the Reader, src/Reader.tsx Tap: 500 ms, under 10 px of movement, vibrate(10), word-spoken on the bus; words are select-none and swallow the contextmenu);
                      #   ReadControls.tsx: Read from the top / Read from here (header), the play button on a verse ('Hear the verse'), the Pause | Stop bar; wakeLock.ts: the screen stays on while reading (re-asked on visibilitychange)
 src/fonts/           # Gentium Plus (Greek + Greek Extended, 400 and 700 woff2) and its OFL licence; @font-face is in src/index.css
 src/config.ts        # issuer (default the Governor's key; VITE_LAMPAS_ISSUER overrides), collection 'lampas', chain, Postern door, the device key's storage name
@@ -102,8 +106,8 @@ src/sw.ts            # the worker: precache, precache guard, SKIP_WAITING, claim
 src/precacheGuard.ts # never serve a .js/.css whose Content-Type does not fit
 src/services/appUpdate.ts  # watches the registration, tap -> SKIP_WAITING -> reload once, periodic update check
 src/ui/              # scrollGuard.ts (page never scrolls), focus.ts (focus with preventScroll)
-src/data/db.ts       # Dexie, version 5: words {lemma key, lemmas, gloss, lesson, state, since}, meta and settings {key, value}, results {lemma, when, right}, answers {ref 'rom.8.28', question, answer, words, when}
-src/data/repositories/  # the only way UI reaches Dexie (words.ts: seed on first open, list, set state, import, and list the solid lemmas; settings.ts: the reader's English | Greek view, Weave Off | Solid words, the English and Greek voice (voiceURI) and the Greek pronunciation; results.ts: recordAnswer; answers.ts: the tutor's answers per verse)
+src/data/db.ts       # Dexie, version 6: words {lemma key, lemmas, gloss, lesson, state, since}, meta and settings {key, value}, results {lemma, when, right}, answers {ref 'rom.8.28', question, answer, words, when}, talks {ref 'rom.8' or 'rom.8.28', q, a, words, when}
+src/data/repositories/  # the only way UI reaches Dexie (words.ts: seed on first open, list, set state, import, and list the solid lemmas; settings.ts: the reader's English | Greek view, Weave Off | Solid words, the English and Greek voice (voiceURI) and the Greek pronunciation; results.ts: recordAnswer; answers.ts: the tutor's answers per verse; talks.ts: the Bible talk's turns per chapter or verse)
 src/data/quiz.ts     # Quick test, pure: nextState (the two-in-a-row rule), drawWords, buildOptions, buildQuestion; the random source is injected (mulberry32 in tests; App's newRandom prop)
 src/data/lemma.ts    # BMA lemma -> headword (the key) + TBESG lexicon lemmas (εἶπεν -> λέγω, εἶπον ...)
 src/data/importWords.ts  # parses pasted 'lemma — gloss' lines and rows of the example table
