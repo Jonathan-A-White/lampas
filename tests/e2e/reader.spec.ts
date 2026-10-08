@@ -33,7 +33,7 @@ test('Romans 8 opens in English at phone width, words with a 44 px tap target', 
   const switchBox = await page.getByRole('button', { name: 'Greek', exact: true }).boundingBox();
   expect(switchBox?.height).toBeGreaterThanOrEqual(43.5);
 
-  await expect(page.getByTestId('build-version')).toBeAttached();
+  await expect(page.getByTestId('build-version')).toHaveText(/^v\d+\.\d+\.\d+ · \d{4}-\d{2}-\d{2} \d{2}:\d{2}Z · [0-9a-f]{7,}$/);
   await expectFitsPhone(page);
   await shot(page, 'reader-english');
 });

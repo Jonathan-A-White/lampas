@@ -9,6 +9,7 @@ test('a phone with no licence sees Unlock with its key, a Copy and nothing scrol
   await expect(page.getByRole('heading', { name: 'Unlock' })).toBeVisible();
   await expect(page.getByTestId('device-key')).toHaveText(SEED_PUBLIC_KEY);
   await expect(page.getByRole('button', { name: 'Copy', exact: true })).toBeVisible();
+  await expect(page.getByTestId('build-version')).toHaveText(/^v\d+\.\d+\.\d+ · /);
   await expect(page.getByRole('heading', { name: 'Lampas' })).toHaveCount(0);
 
   const { scrollWidth, clientWidth, scrollTop } = await page.evaluate(() => ({
