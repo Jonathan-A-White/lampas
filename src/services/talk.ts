@@ -34,20 +34,34 @@ export interface TalkHistoryEntry {
 
 /** The word he asked for help with (the word sheet's Help with this word row): the form as it stands, its lemma, its parsing in
  * plain words, and what he wants: its grammar, or how to sound it out. */
-export interface TalkFocus {
+export interface WordFocus {
   form: string;
   lemma: string;
   parse: string;
   kind: 'grammar' | 'sound';
 }
 
+/** The grammar term he asked the tutor about (the Grammar sheet's Ask the tutor): 'conjunction'. */
+export interface TermFocus {
+  term: string;
+  kind: 'grammar-term';
+}
+
+/** What a question comes with, when it comes from a word's sheet or a Grammar sheet. */
+export type TalkFocus = WordFocus | TermFocus;
+
 /** The question the word sheet's Help row sends for `focus` in `reference`: it names the word, its lemma, its parsing and the
  * reference, then asks. */
-export function helpQuestion(focus: TalkFocus, reference: string): string {
+export function helpQuestion(focus: WordFocus, reference: string): string {
   const word = `${focus.form} (lemma ${focus.lemma}; ${focus.parse}) in ${reference}`;
   return focus.kind === 'grammar'
     ? `The word ${word}. Explain the grammar of this form and what I need to know to read it.`
     : `The word ${word}. Help me pronounce this word: its syllables and how each sounds.`;
+}
+
+/** The question the Grammar sheet's Ask the tutor sends: it names the term and the reference it was asked in. */
+export function termQuestion(term: string, reference: string): string {
+  return `Explain the grammar term “${term}” in plain words, and show me where it is in ${reference}.`;
 }
 
 /** What the grind is sent (Bible Talk Request 1; grinds/bible-talk.input.schema.json). */
@@ -60,7 +74,7 @@ export interface TalkRequest {
   solid_words: string[];
   /** what each of the app's settings holds now (src/settings/registry.ts currentSettings), by key */
   settings: Record<string, SettingValue>;
-  /** present only when the question comes from the word sheet's Help with this word row */
+  /** present only when the question comes from the word sheet's Help with this word row, or a Grammar sheet's Ask the tutor */
   focus?: TalkFocus;
 }
 

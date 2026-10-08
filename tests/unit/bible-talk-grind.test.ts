@@ -148,3 +148,22 @@ describe('the word help focus and the syllables (mw-5r3p30.34)', () => {
     for (const part of ['`focus`', '`syllables`', 'tart from the form', 'ending, the stem change, the accent or breathing', 'same chapter', 'one check question']) expect(text).toContain(part);
   });
 });
+
+describe('the grammar term focus (mw-5r3p30.35)', () => {
+  const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
+  const request = { reference: 'Romans 8:2', greek: 'ὁ γὰρ νόμος', english: 'For the law', question: 'What is a conjunction?', history: [], solid_words: [], settings: {} };
+  const term = { term: 'conjunction', kind: 'grammar-term' };
+
+  it('the request schema accepts a grammar term focus beside the word focus, and still refuses an incomplete or mixed one', () => {
+    expect(validate({ ...request, focus: term }, input)).toEqual([]);
+    expect(validate({ ...request, focus: { form: 'γὰρ', lemma: 'γάρ', parse: 'conjunction', kind: 'grammar' } }, input)).toEqual([]);
+    for (const bad of [{ term: 'conjunction' }, { ...term, kind: 'grammar' }, { ...term, extra: 1 }, { term: '', kind: 'grammar-term' }, { ...term, form: 'γὰρ' }]) {
+      expect(validate({ ...request, focus: bad }, input), JSON.stringify(bad)).not.toEqual([]);
+    }
+  });
+
+  it('the instructions tell the companion what a grammar term focus is and how to answer it', () => {
+    const text = readFileSync(grind.instructions as string, 'utf8');
+    for (const part of ['grammar-term', '`focus.term`', 'plain words', 'Leave `syllables` out']) expect(text).toContain(part);
+  });
+});

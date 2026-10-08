@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import type { Chapter } from '../../src/data/chapter';
-import { MAX_HISTORY_TURNS, MAX_REQUEST_BYTES, MAX_TALK_CHARS, buildTalkRequest, fitHistory, type TalkRequest } from '../../src/services/talk';
+import { MAX_HISTORY_TURNS, MAX_REQUEST_BYTES, MAX_TALK_CHARS, buildTalkRequest, fitHistory, termQuestion, type TalkRequest } from '../../src/services/talk';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const turn = (i: number, a = `Answer ${i}`) => ({ q: `Question ${i}`, a });
@@ -46,6 +46,16 @@ describe('buildTalkRequest', () => {
     const focus = { form: 'συνεργεῖ', lemma: 'συνεργέω', parse: 'verb', kind: 'sound' as const };
     expect(buildTalkRequest(scope, 'Help', [], [], {}, focus).focus).toEqual(focus);
     expect('focus' in buildTalkRequest(scope, 'Help', [], [], {})).toBe(false);
+  });
+
+  it('carries a grammar term focus, and asks about the term by name with the reference', () => {
+    const scope = { title: 'Romans 8', chapter, verse: chapter.verses.find((v) => v.n === 2) ?? null };
+    const focus = { term: 'conjunction', kind: 'grammar-term' as const };
+    expect(buildTalkRequest(scope, termQuestion('conjunction', 'Romans 8:2'), [], [], {}, focus).focus).toEqual(focus);
+    const question = termQuestion('conjunction', 'Romans 8:2');
+    expect(question).toContain('conjunction');
+    expect(question).toContain('Romans 8:2');
+    expect(question).toContain('Explain the grammar term');
   });
 
   it('keeps a question to 600 characters', () => {
