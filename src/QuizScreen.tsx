@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react';
 import { loadChapter, type Chapter } from './data/chapter';
 import { listWords, recordAnswer, seedWordsIfFirstOpen } from './data/repositories';
 import { clearRound, readRound, saveRound } from './data/roundKeep';
-import { buildQuestion, drawWords, seedDistractors, type Question, type Random } from './data/quiz';
+import { askAbout, buildQuestion, drawWords, seedDistractors, type Question, type Random } from './data/quiz';
 import { navigate } from './nav/route';
+import { askInReader } from './nav/readerRequest';
+import { speakWord } from './speech/greek';
 import { READER_CHAPTER } from './data/readerChapter';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { HoldToHear } from './HoldToHear';
@@ -95,6 +97,14 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
     setMissed(nextMissed);
     saveRound({ questions, index, picked: option, missed: nextMissed });
     void recordAnswer(question.lemma, right);
+    // The word says itself once, by the long press's engine; the Hold to hear bar says it again. No help line here: that bar carries it.
+    speakWord(question.prompt, 'greek');
+  };
+
+  const askTutor = () => {
+    if (!question) return;
+    const about = askAbout(question, { chapter: READER_CHAPTER.chapter, verse: 1 });
+    askInReader(about.chapter, about.verse, about.text);
   };
 
   const subtitle = question ? `${index + 1} of ${total}` : null;
@@ -228,20 +238,25 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
           {!answered ? '' : picked === question.gloss ? 'Right.' : `Not quite. It means: ${question.gloss}`}
         </p>
         {answered ? (
-          <button
-            type="button"
-            data-testid="next"
-            ref={focusOnMount}
-            onClick={() => {
-              if (last) clearRound();
-              else saveRound({ questions, index: index + 1, picked: null, missed });
-              setPicked(null);
-              setIndex(index + 1);
-            }}
-            className="mt-2 min-h-12 w-full rounded-xl bg-accent text-lg font-medium text-accent-fg"
-          >
-            {last ? 'Finish' : 'Next'}
-          </button>
+          <div className="mt-2 grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              data-testid="next"
+              ref={focusOnMount}
+              onClick={() => {
+                if (last) clearRound();
+                else saveRound({ questions, index: index + 1, picked: null, missed });
+                setPicked(null);
+                setIndex(index + 1);
+              }}
+              className="min-h-12 rounded-xl bg-accent text-lg font-medium text-accent-fg"
+            >
+              {last ? 'Finish' : 'Next'}
+            </button>
+            <button type="button" onClick={askTutor} className="min-h-12 rounded-xl border border-line text-lg font-medium">
+              Ask the tutor
+            </button>
+          </div>
         ) : null}
         <div className="pb-4">
           <DrillLink />

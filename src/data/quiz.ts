@@ -94,6 +94,8 @@ export interface Occurrence {
   form: string;
   /** 'Romans 8:1' */
   reference: string;
+  chapter: number;
+  verse: number;
 }
 
 const nfc = (s: string) => s.normalize('NFC');
@@ -120,7 +122,7 @@ export function formsOf(chapter: Chapter, word: Word, others: ReadonlySet<string
   return chapter.verses.flatMap((v) =>
     v.g
       .filter((g) => isFormOf(g, lemmas, others))
-      .map((g) => ({ form: g.t, reference: `${chapter.book} ${chapter.chapter}:${v.n}` })),
+      .map((g) => ({ form: g.t, reference: `${chapter.book} ${chapter.chapter}:${v.n}`, chapter: chapter.chapter, verse: v.n })),
   );
 }
 
@@ -131,6 +133,9 @@ export interface Question {
   prompt: string;
   /** Under the prompt when it is a form: 'Romans 8:1'. */
   reference?: string;
+  /** Where that form is, for Ask the tutor; a round kept before this was added has neither. */
+  chapter?: number;
+  verse?: number;
   gloss: string;
   options: string[];
 }
@@ -144,7 +149,21 @@ export function buildQuestion(word: Word, pool: readonly Distractor[], chapter: 
     lemma: word.lemma,
     prompt: occurrence?.form ?? word.lemma,
     reference: occurrence?.reference,
+    chapter: occurrence?.chapter,
+    verse: occurrence?.verse,
     gloss: word.gloss,
     options: buildOptions(word.gloss, pos, word.lemma, pool, random),
   };
+}
+
+/**
+ * Where Ask the tutor sends him from a question, and what the Ask box then holds. A form from the chapter is asked about in
+ * its own verse; a word the chapter does not have (or a round kept before verses were stored) is asked about generally, on
+ * the chapter's first verse, because the Ask box needs a verse to open on.
+ */
+export function askAbout(q: Question, fallback: { chapter: number; verse: number }): { chapter: number; verse: number; text: string } {
+  if (q.chapter !== undefined && q.verse !== undefined && q.reference) {
+    return { chapter: q.chapter, verse: q.verse, text: `What does ${q.prompt} mean in ${q.reference}, and why does the verse use that form?` };
+  }
+  return { ...fallback, text: `What does the Greek word ${q.prompt} mean ("${q.gloss}"), and how is it used in the New Testament?` };
 }
