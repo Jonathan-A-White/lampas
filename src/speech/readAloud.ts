@@ -17,6 +17,8 @@ import { keepAwake, letSleep } from './wakeLock';
 export interface Run {
   text: string;
   language: SpeechLanguage;
+  /** said slower than his speed (a word being sounded out) */
+  slow?: boolean;
 }
 
 export interface PlanVerse {
@@ -133,6 +135,7 @@ function readRun(verse: number, run: number, my: number): void {
     part.language,
     () => readRun(verse, run + 1, my),
     (error) => (isCancelError(error) ? interrupted(my) : finish(my)),
+    part.slow,
   );
   if (!spoke) finish(my);
 }

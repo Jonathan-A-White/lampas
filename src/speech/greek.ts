@@ -126,12 +126,15 @@ function watchVisibility(): void {
   document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && stopSpeaking());
 }
 
+/** How much slower than his speed a word is said when it is being sounded out (src/speech/soundOut.ts). */
+export const SLOW_FACTOR = 0.6;
+
 /** One utterance in `language` with its tag, its speed and the voice he chose, handed to the phone. `onEnd` is called
  * when it ends; `onError` with the engine's error name when it does not (a cancel reports 'canceled' or 'interrupted'). */
-function utter(text: string, key: string, language: SpeechLanguage, synth: SpeechSynthesis, onEnd: () => void, onError: (error: string) => void): void {
+function utter(text: string, key: string, language: SpeechLanguage, synth: SpeechSynthesis, onEnd: () => void, onError: (error: string) => void, slow = false): void {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = langOf(language);
-  utterance.rate = rates[language];
+  utterance.rate = slow ? rates[language] * SLOW_FACTOR : rates[language];
   const voice = pickVoice(synth, language);
   if (voice) utterance.voice = voice;
   const ended = () => {
@@ -177,11 +180,11 @@ export const READ_KEY = 'read-aloud';
  * voice with its lang set). Unlike speak() it does not cancel what is playing and does not toggle: the sequence calls
  * stopSpeaking() once at its start, and the next part when `onEnd` says this one is over. `onError` gets the engine's
  * error name. Returns false when the phone cannot speak at all. */
-export function speakPart(text: string, language: SpeechLanguage, onEnd: () => void, onError: (error: string) => void): boolean {
+export function speakPart(text: string, language: SpeechLanguage, onEnd: () => void, onError: (error: string) => void, slow = false): boolean {
   const synth = synthesis();
   if (!synth) return false;
   watchVisibility();
-  utter(text, READ_KEY, language, synth, onEnd, onError);
+  utter(text, READ_KEY, language, synth, onEnd, onError, slow);
   return true;
 }
 
@@ -191,12 +194,12 @@ const WORD_KEY = 'word-press';
 /** Says one word in `language`, now: what is playing is cancelled first, and it never toggles (pressing the same word
  * again says it again). With no Greek voice it still speaks, to the phone's default voice with lang set, as a reading
  * does; the speaker buttons carry the help line. Returns false when the phone cannot speak at all. */
-export function speakWord(text: string, language: SpeechLanguage): boolean {
+export function speakWord(text: string, language: SpeechLanguage, slow = false): boolean {
   const synth = synthesis();
   if (!synth) return false;
   watchVisibility();
   if (playing || synth.speaking || synth.pending) synth.cancel();
-  utter(text, WORD_KEY, language, synth, () => {}, () => {});
+  utter(text, WORD_KEY, language, synth, () => {}, () => {}, slow);
   return true;
 }
 

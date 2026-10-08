@@ -28,6 +28,9 @@ export type AppEvent =
   | { kind: 'word-tapped'; strongs: string; verse: number }
   /** a long press on a word of the reader said that word alone, in its own language */
   | { kind: 'word-spoken'; text: string; language: SpeechLanguage; verse: number }
+  /** he tapped Grammar or Sound it out on a word's sheet (Help with this word): the Talk sheet opens on `verse` with the question
+   * about `form` sent. `help` is what he wants help with */
+  | { kind: 'word-help'; help: 'grammar' | 'sound'; form: string; lemma: string; parse: string; chapter: number; verse: number }
   /** another screen asks the Reader, as it opens on `chapter` and `verse`, to show the Ask box holding `question` (action
    * 'ask') or to open the Talk sheet (action 'talk'); `id` counts up, so the Reader can tell a request it has not met */
   | { kind: 'reader-requested'; id: number; action: 'ask'; chapter: number; verse: number; question: string }

@@ -24,3 +24,8 @@ export function answerRuns(text: string): Run[] {
   english(text.length);
   return runs;
 }
+
+/** The syllables of a word he asked to have sounded out, as runs to read one after another: Greek, said slowly. */
+export function syllableRuns(syllables: string[]): Run[] {
+  return syllables.filter(speakable).map((text) => ({ text, language: 'greek' as const, slow: true }));
+}
