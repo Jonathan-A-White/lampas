@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react';
 import { loadChapter, type Chapter } from './data/chapter';
 import { listWords, recordAnswer, seedWordsIfFirstOpen } from './data/repositories';
+import { clearRound, readRound, saveRound } from './data/roundKeep';
 import { buildQuestion, drawWords, seedDistractors, type Question, type Random } from './data/quiz';
 import { navigate } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { focusOnMount } from './ui/focus';
 
-type Round = { status: 'loading' } | { status: 'ready'; questions: Question[] };
+type Round = { status: 'loading' } | { status: 'offer' } | { status: 'ready'; questions: Question[] };
 
 /** The chapter the inflected forms come from. A phone that cannot load it is asked the plain lemmas. */
 const loadForms = (): Promise<Chapter | null> => loadChapter('rom', 8).catch(() => null);
@@ -30,12 +31,14 @@ const OPTION_LOOK = {
 };
 
 export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
-  const [round, setRound] = useState<Round>({ status: 'loading' });
+  // A round left half done (the app was closed, or he went back to the reader) is offered again: Resume | New round.
+  const [round, setRound] = useState<Round>(() => (readRound() ? { status: 'offer' } : { status: 'loading' }));
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [missed, setMissed] = useState<Question[]>([]);
 
   const another = () => {
+    clearRound();
     setRound({ status: 'loading' });
     setIndex(0);
     setPicked(null);
@@ -43,7 +46,17 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
     void drawRound(newRandom()).then((questions) => setRound({ status: 'ready', questions }));
   };
 
+  const resume = () => {
+    const saved = readRound();
+    if (!saved) return another();
+    setIndex(saved.index);
+    setPicked(saved.picked);
+    setMissed(saved.missed);
+    setRound({ status: 'ready', questions: saved.questions });
+  };
+
   useEffect(() => {
+    if (round.status === 'offer') return;
     let current = true;
     void drawRound(newRandom()).then((questions) => current && setRound({ status: 'ready', questions }));
     return () => {
@@ -61,8 +74,10 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
   const pick = (option: string) => {
     if (!question || picked !== null) return;
     const right = option === question.gloss;
+    const nextMissed = right ? missed : [...missed, question];
     setPicked(option);
-    if (!right) setMissed((m) => [...m, question]);
+    setMissed(nextMissed);
+    saveRound({ questions, index, picked: option, missed: nextMissed });
     void recordAnswer(question.lemma, right);
   };
 
@@ -74,6 +89,26 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
       back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>}
     />
   );
+
+  if (round.status === 'offer') {
+    return (
+      <>
+        {header}
+        <main className="screen min-h-0 flex-1 px-6 pt-8 text-center">
+          <p className="text-lg">Round left unfinished</p>
+          <p className="mt-1 text-muted">Go on where you stopped, or start a new round.</p>
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <button type="button" onClick={resume} className="min-h-12 rounded-xl bg-accent text-lg font-medium text-accent-fg">
+              Resume
+            </button>
+            <button type="button" onClick={another} className="min-h-12 rounded-xl border border-line text-lg font-medium">
+              New round
+            </button>
+          </div>
+        </main>
+      </>
+    );
+  }
 
   if (round.status === 'loading') return <>{header}<main className="screen min-h-0 flex-1" aria-busy="true" /></>;
 
@@ -173,6 +208,8 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
             data-testid="next"
             ref={focusOnMount}
             onClick={() => {
+              if (last) clearRound();
+              else saveRound({ questions, index: index + 1, picked: null, missed });
               setPicked(null);
               setIndex(index + 1);
             }}
