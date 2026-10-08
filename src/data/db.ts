@@ -16,6 +16,15 @@ export interface Word {
   since: number;
 }
 
+/** One answer in the Quick test. */
+export interface TestResult {
+  id?: number;
+  lemma: string;
+  /** When he answered (ms since the epoch). */
+  when: number;
+  right: boolean;
+}
+
 /** One-off facts about the store, such as 'wordsSeeded'. */
 export interface MetaRow {
   key: string;
@@ -34,6 +43,7 @@ class LampasDB extends Dexie {
   words!: EntityTable<Word, 'lemma'>;
   meta!: EntityTable<MetaRow, 'key'>;
   settings!: EntityTable<SettingRow, 'key'>;
+  results!: EntityTable<TestResult, 'id'>;
 
   constructor() {
     super('lampas');
@@ -43,6 +53,13 @@ class LampasDB extends Dexie {
     this.version(2).stores({ words: 'lemma, lesson, state, *lemmas', meta: 'key' });
     // v3: settings he chooses (key, value), such as the reader's English | Greek view.
     this.version(3).stores({ words: 'lemma, lesson, state, *lemmas', meta: 'key', settings: 'key' });
+    // v4: the Quick test's answers {lemma, when, right}; [lemma+when] reads one word's answers in order.
+    this.version(4).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+    });
   }
 }
 

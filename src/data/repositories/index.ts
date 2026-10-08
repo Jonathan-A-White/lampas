@@ -4,3 +4,5 @@ export { addImportedWords, listWords, seedWordsIfFirstOpen, setWordState } from 
 export type { Word, WordState } from './words';
 export { getReaderView, setReaderView } from './settings';
 export type { ReaderView } from './settings';
+export { listResults, recordAnswer } from './results';
+export type { TestResult } from './results';
