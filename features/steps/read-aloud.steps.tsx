@@ -10,7 +10,7 @@ import { App } from '../../src/App';
 import { type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { clearBus, subscribe } from '../../src/events/bus';
-import { stopReading } from '../../src/speech/readAloud';
+import { getReading, stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, type FakeVoice, stubSpeech } from '../../tests/support/fake-speech';
 
@@ -168,7 +168,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('verse {int} is highlighted as being read', (_, n: number) => expect(reading(n)).toBe(true));
   });
 
-  Scenario('Pause keeps the verse and Resume reads it again', ({ Given, And, When, Then }) => {
+  Scenario('Pause keeps the verse and Play reads it again', ({ Given, And, When, Then }) => {
     Given(phoneBoth, bothVoices);
     And('he taps Read from the top', () => user.click(screen.getByRole('button', { name: 'Read from the top' })));
     And('the phone finishes speaking verse {int}', () => {
@@ -177,9 +177,30 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps Pause', () => user.click(screen.getByRole('button', { name: 'Pause' })));
     Then('the phone is told to stop', () => expect(synth.calls[synth.calls.length - 1]).toBe('cancel'));
     And('the reading bar says {string}', (_, text: string) => expectBar(text));
-    When('he taps Resume', () => user.click(screen.getByRole('button', { name: 'Resume' })));
+    When('he taps Play', () => user.click(screen.getByRole('button', { name: 'Play' })));
     Then('the phone speaks the English of verse {int} in {string}', speaksEnglish);
     And('the reading bar now says {string}', (_, text: string) => expectBar(text));
+  });
+
+  Scenario('The top button turns into Pause and Stop while reading and is Play again after Stop', ({ Given, And, When, Then }) => {
+    const top = (name: string) => screen.queryByRole('button', { name });
+    const topBar = (has: string[], lacks: string[]) => {
+      for (const name of has) expect(top(name), name).not.toBeNull();
+      for (const name of lacks) expect(top(name), name).toBeNull();
+    };
+    Given(phoneBoth, bothVoices);
+    Then('the top bar has Read from the top and no Pause or Stop', () => topBar(['Read from the top'], ['Pause', 'Stop']));
+    When('he taps Read from the top', () => user.click(screen.getByRole('button', { name: 'Read from the top' })));
+    Then('the top bar has Pause and Stop and no Read from the top', () => topBar(['Pause', 'Stop'], ['Read from the top', 'Play']));
+    When('he taps Pause', () => user.click(screen.getByRole('button', { name: 'Pause' })));
+    Then('the top bar has Play and Stop and no Pause', () => topBar(['Play', 'Stop'], ['Pause', 'Read from the top']));
+    And('the reading is paused', () => expect(getReading().status).toBe('paused'));
+    When('he taps Play', () => user.click(screen.getByRole('button', { name: 'Play' })));
+    Then('the top bar has Pause and Stop and no Play', () => topBar(['Pause', 'Stop'], ['Play']));
+    And('the reading is going', () => expect(getReading().status).toBe('reading'));
+    When('he taps Stop', () => user.click(screen.getByRole('button', { name: 'Stop' })));
+    Then('the top bar is back to Read from the top with no Pause or Stop', () => topBar(['Read from the top'], ['Pause', 'Stop']));
+    And('nothing is being read', () => expect(getReading().status).toBe('idle'));
   });
 
   Scenario('Stop speaks nothing more', ({ Given, And, When, Then }) => {
