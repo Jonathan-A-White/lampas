@@ -4,11 +4,11 @@ import { db } from '../../src/data/db';
 afterAll(() => db.close());
 
 describe('the Dexie database', () => {
-  it('opens at version 7 with the words, meta, settings, results, answers, talks and drills stores', async () => {
+  it('opens at version 8 with the words, meta, settings, results, answers, talks, drills and readings stores', async () => {
     await db.open();
     expect(db.name).toBe('lampas');
-    expect(db.verno).toBe(7);
-    expect(db.tables.map((t) => t.name).sort()).toEqual(['answers', 'drills', 'meta', 'results', 'settings', 'talks', 'words']);
+    expect(db.verno).toBe(8);
+    expect(db.tables.map((t) => t.name).sort()).toEqual(['answers', 'drills', 'meta', 'readings', 'results', 'settings', 'talks', 'words']);
     expect(db.words.schema.primKey.name).toBe('lemma');
     expect(db.words.schema.idxByName['lemmas']?.multi).toBe(true);
     expect(db.settings.schema.primKey.name).toBe('key');
@@ -20,5 +20,6 @@ describe('the Dexie database', () => {
     expect(db.talks.schema.idxByName['[ref+when]']).toBeDefined();
     expect(db.drills.schema.primKey.auto).toBe(true);
     expect(db.drills.schema.idxByName['[lemma+step]']).toBeDefined();
+    expect(db.readings.schema.primKey.name).toBe('ref');
   });
 });

@@ -68,6 +68,24 @@ export interface DrillResult {
   right: boolean;
 }
 
+/** One word of a reading the mill marked to fix, with its chunks to say and a tip. */
+export interface FixWord {
+  word: string;
+  chunks: string[];
+  tip: string;
+}
+
+/** The result of the last reading check of a verse, kept so it is there on return. */
+export interface VerseReading {
+  /** the verse it was read from: 'rom.8.28', the key */
+  ref: string;
+  verdict: 'well-read' | 'some-to-fix';
+  words: FixWord[];
+  note: string;
+  /** when it arrived (ms since the epoch) */
+  when: number;
+}
+
 /** One-off facts about the store, such as 'wordsSeeded'. */
 export interface MetaRow {
   key: string;
@@ -90,6 +108,7 @@ class LampasDB extends Dexie {
   answers!: EntityTable<TutorAnswer, 'id'>;
   talks!: EntityTable<TalkTurn, 'id'>;
   drills!: EntityTable<DrillResult, 'id'>;
+  readings!: EntityTable<VerseReading, 'ref'>;
 
   constructor() {
     super('lampas');
@@ -132,6 +151,17 @@ class LampasDB extends Dexie {
       answers: '++id, [ref+when]',
       talks: '++id, [ref+when]',
       drills: '++id, lemma, [lemma+step]',
+    });
+    // v8: the last reading check of each verse {ref, verdict, words, note, when}, one row per verse (key ref).
+    this.version(8).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
     });
   }
 }

@@ -32,3 +32,5 @@ export { addTurn, listTurns, talkRef } from './talks';
 export type { TalkTurn } from './talks';
 export { listDrillResults, recordDrillStep } from './drills';
 export type { DrillResult } from './drills';
+export { getVerseReading, keepVerseReading } from './readings';
+export type { FixWord, VerseReading } from './readings';
