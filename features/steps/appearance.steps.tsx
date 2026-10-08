@@ -125,6 +125,8 @@ const speedsAre = async (english: number, greek: number) =>
   waitFor(() => {
     expect(Number((slider('English speed') as HTMLInputElement).value)).toBe(english);
     expect(Number((slider('Greek speed') as HTMLInputElement).value)).toBe(greek);
+    // and the speaker has been told: a button tapped next speaks at these
+    expect(latest('rates-changed')?.rates).toEqual({ english, greek });
   });
 
 /** Back in the reader showing Greek (a verse's play button reads what is shown), taps the play button of verse 1 and
@@ -138,7 +140,7 @@ async function greekRateOfAButton(): Promise<number> {
   const play = within(document.querySelector<HTMLElement>('[data-verse="1"]')!).getByRole('button', { name: 'Hear the verse' });
   const before = synth.spoken.length;
   await user.click(play);
-  expect(synth.spoken.length).toBe(before + 1);
+  await waitFor(() => expect(synth.spoken.length).toBe(before + 1));
   const rate = synth.spoken[before].rate;
   expect(synth.spoken[before].lang).toBe('el-GR');
   stopSpeaking();
@@ -160,26 +162,26 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Theme Phone follows a dark colour scheme and a light one', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone whose colour scheme is dark, with nothing saved', () => openOnPhone(true));
     Then('the Theme in Settings is Phone', () => expectPressed('Theme', 'Phone'));
-    And("the page follows the phone's colour scheme", () => expect(pageTheme()).toBe('phone'));
-    And('the browser bar colour is the dark one', () => expect(barColour()).toBe(THEME_COLORS.dark));
+    And("the page follows the phone's colour scheme", () => waitFor(() => expect(pageTheme()).toBe('phone')));
+    And('the browser bar colour is the dark one', () => waitFor(() => expect(barColour()).toBe(THEME_COLORS.dark)));
     When('the phone switches to a light colour scheme', () => {
       phoneIsDark = false;
       schemeListeners.forEach((l) => l({ matches: false }));
     });
-    Then('the browser bar colour is the light one', () => expect(barColour()).toBe(THEME_COLORS.light));
-    And("the page still follows the phone's colour scheme", () => expect(pageTheme()).toBe('phone'));
+    Then('the browser bar colour is the light one', () => waitFor(() => expect(barColour()).toBe(THEME_COLORS.light)));
+    And("the page still follows the phone's colour scheme", () => waitFor(() => expect(pageTheme()).toBe('phone')));
   });
 
   Scenario('Theme Dark makes the reader dark whatever the phone says', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone whose colour scheme is light, with nothing saved', () => openOnPhone(false));
-    Then('the browser bar colour is the light one', () => expect(barColour()).toBe(THEME_COLORS.light));
+    Then('the browser bar colour is the light one', () => waitFor(() => expect(barColour()).toBe(THEME_COLORS.light)));
     When('he sets Theme to Dark in Settings', () => user.click(choiceIn('Theme', 'Dark')));
-    Then('the bus has heard the theme is dark', () => expect(latest('theme-changed')?.theme).toBe('dark'));
-    And('the page is dark', () => expect(pageTheme()).toBe('dark'));
-    And('the browser bar colour is the dark one', () => expect(barColour()).toBe(THEME_COLORS.dark));
+    Then('the bus has heard the theme is dark', () => waitFor(() => expect(latest('theme-changed')?.theme).toBe('dark')));
+    And('the page is dark', () => waitFor(() => expect(pageTheme()).toBe('dark')));
+    And('the browser bar colour is the dark one', () => waitFor(() => expect(barColour()).toBe(THEME_COLORS.dark)));
     When('he sets Theme to Light in Settings', () => user.click(choiceIn('Theme', 'Light')));
-    Then('the page is light', () => expect(pageTheme()).toBe('light'));
-    And('the browser bar colour is the light one', () => expect(barColour()).toBe(THEME_COLORS.light));
+    Then('the page is light', () => waitFor(() => expect(pageTheme()).toBe('light')));
+    And('the browser bar colour is the light one', () => waitFor(() => expect(barColour()).toBe(THEME_COLORS.light)));
   });
 
   Scenario('Text size Large makes the verse text larger and every tap target stays at least 44 px tall', ({ Given, When, Then, And }) => {
@@ -202,7 +204,7 @@ describeFeature(feature, ({ Scenario }) => {
       Then('the English speed in Settings is {number} and the Greek speed is {number}', (_, english: number, greek: number) => speedsAre(english, greek));
       When('he sets the Greek speed to {number} in Settings', (_, value: number) => setSpeed('Greek speed', String(value)));
       Then('the bus has heard the speeds are English {number} and Greek {number}', (_, english: number, greek: number) =>
-        expect(latest('rates-changed')?.rates).toEqual({ english, greek }),
+        waitFor(() => expect(latest('rates-changed')?.rates).toEqual({ english, greek })),
       );
       And('a Greek speaker button speaks at {number}', async (_, rate: number) => expect(await greekRateOfAButton()).toBe(rate));
       And('English is spoken at {number}', (_, rate: number) => expect(englishRate()).toBe(rate));
