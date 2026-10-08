@@ -1,5 +1,5 @@
-// src/Reader.tsx — Romans 8 verse by verse. The header switches English (the MSB) | Greek (Byzantine); every
-// word is tappable and opens the word sheet; a verse number selects the verse. The gear opens Settings
+// src/Reader.tsx — a chapter verse by verse (Romans 8 on a fresh install; the title opens the picker, src/ChapterPicker.tsx).
+// The header switches English (the MSB) | Greek (Byzantine); every word is tappable and opens the word sheet; a verse number selects the verse. The gear opens Settings
 // (src/SettingsScreen.tsx), where the Weave (Off | Solid words | Solid and learning words) is switched: with it on, the English view shows the
 // Greek of his solid words in place of their English (src/data/weave.ts).
 // Settings also holds the Layout (Verse by verse | Paragraph, src/layout/layouts.ts cuts the verses into blocks) and Section
@@ -8,7 +8,9 @@
 // marked; in either view: the Greek view reads the verse's Greek) directly under it, so what the hold is doing is on
 // screen while he holds; then its kept tutor answers and the Ask box (src/Ask.tsx). The selection, the view and the weave
 // are told to the rest of the app on the event bus (src/events/bus.ts, docs/events.md); the Reader reads the selection back from it.
-// The chapter comes from /data/rom/8.json (precached), the view and the weave are kept in the settings store.
+// The chapter comes from /data/<book>/<n>.json (Romans 8 is precached, any other is fetched when first opened and then kept by the
+// worker), the view and the weave are kept in the settings store. Which chapter is open is the address's (b and c), else the one
+// last open (src/data/readerChapter.ts); a chapter is a ReaderBody keyed by it, so choosing another starts the screen afresh.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Fragment, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnswerCards, AskBox } from './Ask';
@@ -28,7 +30,8 @@ import {
   talkRef,
   type ReaderView,
 } from './data/repositories';
-import { READER_CHAPTER } from './data/readerChapter';
+import { chapterOf, getOpenChapter, setOpenChapter, type OpenChapter } from './data/readerChapter';
+import { ChapterPicker } from './ChapterPicker';
 import { weaveVerse, type Woven } from './data/weave';
 import { BuildVersion } from './BuildVersion';
 import { latest, publish, useLatest } from './events/bus';
@@ -51,7 +54,6 @@ import { speakWord, warmVoices } from './speech/greek';
 import type { SpeechLanguage } from './speech/languages';
 import { WordSheet, type Lookup, type TermAsk, type WordHelp } from './WordSheet';
 
-const { book: BOOK, chapter: CHAPTER, title: TITLE } = READER_CHAPTER;
 // 44 px (--lp-tap) minus 1 em, halved, top and bottom. Every face's content area is taller than 1 em (Gentium Plus
 // about 1.11 em, a phone's sans about 1.1 em), so an inline word is never under 44 px whatever the font, and the line
 // box stays --lp-tap tall, so the spare pixels cost no layout.
@@ -131,7 +133,7 @@ function ViewSwitch({ view }: { view: ReaderView }) {
       type="button"
       aria-pressed={view === value}
       onClick={() => void setReaderView(value)}
-      className={`min-h-11 min-w-11 rounded-lg px-3 chrome-text font-medium ${view === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+      className={`min-h-11 min-w-11 rounded-lg px-2.5 chrome-text font-medium ${view === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
     >
       {label}
     </button>
@@ -339,7 +341,37 @@ function SectionHeading({ text }: { text: string }) {
   );
 }
 
+function ChevronIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
+/** The chapter the Reader shows: the one the address names (a book and chapter; a chapter alone is Romans), else the one last open. */
+function openFrom(address: string): OpenChapter {
+  const named = readerOf(address);
+  if (named.book === undefined && named.chapter === undefined) return getOpenChapter();
+  return chapterOf(named.book ?? 'rom', named.chapter ?? 1) ?? getOpenChapter();
+}
+
 export function Reader() {
+  const open = openFrom(useAddress());
+  // What he has open is kept, so Quick test, the Parsing drill and Review (which draw from it) and the next open follow it.
+  const { book, chapter } = open;
+  useEffect(() => setOpenChapter(book, chapter), [book, chapter]);
+  return <ReaderBody key={`${book}/${chapter}`} open={open} />;
+}
+
+/** Whether an address is of this chapter: it says so, or says nothing of the chapter (a bare open). */
+const isHere = (a: { book?: string; chapter?: number }, book: string, chapter: number): boolean =>
+  a.chapter === undefined || (a.chapter === chapter && (a.book ?? 'rom') === book);
+
+function ReaderBody({ open }: { open: OpenChapter }) {
+  const { book: BOOK, chapter: CHAPTER, title: TITLE } = open;
+  const [picking, setPicking] = useState(false);
+  const closePicker = useCallback(() => setPicking(false), []);
   const view = useLiveQuery(getReaderView, []);
   const weave = useLiveQuery(getWeave, []);
   const solid = useLiveQuery(listSolidLemmas, []);
@@ -379,7 +411,7 @@ export function Reader() {
   // or the Ask box on it holding the question.
   const [request] = useState(() => {
     const pending = pendingRequest();
-    return pending?.chapter === CHAPTER ? pending : undefined;
+    return pending?.chapter === CHAPTER && pending.book === BOOK ? pending : undefined;
   });
   useEffect(() => {
     if (request) takeRequest(request);
@@ -393,7 +425,7 @@ export function Reader() {
   const openTalk = useRef<string | null>(null);
   useEffect(() => {
     openTalk.current = talkAbout === undefined ? null : talkRef(BOOK, CHAPTER, talkAbout);
-  }, [talkAbout]);
+  }, [talkAbout, BOOK, CHAPTER]);
   // Push-to-talk (src/useVoice.ts): what he says goes as the turn of the conversation the sheet is open on.
   const sayAbout = useRef<(message: string) => void>(() => {});
   const voice = useVoice((message) => sayAbout.current(message));
@@ -416,7 +448,7 @@ export function Reader() {
       setTapped(selected === n ? null : n);
       publish({ kind: 'verse-selected', chapter: CHAPTER, verse: selected === n ? null : n });
     },
-    [selected],
+    [selected, CHAPTER],
   );
   const closeSheet = useCallback(() => setLookup(null), []);
   const talkScope = chapter && talkAbout !== undefined ? { title: TITLE, chapter, verse: chapter.verses.find((v) => v.n === talkAbout) ?? null } : null;
@@ -433,7 +465,7 @@ export function Reader() {
       if (state?.phase === 'sending' || state?.phase === 'waiting') return;
       voice.press();
     },
-    [talkStates, voice],
+    [talkStates, voice, BOOK, CHAPTER],
   );
   // Help with this word (the word sheet's Grammar | Sound it out): the Talk sheet on the word's verse, the first question sent.
   // Sound it out says the word, slowly, now (straight from the tap); a conversation still waiting for its answer is only shown.
@@ -451,7 +483,7 @@ export function Reader() {
       if (help.kind === 'sound') speakWord(help.form, 'greek', true);
       say(scope, helpQuestion(focus, scopeTitle(scope)), focus);
     },
-    [chapter, talkStates, voice, say],
+    [chapter, talkStates, voice, say, BOOK, CHAPTER, TITLE],
   );
   // Ask the tutor on a Grammar sheet: the Talk sheet on the verse of the word the term was tapped on, the first question sent.
   const askAboutTerm = useCallback(
@@ -465,7 +497,7 @@ export function Reader() {
       if (state?.phase === 'sending' || state?.phase === 'waiting') return;
       say(scope, termQuestion(ask.term, scopeTitle(scope)), { term: ask.term, kind: 'grammar-term' });
     },
-    [chapter, talkStates, voice, say],
+    [chapter, talkStates, voice, say, BOOK, CHAPTER, TITLE],
   );
   const verseTalk: VerseTalk = { onHold: holdTalk, onRelease: () => void voice.release(), onDrop: voice.abort };
   // The Read button of a verse: holding it on a verse that is not selected selects it, so its result shows below it.
@@ -496,7 +528,7 @@ export function Reader() {
     (from: number, continuous: boolean) => {
       if (plan) startReading({ chapter: CHAPTER, plan, from, continuous });
     },
-    [plan],
+    [plan, CHAPTER],
   );
   const chapterReading = reading.status !== 'idle' && reading.answer === null;
   const readingVerse = chapterReading ? reading.verse : null;
@@ -505,18 +537,19 @@ export function Reader() {
 
   // The selection is not kept when the reader goes away; the bus holds it only while the reader is on screen.
   useEffect(() => {
-    const verse = opened.chapter === undefined || opened.chapter === CHAPTER ? opened.verse ?? null : null;
+    const verse = isHere(opened, BOOK, CHAPTER) ? opened.verse ?? null : null;
+    publish({ kind: 'chapter-opened', book: BOOK, chapter: CHAPTER });
     publish({ kind: 'verse-selected', chapter: CHAPTER, verse });
     return () => publish({ kind: 'verse-selected', chapter: CHAPTER, verse: null });
-  }, [opened]);
+  }, [opened, BOOK, CHAPTER]);
   // Back or Forward to another entry of the reader (the verse, view or weave of that entry) puts that entry's state back.
   useEffect(() => {
     const here = readerOf(address);
-    const verse = here.chapter === undefined || here.chapter === CHAPTER ? here.verse ?? null : null;
+    const verse = isHere(here, BOOK, CHAPTER) ? here.verse ?? null : null;
     if ((latest('verse-selected')?.verse ?? null) !== verse) publish({ kind: 'verse-selected', chapter: CHAPTER, verse });
     const { view: shown } = current.current;
     if (here.view && shown && here.view !== shown) void setReaderView(here.view);
-  }, [address]);
+  }, [address, BOOK, CHAPTER]);
   useEffect(() => {
     if (!view) return;
     if (wantView.current && wantView.current !== view) {
@@ -571,13 +604,25 @@ export function Reader() {
     return () => {
       current = false;
     };
-  }, [attempt]);
+  }, [attempt, BOOK, CHAPTER]);
 
   return (
     <>
       <header className="flex shrink-0 items-center gap-1 border-b border-line px-2 py-2">
         {/* While the chapter is read the header gives its room to Pause and Stop; the title stays for screen readers. */}
-        <h1 className={`chrome-title min-w-0 truncate px-1 font-semibold ${chapterReading ? 'sr-only' : 'flex-1'}`}>{TITLE}</h1>
+        <h1 className={`chrome-title min-w-0 font-semibold ${chapterReading ? 'sr-only' : 'flex-1'}`}>
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            onClick={() => setPicking(true)}
+            className="flex min-h-12 max-w-full items-center gap-0.5 rounded-lg text-left font-semibold active:bg-line"
+          >
+            <span className="truncate">{TITLE}</span>
+            <span className="shrink-0 text-accent">
+              <ChevronIcon />
+            </span>
+          </button>
+        </h1>
         {chapterReading ? <span className="flex-1" /> : null}
         {view ? <ViewSwitch view={view} /> : null}
         {plan ? <ReadFromButton from={selected} reading={reading} onRead={() => readFrom(selected ?? 1, true)} /> : null}
@@ -601,13 +646,24 @@ export function Reader() {
         <div>
         {failed ? (
           <div role="alert" className="px-4 pt-6 text-center">
-            <p className="text-lg">Could not load {TITLE}.</p>
+            {navigator.onLine === false ? (
+              <p className="text-lg">{TITLE} is not on this phone yet, and you are offline. Connect to read it.</p>
+            ) : (
+              <p className="text-lg">Could not load {TITLE}.</p>
+            )}
             <button
               type="button"
               onClick={() => setAttempt((n) => n + 1)}
               className="mt-4 min-h-12 rounded-xl bg-accent px-6 text-lg font-medium text-accent-fg"
             >
               Try again
+            </button>
+            <button
+              type="button"
+              onClick={() => setPicking(true)}
+              className="mt-3 block min-h-12 w-full rounded-xl border border-line text-lg font-medium"
+            >
+              Choose another chapter
             </button>
           </div>
         ) : chapter && view && layout && headings ? (
@@ -713,6 +769,7 @@ export function Reader() {
           }}
         />
       ) : null}
+      {picking ? <ChapterPicker current={open} onClose={closePicker} /> : null}
       {chapter && lookup ? <WordSheet chapter={chapter} lookup={lookup} onClose={closeSheet} onHelp={helpWithWord} onAskTerm={askAboutTerm} /> : null}
     </>
   );
