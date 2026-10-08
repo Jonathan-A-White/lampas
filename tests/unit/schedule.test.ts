@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DAY, RARE_CHECK_DAYS, STEP_DAYS, isDue, nextReview, type Review } from '../../src/data/schedule';
+import { DAY, FLASHCARD_STEP, RARE_CHECK_DAYS, STEP_DAYS, isDue, modeFor, nextReview, type Review } from '../../src/data/schedule';
 
 const NOW = Date.UTC(2026, 9, 8, 9, 0, 0);
 const at = (days: number) => NOW + days * DAY;
@@ -67,5 +67,26 @@ describe('the spaced schedule', () => {
     expect(isDue(r, at(1) - 1)).toBe(false);
     expect(isDue(r, at(1))).toBe(true);
     expect(isDue(r, at(2))).toBe(true);
+  });
+});
+
+describe('the question mode follows the step', () => {
+  it('turns to a flashcard at step 3 (the 14-day gap), which is the one named constant', () => {
+    expect(FLASHCARD_STEP).toBe(3);
+    expect(STEP_DAYS[FLASHCARD_STEP]).toBe(14);
+  });
+
+  it('is multiple choice below that step and a flashcard at and above it, the rare check included', () => {
+    for (let step = 0; step < FLASHCARD_STEP; step += 1) expect(modeFor(step)).toBe('choice');
+    for (let step = FLASHCARD_STEP; step <= STEP_DAYS.length; step += 1) expect(modeFor(step)).toBe('flashcard');
+  });
+
+  it('puts a word that lapses below the step back to multiple choice', () => {
+    const strong = review(FLASHCARD_STEP);
+    expect(modeFor(strong.step)).toBe('flashcard');
+    expect(modeFor(nextReview(strong, false, NOW).step)).toBe('choice');
+    // from further up one lapse drops two steps; step 5 lands on the threshold and stays a flashcard
+    expect(modeFor(nextReview(review(FLASHCARD_STEP + 1), false, NOW).step)).toBe('choice');
+    expect(modeFor(nextReview(review(FLASHCARD_STEP + 2), false, NOW).step)).toBe('flashcard');
   });
 });

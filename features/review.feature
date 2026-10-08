@@ -56,3 +56,54 @@ Feature: Review brings back the words that are due
     And he opens Review from Settings
     And the app is closed and opened again
     Then the Review screen says "Due today: 3 words"
+
+  Scenario: A weak word is asked as multiple choice and a strong one as a flashcard
+    Given the word "λέγω" is due on step 0
+    And the word "εἰμί" is also due on step 3
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    Then the question for "λέγω" has four options and no Show control
+    When he answers "λέγω" right and goes on
+    Then the question for "εἰμί" is a flashcard with the lemma "εἰμί", no options and a Show control
+    And the flashcard does not show the gloss yet
+
+  Scenario: Show reveals the meaning and I knew it records a right review
+    Given the word "λέγω" is due on step 3
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    And he taps Show
+    Then the flashcard shows the gloss of "λέγω" with "I knew it" and "Not yet"
+    When he taps "I knew it"
+    Then "λέγω" has one right review and no lapse
+
+  Scenario: Not yet records a wrong review
+    Given the word "λέγω" is due on step 3
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    And he taps Show
+    And he taps "Not yet"
+    Then "λέγω" is on step 1 and has lapsed once
+
+  Scenario: A word that slips is asked as multiple choice again
+    Given the word "λέγω" is due on step 3
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    And he taps Show
+    And he taps "Not yet"
+    And he goes on to the end of the round
+    And "λέγω" is due again
+    And he starts another round
+    Then the question for "λέγω" has four options and no Show control
+
+  Scenario: A flashcard shows the dictionary form and hold-to-hear says it
+    Given the word "λέγω" is due on step 3
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    Then the flashcard shows only the lemma "λέγω"
+    When he holds the Hold to hear bar
+    Then the Greek voice says "λέγω"

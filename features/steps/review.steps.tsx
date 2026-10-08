@@ -14,6 +14,7 @@ import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 
 afterAll(() => {
   cleanup();
@@ -71,9 +72,14 @@ async function start(): Promise<void> {
   await screen.findByTestId('prompt');
 }
 
-/** Answers the question on screen right or wrong; returns the lemma it asked. */
+/** Answers the question on screen right or wrong; returns the lemma it asked. A flashcard is shown, then graded. */
 async function answerCurrent(right: boolean): Promise<string> {
   const lemma = promptLemma();
+  if (screen.queryByRole('button', { name: 'Show' })) {
+    await user.click(screen.getByRole('button', { name: 'Show' }));
+    await user.click(await screen.findByRole('button', { name: right ? 'I knew it' : 'Not yet' }));
+    return lemma;
+  }
   const gloss = (await db.words.get(lemma))?.gloss;
   const target = options().find((o) => (o.textContent === gloss) === right);
   if (!target) throw new Error('no such option');
@@ -90,6 +96,13 @@ const review = async (lemma: string) => {
   if (!r) throw new Error(`no review for ${lemma}`);
   return r;
 };
+
+const showButton = () => screen.queryByRole('button', { name: 'Show' });
+
+/** past the app's 500 ms hold */
+const HOLD_MS = 650;
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+let synth: FakeSynth;
 
 const feature = await loadFeature('features/review.feature');
 
@@ -237,6 +250,140 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Review screen says {string}', async (_, text: string) => {
       await dueToday();
       await waitFor(() => expect(screen.getByTestId('due-today')).toHaveTextContent(text));
+    });
+  });
+  Scenario('A weak word is asked as multiple choice and a strong one as a flashcard', ({ Given, When, And, Then }) => {
+    Given('the word {string} is due on step {int}', async (_, lemma: string, step: number) => {
+      await freshStore();
+      await makeDue([lemma], () => ({ step, rights: 0 }));
+    });
+    And('the word {string} is also due on step {int}', async (_, lemma: string, step: number) => {
+      expect(await db.words.get(lemma), `${lemma} is a seed word`).toBeTruthy();
+      // overdue by less than the first, so it is asked second
+      const now = Date.now();
+      await db.reviews.put({ kind: 'word', id: lemma, step, rights: 0, due: now - 30_000, lastWhen: now - 3 * DAY, lapses: 0 });
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    Then('the question for {string} has four options and no Show control', (_, lemma: string) => {
+      expect(promptLemma()).toBe(lemma);
+      expect(options()).toHaveLength(4);
+      expect(showButton()).toBeNull();
+    });
+    When('he answers {string} right and goes on', async (_, lemma: string) => {
+      expect(await answerCurrent(true)).toBe(lemma);
+      await goOn();
+    });
+    Then('the question for {string} is a flashcard with the lemma {string}, no options and a Show control', async (_, asked: string, lemma: string) => {
+      await waitFor(() => expect(promptLemma()).toBe(asked));
+      expect(screen.getByTestId('prompt')).toHaveTextContent(lemma);
+      expect(options()).toHaveLength(0);
+      expect(showButton()).toBeVisible();
+    });
+    And('the flashcard does not show the gloss yet', async () => {
+      const gloss = (await db.words.get(promptLemma()))?.gloss ?? '';
+      expect(gloss).not.toBe('');
+      expect(document.body.textContent).not.toContain(gloss);
+      expect(screen.queryByTestId('picture')).toBeNull();
+    });
+  });
+
+  Scenario('Show reveals the meaning and I knew it records a right review', ({ Given, When, And, Then }) => {
+    Given('the word {string} is due on step {int}', async (_, lemma: string, step: number) => {
+      await freshStore();
+      await makeDue([lemma], () => ({ step, rights: 0 }));
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    And('he taps Show', async () => user.click(await screen.findByRole('button', { name: 'Show' })));
+    Then('the flashcard shows the gloss of {string} with {string} and {string}', async (_, lemma: string, a: string, b: string) => {
+      const gloss = (await db.words.get(lemma))?.gloss ?? '';
+      expect(await screen.findByTestId('flash-gloss')).toHaveTextContent(gloss);
+      expect(screen.getByRole('button', { name: a })).toBeVisible();
+      expect(screen.getByRole('button', { name: b })).toBeVisible();
+      expect(showButton()).toBeNull();
+    });
+    When('he taps {string}', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
+    Then('{string} has one right review and no lapse', async (_, lemma: string) => {
+      await waitFor(async () => expect((await review(lemma)).rights).toBe(1));
+      expect((await review(lemma)).lapses).toBe(0);
+      expect((await review(lemma)).step).toBe(3);
+    });
+  });
+
+  Scenario('Not yet records a wrong review', ({ Given, When, And, Then }) => {
+    Given('the word {string} is due on step {int}', async (_, lemma: string, step: number) => {
+      await freshStore();
+      await makeDue([lemma], () => ({ step, rights: 0 }));
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    And('he taps Show', async () => user.click(await screen.findByRole('button', { name: 'Show' })));
+    And('he taps {string}', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
+    Then('{string} is on step {int} and has lapsed once', async (_, lemma: string, step: number) => {
+      await waitFor(async () => expect((await review(lemma)).step).toBe(step));
+      expect((await review(lemma)).lapses).toBe(1);
+    });
+  });
+
+  Scenario('A word that slips is asked as multiple choice again', ({ Given, When, And, Then }) => {
+    Given('the word {string} is due on step {int}', async (_, lemma: string, step: number) => {
+      await freshStore();
+      await makeDue([lemma], () => ({ step, rights: 0 }));
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    And('he taps Show', async () => user.click(await screen.findByRole('button', { name: 'Show' })));
+    And('he taps {string}', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
+    And('he goes on to the end of the round', async () => {
+      await goOn();
+      for (let i = 0; i < 9; i += 1) {
+        await screen.findByTestId('prompt');
+        await answerCurrent(true);
+        await goOn();
+      }
+      await screen.findByTestId('score');
+    });
+    And('{string} is due again', async (_, lemma: string) => {
+      await db.reviews.update(['word', lemma], { due: Date.now() - 60_000 });
+    });
+    And('he starts another round', async () => {
+      await user.click(await screen.findByRole('button', { name: 'Another round' }));
+      await screen.findByTestId('prompt');
+    });
+    Then('the question for {string} has four options and no Show control', (_, lemma: string) => {
+      expect(promptLemma()).toBe(lemma);
+      expect(options()).toHaveLength(4);
+      expect(showButton()).toBeNull();
+    });
+  });
+
+  Scenario('A flashcard shows the dictionary form and hold-to-hear says it', ({ Given, When, And, Then }) => {
+    Given('the word {string} is due on step {int}', async (_, lemma: string, step: number) => {
+      await freshStore();
+      synth = stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
+      await makeDue([lemma], () => ({ step, rights: 0 }));
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    Then('the flashcard shows only the lemma {string}', (_, lemma: string) => {
+      expect(screen.getByTestId('prompt').textContent).toBe(lemma.normalize('NFC'));
+      expect(screen.getByTestId('prompt').textContent).toBe((promptLemma()).normalize('NFC'));
+      expect(screen.queryByTestId('picture')).toBeNull();
+    });
+    When('he holds the Hold to hear bar', async () => {
+      await user.pointer({ keys: '[MouseLeft>]', target: screen.getByTestId('hold-to-hear'), coords: { clientX: 100, clientY: 100 } });
+      await sleep(HOLD_MS);
+    });
+    Then('the Greek voice says {string}', async (_, lemma: string) => {
+      expect(synth.spoken.map((u) => u.text)).toEqual([lemma.normalize('NFC')]);
+      expect(synth.spoken[0].lang).toBe('el-GR');
+      await user.pointer({ keys: '[/MouseLeft]', target: screen.getByTestId('hold-to-hear'), coords: { clientX: 100, clientY: 100 } });
     });
   });
 });
