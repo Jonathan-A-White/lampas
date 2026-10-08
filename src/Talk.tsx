@@ -19,6 +19,7 @@ import { answerRuns } from './speech/answerRuns';
 import { focusOnMount, focusQuietly } from './ui/focus';
 import { HoldBar } from './ui/HoldBar';
 import type { HoldHandlers } from './ui/holdPress';
+import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import type { AskState } from './useAsks';
 import type { Voice } from './useVoice';
@@ -241,6 +242,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, onSay, onHelp, on
   const { drag, handle } = useSheetDrag(onClose);
   // The word sheet above this one takes the Escape.
   useEscapeToClose(onClose, lookup === null);
+  useSheetBack(onClose);
   const busy = state?.phase === 'sending' || state?.phase === 'waiting';
   const list = useRef<HTMLDivElement>(null);
   // The newest turn is kept in view by moving this box and nothing else.

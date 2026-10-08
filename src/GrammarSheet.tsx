@@ -5,6 +5,7 @@ import { type Chapter, type GreekWord, wordGloss } from './data/chapter';
 import { conceptOf } from './data/grammar-concepts';
 import { grammarExamples } from './data/grammarExamples';
 import { focusOnMount } from './ui/focus';
+import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { markTermKnown } from './useKnownTerms';
 
@@ -27,6 +28,7 @@ export function GrammarSheet({ chapter, term, word, known, onClose, onTerm, onWo
 }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
+  useSheetBack(onClose);
   const concept = conceptOf(term);
   const examples = grammarExamples(chapter, term, word);
   const title = `${chapter.book} ${chapter.chapter}`;
