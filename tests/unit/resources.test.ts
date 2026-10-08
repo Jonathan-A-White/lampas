@@ -39,6 +39,22 @@ describe('the registry', () => {
     expect(resourceOf('strongs')?.linksFor({ ...WORD, strongs: 'G25' })[0].url).toBe('https://www.stepbible.org/?q=strong=G0025');
   });
 
+  it('links the Strong\'s numbers STEPBible writes with a letter (G2424 is Jesus: STEP finds only G2424G) and leaves the others bare', () => {
+    const url = (strongs: string) => resourceOf('strongs')?.linksFor({ ...WORD, strongs })[0].url;
+    expect(url('G1722')).toBe('https://www.stepbible.org/?q=strong=G1722');
+    expect(url('G3361')).toBe('https://www.stepbible.org/?q=strong=G3361');
+    expect(url('G2424')).toBe('https://www.stepbible.org/?q=strong=G2424G');
+    expect(resourceOf('strongs')?.linksFor({ ...WORD, strongs: 'G2424' })[0].label).toBe('G2424');
+    expect(url('G129')).toBe('https://www.stepbible.org/?q=strong=G0129G');
+    expect(url('G68')).toBe('https://www.stepbible.org/?q=strong=G0068G');
+  });
+
+  it('links a number STEPBible lists no verses for (G1228, the devil) to its lexicon entry instead', () => {
+    expect(resourceOf('strongs')?.linksFor({ ...WORD, strongs: 'G1228' })[0]).toEqual({ label: 'G1228', url: 'https://www.blueletterbible.org/lexicon/g1228/kjv/tr/0-1/' });
+    // TBESG's own numbers past Strong's list (G6029, G6856, G6897) have no entry there: no link rather than the page for G1
+    expect(resourceOf('strongs')?.linksFor({ ...WORD, strongs: 'G6856' })).toEqual([]);
+  });
+
   it('builds Logos links by its own scheme first: one Open link per ticked lexicon and the Bible Word Study at the verse', () => {
     const links = resourceOf('logos')?.linksFor(BIBLOS, 'bdag,louwnida') ?? [];
     expect(links.map((l) => l.label)).toEqual(['Open in Logos: BDAG', 'Open in Logos: Louw-Nida', 'Bible Word Study in Logos']);

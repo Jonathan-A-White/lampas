@@ -42,6 +42,7 @@ npm run e2e:live     # the live tests (tests/e2e/*-live.spec.ts: tutor-live asks
                      #   no key or no backend; spends a grind of fuel per question; not in the gate or `npm run shots`; tests/e2e/live.ts holds the key lookup they share
 npm run grind:build  # writes the settings the bible-talk grind may change (settings_changes in its answer schema, the list in its instructions) from src/settings/registry.ts;
                      #   run it after adding a setting to the registry; tests/unit/bible-talk-grind.test.ts fails when grinds/ is behind it
+npm run check:step   # asks STEPBible what each Strong's link finds (G1722, G3361, G2424 and Romans 8's 20 commonest lemmas; `-- G25 ...` or `-- --all`); network, not in the gate; docs/resources.md
 npm run data:build   # data/raw (git-ignored, downloaded if absent) -> public/data/<book>/<chapter>.json + index.json + lexicon.json;
                      #   the output is committed and a second run changes nothing (docs/data.md)
 ```

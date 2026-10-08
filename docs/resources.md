@@ -19,6 +19,14 @@ STEPBible was chosen over Blue Letter Bible because Lampas already takes its lex
 entry agree. The number is written with four digits (`G25` becomes `G0025`), as STEPBible writes it. With Strong's on, the word sheet's plain
 `Strong's` fact is hidden so the number shows once, as the link.
 
+STEP keys a word by TBESG's extended Strong's number, so the bare number is not always enough: `G2424` (Jesus) lists 0 verses on STEP,
+`G2424G` lists 886. `src/resources/stepExtended.ts` holds `STEP_LETTER` (105 numbers that need a letter) and `STEP_NO_VERSES` (53 numbers
+STEP lists no verses for under any letter; these link to Blue Letter Bible's lexicon entry, `blueletterbible.org/lexicon/g1228/kjv/tr/0-1/`; G6029, G6856 and G6897,
+TBESG-only numbers past Strong's list, get no link). Both were found by asking STEP once per number; `npm run check:step` (not in the gate,
+it uses the network) repeats the ask for G1722, G3361, G2424 and the 20 most frequent lemmas of Romans 8, `-- G25 G2962` for numbers you name,
+`-- --all` for every number the text uses (about 2 minutes). STEP's REST search answers a browser User-Agent only. Run it after `data:build`
+brings in a new number.
+
 Accordance asks for a text field in Settings: the module as Accordance names it (`BDAG`; empty means BDAG). The lemma is
 percent-encoded UTF-8, in NFC.
 
