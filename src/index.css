@@ -81,9 +81,10 @@
   --lp-leading: max(var(--lp-tap), 1.4em);
 
   /* What the phone's navigation bar may cover at the bottom, in px (never scaled by the text size). Android Chrome does not
-   * always report it in env(safe-area-inset-bottom) (mw-5r3p30.39), so each has a floor: --lp-bar-inset under a pinned bottom
-   * bar or sheet (a gesture bar's height), --lp-end-inset under the last row of a scroll box (a three-button bar's height). */
-  --lp-bar-inset: max(env(safe-area-inset-bottom), 24px);
+   * always report it in env(safe-area-inset-bottom) (mw-5r3p30.39), so each has a floor of a three-button bar's height (48 px; a 24 px
+   * floor cut the Talk button off on the Governor's phone, mw-5r3p30.42): --lp-bar-inset under a pinned bottom bar or sheet,
+   * --lp-end-inset under the last row of a scroll box. */
+  --lp-bar-inset: max(env(safe-area-inset-bottom), 48px);
   --lp-end-inset: max(env(safe-area-inset-bottom), 48px);
 }
 

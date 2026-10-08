@@ -32,7 +32,8 @@ test('the Talk bar sits at the bottom of the reader and opens a sheet that fits 
   const bar = await talk.boundingBox();
   expect(bar?.height).toBeGreaterThanOrEqual(43.5);
   expect(bar?.width).toBeGreaterThan(300);
-  expect((bar?.y ?? 0) + (bar?.height ?? 0)).toBeGreaterThan(VIEWPORT.height - 40);
+  // It rests just above the 48 px the navigation bar may cover (mw-5r3p30.42).
+  expect((bar?.y ?? 0) + (bar?.height ?? 0)).toBeGreaterThan(VIEWPORT.height - 70);
   await expectFitsPhone(page);
 
   await talk.click();

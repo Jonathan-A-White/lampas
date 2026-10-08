@@ -1,8 +1,8 @@
 // The last row of every scroll box can be scrolled clear of the phone's navigation bar (mw-5r3p30.39).
 // A bar is faked two ways: the phone reports it (Chromium's safe-area override sets env(safe-area-inset-bottom)
 // to 48 px), or the phone does not report it (the inset stays 0 and a 48 px bar still covers the bottom of the
-// page, as on the Governor's Android Chrome). Either way the last row of a scroll box must clear 48 px, and a
-// pinned bottom control must clear 24 px, the gesture bar's height.
+// page, as on the Governor's Android Chrome). Either way the last row of a scroll box and a pinned bottom control
+// (the Talk bar, a sheet's buttons) must clear 48 px (mw-5r3p30.42).
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
@@ -10,7 +10,6 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
 const NAV_BAR = 48;
-const GESTURE_BAR = 24;
 const MODES = [
   { name: 'reported', inset: NAV_BAR },
   { name: 'unreported', inset: 0 },
@@ -78,6 +77,19 @@ for (const phone of PHONES) for (const mode of MODES) {
       await shot(page, `bottom-word-${phone.name}-${mode.name}`);
     });
 
+    test('the Talk bar at the foot of the reader shows whole above the navigation bar', async ({ page }) => {
+      await openUnlocked(page);
+      await page.goto('/#/?c=8');
+      await withNavBar(page, mode.inset);
+      const talk = page.getByRole('button', { name: 'Talk', exact: true });
+      await expect(talk).toBeVisible();
+      const rect = await talk.boundingBox();
+      const innerHeight = await page.evaluate(() => window.innerHeight);
+      if (!rect) throw new Error('Talk has no box');
+      expect(rect.y + rect.height).toBeLessThanOrEqual(innerHeight - NAV_BAR + 0.5);
+      await shot(page, `bottom-talk-bar-${phone.name}-${mode.name}`);
+    });
+
     test('the Talk sheet keeps its Send button clear of the bar and its last turn reachable', async ({ page }) => {
       const fake = makeFakePostern();
       fake.autoReply = { status: 'answered', answer: TALK_ANSWER };
@@ -96,7 +108,7 @@ for (const phone of PHONES) for (const mode of MODES) {
       const innerHeight = await page.evaluate(() => window.innerHeight);
       const sendBox = await send.boundingBox();
       if (!sendBox) throw new Error('Send has no box');
-      expect(sendBox.y + sendBox.height).toBeLessThanOrEqual(innerHeight - Math.max(mode.inset, GESTURE_BAR) + 0.5);
+      expect(sendBox.y + sendBox.height).toBeLessThanOrEqual(innerHeight - NAV_BAR + 0.5);
       // the last turn scrolls clear of the composer
       const list = sheet.locator('div.overflow-y-auto').first();
       await list.evaluate((el) => (el.scrollTop = el.scrollHeight));
