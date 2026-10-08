@@ -7,8 +7,9 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Waiting } from './Ask';
-import { findGreekWord } from './data/answerWord';
-import { listTurns, markChangeUndone, type TalkTurn } from './data/repositories';
+import { findGreekWord, glossOf } from './data/answerWord';
+import type { AnswerWord } from './data/db';
+import { addWordToLearn, listTurns, markChangeUndone, wordIsListed, type TalkTurn } from './data/repositories';
 import { settingOf, undoChange, type AppliedChange } from './settings/registry';
 import { MAX_TALK_CHARS, scopeTitle, type TalkScope } from './services/talk';
 import { FAILURE_TITLES } from './services/tutor';
@@ -104,6 +105,50 @@ function ChangeRow({ turn, change, index }: { turn: TalkTurn; change: AppliedCha
   );
 }
 
+/** Add to my words under an explained word: puts its lemma on his words-to-learn list; once it is there the button reads On my list. */
+function AddWord({ scope, word }: { scope: TalkScope; word: AnswerWord }) {
+  const listed = useLiveQuery(() => wordIsListed(word.lemma), [word.lemma]);
+  const [busy, setBusy] = useState(false);
+  if (listed === undefined) return null;
+  const add = async (): Promise<void> => {
+    setBusy(true);
+    try {
+      await addWordToLearn(word.lemma, glossOf(scope, word));
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <button
+      type="button"
+      data-add-word={word.lemma}
+      disabled={listed || busy}
+      onClick={() => void add()}
+      className={`mt-1 block min-h-11 rounded-lg border px-3 text-base font-medium ${listed ? 'border-line text-muted' : 'border-accent text-accent active:bg-line'}`}
+    >
+      {listed ? 'On my list' : 'Add to my words'}
+    </button>
+  );
+}
+
+/** The lemmas of a words_to_add, written in Greek type: 'Added σάρξ to your words'. */
+function WordsLine({ lemmas, before, after }: { lemmas: string[]; before: string; after: string }) {
+  return (
+    <li data-talk-added className="py-1 text-base">
+      {before}
+      {lemmas.map((l, i) => (
+        <span key={l}>
+          {i > 0 ? (i === lemmas.length - 1 ? ' and ' : ', ') : ''}
+          <span lang="grc" className="font-greek text-lg">
+            {l}
+          </span>
+        </span>
+      ))}
+      {after}
+    </li>
+  );
+}
+
 function Turn({ turn, scope, onLook }: { turn: TalkTurn; scope: TalkScope; onLook: (lookup: Lookup) => void }) {
   return (
     <article data-turn className="space-y-2">
@@ -112,7 +157,7 @@ function Turn({ turn, scope, onLook }: { turn: TalkTurn; scope: TalkScope; onLoo
       </p>
       <div data-talk-a className="rounded-2xl border border-line px-3 py-2">
         <p className="break-words text-lg leading-snug">{turn.a}</p>
-        {turn.changes?.length || turn.refused?.length ? (
+        {turn.changes?.length || turn.refused?.length || turn.added?.length || turn.already?.length ? (
           <ul data-talk-changes className="mt-2 border-t border-line pt-1">
             {turn.changes?.map((c, i) => (
               <ChangeRow key={i} turn={turn} change={c} index={i} />
@@ -122,6 +167,8 @@ function Turn({ turn, scope, onLook }: { turn: TalkTurn; scope: TalkScope; onLoo
                 {r}
               </li>
             ))}
+            {turn.added?.length ? <WordsLine lemmas={turn.added} before="Added " after=" to your words" /> : null}
+            {turn.already?.length ? <WordsLine lemmas={turn.already} before="" after={turn.already.length === 1 ? ' is already on your words' : ' are already on your words'} /> : null}
           </ul>
         ) : null}
         {turn.words.length > 0 ? (
@@ -151,6 +198,7 @@ function Turn({ turn, scope, onLook }: { turn: TalkTurn; scope: TalkScope; onLoo
                       {w.lemma}
                     </span>
                     <span className="text-muted"> — {w.note}</span>
+                    <AddWord scope={scope} word={w} />
                   </dd>
                 </div>
               );

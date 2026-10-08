@@ -116,3 +116,36 @@ test('a setting asked for in the talk is applied at once, shown as Changed with 
   await sheet.getByRole('button', { name: 'Undo Theme' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'phone');
 });
+
+test('Add to my words under an explained word is thumb-sized, fits the phone and turns into On my list (mw-5r3p30.44)', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  const fake = makeFakePostern();
+  fake.autoReply = {
+    status: 'answered',
+    answer: {
+      answer: 'The flesh and the spirit.',
+      words: [
+        { greek: 'σάρκα', lemma: 'σάρξ', note: 'noun, accusative singular feminine' },
+        { greek: 'πνεῦμα', lemma: 'πνεῦμα', note: 'noun, nominative singular neuter' },
+      ],
+    },
+  };
+  await routePostern(page, fake);
+  await openUnlocked(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8' });
+  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Explain these words');
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+
+  const add = sheet.getByRole('button', { name: 'Add to my words', exact: true });
+  await expect(add).toHaveCount(2);
+  const box = await add.first().boundingBox();
+  expect(box?.height).toBeGreaterThanOrEqual(43.5);
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
+  await expectFitsPhone(page);
+  await add.first().click();
+  await expect(sheet.getByRole('button', { name: 'On my list', exact: true })).toHaveCount(1);
+  await expect(add).toHaveCount(1);
+  await shot(page, 'talk-add-word');
+});

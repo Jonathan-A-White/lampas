@@ -66,7 +66,7 @@ export function WordsScreen() {
         {groups.map((g) => (
           <section key={g.lesson} aria-labelledby={`lesson-${g.lesson}`} className="pt-4">
             <h2 id={`lesson-${g.lesson}`} className="px-1 pb-1 text-sm font-semibold uppercase tracking-wide text-muted">
-              {g.lesson === 0 ? 'Added by Import' : `Lesson ${g.lesson}`}
+              {g.lesson === 0 ? 'Added by you' : `Lesson ${g.lesson}`}
             </h2>
             <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
               {g.words.map((w) => (

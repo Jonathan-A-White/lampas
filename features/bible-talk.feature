@@ -154,3 +154,42 @@ Feature: Bible talk
     Then the sheet shows "Changed: Greek speed 0.7x" with an Undo button
     And the sheet says the Theme does not allow "purple"
     And the saved Theme is still Phone
+
+  Scenario: Add to my words puts an answer word's lemma on his list once, and a word already there says so from the start
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that explains the words σάρκα, πνεῦμα and θεοῦ
+    And he opens Talk
+    When he sends "Explain these words"
+    Then the answer word "σάρξ" offers "Add to my words"
+    And the answer word "θεός" already shows "On my list", because it is a seeded word
+    When he taps "Add to my words" on the answer word "σάρξ"
+    Then the answer word "σάρξ" shows "On my list"
+    And the word "σάρξ" is on the list once, as a word he is learning, with the gloss "flesh"
+    And the answer word "πνεῦμα" still offers "Add to my words"
+
+  Scenario: A word added from an answer is on the Words screen
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that explains the words σάρκα, πνεῦμα and θεοῦ
+    And he opens Talk
+    When he sends "Explain these words"
+    And he taps "Add to my words" on the answer word "πνεῦμα"
+    And he taps Done on the Talk sheet
+    And he opens the Words screen
+    Then the Words screen lists "πνεῦμα" as learning
+    And the Words screen does not list "σάρξ"
+
+  Scenario: Saying add σάρξ to my words adds it and the answer says so
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the words to add σάρξ
+    And he opens Talk
+    When he sends "add σάρξ to my words"
+    Then the answer shows the line "Added σάρξ to your words"
+    And the word "σάρξ" is on the list once, as a word he is learning, with the gloss "flesh"
+    When he asks again "add σάρξ to my words"
+    Then the second answer shows the line "σάρξ is already on your words"
+    And the word "σάρξ" is still on the list once with the gloss "flesh"
+
+  Scenario: An answer that asks to add a word already on the list says it was already there
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the words to add θεός and σάρξ
+    And he opens Talk
+    When he sends "add θεός and σάρξ to my words"
+    Then the answer shows the line "Added σάρξ to your words"
+    And the answer also shows the line "θεός is already on your words"
+    And the word "θεός" is on the list once
