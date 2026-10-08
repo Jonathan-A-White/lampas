@@ -1,14 +1,15 @@
 // src/Reader.tsx — Romans 8 verse by verse. The header switches English (the MSB) | Greek (Byzantine); every
-// word is tappable and opens the word sheet; a verse number selects the verse. In English a second switch,
-// Weave (Off | Solid words), shows the Greek of his solid words in place of their English (src/data/weave.ts).
+// word is tappable and opens the word sheet; a verse number selects the verse. The gear opens Settings
+// (src/SettingsScreen.tsx), where the Weave (Off | Solid words) is switched: with it on, the English view shows the
+// Greek of his solid words in place of their English (src/data/weave.ts).
 // A selected verse shows its kept tutor answers and the Ask box (src/Ask.tsx). The selection, the view and the weave
 // are told to the rest of the app on the event bus (src/events/bus.ts, docs/events.md); the Reader reads the selection back from it.
-// The chapter comes from /data/rom/8.json (precached), the switches are kept in the settings store.
+// The chapter comes from /data/rom/8.json (precached), the view and the weave are kept in the settings store.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnswerCards, AskBox } from './Ask';
 import { type Chapter, type EnglishChunk, type GreekWord, type Verse, loadChapter } from './data/chapter';
-import { getReaderView, getWeave, listSolidLemmas, setReaderView, setWeave, type ReaderView, type Weave } from './data/repositories';
+import { getReaderView, getWeave, listSolidLemmas, setReaderView, setWeave, type ReaderView } from './data/repositories';
 import { weaveVerse, type Woven } from './data/weave';
 import { BuildVersion } from './BuildVersion';
 import { latest, publish, useLatest } from './events/bus';
@@ -80,22 +81,12 @@ function ViewSwitch({ view }: { view: ReaderView }) {
 
 const EMPTY_LEMMAS: ReadonlySet<string> = new Set();
 
-function WeaveSwitch({ weave }: { weave: Weave }) {
-  const choice = (value: Weave, label: string) => (
-    <button
-      type="button"
-      aria-pressed={weave === value}
-      onClick={() => void setWeave(value)}
-      className={`min-h-11 min-w-11 rounded-lg px-3 text-base font-medium ${weave === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
-    >
-      {label}
-    </button>
-  );
+function GearIcon() {
   return (
-    <div role="group" aria-label="Weave" className="flex shrink-0 rounded-xl border border-line p-0.5">
-      {choice('off', 'Off')}
-      {choice('solid', 'Solid words')}
-    </div>
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" />
+    </svg>
   );
 }
 
@@ -179,12 +170,14 @@ export function Reader() {
   // and weave to put back in the settings. The address is the place; the settings follow it.
   const [opened] = useState(() => readerOf(window.location.hash));
   const wantView = useRef(opened.view);
-  const wantWeave = useRef(opened.weave);
+  // The weave is switched in Settings, so a reader reached by Back from there must not put an older address's weave
+  // back: once the bus has told a weave, the saved setting is the truth and the address only follows it.
+  const wantWeave = useRef(latest('weave-changed') ? undefined : opened.weave);
   const scrollRef = useScrollMemory('reader');
   const address = useAddress();
-  const current = useRef({ view, weave });
+  const current = useRef({ view });
   useEffect(() => {
-    current.current = { view, weave };
+    current.current = { view };
   });
   const selectedEvent = useLatest('verse-selected');
   const selected = selectedEvent?.chapter === CHAPTER ? selectedEvent.verse : null;
@@ -219,9 +212,8 @@ export function Reader() {
     const here = readerOf(address);
     const verse = here.chapter === undefined || here.chapter === CHAPTER ? here.verse ?? null : null;
     if ((latest('verse-selected')?.verse ?? null) !== verse) publish({ kind: 'verse-selected', chapter: CHAPTER, verse });
-    const { view: shown, weave: woven } = current.current;
+    const { view: shown } = current.current;
     if (here.view && shown && here.view !== shown) void setReaderView(here.view);
-    if (here.weave && woven && here.weave !== woven) void setWeave(here.weave);
   }, [address]);
   useEffect(() => {
     if (!view) return;
@@ -256,21 +248,21 @@ export function Reader() {
   return (
     <>
       <header className="flex shrink-0 items-center gap-2 border-b border-line px-2 py-2">
-        <div className="shrink-0">
-          <HeaderButton onClick={() => navigate('words')}>Words</HeaderButton>
-        </div>
-        <h1 className="min-w-0 flex-1 text-center text-lg font-semibold">{TITLE}</h1>
+        <h1 className="min-w-0 flex-1 truncate px-2 text-lg font-semibold">{TITLE}</h1>
         {view ? <ViewSwitch view={view} /> : null}
+        <button
+          type="button"
+          aria-label="Settings"
+          onClick={() => navigate('settings')}
+          className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-lg text-accent active:bg-line"
+        >
+          <GearIcon />
+        </button>
       </header>
-      {view === 'english' && weave ? (
-        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line px-2 py-1">
-          <WeaveSwitch weave={weave} />
-          {woven ? (
-            <p data-testid="weave-count" className="min-w-0 text-right text-sm text-muted">
-              {wovenCount} {wovenCount === 1 ? 'word' : 'words'} in Greek
-            </p>
-          ) : null}
-        </div>
+      {woven ? (
+        <p data-testid="weave-count" className="shrink-0 border-b border-line px-3 py-1 text-right text-sm text-muted">
+          {wovenCount} {wovenCount === 1 ? 'word' : 'words'} in Greek
+        </p>
       ) : null}
       <main ref={scrollRef} data-reader data-view={view} data-weave={weave} className="screen min-h-0 flex-1 px-1 pt-2">
         <div>

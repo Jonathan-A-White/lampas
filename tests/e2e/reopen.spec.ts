@@ -21,6 +21,7 @@ test('closing the app and opening it again puts him back, and Back walks the pla
   // the scroll is written to the phone 250 ms after the last scroll event
   await first.waitForTimeout(600);
 
+  await first.getByRole('button', { name: 'Settings', exact: true }).click();
   await first.getByRole('button', { name: 'Words', exact: true }).click();
   await expect(first.getByRole('heading', { name: 'Words', level: 1 })).toBeVisible();
   await first.getByRole('button', { name: 'Test', exact: true }).click();
@@ -36,6 +37,9 @@ test('closing the app and opening it again puts him back, and Back walks the pla
 
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Words', level: 1 })).toBeVisible();
+
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
 
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();

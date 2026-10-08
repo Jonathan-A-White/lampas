@@ -16,6 +16,7 @@ async function expectFitsPhone(page: import('@playwright/test').Page) {
 test('the Words screen lists the seeded words by lesson at phone width', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/');
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await page.getByRole('button', { name: 'Words', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Words', level: 1 })).toBeVisible();
   await expect(page.getByTestId('word-counts')).toHaveText('54 solid, 9 learning');

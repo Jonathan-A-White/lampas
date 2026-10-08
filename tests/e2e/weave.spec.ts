@@ -11,6 +11,7 @@ async function openReader(page: Page) {
 
 test('the Weave switch swaps his solid words for Greek, big and tappable, at phone width', async ({ page }) => {
   await openReader(page);
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
   const group = page.getByRole('group', { name: 'Weave' });
   await expect(group).toBeVisible();
   for (const label of ['Off', 'Solid words']) {
@@ -19,6 +20,7 @@ test('the Weave switch swaps his solid words for Greek, big and tappable, at pho
     expect(box?.width).toBeGreaterThanOrEqual(43.5);
   }
   await group.getByRole('button', { name: 'Solid words', exact: true }).click();
+  await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-weave', 'solid');
 
   const woven = page.locator('[data-verse="1"] [data-woven]');

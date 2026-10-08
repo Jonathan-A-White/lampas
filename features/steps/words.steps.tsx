@@ -26,6 +26,7 @@ async function openLampasFresh(): Promise<void> {
 }
 
 async function openWords(): Promise<void> {
+  await user.click(await screen.findByRole('button', { name: 'Settings' }));
   await user.click(await screen.findByRole('button', { name: 'Words' }));
   await screen.findByRole('heading', { name: 'Words' });
   await waitFor(() => expect(document.querySelectorAll('[data-lemma]').length).toBeGreaterThan(0));

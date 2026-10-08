@@ -81,7 +81,11 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Switching the weave on publishes weave-changed', ({ Given, When, Then }) => {
     Given('Lampas is opened on Romans 8 and the bus is listened to', openAndListen);
-    When('he switches the weave to Solid words', () => user.click(screen.getByRole('button', { name: 'Solid words' })));
+    When('he switches the weave to Solid words', async () => {
+      // the Weave switch is in Settings, opened by the gear
+      await user.click(screen.getByRole('button', { name: 'Settings' }));
+      await user.click(await screen.findByRole('button', { name: 'Solid words' }));
+    });
     Then('weave-changed was published with solid', async () => {
       await waitFor(() => expect(lastOf('weave-changed')).toEqual({ kind: 'weave-changed', weave: 'solid' }));
     });

@@ -93,6 +93,7 @@ const playButton = (n: number) => within(verseEl(n)).getByRole('button', { name:
 const tapPlay = async (n: number) => user.click(playButton(n));
 
 async function openWords(): Promise<void> {
+  await user.click(await screen.findByRole('button', { name: 'Settings' }));
   await user.click(await screen.findByRole('button', { name: 'Words' }));
   await screen.findByRole('heading', { name: 'Words' });
   await waitFor(() => expect(document.querySelectorAll('[data-lemma]').length).toBeGreaterThan(0));

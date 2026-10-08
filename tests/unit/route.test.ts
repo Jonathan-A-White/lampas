@@ -10,6 +10,7 @@ describe('the address', () => {
     expect(routeOf('#/test')).toBe('test');
     expect(routeOf('#/about')).toBe('about');
     expect(routeOf('#/import')).toBe('import');
+    expect(routeOf('#/settings')).toBe('settings');
   });
 
   it('carries the chapter, view, weave and verse of the reader', () => {

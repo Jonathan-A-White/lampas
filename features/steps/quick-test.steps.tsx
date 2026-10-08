@@ -48,6 +48,7 @@ async function openLampasFresh(): Promise<void> {
 async function openQuickTest(): Promise<void> {
   // The Test button is in the Words header, which the Reader's Words button opens.
   if (!screen.queryByRole('button', { name: 'Test' })) {
+    await user.click(await screen.findByRole('button', { name: 'Settings' }));
     await user.click(await screen.findByRole('button', { name: 'Words' }));
   }
   await user.click(await screen.findByRole('button', { name: 'Test' }));
@@ -57,6 +58,7 @@ async function openQuickTest(): Promise<void> {
 
 async function openQuickTest0(): Promise<void> {
   if (!screen.queryByRole('button', { name: 'Test' })) {
+    await user.click(await screen.findByRole('button', { name: 'Settings' }));
     await user.click(await screen.findByRole('button', { name: 'Words' }));
   }
   await user.click(await screen.findByRole('button', { name: 'Test' }));
@@ -108,6 +110,7 @@ async function playRound(rightAt: (i: number) => boolean): Promise<void> {
 
 async function openWordsScreen(): Promise<void> {
   await user.click(await screen.findByRole('button', { name: 'Done' }));
+  await user.click(await screen.findByRole('button', { name: 'Settings' }));
   await user.click(await screen.findByRole('button', { name: 'Words' }));
   await screen.findByRole('heading', { name: 'Words' });
   await waitFor(() => expect(document.querySelectorAll('[data-lemma]').length).toBeGreaterThan(0));

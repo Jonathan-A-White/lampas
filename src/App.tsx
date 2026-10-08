@@ -8,6 +8,8 @@ import { startReaderAddressSync } from './nav/readerAddress';
 import { routeOf, useAddress } from './nav/route';
 import { Reader } from './Reader';
 import { QuizScreen } from './QuizScreen';
+import { SettingsScreen } from './SettingsScreen';
+import { startSpeechSettingsSync } from './speech/settingsSync';
 import { UpdateBanner } from './UpdateBanner';
 import { WordsScreen } from './WordsScreen';
 
@@ -19,6 +21,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
   useEffect(() => saveLastRoute(address), [address]);
   // A layout effect: it listens before the Reader's own effects (children's first) tell the bus the verse, view and weave.
   useLayoutEffect(() => startReaderAddressSync(), []);
+  // The saved voices and pronunciation reach the speaker before the first tap on a speaker button.
+  useEffect(() => startSpeechSettingsSync(), []);
   // The first open fills the word list from the example list; every later open finds the flag and does nothing.
   useEffect(() => {
     void seedWordsIfFirstOpen();
@@ -34,6 +38,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <QuizScreen newRandom={newRandom} />
       ) : route === 'about' ? (
         <About />
+      ) : route === 'settings' ? (
+        <SettingsScreen />
       ) : (
         <Reader />
       )}

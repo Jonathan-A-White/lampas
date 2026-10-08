@@ -70,8 +70,13 @@ async function solidLemmas(): Promise<Set<string>> {
   return new Set(solid.flatMap((w) => [w.lemma, ...w.lemmas]).map(nfc));
 }
 
+/** The Weave switch is in Settings: open it from the gear, switch, and come back to the reader. */
 async function setWeave(label: 'Off' | 'Solid words'): Promise<void> {
-  await user.click(within(screen.getByRole('group', { name: 'Weave' })).getByRole('button', { name: label }));
+  await user.click(screen.getByRole('button', { name: 'Settings' }));
+  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: label }));
+  await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+  await waitForReader();
   await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-weave')).toBe(label === 'Off' ? 'off' : 'solid'));
   if (label === 'Solid words') await waitFor(() => expect(wovenIn(1).length).toBeGreaterThan(0));
 }
@@ -115,7 +120,8 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened with nothing saved', openFresh);
     And('he sets Weave to Solid words', async () => setWeave('Solid words'));
     When('he drops the word {string} on the Words screen', async (_, lemma: string) => {
-      await user.click(screen.getByRole('button', { name: 'Words', exact: true }));
+      await user.click(await screen.findByRole('button', { name: 'Settings' }));
+      await user.click(await screen.findByRole('button', { name: 'Words' }));
       await screen.findByRole('heading', { name: 'Words', level: 1 });
       const row = await waitFor(() => {
         const el = document.querySelector<HTMLElement>(`[data-lemma="${lemma}"]`);

@@ -69,7 +69,8 @@ build-version.ts     # '<version> · <UTC time> · <commit>' stamp (the commit i
 vite.config.ts       # react, tailwind 4, vite-plugin-pwa (injectManifest, registerType 'prompt')
 src/main.tsx         # scroll guard first, then render, then register the worker
 src/App.tsx          # the shell (data-shell); picks the screen by hash route (src/nav/route.ts); seeds words on first open
-src/Reader.tsx WordsScreen.tsx ImportScreen.tsx QuizScreen.tsx About.tsx  # the screens (#/ , #/words, #/import, #/test, #/about); the Reader is Romans 8, English | Greek;
+src/Reader.tsx WordsScreen.tsx ImportScreen.tsx QuizScreen.tsx About.tsx SettingsScreen.tsx  # the screens (#/ , #/words, #/import, #/test, #/about, #/settings); the Reader is Romans 8, English | Greek, header = title, English | Greek, the gear;
+                     #   Settings (opened by the gear) holds the Weave, the English and Greek voice pickers, the Greek pronunciation list, and links to Words and About;
                      #   About is built from ATTRIBUTION.md (src/attribution.ts), opened by the About button under the chapter
 src/Ask.tsx          # the Ask box under the selected verse (field, Sending / Waiting, No licence, Could not reach + Retry) and the kept answer cards
 src/useAsks.ts       # the questions in flight by verse; a question keeps waiting when he selects another verse; the answer is stored when it comes
@@ -82,7 +83,7 @@ src/nav/             # route.ts: the hash address (screen, and in the reader '?c
                      #   readerAddress.ts: bus events -> address (replaceState); scrollMemory.ts: scroll per address, restored with a ResizeObserver up to 2.5 s
 src/data/roundKeep.ts  # a half-done Quick test round in localStorage (lampas.round); the test screen offers 'Round left unfinished: Resume | New round'
 src/WordSheet.tsx    # the bottom sheet a tapped word opens (tap outside, swipe down on the handle, Done or Escape closes it)
-src/speech/          # greek.ts: speak(text, key) with speechSynthesis, lang el-GR, the phone's Greek voice, no server; a second tap on the same key stops it; hasGreekVoice() true/false/'unknown'; SpeakButton.tsx: the speaker on a word (aria-label 'Hear it') and the play button on a verse ('Hear the verse'), with the one-line no-Greek-voice help
+src/speech/          # pronunciation.ts: the registry of Greek pronunciations (only 'modern', el-GR; add an entry for another); settingsSync.ts: saved voices and pronunciation -> bus -> greek.ts; greek.ts: speak(text, key) with speechSynthesis, lang el-GR, the phone's Greek voice, no server; a second tap on the same key stops it; hasGreekVoice() true/false/'unknown'; SpeakButton.tsx: the speaker on a word (aria-label 'Hear it') and the play button on a verse ('Hear the verse'), with the one-line no-Greek-voice help
 src/fonts/           # Gentium Plus (Greek + Greek Extended, 400 and 700 woff2) and its OFL licence; @font-face is in src/index.css
 src/config.ts        # issuer (default the Governor's key; VITE_LAMPAS_ISSUER overrides), collection 'lampas', chain, Postern door, the device key's storage name
 src/gate/            # Gate (wraps App in main.tsx): Unlock until the phone's key holds a lampas licence; 24 h offline grace
@@ -93,7 +94,7 @@ src/precacheGuard.ts # never serve a .js/.css whose Content-Type does not fit
 src/services/appUpdate.ts  # watches the registration, tap -> SKIP_WAITING -> reload once, periodic update check
 src/ui/              # scrollGuard.ts (page never scrolls), focus.ts (focus with preventScroll)
 src/data/db.ts       # Dexie, version 5: words {lemma key, lemmas, gloss, lesson, state, since}, meta and settings {key, value}, results {lemma, when, right}, answers {ref 'rom.8.28', question, answer, words, when}
-src/data/repositories/  # the only way UI reaches Dexie (words.ts: seed on first open, list, set state, import, and list the solid lemmas; settings.ts: the reader's English | Greek view and Weave Off | Solid words; results.ts: recordAnswer; answers.ts: the tutor's answers per verse)
+src/data/repositories/  # the only way UI reaches Dexie (words.ts: seed on first open, list, set state, import, and list the solid lemmas; settings.ts: the reader's English | Greek view, Weave Off | Solid words, the English and Greek voice (voiceURI) and the Greek pronunciation; results.ts: recordAnswer; answers.ts: the tutor's answers per verse)
 src/data/quiz.ts     # Quick test, pure: nextState (the two-in-a-row rule), drawWords, buildOptions, buildQuestion; the random source is injected (mulberry32 in tests; App's newRandom prop)
 src/data/lemma.ts    # BMA lemma -> headword (the key) + TBESG lexicon lemmas (εἶπεν -> λέγω, εἶπον ...)
 src/data/importWords.ts  # parses pasted 'lemma — gloss' lines and rows of the example table
