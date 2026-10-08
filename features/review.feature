@@ -10,6 +10,25 @@ Feature: Review brings back the words that are due
     When he taps "Due: 3"
     Then the Review screen says "Due today: 3 words"
 
+  Scenario: A word he drops is no longer counted or asked
+    Given 2 of his words are due
+    When Lampas is opened on the Reader
+    And he drops the word "εἰμί"
+    Then the Reader shows "Due: 1"
+    When he taps "Due: 1"
+    Then the Review screen says "Due today: 1 word"
+    When he starts the review
+    Then the first question is "λέγω" and "εἰμί" is never asked
+
+  Scenario: A word taken up again comes back on its schedule
+    Given the word "λέγω" is due on step 3
+    And the word "εἰμί" is also due on step 3
+    When Lampas is opened on the Reader
+    And he drops the word "εἰμί"
+    Then the Reader shows "Due: 1"
+    When he takes up the word "εἰμί" again
+    Then the Reader is back to "Due: 2"
+
   Scenario: The Reader shows no count when nothing is due
     Given none of his words is due
     When Lampas is opened on the Reader

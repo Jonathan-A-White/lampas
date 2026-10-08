@@ -4,9 +4,13 @@ import { clearBus, latest } from '../../src/events/bus';
 import { db } from '../../src/data/db';
 import { DAY } from '../../src/data/schedule';
 import { countDue, ensureScheduled, listDue, recordReview, seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
+import { setWordState } from '../../src/data/repositories/words';
 import { recordAnswer } from '../../src/data/repositories/results';
 
 const NOW = Date.UTC(2026, 9, 8, 9, 0, 0);
+
+/** Lists these lemmas as words he is learning: only a listed word, not dropped, is due. */
+const listWords = (...lemmas: string[]) => db.words.bulkPut(lemmas.map((lemma) => ({ lemma, lemmas: [], gloss: 'g', lesson: 1, state: 'learning' as const, since: 0 })));
 
 beforeEach(async () => {
   await db.open();
@@ -32,6 +36,7 @@ describe('the reviews repository', () => {
   });
 
   it('listDue returns only the due ones, the earliest first, and can filter by kind', async () => {
+    await listWords('a', 'b', 'c');
     await ensureScheduled('word', ['c'], NOW + 3 * DAY);
     await ensureScheduled('word', ['b'], NOW - 2 * DAY);
     await ensureScheduled('word', ['a'], NOW - 5 * DAY);
@@ -42,11 +47,27 @@ describe('the reviews repository', () => {
   });
 
   it('countDue matches listDue', async () => {
+    await listWords('a', 'b', 'c');
     await ensureScheduled('word', ['a', 'b'], NOW - DAY);
     await ensureScheduled('word', ['c'], NOW + DAY);
     expect(await countDue(NOW)).toBe(2);
     expect(await countDue(NOW + 2 * DAY)).toBe(3);
     expect(await countDue(NOW, 'grammar')).toBe(0);
+  });
+
+  it('does not count or list a dropped word, nor a word that is not listed, and counts it again once taken up', async () => {
+    await listWords('a', 'b');
+    await ensureScheduled('word', ['a', 'b', 'ghost'], NOW - DAY);
+    await ensureScheduled('grammar', ['g'], NOW - DAY);
+    expect(await countDue(NOW)).toBe(3);
+    await setWordState('b', 'dropped', NOW);
+    expect(await countDue(NOW)).toBe(2);
+    expect((await listDue(undefined, NOW)).map((r) => r.id).sort()).toEqual(['a', 'g']);
+    expect(await countDue(NOW, 'word')).toBe(1);
+    // taken up again, it comes back on the schedule it kept
+    await setWordState('b', 'learning', NOW);
+    expect(await countDue(NOW, 'word')).toBe(2);
+    expect(await db.reviews.get(['word', 'b'])).toMatchObject({ step: 0, due: NOW - DAY });
   });
 
   it('recordReview moves the item by the rule and says the due count changed', async () => {
