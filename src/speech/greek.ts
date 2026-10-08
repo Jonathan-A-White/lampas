@@ -119,23 +119,16 @@ export function stopIfSpeaking(key: string): void {
   if (playing?.key === key) stopSpeaking();
 }
 
-/** Reads `text` aloud in `language` (Greek unless said), at that language's speed, or stops it when `key` is already
- * being read. A different key's speech is cancelled first. `onFail` is called if the phone's engine reports it cannot
- * speak it (after the call returned 'speaking'). Only Greek is refused for want of a voice: the help is about Greek. */
-export function speak(text: string, key: string, onFail?: () => void, language: SpeechLanguage = 'greek'): SpeakOutcome {
-  const synth = synthesis();
-  if (!synth || (language === 'greek' && hasGreekVoice() === false)) return 'no-voice';
-  if (!watching) {
-    watching = true;
-    // a hidden page's speech is suspended and comes back mid-sentence: end it instead
-    document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && stopSpeaking());
-  }
-  if (playing?.key === key) {
-    stopSpeaking();
-    return 'stopped';
-  }
-  if (playing || synth.speaking || synth.pending) synth.cancel();
+/** A page that goes to the background has its speech suspended, and it comes back mid-sentence: end it instead. */
+function watchVisibility(): void {
+  if (watching) return;
+  watching = true;
+  document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && stopSpeaking());
+}
 
+/** One utterance in `language` with its tag, its speed and the voice he chose, handed to the phone. `onEnd` is called
+ * when it ends; `onError` with the engine's error name when it does not (a cancel reports 'canceled' or 'interrupted'). */
+function utter(text: string, key: string, language: SpeechLanguage, synth: SpeechSynthesis, onEnd: () => void, onError: (error: string) => void): void {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = langOf(language);
   utterance.rate = rates[language];
@@ -145,15 +138,51 @@ export function speak(text: string, key: string, onFail?: () => void, language: 
     // a cancelled utterance reports after the next one has started: only its own end clears the state
     if (playing?.utterance === utterance) setPlaying(null);
   };
-  utterance.onend = ended;
+  utterance.onend = () => {
+    ended();
+    onEnd();
+  };
   utterance.onerror = (e) => {
     ended();
-    if (e.error !== 'canceled' && e.error !== 'interrupted') onFail?.();
+    onError(e.error);
   };
   setPlaying({ key, utterance });
   synth.resume();
   synth.speak(utterance);
+}
+
+/** Whether an engine error is a cancel (deliberate or the phone's own) rather than a failure. */
+export const isCancelError = (error: string): boolean => error === 'canceled' || error === 'interrupted';
+
+/** Reads `text` aloud in `language` (Greek unless said), at that language's speed, or stops it when `key` is already
+ * being read. A different key's speech is cancelled first. `onFail` is called if the phone's engine reports it cannot
+ * speak it (after the call returned 'speaking'). Only Greek is refused for want of a voice: the help is about Greek. */
+export function speak(text: string, key: string, onFail?: () => void, language: SpeechLanguage = 'greek'): SpeakOutcome {
+  const synth = synthesis();
+  if (!synth || (language === 'greek' && hasGreekVoice() === false)) return 'no-voice';
+  watchVisibility();
+  if (playing?.key === key) {
+    stopSpeaking();
+    return 'stopped';
+  }
+  if (playing || synth.speaking || synth.pending) synth.cancel();
+  utter(text, key, language, synth, () => {}, (error) => !isCancelError(error) && onFail?.());
   return 'speaking';
+}
+
+/** The key the read-aloud sequence (src/speech/readAloud.ts) speaks under. */
+export const READ_KEY = 'read-aloud';
+
+/** One part of a sequence read aloud, in `language`, even with no voice for it (Greek then goes to the phone's default
+ * voice with its lang set). Unlike speak() it does not cancel what is playing and does not toggle: the sequence calls
+ * stopSpeaking() once at its start, and the next part when `onEnd` says this one is over. `onError` gets the engine's
+ * error name. Returns false when the phone cannot speak at all. */
+export function speakPart(text: string, language: SpeechLanguage, onEnd: () => void, onError: (error: string) => void): boolean {
+  const synth = synthesis();
+  if (!synth) return false;
+  watchVisibility();
+  utter(text, READ_KEY, language, synth, onEnd, onError);
+  return true;
 }
 
 /** The one line shown when there is no Greek voice: where to get one. */
