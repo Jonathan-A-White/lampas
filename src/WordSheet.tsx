@@ -3,12 +3,16 @@
 // outside, a swipe down on its handle, the Done button or Escape. Each word has a Help with this word row (Grammar, Sound it out)
 // when the screen gives it somewhere to send them: the Talk sheet on the word's verse with the first question sent. Every grammar
 // word of the Parsing is a link to its Grammar sheet (src/GrammarSheet.tsx), which opens over this one: underlined until he marks
-// the term I know this, plain after.
+// the term I know this, plain after. A Study row holds the links of the study resources he switched on in Settings (src/resources/),
+// and is not drawn when none is on.
+import { useLiveQuery } from 'dexie-react-hooks';
 import { useState, type ReactNode } from 'react';
 import { type Chapter, type GreekWord, wordGloss, wordLemma, wordParse } from './data/chapter';
 import { parseSegments } from './data/parseCode';
+import { getStudyResources, type StudyResources } from './data/repositories';
 import { publish, useLatest } from './events/bus';
 import { GrammarSheet } from './GrammarSheet';
+import { optionOf, RESOURCES, type StudyLink } from './resources';
 import { pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
 import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
@@ -75,6 +79,36 @@ function ParseTerms({ parse, known, open }: { parse: string; known: ReadonlySet<
   );
 }
 
+/** The links of every study resource he switched on (Settings > Study resources) for this word. */
+function studyLinks(chosen: StudyResources | undefined, word: GreekWord): StudyLink[] {
+  if (!chosen) return [];
+  const study = { form: word.t, lemma: wordLemma(word), strongs: word.s };
+  return RESOURCES.filter((r) => chosen.on.includes(r.id)).flatMap((r) => r.linksFor(study, optionOf(r, chosen.options[r.id])));
+}
+
+/** The Study row: one link per switched-on resource, each a 44 px tap target; nothing at all when none is on. */
+function StudyRow({ links }: { links: StudyLink[] }) {
+  if (links.length === 0) return null;
+  return (
+    <div role="group" aria-label="Study" className="mt-3">
+      <p className="mb-1 text-sm text-muted">Study</p>
+      <div className="flex flex-wrap gap-2">
+        {links.map((link) => (
+          <a
+            key={link.label}
+            href={link.url}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex min-h-12 items-center rounded-xl border border-line px-4 text-base font-medium text-accent active:bg-line"
+          >
+            {link.label}
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const HELP_BUTTON = 'min-h-12 flex-1 rounded-xl border border-line px-3 text-base font-medium text-accent active:bg-line';
 
 /** Help with this word: Grammar and Sound it out, the two ways a word he struggled with can be helped. */
@@ -94,12 +128,13 @@ function HelpRow({ help }: { help: (kind: WordHelp['kind']) => void }) {
   );
 }
 
-function WordCard({ chapter, word, english, pronunciation, known, onHelp, onTerm }: {
+function WordCard({ chapter, word, english, pronunciation, known, study, onHelp, onTerm }: {
   chapter: Chapter;
   word: GreekWord;
   english?: string;
   pronunciation: GreekPronunciation | undefined;
   known: ReadonlySet<string>;
+  study: StudyResources | undefined;
   onHelp?: (help: WordHelp) => void;
   /** a grammar word of the Parsing was tapped: the term, and the verse the word stands in */
   onTerm: (term: string, word: GreekWord, verse: number | undefined) => void;
@@ -135,6 +170,7 @@ function WordCard({ chapter, word, english, pronunciation, known, onHelp, onTerm
           </Fact>
         ) : null}
       </dl>
+      <StudyRow links={studyLinks(study, word)} />
       {onHelp && verse !== undefined ? (
         <HelpRow help={(kind) => onHelp({ kind, form: word.t, lemma: wordLemma(word), parse: wordParse(chapter, word), verse })} />
       ) : null}
@@ -160,6 +196,7 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
   useEscapeToClose(onClose, grammar === null);
   const pronunciation = useLatest('pronunciation-changed')?.pronunciation;
   const known = useKnownTerms();
+  const study = useLiveQuery(getStudyResources, []);
   const help = onHelp
     ? (asked: WordHelp): void => {
         onClose();
@@ -219,6 +256,7 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
               english={lookup.fromEnglish ? undefined : lookup.english}
               pronunciation={pronunciation}
               known={known}
+              study={study}
               onHelp={help}
               onTerm={openTerm}
             />

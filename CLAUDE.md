@@ -107,6 +107,9 @@ src/GrammarSheet.tsx src/useKnownTerms.ts data/grammar-concepts.ts data/grammarE
                      #   decoded parsing into terms; GRAMMAR_TERMS is every term it can write) to the Grammar sheet over the word sheet: grammar-concepts.ts holds one entry per term (explanation <= 60 words, Greek note <= 40, related terms;
                      #   a test fails on a term without one), grammarExamples picks up to three words of the chapter whose parsing has the term, I know this (markTermKnown: grammarKnown table + grammar-term-known on the bus; useKnownTerms
                      #   keeps every sheet current; a known term still links but is not underlined) and Ask the tutor (the Talk sheet on the word's verse, focus {term, kind 'grammar-term'}, services/talk.ts termQuestion); grammar-term-opened is published on every open
+src/resources/       # study resources (mw-5r3p30.37): one file per resource (strongs, logos, accordance) exporting a StudyResource {id, name, kind, describe, option?, linksFor(word, option)}, listed in index.ts;
+                     #   Settings > Study resources (SettingsScreen.tsx) has a switch per resource (all off) and a name field for Logos and Accordance's lexicon, kept by data/repositories/resources.ts ('resource.<id>', 'resourceOption.<id>' in the settings store, not in the settings registry);
+                     #   the word sheet's Study row (WordSheet.tsx) shows the links of those switched on. Links only, no lexicon text; docs/resources.md has the URL sources and how to add one
 src/appearance/     # themes.ts (Theme list, THEME_COLORS = the browser bar's colour per palette), textSizes.ts (the sizes list, 85 to 160 %), appearanceSync.ts
                      #   (bus -> html[data-theme], html --lp-scale and the theme-color meta, kept in localStorage too so main.tsx's restoreAppearance() paints before React;
                      #   'phone' follows prefers-color-scheme live). The palettes are CSS variables in src/index.css (the light one is written twice: tests/unit/themes.test.ts
@@ -149,6 +152,7 @@ docs/example-words.md        # the owner's own BMA word list (public, an example
 docs/testing.md      # the gate's test seam: where the device key lives and how a test seeds it
 docs/events.md       # every event kind on the bus, its payload, who publishes and who listens
 docs/pronunciation.md # the respelling schemes: Modern Greek's rules and how to add Erasmian
+docs/resources.md    # the study resources: what ships, where each URL form is documented, how to add one
 docs/pictures.md     # the memory pictures: the rules for one, how to add one, which seed words have none
 docs/data.md         # the data's JSON shape, its two sources and licences, and what the build changes
 ```
