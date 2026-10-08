@@ -100,6 +100,16 @@ const nothingSent = async () => {
   expect(sheet().querySelector('[data-talk-pending]')).toBeNull();
 };
 
+/** Postern's bar (TalkLineScreen.tsx: h-24 w-full max-w-xl rounded-3xl, a mic over the label): the shared component marks itself. */
+const expectBar = (el: HTMLElement, px: number): void => {
+  expect(el).toHaveAttribute('data-hold-bar');
+  expect(el.className).toContain('h-24');
+  expect(px).toBe(96);
+  expect(el.className).toContain('w-full');
+  expect(el.className).toContain('rounded-3xl');
+  expect(el.querySelector('svg')).not.toBeNull();
+};
+
 const feature = await loadFeature('features/push-to-talk.feature');
 
 describeFeature(feature, ({ Scenario }) => {
@@ -244,6 +254,31 @@ describeFeature(feature, ({ Scenario }) => {
     And('the sheet says this phone cannot turn speech into text, and the typed field is focused', async () => {
       expect(await within(sheet()).findByRole('alert')).toHaveTextContent('This phone cannot turn speech into text');
       await waitFor(() => expect(document.activeElement).toBe(within(sheet()).getByRole('textbox', { name: 'Your message' })));
+    });
+  });
+
+  Scenario("The reader's Talk button and the sheet's hold button are Postern's one big bar", ({ Given, When, Then }) => {
+    Given(withRecogniser, () => open());
+    Then('the Talk button is Postern\'s hold bar, {int} px high, with a microphone and the label {string}', (_, px: number, label: string) => {
+      expectBar(talkButton(), px);
+      expect(talkButton()).toHaveTextContent(label);
+    });
+    When('he taps the Talk button quickly', () => user.click(talkButton()));
+    Then(
+      'the sheet\'s hold-to-talk button is Postern\'s hold bar, {int} px high, labelled {string}, and the last control of the sheet',
+      async (_, px: number, label: string) => {
+        await screen.findByRole('dialog', { name: /^Talk about / });
+        expectBar(holdInSheet(), px);
+        expect(holdInSheet()).toHaveTextContent(label);
+        const controls = Array.from(sheet().querySelectorAll('button, textarea'));
+        expect(controls[controls.length - 1]).toBe(holdInSheet());
+      },
+    );
+    When('he presses the hold-to-talk button in the sheet', () => pressDown(holdInSheet()));
+    Then('the sheet\'s hold bar says {string} until the microphone is open and {string} after', async (_, before: string, after: string) => {
+      await waitFor(() => expect(holdInSheet()).toHaveTextContent(before));
+      act(() => FakeRecognizer.last().open());
+      await waitFor(() => expect(holdInSheet()).toHaveTextContent(after));
     });
   });
 });
