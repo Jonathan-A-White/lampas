@@ -1,9 +1,10 @@
-// src/speech/pronunciation.ts — how the Greek is spoken, as a list so another way (such as Erasmian) is one more
-// entry here plus whatever it needs in the voice and the reading check; nothing else names 'modern'. Modern Greek is
-// the only entry for now: the phone's el-GR voice.
+// src/speech/pronunciation.ts — how the Greek is spoken and respelled, as a registry so another way (such as Erasmian)
+// is one more file in ./schemes/ plus one line in SCHEMES below; nothing else names 'modern'. Modern Greek is the only
+// scheme for now. docs/pronunciation.md says how to add one.
+import { MODERN } from './schemes/modern';
 
-/** The ids of the entries below. */
-export type GreekPronunciation = 'modern';
+/** The id of a scheme in the registry. */
+export type GreekPronunciation = string;
 
 export interface Pronunciation {
   id: GreekPronunciation;
@@ -13,13 +14,26 @@ export interface Pronunciation {
   lang: string;
   /** a line under the label in Settings */
   note: string;
+  /** the Greek word as syllables an English reader can say, the stressed one in capitals: 'χριστῷ' is 'hree-STO' */
+  respell(greekWord: string): string;
 }
 
-export const PRONUNCIATIONS: readonly Pronunciation[] = [
-  { id: 'modern', label: 'Modern Greek', lang: 'el-GR', note: "How Greek is spoken today, by the phone's Greek voice." },
-];
+const SCHEMES: Pronunciation[] = [MODERN];
 
-export const DEFAULT_PRONUNCIATION: GreekPronunciation = 'modern';
+/** Every scheme, in the order Settings lists them. Read it at use, not at load: registerPronunciation adds to it. */
+export const PRONUNCIATIONS: readonly Pronunciation[] = SCHEMES;
+
+export const DEFAULT_PRONUNCIATION: GreekPronunciation = MODERN.id;
+
+/** Adds a scheme at the end of the list (tests do, to prove the list drives Settings and the word sheet); returns the
+ * function that takes it out again. */
+export function registerPronunciation(scheme: Pronunciation): () => void {
+  SCHEMES.push(scheme);
+  return () => {
+    const at = SCHEMES.indexOf(scheme);
+    if (at >= 0) SCHEMES.splice(at, 1);
+  };
+}
 
 export function isPronunciation(value: unknown): value is GreekPronunciation {
   return PRONUNCIATIONS.some((p) => p.id === value);
