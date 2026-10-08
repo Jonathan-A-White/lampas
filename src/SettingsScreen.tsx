@@ -14,23 +14,15 @@ import {
   getTheme,
   getVoice,
   getWeave,
-  setGreekPronunciation,
-  setLayout,
-  setSectionHeadings,
-  setSpeechRate,
-  setTextSize,
-  setTheme,
-  setVoice,
-  setWeave,
   type ReadingLayout,
   type SectionHeadings,
   type VoiceLanguage,
   type Weave,
 } from './data/repositories';
-import { publish } from './events/bus';
 import { LAYOUTS } from './layout/layouts';
 import { navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
+import { PHONE_VOICE, writeSetting } from './settings/registry';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { speaksLanguage, useVoices, voiceKey } from './speech/greek';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from './speech/languages';
@@ -54,7 +46,7 @@ function ThemeChoice({ theme }: { theme: Theme }) {
           key={t.id}
           type="button"
           aria-pressed={theme === t.id}
-          onClick={() => void setTheme(t.id).then(() => publish({ kind: 'theme-changed', theme: t.id }))}
+          onClick={() => void writeSetting('theme', t.id)}
           className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${theme === t.id ? 'bg-accent text-accent-fg' : 'text-fg'}`}
         >
           {t.label}
@@ -72,7 +64,7 @@ function TextSizeChoice({ percent }: { percent: number }) {
           key={t.id}
           type="button"
           aria-pressed={percent === t.percent}
-          onClick={() => void setTextSize(t.percent).then(() => publish({ kind: 'text-size-changed', percent: t.percent }))}
+          onClick={() => void writeSetting('textSize', t.id)}
           className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${percent === t.percent ? 'bg-accent text-accent-fg' : 'text-fg'}`}
         >
           {t.label}
@@ -87,7 +79,7 @@ function WeaveChoice({ weave }: { weave: Weave }) {
     <button
       type="button"
       aria-pressed={weave === value}
-      onClick={() => void setWeave(value).then(() => publish({ kind: 'weave-changed', weave: value }))}
+      onClick={() => void writeSetting('weave', value)}
       className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${weave === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
     >
       {label}
@@ -109,7 +101,7 @@ function LayoutChoice({ layout }: { layout: ReadingLayout }) {
           key={l.id}
           type="button"
           aria-pressed={layout === l.id}
-          onClick={() => void setLayout(l.id).then(() => publish({ kind: 'layout-changed', layout: l.id }))}
+          onClick={() => void writeSetting('layout', l.id)}
           className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${layout === l.id ? 'bg-accent text-accent-fg' : 'text-fg'}`}
         >
           {l.label}
@@ -124,7 +116,7 @@ function HeadingsChoice({ headings }: { headings: SectionHeadings }) {
     <button
       type="button"
       aria-pressed={headings === value}
-      onClick={() => void setSectionHeadings(value).then(() => publish({ kind: 'headings-changed', headings: value }))}
+      onClick={() => void writeSetting('sectionHeadings', value)}
       className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${headings === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
     >
       {label}
@@ -145,12 +137,7 @@ function VoicePicker({ language, label, lang, saved }: { language: VoiceLanguage
   const voices = useVoices().filter((v) => speaksLanguage(v, lang));
   // A saved voice the phone no longer lists reads as the phone's default (it is what speak() falls back to).
   const shown = saved && voices.some((v) => voiceKey(v) === saved) ? saved : '';
-  const change = async (value: string) => {
-    const voice = value === '' ? null : value;
-    await setVoice(language, voice);
-    const other = await getVoice(language === 'english' ? 'greek' : 'english');
-    publish({ kind: 'voices-changed', english: language === 'english' ? voice : other, greek: language === 'greek' ? voice : other });
-  };
+  const change = (value: string) => writeSetting(`${language}Voice`, value === '' ? PHONE_VOICE : value);
   return (
     <label className="mt-3 block">
       <span className="block text-base font-medium">{label}</span>
@@ -176,8 +163,7 @@ function SpeedSlider({ language, label, saved }: { language: VoiceLanguage; labe
   const [value, setValue] = useState(saved);
   const change = async (next: number) => {
     setValue(next);
-    await setSpeechRate(language, next);
-    publish({ kind: 'rates-changed', rates: await getSpeechRates() });
+    await writeSetting(`${language}Rate`, next);
   };
   return (
     <label className="mt-3 block">
@@ -213,7 +199,7 @@ function PronunciationList({ chosen }: { chosen: GreekPronunciation }) {
           aria-checked={chosen === p.id}
           aria-labelledby={`pron-${p.id}`}
           aria-describedby={`pron-${p.id}-note`}
-          onClick={() => void setGreekPronunciation(p.id).then(() => publish({ kind: 'pronunciation-changed', pronunciation: p.id }))}
+          onClick={() => void writeSetting('greekPronunciation', p.id)}
           className={`block min-h-12 w-full rounded-xl border px-4 py-2 text-left ${chosen === p.id ? 'border-accent bg-accent/15' : 'border-line'}`}
         >
           <span id={`pron-${p.id}`} className="block text-base font-medium">
