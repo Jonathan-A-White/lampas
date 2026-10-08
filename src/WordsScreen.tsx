@@ -4,6 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
 import { listWords, setWordState, type Word, type WordState } from './data/repositories';
 import { navigate } from './nav/route';
+import { useScrollMemory } from './nav/scrollMemory';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
@@ -37,6 +38,7 @@ function countLine(words: Word[]): string {
 export function WordsScreen() {
   const words = useLiveQuery(listWords, []);
   const [confirming, setConfirming] = useState<string | null>(null);
+  const scrollRef = useScrollMemory('words');
 
   const tap = (w: Word) => {
     const next = NEXT[w.state];
@@ -58,7 +60,8 @@ export function WordsScreen() {
           </>
         }
       />
-      <main className="screen min-h-0 flex-1 px-3">
+      <main ref={scrollRef} className="screen min-h-0 flex-1 px-3">
+        <div>
         {groups.map((g) => (
           <section key={g.lesson} aria-labelledby={`lesson-${g.lesson}`} className="pt-4">
             <h2 id={`lesson-${g.lesson}`} className="px-1 pb-1 text-sm font-semibold uppercase tracking-wide text-muted">
@@ -88,6 +91,7 @@ export function WordsScreen() {
             </ul>
           </section>
         ))}
+        </div>
       </main>
       {confirming ? (
         <div className="fixed inset-0 z-10 flex items-end bg-black/60">

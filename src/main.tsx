@@ -4,10 +4,15 @@ import './index.css';
 import { registerSW } from 'virtual:pwa-register';
 import { App } from './App';
 import { Gate } from './gate/Gate';
+import { restoreLastRoute } from './nav/lastRoute';
+import { restoreScrolls } from './nav/scrollMemory';
 import { startAppUpdates } from './services/appUpdate';
 import { installScrollGuard } from './ui/scrollGuard';
 
 installScrollGuard();
+// Reopen where he left it: the address and the scroll offsets, before the first render reads them.
+restoreLastRoute();
+restoreScrolls();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

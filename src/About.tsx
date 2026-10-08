@@ -2,6 +2,7 @@
 import { Fragment, type ReactNode } from 'react';
 import { attribution, URL_PATTERN } from './attribution';
 import { navigate } from './nav/route';
+import { useScrollMemory } from './nav/scrollMemory';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 
 /** A line of markdown as nodes: **bold** and `code` marked up, URLs as links. */
@@ -26,10 +27,12 @@ function inline(md: string): ReactNode[] {
 }
 
 export function About() {
+  const scrollRef = useScrollMemory('about');
   return (
     <>
       <ScreenHeader title="About" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />
-      <main className="screen min-h-0 flex-1 px-4">
+      <main ref={scrollRef} className="screen min-h-0 flex-1 px-4">
+        <div>
         <p className="pt-4 text-base">{inline(attribution.intro)}</p>
         <ul className="list-none space-y-4 py-4">
           {attribution.entries.map((entry) => (
@@ -38,6 +41,7 @@ export function About() {
             </li>
           ))}
         </ul>
+        </div>
       </main>
     </>
   );

@@ -46,3 +46,22 @@ Feature: A quick test on his words
     And he answers every question rightly again and goes on to the end
     Then the learning words he was asked are solid on the Words screen
     And the words store holds them as solid
+
+  Scenario: A round left half done is offered again after the app was closed, and Resume goes on where he stopped
+    Given Lampas is opened for the first time
+    When he opens the Quick test
+    And he answers the first 3 questions of a round
+    And he closes the app and opens it again
+    Then the Quick test says "Round left unfinished" with Resume and New round
+    When he taps Resume
+    Then he is on question 4 of 10 with the same word as before
+
+  Scenario: New round throws the half-done round away
+    Given Lampas is opened for the first time
+    When he opens the Quick test
+    And he answers the first 3 questions of a round
+    And he closes the app and opens it again
+    And he taps New round
+    Then he is on question 1 of 10
+    When he closes the app and opens it again
+    Then the Quick test shows a question and does not offer a round

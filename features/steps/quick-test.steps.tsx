@@ -38,6 +38,7 @@ async function openLampasFresh(): Promise<void> {
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.results.clear()]);
   window.location.hash = '';
+  localStorage.removeItem('lampas.round');
   asked = [];
   round = [];
   // Every round starts from the same random source, so a second round asks the same words.
@@ -52,6 +53,14 @@ async function openQuickTest(): Promise<void> {
   await user.click(await screen.findByRole('button', { name: 'Test' }));
   await screen.findByRole('heading', { name: 'Quick test' });
   await screen.findByTestId('prompt');
+}
+
+async function openQuickTest0(): Promise<void> {
+  if (!screen.queryByRole('button', { name: 'Test' })) {
+    await user.click(await screen.findByRole('button', { name: 'Words' }));
+  }
+  await user.click(await screen.findByRole('button', { name: 'Test' }));
+  await screen.findByRole('heading', { name: 'Quick test' });
 }
 
 const options = (): HTMLElement[] => [...document.querySelectorAll<HTMLElement>('[data-option]')];
@@ -118,6 +127,24 @@ async function expectOnWordsScreen(lemmas: string[], state: string): Promise<voi
 
 async function expectInStore(lemmas: string[], state: string): Promise<void> {
   for (const l of lemmas) expect((await db.words.get(l))?.state).toBe(state);
+}
+
+
+/** Answers the first `n` questions of a round and goes on to the next, leaving the round half done. */
+async function answerSome(n: number): Promise<void> {
+  round = [];
+  for (let i = 0; i < n; i += 1) {
+    await screen.findByTestId('prompt');
+    await answer(true);
+    await goOn();
+  }
+  await screen.findByTestId('prompt');
+}
+
+/** The app is closed and opened from its icon: a new render over the same stored data, landing where he was. */
+async function closeAndReopen(): Promise<void> {
+  cleanup();
+  render(<App newRandom={() => mulberry32(7)} />);
 }
 
 const feature = await loadFeature('features/quick-test.feature');
@@ -218,6 +245,54 @@ describeFeature(feature, ({ Scenario }) => {
       await expectInStore(learningWords, 'solid');
       const rows = await db.results.where('lemma').equals(learningWords[0]).toArray();
       expect(rows.map((r) => r.right)).toEqual([true, true]);
+    });
+  });
+  Scenario('A round left half done is offered again after the app was closed, and Resume goes on where he stopped', ({ Given, When, And, Then }) => {
+    let wordAtFour = '';
+    Given('Lampas is opened for the first time', openLampasFresh);
+    When('he opens the Quick test', openQuickTest);
+    And('he answers the first 3 questions of a round', async () => {
+      await answerSome(3);
+      wordAtFour = promptLemma();
+    });
+    And('he closes the app and opens it again', async () => {
+      await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+      await closeAndReopen();
+      await openQuickTest0();
+    });
+    Then('the Quick test says {string} with Resume and New round', async (_, text: string) => {
+      await screen.findByText(text);
+      expect(screen.getByRole('button', { name: 'Resume' })).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'New round' })).toBeTruthy();
+    });
+    When('he taps Resume', async () => user.click(screen.getByRole('button', { name: 'Resume' })));
+    Then('he is on question 4 of 10 with the same word as before', async () => {
+      await screen.findByText('4 of 10');
+      expect(promptLemma()).toBe(wordAtFour);
+    });
+  });
+
+  Scenario('New round throws the half-done round away', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened for the first time', openLampasFresh);
+    When('he opens the Quick test', openQuickTest);
+    And('he answers the first 3 questions of a round', async () => answerSome(3));
+    And('he closes the app and opens it again', async () => {
+      await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+      await closeAndReopen();
+      await openQuickTest0();
+    });
+    And('he taps New round', async () => user.click(await screen.findByRole('button', { name: 'New round' })));
+    Then('he is on question 1 of 10', async () => {
+      await screen.findByText('1 of 10');
+    });
+    When('he closes the app and opens it again', async () => {
+      await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+      await closeAndReopen();
+      await openQuickTest0();
+    });
+    Then('the Quick test shows a question and does not offer a round', async () => {
+      await screen.findByTestId('prompt');
+      expect(screen.queryByText('Round left unfinished')).toBeNull();
     });
   });
 });

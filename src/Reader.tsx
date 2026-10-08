@@ -5,14 +5,15 @@
 // are told to the rest of the app on the event bus (src/events/bus.ts, docs/events.md); the Reader reads the selection back from it.
 // The chapter comes from /data/rom/8.json (precached), the switches are kept in the settings store.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnswerCards, AskBox } from './Ask';
 import { type Chapter, type EnglishChunk, type GreekWord, type Verse, loadChapter } from './data/chapter';
 import { getReaderView, getWeave, listSolidLemmas, setReaderView, setWeave, type ReaderView, type Weave } from './data/repositories';
 import { weaveVerse, type Woven } from './data/weave';
 import { BuildVersion } from './BuildVersion';
-import { publish, useLatest } from './events/bus';
-import { navigate } from './nav/route';
+import { latest, publish, useLatest } from './events/bus';
+import { navigate, readerOf, useAddress } from './nav/route';
+import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
 import { HeaderButton } from './ScreenHeader';
 import { SpeakButton } from './speech/SpeakButton';
@@ -174,12 +175,29 @@ export function Reader() {
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  // What the address said when the reader opened (a reopen, Back to an earlier place): the selected verse, and the view
+  // and weave to put back in the settings. The address is the place; the settings follow it.
+  const [opened] = useState(() => readerOf(window.location.hash));
+  const wantView = useRef(opened.view);
+  const wantWeave = useRef(opened.weave);
+  const scrollRef = useScrollMemory('reader');
+  const address = useAddress();
+  const current = useRef({ view, weave });
+  useEffect(() => {
+    current.current = { view, weave };
+  });
   const selectedEvent = useLatest('verse-selected');
   const selected = selectedEvent?.chapter === CHAPTER ? selectedEvent.verse : null;
   const [lookup, setLookup] = useState<Lookup | null>(null);
   const { asks, ask } = useAsks(BOOK, CHAPTER, TITLE);
+  // The verse he last tapped: its Ask box scrolls into view. A selection put back by a reopen or Back does not, so it
+  // leaves the text where the scroll memory put it.
+  const [tapped, setTapped] = useState<number | null>(null);
   const selectVerse = useCallback(
-    (n: number) => publish({ kind: 'verse-selected', chapter: CHAPTER, verse: selected === n ? null : n }),
+    (n: number) => {
+      setTapped(selected === n ? null : n);
+      publish({ kind: 'verse-selected', chapter: CHAPTER, verse: selected === n ? null : n });
+    },
     [selected],
   );
   const closeSheet = useCallback(() => setLookup(null), []);
@@ -191,12 +209,37 @@ export function Reader() {
   const wovenCount = woven ? woven.reduce((n, w) => n + w.filter(Boolean).length, 0) : 0;
 
   // The selection is not kept when the reader goes away; the bus holds it only while the reader is on screen.
-  useEffect(() => () => publish({ kind: 'verse-selected', chapter: CHAPTER, verse: null }), []);
   useEffect(() => {
-    if (view) publish({ kind: 'view-changed', view });
+    const verse = opened.chapter === undefined || opened.chapter === CHAPTER ? opened.verse ?? null : null;
+    publish({ kind: 'verse-selected', chapter: CHAPTER, verse });
+    return () => publish({ kind: 'verse-selected', chapter: CHAPTER, verse: null });
+  }, [opened]);
+  // Back or Forward to another entry of the reader (the verse, view or weave of that entry) puts that entry's state back.
+  useEffect(() => {
+    const here = readerOf(address);
+    const verse = here.chapter === undefined || here.chapter === CHAPTER ? here.verse ?? null : null;
+    if ((latest('verse-selected')?.verse ?? null) !== verse) publish({ kind: 'verse-selected', chapter: CHAPTER, verse });
+    const { view: shown, weave: woven } = current.current;
+    if (here.view && shown && here.view !== shown) void setReaderView(here.view);
+    if (here.weave && woven && here.weave !== woven) void setWeave(here.weave);
+  }, [address]);
+  useEffect(() => {
+    if (!view) return;
+    if (wantView.current && wantView.current !== view) {
+      void setReaderView(wantView.current);
+      return;
+    }
+    wantView.current = undefined;
+    publish({ kind: 'view-changed', view });
   }, [view]);
   useEffect(() => {
-    if (weave) publish({ kind: 'weave-changed', weave });
+    if (!weave) return;
+    if (wantWeave.current && wantWeave.current !== weave) {
+      void setWeave(wantWeave.current);
+      return;
+    }
+    wantWeave.current = undefined;
+    publish({ kind: 'weave-changed', weave });
   }, [weave]);
 
   useEffect(() => {
@@ -229,7 +272,8 @@ export function Reader() {
           ) : null}
         </div>
       ) : null}
-      <main data-reader data-view={view} data-weave={weave} className="screen min-h-0 flex-1 px-1 pt-2">
+      <main ref={scrollRef} data-reader data-view={view} data-weave={weave} className="screen min-h-0 flex-1 px-1 pt-2">
+        <div>
         {failed ? (
           <div role="alert" className="px-4 pt-6 text-center">
             <p className="text-lg">Could not load {TITLE}.</p>
@@ -256,7 +300,7 @@ export function Reader() {
                 {selected === v.n ? (
                   <>
                     <AnswerCards verse={v.n} book={BOOK} chapter={CHAPTER} />
-                    <AskBox chapter={chapter} asks={asks} onAsk={ask} />
+                    <AskBox chapter={chapter} asks={asks} onAsk={ask} reveal={tapped === v.n} />
                   </>
                 ) : null}
               </Fragment>
@@ -271,6 +315,7 @@ export function Reader() {
             Loading {TITLE}…
           </p>
         )}
+        </div>
       </main>
       {chapter && lookup ? <WordSheet chapter={chapter} lookup={lookup} onClose={closeSheet} /> : null}
     </>
