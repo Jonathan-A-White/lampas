@@ -92,6 +92,7 @@ describe('docs/events.md', () => {
       'chapter-opened': true,
       'reader-requested': true,
       'review-due-changed': true,
+      'grammar-level-changed': true,
     };
     const doc = readFileSync('docs/events.md', 'utf8');
     for (const kind of Object.keys(kinds)) expect(doc, kind).toContain(`\`${kind}\``);

@@ -107,6 +107,21 @@ export interface KnownTerm {
   since: number;
 }
 
+export type GrammarLevelName = 'solid' | 'frontier' | 'notYet';
+
+/** What set a grammar level: the placement, a review answer, the idea sheet, the tutor, or a term he marked I know this. */
+export type GrammarLevelHow = 'placement' | 'review' | 'sheet' | 'tutor' | 'marked';
+
+/** Where one grammar idea (src/data/grammar/ladder.ts) stands for him: solid, at the frontier, or not yet. One row per idea. */
+export interface GrammarLevel {
+  /** the idea's id: 'case-genitive' */
+  id: string;
+  level: GrammarLevelName;
+  /** when it got this level (ms since the epoch) */
+  since: number;
+  how: GrammarLevelHow;
+}
+
 /**
  * One item on the back-off schedule (src/data/schedule.ts): a word today, anything he reviews later. The key is
  * {kind, id}: kind 'word' with the NFC headword as id, or another kind with its own ids.
@@ -151,6 +166,7 @@ class LampasDB extends Dexie {
   readings!: EntityTable<VerseReading, 'ref'>;
   grammarKnown!: EntityTable<KnownTerm, 'term'>;
   reviews!: EntityTable<Review, 'kind' | 'id'>;
+  grammarLevels!: EntityTable<GrammarLevel, 'id'>;
 
   constructor() {
     super('lampas');
@@ -229,6 +245,20 @@ class LampasDB extends Dexie {
       readings: 'ref',
       grammarKnown: 'term',
       reviews: '[kind+id], due, kind',
+    });
+    // v11: where each grammar idea stands {id, level, since, how}, one row per idea (key id); level finds the solid ones.
+    this.version(11).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
+      reviews: '[kind+id], due, kind',
+      grammarLevels: 'id, level',
     });
   }
 }

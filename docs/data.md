@@ -133,6 +133,25 @@ rule (pure) and `src/data/repositories/reviews.ts` the rows (`recordReview`, `li
 * What is due counts live words only: `listDue` (and so `countDue`, the Reader's strip, Review's cards and the round) leaves out the
   row of a dropped or unlisted word. The row is kept, so a word taken up again comes back on the schedule it had (overdue ones are due at once).
 * Every change publishes `review-due-changed` (docs/events.md).
+* A grammar idea (`src/data/grammar/ladder.ts`, docs/grammar.md) is an item of kind `'grammar'` with the idea's id; `listDue`
+  counts it live like any kind that is not a word.
+
+## Grammar levels (Dexie v11)
+
+The store's version 11 adds `grammarLevels`, one row per grammar idea, key `id` (index `level`): `{id, level, since, how}`.
+`level` is `'solid'` (he has it), `'frontier'` (he is working on it) or `'notYet'`; `how` is what set it: `'placement'`,
+`'review'`, `'sheet'`, `'tutor'` or `'marked'`. `src/data/repositories/grammarLevels.ts` keeps it:
+
+* `setLevel(id, level, how)` writes the row and publishes `grammar-level-changed` (docs/events.md).
+* `recordGrammarAnswer(id, right)` is `recordReview('grammar', id, right)` and the level from the new step in one transaction:
+  `levelFromStep` says solid from `SOLID_STEP` (3, the 14-day step, provisional, the Governor to confirm) and frontier below it. So
+  two rights in a row at step 2 turn an idea solid, a wrong at step 3 drops it to step 1 and frontier, and a not-yet idea
+  that is answered becomes frontier. A right never lowers an idea he set solid by hand; a level that does not change keeps
+  its `since` and `how`.
+* `scheduleIdea(id, level)` puts the idea on the schedule if it is not there: step 0 for frontier, the 30-day step (due in
+  30 days) for solid (the 'I know this' jump); not-yet ideas are not scheduled.
+* `seedLevelsIfFirstOpen` runs once (meta `grammarLevelsSeeded`), after the upgrade: every term in `grammarKnown` makes every idea
+  that covers it solid, `how` `'marked'`, scheduled at the 30-day step; an idea that already has a level keeps it.
 
 ## Offline
 
