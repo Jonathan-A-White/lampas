@@ -1,17 +1,25 @@
-// src/SettingsScreen.tsx — what he can set, so the reader's front screen stays clear: the layout (verse by verse | paragraph), the section headings, the weave, the voices that read
-// English and Greek aloud, and how Greek is pronounced. Each choice is saved in the settings store (src/data/repositories)
+// src/SettingsScreen.tsx — what he can set, so the reader's front screen stays clear: the Theme and Text size, the layout (verse by verse | paragraph), the section headings, the weave, the voices that read
+// English and Greek aloud, how fast each is read, and how Greek is pronounced. Each choice is saved in the settings store (src/data/repositories)
 // and told to the bus (src/events/bus.ts); Words and About open from here too.
 import { useLiveQuery } from 'dexie-react-hooks';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import { TEXT_SIZES } from './appearance/textSizes';
+import { THEMES, type Theme } from './appearance/themes';
 import {
   getGreekPronunciation,
   getLayout,
   getSectionHeadings,
+  getSpeechRates,
+  getTextSize,
+  getTheme,
   getVoice,
   getWeave,
   setGreekPronunciation,
   setLayout,
   setSectionHeadings,
+  setSpeechRate,
+  setTextSize,
+  setTheme,
   setVoice,
   setWeave,
   type ReadingLayout,
@@ -25,6 +33,7 @@ import { navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { speaksLanguage, useVoices, voiceKey } from './speech/greek';
+import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from './speech/languages';
 import { PRONUNCIATIONS, pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
 
 function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
@@ -34,6 +43,42 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
       {hint ? <p className="pb-2 text-base text-muted">{hint}</p> : null}
       {children}
     </section>
+  );
+}
+
+function ThemeChoice({ theme }: { theme: Theme }) {
+  return (
+    <div role="group" aria-label="Theme" className="inline-flex flex-wrap rounded-xl border border-line p-0.5">
+      {THEMES.map((t) => (
+        <button
+          key={t.id}
+          type="button"
+          aria-pressed={theme === t.id}
+          onClick={() => void setTheme(t.id).then(() => publish({ kind: 'theme-changed', theme: t.id }))}
+          className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${theme === t.id ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+        >
+          {t.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function TextSizeChoice({ percent }: { percent: number }) {
+  return (
+    <div role="group" aria-label="Text size" className="inline-flex flex-wrap rounded-xl border border-line p-0.5">
+      {TEXT_SIZES.map((t) => (
+        <button
+          key={t.id}
+          type="button"
+          aria-pressed={percent === t.percent}
+          onClick={() => void setTextSize(t.percent).then(() => publish({ kind: 'text-size-changed', percent: t.percent }))}
+          className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${percent === t.percent ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+        >
+          {t.label}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -125,6 +170,38 @@ function VoicePicker({ language, label, lang, saved }: { language: VoiceLanguage
   );
 }
 
+/** How fast one language is read aloud: a slider from slower to faster, 1 in the middle. It keeps its own value while
+ * it is dragged, so the thumb does not wait on the settings store. */
+function SpeedSlider({ language, label, saved }: { language: VoiceLanguage; label: string; saved: number }) {
+  const [value, setValue] = useState(saved);
+  const change = async (next: number) => {
+    setValue(next);
+    await setSpeechRate(language, next);
+    publish({ kind: 'rates-changed', rates: await getSpeechRates() });
+  };
+  return (
+    <label className="mt-3 block">
+      <span className="flex items-baseline justify-between text-base font-medium">
+        {label}
+        <span aria-hidden="true" className="text-muted">
+          {value.toFixed(1)}×{value === DEFAULT_RATE ? ' normal' : ''}
+        </span>
+      </span>
+      <input
+        type="range"
+        aria-label={label}
+        aria-valuetext={`${value.toFixed(1)} times normal`}
+        min={RATE_MIN}
+        max={RATE_MAX}
+        step={RATE_STEP}
+        value={value}
+        onChange={(e) => void change(Number(e.target.value))}
+        className="mt-1 block min-h-12 w-full accent-accent"
+      />
+    </label>
+  );
+}
+
 function PronunciationList({ chosen }: { chosen: GreekPronunciation }) {
   return (
     <div role="radiogroup" aria-label="Greek pronunciation" className="space-y-2">
@@ -168,6 +245,9 @@ function LinkRow({ label, to }: { label: string; to: 'words' | 'about' }) {
 
 export function SettingsScreen() {
   const scrollRef = useScrollMemory('settings');
+  const theme = useLiveQuery(getTheme, []);
+  const textSize = useLiveQuery(getTextSize, []);
+  const rates = useLiveQuery(getSpeechRates, []);
   const weave = useLiveQuery(getWeave, []);
   const layout = useLiveQuery(getLayout, []);
   const headings = useLiveQuery(getSectionHeadings, []);
@@ -179,6 +259,12 @@ export function SettingsScreen() {
       <ScreenHeader title="Settings" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />
       <main ref={scrollRef} className="screen min-h-0 flex-1 px-4">
         <div>
+          <Section title="Appearance" hint="Phone follows the phone's own light or dark setting. Normal text is the size your phone uses.">
+            <h3 className="pb-1 text-base font-medium">Theme</h3>
+            {theme ? <ThemeChoice theme={theme} /> : null}
+            <h3 className="pb-1 pt-3 text-base font-medium">Text size</h3>
+            {textSize !== undefined ? <TextSizeChoice percent={textSize} /> : null}
+          </Section>
           <Section title="Layout" hint="Verse by verse is one verse per line. Paragraph runs the verses of a paragraph together, with small verse numbers.">
             {layout ? <LayoutChoice layout={layout} /> : null}
           </Section>
@@ -195,6 +281,9 @@ export function SettingsScreen() {
                 <VoicePicker language="greek" label="Greek voice" lang={pronunciationOf(pronunciation).lang} saved={greek} />
               </>
             ) : null}
+          </Section>
+          <Section title="Reading speed" hint="How fast each language is read aloud, on its own: 1.0 is normal.">
+            {rates ? LANGUAGES.map((l) => <SpeedSlider key={l.id} language={l.id} label={`${l.label} speed`} saved={rates[l.id]} />) : null}
           </Section>
           <Section title="Greek pronunciation" hint="How Greek is read aloud.">
             {pronunciation ? <PronunciationList chosen={pronunciation} /> : null}
