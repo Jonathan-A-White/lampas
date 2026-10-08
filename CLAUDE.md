@@ -59,7 +59,7 @@ npm run data:build   # data/raw (git-ignored, downloaded if absent) -> public/da
 index.html           # viewport (zoom locked), theme colour, iOS meta, PNG touch icon
 pwa-manifest.ts      # the manifest as one plain object (vite.config.ts and the tests import it)
 pwa-precache.ts      # injectManifest options (precache size limit raised)
-build-version.ts     # '<version> · <UTC time> · <commit>' stamp shown on the home screen
+build-version.ts     # '<version> · <UTC time> · <commit>' stamp (the commit is read from git at build time); src/BuildVersion.tsx shows it as 'v…' on Home and Unlock
 vite.config.ts       # react, tailwind 4, vite-plugin-pwa (injectManifest, registerType 'prompt')
 src/main.tsx         # scroll guard first, then render, then register the worker
 src/App.tsx          # the shell (data-shell); picks the screen by hash route (src/nav/route.ts); seeds words on first open

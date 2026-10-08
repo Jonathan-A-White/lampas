@@ -1,6 +1,7 @@
 // src/gate/Unlock.tsx — the screen the licence gate shows until the phone's key holds a licence: the answer
 // so far, the phone's key as hex with a Copy (to issue the licence from Postern's Key screen), Check again.
 import { useState } from 'react';
+import { BuildVersion } from '../BuildVersion';
 import { UpdateBanner } from '../UpdateBanner';
 
 export type Locked =
@@ -68,6 +69,7 @@ export function Unlock({ locked, publicKeyHex, onCheckAgain }: Props) {
         >
           Check again
         </button>
+        <BuildVersion />
       </main>
     </div>
   );

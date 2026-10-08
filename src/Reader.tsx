@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { type Chapter, type EnglishChunk, type GreekWord, type Verse, loadChapter } from './data/chapter';
 import { getReaderView, getWeave, listSolidLemmas, setReaderView, setWeave, type ReaderView, type Weave } from './data/repositories';
 import { weaveVerse, type Woven } from './data/weave';
+import { BuildVersion } from './BuildVersion';
 import { navigate } from './nav/route';
 import { HeaderButton } from './ScreenHeader';
 import { WordSheet, type Lookup } from './WordSheet';
@@ -225,9 +226,7 @@ export function Reader() {
                 onLook={setLookup}
               />
             ))}
-            <p data-testid="build-version" className="break-words px-3 pt-6 text-center text-sm text-muted">
-              Lampas {__APP_VERSION__}
-            </p>
+            <BuildVersion className="px-3 pt-6" />
             <div className="flex justify-center pb-4">
               <HeaderButton onClick={() => navigate('about')}>About</HeaderButton>
             </div>
