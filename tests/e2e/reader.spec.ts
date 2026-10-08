@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
+import { openUnlocked } from './unlocked';
 
 // The page never scrolls and never grows wider than the window.
 async function expectFitsPhone(page: Page) {
@@ -13,6 +14,7 @@ async function expectFitsPhone(page: Page) {
 }
 
 async function openReader(page: Page) {
+  await openUnlocked(page);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await expect(page.locator('[data-verse="1"]')).toBeVisible();

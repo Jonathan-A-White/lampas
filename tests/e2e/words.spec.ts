@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { shot } from './shot';
+import { openUnlocked } from './unlocked';
 
 // The page never scrolls and never grows wider than the window.
 async function expectFitsPhone(page: import('@playwright/test').Page) {
@@ -13,6 +14,7 @@ async function expectFitsPhone(page: import('@playwright/test').Page) {
 }
 
 test('the Words screen lists the seeded words by lesson at phone width', async ({ page }) => {
+  await openUnlocked(page);
   await page.goto('/');
   await page.getByRole('button', { name: 'Words' }).click();
   await expect(page.getByRole('heading', { name: 'Words', level: 1 })).toBeVisible();
@@ -28,6 +30,7 @@ test('the Words screen lists the seeded words by lesson at phone width', async (
 });
 
 test('the Import screen previews a pasted list and keeps Add in reach at phone width', async ({ page }) => {
+  await openUnlocked(page);
   await page.goto('/#/import');
   await expect(page.getByRole('heading', { name: 'Import', level: 1 })).toBeVisible();
   await page.getByRole('textbox').fill('ἀνάστασις — resurrection\nπνεῦμα, spirit\nspirit');

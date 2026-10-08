@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import { registerSW } from 'virtual:pwa-register';
 import { App } from './App';
+import { Gate } from './gate/Gate';
 import { startAppUpdates } from './services/appUpdate';
 import { installScrollGuard } from './ui/scrollGuard';
 
@@ -10,7 +11,9 @@ installScrollGuard();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <Gate>
+      <App />
+    </Gate>
   </StrictMode>,
 );
 

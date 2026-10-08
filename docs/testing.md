@@ -1,0 +1,58 @@
+# Testing behind the licence gate
+
+Lampas opens on an Unlock screen until the phone's key holds a `lampas` licence on chain (`src/gate/`).
+The gate is not switched off for tests: a test that needs the reader either answers the licence lookup
+or starts from a key it knows. This page names the one place the key lives and how a test seeds it.
+
+## The device key's storage (the test seam)
+
+- Place: `window.localStorage`, under the key **`lampas.deviceKey`** (`DEVICE_KEY_STORAGE_KEY` in `src/config.ts`).
+- Value: the private key as 64 lower-case hex characters (a number from 1 up to the curve order).
+- It lives outside the Dexie database on purpose (`src/data/db.ts` is shared by other stories).
+- Made once on first open (`getOrCreateDeviceKey`, `src/services/deviceKey.ts`) and never rewritten while it is
+  valid. A stored value that is not a usable key (not hex, zero, past the curve order) is replaced by a new one.
+- The Unlock screen shows the matching **public** key (33 bytes, 66 hex chars) in `data-testid="device-key"`;
+  that is what Postern's Key screen issues a licence to.
+
+The seam is a storage location, not a bypass: the gate still asks the chain whether that key holds a licence
+minted by the issuer. A seeded key with no licence sees Unlock.
+
+### Seeding a known key in Playwright
+
+Write the key before the app boots, then load the page:
+
+```ts
+await page.addInitScript((hex) => window.localStorage.setItem('lampas.deviceKey', hex), PRIVATE_KEY_HEX);
+await page.goto('/');
+await expect(page.getByTestId('device-key')).toHaveText(PUBLIC_KEY_HEX);
+```
+
+`tests/e2e/unlocked.ts` has `seedDeviceKey(page, hex)`, and the well-known pair the specs use
+(`SEED_PRIVATE_KEY` = 1, `SEED_PUBLIC_KEY` = `0279be66…1798`).
+
+A live test (for example the tutor's) that needs the real reader seeds a key whose licence is on testnet and lets
+the real lookup run. A test that must not touch the network uses `openUnlocked(page)`: it seeds the key, plants the
+offline-grace memory (`lampas.licenceHeld` = `{"publicKeyHex": …, "at": <ms>}`, good for 24 h) and refuses every
+WhatsOnChain request, so the gate opens on its remembered "held" answer.
+
+### Seeding a key in a Gherkin step
+
+```ts
+window.localStorage.setItem('lampas.deviceKey', '00'.repeat(31) + '01');
+render(<Gate issuer={ISSUER} check={stub}><App /></Gate>);
+```
+
+`features/gate.feature` has the scenario ("A key stored through the test seam is the device key"); its steps are in
+`features/steps/gate.steps.tsx`. Unit and feature tests give `Gate` a `check` stub and a `now` clock; they never
+touch the network. `fetchLicenceStatus` is tested with bsv-kit's `FakeChainReader` (`tests/unit/licence-check.test.ts`).
+
+## Settings (`src/config.ts`)
+
+| Name | Env var | Default |
+| --- | --- | --- |
+| issuer public key | `VITE_LAMPAS_ISSUER` | empty: the gate stays shut and says "No licence issuer is set" |
+| collection | none | `lampas` |
+| chain | `VITE_LAMPAS_CHAIN` | `testnet` (bsv-kit reads testnet only so far) |
+| Postern door | `VITE_POSTERN_DOOR` | `https://postern.allmymind.org` |
+
+Vite bakes these in at build time: set the variable for `npm run build`.

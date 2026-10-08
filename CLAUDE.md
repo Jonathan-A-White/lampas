@@ -65,6 +65,9 @@ src/App.tsx          # the shell (data-shell); picks the screen by hash route (s
 src/Reader.tsx WordsScreen.tsx ImportScreen.tsx QuizScreen.tsx  # the screens (#/ , #/words, #/import, #/test); the Reader is Romans 8, English | Greek
 src/WordSheet.tsx    # the bottom sheet a tapped word opens (tap outside, swipe down on the handle, Done or Escape closes it)
 src/fonts/           # Gentium Plus (Greek + Greek Extended, 400 and 700 woff2) and its OFL licence; @font-face is in src/index.css
+src/config.ts        # issuer (VITE_LAMPAS_ISSUER), collection 'lampas', chain, Postern door, the device key's storage name
+src/gate/            # Gate (wraps App in main.tsx): Unlock until the phone's key holds a lampas licence; 24 h offline grace
+src/services/deviceKey.ts licenceCheck.ts licenceCache.ts  # the key in localStorage; chain lookup + issuer rule; the held memory
 src/UpdateBanner.tsx # 'Update ready, tap to reload'; the tap posts SKIP_WAITING
 src/sw.ts            # the worker: precache, precache guard, SKIP_WAITING, claim on activate
 src/precacheGuard.ts # never serve a .js/.css whose Content-Type does not fit
@@ -84,6 +87,7 @@ public/data/         # generated NT JSON, committed (~30 MB); only index.json an
 features/ tests/     # BDD features + steps; unit tests; e2e + shots; support fakes
 docs/pwa-best-practices.md   # copied verbatim from the vault; the law for every screen
 docs/example-words.md        # the owner's own BMA word list (public, an example template); the seed's source
+docs/testing.md      # the gate's test seam: where the device key lives and how a test seeds it
 docs/data.md         # the data's JSON shape, its two sources and licences, and what the build changes
 ```
 
