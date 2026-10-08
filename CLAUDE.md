@@ -103,6 +103,10 @@ src/nav/             # route.ts: the hash address (screen, and in the reader '?b
                      #   lastRoute.ts: reopen where he left it (localStorage lampas.lastRoute, lampas.trail = last 20 addresses, lampas.scrolls; history.state.i;
                      #   a bare open lands on the newest and rebuilds history so Back walks the trail, past the oldest on Home; an open that names a place wins);
                      #   readerAddress.ts: bus events -> address (replaceState); scrollMemory.ts: scroll per address, restored with a ResizeObserver up to 2.5 s
+src/nav/links.ts LinkOpener.tsx linkRequest.ts ui/LinkActions.tsx  # Lampas takes links in (mw-5r3p30.65, docs/links.md): '#/?ref=Rom.8.28' (also 'Rom 8:28', 'Romans 8:28', '1John.1.9', a chapter alone) opens the reader on the verse, '#/?word=G3551' (or the lemma) opens the word's sheet,
+                     #   web+lampas: reaches the same (manifest protocol_handlers, url '/#/?ref=%s'; not iOS Safari); links.ts is pure (parseReference, resolveReference against index.json, findWord against lexicon.json, linkOf, referenceUrl/wordUrl: the https form on LINK_ORIGIN in config.ts, lemmaSheet);
+                     #   a reference Lampas does not hold opens the nearest place it does with a one-line notice (Reader, [data-link-notice]); Reader() renders LinkOpener in place of the reader while a link in the address is resolved, which announces 'link-opened' on the bus and
+                     #   replaces the address with the plain reader one; the Reader meets it once (pendingLink/takeLink); LinkActions is Copy link / Share, on the verse panel (ReadCheck.tsx) and every card of the word sheet
 src/HoldToHear.tsx   # the 'Hold to hear' bar under the Quick test word (src/QuizScreen.tsx): holdPress's 500 ms hold says the Greek word with speakWord (the long press's engine), release or a slide off stops it, a tap does nothing, Space / Enter held do the same
 src/QuizScreen.tsx   # after an answer (mw-5r3p30.47) pick() says the word by itself, once (speakWord, the same engine as HoldToHear; not on a Resume of an answered question) and a row of Next | Ask the tutor appears
                      #   (wrong answers never advance by themselves); Ask the tutor is askInReader on the question's verse (Question.chapter/verse from formsOf, data/quiz.ts askAbout; a word the chapter lacks, or a round kept before verses were stored, asks about its meaning on verse 1)
@@ -169,6 +173,7 @@ docs/events.md       # every event kind on the bus, its payload, who publishes a
 docs/pronunciation.md # the respelling schemes: Modern Greek's rules and how to add Erasmian
 docs/resources.md    # the study resources: what ships, where each URL form is documented, how to add one
 docs/pictures.md     # the memory pictures: the rules for one, how to add one, which seed words have none
+docs/links.md        # every link form Lampas takes in, with an example; where web+lampas: does not work
 docs/data.md         # the data's JSON shape, its two sources and licences, and what the build changes
 ```
 
