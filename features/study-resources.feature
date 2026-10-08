@@ -93,3 +93,41 @@ Feature: Study resources
     And the study resource "Accordance" is switched off
     And the Logos lexicon "Louw-Nida" is ticked
     And the Logos lexicon "BDAG" stays ticked
+
+  Scenario: Searching the Logos lexicons narrows the list, and clearing the search brings every lexicon back
+    Given Lampas is opened on Romans 8 with no study resources on
+    When he taps the gear in the reader's header
+    And he switches on the study resource "Logos"
+    And he types "louw" in the Logos lexicons search
+    Then the Logos lexicons list shows "Louw-Nida"
+    And the Logos lexicons list does not show "BDAG"
+    And the Logos lexicons list also does not show "EDNT"
+    When he clears the Logos lexicons search
+    Then the Logos lexicons list is back with "BDAG"
+    And the Logos lexicons list also shows "Louw-Nida"
+    And the Logos lexicons list holds 21 lexicons
+
+  Scenario: A search with no match says so
+    Given Lampas is opened on Romans 8 with no study resources on
+    When he taps the gear in the reader's header
+    And he switches on the study resource "Logos"
+    And he types "zzz" in the Logos lexicons search
+    Then the Logos lexicons list holds 0 lexicons
+    And the Logos lexicons list says "No lexicon matches"
+
+  Scenario: Ticking a lexicon found by search is saved as before
+    Given Lampas is opened on Romans 8 with no study resources on
+    When he taps the gear in the reader's header
+    And he switches on the study resource "Logos"
+    And he types "louw" in the Logos lexicons search
+    And he ticks the Logos lexicon "Louw-Nida"
+    Then the setting "resourceOption.logos" holds '["bdag","louwnida"]'
+
+  Scenario: Ticked lexicons are listed first
+    Given Lampas is opened on Romans 8 with no study resources on
+    When he taps the gear in the reader's header
+    And he switches on the study resource "Logos"
+    And he ticks the Logos lexicon "EDNT"
+    And Lampas is opened again
+    And he opens Settings again
+    Then the Logos lexicons list starts with "BDAG", "EDNT", "Louw-Nida"
