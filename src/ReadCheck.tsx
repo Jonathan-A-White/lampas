@@ -268,8 +268,10 @@ function Walk({ words, text, view, hold, recording, onDone }: { words: FixWord[]
 }
 
 /** The reading check for the selected verse. `hold` is the Read button's hold for this verse; `checks` has the states. */
-export function ReadCheckPanel({ verse, title, view, book, chapter, checks, hold, onRetry }: {
+export function ReadCheckPanel({ verse, text: shownText, title, view, book, chapter, checks, hold, onRetry }: {
   verse: Verse;
+  /** the verse as the reader draws it (the same component, so the view and the weave show alike); tappable as in the reader */
+  text: ReactNode;
   /** the chapter's title ('Romans 8'): the panel is headed by the verse's reference, title and number */
   title: string;
   view: 'english' | 'greek';
@@ -312,7 +314,7 @@ export function ReadCheckPanel({ verse, title, view, book, chapter, checks, hold
         lang={shown.lang}
         className={`max-h-52 overflow-y-auto break-words ${shown.face} leading-(--lp-leading)`}
       >
-        {text}
+        {shownText}
       </p>
       {walking && reading ? null : (
         <>

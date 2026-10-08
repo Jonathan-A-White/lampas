@@ -708,6 +708,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       <ReadCheckPanel
                         key={pick.n}
                         verse={pick}
+                        text={<VerseText verse={pick} view={view} woven={wovenOf(pick)} onLook={setLookup} />}
                         title={TITLE}
                         view={view}
                         book={BOOK}
