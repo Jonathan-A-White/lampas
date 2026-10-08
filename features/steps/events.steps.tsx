@@ -57,7 +57,10 @@ describeFeature(feature, ({ Scenario }) => {
     And('the Ask box shows under verse {int}', async (_, verse: number) => {
       await screen.findByRole('region', { name: 'Ask the tutor' });
       expect(askBoxes()).toEqual([verse]);
-      expect(document.querySelector(`[data-ask="${verse}"]`)?.previousElementSibling?.getAttribute('data-verse')).toBe(String(verse));
+      // under the verse: the reading check (src/ReadCheck.tsx) sits between the verse and its Ask box, so it is stepped over
+      let above = document.querySelector(`[data-ask="${verse}"]`)?.previousElementSibling;
+      while (above?.hasAttribute('data-readcheck')) above = above.previousElementSibling;
+      expect(above?.getAttribute('data-verse')).toBe(String(verse));
     });
   });
 

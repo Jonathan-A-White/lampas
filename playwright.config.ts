@@ -17,6 +17,10 @@ const browserEnv = existsSync(extraLibDir)
 
 const LIVE_SPEC = '**/*-live.spec.ts';
 
+// The live reading spec has no real microphone: Chromium's fake capture device plays this clip of Romans 8:28 read aloud
+// (synthesized with espeak-ng) as the microphone's sound, and the page is allowed the microphone without a prompt.
+const FAKE_MIC_CLIP = join(process.cwd(), 'tests', 'fixtures', 'read-8-28.wav');
+
 // The live project drives the DEPLOYED app: Postern's CORS allows only https://lampas.allmymind.org, so a
 // localhost preview could never reach the tutor. `npm run e2e:live` sets LAMPAS_E2E=live, and then no preview
 // server is started (and nothing is built).
@@ -64,7 +68,11 @@ export default defineConfig({
         baseURL: LIVE_BASE_URL,
         channel: 'chromium',
         viewport: { width: 390, height: 844 },
-        launchOptions: { env: browserEnv },
+        permissions: ['microphone'],
+        launchOptions: {
+          env: browserEnv,
+          args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', `--use-file-for-fake-audio-capture=${FAKE_MIC_CLIP}`],
+        },
       },
     },
   ],

@@ -13,7 +13,7 @@ export async function routePostern(page: Page, fake: FakePostern): Promise<void>
   await page.route(`${POSTERN_ORIGIN}/**`, async (route) => {
     const request = route.request();
     if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: CORS });
-    const reply = await fake.fetch(request.url(), { method: request.method(), headers: request.headers(), body: request.postData() ?? undefined });
+    const reply = await fake.fetch(request.url(), { method: request.method(), headers: request.headers(), body: (request.postDataBuffer() ?? undefined) as BodyInit | undefined });
     return route.fulfill({ status: reply.status, headers: { ...CORS, 'content-type': 'application/json' }, body: await reply.text() });
   });
 }

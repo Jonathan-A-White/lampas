@@ -4,12 +4,15 @@
 // Greek of his solid words in place of their English (src/data/weave.ts).
 // Settings also holds the Layout (Verse by verse | Paragraph, src/layout/layouts.ts cuts the verses into blocks) and Section
 // headings (On | Off): the MSB's heading (verses[].h) is drawn above its block in either view, in English.
-// A selected verse shows its kept tutor answers and the Ask box (src/Ask.tsx). The selection, the view and the weave
+// A selected verse shows its reading check (src/ReadCheck.tsx: hold Read, read the verse aloud, the words to fix come back
+// marked; English view only, the Greek view says that check is coming) directly under it, so what the hold is doing is on
+// screen while he holds; then its kept tutor answers and the Ask box (src/Ask.tsx). The selection, the view and the weave
 // are told to the rest of the app on the event bus (src/events/bus.ts, docs/events.md); the Reader reads the selection back from it.
 // The chapter comes from /data/rom/8.json (precached), the view and the weave are kept in the settings store.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Fragment, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnswerCards, AskBox } from './Ask';
+import { ReadCheckPanel, VerseRead, type ReadHold } from './ReadCheck';
 import { TalkBar, TalkSheet } from './Talk';
 import { type Chapter, type EnglishChunk, type GreekWord, type Verse, loadChapter } from './data/chapter';
 import {
@@ -32,6 +35,7 @@ import { pendingRequest, takeRequest } from './nav/readerRequest';
 import { navigate, readerOf, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
+import { useReadChecks } from './useReadChecks';
 import { useTalk } from './useTalk';
 import { useVoice } from './useVoice';
 import { useHoldPress } from './ui/holdPress';
@@ -188,6 +192,8 @@ interface VerseProps {
   onPlay: () => void;
   onLook: (lookup: Lookup) => void;
   talk: VerseTalk;
+  /** the Read button of this verse (English view only) */
+  read: ReadHold | null;
 }
 
 /** The words of one verse, every one tappable: the Greek in Greek order, or the English chunks (woven or not). */
@@ -241,7 +247,7 @@ const READING_CLASS = 'bg-accent/30';
 
 /** Verse by verse: one verse per line, its number a button before it. */
 function VerseView(props: VerseProps) {
-  const { verse, view, selected, reading, onSelect, onPlay, talk } = props;
+  const { verse, view, selected, reading, onSelect, onPlay, talk, read } = props;
   return (
     <p
       data-verse={verse.n}
@@ -261,6 +267,7 @@ function VerseView(props: VerseProps) {
       </VerseNumber>
       <VerseText {...props} />
       <VersePlay playing={reading} onPlay={onPlay} className="align-baseline font-sans" />
+      {read ? <VerseRead verse={verse.n} hold={read} className="align-baseline font-sans" /> : null}
     </p>
   );
 }
@@ -268,7 +275,7 @@ function VerseView(props: VerseProps) {
 /** Paragraph: the verses of one MSB paragraph run on, each number a small superscript. The button is still 44 px square
  * (its side margins pull the neighbours back in), and a verse is still selected by its number. The play button of a
  * verse shows only while it is selected, so a paragraph reads as running text. */
-function ParagraphView({ verses, view, woven, selected, reading, onSelect, onPlay, onLook, talk }: {
+function ParagraphView({ verses, view, woven, selected, reading, onSelect, onPlay, onLook, talk, readOf }: {
   verses: Verse[];
   view: ReaderView;
   woven: (Woven[] | null)[];
@@ -279,6 +286,8 @@ function ParagraphView({ verses, view, woven, selected, reading, onSelect, onPla
   onPlay: (n: number) => void;
   onLook: (lookup: Lookup) => void;
   talk: VerseTalk;
+  /** the Read button of a verse, or null (Greek view) */
+  readOf: (verse: Verse) => ReadHold | null;
 }) {
   return (
     <p data-paragraph lang={view === 'greek' ? 'grc' : 'en'} className={`mb-2 break-words px-2 leading-(--lp-leading) ${textClass(view)}`}>
@@ -295,7 +304,10 @@ function ParagraphView({ verses, view, woven, selected, reading, onSelect, onPla
           </VerseNumber>
           <VerseText verse={verse} view={view} woven={woven[i]} onLook={onLook} />
           {selected === verse.n || reading === verse.n ? (
-            <VersePlay playing={reading === verse.n} onPlay={() => onPlay(verse.n)} className="align-baseline font-sans" />
+            <>
+              <VersePlay playing={reading === verse.n} onPlay={() => onPlay(verse.n)} className="align-baseline font-sans" />
+              {readOf(verse) ? <VerseRead verse={verse.n} hold={readOf(verse) as ReadHold} className="align-baseline font-sans" /> : null}
+            </>
           ) : null}
         </span>
       ))}
@@ -357,6 +369,7 @@ export function Reader() {
     if (request) takeRequest(request);
   }, [request]);
   const [prefill, setPrefill] = useState(() => (request?.action === 'ask' ? { verse: request.verse, text: request.question } : null));
+  const checks = useReadChecks(BOOK, CHAPTER, TITLE);
   // The Talk sheet: undefined is closed, a number the verse it was opened on, null the chapter. An answer that arrives while
   // its conversation is open on the sheet is read aloud.
   const [talkAbout, setTalkAbout] = useState<number | null | undefined>(() => (request?.action === 'talk' ? request.verse : undefined));
@@ -403,6 +416,19 @@ export function Reader() {
     [talkStates, voice],
   );
   const verseTalk: VerseTalk = { onHold: holdTalk, onRelease: () => void voice.release(), onDrop: voice.abort };
+  // The Read button of a verse: holding it on a verse that is not selected selects it, so its result shows below it.
+  const readOf = (verse: Verse): ReadHold => {
+    const phase = checks.states[verse.n]?.phase;
+    return {
+      onPress: () => {
+        if (selected !== verse.n) publish({ kind: 'verse-selected', chapter: CHAPTER, verse: verse.n });
+        checks.press(verse);
+      },
+      onRelease: checks.release,
+      onDrop: checks.drop,
+      disabled: phase === 'sending' || phase === 'waiting',
+    };
+  };
   const weaving = view === 'english' && weave === 'solid';
   const woven = useMemo(
     () => (chapter && weaving ? chapter.verses.map((v) => weaveVerse(v, solid ?? EMPTY_LEMMAS)) : null),
@@ -530,6 +556,7 @@ export function Reader() {
               const first = block[0];
               const wovenOf = (v: Verse) => woven?.[chapter.verses.indexOf(v)] ?? null;
               const withSelection = block.some((v) => v.n === selected);
+              const pick = block.find((v) => v.n === selected);
               return (
                 <Fragment key={first.n}>
                   {headings === 'on' && first.h ? <SectionHeading text={first.h} /> : null}
@@ -544,6 +571,7 @@ export function Reader() {
                       onPlay={(n) => readFrom(n, false)}
                       onLook={setLookup}
                       talk={verseTalk}
+                      readOf={(v) => (view === 'english' ? readOf(v) : null)}
                     />
                   ) : (
                     <VerseView
@@ -556,10 +584,20 @@ export function Reader() {
                       onPlay={() => readFrom(first.n, false)}
                       onLook={setLookup}
                       talk={verseTalk}
+                      read={view === 'english' ? readOf(first) : null}
                     />
                   )}
-                  {withSelection && selected !== null ? (
+                  {withSelection && selected !== null && pick ? (
                     <>
+                      <ReadCheckPanel
+                        verse={pick}
+                        view={view}
+                        book={BOOK}
+                        chapter={CHAPTER}
+                        checks={checks}
+                        hold={readOf(pick)}
+                        onRetry={() => checks.retry(pick)}
+                      />
                       <AnswerCards verse={selected} book={BOOK} chapter={CHAPTER} />
                       <AskBox
                         chapter={chapter}

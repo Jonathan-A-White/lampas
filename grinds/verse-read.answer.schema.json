@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Verse Read Answer 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["verdict", "focus_words", "note"],
+  "properties": {
+    "verdict": {
+      "description": "well-read when nothing needs fixing; some-to-fix when at least one word was truly misread.",
+      "type": "string",
+      "enum": ["well-read", "some-to-fix"]
+    },
+    "focus_words": {
+      "description": "The words he misread, in the order they stand in the verse, each broken into chunks to say. Empty when well-read.",
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["word", "chunks", "tip"],
+        "properties": {
+          "word": { "description": "The word as it stands in the verse, without punctuation.", "type": "string", "minLength": 1, "maxLength": 60 },
+          "chunks": {
+            "description": "The word in parts to say one after another, such as to, geth, er. Joined they spell the word.",
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 12,
+            "items": { "type": "string", "minLength": 1, "maxLength": 20 }
+          },
+          "tip": { "description": "One short, kind line on how to say it.", "type": "string", "minLength": 1, "maxLength": 200 }
+        }
+      }
+    },
+    "note": {
+      "description": "One or two short sentences to him about the reading as a whole.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400
+    }
+  }
+}

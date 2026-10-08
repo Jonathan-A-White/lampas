@@ -99,6 +99,8 @@ export interface AskOptions {
   signal?: AbortSignal;
   /** Called once the question has been sent and the wait for the answer begins. */
   onSent?: () => void;
+  /** Files sent with the grist: a recording of him reading (src/services/reading.ts). */
+  files?: grist.GristFile[];
   baseUrl?: string;
 }
 
@@ -116,7 +118,7 @@ export async function askGrind<Answer>(kind: string, request: object, isAnswer: 
   options.signal?.addEventListener('abort', stop, { once: true });
   const timer = setTimeout(stop, tutorTimings.deadlineMs);
   try {
-    const txid = await grist.sendGrist({ door: d, key, app: TUTOR_APP, kind, v: TUTOR_VERSION, input: request, photos: [] });
+    const txid = await grist.sendGrist({ door: d, key, app: TUTOR_APP, kind, v: TUTOR_VERSION, input: request, photos: [], attachments: options.files });
     options.onSent?.();
     const reply = await grist.awaitAnswer(txid, { door: d, key, intervalMs: tutorTimings.pollMs, signal: deadline.signal });
     if (reply.status !== 'answered') {

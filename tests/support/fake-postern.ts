@@ -15,7 +15,7 @@ const millBytes = Uint8Array.from(Utils.toArray(MILL_KEY_HEX, 'hex'));
 export interface ReceivedGrist {
   grist: { app: string; kind: string; v: string; model?: string; effort?: string };
   input: Record<string, unknown>;
-  attachments: unknown[];
+  attachments: { hash: string; size: number; mime: string; name?: string }[];
 }
 
 /** What the fake answers a grist with. */
@@ -31,6 +31,8 @@ export interface FakePostern {
   calls: string[];
   /** every grist the phone sent, opened */
   received: ReceivedGrist[];
+  /** every sealed upload the phone made to POST /api/blobs: its hash and byte length (a grist's attachments name them) */
+  blobs: { hash: string; size: number }[];
   /** the Authorization header of each signed call */
   authorizations: string[];
   /** Answers a grist as soon as it arrives with this reply; undefined holds every grist until `answer` is called. */
@@ -48,11 +50,33 @@ const json = (status: number, body: unknown) =>
 
 const hex = (bytes: number[]): string => Utils.toHex(bytes);
 
+/** The bytes a request body signs as: a string's UTF-8, a buffer's or view's own bytes, none for no body. */
+function bodyBytes(body: BodyInit | null | undefined): number[] {
+  if (body === undefined || body === null) return [];
+  if (typeof body === 'string') return Utils.toArray(body, 'utf8');
+  if (ArrayBuffer.isView(body)) return Array.from(new Uint8Array(body.buffer, body.byteOffset, body.byteLength));
+  if (Object.prototype.toString.call(body) === '[object ArrayBuffer]') return Array.from(new Uint8Array(body as ArrayBuffer));
+  throw new Error('the fake Postern cannot read this body');
+}
+
 /** The answer the fake gives to a question about συνεργεῖ, in the app's answer shape. */
 export const SYNERGEI_ANSWER = {
   answer: 'συνεργεῖ is present active indicative, third person singular, of συνεργέω: "works together". Its subject is "all things".',
   words: [{ greek: 'συνεργεῖ', lemma: 'συνεργέω', note: 'verb, present active indicative, third person singular' }],
 };
+
+/** The answer the fake gives to a reading of Romans 8:28, in the app's answer shape (grinds/verse-read.answer.schema.json). */
+export const READING_ANSWER = {
+  verdict: 'some-to-fix',
+  focus_words: [
+    { word: 'together', chunks: ['to', 'geth', 'er'], tip: 'Say the th softly, with your tongue between your teeth.' },
+    { word: 'purpose', chunks: ['pur', 'pose'], tip: 'The first part sounds like per.' },
+  ],
+  note: 'Nearly there: two words to say again.',
+};
+
+/** The answer the fake gives to a reading with nothing to fix. */
+export const WELL_READ_ANSWER = { verdict: 'well-read', focus_words: [], note: 'Clear and steady. Well read.' };
 
 /** The answer the fake gives to a Bible talk question, in the app's answer shape (grinds/bible-talk.answer.schema.json). */
 export const TALK_ANSWER = {
@@ -70,6 +94,7 @@ export function makeFakePostern(): FakePostern {
     fetch: undefined as unknown as typeof fetch,
     calls: [],
     received: [],
+    blobs: [],
     authorizations: [],
     autoReply: undefined,
     licensed: true,
@@ -104,8 +129,8 @@ export function makeFakePostern(): FakePostern {
     const [, pubkey, nonce, signature] = match;
     if (!issued.delete(nonce)) return json(401, { error: 'unknown nonce', reason: 'nonce' });
     // v2 (docs/protocol.md §1): one request per signature, over the method, the request target and the body's hash.
-    const body = typeof init?.body === 'string' ? init.body : '';
-    const message = `postern-v2\n${method}\n${url.pathname}${url.search}\n${Utils.toHex(Hash.sha256(Utils.toArray(body, 'utf8')))}\n${nonce}`;
+    const bytes = bodyBytes(init?.body);
+    const message = `postern-v2\n${method}\n${url.pathname}${url.search}\n${Utils.toHex(Hash.sha256(bytes))}\n${nonce}`;
     if (!PublicKey.fromString(pubkey).verify(message, Signature.fromDER(signature, 'hex'))) {
       return json(401, { error: 'bad signature', reason: 'signature' });
     }
@@ -113,6 +138,11 @@ export function makeFakePostern(): FakePostern {
 
     if (url.pathname === '/api/me' && method === 'GET') {
       return json(200, { pubkey, mill: MILL_PUBLIC_KEY, network: 'testnet', features: ['grist'], apps: ['lampas'] });
+    }
+    if (url.pathname === '/api/blobs' && method === 'POST') {
+      const blob = { hash: Utils.toHex(Hash.sha256(bytes)), size: bytes.length };
+      fake.blobs.push(blob);
+      return json(201, blob);
     }
     if (url.pathname === '/api/messages' && method === 'POST') {
       const { scriptHex } = JSON.parse(String(init?.body)) as { scriptHex: string };
