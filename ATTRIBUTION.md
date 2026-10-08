@@ -12,3 +12,7 @@ Lampas uses these texts, lexicons and libraries.
   Abbott-Smith definition has its markup, scripture references and daggers removed and is cut near 300
   characters (scripts/data-build.ts, docs/data.md).
 - **bsv-kit** (https://github.com/Jonathan-A-White/bsv-kit). MIT licence. Licence gate and tutor payments.
+- **Gentium Plus** (https://software.sil.org/gentium/), the Greek type of the reader. SIL Open Font License 1.1,
+  Copyright (c) 2003-2022 SIL International; the licence text is in `src/fonts/OFL.txt`. The OFL allows bundling
+  and redistributing the font with software. The Greek and Greek Extended subsets are bundled as the
+  @fontsource/gentium-plus 5.3.0 builds, unmodified.
