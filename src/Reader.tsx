@@ -29,7 +29,9 @@ import { navigate, readerOf, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
 import { HeaderButton } from './ScreenHeader';
-import { SpeakButton } from './speech/SpeakButton';
+import { planOf, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
+import { ReadFromButton, ReadingBar, VersePlay } from './speech/ReadControls';
+import { warmVoices } from './speech/greek';
 import { WordSheet, type Lookup } from './WordSheet';
 
 const BOOK = 'rom';
@@ -108,7 +110,10 @@ interface VerseProps {
   /** per English chunk, the Greek words shown in its place or null; null for the whole verse when the weave is off */
   woven: Woven[] | null;
   selected: boolean;
+  /** this verse is the one being read aloud */
+  reading: boolean;
   onSelect: () => void;
+  onPlay: () => void;
   onLook: (lookup: Lookup) => void;
 }
 
@@ -151,19 +156,19 @@ function VerseText({ verse, view, woven, onLook }: Pick<VerseProps, 'verse' | 'v
 const textClass = (view: ReaderView) =>
   view === 'greek' ? 'font-greek text-[length:var(--lp-greek-size)]' : 'font-sans text-[length:var(--lp-english-size)]';
 
-const playOf = (verse: Verse, className: string) => (
-  <SpeakButton text={verse.g.map((w) => w.t).join(' ')} id={`verse:${verse.n}`} label="Hear the verse" kind="play" className={className} />
-);
+const READING_CLASS = 'bg-accent/30';
+
 
 /** Verse by verse: one verse per line, its number a button before it. */
 function VerseView(props: VerseProps) {
-  const { verse, view, selected, onSelect } = props;
+  const { verse, view, selected, reading, onSelect, onPlay } = props;
   return (
     <p
       data-verse={verse.n}
       data-selected={selected}
+      data-reading={reading || undefined}
       lang={view === 'greek' ? 'grc' : 'en'}
-      className={`mb-1 break-words rounded-xl px-2 leading-(--lp-leading) ${selected ? 'bg-accent/15' : ''} ${textClass(view)}`}
+      className={`mb-1 break-words rounded-xl px-2 leading-(--lp-leading) ${reading ? READING_CLASS : selected ? 'bg-accent/15' : ''} ${textClass(view)}`}
     >
       <button
         type="button"
@@ -175,7 +180,7 @@ function VerseView(props: VerseProps) {
         {verse.n}
       </button>
       <VerseText {...props} />
-      {playOf(verse, 'align-baseline font-sans')}
+      <VersePlay playing={reading} onPlay={onPlay} className="align-baseline font-sans" />
     </p>
   );
 }
@@ -183,18 +188,21 @@ function VerseView(props: VerseProps) {
 /** Paragraph: the verses of one MSB paragraph run on, each number a small superscript. The button is still 44 px square
  * (its side margins pull the neighbours back in), and a verse is still selected by its number. The play button of a
  * verse shows only while it is selected, so a paragraph reads as running text. */
-function ParagraphView({ verses, view, woven, selected, onSelect, onLook }: {
+function ParagraphView({ verses, view, woven, selected, reading, onSelect, onPlay, onLook }: {
   verses: Verse[];
   view: ReaderView;
   woven: (Woven[] | null)[];
   selected: number | null;
+  /** the verse being read aloud */
+  reading: number | null;
   onSelect: (n: number) => void;
+  onPlay: (n: number) => void;
   onLook: (lookup: Lookup) => void;
 }) {
   return (
     <p data-paragraph lang={view === 'greek' ? 'grc' : 'en'} className={`mb-2 break-words px-2 leading-(--lp-leading) ${textClass(view)}`}>
       {verses.map((verse, i) => (
-        <span key={verse.n} data-verse={verse.n} data-selected={selected === verse.n} className={`rounded-xl ${selected === verse.n ? 'bg-accent/15' : ''}`}>
+        <span key={verse.n} data-verse={verse.n} data-selected={selected === verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${reading === verse.n ? READING_CLASS : selected === verse.n ? 'bg-accent/15' : ''}`}>
           <button
             type="button"
             aria-label={`Verse ${verse.n}`}
@@ -205,7 +213,9 @@ function ParagraphView({ verses, view, woven, selected, onSelect, onLook }: {
             <sup className="text-xs font-semibold text-muted">{verse.n}</sup>
           </button>
           <VerseText verse={verse} view={view} woven={woven[i]} onLook={onLook} />
-          {selected === verse.n ? playOf(verse, 'align-baseline font-sans') : null}
+          {selected === verse.n || reading === verse.n ? (
+            <VersePlay playing={reading === verse.n} onPlay={() => onPlay(verse.n)} className="align-baseline font-sans" />
+          ) : null}
         </span>
       ))}
     </p>
@@ -238,6 +248,15 @@ export function Reader() {
   // back: once the bus has told a weave, the saved setting is the truth and the address only follows it.
   const wantWeave = useRef(latest('weave-changed') ? undefined : opened.weave);
   const scrollRef = useScrollMemory('reader');
+  const main = useRef<HTMLElement | null>(null);
+  const mainRef = useCallback(
+    (el: HTMLElement | null) => {
+      main.current = el;
+      scrollRef(el);
+    },
+    [scrollRef],
+  );
+  const reading = useReading();
   const address = useAddress();
   const current = useRef({ view });
   useEffect(() => {
@@ -263,6 +282,15 @@ export function Reader() {
     () => (chapter && weaving ? chapter.verses.map((v) => weaveVerse(v, solid ?? EMPTY_LEMMAS)) : null),
     [chapter, weaving, solid],
   );
+  // What is read is what is shown: the plan follows the view and the weave.
+  const plan = useMemo(() => (chapter && view ? planOf(chapter.verses, view, woven) : null), [chapter, view, woven]);
+  const readFrom = useCallback(
+    (from: number, continuous: boolean) => {
+      if (plan) startReading({ chapter: CHAPTER, plan, from, continuous });
+    },
+    [plan],
+  );
+  const readingVerse = reading.status === 'idle' ? null : reading.verse;
   const blocks = useMemo(() => (chapter && layout ? blocksOf(chapter.verses, layout) : []), [chapter, layout]);
   const wovenCount = woven ? woven.reduce((n, w) => n + w.filter(Boolean).length, 0) : 0;
 
@@ -300,6 +328,25 @@ export function Reader() {
   }, [weave]);
 
   useEffect(() => {
+    if (plan) updatePlan(plan);
+  }, [plan]);
+  // Leaving the reader stops the reading.
+  useEffect(() => {
+    void warmVoices();
+    return () => stopReading();
+  }, []);
+  // The verse being read is kept in view, by moving this box and nothing else.
+  useEffect(() => {
+    const box = main.current;
+    const el = readingVerse === null ? null : box?.querySelector<HTMLElement>(`[data-verse="${readingVerse}"]`);
+    if (!box || !el) return;
+    const margin = 16;
+    const bar = box.getBoundingClientRect();
+    const rect = el.getBoundingClientRect();
+    if (rect.top < bar.top + margin || rect.bottom > bar.bottom - margin) box.scrollTop += rect.top - bar.top - margin;
+  }, [readingVerse]);
+
+  useEffect(() => {
     if (layout) publish({ kind: 'layout-changed', layout });
   }, [layout]);
   useEffect(() => {
@@ -319,9 +366,10 @@ export function Reader() {
 
   return (
     <>
-      <header className="flex shrink-0 items-center gap-2 border-b border-line px-2 py-2">
-        <h1 className="chrome-title min-w-0 flex-1 truncate px-2 font-semibold">{TITLE}</h1>
+      <header className="flex shrink-0 items-center gap-1 border-b border-line px-2 py-2">
+        <h1 className="chrome-title min-w-0 flex-1 truncate px-1 font-semibold">{TITLE}</h1>
         {view ? <ViewSwitch view={view} /> : null}
+        {plan ? <ReadFromButton from={selected} onRead={() => readFrom(selected ?? 1, true)} /> : null}
         <button
           type="button"
           aria-label="Settings"
@@ -331,12 +379,13 @@ export function Reader() {
           <GearIcon />
         </button>
       </header>
+      <ReadingBar reading={reading} />
       {woven ? (
         <p data-testid="weave-count" className="shrink-0 border-b border-line px-3 py-1 text-right text-sm text-muted">
           {wovenCount} {wovenCount === 1 ? 'word' : 'words'} in Greek
         </p>
       ) : null}
-      <main ref={scrollRef} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} className="screen min-h-0 flex-1 px-1 pt-2">
+      <main ref={mainRef} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} className="screen min-h-0 flex-1 px-1 pt-2">
         <div>
         {failed ? (
           <div role="alert" className="px-4 pt-6 text-center">
@@ -364,7 +413,9 @@ export function Reader() {
                       view={view}
                       woven={block.map(wovenOf)}
                       selected={selected}
+                      reading={readingVerse}
                       onSelect={selectVerse}
+                      onPlay={(n) => readFrom(n, false)}
                       onLook={setLookup}
                     />
                   ) : (
@@ -373,7 +424,9 @@ export function Reader() {
                       view={view}
                       woven={wovenOf(first)}
                       selected={selected === first.n}
+                      reading={readingVerse === first.n}
                       onSelect={() => selectVerse(first.n)}
+                      onPlay={() => readFrom(first.n, false)}
                       onLook={setLookup}
                     />
                   )}

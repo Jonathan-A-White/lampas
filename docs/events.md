@@ -29,8 +29,8 @@ useLatest('verse-selected');         // React: the last one, re-rendering when a
 | `theme-changed` | `{ theme: 'phone' \| 'light' \| 'dark' }` (an id of `src/appearance/themes.ts`) | Settings (the Theme choice); `src/appearance/appearanceSync.ts` (once at start, from the saved choice) | `src/appearance/appearanceSync.ts` (html `data-theme` and the browser bar's colour) |
 | `text-size-changed` | `{ percent }`: the Text size as a percent of the phone's own, 85 to 160 | Settings (the Text size choice); `src/appearance/appearanceSync.ts` (once at start) | `src/appearance/appearanceSync.ts` (html `--lp-scale`, which the root font size follows) |
 | `rates-changed` | `{ rates }`: how fast each language is spoken, `{ english, greek }`, each 0.5 to 1.5, 1 normal (the languages of `src/speech/languages.ts`) | Settings (a speed slider); `src/speech/settingsSync.ts` (once at start) | `src/speech/settingsSync.ts` (hands each to `src/speech/greek.ts`: the rate of every utterance in that language) |
-| `verse-reading` | `{ chapter, verse }` | nobody yet (read aloud, a later story: the verse being spoken now) | nobody yet |
-| `reading-stopped` | none | nobody yet (read aloud, a later story: speech ended or was stopped) | nobody yet |
+| `verse-reading` | `{ chapter, verse }` | `src/speech/readAloud.ts`: as each verse starts being read aloud (a verse's play button, or Read from the top / Read from here); again when Resume reads a verse from its start | nobody yet (the Reader highlights from `useReading()` of the same module) |
+| `reading-stopped` | none | `src/speech/readAloud.ts`: a reading ended (the last verse was read) or was stopped (Stop, or leaving the reader); not on Pause | nobody yet |
 | `word-tapped` | `{ strongs, verse }` | nobody yet (a later story) | nobody yet |
 
 The reader also reads its own state back from the address when it opens (a reopen, Back): `src/nav/route.ts` `readerOf`, and the reader publishes the verse the address names. The address is `#/?c=8&view=greek&weave=off&v=28` (docs: `src/nav/lastRoute.ts`).
