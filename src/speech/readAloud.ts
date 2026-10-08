@@ -60,9 +60,12 @@ export interface ReadingState {
   verse: number | null;
   /** one plain line to show, or null */
   notice: string | null;
+  /** the id of the Bible talk answer being read (src/Talk.tsx), or null when it is the chapter being read: the reader's
+   * highlight and bar are for the chapter only */
+  answer: number | null;
 }
 
-const IDLE: ReadingState = { status: 'idle', verse: null, notice: null };
+const IDLE: ReadingState = { status: 'idle', verse: null, notice: null, answer: null };
 
 let state: ReadingState = IDLE;
 let plan: PlanVerse[] = [];
@@ -100,6 +103,8 @@ function finish(my: number): void {
 /** The phone stopped the speech by itself (another button spoke, the engine was interrupted): wait where we are. */
 function interrupted(my: number): void {
   if (my !== epoch) return;
+  // An answer has no bar to Resume from: an interrupted one is over.
+  if (state.answer !== null) return finish(my);
   epoch++;
   letSleep();
   set({ ...state, status: 'paused' });
@@ -116,7 +121,7 @@ function readRun(verse: number, run: number, my: number): void {
   if (!entry) return finish(my);
   if (run === 0) {
     if (state.verse !== verse) set({ ...state, verse });
-    publish({ kind: 'verse-reading', chapter: chapterNumber, verse });
+    if (state.answer === null) publish({ kind: 'verse-reading', chapter: chapterNumber, verse });
   }
   const part = entry.runs[run];
   if (!part) {
@@ -139,7 +144,7 @@ function greekAhead(from: number, all: boolean): boolean {
 
 /** Starts reading at verse `from`: that verse only, or on to the chapter's end when `continuous`. It takes the speech
  * from whatever was being read. Call it straight from the tap (docs/pwa-best-practices.md section 12). */
-export function startReading(options: { chapter: number; plan: PlanVerse[]; from: number; continuous: boolean }): void {
+export function startReading(options: { chapter: number; plan: PlanVerse[]; from: number; continuous: boolean; answer?: number }): void {
   epoch++;
   stopSpeaking();
   plan = options.plan;
@@ -147,7 +152,7 @@ export function startReading(options: { chapter: number; plan: PlanVerse[]; from
   continuous = options.continuous;
   queued = null;
   const notice = hasGreekVoice() === false && greekAhead(options.from, options.continuous) ? NO_GREEK_VOICE_NOTICE : null;
-  set({ status: 'reading', verse: options.from, notice });
+  set({ status: 'reading', verse: options.from, notice, answer: options.answer ?? null });
   keepAwake();
   readRun(options.from, 0, epoch);
 }
@@ -155,6 +160,8 @@ export function startReading(options: { chapter: number; plan: PlanVerse[]; from
 /** Stops the speech and keeps the verse, so Resume can go on from it. */
 export function pauseReading(): void {
   if (state.status !== 'reading') return;
+  // An answer is not waited at: pausing it (the page went to the background) ends it.
+  if (state.answer !== null) return stopReading();
   epoch++;
   stopSpeaking();
   letSleep();
@@ -184,7 +191,18 @@ export function stopReading(): void {
 /** The chapter is shown differently now (the view or the weave changed): the verses still to be read follow it, from the
  * next verse on (the one being spoken is finished as it began). */
 export function updatePlan(next: PlanVerse[]): void {
-  if (state.status !== 'idle') queued = next;
+  if (state.status !== 'idle' && state.answer === null) queued = next;
+}
+
+/** Reads a Bible talk answer aloud (`id` names it), its Greek words in Greek and the rest in English. It takes the speech
+ * from whatever was being read. Call it straight from the tap where it can be (docs/pwa-best-practices.md section 12). */
+export function startAnswer(id: number, runs: Run[]): void {
+  startReading({ chapter: 0, plan: [{ n: id, runs }], from: id, continuous: false, answer: id });
+}
+
+/** Stops the Bible talk answer being read, and only that: the chapter's own reading is left alone. */
+export function stopAnswer(): void {
+  if (state.answer !== null) stopReading();
 }
 
 // A page that goes to the background has its speech suspended: wait at the verse; he taps Resume when he is back.

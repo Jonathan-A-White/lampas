@@ -2,7 +2,7 @@
 // button on a verse, and the bar shown while a reading is going (Pause | Stop). The state is src/speech/readAloud.ts's.
 import { pauseReading, resumeReading, stopReading, type ReadingState } from './readAloud';
 
-function Icon({ kind }: { kind: 'play' | 'stop' }) {
+export function Icon({ kind }: { kind: 'play' | 'stop' }) {
   return (
     <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
       {kind === 'play' ? <path d="M8 5v14l11-7L8 5Z" /> : <path d="M6 6h12v12H6V6Z" />}
@@ -42,7 +42,7 @@ export function ReadFromButton({ from, onRead }: { from: number | null; onRead: 
 /** Shown while a reading is going or paused: which verse, Pause (Resume when paused) and Stop, and the one line about a
  * missing Greek voice. */
 export function ReadingBar({ reading }: { reading: ReadingState }) {
-  if (reading.status === 'idle') return null;
+  if (reading.status === 'idle' || reading.answer !== null) return null;
   const paused = reading.status === 'paused';
   const button = 'min-h-11 min-w-11 rounded-lg border border-line px-4 chrome-text font-medium text-fg active:bg-line';
   return (
