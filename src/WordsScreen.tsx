@@ -8,6 +8,7 @@ import { useScrollMemory } from './nav/scrollMemory';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
+import { WordPicture } from './WordPicture';
 
 const NEXT: Record<WordState, WordState> = { solid: 'learning', learning: 'dropped', dropped: 'learning' };
 
@@ -78,6 +79,7 @@ export function WordsScreen() {
                     onClick={() => tap(w)}
                     className="flex min-h-14 min-w-0 flex-1 items-center gap-3 py-2 pl-1 pr-3 text-left"
                   >
+                    <WordPicture lemma={w.lemma} size={56} className={w.state === 'dropped' ? 'opacity-50' : ''} />
                     <span className="min-w-0 flex-1">
                       <span lang="grc" className={`block break-words font-greek text-2xl ${w.state === 'dropped' ? 'text-muted' : ''}`}>
                         {w.lemma}

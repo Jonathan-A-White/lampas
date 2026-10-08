@@ -8,6 +8,7 @@ import { buildQuestion, drawWords, seedDistractors, type Question, type Random }
 import { navigate } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { focusOnMount } from './ui/focus';
+import { WordPicture } from './WordPicture';
 
 type Round = { status: 'loading' } | { status: 'offer' } | { status: 'ready'; questions: Question[] };
 
@@ -175,9 +176,12 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
       {header}
       <main className="screen min-h-0 flex-1 px-4 pt-6">
         <div className="text-center">
-          <p data-testid="prompt" data-lemma={question.lemma} lang="grc" className="break-words font-greek text-5xl">
-            {question.prompt}
-          </p>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <WordPicture lemma={question.lemma} size={80} testId="picture" />
+            <p data-testid="prompt" data-lemma={question.lemma} lang="grc" className="min-w-0 break-words font-greek text-5xl">
+              {question.prompt}
+            </p>
+          </div>
           <p className="mt-1 min-h-6 text-base text-muted">{question.reference ?? ''}</p>
         </div>
         <ul className="mt-6 space-y-3">
