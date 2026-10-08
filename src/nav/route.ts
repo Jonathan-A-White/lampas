@@ -59,7 +59,7 @@ export function readerOf(hash: string): ReaderAddress {
   const view = params.get('view');
   if (view === 'english' || view === 'greek') address.view = view;
   const weave = params.get('weave');
-  if (weave === 'off' || weave === 'solid') address.weave = weave;
+  if (weave === 'off' || weave === 'solid' || weave === 'solid+learning') address.weave = weave;
   const verse = wholeNumber(params.get('v'));
   if (verse !== undefined) address.verse = verse;
   return address;

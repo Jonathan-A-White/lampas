@@ -85,6 +85,12 @@ export async function listSolidLemmas(): Promise<Set<string>> {
   return new Set(solid.flatMap((w) => [w.lemma, ...w.lemmas]).map((l) => l.normalize('NFC')));
 }
 
+/** Every lemma a learning word goes by (NFC), like listSolidLemmas: what the weave stands in Greek with its English beneath. */
+export async function listLearningLemmas(): Promise<Set<string>> {
+  const learning = await db.words.where('state').equals('learning').toArray();
+  return new Set(learning.flatMap((w) => [w.lemma, ...w.lemmas]).map((l) => l.normalize('NFC')));
+}
+
 /** The headwords of his solid words, in the order of the list (lesson, then spelling): what the tutor is told he knows. */
 export async function listSolidHeadwords(): Promise<string[]> {
   const solid = await db.words.where('state').equals('solid').toArray();
