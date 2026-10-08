@@ -2,7 +2,8 @@
 // Sending and Waiting lines and the failures; AnswerCards the kept answers. The questions in flight are src/useAsks.ts.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
-import type { Verse } from './data/chapter';
+import type { Chapter, Verse } from './data/chapter';
+import { useLatest } from './events/bus';
 import { listAnswers, verseRef, type TutorAnswer } from './data/repositories';
 import { MAX_QUESTION_CHARS, type TutorFailure } from './services/tutor';
 import type { AskState } from './useAsks';
@@ -71,8 +72,15 @@ function AnswerCard({ answer }: { answer: TutorAnswer }) {
   );
 }
 
+/** The Ask box for the verse the bus says is selected (verse-selected), in `chapter`; nothing when there is none. */
+export function AskBox({ chapter, asks, onAsk }: { chapter: Chapter; asks: Record<number, AskState | undefined>; onAsk: (verse: Verse, question: string) => void }) {
+  const selected = useLatest('verse-selected');
+  const verse = selected?.verse == null || selected.chapter !== chapter.chapter ? undefined : chapter.verses.find((v) => v.n === selected.verse);
+  return verse ? <AskField key={verse.n} verse={verse} state={asks[verse.n]} onAsk={(question) => onAsk(verse, question)} /> : null;
+}
+
 /** The field and the Ask button for one verse, with what its last question is doing. */
-export function AskBox({ verse, state, onAsk }: { verse: Verse; state: AskState | undefined; onAsk: (question: string) => void }) {
+function AskField({ verse, state, onAsk }: { verse: Verse; state: AskState | undefined; onAsk: (question: string) => void }) {
   const [text, setText] = useState('');
   const busy = state?.phase === 'sending' || state?.phase === 'waiting';
   const section = useRef<HTMLElement>(null);

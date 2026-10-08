@@ -1,7 +1,8 @@
 // src/Reader.tsx — Romans 8 verse by verse. The header switches English (the MSB) | Greek (Byzantine); every
 // word is tappable and opens the word sheet; a verse number selects the verse. In English a second switch,
 // Weave (Off | Solid words), shows the Greek of his solid words in place of their English (src/data/weave.ts).
-// A selected verse shows its kept tutor answers and the Ask box (src/Ask.tsx).
+// A selected verse shows its kept tutor answers and the Ask box (src/Ask.tsx). The selection, the view and the weave
+// are told to the rest of the app on the event bus (src/events/bus.ts, docs/events.md); the Reader reads the selection back from it.
 // The chapter comes from /data/rom/8.json (precached), the switches are kept in the settings store.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
@@ -10,6 +11,7 @@ import { type Chapter, type EnglishChunk, type GreekWord, type Verse, loadChapte
 import { getReaderView, getWeave, listSolidLemmas, setReaderView, setWeave, type ReaderView, type Weave } from './data/repositories';
 import { weaveVerse, type Woven } from './data/weave';
 import { BuildVersion } from './BuildVersion';
+import { publish, useLatest } from './events/bus';
 import { navigate } from './nav/route';
 import { useAsks } from './useAsks';
 import { HeaderButton } from './ScreenHeader';
@@ -172,9 +174,14 @@ export function Reader() {
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  const [selected, setSelected] = useState<number | null>(null);
+  const selectedEvent = useLatest('verse-selected');
+  const selected = selectedEvent?.chapter === CHAPTER ? selectedEvent.verse : null;
   const [lookup, setLookup] = useState<Lookup | null>(null);
   const { asks, ask } = useAsks(BOOK, CHAPTER, TITLE);
+  const selectVerse = useCallback(
+    (n: number) => publish({ kind: 'verse-selected', chapter: CHAPTER, verse: selected === n ? null : n }),
+    [selected],
+  );
   const closeSheet = useCallback(() => setLookup(null), []);
   const weaving = view === 'english' && weave === 'solid';
   const woven = useMemo(
@@ -182,6 +189,15 @@ export function Reader() {
     [chapter, weaving, solid],
   );
   const wovenCount = woven ? woven.reduce((n, w) => n + w.filter(Boolean).length, 0) : 0;
+
+  // The selection is not kept when the reader goes away; the bus holds it only while the reader is on screen.
+  useEffect(() => () => publish({ kind: 'verse-selected', chapter: CHAPTER, verse: null }), []);
+  useEffect(() => {
+    if (view) publish({ kind: 'view-changed', view });
+  }, [view]);
+  useEffect(() => {
+    if (weave) publish({ kind: 'weave-changed', weave });
+  }, [weave]);
 
   useEffect(() => {
     let current = true;
@@ -234,13 +250,13 @@ export function Reader() {
                   view={view}
                   woven={woven?.[vi] ?? null}
                   selected={selected === v.n}
-                  onSelect={() => setSelected((n) => (n === v.n ? null : v.n))}
+                  onSelect={() => selectVerse(v.n)}
                   onLook={setLookup}
                 />
                 {selected === v.n ? (
                   <>
                     <AnswerCards verse={v.n} book={BOOK} chapter={CHAPTER} />
-                    <AskBox verse={v} state={asks[v.n]} onAsk={(question) => ask(v, question)} />
+                    <AskBox chapter={chapter} asks={asks} onAsk={ask} />
                   </>
                 ) : null}
               </Fragment>
