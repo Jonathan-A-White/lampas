@@ -45,3 +45,9 @@ export async function addImportedWords(words: ImportWord[], now = Date.now()): P
     return { added, existing: words.length - added };
   });
 }
+
+/** Every lemma a solid word goes by (its headword and its lexicon lemmas, NFC): what the weave matches Greek words against. */
+export async function listSolidLemmas(): Promise<Set<string>> {
+  const solid = await db.words.where('state').equals('solid').toArray();
+  return new Set(solid.flatMap((w) => [w.lemma, ...w.lemmas]).map((l) => l.normalize('NFC')));
+}

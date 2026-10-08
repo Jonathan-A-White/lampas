@@ -1,10 +1,12 @@
 // src/Reader.tsx — Romans 8 verse by verse. The header switches English (the MSB) | Greek (Byzantine); every
-// word is tappable and opens the word sheet; a verse number selects the verse. The chapter comes from
-// /data/rom/8.json (precached), the switch is kept in the settings store.
+// word is tappable and opens the word sheet; a verse number selects the verse. In English a second switch,
+// Weave (Off | Solid words), shows the Greek of his solid words in place of their English (src/data/weave.ts).
+// The chapter comes from /data/rom/8.json (precached), the switches are kept in the settings store.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { type Chapter, type EnglishChunk, type GreekWord, type Verse, loadChapter } from './data/chapter';
-import { getReaderView, setReaderView, type ReaderView } from './data/repositories';
+import { getReaderView, getWeave, listSolidLemmas, setReaderView, setWeave, type ReaderView, type Weave } from './data/repositories';
+import { weaveVerse, type Woven } from './data/weave';
 import { navigate } from './nav/route';
 import { HeaderButton } from './ScreenHeader';
 import { WordSheet, type Lookup } from './WordSheet';
@@ -14,6 +16,8 @@ const CHAPTER = 8;
 const TITLE = 'Romans 8';
 // 44 px (--lp-tap) minus the face's content area, halved, top and bottom: Gentium Plus is about 1.18 em tall, a phone's sans about 1.1 em.
 const GREEK_PAD = 'py-[calc((var(--lp-tap)-1.15em)/2)]';
+// A woven word is Greek in an English line; measured here Gentium Plus's content area is 1.107 em, not 1.18, so it pads for 1.05 em.
+const WOVEN_PAD = 'py-[calc((var(--lp-tap)-1.05em)/2)]';
 const ENGLISH_PAD = 'py-[calc((var(--lp-tap)-1.1em)/2)]';
 
 /** A word he can tap: a span with role button and no chrome. The caller pads it to a 44 px tap height (an inline box
@@ -25,6 +29,7 @@ function Tap({ onTap, lang, className, children, ...data }: {
   className?: string;
   children: string;
   'data-chunk'?: string;
+  'data-woven'?: string;
   'data-word'?: string;
 }) {
   return (
@@ -66,9 +71,32 @@ function ViewSwitch({ view }: { view: ReaderView }) {
   );
 }
 
-function VerseView({ verse, view, selected, onSelect, onLook }: {
+const EMPTY_LEMMAS: ReadonlySet<string> = new Set();
+
+function WeaveSwitch({ weave }: { weave: Weave }) {
+  const choice = (value: Weave, label: string) => (
+    <button
+      type="button"
+      aria-pressed={weave === value}
+      onClick={() => void setWeave(value)}
+      className={`min-h-11 min-w-11 rounded-lg px-3 text-base font-medium ${weave === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <div role="group" aria-label="Weave" className="flex shrink-0 rounded-xl border border-line p-0.5">
+      {choice('off', 'Off')}
+      {choice('solid', 'Solid words')}
+    </div>
+  );
+}
+
+function VerseView({ verse, view, woven, selected, onSelect, onLook }: {
   verse: Verse;
   view: ReaderView;
+  /** per English chunk, the Greek words shown in its place or null; null for the whole verse when the weave is off */
+  woven: Woven[] | null;
   selected: boolean;
   onSelect: () => void;
   onLook: (lookup: Lookup) => void;
@@ -102,11 +130,25 @@ function VerseView({ verse, view, selected, onSelect, onLook }: {
                 {w.t}
               </Tap>
             ))
-          : verse.e.map((c, i) => (
-              <Tap key={i} data-chunk={String(i)} className={`${ENGLISH_PAD} ${c.s ? 'italic' : ''}`} onTap={() => lookEnglish(c)}>
-                {c.t}
-              </Tap>
-            ))}
+          : verse.e.map((c, i) => {
+              const words = woven?.[i];
+              return words ? (
+                <Tap
+                  key={i}
+                  data-chunk={String(i)}
+                  data-woven=""
+                  lang="grc"
+                  className={`font-greek text-[length:var(--lp-greek-size)] text-accent ${WOVEN_PAD}`}
+                  onTap={() => lookEnglish(c)}
+                >
+                  {words.map((w) => w.t).join(' ')}
+                </Tap>
+              ) : (
+                <Tap key={i} data-chunk={String(i)} className={`${ENGLISH_PAD} ${c.s ? 'italic' : ''}`} onTap={() => lookEnglish(c)}>
+                  {c.t}
+                </Tap>
+              );
+            })}
       </span>
     </p>
   );
@@ -114,12 +156,20 @@ function VerseView({ verse, view, selected, onSelect, onLook }: {
 
 export function Reader() {
   const view = useLiveQuery(getReaderView, []);
+  const weave = useLiveQuery(getWeave, []);
+  const solid = useLiveQuery(listSolidLemmas, []);
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [lookup, setLookup] = useState<Lookup | null>(null);
   const closeSheet = useCallback(() => setLookup(null), []);
+  const weaving = view === 'english' && weave === 'solid';
+  const woven = useMemo(
+    () => (chapter && weaving ? chapter.verses.map((v) => weaveVerse(v, solid ?? EMPTY_LEMMAS)) : null),
+    [chapter, weaving, solid],
+  );
+  const wovenCount = woven ? woven.reduce((n, w) => n + w.filter(Boolean).length, 0) : 0;
 
   useEffect(() => {
     let current = true;
@@ -141,7 +191,17 @@ export function Reader() {
         <h1 className="min-w-0 flex-1 text-center text-lg font-semibold">{TITLE}</h1>
         {view ? <ViewSwitch view={view} /> : null}
       </header>
-      <main data-reader data-view={view} className="screen min-h-0 flex-1 px-1 pt-2">
+      {view === 'english' && weave ? (
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line px-2 py-1">
+          <WeaveSwitch weave={weave} />
+          {woven ? (
+            <p data-testid="weave-count" className="min-w-0 text-right text-sm text-muted">
+              {wovenCount} {wovenCount === 1 ? 'word' : 'words'} in Greek
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+      <main data-reader data-view={view} data-weave={weave} className="screen min-h-0 flex-1 px-1 pt-2">
         {failed ? (
           <div role="alert" className="px-4 pt-6 text-center">
             <p className="text-lg">Could not load {TITLE}.</p>
@@ -155,11 +215,12 @@ export function Reader() {
           </div>
         ) : chapter && view ? (
           <>
-            {chapter.verses.map((v) => (
+            {chapter.verses.map((v, vi) => (
               <VerseView
                 key={v.n}
                 verse={v}
                 view={view}
+                woven={woven?.[vi] ?? null}
                 selected={selected === v.n}
                 onSelect={() => setSelected((n) => (n === v.n ? null : v.n))}
                 onLook={setLookup}

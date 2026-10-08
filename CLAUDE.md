@@ -74,12 +74,13 @@ src/precacheGuard.ts # never serve a .js/.css whose Content-Type does not fit
 src/services/appUpdate.ts  # watches the registration, tap -> SKIP_WAITING -> reload once, periodic update check
 src/ui/              # scrollGuard.ts (page never scrolls), focus.ts (focus with preventScroll)
 src/data/db.ts       # Dexie, version 4: words {lemma key, lemmas, gloss, lesson, state, since}, meta and settings {key, value}, results {lemma, when, right}
-src/data/repositories/  # the only way UI reaches Dexie (words.ts: seed on first open, list, set state, import; settings.ts: the reader's English | Greek view; results.ts: recordAnswer)
+src/data/repositories/  # the only way UI reaches Dexie (words.ts: seed on first open, list, set state, import, and list the solid lemmas; settings.ts: the reader's English | Greek view and Weave Off | Solid words; results.ts: recordAnswer)
 src/data/quiz.ts     # Quick test, pure: nextState (the two-in-a-row rule), drawWords, buildOptions, buildQuestion; the random source is injected (mulberry32 in tests; App's newRandom prop)
 src/data/lemma.ts    # BMA lemma -> headword (the key) + TBESG lexicon lemmas (εἶπεν -> λέγω, εἶπον ...)
 src/data/importWords.ts  # parses pasted 'lemma — gloss' lines and rows of the example table
 src/data/seed-words.ts   # GENERATED from docs/example-words.md by scripts/seed-build.ts: 63 words
 src/data/chapter.ts  # chapter types, loadChapter(book, n), wordLemma/wordGloss/wordParse: screens never read the raw keys
+src/data/weave.ts    # the diglot weave: weaveVerse(verse, solidLemmas) -> per English chunk the Greek words shown in its place, or null
 src/data/parseCode.ts # RP parsing code -> plain words (shared by the data build and the app)
 scripts/data-build.ts # the New Testament data build (npx tsx); tests/fixtures/data/ holds small source slices
 public/              # icon.svg (lamp glyph), icon-192.png, icon-512.png
