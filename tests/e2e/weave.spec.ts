@@ -1,7 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
+import { openUnlocked } from './unlocked';
 
 async function openReader(page: Page) {
+  await openUnlocked(page);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await expect(page.locator('[data-verse="1"]')).toBeVisible();

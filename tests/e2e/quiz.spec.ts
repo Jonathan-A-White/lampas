@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
+import { openUnlocked } from './unlocked';
 
 // The page never scrolls and never grows wider than the window.
 async function expectFitsPhone(page: Page) {
@@ -13,6 +14,7 @@ async function expectFitsPhone(page: Page) {
 }
 
 test('a Quick test question shows its glosses and, once tapped, the answer and Next in reach at phone width', async ({ page }) => {
+  await openUnlocked(page);
   await page.goto('/#/test');
   await expect(page.getByRole('heading', { name: 'Quick test', level: 1 })).toBeVisible();
   const prompt = page.getByTestId('prompt');
@@ -36,6 +38,7 @@ test('a Quick test question shows its glosses and, once tapped, the answer and N
 });
 
 test('a Quick test round ends with N of 10 and the words missed at phone width', async ({ page }) => {
+  await openUnlocked(page);
   await page.goto('/#/test');
   for (let i = 0; i < 10; i += 1) {
     await page.locator('[data-option]').first().click();
