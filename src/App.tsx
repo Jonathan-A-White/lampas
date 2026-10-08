@@ -1,16 +1,21 @@
+import { useEffect } from 'react';
+import { seedWordsIfFirstOpen } from './data/repositories';
+import { Home } from './Home';
+import { ImportScreen } from './ImportScreen';
+import { useRoute } from './nav/route';
 import { UpdateBanner } from './UpdateBanner';
+import { WordsScreen } from './WordsScreen';
 
 export function App() {
+  const route = useRoute();
+  // The first open fills the word list from the example list; every later open finds the flag and does nothing.
+  useEffect(() => {
+    void seedWordsIfFirstOpen();
+  }, []);
   return (
     <div data-shell className="flex h-full min-w-0 flex-col overflow-clip">
       <UpdateBanner />
-      <main className="screen flex min-h-0 flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-        <img src="/icon.svg" alt="" width={96} height={96} className="rounded-2xl" />
-        <h1 className="font-greek text-4xl font-semibold">Lampas</h1>
-        <p data-testid="build-version" className="break-words text-sm text-muted">
-          {__APP_VERSION__}
-        </p>
-      </main>
+      {route === 'words' ? <WordsScreen /> : route === 'import' ? <ImportScreen /> : <Home />}
     </div>
   );
 }

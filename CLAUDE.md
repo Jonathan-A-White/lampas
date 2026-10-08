@@ -33,6 +33,7 @@ npm run test:bdd     # vitest run, features/steps only
 npm run shots        # Playwright at 390x844 against `vite preview` of dist/ (run `npm run build` first,
                      #   or use `npm run gate:shots`); writes shots/<name>.png
 npm run icons        # re-render public/icon-192.png and icon-512.png from public/icon.svg
+npm run seed:build   # rebuild src/data/seed-words.ts from docs/example-words.md (plain node, 22.18+)
 ```
 
 ## Tests
@@ -58,16 +59,22 @@ pwa-precache.ts      # injectManifest options (precache size limit raised)
 build-version.ts     # '<version> · <UTC time> · <commit>' stamp shown on the home screen
 vite.config.ts       # react, tailwind 4, vite-plugin-pwa (injectManifest, registerType 'prompt')
 src/main.tsx         # scroll guard first, then render, then register the worker
-src/App.tsx          # the shell (data-shell) and the one screen
+src/App.tsx          # the shell (data-shell); picks the screen by hash route (src/nav/route.ts); seeds words on first open
+src/Home.tsx WordsScreen.tsx ImportScreen.tsx  # the three screens (#/ , #/words, #/import)
 src/UpdateBanner.tsx # 'Update ready, tap to reload'; the tap posts SKIP_WAITING
 src/sw.ts            # the worker: precache, precache guard, SKIP_WAITING, claim on activate
 src/precacheGuard.ts # never serve a .js/.css whose Content-Type does not fit
 src/services/appUpdate.ts  # watches the registration, tap -> SKIP_WAITING -> reload once, periodic update check
 src/ui/              # scrollGuard.ts (page never scrolls), focus.ts (focus with preventScroll)
-src/data/db.ts       # Dexie, version 1, no stores yet; src/data/repositories/ is the only way UI reaches it
+src/data/db.ts       # Dexie, version 2: words {lemma key, lemmas, gloss, lesson, state, since} and meta
+src/data/repositories/  # the only way UI reaches Dexie (words.ts: seed on first open, list, set state, import)
+src/data/lemma.ts    # BMA lemma -> headword (the key) + TBESG lexicon lemmas (εἶπεν -> λέγω, εἶπον ...)
+src/data/importWords.ts  # parses pasted 'lemma — gloss' lines and rows of the example table
+src/data/seed-words.ts   # GENERATED from docs/example-words.md by scripts/seed-build.ts: 63 words
 public/              # icon.svg (lamp glyph), icon-192.png, icon-512.png
 features/ tests/     # BDD features + steps; unit tests; e2e + shots; support fakes
 docs/pwa-best-practices.md   # copied verbatim from the vault; the law for every screen
+docs/example-words.md        # the owner's own BMA word list (public, an example template); the seed's source
 ```
 
 ## Conventions
