@@ -10,6 +10,8 @@ import type { GreekPronunciation } from '../speech/pronunciation';
 export type AppEvent =
   /** `verse` is null when no verse is selected any more (the same verse tapped again, or the reader left) */
   | { kind: 'verse-selected'; chapter: number; verse: number | null }
+  /** the Reader shows this chapter (it opens, or he chose another in the picker); `book` is the code public/data/index.json has */
+  | { kind: 'chapter-opened'; book: string; chapter: number }
   | { kind: 'view-changed'; view: ReaderView }
   | { kind: 'weave-changed'; weave: Weave }
   | { kind: 'layout-changed'; layout: ReadingLayout }
@@ -38,8 +40,8 @@ export type AppEvent =
   | { kind: 'grammar-term-known'; term: string; known: boolean }
   /** another screen asks the Reader, as it opens on `chapter` and `verse`, to show the Ask box holding `question` (action
    * 'ask') or to open the Talk sheet (action 'talk'); `id` counts up, so the Reader can tell a request it has not met */
-  | { kind: 'reader-requested'; id: number; action: 'ask'; chapter: number; verse: number; question: string }
-  | { kind: 'reader-requested'; id: number; action: 'talk'; chapter: number; verse: number }
+  | { kind: 'reader-requested'; id: number; action: 'ask'; book: string; chapter: number; verse: number; question: string }
+  | { kind: 'reader-requested'; id: number; action: 'talk'; book: string; chapter: number; verse: number }
   /** the schedule changed (an answer, or items added): `due` is how many items are due now (src/data/schedule.ts) */
   | { kind: 'review-due-changed'; due: number };
 

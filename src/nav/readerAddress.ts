@@ -12,12 +12,19 @@ function update(patch: ReaderAddress, without: (keyof ReaderAddress)[] = []): vo
   replaceHash(readerHash(next));
 }
 
-/** Starts writing the reader's chapter, verse, view and weave into the address; returns the stop. */
+/** Starts writing the reader's book, chapter, verse, view and weave into the address; returns the stop. */
 export function startReaderAddressSync(): () => void {
   const stops = [
-    subscribe('verse-selected', ({ chapter, verse }) =>
-      verse === null ? update({ chapter }, ['verse']) : update({ chapter, verse }),
-    ),
+    // A Reader on its way out (another chapter was chosen) tells the bus its verse is gone after the address already names the new
+    // chapter: it must not write its own chapter back.
+    subscribe('verse-selected', ({ chapter, verse }) => {
+      const named = readerOf(window.location.hash).chapter;
+      if (named !== undefined && named !== chapter) return;
+      if (verse === null) update({ chapter }, ['verse']);
+      else update({ chapter, verse });
+    }),
+    // The Reader says which book it shows, so a bare open (no address) comes to name it.
+    subscribe('chapter-opened', ({ book, chapter }) => update({ book, chapter })),
     subscribe('view-changed', ({ view }) => update({ view })),
     subscribe('weave-changed', ({ weave }) => update({ weave })),
   ];

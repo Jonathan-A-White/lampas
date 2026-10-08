@@ -8,7 +8,7 @@ Feature: Lampas reopens where he left it
     Given Lampas is opened on Romans 8
     When he switches to Greek
     And he selects verse 28
-    Then the address says chapter 8, the Greek view, no weave and verse 28
+    Then the address says Romans chapter 8, the Greek view, no weave and verse 28
     When he taps verse 28 again
     Then the address names no verse
 
