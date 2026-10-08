@@ -76,6 +76,11 @@ src/useAsks.ts       # the questions in flight by verse; a question keeps waitin
 src/services/tutor.ts  # askTutor: bsv-kit door + grist.sendGrist + grist.awaitAnswer; the request and answer shapes, isVerseAnswer, tutorTimings (poll 3 s, 180 s deadline)
 grinds/              # the mill's grind for lampas: verse-ask.json + instructions + answer schema (same keys as SpellForge's tutor-turn.json)
 src/events/bus.ts   # the typed event bus screens talk through: publish, subscribe, latest, useEvent, useLatest; docs/events.md lists every kind, who publishes, who listens
+src/nav/             # route.ts: the hash address (screen, and in the reader '?c=8&view=greek&weave=off&v=28'), navigate, replaceHash, useAddress;
+                     #   lastRoute.ts: reopen where he left it (localStorage lampas.lastRoute, lampas.trail = last 20 addresses, lampas.scrolls; history.state.i;
+                     #   a bare open lands on the newest and rebuilds history so Back walks the trail, past the oldest on Home; an open that names a place wins);
+                     #   readerAddress.ts: bus events -> address (replaceState); scrollMemory.ts: scroll per address, restored with a ResizeObserver up to 2.5 s
+src/data/roundKeep.ts  # a half-done Quick test round in localStorage (lampas.round); the test screen offers 'Round left unfinished: Resume | New round'
 src/WordSheet.tsx    # the bottom sheet a tapped word opens (tap outside, swipe down on the handle, Done or Escape closes it)
 src/speech/          # greek.ts: speak(text, key) with speechSynthesis, lang el-GR, the phone's Greek voice, no server; a second tap on the same key stops it; hasGreekVoice() true/false/'unknown'; SpeakButton.tsx: the speaker on a word (aria-label 'Hear it') and the play button on a verse ('Hear the verse'), with the one-line no-Greek-voice help
 src/fonts/           # Gentium Plus (Greek + Greek Extended, 400 and 700 woff2) and its OFL licence; @font-face is in src/index.css
