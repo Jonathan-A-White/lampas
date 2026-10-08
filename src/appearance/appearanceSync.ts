@@ -59,9 +59,19 @@ export function restoreAppearance(): void {
 /** Starts listening to Settings and to the phone's colour scheme, and loads the saved choices; returns the stop. */
 export function startAppearanceSync(): () => void {
   let live = true;
+  // A choice made while the saved ones are still being read wins over them: the read only fills in what was not written.
+  let themeWritten = false;
+  let sizeWritten = false;
+  let reading = false;
   const stops = [
-    subscribe('theme-changed', (e) => applyTheme(e.theme)),
-    subscribe('text-size-changed', (e) => applyTextSize(e.percent)),
+    subscribe('theme-changed', (e) => {
+      if (!reading) themeWritten = true;
+      applyTheme(e.theme);
+    }),
+    subscribe('text-size-changed', (e) => {
+      if (!reading) sizeWritten = true;
+      applyTextSize(e.percent);
+    }),
   ];
   const scheme = typeof window.matchMedia === 'function' ? window.matchMedia(DARK_QUERY) : null;
   const onScheme = () => paintBar();
@@ -70,8 +80,10 @@ export function startAppearanceSync(): () => void {
   paintBar();
   void Promise.all([getTheme(), getTextSize()]).then(([savedTheme, savedSize]) => {
     if (!live) return;
-    publish({ kind: 'theme-changed', theme: savedTheme });
-    publish({ kind: 'text-size-changed', percent: savedSize });
+    reading = true;
+    if (!themeWritten) publish({ kind: 'theme-changed', theme: savedTheme });
+    if (!sizeWritten) publish({ kind: 'text-size-changed', percent: savedSize });
+    reading = false;
   });
   return () => {
     live = false;
