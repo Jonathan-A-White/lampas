@@ -1,4 +1,4 @@
-// src/nav/route.ts — four screens, told apart by the address hash, so the phone's Back button walks them.
+// src/nav/route.ts — five screens, told apart by the address hash, so the phone's Back button walks them.
 import { useSyncExternalStore } from 'react';
 
 export type Route = 'home' | 'words' | 'import' | 'test' | 'about';

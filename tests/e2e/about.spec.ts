@@ -1,7 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { shot } from './shot';
+import { openUnlocked } from './unlocked';
 
 test('About credits the data at phone width, reached from Home', async ({ page }) => {
+  await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   const about = page.getByRole('button', { name: 'About', exact: true });
