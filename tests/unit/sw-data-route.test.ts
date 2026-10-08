@@ -42,6 +42,7 @@ describe('the /data/ runtime route', () => {
 describe('the precache', () => {
   it('lists data/index.json and data/rom/8.json, and no glob that would take another chapter', () => {
     expect(injectManifestOptions.globPatterns).toContain('data/index.json');
+    expect(injectManifestOptions.globPatterns).toContain('data/lexicon.json');
     expect(injectManifestOptions.globPatterns).toContain('data/rom/8.json');
     for (const pattern of injectManifestOptions.globPatterns) {
       if (pattern.includes('data')) expect(pattern).not.toContain('*');

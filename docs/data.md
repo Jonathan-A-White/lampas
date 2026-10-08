@@ -33,6 +33,17 @@ build no longer produces are deleted. Tests use the small slices in `tests/fixtu
 The 27 books in canonical order. `code` is lower-case: `mat mrk luk jhn act rom 1co 2co gal eph php col 1th 2th
 1ti 2ti tit phm heb jas 1pe 2pe 1jn 2jn 3jn jud rev`. `verses[i]` is the number of verses in chapter `i + 1`.
 
+## `lexicon.json`
+
+Every lemma of the text once (about 5,400, 320 KB), so a word he names that the open chapter does not use still has a gloss:
+
+```json
+{"ἀγγελία":{"g":"message","s":"G31","c":"noun"},"σάρξ":{"g":"flesh","s":"G4561","c":"noun"}}
+```
+
+`g` is the TBESG gloss, `s` the Strong's number, `c` the part of speech (`parseCode.ts` `splitParse`) of the lemma's first use in
+canonical order; keys are NFC, in alphabetical order. `src/data/lexicon.ts` (`loadLexicon`, `lookupLemma`) reads it.
+
 ## `<book>/<chapter>.json`
 
 Compact: short keys, no indentation, each lexicon entry once per file.
@@ -103,6 +114,6 @@ starts a paragraph whether or not it has `p`; the reader treats it so.
 
 ## Offline
 
-Only `data/index.json` and `data/rom/8.json` are in the service worker's precache (`pwa-precache.ts`; the
-globs name those two files, with no wildcard). Every other chapter is fetched when first opened and kept by a
+Only `data/index.json`, `data/lexicon.json` and `data/rom/8.json` are in the service worker's precache (`pwa-precache.ts`; the
+globs name those three files, with no wildcard). Every other chapter is fetched when first opened and kept by a
 CacheFirst route for `/data/` in `src/sw.ts` (cache `lampas-data`), so a chapter once read stays offline.

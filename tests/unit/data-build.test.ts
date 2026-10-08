@@ -171,6 +171,21 @@ describe('a chapter file', () => {
   });
 });
 
+describe('the lemma lexicon', () => {
+  it('lists each lemma of the text once, with its gloss, Strong number and part of speech, in alphabetical order', () => {
+    const lemmas = Object.keys(built.lexicon);
+    expect(lemmas.length).toBeGreaterThan(50);
+    expect(lemmas).toEqual([...lemmas].sort());
+    const w = chapter('rom/8.json').verses[0].g[1];
+    expect(built.lexicon[w.l]).toEqual({ g: chapter('rom/8.json').lex[w.s].g, s: w.s, c: 'particle' });
+    for (const [lemma, entry] of Object.entries(built.lexicon)) {
+      expect(lemma).toBe(lemma.normalize('NFC'));
+      expect(entry.s).toMatch(/^G\d+$/);
+      expect(entry.c).not.toBe('');
+    }
+  });
+});
+
 describe('writing the files', () => {
   function run(raw: string, out: string, downloads: string[] = []) {
     return runBuild({
@@ -193,7 +208,7 @@ describe('writing the files', () => {
       const out2 = join(base, 'out2');
       await run(raw, out1);
       await run(raw, out2);
-      expect(listing(out1)).toEqual(['index.json', 'jhn/1.json', 'mat/1.json', 'mat/18.json', 'rev/17.json', 'rom/8.json']);
+      expect(listing(out1)).toEqual(['index.json', 'jhn/1.json', 'lexicon.json', 'mat/1.json', 'mat/18.json', 'rev/17.json', 'rom/8.json']);
       expect(listing(out2)).toEqual(listing(out1));
       for (const p of listing(out1)) expect(readFileSync(join(out2, p), 'utf8')).toBe(readFileSync(join(out1, p), 'utf8'));
       const text = readFileSync(join(out1, 'rom/8.json'), 'utf8');

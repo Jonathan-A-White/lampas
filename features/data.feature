@@ -39,7 +39,7 @@ Feature: The New Testament data
     When the data is built twice
     Then the second run writes the same bytes as the first
 
-  Scenario: Only the index and Romans 8 are precached
+  Scenario: Only the index, the lemma lexicon and Romans 8 are precached
     Given the app is built
-    Then the service worker precaches data/index.json and data/rom/8.json and no other chapter
+    Then the service worker precaches data/index.json, data/lexicon.json and data/rom/8.json and no other chapter
     And the service worker serves other chapters cache-first from a runtime cache
