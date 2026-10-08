@@ -12,7 +12,8 @@ export const accordance: StudyResource = {
     default: 'BDAG',
     hint: 'The lexicon module as Accordance names it, such as BDAG. Empty means BDAG.',
   },
-  linksFor: (word, option) => [
-    { label: 'Open in Accordance', url: `accord://search/${encodeURIComponent(option?.trim() || 'BDAG')}?${encodeURIComponent(word.lemma)}` },
-  ],
+  linksFor: (word, option) => {
+    const lexicon = option?.trim() || 'BDAG';
+    return [{ label: 'Open in Accordance', tile: lexicon, url: `accord://search/${encodeURIComponent(lexicon)}?${encodeURIComponent(word.lemma)}` }];
+  },
 };

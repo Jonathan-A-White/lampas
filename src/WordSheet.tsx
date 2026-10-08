@@ -3,16 +3,17 @@
 // outside, a swipe down on its handle, the Done button, Escape or the phone's Back (src/ui/sheetBack.ts). Each word has a Help with this word row (Grammar, Sound it out)
 // when the screen gives it somewhere to send them: the Talk sheet on the word's verse with the first question sent. Every grammar
 // word of the Parsing is a link to its Grammar sheet (src/GrammarSheet.tsx), which opens over this one: underlined until he marks
-// the term I know this, plain after. A Study row holds the links of the study resources he switched on in Settings (src/resources/),
+// the term I know this, plain after. A Study link whose app did not open (src/resources/openApp.ts) opens the sheet that says the app is not on this phone: Get it, or Turn off its resource. A Study row holds the links of the study resources he switched on in Settings (src/resources/),
 // and is not drawn when none is on.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState, type ReactNode } from 'react';
 import { type Chapter, type GreekWord, wordGloss, wordLemma, wordParse } from './data/chapter';
 import { parseSegments } from './data/parseCode';
-import { getStudyResources, type StudyResources } from './data/repositories';
+import { getStudyResources, setResourceOn, type StudyResources } from './data/repositories';
 import { publish, useLatest } from './events/bus';
 import { GrammarSheet } from './GrammarSheet';
-import { optionOf, RESOURCES, type StudyLink, type StudyRef } from './resources';
+import { optionOf, RESOURCES, type StudyLink, type StudyRef, type StudyResource } from './resources';
+import { storeUrl } from './resources/appStore';
 import { armFallback } from './resources/openApp';
 import { pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
 import { SpeakButton } from './speech/SpeakButton';
@@ -81,32 +82,79 @@ function ParseTerms({ parse, known, open }: { parse: string; known: ReadonlySet<
   );
 }
 
-/** The links of every study resource he switched on (Settings > Study resources) for this word. */
-function studyLinks(chosen: StudyResources | undefined, word: GreekWord, ref: StudyRef | undefined): StudyLink[] {
-  if (!chosen) return [];
-  const study = { form: word.t, lemma: wordLemma(word), strongs: word.s, ref };
-  return RESOURCES.filter((r) => chosen.on.includes(r.id)).flatMap((r) => r.linksFor(study, optionOf(r, chosen.options[r.id])));
+/** One switched-on study resource and its links for a word. */
+interface StudyGroup {
+  resource: StudyResource;
+  links: StudyLink[];
 }
 
-/** The Study row: one link per switched-on resource, each a 44 px tap target; nothing at all when none is on. */
-function StudyRow({ links }: { links: StudyLink[] }) {
-  if (links.length === 0) return null;
+/** The links of every study resource he switched on (Settings > Study resources) for this word, a group per resource. */
+function studyGroups(chosen: StudyResources | undefined, word: GreekWord, ref: StudyRef | undefined): StudyGroup[] {
+  if (!chosen) return [];
+  const study = { form: word.t, lemma: wordLemma(word), strongs: word.s, ref };
+  return RESOURCES.filter((r) => chosen.on.includes(r.id))
+    .map((resource) => ({ resource, links: resource.linksFor(study, optionOf(resource, chosen.options[resource.id])) }))
+    .filter((g) => g.links.length > 0);
+}
+
+const TILE_BASE = 'flex min-h-12 min-w-0 items-center justify-center rounded-xl px-2 text-base font-medium';
+const TILE = `${TILE_BASE} border border-line text-accent active:bg-line`;
+
+/** The Study row: the links of each switched-on resource as equal tiles, two to a row, an app's under its name; nothing at all when none is on.
+ *  A tap on an app's link also arms the wait for the app to open (openApp.ts); `onMissing` hears of an app that did not. */
+function StudyRow({ groups, onMissing }: { groups: StudyGroup[]; onMissing: (resource: StudyResource) => void }) {
+  if (groups.length === 0) return null;
   return (
     <div role="group" aria-label="Study" className="mt-3">
       <p className="mb-1 text-sm text-muted">Study</p>
-      <div className="flex flex-wrap gap-2">
-        {links.map((link) => (
-          <a
-            key={link.label}
-            href={link.url}
-            data-fallback={link.fallback}
-            onClick={() => armFallback(link.fallback)}
-            {...(link.url.startsWith('https:') ? { target: '_blank', rel: 'noreferrer' } : {})}
-            className="inline-flex min-h-12 items-center rounded-xl border border-line px-4 text-base font-medium text-accent active:bg-line"
-          >
-            {link.label}
-          </a>
-        ))}
+      {groups.map(({ resource, links }) => (
+        <div key={resource.id} role={resource.kind === 'app' ? 'group' : undefined} aria-label={resource.kind === 'app' ? resource.name : undefined} className="mb-2 last:mb-0">
+          {resource.kind === 'app' ? <p className="mb-1 text-sm font-medium">{resource.name}</p> : null}
+          <div className="grid grid-cols-2 gap-2">
+            {links.map((link) => (
+              <a
+                key={link.label}
+                href={link.url}
+                aria-label={link.tile && link.tile !== link.label ? link.label : undefined}
+                data-fallback={link.fallback}
+                onClick={resource.kind === 'app' ? () => armFallback(link.fallback, undefined, () => onMissing(resource)) : undefined}
+                {...(link.url.startsWith('https:') ? { target: '_blank', rel: 'noreferrer' } : {})}
+                className={TILE}
+              >
+                <span className="truncate">{link.tile ?? link.label}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Over the word sheet when a Study link's app did not open: Get it from the phone's store, or Turn off its resource in Settings. */
+function AppMissingSheet({ app, onClose, onTurnOff }: { app: string; onClose: () => void; onTurnOff: () => void }) {
+  useEscapeToClose(onClose);
+  useSheetBack(onClose);
+  return (
+    <div className="fixed inset-0 z-30 flex flex-col justify-end">
+      <div data-testid="app-missing-backdrop" aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-black/60" />
+      <div role="dialog" aria-modal="true" aria-label="App not on this phone" className="relative rounded-t-2xl border-t border-line bg-surface">
+        <div className="flex min-h-12 items-center justify-end px-2 pt-2">
+          <button type="button" ref={focusOnMount} onClick={onClose} className="min-h-11 min-w-11 rounded-lg px-3 text-base font-medium text-accent">
+            Done
+          </button>
+        </div>
+        <div className="px-4 pb-[calc(1rem+var(--lp-end-inset))]">
+          <h2 className="text-xl font-bold">{`${app} isn't on this phone`}</h2>
+          <div className="mt-4 flex flex-col gap-2">
+            <a href={storeUrl(app)} target="_blank" rel="noreferrer" className={`${TILE_BASE} bg-accent text-accent-fg`}>
+              Get {app}
+            </a>
+            <button type="button" onClick={onTurnOff} className={TILE}>
+              Turn off {app}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -131,7 +179,7 @@ function HelpRow({ help }: { help: (kind: WordHelp['kind']) => void }) {
   );
 }
 
-function WordCard({ chapter, word, english, pronunciation, known, study, onHelp, onTerm }: {
+function WordCard({ chapter, word, english, pronunciation, known, study, onHelp, onTerm, onMissing }: {
   chapter: Chapter;
   word: GreekWord;
   english?: string;
@@ -141,6 +189,8 @@ function WordCard({ chapter, word, english, pronunciation, known, study, onHelp,
   onHelp?: (help: WordHelp) => void;
   /** a grammar word of the Parsing was tapped: the term, and the verse the word stands in */
   onTerm: (term: string, word: GreekWord, verse: number | undefined) => void;
+  /** a Study link's app did not open */
+  onMissing: (resource: StudyResource) => void;
 }) {
   const verse = chapter.verses.find((v) => v.g.includes(word))?.n;
   // The Strong's resource shows the number as its link in the Study row; the plain fact would say it twice.
@@ -178,7 +228,7 @@ function WordCard({ chapter, word, english, pronunciation, known, study, onHelp,
           </Fact>
         ) : null}
       </dl>
-      <StudyRow links={studyLinks(study, word, ref)} />
+      <StudyRow groups={studyGroups(study, word, ref)} onMissing={onMissing} />
       {onHelp && verse !== undefined ? (
         <HelpRow help={(kind) => onHelp({ kind, form: word.t, lemma: wordLemma(word), parse: wordParse(chapter, word), verse })} />
       ) : null}
@@ -201,7 +251,9 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
   // An example on a Grammar sheet shows its own word here, until the sheet is opened on something else.
   const [shown, setShown] = useState<{ base: Lookup; lookup: Lookup } | null>(null);
   const lookup = shown && shown.base === opened ? shown.lookup : opened;
-  useEscapeToClose(onClose, grammar === null);
+  // The sheet that says an app is not on the phone, over this one, after a Study link's app did not open.
+  const [missing, setMissing] = useState<StudyResource | null>(null);
+  useEscapeToClose(onClose, grammar === null && missing === null);
   useSheetBack(onClose);
   const pronunciation = useLatest('pronunciation-changed')?.pronunciation;
   const known = useKnownTerms();
@@ -268,6 +320,7 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
               study={study}
               onHelp={help}
               onTerm={openTerm}
+              onMissing={setMissing}
             />
           ))}
         </div>
@@ -285,6 +338,16 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
             setGrammar(null);
           }}
           onAsk={ask}
+        />
+      ) : null}
+      {missing ? (
+        <AppMissingSheet
+          app={missing.name}
+          onClose={() => setMissing(null)}
+          onTurnOff={() => {
+            void setResourceOn(missing.id, false);
+            setMissing(null);
+          }}
         />
       ) : null}
     </div>

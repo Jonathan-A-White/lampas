@@ -39,9 +39,16 @@ shows them; adding a lexicon is one line there. Each ticked one gives `Open in L
 
 **The scheme first, https only as the fallback.** A link's `href` is the app's own scheme (`logosres:`, `logos4:`); on a phone
 with Logos the tap hands it to the app. A phone with no app for the scheme does nothing on its own, so the tap also starts a
-timer (`src/resources/openApp.ts`): if the page is still in front 1.8 s later (not hidden, blurred or left), the link's https
+timer (`src/resources/openApp.ts`): if the page is still in front 1.5 s later (not hidden, blurred or left), the link's https
 `ref.ly` address is opened instead. Each Logos link carries it (`data-fallback`). Accordance has no web page for its lexicons, so
-its link has no fallback.
+its link has no fallback: the word sheet then opens a small sheet over itself, "<App> isn't on this phone", with `Get <App>` (the
+store search of `src/resources/appStore.ts`: the Play Store, or the App Store on an iPhone or iPad; UNVERIFIED that either finds the app,
+and Accordance may have no Android app) and `Turn off <App>` (the resource goes off in Settings at once). Any new resource of kind
+`'app'` gets this sheet for a link with no `fallback`.
+
+**The Study row's grid.** The links are equal tiles, two to a row, under the app's name for a resource of kind `'app'`. A link's `label`
+is its accessible name ('Open in Logos: BDAG'); its optional `tile` is the short text on the tile ('BDAG', 'Word Study'; a Logos lexicon's
+is its `short` in `LEXICONS`). A tile never wraps at 360 px: keep a `tile` to about 16 characters.
 
 **Resource ids.** The `resource` of each lexicon is the id the link names. NONE of these ids could be confirmed (Logos' pages
 answer 403; the Logos wiki and forum could not be read); every one is **UNVERIFIED**: `bdag`, `louwnida`, `lexhamtheolwordbk`,
