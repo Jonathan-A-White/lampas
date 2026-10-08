@@ -23,10 +23,12 @@ import {
   talkRef,
   type ReaderView,
 } from './data/repositories';
+import { READER_CHAPTER } from './data/readerChapter';
 import { weaveVerse, type Woven } from './data/weave';
 import { BuildVersion } from './BuildVersion';
 import { latest, publish, useLatest } from './events/bus';
 import { blocksOf } from './layout/layouts';
+import { pendingRequest, takeRequest } from './nav/readerRequest';
 import { navigate, readerOf, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
@@ -41,9 +43,7 @@ import { speakWord, warmVoices } from './speech/greek';
 import type { SpeechLanguage } from './speech/languages';
 import { WordSheet, type Lookup } from './WordSheet';
 
-const BOOK = 'rom';
-const CHAPTER = 8;
-const TITLE = 'Romans 8';
+const { book: BOOK, chapter: CHAPTER, title: TITLE } = READER_CHAPTER;
 // 44 px (--lp-tap) minus 1 em, halved, top and bottom. Every face's content area is taller than 1 em (Gentium Plus
 // about 1.11 em, a phone's sans about 1.1 em), so an inline word is never under 44 px whatever the font, and the line
 // box stays --lp-tap tall, so the spare pixels cost no layout.
@@ -347,9 +347,19 @@ export function Reader() {
   const selected = selectedEvent?.chapter === CHAPTER ? selectedEvent.verse : null;
   const [lookup, setLookup] = useState<Lookup | null>(null);
   const { asks, ask } = useAsks(BOOK, CHAPTER, TITLE);
+  // A request from another screen (the Parsing drill's links) is met once, as the Reader opens: the Talk sheet on that verse,
+  // or the Ask box on it holding the question.
+  const [request] = useState(() => {
+    const pending = pendingRequest();
+    return pending?.chapter === CHAPTER ? pending : undefined;
+  });
+  useEffect(() => {
+    if (request) takeRequest(request);
+  }, [request]);
+  const [prefill, setPrefill] = useState(() => (request?.action === 'ask' ? { verse: request.verse, text: request.question } : null));
   // The Talk sheet: undefined is closed, a number the verse it was opened on, null the chapter. An answer that arrives while
   // its conversation is open on the sheet is read aloud.
-  const [talkAbout, setTalkAbout] = useState<number | null | undefined>(undefined);
+  const [talkAbout, setTalkAbout] = useState<number | null | undefined>(() => (request?.action === 'talk' ? request.verse : undefined));
   const openTalk = useRef<string | null>(null);
   useEffect(() => {
     openTalk.current = talkAbout === undefined ? null : talkRef(BOOK, CHAPTER, talkAbout);
@@ -367,7 +377,7 @@ export function Reader() {
   });
   // The verse he last tapped: its Ask box scrolls into view. A selection put back by a reopen or Back does not, so it
   // leaves the text where the scroll memory put it.
-  const [tapped, setTapped] = useState<number | null>(null);
+  const [tapped, setTapped] = useState<number | null>(() => (request?.action === 'ask' ? request.verse : null));
   const selectVerse = useCallback(
     (n: number) => {
       setTapped(selected === n ? null : n);
@@ -551,7 +561,16 @@ export function Reader() {
                   {withSelection && selected !== null ? (
                     <>
                       <AnswerCards verse={selected} book={BOOK} chapter={CHAPTER} />
-                      <AskBox chapter={chapter} asks={asks} onAsk={ask} reveal={tapped === selected} />
+                      <AskBox
+                        chapter={chapter}
+                        asks={asks}
+                        onAsk={(verse, question) => {
+                          setPrefill(null);
+                          ask(verse, question);
+                        }}
+                        reveal={tapped === selected}
+                        prefill={prefill}
+                      />
                     </>
                   ) : null}
                 </Fragment>

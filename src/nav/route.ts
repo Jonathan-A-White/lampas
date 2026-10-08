@@ -1,10 +1,10 @@
-// src/nav/route.ts — six screens, told apart by the address hash, so the phone's Back button walks them.
+// src/nav/route.ts — seven screens, told apart by the address hash, so the phone's Back button walks them.
 // The reader's own state rides in the same hash after a '?': chapter (c), view, weave and the selected verse (v),
 // e.g. '#/?c=8&view=greek&weave=off&v=28'. src/nav/lastRoute.ts keeps these addresses across a close.
 import { useSyncExternalStore } from 'react';
 import type { ReaderView, Weave } from '../data/repositories';
 
-export type Route = 'home' | 'words' | 'import' | 'test' | 'about' | 'settings';
+export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'about' | 'settings';
 
 /** What the address says about the reader; a key is missing when the address does not say. */
 export interface ReaderAddress {
@@ -39,6 +39,7 @@ export function routeOf(hash: string): Route {
   if (path === '#/words') return 'words';
   if (path === '#/import') return 'import';
   if (path === '#/test') return 'test';
+  if (path === '#/drill') return 'drill';
   if (path === '#/about') return 'about';
   if (path === '#/settings') return 'settings';
   return 'home';
@@ -84,6 +85,12 @@ export function navigate(route: Route, options: { replace?: boolean } = {}): voi
     window.history.pushState(null, '', urlFor(hashFor(route)));
     notify();
   }
+}
+
+/** Opens the reader at a chapter and verse, as a new Back step. */
+export function openReader(address: Pick<ReaderAddress, 'chapter' | 'verse'>): void {
+  window.history.pushState(null, '', urlFor(readerHash(address)));
+  notify();
 }
 
 /** Changes the address of the entry he is on (the reader's verse, view or weave moved): no new Back step, and the

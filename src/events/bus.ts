@@ -27,7 +27,11 @@ export type AppEvent =
   | { kind: 'reading-stopped' }
   | { kind: 'word-tapped'; strongs: string; verse: number }
   /** a long press on a word of the reader said that word alone, in its own language */
-  | { kind: 'word-spoken'; text: string; language: SpeechLanguage; verse: number };
+  | { kind: 'word-spoken'; text: string; language: SpeechLanguage; verse: number }
+  /** another screen asks the Reader, as it opens on `chapter` and `verse`, to show the Ask box holding `question` (action
+   * 'ask') or to open the Talk sheet (action 'talk'); `id` counts up, so the Reader can tell a request it has not met */
+  | { kind: 'reader-requested'; id: number; action: 'ask'; chapter: number; verse: number; question: string }
+  | { kind: 'reader-requested'; id: number; action: 'talk'; chapter: number; verse: number };
 
 export type EventKind = AppEvent['kind'];
 export type EventOf<K extends EventKind> = Extract<AppEvent, { kind: K }>;

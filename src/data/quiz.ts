@@ -1,6 +1,6 @@
 // src/data/quiz.ts — the pure parts of the Quick test: the state rule, the drawing of a round, the option
 // builder and the question. Nothing here touches the store or the screen; the random source is passed in.
-import { wordLemma, type Chapter } from './chapter';
+import { wordLemma, type Chapter, type GreekWord } from './chapter';
 import type { Word, WordState } from './db';
 import { normaliseLemma } from './lemma';
 import { SEED_WORDS } from './seed-words';
@@ -98,16 +98,28 @@ export interface Occurrence {
 
 const nfc = (s: string) => s.normalize('NFC');
 
+/** The lexicon lemmas a word is found by (NFC), less any that one of `others` owns: μου also lists ἐγώ, which is the word 'I'. */
+export function lemmasOf(word: Word, others: ReadonlySet<string> = new Set()): Set<string> {
+  return new Set(word.lemmas.map(nfc).filter((l) => !others.has(l)));
+}
+
+/**
+ * Whether a Greek word of a chapter is a form of the word whose lemmas these are. A form that is another of
+ * his words (ἡμεῖς has the lexicon lemma ἐγώ, but asking it for 'I' would teach the wrong gloss) is not.
+ */
+export function isFormOf(g: GreekWord, lemmas: ReadonlySet<string>, others: ReadonlySet<string> = new Set()): boolean {
+  return lemmas.has(nfc(wordLemma(g))) && !others.has(nfc(g.t));
+}
+
 /**
  * Every place the chapter has a word, found by any of its lexicon lemmas. `others` are the headwords of his
- * other words: a lemma one of them owns is left out (μου also lists ἐγώ, which is the word 'I'), and so is a
- * form that is another of them (ἡμεῖς has the lexicon lemma ἐγώ, but asking it for 'I' would teach the wrong gloss).
+ * other words: a lemma one of them owns is left out, and so is a form that is another of them (see lemmasOf, isFormOf).
  */
 export function formsOf(chapter: Chapter, word: Word, others: ReadonlySet<string> = new Set()): Occurrence[] {
-  const lemmas = new Set(word.lemmas.map(nfc).filter((l) => !others.has(l)));
+  const lemmas = lemmasOf(word, others);
   return chapter.verses.flatMap((v) =>
     v.g
-      .filter((g) => lemmas.has(nfc(wordLemma(g))) && !others.has(nfc(g.t)))
+      .filter((g) => isFormOf(g, lemmas, others))
       .map((g) => ({ form: g.t, reference: `${chapter.book} ${chapter.chapter}:${v.n}` })),
   );
 }

@@ -69,7 +69,7 @@ build-version.ts     # '<version> · <UTC time> · <commit>' stamp (the commit i
 vite.config.ts       # react, tailwind 4, vite-plugin-pwa (injectManifest, registerType 'prompt')
 src/main.tsx         # scroll guard first, then render, then register the worker
 src/App.tsx          # the shell (data-shell); picks the screen by hash route (src/nav/route.ts); seeds words on first open
-src/Reader.tsx WordsScreen.tsx ImportScreen.tsx QuizScreen.tsx About.tsx SettingsScreen.tsx  # the screens (#/ , #/words, #/import, #/test, #/about, #/settings); the Reader is Romans 8, English | Greek, header = title, English | Greek, the gear;
+src/Reader.tsx WordsScreen.tsx ImportScreen.tsx QuizScreen.tsx DrillScreen.tsx About.tsx SettingsScreen.tsx  # the screens (#/ , #/words, #/import, #/test, #/drill, #/about, #/settings); the Reader is Romans 8, English | Greek, header = title, English | Greek, the gear;
                      #   Settings (opened by the gear) holds the Appearance (Theme Phone | Light | Dark, Text size Small | Normal | Large | Largest), the Layout (Verse by verse | Paragraph), Section headings (On | Off), the Weave, the English and Greek voice pickers, the English and Greek speed sliders, the Greek pronunciation list, and links to Words and About;
                      #   About is built from ATTRIBUTION.md (src/attribution.ts), opened by the About button under the chapter
 src/Ask.tsx          # the Ask box under the selected verse (field, Sending / Waiting, No licence, Could not reach + Retry) and the kept answer cards
@@ -107,16 +107,20 @@ src/sw.ts            # the worker: precache, precache guard, SKIP_WAITING, claim
 src/precacheGuard.ts # never serve a .js/.css whose Content-Type does not fit
 src/services/appUpdate.ts  # watches the registration, tap -> SKIP_WAITING -> reload once, periodic update check
 src/ui/              # scrollGuard.ts (page never scrolls), focus.ts (focus with preventScroll)
-src/data/db.ts       # Dexie, version 6: words {lemma key, lemmas, gloss, lesson, state, since}, meta and settings {key, value}, results {lemma, when, right}, answers {ref 'rom.8.28', question, answer, words, when}, talks {ref 'rom.8' or 'rom.8.28', q, a, words, when}
-src/data/repositories/  # the only way UI reaches Dexie (words.ts: seed on first open, list, set state, import, and list the solid lemmas; settings.ts: the reader's English | Greek view, Weave Off | Solid words, the English and Greek voice (voiceURI) and the Greek pronunciation; results.ts: recordAnswer; answers.ts: the tutor's answers per verse; talks.ts: the Bible talk's turns per chapter or verse)
+src/data/db.ts       # Dexie, version 7: words {lemma key, lemmas, gloss, lesson, state, since}, meta and settings {key, value}, results {lemma, when, right}, answers {ref 'rom.8.28', question, answer, words, when}, talks {ref 'rom.8' or 'rom.8.28', q, a, words, when}, drills {lemma, step, when, right}
+src/data/repositories/  # the only way UI reaches Dexie (words.ts: seed on first open, list, set state, import, and list the solid lemmas; settings.ts: the reader's English | Greek view, Weave Off | Solid words, the English and Greek voice (voiceURI) and the Greek pronunciation; results.ts: recordAnswer; answers.ts: the tutor's answers per verse; talks.ts: the Bible talk's turns per chapter or verse; drills.ts: the Parsing drill's answers per word and step)
 src/data/quiz.ts     # Quick test, pure: nextState (the two-in-a-row rule), drawWords, buildOptions, buildQuestion; the random source is injected (mulberry32 in tests; App's newRandom prop)
+src/DrillScreen.tsx data/drill.ts data/drillKeep.ts nav/readerRequest.ts  # the Parsing drill (Test screen > 'Parsing drill: Romans 8'): drill.ts is pure and seeded like quiz.ts (buildSteps splits an RP code, via parseCode.ts splitParse, into steps of four choices: a feature with fewer than four values, such as number or gender, joins its neighbour; drawDrill picks up to ten places of words he knows, learning first, parsable before particles);
+                     #   drillKeep.ts keeps a half-done round in localStorage (lampas.drill; 'away' = he left for the Reader and the drill reopens on it at once); each answer goes to the drills table (step ids 'pos', 'tense', 'case', 'number+gender' ...);
+                     #   Ask the tutor / Talk about it call askInReader / talkInReader: a 'reader-requested' bus event plus the Reader's address, which the Reader meets once as it opens (the Ask box prefilled, or the Talk sheet)
 src/data/lemma.ts    # BMA lemma -> headword (the key) + TBESG lexicon lemmas (εἶπεν -> λέγω, εἶπον ...)
 src/data/importWords.ts  # parses pasted 'lemma — gloss' lines and rows of the example table
 src/data/pictures.ts  # memory pictures: headword -> public/pictures/<name>.svg (52 of the 63 seed words); src/WordPicture.tsx shows one on a Words card and beside the Quick test's word; docs/pictures.md
 src/data/seed-words.ts   # GENERATED from docs/example-words.md by scripts/seed-build.ts: 63 words
+src/data/readerChapter.ts # the one chapter the Reader and the drill use (Romans 8)
 src/data/chapter.ts  # chapter types, loadChapter(book, n), wordLemma/wordGloss/wordParse: screens never read the raw keys
 src/data/weave.ts    # the diglot weave: weaveVerse(verse, solidLemmas) -> per English chunk the Greek words shown in its place, or null
-src/data/parseCode.ts # RP parsing code -> plain words (shared by the data build and the app)
+src/data/parseCode.ts # RP parsing code -> plain words (decodeParse, shared by the data build and the app) and -> a part of speech + features (splitParse, for the drill)
 scripts/data-build.ts # the New Testament data build (npx tsx); tests/fixtures/data/ holds small source slices
 public/              # icon.svg (lamp glyph), icon-192.png, icon-512.png
 public/pictures/     # the hand-drawn memory pictures, one SVG each (docs/pictures.md says how to add one)

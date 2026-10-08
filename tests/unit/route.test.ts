@@ -8,6 +8,7 @@ describe('the address', () => {
     expect(routeOf('#/?c=8&view=greek&v=28')).toBe('home');
     expect(routeOf('#/words')).toBe('words');
     expect(routeOf('#/test')).toBe('test');
+    expect(routeOf('#/drill')).toBe('drill');
     expect(routeOf('#/about')).toBe('about');
     expect(routeOf('#/import')).toBe('import');
     expect(routeOf('#/settings')).toBe('settings');
