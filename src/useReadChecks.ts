@@ -1,0 +1,176 @@
+// src/useReadChecks.ts — the reading check's state, by verse: he holds Read, the phone records (src/audio/recorder.ts), he
+// lets go and the clip goes to the mill (src/services/reading.ts), and the answer is kept in Dexie when it comes. One reading
+// at a time. Pressing stops any reading aloud (page audio could take the microphone); a buzz says the microphone is live;
+// a press under 500 ms is a tap and sends nothing; a slide off the button drops it. A reading keeps waiting when he selects
+// another verse, and all stop when the screen goes away.
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { Verse } from './data/chapter';
+import { keepVerseReading, verseRef } from './data/repositories';
+import { MicUnavailable, recorderSeam, type HoldRecorder, type Recording } from './audio/recorder';
+import { getDeviceKeyBytes } from './services/deviceKey';
+import { askVerseRead, buildReadingRequest } from './services/reading';
+import { TutorError, type TutorFailure } from './services/tutor';
+import { stopReading } from './speech/readAloud';
+import { stopSpeaking } from './speech/greek';
+
+/** A press shorter than this is a tap, not a reading. */
+export const MIN_READING_MS = 500;
+
+export const TAP_HINT = 'Hold while you read';
+export const DROPPED_NOTE = 'Dropped. Hold to try again';
+
+/** What a verse's reading is doing right now. */
+export type ReadState =
+  | { phase: 'recording' }
+  | { phase: 'tap' }
+  | { phase: 'dropped' }
+  | { phase: 'sending' | 'waiting'; startedAt: number }
+  | { phase: 'failed'; failure: TutorFailure | 'mic'; detail: string; recording?: Recording };
+
+type States = Record<number, ReadState | undefined>;
+
+export interface UseReadChecks {
+  states: States;
+  /** the finger is down on Read for this verse */
+  press: (verse: Verse) => void;
+  /** the finger lifted on the button */
+  release: () => void;
+  /** the finger slid off, or the browser cancelled the press */
+  drop: () => void;
+  /** send the recording of a failed reading again */
+  retry: (verse: Verse) => void;
+}
+
+interface Hold {
+  verse: Verse;
+  recorder: HoldRecorder;
+  started: boolean;
+  released: boolean;
+  dropped: boolean;
+  /** the clip was handed on (by the one-minute cap) */
+  over: boolean;
+}
+
+const buzz = (ms: number) => navigator.vibrate?.(ms);
+
+export function useReadChecks(book: string, chapter: number, title: string): UseReadChecks {
+  const [states, setStates] = useState<States>({});
+  const live = useRef<AbortController>(new AbortController());
+  const hold = useRef<Hold | null>(null);
+
+  useEffect(() => {
+    // React strict mode runs the effect twice: the controller made while the screen was away is replaced here.
+    if (live.current.signal.aborted) live.current = new AbortController();
+    const controller = live.current;
+    return () => {
+      controller.abort();
+      hold.current?.recorder.cancel();
+      hold.current = null;
+    };
+  }, []);
+
+  const set = useCallback((verse: number, state: ReadState | undefined): void => {
+    if (!live.current.signal.aborted) setStates((all) => ({ ...all, [verse]: state }));
+  }, []);
+
+  const send = useCallback(
+    (verse: Verse, recording: Recording): void => {
+      const signal = live.current.signal;
+      const startedAt = Date.now();
+      set(verse.n, { phase: 'sending', startedAt });
+      void (async () => {
+        try {
+          const answer = await askVerseRead(buildReadingRequest(`${title}:${verse.n}`, verse), recording, {
+            key: getDeviceKeyBytes(),
+            signal,
+            onSent: () => set(verse.n, { phase: 'waiting', startedAt }),
+          });
+          await keepVerseReading(verseRef(book, chapter, verse.n), answer.verdict, answer.focus_words, answer.note);
+          set(verse.n, undefined);
+        } catch (err) {
+          if (signal.aborted) return;
+          const failure = err instanceof TutorError ? err.failure : 'unreachable';
+          set(verse.n, { phase: 'failed', failure, detail: err instanceof Error ? err.message : 'Something went wrong.', recording });
+        }
+      })();
+    },
+    [book, chapter, title, set],
+  );
+
+  // The recording is over (let go, or the one-minute cap): short ones are taps, the rest go to the mill.
+  const finish = useCallback(
+    (h: Hold, recording: Recording): void => {
+      if (hold.current === h) hold.current = null;
+      if (recording.durationMs < MIN_READING_MS) set(h.verse.n, { phase: 'tap' });
+      else send(h.verse, recording);
+    },
+    [send, set],
+  );
+
+  const press = useCallback(
+    (verse: Verse): void => {
+      if (hold.current) return;
+      // Page audio can take the microphone: nothing is read aloud while he reads.
+      stopReading();
+      stopSpeaking();
+      const h: Hold = {
+        verse,
+        // the recorder hands the clip on by itself at the one-minute cap
+        recorder: recorderSeam.make((recording) => {
+          h.over = true;
+          buzz(15);
+          finish(h, recording);
+        }),
+        started: false,
+        released: false,
+        dropped: false,
+        over: false,
+      };
+      hold.current = h;
+      set(verse.n, { phase: 'recording' });
+      h.recorder.start().then(
+        () => {
+          h.started = true;
+          if (h.dropped) h.recorder.cancel();
+          else if (h.released) void h.recorder.stop().then((recording) => finish(h, recording));
+          else buzz(30);
+        },
+        (err: unknown) => {
+          if (hold.current === h) hold.current = null;
+          if (h.dropped) return;
+          const detail = err instanceof MicUnavailable || err instanceof Error ? err.message : 'The microphone could not be used.';
+          set(verse.n, { phase: 'failed', failure: 'mic', detail });
+        },
+      );
+    },
+    [finish, set],
+  );
+
+  const release = useCallback((): void => {
+    const h = hold.current;
+    if (!h || h.over) return;
+    h.released = true;
+    buzz(15);
+    // A stop() that finds the cap already stopped it fails: the cap hands that clip on, so there is nothing to do here.
+    if (h.started) void h.recorder.stop().then((recording) => finish(h, recording), () => undefined);
+  }, [finish]);
+
+  const drop = useCallback((): void => {
+    const h = hold.current;
+    if (!h || h.over) return;
+    h.dropped = true;
+    hold.current = null;
+    if (h.started) h.recorder.cancel();
+    set(h.verse.n, { phase: 'dropped' });
+  }, [set]);
+
+  const retry = useCallback(
+    (verse: Verse): void => {
+      const state = states[verse.n];
+      if (state?.phase === 'failed' && state.recording) send(verse, state.recording);
+    },
+    [states, send],
+  );
+
+  return { states, press, release, drop, retry };
+}

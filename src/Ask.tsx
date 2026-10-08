@@ -8,14 +8,7 @@ import { listAnswers, verseRef, type TutorAnswer } from './data/repositories';
 import { FAILURE_TITLES, MAX_QUESTION_CHARS } from './services/tutor';
 import type { AskState } from './useAsks';
 import { revealInScrollBox } from './ui/reveal';
-import { setVisibleInterval } from './ui/visibleInterval';
-
-/** Whole seconds since `since`, ticking while the page is visible. */
-function useElapsed(since: number): number {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => setVisibleInterval(() => setNow(Date.now()), 1000), []);
-  return Math.max(0, Math.floor((now - since) / 1000));
-}
+import { useElapsed } from './ui/useElapsed';
 
 export function Waiting({ state }: { state: Extract<AskState, { phase: 'sending' | 'waiting' }> }) {
   const seconds = useElapsed(state.startedAt);
