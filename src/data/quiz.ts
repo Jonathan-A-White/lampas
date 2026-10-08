@@ -94,6 +94,8 @@ export interface Occurrence {
   form: string;
   /** 'Romans 8:1' */
   reference: string;
+  /** the book's code ('rom', '1jn') */
+  book: string;
   chapter: number;
   verse: number;
 }
@@ -122,7 +124,7 @@ export function formsOf(chapter: Chapter, word: Word, others: ReadonlySet<string
   return chapter.verses.flatMap((v) =>
     v.g
       .filter((g) => isFormOf(g, lemmas, others))
-      .map((g) => ({ form: g.t, reference: `${chapter.book} ${chapter.chapter}:${v.n}`, chapter: chapter.chapter, verse: v.n })),
+      .map((g) => ({ form: g.t, reference: `${chapter.book} ${chapter.chapter}:${v.n}`, book: chapter.code, chapter: chapter.chapter, verse: v.n })),
   );
 }
 
@@ -133,7 +135,8 @@ export interface Question {
   prompt: string;
   /** Under the prompt when it is a form: 'Romans 8:1'. */
   reference?: string;
-  /** Where that form is, for Ask the tutor; a round kept before this was added has neither. */
+  /** Where that form is, for Ask the tutor; a round kept before this was added has neither. A round kept before the picker (mw-5r3p30.60) has no book: it was Romans. */
+  book?: string;
   chapter?: number;
   verse?: number;
   gloss: string;
@@ -149,6 +152,7 @@ export function buildQuestion(word: Word, pool: readonly Distractor[], chapter: 
     lemma: word.lemma,
     prompt: occurrence?.form ?? word.lemma,
     reference: occurrence?.reference,
+    book: occurrence?.book,
     chapter: occurrence?.chapter,
     verse: occurrence?.verse,
     gloss: word.gloss,
@@ -161,9 +165,12 @@ export function buildQuestion(word: Word, pool: readonly Distractor[], chapter: 
  * its own verse; a word the chapter does not have (or a round kept before verses were stored) is asked about generally, on
  * the chapter's first verse, because the Ask box needs a verse to open on.
  */
-export function askAbout(q: Question, fallback: { chapter: number; verse: number }): { chapter: number; verse: number; text: string } {
+export function askAbout(
+  q: Question,
+  fallback: { book: string; chapter: number; verse: number },
+): { book: string; chapter: number; verse: number; text: string } {
   if (q.chapter !== undefined && q.verse !== undefined && q.reference) {
-    return { chapter: q.chapter, verse: q.verse, text: `What does ${q.prompt} mean in ${q.reference}, and why does the verse use that form?` };
+    return { book: q.book ?? 'rom', chapter: q.chapter, verse: q.verse, text: `What does ${q.prompt} mean in ${q.reference}, and why does the verse use that form?` };
   }
   return { ...fallback, text: `What does the Greek word ${q.prompt} mean ("${q.gloss}"), and how is it used in the New Testament?` };
 }

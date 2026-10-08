@@ -148,8 +148,8 @@ describe('formsOf and buildQuestion: the form from Romans 8', () => {
   it('finds each occurrence of a word with its verse reference', () => {
     const forms = formsOf(chapter, { ...word('ἀγαπάω', 'learning'), lemmas: ['ἀγαπάω'] });
     expect(forms).toEqual([
-      { form: 'ἀγαπῶσιν', reference: 'Romans 8:1', chapter: 8, verse: 1 },
-      { form: 'ἠγάπησεν', reference: 'Romans 8:2', chapter: 8, verse: 2 },
+      { form: 'ἀγαπῶσιν', reference: 'Romans 8:1', book: 'rom', chapter: 8, verse: 1 },
+      { form: 'ἠγάπησεν', reference: 'Romans 8:2', book: 'rom', chapter: 8, verse: 2 },
     ]);
     expect(formsOf(chapter, word('δόξα', 'solid'))).toEqual([]);
   });
