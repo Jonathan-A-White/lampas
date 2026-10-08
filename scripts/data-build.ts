@@ -100,6 +100,8 @@ const COLUMNS = {
   parse: 8,
   strongs: 11,
   verseId: 12,
+  heading: 13,
+  paragraph: 15,
   begQ: 17,
   english: 18,
   pnc: 19,
@@ -108,7 +110,7 @@ const COLUMNS = {
 } as const;
 const EXPECTED_HEADER: Record<number, string> = {
   1: 'Greek Sort', 2: 'MSB Sort', 3: 'Verse', 4: 'Language', 6: 'MT Greek', 7: 'Translit', 8: 'Parsing',
-  11: 'Str Grk', 12: 'VerseId', 18: ' MSB version ', 19: 'pnc', 20: 'endQ', 22: 'End text',
+  11: 'Str Grk', 12: 'VerseId', 13: 'Hdg', 15: 'Par', 18: ' MSB version ', 19: 'pnc', 20: 'endQ', 22: 'End text',
 };
 
 interface MsbWord {
@@ -121,18 +123,24 @@ interface MsbWord {
   english: string;
   begQ: string;
   tail: string; // pnc + endQ + endText
+  par: string; // the MSB's paragraph markup on this word, '' when none
 }
 interface MsbVerse {
   book: string;
   chapter: number;
   n: number;
   words: MsbWord[];
+  heading: string; // the section heading that comes before this verse, '' when none
 }
 
 // In the MSB's English [square brackets] mark words supplied for the English, and {curly braces} words moved
 // here from another place; the marks come off, and only the first is kept (as the chunk's `s` flag).
 const stripTags = (s: string): string => s.replace(/<[^>]*>/g, '');
 const spaced = (s: string): string => stripTags(s).replace(/[[\]{}]/g, '');
+// A verse starts a paragraph when the MSB puts a paragraph tag that opens one (prose, or the first line of an
+// indented block) on its first word. The indented lines inside a poetry block (indent1, indent2) do not.
+const PARAGRAPH_OPENER = /^<p class=\|(?:reg|red|(?:indent|tab|list)1stline(?:red)?)\|>/;
+const headingOf = (cell: string): string => stripTags(cell).replace(/\s+/g, ' ').trim().normalize('NFC');
 const tidy = (s: string): string => spaced(s).replace(/\s+/g, ' ').replace(/\(\s+/g, '(').replace(/\s+\)/g, ')').trim();
 
 export function parseMsb(tsv: string): MsbVerse[] {
@@ -141,17 +149,18 @@ export function parseMsb(tsv: string): MsbVerse[] {
   for (const [col, name] of Object.entries(EXPECTED_HEADER)) {
     if (header[Number(col)] !== name) throw new Error(`MSB table: column ${col} should be ${JSON.stringify(name)}, is ${JSON.stringify(header[Number(col)])}`);
   }
-  const groups = new Map<string, { ref: string; rows: string[][] }>();
+  const groups = new Map<string, { ref: string; heading: string; rows: string[][] }>();
   for (const line of lines.slice(1)) {
     if (!line) continue;
     const f = line.split('\t');
     if (f[COLUMNS.language] !== 'Greek') continue; // the table ends with a sentinel row
     let group = groups.get(f[COLUMNS.group]);
-    if (!group) groups.set(f[COLUMNS.group], (group = { ref: '', rows: [] }));
+    if (!group) groups.set(f[COLUMNS.group], (group = { ref: '', heading: '', rows: [] }));
     if (f[COLUMNS.verseId]) {
       if (group.ref) throw new Error(`MSB table: verse group ${f[COLUMNS.group]} has two references`);
       group.ref = f[COLUMNS.verseId];
     }
+    if (f[COLUMNS.heading] && !group.heading) group.heading = headingOf(f[COLUMNS.heading]);
     if (f[COLUMNS.greek]) group.rows.push(f);
   }
 
@@ -186,7 +195,7 @@ export function parseMsb(tsv: string): MsbVerse[] {
   };
 
   const verses: MsbVerse[] = [];
-  for (const [id, { ref, rows }] of groups) {
+  for (const [id, { ref, heading, rows }] of groups) {
     const m = /^(.+) (\d+):(\d+)$/.exec(ref);
     if (!m) throw new Error(`MSB table: verse group ${id} has no usable reference (${JSON.stringify(ref)})`);
     const words = rows.map((f): MsbWord => {
@@ -203,9 +212,10 @@ export function parseMsb(tsv: string): MsbVerse[] {
         english: f[COLUMNS.english],
         begQ: f[COLUMNS.begQ],
         tail: f[COLUMNS.pnc] + f[COLUMNS.endQ] + f[COLUMNS.endText],
+        par: f[COLUMNS.paragraph],
       };
     });
-    verses.push({ book: m[1], chapter: Number(m[2]), n: Number(m[3]), words });
+    verses.push({ book: m[1], chapter: Number(m[2]), n: Number(m[3]), words, heading });
   }
   return verses;
 }
@@ -253,7 +263,15 @@ function buildVerse(v: MsbVerse, lex: Lexicon): Verse {
     if (c.s) chunk.s = 1;
     return chunk;
   });
-  return { n: v.n, g: g.map(ordered), e: english };
+  const first = [...v.words].sort((a, b) => a.msbSort - b.msbSort)[0];
+  // A fixed key order: n, h, p, g, e.
+  return {
+    n: v.n,
+    ...(v.heading ? { h: v.heading } : {}),
+    ...(first && PARAGRAPH_OPENER.test(first.par) ? { p: 1 as const } : {}),
+    g: g.map(ordered),
+    e: english,
+  };
 }
 
 // A fixed key order, so the output bytes never depend on the order the keys were set in.

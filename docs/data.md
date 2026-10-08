@@ -41,7 +41,7 @@ Compact: short keys, no indentation, each lexicon entry once per file.
 {"book":"Romans","code":"rom","chapter":8,
  "lex":{"G686":{"g":"therefore","d":"ἄρα, illative particle, ..."}},
  "parse":{"PRT":"particle","V-PAP-DPM":"verb, present active participle, dative plural masculine"},
- "verses":[{"n":1,
+ "verses":[{"n":1,"h":"Walking by the Spirit","p":1,
    "g":[{"t":"Οὐδὲν","tr":"ouden","s":"G3762","l":"οὐδείς","p":"A-NSN-N","e":2},
         {"t":"ἄρα","tr":"ara","s":"G686","l":"ἄρα","p":"PRT","e":0}, "..."],
    "e":[{"t":"Therefore","g":[1]},{"t":"there is now","g":[2],"s":1},{"t":"no","g":[0]}, "..."]}]}
@@ -52,6 +52,8 @@ Compact: short keys, no indentation, each lexicon entry once per file.
 | `lex` | every Strong's number used in the file, once: `g` gloss (TBESG), `d` definition (plain text, at most about 300 characters) |
 | `parse` | every parsing code used in the file, once, decoded to words by `src/data/parseCode.ts` |
 | `verses[].n` | the verse number; a verse the Byzantine text lacks is not listed |
+| `verses[].h` | the MSB's section heading (English, plain text) that comes **before** this verse; absent on a verse with no heading. All 993 headings of the table are carried |
+| `verses[].p` | `1` when the MSB starts a paragraph at this verse; absent otherwise (see below) |
 | `verses[].g` | the Greek words **in Greek order**; a word's position in this array is its index |
 | `g[].t` | the word as the Byzantine text has it (NFC) |
 | `g[].tr` | transliteration |
@@ -69,8 +71,15 @@ Links are mutual: `e[g[i].e].g` contains `i`, and every `g[e[j].g[k]].e` is `j`.
 In the MSB table a word whose English is `-` or `vvv` has no English (no `e`, no chunk). A word whose English is
 `. . .` is rendered by the chunk that completes it later in the English ("In all, then, there were fourteen
 . . . generations"): its index joins that chunk's `g` array. Quotation marks and punctuation that sit on a word
-with no English of its own move to the neighbouring chunk. Headings, paragraph marks and footnotes in the table
-are not carried.
+with no English of its own move to the neighbouring chunk. Footnotes in the table are not carried.
+
+Headings and paragraphs come from two columns of the table. `Hdg` (`<p class=|hdg|>Walking by the Spirit`) is on
+the first word of the verse the heading comes before; the tag comes off and the text is `h`. `Par` is the paragraph
+tag the MSB puts on a word: a verse gets `p: 1` when the tag on its **first** word opens a paragraph (`reg`, `red`
+for the words of Jesus, or the first line of an indented block: `indent1stline`, `tab1stline`, `list1stline` and their
+`red` forms). The indented lines inside a poetry block (`indent1`, `indent2`) are not paragraph starts. A paragraph
+that starts in the middle of a verse is not carried: a break is only ever at a verse. The first verse of a chapter
+starts a paragraph whether or not it has `p`; the reader treats it so.
 
 ## Changes to the sources
 
