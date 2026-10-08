@@ -43,7 +43,7 @@ function MicIcon() {
 export function TalkBar({ hold }: { hold: HoldHandlers }) {
   const press = useHoldPress(hold);
   return (
-    <div data-talk-bar className="shrink-0 border-t border-line bg-surface px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
+    <div data-talk-bar className="shrink-0 border-t border-line bg-surface px-3 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))]">
       <button
         type="button"
         {...press}
@@ -251,7 +251,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, onSay, onClose }:
               </div>
             ) : null}
           </div>
-          <div className="shrink-0 space-y-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+          <div className="shrink-0 space-y-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+var(--lp-bar-inset))]">
             {voice.listening ? (
               <div data-talk-live role="status" className="rounded-2xl border border-bad px-3 py-2">
                 <p className="text-sm font-medium text-bad">{voice.ready ? 'Listening… let go to send, slide away to cancel' : 'Starting the microphone…'}</p>

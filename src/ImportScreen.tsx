@@ -72,7 +72,7 @@ export function ImportScreen() {
           </ul>
         ) : null}
       </main>
-      <footer className="shrink-0 border-t border-line px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+      <footer className="shrink-0 border-t border-line px-3 pt-3 pb-[calc(0.75rem+var(--lp-bar-inset))]">
         <p data-testid="import-summary" className="mb-2 text-center text-sm text-muted">
           {summary}
         </p>

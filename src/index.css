@@ -79,6 +79,12 @@
   /* A line of reading text: 44 px so a tapped word is a thumb tall, or 1.4 lines of larger type when that is taller.
    * Written with em, so it is worked out on the element that uses it. */
   --lp-leading: max(var(--lp-tap), 1.4em);
+
+  /* What the phone's navigation bar may cover at the bottom, in px (never scaled by the text size). Android Chrome does not
+   * always report it in env(safe-area-inset-bottom) (mw-5r3p30.39), so each has a floor: --lp-bar-inset under a pinned bottom
+   * bar or sheet (a gesture bar's height), --lp-end-inset under the last row of a scroll box (a three-button bar's height). */
+  --lp-bar-inset: max(env(safe-area-inset-bottom), 24px);
+  --lp-end-inset: max(env(safe-area-inset-bottom), 48px);
 }
 
 @media (prefers-color-scheme: light) {
@@ -166,7 +172,7 @@ html {
 .screen {
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(1rem + var(--lp-end-inset));
 }
 
 button,

@@ -89,7 +89,7 @@ export function WordSheet({ chapter, lookup, onClose }: { chapter: Chapter; look
             Done
           </button>
         </div>
-        <div className="max-h-[60dvh] overflow-y-auto overscroll-contain px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3">
+        <div className="max-h-[60dvh] overflow-y-auto overscroll-contain px-4 pb-[calc(1rem+var(--lp-end-inset))] pt-3">
           {lookup.fromEnglish && lookup.english ? (
             <p className="mb-3 pr-14 text-lg text-muted">
               <span className="sr-only">English: </span>“{lookup.english}”

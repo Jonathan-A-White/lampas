@@ -137,5 +137,8 @@ docs/data.md         # the data's JSON shape, its two sources and licences, and 
   UI code goes through `src/data/repositories`, never Dexie tables directly.
 - Page never scrolls: html, body and `#root` are `overflow: clip` at `100dvh`; screens scroll in their own
   `.screen` box. Focus with `focusQuietly` (preventScroll); no `autoFocus`.
+- Bottom insets: never write `env(safe-area-inset-bottom)` in a component. A pinned bar or sheet pads with `var(--lp-bar-inset)`
+  and the end of a scroll box with `var(--lp-end-inset)` (src/index.css: the phone's inset with a 24 px / 48 px floor, because
+  Android Chrome does not always report the navigation bar). tests/e2e/bottom-reach.spec.ts holds the proof.
 - Raw text downloads (`data/raw`) stay out of git; the generated JSON per chapter is committed.
   `ATTRIBUTION.md` names every text and licence.

@@ -101,7 +101,7 @@ export function WordsScreen() {
             role="alertdialog"
             aria-modal="true"
             aria-labelledby="drop-title"
-            className="w-full rounded-t-2xl border-t border-line bg-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]"
+            className="w-full rounded-t-2xl border-t border-line bg-surface p-4 pb-[calc(1rem+var(--lp-bar-inset))]"
           >
             <h2 id="drop-title" className="text-lg font-semibold">
               Drop <span lang="grc" className="font-greek text-2xl">{confirming}</span>?
