@@ -49,7 +49,7 @@ export function WordsScreen() {
       <ScreenHeader
         title="Words"
         subtitle={words ? <span data-testid="word-counts">{countLine(words)}</span> : null}
-        back={<HeaderButton onClick={() => navigate('home')}>‹ Home</HeaderButton>}
+        back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>}
         action={<HeaderButton onClick={() => navigate('import')}>Import</HeaderButton>}
       />
       <main className="screen min-h-0 flex-1 px-3">
