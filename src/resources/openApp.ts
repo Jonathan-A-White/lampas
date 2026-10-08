@@ -1,6 +1,7 @@
 // src/resources/openApp.ts — a study link to an app opens by the app's own scheme (the link's href; the phone hands it to the app).
 // When the phone has no app for the scheme nothing happens at all, so a tap also arms this: if the page is still in front after
 // `waitMs` (no app took it: the page was not hidden, blurred or left), the link's https fallback is opened. https only, never the other way round.
+// A link with no fallback says so instead: `onMissing` is called (the word sheet then tells him the app is not on the phone).
 
 export interface OpenEnv {
   waitMs: number;
@@ -12,7 +13,7 @@ export interface OpenEnv {
 }
 
 export const browserEnv: OpenEnv = {
-  waitMs: 1800,
+  waitMs: 1500,
   after: (fn) => {
     const id = window.setTimeout(fn, browserEnv.waitMs);
     return () => window.clearTimeout(id);
@@ -35,13 +36,16 @@ export const browserEnv: OpenEnv = {
   },
 };
 
-/** Arms the fallback for a tap on an app link. Does nothing without a fallback, or for one that is not https. */
-export function armFallback(fallback: string | undefined, env: OpenEnv = browserEnv): void {
-  if (!fallback?.startsWith('https://')) return;
+/** Arms the wait for a tap on an app link. When the page is still in front after it: opens the https fallback, or, for a link with none
+ *  (or one that is not https), calls `onMissing`. With neither, nothing is armed. */
+export function armFallback(fallback: string | undefined, env: OpenEnv = browserEnv, onMissing?: () => void): void {
+  const web = fallback?.startsWith('https://') ? fallback : undefined;
+  const run = web ? (): void => env.open(web) : onMissing;
+  if (!run) return;
   let stopListening = (): void => {};
   const cancel = env.after(() => {
     stopListening();
-    env.open(fallback);
+    run();
   });
   stopListening = env.onAway(() => {
     cancel();

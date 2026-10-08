@@ -99,3 +99,69 @@ test('The Logos lexicons are a compact list at 360 px: bounded height, its own s
   await logosSwitch.evaluate((el) => el.scrollIntoView({ block: 'start' }));
   await shot(page, 'settings-logos-list');
 });
+
+test('The Study links are equal tiles in two columns at 360 px, and an app that does not open says so', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 740 });
+  await openUnlocked(page);
+  // Headless Chromium stops at a link to an app scheme (an unanswered prompt eats the clicks that follow); the tap itself still reaches the page.
+  await page.addInitScript(() => {
+    window.addEventListener('click', (e) => {
+      const link = (e.target as Element).closest('a');
+      if (link && !/^https?:/.test(link.href)) e.preventDefault();
+    }, true);
+  });
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  const section = page.getByRole('region', { name: 'Study resources' });
+  await section.getByRole('switch', { name: 'Logos', exact: true }).click();
+  const lexham = section.getByRole('checkbox', { name: 'Lexham Theological Wordbook', exact: true });
+  await lexham.scrollIntoViewIfNeeded();
+  await lexham.click();
+  await section.getByRole('switch', { name: 'Accordance', exact: true }).evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  await section.getByRole('switch', { name: 'Accordance', exact: true }).click();
+  await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
+  await page.locator('[data-verse="28"]').getByRole('button', { name: 'work together', exact: true }).click();
+
+  const study = page.getByRole('dialog', { name: 'Word' }).getByRole('group', { name: 'Study', exact: true });
+  const logos = study.getByRole('group', { name: 'Logos', exact: true });
+  const tiles = logos.getByRole('link');
+  await expect(tiles).toHaveText(['BDAG', 'Lexham', 'Word Study']);
+  const boxes = await study.getByRole('link').evaluateAll((els) => els.map((el) => {
+    const r = el.getBoundingClientRect();
+    const label = el.querySelector('span') as HTMLElement;
+    return { x: r.x, w: r.width, h: r.height, right: r.right, wrapped: label.scrollWidth > label.clientWidth, lines: Math.round(label.getBoundingClientRect().height / parseFloat(getComputedStyle(label).lineHeight)) };
+  }));
+  expect(boxes).toHaveLength(4);
+  for (const b of boxes) {
+    expect(b.h).toBeGreaterThanOrEqual(47.5);
+    expect(b.w).toBeCloseTo(boxes[0].w, 0);
+    expect(b.right).toBeLessThanOrEqual(360);
+    expect(b.wrapped).toBe(false);
+    expect(b.lines).toBe(1);
+  }
+  expect(new Set(boxes.map((b) => Math.round(b.x))).size).toBe(2);
+
+  // Accordance is not on this phone: the tap leaves the page in front, and the sheet says so.
+  await study.getByRole('group', { name: 'Accordance', exact: true }).getByRole('link').click();
+  const sheet = page.getByRole('dialog', { name: 'App not on this phone' });
+  await expect(sheet).toBeVisible({ timeout: 4000 });
+  await expect(sheet.getByText("Accordance isn't on this phone")).toBeVisible();
+  const get = sheet.getByRole('link', { name: 'Get Accordance', exact: true });
+  await expect(get).toHaveAttribute('href', /play\.google\.com\/store\/search\?q=Accordance/);
+  const off = sheet.getByRole('button', { name: 'Turn off Accordance', exact: true });
+  for (const control of [get, off]) {
+    const b = await control.boundingBox();
+    expect(b?.height).toBeGreaterThanOrEqual(47.5);
+    expect((b?.x ?? 0) + (b?.width ?? 0)).toBeLessThanOrEqual(360);
+    expect(b?.height).toBeLessThan(60); // one line of text
+  }
+  await shot(page, 'app-missing-sheet');
+  await off.click();
+  await expect(sheet).toHaveCount(0);
+  await expect(study.getByRole('group', { name: 'Accordance', exact: true })).toHaveCount(0);
+  await expect(study.getByRole('group', { name: 'Logos', exact: true })).toBeVisible();
+  const fits = await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+  expect(fits).toBe(true);
+  await shot(page, 'word-sheet-study-grid');
+});

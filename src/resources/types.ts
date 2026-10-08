@@ -18,8 +18,10 @@ export interface StudyWord {
 }
 
 export interface StudyLink {
-  /** what the link says on the word sheet */
+  /** what the link is called: its accessible name, and what it says on the word sheet unless `tile` is given */
   label: string;
+  /** the short words on the link's tile in the word sheet's grid ('BDAG', 'Word Study'); `label` when absent */
+  tile?: string;
   /** the app's own scheme (logosres:, logos4:, accord:), or https for a web page */
   url: string;
   /** an https address opened only when `url` is an app scheme the phone could not open (src/resources/openApp.ts) */

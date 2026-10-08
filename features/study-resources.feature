@@ -2,7 +2,7 @@ Feature: Study resources
   Settings has a Study resources section that lists every resource registered in src/resources/ with an on/off switch,
   all off to start with. A word's sheet shows a Study row with the links of every resource switched on (Strong's: its
   G-number as a link to the public STEPBible entry; Logos: Open in Logos: <lexicon> for each lexicon he ticked in Settings, BDAG by default, and
-  Bible Word Study in Logos; Accordance: Open in Accordance, to his own copy of a lexicon), and no row when none is on. Only links are built; no lexicon text is bundled
+  Bible Word Study in Logos; Accordance: Open in Accordance, to his own copy of a lexicon), and no row when none is on. An app that does not open says so (features/app-missing.feature). Only links are built; no lexicon text is bundled
   or fetched. The switches are kept in the settings store and survive a close.
 
   Scenario: Settings lists Strong's, Logos and Accordance, all switched off
