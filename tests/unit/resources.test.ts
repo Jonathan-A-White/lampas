@@ -9,6 +9,11 @@ const WORD: StudyWord = { form: 'συνεργεῖ', lemma: 'συνεργέω', 
 /** βίβλος, tapped at Acts 19:19 */
 const BIBLOS: StudyWord = { form: 'βίβλους', lemma: 'βίβλος', strongs: 'G976', ref: { book: 'act', chapter: 19, verse: 19 } };
 const BIBLOS_URL = encodeURIComponent('βίβλος');
+/** Logos names a Greek lemma lbs/el/<lemma>, its slashes escaped (Logos' own Copy-location form; docs/resources.md) */
+const BIBLOS_LEMMA = encodeURIComponent('lbs/el/βίβλος');
+const JESUS_LEMMA = 'lbs%2Fel%2F%E1%BC%B8%CE%B7%CF%83%CE%BF%E1%BF%A6%CF%82';
+/** Ἰησοῦς, tapped as Ἰησοῦ at Romans 8:1 */
+const JESUS: StudyWord = { form: 'Ἰησοῦ', lemma: 'Ἰησοῦς', strongs: 'G2424', ref: { book: 'rom', chapter: 8, verse: 1 } };
 
 describe('the registry', () => {
   it('lists Strong\'s, Logos and Accordance with distinct ids and a name and a description each', () => {
@@ -60,14 +65,23 @@ describe('the registry', () => {
     expect(links.map((l) => l.label)).toEqual(['Open in Logos: BDAG', 'Open in Logos: Louw-Nida', 'Bible Word Study in Logos']);
     expect(links[0].url).toBe(`logosres:bdag;hw=${BIBLOS_URL}`);
     expect(links[1].url).toBe(`logosres:louwnida;hw=${BIBLOS_URL}`);
-    expect(links[2].url).toBe(`logos4:Guide;t=Bible%20Word%20Study;lemma=${BIBLOS_URL};ref=Bible.Ac19.19`);
+    expect(links[2].url).toBe(`logos4:Guide;t=Bible%20Word%20Study;lemma=${BIBLOS_LEMMA};ref=Bible.Ac19.19`);
   });
 
   it('gives every Logos link its https address as the fallback, used only when the scheme cannot open', () => {
     const links = resourceOf('logos')?.linksFor(BIBLOS, 'bdag') ?? [];
     expect(links[0].fallback).toBe(`https://ref.ly/logosres/bdag?hw=${BIBLOS_URL}`);
-    expect(links[1].fallback).toBe(`https://ref.ly/logos4/Guide;t=Bible%20Word%20Study;lemma=${BIBLOS_URL};ref=Bible.Ac19.19`);
+    expect(links[1].fallback).toBe(`https://ref.ly/logos4/Guide;t=Bible%20Word%20Study;lemma=${BIBLOS_LEMMA};ref=Bible.Ac19.19`);
     for (const link of links) expect(new URL(link.fallback ?? '').protocol).toBe('https:');
+  });
+
+  it('names the lemma the way Logos does, lbs/el/<lemma> with its slashes escaped, for Ἰησοῦς alone and at Romans 8:1', () => {
+    const alone = resourceOf('logos')?.linksFor({ ...JESUS, ref: undefined }, '') ?? [];
+    expect(alone[0].url).toBe(`logos4:Guide;t=Bible%20Word%20Study;lemma=${JESUS_LEMMA}`);
+    expect(alone[0].fallback).toBe(`https://ref.ly/logos4/Guide;t=Bible%20Word%20Study;lemma=${JESUS_LEMMA}`);
+    const atVerse = resourceOf('logos')?.linksFor(JESUS, '') ?? [];
+    expect(atVerse[0].url).toBe(`logos4:Guide;t=Bible%20Word%20Study;lemma=${JESUS_LEMMA};ref=Bible.Ro8.1`);
+    expect(atVerse[0].fallback).toBe(`https://ref.ly/logos4/Guide;t=Bible%20Word%20Study;lemma=${JESUS_LEMMA};ref=Bible.Ro8.1`);
   });
 
   it('leaves the verse out of the Bible Word Study link when the word has none, and builds no lexicon link for none ticked', () => {
