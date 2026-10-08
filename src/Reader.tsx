@@ -480,7 +480,8 @@ export function Reader() {
     },
     [plan],
   );
-  const readingVerse = reading.status === 'idle' || reading.answer !== null ? null : reading.verse;
+  const chapterReading = reading.status !== 'idle' && reading.answer === null;
+  const readingVerse = chapterReading ? reading.verse : null;
   const blocks = useMemo(() => (chapter && layout ? blocksOf(chapter.verses, layout) : []), [chapter, layout]);
   const wovenCount = woven ? woven.reduce((n, w) => n + w.filter(Boolean).length, 0) : 0;
 
@@ -557,9 +558,11 @@ export function Reader() {
   return (
     <>
       <header className="flex shrink-0 items-center gap-1 border-b border-line px-2 py-2">
-        <h1 className="chrome-title min-w-0 flex-1 truncate px-1 font-semibold">{TITLE}</h1>
+        {/* While the chapter is read the header gives its room to Pause and Stop; the title stays for screen readers. */}
+        <h1 className={`chrome-title min-w-0 truncate px-1 font-semibold ${chapterReading ? 'sr-only' : 'flex-1'}`}>{TITLE}</h1>
+        {chapterReading ? <span className="flex-1" /> : null}
         {view ? <ViewSwitch view={view} /> : null}
-        {plan ? <ReadFromButton from={selected} onRead={() => readFrom(selected ?? 1, true)} /> : null}
+        {plan ? <ReadFromButton from={selected} reading={reading} onRead={() => readFrom(selected ?? 1, true)} /> : null}
         <button
           type="button"
           aria-label="Settings"
