@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { listWords, setWordState, type Word, type WordState } from './data/repositories';
 import { navigate } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
 
 const NEXT: Record<WordState, WordState> = { solid: 'learning', learning: 'dropped', dropped: 'learning' };
@@ -65,13 +66,14 @@ export function WordsScreen() {
             </h2>
             <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
               {g.words.map((w) => (
-                <li key={w.lemma}>
+                <li key={w.lemma} className="flex items-stretch">
+                  <SpeakButton text={w.lemma} id={`word:${w.lemma}`} label="Hear it" kind="speaker" className="w-12 shrink-0 rounded-l-xl" />
                   <button
                     type="button"
                     data-lemma={w.lemma}
                     data-state={w.state}
                     onClick={() => tap(w)}
-                    className="flex min-h-14 w-full min-w-0 items-center gap-3 px-3 py-2 text-left"
+                    className="flex min-h-14 min-w-0 flex-1 items-center gap-3 py-2 pl-1 pr-3 text-left"
                   >
                     <span className="min-w-0 flex-1">
                       <span lang="grc" className={`block break-words font-greek text-2xl ${w.state === 'dropped' ? 'text-muted' : ''}`}>

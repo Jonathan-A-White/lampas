@@ -9,6 +9,7 @@ import { getReaderView, getWeave, listSolidLemmas, setReaderView, setWeave, type
 import { weaveVerse, type Woven } from './data/weave';
 import { navigate } from './nav/route';
 import { HeaderButton } from './ScreenHeader';
+import { SpeakButton } from './speech/SpeakButton';
 import { WordSheet, type Lookup } from './WordSheet';
 
 const BOOK = 'rom';
@@ -149,6 +150,13 @@ function VerseView({ verse, view, woven, selected, onSelect, onLook }: {
               );
             })}
       </span>
+      <SpeakButton
+        text={verse.g.map((w) => w.t).join(' ')}
+        id={`verse:${verse.n}`}
+        label="Hear the verse"
+        kind="play"
+        className="align-baseline font-sans"
+      />
     </p>
   );
 }
