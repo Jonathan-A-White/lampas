@@ -73,6 +73,7 @@ src/Ask.tsx          # the Ask box under the selected verse (field, Sending / Wa
 src/useAsks.ts       # the questions in flight by verse; a question keeps waiting when he selects another verse; the answer is stored when it comes
 src/services/tutor.ts  # askTutor: bsv-kit door + grist.sendGrist + grist.awaitAnswer; the request and answer shapes, isVerseAnswer, tutorTimings (poll 3 s, 180 s deadline)
 grinds/              # the mill's grind for lampas: verse-ask.json + instructions + answer schema (same keys as SpellForge's tutor-turn.json)
+src/events/bus.ts   # the typed event bus screens talk through: publish, subscribe, latest, useEvent, useLatest; docs/events.md lists every kind, who publishes, who listens
 src/WordSheet.tsx    # the bottom sheet a tapped word opens (tap outside, swipe down on the handle, Done or Escape closes it)
 src/speech/          # greek.ts: speak(text, key) with speechSynthesis, lang el-GR, the phone's Greek voice, no server; a second tap on the same key stops it; hasGreekVoice() true/false/'unknown'; SpeakButton.tsx: the speaker on a word (aria-label 'Hear it') and the play button on a verse ('Hear the verse'), with the one-line no-Greek-voice help
 src/fonts/           # Gentium Plus (Greek + Greek Extended, 400 and 700 woff2) and its OFL licence; @font-face is in src/index.css
@@ -100,6 +101,7 @@ features/ tests/     # BDD features + steps; unit tests; e2e + shots; support fa
 docs/pwa-best-practices.md   # copied verbatim from the vault; the law for every screen
 docs/example-words.md        # the owner's own BMA word list (public, an example template); the seed's source
 docs/testing.md      # the gate's test seam: where the device key lives and how a test seeds it
+docs/events.md       # every event kind on the bus, its payload, who publishes and who listens
 docs/data.md         # the data's JSON shape, its two sources and licences, and what the build changes
 ```
 
