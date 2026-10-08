@@ -32,7 +32,7 @@ percent-encoded UTF-8, in NFC.
 
 ## Logos: his lexicons, the scheme and the fallback
 
-With Logos on, Settings shows his Logos lexicons as a ticked list (BDAG ticked until he changes it; the ticked ids are a JSON
+With Logos on, Settings shows his Logos lexicons as a searchable, scrolling ticked list (`src/ui/SearchableList.tsx`: a search field, the ticked ones first, a box about five rows high that scrolls on its own; BDAG ticked until he changes it; the ticked ids are a JSON
 array in `resourceOption.logos`). The list is data: `LEXICONS` in `src/resources/logos.ts`, in the order Logos' Bible Word Study
 shows them; adding a lexicon is one line there. Each ticked one gives `Open in Logos: <name>` on the word sheet, and one
 `Bible Word Study in Logos` link (at the verse, `ref=Bible.Ro8.28`, when the sheet knows it) always comes with Logos.

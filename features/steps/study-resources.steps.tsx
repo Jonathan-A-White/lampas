@@ -71,6 +71,22 @@ const ticks = async (_: unknown, name: string): Promise<void> => {
   if (box.getAttribute('aria-checked') !== 'true') await user.click(box);
   await waitFor(() => expect(box).toHaveAttribute('aria-checked', 'true'));
 };
+const listNames = (): string[] =>
+  within(screen.getByRole('group', { name: 'Logos lexicons' }))
+    .queryAllByRole('checkbox')
+    .map((c) => c.textContent?.replace('✓', '').trim() ?? '');
+const typesSearch = async (_: unknown, text: string): Promise<void> => {
+  await user.type(await screen.findByRole('searchbox', { name: 'Search Logos lexicons' }), text);
+};
+const listShows = async (_: unknown, name: string): Promise<void> => {
+  expect(await screen.findByRole('checkbox', { name })).toBeInTheDocument();
+};
+const listLacks = (_: unknown, name: string): void => {
+  expect(screen.queryByRole('checkbox', { name })).toBeNull();
+};
+const listCount = (_: unknown, n: number): void => {
+  expect(listNames()).toHaveLength(n);
+};
 const link = (label: string): HTMLElement | null => {
   const row = studyRow();
   if (!row) throw new Error('no Study row');
@@ -212,6 +228,57 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the Logos lexicon {string} stays ticked', async (_, name: string) => {
       expect(await lexicon(name)).toHaveAttribute('aria-checked', 'true');
+    });
+  });
+
+  Scenario('Searching the Logos lexicons narrows the list, and clearing the search brings every lexicon back', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
+    When("he taps the gear in the reader's header", openSettings);
+    And('he switches on the study resource {string}', switchOn);
+    And('he types {string} in the Logos lexicons search', typesSearch);
+    Then('the Logos lexicons list shows {string}', listShows);
+    And('the Logos lexicons list does not show {string}', listLacks);
+    And('the Logos lexicons list also does not show {string}', listLacks);
+    When('he clears the Logos lexicons search', async () => {
+      await user.clear(screen.getByRole('searchbox', { name: 'Search Logos lexicons' }));
+    });
+    Then('the Logos lexicons list is back with {string}', listShows);
+    And('the Logos lexicons list also shows {string}', listShows);
+    And('the Logos lexicons list holds {int} lexicons', listCount);
+  });
+
+  Scenario('A search with no match says so', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
+    When("he taps the gear in the reader's header", openSettings);
+    And('he switches on the study resource {string}', switchOn);
+    And('he types {string} in the Logos lexicons search', typesSearch);
+    Then('the Logos lexicons list holds {int} lexicons', listCount);
+    And('the Logos lexicons list says {string}', async (_, text: string) => {
+      expect(await screen.findByText(text)).toBeInTheDocument();
+    });
+  });
+
+  Scenario('Ticking a lexicon found by search is saved as before', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
+    When("he taps the gear in the reader's header", openSettings);
+    And('he switches on the study resource {string}', switchOn);
+    And('he types {string} in the Logos lexicons search', typesSearch);
+    And('he ticks the Logos lexicon {string}', ticks);
+    Then('the setting {string} holds {string}', async (_, key: string, value: string) => {
+      await waitFor(async () => expect((await db.settings.get(key))?.value).toBe(value));
+    });
+  });
+
+  Scenario('Ticked lexicons are listed first', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
+    When("he taps the gear in the reader's header", openSettings);
+    And('he switches on the study resource {string}', switchOn);
+    And('he ticks the Logos lexicon {string}', ticks);
+    And('Lampas is opened again', mount);
+    And('he opens Settings again', openSettings);
+    Then('the Logos lexicons list starts with {string}, {string}, {string}', async (_, a: string, b: string, c: string) => {
+      await screen.findByRole('checkbox', { name: a });
+      expect(listNames().slice(0, 3)).toEqual([a, b, c]);
     });
   });
 });
