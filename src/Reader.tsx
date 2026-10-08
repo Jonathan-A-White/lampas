@@ -31,6 +31,7 @@ import {
   type ReaderView,
 } from './data/repositories';
 import { chapterOf, getOpenChapter, setOpenChapter, type OpenChapter } from './data/readerChapter';
+import { ChapterNav } from './ChapterNav';
 import { ChapterPicker } from './ChapterPicker';
 import { weaveVerse, type Woven } from './data/weave';
 import { BuildVersion } from './BuildVersion';
@@ -732,6 +733,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                 </Fragment>
               );
             })}
+            <ChapterNav book={BOOK} chapter={CHAPTER} />
             <BuildVersion className="px-3 pt-6" />
             <div className="flex justify-center pb-4">
               <HeaderButton onClick={() => navigate('about')}>About</HeaderButton>
