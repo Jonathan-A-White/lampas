@@ -30,3 +30,5 @@ export { addAnswer, listAnswers, verseRef } from './answers';
 export type { AnswerWord, TutorAnswer } from './answers';
 export { addTurn, listTurns, talkRef } from './talks';
 export type { TalkTurn } from './talks';
+export { listDrillResults, recordDrillStep } from './drills';
+export type { DrillResult } from './drills';

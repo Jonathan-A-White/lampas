@@ -56,6 +56,18 @@ export interface TalkTurn {
   when: number;
 }
 
+/** One step of one word in the Parsing drill: 'tense' of λέγω, answered rightly or not. */
+export interface DrillResult {
+  id?: number;
+  /** the word's key in the store: the headword he knows it by */
+  lemma: string;
+  /** the step asked: 'pos', 'tense', 'case', 'number+gender' ... (src/data/drill.ts) */
+  step: string;
+  /** when he answered (ms since the epoch) */
+  when: number;
+  right: boolean;
+}
+
 /** One-off facts about the store, such as 'wordsSeeded'. */
 export interface MetaRow {
   key: string;
@@ -77,6 +89,7 @@ class LampasDB extends Dexie {
   results!: EntityTable<TestResult, 'id'>;
   answers!: EntityTable<TutorAnswer, 'id'>;
   talks!: EntityTable<TalkTurn, 'id'>;
+  drills!: EntityTable<DrillResult, 'id'>;
 
   constructor() {
     super('lampas');
@@ -109,6 +122,16 @@ class LampasDB extends Dexie {
       results: '++id, [lemma+when]',
       answers: '++id, [ref+when]',
       talks: '++id, [ref+when]',
+    });
+    // v7: the Parsing drill's steps {lemma, step, when, right}; [lemma+step] reads one word's answers to one step.
+    this.version(7).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
     });
   }
 }
