@@ -68,10 +68,12 @@ test('the Words screen has a speaker beside each lemma that speaks it in Greek',
   await shot(page, 'words-audio');
 });
 
-test('each verse has a play button that speaks its Greek, and the tapped-word card has a speaker', async ({ page }) => {
+test('each verse has a play button that speaks its Greek in the Greek view, and the tapped-word card has a speaker', async ({ page }) => {
   await withGreekVoice(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await page.getByRole('button', { name: 'Greek', exact: true }).click();
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'greek');
 
   const play = page.locator('[data-verse="1"]').getByRole('button', { name: 'Hear the verse' });
   const box = await play.boundingBox();
@@ -89,7 +91,6 @@ test('each verse has a play button that speaks its Greek, and the tapped-word ca
   await expect(play).toHaveAttribute('aria-pressed', 'false');
   expect(await spoken(page)).toHaveLength(1);
 
-  await page.getByRole('button', { name: 'Greek', exact: true }).click();
   await page.locator('[data-verse="1"] [data-word="0"]').click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
@@ -106,7 +107,7 @@ test('each verse has a play button that speaks its Greek, and the tapped-word ca
   await shot(page, 'word-card-audio');
 });
 
-test('without a Greek voice the button still shows and a tap puts one line of help on screen', async ({ page }) => {
+test("without a Greek voice a word's speaker still shows and a tap puts one line of help on screen", async ({ page }) => {
   await openUnlocked(page);
   await page.addInitScript(() => {
     const synth = {
@@ -121,8 +122,8 @@ test('without a Greek voice the button still shows and a tap puts one line of he
     };
     Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
   });
-  await page.goto('/');
-  await page.locator('[data-verse="1"]').getByRole('button', { name: 'Hear the verse' }).click();
+  await page.goto('/#/words');
+  await page.getByRole('button', { name: 'Hear it', exact: true }).first().click();
   const help = page.getByRole('status');
   await expect(help).toContainText('No Greek voice on this');
   const box = await help.boundingBox();

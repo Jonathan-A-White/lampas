@@ -167,6 +167,10 @@ test('a slower Greek rate slows a Greek speaker button and leaves English at its
   await play.click();
   expect(await lastRate(page)).toBe(1);
   await play.click();
+  const showGreek = async () => {
+    await page.getByRole('button', { name: 'Greek', exact: true }).click();
+    await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'greek');
+  };
 
   await openSettings(page);
   const english = page.getByRole('slider', { name: 'English speed' });
@@ -184,6 +188,11 @@ test('a slower Greek rate slows a Greek speaker button and leaves English at its
   await shot(page, 'settings-speed');
 
   await backToReader(page);
+  // the reader shows English: its play button reads English, at the English rate
+  await play.click();
+  expect(await lastRate(page)).toBe(0.8);
+  await play.click();
+  await showGreek();
   await play.click();
   expect(await lastRate(page)).toBe(0.6);
 });
@@ -209,6 +218,8 @@ test('Theme, Text size and both rates survive a reload', async ({ page }) => {
   await expect(page.getByRole('slider', { name: 'Greek speed' })).toHaveValue('1.3');
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe('25.6px');
   await backToReader(page);
+  await page.getByRole('button', { name: 'Greek', exact: true }).click();
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'greek');
   await page.locator('[data-verse="1"]').getByRole('button', { name: 'Hear the verse' }).click();
   expect(await lastRate(page)).toBe(1.3);
 });

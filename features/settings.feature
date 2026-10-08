@@ -26,6 +26,7 @@ Feature: Settings
     When he taps the gear in the reader's header
     And he chooses the Greek voice "Greek (Cyprus)" in Settings
     And he taps Back on the Settings screen
+    And he switches the reader to Greek
     And he taps the play button of verse 1
     Then the phone speaks verse 1 with the voice "Greek (Cyprus)"
 

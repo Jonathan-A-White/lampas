@@ -113,6 +113,11 @@ const expectSpoken = (text: string, lang: string) => {
 const helpLine = () => screen.getByRole('status');
 const expectNothingSpoken = () => expect(synth.spoken).toHaveLength(0);
 
+async function switchToGreek(): Promise<void> {
+  await user.click(screen.getByRole('button', { name: 'Greek' }));
+  await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-view')).toBe('greek'));
+}
+
 const feature = await loadFeature('features/greek-audio.feature');
 
 describeFeature(feature, ({ Scenario }) => {
@@ -128,10 +133,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario("The speaker on a tapped word's sheet speaks the word as it stands in the text", ({ Given, When, And, Then }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([GREEK_VOICE]));
-    When('he switches the reader to Greek', async () => {
-      await user.click(screen.getByRole('button', { name: 'Greek' }));
-      await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-view')).toBe('greek'));
-    });
+    When('he switches the reader to Greek', switchToGreek);
     And('he taps the word {string} in verse {int}', async (_, text: string, n: number) => {
       await user.click(within(verseEl(n)).getByRole('button', { name: text }));
     });
@@ -141,8 +143,9 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the phone is told to speak {string} in {string}', (_, text: string, lang: string) => expectSpoken(text, lang));
   });
 
-  Scenario("A verse's play button speaks the verse's Greek", ({ Given, When, Then, And }) => {
+  Scenario("A verse's play button speaks the verse's Greek when the reader shows Greek", ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([GREEK_VOICE]));
+    And('he switches the reader to Greek', switchToGreek);
     When('he taps the play button of verse {int}', (_, n: number) => tapPlay(n));
     Then('the phone is told to speak the Greek of verse {int} in {string}', (_, n: number, lang: string) =>
       expectSpoken(verseGreek(n), lang),
@@ -154,6 +157,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A second tap on the same verse stops it', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([GREEK_VOICE]));
+    And('he switches the reader to Greek', switchToGreek);
     And('he taps the play button of verse {int}', (_, n: number) => tapPlay(n));
     When('he taps the play button of verse {int} again', (_, n: number) => tapPlay(n));
     Then('the phone is told to stop', () => {
@@ -169,6 +173,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Tapping another verse stops the first and speaks the second', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([GREEK_VOICE]));
+    And('he switches the reader to Greek', switchToGreek);
     And('he taps the play button of verse {int}', (_, n: number) => tapPlay(n));
     When('he taps the play button of verse {int}', (_, n: number) => tapPlay(n));
     Then('the phone is told to stop before it speaks the Greek of verse {int}', (_, n: number) => {
@@ -176,16 +181,6 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the play button of verse {int} shows it is not playing', (_, n: number) => {
       expect(playButton(n)).toHaveAttribute('aria-pressed', 'false');
-    });
-  });
-
-  Scenario('Without a Greek voice a tap shows one line of help and nothing is spoken', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on an Android phone with no Greek voice', () => openWith([ENGLISH_VOICE], ANDROID));
-    When('he taps the play button of verse {int}', (_, n: number) => tapPlay(n));
-    Then('the help line reads {string}', (_, line: string) => expect(helpLine()).toHaveTextContent(line));
-    And('nothing is spoken', expectNothingSpoken);
-    And('the play button of verse {int} still shows', (_, n: number) => {
-      expect(playButton(n)).toBeVisible();
     });
   });
 
@@ -199,13 +194,15 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A browser that is not Android gets the generic line', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a computer with no Greek voice', () => openWith([ENGLISH_VOICE]));
-    When('he taps the play button of verse {int}', (_, n: number) => tapPlay(n));
+    When('he opens Words', openWords);
+    And('he taps the speaker of the word {string}', (_, lemma: string) => tapWordSpeaker(lemma));
     Then('the help line reads {string}', (_, line: string) => expect(helpLine()).toHaveTextContent(line));
     And('nothing is spoken', expectNothingSpoken);
   });
 
   Scenario('A phone that lists no voices yet is still asked to speak', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone that has not listed its voices', () => openWith([]));
+    And('he switches the reader to Greek', switchToGreek);
     When('he taps the play button of verse {int}', (_, n: number) => tapPlay(n));
     Then('the phone is told to speak the Greek of verse {int} in {string}', (_, n: number, lang: string) =>
       expectSpoken(verseGreek(n), lang),

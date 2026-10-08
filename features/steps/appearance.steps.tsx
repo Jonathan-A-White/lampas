@@ -127,9 +127,14 @@ const speedsAre = async (english: number, greek: number) =>
     expect(Number((slider('Greek speed') as HTMLInputElement).value)).toBe(greek);
   });
 
-/** Back in the reader, taps the play button of verse 1 and reads the rate the phone was told. */
+/** Back in the reader showing Greek (a verse's play button reads what is shown), taps the play button of verse 1 and
+ * reads the rate the phone was told. */
 async function greekRateOfAButton(): Promise<number> {
   await backToReader();
+  if (document.querySelector('[data-reader]')?.getAttribute('data-view') !== 'greek') {
+    await user.click(screen.getByRole('button', { name: 'Greek' }));
+    await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-view')).toBe('greek'));
+  }
   const play = within(document.querySelector<HTMLElement>('[data-verse="1"]')!).getByRole('button', { name: 'Hear the verse' });
   const before = synth.spoken.length;
   await user.click(play);

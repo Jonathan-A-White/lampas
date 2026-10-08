@@ -147,6 +147,10 @@ describeFeature(feature, ({ Scenario }) => {
       await user.selectOptions(await greekPicker(), name);
     });
     And('he taps Back on the Settings screen', goBack);
+    And('he switches the reader to Greek', async () => {
+      await user.click(screen.getByRole('button', { name: 'Greek' }));
+      await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-view')).toBe('greek'));
+    });
     And('he taps the play button of verse {int}', async (_, n: number) => {
       await user.click(within(verseEl(n)).getByRole('button', { name: 'Hear the verse' }));
     });
