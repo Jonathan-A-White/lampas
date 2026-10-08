@@ -561,4 +561,28 @@ describeFeature(feature, ({ Scenario }) => {
       expect(await listed(lemma)).toHaveLength(1);
     });
   });
+
+  Scenario("Saying add for a word outside the chapter adds it with the lexicon's gloss", ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the words to add προσκυνέω', () => open(adding('προσκυνέω')));
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('the answer shows the line {string}', async (_, line: string) => {
+      await waitFor(() => expect(lines()).toContain(line));
+    });
+    And('the word {string} is on the list once, as a word he is learning, with the gloss {string}', async (_, lemma: string, gloss: string) => {
+      expect(await listed(lemma)).toMatchObject([{ lemma, state: 'learning', lesson: 0, gloss }]);
+    });
+  });
+
+  Scenario('Saying add for a word the lexicon does not know says so and adds nothing', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the words to add ζζζ', () => open(adding('ζζζ')));
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('the answer shows the line {string}', async (_, line: string) => {
+      await waitFor(() => expect(lines()).toContain(line));
+    });
+    And('the word {string} is not on the list', async (_, lemma: string) => {
+      expect(await listed(lemma)).toHaveLength(0);
+    });
+  });
 });

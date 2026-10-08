@@ -42,7 +42,7 @@ npm run e2e:live     # the live tests (tests/e2e/*-live.spec.ts: tutor-live asks
                      #   no key or no backend; spends a grind of fuel per question; not in the gate or `npm run shots`; tests/e2e/live.ts holds the key lookup they share
 npm run grind:build  # writes the settings the bible-talk grind may change (settings_changes in its answer schema, the list in its instructions) from src/settings/registry.ts;
                      #   run it after adding a setting to the registry; tests/unit/bible-talk-grind.test.ts fails when grinds/ is behind it
-npm run data:build   # data/raw (git-ignored, downloaded if absent) -> public/data/<book>/<chapter>.json + index.json;
+npm run data:build   # data/raw (git-ignored, downloaded if absent) -> public/data/<book>/<chapter>.json + index.json + lexicon.json;
                      #   the output is committed and a second run changes nothing (docs/data.md)
 ```
 
@@ -82,7 +82,7 @@ src/Talk.tsx useTalk.ts services/talk.ts  # Bible talk: the Talk bar pinned unde
                      #   useTalk keeps the messages in flight per conversation (a message keeps waiting when the sheet closes; an answer that comes while its sheet is open is read aloud);
                      #   services/talk.ts is the bible-talk kind: the request (reference, greek, english of the verse or of the chapter's first 3 verses, question <= 600, history = the last 10 turns {q, a}, solid_words, settings = what every registry setting holds now),
                      #   fitHistory (cuts old answers, then old turns, to fit the grist's 10 KiB record), REFUSAL (the one sentence for anything outside the Bible), isTalkAnswer (the answer may carry settings_changes [{key, value}]: useTalk applies them at once and the turn keeps changes/refused, shown in the Talk sheet as 'Changed: Greek speed 0.8x' with an Undo); data/answerWord.ts finds an answer's Greek word in the chapter for the word sheet;
-                     #   Add to my words (mw-5r3p30.44): each explained word of an answer has a button (Talk.tsx AddWord) that calls repositories/words.ts addWordToLearn(lemma, gloss) and reads 'On my list' once the lemma is listed (wordIsListed; a dropped word is not); the answer may carry `words_to_add` (lemmas, <= 12, in the grind's schema and instructions, and isTalkAnswer): useTalk adds each once and keeps added/already on the turn, shown as 'Added σάρξ to your words'
+                     #   Add to my words (mw-5r3p30.44): each explained word of an answer has a button (Talk.tsx AddWord) that calls data/answerWord.ts addLemmaToLearn(scope, lemma) and reads 'On my list' once the lemma is listed (wordIsListed; a dropped word is not); the answer may carry `words_to_add` (lemmas, <= 12, in the grind's schema and instructions, and isTalkAnswer): useTalk adds each once (addLemmaToLearn: gloss and part of speech `pos` from data/lexicon.ts, the whole text's lemma list in public/data/lexicon.json, so a word outside the open chapter works; mw-5r3p30.52) and keeps added/already/unknown on the turn, shown as 'Added σάρξ to your words' and, for a lemma the lexicon lacks, which is not added, 'I do not know ζζζ'
                      #   Help with this word (mw-5r3p30.34): each word on the word sheet has Grammar | Sound it out (WordSheet onHelp); the Reader's helpWithWord closes the sheet, opens the Talk sheet on the word's verse and sends the first question
                      #   (helpQuestion) with a `focus` {form, lemma, parse, kind grammar|sound} (TalkFocus in the request, grinds/bible-talk.input.schema.json; useTalk keeps it for Retry) and publishes word-help; Sound it out says the form slowly at the tap
                      #   (speakWord slow, SLOW_FACTOR) and, when the answer lists `syllables`, reads each one slowly in Greek (answerRuns.ts syllableRuns, Run.slow) instead of the answer's text
@@ -149,7 +149,7 @@ src/data/parseCode.ts # RP parsing code -> plain words (decodeParse, shared by t
 scripts/data-build.ts # the New Testament data build (npx tsx); tests/fixtures/data/ holds small source slices
 public/              # icon.svg (lamp glyph), icon-192.png, icon-512.png
 public/pictures/     # the hand-drawn memory pictures, one SVG each (docs/pictures.md says how to add one)
-public/data/         # generated NT JSON, committed (~30 MB); only index.json and rom/8.json are precached
+public/data/         # generated NT JSON, committed (~30 MB); only index.json, lexicon.json and rom/8.json are precached
 features/ tests/     # BDD features + steps; unit tests; e2e + shots; support fakes
 docs/pwa-best-practices.md   # copied verbatim from the vault; the law for every screen
 docs/example-words.md        # the owner's own BMA word list (public, an example template); the seed's source

@@ -10,6 +10,8 @@ export interface Word {
   /** The lexicon lemmas that match it (see lemma.ts); indexed so the weave can look a lemma up. */
   lemmas: string[];
   gloss: string;
+  /** The part of speech ('noun', 'verb' ...) when the lexicon gave it, for a word added from a Talk answer; not indexed, so no version bump. */
+  pos?: string;
   /** The BMA lesson it came from; 0 for a word added by Import or from a Talk answer, with no lesson. */
   lesson: number;
   state: WordState;
@@ -63,6 +65,8 @@ export interface TalkTurn {
   added?: string[];
   /** the lemmas the answer asked to add that were on his list already */
   already?: string[];
+  /** the lemmas the answer asked to add that neither his list nor the lexicon has: not added, and said so */
+  unknown?: string[];
 }
 
 /** One step of one word in the Parsing drill: 'tense' of λέγω, answered rightly or not. */

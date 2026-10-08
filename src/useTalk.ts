@@ -2,9 +2,8 @@
 // answer is kept when it comes and `onAnswered` is told, so a sheet still open can read it aloud. They all stop when the
 // reader goes away.
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { glossOf } from './data/answerWord';
-import { addTurn, addWordToLearn, listSolidHeadwords, listTurns, talkRef } from './data/repositories';
-import { normaliseHeadword } from './data/lemma';
+import { addLemmaToLearn } from './data/answerWord';
+import { addTurn, listSolidHeadwords, listTurns, talkRef } from './data/repositories';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { TutorError } from './services/tutor';
 import { applyChanges, currentSettings } from './settings/registry';
@@ -27,21 +26,22 @@ export interface AnswerInfo {
   syllables?: string[];
 }
 
-/** Puts the lemmas an answer asked for on his words-to-learn list, once each; says which were new and which were there already. */
-async function addWords(scope: TalkScope, lemmas: string[]): Promise<{ added: string[]; already: string[] }> {
+/** Puts the lemmas an answer asked for on his words-to-learn list, once each, with the lexicon's gloss; says which were new, which
+ * were there already and which the lexicon does not know (those are not added). */
+async function addWords(scope: TalkScope, lemmas: string[]): Promise<{ added: string[]; already: string[]; unknown: string[] }> {
   const added: string[] = [];
   const already: string[] = [];
+  const unknown: string[] = [];
   const seen = new Set<string>();
   for (const lemma of lemmas) {
-    const headword = normaliseHeadword(lemma);
+    const { headword, result } = await addLemmaToLearn(scope, lemma);
     if (!headword || seen.has(headword)) continue;
     seen.add(headword);
-    const gloss = glossOf(scope, { greek: headword, lemma: headword, note: '' });
-    const done = await addWordToLearn(headword, gloss);
-    if (done === 'added') added.push(headword);
-    else if (done === 'already') already.push(headword);
+    if (result === 'added') added.push(headword);
+    else if (result === 'already') already.push(headword);
+    else if (result === 'unknown') unknown.push(headword);
   }
-  return { added, already };
+  return { added, already, unknown };
 }
 
 /** `onAnswered(ref, turnId, answer, info)` is called once an answer has been kept. */
@@ -88,8 +88,8 @@ export function useTalk(book: string, chapter: number, onAnswered: (ref: string,
           });
           // The settings he asked for are applied at once (the registry checks each), then kept with the turn for its Undo.
           const { applied, refused } = await applyChanges(answer.settings_changes);
-          const { added, already } = await addWords(scope, answer.words_to_add ?? []);
-          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { changes: applied, refused, added, already });
+          const { added, already, unknown } = await addWords(scope, answer.words_to_add ?? []);
+          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { changes: applied, refused, added, already, unknown });
           set(undefined);
           if (!signal.aborted) answered.current(ref, id, answer.answer, { focus, syllables: answer.syllables });
         } catch (err) {

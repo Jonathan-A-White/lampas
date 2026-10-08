@@ -62,19 +62,19 @@ export async function wordIsListed(lemma: string): Promise<boolean> {
 /**
  * Puts a lemma on the list as a word he is learning (the Talk answer's Add to my words, and a words_to_add the tutor sends).
  * 'already' when it is there (as a learning or solid word, found by headword or lexicon lemma): nothing changes. A dropped word
- * goes back to learning. 'ignored' for a blank lemma. A new word has no lesson (0) and the gloss given.
+ * goes back to learning. 'ignored' for a blank lemma. A new word has no lesson (0), the gloss given and, when given, its part of speech.
  */
-export async function addWordToLearn(lemma: string, gloss = '', now = Date.now()): Promise<'added' | 'already' | 'ignored'> {
+export async function addWordToLearn(lemma: string, gloss = '', now = Date.now(), pos = ''): Promise<'added' | 'already' | 'ignored'> {
   const { headword, lemmas } = normaliseLemma(lemma);
   if (!headword) return 'ignored';
   return db.transaction('rw', db.words, async () => {
     const found = await findListed(headword, lemmas);
     if (!found) {
-      await db.words.add({ lemma: headword, lemmas, gloss, lesson: 0, state: 'learning', since: now });
+      await db.words.add({ lemma: headword, lemmas, gloss, ...(pos ? { pos } : {}), lesson: 0, state: 'learning', since: now });
       return 'added';
     }
     if (found.state !== 'dropped') return 'already';
-    await db.words.update(found.lemma, { state: 'learning', since: now, ...(found.gloss || !gloss ? {} : { gloss }) });
+    await db.words.update(found.lemma, { state: 'learning', since: now, ...(found.gloss || !gloss ? {} : { gloss }), ...(found.pos || !pos ? {} : { pos }) });
     return 'added';
   });
 }

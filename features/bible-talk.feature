@@ -193,3 +193,17 @@ Feature: Bible talk
     Then the answer shows the line "Added σάρξ to your words"
     And the answer also shows the line "θεός is already on your words"
     And the word "θεός" is on the list once
+
+  Scenario: Saying add for a word outside the chapter adds it with the lexicon's gloss
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the words to add προσκυνέω
+    And he opens Talk
+    When he sends "add προσκυνέω to my words"
+    Then the answer shows the line "Added προσκυνέω to your words"
+    And the word "προσκυνέω" is on the list once, as a word he is learning, with the gloss "to worship"
+
+  Scenario: Saying add for a word the lexicon does not know says so and adds nothing
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the words to add ζζζ
+    And he opens Talk
+    When he sends "add ζζζ to my words"
+    Then the answer shows the line "I do not know ζζζ"
+    And the word "ζζζ" is not on the list
