@@ -1,0 +1,33 @@
+import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { pwaManifest, THEME_COLOR } from '../../pwa-manifest';
+import { injectManifestOptions } from '../../pwa-precache';
+
+const html = readFileSync('index.html', 'utf-8');
+
+describe('pwaManifest', () => {
+  it('is Lampas, standalone, scoped to the root of its own domain', () => {
+    expect(pwaManifest.name).toBe('Lampas');
+    expect(pwaManifest.short_name).toBe('Lampas');
+    expect(pwaManifest.display).toBe('standalone');
+    expect(pwaManifest.start_url).toBe('/');
+    expect(pwaManifest.scope).toBe('/');
+  });
+
+  it('has the same theme colour as index.html', () => {
+    expect(pwaManifest.theme_color).toBe(THEME_COLOR);
+    expect(pwaManifest.background_color).toBe(THEME_COLOR);
+    expect(html).toContain(`<meta name="theme-color" content="${THEME_COLOR}" />`);
+  });
+
+  it('ships PNG icons at 192 and 512, one of them maskable, and a PNG touch icon for iOS', () => {
+    const icons = pwaManifest.icons ?? [];
+    expect(icons.some((i) => i.sizes === '192x192' && i.type === 'image/png')).toBe(true);
+    expect(icons.some((i) => i.sizes === '512x512' && i.type === 'image/png' && i.purpose === 'maskable')).toBe(true);
+    expect(html).toContain('<link rel="apple-touch-icon" href="/icon-192.png" />');
+  });
+
+  it('raises the precache size limit past workbox default of 2 MiB', () => {
+    expect(injectManifestOptions.maximumFileSizeToCacheInBytes).toBeGreaterThan(2 * 1024 * 1024);
+  });
+});
