@@ -81,6 +81,7 @@ describeFeature(feature, ({ Scenario }) => {
         id: 'shouting',
         label,
         lang: 'el-GR',
+        scoringLang: 'el',
         note: 'Test scheme.',
         respell: (word) => word.normalize('NFD').replace(/\p{M}/gu, '').toUpperCase(),
       });

@@ -82,7 +82,7 @@ export interface FixWord {
 
 /** The result of the last reading check of a verse, kept so it is there on return. */
 export interface VerseReading {
-  /** the verse it was read from: 'rom.8.28', the key */
+  /** the verse it was read from, the key: 'rom.8.28' for an English reading, 'rom.8.28:el' for one in another language */
   ref: string;
   verdict: 'well-read' | 'some-to-fix';
   words: FixWord[];

@@ -15,6 +15,7 @@
   },
   "scoring": {
     "audio": true,
-    "target_field": "target_text"
+    "target_field": "target_text",
+    "langs": ["en", "el"]
   }
 }

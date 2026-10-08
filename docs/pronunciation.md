@@ -11,7 +11,7 @@ sound-alikes for the letters.
 ## How it is built
 
 `src/speech/pronunciation.ts` is the registry: a list of `Pronunciation` entries
-`{ id, label, lang, note, respell(greekWord) }`. Settings lists the entries, the word sheet calls
+`{ id, label, lang, scoringLang, note, respell(greekWord) }`. Settings lists the entries, the word sheet calls
 `pronunciationOf(chosen).respell(word.t)`, and `lang` is the language tag of the voice that speaks (Settings keeps
 the chosen id under `greekPronunciation`). Each scheme is one file in `src/speech/schemes/`.
 
@@ -42,7 +42,10 @@ moving to the next syllable the longest group of consonants that can open a Gree
 2. Put it in `SCHEMES` in `src/speech/pronunciation.ts`, after Modern Greek. Settings, the saved choice and the word
    sheet pick it up; nothing else names an id.
 3. Add the id's voice language: `lang` is what the utterance uses. If the phone has no voice for it, say so in `note`.
-4. Test it the way `tests/unit/respell-modern.test.ts` does, one row per rule.
+4. Set `scoringLang`: the language the Greek reading check asks the mill to score a reading in (modern Greek is `el`).
+   It goes as `lang` on the verse-read grist, so the grind's `scoring.langs` (grinds/verse-read.json) must list it and the
+   mill's scorers must be able to score it; a scheme the mill cannot score cannot be given a reading check until they can.
+5. Test it the way `tests/unit/respell-modern.test.ts` does, one row per rule.
 
 A test adds a scheme for one scenario with `registerPronunciation(scheme)`, which returns the function that takes
 it out again (features/pronunciation.feature).

@@ -201,6 +201,7 @@ export const MODERN: Pronunciation = {
   id: 'modern',
   label: 'Modern Greek',
   lang: 'el-GR',
+  scoringLang: 'el',
   note: "How Greek is spoken today, by the phone's Greek voice.",
   respell: respellModern,
 };

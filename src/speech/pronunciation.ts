@@ -12,6 +12,8 @@ export interface Pronunciation {
   label: string;
   /** the language tag put on every utterance, and the language of the voices offered for it */
   lang: string;
+  /** the language the mill scores a reading of the Greek in (a grind's scoring.langs): modern Greek is 'el' */
+  scoringLang: string;
   /** a line under the label in Settings */
   note: string;
   /** the Greek word as syllables an English reader can say, the stressed one in capitals: 'χριστῷ' is 'hree-STO' */

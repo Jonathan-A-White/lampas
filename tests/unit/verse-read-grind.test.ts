@@ -20,7 +20,15 @@ describe('grinds/verse-read.json', () => {
 
   it('takes one recording of audio/webm, audio/ogg or audio/mp4, up to 8 MiB, and scores it against target_text', () => {
     expect(grind.attachments).toEqual({ min: 1, max: 1, mime: ['audio/webm', 'audio/ogg', 'audio/mp4'], maxBytes: 8388608 });
-    expect(grind.scoring).toEqual({ audio: true, target_field: 'target_text' });
+    expect(grind.scoring).toEqual({ audio: true, target_field: 'target_text', langs: ['en', 'el'] });
+  });
+
+  it('scores in English and in modern Greek, and its instructions cover a Greek reading', () => {
+    expect((grind.scoring as { langs: string[] }).langs).toEqual(['en', 'el']);
+    const text = readFileSync(grind.instructions as string, 'utf8');
+    expect(text).toContain('`el`');
+    expect(text).toContain('modern Greek pronunciation');
+    expect(text).toContain('Greek syllables');
   });
 
   it('names an instructions file and an answer schema that exist', () => {
