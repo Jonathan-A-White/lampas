@@ -44,6 +44,8 @@
   --color-muted: var(--lp-muted);
   --color-accent: var(--lp-accent);
   --color-accent-fg: var(--lp-accent-fg);
+  --color-good: var(--lp-good);
+  --color-bad: var(--lp-bad);
 
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-greek: "Gentium Plus", "Noto Serif", "Cardo", "Times New Roman", serif;
@@ -63,6 +65,8 @@
   --lp-greek-size: 1.75rem;
   --lp-english-size: 1.25rem;
   --lp-tap: 2.75rem;
+  --lp-good: #3fb97a;
+  --lp-bad: #ef6a6a;
 }
 
 @media (prefers-color-scheme: light) {
@@ -75,6 +79,8 @@
     --lp-muted: #525c70;
     --lp-accent: #b7790f;
     --lp-accent-fg: #ffffff;
+    --lp-good: #15803d;
+    --lp-bad: #c62828;
   }
 }
 

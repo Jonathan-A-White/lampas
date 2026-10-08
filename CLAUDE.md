@@ -62,7 +62,7 @@ build-version.ts     # '<version> · <UTC time> · <commit>' stamp shown on the 
 vite.config.ts       # react, tailwind 4, vite-plugin-pwa (injectManifest, registerType 'prompt')
 src/main.tsx         # scroll guard first, then render, then register the worker
 src/App.tsx          # the shell (data-shell); picks the screen by hash route (src/nav/route.ts); seeds words on first open
-src/Reader.tsx WordsScreen.tsx ImportScreen.tsx  # the three screens (#/ , #/words, #/import); the Reader is Romans 8, English | Greek
+src/Reader.tsx WordsScreen.tsx ImportScreen.tsx QuizScreen.tsx  # the screens (#/ , #/words, #/import, #/test); the Reader is Romans 8, English | Greek
 src/WordSheet.tsx    # the bottom sheet a tapped word opens (tap outside, swipe down on the handle, Done or Escape closes it)
 src/fonts/           # Gentium Plus (Greek + Greek Extended, 400 and 700 woff2) and its OFL licence; @font-face is in src/index.css
 src/UpdateBanner.tsx # 'Update ready, tap to reload'; the tap posts SKIP_WAITING
@@ -70,8 +70,9 @@ src/sw.ts            # the worker: precache, precache guard, SKIP_WAITING, claim
 src/precacheGuard.ts # never serve a .js/.css whose Content-Type does not fit
 src/services/appUpdate.ts  # watches the registration, tap -> SKIP_WAITING -> reload once, periodic update check
 src/ui/              # scrollGuard.ts (page never scrolls), focus.ts (focus with preventScroll)
-src/data/db.ts       # Dexie, version 3: words {lemma key, lemmas, gloss, lesson, state, since}, meta and settings {key, value}
-src/data/repositories/  # the only way UI reaches Dexie (words.ts: seed on first open, list, set state, import; settings.ts: the reader's English | Greek view)
+src/data/db.ts       # Dexie, version 4: words {lemma key, lemmas, gloss, lesson, state, since}, meta and settings {key, value}, results {lemma, when, right}
+src/data/repositories/  # the only way UI reaches Dexie (words.ts: seed on first open, list, set state, import; settings.ts: the reader's English | Greek view; results.ts: recordAnswer)
+src/data/quiz.ts     # Quick test, pure: nextState (the two-in-a-row rule), drawWords, buildOptions, buildQuestion; the random source is injected (mulberry32 in tests; App's newRandom prop)
 src/data/lemma.ts    # BMA lemma -> headword (the key) + TBESG lexicon lemmas (εἶπεν -> λέγω, εἶπον ...)
 src/data/importWords.ts  # parses pasted 'lemma — gloss' lines and rows of the example table
 src/data/seed-words.ts   # GENERATED from docs/example-words.md by scripts/seed-build.ts: 63 words

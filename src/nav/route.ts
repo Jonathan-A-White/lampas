@@ -1,7 +1,7 @@
-// src/nav/route.ts — three screens, told apart by the address hash, so the phone's Back button walks them.
+// src/nav/route.ts — four screens, told apart by the address hash, so the phone's Back button walks them.
 import { useSyncExternalStore } from 'react';
 
-export type Route = 'home' | 'words' | 'import';
+export type Route = 'home' | 'words' | 'import' | 'test';
 
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((l) => l());
@@ -18,6 +18,7 @@ function subscribe(listener: () => void): () => void {
 export function routeOf(hash: string): Route {
   if (hash === '#/words') return 'words';
   if (hash === '#/import') return 'import';
+  if (hash === '#/test') return 'test';
   return 'home';
 }
 

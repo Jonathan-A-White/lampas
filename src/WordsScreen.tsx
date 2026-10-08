@@ -50,7 +50,12 @@ export function WordsScreen() {
         title="Words"
         subtitle={words ? <span data-testid="word-counts">{countLine(words)}</span> : null}
         back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>}
-        action={<HeaderButton onClick={() => navigate('import')}>Import</HeaderButton>}
+        action={
+          <>
+            <HeaderButton onClick={() => navigate('test')}>Test</HeaderButton>
+            <HeaderButton onClick={() => navigate('import')}>Import</HeaderButton>
+          </>
+        }
       />
       <main className="screen min-h-0 flex-1 px-3">
         {groups.map((g) => (

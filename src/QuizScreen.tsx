@@ -1,0 +1,187 @@
+// src/QuizScreen.tsx — the Quick test: ten questions on his solid and learning words. Tap one of four
+// glosses, see at once whether it was right, go on; the end screen gives the score and the misses.
+import { useEffect, useState } from 'react';
+import { loadChapter, type Chapter } from './data/chapter';
+import { listWords, recordAnswer, seedWordsIfFirstOpen } from './data/repositories';
+import { buildQuestion, drawWords, seedDistractors, type Question, type Random } from './data/quiz';
+import { navigate } from './nav/route';
+import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { focusOnMount } from './ui/focus';
+
+type Round = { status: 'loading' } | { status: 'ready'; questions: Question[] };
+
+/** The chapter the inflected forms come from. A phone that cannot load it is asked the plain lemmas. */
+const loadForms = (): Promise<Chapter | null> => loadChapter('rom', 8).catch(() => null);
+
+async function drawRound(random: Random): Promise<Question[]> {
+  // A first open seeds the words; wait for it so a round opened straight away has words to ask.
+  await seedWordsIfFirstOpen();
+  const [words, chapter] = await Promise.all([listWords(), loadForms()]);
+  const pool = seedDistractors();
+  return drawWords(words, random).map((w) => buildQuestion(w, pool, chapter, random));
+}
+
+const OPTION_BASE = 'block min-h-14 w-full rounded-xl border px-4 py-3 text-left text-lg disabled:opacity-100';
+const OPTION_LOOK = {
+  idle: 'border-line bg-surface',
+  right: 'border-good bg-good/20 font-medium',
+  wrong: 'border-bad bg-bad/20 font-medium',
+  other: 'border-line bg-surface text-muted',
+};
+
+export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
+  const [round, setRound] = useState<Round>({ status: 'loading' });
+  const [index, setIndex] = useState(0);
+  const [picked, setPicked] = useState<string | null>(null);
+  const [missed, setMissed] = useState<Question[]>([]);
+
+  const another = () => {
+    setRound({ status: 'loading' });
+    setIndex(0);
+    setPicked(null);
+    setMissed([]);
+    void drawRound(newRandom()).then((questions) => setRound({ status: 'ready', questions }));
+  };
+
+  useEffect(() => {
+    let current = true;
+    void drawRound(newRandom()).then((questions) => current && setRound({ status: 'ready', questions }));
+    return () => {
+      current = false;
+    };
+    // A round is drawn once, when the screen opens; Another round draws the next.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const questions = round.status === 'ready' ? round.questions : [];
+  const total = questions.length;
+  const finished = round.status === 'ready' && index >= total && total > 0;
+  const question = questions[index];
+
+  const pick = (option: string) => {
+    if (!question || picked !== null) return;
+    const right = option === question.gloss;
+    setPicked(option);
+    if (!right) setMissed((m) => [...m, question]);
+    void recordAnswer(question.lemma, right);
+  };
+
+  const subtitle = question ? `${index + 1} of ${total}` : null;
+  const header = (
+    <ScreenHeader
+      title="Quick test"
+      subtitle={subtitle}
+      back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>}
+    />
+  );
+
+  if (round.status === 'loading') return <>{header}<main className="screen min-h-0 flex-1" aria-busy="true" /></>;
+
+  if (total === 0) {
+    return (
+      <>
+        {header}
+        <main className="screen min-h-0 flex-1 px-6 pt-8 text-center">
+          <p className="text-lg">No words to test yet.</p>
+          <p className="mt-1 text-muted">Words that are solid or learning are asked here. Add some with Import.</p>
+        </main>
+      </>
+    );
+  }
+
+  if (finished) {
+    const score = total - missed.length;
+    return (
+      <>
+        {header}
+        <main className="screen min-h-0 flex-1 px-4 pt-6">
+          <p data-testid="score" className="text-center text-4xl font-semibold">
+            {score} of {total}
+          </p>
+          {missed.length > 0 ? (
+            <section aria-labelledby="missed-title" className="mt-6">
+              <h2 id="missed-title" className="px-1 pb-1 text-sm font-semibold uppercase tracking-wide text-muted">
+                Missed
+              </h2>
+              <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
+                {missed.map((q) => (
+                  <li key={q.lemma} data-missed={q.lemma} className="px-3 py-2">
+                    <span lang="grc" className="block break-words font-greek text-2xl">{q.lemma}</span>
+                    <span className="block break-words text-sm text-muted">{q.gloss}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : (
+            <p className="mt-6 text-center text-lg">All right. Well done.</p>
+          )}
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <button type="button" onClick={() => navigate('home')} className="min-h-12 rounded-xl border border-line text-lg font-medium">
+              Done
+            </button>
+            <button type="button" onClick={another} className="min-h-12 rounded-xl bg-accent text-lg font-medium text-accent-fg">
+              Another round
+            </button>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  const answered = picked !== null;
+  const last = index === total - 1;
+  const lookOf = (option: string): keyof typeof OPTION_LOOK => {
+    if (!answered) return 'idle';
+    if (option === question.gloss) return 'right';
+    return option === picked ? 'wrong' : 'other';
+  };
+  return (
+    <>
+      {header}
+      <main className="screen min-h-0 flex-1 px-4 pt-6">
+        <div className="text-center">
+          <p data-testid="prompt" data-lemma={question.lemma} lang="grc" className="break-words font-greek text-5xl">
+            {question.prompt}
+          </p>
+          <p className="mt-1 min-h-6 text-base text-muted">{question.reference ?? ''}</p>
+        </div>
+        <ul className="mt-6 space-y-3">
+          {question.options.map((option) => {
+            const look = lookOf(option);
+            return (
+              <li key={`${index}:${option}`}>
+                <button
+                  type="button"
+                  data-option
+                  data-result={look === 'right' || look === 'wrong' ? look : undefined}
+                  disabled={answered}
+                  onClick={() => pick(option)}
+                  className={`${OPTION_BASE} ${OPTION_LOOK[look]}`}
+                >
+                  {option}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+        <p data-testid="feedback" role="status" className="mt-4 min-h-12 text-center text-lg">
+          {!answered ? '' : picked === question.gloss ? 'Right.' : `Not quite. It means: ${question.gloss}`}
+        </p>
+        {answered ? (
+          <button
+            type="button"
+            data-testid="next"
+            ref={focusOnMount}
+            onClick={() => {
+              setPicked(null);
+              setIndex(index + 1);
+            }}
+            className="mt-2 min-h-12 w-full rounded-xl bg-accent text-lg font-medium text-accent-fg"
+          >
+            {last ? 'Finish' : 'Next'}
+          </button>
+        ) : null}
+      </main>
+    </>
+  );
+}
