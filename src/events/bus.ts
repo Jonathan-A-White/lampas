@@ -3,6 +3,8 @@
 // kept, so a screen that mounts late still knows the current verse. docs/events.md lists every kind.
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import type { ReaderView, ReadingLayout, SectionHeadings, Weave } from '../data/repositories';
+import type { Theme } from '../appearance/themes';
+import type { SpeechRates } from '../speech/languages';
 import type { GreekPronunciation } from '../speech/pronunciation';
 
 export type AppEvent =
@@ -15,6 +17,12 @@ export type AppEvent =
   /** the voices he chose in Settings, as the phone's voiceURI; null is the phone's default */
   | { kind: 'voices-changed'; english: string | null; greek: string | null }
   | { kind: 'pronunciation-changed'; pronunciation: GreekPronunciation }
+  /** the Theme he chose in Settings */
+  | { kind: 'theme-changed'; theme: Theme }
+  /** the Text size he chose, as a percent of the phone's own (85 to 160) */
+  | { kind: 'text-size-changed'; percent: number }
+  /** how fast each language is spoken, 0.5 to 1.5, 1 normal */
+  | { kind: 'rates-changed'; rates: SpeechRates }
   | { kind: 'verse-reading'; chapter: number; verse: number }
   | { kind: 'reading-stopped' }
   | { kind: 'word-tapped'; strongs: string; verse: number };

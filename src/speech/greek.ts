@@ -1,12 +1,12 @@
-// src/speech/greek.ts — modern Greek read aloud by the phone's own voice (Web Speech, el-GR), no server.
+// src/speech/greek.ts — the phone's own voice reading aloud (Web Speech), no server: modern Greek (el-GR) first, and any
+// language in src/speech/languages.ts at its own speed.
 // speak() is called straight from the tap handler (docs/pwa-best-practices.md section 12: a speak() that leaves the
 // tap loses user activation on Android Chrome), so it never waits: the voice list is loaded ahead by warmVoices(),
 // and a phone that has not listed its voices yet is still asked to speak with lang 'el-GR' and picks its own.
 import { useRef, useSyncExternalStore } from 'react';
+import { DEFAULT_RATES, LANGUAGES, normaliseRate, type SpeechLanguage, type SpeechRates } from './languages';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation } from './pronunciation';
 
-/** a little slower than the default, so each word is clear */
-const RATE = 0.9;
 /** how long warmVoices() waits for the phone to list its voices */
 const VOICES_WAIT_MS = 1500;
 
@@ -20,18 +20,28 @@ interface Playing {
 
 // What he chose in Settings (src/speech/settingsSync.ts hands it over; speak() cannot wait for a database read).
 let pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION;
-let chosenVoice: string | null = null;
+const chosenVoices: Record<SpeechLanguage, string | null> = { english: null, greek: null };
+const rates: SpeechRates = { ...DEFAULT_RATES };
 
 /** The language tag of the Greek being spoken (the pronunciation's), such as 'el-GR'. */
 export const greekLang = (): string => pronunciationOf(pronunciation).lang;
+
+/** The language tag put on an utterance in `language`. */
+const langOf = (language: SpeechLanguage): string =>
+  language === 'greek' ? greekLang() : (LANGUAGES.find((l) => l.id === language)?.lang ?? 'en-US');
 
 export function setGreekPronunciation(next: GreekPronunciation): void {
   pronunciation = next;
 }
 
-/** The voiceURI of the voice he chose for Greek, or null for the phone's own pick. */
-export function setGreekVoice(voiceURI: string | null): void {
-  chosenVoice = voiceURI;
+/** The voiceURI of the voice he chose for `language`, or null for the phone's own pick. */
+export function setVoice(language: SpeechLanguage, voiceURI: string | null): void {
+  chosenVoices[language] = voiceURI;
+}
+
+/** How fast `language` is spoken (1 is normal); every utterance in it carries this, whichever button asked. */
+export function setSpeechRate(language: SpeechLanguage, rate: number): void {
+  rates[language] = normaliseRate(rate);
 }
 
 let playing: Playing | null = null;
@@ -57,6 +67,7 @@ export const speaksLanguage = (v: SpeechSynthesisVoice, tag: string): boolean =>
 export const voiceKey = (v: SpeechSynthesisVoice): string => v.voiceURI || v.name;
 
 const isGreek = (v: SpeechSynthesisVoice): boolean => speaksLanguage(v, greekLang());
+const isLanguage = (language: SpeechLanguage) => (v: SpeechSynthesisVoice): boolean => speaksLanguage(v, langOf(language));
 
 /** true: the phone lists a Greek voice; false: it lists voices and none is Greek, or cannot speak at all;
  * 'unknown': its voice list is still empty (Android Chrome fills it late). */
@@ -87,11 +98,13 @@ export function warmVoices(): Promise<void> {
   return warm;
 }
 
-function pickVoice(synth: SpeechSynthesis): SpeechSynthesisVoice | null {
+function pickVoice(synth: SpeechSynthesis, language: SpeechLanguage): SpeechSynthesisVoice | null {
   const voices = synth.getVoices();
-  const lang = greekLang().toLowerCase();
-  const chosen = chosenVoice === null ? undefined : voices.find((v) => voiceKey(v) === chosenVoice && isGreek(v));
-  return chosen ?? voices.find((v) => v.lang.replace('_', '-').toLowerCase() === lang) ?? voices.find(isGreek) ?? null;
+  const lang = langOf(language).toLowerCase();
+  const fits = isLanguage(language);
+  const chosenVoice = chosenVoices[language];
+  const chosen = chosenVoice === null ? undefined : voices.find((v) => voiceKey(v) === chosenVoice && fits(v));
+  return chosen ?? voices.find((v) => v.lang.replace('_', '-').toLowerCase() === lang) ?? voices.find(fits) ?? null;
 }
 
 /** Stops whatever is being read. */
@@ -106,11 +119,12 @@ export function stopIfSpeaking(key: string): void {
   if (playing?.key === key) stopSpeaking();
 }
 
-/** Reads `text` aloud, or stops it when `key` is already being read. A different key's speech is cancelled first.
- * `onFail` is called if the phone's engine reports it cannot speak it (after the call returned 'speaking'). */
-export function speak(text: string, key: string, onFail?: () => void): SpeakOutcome {
+/** Reads `text` aloud in `language` (Greek unless said), at that language's speed, or stops it when `key` is already
+ * being read. A different key's speech is cancelled first. `onFail` is called if the phone's engine reports it cannot
+ * speak it (after the call returned 'speaking'). Only Greek is refused for want of a voice: the help is about Greek. */
+export function speak(text: string, key: string, onFail?: () => void, language: SpeechLanguage = 'greek'): SpeakOutcome {
   const synth = synthesis();
-  if (!synth || hasGreekVoice() === false) return 'no-voice';
+  if (!synth || (language === 'greek' && hasGreekVoice() === false)) return 'no-voice';
   if (!watching) {
     watching = true;
     // a hidden page's speech is suspended and comes back mid-sentence: end it instead
@@ -123,9 +137,9 @@ export function speak(text: string, key: string, onFail?: () => void): SpeakOutc
   if (playing || synth.speaking || synth.pending) synth.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = greekLang();
-  utterance.rate = RATE;
-  const voice = pickVoice(synth);
+  utterance.lang = langOf(language);
+  utterance.rate = rates[language];
+  const voice = pickVoice(synth, language);
   if (voice) utterance.voice = voice;
   const ended = () => {
     // a cancelled utterance reports after the next one has started: only its own end clears the state

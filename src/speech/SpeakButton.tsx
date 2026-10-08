@@ -1,7 +1,8 @@
 // src/speech/SpeakButton.tsx — the speaker button on a word and the play button on a verse. Both speak `text` in
-// modern Greek; a second tap on the same one stops it. With no Greek voice the button still shows and a tap puts one
+// modern Greek (or in the `language` they are given, at that language's speed); a second tap on the same one stops it. With no Greek voice the button still shows and a tap puts one
 // line of help at the top of the screen.
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { SpeechLanguage } from './languages';
 import { noVoiceHelp, speak, stopIfSpeaking, useSpeakingKey, warmVoices } from './greek';
 
 const HELP_MS = 7000;
@@ -21,11 +22,13 @@ function Icon({ kind }: { kind: 'speaker' | 'play' | 'stop' }) {
 }
 
 /** `id` names what is spoken, so two buttons for the same text agree on whether it is playing. */
-export function SpeakButton({ text, id, label, kind, className }: {
+export function SpeakButton({ text, id, label, kind, language, className }: {
   text: string;
   id: string;
   label: string;
   kind: 'speaker' | 'play';
+  /** the language of `text`: Greek unless said; its speed and voice are the ones he set for it */
+  language?: SpeechLanguage;
   className?: string;
 }) {
   const playing = useSpeakingKey() === id;
@@ -54,7 +57,7 @@ export function SpeakButton({ text, id, label, kind, className }: {
         aria-pressed={playing}
         onClick={() => {
           setHelp(null);
-          if (speak(text, id, showHelp) === 'no-voice') showHelp();
+          if (speak(text, id, showHelp, language) === 'no-voice') showHelp();
         }}
         className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-accent active:bg-line ${className ?? ''}`}
       >
