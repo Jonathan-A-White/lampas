@@ -250,3 +250,59 @@ export function splitParse(code: string): SplitParse {
       return bad(code);
   }
 }
+
+// ---- The words decodeParse writes, as a list (mw-5r3p30.35) ----
+// Every grammar word a parsing can show is a term the word sheet links to its Grammar sheet. The list is built from the tables above
+// (and the few words decodeParse writes itself), so a term added to a table is a term the Grammar sheet must explain: a test fails
+// until src/data/grammar-concepts.ts has it.
+
+const VALUES = (table: Record<string, string>): string[] => Object.values(table);
+
+/** Words decodeParse writes that are in no table: the parts of speech it names itself, 'second' (second aorist ...), and the
+ * rest of the special noun and adjective codes. */
+const OWN_TERMS = ['verb', 'noun', 'adjective', 'article', 'second', 'letter', 'indeclinable', 'proper name', 'numeral', 'possessor'];
+
+/** Every grammar term decodeParse can write, once each. */
+export const GRAMMAR_TERMS: readonly string[] = [
+  ...new Set([
+    ...OWN_TERMS,
+    ...VALUES(WORDS),
+    ...VALUES(PRONOUNS),
+    ...VALUES(SUFFIXES),
+    ...VALUES(CASES),
+    ...VALUES(NUMBERS),
+    ...VALUES(GENDERS),
+    ...VALUES(PERSONS),
+    ...VALUES(TENSES),
+    ...VALUES(VOICES),
+    ...VALUES(MOODS),
+  ]),
+];
+
+/** A stretch of a decoded parsing: a grammar term, or the text between terms (', ' and spaces). */
+export interface ParseSegment {
+  text: string;
+  /** the term, when this stretch is one */
+  term?: string;
+}
+
+const escape = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// The longest term first, so 'middle or passive deponent' is one term and not 'middle' and 'passive deponent'.
+const TERM_PATTERN = new RegExp(
+  `(?<![A-Za-z0-9])(${[...GRAMMAR_TERMS].sort((a, b) => b.length - a.length).map(escape).join('|')})(?![A-Za-z0-9])`,
+  'g',
+);
+
+/** A decoded parsing ('verb, present active indicative, 3rd person singular') cut into its terms and the text between them; the
+ * segments' texts joined are the parsing itself. */
+export function parseSegments(decoded: string): ParseSegment[] {
+  const out: ParseSegment[] = [];
+  let at = 0;
+  for (const m of decoded.matchAll(TERM_PATTERN)) {
+    if (m.index > at) out.push({ text: decoded.slice(at, m.index) });
+    out.push({ text: m[0], term: m[0] });
+    at = m.index + m[0].length;
+  }
+  if (at < decoded.length) out.push({ text: decoded.slice(at) });
+  return out;
+}
