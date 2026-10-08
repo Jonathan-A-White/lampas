@@ -1,6 +1,6 @@
 // src/services/deviceKey.ts — this phone's key: made once, kept in localStorage under one named key
 // (DEVICE_KEY_STORAGE_KEY, the test seam of docs/testing.md), shown by the Unlock screen as its public key.
-import { PrivateKey } from '@bsv/sdk';
+import { PrivateKey, Utils } from '@bsv/sdk';
 import { DEVICE_KEY_STORAGE_KEY } from '../config';
 
 export interface DeviceKey {
@@ -27,4 +27,12 @@ export function getOrCreateDeviceKey(storage: Storage = window.localStorage): De
   const key = parse(storage.getItem(DEVICE_KEY_STORAGE_KEY)) ?? PrivateKey.fromRandom();
   storage.setItem(DEVICE_KEY_STORAGE_KEY, key.toHex());
   return { publicKeyHex: key.toPublicKey().toString() };
+}
+
+/** The key's 32 raw bytes, for signing the tutor's calls to Postern. Made first if there is none yet. */
+export function getDeviceKeyBytes(storage: Storage = window.localStorage): Uint8Array {
+  getOrCreateDeviceKey(storage);
+  const key = parse(storage.getItem(DEVICE_KEY_STORAGE_KEY));
+  if (!key) throw new Error('This phone has no usable key.');
+  return Uint8Array.from(Utils.toArray(key.toHex(), 'hex'));
 }

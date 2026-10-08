@@ -48,6 +48,22 @@ touch the network. `fetchLicenceStatus` is tested with bsv-kit's `FakeChainReade
 
 Opt-in live check, not in the gate: `npm run check:licence -- <public key>` asks testnet what the gate would answer (held, revoked, indexing or none).
 
+## The tutor's tests
+
+- `features/tutor.feature` runs against `tests/support/fake-postern.ts`: signed `/api/challenge`, `/api/me`, `/api/messages`;
+  its mill opens the grist with its own key and answers it (`autoReply`, or held until `answer(...)`); `licensed = false`
+  answers 401 `no_licence`, `down = true` makes every call fail as an unreachable backend does. Steps stub `fetch` so
+  `https://postern.allmymind.org` goes to the fake and `/data/...` to the committed chapter files, and shorten
+  `tutorTimings.pollMs`.
+- `tests/e2e/tutor.spec.ts` (in `npm run shots`, shots `ask.png` and `answer.png`) routes Postern's origin to the same fake
+  from Playwright (`tests/support/playwright-postern.ts`); the app's real signing and sealing run.
+- `tests/e2e/tutor-live.spec.ts` is the true end-to-end test, Playwright project `live`, run by `npm run e2e:live` only. It
+  seeds the device key from `process.env.LAMPAS_TEST_KEY`, or the line `LAMPAS_TEST_KEY=<hex>` in
+  `~/.config/mw/lampas-test.env`, through the seam above, lets the real gate look the licence up on testnet, asks about
+  Romans 8:28 and waits up to 120 s for an answer that mentions συνεργεῖ or συνεργέω. With no key, or a backend that does not
+  answer `/api/challenge`, it prints `SKIP tutor-live: <reason>` and reports skipped, never passed. The key is never printed.
+  It needs the mill to know the app (`lampas` in `[grist-apps]`, `POSTERN_APPS` `lampas=lampas`) and spends one grind of fuel.
+
 ## Settings (`src/config.ts`)
 
 | Name | Env var | Default |

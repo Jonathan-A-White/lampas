@@ -15,6 +15,8 @@ const browserEnv = existsSync(extraLibDir)
   ? { ...process.env, LD_LIBRARY_PATH: [extraLibDir, process.env.LD_LIBRARY_PATH].filter(Boolean).join(':') }
   : undefined;
 
+const LIVE_SPEC = '**/tutor-live.spec.ts';
+
 export default defineConfig({
   testDir: './tests/e2e',
   timeout: 60_000,
@@ -30,12 +32,27 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: LIVE_SPEC,
       use: { ...devices['Desktop Chrome'], channel: 'chromium', launchOptions: { env: browserEnv } },
     },
     // `npm run shots` (--project=shots): every spec's end-of-test screenshot (tests/e2e/shot.ts)
     // is taken at a 390x844 phone width.
     {
       name: 'shots',
+      testIgnore: LIVE_SPEC,
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: 'chromium',
+        viewport: { width: 390, height: 844 },
+        launchOptions: { env: browserEnv },
+      },
+    },
+    // `npm run e2e:live` (--project=live): the one spec that talks to the real Postern backend. It is in
+    // neither the gate nor `npm run shots`, and it spends a grind of fuel per run.
+    {
+      name: 'live',
+      testMatch: LIVE_SPEC,
+      timeout: 180_000,
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chromium',

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Verse Ask Answer 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["answer", "words"],
+  "properties": {
+    "answer": {
+      "description": "The reply to his question, in short plain English, at most 120 words.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1200
+    },
+    "words": {
+      "description": "The Greek words of the verse the answer speaks about, each with its lemma and a short note that includes its parsing. Empty when the answer is about no particular word.",
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["greek", "lemma", "note"],
+        "properties": {
+          "greek": { "description": "The word as it stands in the verse.", "type": "string", "minLength": 1, "maxLength": 80 },
+          "lemma": { "description": "Its dictionary form.", "type": "string", "minLength": 1, "maxLength": 80 },
+          "note": { "description": "Its parsing and what it does here, in plain words.", "type": "string", "minLength": 1, "maxLength": 300 }
+        }
+      }
+    }
+  }
+}

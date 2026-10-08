@@ -1,0 +1,228 @@
+// features/steps/tutor.steps.tsx — runs features/tutor.feature: the Ask box under the selected verse, the grist it
+// sends through a fake Postern (tests/support/fake-postern.ts), the answer card, the failure states and the
+// kept answers. fetch is stubbed: /data/ files from disk, https://postern.allmymind.org to the fake.
+import '@testing-library/react/dont-cleanup-after-each';
+import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterAll, expect, vi } from 'vitest';
+import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
+import { readFileSync } from 'node:fs';
+import { App } from '../../src/App';
+import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
+import { type Chapter } from '../../src/data/chapter';
+import { db } from '../../src/data/db';
+import { tutorTimings } from '../../src/services/tutor';
+import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+
+const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
+const verse28 = chapter.verses.find((v) => v.n === 28);
+if (!verse28) throw new Error('no verse 28');
+
+afterAll(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+  db.close();
+});
+
+const user = userEvent.setup();
+const PHONE_KEY = '00'.repeat(31) + '02';
+const QUESTION = 'What does συνεργεῖ mean here?';
+let fake: FakePostern;
+
+async function open(configure: (f: FakePostern) => void = (f) => void (f.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER })): Promise<void> {
+  cleanup();
+  window.localStorage.clear();
+  window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
+  window.location.hash = '';
+  tutorTimings.pollMs = 20;
+  fake = makeFakePostern();
+  configure(fake);
+  stubChapterFetch();
+  const chapterFetch = globalThis.fetch;
+  vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) =>
+    String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init),
+  );
+  await db.open();
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.answers.clear()]);
+  render(<App />);
+  await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
+  await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
+}
+
+async function selectVerse28(): Promise<void> {
+  const number = await screen.findByRole('button', { name: 'Verse 28' });
+  if (number.getAttribute('aria-pressed') !== 'true') await user.click(number);
+  await screen.findByRole('region', { name: 'Ask the tutor' });
+}
+
+const askBox = () => screen.getByRole('region', { name: 'Ask the tutor' });
+const field = () => within(askBox()).getByRole('textbox', { name: 'Your question' });
+const askButton = () => within(askBox()).getByRole('button', { name: 'Ask' });
+const answersOn28 = () => document.querySelectorAll('[data-answers-for="28"] [data-answer]');
+
+async function ask(question: string): Promise<void> {
+  await user.type(field(), question);
+  await user.click(askButton());
+}
+
+async function answerShows(): Promise<void> {
+  await waitFor(() => expect(answersOn28().length).toBe(1));
+}
+
+const received = () => {
+  expect(fake.received).toHaveLength(1);
+  return fake.received[0];
+};
+
+const feature = await loadFeature('features/tutor.feature');
+
+describeFeature(feature, ({ Scenario }) => {
+  Scenario("Asking about 8:28 sends a grist whose input carries the verse's Greek, English, the question and the solid words", ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern', () => open());
+    And('he selects verse 28', selectVerse28);
+    When('he asks {string}', (_, question: string) => ask(question));
+    Then('the mill received one grist for the lampas app, kind verse-ask', async () => {
+      await waitFor(() => expect(fake.received).toHaveLength(1));
+      const { grist } = received();
+      expect(grist).toMatchObject({ app: 'lampas', kind: 'verse-ask', v: '1' });
+    });
+    And('its input carries the Greek and the English of verse 28', () => {
+      const { input } = received();
+      expect(input.reference).toBe('Romans 8:28');
+      expect(input.greek).toBe(verse28.g.map((w) => w.t).join(' '));
+      expect(input.english).toBe(verse28.e.map((c) => c.t.trim()).join(' '));
+    });
+    And('its input carries the question {string}', (_, question: string) => {
+      expect(received().input.question).toBe(question);
+    });
+    And('its input carries his solid words, and not the words he is still learning', async () => {
+      const solid = (await db.words.where('state').equals('solid').toArray()).map((w) => w.lemma);
+      const learning = (await db.words.where('state').equals('learning').toArray()).map((w) => w.lemma);
+      expect(solid.length).toBeGreaterThan(0);
+      expect(learning.length).toBeGreaterThan(0);
+      const sent = received().input.solid_words as string[];
+      expect([...sent].sort()).toEqual([...solid].sort());
+      for (const word of learning) expect(sent).not.toContain(word);
+    });
+  });
+
+  Scenario('The answer arrives and shows under the verse', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern', () => open());
+    And('he selects verse 28', selectVerse28);
+    When('he asks {string}', (_, question: string) => ask(question));
+    Then('the answer shows under verse 28', async () => {
+      await answerShows();
+      const card = answersOn28()[0] as HTMLElement;
+      expect(card).toHaveTextContent(SYNERGEI_ANSWER.answer);
+      expect(card).toHaveTextContent(QUESTION);
+    });
+    And('the answer names the Greek word {string} with its lemma {string}', (_, greek: string, lemma: string) => {
+      const card = answersOn28()[0] as HTMLElement;
+      const word = within(card).getByText(greek, { selector: '[lang="grc"]' });
+      expect(word).toBeInTheDocument();
+      expect(within(card).getByText(lemma, { selector: '[lang="grc"]' })).toBeInTheDocument();
+      expect(card).toHaveTextContent('third person singular');
+    });
+    And('the Ask box is ready for the next question', () => {
+      expect(field()).toHaveValue('');
+      expect(field()).toBeEnabled();
+    });
+  });
+
+  Scenario('While the tutor has not answered the box says Sending and then Waiting', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern that holds its answers', () => open((f) => void (f.autoReply = undefined)));
+    And('he selects verse 28', selectVerse28);
+    When('he asks {string}', (_, question: string) => ask(question));
+    Then('the box says Waiting and nothing can be asked until the answer comes', async () => {
+      const status = await within(askBox()).findByRole('status');
+      await waitFor(() => expect(status).toHaveTextContent(/^Waiting for the tutor… \d+ s$/));
+      expect(field()).toBeDisabled();
+      expect(askButton()).toBeDisabled();
+    });
+    When('the tutor answers', () => {
+      fake.answer({ status: 'answered', answer: SYNERGEI_ANSWER });
+    });
+    Then('the answer shows under verse 28', answerShows);
+  });
+
+  Scenario('An unlicensed reply shows No licence', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern that holds no licence for this phone', () => open((f) => void (f.licensed = false)));
+    And('he selects verse 28', selectVerse28);
+    When('he asks {string}', (_, question: string) => ask(question));
+    Then('the box says {string}', async (_, words: string) => {
+      expect(await within(askBox()).findByRole('alert')).toHaveTextContent(words);
+    });
+    And('no answer shows under verse 28', () => {
+      expect(answersOn28()).toHaveLength(0);
+    });
+  });
+
+  Scenario('A backend that cannot be reached shows Could not reach with Retry', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern that cannot be reached', () => open((f) => {
+      f.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER };
+      f.down = true;
+    }));
+    And('he selects verse 28', selectVerse28);
+    When('he asks {string}', (_, question: string) => ask(question));
+    Then('the box says {string} with a Retry button', async (_, words: string) => {
+      expect(await within(askBox()).findByRole('alert')).toHaveTextContent(words);
+      expect(within(askBox()).getByRole('button', { name: 'Retry' })).toBeEnabled();
+    });
+    When('the backend comes back and he taps Retry', async () => {
+      fake.down = false;
+      await user.click(within(askBox()).getByRole('button', { name: 'Retry' }));
+    });
+    Then('the answer shows under verse 28', answerShows);
+  });
+
+  Scenario('An answer is still there after reload', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern', () => open());
+    And('he selects verse 28', selectVerse28);
+    And('he asks {string}', (_, question: string) => ask(question));
+    And('the answer for verse 28 has arrived', answerShows);
+    When('he reopens Lampas and selects verse 28', async () => {
+      cleanup();
+      fake.calls.length = 0;
+      render(<App />);
+      await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
+      await selectVerse28();
+    });
+    Then('the answer shows under verse 28', async () => {
+      await answerShows();
+      expect(answersOn28()[0]).toHaveTextContent(SYNERGEI_ANSWER.answer);
+    });
+    And('the fake Postern was not asked again', () => {
+      expect(fake.calls.filter((call) => call.includes('/api/'))).toEqual([]);
+    });
+  });
+
+  Scenario('Ask cannot be tapped with nothing typed', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern', () => open());
+    When('he selects verse 28', selectVerse28);
+    Then('the Ask button is off', () => {
+      expect(askButton()).toBeDisabled();
+    });
+    When('he types {string}', (_, text: string) => user.type(field(), text));
+    Then('the Ask button is still off', () => {
+      expect(askButton()).toBeDisabled();
+    });
+    When('he types {string} instead', (_, text: string) => user.clear(field()).then(() => user.type(field(), text)));
+    Then('the Ask button is on', () => {
+      expect(askButton()).toBeEnabled();
+    });
+  });
+
+  Scenario('An answer in the wrong shape is not kept', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern that answers in the wrong shape', () => open((f) => void (f.autoReply = { status: 'answered', answer: { answer: 42 } })));
+    And('he selects verse 28', selectVerse28);
+    When('he asks {string}', (_, question: string) => ask(question));
+    Then('the box says {string} with a Retry button', async (_, words: string) => {
+      expect(await within(askBox()).findByRole('alert')).toHaveTextContent(words);
+      expect(within(askBox()).getByRole('button', { name: 'Retry' })).toBeEnabled();
+    });
+    And('no answer shows under verse 28', () => {
+      expect(answersOn28()).toHaveLength(0);
+    });
+  });
+});

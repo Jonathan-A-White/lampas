@@ -1,14 +1,17 @@
 // src/Reader.tsx — Romans 8 verse by verse. The header switches English (the MSB) | Greek (Byzantine); every
 // word is tappable and opens the word sheet; a verse number selects the verse. In English a second switch,
 // Weave (Off | Solid words), shows the Greek of his solid words in place of their English (src/data/weave.ts).
+// A selected verse shows its kept tutor answers and the Ask box (src/Ask.tsx).
 // The chapter comes from /data/rom/8.json (precached), the switches are kept in the settings store.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import { AnswerCards, AskBox } from './Ask';
 import { type Chapter, type EnglishChunk, type GreekWord, type Verse, loadChapter } from './data/chapter';
 import { getReaderView, getWeave, listSolidLemmas, setReaderView, setWeave, type ReaderView, type Weave } from './data/repositories';
 import { weaveVerse, type Woven } from './data/weave';
 import { BuildVersion } from './BuildVersion';
 import { navigate } from './nav/route';
+import { useAsks } from './useAsks';
 import { HeaderButton } from './ScreenHeader';
 import { WordSheet, type Lookup } from './WordSheet';
 
@@ -163,6 +166,7 @@ export function Reader() {
   const [attempt, setAttempt] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [lookup, setLookup] = useState<Lookup | null>(null);
+  const { asks, ask } = useAsks(BOOK, CHAPTER, TITLE);
   const closeSheet = useCallback(() => setLookup(null), []);
   const weaving = view === 'english' && weave === 'solid';
   const woven = useMemo(
@@ -216,15 +220,22 @@ export function Reader() {
         ) : chapter && view ? (
           <>
             {chapter.verses.map((v, vi) => (
-              <VerseView
-                key={v.n}
-                verse={v}
-                view={view}
-                woven={woven?.[vi] ?? null}
-                selected={selected === v.n}
-                onSelect={() => setSelected((n) => (n === v.n ? null : v.n))}
-                onLook={setLookup}
-              />
+              <Fragment key={v.n}>
+                <VerseView
+                  verse={v}
+                  view={view}
+                  woven={woven?.[vi] ?? null}
+                  selected={selected === v.n}
+                  onSelect={() => setSelected((n) => (n === v.n ? null : v.n))}
+                  onLook={setLookup}
+                />
+                {selected === v.n ? (
+                  <>
+                    <AnswerCards verse={v.n} book={BOOK} chapter={CHAPTER} />
+                    <AskBox verse={v} state={asks[v.n]} onAsk={(question) => ask(v, question)} />
+                  </>
+                ) : null}
+              </Fragment>
             ))}
             <BuildVersion className="px-3 pt-6" />
             <div className="flex justify-center pb-4">

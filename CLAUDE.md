@@ -35,6 +35,9 @@ npm run shots        # Playwright at 390x844 against `vite preview` of dist/ (ru
 npm run icons        # re-render public/icon-192.png and icon-512.png from public/icon.svg
 npm run seed:build   # rebuild src/data/seed-words.ts from docs/example-words.md (plain node, 22.18+)
 npm run check:licence -- <pubkey>  # live testnet licence check, opt-in, not in the gate
+npm run e2e:live     # the ONE live test (tests/e2e/tutor-live.spec.ts, Playwright project 'live'): builds, then asks the real
+                     #   Postern tutor about Romans 8:28 with LAMPAS_TEST_KEY (or ~/.config/mw/lampas-test.env); skips, never
+                     #   passes, with no key or no backend; spends a grind of fuel; not in the gate or `npm run shots`
 npm run data:build   # data/raw (git-ignored, downloaded if absent) -> public/data/<book>/<chapter>.json + index.json;
                      #   the output is committed and a second run changes nothing (docs/data.md)
 ```
@@ -46,7 +49,8 @@ npm run data:build   # data/raw (git-ignored, downloaded if absent) -> public/da
   `features/steps/*.steps.ts(x)` (@amiceli/vitest-cucumber), run inside `npm test`. Import
   `@testing-library/react/dont-cleanup-after-each` before React Testing Library in a step file.
 - Unit tests live in `tests/unit/`; shared fakes in `tests/support/` (`fake-registration.ts` fakes a
-  service worker registration). Tests run in jsdom with `fake-indexeddb`, in `TZ=UTC`.
+  service worker registration; `fake-postern.ts` is a Postern backend with a mill that opens the grist and answers it,
+  used by features/tutor.feature and, through `playwright-postern.ts`, by tests/e2e/tutor.spec.ts). Tests run in jsdom with `fake-indexeddb`, in `TZ=UTC`.
 - jsdom has no layout: a layout claim is proven only by a Playwright spec in `tests/e2e/` at 390x844,
   which ends with `shot(page, name)`. Service workers are blocked in e2e.
 - esbuild refuses to run inside the jsdom environment: a test that needs a real build runs
@@ -65,6 +69,10 @@ src/main.tsx         # scroll guard first, then render, then register the worker
 src/App.tsx          # the shell (data-shell); picks the screen by hash route (src/nav/route.ts); seeds words on first open
 src/Reader.tsx WordsScreen.tsx ImportScreen.tsx QuizScreen.tsx About.tsx  # the screens (#/ , #/words, #/import, #/test, #/about); the Reader is Romans 8, English | Greek;
                      #   About is built from ATTRIBUTION.md (src/attribution.ts), opened by the About button under the chapter
+src/Ask.tsx          # the Ask box under the selected verse (field, Sending / Waiting, No licence, Could not reach + Retry) and the kept answer cards
+src/useAsks.ts       # the questions in flight by verse; a question keeps waiting when he selects another verse; the answer is stored when it comes
+src/services/tutor.ts  # askTutor: bsv-kit door + grist.sendGrist + grist.awaitAnswer; the request and answer shapes, isVerseAnswer, tutorTimings (poll 3 s, 180 s deadline)
+grinds/              # the mill's grind for lampas: verse-ask.json + instructions + answer schema (same keys as SpellForge's tutor-turn.json)
 src/WordSheet.tsx    # the bottom sheet a tapped word opens (tap outside, swipe down on the handle, Done or Escape closes it)
 src/fonts/           # Gentium Plus (Greek + Greek Extended, 400 and 700 woff2) and its OFL licence; @font-face is in src/index.css
 src/config.ts        # issuer (default the Governor's key; VITE_LAMPAS_ISSUER overrides), collection 'lampas', chain, Postern door, the device key's storage name
@@ -75,8 +83,8 @@ src/sw.ts            # the worker: precache, precache guard, SKIP_WAITING, claim
 src/precacheGuard.ts # never serve a .js/.css whose Content-Type does not fit
 src/services/appUpdate.ts  # watches the registration, tap -> SKIP_WAITING -> reload once, periodic update check
 src/ui/              # scrollGuard.ts (page never scrolls), focus.ts (focus with preventScroll)
-src/data/db.ts       # Dexie, version 4: words {lemma key, lemmas, gloss, lesson, state, since}, meta and settings {key, value}, results {lemma, when, right}
-src/data/repositories/  # the only way UI reaches Dexie (words.ts: seed on first open, list, set state, import, and list the solid lemmas; settings.ts: the reader's English | Greek view and Weave Off | Solid words; results.ts: recordAnswer)
+src/data/db.ts       # Dexie, version 5: words {lemma key, lemmas, gloss, lesson, state, since}, meta and settings {key, value}, results {lemma, when, right}, answers {ref 'rom.8.28', question, answer, words, when}
+src/data/repositories/  # the only way UI reaches Dexie (words.ts: seed on first open, list, set state, import, and list the solid lemmas; settings.ts: the reader's English | Greek view and Weave Off | Solid words; results.ts: recordAnswer; answers.ts: the tutor's answers per verse)
 src/data/quiz.ts     # Quick test, pure: nextState (the two-in-a-row rule), drawWords, buildOptions, buildQuestion; the random source is injected (mulberry32 in tests; App's newRandom prop)
 src/data/lemma.ts    # BMA lemma -> headword (the key) + TBESG lexicon lemmas (εἶπεν -> λέγω, εἶπον ...)
 src/data/importWords.ts  # parses pasted 'lemma — gloss' lines and rows of the example table

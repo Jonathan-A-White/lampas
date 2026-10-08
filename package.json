@@ -15,6 +15,7 @@
     "lint": "eslint .",
     "shots": "playwright test --project=shots",
     "gate:shots": "npm run build && TZ=UTC playwright test --project=shots",
+    "e2e:live": "npm run build && TZ=UTC playwright test --project=live",
     "icons": "node scripts/make-icons.mjs",
     "seed:build": "node scripts/seed-build.ts",
     "data:build": "tsx scripts/data-build.ts",
