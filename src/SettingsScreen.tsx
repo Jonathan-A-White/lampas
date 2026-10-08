@@ -90,9 +90,10 @@ function WeaveChoice({ weave }: { weave: Weave }) {
     </button>
   );
   return (
-    <div role="group" aria-label="Weave" className="inline-flex rounded-xl border border-line p-0.5">
+    <div role="group" aria-label="Weave" className="inline-flex max-w-full flex-wrap rounded-xl border border-line p-0.5">
       {choice('off', 'Off')}
       {choice('solid', 'Solid words')}
+      {choice('solid+learning', 'Solid and learning words')}
     </div>
   );
 }
@@ -348,7 +349,7 @@ export function SettingsScreen() {
           <Section title="Section headings" hint="Show the Bible's headings (such as Walking by the Spirit) above their verses.">
             {headings ? <HeadingsChoice headings={headings} /> : null}
           </Section>
-          <Section title="Weave" hint="In the English view, show the Greek of your solid words in place of their English.">
+          <Section title="Weave" hint="In the English view, show the Greek of your solid words in place of their English. Solid and learning words also stands the words you are learning in Greek, with their English beneath in small grey until they turn solid.">
             {weave ? <WeaveChoice weave={weave} /> : null}
           </Section>
           <Section title="Reading voices" hint="Which of this phone's voices reads aloud. Phone default lets the phone choose.">

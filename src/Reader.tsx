@@ -1,6 +1,6 @@
 // src/Reader.tsx — Romans 8 verse by verse. The header switches English (the MSB) | Greek (Byzantine); every
 // word is tappable and opens the word sheet; a verse number selects the verse. The gear opens Settings
-// (src/SettingsScreen.tsx), where the Weave (Off | Solid words) is switched: with it on, the English view shows the
+// (src/SettingsScreen.tsx), where the Weave (Off | Solid words | Solid and learning words) is switched: with it on, the English view shows the
 // Greek of his solid words in place of their English (src/data/weave.ts).
 // Settings also holds the Layout (Verse by verse | Paragraph, src/layout/layouts.ts cuts the verses into blocks) and Section
 // headings (On | Off): the MSB's heading (verses[].h) is drawn above its block in either view, in English.
@@ -21,6 +21,7 @@ import {
   getReaderView,
   getSectionHeadings,
   getWeave,
+  listLearningLemmas,
   listSolidLemmas,
   setReaderView,
   setWeave,
@@ -69,9 +70,10 @@ function Tap({ onTap, onLongPress, lang, className, children, ...data }: {
   onLongPress: () => void;
   lang?: string;
   className?: string;
-  children: string;
+  children: ReactNode;
   'data-chunk'?: string;
   'data-woven'?: string;
+  'data-learning'?: string;
   'data-word'?: string;
 }) {
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -218,18 +220,28 @@ function VerseText({ verse, view, woven, onLook }: Pick<VerseProps, 'verse' | 'v
             </Tap>
           ))
         : verse.e.map((c, i) => {
-            const words = woven?.[i];
-            return words ? (
+            const weft = woven?.[i];
+            return weft ? (
               <Tap
                 key={i}
                 data-chunk={String(i)}
                 data-woven=""
+                data-learning={weft.learning ? '' : undefined}
                 lang="grc"
                 className={`font-greek text-[length:var(--lp-greek-size)] text-accent ${TAP_PAD}`}
                 onTap={() => lookEnglish(c)}
-                onLongPress={() => say(words.map((w) => w.t).join(' '), 'greek')}
+                onLongPress={() => say(weft.words.map((w) => w.t).join(' '), 'greek')}
               >
-                {words.map((w) => w.t).join(' ')}
+                {weft.learning ? (
+                  <span className="inline-flex flex-col items-center align-top leading-tight">
+                    <span data-greek>{weft.words.map((w) => w.t).join(' ')}</span>
+                    <span data-hint lang="en" className="whitespace-nowrap font-sans text-sm font-normal text-muted">
+                      {c.t}
+                    </span>
+                  </span>
+                ) : (
+                  weft.words.map((w) => w.t).join(' ')
+                )}
               </Tap>
             ) : (
               <Tap key={i} data-chunk={String(i)} className={`${TAP_PAD} ${c.s ? 'italic' : ''}`} onTap={() => lookEnglish(c)} onLongPress={() => say(c.t, 'english')}>
@@ -330,6 +342,7 @@ export function Reader() {
   const view = useLiveQuery(getReaderView, []);
   const weave = useLiveQuery(getWeave, []);
   const solid = useLiveQuery(listSolidLemmas, []);
+  const learning = useLiveQuery(listLearningLemmas, []);
   const layout = useLiveQuery(getLayout, []);
   const headings = useLiveQuery(getSectionHeadings, []);
   const [chapter, setChapter] = useState<Chapter | null>(null);
@@ -467,10 +480,14 @@ export function Reader() {
       disabled: phase === 'sending' || phase === 'waiting',
     };
   };
-  const weaving = view === 'english' && weave === 'solid';
+  const weaving = view === 'english' && (weave === 'solid' || weave === 'solid+learning');
+  const withLearning = weave === 'solid+learning';
   const woven = useMemo(
-    () => (chapter && weaving ? chapter.verses.map((v) => weaveVerse(v, solid ?? EMPTY_LEMMAS)) : null),
-    [chapter, weaving, solid],
+    () =>
+      chapter && weaving
+        ? chapter.verses.map((v) => weaveVerse(v, { solid: solid ?? EMPTY_LEMMAS, learning: withLearning ? learning ?? EMPTY_LEMMAS : undefined }))
+        : null,
+    [chapter, weaving, withLearning, solid, learning],
   );
   // What is read is what is shown: the plan follows the view and the weave.
   const plan = useMemo(() => (chapter && view ? planOf(chapter.verses, view, woven) : null), [chapter, view, woven]);

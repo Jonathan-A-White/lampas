@@ -37,7 +37,7 @@ export function runsOf(verse: Verse, view: ReaderView, woven: Woven[] | null): R
     view === 'greek'
       ? verse.g.map((w) => ({ text: w.t, language: 'greek' as const }))
       : verse.e.map((chunk, i) => {
-          const words = woven?.[i];
+          const words = woven?.[i]?.words;
           return words ? { text: words.map((w) => w.t).join(' '), language: 'greek' as const } : { text: chunk.t, language: 'english' as const };
         });
   const runs: Run[] = [];

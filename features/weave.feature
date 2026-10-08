@@ -51,3 +51,28 @@ Feature: The diglot weave
     And he sets Weave to Solid words
     When he reopens Lampas
     Then Weave is set to Solid words
+
+  Scenario: A learning word stands in Greek with its English beneath
+    Given Lampas is opened with nothing saved
+    When he sets Weave to Solid and learning words
+    Then verse 18 shows the Greek of "δόξα" in place of "glory" with the English "glory" beneath it as a hint
+    And the solid woven words of verse 1 have no hint
+    And the count line counts the learning word too
+
+  Scenario: Solid words alone leave a learning word in English
+    Given Lampas is opened with nothing saved
+    When he sets Weave to Solid words
+    Then "glory" in verse 18 is English
+
+  Scenario: When it turns solid the English hint goes
+    Given Lampas is opened with nothing saved
+    And he sets Weave to Solid and learning words
+    When he answers the word "δόξα" right twice in the Quick test
+    Then verse 18 shows the Greek of "δόξα" in place of "glory" with no hint beneath it
+
+  Scenario: The Weave setting offers Off, Solid, Solid and learning
+    Given Lampas is opened with nothing saved
+    When he opens Settings
+    Then the Weave setting offers "Off", "Solid words" and "Solid and learning words"
+    And the Weave setting allows the values "off", "solid" and "solid+learning"
+

@@ -29,7 +29,7 @@ afterEach(() => {
 });
 
 const plan = (view: 'english' | 'greek', solid: string[] = []) =>
-  planOf(chapter.verses, view, solid.length ? chapter.verses.map((v) => weaveVerse(v, new Set(solid))) : null);
+  planOf(chapter.verses, view, solid.length ? chapter.verses.map((v) => weaveVerse(v, { solid: new Set(solid) })) : null);
 
 describe('what is read is what is shown', () => {
   it('the English view reads the English chunks in order, in en-US', () => {
@@ -55,13 +55,13 @@ describe('what is read is what is shown', () => {
 
   it('a woven verse reads the woven chunk in Greek and its neighbours in English, in runs', () => {
     const v = verse(1);
-    const woven = weaveVerse(v, new Set(['Χριστός']));
+    const woven = weaveVerse(v, { solid: new Set(['Χριστός']) });
     const at = woven.findIndex(Boolean);
     expect(at).toBeGreaterThan(0);
     const runs = runsOf(v, 'english', woven);
     const greekRuns = runs.filter((r) => r.language === 'greek');
     expect(greekRuns).toHaveLength(1);
-    expect(greekRuns[0].text).toBe((woven[at] ?? []).map((w) => w.t).join(' '));
+    expect(greekRuns[0].text).toBe((woven[at]?.words ?? []).map((w) => w.t).join(' '));
     // the voice changes only where the language does
     runs.forEach((r, i) => i > 0 && expect(r.language).not.toBe(runs[i - 1].language));
     // in order: the English before the woven chunk, the woven chunk, the English after it

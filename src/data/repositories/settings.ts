@@ -20,14 +20,14 @@ export async function setReaderView(view: ReaderView): Promise<void> {
   await db.settings.put({ key: READER_VIEW_KEY, value: view });
 }
 
-export type Weave = 'off' | 'solid';
+export type Weave = 'off' | 'solid' | 'solid+learning';
 
 const WEAVE_KEY = 'weave';
 
-/** The saved Weave choice; off when he has not chosen yet or the saved value is not one of the two. */
+/** The saved Weave choice; off when he has not chosen yet or the saved value is not one of the three. */
 export async function getWeave(): Promise<Weave> {
   const row = await db.settings.get(WEAVE_KEY);
-  return row?.value === 'solid' ? 'solid' : 'off';
+  return row?.value === 'solid' || row?.value === 'solid+learning' ? row.value : 'off';
 }
 
 export async function setWeave(weave: Weave): Promise<void> {
