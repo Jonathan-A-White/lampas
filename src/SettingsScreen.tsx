@@ -305,7 +305,7 @@ function ResourceRow({ resource, on, typed }: { resource: StudyResource; on: boo
   );
 }
 
-function LinkRow({ label, to }: { label: string; to: 'words' | 'about' }) {
+function LinkRow({ label, to }: { label: string; to: 'words' | 'review' | 'about' }) {
   return (
     <button
       type="button"
@@ -377,6 +377,7 @@ export function SettingsScreen() {
           </section>
           <Section title="More">
             <LinkRow label="Words" to="words" />
+            <LinkRow label="Review" to="review" />
             <LinkRow label="About" to="about" />
           </Section>
         </div>

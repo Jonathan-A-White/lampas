@@ -47,6 +47,12 @@ export async function listDue(kind?: string, now = Date.now()): Promise<Review[]
   return due.filter((r) => isDue(r, now) && (kind === undefined || r.kind === kind)).sort((a, b) => a.due - b.due);
 }
 
+/** The schedule rows of these items, for the ones that have one. */
+export async function reviewsOf(items: Array<Pick<Review, 'kind' | 'id'>>): Promise<Review[]> {
+  const rows = await Promise.all(items.map((r) => db.reviews.get([r.kind, r.id])));
+  return rows.filter((r): r is Review => r !== undefined);
+}
+
 /** How many items are due at `now`, of `kind` or of every kind. */
 export async function countDue(now = Date.now(), kind?: string): Promise<number> {
   return (await listDue(kind, now)).length;

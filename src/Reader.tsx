@@ -45,6 +45,7 @@ import { useHoldPress } from './ui/holdPress';
 import { HeaderButton } from './ScreenHeader';
 import { pauseReading, planOf, startAnswer, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
+import { DueBadge } from './DueBadge';
 import { ReadFromButton, ReadingBar, VersePlay } from './speech/ReadControls';
 import { speakWord, warmVoices } from './speech/greek';
 import type { SpeechLanguage } from './speech/languages';
@@ -589,6 +590,7 @@ export function Reader() {
           <GearIcon />
         </button>
       </header>
+      {chapterReading ? null : <DueBadge />}
       <ReadingBar reading={reading} />
       {woven ? (
         <p data-testid="weave-count" className="shrink-0 border-b border-line px-3 py-1 text-right text-sm text-muted">
