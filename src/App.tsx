@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect } from 'react';
 import { seedWordsIfFirstOpen } from './data/repositories';
 import { About } from './About';
 import { startAppearanceSync } from './appearance/appearanceSync';
+import { DrillScreen } from './DrillScreen';
 import { ImportScreen } from './ImportScreen';
 import type { Random } from './data/quiz';
 import { saveLastRoute } from './nav/lastRoute';
@@ -14,7 +15,7 @@ import { startSpeechSettingsSync } from './speech/settingsSync';
 import { UpdateBanner } from './UpdateBanner';
 import { WordsScreen } from './WordsScreen';
 
-/** `newRandom` makes the random source of each Quick test round; tests pass a seeded one. */
+/** `newRandom` makes the random source of each Quick test round and Parsing drill; tests pass a seeded one. */
 export function App({ newRandom }: { newRandom?: () => Random } = {}) {
   const address = useAddress();
   const route = routeOf(address);
@@ -39,6 +40,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <ImportScreen />
       ) : route === 'test' ? (
         <QuizScreen newRandom={newRandom} />
+      ) : route === 'drill' ? (
+        <DrillScreen newRandom={newRandom} />
       ) : route === 'about' ? (
         <About />
       ) : route === 'settings' ? (

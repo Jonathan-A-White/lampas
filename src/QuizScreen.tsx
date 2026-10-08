@@ -6,6 +6,7 @@ import { listWords, recordAnswer, seedWordsIfFirstOpen } from './data/repositori
 import { clearRound, readRound, saveRound } from './data/roundKeep';
 import { buildQuestion, drawWords, seedDistractors, type Question, type Random } from './data/quiz';
 import { navigate } from './nav/route';
+import { READER_CHAPTER } from './data/readerChapter';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { focusOnMount } from './ui/focus';
 import { WordPicture } from './WordPicture';
@@ -21,6 +22,19 @@ async function drawRound(random: Random): Promise<Question[]> {
   const [words, chapter] = await Promise.all([listWords(), loadForms()]);
   const pool = seedDistractors();
   return drawWords(words, random).map((w) => buildQuestion(w, pool, chapter, random));
+}
+
+/** The way into the Parsing drill from the Test screen. */
+function DrillLink() {
+  return (
+    <button
+      type="button"
+      onClick={() => navigate('drill')}
+      className="mt-3 min-h-12 w-full rounded-xl border border-line text-base font-medium"
+    >
+      Parsing drill: {READER_CHAPTER.title}
+    </button>
+  );
 }
 
 const OPTION_BASE = 'block min-h-14 w-full rounded-xl border px-4 py-3 text-left text-lg disabled:opacity-100';
@@ -106,6 +120,7 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
               New round
             </button>
           </div>
+          <DrillLink />
         </main>
       </>
     );
@@ -120,6 +135,7 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
         <main className="screen min-h-0 flex-1 px-6 pt-8 text-center">
           <p className="text-lg">No words to test yet.</p>
           <p className="mt-1 text-muted">Words that are solid or learning are asked here. Add some with Import.</p>
+          <DrillLink />
         </main>
       </>
     );
@@ -159,6 +175,7 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
               Another round
             </button>
           </div>
+          <DrillLink />
         </main>
       </>
     );
@@ -222,6 +239,9 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
             {last ? 'Finish' : 'Next'}
           </button>
         ) : null}
+        <div className="pb-4">
+          <DrillLink />
+        </div>
       </main>
     </>
   );
