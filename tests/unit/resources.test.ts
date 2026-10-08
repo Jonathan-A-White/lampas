@@ -63,14 +63,59 @@ describe('the registry', () => {
   it('builds Logos links by its own scheme first: one Open link per ticked lexicon and the Bible Word Study at the verse', () => {
     const links = resourceOf('logos')?.linksFor(BIBLOS, 'bdag,louwnida') ?? [];
     expect(links.map((l) => l.label)).toEqual(['Open in Logos: BDAG', 'Open in Logos: Louw-Nida', 'Bible Word Study in Logos']);
-    expect(links[0].url).toBe(`logosres:bdag;hw=${BIBLOS_URL}`);
-    expect(links[1].url).toBe(`logosres:louwnida;hw=${BIBLOS_URL}`);
+    expect(links[0].url).toBe(`logosres:LLS:46.30.18;hw=${BIBLOS_URL}`);
+    expect(links[1].url).toBe(`logosres:LLS:46.30.4;hw=${BIBLOS_URL}`);
     expect(links[2].url).toBe(`logos4:Guide;t=Bible%20Word%20Study;lemma=${BIBLOS_LEMMA};ref=Bible.Ac19.19`);
+  });
+
+  it('names each lexicon by the Resource ID Logos prints on its own product page (LLS:...), never a guessed short name', () => {
+    // each id is the "Resource ID" of the product page named in the comment (https://www.logos.com/product/<n>); docs/resources.md has the table
+    const IDS: Record<string, string> = {
+      bdag: 'LLS:46.30.18', // product 3878
+      louwnida: 'LLS:46.30.4', // 199
+      lexhamtheolwordbk: 'LLS:LXTHEOWRDBK', // 45638
+      dbl: 'LLS:46.30.9', // 693
+      ednt: 'LLS:46.10.26', // 5791
+      nasbdict: 'LLS:46.10.12', // 25731
+      leh: 'LLS:46.30.22', // 1797
+      intermediategel: 'LLS:46.30.1', // 108
+      lxgrcanlex: 'LLS:LXGRCANLEX', // 4580
+      newstrongs: 'LLS:46.10.6', // 1212
+      tdnta: 'LLS:46.10.1', // 390
+      vocab3: 'LLS:NTGRKVOCAB', // 2671
+      lxgntlex: 'LLS:FBGNTLEX', // 197493
+      lxlxxlex: 'LLS:FBLXXLEX', // 197497
+      gelnt: 'LLS:GRKENGLXCNNTBLMSFIELD', // 29722
+      biblicotheolexicon: 'LLS:LEXNTGRKCREMER', // 15703
+      lexhamanalyticallxx: 'LLS:LXGRKOTANLEX', // 27295
+      manualgreeklex: 'LLS:MNLGRKLXABBOTSMITH', // 31160
+      pocketlex: 'LLS:PCKTLXCNGRKNWTS', // 41596
+      concisedict: 'LLS:STRNGDICHEBGRK', // 10514
+      gelntthayer: 'LLS:THAYERGELEXNT', // 5682
+    };
+    const logos = resourceOf('logos');
+    expect(Object.keys(IDS).sort()).toEqual((logos?.choices?.items ?? []).map((i) => i.id).sort());
+    for (const [id, resource] of Object.entries(IDS)) {
+      const link = logos?.linksFor(BIBLOS, id)[0];
+      expect(link?.url, id).toBe(`logosres:${resource};hw=${BIBLOS_URL}`);
+      expect(link?.fallback, id).toBe(`https://ref.ly/logosres/${encodeURIComponent(resource)}?hw=${BIBLOS_URL}`);
+    }
+  });
+
+  it('builds the EDNT and BDAG links on their Resource IDs, in the scheme and in the https fallback', () => {
+    const [bdag] = resourceOf('logos')?.linksFor(BIBLOS, 'bdag') ?? [];
+    expect(bdag.label).toBe('Open in Logos: BDAG');
+    expect(bdag.url).toBe(`logosres:LLS:46.30.18;hw=${BIBLOS_URL}`);
+    expect(bdag.fallback).toBe(`https://ref.ly/logosres/LLS%3A46.30.18?hw=${BIBLOS_URL}`);
+    const [ednt] = resourceOf('logos')?.linksFor(BIBLOS, 'ednt') ?? [];
+    expect(ednt.label).toBe('Open in Logos: EDNT');
+    expect(ednt.url).toBe(`logosres:LLS:46.10.26;hw=${BIBLOS_URL}`);
+    expect(ednt.fallback).toBe(`https://ref.ly/logosres/LLS%3A46.10.26?hw=${BIBLOS_URL}`);
   });
 
   it('gives every Logos link its https address as the fallback, used only when the scheme cannot open', () => {
     const links = resourceOf('logos')?.linksFor(BIBLOS, 'bdag') ?? [];
-    expect(links[0].fallback).toBe(`https://ref.ly/logosres/bdag?hw=${BIBLOS_URL}`);
+    expect(links[0].fallback).toBe(`https://ref.ly/logosres/LLS%3A46.30.18?hw=${BIBLOS_URL}`);
     expect(links[1].fallback).toBe(`https://ref.ly/logos4/Guide;t=Bible%20Word%20Study;lemma=${BIBLOS_LEMMA};ref=Bible.Ac19.19`);
     for (const link of links) expect(new URL(link.fallback ?? '').protocol).toBe('https:');
   });

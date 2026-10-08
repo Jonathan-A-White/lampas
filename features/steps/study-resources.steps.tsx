@@ -158,6 +158,19 @@ describeFeature(feature, ({ Scenario }) => {
     And('the Study row has one more link {string} to {string}', hasLink);
   });
 
+  Scenario('With EDNT ticked, Open in Logos: EDNT carries the Resource ID Logos prints for EDNT', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
+    When("he taps the gear in the reader's header", openSettings);
+    And('he switches on the study resource {string}', switchOn);
+    And('he ticks the Logos lexicon {string}', ticks);
+    And('he taps Back on the Settings screen', goBack);
+    And('he taps the word {string} in verse {int}', taps);
+    Then('the Study row has a link {string} to {string}', hasLink);
+    And('the Study link {string} has the fallback {string}', (_, label: string, fallback: string) => {
+      expect(link(label)).toHaveAttribute('data-fallback', fallback);
+    });
+  });
+
   Scenario('Bible Word Study in Logos names Jesus by his Logos lemma, and the BDAG link is unchanged', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
     When("he taps the gear in the reader's header", openSettings);
