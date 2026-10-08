@@ -74,6 +74,7 @@ src/useAsks.ts       # the questions in flight by verse; a question keeps waitin
 src/services/tutor.ts  # askTutor: bsv-kit door + grist.sendGrist + grist.awaitAnswer; the request and answer shapes, isVerseAnswer, tutorTimings (poll 3 s, 180 s deadline)
 grinds/              # the mill's grind for lampas: verse-ask.json + instructions + answer schema (same keys as SpellForge's tutor-turn.json)
 src/WordSheet.tsx    # the bottom sheet a tapped word opens (tap outside, swipe down on the handle, Done or Escape closes it)
+src/speech/          # greek.ts: speak(text, key) with speechSynthesis, lang el-GR, the phone's Greek voice, no server; a second tap on the same key stops it; hasGreekVoice() true/false/'unknown'; SpeakButton.tsx: the speaker on a word (aria-label 'Hear it') and the play button on a verse ('Hear the verse'), with the one-line no-Greek-voice help
 src/fonts/           # Gentium Plus (Greek + Greek Extended, 400 and 700 woff2) and its OFL licence; @font-face is in src/index.css
 src/config.ts        # issuer (default the Governor's key; VITE_LAMPAS_ISSUER overrides), collection 'lampas', chain, Postern door, the device key's storage name
 src/gate/            # Gate (wraps App in main.tsx): Unlock until the phone's key holds a lampas licence; 24 h offline grace

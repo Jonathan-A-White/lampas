@@ -3,6 +3,7 @@
 // the Done button or Escape.
 import { useEffect, useRef, useState } from 'react';
 import { type Chapter, type GreekWord, wordGloss, wordLemma, wordParse } from './data/chapter';
+import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
 
 /** What was tapped: Greek words, and the English they stand for. `english` is the tapped chunk, or a Greek word's own chunk. */
@@ -30,9 +31,12 @@ function Fact({ label, children, testId, lang }: { label: string; children: stri
 function WordCard({ chapter, word, english }: { chapter: Chapter; word: GreekWord; english?: string }) {
   return (
     <section className="border-t border-line py-3 first:border-t-0 first:pt-0">
-      <p data-testid="sheet-word" lang="grc" className="break-words font-greek text-4xl font-bold">
-        {word.t}
-      </p>
+      <div className="flex items-start justify-between gap-2">
+        <p data-testid="sheet-word" lang="grc" className="min-w-0 break-words font-greek text-4xl font-bold">
+          {word.t}
+        </p>
+        <SpeakButton text={word.t} id={`word:${word.t}`} label="Hear it" kind="speaker" className="shrink-0" />
+      </div>
       <p data-testid="sheet-translit" className="text-base text-muted">
         {word.tr}
       </p>
@@ -102,7 +106,7 @@ export function WordSheet({ chapter, lookup, onClose }: { chapter: Chapter; look
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
           onTouchCancel={onTouchEnd}
-          className="flex touch-none items-center justify-between gap-3 px-4 pt-2"
+          className="flex min-h-12 touch-none items-center justify-between gap-3 px-4 pt-2"
         >
           <span aria-hidden="true" className="mx-auto h-1.5 w-10 rounded-full bg-line" />
           <button
