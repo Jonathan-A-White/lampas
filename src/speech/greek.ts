@@ -2,9 +2,9 @@
 // speak() is called straight from the tap handler (docs/pwa-best-practices.md section 12: a speak() that leaves the
 // tap loses user activation on Android Chrome), so it never waits: the voice list is loaded ahead by warmVoices(),
 // and a phone that has not listed its voices yet is still asked to speak with lang 'el-GR' and picks its own.
-import { useSyncExternalStore } from 'react';
+import { useRef, useSyncExternalStore } from 'react';
+import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation } from './pronunciation';
 
-export const GREEK_LANG = 'el-GR';
 /** a little slower than the default, so each word is clear */
 const RATE = 0.9;
 /** how long warmVoices() waits for the phone to list its voices */
@@ -16,6 +16,22 @@ export type SpeakOutcome = 'speaking' | 'stopped' | 'no-voice';
 interface Playing {
   key: string;
   utterance: SpeechSynthesisUtterance;
+}
+
+// What he chose in Settings (src/speech/settingsSync.ts hands it over; speak() cannot wait for a database read).
+let pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION;
+let chosenVoice: string | null = null;
+
+/** The language tag of the Greek being spoken (the pronunciation's), such as 'el-GR'. */
+export const greekLang = (): string => pronunciationOf(pronunciation).lang;
+
+export function setGreekPronunciation(next: GreekPronunciation): void {
+  pronunciation = next;
+}
+
+/** The voiceURI of the voice he chose for Greek, or null for the phone's own pick. */
+export function setGreekVoice(voiceURI: string | null): void {
+  chosenVoice = voiceURI;
 }
 
 let playing: Playing | null = null;
@@ -33,7 +49,14 @@ function setPlaying(next: Playing | null): void {
   listeners.forEach((l) => l());
 }
 
-const isGreek = (v: SpeechSynthesisVoice): boolean => /^el([-_]|$)/i.test(v.lang);
+/** Whether a voice speaks a language: the tag's first part, 'el' for 'el-GR'. */
+export const speaksLanguage = (v: SpeechSynthesisVoice, tag: string): boolean =>
+  v.lang.split(/[-_]/)[0].toLowerCase() === tag.split(/[-_]/)[0].toLowerCase();
+
+/** What identifies a voice for keeping: its voiceURI (its name where a browser leaves that empty). */
+export const voiceKey = (v: SpeechSynthesisVoice): string => v.voiceURI || v.name;
+
+const isGreek = (v: SpeechSynthesisVoice): boolean => speaksLanguage(v, greekLang());
 
 /** true: the phone lists a Greek voice; false: it lists voices and none is Greek, or cannot speak at all;
  * 'unknown': its voice list is still empty (Android Chrome fills it late). */
@@ -66,7 +89,9 @@ export function warmVoices(): Promise<void> {
 
 function pickVoice(synth: SpeechSynthesis): SpeechSynthesisVoice | null {
   const voices = synth.getVoices();
-  return voices.find((v) => v.lang.replace('_', '-').toLowerCase() === GREEK_LANG.toLowerCase()) ?? voices.find(isGreek) ?? null;
+  const lang = greekLang().toLowerCase();
+  const chosen = chosenVoice === null ? undefined : voices.find((v) => voiceKey(v) === chosenVoice && isGreek(v));
+  return chosen ?? voices.find((v) => v.lang.replace('_', '-').toLowerCase() === lang) ?? voices.find(isGreek) ?? null;
 }
 
 /** Stops whatever is being read. */
@@ -98,7 +123,7 @@ export function speak(text: string, key: string, onFail?: () => void): SpeakOutc
   if (playing || synth.speaking || synth.pending) synth.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = GREEK_LANG;
+  utterance.lang = greekLang();
   utterance.rate = RATE;
   const voice = pickVoice(synth);
   if (voice) utterance.voice = voice;
@@ -132,4 +157,23 @@ const subscribe = (listener: () => void): (() => void) => {
 /** The key being read aloud right now, or null. */
 export function useSpeakingKey(): string | null {
   return useSyncExternalStore(subscribe, () => playing?.key ?? null);
+}
+
+/** The phone's voices, re-read when it lists more (Android Chrome fills the list late). */
+export function useVoices(): readonly SpeechSynthesisVoice[] {
+  const synth = synthesis();
+  const snapshot = useRef<readonly SpeechSynthesisVoice[]>([]);
+  return useSyncExternalStore(
+    (notify) => {
+      synth?.addEventListener('voiceschanged', notify);
+      return () => synth?.removeEventListener('voiceschanged', notify);
+    },
+    () => {
+      const now = synth?.getVoices() ?? [];
+      const before = snapshot.current;
+      // a stable array while the list is the same, or useSyncExternalStore would render forever
+      if (now.length !== before.length || now.some((v, i) => v !== before[i])) snapshot.current = [...now];
+      return snapshot.current;
+    },
+  );
 }

@@ -21,7 +21,9 @@ useLatest('verse-selected');         // React: the last one, re-rendering when a
 | --- | --- | --- | --- |
 | `verse-selected` | `{ chapter, verse }`; `verse` is `null` when no verse is selected (the same verse tapped again, or the reader left) | Reader: tapping a verse number; and `null` when the Reader unmounts | Reader (the highlight and where the Ask box sits, through `useLatest`); Ask box (`AskBox` reads which verse to ask about); `src/nav/readerAddress.ts` (writes `v` and `c` into the address) |
 | `view-changed` | `{ view: 'english' \| 'greek' }` | Reader: whenever the saved view changes, and once when it first loads | `src/nav/readerAddress.ts` (writes `view` into the address) |
-| `weave-changed` | `{ weave: 'off' \| 'solid' }` | Reader: whenever the saved weave changes, and once when it first loads | `src/nav/readerAddress.ts` (writes `weave` into the address) |
+| `weave-changed` | `{ weave: 'off' \| 'solid' }` | Reader: whenever the saved weave changes, and once when it first loads; Settings (where the weave is switched) | `src/nav/readerAddress.ts` (writes `weave` into the address) |
+| `voices-changed` | `{ english, greek }`: the voiceURI of the voice he chose for each language, or `null` for the phone's default | Settings (a voice picker changes); `src/speech/settingsSync.ts` (once at start, from the saved choice) | `src/speech/settingsSync.ts` (hands the Greek voice to `src/speech/greek.ts`, so the speaker buttons use it) |
+| `pronunciation-changed` | `{ pronunciation: 'modern' }` (an id of `src/speech/pronunciation.ts`) | Settings (the Greek pronunciation list); `src/speech/settingsSync.ts` (once at start) | `src/speech/settingsSync.ts` (hands it to `src/speech/greek.ts`: the language tag of every utterance) |
 | `verse-reading` | `{ chapter, verse }` | nobody yet (read aloud, a later story: the verse being spoken now) | nobody yet |
 | `reading-stopped` | none | nobody yet (read aloud, a later story: speech ended or was stopped) | nobody yet |
 | `word-tapped` | `{ strongs, verse }` | nobody yet (a later story) | nobody yet |

@@ -3,12 +3,16 @@
 // kept, so a screen that mounts late still knows the current verse. docs/events.md lists every kind.
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import type { ReaderView, Weave } from '../data/repositories';
+import type { GreekPronunciation } from '../speech/pronunciation';
 
 export type AppEvent =
   /** `verse` is null when no verse is selected any more (the same verse tapped again, or the reader left) */
   | { kind: 'verse-selected'; chapter: number; verse: number | null }
   | { kind: 'view-changed'; view: ReaderView }
   | { kind: 'weave-changed'; weave: Weave }
+  /** the voices he chose in Settings, as the phone's voiceURI; null is the phone's default */
+  | { kind: 'voices-changed'; english: string | null; greek: string | null }
+  | { kind: 'pronunciation-changed'; pronunciation: GreekPronunciation }
   | { kind: 'verse-reading'; chapter: number; verse: number }
   | { kind: 'reading-stopped' }
   | { kind: 'word-tapped'; strongs: string; verse: number };
