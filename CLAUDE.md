@@ -100,6 +100,7 @@ src/nav/             # route.ts: the hash address (screen, and in the reader '?c
                      #   lastRoute.ts: reopen where he left it (localStorage lampas.lastRoute, lampas.trail = last 20 addresses, lampas.scrolls; history.state.i;
                      #   a bare open lands on the newest and rebuilds history so Back walks the trail, past the oldest on Home; an open that names a place wins);
                      #   readerAddress.ts: bus events -> address (replaceState); scrollMemory.ts: scroll per address, restored with a ResizeObserver up to 2.5 s
+src/HoldToHear.tsx   # the 'Hold to hear' bar under the Quick test word (src/QuizScreen.tsx): holdPress's 500 ms hold says the Greek word with speakWord (the long press's engine), release or a slide off stops it, a tap does nothing, Space / Enter held do the same
 src/data/roundKeep.ts  # a half-done Quick test round in localStorage (lampas.round); the test screen offers 'Round left unfinished: Resume | New round'
 src/layout/layouts.ts # the reading layouts as a list (Verse by verse, Paragraph): each says where a block of verses starts (a verse with a heading always does); blocksOf cuts a chapter; a new layout is one more entry + how the Reader draws it
 src/WordSheet.tsx    # the bottom sheet a tapped word opens (tap outside, swipe down on the handle, Done or Escape closes it)

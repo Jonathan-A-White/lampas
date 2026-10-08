@@ -68,3 +68,63 @@ test('a Quick test question shows the picture beside a word that has one, and fi
   await expect(page.locator('[data-option]')).toHaveCount(4);
   await expectFitsPhone(page);
 });
+
+// The engine is a stand-in that records what the page asks of it (headless Chromium has no Greek voice).
+test('Hold to hear speaks the word while held, stops on release, shifts nothing and leaves the glosses tappable', async ({ page }) => {
+  await openUnlocked(page);
+  await page.addInitScript(() => {
+    const calls: string[] = [];
+    const synth = {
+      speaking: false,
+      pending: false,
+      getVoices: () => [{ lang: 'el-GR', name: 'Greek' }],
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      resume: () => {},
+      cancel: () => {
+        calls.push('cancel');
+        synth.speaking = false;
+      },
+      speak: (u: { text: string; lang: string }) => {
+        calls.push(`speak ${u.text} ${u.lang}`);
+        synth.speaking = true;
+      },
+    };
+    class Utterance {
+      lang = '';
+      rate = 1;
+      voice = null;
+      text: string;
+      constructor(text: string) {
+        this.text = text;
+      }
+    }
+    Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
+    Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: Utterance, configurable: true });
+    (window as unknown as { __calls: string[] }).__calls = calls;
+  });
+  await page.goto('/#/test');
+  const bar = page.getByTestId('hold-to-hear');
+  await expect(bar).toBeVisible();
+  await expect(bar).toContainText('Hold to hear');
+  const box = await bar.boundingBox();
+  expect(box?.height).toBeGreaterThanOrEqual(48);
+  expect(box?.width).toBeGreaterThan(300);
+  const first = page.locator('[data-option]').first();
+  const before = await first.boundingBox();
+
+  const lemma = await page.getByTestId('prompt').textContent();
+  const calls = () => page.evaluate(() => (window as unknown as { __calls: string[] }).__calls);
+  if (!box) throw new Error('no bar');
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await expect.poll(calls).toEqual([`speak ${lemma} el-GR`]);
+  expect(await first.boundingBox()).toEqual(before);
+  await shot(page, 'test-hold-to-hear');
+  await page.mouse.up();
+  await expect.poll(calls).toEqual([`speak ${lemma} el-GR`, 'cancel']);
+
+  await first.click();
+  await expect(page.locator('[data-option][data-result="right"]')).toHaveCount(1);
+  await expectFitsPhone(page);
+});

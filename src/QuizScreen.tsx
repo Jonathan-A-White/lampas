@@ -8,6 +8,7 @@ import { buildQuestion, drawWords, seedDistractors, type Question, type Random }
 import { navigate } from './nav/route';
 import { READER_CHAPTER } from './data/readerChapter';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { HoldToHear } from './HoldToHear';
 import { focusOnMount } from './ui/focus';
 import { WordPicture } from './WordPicture';
 
@@ -201,7 +202,10 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
           </div>
           <p className="mt-1 min-h-6 text-base text-muted">{question.reference ?? ''}</p>
         </div>
-        <ul className="mt-6 space-y-3">
+        <div className="mt-4">
+          <HoldToHear text={question.prompt} />
+        </div>
+        <ul className="mt-4 space-y-3">
           {question.options.map((option) => {
             const look = lookOf(option);
             return (
