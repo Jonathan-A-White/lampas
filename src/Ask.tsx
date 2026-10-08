@@ -66,21 +66,32 @@ function AnswerCard({ answer }: { answer: TutorAnswer }) {
 }
 
 /** The Ask box for the verse the bus says is selected (verse-selected), in `chapter`; nothing when there is none. */
-export function AskBox({ chapter, asks, onAsk, reveal }: {
+export function AskBox({ chapter, asks, onAsk, reveal, prefill = null }: {
   chapter: Chapter;
   asks: Record<number, AskState | undefined>;
   onAsk: (verse: Verse, question: string) => void;
   /** Scroll the box into view as it appears: when he just tapped the verse; not when the selection was put back by a reopen or Back */
   reveal: boolean;
+  /** a question to put in the field when the box opens on that verse (the Parsing drill's link); he sends it himself */
+  prefill?: { verse: number; text: string } | null;
 }) {
   const selected = useLatest('verse-selected');
   const verse = selected?.verse == null || selected.chapter !== chapter.chapter ? undefined : chapter.verses.find((v) => v.n === selected.verse);
-  return verse ? <AskField key={verse.n} verse={verse} state={asks[verse.n]} reveal={reveal} onAsk={(question) => onAsk(verse, question)} /> : null;
+  return verse ? (
+    <AskField
+      key={verse.n}
+      verse={verse}
+      state={asks[verse.n]}
+      reveal={reveal}
+      initial={prefill?.verse === verse.n ? prefill.text : ''}
+      onAsk={(question) => onAsk(verse, question)}
+    />
+  ) : null;
 }
 
 /** The field and the Ask button for one verse, with what its last question is doing. */
-function AskField({ verse, state, reveal, onAsk }: { verse: Verse; state: AskState | undefined; reveal: boolean; onAsk: (question: string) => void }) {
-  const [text, setText] = useState('');
+function AskField({ verse, state, reveal, initial, onAsk }: { verse: Verse; state: AskState | undefined; reveal: boolean; initial: string; onAsk: (question: string) => void }) {
+  const [text, setText] = useState(initial);
   const busy = state?.phase === 'sending' || state?.phase === 'waiting';
   const section = useRef<HTMLElement>(null);
   useEffect(() => {

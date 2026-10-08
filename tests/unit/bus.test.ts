@@ -86,6 +86,7 @@ describe('docs/events.md', () => {
       'reading-stopped': true,
       'word-tapped': true,
       'word-spoken': true,
+      'reader-requested': true,
     };
     const doc = readFileSync('docs/events.md', 'utf8');
     for (const kind of Object.keys(kinds)) expect(doc, kind).toContain(`\`${kind}\``);
