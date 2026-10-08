@@ -70,8 +70,7 @@ test('a Quick test question shows the picture beside a word that has one, and fi
 });
 
 // The engine is a stand-in that records what the page asks of it (headless Chromium has no Greek voice).
-test('Hold to hear speaks the word while held, stops on release, shifts nothing and leaves the glosses tappable', async ({ page }) => {
-  await openUnlocked(page);
+async function stubSpeech(page: Page) {
   await page.addInitScript(() => {
     const calls: string[] = [];
     const synth = {
@@ -103,6 +102,11 @@ test('Hold to hear speaks the word while held, stops on release, shifts nothing 
     Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: Utterance, configurable: true });
     (window as unknown as { __calls: string[] }).__calls = calls;
   });
+}
+
+test('Hold to hear speaks the word while held, stops on release, shifts nothing and leaves the glosses tappable', async ({ page }) => {
+  await openUnlocked(page);
+  await stubSpeech(page);
   await page.goto('/#/test');
   const bar = page.getByTestId('hold-to-hear');
   await expect(bar).toBeVisible();
@@ -127,4 +131,44 @@ test('Hold to hear speaks the word while held, stops on release, shifts nothing 
   await first.click();
   await expect(page.locator('[data-option][data-result="right"]')).toHaveCount(1);
   await expectFitsPhone(page);
+});
+
+test('the word speaks by itself once, a wrong answer waits for Next, and Ask the tutor sits beside Next without moving the glosses', async ({ page }) => {
+  await openUnlocked(page);
+  await stubSpeech(page);
+  await page.goto('/#/test');
+  const prompt = page.getByTestId('prompt');
+  await expect(prompt).toBeVisible();
+  const word = await prompt.textContent();
+  const calls = () => page.evaluate(() => (window as unknown as { __calls: string[] }).__calls);
+  expect(await calls()).toEqual([]);
+  await expect(page.getByRole('button', { name: 'Ask the tutor' })).toHaveCount(0);
+  const first = page.locator('[data-option]').first();
+  const before = await first.boundingBox();
+
+  // the first gloss may be right or wrong: either way the word speaks, and the test waits for Next
+  await first.click();
+  await expect(page.locator('[data-option][data-result]')).not.toHaveCount(0);
+  await expect.poll(calls).toContain(`speak ${word} el-GR`);
+  expect((await calls()).filter((c) => c.startsWith('speak '))).toHaveLength(1);
+  expect(await first.boundingBox()).toEqual(before);
+
+  const next = page.getByTestId('next');
+  const ask = page.getByRole('button', { name: 'Ask the tutor' });
+  await expect(next).toBeVisible();
+  await expect(ask).toBeVisible();
+  const nextBox = await next.boundingBox();
+  const askBox = await ask.boundingBox();
+  expect(nextBox && nextBox.y + nextBox.height).toBeLessThanOrEqual(844);
+  expect(nextBox?.height).toBeGreaterThanOrEqual(48);
+  expect(askBox?.height).toBeGreaterThanOrEqual(48);
+  expect(askBox?.y).toBe(nextBox?.y);
+  await page.waitForTimeout(800);
+  await expect(prompt).toHaveText(word ?? '');
+  await expectFitsPhone(page);
+  await shot(page, 'test-answered');
+
+  await ask.click();
+  await expect(page.getByRole('textbox', { name: 'Your question' })).toBeVisible();
+  expect(await page.getByRole('textbox', { name: 'Your question' }).inputValue()).toContain(word ?? '');
 });
