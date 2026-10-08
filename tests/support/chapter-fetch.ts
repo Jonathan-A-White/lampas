@@ -1,4 +1,4 @@
-// tests/support/chapter-fetch.ts — a fetch that answers /data/<book>/<n>.json and /data/lexicon.json with the committed file read
+// tests/support/chapter-fetch.ts — a fetch that answers /data/<book>/<n>.json, /data/index.json and /data/lexicon.json with the committed file read
 // from disk and refuses everything else, so a test proves the reader calls nothing beyond the app's own data.
 import { readFileSync } from 'node:fs';
 import { vi } from 'vitest';
@@ -19,7 +19,7 @@ export function stubChapterFetch(): ChapterFetch {
     vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
       stub.requests.push(url);
-      if (!/^\/data\/([0-9a-z]+\/\d+|lexicon)\.json$/.test(url)) return new Response('not found', { status: 404 });
+      if (!/^\/data\/([0-9a-z]+\/\d+|lexicon|index)\.json$/.test(url)) return new Response('not found', { status: 404 });
       return new Response(readFileSync(`public${url}`, 'utf8'), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }),
   );
