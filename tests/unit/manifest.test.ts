@@ -27,6 +27,10 @@ describe('pwaManifest', () => {
     expect(html).toContain('<link rel="apple-touch-icon" href="/icon-192.png" />');
   });
 
+  it('hands web+lampas: links to the reference in the address', () => {
+    expect(pwaManifest.protocol_handlers).toEqual([{ protocol: 'web+lampas', url: '/#/?ref=%s' }]);
+  });
+
   it('raises the precache size limit past workbox default of 2 MiB', () => {
     expect(injectManifestOptions.maximumFileSizeToCacheInBytes).toBeGreaterThan(2 * 1024 * 1024);
   });
