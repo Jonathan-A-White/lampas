@@ -8,7 +8,7 @@
 // are told to the rest of the app on the event bus (src/events/bus.ts, docs/events.md); the Reader reads the selection back from it.
 // The chapter comes from /data/rom/8.json (precached), the view and the weave are kept in the settings store.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnswerCards, AskBox } from './Ask';
 import { TalkBar, TalkSheet } from './Talk';
 import { type Chapter, type EnglishChunk, type GreekWord, type Verse, loadChapter } from './data/chapter';
@@ -31,6 +31,8 @@ import { navigate, readerOf, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
 import { useTalk } from './useTalk';
+import { useVoice } from './useVoice';
+import { useHoldPress } from './ui/holdPress';
 import { HeaderButton } from './ScreenHeader';
 import { pauseReading, planOf, startAnswer, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
 import { answerRuns } from './speech/answerRuns';
@@ -144,6 +146,36 @@ function GearIcon() {
   );
 }
 
+/** What a held verse number does: open the talk about that verse and listen, send on release, drop on a slide-away. */
+interface VerseTalk {
+  onHold: (n: number) => void;
+  onRelease: () => void;
+  onDrop: () => void;
+}
+
+/** The button with a verse's number: a tap selects the verse, a hold (half a second) talks about it. */
+function VerseNumber({ n, selected, onSelect, talk, className, children }: {
+  n: number;
+  selected: boolean;
+  onSelect: () => void;
+  talk: VerseTalk;
+  className: string;
+  children: ReactNode;
+}) {
+  const press = useHoldPress({ onTap: onSelect, onHold: () => talk.onHold(n), onRelease: talk.onRelease, onDrop: talk.onDrop });
+  return (
+    <button
+      type="button"
+      {...press}
+      aria-label={`Verse ${n}`}
+      aria-pressed={selected}
+      className={`select-none [-webkit-touch-callout:none] ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
 interface VerseProps {
   verse: Verse;
   view: ReaderView;
@@ -155,6 +187,7 @@ interface VerseProps {
   onSelect: () => void;
   onPlay: () => void;
   onLook: (lookup: Lookup) => void;
+  talk: VerseTalk;
 }
 
 /** The words of one verse, every one tappable: the Greek in Greek order, or the English chunks (woven or not). */
@@ -208,7 +241,7 @@ const READING_CLASS = 'bg-accent/30';
 
 /** Verse by verse: one verse per line, its number a button before it. */
 function VerseView(props: VerseProps) {
-  const { verse, view, selected, reading, onSelect, onPlay } = props;
+  const { verse, view, selected, reading, onSelect, onPlay, talk } = props;
   return (
     <p
       data-verse={verse.n}
@@ -217,15 +250,15 @@ function VerseView(props: VerseProps) {
       lang={view === 'greek' ? 'grc' : 'en'}
       className={`mb-1 break-words rounded-xl px-2 leading-(--lp-leading) ${reading ? READING_CLASS : selected ? 'bg-accent/15' : ''} ${textClass(view)}`}
     >
-      <button
-        type="button"
-        aria-label={`Verse ${verse.n}`}
-        aria-pressed={selected}
-        onClick={onSelect}
+      <VerseNumber
+        n={verse.n}
+        selected={selected}
+        onSelect={onSelect}
+        talk={talk}
         className="inline-block min-h-(--lp-tap) min-w-(--lp-tap) pr-1 text-left align-baseline font-sans text-sm font-semibold leading-(--lp-tap) text-muted"
       >
         {verse.n}
-      </button>
+      </VerseNumber>
       <VerseText {...props} />
       <VersePlay playing={reading} onPlay={onPlay} className="align-baseline font-sans" />
     </p>
@@ -235,7 +268,7 @@ function VerseView(props: VerseProps) {
 /** Paragraph: the verses of one MSB paragraph run on, each number a small superscript. The button is still 44 px square
  * (its side margins pull the neighbours back in), and a verse is still selected by its number. The play button of a
  * verse shows only while it is selected, so a paragraph reads as running text. */
-function ParagraphView({ verses, view, woven, selected, reading, onSelect, onPlay, onLook }: {
+function ParagraphView({ verses, view, woven, selected, reading, onSelect, onPlay, onLook, talk }: {
   verses: Verse[];
   view: ReaderView;
   woven: (Woven[] | null)[];
@@ -245,20 +278,21 @@ function ParagraphView({ verses, view, woven, selected, reading, onSelect, onPla
   onSelect: (n: number) => void;
   onPlay: (n: number) => void;
   onLook: (lookup: Lookup) => void;
+  talk: VerseTalk;
 }) {
   return (
     <p data-paragraph lang={view === 'greek' ? 'grc' : 'en'} className={`mb-2 break-words px-2 leading-(--lp-leading) ${textClass(view)}`}>
       {verses.map((verse, i) => (
         <span key={verse.n} data-verse={verse.n} data-selected={selected === verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${reading === verse.n ? READING_CLASS : selected === verse.n ? 'bg-accent/15' : ''}`}>
-          <button
-            type="button"
-            aria-label={`Verse ${verse.n}`}
-            aria-pressed={selected === verse.n}
-            onClick={() => onSelect(verse.n)}
+          <VerseNumber
+            n={verse.n}
+            selected={selected === verse.n}
+            onSelect={() => onSelect(verse.n)}
+            talk={talk}
             className="-mx-3 inline-block min-h-(--lp-tap) min-w-(--lp-tap) text-center align-baseline font-sans leading-(--lp-tap)"
           >
             <sup className="text-xs font-semibold text-muted">{verse.n}</sup>
-          </button>
+          </VerseNumber>
           <VerseText verse={verse} view={view} woven={woven[i]} onLook={onLook} />
           {selected === verse.n || reading === verse.n ? (
             <VersePlay playing={reading === verse.n} onPlay={() => onPlay(verse.n)} className="align-baseline font-sans" />
@@ -320,8 +354,16 @@ export function Reader() {
   useEffect(() => {
     openTalk.current = talkAbout === undefined ? null : talkRef(BOOK, CHAPTER, talkAbout);
   }, [talkAbout]);
+  // Push-to-talk (src/useVoice.ts): what he says goes as the turn of the conversation the sheet is open on.
+  const sayAbout = useRef<(message: string) => void>(() => {});
+  const voice = useVoice((message) => sayAbout.current(message));
+  const holding = useRef(false);
+  useEffect(() => {
+    holding.current = voice.listening;
+  });
   const { states: talkStates, say } = useTalk(BOOK, CHAPTER, (ref, id, answer) => {
-    if (openTalk.current === ref) startAnswer(id, answerRuns(answer));
+    // an answer that comes while he holds waits: page audio can take the microphone from the recogniser
+    if (openTalk.current === ref && !holding.current) startAnswer(id, answerRuns(answer));
   });
   // The verse he last tapped: its Ask box scrolls into view. A selection put back by a reopen or Back does not, so it
   // leaves the text where the scroll memory put it.
@@ -335,6 +377,22 @@ export function Reader() {
   );
   const closeSheet = useCallback(() => setLookup(null), []);
   const talkScope = chapter && talkAbout !== undefined ? { title: TITLE, chapter, verse: chapter.verses.find((v) => v.n === talkAbout) ?? null } : null;
+  useEffect(() => {
+    sayAbout.current = (message) => {
+      if (talkScope) say(talkScope, message);
+    };
+  });
+  // A hold opens the sheet about `about` and listens, unless that conversation is still waiting for its answer.
+  const holdTalk = useCallback(
+    (about: number | null) => {
+      setTalkAbout(about);
+      const state = talkStates[talkRef(BOOK, CHAPTER, about)];
+      if (state?.phase === 'sending' || state?.phase === 'waiting') return;
+      voice.press();
+    },
+    [talkStates, voice],
+  );
+  const verseTalk: VerseTalk = { onHold: holdTalk, onRelease: () => void voice.release(), onDrop: voice.abort };
   const weaving = view === 'english' && weave === 'solid';
   const woven = useMemo(
     () => (chapter && weaving ? chapter.verses.map((v) => weaveVerse(v, solid ?? EMPTY_LEMMAS)) : null),
@@ -475,6 +533,7 @@ export function Reader() {
                       onSelect={selectVerse}
                       onPlay={(n) => readFrom(n, false)}
                       onLook={setLookup}
+                      talk={verseTalk}
                     />
                   ) : (
                     <VerseView
@@ -486,6 +545,7 @@ export function Reader() {
                       onSelect={() => selectVerse(first.n)}
                       onPlay={() => readFrom(first.n, false)}
                       onLook={setLookup}
+                      talk={verseTalk}
                     />
                   )}
                   {withSelection && selected !== null ? (
@@ -509,14 +569,29 @@ export function Reader() {
         )}
         </div>
       </main>
-      {chapter ? <TalkBar onTalk={() => setTalkAbout(selected)} /> : null}
+      {chapter ? (
+        <TalkBar
+          hold={{
+            onPress: stopReading,
+            onTap: () => setTalkAbout(selected),
+            onHold: () => holdTalk(selected),
+            onRelease: () => void voice.release(),
+            onDrop: voice.abort,
+          }}
+        />
+      ) : null}
       {talkScope && talkAbout !== undefined ? (
         <TalkSheet
           scope={talkScope}
           talkRef={talkRef(BOOK, CHAPTER, talkAbout)}
           state={talkStates[talkRef(BOOK, CHAPTER, talkAbout)]}
+          voice={voice}
           onSay={(message) => say(talkScope, message)}
-          onClose={() => setTalkAbout(undefined)}
+          onClose={() => {
+            voice.abort();
+            voice.clearNotice();
+            setTalkAbout(undefined);
+          }}
         />
       ) : null}
       {chapter && lookup ? <WordSheet chapter={chapter} lookup={lookup} onClose={closeSheet} /> : null}

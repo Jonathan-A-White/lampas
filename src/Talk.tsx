@@ -1,6 +1,8 @@
 // src/Talk.tsx — Bible talk: the Talk bar at the bottom of the reader and the bottom sheet it opens, a conversation about the
 // chapter or the selected verse. The sheet shows the turns so far (kept per chapter and per verse, src/data/repositories/talks.ts),
-// a field and Send; what a message is doing is src/useTalk.ts's. Each answer can be heard (read aloud through
+// a field, a hold-to-talk button and Send; what a message is doing is src/useTalk.ts's. He can talk instead of typing
+// (src/useVoice.ts): the Talk button held for half a second, a verse number held, or the sheet's own mic button; his words
+// show live while he holds and go on release. Each answer can be heard (read aloud through
 // src/speech/readAloud.ts, a Stop while it plays) and its Greek words open the word sheet.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
@@ -12,9 +14,11 @@ import { FAILURE_TITLES } from './services/tutor';
 import { startAnswer, stopAnswer, useReading } from './speech/readAloud';
 import { Icon } from './speech/ReadControls';
 import { answerRuns } from './speech/answerRuns';
-import { focusOnMount } from './ui/focus';
+import { focusOnMount, focusQuietly } from './ui/focus';
+import { type HoldHandlers, useHoldPress } from './ui/holdPress';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import type { AskState } from './useAsks';
+import type { Voice } from './useVoice';
 import { WordSheet, type Lookup } from './WordSheet';
 
 function BubbleIcon() {
@@ -25,19 +29,56 @@ function BubbleIcon() {
   );
 }
 
-/** The bar pinned at the bottom of the reader: one Talk button. It is the lowest bar, so it alone keeps the safe-area inset. */
-export function TalkBar({ onTalk }: { onTalk: () => void }) {
+function MicIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="9" y="3" width="6" height="12" rx="3" />
+      <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+    </svg>
+  );
+}
+
+/** The bar pinned at the bottom of the reader: one Talk button. A tap opens the sheet; a hold (half a second) opens it and
+ * listens, and what he says goes on release. It is the lowest bar, so it alone keeps the safe-area inset. */
+export function TalkBar({ hold }: { hold: HoldHandlers }) {
+  const press = useHoldPress(hold);
   return (
     <div data-talk-bar className="shrink-0 border-t border-line bg-surface px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
       <button
         type="button"
-        onClick={onTalk}
-        className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-accent px-6 text-lg font-medium text-accent-fg"
+        {...press}
+        className="flex min-h-12 w-full touch-none select-none items-center justify-center gap-2 rounded-xl bg-accent px-6 text-lg font-medium text-accent-fg [-webkit-touch-callout:none]"
       >
         <BubbleIcon />
         Talk
       </button>
     </div>
+  );
+}
+
+/** The hold-to-talk button beside Send: listens from the first touch (or Space / Enter held) and sends on release. */
+function HoldToTalk({ voice, disabled }: { voice: Voice; disabled: boolean }) {
+  const press = useHoldPress({ onHold: voice.press, onRelease: () => void voice.release(), onDrop: voice.abort }, 0);
+  return (
+    <button
+      type="button"
+      aria-label="Hold to talk"
+      aria-pressed={voice.listening}
+      disabled={disabled}
+      {...press}
+      onClick={undefined}
+      onKeyDown={(e) => {
+        if (e.key !== ' ' && e.key !== 'Enter') return;
+        e.preventDefault();
+        if (!e.repeat) voice.press();
+      }}
+      onKeyUp={(e) => {
+        if (e.key === ' ' || e.key === 'Enter') void voice.release();
+      }}
+      className={`inline-flex min-h-12 min-w-14 shrink-0 touch-none select-none items-center justify-center rounded-xl text-accent-fg [-webkit-touch-callout:none] disabled:opacity-40 ${voice.listening ? 'bg-bad' : 'bg-accent'}`}
+    >
+      <MicIcon />
+    </button>
   );
 }
 
@@ -109,12 +150,14 @@ function Turn({ turn, scope, onLook }: { turn: TalkTurn; scope: TalkScope; onLoo
 }
 
 /** The sheet: the conversation `scope` names, the field, Send, and what the last message is doing. */
-export function TalkSheet({ scope, talkRef: ref, state, onSay, onClose }: {
+export function TalkSheet({ scope, talkRef: ref, state, voice, onSay, onClose }: {
   scope: TalkScope;
   /** the key the conversation is kept under (src/data/repositories/talks.ts talkRef) */
   talkRef: string;
   /** what the last message of this conversation is doing; undefined when it is done */
   state: AskState | undefined;
+  /** push-to-talk: his words live while he holds, and what went wrong */
+  voice: Voice;
   onSay: (message: string) => void;
   onClose: () => void;
 }) {
@@ -137,6 +180,11 @@ export function TalkSheet({ scope, talkRef: ref, state, onSay, onClose }: {
   }, [turnCount, state?.phase]);
   // Closing the sheet takes its answer's speech with it.
   useEffect(() => () => stopAnswer(), []);
+  // A phone with no recogniser sends a hold to the typed field.
+  const field = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    if (voice.typing > 0) focusQuietly(field.current);
+  }, [voice.typing]);
 
   const send = (message: string): void => {
     if (!message.trim() || busy) return;
@@ -204,7 +252,19 @@ export function TalkSheet({ scope, talkRef: ref, state, onSay, onClose }: {
             ) : null}
           </div>
           <div className="shrink-0 space-y-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+            {voice.listening ? (
+              <div data-talk-live role="status" className="rounded-2xl border border-bad px-3 py-2">
+                <p className="text-sm font-medium text-bad">{voice.ready ? 'Listening… let go to send, slide away to cancel' : 'Starting the microphone…'}</p>
+                <p className="min-h-7 break-words text-lg">{voice.transcript}</p>
+              </div>
+            ) : null}
+            {voice.notice ? (
+              <p role="alert" className="break-words text-base text-bad">
+                {voice.notice.message}
+              </p>
+            ) : null}
             <textarea
+              ref={field}
               aria-label="Your message"
               rows={2}
               maxLength={MAX_TALK_CHARS}
@@ -213,14 +273,17 @@ export function TalkSheet({ scope, talkRef: ref, state, onSay, onClose }: {
               onChange={(e) => setText(e.target.value)}
               className="block w-full resize-none rounded-lg border border-line bg-canvas px-3 py-2 text-lg"
             />
-            <button
-              type="button"
-              disabled={busy || !text.trim()}
-              onClick={() => send(text)}
-              className="min-h-12 w-full rounded-xl bg-accent px-6 text-lg font-medium text-accent-fg disabled:opacity-40"
-            >
-              Send
-            </button>
+            <div className="flex gap-2">
+              <HoldToTalk voice={voice} disabled={busy} />
+              <button
+                type="button"
+                disabled={busy || !text.trim()}
+                onClick={() => send(text)}
+                className="min-h-12 min-w-0 flex-1 rounded-xl bg-accent px-6 text-lg font-medium text-accent-fg disabled:opacity-40"
+              >
+                Send
+              </button>
+            </div>
           </div>
         </div>
       </div>
