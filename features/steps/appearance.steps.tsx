@@ -174,9 +174,9 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on a phone whose colour scheme is light, with nothing saved', () => openOnPhone(false));
     Then('the browser bar colour is the light one', () => expect(barColour()).toBe(THEME_COLORS.light));
     When('he sets Theme to Dark in Settings', () => user.click(choiceIn('Theme', 'Dark')));
-    Then('the bus has heard the theme is dark', () => expect(latest('theme-changed')?.theme).toBe('dark'));
-    And('the page is dark', () => expect(pageTheme()).toBe('dark'));
-    And('the browser bar colour is the dark one', () => expect(barColour()).toBe(THEME_COLORS.dark));
+    Then('the bus has heard the theme is dark', () => waitFor(() => expect(latest('theme-changed')?.theme).toBe('dark')));
+    And('the page is dark', () => waitFor(() => expect(pageTheme()).toBe('dark')));
+    And('the browser bar colour is the dark one', () => waitFor(() => expect(barColour()).toBe(THEME_COLORS.dark)));
     When('he sets Theme to Light in Settings', () => user.click(choiceIn('Theme', 'Light')));
     Then('the page is light', () => expect(pageTheme()).toBe('light'));
     And('the browser bar colour is the light one', () => expect(barColour()).toBe(THEME_COLORS.light));
