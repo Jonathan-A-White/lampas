@@ -332,7 +332,10 @@ describeFeature(feature, ({ Scenario }) => {
       expect(group.parentElement).toHaveTextContent(label);
       expect(within(group).getAllByRole('button').map((e) => e.textContent)).toEqual([a, b, c]);
     });
-    And('the Grammar row is labelled {string} and offers {string}, {string} and {string}', async (_, label: string, a: string, b: string, c: string) => {
+    When('he turns the Weave on in Settings', async () => {
+      await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: 'Solid' }));
+    });
+    Then('the Grammar row is labelled {string} and offers {string}, {string} and {string}', async (_, label: string, a: string, b: string, c: string) => {
       const group = await screen.findByRole('group', { name: 'Grammar' });
       expect(group.parentElement).toHaveTextContent(label);
       expect(within(group).getAllByRole('button').map((e) => e.textContent)).toEqual([a, b, c]);
@@ -410,6 +413,8 @@ describeFeature(feature, ({ Scenario }) => {
     When('he opens Settings', openSettings);
     Then('each of Solid words, + Learning words, with Solid grammar, + Frontier grammar is set by one tap on each row', async () => {
       const words = within(await screen.findByRole('group', { name: 'Weave' }));
+      // the Grammar row is drawn only while the Weave is not Off (mw-5r3p30.106)
+      await user.click(words.getByRole('button', { name: 'Solid' }));
       const grammar = within(await screen.findByRole('group', { name: 'Grammar' }));
       const combos: [string, string, string, string][] = [
         ['Solid', 'solid', 'Solid', 'solid'],

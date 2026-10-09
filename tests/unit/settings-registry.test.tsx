@@ -25,6 +25,11 @@ describe('the registry lists every Settings row', () => {
   it('has an entry for each control the Settings screen draws, named as the screen names it', async () => {
     cleanup();
     window.location.hash = '#/settings';
+    // a setting's details are drawn only while it is on (mw-5r3p30.106): turn on the ones that have some
+    await db.settings.bulkPut([
+      { key: 'weave', value: 'solid' },
+      { key: 'resource.logos', value: 'on' },
+    ]);
     // jsdom has no speechSynthesis: two voice pickers still draw, empty
     render(<SettingsScreen />);
     await screen.findByRole('slider', { name: 'Greek speed' });
@@ -40,7 +45,8 @@ describe('the registry lists every Settings row', () => {
     await screen.findByRole('group', { name: 'Bible in Logos' });
     await screen.findByRole('group', { name: 'Read aloud span' });
     const drawn = [
-      ...screen.getAllByRole('group'),
+      // Logos' ticked list of lexicons belongs to the Logos switch, a study resource kept outside the registry
+      ...screen.getAllByRole('group').filter((el) => el.getAttribute('aria-label') !== 'Logos lexicons'),
       ...screen.getAllByRole('radiogroup'),
       // the Goal group's own Book, Chapter and Verse pickers, and Bible in Logos' own Bible list, are parts of those one settings
       ...screen.getAllByRole('combobox').filter((el) => !el.closest('[role="group"][aria-label="Goal"], [role="group"][aria-label="Bible in Logos"]')),
