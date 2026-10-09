@@ -11,7 +11,7 @@ goes before the voice stops. It starts at the verse he starts from (the header's
 | Chapter | at the chapter's end |
 | Book | at the end of the book (Revelation 22 for Revelation); it does not go on into the next book |
 
-The play button on a single verse (*Hear the verse*) always reads that verse only, whatever the span.
+The play button on a single verse (*Hear the verse*) always reads that verse only, whatever the span. The Verse view of a passage (a tapped section heading, mw-5r3p30.73) has Listen read that passage only, whatever the span.
 
 ## Crossing into another chapter
 
