@@ -6,6 +6,7 @@ import { BOOKS, titleOf } from '../data/books';
 import type { BookIndex, Chapter } from '../data/chapter';
 import type { Lookup } from '../WordSheet';
 import type { LemmaEntry, LemmaLexicon } from '../data/lexicon';
+import { OT_BOOKS } from '../data/otBooks';
 import type { OpenChapter } from '../data/readerChapter';
 import { LINK_ORIGIN } from '../config';
 import { pathOf } from './route';
@@ -48,13 +49,48 @@ export function parseReference(text: string): Reference | null {
   if (!named) return null;
   const book = BOOK_BY_NAME.get(squash(`${named[1]}${named[2]}`));
   if (!book) return null;
-  const rest = named[3].trim();
+  return numbersOf(book, named[3].trim());
+}
+
+/** The chapter and verse that follow a book's name ('' for none, '8:28', '8 28', '8.28', '8:28-30' keeps the first verse), or null for anything else. */
+function numbersOf(book: string, rest: string): Reference | null {
   if (rest === '') return { book };
   const numbers = /^(\d+)(?:(?:\s*[.:]\s*|\s+)(\d+))?(?:\s*[-–]\s*\d+)?$/.exec(rest);
   if (!numbers) return null;
   const reference: Reference = { book, chapter: Number(numbers[1]) };
   if (numbers[2] !== undefined) reference.verse = Number(numbers[2]);
   return reference;
+}
+
+/** Other common short forms of the Old Testament books, beside the code, the full name and Logos' abbreviation (data/otBooks.ts). */
+const EXTRA_OT_NAMES: Readonly<Record<string, readonly string[]>> = {
+  gen: ['gn'], exo: ['exod', 'exo'], lev: ['lv'], num: ['nm', 'nb'], deu: ['deut', 'dt'], jos: ['josh'], jdg: ['judg', 'jg'],
+  '1sa': ['1sam'], '2sa': ['2sam'], '1ki': ['1kgs', '1kg', '1kin'], '2ki': ['2kgs', '2kg', '2kin'], '1ch': ['1chr', '1chron'], '2ch': ['2chr', '2chron'],
+  neh: ['nehe'], est: ['esth'], psa: ['psalm', 'psalms', 'pss', 'psl'], pro: ['prov', 'prv'], ecc: ['eccl', 'eccles', 'qoh', 'qoheleth'],
+  sng: ['song', 'sos', 'songofsongs', 'songofsolomon', 'canticles', 'sg'], isa: ['is'], jer: ['jr'], lam: ['lm'], ezk: ['ezek', 'eze'], dan: ['dn'],
+  hos: ['hs'], jol: ['jl'], amo: ['amos'], oba: ['obad', 'ob'], jon: ['jnh'], mic: ['mc'], nam: ['nah'], hab: ['hb'], zep: ['zeph'], zec: ['zech'], mal: ['ml'],
+};
+
+/** The Old Testament's names, as the matcher compares them. A name the New Testament already uses stays the New Testament's (BOOK_BY_NAME is asked first). */
+const OT_BY_NAME: ReadonlyMap<string, string> = new Map(
+  OT_BOOKS.flatMap(({ code, name, logos }) => [code, name, logos, ...(EXTRA_OT_NAMES[code] ?? [])].map((n): [string, string] => [squash(n), code])),
+);
+
+/** A reference to any book of the Bible: `testament` says which list names the book (data/books.ts for the New, data/otBooks.ts for the Old). Lampas holds only
+ *  the New Testament's text, so only a 'nt' reference can open the Reader. */
+export interface CanonReference extends Reference {
+  testament: 'nt' | 'ot';
+}
+
+/** `parseReference`, and the 39 books of the Old Testament as well ('Isaiah 53:5', 'Gen 15:6', 'Psalm 23', '1 Samuel 3:4', 'Song of Solomon 2:1'); null for a
+ *  book of neither. Used for the references the tutor names; the links Lampas takes in (resolveReference) still know only the New Testament. */
+export function parseCanonReference(text: string): CanonReference | null {
+  const nt = parseReference(text);
+  if (nt) return { testament: 'nt', ...nt };
+  const named = /^((?:[1-3]\s*)?[a-z][a-z .]*?)\s*((?:\d.*)?)$/i.exec(text.trim().replace(SCHEME, '').replace(/\+/g, ' '));
+  const book = named && OT_BY_NAME.get(squash(named[1]));
+  const numbers = book && numbersOf(book, named[2].trim());
+  return numbers ? { testament: 'ot', ...numbers } : null;
 }
 
 /** Where a reference opens the reader. `notice` is set when what was asked for is not what is shown. */
