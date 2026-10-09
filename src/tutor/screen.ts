@@ -63,7 +63,7 @@ const SUGGESTIONS: Record<string, string[]> = {
   Settings: ['Which settings suit a beginner?', 'How do I make the Greek easier to read?'],
   'My study way': ['What should I write in my study way?', 'How does the tutor use my study way?'],
   Import: ['What words should I add to my list?', 'How do I write a word list to import?'],
-  About: ['What is Lampas for?', 'Which texts does Lampas use?'],
+  About: ['What is Lampas for?', 'Which texts does Lampas use?', 'What does each of these do for Lampas?'],
 };
 
 /** The two or three questions the sheet opens with on the screen `name`; none for a name it does not know. */

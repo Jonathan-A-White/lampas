@@ -23,6 +23,7 @@ export {
   getSpeechRates,
   getTextSize,
   getTheme,
+  getReadTutor,
   getTips,
   getVoice,
   getWeave,
@@ -41,13 +42,14 @@ export {
   setSpeechRate,
   setTextSize,
   setTheme,
+  setReadTutor,
   setTips,
   setVoice,
   setWeave,
   setWeaveGrammar,
 } from './settings';
 export type { ReadSpan } from '../../speech/readSpan';
-export type { GrammarMove, PickerGrammar, ReaderView, ReadingLayout, SectionHeadings, Tips, VoiceLanguage, Weave, WeaveGrammar } from './settings';
+export type { GrammarMove, PickerGrammar, ReaderView, ReadingLayout, ReadTutor, SectionHeadings, Tips, VoiceLanguage, Weave, WeaveGrammar } from './settings';
 export { listResults, recordAnswer } from './results';
 export type { TestResult } from './results';
 export { countDue, ensureScheduled, listDue, recordReview, reviewsOf, seedScheduleIfFirstOpen } from './reviews';

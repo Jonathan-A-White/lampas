@@ -1,21 +1,82 @@
 # Attribution
 
-Lampas uses these texts, lexicons and libraries.
+> If I have seen further it is by standing on the shoulders of Giants.
+> — Isaac Newton, letter to Robert Hooke, 1675
 
-- **Majority Standard Bible (MSB), New Testament tables.** Public domain. Byzantine Greek word-aligned
-  to the MSB English, with Strong's numbers and Robinson-Pierpont parsing codes.
-  Source: https://majoritybible.com/msb_nt_tables.tsv (majoritybible.com).
-- **Tyndale House's Brief lexicon of the Greek NT, extended (TBESG), from STEPBible.** Licensed
-  CC BY 4.0. Credit: STEPBible (https://www.STEPBible.org), Tyndale House, Cambridge. Data used under
-  https://creativecommons.org/licenses/by/4.0/.
+Lampas stands on other people's work, so it names every text, lexicon, library, font, service and idea it
+builds on, with a link to each, its licence and what we changed. Credit is owed whether or not a licence asks for it.
+
+## Texts and data
+
+- **[Majority Standard Bible (MSB), New Testament tables](https://majoritybible.com).** Public domain. Byzantine Greek word-aligned
+  to the MSB English, with Strong's numbers and Robinson-Pierpont parsing codes: the text and the English you read.
+  Source: the msb_nt_tables.tsv file at majoritybible.com. Changes: cut into one file per chapter, with short keys (scripts/data-build.ts, docs/data.md).
+- **[Tyndale House's Brief lexicon of the Greek NT, extended (TBESG), from STEPBible](https://www.stepbible.org).** Licensed
+  [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Credit: STEPBible, Tyndale House, Cambridge. The words' lemmas,
+  glosses and definitions (the definitions are Abbott-Smith's). Data used under the licence.
   Changes: per Strong's number only the first entry is used, with its lemma and gloss as given; the
   Abbott-Smith definition has its markup, scripture references and daggers removed and is cut near 300
   characters (scripts/data-build.ts, docs/data.md).
-- **bsv-kit** (https://github.com/Jonathan-A-White/bsv-kit). MIT licence. Licence gate and tutor payments.
-- **Gentium Plus** (https://software.sil.org/gentium/), the Greek type of the reader. SIL Open Font License 1.1,
-  Copyright (c) 2003-2022 SIL International; the licence text is in `src/fonts/OFL.txt`. The OFL allows bundling
-  and redistributing the font with software. The Greek and Greek Extended subsets are bundled as the
-  @fontsource/gentium-plus 5.3.0 builds, unmodified.
-- **Biblical Mastery Academy** (https://biblicalmastery.academy/). The order in which the BMA Tutor grammar approach teaches Greek
+- **[Biblical Mastery Academy](https://biblicalmastery.academy/).** The order in which the BMA Tutor grammar approach teaches Greek
   follows the sequence of the Greek Success Path of Biblical Mastery Academy. Only the sequence is followed: the lesson titles,
   the method and the drills in Lampas are its own, and no course text, image or exercise is copied.
+
+## Type
+
+- **[Gentium Plus](https://software.sil.org/gentium/)** by SIL International, the Greek type of the reader. Licence:
+  [SIL Open Font License 1.1](https://openfontlicense.org/open-font-license-official-text/), Copyright (c) 2003-2022 SIL International;
+  the licence text is in `src/fonts/OFL.txt`. The Greek and Greek Extended subsets are bundled as the
+  @fontsource/gentium-plus 5.3.0 builds. Changes: none.
+
+## Libraries the app runs on
+
+- **[React](https://react.dev/)** (`react`, `react-dom`). The interface library, from Meta and the React community.
+  Licence: [MIT](https://github.com/facebook/react/blob/main/LICENSE). Changes: none.
+- **[Dexie](https://dexie.org/)** (`dexie`, `dexie-react-hooks`) by David Fahlander. Keeps your words, answers and settings on the phone
+  (IndexedDB). Licence: [Apache-2.0](https://github.com/dexie/Dexie.js/blob/master/LICENSE). Changes: none.
+- **[bsv-kit](https://github.com/Jonathan-A-White/bsv-kit)** (`bsv-kit`) by Jonathan A. White. The licence gate and the tutor's payments
+  and messages. Licence: [MIT](https://github.com/Jonathan-A-White/bsv-kit/blob/main/LICENSE). Changes: none.
+- **[BSV SDK](https://github.com/bsv-blockchain/ts-stack/tree/main/packages/sdk)** (`@bsv/sdk`) by the BSV Association. Keys, signatures
+  and transactions under bsv-kit. Licence: [Open BSV License](https://github.com/bsv-blockchain/ts-stack/blob/main/packages/sdk/LICENSE.txt).
+  Changes: none.
+- **[react-markdown](https://github.com/remarkjs/react-markdown)** (`react-markdown`) by Titus Wormer and the unified collective. Draws the
+  tutor's answers, which are written in Markdown. Licence: [MIT](https://github.com/remarkjs/react-markdown/blob/main/license). Changes: none.
+- **[remark-gfm](https://github.com/remarkjs/remark-gfm)** (`remark-gfm`) by Titus Wormer and the unified collective. Tables, lists and
+  strike-through in those answers. Licence: [MIT](https://github.com/remarkjs/remark-gfm/blob/main/license). Changes: none.
+- **[Workbox](https://developer.chrome.com/docs/workbox)** (`workbox-precaching`, `workbox-routing`, `workbox-strategies`) from Google Chrome.
+  The service worker that lets Lampas open with no signal. Licence: [MIT](https://github.com/GoogleChrome/workbox/blob/v7/LICENSE). Changes: none.
+
+## Services and apps
+
+- **[WhatsOnChain](https://whatsonchain.com)**. A public Bitcoin SV block explorer. Lampas asks it whether your phone's key holds a Lampas
+  licence. Licence: none needed, it is a service used through its public API and no code or data is copied; its [terms](https://whatsonchain.com/terms) apply. Changes: none.
+- **[Postern](https://github.com/Jonathan-A-White/postern)** and its mill, by Jonathan A. White. Carries your questions to the tutor and
+  its answers back. Licence: [MIT](https://github.com/Jonathan-A-White/postern/blob/main/LICENSE). Changes: none.
+- **[Claude](https://www.anthropic.com/claude)** by Anthropic. The model behind the tutor's answers, the reading check and the tips.
+  Licence: none needed, it is a service used through the mill; its [terms](https://www.anthropic.com/legal/consumer-terms) apply. Changes: none.
+- **[Logos Bible Software](https://www.logos.com)** and **[Accordance](https://www.accordancebible.com)**. Only if you switch them on in
+  Settings: Lampas links to a word or a verse in the app you already own. No text, image or data is taken from either. Their own licences are yours.
+- **[Blue Letter Bible](https://www.blueletterbible.org)** and **[STEPBible](https://www.stepbible.org)**. Links from a word to its Strong's
+  entry, if you switch Strong's on. Links only: nothing is copied. Their own terms apply.
+- **[Web Speech API](https://developer.mozilla.org/docs/Web/API/Web_Speech_API)**. Your phone's own voices speak the Greek and English and its
+  recogniser hears you; Lampas ships no voice. The API is a web standard; the voices are your phone's and its maker's.
+
+## Ideas and tools we borrowed
+
+- **[Beads](https://github.com/steveyegge/beads)** and **[Gas Town](https://github.com/steveyegge/gastown)** by [Steve Yegge](https://github.com/steveyegge). The way the
+  factory that builds Lampas keeps its work: small tracked tasks, and agents that take them one at a time. Licence:
+  [MIT](https://github.com/steveyegge/beads/blob/main/LICENSE) (Beads), [MIT](https://github.com/steveyegge/gastown/blob/main/LICENSE) (Gas Town).
+  Changes: our factory, [millwright](https://github.com/Jonathan-A-White/millwright), uses the ideas in its own code.
+- **[Claude Code](https://www.anthropic.com/claude-code)** by Anthropic. Writes most of Lampas's code and the files of its lamp icon and
+  memory pictures, under Jonathan's direction. Licence: none needed, it is a tool; Anthropic's [terms](https://www.anthropic.com/legal/commercial-terms) apply.
+  Changes: none.
+
+## What built it
+
+- **[Vite](https://vite.dev)** ([MIT](https://github.com/vitejs/vite/blob/main/LICENSE)),
+  **[vite-plugin-pwa](https://github.com/vite-pwa/vite-plugin-pwa)** ([MIT](https://github.com/vite-pwa/vite-plugin-pwa/blob/main/LICENSE)),
+  **[Tailwind CSS](https://tailwindcss.com)** ([MIT](https://github.com/tailwindlabs/tailwindcss/blob/main/LICENSE)) and
+  **[TypeScript](https://www.typescriptlang.org/)** ([Apache-2.0](https://github.com/microsoft/TypeScript/blob/main/LICENSE.txt)) build the
+  app you are holding, and **[Vitest](https://vitest.dev)** ([MIT](https://github.com/vitest-dev/vitest/blob/main/LICENSE)) and
+  **[Playwright](https://playwright.dev)** ([Apache-2.0](https://github.com/microsoft/playwright/blob/main/LICENSE)) test it.
+  Changes: none.

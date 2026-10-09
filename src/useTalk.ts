@@ -8,6 +8,7 @@ import { learnerSummary } from './data/learnerSummary';
 import { addTurn, listSolidHeadwords, listStudyWay, listTurns } from './data/repositories';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { TutorError } from './services/tutor';
+import { stopAnswer } from './speech/readAloud';
 import { applyChanges, currentSettings } from './settings/registry';
 import { askTalk, buildTalkRequest, MAX_LINKS, scopeRef, type TalkFocus, type TalkScope } from './services/talk';
 import type { AskState } from './useAsks';
@@ -74,6 +75,8 @@ export function useTalk(book: string, chapter: number, onAnswered: (ref: string,
       const kept = focused.current[ref];
       const focus = focusOf ?? (kept?.text === text ? kept.focus : undefined);
       focused.current[ref] = focus ? { text, focus } : undefined;
+      // a new message ends the speech of the last response
+      stopAnswer();
       const signal = live.current.signal;
       const set = (state: AskState | undefined): void => {
         if (!signal.aborted) setStates((all) => ({ ...all, [ref]: state }));

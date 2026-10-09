@@ -7,6 +7,7 @@ import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { learnerSummary } from './data/learnerSummary';
 import { addAnswer, listSolidHeadwords, verseRef } from './data/repositories';
 import { getDeviceKeyBytes } from './services/deviceKey';
+import { stopAnswer } from './speech/readAloud';
 import { TutorError, askTutor, buildRequest, type TutorFailure } from './services/tutor';
 
 /** What a question is doing right now. */
@@ -39,6 +40,8 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
     (verse: Verse, question: string) => {
       const text = question.trim();
       if (!text) return;
+      // a new question ends the speech of the last response
+      stopAnswer();
       const signal = live.current.signal;
       const set = (state: AskState | undefined): void => {
         if (!signal.aborted) setAsks((all) => ({ ...all, [unitId(verse)]: state }));

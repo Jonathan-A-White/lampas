@@ -187,4 +187,4 @@ The store's version 11 adds `grammarLevels`, one row per grammar idea, key `id` 
 
 Only `data/index.json`, `data/lexicon.json`, `data/frequency.json` and `data/rom/8.json` are in the service worker's precache (`pwa-precache.ts`; the
 globs name those four files, with no wildcard). Every other chapter is fetched when first opened and kept by a
-CacheFirst route for `/data/` in `src/sw.ts` (cache `lampas-data`), so a chapter once read stays offline.
+CacheFirst route for `/data/` in `src/sw.ts` (cache `lampas-data-v<N>`, `src/dataCache.ts`: raise the version in a deploy that changes the data's shape, and the old cache is dropped on activate), so a chapter once read stays offline.

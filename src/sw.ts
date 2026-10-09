@@ -6,6 +6,7 @@
 import { createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
 import { CacheFirst } from 'workbox-strategies';
+import { DATA_CACHE, dropOldDataCaches } from './dataCache';
 import { healPrecache, isGuardedAsset, serveAsset } from './precacheGuard';
 
 declare const self: ServiceWorkerGlobalScope;
@@ -22,17 +23,18 @@ self.addEventListener('fetch', (event) => {
 // On activate the entries already poisoned are deleted and fetched again, and the open windows are
 // claimed, so the page's controllerchange tells it the new build is in control.
 self.addEventListener('activate', (event) => {
-  event.waitUntil(Promise.all([healPrecache(self.caches), self.clients.claim()]));
+  event.waitUntil(Promise.all([healPrecache(self.caches), dropOldDataCaches(self.caches), self.clients.claim()]));
 });
 
 precacheAndRoute(self.__WB_MANIFEST);
 registerRoute(new NavigationRoute(createHandlerBoundToURL('/index.html')));
 
 // A chapter of the New Testament data (/data/<book>/<n>.json) is fetched when he first opens it and then kept:
-// only the index and Romans 8 are in the precache, so a chapter once read stays readable offline.
+// only the index and Romans 8 are in the precache, so a chapter once read stays readable offline. The cache is
+// versioned (src/dataCache.ts): a deploy that changes the data's shape replaces it.
 registerRoute(
   ({ url, request }) => request.method === 'GET' && url.pathname.startsWith('/data/'),
-  new CacheFirst({ cacheName: 'lampas-data' }),
+  new CacheFirst({ cacheName: DATA_CACHE }),
 );
 
 // A tap on the 'Update ready' banner sends {type:'SKIP_WAITING'}: this build takes over at once.

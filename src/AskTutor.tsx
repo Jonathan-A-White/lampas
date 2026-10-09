@@ -5,7 +5,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { NO_CHAPTER } from './data/chapter';
 import { TalkSheet } from './Talk';
-import { startAnswer, stopReading } from './speech/readAloud';
+import { stopReading } from './speech/readAloud';
+import { speakTutor } from './speech/tutorVoice';
 import { answerRuns } from './speech/answerRuns';
 import { scopeRef, type TalkScope } from './services/talk';
 import { fitScreen, SCREEN_NAMES, suggestionsFor, type ScreenContext } from './tutor/screen';
@@ -63,7 +64,7 @@ export function AskTutor({ route }: { route: Route }) {
   const openRef = useRef<string | null>(null);
   const { states, say } = useTalk('', 0, (ref, id, answer) => {
     if (openRef.current !== ref || voice.listening) return;
-    startAnswer(id, answerRuns(answer));
+    speakTutor(id, answerRuns(answer), () => openRef.current === ref);
   });
   const scope: TalkScope | null = name ? { title: name, chapter: NO_CHAPTER, verse: null, screen: contextOf(name, reported) } : null;
   const ref = scope ? scopeRef('', 0, scope) : null;

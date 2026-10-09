@@ -2,13 +2,16 @@
 // the Sending and Waiting lines and the failures; AnswerCards the kept answers (the tutor writes Markdown, src/markdown/). The questions in
 // flight are src/useAsks.ts; the hold bar that asks by voice is the Verse view's.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Verse } from './data/chapter';
 import { unitId, unitName } from './data/passage';
 import { listAnswers, verseRef, type TutorAnswer } from './data/repositories';
 import { FAILURE_TITLES, MAX_QUESTION_CHARS } from './services/tutor';
 import type { AskState } from './useAsks';
 import { Markdown } from './markdown/Markdown';
+import { answerRuns } from './speech/answerRuns';
+import { stopAnswer } from './speech/readAloud';
+import { askAnswerId, speakTutor, stopOnTap } from './speech/tutorVoice';
 import { useElapsed } from './ui/useElapsed';
 
 export function Waiting({ state }: { state: Extract<AskState, { phase: 'sending' | 'waiting' }> }) {
@@ -24,6 +27,30 @@ export function Waiting({ state }: { state: Extract<AskState, { phase: 'sending'
 export function AnswerCards({ verse, book, chapter }: { verse: number | string; book: string; chapter: number }) {
   const ref = verseRef(book, chapter, verse);
   const answers = useLiveQuery(() => listAnswers(ref), [ref]);
+  // An answer that is stored while these cards are on screen is read aloud (the setting, src/speech/tutorVoice.ts); the answers already kept
+  // when the cards open are not, and leaving them stops the speech.
+  const known = useRef<{ ref: string; ids: Set<number> } | null>(null);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      stopAnswer();
+    };
+  }, []);
+  useEffect(() => {
+    if (!answers) return;
+    const stored = answers.flatMap((a) => (a.id === undefined ? [] : [{ id: a.id, answer: a.answer }]));
+    if (known.current?.ref !== ref) {
+      known.current = { ref, ids: new Set(stored.map((a) => a.id)) };
+      return;
+    }
+    const seen = known.current.ids;
+    const fresh = stored.filter((a) => !seen.has(a.id));
+    for (const a of fresh) seen.add(a.id);
+    const newest = fresh[fresh.length - 1];
+    if (newest) speakTutor(askAnswerId(newest.id), answerRuns(newest.answer), () => mounted.current);
+  }, [answers, ref]);
   if (!answers?.length) return null;
   return (
     <div data-answers-for={verse} className="mb-2 space-y-2 px-1">
@@ -36,7 +63,7 @@ export function AnswerCards({ verse, book, chapter }: { verse: number | string; 
 
 function AnswerCard({ answer }: { answer: TutorAnswer }) {
   return (
-    <article data-answer className="rounded-xl border border-line bg-surface p-3">
+    <article data-answer onClick={stopOnTap} className="rounded-xl border border-line bg-surface p-3">
       <p className="break-words text-sm text-muted">{answer.question}</p>
       <div className="mt-1 break-words text-lg leading-snug">
         <Markdown text={answer.answer} />

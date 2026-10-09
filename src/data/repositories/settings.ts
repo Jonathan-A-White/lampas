@@ -134,6 +134,20 @@ export async function setTips(tips: Tips): Promise<void> {
   await db.settings.put({ key: TIPS_KEY, value: tips });
 }
 
+export type ReadTutor = 'on' | 'off';
+
+const READ_TUTOR_KEY = 'readTutor';
+
+/** The saved Read the tutor's responses aloud choice; on when he has not chosen yet or the saved value is not one of the two. */
+export async function getReadTutor(): Promise<ReadTutor> {
+  const row = await db.settings.get(READ_TUTOR_KEY);
+  return row?.value === 'off' ? 'off' : 'on';
+}
+
+export async function setReadTutor(readTutor: ReadTutor): Promise<void> {
+  await db.settings.put({ key: READ_TUTOR_KEY, value: readTutor });
+}
+
 const THEME_KEY = 'theme';
 
 /** The saved Theme; Phone (the phone's own colour scheme) when he has not chosen or the saved value is not one in the list. */
