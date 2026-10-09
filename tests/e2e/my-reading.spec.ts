@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { fakeMedia, type FakeWindow } from './fake-media';
 import { makeFakePostern, READING_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
@@ -8,54 +9,6 @@ import { chooseAction } from './verse-view';
 const VIEWPORT = { width: 390, height: 844 };
 /** The fake clip: 0.2 s of silence as a WAV (8 kHz, 8 bit, mono), so Chromium can decode what the app keeps and plays: 44 header bytes and 1600 samples. */
 const CLIP_BYTES = 1644;
-
-// The Chromium of the gate has no microphone and no sound card: a MediaRecorder that keeps a clip of known size and content stands in, and playing is
-// recorded rather than heard (the page's audio elements are asked to play; the clip behind their src is checked below).
-async function fakeMedia(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    const wav = new Uint8Array(44 + 1600);
-    const view = new DataView(wav.buffer);
-    const text = (at: number, value: string) => [...value].forEach((c, i) => view.setUint8(at + i, c.charCodeAt(0)));
-    text(0, 'RIFF');
-    view.setUint32(4, 36 + 1600, true);
-    text(8, 'WAVEfmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, 1, true);
-    view.setUint32(24, 8000, true);
-    view.setUint32(28, 8000, true);
-    view.setUint16(32, 1, true);
-    view.setUint16(34, 8, true);
-    text(36, 'data');
-    view.setUint32(40, 1600, true);
-    wav.fill(128, 44);
-    const stream = { getTracks: () => [{ stop() {} }] };
-    Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: async () => stream } });
-    class FakeMediaRecorder {
-      static isTypeSupported = (mime: string) => mime === 'audio/webm;codecs=opus';
-      mimeType = 'audio/webm;codecs=opus';
-      state = 'inactive';
-      ondataavailable: ((e: { data: Blob }) => void) | null = null;
-      onstop: (() => void) | null = null;
-      start() {
-        this.state = 'recording';
-      }
-      stop() {
-        this.state = 'inactive';
-        this.ondataavailable?.({ data: new Blob([wav], { type: 'audio/webm' }) });
-        this.onstop?.();
-      }
-    }
-    Object.defineProperty(window, 'MediaRecorder', { configurable: true, value: FakeMediaRecorder });
-    const played: string[] = [];
-    (window as unknown as { played: string[] }).played = played;
-    HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
-      played.push(this.src);
-      return Promise.resolve();
-    };
-    HTMLMediaElement.prototype.pause = function () {};
-  });
-}
 
 async function holdFor(page: Page, button: ReturnType<Page['getByRole']>, ms: number): Promise<void> {
   const box = await button.boundingBox();
@@ -104,7 +57,7 @@ test('Play my reading plays the clip he recorded, and Download my recording is n
   const audio = panel.locator('audio[data-my-reading]');
   const src = await audio.getAttribute('src');
   expect(src).toMatch(/^blob:/);
-  expect(await page.evaluate(() => (window as unknown as { played: string[] }).played)).toEqual([src]);
+  expect(await page.evaluate(() => (window as unknown as FakeWindow).played)).toEqual([src]);
   // the blob behind the src is the recording
   const clip = await page.evaluate(async (url) => {
     const blob = await (await fetch(url)).blob();

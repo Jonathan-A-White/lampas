@@ -82,6 +82,12 @@ export const READING_ANSWER = {
   note: 'Nearly there: two words to say again.',
 };
 
+/** READING_ANSWER with the times the scorer gave for "together" (seconds in the recording); "purpose" was not timed (mw-5r3p30.96). */
+export const TIMED_READING_ANSWER = {
+  ...READING_ANSWER,
+  focus_words: [{ ...READING_ANSWER.focus_words[0], start: 1.2, end: 1.7 }, READING_ANSWER.focus_words[1]],
+};
+
 /** The answer the fake gives to a Greek reading of Romans 8:28: Greek words, their syllables, a tip in English. */
 export const GREEK_READING_ANSWER = {
   verdict: 'some-to-fix',

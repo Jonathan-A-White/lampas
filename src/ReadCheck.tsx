@@ -4,9 +4,10 @@
 // the whole verse again'. The Greek view is the same check on the verse's Greek: the words to fix are Greek, their chunks are
 // Greek syllables, and the speaker is the Greek voice. The state is src/useReadChecks.ts's.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { blobOf, clipFileName, downloadSeam, type Clip } from './audio/clip';
+import { ClipPlayer, usePlaying } from './audio/clipPlayer';
 import type { Verse } from './data/chapter';
 import { unitId, unitName } from './data/passage';
 import { getDeveloper, getGreekPronunciation, getVerseReading, verseRef, type FixWord, type VerseReading } from './data/repositories';
@@ -113,7 +114,7 @@ function SayWord({ fix, view, id, label, className }: { fix: FixWord; view: Read
 }
 
 /** A word's chunks, big, with the tip and a speaker that says the whole word in the voice of the language read. */
-function Fix({ fix, view, large }: { fix: FixWord; view: ReadingView; large?: boolean }) {
+function Fix({ fix, view, large, player }: { fix: FixWord; view: ReadingView; large?: boolean; player?: ClipPlayer }) {
   const type = typeOf(view);
   return (
     <div className="space-y-1">
@@ -122,6 +123,7 @@ function Fix({ fix, view, large }: { fix: FixWord; view: ReadingView; large?: bo
       </p>
       <p className="break-words text-base text-muted">{plainQuotes(fix.tip)}</p>
       <SayWord fix={fix} view={view} id={`fix-${view}-${fix.word}`} label="Hear it" className="align-baseline" />
+      {player ? <MeButton fix={fix} word={fix.word} id={`fix-${fix.word}`} player={player} className="ml-2 align-baseline" /> : null}
     </div>
   );
 }
@@ -132,10 +134,11 @@ const WORD_PARTS = /^([^\p{L}\p{N}\p{M}]*)(.*?)([^\p{L}\p{N}\p{M}]*)$/u;
  * he said right the second time is not marked because he missed it the first. A marked word whose place is not in the verse (the
  * mill counted wrongly) is offered after it, so no mark is lost. `open` is the key of the open mark ('3' for the word at place 3,
  * 'l0' for the first lost word). */
-function MarkedVerse({ text, view, marks, open, onOpen }: { text: string; view: ReadingView; marks: Marks; open: string | null; onOpen: (key: string | null) => void }) {
+function MarkedVerse({ text, view, marks, open, onOpen, player }: { text: string; view: ReadingView; marks: Marks; open: string | null; onOpen: (key: string | null) => void; player?: ClipPlayer }) {
   const type = typeOf(view);
   const tokens = useMemo(() => wordsOfText(text), [text]);
-  // each flagged word has its speaker right after it (a sibling of the word's button): it says only how the word should sound
+  // each flagged word has its speaker right after it (a sibling of the word's button): it says only how the word should sound; with times and a clip,
+  // 'Me' follows the speaker and plays his own clip of the word
   const markButton = (fix: FixWord, label: string, key: string) => (
     <span key={key} className="whitespace-nowrap">
       <button
@@ -148,6 +151,7 @@ function MarkedVerse({ text, view, marks, open, onOpen }: { text: string; view: 
         {label}
       </button>
       <SayWord fix={fix} view={view} id={`say-${view}-${key}`} label={`Hear ${label}`} className="align-middle" />
+      {player ? <MeButton fix={fix} word={label} id={`me-${key}`} player={player} className="ml-1 align-middle" /> : null}
     </span>
   );
   return (
@@ -186,47 +190,33 @@ const RESULT_HEADINGS: Record<VerseReading['verdict'], string> = {
   incomplete: 'Read the whole verse',
 };
 
-/** 'Play my reading': the clip he recorded, played back from a hidden audio element. 'Download my recording' is there only in Developer mode (a debugging
- * option, found on About), and saves the clip as it was recorded, named for the verse and the UTC time it was read. */
-function MyReading({ clip, fileName }: { clip: Clip; fileName: string }) {
-  const developer = useLiveQuery(getDeveloper, []);
-  const element = useRef<HTMLAudioElement>(null);
-  const url = useRef<string | undefined>(undefined);
-  const [playing, setPlaying] = useState(false);
-  useEffect(() => {
-    const audio = element.current;
-    return () => {
-      audio?.pause();
-      if (url.current) URL.revokeObjectURL(url.current);
-      url.current = undefined;
-    };
-  }, []);
-  const toggle = () => {
-    const audio = element.current;
-    if (!audio) return;
-    if (playing) {
-      audio.pause();
-      setPlaying(false);
-      return;
-    }
-    // nothing else speaks while he hears himself
+const ALL = 'all';
+
+/** One player for the clip of this result; it stops speech before it plays, and lets its URL go when the result goes. */
+function useClipPlayer(clip: Clip | undefined): [ClipPlayer, (audio: HTMLAudioElement | null) => void] {
+  const [player] = useState(() => new ClipPlayer(() => {
     stopReading();
     stopSpeaking();
     stopAnswer();
-    if (!url.current) {
-      url.current = URL.createObjectURL(blobOf(clip));
-      audio.src = url.current;
-    }
-    audio.currentTime = 0;
-    setPlaying(true);
-    audio.play().catch(() => setPlaying(false));
-  };
+  }));
+  useEffect(() => {
+    player.setClip(clip);
+  }, [player, clip]);
+  useEffect(() => () => player.dispose(), [player]);
+  const audioRef = useCallback((audio: HTMLAudioElement | null) => player.attach(audio), [player]);
+  return [player, audioRef];
+}
+
+/** 'Play my reading': the clip he recorded, all of it. 'Download my recording' is there only in Developer mode (a debugging option, found on About),
+ * and saves the clip as it was recorded, named for the verse and the UTC time it was read. */
+function MyReading({ clip, fileName, player }: { clip: Clip; fileName: string; player: ClipPlayer }) {
+  const developer = useLiveQuery(getDeveloper, []);
+  const playing = usePlaying(player);
   const button = 'min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium';
   return (
     <div className="space-y-2">
-      <audio ref={element} data-my-reading preload="none" onEnded={() => setPlaying(false)} onError={() => setPlaying(false)} />
-      <button type="button" onClick={toggle} className={button}>
-        {playing ? 'Stop my reading' : 'Play my reading'}
+      <button type="button" onClick={() => player.toggle(ALL)} className={button}>
+        {playing === ALL ? 'Stop my reading' : 'Play my reading'}
       </button>
       {developer === 'on' ? (
         <button type="button" onClick={() => downloadSeam.save(fileName, blobOf(clip))} className={button}>
@@ -237,22 +227,47 @@ function MyReading({ clip, fileName }: { clip: Clip; fileName: string }) {
   );
 }
 
+/** The seconds of the clip the scorer gave for this word, if both came back. */
+const timeOf = (fix: FixWord): { start: number; end: number } | undefined =>
+  fix.start !== undefined && fix.end !== undefined && fix.end > fix.start ? { start: fix.start, end: fix.end } : undefined;
+
+/** 'Me', right beside a flagged word's speaker ('Should sound'): plays just his clip of that word, from the scorer's start to its end. No times, no button. */
+function MeButton({ fix, word, id, player, className }: { fix: FixWord; word: string; id: string; player: ClipPlayer; className?: string }) {
+  const time = timeOf(fix);
+  const on = usePlaying(player) === id;
+  if (!time) return null;
+  return (
+    <button
+      type="button"
+      data-me
+      aria-label={on ? `Stop hearing me say ${word}` : `Hear me say ${word}`}
+      aria-pressed={on}
+      onClick={() => player.toggle(id, time.start, time.end)}
+      className={`inline-block min-h-11 min-w-11 rounded-lg border border-line px-2 text-base font-medium ${className ?? ''}`}
+    >
+      {on ? 'Stop' : 'Me'}
+    </button>
+  );
+}
+
 /** The result of a reading: how it went, the verse with its marked words, a tap shows their chunks, and the walk starts here. */
 function Result({ reading, text, view, fileName, onWalk }: { reading: VerseReading; text: string; view: ReadingView; fileName: string; onWalk: () => void }) {
   const [open, setOpen] = useState<string | null>(null);
   const marks = useMemo(() => markWords(text, reading.words), [text, reading.words]);
   const fix = open === null ? undefined : open.startsWith('l') ? marks.lost[Number(open.slice(1))] : marks.marked.get(Number(open));
+  const [player, audioRef] = useClipPlayer(reading.clip);
   return (
     <div data-reading-result={reading.verdict} onClick={stopOnTap} className="space-y-2">
       <h3 className="text-lg font-semibold">{RESULT_HEADINGS[reading.verdict]}</h3>
       <p className="break-words text-base">{plainQuotes(reading.note)}</p>
-      {reading.clip ? <MyReading clip={reading.clip} fileName={fileName} /> : null}
+      <audio ref={audioRef} data-my-reading preload="none" onEnded={player.ended} onError={player.ended} />
+      {reading.clip ? <MyReading clip={reading.clip} fileName={fileName} player={player} /> : null}
       {reading.words.length > 0 ? (
         <>
-          <MarkedVerse text={text} view={view} marks={marks} open={open} onOpen={setOpen} />
+          <MarkedVerse text={text} view={view} marks={marks} open={open} onOpen={setOpen} player={reading.clip ? player : undefined} />
           {fix ? (
             <div data-fix-detail className="rounded-xl border border-line bg-surface p-3">
-              <Fix fix={fix} view={view} />
+              <Fix fix={fix} view={view} player={reading.clip ? player : undefined} />
             </div>
           ) : (
             <p className="text-sm text-muted">Tap a marked word to see it in chunks.</p>
