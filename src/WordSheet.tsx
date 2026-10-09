@@ -25,6 +25,8 @@ import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { wordUrl } from './nav/links';
 import { LinkActions } from './ui/LinkActions';
 import { useKnownTerms } from './useKnownTerms';
+import { HintCard } from './tips/HintCard';
+import { WORD_SHEET_OPENED } from './tips/hints';
 
 /** What was tapped: Greek words, and the English they stand for. `english` is the tapped chunk, or a Greek word's own chunk. */
 export interface Lookup {
@@ -37,7 +39,8 @@ export interface Lookup {
 /** What a tap on Grammar or Sound it out asks for: the word as it stands, its lemma, its parsing as the sheet shows it, and
  * the verse it stands in. */
 export interface WordHelp {
-  kind: 'grammar' | 'sound';
+  /** Grammar and Sound it out are the Help row's; 'word' is the sheet's Ask the tutor (the word, its lemma and its parsing, no particular help asked) */
+  kind: 'grammar' | 'sound' | 'word';
   form: string;
   lemma: string;
   parse: string;
@@ -166,7 +169,8 @@ function AppMissingSheet({ app, onClose, onTurnOff }: { app: string; onClose: ()
 
 const HELP_BUTTON = 'min-h-12 flex-1 rounded-xl border border-line px-3 text-base font-medium text-accent active:bg-line';
 
-/** Help with this word: Grammar and Sound it out, the two ways a word he struggled with can be helped. */
+/** Help with this word: Grammar and Sound it out, the two ways a word he struggled with can be helped; and, under them, Ask the tutor
+ * about the word with what the app knows of it already handed over. */
 function HelpRow({ help }: { help: (kind: WordHelp['kind']) => void }) {
   return (
     <div role="group" aria-label="Help with this word" className="mt-3">
@@ -179,6 +183,9 @@ function HelpRow({ help }: { help: (kind: WordHelp['kind']) => void }) {
           Sound it out
         </button>
       </div>
+      <button type="button" onClick={() => help('word')} className={`${HELP_BUTTON} mt-2 w-full`}>
+        Ask the tutor
+      </button>
     </div>
   );
 }
@@ -319,7 +326,9 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
             Done
           </button>
         </div>
-        <div className="max-h-[60dvh] overflow-y-auto overscroll-contain px-4 pb-[calc(1rem+var(--lp-end-inset))] pt-3">
+        {/* the tip stays above the scrolling facts, so it is seen without a scroll; the facts' box is 2 dvh shorter to make room, so the sheet stays below 30% of the screen */}
+        <HintCard event={WORD_SHEET_OPENED} className="mx-4 mt-1" />
+        <div className="max-h-[58dvh] overflow-y-auto overscroll-contain px-4 pb-[calc(1rem+var(--lp-end-inset))] pt-3">
           {lookup.fromEnglish && lookup.english ? (
             <p className="mb-3 pr-14 text-lg text-muted">
               <span className="sr-only">English: </span>“{lookup.english}”

@@ -62,3 +62,17 @@ as shown next time and never offered again.
 marks today as asked so no spec sends a tips grist by accident; `openUnlocked(page, { tips: true })` leaves the day free.
 
 PROVISIONAL: once a day, the card's place under the header strips, haiku.
+
+## One-time tips written in the app (`src/tips/hints.ts`, mw-5r3p30.80)
+
+Some things cannot be found by looking: a long press on a word says it, and nothing on the screen says so. Those tips are written in the app,
+not asked of the grind. The list, "which tip shows now" and "dismissed for good" are bsv-kit's (`bsv-kit/tips`, `tips.createTips`; pinned by
+commit in `package.json`, the library has no release tag yet); Lampas supplies the list and the storage.
+
+- `HINTS` in `src/tips/hints.ts` is the list, one entry per tip: `{ id, text, event }`. Today one: `long-press-word`, 'Long-press a word to
+  hear it', shown on `WORD_SHEET_OPENED`. The event is only a name the screen chooses.
+- The dismissals are kept in the phone's localStorage, key `lampas.tipsDismissed` (a JSON list of ids). Nothing else is stored, nothing sent.
+- `src/tips/HintCard.tsx` draws the next tip of an event: one quiet line, 'Tip: …', and Got it (role `note`; 48 px button). Got it dismisses the
+  tip for good. Closing the screen without it keeps the tip for the next time. With the Tips setting Off nothing is drawn.
+- The word sheet (`src/WordSheet.tsx`) holds one, above its scrolling facts so it is seen without a scroll and costs them no room.
+- Adding a tip: one line in `HINTS`, and a `<HintCard event="…" />` where it belongs.
