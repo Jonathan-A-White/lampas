@@ -151,13 +151,7 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
-            "properties": { "key": { "const": "goal" }, "value": { "type": "string", "maxLength": 80 } }
-          },
-          {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["key", "value"],
-            "properties": { "key": { "const": "grammarApproach" }, "value": { "type": "string", "enum": ["bma-tutor", "ladder"] } }
+            "properties": { "key": { "const": "newWordsADay" }, "value": { "type": "string", "enum": ["0", "3", "5", "10"] } }
           },
           {
             "type": "object",
@@ -175,7 +169,13 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
-            "properties": { "key": { "const": "newWordsADay" }, "value": { "type": "string", "enum": ["0", "3", "5", "10"] } }
+            "properties": { "key": { "const": "goal" }, "value": { "type": "string", "maxLength": 80 } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "grammarApproach" }, "value": { "type": "string", "enum": ["bma-tutor", "ladder"] } }
           },
           {
             "type": "object",
