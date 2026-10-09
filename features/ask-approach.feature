@@ -30,10 +30,11 @@ Feature: Ask for another approach
     And it carries two image attachments, each shrunk and under 300 KB
     And the bus has heard feedback-sent for grammar-approach
 
-  Scenario: The answer shows Sent: the factory has it
-    Given the Ask for another approach sheet is filled in and the mill answers
+  Scenario: The mill's forward answer {"status":"sent"} shows Sent: the factory has it, not the could-not-read line
+    Given the Ask for another approach sheet is filled in and the mill answers {"status":"sent"}
     When he taps Send
     Then the sheet shows "Sent: the factory has it"
+    And the sheet does not show "an answer this app could not read"
     And Done closes the sheet
 
   Scenario: A mill that is down shows Could not reach the tutor and Retry

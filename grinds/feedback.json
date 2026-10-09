@@ -3,10 +3,7 @@
   "app": "lampas",
   "kind": "feedback",
   "versions": ["1"],
-  "model": "sonnet",
-  "effort": "low",
-  "instructions": "grinds/feedback.instructions.md",
-  "answerSchema": "grinds/feedback.answer.schema.json",
+  "forward": "mayor",
   "attachments": {
     "min": 0,
     "max": 4,

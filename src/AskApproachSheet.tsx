@@ -24,7 +24,7 @@ interface Picture {
   url: string | null;
 }
 
-type Phase = { name: 'editing' } | { name: 'sending' } | { name: 'sent'; note?: string } | { name: 'failed'; failure: TutorFailure; detail: string };
+type Phase = { name: 'editing' } | { name: 'sending' } | { name: 'sent' } | { name: 'failed'; failure: TutorFailure; detail: string };
 
 const kilobytes = (bytes: number): string => `${Math.max(1, Math.round(bytes / 1024))} KB`;
 const urlOf = (blob: Blob): string | null => (typeof URL.createObjectURL === 'function' ? URL.createObjectURL(blob) : null);
@@ -95,10 +95,10 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
       const files = await Promise.all(
         pictures.map(async (p, i) => ({ bytes: new Uint8Array(await p.blob.arrayBuffer()), mime: 'image/jpeg', name: `picture-${i + 1}.jpg` })),
       );
-      const answer = await sendFeedback(buildFeedbackRequest(text, name, link), files, { key: getDeviceKeyBytes(), signal: live.current.signal });
+      await sendFeedback(buildFeedbackRequest(text, name, link), files, { key: getDeviceKeyBytes(), signal: live.current.signal });
       if (live.current.signal.aborted) return;
       publish({ kind: 'feedback-sent', feedback: 'grammar-approach' });
-      setPhase({ name: 'sent', note: answer.note });
+      setPhase({ name: 'sent' });
     } catch (err) {
       if (live.current.signal.aborted) return;
       const error = err instanceof TutorError ? err : new TutorError('unreachable', err instanceof Error ? err.message : 'Something went wrong.');
@@ -131,7 +131,6 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
             <p role="status" className="text-lg font-semibold">
               {SENT_LINE}
             </p>
-            {phase.note ? <p className="pt-2 break-words text-base text-muted">{phase.note}</p> : null}
           </div>
         ) : (
           <>

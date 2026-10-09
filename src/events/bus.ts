@@ -70,7 +70,7 @@ export type AppEvent =
   | { kind: 'idea-taught'; id: string; outcome: 'got-it' | 'known' }
   /** a grammar placement ended (src/PlacementScreen.tsx): what it found, over the ideas the goal needs; `goal` is the saved goal text, '' for none */
   | { kind: 'placement-done'; goal: string; approach: string; solid: number; frontier: number; notYet: number; untested: number }
-  /** feedback reached the factory (the mill answered 'received'); `feedback` is what it was, today only 'grammar-approach' (the Ask for another approach sheet) */
+  /** feedback reached the factory (the mill answered 'sent'); `feedback` is what it was, today only 'grammar-approach' (the Ask for another approach sheet) */
   | { kind: 'feedback-sent'; feedback: 'grammar-approach' };
 
 export type EventKind = AppEvent['kind'];
