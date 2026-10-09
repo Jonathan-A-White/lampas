@@ -56,6 +56,7 @@ import { HeaderButton } from './ScreenHeader';
 import { pauseReading, planOf, startAnswer, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
 import { DueBadge } from './DueBadge';
+import { GoalStrip } from './GoalStrip';
 import { ReadFromButton, ReadingBar, VersePlay } from './speech/ReadControls';
 import { speakWord, warmVoices } from './speech/greek';
 import type { SpeechLanguage } from './speech/languages';
@@ -666,6 +667,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         </button>
       </header>
       {chapterReading ? null : <DueBadge />}
+      {chapterReading ? null : <GoalStrip />}
       {notice ? (
         <div role="status" data-link-notice className="flex shrink-0 items-center gap-2 border-b border-line bg-surface px-3 py-1 text-sm">
           <p className="min-w-0 flex-1">{notice}</p>

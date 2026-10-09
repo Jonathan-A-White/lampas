@@ -426,6 +426,14 @@ function GoalPickers({ saved }: { saved: string }) {
         >
           Place me
         </button>
+        <button
+          type="button"
+          disabled={!goal}
+          onClick={() => navigate('goal')}
+          className="min-h-12 min-w-16 rounded-lg border border-line px-4 text-base font-medium text-fg disabled:opacity-50"
+        >
+          Progress
+        </button>
       </div>
     </div>
   );
