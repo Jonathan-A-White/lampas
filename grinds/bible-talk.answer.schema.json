@@ -127,6 +127,12 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
+            "properties": { "key": { "const": "hebrewDepth" }, "value": { "type": "string", "enum": ["transliteration", "both", "full"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
             "properties": { "key": { "const": "tips" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
