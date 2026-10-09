@@ -12,7 +12,7 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { type Chapter, markSupplied } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
-import { addTurn, getGoal, getPickerGrammar, getSpeechRate, getTheme, setLevel, talkRef } from '../../src/data/repositories';
+import { addTurn, getGoal, getPickerGrammar, getSpeechRate, getStudyResources, getTheme, setLevel, talkRef } from '../../src/data/repositories';
 import { setGoal } from '../../src/data/repositories/settings';
 import { clearBus, latest } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
@@ -801,6 +801,23 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps Undo', () => taps('Undo New words at'));
     Then('New words at is saved as Frontier grammar', async () => {
       await waitFor(async () => expect(await getPickerGrammar()).toBe('frontier'));
+    });
+  });
+  Scenario("The tutor turns a study resource off or on when asked, as the Settings screen's own switch, and Undo puts it back", ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the change resource.strongs on', () =>
+      open(changing({ key: 'resource.strongs', value: 'on' })),
+    );
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('the sheet shows {string} with an Undo button', async (_, text: string) => {
+      await waitFor(() => expect(changeRows().some((row) => row.textContent?.includes(text))).toBe(true));
+      const row = changeRows().find((r) => r.textContent?.includes(text)) as HTMLElement;
+      expect(within(row).getByRole('button', { name: "Undo Strong's" })).toHaveTextContent('Undo');
+    });
+    And("the Strong's resource is switched on", async () => expect((await getStudyResources()).on).toEqual(['strongs']));
+    When('he taps Undo', () => taps("Undo Strong's"));
+    Then("the Strong's resource is switched off", async () => {
+      await waitFor(async () => expect((await getStudyResources()).on).toEqual([]));
     });
   });
 });

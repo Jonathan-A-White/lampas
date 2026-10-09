@@ -114,6 +114,14 @@ describe('settings_changes in the answer', () => {
     expect(formatJson(withSettingsChanges(schema))).toBe(readFileSync(grind.answerSchema as string, 'utf8').trimEnd());
   });
 
+  it('tells the companion, in the instructions and in the schema, to change a setting only when he asks', () => {
+    const text = readFileSync(grind.instructions as string, 'utf8');
+    expect(text).toMatch(/Change a setting only when he asks for it in words, never on your own/);
+    expect(text).toMatch(/stop\s+reading answers aloud/);
+    const described = ((schema.properties as Record<string, Record<string, unknown>>).settings_changes.description as string);
+    expect(described).toMatch(/Only when he asked for the change in words, never on your own/);
+  });
+
   it('tells the companion never to claim a setting the registry lacks, and what to say instead', () => {
     const text = readFileSync(grind.instructions as string, 'utf8');
     expect(NO_SETTING).toBe('The app has no setting for that yet.');

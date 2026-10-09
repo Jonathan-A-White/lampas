@@ -66,7 +66,7 @@ describe('summarize (pure)', () => {
 
   it('lists the settings with a saved choice as changed, the others as never, and the ones he set to off as turned off', () => {
     const s = summarize(facts({ saved: { theme: 'dark', 'rate.greek': '0.8', sectionHeadings: 'off', readerView: 'greek', 'resource.logos': 'on' } }), T0);
-    expect(s.settings_changed).toEqual(['theme', 'sectionHeadings', 'greekRate']);
+    expect(s.settings_changed).toEqual(['theme', 'sectionHeadings', 'greekRate', 'resource.logos']);
     expect(s.settings_never).not.toContain('theme');
     expect(s.settings_never).toContain('layout');
     expect(s.turned_off).toEqual(['sectionHeadings']);

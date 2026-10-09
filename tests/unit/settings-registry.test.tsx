@@ -7,6 +7,8 @@ import { db } from '../../src/data/db';
 import { getGreekPronunciation, getLayout, getLogosBible, getSectionHeadings, getSpeechRate, getTextSize, getTheme, getVoice, getWeave, getWeaveGrammar } from '../../src/data/repositories';
 import { clearBus, latest } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
+import { getStudyResources } from '../../src/data/repositories';
+import { ROWS } from '../../src/settings/rows';
 import { SETTINGS, applyChanges, currentSettings, settingOf, undoChange } from '../../src/settings/registry';
 
 afterAll(() => {
@@ -55,20 +57,64 @@ describe('the registry lists every Settings row', () => {
       ...screen.getAllByRole('slider'),
     ].map((el) => el.getAttribute('aria-label') ?? el.closest('label')?.querySelector('span')?.textContent ?? '');
     expect(drawn.filter((name) => name === '')).toEqual([]);
-    expect([...drawn].sort()).toEqual(SETTINGS.map((s) => s.label).sort());
+    // the study-resource switches are checkboxes, not groups: the Settings screen's other tests draw them
+    expect([...drawn].sort()).toEqual(SETTINGS.filter((s) => !s.key.startsWith('resource.')).map((s) => s.label).sort());
     cleanup();
   });
 
   it('gives every entry a distinct key, a label, a hint, and the values it allows', () => {
     expect(new Set(SETTINGS.map((s) => s.key)).size).toBe(SETTINGS.length);
     expect(SETTINGS.map((s) => s.key).sort()).toEqual(
-      ['englishRate', 'englishVoice', 'goal', 'grammarApproach', 'grammarMove', 'greekPronunciation', 'greekRate', 'greekVoice', 'hebrewDepth', 'layout', 'logosBible', 'newWordsADay', 'pickerGrammar', 'readSpan', 'readTutor', 'sectionHeadings', 'textSize', 'theme', 'tips', 'weave', 'weaveGrammar'],
+      ['englishRate', 'englishVoice', 'goal', 'grammarApproach', 'grammarMove', 'greekPronunciation', 'greekRate', 'greekVoice', 'hebrewDepth', 'layout', 'logosBible', 'newWordsADay', 'pickerGrammar', 'readSpan', 'readTutor', 'resource.accordance', 'resource.logos', 'resource.strongs', 'sectionHeadings', 'textSize', 'theme', 'tips', 'weave', 'weaveGrammar'],
     );
     for (const s of SETTINGS) {
       expect(s.label).not.toBe('');
       expect(s.hint).not.toBe('');
       if (s.allowed.kind === 'choice') expect(s.allowed.values.length).toBeGreaterThan(0);
     }
+  });
+});
+
+/** The rows that are not settings the tutor may change: links to other screens, and Developer mode, which is found on About
+ * and kept outside the registry on purpose. */
+const NOT_TALKABLE = (key: string): boolean => key.startsWith('link.') || key === 'developer';
+
+describe('the allow-list is the Settings screen\'s own list (mw-5r3p30.100)', () => {
+  it('holds every row of the Settings screen but the links and Developer mode, with the same name', () => {
+    const talkable = ROWS.filter((r) => !NOT_TALKABLE(r.key));
+    expect(talkable.length).toBeGreaterThan(20);
+    for (const row of talkable) {
+      const entry = settingOf(row.key);
+      expect(entry, `${row.key} is a setting on the screen but not on the allow-list`).toBeDefined();
+      expect(entry?.label).toBe(row.label);
+    }
+    expect(SETTINGS.map((s) => s.key).sort()).toEqual(talkable.map((r) => r.key).sort());
+  });
+
+  it('refuses the rows that are left out', async () => {
+    const { applied, refused } = await applyChanges([{ key: 'developer', value: 'on' }, { key: 'link.words', value: 'on' }, { key: 'developerMode', value: 'on' }]);
+    expect(applied).toEqual([]);
+    expect(refused).toHaveLength(3);
+    expect(await db.settings.get('developerMode')).toBeUndefined();
+  });
+
+  it('turns a study resource on and off by its switch, kept in the store, and Undo puts it back', async () => {
+    const { applied, refused } = await applyChanges([{ key: 'resource.strongs', value: 'on' }]);
+    expect(refused).toEqual([]);
+    expect(applied).toEqual([{ key: 'resource.strongs', label: "Strong's", from: 'off', to: 'on', shown: "Strong's: On" }]);
+    expect((await getStudyResources()).on).toEqual(['strongs']);
+    expect((await currentSettings())['resource.strongs']).toBe('on');
+    await undoChange(applied[0]);
+    expect((await getStudyResources()).on).toEqual([]);
+    const bad = await applyChanges([{ key: 'resource.strongs', value: 'maybe' }, { key: 'resource.nothing', value: 'on' }]);
+    expect(bad.applied).toEqual([]);
+    expect(bad.refused).toHaveLength(2);
+    expect((await getStudyResources()).on).toEqual([]);
+  });
+
+  it('shows the Bible in Logos row to the tutor as a detail of the Logos switch', () => {
+    expect(settingOf('logosBible')?.dependsOn?.key).toBe('resource.logos');
+    expect(settingOf('resource.logos')?.section).toBe('resources');
   });
 });
 
@@ -242,6 +288,9 @@ describe('currentSettings', () => {
       grammarMove: 'ask',
       newWordsADay: '3',
       logosBible: 'LLS:LGCYSTNDRDBBLSB',
+      'resource.strongs': 'off',
+      'resource.logos': 'off',
+      'resource.accordance': 'off',
     });
     await applyChanges([{ key: 'greekRate', value: 0.8 }, { key: 'theme', value: 'dark' }]);
     await db.settings.put({ key: 'voice.english', value: 'Some voice' });

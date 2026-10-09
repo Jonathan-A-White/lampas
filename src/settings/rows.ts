@@ -1,11 +1,11 @@
 // src/settings/rows.ts — the one list of every row the Settings screen has: its key, name, one-line hint, longer help, section and what it
 // depends on. The screen draws exactly these rows (src/SettingsScreen.tsx has the control of each), the search at its top filters them by
 // name and hint, and show-when-on reads `dependsOn` (a detail is drawn only while the setting it depends on is on). The tutor is given
-// the same list. A row is a talkable setting (src/settings/registry.ts SETTINGS: it also carries what to read, write and allow), a
-// study-resource switch (src/resources, kept outside the registry) or a link to another screen.
+// the same list. A row is a talkable setting (src/settings/registry.ts SETTINGS: it also carries what to read, write and allow, and the
+// study-resource switches are among them), Developer mode (found on About, kept outside the registry so the tutor cannot change it) or a link
+// to another screen. The tutor may change every row but the last two kinds (tests/unit/settings-registry.test.tsx).
 // A new setting is one entry in the registry (with its section) plus its control in SettingsScreen's CONTROLS; a test fails until both.
-import { getDeveloper, getStudyResources } from '../data/repositories';
-import { RESOURCES } from '../resources';
+import { getDeveloper } from '../data/repositories';
 import { SETTINGS, settingOf, type Dependency, type SectionId } from './registry';
 
 export interface SettingsSection {
@@ -70,9 +70,6 @@ const DEVELOPER: SettingsRow = {
   dependsOn: { key: 'developerMode', shown: (value) => value === 'on' || value === 'off' },
 };
 
-const resourceRows = (): SettingsRow[] =>
-  RESOURCES.map((r) => ({ key: `resource.${r.id}`, label: r.name, hint: r.describe, section: 'resources' }));
-
 const rowOfSetting = (s: (typeof SETTINGS)[number]): SettingsRow => ({
   key: s.key,
   label: s.label,
@@ -82,7 +79,7 @@ const rowOfSetting = (s: (typeof SETTINGS)[number]): SettingsRow => ({
   dependsOn: s.dependsOn,
 });
 
-const unordered: readonly SettingsRow[] = [...SETTINGS.map(rowOfSetting), ...resourceRows(), DEVELOPER, ...LINKS];
+const unordered: readonly SettingsRow[] = [...SETTINGS.map(rowOfSetting), DEVELOPER, ...LINKS];
 
 /** Every row of Settings, section by section in the screen's order (within a section, in the order they are listed above). */
 export const ROWS: readonly SettingsRow[] = SECTIONS.flatMap((section) => unordered.filter((r) => r.section === section.id));
@@ -94,13 +91,11 @@ export type Values = Readonly<Record<string, string>>;
 
 const DEPENDED_ON = [...new Set(ROWS.flatMap((r) => (r.dependsOn ? [r.dependsOn.key] : [])))];
 
-/** The current value of every row some other row depends on: a setting's value as text, a resource switch as 'on' or 'off'. */
+/** The current value of every row some other row depends on: a setting's value as text (a resource switch is 'on' or 'off'). */
 export async function readValues(): Promise<Values> {
-  const resources = await getStudyResources();
   const entries = await Promise.all(
     DEPENDED_ON.map(async (key) => {
       if (key === 'developerMode') return [key, await getDeveloper()] as const;
-      if (key.startsWith('resource.')) return [key, resources.on.includes(key.slice('resource.'.length)) ? 'on' : 'off'] as const;
       return [key, String(await settingOf(key)?.read())] as const;
     }),
   );

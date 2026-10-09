@@ -21,6 +21,7 @@ import {
   getSectionHeadings,
   getSpeechRate,
   getSpeechRates,
+  getStudyResources,
   getTextSize,
   getTheme,
   getTips,
@@ -40,6 +41,7 @@ import {
   setNewWordsADay,
   setSectionHeadings,
   setSpeechRate,
+  setResourceOn,
   setTextSize,
   setTheme,
   setTips,
@@ -62,6 +64,7 @@ import { normaliseNewWordsADay } from '../data/pace';
 import { publish } from '../events/bus';
 import { LAYOUTS } from '../layout/layouts';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from '../speech/languages';
+import { RESOURCES } from '../resources';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../resources/logosBible';
 import { READ_SPANS, type ReadSpan } from '../speech/readSpan';
 import { PRONUNCIATIONS } from '../speech/pronunciation';
@@ -258,6 +261,20 @@ const ON_OFF = [
   { value: 'on', label: 'On' },
   { value: 'off', label: 'Off' },
 ];
+
+// One on/off switch per study resource (src/resources): the Settings screen's own switch, kept in the store as 'resource.<id>'. Turning
+// one on by talk skips the check the screen makes for an app on this phone; the word sheet says so when a link finds no app.
+const resourceEntries = RESOURCES.map((r) =>
+  choice(
+    `resource.${r.id}`,
+    r.name,
+    r.describe,
+    ON_OFF,
+    async () => ((await getStudyResources()).on.includes(r.id) ? 'on' : 'off'),
+    (value) => setResourceOn(r.id, value === 'on'),
+    { section: 'resources' },
+  ),
+);
 
 /** Every talkable Settings item. (The screen draws them in src/settings/rows.ts's order, section by section.) */
 export const SETTINGS: readonly SettingEntry[] = [
@@ -486,6 +503,7 @@ export const SETTINGS: readonly SettingEntry[] = [
     },
     { section: 'pronunciation' },
   ),
+  ...resourceEntries,
   logosBibleEntry,
 ];
 

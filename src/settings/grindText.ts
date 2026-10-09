@@ -50,7 +50,7 @@ function changeSchema(entry: SettingEntry): Json {
 export function settingsChangesSchema(): Json {
   return {
     description:
-      'The settings he asked to change, each applied at once by the app. Only the keys and values the instructions list; leave it out when he asked for no change.',
+      'The settings he asked to change, each applied at once by the app. Only when he asked for the change in words, never on your own; only the keys and values the instructions list; leave it out when he asked for no change.',
     type: 'array',
     maxItems: MAX_CHANGES,
     items: { anyOf: SETTINGS.map(changeSchema) },

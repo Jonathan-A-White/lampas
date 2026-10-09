@@ -88,7 +88,7 @@
       }
     },
     "settings_changes": {
-      "description": "The settings he asked to change, each applied at once by the app. Only the keys and values the instructions list; leave it out when he asked for no change.",
+      "description": "The settings he asked to change, each applied at once by the app. Only when he asked for the change in words, never on your own; only the keys and values the instructions list; leave it out when he asked for no change.",
       "type": "array",
       "maxItems": 10,
       "items": {
@@ -212,6 +212,24 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "greekPronunciation" }, "value": { "type": "string", "enum": ["modern"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "resource.strongs" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "resource.logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "resource.accordance" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",

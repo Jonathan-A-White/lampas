@@ -288,3 +288,12 @@ Feature: Bible talk
     And New words at is saved as Solid grammar
     When he taps Undo
     Then New words at is saved as Frontier grammar
+
+  Scenario: The tutor turns a study resource off or on when asked, as the Settings screen's own switch, and Undo puts it back
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the change resource.strongs on
+    And he opens Talk
+    When he sends "Turn on Strong's numbers"
+    Then the sheet shows "Changed: Strong's: On" with an Undo button
+    And the Strong's resource is switched on
+    When he taps Undo
+    Then the Strong's resource is switched off
