@@ -4,7 +4,7 @@
 // tap loses user activation on Android Chrome), so it never waits: the voice list is loaded ahead by warmVoices(),
 // and a phone that has not listed its voices yet is still asked to speak with lang 'el-GR' and picks its own.
 import { useRef, useSyncExternalStore } from 'react';
-import { DEFAULT_RATES, LANGUAGES, normaliseRate, type SpeechLanguage, type SpeechRates } from './languages';
+import { DEFAULT_RATE, DEFAULT_RATES, HEBREW_LANG, LANGUAGES, normaliseRate, type SettableLanguage, type SpeechLanguage, type SpeechRates } from './languages';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation, type Pronunciation } from './pronunciation';
 
 /** how long warmVoices() waits for the phone to list its voices */
@@ -20,7 +20,7 @@ interface Playing {
 
 // What he chose in Settings (src/speech/settingsSync.ts hands it over; speak() cannot wait for a database read).
 let pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION;
-const chosenVoices: Record<SpeechLanguage, string | null> = { english: null, greek: null };
+const chosenVoices: Record<SettableLanguage, string | null> = { english: null, greek: null };
 const rates: SpeechRates = { ...DEFAULT_RATES };
 
 /** The language tag of the Greek being spoken (the pronunciation's), such as 'el-GR'. */
@@ -28,7 +28,10 @@ export const greekLang = (): string => pronunciationOf(pronunciation).lang;
 
 /** The language tag put on an utterance in `language`. */
 const langOf = (language: SpeechLanguage): string =>
-  language === 'greek' ? greekLang() : (LANGUAGES.find((l) => l.id === language)?.lang ?? 'en-US');
+  language === 'greek' ? greekLang() : language === 'hebrew' ? HEBREW_LANG : (LANGUAGES.find((l) => l.id === language)?.lang ?? 'en-US');
+
+/** How fast `language` is spoken: his speed for it, or the normal one for a language with no speed of its own (Hebrew). */
+const rateOf = (language: SpeechLanguage): number => (language === 'hebrew' ? DEFAULT_RATE : rates[language]);
 
 /** The pronunciation he chose (its respell cuts a word into syllables). */
 export const chosenPronunciation = (): Pronunciation => pronunciationOf(pronunciation);
@@ -38,12 +41,12 @@ export function setGreekPronunciation(next: GreekPronunciation): void {
 }
 
 /** The voiceURI of the voice he chose for `language`, or null for the phone's own pick. */
-export function setVoice(language: SpeechLanguage, voiceURI: string | null): void {
+export function setVoice(language: SettableLanguage, voiceURI: string | null): void {
   chosenVoices[language] = voiceURI;
 }
 
 /** How fast `language` is spoken (1 is normal); every utterance in it carries this, whichever button asked. */
-export function setSpeechRate(language: SpeechLanguage, rate: number): void {
+export function setSpeechRate(language: SettableLanguage, rate: number): void {
   rates[language] = normaliseRate(rate);
 }
 
@@ -69,18 +72,19 @@ export const speaksLanguage = (v: SpeechSynthesisVoice, tag: string): boolean =>
 /** What identifies a voice for keeping: its voiceURI (its name where a browser leaves that empty). */
 export const voiceKey = (v: SpeechSynthesisVoice): string => v.voiceURI || v.name;
 
-const isGreek = (v: SpeechSynthesisVoice): boolean => speaksLanguage(v, greekLang());
 const isLanguage = (language: SpeechLanguage) => (v: SpeechSynthesisVoice): boolean => speaksLanguage(v, langOf(language));
 
-/** true: the phone lists a Greek voice; false: it lists voices and none is Greek, or cannot speak at all;
+/** true: the phone lists a voice for `language`; false: it lists voices and none is that language's, or cannot speak at all;
  * 'unknown': its voice list is still empty (Android Chrome fills it late). */
-export function hasGreekVoice(): boolean | 'unknown' {
+export function hasVoice(language: SpeechLanguage): boolean | 'unknown' {
   const synth = synthesis();
   if (!synth) return false;
   const voices = synth.getVoices();
   if (voices.length === 0) return 'unknown';
-  return voices.some(isGreek);
+  return voices.some(isLanguage(language));
 }
+
+export const hasGreekVoice = (): boolean | 'unknown' => hasVoice('greek');
 
 let warm: Promise<void> | null = null;
 
@@ -105,7 +109,7 @@ function pickVoice(synth: SpeechSynthesis, language: SpeechLanguage): SpeechSynt
   const voices = synth.getVoices();
   const lang = langOf(language).toLowerCase();
   const fits = isLanguage(language);
-  const chosenVoice = chosenVoices[language];
+  const chosenVoice = language === 'hebrew' ? null : chosenVoices[language];
   const chosen = chosenVoice === null ? undefined : voices.find((v) => voiceKey(v) === chosenVoice && fits(v));
   return chosen ?? voices.find((v) => v.lang.replace('_', '-').toLowerCase() === lang) ?? voices.find(fits) ?? null;
 }
@@ -137,7 +141,7 @@ export const SLOW_FACTOR = 0.6;
 function utter(text: string, key: string, language: SpeechLanguage, synth: SpeechSynthesis, onEnd: () => void, onError: (error: string) => void, slow = false): void {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = langOf(language);
-  utterance.rate = slow ? rates[language] * SLOW_FACTOR : rates[language];
+  utterance.rate = slow ? rateOf(language) * SLOW_FACTOR : rateOf(language);
   const voice = pickVoice(synth, language);
   if (voice) utterance.voice = voice;
   const ended = () => {
@@ -162,10 +166,11 @@ export const isCancelError = (error: string): boolean => error === 'canceled' ||
 
 /** Reads `text` aloud in `language` (Greek unless said), at that language's speed, or stops it when `key` is already
  * being read. A different key's speech is cancelled first. `onFail` is called if the phone's engine reports it cannot
- * speak it (after the call returned 'speaking'). Only Greek is refused for want of a voice: the help is about Greek. */
+ * speak it (after the call returned 'speaking'). Only Greek and Hebrew are refused for want of a voice: the help is about them, and
+ * the phone's default voice would read either one as English. */
 export function speak(text: string, key: string, onFail?: () => void, language: SpeechLanguage = 'greek'): SpeakOutcome {
   const synth = synthesis();
-  if (!synth || (language === 'greek' && hasGreekVoice() === false)) return 'no-voice';
+  if (!synth || ((language === 'greek' || language === 'hebrew') && hasVoice(language) === false)) return 'no-voice';
   watchVisibility();
   if (playing?.key === key) {
     stopSpeaking();
@@ -206,8 +211,9 @@ export function speakWord(text: string, language: SpeechLanguage, slow = false):
   return true;
 }
 
-/** The one line shown when there is no Greek voice: where to get one. */
-export function noVoiceHelp(): string {
+/** The one line shown when there is no voice for `language`: for Greek, where to get one. */
+export function noVoiceHelp(language: SpeechLanguage = 'greek'): string {
+  if (language === 'hebrew') return 'No Hebrew voice on this phone';
   return typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)
     ? 'No Greek voice on this phone: Settings > General management > Text-to-speech > install Greek'
     : 'No Greek voice on this device: install a Greek text-to-speech voice in its system settings';

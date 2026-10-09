@@ -5,7 +5,7 @@
 // show live while he holds and go on release. Each answer can be heard (read aloud through
 // src/speech/readAloud.ts, a Stop while it plays) and its Greek words open the word sheet.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Waiting } from './Ask';
 import { addLemmaToLearn, findGreekWord, glossOf } from './data/answerWord';
 import type { AnswerWord } from './data/db';
@@ -13,7 +13,9 @@ import { addWordToLearn, keepStudyWayLine, listStudyWay, listTurns, markChangeUn
 import { Markdown } from './markdown/Markdown';
 import { TutorLinks } from './TutorLinks';
 import { settingOf, undoChange, type AppliedChange } from './settings/registry';
-import { MAX_TALK_CHARS, scopeTitle, type TalkScope } from './services/talk';
+import { hebrewSoundAsk, MAX_TALK_CHARS, scopeTitle, type TalkFocus, type TalkScope } from './services/talk';
+import { HebrewSoundGuide } from './script/HebrewGuide';
+import { HebrewAskContext } from './script/hebrewSpeech';
 import { FAILURE_TITLES } from './services/tutor';
 import { startAnswer, stopAnswer, useReading } from './speech/readAloud';
 import { stopOnTap } from './speech/tutorVoice';
@@ -253,6 +255,7 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
             })}
           </dl>
         ) : null}
+        {turn.guide ? <HebrewSoundGuide guide={turn.guide} /> : null}
         {turn.links?.length ? <TutorLinks links={turn.links} onLeave={onLeave} /> : null}
         {turn.studyWayLine ? <StudyWayProposal line={turn.studyWayLine} /> : null}
         <div className="-mb-1 mt-1 flex justify-end">
@@ -274,7 +277,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
   voice: Voice;
   /** questions fitted to where he asks from (src/tutor/screen.ts): shown as buttons while nothing has been said, a tap sends one */
   suggestions?: string[];
-  onSay: (message: string) => void;
+  onSay: (message: string, focus?: TalkFocus) => void;
   /** a word of an answer was opened and he asked for Grammar or Sound it out on it */
   onHelp: (help: WordHelp) => void;
   /** a word of an answer was opened, a grammar word of its Parsing too, and he asked the tutor about it */
@@ -312,6 +315,17 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
     onSay(message);
     setText('');
   };
+  // A Hebrew word of an answer, in its guide, asks how it is said: a sound question with the word as its focus (mw-5r3p30.98).
+  const hebrew = useMemo(
+    () => ({
+      busy,
+      ask: (word: string): void => {
+        const { message, focus } = hebrewSoundAsk(word);
+        onSay(message, focus);
+      },
+    }),
+    [busy, onSay],
+  );
 
   return (
     <>
@@ -362,9 +376,11 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
                 ))}
               </ul>
             ) : null}
-            {turns?.map((turn) => (
-              <Turn key={turn.id} turn={turn} scope={scope} onLook={setLookup} onLeave={onClose} />
-            ))}
+            <HebrewAskContext.Provider value={hebrew}>
+              {turns?.map((turn) => (
+                <Turn key={turn.id} turn={turn} scope={scope} onLook={setLookup} onLeave={onClose} />
+              ))}
+            </HebrewAskContext.Provider>
             {state ? (
               <div data-talk-pending className="space-y-2">
                 <p className="ml-auto w-fit max-w-[88%] break-words rounded-2xl bg-accent/15 px-3 py-2 text-lg">{state.question}</p>

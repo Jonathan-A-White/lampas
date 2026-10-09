@@ -12,7 +12,7 @@ const speakable = (text: string): boolean => /[\p{L}\p{N}]/u.test(text);
 
 /** The answer cut into runs of one language each, in the order they come; a run with nothing to say is left out. Its Markdown marks are never spoken. */
 export function answerRuns(answer: string): Run[] {
-  // Hebrew in the answer is for his eyes: the English voice would only garble it (a Hebrew voice is a later story).
+  // Hebrew in the answer is for his eyes and his tap (src/script/HebrewWord.tsx says it in the Hebrew voice): the English voice would only garble it.
   const text = withoutScripts(markdownToSpeech(answer));
   const runs: Run[] = [];
   let at = 0;

@@ -1,5 +1,5 @@
 // src/speech/SpeakButton.tsx — the speaker button on a word and the play button on a verse. Both speak `text` in
-// modern Greek (or in the `language` they are given, at that language's speed); a second tap on the same one stops it. With no Greek voice the button still shows and a tap puts one
+// modern Greek (or in the `language` they are given, at that language's speed); a second tap on the same one stops it. With no voice for the language (Greek, Hebrew) the button still shows and a tap puts one
 // line of help at the top of the screen.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { SpeechLanguage } from './languages';
@@ -38,10 +38,10 @@ export function SpeakButton({ text, id, label, kind, language, className, onSpea
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const showHelp = useCallback(() => {
-    setHelp(noVoiceHelp());
+    setHelp(noVoiceHelp(language));
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setHelp(null), HELP_MS);
-  }, []);
+  }, [language]);
 
   useEffect(() => {
     void warmVoices();

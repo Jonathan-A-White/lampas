@@ -45,6 +45,16 @@ export interface WordFocus {
   lemma: string;
   parse: string;
   kind: 'grammar' | 'sound' | 'word';
+  /** the language of the word when it is not Greek: 'he' for a Hebrew word of an answer (mw-5r3p30.98), whose sound question the grind answers in Hebrew syllables */
+  language?: 'he';
+}
+
+/** The question the Hebrew guide's Syllables and sounds sends for a Hebrew word of an answer, and the focus that rides with it. */
+export function hebrewSoundAsk(word: string): { message: string; focus: WordFocus } {
+  return {
+    message: `Help me pronounce the Hebrew word ${word}: its syllables in Hebrew letters and how each sounds.`,
+    focus: { form: word, lemma: word, parse: 'Hebrew word', kind: 'sound', language: 'he' },
+  };
 }
 
 /** One earlier answer of the Quick test round he is in. */
@@ -170,6 +180,8 @@ export interface TalkAnswer {
   words_to_add?: string[];
   /** for a Sound it out question: the syllables of the word, in order (at most 12) */
   syllables?: string[];
+  /** for a Hebrew word's sound question: how each of `syllables` sounds, in Latin letters, in the same order (at most 12) */
+  transliteration?: string[];
   /** the words and verses the answer links to a study resource (mw-5r3p30.75): the app shows each in the resources he has switched on */
   links?: AnswerLink[];
   /** in a quiz, one line the tutor proposes for his study way (mw-5r3p30.76): shown with Keep this, kept only when he taps it */
@@ -185,12 +197,13 @@ const isAnswerLink = (value: unknown): value is AnswerLink =>
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'links' && k !== 'study_way_line')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line')) return false;
   if ('study_way_line' in value && !isText(value.study_way_line, STUDY_WAY_LINE_MAX)) return false;
   if ('links' in value && !(Array.isArray(value.links) && value.links.length <= 12 && value.links.every(isAnswerLink))) return false;
   if ('settings_changes' in value && !Array.isArray(value.settings_changes)) return false;
   if ('words_to_add' in value && !(Array.isArray(value.words_to_add) && value.words_to_add.length <= 12 && value.words_to_add.every((l) => isText(l, 80)))) return false;
   if ('syllables' in value && !(Array.isArray(value.syllables) && value.syllables.length <= 12 && value.syllables.every((s) => isText(s, 40)))) return false;
+  if ('transliteration' in value && !(Array.isArray(value.transliteration) && value.transliteration.length <= 12 && value.transliteration.every((s) => isText(s, 40)))) return false;
   if (!Array.isArray(value.words) || value.words.length > 12) return false;
   return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));
 }

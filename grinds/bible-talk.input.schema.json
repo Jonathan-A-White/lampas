@@ -103,7 +103,8 @@
             "form": { "type": "string", "minLength": 1, "maxLength": 80 },
             "lemma": { "type": "string", "minLength": 1, "maxLength": 80 },
             "parse": { "type": "string", "minLength": 1, "maxLength": 200 },
-            "kind": { "description": "grammar: the form and what is needed to read it; sound: its syllables and how each sounds; word: just the word, with nothing in particular asked.", "type": "string", "enum": ["grammar", "sound", "word"] }
+            "kind": { "description": "grammar: the form and what is needed to read it; sound: its syllables and how each sounds; word: just the word, with nothing in particular asked.", "type": "string", "enum": ["grammar", "sound", "word"] },
+            "language": { "description": "Only for a Hebrew word of an answer (the Hebrew guide's Syllables and sounds): he. Absent for a Greek word.", "type": "string", "enum": ["he"] }
           }
         },
         {

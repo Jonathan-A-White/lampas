@@ -68,6 +68,7 @@ export class FakeSynth {
 }
 
 export const GREEK_VOICE: FakeVoice = { lang: 'el-GR', name: 'Greek (Greece)' };
+export const HEBREW_VOICE: FakeVoice = { lang: 'he-IL', name: 'Hebrew (Israel)' };
 export const ENGLISH_VOICE: FakeVoice = { lang: 'en-US', name: 'English (US)' };
 
 /** Puts a fake engine in place of the phone's. */

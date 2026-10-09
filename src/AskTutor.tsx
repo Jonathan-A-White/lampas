@@ -96,7 +96,7 @@ export function AskTutor({ route }: { route: Route }) {
           state={states[ref]}
           voice={voice}
           suggestions={suggestionsFor(name)}
-          onSay={(message) => say(scope, message)}
+          onSay={(message, focus) => say(scope, message, focus)}
           onHelp={() => {}}
           onAskTerm={() => {}}
           onClose={close}

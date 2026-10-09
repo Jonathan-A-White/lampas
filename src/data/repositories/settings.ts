@@ -9,7 +9,7 @@ import { DEFAULT_TEXT_PERCENT, normaliseTextPercent } from '../../appearance/tex
 import { DEFAULT_THEME, isTheme, type Theme } from '../../appearance/themes';
 import { DEFAULT_LOGOS_BIBLE, isResourceId } from '../../resources/logosBible';
 import { DEFAULT_READ_SPAN, isReadSpan, type ReadSpan } from '../../speech/readSpan';
-import { LANGUAGES, normaliseRate, type SpeechLanguage, type SpeechRates } from '../../speech/languages';
+import { LANGUAGES, normaliseRate, type SettableLanguage, type SpeechRates } from '../../speech/languages';
 import { DEFAULT_DEPTH, isDepth, type Depth, type TutorScript } from '../../script/scripts';
 import { DEFAULT_PRONUNCIATION, isPronunciation, type GreekPronunciation } from '../../speech/pronunciation';
 
@@ -55,7 +55,7 @@ export async function setWeaveGrammar(grammar: WeaveGrammar): Promise<void> {
 }
 
 /** Which of the phone's voices reads each language: its voiceURI, or null for the phone's default. */
-export type VoiceLanguage = SpeechLanguage;
+export type VoiceLanguage = SettableLanguage;
 
 const VOICE_KEYS: Record<VoiceLanguage, string> = { english: 'voice.english', greek: 'voice.greek' };
 const RATE_KEYS: Record<VoiceLanguage, string> = { english: 'rate.english', greek: 'rate.greek' };

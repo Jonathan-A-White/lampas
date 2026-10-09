@@ -76,6 +76,16 @@ export interface TalkTurn {
   links?: AnswerLink[];
   /** the study way line the answer proposed (mw-5r3p30.76); the reader keeps it with Keep this, or not */
   studyWayLine?: string;
+  /** the pronunciation guide the answer carried for a Hebrew word (mw-5r3p30.98, src/script/HebrewGuide.tsx HebrewSoundGuide) */
+  guide?: HebrewSounds;
+}
+
+/** How a Hebrew word is said, as the tutor's sound answer gave it: the word, its syllables in Hebrew letters in reading order and how each sounds in Latin letters. */
+export interface HebrewSounds {
+  word: string;
+  syllables: string[];
+  /** one per syllable, as many as the tutor gave (a missing one shows nothing under its syllable) */
+  sounds: string[];
 }
 
 /** One step of one word in the Parsing drill: 'tense' of λέγω, answered rightly or not. */
