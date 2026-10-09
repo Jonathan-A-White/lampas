@@ -26,7 +26,7 @@ describe('ATTRIBUTION.md carries what CC BY 4.0 requires', () => {
   it('names STEPBible, Tyndale House, the licence link and the changes', () => {
     expect(text).toContain('STEPBible');
     expect(text).toContain('Tyndale House');
-    expect(text).toContain('https://creativecommons.org/licenses/by/4.0/');
+    expect(file).toContain('[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)');
     expect(text).toContain('Changes:');
   });
   it('says the MSB is public domain', () => {
