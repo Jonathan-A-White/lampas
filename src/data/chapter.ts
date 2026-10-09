@@ -58,6 +58,9 @@ export interface Chapter {
   verses: Verse[];
 }
 
+/** A chapter with no text: the stand-in where a talk is about a screen, not a text (src/tutor/screen.ts), or a word is added with no chapter open. */
+export const NO_CHAPTER: Chapter = { book: '', code: '', chapter: 0, lex: {}, parse: {}, verses: [] };
+
 export interface BookInfo {
   code: string;
   name: string;

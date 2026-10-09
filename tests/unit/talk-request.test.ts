@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import type { Chapter } from '../../src/data/chapter';
 import { learnerGrammarOf, type LearnerGrammar } from '../../src/data/grammar/learnerGrammar';
-import { MAX_HISTORY_TURNS, MAX_REQUEST_BYTES, MAX_TALK_CHARS, buildTalkRequest, fitHistory, termQuestion, type TalkRequest } from '../../src/services/talk';
+import { MAX_HISTORY_TURNS, MAX_REQUEST_BYTES, MAX_TALK_CHARS, buildTalkRequest, fitHistory, scopeRef, termQuestion, type TalkRequest } from '../../src/services/talk';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const turn = (i: number, a = `Answer ${i}`) => ({ q: `Question ${i}`, a });
@@ -121,5 +121,34 @@ describe('fitHistory', () => {
   it('drops the whole history when even one clipped turn cannot fit', () => {
     const r = { ...base([turn(1, 'z'.repeat(1500))]), greek: 'α'.repeat(3600), english: 'x'.repeat(3600) };
     expect(fitHistory(r).history).toEqual([]);
+  });
+});
+
+describe('a talk from a screen (mw-5r3p30.91)', () => {
+  const screen = { name: 'Goal', facts: [{ label: 'Goal', value: 'Read 1 John 1:1' }] };
+  const scope = { title: 'Goal', chapter, verse: null, screen };
+
+  it('carries the screen, names the screen as its reference and has no verse text', () => {
+    const r = buildTalkRequest(scope, ' Where am I? ', [], ['θεός']);
+    expect(r.screen).toEqual(screen);
+    expect(r.reference).toBe('Goal');
+    expect('greek' in r).toBe(false);
+    expect('english' in r).toBe(false);
+    expect(r.question).toBe('Where am I?');
+    expect(r.solid_words).toEqual(['θεός']);
+  });
+
+  it('is kept under the screen, whatever chapter is open, and a chapter talk carries no screen key', () => {
+    expect(scopeRef('rom', 8, scope)).toBe('screen.goal');
+    expect(scopeRef('1jn', 1, scope)).toBe('screen.goal');
+    expect(scopeRef('rom', 8, { ...scope, screen: { name: 'My study way', facts: [] } })).toBe('screen.my-study-way');
+    expect('screen' in buildTalkRequest({ title: 'Romans 8', chapter, verse: null }, 'Why?', [], [])).toBe(false);
+  });
+
+  it('fitHistory never cuts the screen', () => {
+    const history = Array.from({ length: 10 }, (_, i) => turn(i, 'x'.repeat(2000)));
+    const r = fitHistory(buildTalkRequest(scope, 'Why?', history, []));
+    expect(r.screen).toEqual(screen);
+    expect(size(r)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
   });
 });

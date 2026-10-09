@@ -289,3 +289,48 @@ describe('the word and quiz focus (mw-5r3p30.80)', () => {
     for (const part of ['`kind` is `word`', 'Help with a Quick test question', '`focus.kind` is `quiz`', 'About νόμος (G3551), noun, and', '`focus.answers`', 'what you were handed']) expect(text).toContain(part);
   });
 });
+
+describe('the screen field (mw-5r3p30.91)', () => {
+  const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
+  const base = { reference: 'Goal', question: 'Where am I?', history: [], solid_words: [], settings: {} };
+  const screen = {
+    name: 'Goal',
+    facts: [
+      { label: 'Goal', value: 'Read 1 John 1:1' },
+      { label: 'Words', value: 'Solid 1 · Frontier 2 · Not yet 27' },
+      { label: 'Learn next', value: 'The Greek alphabet' },
+      { label: 'Next words', value: 'ὅς (who), ἀπό (from), ἀρχή (beginning)' },
+    ],
+  };
+
+  it('the request schema takes a screen, with no verse text, and still takes a request without one', () => {
+    expect(validate({ ...base, screen }, input)).toEqual([]);
+    expect(validate({ ...base, screen: { name: 'About', facts: [] } }, input)).toEqual([]);
+    expect(validate({ ...base, greek: 'Οἴδαμεν', english: 'And we know' }, input)).toEqual([]);
+    expect(input.required as string[]).not.toContain('screen');
+    expect(input.required as string[]).not.toContain('greek');
+    expect(input.required as string[]).not.toContain('english');
+  });
+
+  it('the request schema refuses a screen that is incomplete, has another key or is too big', () => {
+    const many = Array.from({ length: 13 }, (_, i) => ({ label: `L${i}`, value: 'v' }));
+    for (const bad of [
+      { name: 'Goal' },
+      { facts: [] },
+      { ...screen, extra: 1 },
+      { name: '', facts: [] },
+      { name: 'Goal', facts: [{ label: 'Goal' }] },
+      { name: 'Goal', facts: [{ label: '', value: 'x' }] },
+      { name: 'Goal', facts: [{ label: 'Goal', value: 'x', extra: 1 }] },
+      { name: 'Goal', facts: many },
+      { name: 'Goal', facts: [{ label: 'Goal', value: 'x'.repeat(201) }] },
+    ]) {
+      expect(validate({ ...base, screen: bad }, input), JSON.stringify(bad)).not.toEqual([]);
+    }
+  });
+
+  it('the instructions say how to use `screen`, that a verse it suggests comes as a verse link, and that the screen is not a text', () => {
+    const text = readFileSync(grind.instructions as string, 'utf8');
+    for (const part of ['`screen`', '## Talk from a screen', '`facts`', '`kind` `verse`', 'simplest verse', 'no verse text']) expect(text).toContain(part);
+  });
+});

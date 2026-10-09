@@ -4,10 +4,11 @@
 import type { Chapter, Verse } from '../data/chapter';
 import { unitId } from '../data/passage';
 import { STUDY_WAY_LINE_MAX } from '../data/repositories/studyWay';
-import { talkRef } from '../data/repositories/talks';
+import { screenRef, talkRef } from '../data/repositories/talks';
 import type { AnswerLink, AnswerWord } from '../data/db';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { SettingValue } from '../settings/registry';
+import { slugOf, type ScreenContext } from '../tutor/screen';
 import { askGrind, type AskOptions } from './tutor';
 
 /** The kind the mill runs the grind under (grinds/bible-talk.json). */
@@ -134,8 +135,9 @@ export function newWordQuestion(lemma: string, gloss: string, reference: string)
 /** What the grind is sent (Bible Talk Request 1; grinds/bible-talk.input.schema.json). */
 export interface TalkRequest {
   reference: string;
-  greek: string;
-  english: string;
+  /** the verse's, the passage's or the chapter's first verses' Greek; missing in a talk from a screen (`screen`), which is not about a text */
+  greek?: string;
+  english?: string;
   question: string;
   history: TalkHistoryEntry[];
   solid_words: string[];
@@ -143,6 +145,8 @@ export interface TalkRequest {
   settings: Record<string, SettingValue>;
   /** present only when the question comes from the word sheet's Help with this word row, a Grammar sheet's Ask the tutor or a paradigm table's */
   focus?: TalkFocus;
+  /** present only in a talk from a screen (mw-5r3p30.91, the round Ask the tutor control): the screen's name and what it shows; `reference` is then its name */
+  screen?: ScreenContext;
   /** where he stands (src/data/learnerSummary.ts): solid count, the learning words, today's new words, what is due */
   learner?: string;
   /** where his grammar stands (src/data/grammar/learnerGrammar.ts): the goal, the counts, the idea titles by level, the suggested move; fitHistory never cuts it */
@@ -194,11 +198,13 @@ export function isTalkAnswer(value: unknown): value is TalkAnswer {
 /** What a talk is about: the chapter (`verse` null), one of its verses, or a passage under a heading (a Verse with `to`, src/data/passage.ts).
  * `quiz` makes it the quiz about that verse or passage: a conversation of its own, every request in quiz mode. */
 export interface TalkScope {
-  /** the chapter's title: 'Romans 8' */
+  /** the chapter's title: 'Romans 8'; for a talk from a screen, the screen's name */
   title: string;
   chapter: Chapter;
   verse: Verse | null;
   quiz?: boolean;
+  /** a talk from a screen (mw-5r3p30.91): what the screen shows. `chapter` is then NO_CHAPTER, `verse` null: the talk is not about a text. */
+  screen?: ScreenContext;
 }
 
 /** The first thing he says in a quiz (the Start the quiz button sends it): the sheet shows it as his turn. */
@@ -211,8 +217,8 @@ const englishOf = (v: Verse): string => v.e.map((c) => c.t.trim()).join(' ');
 export const scopeTitle = (scope: Pick<TalkScope, 'title' | 'verse'>): string => (scope.verse ? `${scope.title}:${unitId(scope.verse)}` : scope.title);
 
 /** The key the conversation `scope` names is kept under (src/data/repositories/talks.ts talkRef). */
-export const scopeRef = (book: string, chapter: number, scope: Pick<TalkScope, 'verse' | 'quiz'>): string =>
-  talkRef(book, chapter, scope.verse ? unitId(scope.verse) : null, scope.quiz === true);
+export const scopeRef = (book: string, chapter: number, scope: Pick<TalkScope, 'verse' | 'quiz' | 'screen'>): string =>
+  scope.screen ? screenRef(slugOf(scope.screen.name)) : talkRef(book, chapter, scope.verse ? unitId(scope.verse) : null, scope.quiz === true);
 
 const sizeOf = (request: TalkRequest): number => new TextEncoder().encode(JSON.stringify(request)).length;
 
@@ -246,8 +252,8 @@ export function buildTalkRequest(
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   return {
     reference: scopeTitle(scope),
-    greek: verses.map(greekOf).join(' '),
-    english: verses.map(englishOf).join(' '),
+    // a talk from a screen is not about a text: it carries the screen and no verse text
+    ...(scope.screen ? { screen: scope.screen } : { greek: verses.map(greekOf).join(' '), english: verses.map(englishOf).join(' ') }),
     question: question.trim(),
     history: turns.slice(-MAX_HISTORY_TURNS).map(({ q, a }) => ({ q, a })),
     solid_words: solidWords,
