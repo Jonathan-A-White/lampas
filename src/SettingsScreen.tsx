@@ -13,6 +13,7 @@ import {
   getLayout,
   getSectionHeadings,
   getReadSpan,
+  getReadTutor,
   getTips,
   getSpeechRates,
   getTextSize,
@@ -31,6 +32,7 @@ import {
   type PickerGrammar,
   type SectionHeadings,
   type ReadSpan,
+  type ReadTutor,
   type Tips,
   type VoiceLanguage,
   type Weave,
@@ -260,6 +262,25 @@ function ReadSpanChoice({ span }: { span: ReadSpan }) {
           {s.label}
         </button>
       ))}
+    </div>
+  );
+}
+
+function ReadTutorChoice({ readTutor }: { readTutor: ReadTutor }) {
+  const choice = (value: ReadTutor, label: string) => (
+    <button
+      type="button"
+      aria-pressed={readTutor === value}
+      onClick={() => void writeSetting('readTutor', value)}
+      className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${readTutor === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <div role="group" aria-label="Read the tutor's responses aloud" className="inline-flex rounded-xl border border-line p-0.5">
+      {choice('on', 'On')}
+      {choice('off', 'Off')}
     </div>
   );
 }
@@ -722,6 +743,7 @@ export function SettingsScreen() {
   const headings = useLiveQuery(getSectionHeadings, []);
   const tips = useLiveQuery(getTips, []);
   const readSpan = useLiveQuery(getReadSpan, []);
+  const readTutor = useLiveQuery(getReadTutor, []);
   const english = useLiveQuery(() => getVoice('english'), []);
   const greek = useLiveQuery(() => getVoice('greek'), []);
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
@@ -765,6 +787,12 @@ export function SettingsScreen() {
             hint="How far Read from the top / Read from here goes. Verse stops after that verse; Passage before the next heading; Chapter at the chapter's end; Book goes on into each next chapter to the book's end. The play button on a verse reads just that verse."
           >
             {readSpan ? <ReadSpanChoice span={readSpan} /> : null}
+          </Section>
+          <Section
+            title="The tutor's responses"
+            hint="The reading check's verdict and the tutor's answers are read aloud as soon as they arrive, with no tap. Off speaks nothing by itself."
+          >
+            {readTutor ? <ReadTutorChoice readTutor={readTutor} /> : null}
           </Section>
           <Section title="Reading voices" hint="Which of this phone's voices reads aloud. Phone default lets the phone choose.">
             {english !== undefined && greek !== undefined ? (

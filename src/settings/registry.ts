@@ -13,6 +13,7 @@ import {
   getGreekPronunciation,
   getLayout,
   getReadSpan,
+  getReadTutor,
   getLogosBible,
   getNewWordsADay,
   getSectionHeadings,
@@ -31,6 +32,7 @@ import {
   setGreekPronunciation,
   setLayout,
   setReadSpan,
+  setReadTutor,
   setLogosBible,
   setNewWordsADay,
   setSectionHeadings,
@@ -44,6 +46,7 @@ import {
   type GrammarMove,
   type PickerGrammar,
   type ReadingLayout,
+  type ReadTutor,
   type SectionHeadings,
   type Tips,
   type Weave,
@@ -240,6 +243,20 @@ export const SETTINGS: readonly SettingEntry[] = [
     async (value) => {
       await setReadSpan(value as ReadSpan);
       publish({ kind: 'read-span-changed', span: value as ReadSpan });
+    },
+  ),
+  choice(
+    'readTutor',
+    "Read the tutor's responses aloud",
+    "Whether the tutor's responses are spoken the moment they arrive, with no tap: the reading check's verdict (its heading, its note and each word to fix with its tip, never the verse itself) and the answers to what he asks. On by default; Off speaks nothing by itself (the speaker on an answer still reads it).",
+    [
+      { value: 'on', label: 'On' },
+      { value: 'off', label: 'Off' },
+    ],
+    getReadTutor,
+    async (value) => {
+      await setReadTutor(value as ReadTutor);
+      publish({ kind: 'read-tutor-changed', readTutor: value as ReadTutor });
     },
   ),
   choice(
