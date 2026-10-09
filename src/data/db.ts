@@ -141,8 +141,8 @@ export interface KnownTerm {
 
 export type GrammarLevelName = 'solid' | 'frontier' | 'notYet';
 
-/** What set a grammar level: the placement, a review answer, the idea sheet, the tutor, or a term he marked I know this. */
-export type GrammarLevelHow = 'placement' | 'review' | 'sheet' | 'tutor' | 'marked';
+/** What set a grammar level: the placement, a review answer, the idea sheet, the tutor, a term he marked I know this, or the right answers he gave on forms that use it (mw-hqd5bz.17). */
+export type GrammarLevelHow = 'placement' | 'review' | 'sheet' | 'tutor' | 'marked' | 'inferred';
 
 /** Where one grammar idea (src/data/grammar/ladder.ts) stands for him: solid, at the frontier, or not yet. One row per idea. */
 export interface GrammarLevel {

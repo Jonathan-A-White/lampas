@@ -1,6 +1,7 @@
 // src/data/repositories/results.ts — the Quick test's answers, and the state rule applied to a word.
 import { db, type TestResult, type WordState } from '../db';
 import { nextState } from '../quiz';
+import { announceCredited, creditWordRead, type Credited } from './inference';
 import { announceDue, writeReview } from './reviews';
 
 export type { TestResult };
@@ -11,7 +12,8 @@ export type { TestResult };
  * Also records the answer on the back-off schedule. Returns the word's state afterwards, or null for a lemma that is not in the list.
  */
 export async function recordAnswer(lemma: string, right: boolean, now = Date.now()): Promise<WordState | null> {
-  const state = await db.transaction('rw', db.words, db.results, db.reviews, async () => {
+  let credited: Credited | undefined;
+  const state = await db.transaction('rw', db.words, db.results, db.reviews, db.settings, db.grammarLevels, async () => {
     const word = await db.words.get(lemma);
     if (!word) return null;
     const earlier = await db.results.where('[lemma+when]').between([lemma, word.since], [lemma, Infinity]).toArray();
@@ -20,9 +22,12 @@ export async function recordAnswer(lemma: string, right: boolean, now = Date.now
     if (state !== word.state) await db.words.update(lemma, { state, since: now });
     // The answer also moves the word on the back-off schedule (src/data/schedule.ts), in the same transaction.
     await writeReview('word', lemma, right, now);
+    // A word read right shows its letters, sounds and marks (src/data/grammar/inference.ts), written in the same transaction.
+    if (right) credited = await creditWordRead(lemma, now);
     return state;
   });
   if (state !== null) await announceDue(now);
+  if (credited) await announceCredited(credited, now);
   return state;
 }
 

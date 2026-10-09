@@ -70,6 +70,7 @@ export { getVerseReading, keepVerseReading } from './readings';
 export type { FixWord, VerseReading } from './readings';
 export { getLevel, levelFromStep, listLevels, recordGrammarAnswer, scheduleIdea, seedLevelsIfFirstOpen, setLevel, SOLID_STEP, teachIdea } from './grammarLevels';
 export type { GrammarLevel, GrammarLevelHow, GrammarLevelName, IdeaOutcome } from './grammarLevels';
+export { getEvidence, noteAnswer, noteWordRead } from './inference';
 export { getSavedGoalText } from './goalSaved';
 export { isTermKnown, listKnownTerms, setTermKnown } from './grammar';
 export { getStudyResources, setResourceOn, setResourceOption } from './resources';
