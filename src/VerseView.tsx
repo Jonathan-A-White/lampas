@@ -5,13 +5,16 @@
 // that does the chosen action (src/ui/HoldBar.tsx): Hold to listen, Hold to read verse N (the reading check, src/ReadCheck.tsx), Hold to ask.
 // The Reader's Talk bar is not drawn while the view is open, so two bars never stack. The chosen action is kept (src/verse/action.ts); the
 // arrows go to the verse before and the verse after, across a chapter's end. The action bodies draw their bar into `slot`, the foot of the view.
+// A section heading opens the same view for its passage (mw-5r3p30.73): `verse` is then the passage as one Verse (src/data/passage.ts: `n` its
+// first verse, `to` its last), the title is the heading and its range, every action works on the whole passage, and the arrows go to the passage
+// before and after in the chapter. Nothing else differs, so there is one view engine.
 import { type ReactNode, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnswerCards, AskBox } from './Ask';
 import { ReadCheckPanel, type ReadHold } from './ReadCheck';
 import type { Verse } from './data/chapter';
-import type { VerseNeighbours, VersePlace } from './data/neighbours';
-import { referenceUrl } from './nav/links';
+import { unitId, unitName, unitReference } from './data/passage';
+import { passageUrl, referenceUrl } from './nav/links';
 import { Icon } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
 import { HoldBar } from './ui/HoldBar';
@@ -32,12 +35,14 @@ export interface VerseViewProps {
   title: string;
   book: string;
   chapter: number;
+  /** the verse shown, or the passage under a heading as one Verse (`to` set) */
   verse: Verse;
   view: 'english' | 'greek';
   /** the verse as the Reader draws it (the Reader's VerseText: the view, the weave and the tappable words follow the Reader) */
   text: ReactNode;
-  places: VerseNeighbours;
-  onMove: (to: VersePlace) => void;
+  /** the arrows: go to the verse (or, for a passage, the passage) before and after; null when there is none */
+  previous: (() => void) | null;
+  next: (() => void) | null;
   onClose: () => void;
   action: VerseAction;
   onAction: (action: VerseAction) => void;
@@ -56,9 +61,9 @@ export interface VerseViewProps {
 
 const ARROW = 'flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-lg text-2xl text-accent active:bg-line disabled:opacity-30';
 
-function Arrow({ place, name, glyph, onMove }: { place: VersePlace | null; name: string; glyph: string; onMove: (to: VersePlace) => void }) {
+function Arrow({ move, name, glyph }: { move: (() => void) | null; name: string; glyph: string }) {
   return (
-    <button type="button" aria-label={name} disabled={place === null} onClick={() => place && onMove(place)} className={ARROW}>
+    <button type="button" aria-label={name} disabled={move === null} onClick={() => move?.()} className={ARROW}>
       <span aria-hidden="true">{glyph}</span>
     </button>
   );
@@ -68,33 +73,47 @@ function Arrow({ place, name, glyph, onMove }: { place: VersePlace | null; name:
 const askLabel = (voice: Voice): string => (voice.listening ? (voice.ready ? 'Release to send' : 'Starting the mic…') : 'Hold to ask');
 
 export function VerseView(props: VerseViewProps) {
-  const { title, book, chapter, verse, view, text, places, onMove, onClose, action, onAction, listen, checks, read, onRetryRead, ask, onAsk, prefill, voice, onTalk } = props;
+  const { title, book, chapter, verse, view, text, previous, next, onClose, action, onAction, listen, checks, read, onRetryRead, ask, onAsk, prefill, voice, onTalk } = props;
   // The foot of the view, where the chosen action draws its bar.
   const [slot, setSlot] = useState<HTMLDivElement | null>(null);
-  const reference = `${title}:${verse.n}`;
+  const reference = unitReference(title, verse);
+  const passage = verse.to !== undefined;
+  const name = unitName(verse);
+  const noun = passage ? 'passage' : 'verse';
   const busy = ask?.phase === 'sending' || ask?.phase === 'waiting';
   const big = view === 'greek' ? 'font-greek [--lp-greek-size:2.25rem]' : 'font-sans [--lp-english-size:1.75rem] [--lp-greek-size:2.25rem]';
   const size = view === 'greek' ? 'text-[length:var(--lp-greek-size)]' : 'text-[length:var(--lp-english-size)]';
   return (
-    <section aria-label="Verse view" data-verse-view={verse.n} className="fixed inset-0 z-5 flex flex-col bg-canvas pt-[env(safe-area-inset-top)]">
+    <section aria-label="Verse view" data-verse-view={unitId(verse)} className="fixed inset-0 z-5 flex flex-col bg-canvas pt-[env(safe-area-inset-top)]">
       <header className="flex shrink-0 items-center gap-1 border-b border-line px-2 py-2">
         {/* The Reader beneath is inert, so focus starts here and a keyboard or screen reader finds the view first. */}
         <button type="button" ref={focusOnMount} onClick={onClose} className="min-h-12 shrink-0 rounded-lg px-2 chrome-text font-medium text-accent active:bg-line">
           ‹ Reader
         </button>
-        <h2 className="chrome-title min-w-0 flex-1 truncate text-center font-semibold">{reference}</h2>
-        <Arrow place={places.previous} name="Previous verse" glyph="‹" onMove={onMove} />
-        <Arrow place={places.next} name="Next verse" glyph="›" onMove={onMove} />
+        {passage ? (
+          // the heading on top (two lines at most), the range under it on one line of its own
+          <h2 aria-label={`${verse.h}, ${reference}`} className="chrome-title min-w-0 flex-1 text-center font-semibold leading-tight">
+            <span className="line-clamp-2 break-words">{verse.h}</span>
+            <span className="block truncate text-sm font-medium text-muted">{reference}</span>
+          </h2>
+        ) : (
+          <h2 className="chrome-title min-w-0 flex-1 truncate text-center font-semibold">{reference}</h2>
+        )}
+        <Arrow move={previous} name={`Previous ${noun}`} glyph="‹" />
+        <Arrow move={next} name={`Next ${noun}`} glyph="›" />
       </header>
       <div className="screen min-h-0 flex-1 px-3 pt-3">
-        <p
-          data-sheet-verse
-          data-size="big"
-          lang={view === 'greek' ? 'grc' : 'en'}
-          className={`break-words leading-(--lp-leading) ${big} ${size}`}
-        >
-          {text}
-        </p>
+        {/* A passage is long: its text scrolls in a box of its own so the row of actions stays in reach under it. */}
+        <div {...(passage ? { 'data-passage-box': '' } : {})} className={passage ? 'max-h-[40dvh] overflow-y-auto overscroll-contain rounded-xl border border-line px-2' : undefined}>
+          <p
+            data-sheet-verse
+            data-size="big"
+            lang={view === 'greek' ? 'grc' : 'en'}
+            className={`break-words leading-(--lp-leading) ${big} ${size}`}
+          >
+            {text}
+          </p>
+        </div>
         <div role="group" aria-label="Actions" className="relative mt-3 grid grid-flow-col auto-cols-fr items-stretch gap-1">
           {VERSE_ACTIONS.map((a) => (
             <button
@@ -108,7 +127,7 @@ export function VerseView(props: VerseViewProps) {
             </button>
           ))}
           <LinkActions
-            url={referenceUrl(book, chapter, verse.n)}
+            url={verse.to === undefined ? referenceUrl(book, chapter, verse.n) : passageUrl(book, chapter, verse.n, verse.to)}
             title={reference}
             className="contents [&_button]:min-h-12 [&_button]:rounded-xl [&_button]:border [&_button]:border-line [&_button]:px-1 [&_button]:text-sm [&_button]:leading-tight [&_button]:text-fg [&>div]:contents [&_input]:col-span-5 [&_input]:col-start-1 [&_input]:row-start-2"
             statusClassName="absolute right-0 top-full mt-0.5 rounded-lg bg-surface px-2 py-0.5 text-sm text-muted"
@@ -117,15 +136,15 @@ export function VerseView(props: VerseViewProps) {
         <div className="mt-3">
           {action === 'listen' ? (
             <p data-action-help className="px-1 text-sm text-muted">
-              Hold the bar below to hear verse {verse.n}. Let go to stop.
+              Hold the bar below to hear {name}. Let go to stop.
             </p>
           ) : null}
           {action === 'read' ? (
-            <ReadCheckPanel key={verse.n} verse={verse} view={view} book={book} chapter={chapter} checks={checks} hold={read} onRetry={onRetryRead} slot={slot} />
+            <ReadCheckPanel key={unitId(verse)} verse={verse} view={view} book={book} chapter={chapter} checks={checks} hold={read} onRetry={onRetryRead} slot={slot} />
           ) : null}
           {action === 'ask' ? (
             <>
-              <AnswerCards verse={verse.n} book={book} chapter={chapter} />
+              <AnswerCards verse={unitId(verse)} book={book} chapter={chapter} />
               <AskBox verse={verse} state={ask} onAsk={onAsk} prefill={prefill} />
               {voice.listening ? (
                 <p role="status" data-ask-live className="px-1 text-base text-muted">
@@ -137,9 +156,11 @@ export function VerseView(props: VerseViewProps) {
                   {voice.notice.message}
                 </p>
               ) : null}
-              <button type="button" onClick={onTalk} className="min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium active:bg-line">
-                Talk about verse {verse.n}
-              </button>
+              {passage ? null : (
+                <button type="button" onClick={onTalk} className="min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium active:bg-line">
+                  Talk about verse {verse.n}
+                </button>
+              )}
             </>
           ) : null}
         </div>
@@ -150,8 +171,8 @@ export function VerseView(props: VerseViewProps) {
             <HoldBar
               hold={{ onHold: listen.onHold, onRelease: listen.onRelease, onDrop: listen.onRelease }}
               holdMs={0}
-              name={`Hold to listen to verse ${verse.n}`}
-              label={`Hold to listen to verse ${verse.n}`}
+              name={`Hold to listen to ${name}`}
+              label={`Hold to listen to ${name}`}
               icon={<Icon kind="speaker" />}
               keys
             />,
