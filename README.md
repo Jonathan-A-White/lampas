@@ -13,3 +13,7 @@ Lampas builds on other people's work, and credits all of it, by name, with a lin
 the type, every library it runs on, the services and apps it links to, and the ideas we borrowed. The one list is [ATTRIBUTION.md](ATTRIBUTION.md);
 the app's About screen (Settings > About) is built from that file, so the two cannot differ, and a test fails when a package in
 `package.json`'s dependencies is not credited there.
+
+## Code map
+
+[docs/module-map.md](docs/module-map.md) maps the modules under `src/`, the files most stories collide on, the refactors that would let stories run in parallel, and the code that could live in a shared library.
