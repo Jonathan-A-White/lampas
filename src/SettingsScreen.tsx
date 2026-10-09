@@ -17,12 +17,14 @@ import {
   getStudyResources,
   getVoice,
   getWeave,
+  getWeaveGrammar,
   setResourceOn,
   setResourceOption,
   type ReadingLayout,
   type SectionHeadings,
   type VoiceLanguage,
   type Weave,
+  type WeaveGrammar,
 } from './data/repositories';
 import { APPROACHES, approachOf, nextLessonOf, type GrammarApproach } from './approaches';
 import { listLevels } from './data/repositories/grammarLevels';
@@ -87,23 +89,51 @@ function TextSizeChoice({ percent }: { percent: number }) {
   );
 }
 
-function WeaveChoice({ weave }: { weave: Weave }) {
-  const choice = (value: Weave, label: string) => (
-    <button
-      type="button"
-      aria-pressed={weave === value}
-      onClick={() => void writeSetting('weave', value)}
-      className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${weave === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
-    >
-      {label}
-    </button>
-  );
+/** One row of the Weave: a small label at the left and three chips on one line (never wrapped), the hint beneath. `name` is the setting's label in the registry. */
+function WeaveRow({ label, name, hint, current, options, settingKey }: { label: string; name: string; hint: string; current: string; options: [string, string][]; settingKey: 'weave' | 'weaveGrammar' }) {
   return (
-    <div role="group" aria-label="Weave" className="inline-flex max-w-full flex-wrap rounded-xl border border-line p-0.5">
-      {choice('off', 'Off')}
-      {choice('solid', 'Solid words')}
-      {choice('solid+learning', 'Solid and learning words')}
+    <div className="pb-3">
+      <div className="flex items-center gap-2">
+        <span className="w-16 shrink-0 text-sm font-medium text-muted">{label}</span>
+        <div role="group" aria-label={name} className="inline-flex min-w-0 flex-nowrap rounded-xl border border-line p-0.5">
+          {options.map(([value, text]) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={current === value}
+              onClick={() => void writeSetting(settingKey, value)}
+              className={`min-h-12 min-w-12 whitespace-nowrap rounded-lg px-3 text-base font-medium ${current === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+            >
+              {text}
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="pt-1 text-base text-muted">{hint}</p>
     </div>
+  );
+}
+
+function WeaveChoice({ weave, grammar }: { weave: Weave; grammar: WeaveGrammar }) {
+  return (
+    <>
+      <WeaveRow
+        label="Words"
+        name="Weave"
+        settingKey="weave"
+        current={weave}
+        options={[['off', 'Off'], ['solid', 'Solid'], ['solid+learning', '+ Learning']]}
+        hint="Which words stand in Greek: Solid ones, or + Learning too, with their English beneath in small grey until they turn solid."
+      />
+      <WeaveRow
+        label="Grammar"
+        name="Grammar"
+        settingKey="weaveGrammar"
+        current={grammar}
+        options={[['any', 'Any'], ['solid', 'Solid'], ['solid+frontier', '+ Frontier']]}
+        hint="Of the words that stand in Greek, keep only the forms whose grammar you have at this level: Any, Solid, or Solid and frontier."
+      />
+    </>
   );
 }
 
@@ -488,6 +518,7 @@ export function SettingsScreen() {
   const textSize = useLiveQuery(getTextSize, []);
   const rates = useLiveQuery(getSpeechRates, []);
   const weave = useLiveQuery(getWeave, []);
+  const weaveGrammar = useLiveQuery(getWeaveGrammar, []);
   const layout = useLiveQuery(getLayout, []);
   const headings = useLiveQuery(getSectionHeadings, []);
   const english = useLiveQuery(() => getVoice('english'), []);
@@ -514,8 +545,8 @@ export function SettingsScreen() {
           <Section title="Section headings" hint="Show the Bible's headings (such as Walking by the Spirit) above their verses.">
             {headings ? <HeadingsChoice headings={headings} /> : null}
           </Section>
-          <Section title="Weave" hint="In the English view, show the Greek of your solid words in place of their English. Solid and learning words also stands the words you are learning in Greek, with their English beneath in small grey until they turn solid.">
-            {weave ? <WeaveChoice weave={weave} /> : null}
+          <Section title="Weave" hint="In the English view, show the Greek of your words in place of their English.">
+            {weave && weaveGrammar ? <WeaveChoice weave={weave} grammar={weaveGrammar} /> : null}
           </Section>
           <Section title="Goal" hint="The passage you are working toward: a whole book, one chapter or a single verse.">
             {goal !== undefined ? <GoalPickers saved={goal} /> : null}

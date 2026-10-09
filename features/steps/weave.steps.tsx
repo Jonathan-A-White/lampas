@@ -10,7 +10,8 @@ import { readFileSync } from 'node:fs';
 import { App } from '../../src/App';
 import { type Chapter, type GreekWord, type Verse, wordLemma } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
-import { recordAnswer } from '../../src/data/repositories';
+import { LADDER } from '../../src/data/grammar/ladder';
+import { getWeave, getWeaveGrammar, recordAnswer, setLevel } from '../../src/data/repositories';
 import { SETTINGS } from '../../src/settings/registry';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 
@@ -35,7 +36,7 @@ async function openFresh(): Promise<void> {
   cleanup();
   stubChapterFetch();
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.grammarLevels.clear()]);
   window.location.hash = '';
   render(<App />);
   await waitForReader();
@@ -75,14 +76,32 @@ async function solidLemmas(): Promise<Set<string>> {
 /** The Weave switch is in Settings: open it from the gear, switch, and come back to the reader. */
 type WeaveLabel = 'Off' | 'Solid words' | 'Solid and learning words';
 const WEAVE_VALUE: Record<WeaveLabel, string> = { Off: 'off', 'Solid words': 'solid', 'Solid and learning words': 'solid+learning' };
-async function setWeave(label: WeaveLabel): Promise<void> {
+const WEAVE_CHIP: Record<WeaveLabel, string> = { Off: 'Off', 'Solid words': 'Solid', 'Solid and learning words': '+ Learning' };
+async function openSettings(): Promise<void> {
+  if (screen.queryByRole('heading', { name: 'Settings', level: 1 })) return;
   await user.click(screen.getByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
-  await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: label }));
+}
+async function setWeave(label: WeaveLabel): Promise<void> {
+  await openSettings();
+  await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: WEAVE_CHIP[label] }));
   await user.click(screen.getByRole('button', { name: '‹ Reader' }));
   await waitForReader();
   await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-weave')).toBe(WEAVE_VALUE[label]));
   if (label !== 'Off') await waitFor(() => expect(wovenIn(1).length).toBeGreaterThan(0));
+}
+
+/** The Weave grammar dial is in Settings too: set it there and come back to the reader. */
+async function setGrammar(chip: string): Promise<void> {
+  await openSettings();
+  await user.click(within(await screen.findByRole('group', { name: 'Grammar' })).getByRole('button', { name: chip }));
+  await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+  await waitForReader();
+}
+
+/** Every idea of the ladder gets `level`, except the dative case, which gets `dative`. */
+async function setLevels(dative: 'notYet' | 'frontier'): Promise<void> {
+  for (const idea of LADDER) await setLevel(idea.id, idea.id === 'case-dative' ? dative : 'solid', 'placement');
 }
 
 const verse18: Verse = chapter.verses[17];
@@ -303,6 +322,112 @@ describeFeature(feature, ({ Scenario }) => {
     And('the Weave setting allows the values {string}, {string} and {string}', (_, a: string, b: string, c: string) => {
       const allowed = SETTINGS.find((s) => s.key === 'weave')?.allowed;
       expect(allowed?.kind === 'choice' ? allowed.values.map((v) => v.value) : []).toEqual([a, b, c]);
+    });
+  });
+  Scenario('Settings > Weave has a Words row and a Grammar row', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened with nothing saved', openFresh);
+    When('he opens Settings', openSettings);
+    Then('the Words row is labelled {string} and offers {string}, {string} and {string}', async (_, label: string, a: string, b: string, c: string) => {
+      const group = await screen.findByRole('group', { name: 'Weave' });
+      expect(group.parentElement).toHaveTextContent(label);
+      expect(within(group).getAllByRole('button').map((e) => e.textContent)).toEqual([a, b, c]);
+    });
+    And('the Grammar row is labelled {string} and offers {string}, {string} and {string}', async (_, label: string, a: string, b: string, c: string) => {
+      const group = await screen.findByRole('group', { name: 'Grammar' });
+      expect(group.parentElement).toHaveTextContent(label);
+      expect(within(group).getAllByRole('button').map((e) => e.textContent)).toEqual([a, b, c]);
+    });
+    And('the Grammar setting allows the values {string}, {string} and {string}', (_, a: string, b: string, c: string) => {
+      const allowed = SETTINGS.find((s) => s.key === 'weaveGrammar')?.allowed;
+      expect(allowed?.kind === 'choice' ? allowed.values.map((v) => v.value) : []).toEqual([a, b, c]);
+    });
+    And('the Grammar row is set to {string}', (_, chip: string) => {
+      const group = screen.getByRole('group', { name: 'Grammar' });
+      expect(within(group).getByRole('button', { name: chip })).toHaveAttribute('aria-pressed', 'true');
+    });
+  });
+
+  Scenario('Solid words with Solid grammar leaves only the chunks whose forms are solid in Greek', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened with nothing saved', openFresh);
+    And('every grammar idea is solid except the dative case, which is not yet', () => setLevels('notYet'));
+    When('he sets Weave to Solid words', async () => setWeave('Solid words'));
+    And('he sets the Weave grammar to Solid', async () => setGrammar('Solid'));
+    Then('the Greek {string} is woven in verse {int}', async (_, lemma: string, n: number) => {
+      const { word, chunk } = wordOfLemma(lemma);
+      await waitFor(() => expect(chunkEl(n, chunk)).toHaveAttribute('data-woven'));
+      expect(squash(chunkEl(n, chunk).textContent)).toBe(word.t);
+    });
+    And('{string} in verse {int} is English', async (_, english: string, n: number) => {
+      await waitFor(() => expect(within(verseEl(n)).getByRole('button', { name: english })).not.toHaveAttribute('data-woven'));
+    });
+    And('{string} in verse {int} is also English', async (_, english: string, n: number) => {
+      await waitFor(() => expect(within(verseEl(n)).getByRole('button', { name: english })).not.toHaveAttribute('data-woven'));
+    });
+  });
+
+  Scenario('Frontier grammar brings back the chunks whose grammar is at the frontier', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened with nothing saved', openFresh);
+    And('every grammar idea is solid except the dative case, which is at the frontier', () => setLevels('frontier'));
+    And('he sets Weave to Solid words', async () => setWeave('Solid words'));
+    And('he sets the Weave grammar to Solid', async () => setGrammar('Solid'));
+    And('{string} in verse {int} is English', async (_, english: string, n: number) => {
+      await waitFor(() => expect(within(verseEl(n)).getByRole('button', { name: english })).not.toHaveAttribute('data-woven'));
+    });
+    When('he sets the Weave grammar to + Frontier', async () => setGrammar('+ Frontier'));
+    Then('the Greek {string} is woven in verse {int}', async (_, lemma: string, n: number) => {
+      const { word, chunk } = wordOfLemma(lemma);
+      await waitFor(() => expect(chunkEl(n, chunk)).toHaveAttribute('data-woven'));
+      expect(squash(chunkEl(n, chunk).textContent)).toBe(word.t);
+    });
+    And('the Greek {string} is also woven in verse {int}', async (_, lemma: string, n: number) => {
+      const { word, chunk } = wordOfLemma(lemma);
+      await waitFor(() => expect(chunkEl(n, chunk)).toHaveAttribute('data-woven'));
+      expect(squash(chunkEl(n, chunk).textContent)).toBe(word.t);
+    });
+  });
+
+  Scenario('Grammar Any weaves as before', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened with nothing saved', openFresh);
+    And('no grammar idea has a level', async () => expect(await db.grammarLevels.count()).toBe(0));
+    When('he sets Weave to Solid words', async () => setWeave('Solid words'));
+    Then('the Weave grammar is Any', async () => expect(await getWeaveGrammar()).toBe('any'));
+    And('the Greek {string} is woven in verse {int}', async (_, lemma: string, n: number) => {
+      const { word, chunk } = wordOfLemma(lemma);
+      await waitFor(() => expect(chunkEl(n, chunk)).toHaveAttribute('data-woven'));
+      expect(squash(chunkEl(n, chunk).textContent)).toBe(word.t);
+    });
+    And('every woven chunk of verse 1 is a chunk whose Greek words are all solid', async () => {
+      const solid = await solidLemmas();
+      verse1.e.forEach((c, i) => {
+        const allSolid = !c.s && c.t !== '-' && c.g.length > 0 && c.g.every((g) => solid.has(nfc(wordLemma(verse1.g[g]))));
+        expect(chunkEl(1, i).hasAttribute('data-woven'), `chunk ${i} "${c.t}"`).toBe(allSolid);
+      });
+    });
+  });
+
+  Scenario('The four combinations are each one tap', ({ Given, When, Then }) => {
+    Given('Lampas is opened with nothing saved', openFresh);
+    When('he opens Settings', openSettings);
+    Then('each of Solid words, + Learning words, with Solid grammar, + Frontier grammar is set by one tap on each row', async () => {
+      const words = within(await screen.findByRole('group', { name: 'Weave' }));
+      const grammar = within(await screen.findByRole('group', { name: 'Grammar' }));
+      const combos: [string, string, string, string][] = [
+        ['Solid', 'solid', 'Solid', 'solid'],
+        ['Solid', 'solid', '+ Frontier', 'solid+frontier'],
+        ['+ Learning', 'solid+learning', 'Solid', 'solid'],
+        ['+ Learning', 'solid+learning', '+ Frontier', 'solid+frontier'],
+      ];
+      for (const [wChip, wValue, gChip, gValue] of combos) {
+        // one tap on each row, and nothing else, leaves both rows (and the saved settings) at the combination
+        await user.click(words.getByRole('button', { name: wChip }));
+        await user.click(grammar.getByRole('button', { name: gChip }));
+        await waitFor(async () => {
+          expect(await getWeave()).toBe(wValue);
+          expect(await getWeaveGrammar()).toBe(gValue);
+        });
+        expect(words.getByRole('button', { name: wChip })).toHaveAttribute('aria-pressed', 'true');
+        expect(grammar.getByRole('button', { name: gChip })).toHaveAttribute('aria-pressed', 'true');
+      }
     });
   });
 });

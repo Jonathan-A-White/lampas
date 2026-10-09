@@ -15,6 +15,7 @@ export {
   getTheme,
   getVoice,
   getWeave,
+  getWeaveGrammar,
   setGoal,
   setGrammarApproach,
   setGreekPronunciation,
@@ -26,8 +27,9 @@ export {
   setTheme,
   setVoice,
   setWeave,
+  setWeaveGrammar,
 } from './settings';
-export type { ReaderView, ReadingLayout, SectionHeadings, VoiceLanguage, Weave } from './settings';
+export type { ReaderView, ReadingLayout, SectionHeadings, VoiceLanguage, Weave, WeaveGrammar } from './settings';
 export { listResults, recordAnswer } from './results';
 export type { TestResult } from './results';
 export { countDue, ensureScheduled, listDue, recordReview, reviewsOf, seedScheduleIfFirstOpen } from './reviews';

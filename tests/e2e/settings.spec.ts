@@ -37,7 +37,7 @@ test('Settings at phone width: the weave, the voices, the Greek pronunciation, W
   await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
   expect(new URL(page.url()).hash).toBe('#/settings');
 
-  const solid = page.getByRole('group', { name: 'Weave' }).getByRole('button', { name: 'Solid words', exact: true });
+  const solid = page.getByRole('group', { name: 'Weave' }).getByRole('button', { name: 'Solid', exact: true });
   await expect(solid).toBeVisible();
   for (const control of [
     solid,

@@ -25,3 +25,8 @@ Feature: Screens talk through the event bus
     Given Lampas is opened on Romans 8 and the bus is listened to
     When he switches the weave to Solid words
     Then weave-changed was published with solid
+
+  Scenario: Switching the weave grammar publishes weave-grammar-changed
+    Given Lampas is opened on Romans 8 and the bus is listened to
+    When he switches the weave grammar to Solid
+    Then weave-grammar-changed was published with solid

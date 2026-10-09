@@ -10,15 +10,18 @@ export type Woven = { words: GreekWord[]; learning: boolean } | null;
 export interface WeaveLemmas {
   solid: ReadonlySet<string>;
   learning?: ReadonlySet<string>;
+  /** The grammar dial: false for a word whose form's grammar is not at the level asked (src/data/grammar/formLevel.ts). Absent: every form passes. */
+  formPasses?: (word: GreekWord) => boolean;
 }
 
 /**
  * Weaves one verse: a chunk is woven only when it has Greek words, none of its Greek positions is missing, it is
  * not a '-' or a chunk with supplied words, and every one of its Greek words has a lemma in `solid` or `learning`.
+ * A chunk with any word whose form `formPasses` refuses stays English whole, never half a chunk.
  * A chunk with any learning word is marked `learning`. A chunk that cannot be read is left English on its own; it
  * never changes its neighbours.
  */
-export function weaveVerse(verse: Verse, { solid, learning }: WeaveLemmas): Woven[] {
+export function weaveVerse(verse: Verse, { solid, learning, formPasses }: WeaveLemmas): Woven[] {
   return verse.e.map((chunk) => {
     if (chunk.s || chunk.t.trim() === '-' || chunk.g.length === 0) return null;
     const words: GreekWord[] = [];
@@ -28,6 +31,7 @@ export function weaveVerse(verse: Verse, { solid, learning }: WeaveLemmas): Wove
       if (!word) return null;
       const lemma = wordLemma(word).normalize('NFC');
       if (!lemma) return null;
+      if (formPasses && !formPasses(word)) return null;
       if (!solid.has(lemma)) {
         if (!learning?.has(lemma)) return null;
         anyLearning = true;

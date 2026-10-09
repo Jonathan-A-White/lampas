@@ -1,6 +1,7 @@
 // src/data/repositories/settings.ts — what he has chosen. A repository owns its transactions.
 import { approachOf, DEFAULT_APPROACH } from '../../approaches';
 import { db } from '../db';
+import type { WeaveGrammar } from '../grammar/formLevel';
 import { DEFAULT_LAYOUT, isLayout, type ReadingLayout } from '../../layout/layouts';
 import { DEFAULT_TEXT_PERCENT, normaliseTextPercent } from '../../appearance/textSizes';
 import { DEFAULT_THEME, isTheme, type Theme } from '../../appearance/themes';
@@ -22,6 +23,7 @@ export async function setReaderView(view: ReaderView): Promise<void> {
 }
 
 export type Weave = 'off' | 'solid' | 'solid+learning';
+export type { WeaveGrammar };
 
 const WEAVE_KEY = 'weave';
 
@@ -33,6 +35,18 @@ export async function getWeave(): Promise<Weave> {
 
 export async function setWeave(weave: Weave): Promise<void> {
   await db.settings.put({ key: WEAVE_KEY, value: weave });
+}
+
+const WEAVE_GRAMMAR_KEY = 'weaveGrammar';
+
+/** The saved Weave grammar dial; 'any' (grammar ignored) when he has not chosen yet or the saved value is not one of the three. */
+export async function getWeaveGrammar(): Promise<WeaveGrammar> {
+  const row = await db.settings.get(WEAVE_GRAMMAR_KEY);
+  return row?.value === 'solid' || row?.value === 'solid+frontier' ? row.value : 'any';
+}
+
+export async function setWeaveGrammar(grammar: WeaveGrammar): Promise<void> {
+  await db.settings.put({ key: WEAVE_GRAMMAR_KEY, value: grammar });
 }
 
 /** Which of the phone's voices reads each language: its voiceURI, or null for the phone's default. */

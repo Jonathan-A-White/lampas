@@ -17,12 +17,15 @@ import { AnswerCards, AskBox } from './Ask';
 import { ReadCheckPanel, VerseRead, type ReadHold } from './ReadCheck';
 import { TalkBar, TalkSheet } from './Talk';
 import { type Chapter, type EnglishChunk, type GreekWord, type Verse, loadChapter } from './data/chapter';
+import { formPasses } from './data/grammar/formLevel';
+import { listLevels } from './data/repositories/grammarLevels';
 import {
   getLayout,
   getGreekPronunciation,
   getReaderView,
   getSectionHeadings,
   getWeave,
+  getWeaveGrammar,
   listLearningLemmas,
   listSolidLemmas,
   setReaderView,
@@ -386,6 +389,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const closePicker = useCallback(() => setPicking(false), []);
   const view = useLiveQuery(getReaderView, []);
   const weave = useLiveQuery(getWeave, []);
+  const weaveGrammar = useLiveQuery(getWeaveGrammar, []);
+  const grammarLevels = useLiveQuery(listLevels, []);
   const solid = useLiveQuery(listSolidLemmas, []);
   const learning = useLiveQuery(listLearningLemmas, []);
   const layout = useLiveQuery(getLayout, []);
@@ -534,13 +539,19 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   };
   const weaving = view === 'english' && (weave === 'solid' || weave === 'solid+learning');
   const withLearning = weave === 'solid+learning';
-  const woven = useMemo(
-    () =>
-      chapter && weaving
-        ? chapter.verses.map((v) => weaveVerse(v, { solid: solid ?? EMPTY_LEMMAS, learning: withLearning ? learning ?? EMPTY_LEMMAS : undefined }))
-        : null,
-    [chapter, weaving, withLearning, solid, learning],
-  );
+  // The grammar dial: with it on, a form stays English unless every idea its parsing needs is at that level (the dial is not in the address).
+  const woven = useMemo(() => {
+    if (!chapter || !weaving) return null;
+    const formOk =
+      weaveGrammar === undefined || grammarLevels === undefined
+        ? () => false // the dial is still loading: weave nothing rather than flash a verse that then narrows
+        : weaveGrammar === 'any'
+          ? undefined
+          : (w: GreekWord) => formPasses(w.p, grammarLevels, weaveGrammar);
+    return chapter.verses.map((v) =>
+      weaveVerse(v, { solid: solid ?? EMPTY_LEMMAS, learning: withLearning ? learning ?? EMPTY_LEMMAS : undefined, formPasses: formOk }),
+    );
+  }, [chapter, weaving, withLearning, solid, learning, weaveGrammar, grammarLevels]);
   // What is read is what is shown: the plan follows the view and the weave.
   const plan = useMemo(() => (chapter && view ? planOf(chapter.verses, view, woven) : null), [chapter, view, woven]);
   const readFrom = useCallback(

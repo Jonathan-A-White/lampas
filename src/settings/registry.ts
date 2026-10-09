@@ -17,6 +17,7 @@ import {
   getTheme,
   getVoice,
   getWeave,
+  getWeaveGrammar,
   setGoal,
   setGrammarApproach,
   setGreekPronunciation,
@@ -27,9 +28,11 @@ import {
   setTheme,
   setVoice,
   setWeave,
+  setWeaveGrammar,
   type ReadingLayout,
   type SectionHeadings,
   type Weave,
+  type WeaveGrammar,
 } from '../data/repositories';
 import { APPROACHES, DEFAULT_APPROACH, approachOf } from '../approaches';
 import { BOOK_INDEX } from '../data/bookIndex';
@@ -204,13 +207,28 @@ export const SETTINGS: readonly SettingEntry[] = [
     'In the English view, whether the Greek of his solid words, and of the words he is learning with their English beneath in small grey, is shown in place of their English.',
     [
       { value: 'off', label: 'Off' },
-      { value: 'solid', label: 'Solid words' },
-      { value: 'solid+learning', label: 'Solid and learning words' },
+      { value: 'solid', label: 'Solid' },
+      { value: 'solid+learning', label: '+ Learning' },
     ],
     getWeave,
     async (value) => {
       await setWeave(value as Weave);
       publish({ kind: 'weave-changed', weave: value as Weave });
+    },
+  ),
+  choice(
+    'weaveGrammar',
+    'Grammar',
+    'Of the words that stand in Greek, keep only the forms whose grammar you have at this level: Any, Solid, or Solid and frontier.',
+    [
+      { value: 'any', label: 'Any' },
+      { value: 'solid', label: 'Solid' },
+      { value: 'solid+frontier', label: '+ Frontier' },
+    ],
+    getWeaveGrammar,
+    async (value) => {
+      await setWeaveGrammar(value as WeaveGrammar);
+      publish({ kind: 'weave-grammar-changed', grammar: value as WeaveGrammar });
     },
   ),
   goalEntry,
