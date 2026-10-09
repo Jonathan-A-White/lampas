@@ -40,7 +40,7 @@ Feature: Test me on the grammar, and meet me where I am
     And the end card lists "The noun" as "Not yet" under Nouns
     And the bus has heard the placement is done
     When he taps "Back to the goal"
-    Then Settings is open
+    Then the Goal screen is open
 
   Scenario: Place me in Settings opens it
     Given his goal is "Read 1 John 1:1" and he knows nothing yet

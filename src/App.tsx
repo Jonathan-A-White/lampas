@@ -9,6 +9,7 @@ import { saveLastRoute } from './nav/lastRoute';
 import { startReaderAddressSync } from './nav/readerAddress';
 import { routeOf, useAddress } from './nav/route';
 import { Reader } from './Reader';
+import { GoalScreen } from './GoalScreen';
 import { PlacementScreen } from './PlacementScreen';
 import { QuizScreen } from './QuizScreen';
 import { ReviewScreen } from './ReviewScreen';
@@ -53,6 +54,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <ReviewScreen newRandom={newRandom} />
       ) : route === 'placement' ? (
         <PlacementScreen newRandom={newRandom} />
+      ) : route === 'goal' ? (
+        <GoalScreen />
       ) : route === 'about' ? (
         <About />
       ) : route === 'settings' ? (

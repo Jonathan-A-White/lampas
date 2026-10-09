@@ -11,6 +11,7 @@ describe('the address', () => {
     expect(routeOf('#/drill')).toBe('drill');
     expect(routeOf('#/review')).toBe('review');
     expect(routeOf('#/placement')).toBe('placement');
+    expect(routeOf('#/goal')).toBe('goal');
     expect(routeOf('#/about')).toBe('about');
     expect(routeOf('#/import')).toBe('import');
     expect(routeOf('#/settings')).toBe('settings');

@@ -151,8 +151,8 @@ describeFeature(feature, ({ Scenario }) => {
       expect(heard?.untested).toBeGreaterThan(10);
     });
     When('he taps {string}', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
-    Then('Settings is open', async () => {
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+    Then('the Goal screen is open', async () => {
+      await screen.findByRole('heading', { name: 'Goal', level: 1 });
     });
   });
 

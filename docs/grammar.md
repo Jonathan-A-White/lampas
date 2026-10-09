@@ -108,6 +108,19 @@ A word idea draws `ending` or `tap-form` by its first random draw and falls back
 - It stops when a step down lands on a solid idea (already solid, or solid just now: the ceiling is found), when no idea is left in that direction, or after 20 questions in a sitting (`paused`: the state is kept in `localStorage` `lampas.placement`, `placementKeep.ts`, and Go on resumes it, even after a reopen).
 - Every answer goes on the back-off schedule (`recordGrammarAnswer`, kind `grammar`) and an idea that has had its two questions gets its level with `setLevel(id, level, 'placement')` (`placementWrite.ts`). The end card, 'Where you are: solid N, frontier M, not yet K; untested J', lists the counted ideas by tier; the numbers are over the ideas the goal needs and any other idea the walk gave a level. `placement-done` goes on the bus.
 
+## The Goal screen
+
+The strip and the screen that show his goal moving (mw-hqd5bz.10). Both read `useGoalProgress` (`src/useGoalProgress.ts`): the saved goal, what its passage needs (`passageNeeds`, worked out once per goal text and kept in memory) and his words and levels, live; the counts are `progressToward`'s.
+
+- **The strip** (`GoalStrip.tsx`), under the Reader's header and under Due: 'Goal: 1 John 1:1 · 12 of 31 words · 8 of 14 ideas', the solid ones of the ones needed. One line, 48 px; not drawn with no goal or while the passage is still being counted; a tap opens `#/goal`.
+- **The screen** (`GoalScreen.tsx`, `#/goal`, kept across a reopen; '‹ Reader' goes back): the goal as the title with Change (to Settings > Goal), then two bars, Words and Grammar ideas. Each bar is three segments, solid (filled), frontier (striped) and not yet (empty), with the count written in each and 'Solid 6 · Frontier 0 · Not yet 10' beneath, so colour is never the only sign. 'Solid when both are full.' A tap on a bar opens the list behind it, the items grouped by level (a word with its meaning; an idea opens its idea sheet).
+- **Place me** opens `#/placement`; once any level was set by the placement it reads 'Placed on 3 Oct' with Place again (the date is the newest `since` of a level whose `how` is 'placement'; nothing else is stored). The placement's 'Back to the goal' comes here.
+- **Learn next** (`goalProgress.ts` `learnNext`): the earliest idea in the chosen approach's sequence (`orderOf`) that the goal needs and that is not yet or untested, 'Learn next: The noun · Your first words' (the lesson from `lessonOf`); a tap opens its idea sheet. When none is left it says so.
+- **Next words** (`nextWords`): the three most frequent needed words he has no state for (not on his list and not dropped), in dictionary form with their meaning; a tap is Add to my words (`addLemmaToLearn`: the word becomes learning, so it is frontier and the bar moves).
+- **Read it** opens the Reader on the goal: its chapter and verse, or chapter 1 for a whole book.
+
+A word's state is looked up by its headword and by every lexicon lemma it goes by (`wordStatesOf`), the best state winning.
+
 ## One choice to know
 
 Person and number (`person-1st` ... `number-plural`) sit at the start of the `pronouns` tier, not the `nouns` tier: I, you,

@@ -185,7 +185,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
                 Go on
               </button>
             ) : null}
-            <button type="button" onClick={() => navigate('settings')} className={`${BUTTON} ${paused ? 'border border-line' : 'bg-accent text-accent-fg'}`}>
+            <button type="button" onClick={() => navigate(paused ? 'settings' : 'goal')} className={`${BUTTON} ${paused ? 'border border-line' : 'bg-accent text-accent-fg'}`}>
               {paused ? 'Go on another day' : 'Back to the goal'}
             </button>
           </div>

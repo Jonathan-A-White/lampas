@@ -48,6 +48,7 @@ describe('the trail of places he visited', () => {
     expect(isKeptHash('#/settings')).toBe(true);
     expect(isKeptHash('#/review')).toBe(true);
     expect(isKeptHash('#/placement')).toBe(true);
+    expect(isKeptHash('#/goal')).toBe(true);
     expect(isKeptHash('#/unlock')).toBe(false);
     expect(isKeptHash('#/licence')).toBe(false);
     expect(readLastRoute()).toBe('#/words');
