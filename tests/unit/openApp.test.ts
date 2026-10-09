@@ -146,12 +146,18 @@ describe('checkApp', () => {
 });
 
 describe('storeUrl', () => {
-  it('is the Play Store on Android and anywhere else, the App Store on an iPhone or iPad', () => {
-    expect(storeUrl('Accordance', 'Mozilla/5.0 (Linux; Android 14; Pixel 8)')).toBe('https://play.google.com/store/search?q=Accordance&c=apps');
-    expect(storeUrl('Accordance', 'Mozilla/5.0 (X11; Linux x86_64)')).toBe('https://play.google.com/store/search?q=Accordance&c=apps');
-    for (const ua of ['Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X)', 'Mozilla/5.0 (iPad; CPU OS 17_5 like Mac OS X)']) {
-      expect(storeUrl('Accordance', ua)).toBe('itms-apps://search.itunes.apple.com/WebObjects/MZSearch.woa/wa/search?media=software&q=Accordance');
-    }
+  const ANDROID = 'Mozilla/5.0 (Linux; Android 14; Pixel 8)';
+  const IOS = ['Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X)', 'Mozilla/5.0 (iPad; CPU OS 17_5 like Mac OS X)'];
+
+  it('opens Accordance Mobile by its id on Android and anywhere else, and in the App Store on an iPhone or iPad', () => {
+    expect(storeUrl('Accordance', ANDROID)).toBe('https://play.google.com/store/apps/details?id=com.accordancebible.accordance');
+    expect(storeUrl('Accordance', 'Mozilla/5.0 (X11; Linux x86_64)')).toBe('https://play.google.com/store/apps/details?id=com.accordancebible.accordance');
+    for (const ua of IOS) expect(storeUrl('Accordance', ua)).toBe('itms-apps://apps.apple.com/app/id411970514');
+  });
+
+  it('keeps the name search for an app with no known id', () => {
+    expect(storeUrl('Logos', ANDROID)).toBe('https://play.google.com/store/search?q=Logos&c=apps');
+    expect(storeUrl('Logos', IOS[0])).toBe('itms-apps://search.itunes.apple.com/WebObjects/MZSearch.woa/wa/search?media=software&q=Logos');
   });
 
   it('encodes the app name', () => {
