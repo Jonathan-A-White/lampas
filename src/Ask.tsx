@@ -1,13 +1,13 @@
-// src/Ask.tsx — the Ask box under the selected verse and the answers kept under it. AskBox is the field, the
-// Sending and Waiting lines and the failures; AnswerCards the kept answers. The questions in flight are src/useAsks.ts.
+// src/Ask.tsx — the Verse view's 'Ask the tutor' action (src/VerseView.tsx): the Ask box and the answers kept above it. AskBox is the field,
+// the Sending and Waiting lines and the failures; AnswerCards the kept answers (the tutor writes Markdown, src/markdown/). The questions in
+// flight are src/useAsks.ts; the hold bar that asks by voice is the Verse view's.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useRef, useState } from 'react';
-import type { Chapter, Verse } from './data/chapter';
-import { useLatest } from './events/bus';
+import { useState } from 'react';
+import type { Verse } from './data/chapter';
 import { listAnswers, verseRef, type TutorAnswer } from './data/repositories';
 import { FAILURE_TITLES, MAX_QUESTION_CHARS } from './services/tutor';
 import type { AskState } from './useAsks';
-import { revealInScrollBox } from './ui/reveal';
+import { Markdown } from './markdown/Markdown';
 import { useElapsed } from './ui/useElapsed';
 
 export function Waiting({ state }: { state: Extract<AskState, { phase: 'sending' | 'waiting' }> }) {
@@ -36,7 +36,9 @@ function AnswerCard({ answer }: { answer: TutorAnswer }) {
   return (
     <article data-answer className="rounded-xl border border-line bg-surface p-3">
       <p className="break-words text-sm text-muted">{answer.question}</p>
-      <p className="mt-1 break-words text-lg leading-snug">{answer.answer}</p>
+      <div className="mt-1 break-words text-lg leading-snug">
+        <Markdown text={answer.answer} />
+      </div>
       {answer.words.length > 0 ? (
         <dl className="mt-2 space-y-1 border-t border-line pt-2">
           {answer.words.map((w, i) => (
@@ -58,47 +60,28 @@ function AnswerCard({ answer }: { answer: TutorAnswer }) {
   );
 }
 
-/** The Ask box for the verse the bus says is selected (verse-selected), in `chapter`; nothing when there is none. */
-export function AskBox({ chapter, asks, onAsk, reveal, prefill = null }: {
-  chapter: Chapter;
-  asks: Record<number, AskState | undefined>;
+/** The Ask box for `verse`: the field, with what its last question is doing. */
+export function AskBox({ verse, state, onAsk, prefill = null }: {
+  verse: Verse;
+  state: AskState | undefined;
   onAsk: (verse: Verse, question: string) => void;
-  /** Scroll the box into view as it appears: when he just tapped the verse; not when the selection was put back by a reopen or Back */
-  reveal: boolean;
   /** a question to put in the field when the box opens on that verse (the Parsing drill's link); he sends it himself */
   prefill?: { verse: number; text: string } | null;
 }) {
-  const selected = useLatest('verse-selected');
-  const verse = selected?.verse == null || selected.chapter !== chapter.chapter ? undefined : chapter.verses.find((v) => v.n === selected.verse);
-  return verse ? (
-    <AskField
-      key={verse.n}
-      verse={verse}
-      state={asks[verse.n]}
-      reveal={reveal}
-      initial={prefill?.verse === verse.n ? prefill.text : ''}
-      onAsk={(question) => onAsk(verse, question)}
-    />
-  ) : null;
+  return <AskField key={verse.n} verse={verse} state={state} initial={prefill?.verse === verse.n ? prefill.text : ''} onAsk={(question) => onAsk(verse, question)} />;
 }
 
 /** The field and the Ask button for one verse, with what its last question is doing. */
-function AskField({ verse, state, reveal, initial, onAsk }: { verse: Verse; state: AskState | undefined; reveal: boolean; initial: string; onAsk: (question: string) => void }) {
+function AskField({ verse, state, initial, onAsk }: { verse: Verse; state: AskState | undefined; initial: string; onAsk: (question: string) => void }) {
   const [text, setText] = useState(initial);
   const busy = state?.phase === 'sending' || state?.phase === 'waiting';
-  const section = useRef<HTMLElement>(null);
-  useEffect(() => {
-    if (reveal) revealInScrollBox(section.current, section.current?.closest('.screen')?.querySelector<HTMLElement>(`[data-readcheck="${verse.n}"]`));
-    // Once, as the box appears.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
   const submit = (question: string): void => {
     if (!question.trim() || busy) return;
     onAsk(question);
     setText('');
   };
   return (
-    <section ref={section} aria-label="Ask the tutor" data-ask={verse.n} className="mb-3 space-y-2 rounded-xl border border-line px-3 py-3">
+    <section aria-label="Ask the tutor" data-ask={verse.n} className="mb-3 space-y-2 px-1">
       <label className="block text-sm text-muted" htmlFor={`ask-${verse.n}`}>
         Ask the tutor about verse {verse.n}
       </label>

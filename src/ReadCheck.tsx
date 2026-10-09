@@ -1,10 +1,11 @@
-// src/ReadCheck.tsx — the reading check under the selected verse (the 'Reading check' region) and the Read button on the
-// verse itself. English view: hold Read while reading the verse aloud, let go to send; the verse comes back with the words
+// src/ReadCheck.tsx — the reading check of the Verse view's 'Read it aloud' action (the 'Reading check' region; the verse itself, its
+// heading and Copy link are the Verse view's, src/VerseView.tsx). English view: hold the bar while reading the verse aloud, let go to send; the verse comes back with the words
 // to fix marked, each tappable for its chunks and a speaker; 'Read these again' walks them one by one and ends on 'Read
 // the whole verse again'. The Greek view is the same check on the verse's Greek: the words to fix are Greek, their chunks are
 // Greek syllables, and the speaker is the Greek voice. The state is src/useReadChecks.ts's.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { Verse } from './data/chapter';
 import { getGreekPronunciation, getVerseReading, verseRef, type FixWord, type VerseReading } from './data/repositories';
 import { readingLang, readingText, type ReadingView } from './services/reading';
@@ -12,27 +13,16 @@ import { FAILURE_TITLES } from './services/tutor';
 import { pronunciationOf } from './speech/pronunciation';
 import { SpeakButton } from './speech/SpeakButton';
 import { HoldBar } from './ui/HoldBar';
-import { useHoldPress } from './ui/holdPress';
 import { useElapsed } from './ui/useElapsed';
 import { revealInScrollBox } from './ui/reveal';
 import { DROPPED_NOTE, SHORT_HINT, TAP_HINT, type ReadState, type UseReadChecks } from './useReadChecks';
-import { referenceUrl } from './nav/links';
-import { LinkActions } from './ui/LinkActions';
 
 const CHUNK_JOINER = ' · ';
 
 /** The chunks of a word as he says them: 'to · geth · er'. */
 const chunksLine = (chunks: string[]): string => chunks.join(CHUNK_JOINER);
 
-function MicIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
-      <path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1A7 7 0 0 0 19 11h-2Z" />
-    </svg>
-  );
-}
-
-/** The two things a Read button needs from the reading checks: the hold, and whether this verse's reading is out. */
+/** What the Read bar needs from the reading checks: the hold, and whether this verse's reading is out. */
 export interface ReadHold {
   onPress: () => void;
   onRelease: () => void;
@@ -41,47 +31,17 @@ export interface ReadHold {
   disabled: boolean;
 }
 
-/** A button held to record: the press is a hold from the first touch (the first words are not lost), and a hold under half a
- * second is a tap, which the reading check answers with 'Hold while you read'. */
-function HoldButton({ hold, label, className, children }: { hold: ReadHold; label: string; className: string; children: ReactNode }) {
-  const press = useHoldPress({ onHold: hold.onPress, onRelease: hold.onRelease, onDrop: hold.onDrop }, 0);
-  return (
-    <button
-      type="button"
-      {...press}
-      aria-label={label}
-      disabled={hold.disabled}
-      className={`touch-none select-none [-webkit-touch-callout:none] disabled:opacity-40 ${className}`}
-    >
-      {children}
-    </button>
-  );
-}
-
 /** Postern's bar (src/ui/HoldBar.tsx) as the reading check's hold: a hold from the first touch, so the first words are kept. */
-function ReadBar({ hold, label, recording }: { hold: ReadHold; label: string; recording: boolean }) {
+function ReadBar({ hold, name, label, recording }: { hold: ReadHold; name: string; label: string; recording: boolean }) {
   return (
     <HoldBar
       hold={{ onHold: hold.onPress, onRelease: hold.onRelease, onDrop: hold.onDrop }}
       holdMs={0}
-      name={label}
-      label={recording ? 'Release to send' : label}
+      name={name}
+      label={label}
       listening={recording}
       disabled={hold.disabled}
     />
-  );
-}
-
-/** The Read button on a verse, beside its play button (English view). Holding it selects the verse so its result shows below. */
-export function VerseRead({ verse, hold, className }: { verse: number; hold: ReadHold; className?: string }) {
-  return (
-    <HoldButton
-      hold={hold}
-      label={`Read verse ${verse} aloud`}
-      className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-accent active:bg-line ${className ?? ''}`}
-    >
-      <MicIcon />
-    </HoldButton>
   );
 }
 
@@ -238,10 +198,9 @@ function Result({ reading, text, view, onWalk }: { reading: VerseReading; text: 
   );
 }
 
-/** 'Read these again': the marked words one at a time, in chunks, then the whole verse with its own hold button. */
-function Walk({ words, text, view, hold, recording, onDone }: { words: FixWord[]; text: string; view: ReadingView; hold: ReadHold; recording: boolean; onDone: () => void }) {
+/** 'Read these again': the marked words one at a time, in chunks, then the whole verse (its hold is the Verse view's bar). */
+function Walk({ words, text, view, step, onStep, onDone }: { words: FixWord[]; text: string; view: ReadingView; step: number; onStep: (step: number) => void; onDone: () => void }) {
   const type = typeOf(view);
-  const [step, setStep] = useState(0);
   const last = step >= words.length;
   const word = words[step];
   const button = 'min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium';
@@ -252,8 +211,7 @@ function Walk({ words, text, view, hold, recording, onDone }: { words: FixWord[]
           <p data-walk-verse lang={type.lang} className={`break-words ${type.face} leading-(--lp-leading)`}>
             {text}
           </p>
-          <ReadBar hold={hold} label="Read the whole verse again" recording={recording} />
-          <p className="text-sm text-muted">Hold the button while you read the whole verse. Let go to send.</p>
+          <p className="text-sm text-muted">Hold the bar below while you read the whole verse. Let go to send.</p>
         </>
       ) : (
         <>
@@ -265,7 +223,7 @@ function Walk({ words, text, view, hold, recording, onDone }: { words: FixWord[]
           </p>
           <Fix fix={word} view={view} large />
           <p className="text-sm text-muted">Say it out loud, then go on.</p>
-          <button type="button" onClick={() => setStep(step + 1)} className={button}>
+          <button type="button" onClick={() => onStep(step + 1)} className={button}>
             {step + 1 < words.length ? 'Next word' : 'On to the whole verse'}
           </button>
         </>
@@ -277,19 +235,17 @@ function Walk({ words, text, view, hold, recording, onDone }: { words: FixWord[]
   );
 }
 
-/** The reading check for the selected verse. `hold` is the Read button's hold for this verse; `checks` has the states. */
-export function ReadCheckPanel({ verse, text: shownText, title, view, book, chapter, checks, hold, onRetry }: {
+/** The reading check of the verse in the Verse view. `hold` is the bar's hold for this verse, `checks` has the states; the bar itself is drawn
+ * into `slot`, the foot of the Verse view (the one hold bar on that screen), and says what a hold does now. */
+export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRetry, slot }: {
   verse: Verse;
-  /** the verse as the reader draws it (the same component, so the view and the weave show alike); tappable as in the reader */
-  text: ReactNode;
-  /** the chapter's title ('Romans 8'): the panel is headed by the verse's reference, title and number */
-  title: string;
   view: 'english' | 'greek';
   book: string;
   chapter: number;
   checks: Pick<UseReadChecks, 'states'>;
   hold: ReadHold;
   onRetry: () => void;
+  slot: HTMLElement | null;
 }) {
   const ref = verseRef(book, chapter, verse.n);
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
@@ -300,8 +256,8 @@ export function ReadCheckPanel({ verse, text: shownText, title, view, book, chap
   const out = state?.phase === 'recording' || sent;
   // The walk belongs to the reading it was started on: a new result closes it, and so does sending the next one.
   const [walkFor, setWalkFor] = useState<number | null>(null);
+  const [walkStep, setWalkStep] = useState(0);
   const text = readingText(verse, view);
-  const shown = typeOf(view);
   // A result, or a failure, that arrives is brought into view (never while he holds: the page must not move under his finger).
   const section = useRef<HTMLElement>(null);
   const arrived = state?.phase === 'failed' ? 'failed' : reading?.when;
@@ -312,43 +268,44 @@ export function ReadCheckPanel({ verse, text: shownText, title, view, book, chap
     if (arrived !== undefined) revealInScrollBox(section.current);
   }, [arrived]);
 
-  // The walk stays while its last button is held to record (it would lose the let-go if it went), and ends when the clip is sent.
+  // The walk stays while its last step is held to record (it would lose the let-go if it went), and ends when the clip is sent.
   const walking = reading !== undefined && walkFor === reading.when && !sent;
+  const wholeVerse = walking && reading !== undefined && walkStep >= reading.words.length;
+  const idle = wholeVerse ? 'Hold to read the whole verse again' : `Hold to read verse ${verse.n}`;
+  const recording = state?.phase === 'recording';
   return (
-    <section ref={section} aria-label="Reading check" data-readcheck={verse.n} className="mb-3 space-y-3 rounded-xl border border-line px-3 py-3">
-      <div className="flex flex-wrap items-center justify-between gap-x-2">
-        <h3 className="text-lg font-semibold">
-          {title}:{verse.n}
-        </h3>
-        <LinkActions url={referenceUrl(book, chapter, verse.n)} title={`${title}:${verse.n}`} className="-mr-2" />
-      </div>
-      <p
-        data-sheet-verse
-        lang={shown.lang}
-        className={`max-h-52 overflow-y-auto break-words ${shown.face} leading-(--lp-leading)`}
-      >
-        {shownText}
-      </p>
-      {walking && reading ? null : (
-        <>
-          <p className="text-sm text-muted">Read verse {verse.n} aloud{view === 'greek' ? ' in Greek' : ''}</p>
-          <ReadBar hold={hold} label="Read" recording={state?.phase === 'recording'} />
-          <p className="text-sm text-muted">Hold Read and read the verse aloud. Let go to send.</p>
-          {view === 'greek' ? (
-            <p className="text-sm text-muted">
-              It listens for {pronunciationOf(pronunciation).label} ({pronunciationOf(pronunciation).lang}), the way you chose to hear Greek in Settings.
-            </p>
-          ) : null}
-        </>
-      )}
-      <Status state={state} onRetry={onRetry} />
-      {reading && (walking || !out) ? (
-        walking ? (
-          <Walk key={reading.when} words={reading.words} text={text} view={view} hold={hold} recording={state?.phase === 'recording'} onDone={() => setWalkFor(null)} />
-        ) : (
-          <Result key={reading.when} reading={reading} text={text} view={view} onWalk={() => setWalkFor(reading.when)} />
-        )
-      ) : null}
-    </section>
+    <>
+      <section ref={section} aria-label="Reading check" data-readcheck={verse.n} className="mb-3 space-y-3 px-1">
+        {walking && reading ? null : (
+          <>
+            <p className="text-sm text-muted">Read verse {verse.n} aloud{view === 'greek' ? ' in Greek' : ''}</p>
+            <p className="text-sm text-muted">Hold the bar below and read the verse aloud. Let go to send.</p>
+            {view === 'greek' ? (
+              <p className="text-sm text-muted">
+                It listens for {pronunciationOf(pronunciation).label} ({pronunciationOf(pronunciation).lang}), the way you chose to hear Greek in Settings.
+              </p>
+            ) : null}
+          </>
+        )}
+        <Status state={state} onRetry={onRetry} />
+        {reading && (walking || !out) ? (
+          walking ? (
+            <Walk key={reading.when} words={reading.words} text={text} view={view} step={walkStep} onStep={setWalkStep} onDone={() => setWalkFor(null)} />
+          ) : (
+            <Result
+              key={reading.when}
+              reading={reading}
+              text={text}
+              view={view}
+              onWalk={() => {
+                setWalkStep(0);
+                setWalkFor(reading.when);
+              }}
+            />
+          )
+        ) : null}
+      </section>
+      {slot ? createPortal(<ReadBar hold={hold} name={idle} label={recording ? 'Release to send' : idle} recording={recording} />, slot) : null}
+    </>
   );
 }

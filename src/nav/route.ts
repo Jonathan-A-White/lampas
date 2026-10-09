@@ -135,6 +135,35 @@ export function openReader(address: Pick<ReaderAddress, 'book' | 'chapter' | 've
   notify();
 }
 
+/** What the history entry of a Verse view carries, so closing it can step Back to the Reader it was opened from. */
+type VerseEntry = { verseView?: boolean } | null;
+
+/** Opens the Verse view (src/VerseView.tsx) on `verse` of the chapter the address names, as a new Back step: Back returns to the Reader,
+ * which has not moved. */
+export function openVerse(verse: number): void {
+  const next = readerHash({ ...readerOf(window.location.hash), verse });
+  window.history.pushState({ verseView: true } satisfies VerseEntry, '', urlFor(next));
+  notify();
+}
+
+/** Closes the Verse view: a step Back when it was opened by openVerse, else (a reopen or a link opened it) the address loses its verse. */
+export function closeVerse(): void {
+  if ((window.history.state as VerseEntry)?.verseView) {
+    window.history.back();
+    return;
+  }
+  const without = readerOf(window.location.hash);
+  delete without.verse;
+  replaceHash(readerHash(without));
+}
+
+/** The Verse view moves to another verse, in this chapter or another, on the entry it is on (no new Back step). */
+export function moveVerse(to: { book: string; chapter: number; verse: number }): void {
+  const here = readerOf(window.location.hash);
+  const sameChapter = (here.book ?? 'rom') === to.book && here.chapter === to.chapter;
+  replaceHash(readerHash(sameChapter ? { ...here, verse: to.verse } : { book: to.book, chapter: to.chapter, verse: to.verse }));
+}
+
 /** Opens a Paradigms table (or the list, with none) as a new Back step. */
 export function openParadigm(address: ParadigmAddress): void {
   window.history.pushState(null, '', urlFor(paradigmHash(address)));
