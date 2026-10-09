@@ -7,6 +7,7 @@ import type { GrammarLevelName } from '../data/db';
 import type { Goal } from '../data/goal';
 import type { ReadSpan } from '../speech/readSpan';
 import type { Theme } from '../appearance/themes';
+import type { TalkFocus } from '../services/talk';
 import type { SpeechLanguage, SpeechRates } from '../speech/languages';
 import type { GreekPronunciation } from '../speech/pronunciation';
 
@@ -40,8 +41,8 @@ export type AppEvent =
   /** a long press on a word of the reader said that word alone, in its own language */
   | { kind: 'word-spoken'; text: string; language: SpeechLanguage; verse: number }
   /** he tapped Grammar or Sound it out on a word's sheet (Help with this word): the Talk sheet opens on `verse` with the question
-   * about `form` sent. `help` is what he wants help with */
-  | { kind: 'word-help'; help: 'grammar' | 'sound'; form: string; lemma: string; parse: string; chapter: number; verse: number }
+   * about `form` sent. `help` is what he wants help with ('word': the sheet's Ask the tutor, nothing in particular) */
+  | { kind: 'word-help'; help: 'grammar' | 'sound' | 'word'; form: string; lemma: string; parse: string; chapter: number; verse: number }
   /** a Grammar sheet opened on `term` (a word of src/data/grammar-concepts.ts), from a grammar word in the Parsing of a word's sheet,
    * from a related term on another Grammar sheet */
   | { kind: 'grammar-term-opened'; term: string }
@@ -53,6 +54,8 @@ export type AppEvent =
   | { kind: 'reader-requested'; id: number; action: 'talk'; book: string; chapter: number; verse: number }
   /** the Paradigms screen's Ask the tutor: the Talk sheet on the whole chapter, with `table` (its name) and the `revealed` forms sent as the first question's focus */
   | { kind: 'reader-requested'; id: number; action: 'paradigm'; book: string; chapter: number; table: string; revealed: string[] }
+  /** the Quick test's Ask the tutor: the Talk sheet on `verse`, the first question `question` sent with `focus` (a QuizFocus: the word, the question, his answers) */
+  | { kind: 'reader-requested'; id: number; action: 'word'; book: string; chapter: number; verse: number; question: string; focus: TalkFocus }
   /** a link in the address was resolved (src/nav/linkRequest.ts): the reader opens on `chapter` of `book`, with `verse` selected (null: none), the one-line
    * `notice` that says what was asked for when it is not what is shown, and, for a word link, the `word` whose sheet opens over it; `id` counts up, so the
    * Reader can tell a link it has not met */

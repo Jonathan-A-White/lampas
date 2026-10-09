@@ -54,9 +54,10 @@ import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
 import { useReadChecks } from './useReadChecks';
 import { useTalk } from './useTalk';
-import { helpQuestion, newWordQuestion, paradigmQuestion, scopeTitle, termQuestion } from './services/talk';
+import { helpQuestion, newWordQuestion, paradigmQuestion, scopeTitle, termQuestion, type WordFocus } from './services/talk';
 import { useVoice } from './useVoice';
 import { useHoldPress } from './ui/holdPress';
+import { NO_SELECT, useLongPress } from './ui/longPress';
 import { HeaderButton } from './ScreenHeader';
 import { continueReading, getReading, pauseReading, planOf, startAnswer, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
@@ -77,15 +78,11 @@ import { WordSheet, type Lookup, type TermAsk, type WordHelp } from './WordSheet
 // box stays --lp-tap tall, so the spare pixels cost no layout.
 const TAP_PAD = 'py-[calc((var(--lp-tap)-1em)/2)]';
 
-/** How long a finger must stay on a word to say it, and how far it may wander meanwhile. */
-const LONG_PRESS_MS = 500;
-const LONG_PRESS_SLOP_PX = 10;
-
 /** A word he can tap: a span with role button and no chrome. The caller pads it to a 44 px tap height (an inline box
  * is as tall as its font's content area, so the padding is 44 px minus that, which differs by face). The trailing
  * space is inside so the gap between two words is tappable too. A finger held on it for half a second (`onLongPress`)
- * is a press, not a tap: the click that follows is dropped, and so is one after the finger wandered over 10 px. The
- * word never selects text and never raises the phone's callout menu, so the hold is free for the press. */
+ * is a press, not a tap: the click that follows is dropped, and so is one after the finger wandered over 10 px
+ * (src/ui/longPress.ts). The word never selects text and never raises the phone's callout menu, so the hold is free for the press. */
 function Tap({ onTap, onLongPress, lang, className, children, ...data }: {
   onTap: () => void;
   onLongPress: () => void;
@@ -97,48 +94,21 @@ function Tap({ onTap, onLongPress, lang, className, children, ...data }: {
   'data-learning'?: string;
   'data-word'?: string;
 }) {
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const from = useRef({ x: 0, y: 0 });
-  // the press that is going on was a long press or a drag: its click is not a tap
-  const notATap = useRef(false);
-  const stopTimer = () => clearTimeout(timer.current);
-  useEffect(() => stopTimer, []);
+  const press = useLongPress(onTap, onLongPress);
   return (
     <span
       role="button"
       tabIndex={0}
       lang={lang}
       {...data}
-      onPointerDown={(e) => {
-        if (e.button !== 0) return;
-        notATap.current = false;
-        from.current = { x: e.clientX, y: e.clientY };
-        stopTimer();
-        timer.current = setTimeout(() => {
-          notATap.current = true;
-          navigator.vibrate?.(10);
-          onLongPress();
-        }, LONG_PRESS_MS);
-      }}
-      onPointerMove={(e) => {
-        if (Math.hypot(e.clientX - from.current.x, e.clientY - from.current.y) <= LONG_PRESS_SLOP_PX) return;
-        notATap.current = true;
-        stopTimer();
-      }}
-      onPointerUp={stopTimer}
-      onPointerCancel={stopTimer}
-      onContextMenu={(e) => e.preventDefault()}
-      onClick={() => {
-        if (notATap.current) notATap.current = false;
-        else onTap();
-      }}
+      {...press}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           onTap();
         }
       }}
-      className={`cursor-pointer select-none [-webkit-touch-callout:none] rounded px-[0.1em] active:bg-line ${className ?? ''}`}
+      className={`cursor-pointer ${NO_SELECT} rounded px-[0.1em] active:bg-line ${className ?? ''}`}
     >
       {children}{' '}
     </span>
@@ -500,7 +470,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // The Talk sheet: undefined is closed, a number the verse it was opened on, null the chapter. An answer that arrives while
   // its conversation is open on the sheet is read aloud.
   const [talkAbout, setTalkAbout] = useState<number | null | undefined>(() =>
-    request?.action === 'talk' ? request.verse : request?.action === 'paradigm' ? null : undefined,
+    request?.action === 'talk' || request?.action === 'word' ? request.verse : request?.action === 'paradigm' ? null : undefined,
   );
   const openTalk = useRef<string | null>(null);
   useEffect(() => {
@@ -558,6 +528,15 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       revealed: request.revealed,
     });
   }, [request, chapter, say, TITLE]);
+  // The Quick test's Ask the tutor: the Talk sheet is open on the word's verse; once the chapter is here the first question goes with
+  // the focus it was asked with (the word, the question, his answers so far).
+  const wordSent = useRef(false);
+  useEffect(() => {
+    if (request?.action !== 'word' || !chapter || wordSent.current) return;
+    wordSent.current = true;
+    const verse = chapter.verses.find((v) => v.n === request.verse) ?? null;
+    say({ title: TITLE, chapter, verse }, request.question, request.focus);
+  }, [request, chapter, say, TITLE]);
   // A hold opens the sheet about `about` and listens, unless that conversation is still waiting for its answer.
   const holdTalk = useCallback(
     (about: number | null) => {
@@ -575,7 +554,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       if (!chapter) return;
       const verse = chapter.verses.find((v) => v.n === help.verse) ?? null;
       const scope = { title: TITLE, chapter, verse };
-      const focus = { form: help.form, lemma: help.lemma, parse: help.parse, kind: help.kind };
+      const focus: WordFocus = { form: help.form, lemma: help.lemma, parse: help.parse, kind: help.kind };
       publish({ kind: 'word-help', help: help.kind, form: focus.form, lemma: focus.lemma, parse: focus.parse, chapter: CHAPTER, verse: help.verse });
       voice.abort();
       setTalkAbout(help.verse);

@@ -2,7 +2,7 @@
 // itself once he has answered, a wrong answer waiting for Next, and Ask the tutor beside Next. speechSynthesis is the
 // recording fake of tests/support/fake-speech.ts; a round with a chosen question is put in localStorage and resumed.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { afterAll, expect, vi } from 'vitest';
@@ -132,7 +132,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Ask the tutor opens the Ask box on the verse of the word', ({ Given, When, And, Then }) => {
+  Scenario('Ask the tutor opens the Talk sheet on the verse of the word', ({ Given, When, And, Then }) => {
     Given(
       'Lampas is opened with a Greek voice and a kept round whose question is the form ἀγαπῶσιν of Romans 8:28',
       () => open({ question: AGAPAO, picked: null }),
@@ -140,16 +140,10 @@ describeFeature(feature, ({ Scenario }) => {
     When('he resumes the round', resume);
     And('he taps a wrong gloss', () => tapGloss(false));
     And('he taps Ask the tutor', async () => user.click(await screen.findByRole('button', { name: 'Ask the tutor' })));
-    Then('the Reader opens on verse 28 with the Ask box holding a question that names ἀγαπῶσιν and Romans 8:28', async () => {
-      const box = await waitFor(() => {
-        const found = document.querySelector<HTMLElement>('[data-ask="28"]');
-        expect(found).not.toBeNull();
-        return found as HTMLElement;
-      });
-      const text = (within(box).getByRole('textbox', { name: 'Your question' }) as HTMLTextAreaElement).value;
-      expect(text).toContain('ἀγαπῶσιν');
-      expect(text).toContain('Romans 8:28');
-      expect(screen.getByRole('button', { name: 'Verse 28' })).toHaveAttribute('aria-pressed', 'true');
+    Then('the Reader opens on verse 28 with the Talk sheet holding a question that names ἀγαπῶσιν and Romans 8:28', async () => {
+      const sheet = await screen.findByRole('dialog', { name: 'Talk about Romans 8:28' });
+      await waitFor(() => expect(sheet).toHaveTextContent('ἀγαπῶσιν'));
+      expect(sheet).toHaveTextContent('Romans 8:28');
     });
   });
 
@@ -160,13 +154,9 @@ describeFeature(feature, ({ Scenario }) => {
     When('he resumes the round', resume);
     And('he taps a wrong gloss', () => tapGloss(false));
     And('he taps Ask the tutor', async () => user.click(await screen.findByRole('button', { name: 'Ask the tutor' })));
-    Then('the Reader opens with the Ask box holding a question that names ἀμήν', async () => {
-      const box = await waitFor(() => {
-        const found = document.querySelector<HTMLElement>('[data-ask]');
-        expect(found).not.toBeNull();
-        return found as HTMLElement;
-      });
-      expect((within(box).getByRole('textbox', { name: 'Your question' }) as HTMLTextAreaElement).value).toContain('ἀμήν');
+    Then('the Reader opens with the Talk sheet holding a question that names ἀμήν', async () => {
+      const sheet = await screen.findByRole('dialog', { name: /^Talk about / });
+      await waitFor(() => expect(sheet).toHaveTextContent('ἀμήν'));
     });
   });
 

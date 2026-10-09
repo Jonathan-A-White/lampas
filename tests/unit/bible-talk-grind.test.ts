@@ -247,3 +247,45 @@ describe('learner_grammar in the request (mw-hqd5bz.12)', () => {
     }
   });
 });
+
+describe('the word and quiz focus (mw-5r3p30.80)', () => {
+  const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
+  const request = { reference: 'Romans 8:2', greek: 'Ὁ γὰρ νόμος', english: 'For the law', question: 'Tell me', history: [], solid_words: [], settings: {} };
+  const word = { form: 'νόμος', lemma: 'νόμος', parse: 'noun, nominative singular masculine', kind: 'word' };
+  const quiz = {
+    kind: 'quiz',
+    lemma: 'νόμος',
+    form: 'νόμος',
+    parse: 'noun, nominative singular masculine',
+    strongs: 'G3551',
+    pos: 'noun',
+    question: 'What does νόμος mean?',
+    choices: ['law', 'sin', 'spirit', 'flesh'],
+    picked: 'sin',
+    correct: 'law',
+    right: false,
+    answers: [{ lemma: 'ἀγαπάω', picked: 'to love', right: true }],
+  };
+
+  it('the request schema accepts the word kind and a quiz focus, with only what the app knows of the word', () => {
+    expect(validate({ ...request, focus: word }, input)).toEqual([]);
+    expect(validate({ ...request, focus: quiz }, input)).toEqual([]);
+    const bare: Record<string, unknown> = { ...quiz, answers: [] };
+    for (const key of ['form', 'parse', 'strongs', 'pos']) delete bare[key];
+    expect(validate({ ...request, focus: bare }, input)).toEqual([]);
+  });
+
+  it('the request schema refuses a quiz focus that is incomplete, mixed or too big', () => {
+    const noAnswers: Record<string, unknown> = { ...quiz };
+    delete noAnswers.answers;
+    const many = Array.from({ length: 11 }, () => ({ lemma: 'α', picked: 'a', right: true }));
+    for (const bad of [noAnswers, { ...quiz, extra: 1 }, { ...quiz, right: 'no' }, { ...quiz, picked: '' }, { ...quiz, answers: many }, { ...quiz, answers: [{ lemma: 'α', picked: 'a' }] }, { ...quiz, choices: ['a', 'b', 'c', 'd', 'e', 'f', 'g'] }]) {
+      expect(validate({ ...request, focus: bad }, input), JSON.stringify(bad)).not.toEqual([]);
+    }
+  });
+
+  it('the instructions tell the companion to open with what it was handed, for a word and for a quiz question', () => {
+    const text = readFileSync(grind.instructions as string, 'utf8');
+    for (const part of ['`kind` is `word`', 'Help with a Quick test question', '`focus.kind` is `quiz`', 'About νόμος (G3551), noun, and', '`focus.answers`', 'what you were handed']) expect(text).toContain(part);
+  });
+});

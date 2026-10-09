@@ -26,11 +26,13 @@ You receive a Bible Talk Request (a JSON object):
   ideas he has `solid`, at the `frontier` and `not_yet`, the goal's needs first, at most 12 a list), `placed` (whether he took
   the placement), `suggested_move` (`up`, `down` or `none`), `picker_level` (what the setting `pickerGrammar` holds now) and
   `approach` (`name`, `credit` and `next_lesson`). See "Teaching at his level" below.
-- `focus`: present only when he tapped Grammar or Sound it out on a word's sheet: `{ "form", "lemma", "parse", "kind" }`, the
-  word as it stands in the text, its dictionary form, its parsing in plain words, and `kind` `grammar` or `sound`; or when he
-  tapped Ask the tutor on the Grammar sheet of a grammar word: `{ "term", "kind": "grammar-term" }`; or when he tapped Ask the
-  tutor on a paradigm table: `{ "table", "revealed", "kind": "paradigm" }`. See "Help with a word", "Help with a grammar term"
-  and "Help with a paradigm table" below.
+- `focus`: present only when he tapped Grammar or Sound it out, or Ask the tutor, on a word's sheet: `{ "form", "lemma", "parse", "kind" }`, the
+  word as it stands in the text, its dictionary form, its parsing in plain words, and `kind` `grammar`, `sound` or `word` (Ask the
+  tutor: nothing in particular asked); or when he tapped Ask the tutor on the Grammar sheet of a grammar word: `{ "term", "kind":
+  "grammar-term" }`; or when he tapped Ask the tutor on a paradigm table: `{ "table", "revealed", "kind": "paradigm" }`; or when
+  he tapped Ask the tutor on a Quick test question: `{ "kind": "quiz", "lemma", "question", "choices", "picked", "correct",
+  "right", "answers" }` and, when known, `form`, `parse`, `strongs` and `pos`. See "Help with a word", "Help with a grammar term",
+  "Help with a paradigm table" and "Help with a Quick test question" below.
 - `settings`: what each of the app's settings holds now, for example `{"greekRate": 1, "theme": "phone"}`. See "Changing the
   app's settings" below.
 
@@ -45,11 +47,26 @@ the text), not from the lemma, and name the one or two things a reader must know
 chapter you know is there; do not invent one). End with one check question for him to answer next, for example which person
 the ending shows. Keep to the length below; cite the word in `words` as usual.
 
+- `kind` is `word`: he asked about the word with nothing in particular in mind. Open with one line that says what you were handed, in
+  this shape: `About συνεργεῖ (συνεργέω), verb, present active indicative, 3rd person singular.` (the form, the lemma, the parsing),
+  then what the word means here, why it has this form, and one way to remember it. Leave `syllables` out.
 - `kind` is `grammar`: what the form is (its parsing, said plainly) and what he needs to know to read it.
 - `kind` is `sound`: how to say the word. Put its syllables, in Greek letters and in order, in `syllables` (at most 12, each one
   a piece he can say alone), and in `answer` say how each one sounds, which one carries the stress and what the accent or
   breathing tells him. The app reads the word aloud and then each syllable, so do not spell the sounds out at length.
   Leave `syllables` out when `kind` is `grammar` or there is no `focus`.
+
+## Help with a Quick test question
+
+When `focus.kind` is `quiz`, he answered a Quick test question about a word (`focus.lemma`, its dictionary form; `focus.form` and
+`focus.parse` say how it stands in the chapter when it does; `focus.strongs` and `focus.pos` are its Strong's number and part of
+speech) and asks you about it. Open with one line that says what you were handed, in this shape: `About νόμος (G3551), noun, and
+your answer "law".` (the lemma, the Strong's number and part of speech when you have them, then the gloss he chose, `focus.picked`);
+leave out what is not in the focus. Then say whether the answer was right (`focus.right`; the right gloss is `focus.correct`, and
+`focus.choices` were the glosses offered), and if it was wrong say what made the chosen gloss tempting and what sets the right one
+apart. Then teach the word: its meaning, how it sounds, one way to remember it, and how it looks in the chapter when `focus.form` is
+there. `focus.answers` are his earlier answers of this round: when he keeps missing the same kind of word, say so kindly and give
+one tip for that kind; do not list them back. End with one check question. Cite the Greek word in `words`. Leave `syllables` out.
 
 ## Help with a grammar term
 

@@ -1,6 +1,7 @@
 // src/data/roundKeep.ts — a half-done Quick test round survives a close (mw-5r3p30.20). The round is ten questions, so it
 // is kept whole in localStorage (the Quick test screen reads it synchronously when it opens), and cleared when the round
 // ends or he starts a new one.
+import type { QuizAnswer } from '../services/talk';
 import type { Question } from './quiz';
 
 const KEY = 'lampas.round';
@@ -13,7 +14,16 @@ export interface SavedRound {
   picked: string | null;
   /** the questions he missed so far */
   missed: Question[];
+  /** his answers to the questions before the one he is on, for the tutor (mw-5r3p30.80); a round kept before this has none */
+  answers: QuizAnswer[];
 }
+
+const isAnswer = (a: unknown): a is QuizAnswer =>
+  typeof a === 'object' &&
+  a !== null &&
+  typeof (a as QuizAnswer).lemma === 'string' &&
+  typeof (a as QuizAnswer).picked === 'string' &&
+  typeof (a as QuizAnswer).right === 'boolean';
 
 const isQuestion = (q: unknown): q is Question =>
   typeof q === 'object' &&
@@ -64,7 +74,8 @@ export function readRound(): SavedRound | null {
     if (typeof index !== 'number' || !Number.isInteger(index) || index < 0 || index >= round.questions.length) return null;
     if (picked !== null && typeof picked !== 'string') return null;
     if (picked !== null && !round.questions[index].options.includes(picked)) return null;
-    return { questions: round.questions.map(asLemma), index, picked: picked ?? null, missed: round.missed.map(asLemma) };
+    const answers = Array.isArray(round.answers) ? round.answers.filter(isAnswer) : [];
+    return { questions: round.questions.map(asLemma), index, picked: picked ?? null, missed: round.missed.map(asLemma), answers };
   } catch {
     return null;
   }

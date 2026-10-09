@@ -25,6 +25,25 @@ Feature: A long press on a word speaks it
     Then the phone is told to speak the Greek of the lemma "ἐν" in verse 1 with lang "el-GR"
     And no word sheet is open
 
+  Scenario: A long press on a word in the Verse view speaks it and opens nothing; a short tap opens the sheet
+    Given Lampas is opened on a phone with a Greek voice
+    And he switches the reader to Greek
+    And he opens the Verse view of verse 1
+    When he long presses the word "Οὐδὲν" in the Verse view
+    Then the phone is told to speak "Οὐδὲν" with lang "el-GR"
+    And no word sheet is open
+    When he taps the word "Οὐδὲν" in the Verse view
+    Then the word sheet is open
+
+  Scenario: A long press on a word in the Words list speaks it and does not change it; a short tap still changes it
+    Given Lampas is opened on a phone with a Greek voice
+    And he opens the Words list
+    When he long presses the first word of the list
+    Then the phone is told to speak that word with lang "el-GR"
+    And that word keeps its state
+    When he taps the first word of the list
+    Then that word has changed its state
+
   Scenario: A short tap still opens the word sheet
     Given Lampas is opened on a phone with a Greek voice
     And he switches the reader to Greek

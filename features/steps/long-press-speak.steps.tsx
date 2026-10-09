@@ -2,7 +2,7 @@
 // reader speaks that word alone in its own language, a short tap still opens the sheet. speechSynthesis is a fake engine
 // (as in greek-audio.steps.tsx); the press is user-event pointer input held for real time (the half second is the app's).
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { act, render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -168,6 +168,59 @@ describeFeature(feature, ({ Scenario }) => {
       expect(lastSpoken()?.voice).toBe(GREEK_VOICE);
     });
     And('no word sheet is open', () => expect(screen.queryByRole('dialog')).toBeNull());
+  });
+
+  Scenario('A long press on a word in the Verse view speaks it and opens nothing; a short tap opens the sheet', ({ Given, And, When, Then }) => {
+    const viewWord = (text: string): HTMLElement =>
+      within(screen.getByRole('region', { name: 'Verse view' })).getByRole('button', { name: text });
+    Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH_VOICE, GREEK_VOICE]));
+    And('he switches the reader to Greek', switchToGreek);
+    And('he opens the Verse view of verse {int}', async (_, n: number) => {
+      await user.click(screen.getByRole('button', { name: `Verse ${n}`, exact: true }));
+      await screen.findByRole('region', { name: 'Verse view' });
+    });
+    When('he long presses the word {string} in the Verse view', (_, text: string) => press(viewWord(text), HOLD_MS));
+    Then('the phone is told to speak {string} with lang {string}', (_, text: string, lang: string) => {
+      expect(synth.spoken).toHaveLength(1);
+      expect(lastSpoken()?.text).toBe(text);
+      expect(spokenWordLang()).toBe(lang);
+    });
+    And('no word sheet is open', () => expect(screen.queryByRole('dialog')).toBeNull());
+    When('he taps the word {string} in the Verse view', (_, text: string) => user.click(viewWord(text)));
+    Then('the word sheet is open', () => expect(screen.getByRole('dialog')).toBeInTheDocument());
+  });
+
+  Scenario('A long press on a word in the Words list speaks it and does not change it; a short tap still changes it', ({ Given, And, When, Then }) => {
+    let lemma = '';
+    let before = '';
+    const first = (): HTMLElement => {
+      const el = document.querySelector<HTMLElement>('[data-lemma]');
+      if (!el) throw new Error('no word in the list');
+      return el;
+    };
+    Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH_VOICE, GREEK_VOICE]));
+    And('he opens the Words list', async () => {
+      act(() => {
+        window.location.hash = '#/words';
+      });
+      await screen.findByRole('heading', { name: 'Words', level: 1 });
+      await waitFor(() => expect(document.querySelectorAll('[data-lemma]').length).toBeGreaterThan(0));
+      lemma = first().getAttribute('data-lemma') ?? '';
+      before = first().getAttribute('data-state') ?? '';
+    });
+    When('he long presses the first word of the list', () => press(first(), HOLD_MS));
+    Then('the phone is told to speak that word with lang {string}', (_, lang: string) => {
+      expect(synth.spoken).toHaveLength(1);
+      expect(lastSpoken()?.text).toBe(lemma);
+      expect(spokenWordLang()).toBe(lang);
+    });
+    And('that word keeps its state', () => expect(first().getAttribute('data-state')).toBe(before));
+    When('he taps the first word of the list', async () => {
+      await user.click(first());
+    });
+    Then('that word has changed its state', async () => {
+      await waitFor(() => expect(first().getAttribute('data-state')).not.toBe(before));
+    });
   });
 
   Scenario('A short tap still opens the word sheet', ({ Given, And, When, Then }) => {

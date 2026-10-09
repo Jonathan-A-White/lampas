@@ -1,12 +1,14 @@
 // src/QuizScreen.tsx — the Quick test: ten questions on his solid and learning words. Tap one of four
 // glosses, see at once whether it was right, go on; the end screen gives the score and the misses.
 import { useEffect, useState } from 'react';
-import { loadChapter, type Chapter } from './data/chapter';
+import { loadChapter, wordLemma, wordParse, type Chapter } from './data/chapter';
+import { lookupLemma } from './data/lexicon';
 import { listWords, recordAnswer, seedWordsIfFirstOpen } from './data/repositories';
 import { clearRound, readRound, saveRound } from './data/roundKeep';
 import { askAbout, buildQuestion, drawWords, seedDistractors, type Question, type Random } from './data/quiz';
 import { navigate } from './nav/route';
-import { askInReader } from './nav/readerRequest';
+import { askAboutWord } from './nav/readerRequest';
+import { MAX_QUIZ_ANSWERS, quizQuestion, type QuizAnswer, type QuizFocus } from './services/talk';
 import { speakWord } from './speech/greek';
 import { getOpenChapter } from './data/readerChapter';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -48,6 +50,8 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [missed, setMissed] = useState<Question[]>([]);
+  // his answers to the questions before this one: the tutor is told them with the one he asks about
+  const [answers, setAnswers] = useState<QuizAnswer[]>([]);
 
   const another = () => {
     clearRound();
@@ -55,6 +59,7 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
     setIndex(0);
     setPicked(null);
     setMissed([]);
+    setAnswers([]);
     void drawRound(newRandom()).then((questions) => setRound({ status: 'ready', questions }));
   };
 
@@ -64,6 +69,7 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
     setIndex(saved.index);
     setPicked(saved.picked);
     setMissed(saved.missed);
+    setAnswers(saved.answers);
     setRound({ status: 'ready', questions: saved.questions });
   };
 
@@ -89,17 +95,34 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
     const nextMissed = right ? missed : [...missed, question];
     setPicked(option);
     setMissed(nextMissed);
-    saveRound({ questions, index, picked: option, missed: nextMissed });
+    saveRound({ questions, index, picked: option, missed: nextMissed, answers });
     void recordAnswer(question.lemma, right);
     // The word says itself once, by the long press's engine; the Hold to hear bar says it again. No help line here: that bar carries it.
     speakWord(question.prompt, 'greek');
   };
 
-  const askTutor = () => {
-    if (!question) return;
+  // Ask the tutor: the Talk sheet on the word's verse, the first question sent with the word, its parsing, the question and his answers.
+  const askTutor = async () => {
+    if (!question || picked === null) return;
     const open = getOpenChapter();
     const about = askAbout(question, { book: open.book, chapter: open.chapter, verse: 1 });
-    askInReader(about.book, about.chapter, about.verse, about.text);
+    const [forms, entry] = await Promise.all([loadForms(), lookupLemma(question.lemma)]);
+    const verse = forms?.verses.find((v) => v.n === question.verse);
+    const word = question.form === undefined ? undefined : verse?.g.find((w) => w.t === question.form && wordLemma(w) === question.lemma);
+    const focus: QuizFocus = {
+      kind: 'quiz',
+      lemma: question.lemma,
+      ...(question.form ? { form: question.form } : {}),
+      ...(forms && word && wordParse(forms, word) ? { parse: wordParse(forms, word) } : {}),
+      ...(entry ? { strongs: entry.s, pos: entry.c } : {}),
+      question: `What does ${question.prompt} mean?`,
+      choices: question.options,
+      picked,
+      correct: question.gloss,
+      right: picked === question.gloss,
+      answers: answers.slice(-MAX_QUIZ_ANSWERS),
+    };
+    askAboutWord(about.book, about.chapter, about.verse, quizQuestion(focus, question.verse === undefined ? undefined : question.reference), focus);
   };
 
   const subtitle = question ? `${index + 1} of ${total}` : null;
@@ -201,8 +224,10 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
               data-testid="next"
               ref={focusOnMount}
               onClick={() => {
+                const earlier = [...answers, { lemma: question.lemma, picked, right: picked === question.gloss }];
                 if (last) clearRound();
-                else saveRound({ questions, index: index + 1, picked: null, missed });
+                else saveRound({ questions, index: index + 1, picked: null, missed, answers: earlier });
+                setAnswers(earlier);
                 setPicked(null);
                 setIndex(index + 1);
               }}
@@ -210,7 +235,7 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
             >
               {last ? 'Finish' : 'Next'}
             </button>
-            <button type="button" onClick={askTutor} className="min-h-12 rounded-xl border border-line text-lg font-medium">
+            <button type="button" onClick={() => void askTutor()} className="min-h-12 rounded-xl border border-line text-lg font-medium">
               Ask the tutor
             </button>
           </div>

@@ -64,7 +64,7 @@
     },
     "settings": { "description": "What each of the app's settings holds now, by key.", "type": "object" },
     "focus": {
-      "description": "Optional. What he asked for help with: a word (from the word sheet's Help with this word row: the form as it stands, its lemma, its parsing in plain words, and what he wants help with), a grammar term (from a Grammar sheet's Ask the tutor), or a paradigm table (from the Paradigms screen's Ask the tutor).",
+      "description": "Optional. What he asked for help with: a word (from the word sheet's Help with this word row, or its Ask the tutor: the form as it stands, its lemma, its parsing in plain words, and what he wants help with), a grammar term (from a Grammar sheet's Ask the tutor), a paradigm table (from the Paradigms screen's Ask the tutor), or a Quick test question (from the question's Ask the tutor: the word, the question, his answer and his earlier answers of the round).",
       "anyOf": [
         {
           "type": "object",
@@ -74,7 +74,7 @@
             "form": { "type": "string", "minLength": 1, "maxLength": 80 },
             "lemma": { "type": "string", "minLength": 1, "maxLength": 80 },
             "parse": { "type": "string", "minLength": 1, "maxLength": 200 },
-            "kind": { "description": "grammar: the form and what is needed to read it; sound: its syllables and how each sounds.", "type": "string", "enum": ["grammar", "sound"] }
+            "kind": { "description": "grammar: the form and what is needed to read it; sound: its syllables and how each sounds; word: just the word, with nothing in particular asked.", "type": "string", "enum": ["grammar", "sound", "word"] }
           }
         },
         {
@@ -99,6 +99,44 @@
               "items": { "type": "string", "minLength": 1, "maxLength": 120 }
             },
             "kind": { "description": "paradigm: explain the table's pattern and quiz him on the forms he has revealed.", "type": "string", "enum": ["paradigm"] }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "lemma", "question", "choices", "picked", "correct", "right", "answers"],
+          "properties": {
+            "kind": { "description": "quiz: he answered a Quick test question and asks about the word.", "type": "string", "enum": ["quiz"] },
+            "lemma": { "description": "The word's dictionary form, the one the question asked.", "type": "string", "minLength": 1, "maxLength": 80 },
+            "form": { "description": "The form the word has in the chapter he is reading, when it has one there.", "type": "string", "minLength": 1, "maxLength": 80 },
+            "parse": { "description": "That form's parsing in plain words, when the chapter has the form.", "type": "string", "minLength": 1, "maxLength": 200 },
+            "strongs": { "description": "The word's Strong's number: G3551.", "type": "string", "minLength": 1, "maxLength": 20 },
+            "pos": { "description": "The word's part of speech: noun, verb ...", "type": "string", "minLength": 1, "maxLength": 40 },
+            "question": { "description": "The question as he saw it: What does νόμος mean?", "type": "string", "minLength": 1, "maxLength": 200 },
+            "choices": {
+              "description": "The glosses the question offered.",
+              "type": "array",
+              "maxItems": 6,
+              "items": { "type": "string", "minLength": 1, "maxLength": 120 }
+            },
+            "picked": { "description": "The gloss he chose.", "type": "string", "minLength": 1, "maxLength": 120 },
+            "correct": { "description": "The right gloss.", "type": "string", "minLength": 1, "maxLength": 120 },
+            "right": { "description": "Whether what he chose was the right gloss.", "type": "boolean" },
+            "answers": {
+              "description": "His answers to the earlier questions of this round, oldest first. May be empty.",
+              "type": "array",
+              "maxItems": 10,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["lemma", "picked", "right"],
+                "properties": {
+                  "lemma": { "type": "string", "minLength": 1, "maxLength": 80 },
+                  "picked": { "type": "string", "minLength": 1, "maxLength": 120 },
+                  "right": { "type": "boolean" }
+                }
+              }
+            }
           }
         }
       ]
