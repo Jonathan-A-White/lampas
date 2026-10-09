@@ -26,7 +26,23 @@ it, so right-to-left letters never turn the English order round. `.script-he` (s
 @fontsource 5.3.0 woff2 builds under `src/fonts/`, SIL Open Font License 1.1, `OFL-noto-serif-hebrew.txt`; precached with the other woff2 files).
 `src/script/ScriptText.tsx` draws plain text the same way (the Settings examples).
 
-## Speech
+## Speech and the guide (mw-5r3p30.98)
 
-Hebrew letters are left out of what the English voice is given (`answerRuns`); tap to speak, a he-IL voice and the pronunciation guide are
-mw-5r3p30.98.
+A Hebrew word in an answer is a button (`src/script/HebrewWord.tsx`, drawn by `Markdown.tsx`; 44 px high, dotted underline). A tap:
+
+1. says the word in the phone's Hebrew voice (`speak(text, key, undefined, 'hebrew')`, lang `he-IL`, modern Israeli, the normal speed; a second tap on
+   the same word stops it). Hebrew has a voice tag (`HEBREW_LANG`, `SpeechLanguage` 'hebrew' in `src/speech/languages.ts`) but no voice or speed
+   setting of its own yet: the phone picks its he voice. With no he voice on the phone nothing is spoken, never an English voice reading Hebrew
+   letters, and the guide shows the line **No Hebrew voice on this phone** (`hasVoice('hebrew')`; a phone that has not listed its voices yet is
+   still asked to speak, as Greek is);
+2. opens the guide (`src/script/HebrewGuide.tsx`, a bottom sheet named **How to say it** over the Talk sheet): the word large, **Hear it**, and, in
+   a conversation that can ask (the Talk sheet and Ask the tutor from any screen, through `HebrewAskContext`), **Syllables and sounds**.
+
+**Syllables and sounds** sends a bible-talk question with the focus `{form, lemma: form, parse: 'Hebrew word', kind: 'sound', language: 'he'}`
+(`hebrewSoundAsk` in `src/services/talk.ts`). The grind answers in Hebrew: `syllables` in pointed Hebrew letters in reading order and
+`transliteration`, how each one sounds in Latin letters (the stressed one in capitals), one per syllable. `useTalk` keeps them on the turn as
+`guide` {word, syllables, sounds} (no table change) and the turn draws the card (`HebrewSoundGuide`): the word, then each syllable over its sound,
+each a 56 px button that says it in Hebrew. The Greek 'Sound it out' reading of syllables does not run for a Hebrew focus.
+
+Not done: the answers read aloud still leave Hebrew out (the English voice would garble it), and the Verse view's Ask answers have the guide
+without Syllables and sounds (no conversation to ask in).
