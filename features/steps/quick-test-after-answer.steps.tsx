@@ -55,7 +55,8 @@ async function open(round?: { question: Question; picked: string | null }): Prom
 const AMEN: Question = { lemma: 'ἀμήν', prompt: 'ἀμήν', gloss: 'truly', options: ['truly', 'and', 'but', 'not'] };
 const AGAPAO: Question = {
   lemma: 'ἀγαπάω',
-  prompt: 'ἀγαπῶσιν',
+  prompt: 'ἀγαπάω',
+  form: 'ἀγαπῶσιν',
   reference: 'Romans 8:28',
   chapter: 8,
   verse: 28,

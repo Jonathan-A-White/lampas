@@ -24,6 +24,12 @@ const isQuestion = (q: unknown): q is Question =>
   Array.isArray((q as Question).options) &&
   (q as Question).options.every((o) => typeof o === 'string');
 
+/** A round kept before the Quick test asked the lemma has a chapter form as its prompt: the form moves to `form`, the prompt becomes the lemma. */
+const asLemma = (q: Question): Question =>
+  q.form === undefined && q.prompt.normalize('NFC') !== q.lemma.normalize('NFC')
+    ? { ...q, prompt: q.lemma.normalize('NFC'), form: q.prompt }
+    : q;
+
 function store(): Storage | undefined {
   try {
     return typeof localStorage === 'undefined' ? undefined : localStorage;
@@ -58,7 +64,7 @@ export function readRound(): SavedRound | null {
     if (typeof index !== 'number' || !Number.isInteger(index) || index < 0 || index >= round.questions.length) return null;
     if (picked !== null && typeof picked !== 'string') return null;
     if (picked !== null && !round.questions[index].options.includes(picked)) return null;
-    return { questions: round.questions, index, picked: picked ?? null, missed: round.missed };
+    return { questions: round.questions.map(asLemma), index, picked: picked ?? null, missed: round.missed.map(asLemma) };
   } catch {
     return null;
   }

@@ -12,6 +12,14 @@ describe('a half-done Quick test round', () => {
     expect(readRound()).toEqual(round);
   });
 
+  it('turns a round kept with a chapter form as its prompt into the lemma with the form beside it', () => {
+    const old = { lemma: 'ἀγαπάω', prompt: 'ἀγαπῶσιν', reference: 'Romans 8:28', gloss: 'g', options: ['g', 'a', 'b', 'c'] };
+    localStorage.setItem('lampas.round', JSON.stringify({ questions: [old], index: 0, picked: null, missed: [old] }));
+    const read = readRound();
+    expect(read?.questions[0]).toMatchObject({ prompt: 'ἀγαπάω', form: 'ἀγαπῶσιν', reference: 'Romans 8:28' });
+    expect(read?.missed[0]).toMatchObject({ prompt: 'ἀγαπάω', form: 'ἀγαπῶσιν' });
+  });
+
   it('is gone once cleared', () => {
     saveRound(round);
     clearRound();

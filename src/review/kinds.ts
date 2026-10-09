@@ -62,7 +62,7 @@ export interface ReviewKind {
   record: (item: ReviewItem, right: boolean) => Promise<void>;
 }
 
-/** The chapter the inflected forms come from: the one the Reader has open. A phone that cannot load it is asked the plain lemmas. */
+/** The chapter whose forms show beneath a word after the answer: the one the Reader has open. A phone that cannot load it shows no form; the lemma is asked either way. */
 const loadForms = (): Promise<Chapter | null> => {
   const open = getOpenChapter();
   return loadChapter(open.book, open.chapter).catch(() => null);

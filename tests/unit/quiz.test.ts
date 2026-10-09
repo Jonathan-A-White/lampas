@@ -165,17 +165,19 @@ describe('formsOf and buildQuestion: the form from Romans 8', () => {
     expect(formsOf(forms, { ...word('ἐγώ', 'solid') }, new Set(['ἡμεῖς'])).map((f) => f.form)).toEqual(['με']);
   });
 
-  it('asks with the lemma when the chapter does not have it, and with a form and reference when it does', () => {
+  it('always asks the lemma; the chapter form and reference ride along for after the answer', () => {
     const pool: Distractor[] = [
       { lemma: 'x', gloss: 'one', pos: 'Verb' },
       { lemma: 'y', gloss: 'two', pos: 'Verb' },
       { lemma: 'z', gloss: 'three', pos: 'Verb' },
     ];
     const plain = buildQuestion(word('δόξα', 'solid', 'glory'), pool, chapter, mulberry32(1));
-    expect(plain).toMatchObject({ lemma: 'δόξα', prompt: 'δόξα', reference: undefined, gloss: 'glory' });
+    expect(plain).toMatchObject({ lemma: 'δόξα', prompt: 'δόξα', form: undefined, reference: undefined, gloss: 'glory' });
     const inChapter = buildQuestion({ ...word('ἀγαπάω', 'learning', 'to love'), lemmas: ['ἀγαπάω'] }, pool, chapter, mulberry32(1));
     expect(inChapter.lemma).toBe('ἀγαπάω');
-    expect(['ἀγαπῶσιν', 'ἠγάπησεν']).toContain(inChapter.prompt);
+    expect(inChapter.prompt).toBe('ἀγαπάω');
+    expect(['ἀγαπῶσιν', 'ἠγάπησεν']).toContain(inChapter.form);
+    expect(buildQuestion({ ...word('ἀγαπάω', 'learning', 'to love'), lemmas: ['ἀγαπάω'] }, pool, null, mulberry32(1)).prompt).toBe('ἀγαπάω');
     expect(inChapter.reference).toMatch(/^Romans 8:[12]$/);
     expect(inChapter.options).toHaveLength(4);
     expect(inChapter.options).toContain('to love');

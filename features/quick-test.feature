@@ -1,6 +1,6 @@
 Feature: A quick test on his words
   A round asks ten of his solid and learning words, favouring the learning ones. Each question shows the
-  Greek word (or its form from Romans 8) and four English glosses to tap; right or wrong shows at once,
+  Greek word in its dictionary form (the lemma) and four English glosses to tap; right or wrong shows at once,
   and the end screen gives the score. Two misses in a row move a solid word to learning, and two rights
   in a row move a learning word to solid.
 
