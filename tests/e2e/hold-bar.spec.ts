@@ -110,7 +110,7 @@ for (const [view, answer] of [['english', READING_ANSWER], ['greek', GREEK_READI
     const b = await box(read);
     await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
     await page.mouse.down();
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(1200);
     await page.mouse.up();
     await expect(panel.locator('[data-fix]').first()).toBeVisible();
     await panel.getByRole('button', { name: 'Read these again', exact: true }).click();
