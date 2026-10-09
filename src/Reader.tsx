@@ -19,6 +19,7 @@ import { VerseView } from './VerseView';
 import { useVerseAction } from './verse/action';
 import { AskTutorButton, TALK_BAR_LIFT } from './AskTutor';
 import { TalkBar, TalkSheet } from './Talk';
+import { ErrorBoundary } from './ErrorBoundary';
 import { type Chapter, type EnglishChunk, type GreekWord, type Verse, englishRuns, loadChapter } from './data/chapter';
 import { formPasses } from './data/grammar/formLevel';
 import { listLevels } from './data/repositories/grammarLevels';
@@ -419,7 +420,12 @@ function ReaderAt({ address }: { address: string }) {
   useEffect(() => setOpenChapter(book, chapter), [book, chapter]);
   // Leaving the reader stops the reading. A reading that goes on into the next chapter outlives the chapter's ReaderBody, not this.
   useEffect(() => () => stopReading(), []);
-  return <ReaderBody key={`${book}/${chapter}`} open={open} />;
+  // A throw while the chapter draws shows the error screen with Reload, not a black page (src/ErrorBoundary.tsx); another chapter starts afresh.
+  return (
+    <ErrorBoundary key={`${book}/${chapter}`} where="reader">
+      <ReaderBody open={open} />
+    </ErrorBoundary>
+  );
 }
 
 /** Whether an address is of this chapter: it says so, or says nothing of the chapter (a bare open). */

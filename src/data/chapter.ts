@@ -23,7 +23,8 @@ export interface EnglishChunk {
   g: number[];
   /**
    * Which words of the chunk the translators supplied (they are in [square brackets] in the MSB): the positions among
-   * `t` split on white space, so 'was king' with `s: [0]` has 'was' supplied and 'king' not. Absent when none is.
+   * `t` split on white space, so 'was king' with `s: [0]` has 'was' supplied and 'king' not. Absent when none is. A chapter kept on a
+   * phone from before mw-5r3p30.102 says `s: 1`, the whole chunk; englishRuns reads that too.
    */
   s?: number[];
 }
@@ -36,10 +37,12 @@ export interface EnglishRun {
 
 /** The chunk cut into runs of supplied and of other words, in order: 'was king' with `s: [0]` is 'was' (supplied), 'king'. */
 export function englishRuns(chunk: EnglishChunk): EnglishRun[] {
-  const marked = new Set(chunk.s ?? []);
+  // The old shape (`s: 1`, or any value that is not a list) means the whole chunk is supplied; it must never throw.
+  const all = !Array.isArray(chunk.s) && Boolean(chunk.s);
+  const marked = new Set(Array.isArray(chunk.s) ? chunk.s : []);
   const runs: EnglishRun[] = [];
   chunk.t.split(/\s+/).filter(Boolean).forEach((word, i) => {
-    const supplied = marked.has(i);
+    const supplied = all || marked.has(i);
     const last = runs[runs.length - 1];
     if (last && last.supplied === supplied) last.text += ` ${word}`;
     else runs.push({ text: word, supplied });
@@ -49,7 +52,7 @@ export function englishRuns(chunk: EnglishChunk): EnglishRun[] {
 
 /** The chunk's English with each run of supplied words between asterisks, as Markdown italics: '*was* king'. What the tutor is sent. */
 export const markSupplied = (chunk: EnglishChunk): string =>
-  chunk.s?.length ? englishRuns(chunk).map((r) => (r.supplied ? `*${r.text}*` : r.text)).join(' ') : chunk.t.trim();
+  chunk.s && (!Array.isArray(chunk.s) || chunk.s.length) ? englishRuns(chunk).map((r) => (r.supplied ? `*${r.text}*` : r.text)).join(' ') : chunk.t.trim();
 
 export interface Verse {
   n: number;
