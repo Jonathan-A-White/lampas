@@ -45,9 +45,10 @@ Feature: The Verse view
     And he chooses "Listen"
     And he holds the hold bar
     Then the phone is reading verse 11 aloud
-    When the phone finishes speaking
+    When a minute goes by with the bar still held
     Then the phone has stopped reading
     And the phone never spoke verse 12
+    And the phone said verse 11 to its end
 
   Scenario: Read it aloud: the bar says Hold to read verse 11 and the reading check shows above it
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
@@ -65,6 +66,19 @@ Feature: The Verse view
     When he holds the hold bar and says "What does ζωοποιήσει mean?" and lets go
     Then the mill received one grist for the lampas app, kind verse-ask, about "Romans 8:11" with the question "What does ζωοποιήσει mean?"
     And the answer shows in the Verse view
+
+  Scenario: Hold to ask shows his words as he says them, not only when the clip ends
+    Given Lampas is opened on Romans 8 in the English view with the weave "Off" and a tutor and a microphone that hears a clip
+    When he taps the number of verse 11
+    And he chooses "Ask the tutor"
+    And he holds the hold bar
+    And a second goes by
+    Then the words on screen are the start of the clip, and not all of it
+    When the clip plays to its end
+    Then the words on screen are the whole clip
+    When he lets go of the hold bar
+    And a moment goes by
+    Then the mill received one grist for the lampas app, kind verse-ask, about "Romans 8:11" with the question of the whole clip
 
   Scenario: Copy link copies the verse's link
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"

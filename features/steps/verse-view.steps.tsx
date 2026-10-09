@@ -18,6 +18,7 @@ import { getReading, stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';
+import { type StubbedMic, stubMic } from '../../tests/support/fake-mic';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 
@@ -34,15 +35,17 @@ const PHONE_KEY = '00'.repeat(31) + '02';
 const AT = { clientX: 100, clientY: 700 };
 let fake: FakePostern;
 let synth: FakeSynth | undefined;
+let mic: StubbedMic | undefined;
 let copied: string[] = [];
 
 interface Options {
   speaks?: boolean;
   tutor?: boolean;
+  mic?: boolean;
   hash?: string;
 }
 
-async function open(weave: 'off' | 'solid', { speaks = false, tutor = false, hash = '' }: Options = {}): Promise<void> {
+async function open(weave: 'off' | 'solid', { speaks = false, tutor = false, mic: hears = false, hash = '' }: Options = {}): Promise<void> {
   cleanup();
   stopReading();
   clearBus();
@@ -55,6 +58,7 @@ async function open(weave: 'off' | 'solid', { speaks = false, tutor = false, has
   fake.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER };
   synth = speaks ? stubSpeech([GREEK_VOICE, ENGLISH_VOICE]) : undefined;
   if (tutor) stubRecognizer();
+  mic = hears ? stubMic() : undefined;
   stubChapterFetch();
   const chapterFetch = globalThis.fetch;
   vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) =>
@@ -86,6 +90,8 @@ const bar = () => {
   expect(bars()).toHaveLength(1);
   return bars()[0];
 };
+/** The words he has said so far, as the Verse view shows them while he holds. */
+const askLive = (): string => viewEl().querySelector('[data-ask-live]')?.textContent?.trim() ?? '';
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 const feature = await loadFeature('features/verse-view.feature');
@@ -208,8 +214,8 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(getReading().status).toBe('reading'));
       expect(getReading().verse).toBe(11);
     });
-    When('the phone finishes speaking', () => {
-      act(() => synth?.finishAll());
+    When('a minute goes by with the bar still held', () => {
+      act(() => synth?.advance(60_000));
     });
     Then('the phone has stopped reading', async () => {
       await waitFor(() => expect(getReading().status).toBe('idle'));
@@ -218,6 +224,11 @@ describeFeature(feature, ({ Scenario }) => {
       const spoken = (synth?.spoken ?? []).map((u) => u.text.replace(/\s+/g, ' ').trim());
       const verse = (n: number): string => ROMANS_8.verses.find((v) => v.n === n)?.e.map((c) => c.t.trim()).join(' ') ?? '';
       expect(spoken).toEqual([verse(11)]);
+    });
+    And('the phone said verse 11 to its end', () => {
+      // it ended by itself, nobody cut it off: the honest engine's log says how each utterance went
+      expect(synth?.honest.log.map((e) => e.outcome)).toEqual(['ended']);
+      expect(synth?.speaking).toBe(false);
     });
   });
 
@@ -230,6 +241,45 @@ describeFeature(feature, ({ Scenario }) => {
       expect(within(viewEl()).getByRole('region', { name: 'Reading check' })).toBeInTheDocument();
     });
     And('exactly one hold bar is on screen', oneBar);
+  });
+
+  Scenario('Hold to ask shows his words as he says them, not only when the clip ends', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 in the English view with the weave {string} and a tutor and a microphone that hears a clip', (_, weave: string) =>
+      open(weaveOf(weave), { mic: true }),
+    );
+    When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
+    And('he chooses {string}', choose);
+    And('he holds the hold bar', async () => {
+      await user.pointer({ keys: '[MouseLeft>]', target: bar(), coords: AT });
+    });
+    And('a second goes by', () => {
+      act(() => mic?.advance(1000));
+    });
+    Then('the words on screen are the start of the clip, and not all of it', async () => {
+      const whole = mic?.transcript ?? '';
+      await waitFor(() => expect(askLive()).not.toBe(''));
+      expect(askLive()).not.toBe('Listening…');
+      expect(whole.startsWith(askLive())).toBe(true);
+      expect(askLive()).not.toBe(whole);
+    });
+    When('the clip plays to its end', () => {
+      act(() => mic?.advance(2000));
+    });
+    Then('the words on screen are the whole clip', () => {
+      expect(askLive()).toBe(mic?.transcript);
+    });
+    When('he lets go of the hold bar', async () => {
+      await user.pointer({ keys: '[/MouseLeft]', target: bar(), coords: AT });
+    });
+    And('a moment goes by', () => {
+      act(() => mic?.advance(50));
+    });
+    Then('the mill received one grist for the lampas app, kind verse-ask, about {string} with the question of the whole clip', async (_, reference: string) => {
+      await waitFor(() => expect(fake.received).toHaveLength(1));
+      expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind: 'verse-ask' });
+      expect(fake.received[0].input.reference).toBe(reference);
+      expect(fake.received[0].input.question).toBe(mic?.transcript);
+    });
   });
 
   Scenario('Ask the tutor: the bar says Hold to ask and what he says goes to the tutor about the verse', ({ Given, When, Then, And }) => {
