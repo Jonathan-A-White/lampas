@@ -3,10 +3,8 @@
 // credit, with a link if there is one. Send posts a 'feedback' grist to the factory (src/services/feedback.ts). Send waits for the
 // text and the credit; Back, Done, Escape, a swipe down or a tap outside close the sheet (src/ui/sheetBack.ts).
 import { useEffect, useId, useRef, useState } from 'react';
-import { publish } from './events/bus';
 import { shrinkImage } from './images/shrink';
-import { buildFeedbackRequest, MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, sendFeedback } from './services/feedback';
-import { getDeviceKeyBytes } from './services/deviceKey';
+import { buildFeedbackRequest, MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, submitFeedback } from './services/feedback';
 import { FAILURE_TITLES, TutorError, type TutorFailure } from './services/tutor';
 import { focusOnMount } from './ui/focus';
 import { useSheetBack } from './ui/sheetBack';
@@ -95,9 +93,8 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
       const files = await Promise.all(
         pictures.map(async (p, i) => ({ bytes: new Uint8Array(await p.blob.arrayBuffer()), mime: 'image/jpeg', name: `picture-${i + 1}.jpg` })),
       );
-      await sendFeedback(buildFeedbackRequest(text, name, link), files, { key: getDeviceKeyBytes(), signal: live.current.signal });
+      await submitFeedback(buildFeedbackRequest(text, name, link), { files, signal: live.current.signal });
       if (live.current.signal.aborted) return;
-      publish({ kind: 'feedback-sent', feedback: 'grammar-approach' });
       setPhase({ name: 'sent' });
     } catch (err) {
       if (live.current.signal.aborted) return;

@@ -89,8 +89,8 @@ export type AppEvent =
   | { kind: 'frontier-taught'; lemma: string; outcome: 'got-it' | 'known' | 'not-now' }
   /** a grammar placement ended (src/PlacementScreen.tsx): what it found, over the ideas the goal needs; `goal` is the saved goal text, '' for none */
   | { kind: 'placement-done'; goal: string; approach: string; solid: number; frontier: number; notYet: number; untested: number }
-  /** feedback reached the factory (the mill answered 'sent'); `feedback` is what it was, today only 'grammar-approach' (the Ask for another approach sheet) */
-  | { kind: 'feedback-sent'; feedback: 'grammar-approach' };
+  /** feedback reached the factory (the mill answered 'sent'); `feedback` is what it was: 'grammar-approach' (the Ask for another approach sheet) or 'tutor-ask' (the tutor's Send this to the makers) */
+  | { kind: 'feedback-sent'; feedback: 'grammar-approach' | 'tutor-ask' };
 
 export type EventKind = AppEvent['kind'];
 export type EventOf<K extends EventKind> = Extract<AppEvent, { kind: K }>;

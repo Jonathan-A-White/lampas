@@ -6,13 +6,16 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { PrivateKey, Utils } from '@bsv/sdk';
 import { grist } from 'bsv-kit/grist';
-import { MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, buildFeedbackRequest, isFeedbackAnswer } from '../../src/services/feedback';
+import { MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, MAX_ASK_BYTES, MAX_REFERENCE, MAX_SCREEN_NAME, MAX_SUMMARY, buildFeedbackRequest, buildTutorAskRequest, isFeedbackAnswer } from '../../src/services/feedback';
 import { MILL_PUBLIC_KEY } from '../support/fake-postern';
 import { validate, type Schema } from '../support/schema-validate';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const grind = readJson('grinds/feedback.json');
 const input = readJson('grinds/feedback.input.schema.json');
+/** The input schema has one branch for each kind of feedback (anyOf): the grammar approach, and the ask the tutor could not meet. */
+const branches = input.anyOf as Schema[];
+const branch = (kind: string): Schema => branches.find((b) => (b.properties?.kind as { enum?: string[] }).enum?.[0] === kind) as Schema;
 
 describe('grinds/feedback.json', () => {
   it('forwards to the Mayor: no model, effort, instructions or answer schema', () => {
@@ -53,7 +56,7 @@ describe('the input schema and buildFeedbackRequest', () => {
 
   it('carries the build the app is, and the limits of the schema are the constants', () => {
     expect(buildFeedbackRequest('x', 'y').app_version).toBe(__APP_VERSION__);
-    const props = (input as { properties: Record<string, { maxLength: number; properties?: Record<string, { maxLength: number }> }> }).properties;
+    const props = branch('grammar-approach').properties as unknown as Record<string, { maxLength: number; properties?: Record<string, { maxLength: number }> }>;
     expect(props.text.maxLength).toBe(MAX_FEEDBACK_CHARS);
     expect(props.credit.properties?.name.maxLength).toBe(MAX_CREDIT_NAME);
     expect(props.credit.properties?.url.maxLength).toBe(MAX_CREDIT_URL);
@@ -75,6 +78,64 @@ describe('the input schema and buildFeedbackRequest', () => {
     expect(request.credit.url).toHaveLength(MAX_CREDIT_URL);
     const attachments = Array.from({ length: MAX_PICTURES }, (_, i) => ({ hash: '0'.repeat(64), size: 99_999_999, mime: 'image/jpeg', name: `picture-${i + 1}.jpg` }));
     const plaintext = { grist: { app: 'lampas', kind: 'feedback', v: '1' }, input: request, attachments };
+    const key = Uint8Array.from(Utils.toArray(PrivateKey.fromRandom().toHex(), 'hex'));
+    const envelope = grist.sealEnvelope(JSON.stringify(plaintext), key, MILL_PUBLIC_KEY, 1_790_000_000);
+    expect(() => grist.recordScriptHex(envelope)).not.toThrow();
+  });
+});
+
+describe('the tutor-ask kind and buildTutorAskRequest', () => {
+  const ask = { text: 'Can this work with Olive Tree?', summary: 'He wants Lampas to work with Olive Tree.', screen: 'Goal', reference: 'Goal' };
+
+  it('has a branch for each kind of feedback, and both are the same grist kind', () => {
+    expect(branches).toHaveLength(2);
+    expect(branch('grammar-approach')).toBeDefined();
+    expect(branch('tutor-ask')).toBeDefined();
+  });
+
+  it('builds a request the schema accepts, with and without the screen facts', () => {
+    const plain = buildTutorAskRequest(ask);
+    expect(plain).toEqual({ kind: 'tutor-ask', ...ask, app_version: __APP_VERSION__ });
+    expect(validate(plain, input as Schema)).toEqual([]);
+    const facts = [{ label: 'Goal', value: 'Read 1 John 1:1' }];
+    const withFacts = buildTutorAskRequest({ ...ask, facts });
+    expect(withFacts.facts).toEqual(facts);
+    expect(validate(withFacts, input as Schema)).toEqual([]);
+  });
+
+  it('trims his words, the summary and the names', () => {
+    const request = buildTutorAskRequest({ text: '  words  ', summary: '  sum  ', screen: ' Goal ', reference: ' Romans 8 ' });
+    expect(request).toMatchObject({ text: 'words', summary: 'sum', screen: 'Goal', reference: 'Romans 8' });
+  });
+
+  it('has limits in the schema that are the constants', () => {
+    const props = branch('tutor-ask').properties as unknown as Record<string, { maxLength: number }>;
+    expect(props.text.maxLength).toBe(MAX_FEEDBACK_CHARS);
+    expect(props.summary.maxLength).toBe(MAX_SUMMARY);
+    expect(props.screen.maxLength).toBe(MAX_SCREEN_NAME);
+    expect(props.reference.maxLength).toBe(MAX_REFERENCE);
+  });
+
+  it.each<[string, unknown]>([
+    ['no summary', { kind: 'tutor-ask', text: 'x', screen: 'Goal', reference: 'Goal', app_version: 'v' }],
+    ['no screen', { kind: 'tutor-ask', text: 'x', summary: 's', reference: 'Goal', app_version: 'v' }],
+    ['an empty summary', { kind: 'tutor-ask', text: 'x', summary: '', screen: 'Goal', reference: 'Goal', app_version: 'v' }],
+    ['a credit on a tutor ask', { kind: 'tutor-ask', text: 'x', summary: 's', screen: 'Goal', reference: 'Goal', app_version: 'v', credit: { name: 'y' } }],
+    ['a summary on a grammar approach', { kind: 'grammar-approach', text: 'x', summary: 's', credit: { name: 'y' }, app_version: 'v' }],
+  ])('refuses %s', (_, value) => {
+    expect(validate(value, input as Schema)).not.toEqual([]);
+  });
+
+  it('fits the grist record cap with the longest words, summary and screen facts', () => {
+    const facts = Array.from({ length: 12 }, () => ({ label: 'ℓ'.repeat(40), value: 'ω'.repeat(200) }));
+    const request = buildTutorAskRequest({ text: 'α'.repeat(600), summary: 'σ'.repeat(MAX_SUMMARY), screen: 'S'.repeat(MAX_SCREEN_NAME), reference: 'R'.repeat(MAX_REFERENCE), facts });
+    expect(validate(request, input as Schema)).toEqual([]);
+    // Greek is two bytes a letter: the facts gave way (the last ones first) until the request fitted, his words and the summary whole
+    expect(new TextEncoder().encode(JSON.stringify(request)).length).toBeLessThanOrEqual(MAX_ASK_BYTES);
+    expect(request.facts?.length ?? 0).toBeLessThan(12);
+    expect(request.text).toHaveLength(600);
+    expect(request.summary).toHaveLength(MAX_SUMMARY);
+    const plaintext = { grist: { app: 'lampas', kind: 'feedback', v: '1' }, input: request, attachments: [] };
     const key = Uint8Array.from(Utils.toArray(PrivateKey.fromRandom().toHex(), 'hex'));
     const envelope = grist.sealEnvelope(JSON.stringify(plaintext), key, MILL_PUBLIC_KEY, 1_790_000_000);
     expect(() => grist.recordScriptHex(envelope)).not.toThrow();
