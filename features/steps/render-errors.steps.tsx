@@ -56,9 +56,12 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(screen.getByRole('button', { name: 'English' }));
     });
     Then('the verses are shown', async () => {
-      await waitFor(() => expect(document.querySelectorAll('[data-verse]')).toHaveLength(39));
-      expect(document.querySelector('[data-reader]')?.getAttribute('data-view')).toBe('english');
-      expect(document.querySelectorAll('[data-supplied]').length).toBeGreaterThan(0);
+      // the view follows the saved setting a moment after the tap, so everything is waited for together
+      await waitFor(() => {
+        expect(document.querySelectorAll('[data-verse]')).toHaveLength(39);
+        expect(document.querySelector('[data-reader]')?.getAttribute('data-view')).toBe('english');
+        expect(document.querySelectorAll('[data-supplied]').length).toBeGreaterThan(0);
+      });
     });
     And('no error screen is shown', () => {
       expect(screen.queryByText('Something went wrong')).toBeNull();
