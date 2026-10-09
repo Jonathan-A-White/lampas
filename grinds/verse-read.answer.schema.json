@@ -6,12 +6,12 @@
   "required": ["verdict", "focus_words", "note"],
   "properties": {
     "verdict": {
-      "description": "well-read when nothing needs fixing; some-to-fix when at least one word was truly misread.",
+      "description": "well-read when nothing needs fixing; some-to-fix when at least one word was truly misread; incomplete when the transcript covers only part of target_text, or nothing clear could be heard.",
       "type": "string",
-      "enum": ["well-read", "some-to-fix"]
+      "enum": ["well-read", "some-to-fix", "incomplete"]
     },
     "focus_words": {
-      "description": "The words he misread, in the order they stand in the verse, each broken into chunks to say. Empty when well-read.",
+      "description": "The words he misread, in the order they stand in the verse, each broken into chunks to say. Empty when well-read or incomplete.",
       "type": "array",
       "maxItems": 8,
       "items": {

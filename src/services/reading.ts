@@ -31,7 +31,7 @@ export interface FocusWord {
 
 /** What the grind answers (grinds/verse-read.answer.schema.json). */
 export interface VerseReadAnswer {
-  verdict: 'well-read' | 'some-to-fix';
+  verdict: 'well-read' | 'some-to-fix' | 'incomplete';
   focus_words: FocusWord[];
   note: string;
 }
@@ -42,7 +42,7 @@ const isText = (value: unknown, max: number): value is string => typeof value ==
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isVerseReadAnswer(value: unknown): value is VerseReadAnswer {
   if (!isObject(value) || Object.keys(value).length !== 3) return false;
-  if (value.verdict !== 'well-read' && value.verdict !== 'some-to-fix') return false;
+  if (value.verdict !== 'well-read' && value.verdict !== 'some-to-fix' && value.verdict !== 'incomplete') return false;
   if (!isText(value.note, 400)) return false;
   if (!Array.isArray(value.focus_words) || value.focus_words.length > MAX_FOCUS_WORDS) return false;
   return value.focus_words.every(

@@ -69,6 +69,19 @@ describe('the answer schema and isVerseReadAnswer', () => {
     expect(isVerseReadAnswer(clear)).toBe(true);
   });
 
+  it('accepts an incomplete reading, with no words to fix', () => {
+    const partial = { verdict: 'incomplete', focus_words: [], note: "I heard 'and if the Spirit', then you stopped." };
+    expect(validate(partial, schema as Schema)).toEqual([]);
+    expect(isVerseReadAnswer(partial)).toBe(true);
+  });
+
+  it('tells the model to use incomplete when the transcript covers only part of target_text or nothing clear', () => {
+    const text = readFileSync(grind.instructions as string, 'utf8');
+    expect(text).toContain('`incomplete`');
+    expect(text).toMatch(/only part of `target_text`/);
+    expect(text).toMatch(/where he stopped/);
+  });
+
   it.each(bad)('refuses %s in both', (_, value) => {
     expect(validate(value, schema as Schema)).not.toEqual([]);
     expect(isVerseReadAnswer(value)).toBe(false);

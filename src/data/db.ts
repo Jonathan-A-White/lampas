@@ -92,7 +92,7 @@ export interface FixWord {
 export interface VerseReading {
   /** the verse it was read from, the key: 'rom.8.28' for an English reading, 'rom.8.28:el' for one in another language */
   ref: string;
-  verdict: 'well-read' | 'some-to-fix';
+  verdict: 'well-read' | 'some-to-fix' | 'incomplete';
   words: FixWord[];
   note: string;
   /** when it arrived (ms since the epoch) */

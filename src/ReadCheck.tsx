@@ -15,7 +15,7 @@ import { HoldBar } from './ui/HoldBar';
 import { useHoldPress } from './ui/holdPress';
 import { useElapsed } from './ui/useElapsed';
 import { revealInScrollBox } from './ui/reveal';
-import { DROPPED_NOTE, TAP_HINT, type ReadState, type UseReadChecks } from './useReadChecks';
+import { DROPPED_NOTE, SHORT_HINT, TAP_HINT, type ReadState, type UseReadChecks } from './useReadChecks';
 import { referenceUrl } from './nav/links';
 import { LinkActions } from './ui/LinkActions';
 
@@ -96,6 +96,7 @@ function Status({ state, onRetry }: { state: ReadState | undefined; onRetry: () 
     );
   }
   if (state.phase === 'tap') return <p role="status" className="text-base text-muted">{TAP_HINT}</p>;
+  if (state.phase === 'short') return <p role="status" className="text-base text-muted">{SHORT_HINT}</p>;
   if (state.phase === 'dropped') return <p role="status" className="text-base text-muted">{DROPPED_NOTE}</p>;
   if (state.phase !== 'failed') return <Waiting state={state} />;
   const title = state.failure === 'mic' ? 'Could not record' : FAILURE_TITLES[state.failure];
@@ -203,13 +204,20 @@ function MarkedVerse({ text, view, words, open, onOpen }: { text: string; view: 
   );
 }
 
+/** The heading of each verdict: 'Well read' only for a reading that was whole and right. */
+const RESULT_HEADINGS: Record<VerseReading['verdict'], string> = {
+  'well-read': 'Well read',
+  'some-to-fix': 'Words to fix',
+  incomplete: 'Read the whole verse',
+};
+
 /** The result of a reading: how it went, the verse with its marked words, a tap shows their chunks, and the walk starts here. */
 function Result({ reading, text, view, onWalk }: { reading: VerseReading; text: string; view: ReadingView; onWalk: () => void }) {
   const [open, setOpen] = useState<string | null>(null);
   const fix = reading.words.find((w) => normal(w.word) === open);
   return (
     <div data-reading-result={reading.verdict} className="space-y-2">
-      <h3 className="text-lg font-semibold">{reading.verdict === 'well-read' ? 'Well read' : 'Words to fix'}</h3>
+      <h3 className="text-lg font-semibold">{RESULT_HEADINGS[reading.verdict]}</h3>
       <p className="break-words text-base">{reading.note}</p>
       {reading.words.length > 0 ? (
         <>

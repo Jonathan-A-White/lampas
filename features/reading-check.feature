@@ -44,6 +44,29 @@ Feature: Reading check, in English and in Greek
     Then the reading check says "Well read"
     And there is no Read these again button
 
+  Scenario: A reading that covers only part of the verse is headed Read the whole verse, not Well read
+    Given Lampas is opened on Romans 8 in English with a reading check that heard only part of the verse
+    And he selects verse 28
+    When he holds Read for 2 seconds and lets go
+    Then the reading check says "Read the whole verse"
+    And the reading check says "I heard 'and we know that'"
+    And the reading check does not say "Well read"
+    And there is no Read these again button
+
+  Scenario: A reading with words to fix is headed Words to fix
+    Given Lampas is opened on Romans 8 in English with a reading check behind a fake Postern
+    And he selects verse 28
+    When he holds Read for 2 seconds and lets go
+    Then the reading check says "Words to fix"
+    And the reading check does not say "Well read"
+
+  Scenario: A hold under about one second sends nothing and says Hold Read for the whole verse
+    Given Lampas is opened on Romans 8 in English with a reading check behind a fake Postern
+    And he selects verse 28
+    When he holds Read for 800 milliseconds and lets go
+    Then the reading check says "Hold Read for the whole verse"
+    And the mill received no grist
+
   Scenario: A press under 500 ms sends nothing and says Hold while you read
     Given Lampas is opened on Romans 8 in English with a reading check behind a fake Postern
     And he selects verse 28
