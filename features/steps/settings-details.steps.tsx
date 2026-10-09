@@ -159,7 +159,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the app takes the page away', () => run(leavers));
     Then('Settings has the section {string}', async (_, name: string) => {
       expect(await screen.findByRole('heading', { name, level: 2 })).toBeInTheDocument();
-      expect(screen.getByRole('group', { name })).toBeInTheDocument();
+      expect(await screen.findByRole('group', { name })).toBeInTheDocument();
     });
     When('he turns the switch {string} Off', turnsOn);
     Then('Settings no longer has the section {string}', async (_, name: string) => {

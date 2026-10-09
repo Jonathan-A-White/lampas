@@ -1,8 +1,11 @@
 // src/SettingsScreen.tsx — what he can set, so the reader's front screen stays clear: the Theme and Text size, the layout (verse by verse | paragraph), the section headings, the weave, the voices that read
 // English and Greek aloud, how fast each is read, and how Greek is pronounced. Each choice is saved in the settings store (src/data/repositories)
 // and told to the bus (src/events/bus.ts); the Study resources (src/resources/) are switched on here; Words and About open from here too.
+// The rows are not written here: src/settings/rows.ts lists every row (name, hint, help, section, what it depends on) and this file draws
+// them, section by section, each with the control CONTROLS names for its key. The search field at the top filters that list (visibleRows),
+// and a row that depends on a setting that is off is not drawn.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { TEXT_SIZES } from './appearance/textSizes';
 import { THEMES, type Theme } from './appearance/themes';
 import {
@@ -31,46 +34,79 @@ import {
   setResourceOn,
   setResourceOption,
   type ReadingLayout,
-  type GrammarMove,
-  type PickerGrammar,
-  type SectionHeadings,
   type ReadSpan,
-  type ReadTutor,
-  type Tips,
   type VoiceLanguage,
-  type Weave,
-  type WeaveGrammar,
 } from './data/repositories';
 import { AskApproachSheet } from './AskApproachSheet';
 import { APPROACHES, approachOf, nextLessonOf, type GrammarApproach } from './approaches';
 import { listLevels } from './data/repositories/grammarLevels';
 import { BOOK_INDEX } from './data/bookIndex';
 import { goalText, goalTitle, parseGoal, type Goal } from './data/goal';
-import { paceNote, type NewWordsADay, type Pace } from './data/pace';
+import { paceNote } from './data/pace';
 import { LAYOUTS } from './layout/layouts';
 import { navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { usePace } from './usePace';
 import { PHONE_VOICE, writeSetting } from './settings/registry';
+import { ROWS, SECTIONS, readValues, visibleRows, type SettingsRow } from './settings/rows';
 import { ScriptText } from './script/ScriptText';
-import { DEPTHS, HEBREW, type Depth, type TutorScript } from './script/scripts';
+import { DEPTHS, SCRIPTS, type Depth, type TutorScript } from './script/scripts';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { speaksLanguage, useVoices, voiceKey } from './speech/greek';
-import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from './speech/languages';
+import { DEFAULT_RATE, RATE_MAX, RATE_MIN, RATE_STEP } from './speech/languages';
 import { SearchableList } from './ui/SearchableList';
-import { RESOURCES, tickedOf, type ResourceChoices, type StudyResource } from './resources';
+import { tickedOf, type ResourceChoices, type StudyResource } from './resources';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from './resources/logosBible';
 import { checkApp } from './resources/openApp';
 import { PRONUNCIATIONS, pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
+import { resourceOf } from './resources';
 import { READ_SPANS } from './speech/readSpan';
 
-function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
+function Section({ title, hint, labelled, children }: { title: string; hint?: string; labelled?: boolean; children: ReactNode }) {
   return (
-    <section className="border-b border-line py-4">
+    <section aria-label={labelled ? title : undefined} className="border-b border-line py-4">
       <h2 className="text-lg font-semibold">{title}</h2>
       {hint ? <p className="pb-2 text-base text-muted">{hint}</p> : null}
       {children}
     </section>
+  );
+}
+
+/** The row's longer help, behind a small 'More help' that sits on the hint's line (its tap area reaches 44 px without costing height). */
+function MoreHelp({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  return (
+    <>
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={() => setOpen(!open)}
+        className="relative ml-2 text-base font-medium text-accent underline before:absolute before:-inset-x-2 before:-inset-y-3"
+      >
+        {open ? 'Less help' : 'More help'}
+      </button>
+      {open ? (
+        <span id={id} className="mt-1 block text-base text-muted">
+          {text}
+        </span>
+      ) : null}
+    </>
+  );
+}
+
+/** One row of Settings: its control, then the registry's one-line hint (and its help, on request), then any `details` of the control. */
+function SettingRow({ row, children, details, className = 'pb-3' }: { row: SettingsRow; children: ReactNode; details?: ReactNode; className?: string }) {
+  return (
+    <div data-setting={row.key} className={className}>
+      {children}
+      <p className="pt-1 text-base text-muted">
+        {row.hint}
+        {row.help ? <MoreHelp text={row.help} /> : null}
+      </p>
+      {details}
+    </div>
   );
 }
 
@@ -110,116 +146,70 @@ function TextSizeChoice({ percent }: { percent: number }) {
   );
 }
 
-/** One row of the Weave: a small label at the left and three chips on one line (never wrapped), the hint beneath. `name` is the setting's label in the registry. */
-function WeaveRow({ label, name, hint, current, options, settingKey }: { label: string; name: string; hint: string; current: string; options: [string, string][]; settingKey: 'weave' | 'weaveGrammar' }) {
+/** The three chips of a weave or New words row, on one line (never wrapped); `name` is the setting's label in the registry. */
+function ChipRow({ name, current, options, settingKey }: { name: string; current: string; options: [string, string][]; settingKey: 'weave' | 'weaveGrammar' | 'pickerGrammar' | 'grammarMove' | 'newWordsADay' }) {
   return (
-    <div className="pb-3">
+    <div role="group" aria-label={name} className="inline-flex max-w-full min-w-0 flex-nowrap rounded-xl border border-line p-0.5">
+      {options.map(([value, text]) => (
+        <button
+          key={value}
+          type="button"
+          aria-pressed={current === value}
+          onClick={() => void writeSetting(settingKey, value)}
+          className={`min-h-12 min-w-12 whitespace-nowrap rounded-lg px-3 text-base font-medium ${current === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+        >
+          {text}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** The Weave's rows: a small label at the left and three chips on one line. */
+function WeaveControl({ row }: { row: SettingsRow }) {
+  const grammar = row.key === 'weaveGrammar';
+  const current = useLiveQuery(grammar ? getWeaveGrammar : getWeave, [grammar]);
+  const options: [string, string][] = grammar
+    ? [['any', 'Any'], ['solid', 'Solid'], ['solid+frontier', '+ Frontier']]
+    : [['off', 'Off'], ['solid', 'Solid'], ['solid+learning', '+ Learning']];
+  return (
+    <SettingRow row={row}>
       <div className="flex items-center gap-2">
-        <span className="w-16 shrink-0 text-sm font-medium text-muted">{label}</span>
-        <div role="group" aria-label={name} className="inline-flex min-w-0 flex-nowrap rounded-xl border border-line p-0.5">
-          {options.map(([value, text]) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={current === value}
-              onClick={() => void writeSetting(settingKey, value)}
-              className={`min-h-12 min-w-12 whitespace-nowrap rounded-lg px-3 text-base font-medium ${current === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
-            >
-              {text}
-            </button>
-          ))}
-        </div>
+        <span className="w-16 shrink-0 text-sm font-medium text-muted">{grammar ? 'Grammar' : 'Words'}</span>
+        {current ? <ChipRow name={row.label} current={current} options={options} settingKey={grammar ? 'weaveGrammar' : 'weave'} /> : null}
       </div>
-      <p className="pt-1 text-base text-muted">{hint}</p>
-    </div>
+    </SettingRow>
   );
 }
 
-/** The Grammar row is a detail of the Weave: it is drawn only while the Weave is not Off. */
-function WeaveChoice({ weave, grammar }: { weave: Weave; grammar: WeaveGrammar }) {
-  return (
-    <>
-      <WeaveRow
-        label="Words"
-        name="Weave"
-        settingKey="weave"
-        current={weave}
-        options={[['off', 'Off'], ['solid', 'Solid'], ['solid+learning', '+ Learning']]}
-        hint="Which words stand in Greek: Solid ones, or + Learning too, with their English beneath in small grey until they turn solid."
-      />
-      {weave === 'off' ? null : (
-        <WeaveRow
-          label="Grammar"
-          name="Grammar"
-          settingKey="weaveGrammar"
-          current={grammar}
-          options={[['any', 'Any'], ['solid', 'Solid'], ['solid+frontier', '+ Frontier']]}
-          hint="Of the words that stand in Greek, keep only the forms whose grammar you have at this level: Any, Solid, or Solid and frontier."
-        />
-      )}
-    </>
-  );
+const NEW_WORDS = {
+  newWordsADay: { read: getNewWordsADay, options: [['0', 'Off'], ['3', '3'], ['5', '5'], ['10', '10']] },
+  pickerGrammar: { read: getPickerGrammar, options: [['solid', 'Solid grammar'], ['frontier', 'Frontier grammar']] },
+  grammarMove: { read: getGrammarMove, options: [['ask', 'Ask'], ['auto', 'Auto'], ['off', 'Off']] },
+} satisfies Record<string, { read: () => Promise<string | number>; options: [string, string][] }>;
+
+/** What the pace did to New words a day, under its chips. */
+function PaceNote() {
+  const pace = usePace();
+  const note = pace ? paceNote(pace.reason) : null;
+  return note ? (
+    <p data-testid="pace-note" className="pt-1 text-base font-medium">
+      {note}
+    </p>
+  ) : null;
 }
 
-/** One row of New words: the setting's label above, its chips on one line (never wrapped), the hint beneath. `name` is the setting's label in the registry. */
-function NewWordsRow({ name, hint, current, options, settingKey, note }: { name: string; hint: string; current: string; options: [string, string][]; settingKey: 'pickerGrammar' | 'grammarMove' | 'newWordsADay'; note?: string | null }) {
+/** New words a day, New words at and Move it: the setting's label above, its chips on one line. */
+function NewWordsControl({ row }: { row: SettingsRow }) {
+  const key = row.key as keyof typeof NEW_WORDS;
+  const { read, options } = NEW_WORDS[key];
+  const current = useLiveQuery(async () => String(await read()), [key]);
   return (
-    <div className="pb-3">
-      <h3 className="pb-1 text-base font-medium">{name}</h3>
-      <div role="group" aria-label={name} className="inline-flex max-w-full flex-nowrap rounded-xl border border-line p-0.5">
-        {options.map(([value, text]) => (
-          <button
-            key={value}
-            type="button"
-            aria-pressed={current === value}
-            onClick={() => void writeSetting(settingKey, value)}
-            className={`min-h-12 min-w-12 whitespace-nowrap rounded-lg px-3 text-base font-medium ${current === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
-          >
-            {text}
-          </button>
-        ))}
-      </div>
-      {note ? (
-        <p data-testid="pace-note" className="pt-1 text-base font-medium">
-          {note}
-        </p>
-      ) : null}
-      <p className="pt-1 text-base text-muted">{hint}</p>
-    </div>
-  );
-}
-
-/** New words at and Move it are details of New words a day: they are drawn only while it is not Off. */
-function NewWordsChoice({ level, move, perDay, pace }: { level: PickerGrammar; move: GrammarMove; perDay: NewWordsADay; pace: Pace | undefined }) {
-  return (
-    <>
-      <NewWordsRow
-        name="New words a day"
-        settingKey="newWordsADay"
-        current={String(perDay)}
-        options={[['0', 'Off'], ['3', '3'], ['5', '5'], ['10', '10']]}
-        note={pace ? paceNote(pace.reason) : null}
-        hint="From the chapter you are reading, most common first"
-      />
-      {perDay === 0 ? null : (
-        <>
-          <NewWordsRow
-            name="New words at"
-            settingKey="pickerGrammar"
-            current={level}
-            options={[['solid', 'Solid grammar'], ['frontier', 'Frontier grammar']]}
-            hint="Offer only new words whose form in the chapter uses grammar you have at this level."
-          />
-          <NewWordsRow
-            name="Move it"
-            settingKey="grammarMove"
-            current={move}
-            options={[['ask', 'Ask'], ['auto', 'Auto'], ['off', 'Off']]}
-            hint="Whether the app moves New words at by how your grammar reviews go: Ask offers, Auto moves and says so, Off never."
-          />
-        </>
-      )}
-    </>
+    <SettingRow row={row}>
+      <h3 className="pb-1 text-base font-medium">{row.label}</h3>
+      {current !== undefined ? <ChipRow name={row.label} current={current} options={options} settingKey={key} /> : null}
+      {key === 'newWordsADay' ? <PaceNote /> : null}
+    </SettingRow>
   );
 }
 
@@ -241,25 +231,6 @@ function LayoutChoice({ layout }: { layout: ReadingLayout }) {
   );
 }
 
-function HeadingsChoice({ headings }: { headings: SectionHeadings }) {
-  const choice = (value: SectionHeadings, label: string) => (
-    <button
-      type="button"
-      aria-pressed={headings === value}
-      onClick={() => void writeSetting('sectionHeadings', value)}
-      className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${headings === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
-    >
-      {label}
-    </button>
-  );
-  return (
-    <div role="group" aria-label="Section headings" className="inline-flex rounded-xl border border-line p-0.5">
-      {choice('on', 'On')}
-      {choice('off', 'Off')}
-    </div>
-  );
-}
-
 function ReadSpanChoice({ span }: { span: ReadSpan }) {
   return (
     <div role="group" aria-label="Read aloud span" className="inline-flex rounded-xl border border-line p-0.5">
@@ -274,84 +245,6 @@ function ReadSpanChoice({ span }: { span: ReadSpan }) {
           {s.label}
         </button>
       ))}
-    </div>
-  );
-}
-
-function ReadTutorChoice({ readTutor }: { readTutor: ReadTutor }) {
-  const choice = (value: ReadTutor, label: string) => (
-    <button
-      type="button"
-      aria-pressed={readTutor === value}
-      onClick={() => void writeSetting('readTutor', value)}
-      className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${readTutor === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
-    >
-      {label}
-    </button>
-  );
-  return (
-    <div role="group" aria-label="Read the tutor's responses aloud" className="inline-flex rounded-xl border border-line p-0.5">
-      {choice('on', 'On')}
-      {choice('off', 'Off')}
-    </div>
-  );
-}
-
-function DeveloperChoice({ developer }: { developer: 'on' | 'off' }) {
-  const choice = (value: 'on' | 'off', label: string) => (
-    <button
-      type="button"
-      aria-pressed={developer === value}
-      onClick={() => void setDeveloper(value)}
-      className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${developer === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
-    >
-      {label}
-    </button>
-  );
-  return (
-    <div role="group" aria-label="Developer mode" className="inline-flex rounded-xl border border-line p-0.5">
-      {choice('on', 'On')}
-      {choice('off', 'Off')}
-    </div>
-  );
-}
-
-function ScriptDepthChoice({ script, depth }: { script: TutorScript; depth: Depth }) {
-  return (
-    <div role="group" aria-label={script.settingLabel} className="flex flex-col gap-1 rounded-xl border border-line p-0.5">
-      {DEPTHS.map((d) => (
-        <button
-          key={d.id}
-          type="button"
-          aria-pressed={depth === d.id}
-          onClick={() => void writeSetting(script.settingKey, d.id)}
-          className={`flex min-h-12 items-center justify-between gap-3 rounded-lg px-4 text-left text-base font-medium ${depth === d.id ? 'bg-accent text-accent-fg' : 'text-fg'}`}
-        >
-          <span>{d.label}</span>
-          <span className="text-base font-normal opacity-80" aria-hidden="true">
-            <ScriptText text={script.examples[d.id]} />
-          </span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function TipsChoice({ tips }: { tips: Tips }) {
-  const choice = (value: Tips, label: string) => (
-    <button
-      type="button"
-      aria-pressed={tips === value}
-      onClick={() => void writeSetting('tips', value)}
-      className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${tips === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
-    >
-      {label}
-    </button>
-  );
-  return (
-    <div role="group" aria-label="Tips" className="inline-flex rounded-xl border border-line p-0.5">
-      {choice('on', 'On')}
-      {choice('off', 'Off')}
     </div>
   );
 }
@@ -455,7 +348,7 @@ type AppCheck = 'checking' | 'found' | null;
 /** One study resource: its switch (a 44 px row), what it adds, and the field it asks for, if any (kept as he types).
  *  Turning an app On opens it once (openApp.ts checkApp): if the page goes away the app is there and stays On; if not, the switch goes back Off.
  *  Only an On resource shows more than its row (mw-5r3p30.106): the check's line, its choices and its field. The typed field is kept in the store while hidden. */
-function ResourceRow({ resource, on, typed }: { resource: StudyResource; on: boolean; typed: string }) {
+function ResourceRow({ row, resource, on, typed }: { row: SettingsRow; resource: StudyResource; on: boolean; typed: string }) {
   const [value, setValue] = useState(typed);
   const [check, setCheck] = useState<AppCheck>(null);
   const dropCheck = useRef<(() => void) | null>(null);
@@ -477,7 +370,47 @@ function ResourceRow({ resource, on, typed }: { resource: StudyResource; on: boo
     });
   };
   return (
-    <div className="border-b border-line py-2 last:border-b-0">
+    <SettingRow
+      row={row}
+      className="border-b border-line py-2 last:border-b-0"
+      details={
+        on ? (
+          <>
+            {check === 'checking' ? (
+              <p role="status" className="pt-1 text-sm text-muted">{`Looking for ${resource.name} on this phone…`}</p>
+            ) : null}
+            {check === 'found' ? (
+              <p role="status" className="pt-1 text-base font-medium">{`${resource.name} found`}</p>
+            ) : null}
+            {resource.choices ? <ChoiceList resourceId={resource.id} choices={resource.choices} ticked={tickedOf(resource, typed)} /> : null}
+            {option ? (
+              <div className="mt-2">
+                <label className="block">
+                  <span className="block text-base font-medium">{option.label}</span>
+                  <input
+                    type="text"
+                    value={value}
+                    placeholder={option.default}
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    aria-describedby={`resource-${resource.id}-hint`}
+                    onChange={(e) => {
+                      setValue(e.target.value);
+                      void setResourceOption(resource.id, e.target.value);
+                    }}
+                    className="mt-1 min-h-12 w-full rounded-lg border border-line bg-surface px-3 text-base text-fg"
+                  />
+                </label>
+                <p id={`resource-${resource.id}-hint`} className="pt-1 text-sm text-muted">
+                  {option.hint}
+                </p>
+              </div>
+            ) : null}
+          </>
+        ) : null
+      }
+    >
       <div className="flex min-h-12 items-center justify-between gap-3">
         <span id={`resource-${resource.id}`} className="text-base font-medium">
           {resource.name}
@@ -493,43 +426,7 @@ function ResourceRow({ resource, on, typed }: { resource: StudyResource; on: boo
           {on ? 'On' : 'Off'}
         </button>
       </div>
-      <p className="text-sm text-muted">{resource.describe}</p>
-      {on ? (
-        <>
-        {check === 'checking' ? (
-          <p role="status" className="pt-1 text-sm text-muted">{`Looking for ${resource.name} on this phone…`}</p>
-        ) : null}
-        {check === 'found' ? (
-          <p role="status" className="pt-1 text-base font-medium">{`${resource.name} found`}</p>
-        ) : null}
-        {resource.choices ? <ChoiceList resourceId={resource.id} choices={resource.choices} ticked={tickedOf(resource, typed)} /> : null}
-        {option ? (
-          <div className="mt-2">
-            <label className="block">
-              <span className="block text-base font-medium">{option.label}</span>
-              <input
-                type="text"
-                value={value}
-                placeholder={option.default}
-                autoCapitalize="none"
-                autoCorrect="off"
-                spellCheck={false}
-                aria-describedby={`resource-${resource.id}-hint`}
-                onChange={(e) => {
-                  setValue(e.target.value);
-                  void setResourceOption(resource.id, e.target.value);
-                }}
-                className="mt-1 min-h-12 w-full rounded-lg border border-line bg-surface px-3 text-base text-fg"
-              />
-            </label>
-            <p id={`resource-${resource.id}-hint`} className="pt-1 text-sm text-muted">
-              {option.hint}
-            </p>
-          </div>
-        ) : null}
-        </>
-      ) : null}
-    </div>
+    </SettingRow>
   );
 }
 
@@ -756,137 +653,262 @@ function AskApproach() {
   );
 }
 
-function LinkRow({ label, to }: { label: string; to: 'words' | 'review' | 'paradigms' | 'studyway' | 'about' }) {
+const LINK_TO = { 'link.studyway': 'studyway', 'link.words': 'words', 'link.review': 'review', 'link.paradigms': 'paradigms', 'link.about': 'about' } as const;
+
+function LinkControl({ row }: { row: SettingsRow }) {
+  const to = LINK_TO[row.key as keyof typeof LINK_TO];
   return (
-    <button
-      type="button"
-      onClick={() => navigate(to)}
-      className="flex min-h-12 w-full items-center justify-between border-b border-line text-left text-base font-medium"
-    >
-      {label}
-      <span aria-hidden="true" className="text-muted">
-        ›
-      </span>
-    </button>
+    <SettingRow row={row} className="border-b border-line pb-2">
+      <button
+        type="button"
+        onClick={() => navigate(to)}
+        className="flex min-h-12 w-full items-center justify-between text-left text-base font-medium"
+      >
+        {row.label}
+        <span aria-hidden="true" className="text-muted">
+          ›
+        </span>
+      </button>
+    </SettingRow>
+  );
+}
+
+const ON_COLOUR = 'bg-accent text-accent-fg';
+
+/** An On | Off choice of a talkable setting. */
+function OnOff({ name, current, settingKey }: { name: string; current: 'on' | 'off'; settingKey: 'sectionHeadings' | 'tips' | 'readTutor' }) {
+  return (
+    <div role="group" aria-label={name} className="inline-flex rounded-xl border border-line p-0.5">
+      {(['on', 'off'] as const).map((value) => (
+        <button
+          key={value}
+          type="button"
+          aria-pressed={current === value}
+          onClick={() => void writeSetting(settingKey, value)}
+          className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${current === value ? ON_COLOUR : 'text-fg'}`}
+        >
+          {value === 'on' ? 'On' : 'Off'}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ScriptDepthChoice({ script, depth }: { script: TutorScript; depth: Depth }) {
+  return (
+    <div role="group" aria-label={script.settingLabel} className="flex flex-col gap-1 rounded-xl border border-line p-0.5">
+      {DEPTHS.map((d) => (
+        <button
+          key={d.id}
+          type="button"
+          aria-pressed={depth === d.id}
+          onClick={() => void writeSetting(script.settingKey, d.id)}
+          className={`flex min-h-12 items-center justify-between gap-3 rounded-lg px-4 text-left text-base font-medium ${depth === d.id ? ON_COLOUR : 'text-fg'}`}
+        >
+          <span>{d.label}</span>
+          <span className="text-base font-normal opacity-80" aria-hidden="true">
+            <ScriptText text={script.examples[d.id]} />
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function DeveloperChoice({ name, developer }: { name: string; developer: 'on' | 'off' }) {
+  return (
+    <div role="group" aria-label={name} className="inline-flex rounded-xl border border-line p-0.5">
+      {(['on', 'off'] as const).map((value) => (
+        <button
+          key={value}
+          type="button"
+          aria-pressed={developer === value}
+          onClick={() => void setDeveloper(value)}
+          className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${developer === value ? ON_COLOUR : 'text-fg'}`}
+        >
+          {value === 'on' ? 'On' : 'Off'}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** A control of the registry's rows: it reads its own setting and draws it inside its SettingRow. */
+type Control = (props: { row: SettingsRow }) => ReactNode;
+
+const AppearanceControl: Control = ({ row }) => {
+  const theme = useLiveQuery(getTheme, []);
+  const textSize = useLiveQuery(getTextSize, []);
+  const isTheme = row.key === 'theme';
+  return (
+    <SettingRow row={row}>
+      <h3 className="pb-1 text-base font-medium">{row.label}</h3>
+      {isTheme ? (theme ? <ThemeChoice theme={theme} /> : null) : textSize !== undefined ? <TextSizeChoice percent={textSize} /> : null}
+    </SettingRow>
+  );
+};
+
+const LayoutControl: Control = ({ row }) => {
+  const layout = useLiveQuery(getLayout, []);
+  return <SettingRow row={row}>{layout ? <LayoutChoice layout={layout} /> : null}</SettingRow>;
+};
+
+const HeadingsControl: Control = ({ row }) => {
+  const headings = useLiveQuery(getSectionHeadings, []);
+  return <SettingRow row={row}>{headings ? <OnOff name={row.label} current={headings} settingKey="sectionHeadings" /> : null}</SettingRow>;
+};
+
+const TipsControl: Control = ({ row }) => {
+  const tips = useLiveQuery(getTips, []);
+  return <SettingRow row={row}>{tips ? <OnOff name={row.label} current={tips} settingKey="tips" /> : null}</SettingRow>;
+};
+
+const ReadTutorControl: Control = ({ row }) => {
+  const readTutor = useLiveQuery(getReadTutor, []);
+  return <SettingRow row={row}>{readTutor ? <OnOff name={row.label} current={readTutor} settingKey="readTutor" /> : null}</SettingRow>;
+};
+
+const ScriptDepthControl: Control = ({ row }) => {
+  const script = SCRIPTS.find((s) => s.settingKey === row.key);
+  const depth = useLiveQuery(() => (script ? getScriptDepth(script) : Promise.resolve(undefined)), [script]);
+  return <SettingRow row={row}>{script && depth ? <ScriptDepthChoice script={script} depth={depth} /> : null}</SettingRow>;
+};
+
+const DeveloperControl: Control = ({ row }) => {
+  const developer = useLiveQuery(getDeveloper, []);
+  return <SettingRow row={row}>{developer === 'on' || developer === 'off' ? <DeveloperChoice name={row.label} developer={developer} /> : null}</SettingRow>;
+};
+
+const ReadSpanControl: Control = ({ row }) => {
+  const readSpan = useLiveQuery(getReadSpan, []);
+  return <SettingRow row={row}>{readSpan ? <ReadSpanChoice span={readSpan} /> : null}</SettingRow>;
+};
+
+const GoalControl: Control = ({ row }) => {
+  const goal = useLiveQuery(getGoal, []);
+  return <SettingRow row={row}>{goal !== undefined ? <GoalPickers saved={goal} /> : null}</SettingRow>;
+};
+
+const ApproachControl: Control = ({ row }) => {
+  const approach = useLiveQuery(getGrammarApproach, []);
+  const levels = useLiveQuery(listLevels, []);
+  return (
+    <SettingRow row={row}>
+      {approach !== undefined && levels !== undefined ? <ApproachPicker chosen={approach} levels={levels} /> : null}
+      <AskApproach />
+    </SettingRow>
+  );
+};
+
+const VoiceControl: Control = ({ row }) => {
+  const language = row.key === 'englishVoice' ? 'english' : 'greek';
+  const saved = useLiveQuery(() => getVoice(language), [language]);
+  const pronunciation = useLiveQuery(getGreekPronunciation, []);
+  return (
+    <SettingRow row={row}>
+      {saved !== undefined ? <VoicePicker language={language} label={row.label} lang={language === 'english' ? 'en' : pronunciationOf(pronunciation).lang} saved={saved} /> : null}
+    </SettingRow>
+  );
+};
+
+const SpeedControl: Control = ({ row }) => {
+  const language = row.key === 'englishRate' ? 'english' : 'greek';
+  const rates = useLiveQuery(getSpeechRates, []);
+  return <SettingRow row={row}>{rates ? <SpeedSlider language={language} label={row.label} saved={rates[language]} /> : null}</SettingRow>;
+};
+
+const PronunciationControl: Control = ({ row }) => {
+  const pronunciation = useLiveQuery(getGreekPronunciation, []);
+  return <SettingRow row={row}>{pronunciation ? <PronunciationList chosen={pronunciation} /> : null}</SettingRow>;
+};
+
+const ResourceControl: Control = ({ row }) => {
+  const resources = useLiveQuery(getStudyResources, []);
+  const resource = resourceOf(row.key.slice('resource.'.length));
+  return resources && resource ? <ResourceRow row={row} resource={resource} on={resources.on.includes(resource.id)} typed={resources.options[resource.id] ?? ''} /> : null;
+};
+
+const LogosBibleControl: Control = ({ row }) => {
+  const logosBible = useLiveQuery(getLogosBible, []);
+  return <SettingRow row={row}>{logosBible !== undefined ? <LogosBiblePicker saved={logosBible} /> : null}</SettingRow>;
+};
+
+/** The control of each row, by the row's key (src/settings/rows.ts): a row with no control here is a test failure. */
+const CONTROLS: Readonly<Record<string, Control>> = {
+  theme: AppearanceControl,
+  textSize: AppearanceControl,
+  layout: LayoutControl,
+  sectionHeadings: HeadingsControl,
+  weave: WeaveControl,
+  weaveGrammar: WeaveControl,
+  newWordsADay: NewWordsControl,
+  pickerGrammar: NewWordsControl,
+  grammarMove: NewWordsControl,
+  goal: GoalControl,
+  grammarApproach: ApproachControl,
+  readSpan: ReadSpanControl,
+  englishVoice: VoiceControl,
+  greekVoice: VoiceControl,
+  englishRate: SpeedControl,
+  greekRate: SpeedControl,
+  greekPronunciation: PronunciationControl,
+  logosBible: LogosBibleControl,
+  tips: TipsControl,
+  readTutor: ReadTutorControl,
+  developer: DeveloperControl,
+  ...Object.fromEntries(SCRIPTS.map((s) => [s.settingKey, ScriptDepthControl])),
+  ...Object.fromEntries(ROWS.filter((r) => r.key.startsWith('resource.')).map((r) => [r.key, ResourceControl])),
+  ...Object.fromEntries(ROWS.filter((r) => r.key.startsWith('link.')).map((r) => [r.key, LinkControl])),
+};
+
+/** The search field at the top: it filters the rows by name and hint as he types. */
+function SettingsSearch({ query, onChange }: { query: string; onChange: (query: string) => void }) {
+  return (
+    <div className="pt-3">
+      <input
+        type="search"
+        value={query}
+        placeholder="Search settings"
+        aria-label="Search settings"
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
+        enterKeyHint="search"
+        onChange={(e) => onChange(e.target.value)}
+        className="min-h-12 w-full rounded-lg border border-line bg-surface px-3 text-base text-fg"
+      />
+    </div>
   );
 }
 
 export function SettingsScreen() {
   const scrollRef = useScrollMemory('settings');
-  const theme = useLiveQuery(getTheme, []);
-  const textSize = useLiveQuery(getTextSize, []);
-  const rates = useLiveQuery(getSpeechRates, []);
-  const weave = useLiveQuery(getWeave, []);
-  const weaveGrammar = useLiveQuery(getWeaveGrammar, []);
-  const pickerGrammar = useLiveQuery(getPickerGrammar, []);
-  const grammarMove = useLiveQuery(getGrammarMove, []);
-  const newWordsADay = useLiveQuery(getNewWordsADay, []);
-  const pace = usePace();
-  const layout = useLiveQuery(getLayout, []);
-  const headings = useLiveQuery(getSectionHeadings, []);
-  const tips = useLiveQuery(getTips, []);
-  const readSpan = useLiveQuery(getReadSpan, []);
-  const readTutor = useLiveQuery(getReadTutor, []);
-  const developer = useLiveQuery(getDeveloper, []);
-  const hebrewDepth = useLiveQuery(() => getScriptDepth(HEBREW), []);
-  const english = useLiveQuery(() => getVoice('english'), []);
-  const greek = useLiveQuery(() => getVoice('greek'), []);
-  const pronunciation = useLiveQuery(getGreekPronunciation, []);
-  const resources = useLiveQuery(getStudyResources, []);
-  const goal = useLiveQuery(getGoal, []);
-  const logosBible = useLiveQuery(getLogosBible, []);
-  const approach = useLiveQuery(getGrammarApproach, []);
-  const levels = useLiveQuery(listLevels, []);
+  const [query, setQuery] = useState('');
+  const values = useLiveQuery(readValues, []);
+  const rows = visibleRows(values ?? {}, query);
   return (
     <>
       <ScreenHeader title="Settings" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />
       <main ref={scrollRef} className="screen min-h-0 flex-1 px-4">
         <div>
-          <Section title="Appearance" hint="Phone follows the phone's own light or dark setting. Normal text is the size your phone uses.">
-            <h3 className="pb-1 text-base font-medium">Theme</h3>
-            {theme ? <ThemeChoice theme={theme} /> : null}
-            <h3 className="pb-1 pt-3 text-base font-medium">Text size</h3>
-            {textSize !== undefined ? <TextSizeChoice percent={textSize} /> : null}
-          </Section>
-          <Section title="Layout" hint="Verse by verse is one verse per line. Paragraph runs the verses of a paragraph together, with small verse numbers.">
-            {layout ? <LayoutChoice layout={layout} /> : null}
-          </Section>
-          <Section title="Section headings" hint="Show the Bible's headings (such as Walking by the Spirit) above their verses.">
-            {headings ? <HeadingsChoice headings={headings} /> : null}
-          </Section>
-          <Section title="Weave" hint="In the English view, show the Greek of your words in place of their English.">
-            {weave && weaveGrammar ? <WeaveChoice weave={weave} grammar={weaveGrammar} /> : null}
-          </Section>
-          <Section title="New words" hint="How many new words Lampas offers a day, which ones by the grammar of their form in the chapter, and whether it moves that level for you.">
-            {pickerGrammar && grammarMove && newWordsADay !== undefined ? <NewWordsChoice level={pickerGrammar} move={grammarMove} perDay={newWordsADay} pace={pace} /> : null}
-          </Section>
-          <Section title="Goal" hint="The passage you are working toward: a whole book, one chapter or a single verse.">
-            {goal !== undefined ? <GoalPickers saved={goal} /> : null}
-          </Section>
-          <Section title="Grammar approach" hint="The order grammar is taught and tested in.">
-            {approach !== undefined && levels !== undefined ? <ApproachPicker chosen={approach} levels={levels} /> : null}
-            <AskApproach />
-          </Section>
-          <Section
-            title="Read aloud"
-            hint="How far Read from the top / Read from here goes. Verse stops after that verse; Passage before the next heading; Chapter at the chapter's end; Book goes on into each next chapter to the book's end. The play button on a verse reads just that verse."
-          >
-            {readSpan ? <ReadSpanChoice span={readSpan} /> : null}
-          </Section>
-          <Section
-            title="The tutor's responses"
-            hint="The reading check's verdict and the tutor's answers are read aloud as soon as they arrive, with no tap. Off speaks nothing by itself."
-          >
-            {readTutor ? <ReadTutorChoice readTutor={readTutor} /> : null}
-          </Section>
-          <Section title={HEBREW.settingLabel} hint="When the tutor writes a Hebrew word: only how it sounds in English letters, the Hebrew letters with how it sounds, or the pointed Hebrew letters alone, as Greek is written.">
-            {hebrewDepth ? <ScriptDepthChoice script={HEBREW} depth={hebrewDepth} /> : null}
-          </Section>
-          <Section title="Reading voices" hint="Which of this phone's voices reads aloud. Phone default lets the phone choose.">
-            {english !== undefined && greek !== undefined ? (
-              <>
-                <VoicePicker language="english" label="English voice" lang="en" saved={english} />
-                <VoicePicker language="greek" label="Greek voice" lang={pronunciationOf(pronunciation).lang} saved={greek} />
-              </>
-            ) : null}
-          </Section>
-          <Section title="Reading speed" hint="How fast each language is read aloud, on its own: 1.0 is normal.">
-            {rates ? LANGUAGES.map((l) => <SpeedSlider key={l.id} language={l.id} label={`${l.label} speed`} saved={rates[l.id]} />) : null}
-          </Section>
-          <Section title="Greek pronunciation" hint="How Greek is read aloud.">
-            {pronunciation ? <PronunciationList chosen={pronunciation} /> : null}
-          </Section>
-          <section aria-label="Study resources" className="border-b border-line py-4">
-            <h2 className="text-lg font-semibold">Study resources</h2>
-            <p className="pb-2 text-base text-muted">
-              Links from a word to the tools you own. Only links are added; no lexicon text is kept in Lampas. All start off.
+          <SettingsSearch query={query} onChange={setQuery} />
+          {SECTIONS.map((section) => {
+            const mine = rows.filter((r) => r.section === section.id);
+            if (mine.length === 0) return null;
+            return (
+              <Section key={section.id} title={section.title} hint={section.hint} labelled={section.id === 'resources'}>
+                {mine.map((row) => {
+                  const Row = CONTROLS[row.key];
+                  return Row ? <Row key={row.key} row={row} /> : null;
+                })}
+              </Section>
+            );
+          })}
+          {rows.length === 0 && values ? (
+            <p role="status" className="py-4 text-base text-muted">
+              Nothing in Settings matches “{query.trim()}”.
             </p>
-            {resources
-              ? RESOURCES.map((r) => <ResourceRow key={r.id} resource={r} on={resources.on.includes(r.id)} typed={resources.options[r.id] ?? ''} />)
-              : null}
-          </section>
-          {resources?.on.includes('logos') ? (
-            <Section title="Bible in Logos" hint="Lampas has no Old Testament text. Picking an Old Testament chapter opens it in Logos, in this Bible.">
-              {logosBible !== undefined ? <LogosBiblePicker saved={logosBible} /> : null}
-            </Section>
           ) : null}
-          <Section title="Tips" hint="Once a day at most, when you open Lampas and are online, a small tip about something you have not tried. Off sends nothing.">
-            {tips ? <TipsChoice tips={tips} /> : null}
-          </Section>
-          {developer === 'on' || developer === 'off' ? (
-            <Section title="Developer" hint="For finding faults. On shows Download my recording under a reading check's result, to save the clip as it was recorded.">
-              <DeveloperChoice developer={developer} />
-            </Section>
-          ) : null}
-          <Section title="My study way" hint="The lines you kept about how the tutor quizzes you.">
-            <LinkRow label="My study way" to="studyway" />
-          </Section>
-          <Section title="More">
-            <LinkRow label="Words" to="words" />
-            <LinkRow label="Review" to="review" />
-            <LinkRow label="Paradigms" to="paradigms" />
-            <LinkRow label="About" to="about" />
-          </Section>
         </div>
       </main>
     </>

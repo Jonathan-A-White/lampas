@@ -4,7 +4,7 @@
 // the same list. A row is a talkable setting (src/settings/registry.ts SETTINGS: it also carries what to read, write and allow), a
 // study-resource switch (src/resources, kept outside the registry) or a link to another screen.
 // A new setting is one entry in the registry (with its section) plus its control in SettingsScreen's CONTROLS; a test fails until both.
-import { getStudyResources } from '../data/repositories';
+import { getDeveloper, getStudyResources } from '../data/repositories';
 import { RESOURCES } from '../resources';
 import { SETTINGS, settingOf, type Dependency, type SectionId } from './registry';
 
@@ -25,12 +25,15 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'goal', title: 'Goal' },
   { id: 'approach', title: 'Grammar approach' },
   { id: 'readAloud', title: 'Read aloud' },
+  { id: 'readTutor', title: "The tutor's responses" },
+  { id: 'hebrew', title: 'Hebrew in the tutor' },
   { id: 'voices', title: 'Reading voices' },
   { id: 'speed', title: 'Reading speed' },
   { id: 'pronunciation', title: 'Greek pronunciation' },
   { id: 'resources', title: 'Study resources', hint: 'Links from a word to the tools you own. Only links are added; no lexicon text is kept in Lampas. All start off.' },
   { id: 'logos', title: 'Bible in Logos' },
   { id: 'tips', title: 'Tips' },
+  { id: 'developer', title: 'Developer' },
   { id: 'studyWay', title: 'My study way' },
   { id: 'more', title: 'More' },
 ];
@@ -57,6 +60,16 @@ const LINKS: readonly SettingsRow[] = [
   { key: 'link.about', label: 'About', hint: 'Where the text comes from, and its licences.', section: 'more' },
 ];
 
+/** Developer mode is found, not set (seven taps on About's version number): its switch is drawn only once it is no longer 'hidden'. */
+const DEVELOPER: SettingsRow = {
+  key: 'developer',
+  label: 'Developer mode',
+  hint: "For finding faults: On shows Download my recording under a reading check's result.",
+  help: "For finding faults. On shows Download my recording under a reading check's result, to save the clip as it was recorded.",
+  section: 'developer',
+  dependsOn: { key: 'developerMode', shown: (value) => value === 'on' || value === 'off' },
+};
+
 const resourceRows = (): SettingsRow[] =>
   RESOURCES.map((r) => ({ key: `resource.${r.id}`, label: r.name, hint: r.describe, section: 'resources' }));
 
@@ -69,7 +82,7 @@ const rowOfSetting = (s: (typeof SETTINGS)[number]): SettingsRow => ({
   dependsOn: s.dependsOn,
 });
 
-const unordered: readonly SettingsRow[] = [...SETTINGS.map(rowOfSetting), ...resourceRows(), ...LINKS];
+const unordered: readonly SettingsRow[] = [...SETTINGS.map(rowOfSetting), ...resourceRows(), DEVELOPER, ...LINKS];
 
 /** Every row of Settings, section by section in the screen's order (within a section, in the order they are listed above). */
 export const ROWS: readonly SettingsRow[] = SECTIONS.flatMap((section) => unordered.filter((r) => r.section === section.id));
@@ -86,6 +99,7 @@ export async function readValues(): Promise<Values> {
   const resources = await getStudyResources();
   const entries = await Promise.all(
     DEPENDED_ON.map(async (key) => {
+      if (key === 'developerMode') return [key, await getDeveloper()] as const;
       if (key.startsWith('resource.')) return [key, resources.on.includes(key.slice('resource.'.length)) ? 'on' : 'off'] as const;
       return [key, String(await settingOf(key)?.read())] as const;
     }),

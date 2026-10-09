@@ -92,12 +92,15 @@ export type SectionId =
   | 'goal'
   | 'approach'
   | 'readAloud'
+  | 'readTutor'
+  | 'hebrew'
   | 'voices'
   | 'speed'
   | 'pronunciation'
   | 'resources'
   | 'logos'
   | 'tips'
+  | 'developer'
   | 'studyWay'
   | 'more';
 
@@ -158,12 +161,16 @@ const depthEntries = SCRIPTS.map((script) =>
   choice(
     script.settingKey,
     script.settingLabel,
-    `How deep into ${script.label} the tutor goes when it writes a ${script.label} word: ${DEPTHS.map((d) => `${d.id} (${d.label}) writes it like ${script.examples[d.id]}`).join('; ')}. ${DEPTHS.find((d) => d.id === DEFAULT_DEPTH)?.label} by default.`,
+    `How the tutor writes a ${script.label} word: its sound, the letters, or both.`,
     DEPTHS.map((d) => ({ value: d.id, label: d.label })),
     () => getScriptDepth(script),
     async (value) => {
       await setScriptDepth(script, value as Depth);
       publish({ kind: 'script-depth-changed', script: script.id, depth: value as Depth });
+    },
+    {
+      section: 'hebrew',
+      help: `How deep into ${script.label} the tutor goes when it writes a ${script.label} word: ${DEPTHS.map((d) => `${d.id} (${d.label}) writes it like ${script.examples[d.id]}`).join('; ')}. ${DEPTHS.find((d) => d.id === DEFAULT_DEPTH)?.label} by default.`,
     },
   ),
 );
@@ -325,7 +332,7 @@ export const SETTINGS: readonly SettingEntry[] = [
   choice(
     'readTutor',
     "Read the tutor's responses aloud",
-    "Whether the tutor's responses are spoken the moment they arrive, with no tap: the reading check's verdict (its heading, its note and each word to fix with its tip, never the verse itself) and the answers to what he asks. On by default; Off speaks nothing by itself (the speaker on an answer still reads it).",
+    'The tutor\'s answers and reading verdicts are spoken as they arrive.',
     [
       { value: 'on', label: 'On' },
       { value: 'off', label: 'Off' },
@@ -334,6 +341,10 @@ export const SETTINGS: readonly SettingEntry[] = [
     async (value) => {
       await setReadTutor(value as ReadTutor);
       publish({ kind: 'read-tutor-changed', readTutor: value as ReadTutor });
+    },
+    {
+      section: 'readTutor',
+      help: "Whether the tutor's responses are spoken the moment they arrive, with no tap: the reading check's verdict (its heading, its note and each word to fix with its tip, never the verse itself) and the answers to what he asks. On by default; Off speaks nothing by itself (the speaker on an answer still reads it).",
     },
   ),
   ...depthEntries,
