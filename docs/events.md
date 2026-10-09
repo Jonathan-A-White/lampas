@@ -13,6 +13,7 @@ useLatest('verse-selected');         // React: the last one, re-rendering when a
 - Listeners are called in the order they subscribed. A listener that throws is logged (`console.error`) and the others still hear the event.
 - A listener hears only events published after it subscribed. A screen that mounts late reads `latest(kind)` (or `useLatest`) for the current state.
 - `AppEvent` in `bus.ts` is the list of kinds; add a kind there and in the table below (`tests/unit/bus.test.ts` fails if this file does not name every kind).
+- `subscribeAll(listener)` hears every kind, after the listeners of that kind; only the usage log (`src/tips/usageLog.ts`) uses it.
 - Tests call `clearBus()` to forget listeners and kept events.
 
 ## Kinds

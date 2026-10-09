@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { clearBus, latest, publish, subscribe, type AppEvent } from '../../src/events/bus';
+import { clearBus, latest, publish, subscribe, subscribeAll, type AppEvent } from '../../src/events/bus';
 
 afterEach(clearBus);
 
@@ -65,6 +65,33 @@ describe('the event bus', () => {
     expect(latest('verse-selected')).toEqual({ kind: 'verse-selected', chapter: 8, verse: 28 });
     expect(latest('view-changed')).toEqual({ kind: 'view-changed', view: 'greek' });
     expect(latest('weave-changed')).toBeUndefined();
+  });
+});
+
+describe('subscribeAll', () => {
+  it('hears every kind, in publish order, and stops after its unsubscribe', () => {
+    const heard: string[] = [];
+    const off = subscribeAll((event) => heard.push(event.kind));
+    publish({ kind: 'reading-stopped' });
+    publish({ kind: 'view-changed', view: 'greek' });
+    off();
+    publish({ kind: 'reading-stopped' });
+    expect(heard).toEqual(['reading-stopped', 'view-changed']);
+  });
+
+  it('is forgotten by clearBus, and a throwing listener does not stop the others', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const after = vi.fn();
+    subscribeAll(() => {
+      throw new Error('boom');
+    });
+    subscribeAll(after);
+    publish({ kind: 'reading-stopped' });
+    expect(after).toHaveBeenCalledTimes(1);
+    error.mockRestore();
+    clearBus();
+    publish({ kind: 'reading-stopped' });
+    expect(after).toHaveBeenCalledTimes(1);
   });
 });
 
