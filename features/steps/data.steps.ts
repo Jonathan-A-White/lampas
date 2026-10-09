@@ -8,6 +8,7 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { runBuild } from '../../scripts/data-build';
 import type { BookIndex, Chapter } from '../../src/data/chapter';
+import type { FrequencyEntry } from '../../src/data/frequency';
 
 // A real vite build takes a few seconds.
 vi.setConfig({ testTimeout: 90_000 });
@@ -76,7 +77,7 @@ describeFeature(feature, ({ Scenario }) => {
       }
       expect(files).toBe(260);
       const onDisk = readdirSync('public/data', { recursive: true }).map(String).filter((p) => p.endsWith('.json'));
-      expect(onDisk).toHaveLength(262);
+      expect(onDisk).toHaveLength(263);
     });
   });
 
@@ -187,16 +188,50 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Only the index, the lemma lexicon and Romans 8 are precached', ({ Given, Then, And }) => {
+  Scenario('The frequency table is built with the chapters', ({ Given, Then, And }) => {
+    Given('the committed index', () => {
+      index = readJson<BookIndex>('public/data/index.json');
+    });
+    Then("public/data/frequency.json counts every Strong's number of its chapters, with καί first and ἐν in the top five", () => {
+      const table = readJson<FrequencyEntry[]>('public/data/frequency.json');
+      const counts = new Map<string, number>();
+      for (const b of index.books) {
+        for (let n = 1; n <= b.chapters; n++) {
+          for (const v of readJson<Chapter>(chapterPath(b.code, n)).verses) for (const w of v.g) if (w.s !== 'G3588') counts.set(w.s, (counts.get(w.s) ?? 0) + 1);
+        }
+      }
+      expect(table).toHaveLength(counts.size);
+      for (const e of table) expect(e.count).toBe(counts.get(e.strongs));
+      expect(table[0].strongs).toBe('G2532');
+      expect(table.slice(0, 5).map((e) => e.strongs)).toContain('G1722');
+    });
+    And('the build of the source slices writes the same frequency table twice', async () => {
+      const raw = tmp();
+      writeFileSync(join(raw, 'msb_nt_tables.tsv'), readFileSync('tests/fixtures/data/msb-slice.tsv'));
+      writeFileSync(join(raw, 'tbesg.txt'), readFileSync('tests/fixtures/data/tbesg-slice.txt'));
+      const download = async () => {
+        throw new Error('the raw files are there; nothing should be downloaded');
+      };
+      const a = join(raw, 'out-a');
+      const b = join(raw, 'out-b');
+      await runBuild({ rawDir: raw, outDir: a, download });
+      await runBuild({ rawDir: raw, outDir: b, download });
+      const text = readFileSync(join(a, 'frequency.json'), 'utf8');
+      expect(text.length).toBeGreaterThan(50);
+      expect(readFileSync(join(b, 'frequency.json'), 'utf8')).toBe(text);
+    });
+  });
+
+  Scenario('Only the index, the lemma lexicon, the frequency table and Romans 8 are precached', ({ Given, Then, And }) => {
     Given('the app is built', () => {
       outDir = tmp();
       execFileSync(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--outDir', outDir, '--emptyOutDir', '--logLevel', 'error'], { stdio: 'inherit' });
       swText = readFileSync(join(outDir, 'sw.js'), 'utf8');
     });
-    Then('the service worker precaches data/index.json, data/lexicon.json and data/rom/8.json and no other chapter', () => {
+    Then('the service worker precaches data/index.json, data/lexicon.json, data/frequency.json and data/rom/8.json and no other chapter', () => {
       const urls = [...swText.matchAll(/"url":"([^"]+)"/g)].map((m) => m[1]);
       const data = urls.filter((u) => u.startsWith('data/')).sort();
-      expect(data).toEqual(['data/index.json', 'data/lexicon.json', 'data/rom/8.json']);
+      expect(data).toEqual(['data/frequency.json', 'data/index.json', 'data/lexicon.json', 'data/rom/8.json']);
       expect(urls.length).toBeGreaterThan(4);
     });
     And('the service worker serves other chapters cache-first from a runtime cache', () => {

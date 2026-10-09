@@ -208,7 +208,7 @@ describe('writing the files', () => {
       const out2 = join(base, 'out2');
       await run(raw, out1);
       await run(raw, out2);
-      expect(listing(out1)).toEqual(['index.json', 'jhn/1.json', 'lexicon.json', 'mat/1.json', 'mat/18.json', 'rev/17.json', 'rom/8.json']);
+      expect(listing(out1)).toEqual(['frequency.json', 'index.json', 'jhn/1.json', 'lexicon.json', 'mat/1.json', 'mat/18.json', 'rev/17.json', 'rom/8.json']);
       expect(listing(out2)).toEqual(listing(out1));
       for (const p of listing(out1)) expect(readFileSync(join(out2, p), 'utf8')).toBe(readFileSync(join(out1, p), 'utf8'));
       const text = readFileSync(join(out1, 'rom/8.json'), 'utf8');

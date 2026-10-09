@@ -39,7 +39,12 @@ Feature: The New Testament data
     When the data is built twice
     Then the second run writes the same bytes as the first
 
-  Scenario: Only the index, the lemma lexicon and Romans 8 are precached
+  Scenario: The frequency table is built with the chapters
+    Given the committed index
+    Then public/data/frequency.json counts every Strong's number of its chapters, with καί first and ἐν in the top five
+    And the build of the source slices writes the same frequency table twice
+
+  Scenario: Only the index, the lemma lexicon, the frequency table and Romans 8 are precached
     Given the app is built
-    Then the service worker precaches data/index.json, data/lexicon.json and data/rom/8.json and no other chapter
+    Then the service worker precaches data/index.json, data/lexicon.json, data/frequency.json and data/rom/8.json and no other chapter
     And the service worker serves other chapters cache-first from a runtime cache
