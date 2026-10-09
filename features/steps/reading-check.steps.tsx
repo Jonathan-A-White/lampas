@@ -80,6 +80,9 @@ async function selectVerse28(): Promise<void> {
 }
 
 const panel = () => screen.getByRole('region', { name: 'Reading check' });
+/** A marked word of the result or the walk: the verse above them (the sheet's own text) has tappable words of the same names. */
+const markedWord = async (name: string) =>
+  (await within(panel()).findAllByRole('button', { name, exact: true })).filter((b) => !b.closest('[data-sheet-verse]'))[0];
 const readButton = () => within(panel()).getByRole('button', { name: 'Read', exact: true });
 
 /** Presses a button and lets go; the clip says it lasted `ms` (the app's 500 ms rule reads that). */
@@ -156,7 +159,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(marked()).toHaveLength(2);
     });
     When('he taps the marked word {string}', async (_, word: string) => {
-      await user.click(within(panel()).getByRole('button', { name: word, exact: true }));
+      await user.click(await markedWord(word));
     });
     Then('its chunks show as {string} with a speaker to hear it', (_, chunks: string) => {
       const detail = panel().querySelector<HTMLElement>('[data-fix-detail]');
@@ -171,7 +174,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he selects verse 28', selectVerse28);
     And(holdRead, async () => holdAndLetGo(readButton(), 2000));
     When('he taps {string}', async (_, name: string) => {
-      await user.click(await within(panel()).findByRole('button', { name, exact: true }));
+      await user.click(await markedWord(name));
     });
     Then('the walk shows the word {string} as word 1 of 2 in chunks {string}', async (_, word: string, chunks: string) => {
       await waitFor(() => expect(walk()).toHaveTextContent('Word 1 of 2'));
@@ -333,7 +336,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(marked()).toHaveLength(2);
     });
     When('he taps the marked word {string}', async (_, word: string) => {
-      await user.click(within(panel()).getByRole('button', { name: word, exact: true }));
+      await user.click(await markedWord(word));
     });
     Then('its chunks show as {string} with a Greek speaker to hear it', (_, chunks: string) => {
       const detail = panel().querySelector<HTMLElement>('[data-fix-detail]');
@@ -356,7 +359,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he selects verse 28', selectVerse28);
     And(holdRead, async () => holdAndLetGo(readButton(), 2000));
     When('he taps {string}', async (_, name: string) => {
-      await user.click(await within(panel()).findByRole('button', { name, exact: true }));
+      await user.click(await markedWord(name));
     });
     Then('the walk shows the word {string} as word 1 of 2 in chunks {string}', async (_, word: string, chunks: string) => {
       await waitFor(() => expect(walk()).toHaveTextContent('Word 1 of 2'));

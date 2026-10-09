@@ -1,7 +1,7 @@
 // features/steps/verse-sheet.steps.tsx — runs features/verse-sheet.feature: the panel under a tapped verse is headed by the
 // reference and shows the verse's own text in the view's language, before the Read button.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { render, screen, cleanup, waitFor, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -10,7 +10,7 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
-import { keepVerseReading, setReaderView } from '../../src/data/repositories';
+import { keepVerseReading, setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { readingText } from '../../src/services/reading';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -28,7 +28,8 @@ afterAll(() => {
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 
-async function open(view: 'english' | 'greek'): Promise<void> {
+type WeaveValue = 'off' | 'solid';
+async function open(view: 'english' | 'greek', weave: WeaveValue = 'off'): Promise<void> {
   cleanup();
   clearBus();
   window.localStorage.clear();
@@ -38,10 +39,22 @@ async function open(view: 'english' | 'greek'): Promise<void> {
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.readings.clear()]);
   await setReaderView(view);
+  await setWeave(weave);
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
+  if (weave === 'solid' && view === 'english') await waitFor(() => expect(document.querySelectorAll('[data-reader] [data-woven]').length).toBeGreaterThan(0));
 }
+
+const weaveOf = (label: string): WeaveValue => (label === 'Solid words' ? 'solid' : 'off');
+const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
+const readerLine = (n: number): HTMLElement => {
+  const line = document.querySelector<HTMLElement>(`[data-verse="${n}"] [data-text]`);
+  if (!line) throw new Error(`no line for verse ${n}`);
+  return line;
+};
+const sheetVerse = (): HTMLElement => panel().querySelector<HTMLElement>('[data-sheet-verse]') as HTMLElement;
+
 
 const panel = () => screen.getByRole('region', { name: 'Reading check' });
 
@@ -94,5 +107,59 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the panel is headed {string}', headed);
     And('the panel shows the Greek of verse 22 in Greek type', showsVerse('greek', 'grc'));
+  });
+
+  const tapNumberOf = (n: number) => async () => {
+    await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
+    await screen.findByRole('region', { name: 'Reading check' });
+  };
+  const sameWords = () => waitFor(() => expect(squash(sheetVerse().textContent)).toBe(squash(readerLine(1).textContent)));
+  const hasWoven = () => waitFor(() => expect(sheetVerse().querySelectorAll('[data-woven]').length).toBeGreaterThan(0));
+  const noWoven = () => waitFor(() => expect(sheetVerse().querySelectorAll('[data-woven]').length).toBe(0));
+  const openWith = (view: 'english' | 'greek') => (_: unknown, weave: string) => open(view, weaveOf(weave));
+  const setWeaveTo = async (_: unknown, weave: string) => {
+    await act(() => setWeave(weaveOf(weave)));
+  };
+
+  Scenario('With the weave on, the English view\'s sheet shows the verse woven as the reader does', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith('english'));
+    When('he taps the number of verse 1', tapNumberOf(1));
+    Then('the sheet\'s verse has the same words as the reader\'s line for verse 1', sameWords);
+    And('the sheet\'s verse has a Greek word woven in', async () => {
+      await hasWoven();
+      expect(sheetVerse().querySelector('[data-woven]')).toHaveAttribute('lang', 'grc');
+    });
+    And('the sheet\'s woven words are tappable like the reader\'s', async () => {
+      await user.click(sheetVerse().querySelector('[data-woven]') as HTMLElement);
+      expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    });
+  });
+
+  Scenario('With the weave off, the English view\'s sheet shows plain English', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith('english'));
+    When('he taps the number of verse 1', tapNumberOf(1));
+    Then('the sheet\'s verse has the same words as the reader\'s line for verse 1', sameWords);
+    And('the sheet\'s verse has no Greek word woven in', noWoven);
+  });
+
+  Scenario('The Greek view\'s sheet shows the Greek, whatever the weave', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 in the Greek view with the weave {string}', openWith('greek'));
+    When('he taps the number of verse 1', tapNumberOf(1));
+    Then('the sheet\'s verse has the same words as the reader\'s line for verse 1', sameWords);
+    And('the sheet\'s verse has no Greek word woven in', noWoven);
+  });
+
+  Scenario('The sheet follows the weave and the view when they change while it is open', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith('english'));
+    And('he taps the number of verse 1', tapNumberOf(1));
+    When('the weave is set to {string}', setWeaveTo);
+    Then('the sheet\'s verse has a Greek word woven in', hasWoven);
+    And('the sheet\'s verse has the same words as the reader\'s line for verse 1', sameWords);
+    When('the weave is then set to {string}', setWeaveTo);
+    Then('the sheet\'s verse has no Greek word woven in', noWoven);
+    When('the view is set to Greek', async () => {
+      await act(() => setReaderView('greek'));
+    });
+    Then('the sheet\'s verse shows the Greek of verse 1 as the reader\'s line does', sameWords);
   });
 });
