@@ -14,7 +14,7 @@ const verse: Verse = {
     { t: 'nothing', g: [] },
     { t: 'lost', g: [9] },
     { t: '-', g: [0] },
-    { t: 'is', g: [0], s: 1 },
+    { t: 'is', g: [0], s: [0] },
   ],
 };
 

@@ -136,14 +136,46 @@ interface MsbVerse {
 }
 
 // In the MSB's English [square brackets] mark words supplied for the English, and {curly braces} words moved
-// here from another place; the marks come off, and only the first is kept (as the chunk's `s` flag).
+// here from another place; the marks come off, and the chunk's `s` keeps which of its words were in [square brackets].
 const stripTags = (s: string): string => s.replace(/<[^>]*>/g, '');
 const spaced = (s: string): string => stripTags(s).replace(/[[\]{}]/g, '');
+// While a chunk is put together its supplied words stay marked, by two private-use characters in place of [ and ].
+const OPEN = '\uE000';
+const CLOSE = '\uE001';
+const marked = (s: string): string => stripTags(s).replace(/\[/g, OPEN).replace(/\]/g, CLOSE).replace(/[{}]/g, '');
+const unmarked = (s: string): string => s.replace(/[\uE000\uE001]/g, '');
 // A verse starts a paragraph when the MSB puts a paragraph tag that opens one (prose, or the first line of an
 // indented block) on its first word. The indented lines inside a poetry block (indent1, indent2) do not.
 const PARAGRAPH_OPENER = /^<p class=\|(?:reg|red|(?:indent|tab|list)1stline(?:red)?)\|>/;
 const headingOf = (cell: string): string => stripTags(cell).replace(/\s+/g, ' ').trim().normalize('NFC');
 const tidy = (s: string): string => spaced(s).replace(/\s+/g, ' ').replace(/\(\s+/g, '(').replace(/\s+\)/g, ')').trim();
+
+/**
+ * The positions, among the white-space separated words of a chunk's English, of the words the MSB put in [brackets].
+ * `text` is the chunk with OPEN and CLOSE where the brackets were. A word counts as supplied when it has a letter or digit
+ * and every one of them is inside the brackets; punctuation alone is never supplied.
+ */
+export function suppliedWords(text: string): number[] {
+  const out: number[] = [];
+  let inside = false;
+  let index = 0;
+  for (const token of text.split(/\s+/)) {
+    let inner = 0;
+    let outer = 0;
+    for (const ch of token) {
+      if (ch === OPEN) inside = true;
+      else if (ch === CLOSE) inside = false;
+      else if (/[\p{L}\p{N}]/u.test(ch)) {
+        if (inside) inner++;
+        else outer++;
+      }
+    }
+    if (unmarked(token) === '') continue;
+    if (inner > 0 && outer === 0) out.push(index);
+    index++;
+  }
+  return out;
+}
 
 export function parseMsb(tsv: string): MsbVerse[] {
   const lines = tsv.replace(/^\uFEFF/, '').split(/\r?\n/);
@@ -236,13 +268,13 @@ function buildVerse(v: MsbVerse, lex: Lexicon): Verse {
   // English order: a word with '-' or 'vvv' has no English of its own; one with '. . .' is rendered by the
   // chunk that completes it, which comes later in English order. Quotes and punctuation they carry move to
   // the chunk before (punctuation) or after (opening quotes).
-  const e: Array<{ t: string; g: number[]; s: boolean }> = [];
+  const e: Array<{ t: string; g: number[] }> = [];
   let ellipsis: number[] = [];
   let opening = '';
   for (const w of [...v.words].sort((a, b) => a.msbSort - b.msbSort)) {
     const raw = w.english.trim();
     const gi = greekIndex.get(w)!;
-    const tail = spaced(w.tail);
+    const tail = marked(w.tail);
     if (raw === '' || raw === '-' || raw === 'vvv' || raw === '. . .') {
       if (raw === '. . .') ellipsis.push(gi);
       opening += tidy(w.begQ);
@@ -252,7 +284,7 @@ function buildVerse(v: MsbVerse, lex: Lexicon): Verse {
       }
       continue;
     }
-    e.push({ t: opening + tidy(w.begQ) + spaced(raw) + tail, g: [...ellipsis, gi], s: raw.includes('[') });
+    e.push({ t: opening + tidy(w.begQ) + marked(raw) + tail, g: [...ellipsis, gi] });
     ellipsis = [];
     opening = '';
   }
@@ -261,8 +293,9 @@ function buildVerse(v: MsbVerse, lex: Lexicon): Verse {
   const english: EnglishChunk[] = e.map((c, j) => {
     c.g.sort((a, b) => a - b);
     c.g.forEach((i) => (g[i].e = j));
-    const chunk: EnglishChunk = { t: tidy(c.t), g: c.g };
-    if (c.s) chunk.s = 1;
+    const chunk: EnglishChunk = { t: tidy(unmarked(c.t)), g: c.g };
+    const supplied = suppliedWords(tidy(c.t));
+    if (supplied.length) chunk.s = supplied;
     return chunk;
   });
   const first = [...v.words].sort((a, b) => a.msbSort - b.msbSort)[0];

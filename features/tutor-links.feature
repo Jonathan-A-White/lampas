@@ -53,3 +53,22 @@ Feature: The tutor links the reader's study resources
     And the study resource "Strong's" is switched on
     When he asks the tutor about verse 28
     Then the answer shows 3 study links
+
+  Scenario: An Old Testament verse link opens in his Bible in Logos and has no Reader button
+    Given Lampas is opened on Romans 8 and the tutor answers with a link to the verse "Genesis 15:6"
+    And the study resource "Logos" is switched on
+    When he asks the tutor about verse 28
+    Then the answer shows the study link "Open Genesis 15:6 in Logos" to "logosres:lgcystndrdbblsb;ref=Bible.Ge15.6"
+    And the answer has no Reader button
+
+  Scenario: An Old Testament verse link follows the Bible he picked in Settings
+    Given Lampas is opened on Romans 8 and the tutor answers with a link to the verse "Genesis 15:6"
+    And the study resource "Logos" is switched on
+    And his Bible in Logos is "LLS:1.0.710"
+    When he asks the tutor about verse 28
+    Then the answer shows the study link "Open Genesis 15:6 in Logos" to "logosres:1.0.710;ref=Bible.Ge15.6"
+
+  Scenario: An Old Testament verse link with no study resource on shows nothing
+    Given Lampas is opened on Romans 8 and the tutor answers with a link to the verse "Genesis 15:6"
+    When he asks the tutor about verse 28
+    Then the answer shows no study links

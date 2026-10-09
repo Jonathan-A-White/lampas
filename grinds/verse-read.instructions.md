@@ -41,6 +41,8 @@ Answer with a Verse Read Answer (grinds/verse-read.answer.schema.json): `verdict
   to it in the word list.
 - `note` is one or two short sentences to him about the reading: what was good first, then what to try. No sermons,
   no comparisons with other readers, no flattery, and nothing about the meaning of the verse.
+- In `note` and `tip` write plain quote marks, such as `I heard "and if the Spirit"`: never put a backslash before a quote.
+  The answer is JSON, and the JSON already escapes a quote inside a string; a backslash you add shows on his screen.
 - If `reading_result` is missing, carries only errors, or the recording was too quiet to judge, do not guess: answer
   `incomplete` with an empty `focus_words`, and a `note` that says the reading could not be heard clearly and he may
   try again. Never `well-read` for a reading you could not hear.

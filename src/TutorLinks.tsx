@@ -4,28 +4,15 @@
 // comes from the lexicon (src/data/lexicon.ts), never from the tutor.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
-import { BOOK_INDEX } from './data/bookIndex';
-import { titleOf } from './data/books';
 import type { AnswerLink } from './data/db';
 import { lookupLemma } from './data/lexicon';
 import { getLogosBible, getStudyResources, setResourceOn } from './data/repositories';
 import { openReader } from './nav/route';
-import { parseReference } from './nav/links';
 import { MAX_LINKS } from './services/talk';
 import { armFallback } from './resources/openApp';
-import { verseChips, wordChips, type LinkChip } from './resources/tutorLinks';
+import { placeOf, verseChips, wordChips, type LinkChip } from './resources/tutorLinks';
 import type { StudyResource } from './resources';
 import { AppMissingSheet } from './WordSheet';
-
-/** The place a verse link names, when Lampas holds it: the book, the chapter and the verse (none for a whole chapter), and its name as Lampas writes it. */
-function placeOf(reference: string): { book: string; chapter: number; verse?: number; name: string } | null {
-  const parsed = parseReference(reference);
-  const info = parsed && BOOK_INDEX.books.find((b) => b.code === parsed.book);
-  if (!parsed || !info || parsed.chapter === undefined || parsed.chapter < 1 || parsed.chapter > info.chapters) return null;
-  const { book, chapter, verse } = parsed;
-  if (verse !== undefined && (verse < 1 || verse > (info.verses[chapter - 1] ?? 0))) return null;
-  return { book, chapter, ...(verse === undefined ? {} : { verse }), name: verse === undefined ? titleOf(book, chapter) : `${titleOf(book, chapter)}:${verse}` };
-}
 
 /** The Strong's number of each linked lemma, from the lexicon; '' for a lemma it lacks or when it cannot be loaded. Undefined until they are looked up. */
 function useStrongs(lemmas: string[]): Record<string, string> | undefined {
@@ -73,7 +60,7 @@ export function TutorLinks({ links, onLeave }: { links: AnswerLink[]; onLeave: (
       groups.push({ key: `${i}`, name: lemma, greek: true, chips: wordChips(lemma, strongs[lemma] || undefined, chosen) });
     } else {
       const place = placeOf(link.reference);
-      if (place) groups.push({ key: `${i}`, name: place.name, greek: false, reader: place, chips: verseChips(place, place.name, chosen, bible) });
+      if (place) groups.push({ key: `${i}`, name: place.name, greek: false, reader: place.reader ? place : undefined, chips: verseChips(place, place.name, chosen, bible) });
     }
   }
   const drawn = groups.filter((g) => g.reader || g.chips.length > 0);

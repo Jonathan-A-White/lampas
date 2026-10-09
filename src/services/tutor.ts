@@ -4,7 +4,7 @@
 import { door } from 'bsv-kit/bsv';
 import { grist } from 'bsv-kit/grist';
 import { POSTERN_DOOR } from '../config';
-import type { Verse } from '../data/chapter';
+import { markSupplied, type Verse } from '../data/chapter';
 import type { AnswerWord } from '../data/db';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 
@@ -57,7 +57,7 @@ export function buildRequest(reference: string, verse: Verse, question: string, 
   return {
     reference,
     greek: verse.g.map((w) => w.t).join(' '),
-    english: verse.e.map((c) => c.t.trim()).join(' '),
+    english: verse.e.map(markSupplied).join(' '),
     question: question.trim(),
     solid_words: solidWords,
     ...(learner ? { learner } : {}),

@@ -7,7 +7,7 @@
   "properties": {
     "reference": { "description": "What the conversation is about: 'Romans 8:28' or 'Romans 8'; in a talk from a screen (`screen` is present), the screen's name.", "type": "string", "minLength": 1, "maxLength": 80 },
     "greek": { "description": "The Greek of the verse or of the passage under a heading (the whole passage), or of the chapter's first three verses. Missing in a talk from a screen (`screen` is present), which is not about a text.", "type": "string", "minLength": 1 },
-    "english": { "description": "The same text in English (the Majority Standard Bible), of the same verses. Missing in a talk from a screen.", "type": "string", "minLength": 1 },
+    "english": { "description": "The same text in English (the Majority Standard Bible), of the same verses. Words the translators supplied are between asterisks (*was* king): they are in italics in his reader. Missing in a talk from a screen.", "type": "string", "minLength": 1 },
     "question": { "description": "What he just said.", "type": "string", "minLength": 1, "maxLength": 600 },
     "history": {
       "description": "The last turns of the conversation, oldest first.",

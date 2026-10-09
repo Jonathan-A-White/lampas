@@ -84,6 +84,7 @@ export function VerseView(props: VerseViewProps) {
   const name = unitName(verse);
   const noun = passage ? 'passage' : 'verse';
   const busy = ask?.phase === 'sending' || ask?.phase === 'waiting';
+  const canShare = typeof navigator.share === 'function';
   const big = view === 'greek' ? 'font-greek [--lp-greek-size:2.25rem]' : 'font-sans [--lp-english-size:1.75rem] [--lp-greek-size:2.25rem]';
   const size = view === 'greek' ? 'text-[length:var(--lp-greek-size)]' : 'text-[length:var(--lp-english-size)]';
   return (
@@ -117,24 +118,32 @@ export function VerseView(props: VerseViewProps) {
             {text}
           </p>
         </div>
-        <div role="group" aria-label="Actions" className="relative mt-3 grid grid-flow-col auto-cols-fr items-stretch gap-1">
-          {VERSE_ACTIONS.map((a) => (
-            <button
-              key={a.id}
-              type="button"
-              aria-pressed={action === a.id}
-              onClick={() => onAction(a.id)}
-              className={`min-h-12 rounded-xl border px-2 text-sm font-medium leading-tight ${action === a.id ? 'border-accent bg-accent text-accent-fg' : 'border-line text-fg active:bg-line'}`}
-            >
-              {a.label}
-            </button>
-          ))}
-          <LinkActions
-            url={verse.to === undefined ? referenceUrl(book, chapter, verse.n) : passageUrl(book, chapter, verse.n, verse.to)}
-            title={reference}
-            className="contents [&_button]:min-h-12 [&_button]:rounded-xl [&_button]:border [&_button]:border-line [&_button]:px-1 [&_button]:text-sm [&_button]:leading-tight [&_button]:text-fg [&>div]:contents [&_input]:col-span-6 [&_input]:col-start-1 [&_input]:row-start-2"
-            statusClassName="absolute right-0 top-full mt-0.5 rounded-lg bg-surface px-2 py-0.5 text-sm text-muted"
-          />
+        {/* One line while every label has room for two lines of its own (a container query in rem, so a larger text size wraps sooner), else
+            three to a row over two rows; a phone with Share draws a sixth button, which needs more room. */}
+        <div className="@container">
+          <div
+            role="group"
+            aria-label="Actions"
+            className={`relative mt-3 grid grid-cols-3 items-stretch gap-1 ${canShare ? '@[25rem]:grid-flow-col @[25rem]:grid-cols-none @[25rem]:auto-cols-fr' : '@[21rem]:grid-flow-col @[21rem]:grid-cols-none @[21rem]:auto-cols-fr'}`}
+          >
+            {VERSE_ACTIONS.map((a) => (
+              <button
+                key={a.id}
+                type="button"
+                aria-pressed={action === a.id}
+                onClick={() => onAction(a.id)}
+                className={`min-h-12 rounded-xl border px-1 text-sm font-medium leading-tight ${action === a.id ? 'border-accent bg-accent text-accent-fg' : 'border-line text-fg active:bg-line'}`}
+              >
+                {a.label}
+              </button>
+            ))}
+            <LinkActions
+              url={verse.to === undefined ? referenceUrl(book, chapter, verse.n) : passageUrl(book, chapter, verse.n, verse.to)}
+              title={reference}
+              className={`contents [&_button]:min-h-12 [&_button]:rounded-xl [&_button]:border [&_button]:border-line [&_button]:px-1 [&_button]:text-sm [&_button]:leading-tight [&_button]:text-fg [&>div]:contents [&_input]:col-span-3 [&_input]:col-start-1 [&_input]:row-start-3 ${canShare ? '[&_input]:@[25rem]:col-span-6 [&_input]:@[25rem]:row-start-2' : '[&_input]:@[21rem]:col-span-6 [&_input]:@[21rem]:row-start-2'}`}
+              statusClassName="absolute right-0 top-full mt-0.5 rounded-lg bg-surface px-2 py-0.5 text-sm text-muted"
+            />
+          </div>
         </div>
         <div className="mt-3">
           {action === 'listen' ? (

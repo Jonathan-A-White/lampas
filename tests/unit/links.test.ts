@@ -2,9 +2,10 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { BookIndex } from '../../src/data/chapter';
 import { BOOKS } from '../../src/data/books';
+import { OT_BOOKS } from '../../src/data/otBooks';
 import type { LemmaLexicon } from '../../src/data/lexicon';
 import { DEFAULT_CHAPTER } from '../../src/data/readerChapter';
-import { findWord, linkOf, OSIS, parseReference, referenceUrl, resolveReference, wordUrl } from '../../src/nav/links';
+import { findWord, linkOf, OSIS, parseCanonReference, parseReference, referenceUrl, resolveReference, wordUrl } from '../../src/nav/links';
 
 const index = JSON.parse(readFileSync('public/data/index.json', 'utf8')) as BookIndex;
 const lexicon = JSON.parse(readFileSync('public/data/lexicon.json', 'utf8')) as LemmaLexicon;
@@ -52,6 +53,39 @@ describe('parseReference', () => {
     expect(parseReference('')).toBeNull();
     expect(parseReference('8:28')).toBeNull();
     expect(parseReference('Rom.8.28.9')).toBeNull();
+  });
+});
+
+describe('parseCanonReference', () => {
+  it.each([
+    ['Isaiah 53:5', { testament: 'ot', book: 'isa', chapter: 53, verse: 5 }],
+    ['Isa.53.5', { testament: 'ot', book: 'isa', chapter: 53, verse: 5 }],
+    ['Genesis 15:6', { testament: 'ot', book: 'gen', chapter: 15, verse: 6 }],
+    ['Gen 15:6', { testament: 'ot', book: 'gen', chapter: 15, verse: 6 }],
+    ['Psalm 23:1', { testament: 'ot', book: 'psa', chapter: 23, verse: 1 }],
+    ['Psalms 23', { testament: 'ot', book: 'psa', chapter: 23 }],
+    ['1 Samuel 3:4', { testament: 'ot', book: '1sa', chapter: 3, verse: 4 }],
+    ['2Kgs 2:11', { testament: 'ot', book: '2ki', chapter: 2, verse: 11 }],
+    ['Song of Solomon 2:1', { testament: 'ot', book: 'sng', chapter: 2, verse: 1 }],
+    ['Habakkuk 2:4', { testament: 'ot', book: 'hab', chapter: 2, verse: 4 }],
+    ['Isaiah 53', { testament: 'ot', book: 'isa', chapter: 53 }],
+    ['Romans 8:31', { testament: 'nt', book: 'rom', chapter: 8, verse: 31 }],
+    ['1 John 1:9', { testament: 'nt', book: '1jn', chapter: 1, verse: 9 }],
+  ])('reads %s', (text, expected) => {
+    expect(parseCanonReference(text)).toEqual(expected);
+  });
+
+  it('names every one of the 39 Old Testament books by its code, its name and its Logos abbreviation, and none as a New Testament book', () => {
+    for (const { code, name, logos } of OT_BOOKS) {
+      for (const written of [code, name, logos]) {
+        expect(parseCanonReference(`${written} 2:3`), written).toEqual({ testament: 'ot', book: code, chapter: 2, verse: 3 });
+      }
+      expect(parseReference(`${name} 2:3`), name).toBeNull();
+    }
+  });
+
+  it('is null for a book neither Testament has, and for text that is not a reference', () => {
+    for (const text of ['Tobit 3:1', 'Sirach 1:1', '', '53:5', 'Isaiah 53:5:1']) expect(parseCanonReference(text), text).toBeNull();
   });
 });
 

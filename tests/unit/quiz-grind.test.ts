@@ -2,7 +2,7 @@
 // Quizzing and Visual Map rules, written for any reader. The instructions are read by the mill, not by this app, so a grep proves each rule is named.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import type { Chapter } from '../../src/data/chapter';
+import { type Chapter, markSupplied } from '../../src/data/chapter';
 import { passageVerse, passagesOf } from '../../src/data/passage';
 import { MAX_REQUEST_BYTES, buildTalkRequest, scopeTitle } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
@@ -28,7 +28,7 @@ describe('the quiz request', () => {
     expect(r.reference).toBe('Romans 8:1-11');
     expect(passage.to).toBe(11);
     expect(r.greek).toBe(chapter.verses.filter((v) => v.n <= 11).map((v) => v.g.map((w) => w.t).join(' ')).join(' '));
-    expect(r.english).toBe(chapter.verses.filter((v) => v.n <= 11).map((v) => v.e.map((c) => c.t.trim()).join(' ')).join(' '));
+    expect(r.english).toBe(chapter.verses.filter((v) => v.n <= 11).map((v) => v.e.map(markSupplied).join(' ')).join(' '));
     expect(new TextEncoder().encode(JSON.stringify(r)).length).toBeLessThan(MAX_REQUEST_BYTES);
   });
 

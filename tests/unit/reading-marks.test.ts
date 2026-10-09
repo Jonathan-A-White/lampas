@@ -2,7 +2,7 @@
 // word with the same spelling (mw-5r3p30.94).
 import { describe, expect, it } from 'vitest';
 import type { FixWord } from '../../src/data/repositories';
-import { markWords } from '../../src/services/reading';
+import { markWords, plainQuotes } from '../../src/services/reading';
 
 const fix = (word: string, index?: number): FixWord => ({ word, chunks: [word], tip: 'Say it again.', ...(index === undefined ? {} : { index }) });
 const LIFE = 'And this is the life ... the eternal life ...';
@@ -41,5 +41,13 @@ describe('markWords', () => {
   it('falls back to every instance for a kept reading that has no position', () => {
     const { marked } = markWords(LIFE, [fix('life')]);
     expect([...marked.keys()]).toEqual([4, 8]);
+  });
+});
+
+describe('plainQuotes', () => {
+  it('turns backslash-quote into a plain quote mark, and leaves other text alone', () => {
+    expect(plainQuotes('sounded like \\"laff\\" ... \\"to us\\"')).toBe('sounded like "laff" ... "to us"');
+    expect(plainQuotes('Say the th softly.')).toBe('Say the th softly.');
+    expect(plainQuotes('already "plain"')).toBe('already "plain"');
   });
 });

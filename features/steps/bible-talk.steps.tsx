@@ -10,7 +10,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { readFileSync } from 'node:fs';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
-import { type Chapter } from '../../src/data/chapter';
+import { type Chapter, markSupplied } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { addTurn, getGoal, getPickerGrammar, getSpeechRate, getTheme, setLevel, talkRef } from '../../src/data/repositories';
 import { setGoal } from '../../src/data/repositories/settings';
@@ -29,7 +29,7 @@ const verseData = (n: number) => {
   return v;
 };
 const greekOf = (ns: number[]) => ns.map((n) => verseData(n).g.map((w) => w.t).join(' ')).join(' ');
-const englishOf = (ns: number[]) => ns.map((n) => verseData(n).e.map((c) => c.t.trim()).join(' ')).join(' ');
+const englishOf = (ns: number[]) => ns.map((n) => verseData(n).e.map(markSupplied).join(' ')).join(' ');
 
 afterAll(() => {
   cleanup();

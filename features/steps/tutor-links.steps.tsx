@@ -9,7 +9,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
-import { setReaderView, setResourceOn, setWeave } from '../../src/data/repositories';
+import { setLogosBible, setReaderView, setResourceOn, setWeave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { readerOf } from '../../src/nav/route';
 import { RESOURCES } from '../../src/resources';
@@ -167,6 +167,36 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(links()).toHaveLength(count));
       await new Promise((resolve) => setTimeout(resolve, 100));
       expect(links()).toHaveLength(count);
+    });
+  });
+
+  Scenario('An Old Testament verse link opens in his Bible in Logos and has no Reader button', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 and the tutor answers with a link to the verse {string}', verse);
+    And('the study resource {string} is switched on', switchOn);
+    When('he asks the tutor about verse 28', ask);
+    Then('the answer shows the study link {string} to {string}', shows);
+    And('the answer has no Reader button', () => {
+      expect(within(turn()).queryAllByRole('button', { name: /in Lampas/ })).toEqual([]);
+    });
+  });
+
+  Scenario('An Old Testament verse link follows the Bible he picked in Settings', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 and the tutor answers with a link to the verse {string}', verse);
+    And('the study resource {string} is switched on', switchOn);
+    And('his Bible in Logos is {string}', async (_, id: string) => {
+      await setLogosBible(id);
+    });
+    When('he asks the tutor about verse 28', ask);
+    Then('the answer shows the study link {string} to {string}', shows);
+  });
+
+  Scenario('An Old Testament verse link with no study resource on shows nothing', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 and the tutor answers with a link to the verse {string}', verse);
+    When('he asks the tutor about verse 28', ask);
+    Then('the answer shows no study links', async () => {
+      await waitFor(() => expect(turn()).toHaveTextContent('Love is the word'));
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(turn().querySelector('[data-tutor-links]')).toBeNull();
     });
   });
 });
