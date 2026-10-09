@@ -3,6 +3,7 @@
 export { addImportedWords, addWordToLearn, wordIsListed, listLearningLemmas, listSolidHeadwords, listSolidLemmas, listWords, seedWordsIfFirstOpen, setWordState } from './words';
 export type { Word, WordState } from './words';
 export {
+  getGoal,
   getGreekPronunciation,
   getLayout,
   getReaderView,
@@ -13,6 +14,7 @@ export {
   getTheme,
   getVoice,
   getWeave,
+  setGoal,
   setGreekPronunciation,
   setLayout,
   setReaderView,

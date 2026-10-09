@@ -2,15 +2,17 @@
 // schema and the list of keys and values in its instructions, both made from the registry (src/settings/registry.ts).
 // `npm run grind:build` (scripts/grind-build.ts) writes them into grinds/; tests/unit/bible-talk-grind.test.ts fails when the
 // files and the registry disagree, so a setting added to the registry is not talkable until the build has been run.
-import { MAX_CHANGES, SETTINGS, type SettingEntry } from './registry';
+import { MAX_CHANGES, SETTINGS, TEXT_MAX, type SettingEntry } from './registry';
 
 export const SETTINGS_BEGIN = '<!-- settings:begin -->';
 export const SETTINGS_END = '<!-- settings:end -->';
 
-const valueText = (entry: SettingEntry): string =>
-  entry.allowed.kind === 'choice'
-    ? entry.allowed.values.map((v) => `"${v.value}" (${v.label})`).join(', ')
-    : `a number from ${entry.allowed.min} to ${entry.allowed.max}, in steps of ${entry.allowed.step}`;
+function valueText(entry: SettingEntry): string {
+  const { allowed } = entry;
+  if (allowed.kind === 'choice') return allowed.values.map((v) => `"${v.value}" (${v.label})`).join(', ');
+  if (allowed.kind === 'text') return `text, for example "${allowed.example}" (a book, a chapter or a verse; "" for none)`;
+  return `a number from ${allowed.min} to ${allowed.max}, in steps of ${allowed.step}`;
+}
 
 /** The list of keys and values the instructions carry, between the two markers. */
 export function settingsBlock(): string {
@@ -28,11 +30,14 @@ export function withSettingsBlock(instructions: string): string {
 
 type Json = Record<string, unknown>;
 
+function valueSchema({ allowed }: SettingEntry): Json {
+  if (allowed.kind === 'choice') return { type: 'string', enum: allowed.values.map((v) => v.value) };
+  if (allowed.kind === 'text') return { type: 'string', maxLength: TEXT_MAX };
+  return { type: 'number', minimum: allowed.min, maximum: allowed.max };
+}
+
 function changeSchema(entry: SettingEntry): Json {
-  const value: Json =
-    entry.allowed.kind === 'choice'
-      ? { type: 'string', enum: entry.allowed.values.map((v) => v.value) }
-      : { type: 'number', minimum: entry.allowed.min, maximum: entry.allowed.max };
+  const value = valueSchema(entry);
   return {
     type: 'object',
     additionalProperties: false,
