@@ -6,13 +6,15 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { blobOf, clipFileName, downloadSeam, type Clip } from './audio/clip';
 import type { Verse } from './data/chapter';
 import { unitId, unitName } from './data/passage';
-import { getGreekPronunciation, getVerseReading, verseRef, type FixWord, type VerseReading } from './data/repositories';
+import { getDeveloper, getGreekPronunciation, getVerseReading, verseRef, type FixWord, type VerseReading } from './data/repositories';
 import { markWords, normalWord, plainQuotes, readingLang, readingText, wordsOfText, type ReadingView } from './services/reading';
 import { FAILURE_TITLES } from './services/tutor';
 import { pronunciationOf } from './speech/pronunciation';
-import { stopAnswer } from './speech/readAloud';
+import { stopSpeaking } from './speech/greek';
+import { stopAnswer, stopReading } from './speech/readAloud';
 import { speakTutor, stopOnTap, verdictRuns, VERDICT_ID } from './speech/tutorVoice';
 import { SpeakButton } from './speech/SpeakButton';
 import { HoldBar } from './ui/HoldBar';
@@ -172,8 +174,59 @@ const RESULT_HEADINGS: Record<VerseReading['verdict'], string> = {
   incomplete: 'Read the whole verse',
 };
 
+/** 'Play my reading': the clip he recorded, played back from a hidden audio element. 'Download my recording' is there only in Developer mode (a debugging
+ * option, found on About), and saves the clip as it was recorded, named for the verse and the UTC time it was read. */
+function MyReading({ clip, fileName }: { clip: Clip; fileName: string }) {
+  const developer = useLiveQuery(getDeveloper, []);
+  const element = useRef<HTMLAudioElement>(null);
+  const url = useRef<string | undefined>(undefined);
+  const [playing, setPlaying] = useState(false);
+  useEffect(() => {
+    const audio = element.current;
+    return () => {
+      audio?.pause();
+      if (url.current) URL.revokeObjectURL(url.current);
+      url.current = undefined;
+    };
+  }, []);
+  const toggle = () => {
+    const audio = element.current;
+    if (!audio) return;
+    if (playing) {
+      audio.pause();
+      setPlaying(false);
+      return;
+    }
+    // nothing else speaks while he hears himself
+    stopReading();
+    stopSpeaking();
+    stopAnswer();
+    if (!url.current) {
+      url.current = URL.createObjectURL(blobOf(clip));
+      audio.src = url.current;
+    }
+    audio.currentTime = 0;
+    setPlaying(true);
+    audio.play().catch(() => setPlaying(false));
+  };
+  const button = 'min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium';
+  return (
+    <div className="space-y-2">
+      <audio ref={element} data-my-reading preload="none" onEnded={() => setPlaying(false)} onError={() => setPlaying(false)} />
+      <button type="button" onClick={toggle} className={button}>
+        {playing ? 'Stop my reading' : 'Play my reading'}
+      </button>
+      {developer === 'on' ? (
+        <button type="button" onClick={() => downloadSeam.save(fileName, blobOf(clip))} className={button}>
+          Download my recording
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 /** The result of a reading: how it went, the verse with its marked words, a tap shows their chunks, and the walk starts here. */
-function Result({ reading, text, view, onWalk }: { reading: VerseReading; text: string; view: ReadingView; onWalk: () => void }) {
+function Result({ reading, text, view, fileName, onWalk }: { reading: VerseReading; text: string; view: ReadingView; fileName: string; onWalk: () => void }) {
   const [open, setOpen] = useState<string | null>(null);
   const marks = useMemo(() => markWords(text, reading.words), [text, reading.words]);
   const fix = open === null ? undefined : open.startsWith('l') ? marks.lost[Number(open.slice(1))] : marks.marked.get(Number(open));
@@ -181,6 +234,7 @@ function Result({ reading, text, view, onWalk }: { reading: VerseReading; text: 
     <div data-reading-result={reading.verdict} onClick={stopOnTap} className="space-y-2">
       <h3 className="text-lg font-semibold">{RESULT_HEADINGS[reading.verdict]}</h3>
       <p className="break-words text-base">{plainQuotes(reading.note)}</p>
+      {reading.clip ? <MyReading clip={reading.clip} fileName={fileName} /> : null}
       {reading.words.length > 0 ? (
         <>
           <MarkedVerse text={text} view={view} marks={marks} open={open} onOpen={setOpen} />
@@ -324,6 +378,7 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
               reading={reading}
               text={text}
               view={view}
+              fileName={clipFileName(ref, lang, reading.when, reading.clip?.mime ?? 'audio/webm')}
               onWalk={() => {
                 setWalkStep(0);
                 setWalkFor(reading.when);
