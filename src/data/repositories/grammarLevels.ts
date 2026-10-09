@@ -72,6 +72,28 @@ export async function scheduleIdea(id: string, level: GrammarLevelName, now = Da
   return added;
 }
 
+/** What he told the idea sheet: Got it (the idea is on the frontier) or I know this (it is solid). */
+export type IdeaOutcome = 'got-it' | 'known';
+
+/**
+ * The idea sheet's two buttons (mw-hqd5bz.7), in one transaction. Got it makes the idea frontier, how 'sheet', and puts it on the
+ * schedule at step 0, due tomorrow (the first gap); I know this makes it solid and puts it at the 30-day step, due in 30 days.
+ * The row is put in place even when the idea is on the schedule already (he has just said where it stands), keeping its
+ * lapses and rights. Publishes grammar-level-changed and idea-taught.
+ */
+export async function teachIdea(id: string, outcome: IdeaOutcome, now = Date.now()): Promise<void> {
+  const level: GrammarLevelName = outcome === 'known' ? 'solid' : 'frontier';
+  const start = outcome === 'known' ? knownStart(now) : { step: 0, due: now + STEP_DAYS[0] * DAY };
+  await db.transaction('rw', db.reviews, db.grammarLevels, async () => {
+    const there = await db.reviews.get([IDEA_KIND, id]);
+    await db.reviews.put({ kind: IDEA_KIND, id, ...start, lastWhen: now, lapses: there?.lapses ?? 0, rights: there?.rights ?? 0 });
+    await db.grammarLevels.put({ id, level, since: now, how: 'sheet' });
+  });
+  publish({ kind: 'grammar-level-changed', id, level });
+  publish({ kind: 'idea-taught', id, outcome });
+  await announceDue(now);
+}
+
 /**
  * Once (meta 'grammarLevelsSeeded'): every term he marked I know this makes every idea that covers it solid, how 'marked', and
  * puts it on the schedule at the 30-day step. An idea that already has a level keeps it. Returns whether it ran.
