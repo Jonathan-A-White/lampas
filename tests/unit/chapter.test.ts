@@ -1,7 +1,7 @@
 // src/data/chapter.ts fed the committed public/data/rom/8.json through a stubbed fetch.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { forgetChapters, loadChapter, wordGloss, wordLemma, wordParse } from '../../src/data/chapter';
+import { type EnglishChunk, englishRuns, forgetChapters, loadChapter, markSupplied, wordGloss, wordLemma, wordParse } from '../../src/data/chapter';
 
 const rom8 = readFileSync('public/data/rom/8.json', 'utf8');
 
@@ -60,5 +60,31 @@ describe('the word helpers, on Romans 8:1', () => {
     const walking = verse1.g.find((w) => w.p === 'V-PAP-DPM');
     if (!walking) throw new Error('no participle in Romans 8:1');
     expect(wordParse(chapter, walking)).toBe('verb, present active participle, dative plural masculine');
+  });
+});
+
+describe('englishRuns and markSupplied on a chunk of the old shape (mw-5r3p30.112)', () => {
+  // Before mw-5r3p30.102 a chunk said `s: 1` for "the whole chunk is supplied"; a phone's cache can still hold such a chapter.
+  const old = (s: unknown) => ({ t: 'was king', g: [0], s }) as unknown as EnglishChunk;
+
+  it('takes s: 1 as the whole chunk supplied, and does not throw', () => {
+    expect(englishRuns(old(1))).toEqual([{ text: 'was king', supplied: true }]);
+    expect(markSupplied(old(1))).toBe('*was king*');
+  });
+
+  it('reads a list of positions as before', () => {
+    expect(englishRuns(old([0]))).toEqual([
+      { text: 'was', supplied: true },
+      { text: 'king', supplied: false },
+    ]);
+    expect(markSupplied(old([0]))).toBe('*was* king');
+  });
+
+  it('takes any other non-list as nothing supplied or the whole chunk, never an error', () => {
+    expect(() => englishRuns(old('yes'))).not.toThrow();
+    expect(englishRuns(old(true))).toEqual([{ text: 'was king', supplied: true }]);
+    expect(englishRuns(old(0))).toEqual([{ text: 'was king', supplied: false }]);
+    expect(englishRuns({ t: 'was king', g: [0] })).toEqual([{ text: 'was king', supplied: false }]);
+    expect(markSupplied({ t: ' was king ', g: [0] })).toBe('was king');
   });
 });
