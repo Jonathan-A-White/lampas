@@ -34,6 +34,8 @@ const PHONE_KEY = '00'.repeat(31) + '02';
 let fake: FakePostern;
 let taught: EventOf<'frontier-taught'>[] = [];
 let startedAt = 0;
+/** The Laptop's wall clock steps back by about a second now and then: a bound on a stored time allows for it. */
+const CLOCK_SLACK = 3000;
 
 async function open(): Promise<void> {
   cleanup();
@@ -186,8 +188,8 @@ describeFeature(feature, ({ Background, Scenario }) => {
       expect(await wordRow(lemma)).toMatchObject({ state: 'learning', lesson: 0, source: 'frontier' });
       const row = await reviewRow(lemma);
       expect(row?.step).toBe(0);
-      expect(row?.due).toBeLessThanOrEqual(Date.now());
-      expect(row?.due).toBeGreaterThanOrEqual(startedAt - DAY);
+      expect(row?.due).toBeLessThanOrEqual(Date.now() + CLOCK_SLACK);
+      expect(row?.due).toBeGreaterThanOrEqual(startedAt - DAY - CLOCK_SLACK);
     });
     And('a frontier-taught event for {string} with the outcome {string} was published', (_, lemma: string, outcome: string) => {
       expect(taught).toEqual([{ kind: 'frontier-taught', lemma: nfc(lemma), outcome }]);
@@ -215,8 +217,8 @@ describeFeature(feature, ({ Background, Scenario }) => {
       expect(await wordRow(lemma)).toMatchObject({ state: 'solid', lesson: 0, source: 'frontier' });
       const row = await reviewRow(lemma);
       expect(row?.step).toBe(STEP_DAYS.indexOf(30));
-      expect(row?.due).toBeGreaterThanOrEqual(startedAt + 30 * DAY);
-      expect(row?.due).toBeLessThanOrEqual(Date.now() + 30 * DAY);
+      expect(row?.due).toBeGreaterThanOrEqual(startedAt + 30 * DAY - CLOCK_SLACK);
+      expect(row?.due).toBeLessThanOrEqual(Date.now() + 30 * DAY + CLOCK_SLACK);
     });
     And('a frontier-taught event for {string} with the outcome {string} was published', (_, lemma: string, outcome: string) => {
       expect(taught).toEqual([{ kind: 'frontier-taught', lemma: nfc(lemma), outcome }]);

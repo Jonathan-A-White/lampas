@@ -28,6 +28,8 @@ const PHONE_KEY = '00'.repeat(31) + '02';
 let fake: FakePostern;
 let taught: EventOf<'idea-taught'>[] = [];
 let startedAt = 0;
+/** The Laptop's wall clock steps back by about a second now and then: a bound on a stored time allows for it. */
+const CLOCK_SLACK = 3000;
 
 /** Opens the app on Romans 8 with every store emptied, `goal` saved as the goal setting when there is one, and a fake Postern. */
 async function open(goal: string | undefined): Promise<void> {
@@ -167,8 +169,8 @@ describeFeature(feature, ({ Scenario }) => {
       expect(await db.grammarLevels.get(id)).toMatchObject({ level: 'frontier', how: 'sheet' });
       const row = await review(id);
       expect(row.step).toBe(0);
-      expect(row.due).toBeGreaterThanOrEqual(startedAt + DAY);
-      expect(row.due).toBeLessThanOrEqual(Date.now() + DAY);
+      expect(row.due).toBeGreaterThanOrEqual(startedAt + DAY - CLOCK_SLACK);
+      expect(row.due).toBeLessThanOrEqual(Date.now() + DAY + CLOCK_SLACK);
     });
     And('an idea-taught event for {string} with the outcome {string} was published', (_, id: string, outcome: string) => {
       expect(taught).toEqual([{ kind: 'idea-taught', id, outcome }]);
@@ -189,8 +191,8 @@ describeFeature(feature, ({ Scenario }) => {
       expect(await db.grammarLevels.get(id)).toMatchObject({ level: 'solid', how: 'sheet' });
       const row = await review(id);
       expect(row.step).toBe(STEP_DAYS.indexOf(30));
-      expect(row.due).toBeGreaterThanOrEqual(startedAt + 30 * DAY);
-      expect(row.due).toBeLessThanOrEqual(Date.now() + 30 * DAY);
+      expect(row.due).toBeGreaterThanOrEqual(startedAt + 30 * DAY - CLOCK_SLACK);
+      expect(row.due).toBeLessThanOrEqual(Date.now() + 30 * DAY + CLOCK_SLACK);
     });
     And('an idea-taught event for {string} with the outcome {string} was published', (_, id: string, outcome: string) => {
       expect(taught).toEqual([{ kind: 'idea-taught', id, outcome }]);
