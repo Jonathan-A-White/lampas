@@ -4,6 +4,7 @@
 import '@testing-library/react/dont-cleanup-after-each';
 import { act, render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { readFileSync } from 'node:fs';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
@@ -27,6 +28,7 @@ afterAll(() => {
   db.close();
 });
 
+const ROMANS_8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as { verses: { n: number; e: { t: string }[] }[] };
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 const AT = { clientX: 100, clientY: 700 };
@@ -192,6 +194,30 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the phone has stopped reading', async () => {
       await waitFor(() => expect(getReading().status).toBe('idle'));
       expect(synth?.calls[synth.calls.length - 1]).toBe('cancel');
+    });
+  });
+
+  Scenario('Listen stops at the end of the verse even while the bar is still held', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 in the English view with the weave {string} and a phone that speaks', (_, weave: string) => open(weaveOf(weave), { speaks: true }));
+    When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
+    And('he chooses {string}', choose);
+    And('he holds the hold bar', async () => {
+      await user.pointer({ keys: '[MouseLeft>]', target: bar(), coords: AT });
+    });
+    Then('the phone is reading verse 11 aloud', async () => {
+      await waitFor(() => expect(getReading().status).toBe('reading'));
+      expect(getReading().verse).toBe(11);
+    });
+    When('the phone finishes speaking', () => {
+      act(() => synth?.finishAll());
+    });
+    Then('the phone has stopped reading', async () => {
+      await waitFor(() => expect(getReading().status).toBe('idle'));
+    });
+    And('the phone never spoke verse 12', () => {
+      const spoken = (synth?.spoken ?? []).map((u) => u.text.replace(/\s+/g, ' ').trim());
+      const verse = (n: number): string => ROMANS_8.verses.find((v) => v.n === n)?.e.map((c) => c.t.trim()).join(' ') ?? '';
+      expect(spoken).toEqual([verse(11)]);
     });
   });
 

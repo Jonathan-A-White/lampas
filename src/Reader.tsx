@@ -946,7 +946,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           onClose={closeVerse}
           action={action}
           onAction={chooseAction}
-          listen={viewPassage ? { onHold: () => listenTo(viewPassage), onRelease: stopReading } : { onHold: () => readFrom(viewUnit.n, true), onRelease: stopReading }}
+          listen={viewPassage ? { onHold: () => listenTo(viewPassage), onRelease: stopReading } : { onHold: () => readFrom(viewUnit.n, false), onRelease: stopReading }}
           checks={checks}
           read={readOf(viewUnit)}
           onRetryRead={() => checks.retry(viewUnit)}

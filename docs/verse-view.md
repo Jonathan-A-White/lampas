@@ -13,7 +13,7 @@ And if the Spirit of Him who ...              the verse, big, woven as the Reade
 
 | Action | What it shows | The bar | A hold does |
 | --- | --- | --- | --- |
-| Listen | one line of help | `Hold to listen to verse 11` | the app reads the verse aloud, on as far as Settings > Read aloud says (`readSpan`); letting go stops it |
+| Listen | one line of help | `Hold to listen to verse 11` | the app reads this verse aloud and stops at its end, held or not (the Read aloud span does not apply); letting go stops it at once |
 | Read it aloud | the reading check (`ReadCheckPanel`, region 'Reading check'): status, the result with its words to fix, the walk | `Hold to read verse 11`, then `Hold to read the whole verse again` at the end of the walk, `Release to send` while held | records him, sends the verse-read grist on release |
 | Ask the tutor | the kept answers (Markdown), the typed Ask box, `Talk about verse 11` (the Bible talk sheet) | `Hold to ask` | hold-to-talk: what he says goes to the tutor about this verse exactly as a typed question |
 | Quiz me | one line of help | the button `Start the quiz` (`Continue the quiz` once the quiz has a turn), the size and place of the bar but not a hold | opens the Talk sheet in quiz mode, `Quiz on Romans 8:11` or `Quiz on Romans 8:1-11`, and on the first press sends `Quiz me on Romans 8:1-11.` (see *Quiz me* below) |

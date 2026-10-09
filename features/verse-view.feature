@@ -39,6 +39,16 @@ Feature: The Verse view
     When he lets go of the hold bar
     Then the phone has stopped reading
 
+  Scenario: Listen stops at the end of the verse even while the bar is still held
+    Given Lampas is opened on Romans 8 in the English view with the weave "Off" and a phone that speaks
+    When he taps the number of verse 11
+    And he chooses "Listen"
+    And he holds the hold bar
+    Then the phone is reading verse 11 aloud
+    When the phone finishes speaking
+    Then the phone has stopped reading
+    And the phone never spoke verse 12
+
   Scenario: Read it aloud: the bar says Hold to read verse 11 and the reading check shows above it
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
     When he taps the number of verse 11

@@ -2,7 +2,7 @@
 
 Settings > Read aloud has one choice, the **Read aloud span** (registry key `readSpan`, `src/speech/readSpan.ts`; default
 **Chapter**, PROVISIONAL until the Governor confirms). It says how far the header's *Read from the top* / *Read from here*
-goes before the voice stops. It starts at the verse he starts from (the header's Play: verse 1; the Verse view's Listen: its verse, held, mw-5r3p30.79).
+goes before the voice stops. It starts at the verse he starts from (the header's Play: verse 1; the Verse view's Listen: its verse, held, and it stops at that verse's end even if still held, mw-5r3p30.79, .92).
 
 | Span | The voice stops |
 | --- | --- |
