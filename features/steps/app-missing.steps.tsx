@@ -128,7 +128,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('a sheet says {string}', sheetSays);
     And('the sheet has a {string} link to the Play Store', async (_, name: string) => {
       const href = within(await theSheet()).getByRole('link', { name }).getAttribute('href') ?? '';
-      expect(href).toMatch(/^https:\/\/play\.google\.com\/store\/search\?q=Accordance/);
+      expect(href).toBe('https://play.google.com/store/apps/details?id=com.accordancebible.accordance');
     });
     And('the sheet has a {string} button', async (_, name: string) => {
       expect(within(await theSheet()).getByRole('button', { name })).toBeInTheDocument();
@@ -143,7 +143,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('a sheet says {string}', sheetSays);
     And('the sheet has a {string} link to the App Store', async (_, name: string) => {
       const href = within(await theSheet()).getByRole('link', { name }).getAttribute('href') ?? '';
-      expect(href).toBe('itms-apps://search.itunes.apple.com/WebObjects/MZSearch.woa/wa/search?media=software&q=Accordance');
+      expect(href).toBe('itms-apps://apps.apple.com/app/id411970514');
     });
   });
 

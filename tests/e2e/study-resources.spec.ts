@@ -161,7 +161,7 @@ test('The Study links are equal tiles in two columns at 360 px, and an app that 
   await expect(sheet).toBeVisible({ timeout: 4000 });
   await expect(sheet.getByText("Accordance isn't on this phone")).toBeVisible();
   const get = sheet.getByRole('link', { name: 'Get Accordance', exact: true });
-  await expect(get).toHaveAttribute('href', /play\.google\.com\/store\/search\?q=Accordance/);
+  await expect(get).toHaveAttribute('href', /play\.google\.com\/store\/apps\/details\?id=com\.accordancebible\.accordance/);
   const off = sheet.getByRole('button', { name: 'Turn off Accordance', exact: true });
   for (const control of [get, off]) {
     const b = await control.boundingBox();
