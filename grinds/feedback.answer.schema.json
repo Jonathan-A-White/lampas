@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Feedback Answer 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["received"],
+  "properties": {
+    "received": { "description": "true once the factory has the feedback and its attachments.", "type": "boolean" },
+    "note": { "description": "One short line back to him, when there is one.", "type": "string", "minLength": 1, "maxLength": 200 }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Feedback Request 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "text", "credit", "app_version"],
+  "properties": {
+    "kind": {
+      "description": "What the feedback is. grammar-approach asks for another way of teaching Greek grammar.",
+      "type": "string",
+      "enum": ["grammar-approach"]
+    },
+    "text": { "description": "What approach he wants and how it teaches, in his words.", "type": "string", "minLength": 1, "maxLength": 1200 },
+    "credit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "description": "Who made the approach, so the factory can credit them.", "type": "string", "minLength": 1, "maxLength": 120 },
+        "url": { "description": "A link to the approach, when there is one.", "type": "string", "minLength": 1, "maxLength": 300 }
+      }
+    },
+    "app_version": { "description": "The Lampas build he sent it from.", "type": "string", "minLength": 1, "maxLength": 80 }
+  }
+}

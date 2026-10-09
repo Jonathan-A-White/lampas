@@ -69,7 +69,9 @@ export type AppEvent =
   /** he told the idea sheet of grammar idea `id` Got it ('got-it': it is on the frontier, due tomorrow) or I know this ('known': solid, the 30-day step) */
   | { kind: 'idea-taught'; id: string; outcome: 'got-it' | 'known' }
   /** a grammar placement ended (src/PlacementScreen.tsx): what it found, over the ideas the goal needs; `goal` is the saved goal text, '' for none */
-  | { kind: 'placement-done'; goal: string; approach: string; solid: number; frontier: number; notYet: number; untested: number };
+  | { kind: 'placement-done'; goal: string; approach: string; solid: number; frontier: number; notYet: number; untested: number }
+  /** feedback reached the factory (the mill answered 'received'); `feedback` is what it was, today only 'grammar-approach' (the Ask for another approach sheet) */
+  | { kind: 'feedback-sent'; feedback: 'grammar-approach' };
 
 export type EventKind = AppEvent['kind'];
 export type EventOf<K extends EventKind> = Extract<AppEvent, { kind: K }>;

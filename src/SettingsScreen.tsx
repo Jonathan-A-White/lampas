@@ -27,6 +27,7 @@ import {
   type Weave,
   type WeaveGrammar,
 } from './data/repositories';
+import { AskApproachSheet } from './AskApproachSheet';
 import { APPROACHES, approachOf, nextLessonOf, type GrammarApproach } from './approaches';
 import { listLevels } from './data/repositories/grammarLevels';
 import { BOOK_INDEX } from './data/bookIndex';
@@ -568,6 +569,23 @@ function ApproachPicker({ chosen, levels }: { chosen: string; levels: ReadonlyMa
   );
 }
 
+/** The last control of Settings > Grammar approach: it opens the sheet that asks the factory for another approach. */
+function AskApproach() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="mt-4 block min-h-12 w-full rounded-xl border border-line px-4 py-2 text-left text-base font-medium"
+      >
+        Ask for another approach
+      </button>
+      {open ? <AskApproachSheet onClose={() => setOpen(false)} /> : null}
+    </>
+  );
+}
+
 function LinkRow({ label, to }: { label: string; to: 'words' | 'review' | 'about' }) {
   return (
     <button
@@ -625,6 +643,7 @@ export function SettingsScreen() {
           </Section>
           <Section title="Grammar approach" hint="The order grammar is taught and tested in.">
             {approach !== undefined && levels !== undefined ? <ApproachPicker chosen={approach} levels={levels} /> : null}
+            <AskApproach />
           </Section>
           <Section title="Reading voices" hint="Which of this phone's voices reads aloud. Phone default lets the phone choose.">
             {english !== undefined && greek !== undefined ? (

@@ -1,0 +1,16 @@
+{
+  "grind": 1,
+  "app": "lampas",
+  "kind": "feedback",
+  "versions": ["1"],
+  "model": "sonnet",
+  "effort": "low",
+  "instructions": "grinds/feedback.instructions.md",
+  "answerSchema": "grinds/feedback.answer.schema.json",
+  "attachments": {
+    "min": 0,
+    "max": 4,
+    "mime": ["image/jpeg", "image/png", "image/webp"],
+    "maxBytes": 8388608
+  }
+}
