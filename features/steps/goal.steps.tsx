@@ -108,6 +108,8 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario }) => {
     expect(picker('Verse')).toBeDisabled();
   };
   const picks = (name: 'Book' | 'Chapter' | 'Verse') => async (_: unknown, option: string) => {
+    // the pickers redraw from the live query after each write: wait for the option to be there before choosing it
+    await waitFor(() => expect(within(picker(name)).getByRole('option', { name: option })).toBeInTheDocument());
     await user.selectOptions(picker(name), option);
   };
 

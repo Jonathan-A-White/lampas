@@ -16,7 +16,7 @@ function valueText(entry: SettingEntry): string {
 
 /** The list of keys and values the instructions carry, between the two markers. */
 export function settingsBlock(): string {
-  const lines = SETTINGS.map((s) => `- \`${s.key}\` — ${s.label}. ${s.hint} Value: ${valueText(s)}.`);
+  const lines = SETTINGS.map((s) => `- \`${s.key}\` — ${s.label}. ${s.hint}${s.help ? ` ${s.help}` : ''} Value: ${valueText(s)}.`);
   return [SETTINGS_BEGIN, ...lines, SETTINGS_END].join('\n');
 }
 
