@@ -113,6 +113,7 @@ const FULL_SCREENS: [string, string][] = [
   ['My study way', '#/studyway'],
   ['Import', '#/import'],
   ['About', '#/about'],
+  ['Preface', '#/preface'],
 ];
 
 const feature = await loadFeature('features/ask-tutor.feature');

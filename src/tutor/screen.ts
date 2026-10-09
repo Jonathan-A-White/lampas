@@ -33,6 +33,7 @@ export const SCREEN_NAMES: Record<Exclude<Route, 'home'>, string> = {
   studyway: 'My study way',
   import: 'Import',
   about: 'About',
+  preface: 'Preface',
 };
 
 const cut = (text: string, max: number): string => (text.length <= max ? text : text.slice(0, max - 1).trimEnd() + '…');
@@ -63,6 +64,7 @@ const SUGGESTIONS: Record<string, string[]> = {
   Settings: ['Which settings suit a beginner?', 'How do I make the Greek easier to read?'],
   'My study way': ['What should I write in my study way?', 'How does the tutor use my study way?'],
   Import: ['What words should I add to my list?', 'How do I write a word list to import?'],
+  Preface: ['Why does Lampas read the Byzantine text?', 'How does the Majority text differ from the critical text?'],
   About: ['What is Lampas for?', 'Which texts does Lampas use?', 'What does each of these do for Lampas?'],
 };
 
