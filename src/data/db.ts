@@ -12,6 +12,8 @@ export interface Word {
   gloss: string;
   /** The part of speech ('noun', 'verb' ...) when the lexicon gave it, for a word added from a Talk answer; not indexed, so no version bump. */
   pos?: string;
+  /** Where it came from when not a lesson: 'frontier' for a new word he took on the teach sheet (it is listed under 'From my reading'); not indexed, so no version bump. */
+  source?: 'frontier';
   /** The BMA lesson it came from; 0 for a word added by Import or from a Talk answer, with no lesson. */
   lesson: number;
   state: WordState;

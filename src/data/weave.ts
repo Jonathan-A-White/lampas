@@ -41,3 +41,18 @@ export function weaveVerse(verse: Verse, { solid, learning, formPasses }: WeaveL
     return { words, learning: anyLearning };
   });
 }
+
+/**
+ * The verse as the teach sheet shows it (mw-bsf54t.4): woven with his solid words in Greek and the new word `lemma` (NFC) in Greek as well,
+ * marked `learning` so its English stands small beneath it. A chunk that has the new word is shown in Greek even when weaveVerse leaves
+ * it English (a chunk of supplied words, or one with another word he does not know yet), for the point of the sheet is to see the word
+ * in the verse; a chunk with no Greek at all, or only '-', stays English.
+ */
+export function weaveForTeaching(verse: Verse, solid: ReadonlySet<string>, lemma: string): Woven[] {
+  const woven = weaveVerse(verse, { solid, learning: new Set([lemma]) });
+  return verse.e.map((chunk, i) => {
+    if (woven[i]?.learning || chunk.t.trim() === '-') return woven[i];
+    const words = chunk.g.map((g) => verse.g[g] as GreekWord | undefined).filter((w): w is GreekWord => w !== undefined);
+    return words.some((w) => wordLemma(w).normalize('NFC') === lemma) ? { words, learning: true } : woven[i];
+  });
+}

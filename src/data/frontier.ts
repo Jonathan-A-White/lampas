@@ -11,6 +11,9 @@ export interface Known {
   dropped: ReadonlySet<string>;
 }
 
+/** How many new words the Reader offers at a time (the 'New words: N' strip). PROVISIONAL: a constant until the pace story makes it a setting. */
+export const PACE = 3;
+
 export interface Candidate {
   /** Strong's number, no padding: 'G2316' */
   strongs: string;

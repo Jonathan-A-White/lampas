@@ -127,6 +127,7 @@ describe('docs/events.md', () => {
       'approach-changed': true,
       'idea-taught': true,
       'picker-level-moved': true,
+      'frontier-taught': true,
       'placement-done': true,
       'feedback-sent': true,
     };

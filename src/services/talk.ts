@@ -82,6 +82,11 @@ export function termQuestion(term: string, reference: string): string {
   return `Explain the grammar term “${term}” in plain words, and show me where it is in ${reference}.`;
 }
 
+/** The question the teach sheet's Ask the tutor sends: it names the new word, its meaning and the reference it was met in. */
+export function newWordQuestion(lemma: string, gloss: string, reference: string): string {
+  return `Teach me the new word ${lemma}${gloss ? ` (${gloss})` : ''}, as it stands in ${reference}: what it means, how it sounds and one way to remember it.`;
+}
+
 /** What the grind is sent (Bible Talk Request 1; grinds/bible-talk.input.schema.json). */
 export interface TalkRequest {
   reference: string;

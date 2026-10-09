@@ -1,8 +1,11 @@
 // src/data/repositories/words.ts — the words he knows. A repository owns its transactions.
+import { publish } from '../../events/bus';
 import { db, type Word, type WordState } from '../db';
 import type { ImportWord } from '../importWords';
 import { normaliseLemma } from '../lemma';
+import { DAY, STEP_DAYS } from '../schedule';
 import { SEED_WORDS } from '../seed-words';
+import { announceDue, writeScheduled } from './reviews';
 
 export type { Word, WordState };
 
@@ -95,4 +98,37 @@ export async function listLearningLemmas(): Promise<Set<string>> {
 export async function listSolidHeadwords(): Promise<string[]> {
   const solid = await db.words.where('state').equals('solid').toArray();
   return solid.sort((a, b) => a.lesson - b.lesson || a.lemma.localeCompare(b.lemma)).map((w) => w.lemma);
+}
+
+/** Every lemma a dropped word goes by (NFC), like listSolidLemmas: the new words the teach sheet must never offer. */
+export async function listDroppedLemmas(): Promise<Set<string>> {
+  const dropped = await db.words.where('state').equals('dropped').toArray();
+  return new Set(dropped.flatMap((w) => [w.lemma, ...w.lemmas]).map((l) => l.normalize('NFC')));
+}
+
+/** What he told the teach sheet: Got it (learning, due now) or I know this (solid, the 30-day step). */
+export type WordOutcome = 'got-it' | 'known';
+
+/** The step whose gap is 30 days: where a word he already knows starts. */
+const KNOWN_START_STEP = STEP_DAYS.indexOf(30);
+
+/**
+ * Takes a new word from his reading onto his list (the teach sheet): Got it makes it learning, lesson 0, source 'frontier', on the
+ * schedule at step 0 and due now; I know this makes it solid and puts it at the 30-day step, due in 30 days. A word already on the
+ * list keeps its place there and takes the state; one already on the schedule keeps its row. Publishes frontier-taught after the
+ * write.
+ */
+export async function teachWord(lemma: string, gloss: string, outcome: WordOutcome, now = Date.now()): Promise<void> {
+  const { headword, lemmas } = normaliseLemma(lemma);
+  if (!headword) return;
+  const state: WordState = outcome === 'known' ? 'solid' : 'learning';
+  await db.transaction('rw', db.words, db.reviews, async () => {
+    const found = (await db.words.get(headword)) ?? (await db.words.where('lemmas').anyOf(lemmas).first());
+    if (found) await db.words.update(found.lemma, { state, since: now });
+    else await db.words.add({ lemma: headword, lemmas, gloss, lesson: 0, source: 'frontier', state, since: now });
+    const start = outcome === 'known' ? () => ({ step: KNOWN_START_STEP, due: now + 30 * DAY }) : undefined;
+    await writeScheduled('word', [found?.lemma ?? headword], now, start);
+  });
+  publish({ kind: 'frontier-taught', lemma: headword, outcome });
+  await announceDue(now);
 }
