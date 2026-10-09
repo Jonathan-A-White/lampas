@@ -9,6 +9,7 @@ import type { AnswerLink, AnswerWord } from '../data/db';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { SettingValue } from '../settings/registry';
 import { slugOf, type ScreenContext } from '../tutor/screen';
+import { MAX_SUMMARY } from './feedback';
 import { askGrind, type AskOptions } from './tutor';
 
 /** The kind the mill runs the grind under (grinds/bible-talk.json). */
@@ -170,6 +171,14 @@ export interface TalkRequest {
 /** The most links an answer carries (the grind's schema): the app shows the first three of more. */
 export const MAX_LINKS = 3;
 
+/** The longest summary of a feedback offer: the feedback grind's (grinds/feedback.input.schema.json `summary`). */
+export const FEEDBACK_SUMMARY_MAX = MAX_SUMMARY;
+
+/** The tutor's offer to pass an ask the app cannot meet to the makers: one line saying what he wants. The app draws Send this to the makers; nothing is sent without his tap. */
+export interface FeedbackOffer {
+  summary: string;
+}
+
 /** What the grind answers (grinds/bible-talk.answer.schema.json). */
 export interface TalkAnswer {
   answer: string;
@@ -186,6 +195,8 @@ export interface TalkAnswer {
   links?: AnswerLink[];
   /** in a quiz, one line the tutor proposes for his study way (mw-5r3p30.76): shown with Keep this, kept only when he taps it */
   study_way_line?: string;
+  /** an ask the app cannot meet (another app, a new setting, a change): the summary the app offers to send to the makers */
+  feedback_offer?: FeedbackOffer;
 }
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
@@ -197,8 +208,9 @@ const isAnswerLink = (value: unknown): value is AnswerLink =>
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'feedback_offer')) return false;
   if ('study_way_line' in value && !isText(value.study_way_line, STUDY_WAY_LINE_MAX)) return false;
+  if ('feedback_offer' in value && !(isObject(value.feedback_offer) && Object.keys(value.feedback_offer).length === 1 && isText(value.feedback_offer.summary, FEEDBACK_SUMMARY_MAX))) return false;
   if ('links' in value && !(Array.isArray(value.links) && value.links.length <= 12 && value.links.every(isAnswerLink))) return false;
   if ('settings_changes' in value && !Array.isArray(value.settings_changes)) return false;
   if ('words_to_add' in value && !(Array.isArray(value.words_to_add) && value.words_to_add.length <= 12 && value.words_to_add.every((l) => isText(l, 80)))) return false;

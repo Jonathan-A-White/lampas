@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { learnerGrammarOf } from '../../src/data/grammar/learnerGrammar';
-import { NO_SETTING, REFUSAL, isTalkAnswer } from '../../src/services/talk';
+import { FEEDBACK_SUMMARY_MAX, NO_SETTING, REFUSAL, isTalkAnswer } from '../../src/services/talk';
 import { formatJson, settingsBlock, withSettingsBlock, withSettingsChanges } from '../../src/settings/grindText';
 import { SETTINGS } from '../../src/settings/registry';
 import { validate, type Schema } from '../support/schema-validate';
@@ -417,5 +417,50 @@ describe('the sound kind for a Hebrew word (mw-5r3p30.98)', () => {
     expect(text).toContain('`transliteration`');
     expect(text).toMatch(/Hebrew letters/);
     expect(JSON.stringify(schema)).toContain('transliteration');
+  });
+});
+
+describe('the feedback offer', () => {
+  const good = { answer: 'Lampas has no such link yet. I can pass it to the makers; I cannot promise they will build it.', words: [] };
+  const instructions = readFileSync('grinds/bible-talk.instructions.md', 'utf8');
+
+  it('is an optional object with a one-line summary, in both the schema and isTalkAnswer', () => {
+    for (const offer of [{ summary: 'He wants Lampas to work with Olive Tree.' }, { summary: 'x'.repeat(FEEDBACK_SUMMARY_MAX) }]) {
+      const value = { ...good, feedback_offer: offer };
+      expect(validate(value, schema as Schema)).toEqual([]);
+      expect(isTalkAnswer(value)).toBe(true);
+    }
+    expect((schema.required as string[]).includes('feedback_offer')).toBe(false);
+    const summary = ((schema.properties as Record<string, Schema>).feedback_offer.properties as Record<string, Schema>).summary;
+    expect(summary.maxLength).toBe(FEEDBACK_SUMMARY_MAX);
+  });
+
+  it.each<[string, unknown]>([
+    ['an empty summary', { summary: '' }],
+    ['a summary over the limit', { summary: 'x'.repeat(FEEDBACK_SUMMARY_MAX + 1) }],
+    ['an offer with no summary', {}],
+    ['an offer with an extra key', { summary: 'x', extra: 1 }],
+    ['an offer that is a string', 'x'],
+  ])('refuses %s in both', (_, offer) => {
+    const value = { ...good, feedback_offer: offer };
+    expect(validate(value, schema as Schema)).not.toEqual([]);
+    expect(isTalkAnswer(value)).toBe(false);
+  });
+
+  it('tells the grind when to offer it, never to promise the change, and that the app draws the button', () => {
+    expect(instructions).toContain('## Asks the app cannot meet');
+    for (const rule of ['`feedback_offer`', 'Send this to the makers', 'never promise', 'another app', 'a new setting']) expect(instructions).toContain(rule);
+    expect(instructions).toContain('only when');
+  });
+
+  it("carries the worked example 'Can this work with Accordance's competitor, Olive Tree?' and the offer it yields", () => {
+    expect(instructions).toContain("Can this work with Accordance's competitor, Olive Tree?");
+    const block = /<!-- feedback-offer-example:start -->\s*```json\s*([\s\S]*?)```\s*<!-- feedback-offer-example:end -->/.exec(instructions);
+    expect(block, 'the example answer block').not.toBeNull();
+    const answer = JSON.parse((block as RegExpExecArray)[1]) as { feedback_offer?: { summary: string } };
+    expect(answer.feedback_offer?.summary).toMatch(/Olive Tree/);
+    expect(validate(answer, schema as Schema)).toEqual([]);
+    expect(isTalkAnswer(answer)).toBe(true);
+    expect(JSON.stringify(answer)).not.toMatch(/\bwill (build|add|make|do)\b/i);
   });
 });
