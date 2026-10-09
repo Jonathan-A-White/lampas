@@ -13,12 +13,16 @@ import { seedWordsIfFirstOpen, setWordState } from '../../src/data/repositories/
 import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
+import { usageWritesSettled } from '../../src/tips/usageLog';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton, queryButton } from '../../tests/support/find-button';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
+  // App's cleanup drops the usage log's pending writes; let them land before the file closes the db (mw-5r3p30.86).
+  await usageWritesSettled();
   db.close();
   vi.unstubAllGlobals();
 });
@@ -32,6 +36,7 @@ const DUE = ['λέγω', 'εἰμί', 'ἀγαπάω', 'ποιέω'];
 async function freshStore(): Promise<void> {
   cleanup();
   clearBus();
+  await usageWritesSettled();
   forgetTrail();
   localStorage.clear();
   stubChapterFetch();
@@ -58,7 +63,7 @@ async function openReader(): Promise<void> {
 }
 
 async function openReviewFromSettings(): Promise<void> {
-  await user.click(await screen.findByRole('button', { name: 'Settings' }));
+  await user.click(await findButton('Settings'));
   await user.click(await screen.findByRole('button', { name: 'Review' }));
   await screen.findByRole('heading', { name: 'Review', level: 1 });
 }
@@ -114,9 +119,9 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('Lampas is opened on the Reader', openReader);
     Then('the Reader shows {string}', async (_, text: string) => {
-      expect(await screen.findByRole('button', { name: text })).toBeVisible();
+      expect(await findButton(text)).toBeVisible();
     });
-    When('he taps {string}', async (_, text: string) => user.click(await screen.findByRole('button', { name: text })));
+    When('he taps {string}', async (_, text: string) => user.click(await findButton(text)));
     Then('the Review screen says {string}', async (_, text: string) => {
       await dueToday();
       await waitFor(() => expect(screen.getByTestId('due-today')).toHaveTextContent(text));
@@ -130,13 +135,13 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('Lampas is opened on the Reader', openReader);
     And('he drops the word {string}', async (_, lemma: string) => {
-      await screen.findByRole('button', { name: /^Due: 2/ });
+      await findButton(/^Due: 2/);
       await setWordState(lemma, 'dropped');
     });
     Then('the Reader shows {string}', async (_, text: string) => {
-      expect(await screen.findByRole('button', { name: text })).toBeVisible();
+      expect(await findButton(text)).toBeVisible();
     });
-    When('he taps {string}', async (_, text: string) => user.click(await screen.findByRole('button', { name: text })));
+    When('he taps {string}', async (_, text: string) => user.click(await findButton(text)));
     Then('the Review screen says {string}', async (_, text: string) => {
       await dueToday();
       await waitFor(() => expect(screen.getByTestId('due-today')).toHaveTextContent(text));
@@ -168,17 +173,17 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('Lampas is opened on the Reader', openReader);
     And('he drops the word {string}', async (_, lemma: string) => {
-      await screen.findByRole('button', { name: /^Due: 2/ });
+      await findButton(/^Due: 2/);
       await setWordState(lemma, 'dropped');
     });
     Then('the Reader shows {string}', async (_, text: string) => {
-      expect(await screen.findByRole('button', { name: text })).toBeVisible();
+      expect(await findButton(text)).toBeVisible();
     });
     When('he takes up the word {string} again', async (_, lemma: string) => {
       await setWordState(lemma, 'learning');
     });
     Then('the Reader is back to {string}', async (_, text: string) => {
-      expect(await screen.findByRole('button', { name: text })).toBeVisible();
+      expect(await findButton(text)).toBeVisible();
     });
   });
 
@@ -186,8 +191,8 @@ describeFeature(feature, ({ Scenario }) => {
     Given('none of his words is due', freshStore);
     When('Lampas is opened on the Reader', openReader);
     Then('the Reader shows no Due count', async () => {
-      await waitFor(() => expect(screen.getByRole('button', { name: 'Settings' })).toBeVisible());
-      expect(screen.queryByRole('button', { name: /^Due:/ })).toBeNull();
+      expect(await findButton('Settings')).toBeVisible();
+      expect(queryButton(/^Due:/)).toBeNull();
     });
   });
 
