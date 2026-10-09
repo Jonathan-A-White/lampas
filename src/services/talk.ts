@@ -1,7 +1,7 @@
 // src/services/talk.ts — the Bible talk: one thing he says, sent as a grist through Postern (bsv-kit/grist) and answered by
 // the mill's bible-talk grind (grinds/bible-talk.json). The wire work is the tutor's (src/services/tutor.ts askGrind); this
 // file is the kind's own: the request with the last turns of the conversation, the answer's shape, and the fit to a grist.
-import type { Chapter, Verse } from '../data/chapter';
+import { markSupplied, type Chapter, type Verse } from '../data/chapter';
 import { unitId } from '../data/passage';
 import { STUDY_WAY_LINE_MAX } from '../data/repositories/studyWay';
 import { screenRef, talkRef } from '../data/repositories/talks';
@@ -211,7 +211,7 @@ export interface TalkScope {
 export const quizMeQuestion = (reference: string): string => `Quiz me on ${reference}.`;
 
 const greekOf = (v: Verse): string => v.g.map((w) => w.t).join(' ');
-const englishOf = (v: Verse): string => v.e.map((c) => c.t.trim()).join(' ');
+const englishOf = (v: Verse): string => v.e.map(markSupplied).join(' ');
 
 /** The title of the sheet and the reference in the request: 'Romans 8', 'Romans 8:28' or, for a passage, 'Romans 8:1-11'. */
 export const scopeTitle = (scope: Pick<TalkScope, 'title' | 'verse'>): string => (scope.verse ? `${scope.title}:${unitId(scope.verse)}` : scope.title);

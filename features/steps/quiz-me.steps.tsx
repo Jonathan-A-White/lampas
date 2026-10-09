@@ -9,6 +9,7 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
+import { markSupplied } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
@@ -36,7 +37,7 @@ interface RawVerse {
 }
 const ROMANS_8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as { verses: RawVerse[] };
 const englishOf = (from: number, to: number): string =>
-  ROMANS_8.verses.filter((v) => v.n >= from && v.n <= to).map((v) => v.e.map((c) => c.t.trim()).join(' ')).join(' ');
+  ROMANS_8.verses.filter((v) => v.n >= from && v.n <= to).map((v) => v.e.map(markSupplied).join(' ')).join(' ');
 const greekOf = (from: number, to: number): string =>
   ROMANS_8.verses.filter((v) => v.n >= from && v.n <= to).map((v) => v.g.map((w) => w.t).join(' ')).join(' ');
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();

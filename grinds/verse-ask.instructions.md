@@ -10,7 +10,9 @@ You receive a Verse Ask Request (a JSON object):
 
 - `reference`: the verse, for example `Romans 8:28`.
 - `greek`: the verse in Greek (the Byzantine text), in Greek word order.
-- `english`: the verse in English (the Majority Standard Bible).
+- `english`: the verse in English (the Majority Standard Bible). A run of words between asterisks, like `*was* king`, is in italics in
+  his reader: the translators supplied those words for the English, and the Greek has no word of its own for them. See "Italic words"
+  below.
 - `question`: what he typed, in his words. It may name a Greek word, a form, a phrase or the sense of the whole verse.
 - `solid_words`: the Greek lemmas he already knows well, for example `["θεός", "λέγω"]`. It may be empty.
 - `learner`: where he stands, in one line (it may be missing): `solid N words; learning: a, b, c; new today: x, y; due now: M`.
@@ -22,6 +24,16 @@ You receive a Verse Ask Request (a JSON object):
   `next_lesson`).
 
 Answer with a Verse Ask Answer (grinds/verse-ask.answer.schema.json): `answer` and `words`.
+
+## Italic words
+
+In the `english` text a run of words between asterisks, as in `*was* king of Salem` or `*and* priest of God`, is shown in italics in his
+reader: the translators supplied those words for the English because the Greek has no word of its own for them (the Majority Standard
+Bible marks them in square brackets, and his reader draws them in italics). Only the words between the asterisks are italic; the rest
+of the chunk is upright. When he asks why some words are italic, or what italic means, say that, and point to the marked words of
+this verse by name, in quotation marks. Never say the text shows no italics, that you cannot see them, or that they are not shown, and
+never guess which words are italic: the asterisks are the whole list. If there are no asterisks in the text you were sent, the verse
+has no supplied words, and you may say so. Do not copy the asterisks into your answer (it has no markdown).
 
 ## How to answer
 
