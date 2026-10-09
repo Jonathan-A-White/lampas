@@ -1,12 +1,30 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
 const VIEWPORT = { width: 390, height: 844 };
 
+/** Turning an app On opens it to see it is on the phone (mw-5r3p30.68): headless Chromium has no Logos, so the test plays the app taking the
+ *  page away (a blur) after the tap, which is what a phone with the app does. */
+/** Headless Chromium stops at a link to an app scheme (an unanswered prompt eats the clicks that follow); the tap itself still reaches the page. */
+const holdAppLinks = async (page: Page): Promise<void> => {
+  await page.addInitScript(() => {
+    window.addEventListener('click', (e) => {
+      const link = (e.target as Element).closest('a');
+      if (link && !/^https?:/.test(link.href)) e.preventDefault();
+    }, true);
+  });
+};
+
+const turnsOnWithApp = async (page: Page, section: Locator, name: string): Promise<void> => {
+  await section.getByRole('switch', { name, exact: true }).click();
+  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+};
+
 test('Study resources at phone width: thumb-sized switches in Settings, and a Study row on the word sheet', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
   await openUnlocked(page);
+  await holdAppLinks(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
@@ -22,7 +40,7 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
     expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
   }
   await section.getByRole('switch', { name: "Strong's", exact: true }).click();
-  await section.getByRole('switch', { name: 'Logos', exact: true }).click();
+  await turnsOnWithApp(page, section, 'Logos');
   const bdag = section.getByRole('checkbox', { name: 'BDAG', exact: true });
   await expect(bdag).toHaveAttribute('aria-checked', 'true');
   const louw = section.getByRole('checkbox', { name: 'Louw-Nida', exact: true });
@@ -58,12 +76,13 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
 test('The Logos lexicons are a compact list at 360 px: bounded height, its own scroll, a search, and Accordance below it in reach', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 740 });
   await openUnlocked(page);
+  await holdAppLinks(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   const section = page.getByRole('region', { name: 'Study resources' });
   const logosSwitch = section.getByRole('switch', { name: 'Logos', exact: true });
-  await logosSwitch.click();
+  await turnsOnWithApp(page, section, 'Logos');
 
   const list = section.getByRole('group', { name: 'Logos lexicons' });
   const box = list.getByTestId('searchable-list-box');
@@ -103,23 +122,17 @@ test('The Logos lexicons are a compact list at 360 px: bounded height, its own s
 test('The Study links are equal tiles in two columns at 360 px, and an app that does not open says so', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 740 });
   await openUnlocked(page);
-  // Headless Chromium stops at a link to an app scheme (an unanswered prompt eats the clicks that follow); the tap itself still reaches the page.
-  await page.addInitScript(() => {
-    window.addEventListener('click', (e) => {
-      const link = (e.target as Element).closest('a');
-      if (link && !/^https?:/.test(link.href)) e.preventDefault();
-    }, true);
-  });
+  await holdAppLinks(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   const section = page.getByRole('region', { name: 'Study resources' });
-  await section.getByRole('switch', { name: 'Logos', exact: true }).click();
+  await turnsOnWithApp(page, section, 'Logos');
   const lexham = section.getByRole('checkbox', { name: 'Lexham Theological Wordbook', exact: true });
   await lexham.scrollIntoViewIfNeeded();
   await lexham.click();
   await section.getByRole('switch', { name: 'Accordance', exact: true }).evaluate((el) => el.scrollIntoView({ block: 'center' }));
-  await section.getByRole('switch', { name: 'Accordance', exact: true }).click();
+  await turnsOnWithApp(page, section, 'Accordance');
   await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
   await page.locator('[data-verse="28"]').getByRole('button', { name: 'work together', exact: true }).click();
 
@@ -164,4 +177,25 @@ test('The Study links are equal tiles in two columns at 360 px, and an app that 
   const fits = await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
   expect(fits).toBe(true);
   await shot(page, 'word-sheet-study-grid');
+});
+
+test('Settings: Accordance is not on this phone, so its switch goes back Off and Install is offered there', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  await openUnlocked(page);
+  await holdAppLinks(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  const section = page.getByRole('region', { name: 'Study resources' });
+  const accordance = section.getByRole('switch', { name: 'Accordance', exact: true });
+  await accordance.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  await accordance.click();
+  await expect(section.getByText("Accordance isn't on this phone")).toBeVisible({ timeout: 4000 });
+  await expect(accordance).toHaveAttribute('aria-checked', 'false');
+  const install = section.getByRole('link', { name: 'Install Accordance', exact: true });
+  await expect(install).toHaveAttribute('href', /play\.google\.com\/store\/search\?q=Accordance/);
+  const b = await install.boundingBox();
+  expect(b?.height).toBeGreaterThanOrEqual(47.5);
+  expect((b?.x ?? 0) + (b?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
+  await shot(page, 'settings-app-missing');
 });
