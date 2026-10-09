@@ -2,6 +2,10 @@ import { expect, test } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
+// These specs measure a 390 px phone screen, so they pin it themselves: run under the 'chromium' project (a bare
+// `npx playwright test <file>`) they would otherwise get Desktop Chrome's 1280 px and fail every width check.
+test.use({ viewport: { width: 390, height: 844 } });
+
 test('the reader header holds the chapter, English | Greek and the gear, in one row at phone width', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/');

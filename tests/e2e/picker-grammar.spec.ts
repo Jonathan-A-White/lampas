@@ -2,6 +2,10 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
+// These specs measure a 390 px phone screen, so they pin it themselves: run under the 'chromium' project (a bare
+// `npx playwright test <file>`) they would otherwise get Desktop Chrome's 1280 px and fail every width check.
+test.use({ viewport: { width: 390, height: 844 } });
+
 // Puts rows in the app's own store through raw IndexedDB, as the app wrote them.
 async function put(page: Page, store: 'reviews' | 'settings', rows: object[]) {
   await page.evaluate(
