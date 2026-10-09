@@ -165,6 +165,10 @@ drawn**, so a resource he switches on later shows on an old answer:
 | verse | `Open Romans 8:31 in Lampas` (the Reader on the verse, the Talk sheet closes first; a Back step) and, with Logos on, `Open Romans 8:31 in Logos` in his Bible in Logos (`logosres:<bible>;ref=Bible.Ro8.31`, `verseLink` in `logosBible.ts`: the chapter link's form with the New Testament abbreviations of Logos' own list, UNVERIFIED on a device) |
 
 A link to a resource that is off is not drawn and nothing says so; a link with no chip leaves no group, and an answer with no chip at all draws no list. A verse
-the text does not hold (an unknown book, a chapter or verse out of range) is dropped. Accordance gives no verse chip: its field names a lexicon module, not a Bible.
+the canon does not hold (an unknown book, a chapter or verse out of range) is dropped.
+**An Old Testament verse** (`Isaiah 53:5`, `Genesis 15:6`; mw-5r3p30.99) is a verse link like any other: `placeOf` in `tutorLinks.ts` reads the reference against the one canon
+list (`data/books.ts` and `data/otBooks.ts`, `parseCanonReference` in `nav/links.ts`), and the chips are those of the resources that are on and can show a Bible, in the Bible
+he chose in Settings (`Open Genesis 15:6 in Logos`, `logosres:<bible>;ref=Bible.Ge15.6`), never a fixed one. There is no `in Lampas` chip, because Lampas holds no Old
+Testament text: `TutorPlace.reader` is the one flag, and an Old Testament reader later only turns it on. A chapter's last verse is not checked for the Old Testament (no counts). Accordance gives no verse chip: its field names a lexicon module, not a Bible.
 More than three links in an answer: the app keeps the first three (the schema's limit is for the mill). A resource that can show a Bible gives `versesFor(place, bible)`;
 one that cannot has none.

@@ -71,7 +71,7 @@
             "properties": {
               "kind": { "const": "verse" },
               "reference": {
-                "description": "A verse of the New Testament, such as Romans 8:31 or 1 John 1:9.",
+                "description": "A verse of any book of the Bible, Old Testament or New, such as Romans 8:31, 1 John 1:9 or Isaiah 53:5.",
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 40
