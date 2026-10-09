@@ -2,17 +2,35 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import type { Chapter } from '../../src/data/chapter';
+import { learnerGrammarOf, type LearnerGrammar } from '../../src/data/grammar/learnerGrammar';
 import { MAX_HISTORY_TURNS, MAX_REQUEST_BYTES, MAX_TALK_CHARS, buildTalkRequest, fitHistory, termQuestion, type TalkRequest } from '../../src/services/talk';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const turn = (i: number, a = `Answer ${i}`) => ({ q: `Question ${i}`, a });
 const size = (r: TalkRequest) => new TextEncoder().encode(JSON.stringify(r)).length;
 
+// a field as full as it may be: 12 titles at each level
+const FIELD: LearnerGrammar = learnerGrammarOf({
+  goal: 'Read 1 John 1:1',
+  words: { solid: 3, frontier: 2, notYet: 9 },
+  ideas: (['solid', 'frontier', 'notYet'] as const).flatMap((level) => Array.from({ length: 12 }, (_, i) => ({ id: `${level}${i}`, title: `Idea ${level} ${i}`, level }))),
+  placed: true,
+  move: 'up',
+  pickerLevel: 'solid',
+  approach: { name: 'BMA Tutor', credit: 'Biblical Mastery Academy', nextLesson: 'The nominative' },
+});
+
 describe('buildTalkRequest', () => {
   it('carries the learner summary when given one, and no learner key when not', () => {
     const scope = { title: 'Romans 8', chapter, verse: null };
     expect(buildTalkRequest(scope, 'Why?', [], [], {}, undefined, 'solid 1 word; learning: none; new today: none; due now: 0').learner).toBe('solid 1 word; learning: none; new today: none; due now: 0');
     expect('learner' in buildTalkRequest(scope, 'Why?', [], [])).toBe(false);
+  });
+
+  it('carries learner_grammar when given one, and no such key when not', () => {
+    const scope = { title: 'Romans 8', chapter, verse: null };
+    expect(buildTalkRequest(scope, 'Why?', [], [], {}, undefined, undefined, FIELD).learner_grammar).toEqual(FIELD);
+    expect('learner_grammar' in buildTalkRequest(scope, 'Why?', [], [])).toBe(false);
   });
 
   it('about a verse: its reference, its Greek and English', () => {
@@ -88,6 +106,16 @@ describe('fitHistory', () => {
     expect(fitted.history[0].a.length).toBeLessThan(long.length);
     // what is kept is still in order and ends with the newest
     expect(fitted.history.map((t) => t.q)).toEqual(r.history.slice(r.history.length - fitted.history.length).map((t) => t.q));
+  });
+
+  it('clips the history and never learner_grammar, with a full history and the field at its fullest', () => {
+    expect(size({ ...base([]), learner_grammar: FIELD })).toBeGreaterThan(size(base([])) + 700);
+    const r = { ...base(Array.from({ length: 10 }, (_, i) => turn(i, 'y'.repeat(1500)))), learner: 'x'.repeat(600), learner_grammar: FIELD };
+    expect(size(r)).toBeGreaterThan(MAX_REQUEST_BYTES);
+    const fitted = fitHistory(r);
+    expect(size(fitted)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
+    expect(fitted.learner_grammar).toEqual(FIELD);
+    expect(fitted.history.length).toBeGreaterThan(0);
   });
 
   it('drops the whole history when even one clipped turn cannot fit', () => {

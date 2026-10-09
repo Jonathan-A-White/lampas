@@ -3,6 +3,7 @@
 // with isTalkAnswer, the guard the phone runs.
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
+import { learnerGrammarOf } from '../../src/data/grammar/learnerGrammar';
 import { NO_SETTING, REFUSAL, isTalkAnswer } from '../../src/services/talk';
 import { formatJson, settingsBlock, withSettingsBlock, withSettingsChanges } from '../../src/settings/grindText';
 import { SETTINGS } from '../../src/settings/registry';
@@ -216,5 +217,33 @@ describe('words_to_add in the answer (mw-5r3p30.44)', () => {
   it('the instructions tell the companion to use words_to_add for a word he asks to add, and not to claim it otherwise', () => {
     const text = readFileSync(grind.instructions as string, 'utf8');
     for (const part of ['`words_to_add`', 'dictionary form', 'words-to-learn list']) expect(text).toContain(part);
+  });
+});
+
+describe('learner_grammar in the request (mw-hqd5bz.12)', () => {
+  const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
+  const request = { reference: 'Romans 8', greek: 'Οἴδαμεν', english: 'And we know', question: 'Explain', history: [], solid_words: [], settings: {} };
+  const field = learnerGrammarOf({
+    goal: 'Read 1 John 1:1',
+    words: { solid: 3, frontier: 2, notYet: 9 },
+    ideas: [{ id: 'case-genitive', title: 'The genitive case', level: 'frontier' }],
+    placed: true,
+    move: 'up',
+    pickerLevel: 'solid',
+    approach: { name: 'BMA Tutor', credit: 'Biblical Mastery Academy', nextLesson: 'The nominative' },
+  });
+
+  it('the request schema takes the field the app builds, with no goal or no next lesson too, and does not require it', () => {
+    expect((input.required as string[])).not.toContain('learner_grammar');
+    expect(validate(request, input)).toEqual([]);
+    expect(validate({ ...request, learner_grammar: field }, input)).toEqual([]);
+    expect(validate({ ...request, learner_grammar: { ...field, goal: null, approach: { ...field.approach, credit: null, next_lesson: null } } }, input)).toEqual([]);
+  });
+
+  it('the request schema refuses a field with another key, another move or more than 12 titles', () => {
+    const twelve = Array.from({ length: 13 }, () => 'x');
+    for (const bad of [{ ...field, extra: 1 }, { ...field, suggested_move: 'sideways' }, { ...field, ideas: { ...field.ideas, solid: twelve } }, { ...field, picker_level: 'any' }, { ...field, placed: 'yes' }]) {
+      expect(validate({ ...request, learner_grammar: bad }, input), JSON.stringify(bad)).not.toEqual([]);
+    }
   });
 });

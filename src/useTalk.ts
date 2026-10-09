@@ -3,6 +3,7 @@
 // reader goes away.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { addLemmaToLearn } from './data/answerWord';
+import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { learnerSummary } from './data/learnerSummary';
 import { addTurn, listSolidHeadwords, listTurns, talkRef } from './data/repositories';
 import { getDeviceKeyBytes } from './services/deviceKey';
@@ -81,8 +82,8 @@ export function useTalk(book: string, chapter: number, onAnswered: (ref: string,
       set({ phase: 'sending', question: text, startedAt });
       void (async () => {
         try {
-          const [turns, solid, settings, learner] = await Promise.all([listTurns(ref), listSolidHeadwords(), currentSettings(), learnerSummary()]);
-          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner), {
+          const [turns, solid, settings, learner, grammar] = await Promise.all([listTurns(ref), listSolidHeadwords(), currentSettings(), learnerSummary(), learnerGrammar().catch(() => undefined)]);
+          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar), {
             key: getDeviceKeyBytes(),
             signal,
             onSent: () => set({ phase: 'waiting', question: text, startedAt }),

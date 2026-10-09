@@ -3,6 +3,7 @@
 // file is the kind's own: the request with the last turns of the conversation, the answer's shape, and the fit to a grist.
 import type { Chapter, Verse } from '../data/chapter';
 import type { AnswerWord } from '../data/db';
+import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { SettingValue } from '../settings/registry';
 import { askGrind, type AskOptions } from './tutor';
 
@@ -96,6 +97,8 @@ export interface TalkRequest {
   focus?: TalkFocus;
   /** where he stands (src/data/learnerSummary.ts): solid count, the learning words, today's new words, what is due */
   learner?: string;
+  /** where his grammar stands (src/data/grammar/learnerGrammar.ts): the goal, the counts, the idea titles by level, the suggested move; fitHistory never cuts it */
+  learner_grammar?: LearnerGrammar;
 }
 
 /** What the grind answers (grinds/bible-talk.answer.schema.json). */
@@ -164,6 +167,7 @@ export function buildTalkRequest(
   settings: Record<string, SettingValue> = {},
   focus?: TalkFocus,
   learner?: string,
+  learnerGrammar?: LearnerGrammar,
 ): TalkRequest {
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   return {
@@ -176,6 +180,7 @@ export function buildTalkRequest(
     settings,
     ...(focus ? { focus } : {}),
     ...(learner ? { learner } : {}),
+    ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
   };
 }
 
