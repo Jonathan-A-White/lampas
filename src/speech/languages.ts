@@ -2,11 +2,17 @@
 // (Latin, say) is one more id here and one more entry in LANGUAGES: it gets its own voice and its own speed in the
 // settings store, on the bus and in Settings by the same code, and nothing else names 'english' or 'greek' as a list.
 
-/** The ids of the entries below. */
-export type SpeechLanguage = 'english' | 'greek';
+/** The ids of the entries below: the languages that have a voice and a speed of their own in Settings. */
+export type SettableLanguage = 'english' | 'greek';
+
+/** Every language the app can speak. Hebrew (mw-5r3p30.98) is said in the phone's he-IL voice at the normal speed; it has no voice or speed setting yet. */
+export type SpeechLanguage = SettableLanguage | 'hebrew';
+
+/** The language tag of spoken Hebrew: modern Israeli. */
+export const HEBREW_LANG = 'he-IL';
 
 export interface SpeechLanguageInfo {
-  id: SpeechLanguage;
+  id: SettableLanguage;
   /** what Settings calls it: 'English voice', 'Greek speed' */
   label: string;
   /** the language tag put on an utterance when nothing else says (Greek's comes from its pronunciation) */
@@ -19,7 +25,7 @@ export const LANGUAGES: readonly SpeechLanguageInfo[] = [
 ];
 
 /** The speed of each language: 1 is the engine's normal. */
-export type SpeechRates = Record<SpeechLanguage, number>;
+export type SpeechRates = Record<SettableLanguage, number>;
 
 export const RATE_MIN = 0.5;
 export const RATE_MAX = 1.5;
