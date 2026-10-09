@@ -25,6 +25,13 @@ if (!verse28) throw new Error('no verse 28');
 const ENGLISH_28 = verse28.e.map((c) => c.t.trim()).join(' ');
 const GREEK_28 = verse28.g.map((w) => w.t).join(' ');
 
+/** A reading that marks the second 'who' of 8:28 (word 16 of the English), not the first (word 13). */
+const SECOND_WHO_ANSWER = {
+  verdict: 'some-to-fix',
+  focus_words: [{ word: 'who', index: 16, chunks: ['who'], tip: 'Say it as in who are called.' }],
+  note: 'Nearly there: one word to say again.',
+};
+
 afterAll(() => {
   cleanup();
   vi.unstubAllGlobals();
@@ -39,7 +46,7 @@ let fake: FakePostern;
 let synth: FakeSynth;
 
 interface Options {
-  reply?: 'reading' | 'well-read' | 'incomplete' | 'held';
+  reply?: 'reading' | 'well-read' | 'incomplete' | 'held' | 'second-who';
   view?: 'english' | 'greek';
   denied?: boolean;
   down?: boolean;
@@ -55,7 +62,7 @@ async function open({ reply = 'reading', view = 'english', denied = false, down 
   FakeRecorder.denied = denied;
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
-  if (reply !== 'held') fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : reply === 'incomplete' ? INCOMPLETE_ANSWER : WELL_READ_ANSWER };
+  if (reply !== 'held') fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : reply === 'second-who' ? SECOND_WHO_ANSWER : reply === 'incomplete' ? INCOMPLETE_ANSWER : WELL_READ_ANSWER };
   fake.greekReply = { status: 'answered', answer: GREEK_READING_ANSWER };
   fake.down = down;
   synth = stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
@@ -168,6 +175,28 @@ describeFeature(feature, ({ Scenario }) => {
       expect(detail).not.toBeNull();
       expect(detail?.querySelector('[data-chunks]')).toHaveTextContent(chunks);
       expect(within(detail as HTMLElement).getByRole('button', { name: 'Hear it' })).toBeInTheDocument();
+    });
+  });
+
+  Scenario('Only the instance of a word that he misread is marked, not every word spelled the same', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 in English with a reading check whose answer marks the second "who"', () => open({ reply: 'second-who' }));
+    And('he opens the reading check of verse 28', selectVerse28);
+    When(holdRead, async () => holdAndLetGo(readButton(), 2000));
+    Then('one word is marked to fix, the "who" of "who are called"', async () => {
+      await waitFor(() => expect(marked()).toHaveLength(1));
+      const button = marked()[0];
+      expect(button).toHaveTextContent('who');
+      const before = document.createRange();
+      before.setStart(panel().querySelector('[data-reading-verse]') as HTMLElement, 0);
+      before.setEndBefore(button);
+      expect(before.toString()).toContain('those who love Him, ');
+      expect(panel().querySelector('[data-reading-verse]')).toHaveTextContent(ENGLISH_28);
+    });
+    When('he taps the marked word "who"', async () => {
+      await user.click(marked()[0]);
+    });
+    Then('its chunks show as "who" with a speaker to hear it', () => {
+      expect(panel().querySelector('[data-fix-detail] [data-chunks]')).toHaveTextContent('who');
     });
   });
 

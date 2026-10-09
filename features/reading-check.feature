@@ -24,6 +24,14 @@ Feature: Reading check, in English and in Greek
     When he taps the marked word "together"
     Then its chunks show as "to · geth · er" with a speaker to hear it
 
+  Scenario: Only the instance of a word that he misread is marked, not every word spelled the same
+    Given Lampas is opened on Romans 8 in English with a reading check whose answer marks the second "who"
+    And he opens the reading check of verse 28
+    When he holds the bar for 2 seconds and lets go
+    Then one word is marked to fix, the "who" of "who are called"
+    When he taps the marked word "who"
+    Then its chunks show as "who" with a speaker to hear it
+
   Scenario: Read these again walks the marked words and then the whole verse
     Given Lampas is opened on Romans 8 in English with a reading check behind a fake Postern
     And he opens the reading check of verse 28

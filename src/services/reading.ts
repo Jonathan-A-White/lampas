@@ -12,6 +12,8 @@ export const READING_KIND = 'verse-read';
 /** The most words a reading may mark, and the most chunks a word may be broken into (the schema's limits). */
 export const MAX_FOCUS_WORDS = 8;
 export const MAX_CHUNKS = 12;
+/** The largest index a focus word may carry (the schema's maximum). */
+export const MAX_WORD_INDEX = 2000;
 
 /** What the grind is sent (Verse Read Request 1): the verse, the text he was to read and its language. The mill scores the
  * recording against `target_text` in `lang`, one of the grind's scoring.langs: 'en', or 'el' for the Greek read in modern
@@ -25,6 +27,8 @@ export interface VerseReadRequest {
 /** One word he misread, broken into chunks to say. */
 export interface FocusWord {
   word: string;
+  /** where this exact instance stands in target_text, counting its words from 0 (the verse has the same word twice often) */
+  index: number;
   chunks: string[];
   tip: string;
 }
@@ -48,8 +52,12 @@ export function isVerseReadAnswer(value: unknown): value is VerseReadAnswer {
   return value.focus_words.every(
     (f) =>
       isObject(f) &&
-      Object.keys(f).length === 3 &&
+      Object.keys(f).length === 4 &&
       isText(f.word, 60) &&
+      typeof f.index === 'number' &&
+      Number.isInteger(f.index) &&
+      f.index >= 0 &&
+      f.index <= MAX_WORD_INDEX &&
       isText(f.tip, 200) &&
       Array.isArray(f.chunks) &&
       f.chunks.length >= 1 &&
@@ -77,4 +85,33 @@ export async function askVerseRead(request: VerseReadRequest, recording: Recordi
   const bytes = new Uint8Array(await recording.blob.arrayBuffer());
   const file = { bytes, mime: recording.mime, name: `reading.${extensionOf(recording.mime)}` };
   return askGrind(READING_KIND, request, isVerseReadAnswer, { ...options, files: [file] });
+}
+
+/** A word as it is compared: no case, no accents or breathings, a final sigma as a sigma, no punctuation. The mill may write
+ * a Greek word without its accents, and that must still find the word in the verse. */
+export const normalWord = (word: string): string =>
+  word.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/ς/g, 'σ').replace(/[^\p{L}\p{N}]/gu, '');
+
+/** The verse's words as the scorer counts them: split on white space, in order (a focus word's `index` counts these). */
+export const wordsOfText = (text: string): string[] => text.split(/\s+/).filter(Boolean);
+
+/** Which words of `text` the focus words mark: a map from a word's place in the verse to the focus word that marks it, and the
+ * focus words that mark nothing (their place is not in the verse). Only the exact instance named by `index` is marked, never
+ * every word spelled alike. A word with no index (a reading kept before the mill gave one) marks every word spelled so. */
+export function markWords<W extends { word: string; index?: number }>(text: string, words: W[]): { marked: Map<number, W>; lost: W[] } {
+  const tokens = wordsOfText(text);
+  const marked = new Map<number, W>();
+  const lost: W[] = [];
+  for (const w of words) {
+    if (w.index !== undefined) {
+      if (w.index < tokens.length && !marked.has(w.index)) marked.set(w.index, w);
+      else if (w.index >= tokens.length) lost.push(w);
+      continue;
+    }
+    const spelled = normalWord(w.word);
+    const at = tokens.flatMap((t, i) => (normalWord(t) === spelled ? [i] : []));
+    for (const i of at) if (!marked.has(i)) marked.set(i, w);
+    if (at.length === 0) lost.push(w);
+  }
+  return { marked, lost };
 }

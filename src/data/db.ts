@@ -93,6 +93,8 @@ export interface DrillResult {
 /** One word of a reading the mill marked to fix, with its chunks to say and a tip. */
 export interface FixWord {
   word: string;
+  /** where this exact word stands in the verse's words, from 0; a reading kept before the mill gave one has none and marks every word spelled so */
+  index?: number;
   chunks: string[];
   tip: string;
 }
