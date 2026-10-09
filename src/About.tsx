@@ -1,6 +1,8 @@
 // src/About.tsx — Newton's line, why we credit, then every credit (texts, type, libraries, services, ideas, tools), read from ATTRIBUTION.md (src/attribution.ts).
-import { Fragment, type ReactNode } from 'react';
+import { Fragment, useRef, useState, type ReactNode } from 'react';
 import { attribution } from './attribution';
+import { BuildVersion } from './BuildVersion';
+import { setDeveloper } from './data/repositories';
 import { navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -29,10 +31,26 @@ const FACTS = attribution.sections.map((section) => ({
   value: section.entries.map((e) => /\[([^\]]+)\]\(/.exec(e)?.[1]).filter(Boolean).join(', '),
 }));
 
+/** Developer mode is found by tapping the version number this many times, each within DEVELOPER_TAP_WINDOW_MS of the one before (as in SpellForge). */
+export const DEVELOPER_TAPS = 7;
+export const DEVELOPER_TAP_WINDOW_MS = 3000;
+
 export function About() {
   useReportScreen({ name: 'About', facts: FACTS });
   const scrollRef = useScrollMemory('about');
   const { quote, intro, sections } = attribution;
+  const taps = useRef({ count: 0, last: 0 });
+  const [found, setFound] = useState(false);
+  const tapVersion = () => {
+    const now = Date.now();
+    const t = taps.current;
+    t.count = now - t.last > DEVELOPER_TAP_WINDOW_MS ? 1 : t.count + 1;
+    t.last = now;
+    if (t.count >= DEVELOPER_TAPS) {
+      t.count = 0;
+      void setDeveloper('on').then(() => setFound(true));
+    }
+  };
   return (
     <>
       <ScreenHeader title="About" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />
@@ -57,6 +75,12 @@ export function About() {
               </ul>
             </section>
           ))}
+          <BuildVersion className="pb-4" onTap={tapVersion} />
+          {found ? (
+            <p role="status" className="pb-4 text-center text-base font-medium">
+              Developer mode is on. Its switch is in Settings.
+            </p>
+          ) : null}
         </div>
       </main>
     </>

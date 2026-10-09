@@ -148,6 +148,20 @@ export async function setReadTutor(readTutor: ReadTutor): Promise<void> {
   await db.settings.put({ key: READ_TUTOR_KEY, value: readTutor });
 }
 
+/** Developer mode: 'hidden' until he finds it (7 taps on the version number on About), then 'on' or 'off' with its switch in Settings. */
+export type DeveloperMode = 'hidden' | 'off' | 'on';
+
+const DEVELOPER_KEY = 'developerMode';
+
+export async function getDeveloper(): Promise<DeveloperMode> {
+  const row = await db.settings.get(DEVELOPER_KEY);
+  return row?.value === 'on' ? 'on' : row?.value === 'off' ? 'off' : 'hidden';
+}
+
+export async function setDeveloper(mode: 'on' | 'off'): Promise<void> {
+  await db.settings.put({ key: DEVELOPER_KEY, value: mode });
+}
+
 const THEME_KEY = 'theme';
 
 /** The saved Theme; Phone (the phone's own colour scheme) when he has not chosen or the saved value is not one in the list. */

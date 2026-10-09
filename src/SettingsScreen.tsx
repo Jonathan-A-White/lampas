@@ -14,6 +14,8 @@ import {
   getSectionHeadings,
   getReadSpan,
   getReadTutor,
+  getDeveloper,
+  setDeveloper,
   getTips,
   getSpeechRates,
   getTextSize,
@@ -286,6 +288,25 @@ function ReadTutorChoice({ readTutor }: { readTutor: ReadTutor }) {
   );
   return (
     <div role="group" aria-label="Read the tutor's responses aloud" className="inline-flex rounded-xl border border-line p-0.5">
+      {choice('on', 'On')}
+      {choice('off', 'Off')}
+    </div>
+  );
+}
+
+function DeveloperChoice({ developer }: { developer: 'on' | 'off' }) {
+  const choice = (value: 'on' | 'off', label: string) => (
+    <button
+      type="button"
+      aria-pressed={developer === value}
+      onClick={() => void setDeveloper(value)}
+      className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${developer === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <div role="group" aria-label="Developer mode" className="inline-flex rounded-xl border border-line p-0.5">
       {choice('on', 'On')}
       {choice('off', 'Off')}
     </div>
@@ -742,6 +763,7 @@ export function SettingsScreen() {
   const tips = useLiveQuery(getTips, []);
   const readSpan = useLiveQuery(getReadSpan, []);
   const readTutor = useLiveQuery(getReadTutor, []);
+  const developer = useLiveQuery(getDeveloper, []);
   const english = useLiveQuery(() => getVoice('english'), []);
   const greek = useLiveQuery(() => getVoice('greek'), []);
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
@@ -823,6 +845,11 @@ export function SettingsScreen() {
           <Section title="Tips" hint="Once a day at most, when you open Lampas and are online, a small tip about something you have not tried. Off sends nothing.">
             {tips ? <TipsChoice tips={tips} /> : null}
           </Section>
+          {developer === 'on' || developer === 'off' ? (
+            <Section title="Developer" hint="For finding faults. On shows Download my recording under a reading check's result, to save the clip as it was recorded.">
+              <DeveloperChoice developer={developer} />
+            </Section>
+          ) : null}
           <Section title="My study way" hint="The lines you kept about how the tutor quizzes you.">
             <LinkRow label="My study way" to="studyway" />
           </Section>
