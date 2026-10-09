@@ -230,3 +230,4 @@ docs/data.md         # the data's JSON shape, its two sources and licences, and 
   Android Chrome does not always report the navigation bar). tests/e2e/bottom-reach.spec.ts holds the proof.
 - Raw text downloads (`data/raw`) stay out of git; the generated JSON per chapter is committed.
   `ATTRIBUTION.md` names every text and licence.
+- Credit everything we build on (mw-vtjxh4.1): `ATTRIBUTION.md` is the About screen's source and the README's Credits point at it; a new dependency, text, font, icon, service or borrowed idea gets an entry in the same commit (`[Name](url)` as the link text, never a raw URL; use, licence with a link, `Changes:`); `tests/unit/credits.test.ts` fails on a `package.json` dependency with no entry naming its package in backticks.
