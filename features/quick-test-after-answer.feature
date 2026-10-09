@@ -2,7 +2,8 @@ Feature: After an answer on the Quick test the word says itself, a wrong answer 
   The moment he taps a gloss, right or wrong, the Greek word is spoken by itself, once, with the same
   voice as the reader's Read and the Hold to hear bar. Nothing moves on by itself: a wrong answer waits
   for Next, as a right one does. Beside Next sits Ask the tutor, which opens the Reader on the verse
-  of the word with the Ask box holding a question about it.
+  of the word with the Talk sheet open and a first question about the word already sent, holding the word, the question and his answers
+  so far (features/word-ask-tutor.feature).
 
   Scenario: The word is spoken by itself, once, after a right answer
     Given Lampas is opened with a Greek voice and the Quick test is on its first question
@@ -26,19 +27,19 @@ Feature: After an answer on the Quick test the word says itself, a wrong answer 
     When he taps a wrong gloss
     Then there is an Ask the tutor button beside Next
 
-  Scenario: Ask the tutor opens the Ask box on the verse of the word
+  Scenario: Ask the tutor opens the Talk sheet on the verse of the word
     Given Lampas is opened with a Greek voice and a kept round whose question is the form ἀγαπῶσιν of Romans 8:28
     When he resumes the round
     And he taps a wrong gloss
     And he taps Ask the tutor
-    Then the Reader opens on verse 28 with the Ask box holding a question that names ἀγαπῶσιν and Romans 8:28
+    Then the Reader opens on verse 28 with the Talk sheet holding a question that names ἀγαπῶσιν and Romans 8:28
 
   Scenario: A word with no verse of its own asks the tutor about its meaning
     Given Lampas is opened with a Greek voice and a kept round whose question is the word ἀμήν with no verse
     When he resumes the round
     And he taps a wrong gloss
     And he taps Ask the tutor
-    Then the Reader opens with the Ask box holding a question that names ἀμήν
+    Then the Reader opens with the Talk sheet holding a question that names ἀμήν
 
   Scenario: A round resumed after the answer does not speak the word again
     Given Lampas is opened with a Greek voice and a kept round whose question is the word ἀμήν with no verse, already answered

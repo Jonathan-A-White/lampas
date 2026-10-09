@@ -169,7 +169,9 @@ test('the word speaks by itself once, a wrong answer waits for Next, and Ask the
   await expectFitsPhone(page);
   await shot(page, 'test-answered');
 
+  // Ask the tutor opens the Talk sheet on the word's verse with the first question already sent (no backend here: it says so)
   await ask.click();
-  await expect(page.getByRole('textbox', { name: 'Your question' })).toBeVisible();
-  expect(await page.getByRole('textbox', { name: 'Your question' }).inputValue()).toContain(word ?? '');
+  const talk = page.getByRole('dialog', { name: /^Talk about / });
+  await expect(talk).toBeVisible();
+  await expect(talk).toContainText(word ?? '');
 });

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { clearRound, readRound, saveRound, type SavedRound } from '../../src/data/roundKeep';
 
 const question = (lemma: string) => ({ lemma, prompt: lemma, gloss: 'g', options: ['g', 'a', 'b', 'c'] });
-const round: SavedRound = { questions: [question('λόγος'), question('θεός')], index: 1, picked: 'a', missed: [question('λόγος')] };
+const round: SavedRound = { questions: [question('λόγος'), question('θεός')], index: 1, picked: 'a', missed: [question('λόγος')], answers: [{ lemma: 'λόγος', picked: 'b', right: false }] };
 
 beforeEach(() => localStorage.clear());
 
@@ -18,6 +18,15 @@ describe('a half-done Quick test round', () => {
     const read = readRound();
     expect(read?.questions[0]).toMatchObject({ prompt: 'ἀγαπάω', form: 'ἀγαπῶσιν', reference: 'Romans 8:28' });
     expect(read?.missed[0]).toMatchObject({ prompt: 'ἀγαπάω', form: 'ἀγαπῶσιν' });
+  });
+
+  it('has no earlier answers when it was kept before they were (mw-5r3p30.80), and drops a malformed one', () => {
+    const old: Record<string, unknown> = { ...round };
+    delete old.answers;
+    localStorage.setItem('lampas.round', JSON.stringify(old));
+    expect(readRound()?.answers).toEqual([]);
+    localStorage.setItem('lampas.round', JSON.stringify({ ...round, answers: [{ lemma: 'θεός', picked: 'a', right: true }, { lemma: 3 }, 'x'] }));
+    expect(readRound()?.answers).toEqual([{ lemma: 'θεός', picked: 'a', right: true }]);
   });
 
   it('is gone once cleared', () => {

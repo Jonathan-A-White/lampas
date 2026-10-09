@@ -34,12 +34,42 @@ export interface TalkHistoryEntry {
 }
 
 /** The word he asked for help with (the word sheet's Help with this word row): the form as it stands, its lemma, its parsing in
- * plain words, and what he wants: its grammar, or how to sound it out. */
+ * plain words, and what he wants: its grammar, or how to sound it out; or ('word', the sheet's Ask the tutor) just the word,
+ * with nothing in particular asked. */
 export interface WordFocus {
   form: string;
   lemma: string;
   parse: string;
-  kind: 'grammar' | 'sound';
+  kind: 'grammar' | 'sound' | 'word';
+}
+
+/** One earlier answer of the Quick test round he is in. */
+export interface QuizAnswer {
+  lemma: string;
+  picked: string;
+  right: boolean;
+}
+
+/** The most earlier answers a quiz focus carries: a round is ten questions, the one asked about is not among them. */
+export const MAX_QUIZ_ANSWERS = 10;
+
+/** The Quick test question he asked the tutor about (the question's Ask the tutor): the word (its dictionary form, and the form,
+ * parsing and Strong's number it has in the chapter when it has one), the question, the glosses it offered, the one he chose, the
+ * right one, and his earlier answers of the round. */
+export interface QuizFocus {
+  kind: 'quiz';
+  lemma: string;
+  form?: string;
+  parse?: string;
+  strongs?: string;
+  /** part of speech ('noun'), from the lexicon */
+  pos?: string;
+  question: string;
+  choices: string[];
+  picked: string;
+  correct: string;
+  right: boolean;
+  answers: QuizAnswer[];
 }
 
 /** The grammar term he asked the tutor about (the Grammar sheet's Ask the tutor): 'conjunction'. */
@@ -59,8 +89,8 @@ export interface ParadigmFocus {
 /** The most forms a paradigm focus carries (the grind's schema): the largest table holds 40. */
 export const MAX_REVEALED = 40;
 
-/** What a question comes with, when it comes from a word's sheet, a Grammar sheet or a paradigm table. */
-export type TalkFocus = WordFocus | TermFocus | ParadigmFocus;
+/** What a question comes with, when it comes from a word's sheet, a Grammar sheet, a paradigm table or a Quick test question. */
+export type TalkFocus = WordFocus | TermFocus | ParadigmFocus | QuizFocus;
 
 /** The question the Paradigms screen's Ask the tutor sends: it names the table; the forms he has revealed ride in the focus. */
 export function paradigmQuestion(table: string, revealed: number): string {
@@ -73,9 +103,19 @@ export function paradigmQuestion(table: string, revealed: number): string {
  * reference, then asks. */
 export function helpQuestion(focus: WordFocus, reference: string): string {
   const word = `${focus.form} (lemma ${focus.lemma}; ${focus.parse}) in ${reference}`;
+  if (focus.kind === 'word') return `Tell me about the word ${word}: what it means here, why it has this form and how to remember it.`;
   return focus.kind === 'grammar'
     ? `The word ${word}. Explain the grammar of this form and what I need to know to read it.`
     : `The word ${word}. Help me pronounce this word: its syllables and how each sounds.`;
+}
+
+/** What the Quick test's Ask the tutor sends: it names the word, the gloss he chose and the right one, and where the word stands when
+ * it stands anywhere (`reference`). The rest of what the app knows rides in the focus. */
+export function quizQuestion(focus: QuizFocus, reference: string | undefined): string {
+  const as = focus.form && focus.form !== focus.lemma ? ` (as ${focus.form})` : '';
+  const where = reference ? `, as it stands in ${reference}` : '';
+  const verdict = focus.right ? 'and that was right' : `and the right answer was “${focus.correct}”`;
+  return `In the Quick test I was asked what ${focus.lemma}${as} means${where}. I chose “${focus.picked}”, ${verdict}. Tell me more about this word and how to remember it.`;
 }
 
 /** The question the Grammar sheet's Ask the tutor sends: it names the term and the reference it was asked in. */
