@@ -1,7 +1,7 @@
 Feature: A section heading opens the Verse view for its passage
   Tapping a section heading in the Reader opens the same Verse view a verse number opens (mw-5r3p30.73), for the passage under the
   heading (the heading to the next heading): the heading and its verse range at the top, the passage's verses big, the same one row of
-  actions (Listen, Read it aloud, Ask the tutor, Copy link) and the same ONE hold bar, each doing its action for the whole passage.
+  actions (Listen, Read it aloud, Ask the tutor, Quiz me, Copy link) and the same ONE hold bar, each doing its action for the whole passage.
   Romans 8 has five headings: 8:1-11, 8:12-17, 8:18-27, 8:28-34 and 8:35-39. The phone's Back returns to the Reader.
 
   Scenario: Tapping the heading of Romans 8:1-11 opens the Verse view headed with the heading and its range
@@ -24,7 +24,7 @@ Feature: A section heading opens the Verse view for its passage
   Scenario: The passage has the same one row of actions and exactly one hold bar
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
     When he taps the heading "Walking by the Spirit"
-    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor" and "Copy link"
+    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor", "Quiz me" and "Copy link"
     And exactly one hold bar is on screen
 
   Scenario: Listen reads the whole passage aloud and stops at its end

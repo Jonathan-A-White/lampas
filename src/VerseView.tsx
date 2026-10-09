@@ -1,8 +1,9 @@
 // src/VerseView.tsx — the Verse view (mw-5r3p30.79): a tapped verse number opens the verse on a screen of its own, over the Reader, which stays
 // where it was underneath (the phone's Back closes the view, src/nav/route.ts openVerse). At the top the verse big, drawn by the Reader's own
 // VerseText (so the view and the weave follow the Reader, and its words are tappable); under it one row of actions (Listen, Read it aloud,
-// Ask the tutor, and Copy link; 'Quiz me' joins when mw-5r3p30.74 wires it); then what the chosen action shows; and at the foot ONE hold bar
+// Ask the tutor, Quiz me and Copy link); then what the chosen action shows; and at the foot ONE hold bar
 // that does the chosen action (src/ui/HoldBar.tsx): Hold to listen, Hold to read verse N (the reading check, src/ReadCheck.tsx), Hold to ask.
+// Quiz me (mw-5r3p30.74) has no hold: its foot is the Start the quiz / Continue the quiz button, which opens the Talk sheet in quiz mode.
 // The Reader's Talk bar is not drawn while the view is open, so two bars never stack. The chosen action is kept (src/verse/action.ts); the
 // arrows go to the verse before and the verse after, across a chapter's end. The action bodies draw their bar into `slot`, the foot of the view.
 // A section heading opens the same view for its passage (mw-5r3p30.73): `verse` is then the passage as one Verse (src/data/passage.ts: `n` its
@@ -57,6 +58,8 @@ export interface VerseViewProps {
   voice: Voice;
   /** Talk about this verse: the Bible talk's sheet (src/Talk.tsx) on the verse, for a talk with history */
   onTalk: () => void;
+  /** Quiz me: opens the Talk sheet in quiz mode on this verse or passage (src/Talk.tsx, the bible-talk grind's `mode` quiz); `started` once the quiz has a turn or one on its way */
+  quiz: { started: boolean; onOpen: () => void };
 }
 
 const ARROW = 'flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-lg text-2xl text-accent active:bg-line disabled:opacity-30';
@@ -73,7 +76,7 @@ function Arrow({ move, name, glyph }: { move: (() => void) | null; name: string;
 const askLabel = (voice: Voice): string => (voice.listening ? (voice.ready ? 'Release to send' : 'Starting the mic…') : 'Hold to ask');
 
 export function VerseView(props: VerseViewProps) {
-  const { title, book, chapter, verse, view, text, previous, next, onClose, action, onAction, listen, checks, read, onRetryRead, ask, onAsk, prefill, voice, onTalk } = props;
+  const { title, book, chapter, verse, view, text, previous, next, onClose, action, onAction, listen, checks, read, onRetryRead, ask, onAsk, prefill, voice, onTalk, quiz } = props;
   // The foot of the view, where the chosen action draws its bar.
   const [slot, setSlot] = useState<HTMLDivElement | null>(null);
   const reference = unitReference(title, verse);
@@ -129,7 +132,7 @@ export function VerseView(props: VerseViewProps) {
           <LinkActions
             url={verse.to === undefined ? referenceUrl(book, chapter, verse.n) : passageUrl(book, chapter, verse.n, verse.to)}
             title={reference}
-            className="contents [&_button]:min-h-12 [&_button]:rounded-xl [&_button]:border [&_button]:border-line [&_button]:px-1 [&_button]:text-sm [&_button]:leading-tight [&_button]:text-fg [&>div]:contents [&_input]:col-span-5 [&_input]:col-start-1 [&_input]:row-start-2"
+            className="contents [&_button]:min-h-12 [&_button]:rounded-xl [&_button]:border [&_button]:border-line [&_button]:px-1 [&_button]:text-sm [&_button]:leading-tight [&_button]:text-fg [&>div]:contents [&_input]:col-span-6 [&_input]:col-start-1 [&_input]:row-start-2"
             statusClassName="absolute right-0 top-full mt-0.5 rounded-lg bg-surface px-2 py-0.5 text-sm text-muted"
           />
         </div>
@@ -163,6 +166,11 @@ export function VerseView(props: VerseViewProps) {
               )}
             </>
           ) : null}
+          {action === 'quiz' ? (
+            <p data-action-help className="px-1 text-sm text-muted">
+              The tutor asks you about {name} one question at a time, in order, then helps you map how it is built.
+            </p>
+          ) : null}
         </div>
       </div>
       <div ref={setSlot} data-verse-bar className="shrink-0 border-t border-line bg-surface px-3 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))]">
@@ -190,6 +198,19 @@ export function VerseView(props: VerseViewProps) {
               disabled={busy}
               keys
             />,
+            slot,
+          )
+        ) : null}
+        {slot && action === 'quiz' ? (
+          createPortal(
+            // Not a hold: the answers are given in the Talk sheet it opens, which has the hold bar for them. Same size and place as the bar.
+            <button
+              type="button"
+              onClick={quiz.onOpen}
+              className="mx-auto flex h-24 w-full max-w-xl select-none items-center justify-center rounded-3xl bg-accent text-[16px] font-semibold text-accent-fg"
+            >
+              {quiz.started ? 'Continue the quiz' : 'Start the quiz'}
+            </button>,
             slot,
           )
         ) : null}

@@ -108,6 +108,12 @@ export const TALK_ANSWER = {
   words: [{ greek: 'συνεργεῖ', lemma: 'συνεργέω', note: 'verb, present active indicative, third person singular' }],
 };
 
+/** The answer the fake gives to a quiz message (the bible-talk grind in quiz mode): one question, in the app's answer shape. */
+export const QUIZ_ANSWER = {
+  answer: 'Question 1: how does the passage begin, and what is not left for those in Christ Jesus?',
+  words: [{ greek: 'κατάκριμα', lemma: 'κατάκριμα', note: 'noun, nominative singular neuter' }],
+};
+
 /** The answer the fake gives to a word-help question about συνεργεῖ (grammar), in the app's answer shape. */
 export const GRAMMAR_HELP_ANSWER = {
   answer: 'συνεργεῖ is present active indicative, third person singular: the ending -εῖ is a contracted -έει. Check: who is the subject here?',

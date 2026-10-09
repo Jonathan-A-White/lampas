@@ -1,11 +1,12 @@
 // src/verse/action.ts — which action the Verse view (src/VerseView.tsx) has chosen, kept on the phone so the next verse opens on it too
-// (mw-5r3p30.79). Listen is the first and the gentlest, so it is where a new phone starts. 'Quiz me' joins when mw-5r3p30.74 wires it.
+// (mw-5r3p30.79). Listen is the first and the gentlest, so it is where a new phone starts. Quiz me (mw-5r3p30.74) opens the Talk sheet in quiz mode.
 import { useCallback, useState } from 'react';
 
 export const VERSE_ACTIONS = [
   { id: 'listen', label: 'Listen' },
   { id: 'read', label: 'Read it aloud' },
   { id: 'ask', label: 'Ask the tutor' },
+  { id: 'quiz', label: 'Quiz me' },
 ] as const;
 
 export type VerseAction = (typeof VERSE_ACTIONS)[number]['id'];

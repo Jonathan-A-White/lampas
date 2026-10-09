@@ -66,7 +66,7 @@ test('Listen: the verse big, one row of actions on one line, and the one bar Hol
     tops.add(Math.round(b.y));
   }
   expect(tops.size).toBe(1);
-  await expect(view.getByRole('button', { name: 'Quiz me' })).toHaveCount(0);
+  await expect(view.getByRole('button', { name: 'Quiz me', exact: true })).toHaveCount(1);
 
   await expect(view.getByRole('button', { name: 'Listen', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expectOneBar(page, 'Hold to listen to verse 11');

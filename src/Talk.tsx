@@ -236,7 +236,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, onSay, onHelp, on
   onAskTerm: (ask: TermAsk) => void;
   onClose: () => void;
 }) {
-  const title = `Talk about ${scopeTitle(scope)}`;
+  const title = scope.quiz ? `Quiz on ${scopeTitle(scope)}` : `Talk about ${scopeTitle(scope)}`;
   const titleId = useId();
   const turns = useLiveQuery(() => listTurns(ref), [ref]);
   const [text, setText] = useState('');
@@ -298,7 +298,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, onSay, onHelp, on
           <div ref={list} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain border-t border-line px-4 py-3">
             {turns?.length === 0 && !state ? (
               <p data-talk-empty className="text-base text-muted">
-                Nothing said yet. Ask about a word, a verse or what is on your mind.
+                {scope.quiz ? 'Nothing said yet. Say “Quiz me” to begin.' : 'Nothing said yet. Ask about a word, a verse or what is on your mind.'}
               </p>
             ) : null}
             {turns?.map((turn) => (

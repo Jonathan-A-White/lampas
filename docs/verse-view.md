@@ -6,7 +6,7 @@ verse?" His answer: a Verse view. Tapping a verse number opens the verse on a fu
 ```
 ‹ Reader     Romans 8:11            ‹   ›      header: close, the reference, the verse before and after
 And if the Spirit of Him who ...              the verse, big, woven as the Reader weaves it (words tappable)
-[Listen] [Read it aloud] [Ask the tutor] [Copy link]     one row; the chosen one is filled
+[Listen] [Read it aloud] [Ask the tutor] [Quiz me] [Copy link]     one row; the chosen one is filled
   what the action shows                       Listen: a line; Read it aloud: the reading check; Ask the tutor: answers, the Ask box
 [ Hold to listen to verse 11 ]                ONE hold bar, Postern's, at the foot: what a hold does is the chosen action
 ```
@@ -16,10 +16,11 @@ And if the Spirit of Him who ...              the verse, big, woven as the Reade
 | Listen | one line of help | `Hold to listen to verse 11` | the app reads the verse aloud, on as far as Settings > Read aloud says (`readSpan`); letting go stops it |
 | Read it aloud | the reading check (`ReadCheckPanel`, region 'Reading check'): status, the result with its words to fix, the walk | `Hold to read verse 11`, then `Hold to read the whole verse again` at the end of the walk, `Release to send` while held | records him, sends the verse-read grist on release |
 | Ask the tutor | the kept answers (Markdown), the typed Ask box, `Talk about verse 11` (the Bible talk sheet) | `Hold to ask` | hold-to-talk: what he says goes to the tutor about this verse exactly as a typed question |
+| Quiz me | one line of help | the button `Start the quiz` (`Continue the quiz` once the quiz has a turn), the size and place of the bar but not a hold | opens the Talk sheet in quiz mode, `Quiz on Romans 8:11` or `Quiz on Romans 8:1-11`, and on the first press sends `Quiz me on Romans 8:1-11.` (see *Quiz me* below) |
 | Copy link | `Link copied` (Share beside it where the phone has it; the link by hand when the clipboard is refused) | none: a button in the row | |
 
 * **PROVISIONAL, the Governor to confirm:** what each action's hold does (above), Listen as the first action and the one a new phone starts on, the
-  bar names, and that Share sits beside Copy link. 'Quiz me' is hidden until mw-5r3p30.74 wires it.
+  bar names, and that Share sits beside Copy link.
 * The chosen action is kept (`localStorage` `lampas.verseAction`), so the next verse opens on it. An arrow goes to the next verse of the chapter, and past
   a chapter's last verse to the first of the next (Romans 8:39, 9:1); there is none before Matthew 1:1 or after Revelation 22:21.
 * Back: `nav/route.ts` `openVerse` pushes a history entry (state `{verseView: true}`), so the phone's Back closes the view and the Reader is where it was
@@ -55,3 +56,26 @@ verse's words in order), so every action works on it as it works on a verse.
 * **PROVISIONAL, the Governor to confirm:** the title (heading over range), the 40% box, and that Listen on a passage always stops at its end.
 * **Limits worth knowing:** the reading check records at most 60 seconds, so a long passage read aloud is scored as incomplete; a grist record is capped at
   10 KiB, so a very long passage asked about may be refused with 'Could not send the question'.
+
+## Quiz me (mw-5r3p30.74)
+
+The Governor, Postern general (2026-10-08): his Bible-reading method (read, quiz, map) as the tutor's, tailored to the reader. Reading is the Listen and
+Read aloud actions; Quiz me is the other two parts. It works on a verse or on a passage (the same view engine), so on Romans 8:1-11 the tutor is given
+the whole passage.
+
+* **It is the bible-talk grind** (`grinds/bible-talk.*`) with an optional request field `mode: 'quiz'`, not a new kind: no new kind for the mill to
+  allow, and the Talk sheet, its history, answers, word cards and `words_to_add` all work. The quiz is a conversation of its own, kept under
+  `rom.8.1-11:quiz` (or `rom.8.11:quiz`) beside the ordinary talk about the same verses, so a quiz and a question never mix their history; every message
+  sent from that sheet carries `mode: 'quiz'`.
+* **The request** holds the whole verse or passage's Greek and English (the app's own Byzantine text and MSB, never the web, never Logos), the
+  reference (`Romans 8:1-11`), `solid_words`, `learner` and `learner_grammar`, which the instructions use to pitch the questions.
+* **The instructions** (`## Quiz mode` in `grinds/bible-talk.instructions.md`) carry the method for any reader: questions in the order of the passage,
+  one idea at a time; confirm what is right before correcting; nudge rather than tell when close; follow up vague answers; engage a tangent briefly and
+  always land it by restating the next question; note a rabbit hole and pivot back; then build a structural map through the reader's own answers (the
+  Genesis 1 days as the model). The map is Markdown text in the Talk sheet; a diagram is offered only as that text structure.
+* **PROVISIONAL, the Governor to confirm:** the button's names (`Start the quiz`, `Continue the quiz`), that Quiz me has no hold bar (the answers are
+  given in the Talk sheet, which has one), the sheet's title `Quiz on …`, the opening message `Quiz me on …`, and the short turns (about 60 words) the
+  instructions ask for.
+* **Limits worth knowing:** a request is capped at `MAX_REQUEST_BYTES` (6500) and only the history is trimmed to fit, so a very long passage may be refused
+  with 'Could not send the question'; Romans 8:1-11 fits. There is no way to start the same quiz over except to say so in the sheet. Links to study
+  resources come with the words the tutor cites (each opens its word sheet and Study row).

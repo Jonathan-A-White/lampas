@@ -1,6 +1,6 @@
 Feature: The Verse view
   Tapping a verse number opens the verse on a screen of its own (mw-5r3p30.79): the verse big at the top, woven as the Reader
-  weaves it, one row of actions under it (Listen, Read it aloud, Ask the tutor, Copy link) and ONE hold bar at the bottom that
+  weaves it, one row of actions under it (Listen, Read it aloud, Ask the tutor, Quiz me, Copy link) and ONE hold bar at the bottom that
   does the chosen action. The phone's Back returns to the Reader where it was. The Reader's Talk bar is not shown under it.
 
   Scenario: Tapping verse 11 opens the Verse view with the verse big and woven
@@ -25,8 +25,7 @@ Feature: The Verse view
   Scenario: One row of actions and exactly one hold bar, and no Talk bar
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
     When he taps the number of verse 11
-    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor" and "Copy link"
-    And there is no "Quiz me" action
+    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor", "Quiz me" and "Copy link"
     And exactly one hold bar is on screen
     And the Reader's Talk bar is not on screen
 

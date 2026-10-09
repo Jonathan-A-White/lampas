@@ -192,9 +192,9 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('The passage has the same one row of actions and exactly one hold bar', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
     When('he taps the heading {string}', tapHeading);
-    Then('the row of actions is {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
+    Then('the row of actions is {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => {
       const row = within(viewEl()).getByRole('group', { name: 'Actions' });
-      expect(within(row).getAllByRole('button').map((button) => button.textContent)).toEqual([a, b, c, d]);
+      expect(within(row).getAllByRole('button').map((button) => button.textContent)).toEqual([a, b, c, d, e]);
     });
     And('exactly one hold bar is on screen', oneBar);
   });

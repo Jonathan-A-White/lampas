@@ -160,15 +160,12 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('One row of actions and exactly one hold bar, and no Talk bar', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
     When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
-    Then('the row of actions is {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
+    Then('the row of actions is {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => {
       const row = within(viewEl()).getByRole('group', { name: 'Actions' });
       const names = within(row)
         .getAllByRole('button')
         .map((button) => button.textContent);
-      expect(names).toEqual([a, b, c, d]);
-    });
-    And('there is no {string} action', (_, name: string) => {
-      expect(within(viewEl()).queryByRole('button', { name })).toBeNull();
+      expect(names).toEqual([a, b, c, d, e]);
     });
     And('exactly one hold bar is on screen', oneBar);
     And("the Reader's Talk bar is not on screen", () => {
