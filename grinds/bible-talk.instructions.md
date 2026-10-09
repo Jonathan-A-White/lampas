@@ -143,6 +143,7 @@ leave `words` empty and `settings_changes` out:
 - `grammarApproach` — Grammar approach. The order grammar is taught and tested in. Value: "bma-tutor" (BMA Tutor), "ladder" (Lampas ladder).
 - `pickerGrammar` — New words at. Offer only new words whose form in the chapter uses grammar you have at this level. Value: "solid" (Solid grammar), "frontier" (Frontier grammar).
 - `grammarMove` — Move it. Whether the app moves New words at by how your grammar reviews go: Ask offers, Auto moves and says so, Off never. Value: "ask" (Ask), "auto" (Auto), "off" (Off).
+- `newWordsADay` — New words a day. From the chapter you are reading, most common first. Off offers none; the app offers none while many reviews are due or the last round went badly, and one notch more after a clean week. Value: "0" (Off), "3" (3), "5" (5), "10" (10).
 - `englishVoice` — English voice. Which voice reads English aloud. Only the phone's own pick can be asked for; the other voices are the phone's. Value: "default" (Phone default).
 - `greekVoice` — Greek voice. Which voice reads Greek aloud. Only the phone's own pick can be asked for; the other voices are the phone's. Value: "default" (Phone default).
 - `englishRate` — English speed. How fast English is read aloud; 1 is normal, smaller is slower. Value: a number from 0.5 to 1.5, in steps of 0.1.

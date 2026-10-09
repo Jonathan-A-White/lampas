@@ -32,6 +32,7 @@ describe('the registry lists every Settings row', () => {
     await screen.findByRole('radiogroup', { name: 'Greek pronunciation' });
     await screen.findByRole('group', { name: 'Weave' });
     await screen.findByRole('group', { name: 'Grammar' });
+    await screen.findByRole('group', { name: 'New words a day' });
     await screen.findByRole('group', { name: 'New words at' });
     await screen.findByRole('group', { name: 'Move it' });
     await screen.findByRole('group', { name: 'Goal' });
@@ -53,13 +54,29 @@ describe('the registry lists every Settings row', () => {
   it('gives every entry a distinct key, a label, a hint, and the values it allows', () => {
     expect(new Set(SETTINGS.map((s) => s.key)).size).toBe(SETTINGS.length);
     expect(SETTINGS.map((s) => s.key).sort()).toEqual(
-      ['englishRate', 'englishVoice', 'goal', 'grammarApproach', 'grammarMove', 'greekPronunciation', 'greekRate', 'greekVoice', 'layout', 'logosBible', 'pickerGrammar', 'readSpan', 'sectionHeadings', 'textSize', 'theme', 'tips', 'weave', 'weaveGrammar'],
+      ['englishRate', 'englishVoice', 'goal', 'grammarApproach', 'grammarMove', 'greekPronunciation', 'greekRate', 'greekVoice', 'layout', 'logosBible', 'newWordsADay', 'pickerGrammar', 'readSpan', 'sectionHeadings', 'textSize', 'theme', 'tips', 'weave', 'weaveGrammar'],
     );
     for (const s of SETTINGS) {
       expect(s.label).not.toBe('');
       expect(s.hint).not.toBe('');
       if (s.allowed.kind === 'choice') expect(s.allowed.values.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('New words a day', () => {
+  it('is 3 until chosen; a talked change to Off, 3, 5 or 10 is kept, anything else is refused', async () => {
+    expect(await settingOf('newWordsADay')?.read()).toBe('3');
+    const { applied, refused } = await applyChanges([
+      { key: 'newWordsADay', value: '10' },
+      { key: 'newWordsADay', value: '7' },
+    ]);
+    expect(applied.map((a) => a.shown)).toEqual(['New words a day: 10']);
+    expect(refused).toHaveLength(1);
+    expect(await settingOf('newWordsADay')?.read()).toBe('10');
+    await applyChanges([{ key: 'newWordsADay', value: '0' }]);
+    expect(settingOf('newWordsADay')?.show('0')).toBe('New words a day: Off');
+    expect(await settingOf('newWordsADay')?.read()).toBe('0');
   });
 });
 
@@ -213,6 +230,7 @@ describe('currentSettings', () => {
       grammarApproach: 'bma-tutor',
       pickerGrammar: 'frontier',
       grammarMove: 'ask',
+      newWordsADay: '3',
       logosBible: 'LLS:LGCYSTNDRDBBLSB',
     });
     await applyChanges([{ key: 'greekRate', value: 0.8 }, { key: 'theme', value: 'dark' }]);

@@ -1,6 +1,7 @@
 // src/data/repositories/settings.ts — what he has chosen. A repository owns its transactions.
 import { approachOf, DEFAULT_APPROACH } from '../../approaches';
 import { db } from '../db';
+import { afterRound, DEFAULT_NEW_WORDS_A_DAY, normaliseNewWordsADay, type NewWordsADay, type PaceRounds } from '../pace';
 import type { PickerGrammar, WeaveGrammar } from '../grammar/formLevel';
 import { MOVE_WINDOW, type GrammarMove } from '../grammar/move';
 import { DEFAULT_LAYOUT, isLayout, type ReadingLayout } from '../../layout/layouts';
@@ -251,4 +252,40 @@ export async function pushGrammarAnswer(right: boolean): Promise<void> {
 /** Forgets the ring: the answers given at one level do not judge the next. */
 export async function clearGrammarAnswers(): Promise<void> {
   await db.settings.delete(GRAMMAR_ANSWERS_KEY);
+}
+
+const NEW_WORDS_A_DAY_KEY = 'newWordsADay';
+
+/** How many new words a day he asked for (src/data/pace.ts): 0 is Off; 3 when he has not chosen or the saved value is not one of the four. */
+export async function getNewWordsADay(): Promise<NewWordsADay> {
+  const row = await db.settings.get(NEW_WORDS_A_DAY_KEY);
+  return row ? normaliseNewWordsADay(row.value) : DEFAULT_NEW_WORDS_A_DAY;
+}
+
+export async function setNewWordsADay(n: NewWordsADay): Promise<void> {
+  await db.settings.put({ key: NEW_WORDS_A_DAY_KEY, value: String(n) });
+}
+
+const PACE_ROUNDS_KEY = 'paceRounds';
+
+/** The last finished review round and the start of the clean run (kept in the settings store as JSON, no table); null before the first round. */
+export async function getPaceRounds(): Promise<PaceRounds | null> {
+  const row = await db.settings.get(PACE_ROUNDS_KEY);
+  if (typeof row?.value !== 'string') return null;
+  try {
+    const kept = JSON.parse(row.value) as Partial<PaceRounds>;
+    return typeof kept.lastScore === 'number' && typeof kept.lastWhen === 'number' && typeof kept.cleanSince === 'number'
+      ? { lastScore: kept.lastScore, lastWhen: kept.lastWhen, cleanSince: kept.cleanSince }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Keeps a finished round of `total` items, `right` of them right (a round of none is not kept). */
+export async function recordRound(right: number, total: number, now = Date.now()): Promise<void> {
+  if (total <= 0) return;
+  await db.transaction('rw', db.settings, async () => {
+    await db.settings.put({ key: PACE_ROUNDS_KEY, value: JSON.stringify(afterRound(await getPaceRounds(), right / total, now)) });
+  });
 }

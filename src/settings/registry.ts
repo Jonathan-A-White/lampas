@@ -14,6 +14,7 @@ import {
   getLayout,
   getReadSpan,
   getLogosBible,
+  getNewWordsADay,
   getSectionHeadings,
   getSpeechRate,
   getSpeechRates,
@@ -31,6 +32,7 @@ import {
   setLayout,
   setReadSpan,
   setLogosBible,
+  setNewWordsADay,
   setSectionHeadings,
   setSpeechRate,
   setTextSize,
@@ -50,6 +52,7 @@ import {
 import { APPROACHES, DEFAULT_APPROACH, approachOf } from '../approaches';
 import { BOOK_INDEX } from '../data/bookIndex';
 import { goalTitle, parseGoal } from '../data/goal';
+import { normaliseNewWordsADay } from '../data/pace';
 import { publish } from '../events/bus';
 import { LAYOUTS } from '../layout/layouts';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from '../speech/languages';
@@ -321,6 +324,21 @@ export const SETTINGS: readonly SettingEntry[] = [
     getGrammarMove,
     async (value) => {
       await setGrammarMove(value as GrammarMove);
+    },
+  ),
+  choice(
+    'newWordsADay',
+    'New words a day',
+    'From the chapter you are reading, most common first. Off offers none; the app offers none while many reviews are due or the last round went badly, and one notch more after a clean week.',
+    [
+      { value: '0', label: 'Off' },
+      { value: '3', label: '3' },
+      { value: '5', label: '5' },
+      { value: '10', label: '10' },
+    ],
+    async () => String(await getNewWordsADay()),
+    async (value) => {
+      await setNewWordsADay(normaliseNewWordsADay(value));
     },
   ),
   ...voiceEntries,
