@@ -17,6 +17,13 @@ export interface StudyWord {
   ref?: StudyRef;
 }
 
+/** A verse (or, with no `verse`, a whole chapter) as the tutor's links name it. */
+export interface StudyPlace {
+  book: string;
+  chapter: number;
+  verse?: number;
+}
+
 export interface StudyLink {
   /** what the link is called: its accessible name, and what it says on the word sheet unless `tile` is given */
   label: string;
@@ -65,6 +72,9 @@ export interface StudyResource {
   choices?: ResourceChoices;
   /** the links for `word`; `option` is `optionOf(resource, kept)`: the typed field, or the ticked ids joined by a comma */
   linksFor(word: StudyWord, option?: string): StudyLink[];
+  /** the links that open `place` in the app, when it can show a Bible: `bible` is the Resource ID of his Bible in Logos (Settings > Bible in Logos). Optional: a resource
+   *  with no Bible to show (Strong's, Accordance, whose field names a lexicon) has none. The tutor's verse links use it. */
+  versesFor?(place: StudyPlace, bible: string): StudyLink[];
 }
 
 /** The ids ticked in a kept JSON array; the default when nothing was kept or it cannot be read. */

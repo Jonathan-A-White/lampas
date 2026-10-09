@@ -5,7 +5,7 @@ import { logos } from './logos';
 import { strongs } from './strongs';
 import type { StudyResource } from './types';
 
-export type { ResourceChoices, ResourceOption, StudyLink, StudyRef, StudyResource, StudyWord } from './types';
+export type { ResourceChoices, ResourceOption, StudyLink, StudyPlace, StudyRef, StudyResource, StudyWord } from './types';
 export { optionOf, tickedOf } from './types';
 
 export const RESOURCES: readonly StudyResource[] = [strongs, logos, accordance];

@@ -33,3 +33,21 @@ export function chapterLink(code: string, chapter: number, resourceId: string): 
   const ref = `Bible.${book.logos}${chapter}`;
   return { url: `logosres:${bible};ref=${ref}`, fallback: `https://ref.ly/logosres/${encodeURIComponent(bible)}?ref=${ref}` };
 }
+
+/** The New Testament books' abbreviations in a Logos reference (Logos' own list, https://www.logos.com/bible-book-abbreviations, written like the Old Testament's in
+ *  data/otBooks.ts; UNVERIFIED on a device, docs/resources.md), by our book code. */
+const NT_LOGOS: Readonly<Record<string, string>> = {
+  mat: 'Mt', mrk: 'Mk', luk: 'Lk', jhn: 'Jn', act: 'Ac', rom: 'Ro', '1co': '1Co', '2co': '2Co', gal: 'Ga', eph: 'Eph', php: 'Php', col: 'Col', '1th': '1Th', '2th': '2Th',
+  '1ti': '1Ti', '2ti': '2Ti', tit: 'Tit', phm: 'Phm', heb: 'Heb', jas: 'Jas', '1pe': '1Pe', '2pe': '2Pe', '1jn': '1Jn', '2jn': '2Jn', '3jn': '3Jn', jud: 'Jud', rev: 'Re',
+};
+
+/** The link that opens a New Testament chapter, or one verse of it, in the Bible `resourceId` in Logos (the chapter link's form, `Bible.Ro8.31`); undefined for a book
+ *  that is not one of the 27 or a chapter or verse below 1. The tutor's verse links use it (src/resources/tutorLinks.ts). */
+export function verseLink(code: string, chapter: number, verse: number | undefined, resourceId: string): { url: string; fallback: string } | undefined {
+  const book = NT_LOGOS[code];
+  if (!book || !Number.isInteger(chapter) || chapter < 1) return undefined;
+  if (verse !== undefined && (!Number.isInteger(verse) || verse < 1)) return undefined;
+  const bible = schemeName(resourceId);
+  const ref = `Bible.${book}${chapter}${verse === undefined ? '' : `.${verse}`}`;
+  return { url: `logosres:${bible};ref=${ref}`, fallback: `https://ref.ly/logosres/${encodeURIComponent(bible)}?ref=${ref}` };
+}

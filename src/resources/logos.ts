@@ -2,6 +2,7 @@
 // word's headword, and 'Bible Word Study in Logos' for the lemma alone. Every link is the Logos app's own
 // scheme first (logosres: for a resource, logos4: for a guide) and carries the https ref.ly address as the fallback, opened only when the
 // phone cannot open the scheme (src/resources/openApp.ts). docs/resources.md names the sources and what is UNVERIFIED.
+import { verseLink } from './logosBible';
 import type { StudyLink, StudyResource, StudyWord } from './types';
 
 /** His Logos lexicons, in the order Logos' Bible Word Study shows them. `id` is kept in the settings store (never change it); `short` is its tile on the word sheet (it must
@@ -61,5 +62,9 @@ export const logos: StudyResource = {
     }));
     const guide = study(word);
     return [...lexicons, { label: 'Bible Word Study in Logos', tile: 'Word Study', url: guide.path, fallback: guide.fallbackPath }];
+  },
+  versesFor: (place, bible) => {
+    const link = verseLink(place.book, place.chapter, place.verse, bible);
+    return link ? [{ label: 'Open in Logos', tile: 'Logos', url: link.url, fallback: link.fallback }] : [];
   },
 };
