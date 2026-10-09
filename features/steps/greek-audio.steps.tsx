@@ -1,5 +1,5 @@
 // features/steps/greek-audio.steps.tsx — runs features/greek-audio.feature: the speaker on each word, the play
-// button on each verse, the one-line help when the phone has no Greek voice. speechSynthesis is a fake engine.
+// button on each verse, the one-line help when the phone has no Greek voice. speech synthesis is the honest fake of tests/support/fake-speech.ts.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -10,6 +10,7 @@ import { App } from '../../src/App';
 import { type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verseGreek = (n: number): string => {
@@ -20,41 +21,6 @@ const verseGreek = (n: number): string => {
 
 const ANDROID = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/126.0 Mobile Safari/537.36';
 
-class FakeUtterance {
-  lang = '';
-  rate = 1;
-  voice: FakeVoice | null = null;
-  onend: (() => void) | null = null;
-  onerror: ((e: { error: string }) => void) | null = null;
-  constructor(public text: string) {}
-}
-interface FakeVoice {
-  lang: string;
-  name: string;
-}
-
-/** What the phone's engine was asked, in order: 'speak <text>' and 'cancel'. */
-class FakeSynth {
-  calls: string[] = [];
-  spoken: FakeUtterance[] = [];
-  speaking = false;
-  pending = false;
-  constructor(public voices: FakeVoice[]) {}
-  getVoices = () => this.voices;
-  addEventListener = () => {};
-  removeEventListener = () => {};
-  resume = () => {};
-  speak = (u: FakeUtterance) => {
-    this.calls.push(`speak ${u.text}`);
-    this.spoken.push(u);
-    this.speaking = true;
-  };
-  cancel = () => {
-    this.calls.push('cancel');
-    this.speaking = false;
-  };
-}
-
 const GREEK_VOICE: FakeVoice = { lang: 'el-GR', name: 'Greek (Greece)' };
 const ENGLISH_VOICE: FakeVoice = { lang: 'en-US', name: 'English (US)' };
 
@@ -64,9 +30,7 @@ async function openWith(voices: FakeVoice[], userAgent?: string): Promise<void> 
   cleanup();
   vi.unstubAllGlobals();
   stubChapterFetch();
-  synth = new FakeSynth(voices);
-  vi.stubGlobal('speechSynthesis', synth);
-  vi.stubGlobal('SpeechSynthesisUtterance', FakeUtterance);
+  synth = stubSpeech(voices);
   if (userAgent) vi.stubGlobal('navigator', { ...navigator, userAgent });
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);

@@ -1,5 +1,5 @@
 // features/steps/read-aloud.steps.tsx — runs features/read-aloud.feature: the play button on a verse, Read from the top,
-// the reading bar, the highlight, Pause and Stop, the wake lock. speechSynthesis is a fake engine that records.
+// the reading bar, the highlight, Pause and Stop, the wake lock. speech synthesis is the honest fake of tests/support/fake-speech.ts.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';

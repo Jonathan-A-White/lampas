@@ -1,6 +1,6 @@
 // features/steps/quick-test-lemma.steps.tsx — runs features/quick-test-lemma.feature: the Quick test's prompt is the word's
 // dictionary form (the NFC lemma) with or without the chapter, the chapter's form shows small only after the answer, and
-// Hold to hear says the lemma. speechSynthesis is the recording fake of tests/support/fake-speech.ts.
+// Hold to hear says the lemma. speech synthesis is the honest fake of tests/support/fake-speech.ts.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';

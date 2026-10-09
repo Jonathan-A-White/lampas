@@ -1,5 +1,5 @@
 // features/steps/quick-test-hear.steps.tsx — runs features/quick-test-hear.feature: the "Hold to hear" bar on a Quick
-// test question speaks the word while it is held and stops on release. speechSynthesis is the recording fake of
+// test question speaks the word while it is held and stops on release. speech synthesis is the recording fake of
 // tests/support/fake-speech.ts; the press is user-event pointer input held for real time (the half second is the app's).
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup } from '@testing-library/react';

@@ -1,5 +1,5 @@
 // features/steps/appearance.steps.tsx — runs features/appearance.feature: Theme, Text size and the two speech speeds in
-// Settings. matchMedia is a fake phone colour scheme and speechSynthesis a recording engine; what the pixels look like
+// Settings. matchMedia is a fake phone colour scheme and speech synthesis the honest fake of tests/support/fake-speech.ts; what the pixels look like
 // (dark palette, 44 px at every size) is proven at phone width in tests/e2e/appearance.spec.ts.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, fireEvent, waitFor, within } from '@testing-library/react';
@@ -13,36 +13,10 @@ import { clearBus, latest } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { setSpeechRate, speak, stopSpeaking } from '../../src/speech/greek';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 
-class FakeUtterance {
-  lang = '';
-  rate = 1;
-  voice: unknown = null;
-  onend: (() => void) | null = null;
-  onerror: ((e: { error: string }) => void) | null = null;
-  constructor(public text: string) {}
-}
-class FakeSynth {
-  spoken: FakeUtterance[] = [];
-  speaking = false;
-  pending = false;
-  // one array: a screen listing the voices re-renders when the list changes, and a new array each time is a change
-  voices = [
-    { lang: 'el-GR', name: 'Greek (Greece)', voiceURI: 'Greek (Greece)' },
-    { lang: 'en-US', name: 'English (US)', voiceURI: 'English (US)' },
-  ];
-  getVoices = () => this.voices;
-  addEventListener = () => {};
-  removeEventListener = () => {};
-  resume = () => {};
-  speak = (u: FakeUtterance) => {
-    this.spoken.push(u);
-    this.speaking = true;
-  };
-  cancel = () => {
-    this.speaking = false;
-  };
-}
+const GREEK: FakeVoice = { lang: 'el-GR', name: 'Greek (Greece)' };
+const ENGLISH: FakeVoice = { lang: 'en-US', name: 'English (US)' };
 let synth: FakeSynth;
 
 /** The phone's colour scheme: matchMedia answers for it and tells its listeners when it switches. */
@@ -81,9 +55,7 @@ async function openOnPhone(dark: boolean): Promise<void> {
   document.documentElement.removeAttribute('data-theme');
   document.documentElement.style.removeProperty('--lp-scale');
   document.head.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove());
-  synth = new FakeSynth();
-  vi.stubGlobal('speechSynthesis', synth);
-  vi.stubGlobal('SpeechSynthesisUtterance', FakeUtterance);
+  synth = stubSpeech([GREEK, ENGLISH]);
   vi.stubGlobal('matchMedia', fakeMatchMedia);
   setSpeechRate('english', 1);
   setSpeechRate('greek', 1);

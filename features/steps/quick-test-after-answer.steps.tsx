@@ -1,5 +1,5 @@
 // features/steps/quick-test-after-answer.steps.tsx — runs features/quick-test-after-answer.feature: the word spoken by
-// itself once he has answered, a wrong answer waiting for Next, and Ask the tutor beside Next. speechSynthesis is the
+// itself once he has answered, a wrong answer waiting for Next, and Ask the tutor beside Next. speech synthesis is the
 // recording fake of tests/support/fake-speech.ts; a round with a chosen question is put in localStorage and resumed.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor } from '@testing-library/react';

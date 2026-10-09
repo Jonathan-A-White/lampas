@@ -1,6 +1,6 @@
 // features/steps/long-press-speak.steps.tsx — runs features/long-press-speak.feature: a long press on a word of the
-// reader speaks that word alone in its own language, a short tap still opens the sheet. speechSynthesis is a fake engine
-// (as in greek-audio.steps.tsx); the press is user-event pointer input held for real time (the half second is the app's).
+// reader speaks that word alone in its own language, a short tap still opens the sheet. speech synthesis is the honest fake
+// of tests/support/fake-speech.ts; the press is user-event pointer input held for real time (the half second is the app's).
 import '@testing-library/react/dont-cleanup-after-each';
 import { act, render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -12,40 +12,10 @@ import { type Chapter, type Verse, wordLemma } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { clearBus, latest } from '../../src/events/bus';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse1: Verse = chapter.verses[0];
-
-class FakeUtterance {
-  lang = '';
-  rate = 1;
-  voice: FakeVoice | null = null;
-  onend: (() => void) | null = null;
-  onerror: ((e: { error: string }) => void) | null = null;
-  constructor(public text: string) {}
-}
-interface FakeVoice {
-  lang: string;
-  name: string;
-}
-
-class FakeSynth {
-  spoken: FakeUtterance[] = [];
-  speaking = false;
-  pending = false;
-  constructor(public voices: FakeVoice[]) {}
-  getVoices = () => this.voices;
-  addEventListener = () => {};
-  removeEventListener = () => {};
-  resume = () => {};
-  speak = (u: FakeUtterance) => {
-    this.spoken.push(u);
-    this.speaking = true;
-  };
-  cancel = () => {
-    this.speaking = false;
-  };
-}
 
 const GREEK_VOICE: FakeVoice = { lang: 'el-GR', name: 'Greek (Greece)' };
 const ENGLISH_VOICE: FakeVoice = { lang: 'en-US', name: 'English (US)' };
@@ -58,10 +28,8 @@ async function openWith(voices: FakeVoice[]): Promise<void> {
   vi.unstubAllGlobals();
   clearBus();
   stubChapterFetch();
-  synth = new FakeSynth(voices);
+  synth = stubSpeech(voices);
   vibrations = [];
-  vi.stubGlobal('speechSynthesis', synth);
-  vi.stubGlobal('SpeechSynthesisUtterance', FakeUtterance);
   Object.defineProperty(navigator, 'vibrate', {
     configurable: true,
     value: (pattern: unknown) => (vibrations.push(pattern), true),
@@ -117,7 +85,7 @@ async function press(el: HTMLElement, ms: number, drag = 0): Promise<void> {
   await user.pointer({ keys: '[/MouseLeft]', target: el, coords: { clientX: 100 + drag, clientY: 100 } });
 }
 
-const lastSpoken = (): FakeUtterance | undefined => synth.spoken[synth.spoken.length - 1];
+const lastSpoken = () => synth.spoken[synth.spoken.length - 1];
 const spokenWordLang = (): string => lastSpoken()?.lang ?? '';
 
 const feature = await loadFeature('features/long-press-speak.feature');

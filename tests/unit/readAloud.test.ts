@@ -124,7 +124,7 @@ describe('reading a chapter', () => {
     startReading({ chapter: 8, plan: plan('greek'), from: 1, continuous: true });
     const u = synth.spoken[0];
     stopReading();
-    u.onend?.();
+    u.utterance.onend?.({} as never);
     expect(synth.spoken).toHaveLength(1);
   });
 
