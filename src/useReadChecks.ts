@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Verse } from './data/chapter';
 import { unitId, unitReference } from './data/passage';
 import { keepVerseReading, verseRef } from './data/repositories';
+import { clipOf } from './audio/clip';
 import { MicUnavailable, recorderSeam, type HoldRecorder, type Recording } from './audio/recorder';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { askVerseRead, buildReadingRequest, readingLang, type ReadingView } from './services/reading';
@@ -110,7 +111,9 @@ export function useReadChecks(book: string, chapter: number, title: string, view
             signal,
             onSent: () => set(unitId(verse), language, { phase: 'waiting', startedAt }),
           });
-          await keepVerseReading(verseRef(book, chapter, unitId(verse)), answer.verdict, answer.focus_words, answer.note, language);
+          // the clip is kept with the result so he can hear himself (src/audio/clip.ts); a result is kept even if the clip cannot be
+          const clip = await clipOf(recording).catch(() => undefined);
+          await keepVerseReading(verseRef(book, chapter, unitId(verse)), answer.verdict, answer.focus_words, answer.note, language, Date.now(), clip);
           set(unitId(verse), language, undefined);
         } catch (err) {
           if (signal.aborted) return;

@@ -2,6 +2,7 @@
 // verse and per language read, the newest replacing the one before. The English row's key is the verse ('rom.8.28'); another
 // language's is the verse and the language ('rom.8.28:el'), so no table changes for a new language. A repository owns its
 // transactions.
+import type { Clip } from '../../audio/clip';
 import { db, type FixWord, type VerseReading } from '../db';
 
 export type { FixWord, VerseReading };
@@ -16,8 +17,9 @@ export async function keepVerseReading(
   note: string,
   lang = 'en',
   now = Date.now(),
+  clip?: Clip,
 ): Promise<void> {
-  await db.readings.put({ ref: readingKey(ref, lang), verdict, words, note, when: now });
+  await db.readings.put({ ref: readingKey(ref, lang), verdict, words, note, when: now, ...(clip ? { clip } : {}) });
 }
 
 /** The last reading of a verse in `lang`, or undefined when it has not been read yet in that language. */

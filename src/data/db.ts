@@ -108,6 +108,8 @@ export interface VerseReading {
   note: string;
   /** when it arrived (ms since the epoch) */
   when: number;
+  /** the clip he recorded for this reading (not indexed; a reading kept before it existed has none) */
+  clip?: { bytes: ArrayBuffer; mime: string };
 }
 
 /** A grammar term he marked I know this on its Grammar sheet ('conjunction'), kept so the word sheet shows it plain. */
