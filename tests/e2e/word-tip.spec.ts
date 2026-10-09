@@ -1,54 +1,28 @@
 import { expect, test, type Page } from '@playwright/test';
 import { GRAMMAR_HELP_ANSWER, makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
+import { honestSpeech, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
 const VIEWPORT = { width: 390, height: 844 };
 
-// A finger on a word of the reader, as a phone has it: touch points, not the mouse. The engine is a stand-in that records what the
-// page asks of it (headless Chromium has no Greek voice).
+// A finger on a word of the reader, as a phone has it: touch points, not the mouse. The engine is bsv-kit's honest fake
+// (tests/support/honest-fakes.ts; headless Chromium has no Greek voice).
 test.use({ hasTouch: true, viewport: VIEWPORT });
 
 async function openReader(page: Page) {
   await openUnlocked(page);
+  await honestSpeech(page, { langs: ['el-GR'] });
   await page.addInitScript(() => {
-    const spoken: { text: string; lang: string }[] = [];
     const seen: boolean[] = [];
     document.addEventListener('contextmenu', (e) => seen.push(e.defaultPrevented));
-    const synth = {
-      speaking: false,
-      pending: false,
-      getVoices: () => [{ lang: 'el-GR', name: 'Greek' }],
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      resume: () => {},
-      cancel: () => {
-        synth.speaking = false;
-      },
-      speak: (u: { text: string; lang: string }) => {
-        spoken.push({ text: u.text, lang: u.lang });
-        synth.speaking = true;
-      },
-    };
-    class Utterance {
-      lang = '';
-      rate = 1;
-      voice = null;
-      text: string;
-      constructor(text: string) {
-        this.text = text;
-      }
-    }
-    Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
-    Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: Utterance, configurable: true });
-    Object.assign(window, { __spoken: spoken, __contextmenus: seen });
+    Object.assign(window, { __contextmenus: seen });
   });
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 }
 
-const spoken = (page: Page) => page.evaluate(() => (window as unknown as { __spoken: { text: string; lang: string }[] }).__spoken);
 
 /** A touch that stays on `selector` for `ms`, through the browser's own touch input (CDP), then lifts. */
 async function touchHold(page: Page, selector: string, ms: number) {
@@ -68,7 +42,7 @@ test('a touch long-press on a word says it, selects no text and raises no menu o
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'greek');
   const word = '[data-verse="1"] [data-word="0"]';
   await touchHold(page, word, 900);
-  await expect.poll(() => spoken(page)).toEqual([{ text: 'Οὐδὲν', lang: 'el-GR' }]);
+  await expect.poll(() => spoken(page)).toMatchObject([{ text: 'Οὐδὲν', lang: 'el-GR' }]);
   await expect(page.getByRole('dialog')).toHaveCount(0);
   const selection = await page.evaluate(() => ({ text: window.getSelection()?.toString() ?? '', collapsed: window.getSelection()?.isCollapsed ?? true }));
   expect(selection).toEqual({ text: '', collapsed: true });

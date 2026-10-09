@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { honestSpeech, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -69,40 +70,9 @@ test('a Quick test question shows the picture beside a word that has one, and fi
   await expectFitsPhone(page);
 });
 
-// The engine is a stand-in that records what the page asks of it (headless Chromium has no Greek voice).
-async function stubSpeech(page: Page) {
-  await page.addInitScript(() => {
-    const calls: string[] = [];
-    const synth = {
-      speaking: false,
-      pending: false,
-      getVoices: () => [{ lang: 'el-GR', name: 'Greek' }],
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      resume: () => {},
-      cancel: () => {
-        calls.push('cancel');
-        synth.speaking = false;
-      },
-      speak: (u: { text: string; lang: string }) => {
-        calls.push(`speak ${u.text} ${u.lang}`);
-        synth.speaking = true;
-      },
-    };
-    class Utterance {
-      lang = '';
-      rate = 1;
-      voice = null;
-      text: string;
-      constructor(text: string) {
-        this.text = text;
-      }
-    }
-    Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
-    Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: Utterance, configurable: true });
-    (window as unknown as { __calls: string[] }).__calls = calls;
-  });
-}
+// The engine is bsv-kit's honest fake (tests/support/honest-fakes.ts; headless Chromium has no Greek voice). A slow reader
+// (2 s a word), so the word is still being spoken while the bar is held.
+const stubSpeech = (page: Page) => honestSpeech(page, { langs: ['el-GR'], msPerWord: 2000 });
 
 test('Hold to hear speaks the word while held, stops on release, shifts nothing and leaves the glosses tappable', async ({ page }) => {
   await openUnlocked(page);
@@ -119,15 +89,15 @@ test('Hold to hear speaks the word while held, stops on release, shifts nothing 
   const before = await first.boundingBox();
 
   const lemma = await page.getByTestId('prompt').textContent();
-  const calls = () => page.evaluate(() => (window as unknown as { __calls: string[] }).__calls);
+  const calls = async () => (await spoken(page)).map((e) => ({ text: e.text, lang: e.lang, outcome: e.outcome }));
   if (!box) throw new Error('no bar');
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
-  await expect.poll(calls).toEqual([`speak ${lemma} el-GR`]);
+  await expect.poll(calls).toEqual([{ text: lemma, lang: 'el-GR', outcome: 'speaking' }]);
   expect(await first.boundingBox()).toEqual(before);
   await shot(page, 'test-hold-to-hear');
   await page.mouse.up();
-  await expect.poll(calls).toEqual([`speak ${lemma} el-GR`, 'cancel']);
+  await expect.poll(calls).toEqual([{ text: lemma, lang: 'el-GR', outcome: 'interrupted' }]);
 
   await first.click();
   await expect(page.locator('[data-option][data-result="right"]')).toHaveCount(1);
@@ -141,7 +111,7 @@ test('the word speaks by itself once, a wrong answer waits for Next, and Ask the
   const prompt = page.getByTestId('prompt');
   await expect(prompt).toBeVisible();
   const word = await prompt.textContent();
-  const calls = () => page.evaluate(() => (window as unknown as { __calls: string[] }).__calls);
+  const calls = async () => (await spoken(page)).map((e) => ({ text: e.text, lang: e.lang, outcome: e.outcome }));
   expect(await calls()).toEqual([]);
   await expect(page.getByRole('button', { name: 'Ask the tutor', exact: true })).toHaveCount(0);
   const first = page.locator('[data-option]').first();
@@ -150,8 +120,7 @@ test('the word speaks by itself once, a wrong answer waits for Next, and Ask the
   // the first gloss may be right or wrong: either way the word speaks, and the test waits for Next
   await first.click();
   await expect(page.locator('[data-option][data-result]')).not.toHaveCount(0);
-  await expect.poll(calls).toContain(`speak ${word} el-GR`);
-  expect((await calls()).filter((c) => c.startsWith('speak '))).toHaveLength(1);
+  await expect.poll(async () => (await calls()).map((c) => `${c.text} ${c.lang}`)).toEqual([`${word} el-GR`]);
   expect(await first.boundingBox()).toEqual(before);
 
   const next = page.getByTestId('next');

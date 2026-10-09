@@ -1,64 +1,29 @@
 import { expect, test, type Page } from '@playwright/test';
+import { honestSpeech, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
-// The engine is a stand-in that records what the page asks of it and lets the test end the utterance being spoken;
-// how a real phone's voices sound is only a phone check (docs/pwa-best-practices.md section 12).
+// The engine is bsv-kit's honest fake (tests/support/honest-fakes.ts): a verse takes the time it takes to say, so it goes on
+// by itself. A slow reader (300 ms a word) keeps a verse on the bar long enough to look at, and the page's clock (Playwright's
+// page.clock) runs ahead to get through the verses between; how a real phone's voices sound is only a phone check
+// (docs/pwa-best-practices.md section 12).
 async function withVoices(page: Page) {
   await openUnlocked(page);
-  await page.addInitScript(() => {
-    type U = { text: string; lang: string; onend: (() => void) | null };
-    const spoken: { text: string; lang: string }[] = [];
-    let current: U | null = null;
-    const synth = {
-      speaking: false,
-      pending: false,
-      getVoices: () => [
-        { lang: 'en-US', name: 'English' },
-        { lang: 'el-GR', name: 'Greek' },
-      ],
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      resume: () => {},
-      cancel: () => {
-        synth.speaking = false;
-        current = null;
-      },
-      speak: (u: U) => {
-        spoken.push({ text: u.text, lang: u.lang });
-        current = u;
-        synth.speaking = true;
-      },
-    };
-    class Utterance {
-      lang = '';
-      rate = 1;
-      voice = null;
-      onend: (() => void) | null = null;
-      onerror: (() => void) | null = null;
-      text: string;
-      constructor(text: string) {
-        this.text = text;
-      }
-    }
-    Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
-    Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: Utterance, configurable: true });
-    const w = window as unknown as { __spoken: typeof spoken; __finish: () => void };
-    w.__spoken = spoken;
-    w.__finish = () => {
-      const u = current;
-      current = null;
-      synth.speaking = false;
-      u?.onend?.();
-    };
-  });
+  await honestSpeech(page, { msPerWord: 300 });
+  await page.clock.install();
 }
 
-const spoken = (page: Page) => page.evaluate(() => (window as unknown as { __spoken: { text: string; lang: string }[] }).__spoken);
-const finish = (page: Page, times: number) =>
-  page.evaluate((n) => {
-    for (let i = 0; i < n; i++) (window as unknown as { __finish: () => void }).__finish();
-  }, times);
+/** Lets the reading go on, a second of the page's time at a time, until the bar says it is on verse `n`. */
+const readUntilVerse = (page: Page, n: number) =>
+  expect
+    .poll(
+      async () => {
+        await page.clock.runFor(1000);
+        return page.locator('[data-reading-bar]').textContent();
+      },
+      { timeout: 30_000, intervals: [20] },
+    )
+    .toContain(`Reading verse ${n}`);
 
 async function expectFitsPhone(page: Page) {
   const { scrollWidth, clientWidth, scrollTop } = await page.evaluate(() => ({
@@ -100,8 +65,7 @@ test('Read from the top reads the chapter on, with a bar, a highlight kept in vi
   expect((await spoken(page))[0].lang).toBe('en-US');
 
   // the verse being read is scrolled into the reader's own box, never the page
-  await finish(page, 11);
-  await expect(bar).toContainText('Reading verse 12');
+  await readUntilVerse(page, 12);
   const inView = await page.evaluate(() => {
     const box = document.querySelector('[data-reader]')?.getBoundingClientRect();
     const verse = document.querySelector('[data-verse="12"]')?.getBoundingClientRect();

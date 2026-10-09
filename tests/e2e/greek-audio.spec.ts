@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { honestSpeech, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -6,39 +7,10 @@ import { openUnlocked } from './unlocked';
 // whether a real phone's Greek voice sounds right is only a phone check (docs/pwa-best-practices.md section 12).
 async function withGreekVoice(page: Page) {
   await openUnlocked(page);
-  await page.addInitScript(() => {
-    const spoken: { text: string; lang: string }[] = [];
-    const synth = {
-      speaking: false,
-      pending: false,
-      getVoices: () => [{ lang: 'el-GR', name: 'Greek' }],
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      resume: () => {},
-      cancel: () => {
-        synth.speaking = false;
-      },
-      speak: (u: { text: string; lang: string }) => {
-        spoken.push({ text: u.text, lang: u.lang });
-        synth.speaking = true;
-      },
-    };
-    class Utterance {
-      lang = '';
-      rate = 1;
-      voice = null;
-      text: string;
-      constructor(text: string) {
-        this.text = text;
-      }
-    }
-    Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
-    Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: Utterance, configurable: true });
-    (window as unknown as { __spoken: typeof spoken }).__spoken = spoken;
-  });
+  // a slow reader (2 s a word), so a verse is still being spoken when the spec looks at its button and taps it to stop
+  await honestSpeech(page, { langs: ['el-GR'], msPerWord: 2000 });
 }
 
-const spoken = (page: Page) => page.evaluate(() => (window as unknown as { __spoken: { text: string; lang: string }[] }).__spoken);
 
 async function expectFitsPhone(page: Page) {
   const { scrollWidth, clientWidth } = await page.evaluate(() => ({
@@ -64,7 +36,7 @@ test('the Words screen has a speaker beside each lemma that speaks it in Greek',
 
   const lemma = await page.locator('[data-lemma]').first().getAttribute('data-lemma');
   await speakers.first().click();
-  expect(await spoken(page)).toEqual([{ text: lemma, lang: 'el-GR' }]);
+  expect(await spoken(page)).toMatchObject([{ text: lemma, lang: 'el-GR' }]);
   await shot(page, 'words-audio');
 });
 
@@ -103,25 +75,13 @@ test('each verse has a play button that speaks its Greek in the Greek view, and 
   await expectFitsPhone(page);
   await speaker.click();
   const spokenNow = await spoken(page);
-  expect(spokenNow[spokenNow.length - 1]).toEqual({ text: 'Οὐδὲν', lang: 'el-GR' });
+  expect(spokenNow[spokenNow.length - 1]).toMatchObject({ text: 'Οὐδὲν', lang: 'el-GR' });
   await shot(page, 'word-card-audio');
 });
 
 test("without a Greek voice a word's speaker still shows and a tap puts one line of help on screen", async ({ page }) => {
   await openUnlocked(page);
-  await page.addInitScript(() => {
-    const synth = {
-      speaking: false,
-      pending: false,
-      getVoices: () => [{ lang: 'en-US', name: 'English' }],
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      resume: () => {},
-      cancel: () => {},
-      speak: () => {},
-    };
-    Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
-  });
+  await honestSpeech(page, { langs: ['en-US'] });
   await page.goto('/#/words');
   await page.getByRole('button', { name: 'Hear it', exact: true }).first().click();
   const help = page.getByRole('status');
