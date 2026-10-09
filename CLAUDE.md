@@ -43,7 +43,7 @@ npm run e2e:live     # the live tests (tests/e2e/*-live.spec.ts: tutor-live asks
 npm run grind:build  # writes the settings the bible-talk grind may change (settings_changes in its answer schema, the list in its instructions) from src/settings/registry.ts;
                      #   run it after adding a setting to the registry; tests/unit/bible-talk-grind.test.ts fails when grinds/ is behind it
 npm run check:step   # asks STEPBible what each Strong's link finds (G1722, G3361, G2424 and Romans 8's 20 commonest lemmas; `-- G25 ...` or `-- --all`); network, not in the gate; docs/resources.md
-npm run data:build   # data/raw (git-ignored, downloaded if absent) -> public/data/<book>/<chapter>.json + index.json + lexicon.json;
+npm run data:build   # data/raw (git-ignored, downloaded if absent) -> public/data/<book>/<chapter>.json + index.json + lexicon.json + frequency.json;
                      #   the output is committed and a second run changes nothing (docs/data.md)
 ```
 
@@ -172,7 +172,7 @@ src/data/parseCode.ts # RP parsing code -> plain words (decodeParse, shared by t
 scripts/data-build.ts # the New Testament data build (npx tsx); tests/fixtures/data/ holds small source slices
 public/              # icon.svg (lamp glyph), icon-192.png, icon-512.png
 public/pictures/     # the hand-drawn memory pictures, one SVG each (docs/pictures.md says how to add one)
-public/data/         # generated NT JSON, committed (~30 MB); only index.json, lexicon.json and rom/8.json are precached
+public/data/         # generated NT JSON, committed (~30 MB); only index.json, lexicon.json, frequency.json and rom/8.json are precached
 features/ tests/     # BDD features + steps; unit tests; e2e + shots; support fakes
 docs/pwa-best-practices.md   # copied verbatim from the vault; the law for every screen
 docs/example-words.md        # the owner's own BMA word list (public, an example template); the seed's source

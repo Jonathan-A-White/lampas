@@ -44,6 +44,31 @@ Every lemma of the text once (about 5,400, 320 KB), so a word he names that the 
 `g` is the TBESG gloss, `s` the Strong's number, `c` the part of speech (`parseCode.ts` `splitParse`) of the lemma's first use in
 canonical order; keys are NFC, in alphabetical order. `src/data/lexicon.ts` (`loadLexicon`, `lookupLemma`) reads it.
 
+## `frequency.json`
+
+How often each word is used, for the frontier ("the commonest words he does not know yet"). One entry per Strong's number the text uses
+(5,380, 450 KB), commonest first, ties by Strong's number; compact, deterministic:
+
+```json
+[{"strongs":"G2532","lemma":"καί","count":9217,"chapters":260,"proper":false},
+ {"strongs":"G2424","lemma":"Ἰησοῦς","count":972,"chapters":207,"proper":true}]
+```
+
+`lemma` is the TBESG lemma (NFC), `count` the uses in all 27 books, `chapters` how many of the 260 chapters use it. Counts are by
+Strong's number, so the forms of a word, and the lemmas the table spells differently, are one entry. `src/data/frequency.ts`
+reads it: `loadFrequency()` (fetched once, shared), `rankOf(strongs)` (1 is the commonest; undefined for a number not in the table) and
+`isProperNoun(strongs)`. It is precached beside `index.json`.
+
+* **The article is left out.** ὁ (G3588) is used 20,286 times, more than twice as often as καί (9,217), and is not a word to offer
+  for learning, so the table has no row for it (`FREQUENCY_LEAVES_OUT` in `scripts/data-build.ts`); καί is first and ἐν fifth.
+  `rankOf('G3588')` is undefined. The word is still in the chapters and in `lexicon.json`.
+* **The proper-noun rule** (`isProperNounWord`): `proper` is true when any use of the word is coded `N-PRI` (the RP code for an
+  indeclinable proper noun: Ἀβραάμ, Ἰσραήλ), or when a use is coded as a noun (`N-...`) and the lexicon's lemma starts with a
+  capital letter (Ἰησοῦς, Παῦλος, Ἱεροσόλυμα, Φαρισαῖος: a name, a place or a people). RP gives a declined name the plain noun code, so
+  the capital letter of the lemma is the lexicon's mark. Adjectives and adverbs made from names (Ῥωμαῖος as an adjective, Ἑβραϊστί) are not
+  proper. The rule on a capitalised TBESG gloss was tried and rejected: it also marks θεός 'God', ἔθνος 'Gentiles', σάββατον 'Sabbath' and ἐγώ
+  'I/we'. A handful of `N-PRI` words that are not names (ἀββά, χερουβίμ ...) count as proper: they are foreign words the frontier may skip too.
+
 ## `<book>/<chapter>.json`
 
 Compact: short keys, no indentation, each lexicon entry once per file.
@@ -155,6 +180,6 @@ The store's version 11 adds `grammarLevels`, one row per grammar idea, key `id` 
 
 ## Offline
 
-Only `data/index.json`, `data/lexicon.json` and `data/rom/8.json` are in the service worker's precache (`pwa-precache.ts`; the
-globs name those three files, with no wildcard). Every other chapter is fetched when first opened and kept by a
+Only `data/index.json`, `data/lexicon.json`, `data/frequency.json` and `data/rom/8.json` are in the service worker's precache (`pwa-precache.ts`; the
+globs name those four files, with no wildcard). Every other chapter is fetched when first opened and kept by a
 CacheFirst route for `/data/` in `src/sw.ts` (cache `lampas-data`), so a chapter once read stays offline.

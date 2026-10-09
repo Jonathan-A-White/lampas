@@ -1,7 +1,7 @@
 // scripts/data-build.ts — npm run data:build
 // Turns the Majority Standard Bible NT tables (public domain; Byzantine Greek word-aligned to the MSB English,
 // with Strong's and RP parsing codes) and STEPBible's TBESG lexicon (CC BY 4.0) into public/data/index.json
-// and one public/data/<book>/<chapter>.json per chapter, and public/data/lexicon.json (every lemma of the text with its gloss). The raw downloads go to data/raw (git-ignored,
+// and one public/data/<book>/<chapter>.json per chapter, public/data/lexicon.json (every lemma of the text with its gloss) and public/data/frequency.json (every Strong's number with its count). The raw downloads go to data/raw (git-ignored,
 // skipped when present); the JSON is committed. The shape is in docs/data.md and src/data/chapter.ts.
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -9,6 +9,7 @@ import { pathToFileURL } from 'node:url';
 import { decodeParse, splitParse } from '../src/data/parseCode';
 import type { BookIndex, Chapter, EnglishChunk, GreekWord, LexEntry, Verse } from '../src/data/chapter';
 import type { LemmaLexicon } from '../src/data/lexicon';
+import type { FrequencyEntry } from '../src/data/frequency';
 
 export const MSB_URL = 'https://majoritybible.com/msb_nt_tables.tsv';
 export const TBESG_URL =
@@ -293,12 +294,51 @@ export interface BuiltData {
   chapters: BuiltChapter[];
   /** every lemma of the text -> gloss, Strong's number and part of speech: public/data/lexicon.json */
   lexicon: LemmaLexicon;
+  /** every Strong's number of the text with its count: public/data/frequency.json */
+  frequency: FrequencyEntry[];
 }
 
 const sortedKeys = <T>(o: Record<string, T>): Record<string, T> =>
   Object.fromEntries(Object.entries(o).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
 
 const numeric = (a: string, b: string) => Number(a.slice(1)) - Number(b.slice(1));
+
+/** A name: any use of the word is coded N-PRI (an indeclinable proper noun, 'Ἀβραάμ'), or a use is coded as a noun (N-...) and the
+ *  lexicon's lemma is capitalised ('Ἰησοῦς', 'Παῦλος', 'Ἱεροσόλυμα'). A capitalised TBESG gloss was tried and is not used: it also marks
+ *  θεός 'God', ἔθνος 'Gentiles' and σάββατον 'Sabbath'. Docs/data.md. */
+export function isProperNounWord(lemma: string, parseCodes: Iterable<string>): boolean {
+  const codes = [...parseCodes];
+  return codes.includes('N-PRI') || (/^\p{Lu}/u.test(lemma) && codes.some((c) => c.startsWith('N-')));
+}
+
+/** The article ὁ (G3588) is used 20,286 times, more than twice as often as καί (9,217), and is not a word the frontier would offer to learn:
+ *  the table leaves it out, so that καί comes first. Docs/data.md. */
+export const FREQUENCY_LEAVES_OUT = ['G3588'];
+
+/** The count of every Strong's number (but the article's) over all chapters and the chapters it appears in, commonest first (ties by number). */
+export function countWords(chapters: BuiltChapter[], lex: Lexicon): FrequencyEntry[] {
+  const seen = new Map<string, { count: number; chapters: number; codes: Set<string> }>();
+  for (const { chapter } of chapters) {
+    const here = new Set<string>();
+    for (const v of chapter.verses) {
+      for (const w of v.g) {
+        if (FREQUENCY_LEAVES_OUT.includes(w.s)) continue;
+        const e = seen.get(w.s) ?? { count: 0, chapters: 0, codes: new Set<string>() };
+        e.count++;
+        if (!here.has(w.s)) e.chapters++;
+        here.add(w.s);
+        e.codes.add(w.p);
+        seen.set(w.s, e);
+      }
+    }
+  }
+  return [...seen]
+    .map(([strongs, e]): FrequencyEntry => {
+      const lemma = lex.get(strongs)!.lemma;
+      return { strongs, lemma, count: e.count, chapters: e.chapters, proper: isProperNounWord(lemma, e.codes) };
+    })
+    .sort((a, b) => b.count - a.count || numeric(a.strongs, b.strongs));
+}
 
 export function buildData(msbTsv: string, lex: Lexicon): BuiltData {
   const byBook = new Map<string, Map<number, MsbVerse[]>>();
@@ -353,7 +393,7 @@ export function buildData(msbTsv: string, lex: Lexicon): BuiltData {
     }
     index.books.push({ code, name, chapters: count, verses: counts });
   }
-  return { index, chapters, lexicon: sortedKeys(lexicon) };
+  return { index, chapters, lexicon: sortedKeys(lexicon), frequency: countWords(chapters, lex) };
 }
 
 // ---------------------------------------------------------------- files
@@ -393,7 +433,7 @@ export async function runBuild(options: BuildOptions): Promise<{ chapters: numbe
   }
   const built = buildData(readFileSync(msbPath, 'utf8'), parseLexicon(readFileSync(tbesgPath, 'utf8')));
 
-  const files = new Map<string, string>([['index.json', JSON.stringify(built.index)], ['lexicon.json', JSON.stringify(built.lexicon)]]);
+  const files = new Map<string, string>([['index.json', JSON.stringify(built.index)], ['lexicon.json', JSON.stringify(built.lexicon)], ['frequency.json', JSON.stringify(built.frequency)]]);
   for (const { path, chapter } of built.chapters) files.set(path, JSON.stringify(chapter));
 
   let written = 0;
