@@ -9,7 +9,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Waiting } from './Ask';
 import { addLemmaToLearn, findGreekWord, glossOf } from './data/answerWord';
 import type { AnswerWord } from './data/db';
-import { addWordToLearn, listTurns, markChangeUndone, wordIsListed, type TalkTurn } from './data/repositories';
+import { addWordToLearn, keepStudyWayLine, listStudyWay, listTurns, markChangeUndone, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
 import { Markdown } from './markdown/Markdown';
 import { TutorLinks } from './TutorLinks';
 import { settingOf, undoChange, type AppliedChange } from './settings/registry';
@@ -154,6 +154,45 @@ function WordsLine({ lemmas, before, after }: { lemmas: string[]; before: string
   );
 }
 
+/** The line the tutor proposes for his study way (mw-5r3p30.76): shown with Keep this, and kept only by his tap; once it is on the list it reads Kept. */
+function StudyWayProposal({ line }: { line: string }) {
+  const lines = useLiveQuery(listStudyWay, []);
+  const [busy, setBusy] = useState(false);
+  const isKept = lines?.includes(line) === true;
+  const full = lines !== undefined && !isKept && lines.length >= STUDY_WAY_MAX;
+  const keep = async (): Promise<void> => {
+    setBusy(true);
+    try {
+      await keepStudyWayLine(line);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div data-study-way className="mt-2 border-t border-line pt-2">
+      <p className="text-sm text-muted">For your study way</p>
+      <p className="break-words text-lg">{line}</p>
+      {lines === undefined ? (
+        // the room the answer takes once the list is read, so the sheet does not grow after it has scrolled to the newest turn
+        <div aria-hidden="true" className="mt-1 min-h-11" />
+      ) : isKept ? (
+        <p className="min-h-11 py-2 text-base font-medium text-muted">Kept</p>
+      ) : full ? (
+        <p className="py-1 text-base text-muted">Your study way is full: delete a line in Settings &gt; My study way.</p>
+      ) : (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => void keep()}
+          className="mt-1 min-h-11 rounded-lg border border-accent px-4 text-base font-medium text-accent active:bg-line disabled:opacity-40"
+        >
+          Keep this
+        </button>
+      )}
+    </div>
+  );
+}
+
 function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkScope; onLook: (lookup: Lookup) => void; onLeave: () => void }) {
   return (
     <article data-turn className="space-y-2">
@@ -214,6 +253,7 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
           </dl>
         ) : null}
         {turn.links?.length ? <TutorLinks links={turn.links} onLeave={onLeave} /> : null}
+        {turn.studyWayLine ? <StudyWayProposal line={turn.studyWayLine} /> : null}
         <div className="-mb-1 mt-1 flex justify-end">
           <AnswerSpeaker turn={turn} />
         </div>
