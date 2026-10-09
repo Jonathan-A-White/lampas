@@ -12,6 +12,8 @@ import { getGreekPronunciation, getVerseReading, verseRef, type FixWord, type Ve
 import { markWords, normalWord, plainQuotes, readingLang, readingText, wordsOfText, type ReadingView } from './services/reading';
 import { FAILURE_TITLES } from './services/tutor';
 import { pronunciationOf } from './speech/pronunciation';
+import { stopAnswer } from './speech/readAloud';
+import { speakTutor, stopOnTap, verdictRuns, VERDICT_ID } from './speech/tutorVoice';
 import { SpeakButton } from './speech/SpeakButton';
 import { HoldBar } from './ui/HoldBar';
 import { useElapsed } from './ui/useElapsed';
@@ -176,7 +178,7 @@ function Result({ reading, text, view, onWalk }: { reading: VerseReading; text: 
   const marks = useMemo(() => markWords(text, reading.words), [text, reading.words]);
   const fix = open === null ? undefined : open.startsWith('l') ? marks.lost[Number(open.slice(1))] : marks.marked.get(Number(open));
   return (
-    <div data-reading-result={reading.verdict} className="space-y-2">
+    <div data-reading-result={reading.verdict} onClick={stopOnTap} className="space-y-2">
       <h3 className="text-lg font-semibold">{RESULT_HEADINGS[reading.verdict]}</h3>
       <p className="break-words text-base">{plainQuotes(reading.note)}</p>
       {reading.words.length > 0 ? (
@@ -273,6 +275,31 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
   const wholeVerse = walking && reading !== undefined && walkStep >= reading.words.length;
   const idle = wholeVerse ? `Hold to read the whole ${verse.to === undefined ? 'verse' : 'passage'} again` : `Hold to read ${unitName(verse)}`;
   const recording = state?.phase === 'recording';
+
+  // The verdict that comes back from a reading he sent is read aloud (the setting, src/speech/tutorVoice.ts): the heading, the note and every word
+  // to fix with its tip, not the verse. `awaiting` is the language a reading is out for; a result that was already there when the panel opened,
+  // or that comes for a reading sent in the other language, is not read. Leaving the panel stops the speech.
+  const awaiting = useRef<string | null>(null);
+  const heard = useRef<number | undefined>(undefined);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      stopAnswer();
+    };
+  }, []);
+  useEffect(() => {
+    if (sent) awaiting.current = lang;
+    else if (state !== undefined) awaiting.current = null;
+  }, [sent, state, lang]);
+  useEffect(() => {
+    if (!reading || sent || heard.current === reading.when) return;
+    heard.current = reading.when;
+    if (awaiting.current !== lang) return;
+    awaiting.current = null;
+    speakTutor(VERDICT_ID, verdictRuns(RESULT_HEADINGS[reading.verdict], reading.note, reading.words), () => mounted.current);
+  }, [reading, sent, lang]);
   return (
     <>
       <section ref={section} aria-label="Reading check" data-readcheck={unitId(verse)} className="mb-3 space-y-3 px-1">

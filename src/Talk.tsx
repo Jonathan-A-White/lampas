@@ -16,6 +16,7 @@ import { settingOf, undoChange, type AppliedChange } from './settings/registry';
 import { MAX_TALK_CHARS, scopeTitle, type TalkScope } from './services/talk';
 import { FAILURE_TITLES } from './services/tutor';
 import { startAnswer, stopAnswer, useReading } from './speech/readAloud';
+import { stopOnTap } from './speech/tutorVoice';
 import { Icon } from './speech/ReadControls';
 import { answerRuns } from './speech/answerRuns';
 import { focusOnMount, focusQuietly } from './ui/focus';
@@ -199,7 +200,7 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
       <p data-talk-q className="ml-auto w-fit max-w-[88%] break-words rounded-2xl bg-accent/15 px-3 py-2 text-lg">
         {turn.q}
       </p>
-      <div data-talk-a className="rounded-2xl border border-line px-3 py-2">
+      <div data-talk-a onClick={stopOnTap} className="rounded-2xl border border-line px-3 py-2">
         <div data-answer-text className="break-words text-lg leading-snug">
           <Markdown text={turn.a} />
         </div>
