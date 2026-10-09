@@ -10,6 +10,7 @@ import {
   getGrammarApproach,
   getGreekPronunciation,
   getLayout,
+  getLogosBible,
   getSectionHeadings,
   getSpeechRate,
   getSpeechRates,
@@ -22,6 +23,7 @@ import {
   setGrammarApproach,
   setGreekPronunciation,
   setLayout,
+  setLogosBible,
   setSectionHeadings,
   setSpeechRate,
   setTextSize,
@@ -40,6 +42,7 @@ import { goalTitle, parseGoal } from '../data/goal';
 import { publish } from '../events/bus';
 import { LAYOUTS } from '../layout/layouts';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from '../speech/languages';
+import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../resources/logosBible';
 import { PRONUNCIATIONS } from '../speech/pronunciation';
 
 /** The longest text a talked change of a text setting may hold (the grind's schema says the same). */
@@ -150,6 +153,18 @@ const goalEntry: SettingEntry = {
   },
 };
 
+const logosBibleEntry: SettingEntry = {
+  key: 'logosBible',
+  label: 'Bible in Logos',
+  hint: `The Bible in your Logos library that Old Testament chapters open in, named by its Resource ID, such as ${DEFAULT_LOGOS_BIBLE} (the Legacy Standard Bible).`,
+  allowed: { kind: 'text', valid: isResourceId, example: DEFAULT_LOGOS_BIBLE },
+  read: getLogosBible,
+  write: async (value) => {
+    await setLogosBible(String(value));
+  },
+  show: (value) => `Bible in Logos: ${COMMON_BIBLES.find((b) => b.id === value)?.name ?? String(value)}`,
+};
+
 /** Every Settings item, in the order the Settings screen draws them. */
 export const SETTINGS: readonly SettingEntry[] = [
   choice(
@@ -257,6 +272,7 @@ export const SETTINGS: readonly SettingEntry[] = [
       publish({ kind: 'pronunciation-changed', pronunciation: value });
     },
   ),
+  logosBibleEntry,
 ];
 
 export const settingOf = (key: string): SettingEntry | undefined => SETTINGS.find((s) => s.key === key);
