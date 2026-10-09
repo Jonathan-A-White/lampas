@@ -67,6 +67,11 @@ export const SYNERGEI_ANSWER = {
   words: [{ greek: 'συνεργεῖ', lemma: 'συνεργέω', note: 'verb, present active indicative, third person singular' }],
 };
 
+/** The answer the fake gives to a tips grist: one tip with a button to the Review screen (grinds/tips.answer.schema.json). */
+export const TIP_ANSWER = {
+  tip: { id: 'try-review', title: 'Try Review', body: 'Words come back on a schedule. Tap Review to see what is due.', action: { label: 'Open Review', screen: 'review' } },
+};
+
 /** The answer the fake gives to a reading of Romans 8:28, in the app's answer shape (grinds/verse-read.answer.schema.json). */
 export const READING_ANSWER = {
   verdict: 'some-to-fix',

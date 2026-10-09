@@ -8,6 +8,7 @@ import { Gate } from './gate/Gate';
 import { restoreLastRoute } from './nav/lastRoute';
 import { restoreScrolls } from './nav/scrollMemory';
 import { startAppUpdates } from './services/appUpdate';
+import { TipsSitting } from './tips/TipsSitting';
 import { installScrollGuard } from './ui/scrollGuard';
 
 installScrollGuard();
@@ -20,6 +21,7 @@ restoreScrolls();
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Gate>
+      <TipsSitting />
       <App />
     </Gate>
   </StrictMode>,
