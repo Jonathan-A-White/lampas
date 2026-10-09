@@ -45,6 +45,10 @@ let fake: FakePostern;
 let synth: FakeSynth | undefined;
 
 async function open(configure: (f: FakePostern) => void = (f) => void (f.autoReply = { status: 'answered', answer: TALK_ANSWER }), speaks = false): Promise<void> {
+  // The scenario before may have ended with its answer still on the way (a step that only checked the grist): let it land, kept and
+  // spoken or not, before its screen goes, so it cannot write a turn or start a voice in this scenario.
+  const asking = screen.queryByRole('textbox', { name: 'Your message' });
+  if (asking) await waitFor(() => expect(asking).toBeEnabled());
   cleanup();
   stopReading();
   clearBus();
@@ -102,11 +106,21 @@ async function turnsKept(n: number): Promise<void> {
 }
 
 async function answerShowsUnderQuestion(): Promise<void> {
-  await turnsKept(1);
-  const [turn] = turns();
-  expect(within(turn).getByText(QUESTION)).toBeInTheDocument();
-  expect(turn).toHaveTextContent(TALK_ANSWER.answer);
+  await waitFor(() => {
+    const [turn] = turns();
+    expect(within(turn).getByText(QUESTION)).toBeInTheDocument();
+    expect(turn).toHaveTextContent(TALK_ANSWER.answer);
+  });
 }
+
+/** The utterance the engine was asked to say as number `n` (0 is the first): waits for it, as the voice starts a moment after the answer shows. */
+async function spokenAt(engine: FakeSynth, n: number) {
+  await waitFor(() => expect(engine.spoken.length).toBeGreaterThan(n));
+  return engine.spoken[n];
+}
+
+/** Waits for turn number `index` of the sheet to show `text`: a turn is drawn, and its lines added, a moment after the step before it. */
+const turnShows = (index: number, text: string) => waitFor(() => expect(turns()[index]).toHaveTextContent(text));
 
 const received = (i: number) => {
   const got = fake.received[i];
@@ -235,22 +249,24 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the answer shows in the sheet under his question', answerShowsUnderQuestion);
     And('the answer is read aloud, its Greek word in Greek and the rest in English', async () => {
       const engine = synth as FakeSynth;
-      await waitFor(() => expect(engine.spoken.length).toBeGreaterThan(0));
-      expect(engine.spoken[0].lang).toBe('en-US');
-      expect(engine.spoken[0].text).toBe('In this verse');
+      const first = await spokenAt(engine, 0);
+      expect(first.lang).toBe('en-US');
+      expect(first.text).toBe('In this verse');
       act(() => engine.finish());
-      expect(engine.spoken[1].lang).toBe('el-GR');
-      expect(engine.spoken[1].text).toBe('συνεργεῖ');
+      const second = await spokenAt(engine, 1);
+      expect(second.lang).toBe('el-GR');
+      expect(second.text).toBe('συνεργεῖ');
       act(() => engine.finish());
-      expect(engine.spoken[2].lang).toBe('en-US');
-      expect(engine.spoken[2].text).toContain('means "works together"');
+      const third = await spokenAt(engine, 2);
+      expect(third.lang).toBe('en-US');
+      expect(third.text).toContain('means "works together"');
     });
     When('he taps Stop on the answer', () => taps('Stop'));
-    Then('the reading stops and the answer can be heard again', () => {
+    Then('the reading stops and the answer can be heard again', async () => {
       const engine = synth as FakeSynth;
       expect(engine.calls[engine.calls.length - 1]).toBe('cancel');
       expect(engine.speaking).toBe(false);
-      expect(within(turns()[0]).getByRole('button', { name: 'Hear the answer' })).toBeInTheDocument();
+      await waitFor(() => expect(within(turns()[0]).getByRole('button', { name: 'Hear the answer' })).toBeInTheDocument());
     });
   });
 
@@ -493,17 +509,14 @@ describeFeature(feature, ({ Scenario }) => {
     And('he opens Talk', openTalk);
     When('he sends {string}', (_, question: string) => send(question));
     Then('the answer shows in the sheet under his question', async () => {
-      await turnsKept(1);
-      expect(turns()[0]).toHaveTextContent('Done.');
+      await turnShows(0, 'Done.');
     });
     And('nothing was changed and the sheet shows no Undo button', async () => {
       expect(await db.settings.count()).toBe(0);
       expect(within(sheet()).queryByRole('button', { name: /^Undo/ })).toBeNull();
       expect(changeRows()).toHaveLength(0);
     });
-    And('the sheet says the app has no such setting {string}', (_, key: string) => {
-      expect(turns()[0]).toHaveTextContent(`"${key}": the app has no such setting`);
-    });
+    And('the sheet says the app has no such setting {string}', (_, key: string) => turnShows(0, `"${key}": the app has no such setting`));
   });
 
   Scenario('A change with a value the setting does not allow is left out, the allowed change beside it is made', ({ Given, And, When, Then }) => {
@@ -516,9 +529,7 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(changeRows().some((row) => row.textContent?.includes(text))).toBe(true));
       expect(within(sheet()).getByRole('button', { name: 'Undo Greek speed' })).toBeInTheDocument();
     });
-    And('the sheet says the Theme does not allow {string}', (_, value: string) => {
-      expect(turns()[0]).toHaveTextContent(`Theme: "${value}" is not a value it allows`);
-    });
+    And('the sheet says the Theme does not allow {string}', (_, value: string) => turnShows(0, `Theme: "${value}" is not a value it allows`));
     And('the saved Theme is still Phone', async () => {
       expect(await getTheme()).toBe('phone');
     });
@@ -589,8 +600,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('he asks again {string}', (_, question: string) => send(question));
     Then('the second answer shows the line {string}', async (_, line: string) => {
-      await waitFor(() => expect(turns()).toHaveLength(2));
-      expect(turns()[1]).toHaveTextContent(line);
+      await turnShows(1, line);
     });
     And('the word {string} is still on the list once with the gloss {string}', async (_, lemma: string, gloss: string) => {
       expect(await listed(lemma)).toMatchObject([{ lemma, state: 'learning', lesson: 0, gloss }]);
@@ -605,7 +615,7 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(lines()).toContain(line));
     });
     And('the answer also shows the line {string}', async (_, line: string) => {
-      expect(lines()).toContain(line);
+      await waitFor(() => expect(lines()).toContain(line));
     });
     And('the word {string} is on the list once', async (_, lemma: string) => {
       expect(await listed(lemma)).toHaveLength(1);
@@ -640,14 +650,17 @@ describeFeature(feature, ({ Scenario }) => {
     And('he opens Talk', openTalk);
     When('he sends {string}', (_, question: string) => send(question));
     Then('the answer shows {string} in bold and {string} in italics', async (_, bold: string, italic: string) => {
-      await waitFor(() => expect(answerBox().querySelector('strong')).not.toBeNull());
-      expect(answerBox().querySelector('strong')?.textContent).toBe(bold);
-      expect(answerBox().querySelector('em')?.textContent).toBe(italic);
+      await waitFor(() => {
+        expect(answerBox().querySelector('strong')?.textContent).toBe(bold);
+        expect(answerBox().querySelector('em')?.textContent).toBe(italic);
+      });
     });
-    And('the answer shows a bulleted list of {int} items and a numbered list of {int} items', (_, bullets: number, numbers: number) => {
-      expect(answerBox().querySelectorAll('ul > li')).toHaveLength(bullets);
-      expect(answerBox().querySelectorAll('ol > li')).toHaveLength(numbers);
-    });
+    And('the answer shows a bulleted list of {int} items and a numbered list of {int} items', (_, bullets: number, numbers: number) =>
+      waitFor(() => {
+        expect(answerBox().querySelectorAll('ul > li')).toHaveLength(bullets);
+        expect(answerBox().querySelectorAll('ol > li')).toHaveLength(numbers);
+      }),
+    );
     And('the answer shows no stars and no hashes', () => {
       expect(answerBox().textContent).not.toMatch(/[*#]/);
     });
@@ -686,14 +699,16 @@ describeFeature(feature, ({ Scenario }) => {
     When('he sends {string}', (_, question: string) => send(question));
     Then('the answer is read aloud with no stars, hashes or list marks', async () => {
       const engine = synth as FakeSynth;
-      await waitFor(() => expect(engine.spoken.length).toBeGreaterThan(0));
-      const said: string[] = [];
-      for (let i = 0; i < 6 && engine.spoken.length > said.length; i++) {
-        said.push(engine.spoken[said.length].text);
+      const spoken: string[] = [];
+      // One part ends and the next starts in the same tick (readAloud.ts readRun): when nothing is speaking after an end, the answer is over.
+      for (let i = 0; i < 6; i++) {
+        spoken.push((await spokenAt(engine, i)).text);
         act(() => engine.finish());
+        if (!engine.speaking) break;
       }
-      expect(said.join(' ')).toContain('parsing');
-      expect(said.join(' ')).not.toMatch(/[*#]|^- /m);
+      const all = spoken.join(' ');
+      expect(all).toContain('parsing');
+      expect(all).not.toMatch(/[*#]|^- /m);
     });
   });
 

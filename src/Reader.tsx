@@ -513,6 +513,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   useEffect(() => {
     openTalk.current = talkAbout === undefined ? null : quizUnit ? scopeRef(BOOK, CHAPTER, { verse: quizUnit, quiz: true }) : talkRef(BOOK, CHAPTER, talkAbout);
   }, [talkAbout, quizUnit, BOOK, CHAPTER]);
+  // A Reader that is gone has no talk open: an answer that came as it went, and is read a moment later (speakTutor reads the saved choice first), is not spoken (mw-5r3p30.114).
+  useEffect(() => () => void (openTalk.current = null), []);
   // Push-to-talk (src/useVoice.ts): what he says goes as the turn of the conversation the sheet is open on.
   const sayAbout = useRef<(message: string) => void>(() => {});
   const voice = useVoice((message) => sayAbout.current(message));
