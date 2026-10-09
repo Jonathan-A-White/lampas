@@ -22,7 +22,9 @@ beforeEach(async () => {
 });
 
 const keys = (rows: readonly { key: string }[]) => rows.map((r) => r.key);
-const ALL_ON: Values = { weave: 'solid', newWordsADay: '3', 'resource.logos': 'on' };
+const ALL_ON: Values = { weave: 'solid', newWordsADay: '3', 'resource.logos': 'on', developerMode: 'on' };
+/** Values a row may read that are not rows of their own: Developer mode is found on About, it is not a setting of the list. */
+const NOT_ROWS = ['developerMode'];
 
 describe('the rows', () => {
   it('gives every row a distinct key, a name, a one-line hint and a section', () => {
@@ -42,7 +44,7 @@ describe('the rows', () => {
       expect(row, s.key).toBeDefined();
       expect(row?.label).toBe(s.label);
     }
-    for (const row of ROWS) if (row.dependsOn) expect(rowOf(row.dependsOn.key), row.key).toBeDefined();
+    for (const row of ROWS) if (row.dependsOn && !NOT_ROWS.includes(row.dependsOn.key)) expect(rowOf(row.dependsOn.key), row.key).toBeDefined();
   });
 
   it('lists the study resources and the links as rows too, so nothing on the screen is outside the list', () => {
@@ -103,6 +105,7 @@ describe('the Settings screen', () => {
     await db.settings.bulkPut([
       { key: 'weave', value: 'solid' },
       { key: 'resource.logos', value: 'on' },
+      { key: 'developerMode', value: 'on' },
     ]);
     render(<SettingsScreen />);
     await screen.findByRole('group', { name: 'Bible in Logos' });
