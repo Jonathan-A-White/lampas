@@ -14,6 +14,7 @@ import {
   getLayout,
   getReadSpan,
   getReadTutor,
+  getScriptDepth,
   getLogosBible,
   getNewWordsADay,
   getSectionHeadings,
@@ -33,6 +34,7 @@ import {
   setLayout,
   setReadSpan,
   setReadTutor,
+  setScriptDepth,
   setLogosBible,
   setNewWordsADay,
   setSectionHeadings,
@@ -62,6 +64,7 @@ import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from '../speec
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../resources/logosBible';
 import { READ_SPANS, type ReadSpan } from '../speech/readSpan';
 import { PRONUNCIATIONS } from '../speech/pronunciation';
+import { DEFAULT_DEPTH, DEPTHS, SCRIPTS, type Depth } from '../script/scripts';
 
 /** The longest text a talked change of a text setting may hold (the grind's schema says the same). */
 export const TEXT_MAX = 80;
@@ -112,6 +115,21 @@ function choice(
     show: (value) => `${label}: ${values.find((v) => v.value === value)?.label ?? String(value)}`,
   };
 }
+
+// One depth setting per script the tutor writes (src/script/scripts.ts): Hebrew's is 'hebrewDepth', Settings > Hebrew in the tutor.
+const depthEntries = SCRIPTS.map((script) =>
+  choice(
+    script.settingKey,
+    script.settingLabel,
+    `How deep into ${script.label} the tutor goes when it writes a ${script.label} word: ${DEPTHS.map((d) => `${d.id} (${d.label}) writes it like ${script.examples[d.id]}`).join('; ')}. ${DEPTHS.find((d) => d.id === DEFAULT_DEPTH)?.label} by default.`,
+    DEPTHS.map((d) => ({ value: d.id, label: d.label })),
+    () => getScriptDepth(script),
+    async (value) => {
+      await setScriptDepth(script, value as Depth);
+      publish({ kind: 'script-depth-changed', script: script.id, depth: value as Depth });
+    },
+  ),
+);
 
 const textSizeId = (percent: number): SettingValue => TEXT_SIZES.find((t) => t.percent === percent)?.id ?? percent;
 
@@ -259,6 +277,7 @@ export const SETTINGS: readonly SettingEntry[] = [
       publish({ kind: 'read-tutor-changed', readTutor: value as ReadTutor });
     },
   ),
+  ...depthEntries,
   choice(
     'tips',
     'Tips',
