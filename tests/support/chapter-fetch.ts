@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { vi } from 'vitest';
 import { forgetChapters } from '../../src/data/chapter';
 import { forgetLexicon } from '../../src/data/lexicon';
+import { forgetGoalNeeds } from '../../src/useGoalProgress';
 
 export interface ChapterFetch {
   /** every URL asked for since the last stub */
@@ -14,6 +15,7 @@ export function stubChapterFetch(): ChapterFetch {
   const stub: ChapterFetch = { requests: [] };
   forgetChapters();
   forgetLexicon();
+  forgetGoalNeeds();
   vi.stubGlobal(
     'fetch',
     vi.fn(async (input: RequestInfo | URL) => {
