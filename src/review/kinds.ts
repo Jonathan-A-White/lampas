@@ -16,6 +16,7 @@ import {
   listWords,
   pushGrammarAnswer,
   recordAnswer,
+  noteAnswer,
   recordGrammarAnswer,
   reviewsOf,
   seedWordsIfFirstOpen,
@@ -147,6 +148,8 @@ export const GRAMMAR: ReviewKind = {
   record: async (item, right) => {
     if (item.kind !== 'grammar') return;
     await recordGrammarAnswer(item.id, right);
+    // a form read right shows its letters, sounds and marks; a miss on a letter or sound counts against it (mw-hqd5bz.17)
+    await noteAnswer(item.question, right);
     // the ring of the last 20 grammar answers that decides whether New words at moves (src/review/pickerMove.ts)
     await pushGrammarAnswer(right);
   },

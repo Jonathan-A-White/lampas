@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { approachOf } from '../../src/approaches';
 import type { GrammarLevel } from '../../src/data/db';
 import { groupWords, learnNext, nextWords, placedAt, wordStatesOf } from '../../src/data/grammar/goalProgress';
+import { LETTER_IDS } from '../../src/data/grammar/inference';
 import type { Level, PassageNeeds } from '../../src/data/grammar/needs';
 
 const word = (lemma: string, count: number) => ({ lemma, gloss: lemma, count, firstRef: 'jn.1.1' });
@@ -61,5 +62,31 @@ describe('placedAt', () => {
   it('is the newest level the placement set, and nothing when it set none', () => {
     expect(placedAt(new Map([row('a', 'placement', 5), row('b', 'placement', 9), row('c', 'sheet', 20)]))).toBe(9);
     expect(placedAt(new Map([row('c', 'sheet', 20)]))).toBeUndefined();
+  });
+});
+
+describe('learnNext names weak letters (mw-hqd5bz.17)', () => {
+  const withAlphabet = { ...needs, ideas: [idea('alphabet'), idea('breathings'), idea('accents'), idea('noun')] };
+  const letters = (...except: string[]) => new Map<string, Level>(LETTER_IDS.filter((id) => !except.includes(id)).map((id) => [id, 'solid']));
+
+  it('names the alphabet while no letter is solid', () => {
+    const next = learnNext(withAlphabet, bma, new Map())!;
+    expect(next.idea.id).toBe('alphabet');
+    expect(next.letters).toBeUndefined();
+  });
+
+  it('names the letters that are not solid once some are, and opens the first of them', () => {
+    const next = learnNext(withAlphabet, bma, letters('letter-xi', 'letter-psi'))!;
+    expect(next.letters?.map((l) => l.id)).toEqual(['letter-xi', 'letter-psi']);
+    expect(next.idea.id).toBe('letter-xi');
+    expect(next.lesson?.lesson.title).toBe('The Greek letters');
+  });
+
+  it('goes on to the next idea when all 24 letters are solid, whatever the alphabet row says', () => {
+    expect(learnNext(withAlphabet, bma, letters())!.idea.id).toBe('breathings');
+  });
+
+  it('leaves a frontier alphabet alone', () => {
+    expect(learnNext(withAlphabet, bma, new Map<string, Level>([['alphabet', 'frontier']]))!.idea.id).toBe('breathings');
   });
 });

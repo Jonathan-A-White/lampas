@@ -104,7 +104,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the question line says {string}', asks);
   });
 
-  Scenario('When I miss the easy things it goes easier, down to the letters', ({ Given, When, And, Then }) => {
+  Scenario('When I miss the easy things it goes easier, down to the letters and marks of the words I missed', ({ Given, When, And, Then }) => {
     Given('his goal is {string} and he knows nothing yet', given);
     When('he opens the placement', opened);
     And('he starts the placement', started);
@@ -112,6 +112,10 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the question line says {string}', asks);
     And('the idea {string} is not yet', async (_, id: string) => expect(await levelOf(id)).toBe('notYet'));
     And('the idea {string} is also not yet', async (_, id: string) => expect(await levelOf(id)).toBe('notYet'));
+    And('the alphabet as a whole was not asked', async () => {
+      expect(await levelOf('alphabet')).toBeUndefined();
+      expect(await db.reviews.get(['grammar', 'alphabet'])).toBeUndefined();
+    });
   });
 
   Scenario('It does not ask the harder things after that', ({ Given, When, And, Then }) => {
@@ -147,7 +151,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the bus has heard the placement is done', () => {
       const heard = latest('placement-done');
-      expect(heard).toMatchObject({ goal: '1 John 1:1', approach: 'bma-tutor', solid: 1, frontier: 0, notYet: 2 });
+      expect(heard).toMatchObject({ goal: '1 John 1:1', approach: 'bma-tutor', solid: 12, frontier: 0, notYet: 1 });
       expect(heard?.untested).toBeGreaterThan(10);
     });
     When('he taps {string}', async (_, name: string) => user.click(await screen.findByRole('button', { name })));

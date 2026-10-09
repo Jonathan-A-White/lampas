@@ -3,6 +3,7 @@
 // ends or he starts it again. A kept placement of another goal or approach is not offered.
 import { ideaOf } from './grammar/ladder';
 import type { Level } from './grammar/needs';
+import type { Evidence } from './grammar/inference';
 import { ANSWERS_PER_IDEA, type Asked, type PlacementDone, type PlacementState } from './grammar/placement';
 
 const KEY = 'lampas.placement';
@@ -39,7 +40,7 @@ function store(): Storage | undefined {
 export function savePlacement(saved: SavedPlacement): void {
   const { state } = saved;
   try {
-    store()?.setItem(KEY, JSON.stringify({ ...saved, state: { ...state, levels: [...state.levels] } }));
+    store()?.setItem(KEY, JSON.stringify({ ...saved, state: { ...state, levels: [...state.levels], evidence: [...state.evidence] } }));
   } catch {
     // Storage full or refused: the placement is not kept, and the next open starts again.
   }
@@ -59,13 +60,17 @@ export function readPlacement(): SavedPlacement | null {
     const saved = JSON.parse(store()?.getItem(KEY) ?? 'null') as { goal?: unknown; approach?: unknown; state?: Record<string, unknown> } | null;
     const s = saved?.state;
     if (!saved || !s || typeof saved.goal !== 'string' || typeof saved.approach !== 'string') return null;
-    const { ideas, needed, at, asked, levels, done, questionsLeft, down, onlyDown, last, seed } = s;
+    const { ideas, needed, at, asked, levels, done, questionsLeft, down, onlyDown, last, seed, evidence, inferred, focus } = s;
     if (!Array.isArray(ideas) || !ideas.every(isIdea) || !Array.isArray(needed) || !needed.every(isIdea)) return null;
     if (!count(at) || at >= Math.max(ideas.length, 1) || !count(questionsLeft) || !count(seed)) return null;
-    if (!Array.isArray(asked) || !asked.every((a: Partial<Asked>) => typeof a?.ideaId === 'string' && ideas.includes(a.ideaId) && typeof a.right === 'boolean')) return null;
+    if (!Array.isArray(asked) || !asked.every((a: Partial<Asked>) => typeof a?.ideaId === 'string' && ideas.includes(a.ideaId) && typeof a.right === 'boolean' && (a.form === undefined || typeof a.form === 'string'))) return null;
     if (!Array.isArray(levels) || !levels.every((l) => Array.isArray(l) && ideas.includes(l[0]) && isLevel(l[1]))) return null;
     if (done !== null && done !== 'finished' && done !== 'paused') return null;
     if (typeof down !== 'boolean' || typeof onlyDown !== 'boolean' || (last !== null && !isLevel(last))) return null;
+    // a placement kept before the evidence existed has none, and asks the foundation as it did
+    if (evidence !== undefined && !(Array.isArray(evidence) && evidence.every((e) => Array.isArray(e) && typeof e[0] === 'string' && count(e[1]?.run) && count(e[1]?.misses)))) return null;
+    if (inferred !== undefined && !(Array.isArray(inferred) && inferred.every((i) => typeof i === 'string'))) return null;
+    if (focus !== undefined && focus !== null && !(Array.isArray(focus) && focus.every((i) => typeof i === 'string'))) return null;
     const idea = ideas[at];
     if (done === null && idea !== undefined && (asked as Asked[]).filter((a) => a.ideaId === idea).length >= ANSWERS_PER_IDEA) return null;
     return {
@@ -83,6 +88,9 @@ export function readPlacement(): SavedPlacement | null {
         onlyDown,
         last: last as Level | null,
         seed,
+        evidence: new Map((evidence as [string, Evidence][] | undefined) ?? []),
+        inferred: (inferred as string[] | undefined) ?? [],
+        focus: (focus as string[] | null | undefined) ?? null,
       },
     };
   } catch {

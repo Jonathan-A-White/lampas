@@ -21,7 +21,7 @@ import { questionFor } from './data/grammar/placementQuestion';
 import type { GrammarQuestion } from './data/grammar/questions';
 import { clearPlacement, readPlacement, savePlacement, type SavedPlacement } from './data/placementKeep';
 import { mulberry32, type Random } from './data/quiz';
-import { getGoal, getGrammarApproach, listLevels } from './data/repositories';
+import { getEvidence, getGoal, getGrammarApproach, listLevels } from './data/repositories';
 import { publish } from './events/bus';
 import { navigate } from './nav/route';
 import { ItemCard } from './review/ItemCard';
@@ -107,10 +107,10 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
       return ask(state);
     }
     const goal = parseGoal(session.goal, BOOK_INDEX);
-    const [needs, levels] = await Promise.all([goal ? passageNeeds(goal, loadChapter, BOOK_INDEX) : null, listLevels()]);
+    const [needs, levels, evidence] = await Promise.all([goal ? passageNeeds(goal, loadChapter, BOOK_INDEX) : null, listLevels(), getEvidence()]);
     const known = new Map(Array.from(levels, ([id, row]): [string, Level] => [id, row.level]));
     const seed = Math.floor(newRandom()() * 0x100000000);
-    const state = startPlacement(needs, known, orderOf(session.approach), seed);
+    const state = startPlacement(needs, known, orderOf(session.approach), seed, evidence);
     savePlacement({ goal: session.goal, approach: session.approach.id, state });
     passage.current = [];
     lastQuestion.current = null;
@@ -199,6 +199,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
                       <span className="min-w-0 break-words">{i.title}</span>
                       <span className={`shrink-0 font-medium ${i.level === 'solid' ? 'text-good' : i.level === 'notYet' ? 'text-bad' : i.level === null ? 'text-muted' : ''}`}>
                         {i.level === null ? 'Untested' : LEVEL_WORDS[i.level]}
+                        {i.inferred ? ' (from your answers)' : ''}
                       </span>
                     </li>
                   ))}
@@ -218,8 +219,8 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
   const pick = (option: string) => {
     if (picked !== null) return;
     const right = GRAMMAR.isRight(item, option);
-    const next = answer(state, right);
-    writing.current = writing.current.then(() => writeAnswer(state, next, right)).catch((error: unknown) => console.error('could not record the answer', error));
+    const next = answer(state, right, item.question);
+    writing.current = writing.current.then(() => writeAnswer(state, next, right, undefined, item.question)).catch((error: unknown) => console.error('could not record the answer', error));
     if (next.done === 'finished') clearPlacement();
     else savePlacement({ goal: session.goal, approach: session.approach.id, state: next });
     setRun({ ...run, picked: option, after: next });

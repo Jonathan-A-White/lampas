@@ -163,3 +163,31 @@ test('the Goal screen: two bars that fit, the lists, Learn next, Next words and 
   await expect(page.getByRole('heading', { name: '1 John 1', level: 1 })).toBeVisible();
   await expect(page.locator('[data-verse="1"][data-selected="true"]')).toBeVisible();
 });
+
+test('Learn next names the letters that are not solid yet, not the whole alphabet', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await expect.poll(() => seeded(page)).toBe(true);
+  const now = Date.now();
+  const letters = 'alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu omicron pi rho sigma tau upsilon phi chi omega'.split(' ');
+  await put(page, 'settings', [{ key: 'goal', value: '1 John 1:1' }]);
+  await put(page, 'grammarLevels', [
+    ...letters.map((name) => ({ id: `letter-${name}`, level: 'solid', since: now, how: 'inferred' })),
+    { id: 'breathings', level: 'solid', since: now, how: 'marked' },
+    { id: 'accents', level: 'solid', since: now, how: 'marked' },
+  ]);
+  await page.reload();
+  await page.goto('/#/goal');
+  await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
+  const next = page.getByTestId('learn-next');
+  await expect(next).toHaveText('Learn next: ξ and ψ · The Greek letters');
+  await expectThumbSized(next);
+  expect(await next.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  await expectFitsPhone(page);
+  await shot(page, 'goal-letters');
+
+  // a tap opens the sheet of the first weak letter
+  await next.click();
+  await expect(page.getByRole('dialog', { name: 'Idea' }).getByRole('heading', { name: 'Xi' })).toBeVisible();
+});

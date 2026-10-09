@@ -3,11 +3,14 @@
 import type { GrammarApproach, LessonPlace } from '../../approaches';
 import { lessonOf, orderOf } from '../../approaches';
 import type { GrammarLevel, WordState } from '../db';
+import { alphabetIsSolid, LETTER_IDS, weakLetters } from './inference';
 import { ideaOf, type GrammarIdea } from './ladder';
 import type { Level, NeededIdea, NeededWord, PassageNeeds } from './needs';
 
 /** How many words Next words offers. */
 export const NEXT_WORDS = 3;
+
+const LETTER_COUNT = LETTER_IDS.length;
 
 /** The levels, in the order the bars and lists show them. */
 export const LEVELS: readonly Level[] = ['solid', 'frontier', 'notYet'];
@@ -33,16 +36,27 @@ export const levelsOf = (rows: ReadonlyMap<string, GrammarLevel>): Map<string, L
 export const wordLevel = (state: WordState | undefined): Level => (state === 'solid' ? 'solid' : state === 'learning' ? 'frontier' : 'notYet');
 
 export interface LearnNext {
+  /** the idea it opens: the first weak letter when `letters` is set */
   idea: GrammarIdea;
   /** the lesson of the approach that teaches it; none when the approach has no lesson for it */
   lesson: LessonPlace | undefined;
+  /** the letters that are not solid yet, when some letters are: Learn next names these, not the whole alphabet (mw-hqd5bz.17, PROVISIONAL) */
+  letters?: GrammarIdea[];
 }
 
-/** The earliest idea in the approach's sequence that the goal needs and that is not yet or untested; undefined when none is left. */
+/**
+ * The earliest idea in the approach's sequence that the goal needs and that is not yet or untested; undefined when none is left. The alphabet is
+ * solid when all 24 letters are; while some letters are solid and others are not it is the weak letters that are named, never the whole alphabet.
+ */
 export function learnNext(needs: Pick<PassageNeeds, 'ideas'>, approach: GrammarApproach, levels: ReadonlyMap<string, Level>): LearnNext | undefined {
   const needed = new Set(needs.ideas.map((i) => i.id));
-  const id = orderOf(approach).find((i) => needed.has(i) && (levels.get(i) ?? 'notYet') === 'notYet');
-  return id === undefined ? undefined : { idea: ideaOf(id), lesson: lessonOf(approach, id) };
+  const id = orderOf(approach).find((i) => needed.has(i) && (levels.get(i) ?? 'notYet') === 'notYet' && !(i === 'alphabet' && alphabetIsSolid(levels)));
+  if (id === undefined) return undefined;
+  if (id === 'alphabet') {
+    const weak = weakLetters(levels);
+    if (weak.length < LETTER_COUNT) return { idea: weak[0], lesson: lessonOf(approach, weak[0].id), letters: weak };
+  }
+  return { idea: ideaOf(id), lesson: lessonOf(approach, id) };
 }
 
 /** The most frequent needed words he has no state for (not on his list and not dropped), in dictionary form. */
