@@ -31,9 +31,14 @@ Answer with a Verse Read Answer (grinds/verse-read.answer.schema.json): `verdict
   verse. Never call a partial reading `well-read`.
 - Never more than 8 words in `focus_words`: if more were wrong, give the 8 that matter most, and say in `note` that
   the rest can wait. List them in the order they stand in the verse.
-- For each word give `word` (as it stands in `target_text`, without punctuation), `chunks` (the word broken into the
+- For each word give `word` (as it stands in `target_text`, without punctuation), `index` (see below), `chunks` (the word broken into the
   parts to say one after another, 1 to 12 of them, which joined spell the word, such as `to`, `geth`, `er`) and `tip`
   (one short line on how to say it, kind and concrete).
+- `index` is the place of that exact word in `target_text`, counting from 0: the first word is 0, the second is 1. Take it
+  from the position of the word in the `reading_result` word list, which is `target_text` split into words in order.
+  A word that stands twice in the verse (such as `life` or `to`) is marked only at the place he misread it, so give the
+  index of that one and no other. If he misread both, give two entries, one for each index. Never guess an index: count
+  to it in the word list.
 - `note` is one or two short sentences to him about the reading: what was good first, then what to try. No sermons,
   no comparisons with other readers, no flattery, and nothing about the meaning of the verse.
 - If `reading_result` is missing, carries only errors, or the recording was too quiet to judge, do not guess: answer

@@ -9,7 +9,7 @@ import { createPortal } from 'react-dom';
 import type { Verse } from './data/chapter';
 import { unitId, unitName } from './data/passage';
 import { getGreekPronunciation, getVerseReading, verseRef, type FixWord, type VerseReading } from './data/repositories';
-import { readingLang, readingText, type ReadingView } from './services/reading';
+import { markWords, normalWord, readingLang, readingText, wordsOfText, type ReadingView } from './services/reading';
 import { FAILURE_TITLES } from './services/tutor';
 import { pronunciationOf } from './speech/pronunciation';
 import { SpeakButton } from './speech/SpeakButton';
@@ -17,6 +17,8 @@ import { HoldBar } from './ui/HoldBar';
 import { useElapsed } from './ui/useElapsed';
 import { revealInScrollBox } from './ui/reveal';
 import { DROPPED_NOTE, SHORT_HINT, TAP_HINT, type ReadState, type UseReadChecks } from './useReadChecks';
+
+type Marks = ReturnType<typeof markWords<FixWord>>;
 
 const CHUNK_JOINER = ' · ';
 
@@ -112,26 +114,21 @@ function Fix({ fix, view, large }: { fix: FixWord; view: ReadingView; large?: bo
 }
 
 const WORD_PARTS = /^([^\p{L}\p{N}\p{M}]*)(.*?)([^\p{L}\p{N}\p{M}]*)$/u;
-/** A word as it is compared: no case, no accents or breathings, a final sigma as a sigma, no punctuation. The mill may write
- * a Greek word without its accents, and that must still find the word in the verse. */
-const normal = (word: string): string =>
-  word.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/ς/g, 'σ').replace(/[^\p{L}\p{N}]/gu, '');
 
-/** The verse as he read it, every word of it, with the words the mill marked as buttons. A marked word that cannot be found
- * in the verse (the mill wrote it differently) is offered after it, so no mark is lost. */
-function MarkedVerse({ text, view, words, open, onOpen }: { text: string; view: ReadingView; words: FixWord[]; open: string | null; onOpen: (word: string | null) => void }) {
+/** The verse as he read it, every word of it, with the words the mill marked as buttons: only the exact instance named, so a word
+ * he said right the second time is not marked because he missed it the first. A marked word whose place is not in the verse (the
+ * mill counted wrongly) is offered after it, so no mark is lost. `open` is the key of the open mark ('3' for the word at place 3,
+ * 'l0' for the first lost word). */
+function MarkedVerse({ text, view, marks, open, onOpen }: { text: string; view: ReadingView; marks: Marks; open: string | null; onOpen: (key: string | null) => void }) {
   const type = typeOf(view);
-  const tokens = useMemo(() => text.split(/\s+/).filter(Boolean), [text]);
-  const marks = useMemo(() => new Set(words.map((w) => normal(w.word))), [words]);
-  const found = new Set(tokens.map((t) => normal(t)).filter((t) => marks.has(t)));
-  const lost = words.filter((w) => !found.has(normal(w.word)));
+  const tokens = useMemo(() => wordsOfText(text), [text]);
   const markButton = (word: string, label: string, key: string) => (
     <button
       key={key}
       type="button"
-      data-fix={normal(word)}
-      aria-pressed={open === normal(word)}
-      onClick={() => onOpen(open === normal(word) ? null : normal(word))}
+      data-fix={normalWord(word)}
+      aria-pressed={open === key}
+      onClick={() => onOpen(open === key ? null : key)}
       className="inline-block min-h-11 rounded-lg bg-bad/15 px-1 font-semibold text-bad underline decoration-2 underline-offset-4"
     >
       {label}
@@ -142,21 +139,22 @@ function MarkedVerse({ text, view, words, open, onOpen }: { text: string; view: 
       <p data-reading-verse lang={type.lang} className={`break-words ${type.face} leading-(--lp-leading)`}>
         {tokens.map((token, i) => {
           const [, before, core, after] = WORD_PARTS.exec(token) ?? ['', '', token, ''];
+          const mark = marks.marked.get(i);
           return (
             <span key={i}>
               {before}
-              {marks.has(normal(core)) ? markButton(core, core, `m${i}`) : core}
+              {mark ? markButton(mark.word, core, String(i)) : core}
               {after}{' '}
             </span>
           );
         })}
       </p>
-      {lost.length > 0 ? (
+      {marks.lost.length > 0 ? (
         <p className="text-base text-muted">
           Also to fix:{' '}
-          {lost.map((w) => (
-            <span key={w.word} className="mr-2">
-              {markButton(w.word, w.word, `l-${w.word}`)}
+          {marks.lost.map((w, i) => (
+            <span key={i} className="mr-2">
+              {markButton(w.word, w.word, `l${i}`)}
             </span>
           ))}
         </p>
@@ -175,14 +173,15 @@ const RESULT_HEADINGS: Record<VerseReading['verdict'], string> = {
 /** The result of a reading: how it went, the verse with its marked words, a tap shows their chunks, and the walk starts here. */
 function Result({ reading, text, view, onWalk }: { reading: VerseReading; text: string; view: ReadingView; onWalk: () => void }) {
   const [open, setOpen] = useState<string | null>(null);
-  const fix = reading.words.find((w) => normal(w.word) === open);
+  const marks = useMemo(() => markWords(text, reading.words), [text, reading.words]);
+  const fix = open === null ? undefined : open.startsWith('l') ? marks.lost[Number(open.slice(1))] : marks.marked.get(Number(open));
   return (
     <div data-reading-result={reading.verdict} className="space-y-2">
       <h3 className="text-lg font-semibold">{RESULT_HEADINGS[reading.verdict]}</h3>
       <p className="break-words text-base">{reading.note}</p>
       {reading.words.length > 0 ? (
         <>
-          <MarkedVerse text={text} view={view} words={reading.words} open={open} onOpen={setOpen} />
+          <MarkedVerse text={text} view={view} marks={marks} open={open} onOpen={setOpen} />
           {fix ? (
             <div data-fix-detail className="rounded-xl border border-line bg-surface p-3">
               <Fix fix={fix} view={view} />

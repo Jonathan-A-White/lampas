@@ -76,8 +76,8 @@ export const TIP_ANSWER = {
 export const READING_ANSWER = {
   verdict: 'some-to-fix',
   focus_words: [
-    { word: 'together', chunks: ['to', 'geth', 'er'], tip: 'Say the th softly, with your tongue between your teeth.' },
-    { word: 'purpose', chunks: ['pur', 'pose'], tip: 'The first part sounds like per.' },
+    { word: 'together', index: 7, chunks: ['to', 'geth', 'er'], tip: 'Say the th softly, with your tongue between your teeth.' },
+    { word: 'purpose', index: 22, chunks: ['pur', 'pose'], tip: 'The first part sounds like per.' },
   ],
   note: 'Nearly there: two words to say again.',
 };
@@ -86,8 +86,8 @@ export const READING_ANSWER = {
 export const GREEK_READING_ANSWER = {
   verdict: 'some-to-fix',
   focus_words: [
-    { word: 'συνεργεῖ', chunks: ['συν', 'ερ', 'γεῖ'], tip: 'The γ before ε is a soft y, and the stress falls on the last part.' },
-    { word: 'πρόθεσιν', chunks: ['πρό', 'θε', 'σιν'], tip: 'The θ is the th of think; stress the first part.' },
+    { word: 'συνεργεῖ', index: 8, chunks: ['συν', 'ερ', 'γεῖ'], tip: 'The γ before ε is a soft y, and the stress falls on the last part.' },
+    { word: 'πρόθεσιν', index: 13, chunks: ['πρό', 'θε', 'σιν'], tip: 'The θ is the th of think; stress the first part.' },
   ],
   note: 'Nearly there: two Greek words to say again.',
 };

@@ -17,9 +17,10 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["word", "chunks", "tip"],
+        "required": ["word", "index", "chunks", "tip"],
         "properties": {
           "word": { "description": "The word as it stands in the verse, without punctuation.", "type": "string", "minLength": 1, "maxLength": 60 },
+          "index": { "description": "Where this exact word stands in target_text: 0 for the first word, 1 for the second, counting the words as the scorer's word list does. Two words spelled alike have different indexes; give the one he misread.", "type": "number", "minimum": 0, "maximum": 2000 },
           "chunks": {
             "description": "The word in parts to say one after another, such as to, geth, er. Joined they spell the word.",
             "type": "array",

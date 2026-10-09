@@ -47,7 +47,7 @@ describe('grinds/verse-read.json', () => {
 });
 
 describe('the answer schema and isVerseReadAnswer', () => {
-  const fix = { word: 'together', chunks: ['to', 'geth', 'er'], tip: 'Say the th softly.' };
+  const fix = { word: 'together', index: 7, chunks: ['to', 'geth', 'er'], tip: 'Say the th softly.' };
   const good = { verdict: 'some-to-fix', focus_words: [fix], note: 'Nearly there.' };
   const bad: [string, unknown][] = [
     ['an unknown verdict', { ...good, verdict: 'ok' }],
@@ -55,7 +55,9 @@ describe('the answer schema and isVerseReadAnswer', () => {
     ['an empty note', { ...good, note: '' }],
     ['a word with no chunks', { ...good, focus_words: [{ ...fix, chunks: [] }] }],
     ['13 chunks', { ...good, focus_words: [{ ...fix, chunks: Array.from({ length: 13 }, () => 'a') }] }],
-    ['a word with no tip', { ...good, focus_words: [{ word: 'together', chunks: ['to'] }] }],
+    ['a word with no tip', { ...good, focus_words: [{ word: 'together', index: 7, chunks: ['to'] }] }],
+    ['a word with no index', { ...good, focus_words: [{ word: 'together', chunks: ['to'], tip: 'Say it.' }] }],
+    ['a negative index', { ...good, focus_words: [{ ...fix, index: -1 }] }],
     ['an extra key on a word', { ...good, focus_words: [{ ...fix, extra: 1 }] }],
     ['9 words', { ...good, focus_words: Array.from({ length: 9 }, () => fix) }],
     ['an extra key', { ...good, extra: 1 }],
@@ -80,6 +82,17 @@ describe('the answer schema and isVerseReadAnswer', () => {
     expect(text).toContain('`incomplete`');
     expect(text).toMatch(/only part of `target_text`/);
     expect(text).toMatch(/where he stopped/);
+  });
+
+  it('tells the model to give each word its place from the scorer\'s word list, counting from 0', () => {
+    const text = readFileSync(grind.instructions as string, 'utf8');
+    expect(text).toContain('`index`');
+    expect(text).toMatch(/0-based|counting from 0/);
+    expect(text).toMatch(/word list/);
+  });
+
+  it('refuses an index that is not a whole number on the phone', () => {
+    expect(isVerseReadAnswer({ ...good, focus_words: [{ ...fix, index: 1.5 }] })).toBe(false);
   });
 
   it.each(bad)('refuses %s in both', (_, value) => {
