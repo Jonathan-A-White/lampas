@@ -1,5 +1,5 @@
 // features/steps/settings.steps.tsx — runs features/settings.feature: the gear, the Settings screen, the weave moved
-// there, the voice pickers and the Greek pronunciation list. speechSynthesis is a fake engine with named voices.
+// there, the voice pickers and the Greek pronunciation list. speech synthesis is the honest fake of tests/support/fake-speech.ts, with named voices.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -10,43 +10,14 @@ import { db } from '../../src/data/db';
 import { clearBus, latest } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 
-class FakeUtterance {
-  lang = '';
-  rate = 1;
-  voice: FakeVoice | null = null;
-  onend: (() => void) | null = null;
-  onerror: ((e: { error: string }) => void) | null = null;
-  constructor(public text: string) {}
-}
-interface FakeVoice {
-  lang: string;
-  name: string;
-  voiceURI: string;
-}
 const voice = (lang: string, name: string): FakeVoice => ({ lang, name, voiceURI: name });
 const GREEK = voice('el-GR', 'Greek (Greece)');
 const CYPRIOT = voice('el-CY', 'Greek (Cyprus)');
 const ENGLISH = voice('en-US', 'English (US)');
 const FRENCH = voice('fr-FR', 'French (France)');
 
-class FakeSynth {
-  spoken: FakeUtterance[] = [];
-  speaking = false;
-  pending = false;
-  constructor(public voices: FakeVoice[]) {}
-  getVoices = () => this.voices;
-  addEventListener = () => {};
-  removeEventListener = () => {};
-  resume = () => {};
-  speak = (u: FakeUtterance) => {
-    this.spoken.push(u);
-    this.speaking = true;
-  };
-  cancel = () => {
-    this.speaking = false;
-  };
-}
 let synth: FakeSynth;
 
 const user = userEvent.setup();
@@ -63,9 +34,7 @@ async function openWith(voices: FakeVoice[]): Promise<void> {
   localStorage.clear();
   vi.unstubAllGlobals();
   stubChapterFetch();
-  synth = new FakeSynth(voices);
-  vi.stubGlobal('speechSynthesis', synth);
-  vi.stubGlobal('SpeechSynthesisUtterance', FakeUtterance);
+  synth = stubSpeech(voices);
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
   window.history.replaceState(null, '', '/');

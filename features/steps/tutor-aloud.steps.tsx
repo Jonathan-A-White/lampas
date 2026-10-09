@@ -1,5 +1,5 @@
 // features/steps/tutor-aloud.steps.tsx — runs features/tutor-aloud.feature: the tutor's responses (the reading check's verdict, the answer to Ask the
-// tutor) read aloud by themselves, and the Settings switch that turns it off. speechSynthesis is the recording fake of tests/support/fake-speech.ts,
+// tutor) read aloud by themselves, and the Settings switch that turns it off. speech synthesis is the honest fake of tests/support/fake-speech.ts,
 // the Postern is tests/support/fake-postern.ts and the recorder tests/support/fake-recorder.ts.
 import '@testing-library/react/dont-cleanup-after-each';
 import { act, render, screen, cleanup, waitFor, within } from '@testing-library/react';

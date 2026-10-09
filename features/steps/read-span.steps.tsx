@@ -1,5 +1,5 @@
 // features/steps/read-span.steps.tsx — runs features/read-span.feature: the Read aloud span setting (Verse, Passage, Chapter, Book)
-// and how far the header's Read from the top / Read from here goes. speechSynthesis is the recording fake of tests/support/fake-speech.ts.
+// and how far the header's Read from the top / Read from here goes. speech synthesis is the honest fake of tests/support/fake-speech.ts.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';

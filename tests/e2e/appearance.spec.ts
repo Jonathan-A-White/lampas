@@ -2,6 +2,7 @@
 // paints them, the 44 px floor at every text size, and the saved choices after a reload (features/appearance.feature
 // proves the same choices in jsdom, where there is no layout and no colour).
 import { expect, test, type Page } from '@playwright/test';
+import { honestSpeech, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -122,43 +123,12 @@ test('Text size Large makes the verse text larger and every tap target stays at 
   }
 });
 
-// The engine is a stand-in that records what the page asks of it (headless Chromium has no Greek voice).
+// The engine is bsv-kit's honest fake (tests/support/honest-fakes.ts; headless Chromium has no Greek voice). A slow reader
+// (2 s a word), so a verse is still being spoken when the spec taps its button again to stop it.
 async function withVoices(page: Page) {
-  await page.addInitScript(() => {
-    const spoken: { text: string; lang: string; rate: number }[] = [];
-    // one array: Settings lists the voices, and a new array on each call would read as a change forever
-    const voices = [{ lang: 'el-GR', name: 'Greek', voiceURI: 'Greek' }];
-    const synth = {
-      speaking: false,
-      pending: false,
-      getVoices: () => voices,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      resume: () => {},
-      cancel: () => {
-        synth.speaking = false;
-      },
-      speak: (u: { text: string; lang: string; rate: number }) => {
-        spoken.push({ text: u.text, lang: u.lang, rate: u.rate });
-        synth.speaking = true;
-      },
-    };
-    class Utterance {
-      lang = '';
-      rate = 1;
-      voice = null;
-      text: string;
-      constructor(text: string) {
-        this.text = text;
-      }
-    }
-    Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
-    Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: Utterance, configurable: true });
-    (window as unknown as { __spoken: typeof spoken }).__spoken = spoken;
-  });
+  await honestSpeech(page, { langs: ['el-GR'], msPerWord: 2000 });
 }
-const lastRate = (page: Page) =>
-  page.evaluate(() => (window as unknown as { __spoken: { rate: number }[] }).__spoken.at(-1)?.rate);
+const lastRate = async (page: Page) => (await spoken(page)).at(-1)?.rate;
 
 test('a slower Greek rate slows a Greek speaker button and leaves English at its own rate, and a slower English rate slows English only', async ({ page }) => {
   await withVoices(page);

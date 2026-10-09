@@ -1,43 +1,17 @@
 import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
+import { honestMic } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
 const VIEWPORT = { width: 390, height: 844 };
 
-// headless Chromium has no microphone: a stand-in recogniser the test drives by hand. How a phone really hears is only a
-// phone check (docs/pwa-best-practices.md section 12).
-async function installRecogniser(page: Page) {
-  await page.addInitScript(() => {
-    class Recognizer {
-      lang = '';
-      continuous = false;
-      interimResults = false;
-      processLocally = false;
-      onstart: (() => void) | null = null;
-      onaudiostart: (() => void) | null = null;
-      onresult: ((e: unknown) => void) | null = null;
-      onerror: ((e: { error: string }) => void) | null = null;
-      onend: (() => void) | null = null;
-      constructor() {
-        (window as unknown as { __rec: Recognizer }).__rec = this;
-      }
-      start() {
-        setTimeout(() => this.onstart?.(), 0);
-      }
-      stop() {
-        setTimeout(() => this.onend?.(), 0);
-      }
-      abort() {
-        setTimeout(() => this.onend?.(), 0);
-      }
-    }
-    Object.defineProperty(window, 'SpeechRecognition', { value: Recognizer, configurable: true });
-    (window as unknown as { __say: (t: string) => void }).__say = (text) =>
-      (window as unknown as { __rec: Recognizer }).__rec.onresult?.({ resultIndex: 0, results: [{ isFinal: false, length: 1, 0: { transcript: text } }] });
-  });
-}
+// headless Chromium has no microphone: bsv-kit's honest one (tests/support/honest-fakes.ts) opens a recogniser after a moment and
+// sends the words of a recorded clip ("Please read me the first chapter") one by one as interim results while the bar is held, a
+// final one at the clip's end. How a phone really hears is only a phone check (docs/pwa-best-practices.md section 12).
+const SAID = 'Please read me the first chapter';
+const installRecogniser = (page: Page) => honestMic(page);
 
 test('holding Talk shows his words live in the sheet and sends them on release', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
@@ -58,9 +32,9 @@ test('holding Talk shows his words live in the sheet and sends them on release',
   await expect(sheet).toBeVisible();
   const live = sheet.locator('[data-talk-live]');
   await expect(live).toBeVisible();
-  await page.evaluate(() => (window as unknown as { __say: (t: string) => void }).__say('What is this chapter about'));
-  await expect(live).toContainText('What is this chapter about');
   await expect(live).toContainText('Listening');
+  // his words come as he says them
+  await expect(live).toContainText('Please');
 
   // The live words, the mic button and Send are inside the window, a thumb tall, and the page has not moved.
   const hold = sheet.getByRole('button', { name: 'Hold to talk' });
@@ -82,10 +56,11 @@ test('holding Talk shows his words live in the sheet and sends them on release',
   expect(fake.received).toHaveLength(0);
   await shot(page, 'talk-listening');
 
+  await expect(live).toContainText(SAID);
   await page.mouse.up();
   await expect(sheet.locator('[data-turn]')).toContainText(TALK_ANSWER.answer);
   expect(fake.received).toHaveLength(1);
-  expect(fake.received[0].input.question).toBe('What is this chapter about');
+  expect(fake.received[0].input.question).toBe(SAID);
   await expect(live).toHaveCount(0);
 });
 
@@ -112,7 +87,7 @@ test('a long press on a verse number talks about that verse, and a tap on it ope
   await page.mouse.down();
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
   await expect(sheet.locator('[data-talk-live]')).toBeVisible();
-  await page.evaluate(() => (window as unknown as { __say: (t: string) => void }).__say('Why does Paul say all things'));
+  await expect(sheet.locator('[data-talk-live]')).toContainText(SAID);
   await page.mouse.up();
   await expect(sheet.locator('[data-turn]')).toContainText(TALK_ANSWER.answer);
   expect(fake.received[0].input.reference).toBe('Romans 8:28');

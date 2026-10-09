@@ -1,5 +1,5 @@
 // features/steps/hear-any-word.steps.tsx — runs features/hear-any-word.feature: a long press on a word of prose anywhere says it
-// in its own language. Components are drawn on their own beside <HearAnyWord />; speechSynthesis is the recording fake of
+// in its own language. Components are drawn on their own beside <HearAnyWord />; speech synthesis is the recording fake of
 // tests/support/fake-speech.ts. jsdom has no layout, so the word under the finger is found through a stand-in for
 // document.caretPositionFromPoint that answers with the text node and offset of the word the step names; the half second is the app's.
 import '@testing-library/react/dont-cleanup-after-each';

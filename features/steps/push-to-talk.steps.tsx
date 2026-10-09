@@ -1,7 +1,7 @@
 // features/steps/push-to-talk.steps.tsx — runs features/push-to-talk.feature: hold the Talk button (or a verse number) and
 // speak, his words live in the sheet, sent on release. The phone's recogniser is a fake (tests/support/fake-recognizer.ts),
 // Postern a fake (tests/support/fake-postern.ts), the press is user-event pointer input held for real time (the half
-// second is the app's), speechSynthesis a fake engine where a scenario reads aloud.
+// second is the app's), speech synthesis the honest fake where a scenario reads aloud.
 import '@testing-library/react/dont-cleanup-after-each';
 import { act, fireEvent, render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';

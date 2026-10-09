@@ -1,44 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
+import { honestSpeech, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
-// The engine is a stand-in that records what the page asks of it (headless Chromium has no Greek voice); how a real
+// The engine is bsv-kit's honest fake (tests/support/honest-fakes.ts; headless Chromium has no Greek voice); how a real
 // phone's voice sounds, and its long-press menu, are only a phone check (docs/pwa-best-practices.md section 12).
 async function openReader(page: Page) {
   await openUnlocked(page);
-  await page.addInitScript(() => {
-    const spoken: { text: string; lang: string }[] = [];
-    const synth = {
-      speaking: false,
-      pending: false,
-      getVoices: () => [
-        { lang: 'el-GR', name: 'Greek' },
-        { lang: 'en-US', name: 'English' },
-      ],
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      resume: () => {},
-      cancel: () => {
-        synth.speaking = false;
-      },
-      speak: (u: { text: string; lang: string }) => {
-        spoken.push({ text: u.text, lang: u.lang });
-        synth.speaking = true;
-      },
-    };
-    class Utterance {
-      lang = '';
-      rate = 1;
-      voice = null;
-      text: string;
-      constructor(text: string) {
-        this.text = text;
-      }
-    }
-    Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
-    Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: Utterance, configurable: true });
-    (window as unknown as { __spoken: typeof spoken }).__spoken = spoken;
-  });
+  await honestSpeech(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   // The Due and New words strips draw once the words have been read from the store, and each pushes the text down
@@ -48,8 +17,6 @@ async function openReader(page: Page) {
   await expect(page.getByTestId('new-words')).toBeVisible();
 }
 
-const spoken = (page: Page) =>
-  page.evaluate(() => (window as unknown as { __spoken: { text: string; lang: string }[] }).__spoken);
 
 async function hold(page: Page, selector: string, ms: number, drag = 0) {
   const box = await page.locator(selector).boundingBox();
@@ -66,7 +33,7 @@ async function hold(page: Page, selector: string, ms: number, drag = 0) {
 test('a long press on an English word says it in English, and opens no sheet', async ({ page }) => {
   await openReader(page);
   await hold(page, '[data-verse="1"] [data-chunk="0"]', 650);
-  await expect.poll(() => spoken(page)).toEqual([{ text: 'Therefore', lang: 'en-US' }]);
+  await expect.poll(() => spoken(page)).toMatchObject([{ text: 'Therefore', lang: 'en-US' }]);
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.locator('[data-verse="1"] [data-chunk="0"]')).toHaveCSS('user-select', 'none');
   await shot(page, 'long-press-speak');
@@ -77,7 +44,7 @@ test('a long press on a Greek word says it in Greek; a short tap opens the sheet
   await page.getByRole('button', { name: 'Greek', exact: true }).click();
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'greek');
   await hold(page, '[data-verse="1"] [data-word="0"]', 650);
-  await expect.poll(() => spoken(page)).toEqual([{ text: 'Οὐδὲν', lang: 'el-GR' }]);
+  await expect.poll(() => spoken(page)).toMatchObject([{ text: 'Οὐδὲν', lang: 'el-GR' }]);
   await expect(page.getByRole('dialog')).toHaveCount(0);
 
   await hold(page, '[data-verse="1"] [data-word="1"]', 650, 24);

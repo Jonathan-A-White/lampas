@@ -7,8 +7,8 @@ import { openUnlocked } from './unlocked';
 import { chooseAction } from './verse-view';
 
 const VIEWPORT = { width: 390, height: 844 };
-/** The fake clip: 0.2 s of silence as a WAV (8 kHz, 8 bit, mono), so Chromium can decode what the app keeps and plays: 44 header bytes and 1600 samples. */
-const CLIP_BYTES = 1644;
+/** The honest microphone records 16 kHz, 16-bit mono PCM, 32 bytes a millisecond, for as long as the bar was held (1.2 s here, a little more with the page's lag; fake-media.ts adds a WAV header). */
+const PCM_BYTES_A_MS = 32;
 
 async function holdFor(page: Page, button: ReturnType<Page['getByRole']>, ms: number): Promise<void> {
   const box = await button.boundingBox();
@@ -63,7 +63,8 @@ test('Play my reading plays the clip he recorded, and Download my recording is n
     const blob = await (await fetch(url)).blob();
     return { size: blob.size, type: blob.type };
   }, src as string);
-  expect(clip).toEqual({ size: CLIP_BYTES, type: 'audio/webm' });
+  expect(clip.type).toBe('audio/webm');
+  expect(clip.size).toBeGreaterThanOrEqual(1000 * PCM_BYTES_A_MS);
   // and the element took it as sound
   await expect.poll(() => audio.evaluate((el: HTMLAudioElement) => el.duration)).toBeGreaterThan(0.1);
   await shot(page, 'my-reading');

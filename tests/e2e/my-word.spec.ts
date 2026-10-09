@@ -17,17 +17,17 @@ async function holdFor(page: Page, button: ReturnType<Page['getByRole']>, ms: nu
   await page.mouse.up();
 }
 
-/** Reads verse 28 through the fake mill, which answers with `answer`, and waits for the result. The fake clip is 4 s long. */
+/** Reads verse 28 through the fake mill, which answers with `answer`, and waits for the result. The clip is as long as he holds the bar, 2.2 s here: the timed word (1.2 to 1.7 s) lies inside it. */
 async function readVerse28(page: Page, answer: unknown) {
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer };
   await routePostern(page, fake);
-  await fakeMedia(page, 4);
+  await fakeMedia(page, 2.2);
   await openUnlocked(page);
   await page.goto('/');
   await chooseAction(page, 28, 'Read it aloud');
   const panel = page.getByRole('region', { name: 'Reading check' });
-  await holdFor(page, page.getByRole('button', { name: 'Hold to read verse 28', exact: true }), 1200);
+  await holdFor(page, page.getByRole('button', { name: 'Hold to read verse 28', exact: true }), 2200);
   await expect(panel.locator('[data-fix]')).toHaveText(['together', 'purpose']);
   return panel;
 }

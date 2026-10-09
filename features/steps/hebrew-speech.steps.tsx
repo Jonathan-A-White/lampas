@@ -1,5 +1,5 @@
 // features/steps/hebrew-speech.steps.tsx — runs features/hebrew-speech.feature: a Hebrew word in the tutor's answer is a button that speaks in the
-// phone's he-IL voice and opens the pronunciation guide. speechSynthesis is the recording fake (tests/support/fake-speech.ts), the Postern the fake of
+// phone's he-IL voice and opens the pronunciation guide. speech synthesis is the recording fake (tests/support/fake-speech.ts), the Postern the fake of
 // tests/support/fake-postern.ts.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';

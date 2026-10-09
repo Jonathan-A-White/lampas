@@ -1,6 +1,6 @@
 // features/steps/bible-talk.steps.tsx — runs features/bible-talk.feature: the Talk button, the Talk sheet, the grist it
 // sends through a fake Postern (tests/support/fake-postern.ts), the answers shown, read aloud and kept per chapter and
-// per verse. fetch is stubbed: /data/ files from disk, https://postern.allmymind.org to the fake. speechSynthesis is a
+// per verse. fetch is stubbed: /data/ files from disk, https://postern.allmymind.org to the fake. speech synthesis is a
 // fake engine (tests/support/fake-speech.ts) where a scenario listens.
 import '@testing-library/react/dont-cleanup-after-each';
 import { act, render, screen, cleanup, waitFor, within } from '@testing-library/react';
