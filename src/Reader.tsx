@@ -62,6 +62,7 @@ import { useVoice } from './useVoice';
 import { useHoldPress } from './ui/holdPress';
 import { NO_SELECT, useLongPress } from './ui/longPress';
 import { HeaderButton } from './ScreenHeader';
+import { speakTutor } from './speech/tutorVoice';
 import { continueReading, getReading, pauseReading, planOf, startAnswer, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
 import { DueBadge } from './DueBadge';
@@ -518,7 +519,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     if (openTalk.current !== ref || holding.current) return;
     // Sound it out: the word was said before the answer; now each syllable it lists, slowly, one after another.
     if (info.focus?.kind === 'sound' && info.syllables?.length) startAnswer(id, syllableRuns(info.syllables));
-    else startAnswer(id, answerRuns(answer));
+    else speakTutor(id, answerRuns(answer), () => openTalk.current === ref);
   });
   // A tap on a verse number opens the Verse view as a Back step of its own; the address then names the verse and the effect below tells the bus.
   const selectVerse = useCallback((n: number) => openVerse(n), []);

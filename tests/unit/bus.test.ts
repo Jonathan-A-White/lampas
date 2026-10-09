@@ -106,6 +106,7 @@ describe('docs/events.md', () => {
       'layout-changed': true,
       'headings-changed': true,
       'tips-changed': true,
+      'read-tutor-changed': true,
       'read-span-changed': true,
       'voices-changed': true,
       'pronunciation-changed': true,
