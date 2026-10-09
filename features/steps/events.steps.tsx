@@ -1,7 +1,7 @@
 // features/steps/events.steps.tsx — runs features/events.feature: the reader publishes the verse he selected and his
 // view and weave switches on the event bus (src/events/bus.ts), and the Ask box learns the verse from it.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor } from '@testing-library/react';
+import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -30,7 +30,7 @@ async function openAndListen(): Promise<void> {
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.answers.clear()]);
   window.location.hash = '';
-  const kinds = ['verse-selected', 'view-changed', 'weave-changed'] as const;
+  const kinds = ['verse-selected', 'view-changed', 'weave-changed', 'weave-grammar-changed'] as const;
   off = kinds.map((kind) => subscribe(kind, (event) => void heard.push(event)));
   render(<App />);
   await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
@@ -87,10 +87,20 @@ describeFeature(feature, ({ Scenario }) => {
     When('he switches the weave to Solid words', async () => {
       // the Weave switch is in Settings, opened by the gear
       await user.click(screen.getByRole('button', { name: 'Settings' }));
-      await user.click(await screen.findByRole('button', { name: 'Solid words' }));
+      await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: 'Solid' }));
     });
     Then('weave-changed was published with solid', async () => {
       await waitFor(() => expect(lastOf('weave-changed')).toEqual({ kind: 'weave-changed', weave: 'solid' }));
+    });
+  });
+  Scenario('Switching the weave grammar publishes weave-grammar-changed', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 and the bus is listened to', openAndListen);
+    When('he switches the weave grammar to Solid', async () => {
+      await user.click(screen.getByRole('button', { name: 'Settings' }));
+      await user.click(within(await screen.findByRole('group', { name: 'Grammar' })).getByRole('button', { name: 'Solid' }));
+    });
+    Then('weave-grammar-changed was published with solid', async () => {
+      await waitFor(() => expect(lastOf('weave-grammar-changed')).toEqual({ kind: 'weave-grammar-changed', grammar: 'solid' }));
     });
   });
 });

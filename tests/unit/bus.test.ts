@@ -75,6 +75,7 @@ describe('docs/events.md', () => {
       'verse-selected': true,
       'view-changed': true,
       'weave-changed': true,
+      'weave-grammar-changed': true,
       'layout-changed': true,
       'headings-changed': true,
       'voices-changed': true,

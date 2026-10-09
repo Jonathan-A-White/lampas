@@ -78,6 +78,12 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
+            "properties": { "key": { "const": "weaveGrammar" }, "value": { "type": "string", "enum": ["any", "solid", "solid+frontier"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
             "properties": { "key": { "const": "goal" }, "value": { "type": "string", "maxLength": 80 } }
           },
           {

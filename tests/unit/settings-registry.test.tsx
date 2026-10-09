@@ -4,7 +4,7 @@ import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
-import { getGreekPronunciation, getLayout, getSectionHeadings, getSpeechRate, getTextSize, getTheme, getVoice, getWeave } from '../../src/data/repositories';
+import { getGreekPronunciation, getLayout, getSectionHeadings, getSpeechRate, getTextSize, getTheme, getVoice, getWeave, getWeaveGrammar } from '../../src/data/repositories';
 import { clearBus, latest } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { SETTINGS, applyChanges, currentSettings, settingOf, undoChange } from '../../src/settings/registry';
@@ -31,6 +31,7 @@ describe('the registry lists every Settings row', () => {
     await screen.findByRole('combobox', { name: 'Greek voice' });
     await screen.findByRole('radiogroup', { name: 'Greek pronunciation' });
     await screen.findByRole('group', { name: 'Weave' });
+    await screen.findByRole('group', { name: 'Grammar' });
     await screen.findByRole('group', { name: 'Goal' });
     await screen.findByRole('radiogroup', { name: 'Grammar approach' });
     const drawn = [
@@ -48,7 +49,7 @@ describe('the registry lists every Settings row', () => {
   it('gives every entry a distinct key, a label, a hint, and the values it allows', () => {
     expect(new Set(SETTINGS.map((s) => s.key)).size).toBe(SETTINGS.length);
     expect(SETTINGS.map((s) => s.key).sort()).toEqual(
-      ['englishRate', 'englishVoice', 'goal', 'grammarApproach', 'greekPronunciation', 'greekRate', 'greekVoice', 'layout', 'sectionHeadings', 'textSize', 'theme', 'weave'],
+      ['englishRate', 'englishVoice', 'goal', 'grammarApproach', 'greekPronunciation', 'greekRate', 'greekVoice', 'layout', 'sectionHeadings', 'textSize', 'theme', 'weave', 'weaveGrammar'],
     );
     for (const s of SETTINGS) {
       expect(s.label).not.toBe('');
@@ -75,6 +76,7 @@ describe('applyChanges', () => {
       { key: 'layout', value: 'paragraph' },
       { key: 'sectionHeadings', value: 'off' },
       { key: 'weave', value: 'solid' },
+      { key: 'weaveGrammar', value: 'solid+frontier' },
       { key: 'greekPronunciation', value: 'modern' },
       { key: 'englishRate', value: 1.2 },
       { key: 'greekVoice', value: 'default' },
@@ -85,7 +87,8 @@ describe('applyChanges', () => {
       'Text size: Large',
       'Layout: Paragraph',
       'Section headings: Off',
-      'Weave: Solid words',
+      'Weave: Solid',
+      'Grammar: + Frontier',
       'Greek pronunciation: Modern Greek',
       'English speed 1.2x',
       'Greek voice: Phone default',
@@ -95,6 +98,7 @@ describe('applyChanges', () => {
     expect(await getLayout()).toBe('paragraph');
     expect(await getSectionHeadings()).toBe('off');
     expect(await getWeave()).toBe('solid');
+    expect(await getWeaveGrammar()).toBe('solid+frontier');
     expect(await getGreekPronunciation()).toBe('modern');
     expect(await getSpeechRate('english')).toBe(1.2);
     expect(await getVoice('greek')).toBeNull();
@@ -103,6 +107,7 @@ describe('applyChanges', () => {
     expect(latest('layout-changed')?.layout).toBe('paragraph');
     expect(latest('headings-changed')?.headings).toBe('off');
     expect(latest('weave-changed')?.weave).toBe('solid');
+    expect(latest('weave-grammar-changed')?.grammar).toBe('solid+frontier');
     expect(latest('voices-changed')).toMatchObject({ greek: null });
   });
 
@@ -177,6 +182,7 @@ describe('currentSettings', () => {
       layout: 'verse',
       sectionHeadings: 'on',
       weave: 'off',
+      weaveGrammar: 'any',
       englishVoice: 'default',
       greekVoice: 'default',
       englishRate: 1,
