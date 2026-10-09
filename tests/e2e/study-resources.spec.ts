@@ -134,7 +134,7 @@ test('The Study links are equal tiles in two columns at 360 px, and an app that 
   await section.getByRole('switch', { name: 'Accordance', exact: true }).evaluate((el) => el.scrollIntoView({ block: 'center' }));
   await turnsOnWithApp(page, section, 'Accordance');
   await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
-  await page.locator('[data-verse="28"]').getByRole('button', { name: 'work together', exact: true }).click();
+  await page.locator('[data-verse="1"]').getByRole('button', { name: 'condemnation', exact: true }).click();
 
   const study = page.getByRole('dialog', { name: 'Word' }).getByRole('group', { name: 'Study', exact: true });
   const logos = study.getByRole('group', { name: 'Logos', exact: true });

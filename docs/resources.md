@@ -12,7 +12,7 @@ settings registry (`src/settings/registry.ts`), so the Bible talk cannot change 
 | id | Switch | Adds to the Study row | Source of the URL form |
 | --- | --- | --- | --- |
 | `strongs` | Strong's | the word's number, such as `G4903`, a link to `https://www.stepbible.org/?q=strong=G0…` | STEPBible's own search address; STEPBible is the lexicon source Lampas already credits (ATTRIBUTION.md) and its data are CC BY 4.0 |
-| `logos` | Logos | `Open in Logos: <lexicon>` per ticked lexicon: `logosres:<Resource ID>;hw=<lemma>`; and `Bible Word Study in Logos`: `logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F<lemma>` | `logosres:` form: Logos forum post pairing `logosres:becnt65ac;ref=Bible.Ac6.3;off=114` with `https://ref.ly/logosres/becnt65ac?ref=Bible.Ac6.3&off=114` (the `Bible.Ac6.3` reference form is from it); `logos4:` is Logos' older scheme, which its release notes say still works. `hw=` is **UNVERIFIED** (below); the Guide's `lbs%2Fel%2F<lemma>` form is Logos' own, see "Bible Word Study's lemma" below |
+| `logos` | Logos | `Open in Logos: <lexicon>` per ticked lexicon: `logosres:<Resource ID>;<key>` (the key each lexicon takes: "Logos: the key each lexicon is filed under" below); and `Bible Word Study in Logos`: `logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F<lemma>` | `logosres:` form: Logos forum post pairing `logosres:becnt65ac;ref=Bible.Ac6.3;off=114` with `https://ref.ly/logosres/becnt65ac?ref=Bible.Ac6.3&off=114` (the `Bible.Ac6.3` reference form is from it); `logos4:` is Logos' older scheme, which its release notes say still works. `hw=` is **UNVERIFIED** (below); the Guide's `lbs%2Fel%2F<lemma>` form is Logos' own, see "Bible Word Study's lemma" below |
 | `accordance` | Accordance | `Open in Accordance`: `accord://search/<module>?<lemma>` | Accordance's help topic "Using Links for Common Tasks": `accord://search/[module];[field]?[query]` |
 
 STEPBible was chosen over Blue Letter Bible because Lampas already takes its lexicon from STEPBible, so the number and the
@@ -101,8 +101,22 @@ Two rows are a match by title, not by the abbreviation Logos shows: `lxgntlex` a
 wrong book, check the Information pane of that book in Logos. The id is confirmed by the product page; that the Logos app takes a full `LLS:` id in a `logosres:` link
 (rather than only a short file name) is the Governor's check on his phone, see below.
 
+**The key each lexicon is filed under (mw-5r3p30.131).** A lexicon is opened by the key it indexes, not by the Greek lemma for all. `LEXICONS` in `logos.ts` gives each a `key`
+(default `lemma`); a tile is left out when Lampas has no such key for the word, never a guess. Sources: Logos' Personal Book Builder tutorial (https://www.logos.com/media/pbb/tutorial.html,
+read 2026-10-09) names the reference data types `Bible`, `Topic` and `GreekStrongs` (`GreekStrongs:g3056`); the Logos Community wiki "Hyperlinks" and "About Personal Books" pages (403 to a
+script; read through a search engine's excerpts, 2026-10-09) give `logosref:GreekStrongs.104` for a Greek Strong's number, `logosref:Hebrew.<lemma>` for a Hebrew headword, `[[Lemma:lbs/el/δοῦλος]]`
+and the resource forms `https://ref.ly/logosres/dblgreek?hw=ἄνθρωπος` (headword) and `https://ref.ly/logosres/dblgreek?ref=DBLGreek.DBLG+476` (a resource's own index data type).
+
+| key | `logos.ts` builds | lexicons | source of the key |
+| --- | --- | --- | --- |
+| Greek lemma | `logosres:<id>;hw=<lemma>` (https `ref.ly/logosres/<id>?hw=<lemma>`) | BDAG, Louw-Nida, DBL Greek, EDNT, LEH LXX, Intermediate (LSJI), LXGRCANLEX, TDNTA, Vocab 3, LXGNTLEX, LXLXXLEX, Greek-English NT, Cremer, Lexham LXX, Abbott-Smith, Pocket Lexicon, Thayer | the `hw=` headword form of the DBL Greek example above; each is a Greek-headword lexicon by its product page. **`hw=` itself and TDNTA, Louw-Nida (also keyed by Domain number) and Vocab 3 are UNVERIFIED on a device** |
+| Strong's number | `logosres:<id>;ref=GreekStrongs.11` or `ref=HebrewStrongs.539` (https `?ref=…`): the letter of the word's number picks Greek or Hebrew, the digits lose their padding | NASB Dictionaries, New Strong's, Concise Dictionary | the data type names `GreekStrongs` (PBB tutorial, wiki) and `HebrewStrongs`, in the `?ref=<DataType>.<key>` form of the DBL example. Greek and Hebrew numbers overlap (a bare `11` or `539` lands in the wrong language: NASB opened Hebrew 539 אָמַן for Ἀβραάμ), so the data type is always named. These three are filed by Strong's number per their product pages (the Concise Dictionary's title names both testaments). **The `logosres:` + `ref=GreekStrongs.n` pairing and `HebrewStrongs` are UNVERIFIED on a device**; no word has no number, and with no readable number there is no tile |
+| English topic | `logosres:LLS:LXTHEOWRDBK;hw=<Topic>`, the topic capitalised (https `?hw=<Topic>`) | Lexham Theological Wordbook | it is headed by English topics (Condemnation), not Greek words, so the Greek lemma finds nothing (the Governor's screenshot, 2026-10-09: "Navigation failed" at Hebrew עָנָן). Lampas has no topic list: the word sheet offers the lexicon's gloss (`src/resources/topic.ts`) when it is a plain noun-like phrase (`condemnation`, not `to preach` or `implanted/ingrafted`), and without a topic there is no tile. **UNVERIFIED on a device**: that the wordbook takes `hw=` at all, and that a gloss is its topic (`condemnation` for κατάκριμα should land on Condemnation; a gloss that is not a topic will not). The tutor's chips (`wordChips`) carry no topic, so Lexham gives none there |
+
+A Hebrew word is not yet shown in Lampas; the Hebrew form is built and tested for when it is.
+
 **Not verified on a device (no phone with Logos or Accordance was available).** Unverified: that `logosres:<Resource ID>;hw=<lemma>`
-opens that lexicon at the headword (the `hw` part), that `logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F...` opens the Bible
+opens that lexicon at the headword (the `hw` part, and the other keys in the table above), that `logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F...` opens the Bible
 Word Study guide, that the Logos Android app claims `logosres:` and `logos4:` at all, and that the
 Accordance `accord://search/<module>?<lemma>` form finds a word in a lexicon module. The https fallback is kept for all of them. If a link does not open the
 entry, the fix is in that resource's file.
