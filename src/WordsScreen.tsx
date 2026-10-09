@@ -7,6 +7,7 @@ import { navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { speakWord } from './speech/greek';
+import { useReportScreen } from './tutor/screenContext';
 import { SpeakButton } from './speech/SpeakButton';
 import { NO_SELECT, useLongPress } from './ui/longPress';
 import { focusOnMount } from './ui/focus';
@@ -74,6 +75,7 @@ export function WordsScreen() {
   const words = useLiveQuery(listWords, []);
   const [confirming, setConfirming] = useState<string | null>(null);
   const scrollRef = useScrollMemory('words');
+  useReportScreen({ name: 'Words', facts: words ? [{ label: 'His words', value: countLine(words) }] : [] });
 
   const tap = (w: Word) => {
     const next = NEXT[w.state];

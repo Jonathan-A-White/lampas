@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect } from 'react';
 import { seedLevelsIfFirstOpen, seedScheduleIfFirstOpen, seedWordsIfFirstOpen } from './data/repositories';
 import { About } from './About';
+import { AskTutor } from './AskTutor';
 import { startAppearanceSync } from './appearance/appearanceSync';
 import { DrillScreen } from './DrillScreen';
 import { ImportScreen } from './ImportScreen';
@@ -75,6 +76,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
       ) : (
         <Reader />
       )}
+      {/* the round Ask the tutor control of every screen but the Reader, which draws its own beside its Talk bar */}
+      {route === 'home' ? null : <AskTutor route={route} />}
     </div>
   );
 }

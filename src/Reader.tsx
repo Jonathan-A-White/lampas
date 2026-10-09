@@ -17,6 +17,7 @@ import { Fragment, type ReactNode, useCallback, useEffect, useMemo, useRef, useS
 import type { ReadHold } from './ReadCheck';
 import { VerseView } from './VerseView';
 import { useVerseAction } from './verse/action';
+import { AskTutorButton, TALK_BAR_LIFT } from './AskTutor';
 import { TalkBar, TalkSheet } from './Talk';
 import { type Chapter, type EnglishChunk, type GreekWord, type Verse, loadChapter } from './data/chapter';
 import { formPasses } from './data/grammar/formLevel';
@@ -54,6 +55,7 @@ import { closeVerse, movePassage, moveVerse, navigate, openPassage, openVerse, r
 import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
 import { useReadChecks } from './useReadChecks';
+import { READER_SUGGESTIONS } from './tutor/screen';
 import { useTalk } from './useTalk';
 import { helpQuestion, newWordQuestion, paradigmQuestion, quizMeQuestion, scopeRef, scopeTitle, termQuestion, type TalkScope, type WordFocus } from './services/talk';
 import { useVoice } from './useVoice';
@@ -894,9 +896,20 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           }}
         />
       ) : null}
+      {chapter && !viewUnit ? (
+        <AskTutorButton
+          lift={TALK_BAR_LIFT}
+          onClick={() => {
+            stopReading();
+            voice.abort();
+            setTalkAbout(null);
+          }}
+        />
+      ) : null}
       {talkScope && talkAbout !== undefined ? (
         <TalkSheet
           scope={talkScope}
+          suggestions={talkScope.verse === null && !talkScope.quiz ? READER_SUGGESTIONS : undefined}
           talkRef={talkKey ?? talkRef(BOOK, CHAPTER, talkAbout)}
           state={talkStates[talkKey ?? talkRef(BOOK, CHAPTER, talkAbout)]}
           voice={voice}

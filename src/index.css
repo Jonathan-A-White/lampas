@@ -173,7 +173,8 @@ html {
 .screen {
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding-bottom: calc(1rem + var(--lp-end-inset));
+  /* the last row clears the round Ask the tutor button (src/AskTutor.tsx, 56 px and its gap) as well as the phone's bar */
+  padding-bottom: calc(1rem + var(--lp-end-inset) + var(--spacing) * 16);
 }
 
 button,

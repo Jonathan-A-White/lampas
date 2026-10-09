@@ -263,7 +263,7 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
 }
 
 /** The sheet: the conversation `scope` names, the field, Send, and what the last message is doing. */
-export function TalkSheet({ scope, talkRef: ref, state, voice, onSay, onHelp, onAskTerm, onClose }: {
+export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSay, onHelp, onAskTerm, onClose }: {
   scope: TalkScope;
   /** the key the conversation is kept under (src/data/repositories/talks.ts talkRef) */
   talkRef: string;
@@ -271,6 +271,8 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, onSay, onHelp, on
   state: AskState | undefined;
   /** push-to-talk: his words live while he holds, and what went wrong */
   voice: Voice;
+  /** questions fitted to where he asks from (src/tutor/screen.ts): shown as buttons while nothing has been said, a tap sends one */
+  suggestions?: string[];
   onSay: (message: string) => void;
   /** a word of an answer was opened and he asked for Grammar or Sound it out on it */
   onHelp: (help: WordHelp) => void;
@@ -278,7 +280,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, onSay, onHelp, on
   onAskTerm: (ask: TermAsk) => void;
   onClose: () => void;
 }) {
-  const title = scope.quiz ? `Quiz on ${scopeTitle(scope)}` : `Talk about ${scopeTitle(scope)}`;
+  const title = scope.screen ? `Ask the tutor: ${scope.screen.name}` : scope.quiz ? `Quiz on ${scopeTitle(scope)}` : `Talk about ${scopeTitle(scope)}`;
   const titleId = useId();
   const turns = useLiveQuery(() => listTurns(ref), [ref]);
   const [text, setText] = useState('');
@@ -340,8 +342,24 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, onSay, onHelp, on
           <div ref={list} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain border-t border-line px-4 py-3">
             {turns?.length === 0 && !state ? (
               <p data-talk-empty className="text-base text-muted">
-                {scope.quiz ? 'Nothing said yet. Say “Quiz me” to begin.' : 'Nothing said yet. Ask about a word, a verse or what is on your mind.'}
+                {scope.quiz ? 'Nothing said yet. Say “Quiz me” to begin.' : scope.screen ? 'Nothing said yet. Ask about this screen or about where you are.' : 'Nothing said yet. Ask about a word, a verse or what is on your mind.'}
               </p>
+            ) : null}
+            {turns?.length === 0 && !state && suggestions?.length ? (
+              <ul data-suggestions aria-label="Suggested questions" className="space-y-2">
+                {suggestions.map((question) => (
+                  <li key={question}>
+                    <button
+                      type="button"
+                      data-suggestion
+                      onClick={() => send(question)}
+                      className="min-h-12 w-full rounded-xl border border-accent px-4 py-2 text-left text-lg text-accent active:bg-line"
+                    >
+                      {question}
+                    </button>
+                  </li>
+                ))}
+              </ul>
             ) : null}
             {turns?.map((turn) => (
               <Turn key={turn.id} turn={turn} scope={scope} onLook={setLookup} onLeave={onClose} />

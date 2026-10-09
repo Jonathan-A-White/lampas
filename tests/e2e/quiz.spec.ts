@@ -143,7 +143,7 @@ test('the word speaks by itself once, a wrong answer waits for Next, and Ask the
   const word = await prompt.textContent();
   const calls = () => page.evaluate(() => (window as unknown as { __calls: string[] }).__calls);
   expect(await calls()).toEqual([]);
-  await expect(page.getByRole('button', { name: 'Ask the tutor' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Ask the tutor', exact: true })).toHaveCount(0);
   const first = page.locator('[data-option]').first();
   const before = await first.boundingBox();
 
@@ -155,7 +155,7 @@ test('the word speaks by itself once, a wrong answer waits for Next, and Ask the
   expect(await first.boundingBox()).toEqual(before);
 
   const next = page.getByTestId('next');
-  const ask = page.getByRole('button', { name: 'Ask the tutor' });
+  const ask = page.getByRole('button', { name: 'Ask the tutor', exact: true });
   await expect(next).toBeVisible();
   await expect(ask).toBeVisible();
   const nextBox = await next.boundingBox();
