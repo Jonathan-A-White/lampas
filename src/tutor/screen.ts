@@ -9,16 +9,30 @@ export interface ScreenFact {
   value: string;
 }
 
-/** The screen he asks from: its name, as the screen's own title has it, and what it shows (grinds/bible-talk.input.schema.json `screen`). */
+/** One setting as Settings shows it (mw-5r3p30.107): its name, what it holds now ('Off', 'Solid words', '0.8x') and its hint, the line under its control. */
+export interface ScreenSetting {
+  name: string;
+  value: string;
+  help: string;
+}
+
+/** The screen he asks from: its name, as the screen's own title has it, and what it shows (grinds/bible-talk.input.schema.json `screen`).
+ *  Settings also lists every setting it has in `settings`, so the tutor can speak of one that is off. */
 export interface ScreenContext {
   name: string;
   facts: ScreenFact[];
+  settings?: ScreenSetting[];
 }
 
 /** The most facts a screen sends, the longest label and the longest value (the input schema's limits). */
 export const MAX_FACTS = 12;
 export const FACT_LABEL_MAX = 40;
 export const FACT_VALUE_MAX = 200;
+/** The most settings a screen sends and the longest name, value and help of one (the input schema's limits). */
+export const MAX_SETTINGS = 30;
+export const SETTING_NAME_MAX = 40;
+export const SETTING_VALUE_MAX = 80;
+export const SETTING_HELP_MAX = 100;
 
 /** The name each full screen but the Reader goes by (its title, or the name the Settings list has for it). */
 export const SCREEN_NAMES: Record<Exclude<Route, 'home'>, string> = {
@@ -43,7 +57,12 @@ export function fitScreen(context: ScreenContext): ScreenContext {
     .map((f) => ({ label: cut(f.label.trim(), FACT_LABEL_MAX), value: cut(f.value.trim(), FACT_VALUE_MAX) }))
     .filter((f) => f.label !== '' && f.value !== '')
     .slice(0, MAX_FACTS);
-  return { name: context.name, facts };
+  if (!context.settings) return { name: context.name, facts };
+  const settings = context.settings
+    .map((x) => ({ name: cut(x.name.trim(), SETTING_NAME_MAX), value: cut(x.value.trim(), SETTING_VALUE_MAX), help: cut(x.help.trim(), SETTING_HELP_MAX) }))
+    .filter((x) => x.name !== '' && x.value !== '' && x.help !== '')
+    .slice(0, MAX_SETTINGS);
+  return { name: context.name, facts, settings };
 }
 
 /** The key part of a screen's name: 'My study way' is 'my-study-way' (the talk is kept under 'screen.my-study-way'). */
@@ -60,7 +79,7 @@ const SUGGESTIONS: Record<string, string[]> = {
   'Parsing drill': ['How do I read a Greek verb form?', 'What should I know before I try this drill?'],
   Paradigms: ['How do I learn a paradigm table?', 'Which table should I learn first?'],
   Placement: ['What is the placement for?', 'Where should I start with Greek grammar?'],
-  Settings: ['Which settings suit a beginner?', 'How do I make the Greek easier to read?'],
+  Settings: ['Which settings suit a beginner?', 'What would Accordance give me?', 'What do I lose with the Weave off?'],
   'My study way': ['What should I write in my study way?', 'How does the tutor use my study way?'],
   Import: ['What words should I add to my list?', 'How do I write a word list to import?'],
   About: ['What is Lampas for?', 'Which texts does Lampas use?', 'What does each of these do for Lampas?'],

@@ -16,6 +16,7 @@ import { passageNeeds, progressToward, type Level } from '../../src/data/grammar
 import { setGoal } from '../../src/data/repositories/settings';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
+import { ROWS } from '../../src/settings/rows';
 import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -247,6 +248,44 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     });
     And('the suggested questions are gone', () => {
       expect(suggestions()).toHaveLength(0);
+    });
+  });
+
+  Scenario('On Settings the request carries every setting, its value and its help, and the sheet suggests questions about settings', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on #/settings with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/settings', goal));
+    When('he taps the Ask the tutor control', taps);
+    Then('the sheet suggests a question about Accordance, {string}', async (_, question: string) => {
+      await screen.findByRole('dialog', { name: 'Ask the tutor: Settings' });
+      expect(suggestions().map((s) => s.textContent)).toContain(question);
+    });
+    When('he taps that suggested question', async () => {
+      await user.click(suggestions().find((s) => s.textContent === 'What would Accordance give me?')!);
+    });
+    Then('the mill received {int} grists for the lampas app, kind bible-talk', async (_, count: number) => {
+      await waitFor(() => expect(fake.received).toHaveLength(count));
+    });
+    And('the grist carries the question {string}', (_, question: string) => {
+      expect(sent(0).question).toBe(question);
+    });
+    And('the grist is for the screen {string} and has no verse text', (_, name: string) => {
+      expect(sent(0).screen).toMatchObject({ name });
+      expect(sent(0)).not.toHaveProperty('greek');
+    });
+    And("the grist's screen settings name every setting and study resource with its value now and its help", () => {
+      const got = (sent(0).screen as { settings: { name: string; value: string; help: string }[] }).settings;
+      const wanted = ROWS.filter((r) => !r.key.startsWith('link.') && r.key !== 'developer');
+      expect(got.map((s) => s.name)).toEqual(wanted.map((r) => r.label));
+      for (const s of got) {
+        expect(s.value, s.name).not.toBe('');
+        expect(s.help, s.name).toBe(wanted.find((r) => r.label === s.name)?.hint);
+      }
+    });
+    And("the grist's screen settings say Accordance is Off and what it adds", () => {
+      const got = (sent(0).screen as { settings: { name: string; value: string; help: string }[] }).settings;
+      expect(got.find((s) => s.name === 'Accordance')).toMatchObject({ value: 'Off', help: expect.stringContaining('Open in Accordance') });
+    });
+    And('the grist carries only fields the input schema allows', () => {
+      expect(validate(sent(0), inputSchema)).toEqual([]);
     });
   });
 
