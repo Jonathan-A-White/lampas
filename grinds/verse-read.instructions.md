@@ -34,6 +34,10 @@ Answer with a Verse Read Answer (grinds/verse-read.answer.schema.json): `verdict
 - For each word give `word` (as it stands in `target_text`, without punctuation), `index` (see below), `chunks` (the word broken into the
   parts to say one after another, 1 to 12 of them, which joined spell the word, such as `to`, `geth`, `er`) and `tip`
   (one short line on how to say it, kind and concrete).
+- `say` is optional, and only for an English word that a text-to-speech voice would say wrongly as written: give a respelling that
+  the English voice speaks right, in plain letters, such as `blest` for `blessed` (one beat, not two) or `led` for `lead` read as the
+  metal. The phone speaks `say`, and only `say`, when he taps the speaker beside that word, so write the word as it should sound and
+  nothing else: no tip, no hyphens or capitals for emphasis. Leave `say` out when the written word is spoken right, and always in a Greek reading.
 - `index` is the place of that exact word in `target_text`, counting from 0: the first word is 0, the second is 1. Take it
   from the position of the word in the `reading_result` word list, which is `target_text` split into words in order.
   A word that stands twice in the verse (such as `life` or `to`) is marked only at the place he misread it, so give the

@@ -10,7 +10,7 @@ import { blobOf, clipFileName, downloadSeam, type Clip } from './audio/clip';
 import type { Verse } from './data/chapter';
 import { unitId, unitName } from './data/passage';
 import { getDeveloper, getGreekPronunciation, getVerseReading, verseRef, type FixWord, type VerseReading } from './data/repositories';
-import { markWords, normalWord, plainQuotes, readingLang, readingText, wordsOfText, type ReadingView } from './services/reading';
+import { markWords, normalWord, plainQuotes, readingLang, readingText, sayOf, wordsOfText, type ReadingView } from './services/reading';
 import { FAILURE_TITLES } from './services/tutor';
 import { pronunciationOf } from './speech/pronunciation';
 import { stopSpeaking } from './speech/greek';
@@ -96,6 +96,22 @@ const typeOf = (view: ReadingView) =>
     ? { lang: 'grc', face: 'font-greek text-[length:var(--lp-greek-size)]', chunks: 'font-greek' }
     : { lang: 'en', face: 'font-sans text-[length:var(--lp-english-size)]', chunks: '' };
 
+/** The speaker for a flagged word: it says the word as it should sound (the answer's `say`, else the word) in the voice of the language read, and
+ * nothing else; a response being read aloud is stopped by the tap (stopAnswer), so he hears only the word. */
+function SayWord({ fix, view, id, label, className }: { fix: FixWord; view: ReadingView; id: string; label: string; className?: string }) {
+  return (
+    <SpeakButton
+      text={sayOf(fix)}
+      id={id}
+      label={label}
+      kind="speaker"
+      language={view === 'greek' ? 'greek' : 'english'}
+      className={className}
+      onSpeak={stopAnswer}
+    />
+  );
+}
+
 /** A word's chunks, big, with the tip and a speaker that says the whole word in the voice of the language read. */
 function Fix({ fix, view, large }: { fix: FixWord; view: ReadingView; large?: boolean }) {
   const type = typeOf(view);
@@ -105,14 +121,7 @@ function Fix({ fix, view, large }: { fix: FixWord; view: ReadingView; large?: bo
         {chunksLine(fix.chunks)}
       </p>
       <p className="break-words text-base text-muted">{plainQuotes(fix.tip)}</p>
-      <SpeakButton
-        text={fix.word}
-        id={`fix-${view}-${fix.word}`}
-        label="Hear it"
-        kind="speaker"
-        language={view === 'greek' ? 'greek' : 'english'}
-        className="align-baseline"
-      />
+      <SayWord fix={fix} view={view} id={`fix-${view}-${fix.word}`} label="Hear it" className="align-baseline" />
     </div>
   );
 }
@@ -126,17 +135,20 @@ const WORD_PARTS = /^([^\p{L}\p{N}\p{M}]*)(.*?)([^\p{L}\p{N}\p{M}]*)$/u;
 function MarkedVerse({ text, view, marks, open, onOpen }: { text: string; view: ReadingView; marks: Marks; open: string | null; onOpen: (key: string | null) => void }) {
   const type = typeOf(view);
   const tokens = useMemo(() => wordsOfText(text), [text]);
-  const markButton = (word: string, label: string, key: string) => (
-    <button
-      key={key}
-      type="button"
-      data-fix={normalWord(word)}
-      aria-pressed={open === key}
-      onClick={() => onOpen(open === key ? null : key)}
-      className="inline-block min-h-11 rounded-lg bg-bad/15 px-1 font-semibold text-bad underline decoration-2 underline-offset-4"
-    >
-      {label}
-    </button>
+  // each flagged word has its speaker right after it (a sibling of the word's button): it says only how the word should sound
+  const markButton = (fix: FixWord, label: string, key: string) => (
+    <span key={key} className="whitespace-nowrap">
+      <button
+        type="button"
+        data-fix={normalWord(fix.word)}
+        aria-pressed={open === key}
+        onClick={() => onOpen(open === key ? null : key)}
+        className="inline-block min-h-11 rounded-lg bg-bad/15 px-1 font-semibold text-bad underline decoration-2 underline-offset-4"
+      >
+        {label}
+      </button>
+      <SayWord fix={fix} view={view} id={`say-${view}-${key}`} label={`Hear ${label}`} className="align-middle" />
+    </span>
   );
   return (
     <>
@@ -147,7 +159,7 @@ function MarkedVerse({ text, view, marks, open, onOpen }: { text: string; view: 
           return (
             <span key={i}>
               {before}
-              {mark ? markButton(mark.word, core, String(i)) : core}
+              {mark ? markButton(mark, core, String(i)) : core}
               {after}{' '}
             </span>
           );
@@ -158,7 +170,7 @@ function MarkedVerse({ text, view, marks, open, onOpen }: { text: string; view: 
           Also to fix:{' '}
           {marks.lost.map((w, i) => (
             <span key={i} className="mr-2">
-              {markButton(w.word, w.word, `l${i}`)}
+              {markButton(w, w.word, `l${i}`)}
             </span>
           ))}
         </p>

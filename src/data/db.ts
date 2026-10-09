@@ -97,6 +97,8 @@ export interface FixWord {
   index?: number;
   chunks: string[];
   tip: string;
+  /** the respelling the English voice speaks right ('blest' for 'blessed'); a reading kept before it existed, or a word the voice says right, has none */
+  say?: string;
 }
 
 /** The result of the last reading check of a verse, kept so it is there on return. */

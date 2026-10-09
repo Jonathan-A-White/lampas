@@ -77,7 +77,7 @@ export const READING_ANSWER = {
   verdict: 'some-to-fix',
   focus_words: [
     { word: 'together', index: 7, chunks: ['to', 'geth', 'er'], tip: 'Say the th softly, with your tongue between your teeth.' },
-    { word: 'purpose', index: 22, chunks: ['pur', 'pose'], tip: 'The first part sounds like per.' },
+    { word: 'purpose', index: 22, chunks: ['pur', 'pose'], tip: 'The first part sounds like per.', say: 'perpus' },
   ],
   note: 'Nearly there: two words to say again.',
 };

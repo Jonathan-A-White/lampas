@@ -101,6 +101,42 @@ describe('the answer schema and isVerseReadAnswer', () => {
   });
 });
 
+describe('the optional say respelling of a focus word (mw-5r3p30.101)', () => {
+  const blessed = { word: 'blessed', index: 3, chunks: ['bless', 'ed'], tip: 'One beat, as in blest.', say: 'blest' };
+  const answer = { verdict: 'some-to-fix', focus_words: [blessed], note: 'Nearly there.' };
+  const properties = ((schema.properties as Record<string, { items: { properties: Record<string, unknown>; required: string[] } }>).focus_words.items);
+
+  it('gives focus words an optional say in the schema, not required', () => {
+    expect(properties.properties).toHaveProperty('say');
+    expect(properties.required).not.toContain('say');
+  });
+
+  it('accepts a sample answer where blessed carries say blest, and one with no say', () => {
+    expect(validate(answer, schema as Schema)).toEqual([]);
+    expect(isVerseReadAnswer(answer)).toBe(true);
+    expect(isVerseReadAnswer({ ...answer, focus_words: [{ ...blessed, say: 'blest' }] })).toBe(true);
+    expect(validate({ ...answer, focus_words: [{ word: 'blessed', index: 3, chunks: ['bless', 'ed'], tip: 'One beat.' }] }, schema as Schema)).toEqual([]);
+  });
+
+  it.each([
+    ['an empty say', ''],
+    ['a say over 60 characters', 'a'.repeat(61)],
+    ['a say that is not text', 5],
+  ])('refuses %s in both', (_, say) => {
+    const value = { ...answer, focus_words: [{ ...blessed, say }] };
+    expect(validate(value, schema as Schema)).not.toEqual([]);
+    expect(isVerseReadAnswer(value)).toBe(false);
+  });
+
+  it('tells the model to give say for a word the English voice would say wrongly, with the blessed example', () => {
+    const text = readFileSync(grind.instructions as string, 'utf8');
+    expect(text).toContain('`say`');
+    expect(text).toContain('blessed');
+    expect(text).toContain('blest');
+    expect(text).toMatch(/English voice/);
+  });
+});
+
 describe('quotes in the note and the tip', () => {
   it('tells the model to write plain quotes, never a backslash before one', () => {
     const text = readFileSync(grind.instructions as string, 'utf8');

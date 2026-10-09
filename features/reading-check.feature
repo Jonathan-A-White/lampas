@@ -24,6 +24,25 @@ Feature: Reading check, in English and in Greek
     When he taps the marked word "together"
     Then its chunks show as "to · geth · er" with a speaker to hear it
 
+  Scenario: Each flagged word has a speaker right beside it that says only how the word should sound
+    Given Lampas is opened on Romans 8 in English with a reading check behind a fake Postern
+    And he opens the reading check of verse 28
+    And he holds the bar for 2 seconds and lets go
+    And the verse in the reading check shows "together" and "purpose" marked to fix
+    Then each marked word has a speaker right beside it
+    When he taps the speaker beside "purpose"
+    Then the phone says only "perpus", the respelling the answer gave, in the English voice
+    When he then taps the speaker beside "together"
+    Then the phone says only "together", the word itself, in the English voice
+
+  Scenario: A flagged Greek word's speaker says the Greek word in the Greek voice
+    Given Lampas is opened on Romans 8 in Greek with a reading check behind a fake Postern
+    And he opens the reading check of verse 28
+    And he holds the bar for 2 seconds and lets go
+    And the verse in the reading check shows "συνεργεῖ" and "πρόθεσιν" marked to fix
+    When he taps the speaker beside "συνεργεῖ"
+    Then the phone says only "συνεργεῖ", the Greek word itself, in the Greek voice
+
   Scenario: Only the instance of a word that he misread is marked, not every word spelled the same
     Given Lampas is opened on Romans 8 in English with a reading check whose answer marks the second "who"
     And he opens the reading check of verse 28

@@ -14,6 +14,8 @@ export const MAX_FOCUS_WORDS = 8;
 export const MAX_CHUNKS = 12;
 /** The largest index a focus word may carry (the schema's maximum). */
 export const MAX_WORD_INDEX = 2000;
+/** The longest respelling a focus word's `say` may be (the schema's maximum). */
+export const MAX_SAY = 60;
 
 /** What the grind is sent (Verse Read Request 1): the verse, the text he was to read and its language. The mill scores the
  * recording against `target_text` in `lang`, one of the grind's scoring.langs: 'en', or 'el' for the Greek read in modern
@@ -31,6 +33,8 @@ export interface FocusWord {
   index: number;
   chunks: string[];
   tip: string;
+  /** how the English voice should be given the word to say it right ('blest' for 'blessed'); absent when the word is spoken as written */
+  say?: string;
 }
 
 /** What the grind answers (grinds/verse-read.answer.schema.json). */
@@ -52,7 +56,8 @@ export function isVerseReadAnswer(value: unknown): value is VerseReadAnswer {
   return value.focus_words.every(
     (f) =>
       isObject(f) &&
-      Object.keys(f).length === 4 &&
+      Object.keys(f).length === (f.say === undefined ? 4 : 5) &&
+      (f.say === undefined || isText(f.say, MAX_SAY)) &&
       isText(f.word, 60) &&
       typeof f.index === 'number' &&
       Number.isInteger(f.index) &&
@@ -65,6 +70,9 @@ export function isVerseReadAnswer(value: unknown): value is VerseReadAnswer {
       f.chunks.every((c) => isText(c, 20)),
   );
 }
+
+/** What a speaker beside a flagged word says: the respelling the answer gave, else the word as written. */
+export const sayOf = (fix: { word: string; say?: string }): string => fix.say ?? fix.word;
 
 /** The note and the tip as he reads them: the grind's model has written a quote as backslash-quote inside a string the JSON
  * already escapes, so a reading kept that way shows plain quote marks (mw-5r3p30.110). */

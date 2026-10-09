@@ -131,6 +131,22 @@ const says = (text: string) => async () => {
 };
 const walk = () => within(panel()).getByRole('group', { name: 'Read these again' });
 
+/** The speaker beside a marked word (named for the word it is beside), tapped. */
+const tapSpeakerBeside = async (_: unknown, word: string) => {
+  const button = marked().find((m) => m.textContent === word);
+  expect(button, `a marked word ${word}`).toBeDefined();
+  await user.click(within(panel()).getByRole('button', { name: `Hear ${word}`, exact: true }));
+};
+/** The last thing the engine was asked to say is exactly `text`, in `lang`; neither the tip nor the note was spoken. */
+const saysOnly = (lang: string) => (_: unknown, text: string) => {
+  const last = synth.spoken[synth.spoken.length - 1];
+  expect(last.text).toBe(text);
+  expect(last.lang).toBe(lang);
+  const spokenAll = synth.spoken.map((u) => u.text).join(' ');
+  expect(spokenAll).not.toContain('Say the th softly');
+  expect(spokenAll).not.toContain('Nearly there');
+};
+
 const feature = await loadFeature('features/reading-check.feature');
 
 describeFeature(feature, ({ Scenario }) => {
@@ -201,6 +217,33 @@ describeFeature(feature, ({ Scenario }) => {
       expect(detail).toHaveTextContent('Say it as in "who" are called.');
       expect(detail?.textContent).not.toContain('\\');
     });
+  });
+
+  Scenario('Each flagged word has a speaker right beside it that says only how the word should sound', ({ Given, And, When, Then }) => {
+    Given(given, () => open());
+    And('he opens the reading check of verse 28', selectVerse28);
+    And(holdRead, async () => holdAndLetGo(readButton(), 2000));
+    And(verseMarked, verseMarkedSteps);
+    Then('each marked word has a speaker right beside it', () => {
+      for (const word of marked()) {
+        const beside = word.nextElementSibling;
+        expect(beside).toBeInstanceOf(HTMLButtonElement);
+        expect(beside).toHaveAccessibleName(`Hear ${word.textContent}`);
+      }
+    });
+    When('he taps the speaker beside {string}', tapSpeakerBeside);
+    Then('the phone says only {string}, the respelling the answer gave, in the English voice', saysOnly('en-US'));
+    When('he then taps the speaker beside {string}', tapSpeakerBeside);
+    Then('the phone says only {string}, the word itself, in the English voice', saysOnly('en-US'));
+  });
+
+  Scenario("A flagged Greek word's speaker says the Greek word in the Greek voice", ({ Given, And, When, Then }) => {
+    Given(greekGiven, () => open({ view: 'greek' }));
+    And('he opens the reading check of verse 28', selectVerse28);
+    And(holdRead, async () => holdAndLetGo(readButton(), 2000));
+    And(verseMarked, greekMarkedSteps);
+    When('he taps the speaker beside {string}', tapSpeakerBeside);
+    Then('the phone says only {string}, the Greek word itself, in the Greek voice', saysOnly('el-GR'));
   });
 
   Scenario('Only the instance of a word that he misread is marked, not every word spelled the same', ({ Given, And, When, Then }) => {

@@ -28,7 +28,8 @@
             "maxItems": 12,
             "items": { "type": "string", "minLength": 1, "maxLength": 20 }
           },
-          "tip": { "description": "One short, kind line on how to say it.", "type": "string", "minLength": 1, "maxLength": 200 }
+          "tip": { "description": "One short, kind line on how to say it.", "type": "string", "minLength": 1, "maxLength": 200 },
+          "say": { "description": "Optional. How to spell the word so that a text-to-speech voice says it right when it would say the written word wrongly, such as blest for blessed. The phone speaks this, and only this, when he taps the speaker beside the word. Leave it out when the written word is spoken right.", "type": "string", "minLength": 1, "maxLength": 60 }
         }
       }
     },

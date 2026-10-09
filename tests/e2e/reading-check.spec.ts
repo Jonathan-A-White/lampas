@@ -91,6 +91,13 @@ test('holding the bar of Read it aloud on verse 28 sends the reading and marks t
 
   const together = panel.getByRole('button', { name: 'together', exact: true });
   expect((await together.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
+  // each flagged word has a speaker right beside it, a thumb-sized button on the same line
+  const wordBox = await together.boundingBox();
+  const speakerBox = await panel.getByRole('button', { name: 'Hear together', exact: true }).boundingBox();
+  expect(speakerBox?.width).toBeGreaterThanOrEqual(43.5);
+  expect(speakerBox?.height).toBeGreaterThanOrEqual(43.5);
+  expect(Math.abs((speakerBox?.y ?? 0) + (speakerBox?.height ?? 0) / 2 - ((wordBox?.y ?? 0) + (wordBox?.height ?? 0) / 2))).toBeLessThan(wordBox?.height ?? 0);
+  expect(Math.abs((speakerBox?.x ?? 0) - ((wordBox?.x ?? 0) + (wordBox?.width ?? 0)))).toBeLessThan(8);
   await together.click();
   await expect(panel.locator('[data-fix-detail] [data-chunks]')).toHaveText('to · geth · er');
   await expectFitsPhone(page);

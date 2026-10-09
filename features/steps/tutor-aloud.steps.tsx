@@ -223,6 +223,26 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the speech has stopped', stopped);
   });
 
+  Scenario("A tap on a flagged word's speaker while the verdict is read stops the reading and says only the word", ({ Given, And, When, Then }) => {
+    Given(readOn, () => open({ aloud: true, reply: 'reading' }));
+    And(readOpen, () => openVerse28('Read it aloud'));
+    And(holdRead, holdAndLetGo);
+    And('the phone is speaking the verdict', speaking);
+    When('he taps the speaker beside the flagged word {string}', async (_, word: string) => {
+      const region = await screen.findByRole('region', { name: 'Reading check' });
+      await user.click(within(region).getByRole('button', { name: `Hear ${word}`, exact: true }));
+    });
+    Then("the verdict's reading has stopped", async () => {
+      await waitFor(() => expect(getReading().status).toBe('idle'));
+    });
+    And('the phone says only {string} and not the tip or the note', (_, text: string) => {
+      const last = synth.spoken[synth.spoken.length - 1];
+      expect(last.text).toBe(text);
+      expect(synth.speaking).toBe(true);
+      expect(synth.since.map((u) => u.text)).toEqual([text]);
+    });
+  });
+
   Scenario('Settings has the switch, On until he turns it Off, and it is kept', ({ Given, When, Then, And }) => {
     const settings = () => open({ aloud: true, hash: '#/settings', reply: 'answer' });
     Given('Lampas is opened on its Settings screen', settings);
