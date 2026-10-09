@@ -49,13 +49,16 @@ import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
 import { useReadChecks } from './useReadChecks';
 import { useTalk } from './useTalk';
-import { helpQuestion, paradigmQuestion, scopeTitle, termQuestion } from './services/talk';
+import { helpQuestion, newWordQuestion, paradigmQuestion, scopeTitle, termQuestion } from './services/talk';
 import { useVoice } from './useVoice';
 import { useHoldPress } from './ui/holdPress';
 import { HeaderButton } from './ScreenHeader';
 import { pauseReading, planOf, startAnswer, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
 import { DueBadge } from './DueBadge';
+import { NewWordsStrip } from './NewWordsStrip';
+import { TeachSheet, type NewWordAsk } from './TeachSheet';
+import { useNewWords } from './useNewWords';
 import { GoalStrip } from './GoalStrip';
 import { TipCard } from './tips/TipCard';
 import { ReadFromButton, ReadingBar, VersePlay } from './speech/ReadControls';
@@ -425,6 +428,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const selectedEvent = useLatest('verse-selected');
   const selected = selectedEvent?.chapter === CHAPTER ? selectedEvent.verse : null;
   const [lookup, setLookup] = useState<Lookup | null>(null);
+  // The teach sheet (src/TeachSheet.tsx), opened by the 'New words: N' strip.
+  const [teaching, setTeaching] = useState(false);
+  const newWords = useNewWords(chapter, solid, learning);
   const { asks, ask } = useAsks(BOOK, CHAPTER, TITLE);
   // A request from another screen (the Parsing drill's links) is met once, as the Reader opens: the Talk sheet on that verse,
   // or the Ask box on it holding the question.
@@ -539,6 +545,28 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     },
     [chapter, talkStates, voice, say, BOOK, CHAPTER, TITLE],
   );
+  // Ask the tutor on the teach sheet: the Talk sheet on the verse the new word was shown in, the first question sent.
+  const askAboutNewWord = useCallback(
+    (asked: NewWordAsk) => {
+      if (!chapter) return;
+      const verse = chapter.verses.find((v) => v.n === asked.verse) ?? null;
+      const scope = { title: TITLE, chapter, verse };
+      voice.abort();
+      setTalkAbout(asked.verse);
+      const state = talkStates[talkRef(BOOK, CHAPTER, asked.verse)];
+      if (state?.phase === 'sending' || state?.phase === 'waiting') return;
+      say(scope, newWordQuestion(asked.lemma, asked.gloss, scopeTitle(scope)));
+    },
+    [chapter, talkStates, voice, say, BOOK, CHAPTER, TITLE],
+  );
+  // The verse number on the teach sheet: the reading box is scrolled so that verse stands at its top. The verse is not selected: that
+  // opens its panel and the Ask box under it, and scrolls the verse out of sight again.
+  const showVerse = useCallback((n: number) => {
+    const box = main.current;
+    const el = box?.querySelector<HTMLElement>(`[data-verse="${n}"]`);
+    if (box && el) box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
+  }, []);
+  const closeTeach = useCallback(() => setTeaching(false), []);
   const verseTalk: VerseTalk = { onHold: holdTalk, onRelease: () => void voice.release(), onDrop: voice.abort };
   // The Read button of a verse: holding it on a verse that is not selected selects it, so its result shows below it.
   const readOf = (verse: Verse): ReadHold => {
@@ -684,6 +712,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       {chapterReading ? null : <DueBadge />}
       {chapterReading ? null : <GoalStrip />}
       {chapterReading ? null : <TipCard />}
+      {chapterReading ? null : <NewWordsStrip count={newWords?.length ?? 0} onOpen={() => setTeaching(true)} />}
       {notice ? (
         <div role="status" data-link-notice className="flex shrink-0 items-center gap-2 border-b border-line bg-surface px-3 py-1 text-sm">
           <p className="min-w-0 flex-1">{notice}</p>
@@ -827,6 +856,17 @@ function ReaderBody({ open }: { open: OpenChapter }) {
             voice.clearNotice();
             setTalkAbout(undefined);
           }}
+        />
+      ) : null}
+      {chapter && teaching && newWords ? (
+        <TeachSheet
+          chapter={chapter}
+          title={TITLE}
+          candidates={newWords}
+          solid={solid ?? EMPTY_LEMMAS}
+          onClose={closeTeach}
+          onShowVerse={showVerse}
+          onAsk={askAboutNewWord}
         />
       ) : null}
       {picking ? <ChapterPicker current={open} onClose={closePicker} /> : null}

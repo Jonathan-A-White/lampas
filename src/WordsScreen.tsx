@@ -20,10 +20,16 @@ const PILL: Record<WordState, string> = {
 
 const greek = new Intl.Collator('el');
 
-/** Imported words with no lesson come first so he sees what he just added; then lessons in order. */
+/** The group of the words he took on the teach sheet (source 'frontier', no lesson); it sorts between 'Added by you' and Lesson 1. */
+const FROM_READING = 0.5;
+
+/** Imported words with no lesson come first so he sees what he just added, then the words from his reading; then lessons in order. */
 function byLesson(words: Word[]): { lesson: number; words: Word[] }[] {
   const groups = new Map<number, Word[]>();
-  for (const w of words) groups.set(w.lesson, [...(groups.get(w.lesson) ?? []), w]);
+  for (const w of words) {
+    const key = w.lesson === 0 && w.source === 'frontier' ? FROM_READING : w.lesson;
+    groups.set(key, [...(groups.get(key) ?? []), w]);
+  }
   return [...groups.entries()]
     .sort(([a], [b]) => a - b)
     .map(([lesson, ws]) => ({ lesson, words: ws.sort((a, b) => greek.compare(a.lemma, b.lemma)) }));
@@ -66,7 +72,7 @@ export function WordsScreen() {
         {groups.map((g) => (
           <section key={g.lesson} aria-labelledby={`lesson-${g.lesson}`} className="pt-4">
             <h2 id={`lesson-${g.lesson}`} className="px-1 pb-1 text-sm font-semibold uppercase tracking-wide text-muted">
-              {g.lesson === 0 ? 'Added by you' : `Lesson ${g.lesson}`}
+              {g.lesson === 0 ? 'Added by you' : g.lesson === FROM_READING ? 'From my reading' : `Lesson ${g.lesson}`}
             </h2>
             <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
               {g.words.map((w) => (

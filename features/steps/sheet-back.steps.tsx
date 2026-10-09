@@ -161,6 +161,22 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('Back on the teach sheet closes it', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with verse 2 selected', () => open('', false));
+    And('he opens the teach sheet', async () => {
+      await user.click(await screen.findByTestId('new-words'));
+      await screen.findByRole('dialog', { name: 'New word' });
+    });
+    When('he goes back', back);
+    Then('the teach sheet is closed', async () => {
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'New word' })).toBeNull());
+    });
+    And('the Reader shows Romans 8 at verse 2', () => {
+      expect(window.location.hash).toContain('v=2');
+      expect(screen.getByRole('button', { name: 'Verse 2' }).getAttribute('aria-pressed')).toBe('true');
+    });
+  });
+
   Scenario('Back on the Ask for another approach sheet closes it', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Settings with the Ask for another approach sheet open', async () => {
       cleanup();
@@ -212,7 +228,7 @@ describeFeature(feature, ({ Scenario }) => {
       const sheets = readdirSync('src')
         .filter((name) => name.endsWith('.tsx'))
         .filter((name) => readFileSync(`src/${name}`, 'utf8').includes('role="dialog"'));
-      expect(sheets.sort()).toEqual(['AskApproachSheet.tsx', 'ChapterPicker.tsx', 'GrammarSheet.tsx', 'IdeaSheet.tsx', 'Talk.tsx', 'WordSheet.tsx']);
+      expect(sheets.sort()).toEqual(['AskApproachSheet.tsx', 'ChapterPicker.tsx', 'GrammarSheet.tsx', 'IdeaSheet.tsx', 'Talk.tsx', 'TeachSheet.tsx', 'WordSheet.tsx']);
       for (const name of sheets) expect(readFileSync(`src/${name}`, 'utf8'), name).toMatch(/useSheetBack\(/);
     });
   });

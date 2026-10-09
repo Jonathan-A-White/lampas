@@ -21,7 +21,7 @@ export function stubChapterFetch(): ChapterFetch {
     vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
       stub.requests.push(url);
-      if (!/^\/data\/([0-9a-z]+\/\d+|lexicon|index)\.json$/.test(url)) return new Response('not found', { status: 404 });
+      if (!/^\/data\/([0-9a-z]+\/\d+|lexicon|index|frequency)\.json$/.test(url)) return new Response('not found', { status: 404 });
       return new Response(readFileSync(`public${url}`, 'utf8'), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }),
   );

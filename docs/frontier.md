@@ -60,3 +60,23 @@ nothing. A move forgets the ring, so the answers given at the old level do not j
 chapter, `tests/fixtures/frontier.ts`, whose word counts are invented so that every rule is proved and nothing changes when the
 data does. `features/picker-grammar.feature`, `tests/unit/move.test.ts` and `tests/unit/grammar-answers.test.ts` cover the level and the move. Both also run on Romans 8 with his seed (lessons 1 to 9 solid, the rest learning): the list is not empty and its first
 word is not a name.
+
+## The teach sheet (mw-bsf54t.4)
+
+The Reader shows the frontier as a strip under its header, `New words: N` (`src/NewWordsStrip.tsx`, like `Due: N`; not drawn at 0).
+`N` is the number of candidates `pickFrontier` gives for the open chapter without the words he said Not now to today, at most
+`PACE` (3, a constant in `src/data/frontier.ts` until the pace story makes it a setting). `src/useNewWords.ts` is the one hook.
+
+A tap opens the teach sheet (`src/TeachSheet.tsx`, dialog 'New word') on the first candidate:
+
+- the lemma large with a speaker, its respelling (`testid teach-translit`), its meaning, the picture if it has one, and the parsing of its
+  first occurrence in plain words;
+- its easiest verse (`easiestVerse`), woven by `weaveForTeaching` (`src/data/weave.ts`): his solid words and the new word in Greek, the new
+  word's chunk marked (`[data-new]`) with its English in small grey beneath (`[data-hint]`); the verse number ('Romans 8:9') scrolls the
+  Reader to that verse and closes the sheet;
+- **Got it**: `teachWord(lemma, gloss, 'got-it')` puts the word on the list as learning, lesson 0, `source: 'frontier'`, on the schedule at
+  step 0 and due now; **I know this**: the same word solid, at the 30-day step; **Not now**: skipped for today only (`src/data/skipped.ts`, in
+  memory, forgotten at midnight, nothing in Dexie); **Ask the tutor**: the Talk sheet on the verse, with `newWordQuestion` sent.
+- Each answer shows the next candidate; the sheet closes when none is left. `frontier-taught` {lemma, outcome} goes on the bus (docs/events.md).
+
+Words lists the words taken here under 'From my reading' (`source: 'frontier'`, lesson 0).

@@ -45,6 +45,13 @@ Feature: Back closes an open sheet
     Then the Talk sheet is closed
     And the Reader shows Romans 8 at verse 2
 
+  Scenario: Back on the teach sheet closes it
+    Given Lampas is opened on Romans 8 with verse 2 selected
+    And he opens the teach sheet
+    When he goes back
+    Then the teach sheet is closed
+    And the Reader shows Romans 8 at verse 2
+
   Scenario: Back on the Ask for another approach sheet closes it
     Given Lampas is opened on Settings with the Ask for another approach sheet open
     When he goes back
