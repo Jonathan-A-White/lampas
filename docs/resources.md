@@ -151,3 +151,20 @@ Examples: Ἰησοῦς (G2424) `lemma=lbs%2Fel%2F%E1%BC%B8%CE%B7%CF%83%CE%BF%E
 2. Add it to `RESOURCES` in `src/resources/index.ts`. Settings and the word sheet draw from that list and need no change.
 3. URLs are `https:` or the app's own scheme, with the lemma passed through `encodeURIComponent`; never put lexicon text in one. A scheme link may carry an https `fallback`.
 4. Add its row to the table above and to the unit test's expected ids (`tests/unit/resources.test.ts`).
+
+## The tutor's links (mw-5r3p30.75, PROVISIONAL, Governor to confirm)
+
+A Bible talk answer may carry `links` (grinds/bible-talk.answer.schema.json): at most three, each a word (`{kind: 'word', lemma}`, the dictionary form) or a verse
+(`{kind: 'verse', reference}`, such as `Romans 8:31`); the grind's instructions say when to add one, most of all in quiz mode and in the map. The app keeps them
+with the turn (`links`, no table change) and draws them under the answer (`src/TutorLinks.tsx`) as a group of chips for each link, chosen **when the answer is
+drawn**, so a resource he switches on later shows on an old answer:
+
+| link | chips (`src/resources/tutorLinks.ts`) |
+| --- | --- |
+| word | the **first** link of each resource that is on, named for the lemma: Strong's `G26 for ἀγάπη`; Logos his first ticked lexicon, `Open in Logos: BDAG for ἀγάπη` (`logosres:LLS:46.30.18;hw=<lemma>`, its https fallback as on the word sheet); Accordance `Open in Accordance for ἀγάπη`. The Strong's number is the lexicon's (`src/data/lexicon.ts`), never the tutor's; a lemma the lexicon lacks gets no Strong's chip |
+| verse | `Open Romans 8:31 in Lampas` (the Reader on the verse, the Talk sheet closes first; a Back step) and, with Logos on, `Open Romans 8:31 in Logos` in his Bible in Logos (`logosres:<bible>;ref=Bible.Ro8.31`, `verseLink` in `logosBible.ts`: the chapter link's form with the New Testament abbreviations of Logos' own list, UNVERIFIED on a device) |
+
+A link to a resource that is off is not drawn and nothing says so; a link with no chip leaves no group, and an answer with no chip at all draws no list. A verse
+the text does not hold (an unknown book, a chapter or verse out of range) is dropped. Accordance gives no verse chip: its field names a lexicon module, not a Bible.
+More than three links in an answer: the app keeps the first three (the schema's limit is for the mill). A resource that can show a Bible gives `versesFor(place, bible)`;
+one that cannot has none.

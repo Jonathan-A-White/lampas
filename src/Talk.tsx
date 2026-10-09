@@ -11,6 +11,7 @@ import { addLemmaToLearn, findGreekWord, glossOf } from './data/answerWord';
 import type { AnswerWord } from './data/db';
 import { addWordToLearn, listTurns, markChangeUndone, wordIsListed, type TalkTurn } from './data/repositories';
 import { Markdown } from './markdown/Markdown';
+import { TutorLinks } from './TutorLinks';
 import { settingOf, undoChange, type AppliedChange } from './settings/registry';
 import { MAX_TALK_CHARS, scopeTitle, type TalkScope } from './services/talk';
 import { FAILURE_TITLES } from './services/tutor';
@@ -153,7 +154,7 @@ function WordsLine({ lemmas, before, after }: { lemmas: string[]; before: string
   );
 }
 
-function Turn({ turn, scope, onLook }: { turn: TalkTurn; scope: TalkScope; onLook: (lookup: Lookup) => void }) {
+function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkScope; onLook: (lookup: Lookup) => void; onLeave: () => void }) {
   return (
     <article data-turn className="space-y-2">
       <p data-talk-q className="ml-auto w-fit max-w-[88%] break-words rounded-2xl bg-accent/15 px-3 py-2 text-lg">
@@ -212,6 +213,7 @@ function Turn({ turn, scope, onLook }: { turn: TalkTurn; scope: TalkScope; onLoo
             })}
           </dl>
         ) : null}
+        {turn.links?.length ? <TutorLinks links={turn.links} onLeave={onLeave} /> : null}
         <div className="-mb-1 mt-1 flex justify-end">
           <AnswerSpeaker turn={turn} />
         </div>
@@ -302,7 +304,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, onSay, onHelp, on
               </p>
             ) : null}
             {turns?.map((turn) => (
-              <Turn key={turn.id} turn={turn} scope={scope} onLook={setLookup} />
+              <Turn key={turn.id} turn={turn} scope={scope} onLook={setLookup} onLeave={onClose} />
             ))}
             {state ? (
               <div data-talk-pending className="space-y-2">

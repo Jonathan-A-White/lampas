@@ -139,7 +139,7 @@ function StudyRow({ groups, onMissing }: { groups: StudyGroup[]; onMissing: (res
 }
 
 /** Over the word sheet when a Study link's app did not open: Get it from the phone's store, or Turn off its resource in Settings. */
-function AppMissingSheet({ app, onClose, onTurnOff }: { app: string; onClose: () => void; onTurnOff: () => void }) {
+export function AppMissingSheet({ app, onClose, onTurnOff }: { app: string; onClose: () => void; onTurnOff: () => void }) {
   useEscapeToClose(onClose);
   useSheetBack(onClose);
   return (
