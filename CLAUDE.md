@@ -53,6 +53,12 @@ npm run data:build   # data/raw (git-ignored, downloaded if absent) -> public/da
 - Every behaviour is a Gherkin scenario under `features/*.feature` with steps in
   `features/steps/*.steps.ts(x)` (@amiceli/vitest-cucumber), run inside `npm test`. Import
   `@testing-library/react/dont-cleanup-after-each` before React Testing Library in a step file.
+- Speech and the microphone are never faked by hand (mw-it6qk5.3): they are bsv-kit's honest fakes (`bsv-kit/testing/speech` and `/mic`: an utterance
+  takes `150 + 60 x words` ms and fires start, boundaries and end, `cancel()` interrupts the one being spoken, a recogniser sends interim words as a clip
+  plays). Feature steps use `tests/support/fake-speech.ts` (`stubSpeech`: `finish()`, `finishAll()`, `advance(ms)`, `calls`, `spoken`, on a manual clock,
+  `tests/support/manual-clock.ts`) and `tests/support/fake-mic.ts` (`stubMic()`, `advance(ms)`); Playwright specs use `tests/support/honest-fakes.ts`
+  (`honestSpeech(page, {langs, msPerWord})`, `spoken(page)`, `honestMic(page)`). A screen that holds on a verse being spoken or a clip being recorded needs a slow reader
+  (`msPerWord`) or a long hold; `tests/e2e/fake-media.ts` also fakes playing a clip (and gives the recorded PCM a WAV header). `tests/support/fake-recognizer.ts` stays for unit tests that drive a recogniser result by result.
 - Unit tests live in `tests/unit/`; shared fakes in `tests/support/` (`fake-registration.ts` fakes a
   service worker registration; `fake-postern.ts` is a Postern backend with a mill that opens the grist and answers it,
   used by features/tutor.feature and, through `playwright-postern.ts`, by tests/e2e/tutor.spec.ts). Tests run in jsdom with `fake-indexeddb`, in `TZ=UTC`.
