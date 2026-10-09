@@ -18,3 +18,31 @@ Feature: What a passage needs
     And it needs the ideas "The relative pronoun", "The imperfect tense", "The perfect tense" and "The aorist tense"
     And it does not need "The subjunctive mood" or "The imperative mood"
     And with "λόγος" being learned and nothing else known, 1 word is on the frontier and 15 are not yet
+
+  Scenario: Settings > Goal sets Read 1 John 1:1 from the three pickers
+    Given Settings is open and no goal is set
+    Then the Goal says "Goal: none" and the Chapter and Verse pickers wait for a book
+    When he picks the book "1 John"
+    Then the Goal says "Read 1 John" and the Chapter picker offers "Whole book" and the chapters 1 to 5
+    When he picks the chapter "1"
+    Then the Goal says "Read 1 John 1" and the Verse picker offers "Whole chapter" and the verses 1 to 10
+    When he picks the verse "1"
+    Then the Goal says "Read 1 John 1:1"
+    And the bus has heard the goal is verse 1 of chapter 1 of 1 John
+
+  Scenario: The goal survives a reopen
+    Given Settings is open and no goal is set
+    When he picks the book "1 John"
+    And he picks the chapter "1"
+    And he picks the verse "1"
+    And Settings is opened again
+    Then the Goal says "Read 1 John 1:1"
+    And the Book picker shows "1 John", the Chapter picker "1" and the Verse picker "1"
+
+  Scenario: Clear leaves no goal
+    Given Settings is open and no goal is set
+    When he picks the book "1 John"
+    And he picks the chapter "1"
+    And he taps Clear
+    Then the Goal says "Goal: none" and the Chapter and Verse pickers wait for a book
+    And the bus has heard there is no goal

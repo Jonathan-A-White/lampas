@@ -12,7 +12,7 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
-import { addTurn, getSpeechRate, getTheme, talkRef } from '../../src/data/repositories';
+import { addTurn, getGoal, getSpeechRate, getTheme, talkRef } from '../../src/data/repositories';
 import { clearBus, latest } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
@@ -455,6 +455,24 @@ describeFeature(feature, ({ Scenario }) => {
     And('the Greek speed is saved as 1', async () => {
       expect(await getSpeechRate('greek')).toBe(1);
       expect(latest('rates-changed')?.rates.greek).toBe(1);
+    });
+  });
+
+  Scenario('The tutor sets the goal when asked', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the change goal 1 John 1', () =>
+      open(changing({ key: 'goal', value: '1 John 1' })),
+    );
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('the sheet shows {string} with an Undo button', async (_, text: string) => {
+      await waitFor(() => expect(changeRows().some((row) => row.textContent?.includes(text))).toBe(true));
+      const row = changeRows().find((r) => r.textContent?.includes(text)) as HTMLElement;
+      expect(within(row).getByRole('button', { name: 'Undo Goal' })).toHaveTextContent('Undo');
+    });
+    And('the saved goal is {string}', async (_, text: string) => expect(await getGoal()).toBe(text));
+    When('he taps Undo', () => taps('Undo Goal'));
+    Then('the saved goal is {string}', async (_, text: string) => {
+      await waitFor(async () => expect(await getGoal()).toBe(text));
     });
   });
 

@@ -139,6 +139,15 @@ Feature: Bible talk
     Then the sheet shows "Put back: Greek speed 1x" and no Undo button
     And the Greek speed is saved as 1
 
+  Scenario: The tutor sets the goal when asked
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the change goal 1 John 1
+    And he opens Talk
+    When he sends "My goal is to read 1 John 1"
+    Then the sheet shows "Changed: Goal: Read 1 John 1" with an Undo button
+    And the saved goal is "Read 1 John 1"
+    When he taps Undo
+    Then the saved goal is ""
+
   Scenario: A change to a setting the app does not have changes nothing and the talk says so
     Given Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the change fontColour red
     And he opens Talk

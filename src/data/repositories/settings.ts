@@ -127,3 +127,15 @@ export async function getSpeechRates(): Promise<SpeechRates> {
 export async function setSpeechRate(language: VoiceLanguage, rate: number): Promise<void> {
   await db.settings.put({ key: RATE_KEYS[language], value: String(normaliseRate(rate)) });
 }
+
+const GOAL_KEY = 'goal';
+
+/** The saved goal as text, 'Read 1 John 1:1'; '' when he has none (the settings store keeps text, no table of its own). */
+export async function getGoal(): Promise<string> {
+  const row = await db.settings.get(GOAL_KEY);
+  return typeof row?.value === 'string' ? row.value : '';
+}
+
+export async function setGoal(text: string): Promise<void> {
+  await db.settings.put({ key: GOAL_KEY, value: text });
+}

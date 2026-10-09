@@ -3,6 +3,8 @@
 // kept, so a screen that mounts late still knows the current verse. docs/events.md lists every kind.
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import type { ReaderView, ReadingLayout, SectionHeadings, Weave } from '../data/repositories';
+import type { GrammarLevelName } from '../data/db';
+import type { Goal } from '../data/goal';
 import type { Theme } from '../appearance/themes';
 import type { SpeechLanguage, SpeechRates } from '../speech/languages';
 import type { GreekPronunciation } from '../speech/pronunciation';
@@ -55,7 +57,11 @@ export type AppEvent =
       word: { lemma: string; strongs: string; gloss: string } | null;
     }
   /** the schedule changed (an answer, or items added): `due` is how many items are due now (src/data/schedule.ts) */
-  | { kind: 'review-due-changed'; due: number };
+  | { kind: 'review-due-changed'; due: number }
+  /** grammar idea `id` (src/data/grammar/ladder.ts) got a level: a review answer, the placement, the idea sheet, the tutor, or the first-open seed */
+  | { kind: 'grammar-level-changed'; id: string; level: GrammarLevelName }
+  /** the reading goal he set in Settings or asked the tutor for; `goal` is null when he cleared it */
+  | { kind: 'goal-changed'; goal: Goal | null };
 
 export type EventKind = AppEvent['kind'];
 export type EventOf<K extends EventKind> = Extract<AppEvent, { kind: K }>;

@@ -6,6 +6,7 @@
 import { TEXT_SIZES } from '../appearance/textSizes';
 import { THEMES } from '../appearance/themes';
 import {
+  getGoal,
   getGreekPronunciation,
   getLayout,
   getSectionHeadings,
@@ -15,6 +16,7 @@ import {
   getTheme,
   getVoice,
   getWeave,
+  setGoal,
   setGreekPronunciation,
   setLayout,
   setSectionHeadings,
@@ -27,10 +29,15 @@ import {
   type SectionHeadings,
   type Weave,
 } from '../data/repositories';
+import { BOOK_INDEX } from '../data/bookIndex';
+import { goalTitle, parseGoal } from '../data/goal';
 import { publish } from '../events/bus';
 import { LAYOUTS } from '../layout/layouts';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from '../speech/languages';
 import { PRONUNCIATIONS } from '../speech/pronunciation';
+
+/** The longest text a talked change of a text setting may hold (the grind's schema says the same). */
+export const TEXT_MAX = 80;
 
 /** What a setting holds: a choice's value (text) or a speed (number). */
 export type SettingValue = string | number;
@@ -40,7 +47,9 @@ export const PHONE_VOICE = 'default';
 
 export type Allowed =
   | { kind: 'choice'; values: readonly { value: string; label: string }[] }
-  | { kind: 'number'; min: number; max: number; step: number };
+  | { kind: 'number'; min: number; max: number; step: number }
+  /** free text the entry checks itself: `valid` takes the text a person or the tutor wrote; `example` is one it takes */
+  | { kind: 'text'; valid(value: string): boolean; example: string };
 
 export interface SettingEntry {
   /** what the grind and `settings_changes` call it: 'greekRate' */
@@ -112,6 +121,29 @@ const rateEntries = LANGUAGES.map(
   }),
 );
 
+// The goal is checked against the committed index (src/data/bookIndex.ts), so a book, chapter or verse the text lacks is refused at once.
+const INDEX = BOOK_INDEX;
+
+/** The goal text names, as `parseGoal` reads it; '' is no goal. */
+const goalOf = (value: string) => (value.trim() === '' ? null : (parseGoal(value, INDEX) ?? null));
+
+const goalEntry: SettingEntry = {
+  key: 'goal',
+  label: 'Goal',
+  hint: 'The passage you are working toward: a book, a chapter or a verse.',
+  allowed: { kind: 'text', valid: (value) => value.trim() === '' || goalOf(value) !== null, example: '1 John 1:1' },
+  read: getGoal,
+  write: async (value) => {
+    const goal = goalOf(String(value));
+    await setGoal(goal ? goalTitle(goal, INDEX) : '');
+    publish({ kind: 'goal-changed', goal });
+  },
+  show: (value) => {
+    const goal = goalOf(String(value));
+    return `Goal: ${goal ? goalTitle(goal, INDEX) : 'none'}`;
+  },
+};
+
 /** Every Settings item, in the order the Settings screen draws them. */
 export const SETTINGS: readonly SettingEntry[] = [
   choice(
@@ -178,6 +210,7 @@ export const SETTINGS: readonly SettingEntry[] = [
       publish({ kind: 'weave-changed', weave: value as Weave });
     },
   ),
+  goalEntry,
   ...voiceEntries,
   ...rateEntries,
   choice(
@@ -206,6 +239,7 @@ export async function writeSetting(key: string, value: SettingValue): Promise<vo
 function allowedValue(entry: SettingEntry, value: unknown): SettingValue | undefined {
   const { allowed } = entry;
   if (allowed.kind === 'choice') return typeof value === 'string' && allowed.values.some((v) => v.value === value) ? value : undefined;
+  if (allowed.kind === 'text') return typeof value === 'string' && value.length <= TEXT_MAX && allowed.valid(value) ? value : undefined;
   return typeof value === 'number' && Number.isFinite(value) && value >= allowed.min && value <= allowed.max ? value : undefined;
 }
 

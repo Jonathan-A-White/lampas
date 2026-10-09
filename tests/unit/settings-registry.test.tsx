@@ -31,10 +31,12 @@ describe('the registry lists every Settings row', () => {
     await screen.findByRole('combobox', { name: 'Greek voice' });
     await screen.findByRole('radiogroup', { name: 'Greek pronunciation' });
     await screen.findByRole('group', { name: 'Weave' });
+    await screen.findByRole('group', { name: 'Goal' });
     const drawn = [
       ...screen.getAllByRole('group'),
       ...screen.getAllByRole('radiogroup'),
-      ...screen.getAllByRole('combobox'),
+      // the Goal group's own Book, Chapter and Verse pickers are parts of the one Goal setting
+      ...screen.getAllByRole('combobox').filter((el) => !el.closest('[role="group"][aria-label="Goal"]')),
       ...screen.getAllByRole('slider'),
     ].map((el) => el.getAttribute('aria-label') ?? el.closest('label')?.querySelector('span')?.textContent ?? '');
     expect(drawn.filter((name) => name === '')).toEqual([]);
@@ -45,7 +47,7 @@ describe('the registry lists every Settings row', () => {
   it('gives every entry a distinct key, a label, a hint, and the values it allows', () => {
     expect(new Set(SETTINGS.map((s) => s.key)).size).toBe(SETTINGS.length);
     expect(SETTINGS.map((s) => s.key).sort()).toEqual(
-      ['englishRate', 'englishVoice', 'greekPronunciation', 'greekRate', 'greekVoice', 'layout', 'sectionHeadings', 'textSize', 'theme', 'weave'],
+      ['englishRate', 'englishVoice', 'goal', 'greekPronunciation', 'greekRate', 'greekVoice', 'layout', 'sectionHeadings', 'textSize', 'theme', 'weave'],
     );
     for (const s of SETTINGS) {
       expect(s.label).not.toBe('');
@@ -179,6 +181,7 @@ describe('currentSettings', () => {
       englishRate: 1,
       greekRate: 1,
       greekPronunciation: 'modern',
+      goal: '',
     });
     await applyChanges([{ key: 'greekRate', value: 0.8 }, { key: 'theme', value: 'dark' }]);
     await db.settings.put({ key: 'voice.english', value: 'Some voice' });
