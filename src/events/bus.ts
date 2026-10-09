@@ -44,7 +44,7 @@ export type AppEvent =
   | { kind: 'reading-stopped' }
   | { kind: 'word-tapped'; strongs: string; verse: number }
   /** a long press on a word of the reader said that word alone, in its own language */
-  | { kind: 'word-spoken'; text: string; language: SpeechLanguage; verse: number }
+  | { kind: 'word-spoken'; text: string; language: SpeechLanguage; verse: number | null }
   /** he tapped Grammar or Sound it out on a word's sheet (Help with this word): the Talk sheet opens on `verse` with the question
    * about `form` sent. `help` is what he wants help with ('word': the sheet's Ask the tutor, nothing in particular) */
   | { kind: 'word-help'; help: 'grammar' | 'sound' | 'word'; form: string; lemma: string; parse: string; chapter: number; verse: number }
