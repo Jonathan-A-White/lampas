@@ -41,6 +41,11 @@ async function openReader(page: Page) {
   });
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  // The Due and New words strips draw once the words have been read from the store, and each pushes the text down
+  // 24 px. A press aimed at where a word was before they came lands on a strip instead (the full-run failure), so
+  // measure only once the page has stopped moving.
+  await expect(page.getByRole('button', { name: /^Due: \d+$/ })).toBeVisible();
+  await expect(page.getByTestId('new-words')).toBeVisible();
 }
 
 const spoken = (page: Page) =>
