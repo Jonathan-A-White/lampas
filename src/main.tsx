@@ -4,6 +4,7 @@ import './index.css';
 import { registerSW } from 'virtual:pwa-register';
 import { App } from './App';
 import { restoreAppearance } from './appearance/appearanceSync';
+import { ErrorBoundary } from './ErrorBoundary';
 import { Gate } from './gate/Gate';
 import { restoreLastRoute } from './nav/lastRoute';
 import { restoreScrolls } from './nav/scrollMemory';
@@ -20,10 +21,12 @@ restoreScrolls();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Gate>
-      <TipsSitting />
-      <App />
-    </Gate>
+    <ErrorBoundary where="app">
+      <Gate>
+        <TipsSitting />
+        <App />
+      </Gate>
+    </ErrorBoundary>
   </StrictMode>,
 );
 

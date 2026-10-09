@@ -159,6 +159,7 @@ src/config.ts        # issuer (default the Governor's key; VITE_LAMPAS_ISSUER ov
 src/gate/            # Gate (wraps App in main.tsx): Unlock until the phone's key holds a lampas licence; 24 h offline grace
 src/services/deviceKey.ts licenceCheck.ts licenceCache.ts  # the key in localStorage; chain lookup (bsv-kit licenceStatus with { issuer }: issuer-signed mint, issuer's revoke); the held memory
 src/UpdateBanner.tsx # 'Update ready, tap to reload'; the tap posts SKIP_WAITING
+src/ErrorBoundary.tsx reportError.ts dataCache.ts  # one render error never blacks out the app (mw-5r3p30.112): ErrorBoundary (around the Gate in main.tsx, and around each chapter's ReaderBody in Reader.tsx ReaderAt) draws 'Something went wrong' + Reload and reports (console.error 'Lampas error screen (where)', localStorage lampas.lastError); dataCache.ts names the worker's chapter cache 'lampas-data-v<N>': raise DATA_CACHE_VERSION in a deploy that changes the shape of public/data, and the old cache is dropped on activate; data/chapter.ts englishRuns still reads the old `s: 1`
 src/sw.ts            # the worker: precache, precache guard, SKIP_WAITING, claim on activate
 src/precacheGuard.ts # never serve a .js/.css whose Content-Type does not fit
 src/services/appUpdate.ts  # watches the registration, tap -> SKIP_WAITING -> reload once, periodic update check
