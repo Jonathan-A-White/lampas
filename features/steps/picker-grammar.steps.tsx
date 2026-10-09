@@ -101,6 +101,8 @@ async function finishRound(rightAnswer: boolean): Promise<void> {
       await user.click(document.querySelector<HTMLElement>('[data-option]') as HTMLElement);
     }
     await user.click(await screen.findByTestId('next'));
+    // Next/Finish stays up while the round writes; a second tap on Finish would draw the end card twice, and the second draw finds the move already made
+    await waitFor(() => expect(screen.queryByTestId('next')).toBeNull());
   }
   await screen.findByTestId('score');
   off();
