@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { GREEK_READING_ANSWER, makeFakePostern, READING_ANSWER } from '../support/fake-postern';
+import { GREEK_READING_ANSWER, INCOMPLETE_ANSWER, makeFakePostern, READING_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
@@ -76,7 +76,12 @@ test('holding Read under verse 28 sends the reading and marks the words to fix, 
   await expect(panel).toContainText('Hold while you read');
   expect(fake.received).toHaveLength(0);
 
-  await holdFor(page, read, 800);
+  // under about a second is too short for a verse: nothing is sent
+  await holdFor(page, read, 700);
+  await expect(panel).toContainText('Hold Read for the whole verse');
+  expect(fake.received).toHaveLength(0);
+
+  await holdFor(page, read, 1200);
   await expect(panel.locator('[data-fix]')).toHaveText(['together', 'purpose']);
   expect(fake.received).toHaveLength(1);
   expect(fake.received[0].grist.kind).toBe('verse-read');
@@ -121,7 +126,7 @@ test('holding Read in the Greek view sends the Greek, marks Greek words and show
   expect(inlineBox?.height).toBeGreaterThanOrEqual(43.5);
   expect(inlineBox?.width).toBeGreaterThanOrEqual(43.5);
 
-  await holdFor(page, read, 800);
+  await holdFor(page, read, 1200);
   await expect(panel.locator('[data-fix]')).toHaveText(['συνεργεῖ', 'πρόθεσιν']);
   expect(fake.received).toHaveLength(1);
   expect(fake.received[0].input).toMatchObject({ reference: 'Romans 8:28', lang: 'el' });
@@ -146,4 +151,24 @@ test('holding Read in the Greek view sends the Greek, marks Greek words and show
   await walk.getByRole('button', { name: 'On to the whole verse', exact: true }).click();
   await expect(walk.getByRole('button', { name: 'Read the whole verse again', exact: true })).toBeVisible();
   await expectFitsPhone(page);
+});
+
+test('a reading of only the first words is headed Read the whole verse, not Well read, at phone width', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: INCOMPLETE_ANSWER };
+  await routePostern(page, fake);
+  await fakeMicrophone(page);
+  await openUnlocked(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Verse 28', exact: true }).click();
+  const panel = page.getByRole('region', { name: 'Reading check' });
+  await holdFor(page, panel.getByRole('button', { name: 'Read', exact: true }), 1200);
+  const result = panel.locator('[data-reading-result="incomplete"]');
+  await expect(result.getByRole('heading', { name: 'Read the whole verse', exact: true })).toBeVisible();
+  await expect(result).toContainText('I heard');
+  await expect(panel).not.toContainText('Well read');
+  await expectFitsPhone(page);
+  await result.scrollIntoViewIfNeeded();
+  await shot(page, 'reading-check-incomplete');
 });

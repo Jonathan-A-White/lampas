@@ -1,7 +1,7 @@
 // src/useReadChecks.ts — the reading check's state, by verse: he holds Read, the phone records (src/audio/recorder.ts), he
 // lets go and the clip goes to the mill (src/services/reading.ts), and the answer is kept in Dexie when it comes. One reading
 // at a time. Pressing stops any reading aloud (page audio could take the microphone); a buzz says the microphone is live;
-// a press under 500 ms is a tap and sends nothing; a slide off the button drops it. A reading keeps waiting when he selects
+// a press under 500 ms is a tap and a hold under 1 s is too short, and neither sends anything; a slide off the button drops it. A reading keeps waiting when he selects
 // another verse, and all stop when the screen goes away. The view decides what is read and in which language the mill
 // scores it (English, or the Greek in the chosen pronunciation's scoring language); the states returned are those of the
 // language shown, a reading in the other one carries on unseen.
@@ -17,14 +17,18 @@ import { stopSpeaking } from './speech/greek';
 
 /** A press shorter than this is a tap, not a reading. */
 export const MIN_READING_MS = 500;
+/** A hold shorter than this is too short to hold a verse (the mill cannot score about a second of sound): nothing is sent. */
+export const SHORT_READING_MS = 1000;
 
 export const TAP_HINT = 'Hold while you read';
+export const SHORT_HINT = 'Hold Read for the whole verse';
 export const DROPPED_NOTE = 'Dropped. Hold to try again';
 
 /** What a verse's reading is doing right now. */
 export type ReadState =
   | { phase: 'recording' }
   | { phase: 'tap' }
+  | { phase: 'short' }
   | { phase: 'dropped' }
   | { phase: 'sending' | 'waiting'; startedAt: number }
   | { phase: 'failed'; failure: TutorFailure | 'mic'; detail: string; recording?: Recording };
@@ -122,6 +126,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
     (h: Hold, recording: Recording): void => {
       if (hold.current === h) hold.current = null;
       if (recording.durationMs < MIN_READING_MS) set(h.verse.n, h.lang, { phase: 'tap' });
+      else if (recording.durationMs < SHORT_READING_MS) set(h.verse.n, h.lang, { phase: 'short' });
       else send(h.verse, h.view, h.lang, recording);
     },
     [send, set],
