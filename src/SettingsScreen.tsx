@@ -410,14 +410,23 @@ function GoalPickers({ saved }: { saved: string }) {
         options={[['', 'Whole chapter'], ...range(info && goal?.chapter ? (info.verses[goal.chapter - 1] ?? 0) : 0).map((n): [string, string] => [String(n), String(n)])]}
         onChange={(n) => goal?.chapter !== undefined && write(n === '' ? { book: goal.book, chapter: goal.chapter } : { ...goal, verse: Number(n) })}
       />
-      <button
-        type="button"
-        disabled={!goal}
-        onClick={() => write(undefined)}
-        className="mt-3 min-h-12 min-w-16 rounded-lg border border-line px-4 text-base font-medium text-fg disabled:opacity-50"
-      >
-        Clear
-      </button>
+      <div className="mt-3 flex gap-3">
+        <button
+          type="button"
+          disabled={!goal}
+          onClick={() => write(undefined)}
+          className="min-h-12 min-w-16 rounded-lg border border-line px-4 text-base font-medium text-fg disabled:opacity-50"
+        >
+          Clear
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate('placement')}
+          className="min-h-12 min-w-16 rounded-lg bg-accent px-4 text-base font-medium text-accent-fg"
+        >
+          Place me
+        </button>
+      </div>
     </div>
   );
 }

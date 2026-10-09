@@ -10,6 +10,7 @@ describe('the address', () => {
     expect(routeOf('#/test')).toBe('test');
     expect(routeOf('#/drill')).toBe('drill');
     expect(routeOf('#/review')).toBe('review');
+    expect(routeOf('#/placement')).toBe('placement');
     expect(routeOf('#/about')).toBe('about');
     expect(routeOf('#/import')).toBe('import');
     expect(routeOf('#/settings')).toBe('settings');
