@@ -73,6 +73,46 @@ Feature: The diglot weave
   Scenario: The Weave setting offers Off, Solid, Solid and learning
     Given Lampas is opened with nothing saved
     When he opens Settings
-    Then the Weave setting offers "Off", "Solid words" and "Solid and learning words"
+    Then the Weave setting offers "Off", "Solid" and "+ Learning"
     And the Weave setting allows the values "off", "solid" and "solid+learning"
+
+  Scenario: Settings > Weave has a Words row and a Grammar row
+    Given Lampas is opened with nothing saved
+    When he opens Settings
+    Then the Words row is labelled "Words" and offers "Off", "Solid" and "+ Learning"
+    And the Grammar row is labelled "Grammar" and offers "Any", "Solid" and "+ Frontier"
+    And the Grammar setting allows the values "any", "solid" and "solid+frontier"
+    And the Grammar row is set to "Any"
+
+  Scenario: Solid words with Solid grammar leaves only the chunks whose forms are solid in Greek
+    Given Lampas is opened with nothing saved
+    And every grammar idea is solid except the dative case, which is not yet
+    When he sets Weave to Solid words
+    And he sets the Weave grammar to Solid
+    Then the Greek "ἐν" is woven in verse 1
+    And "Christ" in verse 1 is English
+    And "Jesus," in verse 1 is also English
+
+  Scenario: Frontier grammar brings back the chunks whose grammar is at the frontier
+    Given Lampas is opened with nothing saved
+    And every grammar idea is solid except the dative case, which is at the frontier
+    And he sets Weave to Solid words
+    And he sets the Weave grammar to Solid
+    And "Christ" in verse 1 is English
+    When he sets the Weave grammar to + Frontier
+    Then the Greek "Χριστός" is woven in verse 1
+    And the Greek "Ἰησοῦς" is also woven in verse 1
+
+  Scenario: Grammar Any weaves as before
+    Given Lampas is opened with nothing saved
+    And no grammar idea has a level
+    When he sets Weave to Solid words
+    Then the Weave grammar is Any
+    And the Greek "Χριστός" is woven in verse 1
+    And every woven chunk of verse 1 is a chunk whose Greek words are all solid
+
+  Scenario: The four combinations are each one tap
+    Given Lampas is opened with nothing saved
+    When he opens Settings
+    Then each of Solid words, + Learning words, with Solid grammar, + Frontier grammar is set by one tap on each row
 

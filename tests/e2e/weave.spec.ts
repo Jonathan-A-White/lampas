@@ -14,12 +14,12 @@ test('the Weave switch swaps his solid words for Greek, big and tappable, at pho
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   const group = page.getByRole('group', { name: 'Weave' });
   await expect(group).toBeVisible();
-  for (const label of ['Off', 'Solid words']) {
+  for (const label of ['Off', 'Solid']) {
     const box = await group.getByRole('button', { name: label, exact: true }).boundingBox();
     expect(box?.height).toBeGreaterThanOrEqual(43.5);
     expect(box?.width).toBeGreaterThanOrEqual(43.5);
   }
-  await group.getByRole('button', { name: 'Solid words', exact: true }).click();
+  await group.getByRole('button', { name: 'Solid', exact: true }).click();
   await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-weave', 'solid');
 

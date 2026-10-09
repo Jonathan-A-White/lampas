@@ -104,7 +104,7 @@ const goBack = async () => {
   await user.click(screen.getByRole('button', { name: '‹ Reader' }));
   await waitForReader();
 };
-const setWeaveInSettings = async (label: 'Off' | 'Solid words') => {
+const setWeaveInSettings = async (label: 'Off' | 'Solid') => {
   await user.click(within(screen.getByRole('group', { name: 'Weave' })).getByRole('button', { name: label }));
   await waitFor(() => expect(latest('weave-changed')?.weave).toBe(label === 'Off' ? 'off' : 'solid'));
 };
@@ -129,7 +129,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Turning the weave on in Settings weaves the reader', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH, GREEK]));
     When("he taps the gear in the reader's header", openSettings);
-    And('he sets Weave to Solid words in Settings', () => setWeaveInSettings('Solid words'));
+    And('he sets Weave to Solid words in Settings', () => setWeaveInSettings('Solid'));
     Then('the bus has heard the weave is solid', () => expect(latest('weave-changed')?.weave).toBe('solid'));
     When('he taps Back on the Settings screen', goBack);
     Then('verse 1 of the reader has woven Greek words', async () => {
@@ -185,7 +185,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Settings survive a reload', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on a phone with two Greek voices', () => openWith([ENGLISH, GREEK, CYPRIOT]));
     When("he taps the gear in the reader's header", openSettings);
-    And('he sets Weave to Solid words in Settings', () => setWeaveInSettings('Solid words'));
+    And('he sets Weave to Solid words in Settings', () => setWeaveInSettings('Solid'));
     And('he chooses the Greek voice {string} in Settings', async (_, name: string) => {
       await user.selectOptions(await greekPicker(), name);
       await waitFor(async () => expect((await db.settings.get('voice.greek'))?.value).toBe(name));
@@ -205,7 +205,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('Weave is set to Solid words in Settings', async () => {
       await waitFor(() =>
-        expect(within(screen.getByRole('group', { name: 'Weave' })).getByRole('button', { name: 'Solid words' })).toHaveAttribute('aria-pressed', 'true'),
+        expect(within(screen.getByRole('group', { name: 'Weave' })).getByRole('button', { name: 'Solid' })).toHaveAttribute('aria-pressed', 'true'),
       );
     });
     And('the Greek voice picker shows {string}', async (_, name: string) => {
