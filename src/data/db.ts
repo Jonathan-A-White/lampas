@@ -153,6 +153,16 @@ export interface SettingRow {
   value: string;
 }
 
+/** How many times he used one part of the app on one day: an event kind ('verse-selected'), 'screen:<route>' or 'chapter-changed'. Counts only. */
+export interface UsageRow {
+  /** '2026-10-01|verse-selected' */
+  key: string;
+  /** the local day, 'YYYY-MM-DD' */
+  day: string;
+  name: string;
+  count: number;
+}
+
 // Never edit an old version(): repeat the whole stores map on each bump with a '// vN:' comment
 // (docs/pwa-best-practices.md section 15).
 class LampasDB extends Dexie {
@@ -167,6 +177,7 @@ class LampasDB extends Dexie {
   grammarKnown!: EntityTable<KnownTerm, 'term'>;
   reviews!: EntityTable<Review, 'kind' | 'id'>;
   grammarLevels!: EntityTable<GrammarLevel, 'id'>;
+  usage!: EntityTable<UsageRow, 'key'>;
 
   constructor() {
     super('lampas');
@@ -259,6 +270,21 @@ class LampasDB extends Dexie {
       grammarKnown: 'term',
       reviews: '[kind+id], due, kind',
       grammarLevels: 'id, level',
+    });
+    // v12: how often he used each part of the app, a row per day and name {key 'day|name', day, name, count}; counts only (src/tips/).
+    this.version(12).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
+      reviews: '[kind+id], due, kind',
+      grammarLevels: 'id, level',
+      usage: 'key, day, name',
     });
   }
 }
