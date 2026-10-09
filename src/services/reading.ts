@@ -14,6 +14,8 @@ export const MAX_FOCUS_WORDS = 8;
 export const MAX_CHUNKS = 12;
 /** The largest index a focus word may carry (the schema's maximum). */
 export const MAX_WORD_INDEX = 2000;
+/** The latest second a focus word's times may name (the schema's maximum; a reading is kept to a minute). */
+export const MAX_SECONDS = 600;
 /** The longest respelling a focus word's `say` may be (the schema's maximum). */
 export const MAX_SAY = 60;
 
@@ -35,6 +37,9 @@ export interface FocusWord {
   tip: string;
   /** how the English voice should be given the word to say it right ('blest' for 'blessed'); absent when the word is spoken as written */
   say?: string;
+  /** where the word stands in his recording, in seconds, copied from the scorer's times; both or neither (absent: no 'Me' button) */
+  start?: number;
+  end?: number;
 }
 
 /** What the grind answers (grinds/verse-read.answer.schema.json). */
@@ -47,6 +52,14 @@ export interface VerseReadAnswer {
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 const isText = (value: unknown, max: number): value is string => typeof value === 'string' && value.length > 0 && value.length <= max;
 
+const OPTIONAL_KEYS = ['say', 'start', 'end'] as const;
+/** Both times or neither; each from 0 to the schema's maximum, the end after the start. */
+const hasTimes = (f: Record<string, unknown>): boolean => {
+  if (f.start === undefined && f.end === undefined) return true;
+  const { start, end } = f;
+  return typeof start === 'number' && typeof end === 'number' && start >= 0 && end > start && end <= MAX_SECONDS;
+};
+
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isVerseReadAnswer(value: unknown): value is VerseReadAnswer {
   if (!isObject(value) || Object.keys(value).length !== 3) return false;
@@ -56,8 +69,9 @@ export function isVerseReadAnswer(value: unknown): value is VerseReadAnswer {
   return value.focus_words.every(
     (f) =>
       isObject(f) &&
-      Object.keys(f).length === (f.say === undefined ? 4 : 5) &&
+      Object.keys(f).length === 4 + OPTIONAL_KEYS.filter((k) => f[k] !== undefined).length &&
       (f.say === undefined || isText(f.say, MAX_SAY)) &&
+      hasTimes(f) &&
       isText(f.word, 60) &&
       typeof f.index === 'number' &&
       Number.isInteger(f.index) &&

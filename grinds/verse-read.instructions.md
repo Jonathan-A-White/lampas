@@ -13,7 +13,7 @@ You receive a Verse Read Request (a JSON object) with a recording scored by the 
 - `lang`: the language read, `en` (English) or `el` (Greek, read in modern Greek pronunciation).
 - `reading_result`: what the scorer heard of the recording, word by word against `target_text`: for each word its
   `error` (`none`, `omission`, `insertion`, `mispronunciation` or `hesitation`) and an `accuracy`, with the
-  phonemes expected and produced, and an `accuracy` for the whole reading. It may carry an `error` text instead when
+  phonemes expected and produced and, when the word was heard, its `start` and `end` in seconds, and an `accuracy` for the whole reading. It may carry an `error` text instead when
   a scorer failed.
 
 Answer with a Verse Read Answer (grinds/verse-read.answer.schema.json): `verdict`, `focus_words` and `note`.
@@ -38,6 +38,10 @@ Answer with a Verse Read Answer (grinds/verse-read.answer.schema.json): `verdict
   the English voice speaks right, in plain letters, such as `blest` for `blessed` (one beat, not two) or `led` for `lead` read as the
   metal. The phone speaks `say`, and only `say`, when he taps the speaker beside that word, so write the word as it should sound and
   nothing else: no tip, no hyphens or capitals for emphasis. Leave `say` out when the written word is spoken right, and always in a Greek reading.
+- `start` and `end` are optional, and only copied: when the word you mark has times in `reading_result`, give its `start` and
+  `end` exactly as the scorer gave them, in seconds in the recording (a number, `end` after `start`). The phone plays his own
+  clip of just that word from them, beside the word as it should sound. When the scorer gave no times for the word (they are
+  null or missing, as for a word left out), leave them out, both together; never estimate or invent a time.
 - `index` is the place of that exact word in `target_text`, counting from 0: the first word is 0, the second is 1. Take it
   from the position of the word in the `reading_result` word list, which is `target_text` split into words in order.
   A word that stands twice in the verse (such as `life` or `to`) is marked only at the place he misread it, so give the

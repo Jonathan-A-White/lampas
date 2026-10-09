@@ -29,7 +29,9 @@
             "items": { "type": "string", "minLength": 1, "maxLength": 20 }
           },
           "tip": { "description": "One short, kind line on how to say it.", "type": "string", "minLength": 1, "maxLength": 200 },
-          "say": { "description": "Optional. How to spell the word so that a text-to-speech voice says it right when it would say the written word wrongly, such as blest for blessed. The phone speaks this, and only this, when he taps the speaker beside the word. Leave it out when the written word is spoken right.", "type": "string", "minLength": 1, "maxLength": 60 }
+          "say": { "description": "Optional. How to spell the word so that a text-to-speech voice says it right when it would say the written word wrongly, such as blest for blessed. The phone speaks this, and only this, when he taps the speaker beside the word. Leave it out when the written word is spoken right.", "type": "string", "minLength": 1, "maxLength": 60 },
+          "start": { "description": "Optional. Where this word begins in the recording, in seconds, copied from this word's start in reading_result. The phone plays just his clip of the word from here. Give it with end, or leave both out when reading_result gave no times for the word.", "type": "number", "minimum": 0, "maximum": 600 },
+          "end": { "description": "Optional. Where this word ends in the recording, in seconds, copied from this word's end in reading_result. Always after start. Give it with start, or leave both out.", "type": "number", "minimum": 0, "maximum": 600 }
         }
       }
     },

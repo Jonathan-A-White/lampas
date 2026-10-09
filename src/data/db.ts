@@ -99,6 +99,9 @@ export interface FixWord {
   tip: string;
   /** the respelling the English voice speaks right ('blest' for 'blessed'); a reading kept before it existed, or a word the voice says right, has none */
   say?: string;
+  /** where the word stands in the recording, seconds (both or neither); a reading kept before the scorer gave times has none, and no 'Me' button */
+  start?: number;
+  end?: number;
 }
 
 /** The result of the last reading check of a verse, kept so it is there on return. */
