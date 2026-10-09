@@ -1,5 +1,5 @@
-// features/steps/verse-sheet.steps.tsx — runs features/verse-sheet.feature: the panel under a tapped verse is headed by the
-// reference and shows the verse's own text in the view's language, before the Read button.
+// features/steps/verse-sheet.steps.tsx — runs features/verse-sheet.feature: the Verse view of a tapped verse is headed by the
+// reference and shows the verse's own text in the view's language, big, above its hold bar.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -56,14 +56,14 @@ const readerLine = (n: number): HTMLElement => {
 const sheetVerse = (): HTMLElement => panel().querySelector<HTMLElement>('[data-sheet-verse]') as HTMLElement;
 
 
-const panel = () => screen.getByRole('region', { name: 'Reading check' });
+const panel = () => screen.getByRole('region', { name: 'Verse view' });
 
 const feature = await loadFeature('features/verse-sheet.feature');
 
 describeFeature(feature, ({ Scenario }) => {
   const tapNumber = async () => {
     await user.click(await screen.findByRole('button', { name: 'Verse 22', exact: true }));
-    await screen.findByRole('region', { name: 'Reading check' });
+    await screen.findByRole('region', { name: 'Verse view' });
   };
   const headed = (_: unknown, reference: string) => {
     expect(within(panel()).getByRole('heading', { name: reference })).toBeInTheDocument();
@@ -76,24 +76,24 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const verseBeforeRead = () => {
     const text = panel().querySelector('[data-sheet-verse]') as HTMLElement;
-    const read = within(panel()).getByRole('button', { name: 'Read', exact: true });
-    expect(text.compareDocumentPosition(read) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const bar = within(panel()).getByRole('button', { name: /^Hold to / });
+    expect(text.compareDocumentPosition(bar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   };
 
   Scenario('The Greek view shows the Greek of Romans 8:22 under the reference', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the Greek view', () => open('greek'));
     When('he taps the number of verse 22', tapNumber);
-    Then('the panel is headed {string}', headed);
-    And('the panel shows the Greek of verse 22 in Greek type', showsVerse('greek', 'grc'));
-    And('the verse comes before the Read button', verseBeforeRead);
+    Then('the Verse view is headed {string}', headed);
+    And('the Verse view shows the Greek of verse 22 in Greek type', showsVerse('greek', 'grc'));
+    And('the verse comes before the hold bar', verseBeforeRead);
   });
 
   Scenario('The English view shows the English of Romans 8:22 under the reference', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view', () => open('english'));
     When('he taps the number of verse 22', tapNumber);
-    Then('the panel is headed {string}', headed);
-    And('the panel shows the English of verse 22 in English type', showsVerse('english', 'en'));
-    And('the verse comes before the Read button', verseBeforeRead);
+    Then('the Verse view is headed {string}', headed);
+    And('the Verse view shows the English of verse 22 in English type', showsVerse('english', 'en'));
+    And('the verse comes before the hold bar', verseBeforeRead);
   });
 
   Scenario('A kept reading with a word from another verse does not head the panel', ({ Given, And, When, Then }) => {
@@ -102,16 +102,19 @@ describeFeature(feature, ({ Scenario }) => {
       await keepVerseReading('rom.8.22', 'some-to-fix', [{ word, chunks: ['ἀπ', 'εκ', 'δεχ', 'όμεθα'], tip: 'Say it slowly.' }], 'One word.', 'el');
     });
     When('he taps the number of verse 22', tapNumber);
+    And('he chooses {string}', async (_, name: string) => {
+      await user.click(await within(panel()).findByRole('button', { name, exact: true }));
+    });
     And('he taps {string}', async (_, name: string) => {
       await user.click(await within(panel()).findByRole('button', { name, exact: true }));
     });
-    Then('the panel is headed {string}', headed);
-    And('the panel shows the Greek of verse 22 in Greek type', showsVerse('greek', 'grc'));
+    Then('the Verse view is headed {string}', headed);
+    And('the Verse view shows the Greek of verse 22 in Greek type', showsVerse('greek', 'grc'));
   });
 
   const tapNumberOf = (n: number) => async () => {
     await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
-    await screen.findByRole('region', { name: 'Reading check' });
+    await screen.findByRole('region', { name: 'Verse view' });
   };
   const sameWords = () => waitFor(() => expect(squash(sheetVerse().textContent)).toBe(squash(readerLine(1).textContent)));
   const hasWoven = () => waitFor(() => expect(sheetVerse().querySelectorAll('[data-woven]').length).toBeGreaterThan(0));
@@ -121,45 +124,45 @@ describeFeature(feature, ({ Scenario }) => {
     await act(() => setWeave(weaveOf(weave)));
   };
 
-  Scenario('With the weave on, the English view\'s sheet shows the verse woven as the reader does', ({ Given, When, Then, And }) => {
+  Scenario('With the weave on, the English view\'s Verse view shows the verse woven as the reader does', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith('english'));
     When('he taps the number of verse 1', tapNumberOf(1));
-    Then('the sheet\'s verse has the same words as the reader\'s line for verse 1', sameWords);
-    And('the sheet\'s verse has a Greek word woven in', async () => {
+    Then('the Verse view\'s verse has the same words as the reader\'s line for verse 1', sameWords);
+    And('the Verse view\'s verse has a Greek word woven in', async () => {
       await hasWoven();
       expect(sheetVerse().querySelector('[data-woven]')).toHaveAttribute('lang', 'grc');
     });
-    And('the sheet\'s woven words are tappable like the reader\'s', async () => {
+    And('the Verse view\'s woven words are tappable like the reader\'s', async () => {
       await user.click(sheetVerse().querySelector('[data-woven]') as HTMLElement);
       expect(await screen.findByRole('dialog')).toBeInTheDocument();
     });
   });
 
-  Scenario('With the weave off, the English view\'s sheet shows plain English', ({ Given, When, Then, And }) => {
+  Scenario('With the weave off, the English view\'s Verse view shows plain English', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith('english'));
     When('he taps the number of verse 1', tapNumberOf(1));
-    Then('the sheet\'s verse has the same words as the reader\'s line for verse 1', sameWords);
-    And('the sheet\'s verse has no Greek word woven in', noWoven);
+    Then('the Verse view\'s verse has the same words as the reader\'s line for verse 1', sameWords);
+    And('the Verse view\'s verse has no Greek word woven in', noWoven);
   });
 
-  Scenario('The Greek view\'s sheet shows the Greek, whatever the weave', ({ Given, When, Then, And }) => {
+  Scenario('The Greek view\'s Verse view shows the Greek, whatever the weave', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the Greek view with the weave {string}', openWith('greek'));
     When('he taps the number of verse 1', tapNumberOf(1));
-    Then('the sheet\'s verse has the same words as the reader\'s line for verse 1', sameWords);
-    And('the sheet\'s verse has no Greek word woven in', noWoven);
+    Then('the Verse view\'s verse has the same words as the reader\'s line for verse 1', sameWords);
+    And('the Verse view\'s verse has no Greek word woven in', noWoven);
   });
 
-  Scenario('The sheet follows the weave and the view when they change while it is open', ({ Given, And, When, Then }) => {
+  Scenario('The Verse view follows the weave and the view when they change while it is open', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith('english'));
     And('he taps the number of verse 1', tapNumberOf(1));
     When('the weave is set to {string}', setWeaveTo);
-    Then('the sheet\'s verse has a Greek word woven in', hasWoven);
-    And('the sheet\'s verse has the same words as the reader\'s line for verse 1', sameWords);
+    Then('the Verse view\'s verse has a Greek word woven in', hasWoven);
+    And('the Verse view\'s verse has the same words as the reader\'s line for verse 1', sameWords);
     When('the weave is then set to {string}', setWeaveTo);
-    Then('the sheet\'s verse has no Greek word woven in', noWoven);
+    Then('the Verse view\'s verse has no Greek word woven in', noWoven);
     When('the view is set to Greek', async () => {
       await act(() => setReaderView('greek'));
     });
-    Then('the sheet\'s verse shows the Greek of verse 1 as the reader\'s line does', sameWords);
+    Then('the Verse view\'s verse shows the Greek of verse 1 as the reader\'s line does', sameWords);
   });
 });

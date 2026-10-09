@@ -89,7 +89,7 @@ test('holding Talk shows his words live in the sheet and sends them on release',
   await expect(live).toHaveCount(0);
 });
 
-test('a long press on a verse number talks about that verse, and a tap on it still selects it', async ({ page }) => {
+test('a long press on a verse number talks about that verse, and a tap on it opens its Verse view', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: TALK_ANSWER };
@@ -101,7 +101,8 @@ test('a long press on a verse number talks about that verse, and a tap on it sti
   await number.scrollIntoViewIfNeeded();
   await number.click();
   await expect(number).toHaveAttribute('aria-pressed', 'true');
-  await number.click();
+  await expect(page.getByRole('region', { name: 'Verse view' })).toBeVisible();
+  await page.getByRole('button', { name: '‹ Reader' }).click();
   await expect(number).toHaveAttribute('aria-pressed', 'false');
   await expect(page.getByRole('dialog')).toHaveCount(0);
 

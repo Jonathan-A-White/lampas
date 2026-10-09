@@ -3,6 +3,7 @@ import { makeFakePostern, SYNERGEI_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { chooseAction } from './verse-view';
 
 // The page never scrolls and never grows wider than the window.
 async function expectFitsPhone(page: Page) {
@@ -15,13 +16,13 @@ async function expectFitsPhone(page: Page) {
   expect(scrollTop).toBe(0);
 }
 
-test('the Ask box under verse 28 sends the question and shows the answer, at phone width', async ({ page }) => {
+test('the Ask box of the Verse view on verse 28 sends the question and shows the answer, at phone width', async ({ page }) => {
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER };
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.goto('/');
-  await page.getByRole('button', { name: 'Verse 28', exact: true }).click();
+  await chooseAction(page, 28, 'Ask the tutor');
 
   const box = page.getByRole('region', { name: 'Ask the tutor' });
   const field = box.getByRole('textbox', { name: 'Your question' });

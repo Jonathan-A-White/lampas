@@ -49,9 +49,11 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(readerOf(window.location.hash)).toEqual({ book: 'rom', chapter: 8, view: 'greek', weave: 'off', verse: 28 }));
       expect(window.location.hash).toBe('#/?b=rom&c=8&view=greek&weave=off&v=28');
     });
-    When('he taps verse 28 again', () => user.click(screen.getByRole('button', { name: 'Verse 28' })));
+    When('he closes the Verse view', () => user.click(screen.getByRole('button', { name: '‹ Reader' })));
     Then('the address names no verse', async () => {
-      await waitFor(() => expect(window.location.hash).toBe('#/?b=rom&c=8&view=greek&weave=off'));
+      // the entry before the Verse view is the one he tapped from: the same place, no verse (its weave may have reached the address a moment later)
+      await waitFor(() => expect(readerOf(window.location.hash)).toMatchObject({ book: 'rom', chapter: 8, view: 'greek' }));
+      expect(readerOf(window.location.hash).verse).toBeUndefined();
     });
   });
 

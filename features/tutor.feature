@@ -1,5 +1,5 @@
 Feature: Ask the tutor about a verse
-  Under the selected verse sits an Ask box. He types a question; Lampas sends a grist through Postern
+  The Verse view's Ask the tutor action holds an Ask box. He types a question (or holds Hold to ask and says it); Lampas sends a grist through Postern
   (bsv-kit/grist) with the verse's Greek and English, his question and his solid words, and shows the
   tutor's answer under the verse. The answers are kept on the phone. These scenarios run against a fake
   Postern whose mill opens the grist and answers it; the live backend is tried by `npm run e2e:live`.

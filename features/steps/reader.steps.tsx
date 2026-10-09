@@ -161,17 +161,25 @@ describeFeature(feature, ({ Scenario }) => {
     Then('no word sheet is open', () => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
-  Scenario('Tapping a verse number selects that verse', ({ Given, When, Then }) => {
+  Scenario('Tapping a verse number opens that verse on a screen of its own, and closing it selects nothing', ({ Given, When, Then }) => {
     Given('Lampas is opened with nothing saved', openFresh);
-    When('he taps the number of verse {int}', async (_, n: number) => user.click(numberButton(n)));
-    Then('verse {int} is selected', (_, n: number) => expect(selectedVerses()).toEqual([n]));
-    When('he taps the number of verse {int} instead', async (_, n: number) => user.click(numberButton(n)));
-    Then('verse {int} is selected and verse {int} is not', (_, n: number, m: number) => {
-      expect(selectedVerses()).toEqual([n]);
-      expect(selectedVerses()).not.toContain(m);
+    When('he taps the number of verse 3', async () => user.click(numberButton(3)));
+    Then('verse 3 is selected and its Verse view is open', async () => {
+      expect(selectedVerses()).toEqual([3]);
+      await screen.findByRole('region', { name: 'Verse view' });
+      expect(document.querySelector('[data-verse-view]')).toHaveAttribute('data-verse-view', '3');
     });
-    When('he taps the number of verse {int} again', async (_, n: number) => user.click(numberButton(n)));
-    Then('no verse is selected', () => expect(selectedVerses()).toEqual([]));
+    When('he closes the Verse view', async () => user.click(screen.getByRole('button', { name: '‹ Reader' })));
+    Then('no verse is selected', async () => {
+      await waitFor(() => expect(selectedVerses()).toEqual([]));
+      expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull();
+    });
+    When('he taps the number of verse 5', async () => user.click(numberButton(5)));
+    Then('verse 5 is selected and verse 3 is not', async () => {
+      await screen.findByRole('region', { name: 'Verse view' });
+      expect(selectedVerses()).toEqual([5]);
+      expect(selectedVerses()).not.toContain(3);
+    });
   });
 
   Scenario('The switch is remembered after reload', ({ Given, And, When, Then }) => {

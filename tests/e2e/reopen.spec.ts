@@ -13,8 +13,6 @@ test('closing the app and opening it again puts him back, and Back walks the pla
 
   await first.getByRole('button', { name: 'Greek', exact: true }).click();
   await expect(first.locator('[data-reader]')).toHaveAttribute('data-view', 'greek');
-  await first.getByRole('button', { name: 'Verse 28', exact: true }).click();
-  await expect(first.locator('[data-verse="28"]')).toHaveAttribute('data-selected', 'true');
   await first.locator('[data-reader]').evaluate((el) => (el.scrollTop = 900));
   const left = await scrollTop(first);
   expect(left).toBeGreaterThan(500);
@@ -44,15 +42,10 @@ test('closing the app and opening it again puts him back, and Back walks the pla
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'greek');
-  await expect(page.locator('[data-verse="28"]')).toHaveAttribute('data-selected', 'true');
   await expect.poll(() => scrollTop(page), { timeout: 5000 }).toBeGreaterThan(left - 5);
   expect(await scrollTop(page)).toBeLessThan(left + 5);
   await shot(page, 'reopen-reader');
 
-  // past the oldest place Back lands on Home: the reader with nothing selected
-  await page.goBack();
-  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-  await expect(page.locator('[data-selected="true"]')).toHaveCount(0);
   await context.close();
 });
 
@@ -62,4 +55,27 @@ test('a reload keeps him on the same screen, verse and view', async ({ page }) =
   await page.getByRole('button', { name: 'Verse 5', exact: true }).click();
   await page.reload();
   await expect(page.locator('[data-verse="5"]')).toHaveAttribute('data-selected', 'true');
+});
+
+test('closing the app on a verse reopens its Verse view, and Back returns to the Reader', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
+  const first = await context.newPage();
+  await openUnlocked(first);
+  await first.goto('/');
+  await first.getByRole('button', { name: 'Verse 28', exact: true }).click();
+  await expect(first.getByRole('region', { name: 'Verse view' }).getByRole('heading', { name: 'Romans 8:28' })).toBeVisible();
+  await first.waitForTimeout(600);
+  await first.close();
+
+  const page = await context.newPage();
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.getByRole('region', { name: 'Verse view' }).getByRole('heading', { name: 'Romans 8:28' })).toBeVisible();
+  await shot(page, 'reopen-verse-view');
+
+  await page.goBack();
+  await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await expect(page.locator('[data-selected="true"]')).toHaveCount(0);
+  await context.close();
 });

@@ -1,5 +1,5 @@
 // features/steps/links.steps.tsx — runs features/links.feature: a link in the address (#/?ref=… or #/?word=…) opens the reader on a verse
-// or the word sheet of a word, a reference Lampas does not hold opens the nearest place it does with a notice, and the verse panel and the
+// or the word sheet of a word, a reference Lampas does not hold opens the nearest place it does with a notice, and the Verse view and the
 // word sheet copy (or share) the https form of their link. fetch is stubbed with the committed public/data files; the clipboard and
 // navigator.share are replaced here with recorders.
 import '@testing-library/react/dont-cleanup-after-each';
@@ -62,7 +62,7 @@ async function openLink(hash: string): Promise<void> {
 
 const verseEl = (n: number): HTMLElement | null => document.querySelector<HTMLElement>(`[data-verse="${n}"]`);
 const notice = () => document.querySelector<HTMLElement>('[data-link-notice]');
-const panel = () => screen.getByRole('region', { name: 'Reading check' });
+const panel = () => screen.getByRole('region', { name: 'Verse view' });
 const wordSheet = () => screen.getByRole('dialog', { name: 'Word' });
 
 async function headed(title: string): Promise<void> {
@@ -190,34 +190,34 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('The verse panel copies the https link of its verse', ({ Given, When, Then, And }) => {
+  Scenario('The Verse view copies the https link of its verse', ({ Given, When, Then, And }) => {
     Given('a link {string} is opened', (_, hash: string) => openLink(hash));
-    When('he taps Copy link on the verse panel', async () => {
+    When('he taps Copy link on the Verse view', async () => {
       await headed('Romans 8');
-      await user.click(within(await screen.findByRole('region', { name: 'Reading check' })).getByRole('button', { name: 'Copy link' }));
+      await user.click(within(await screen.findByRole('region', { name: 'Verse view' })).getByRole('button', { name: 'Copy link' }));
     });
     Then('the clipboard holds {string}', async (_, url: string) => {
       await waitFor(() => expect(copied).toEqual([url]));
     });
-    And('the panel says {string}', async (_, text: string) => {
+    And('the Verse view says {string}', async (_, text: string) => {
       await waitFor(() => expect(panel()).toHaveTextContent(text));
     });
   });
 
-  Scenario('The verse panel has no Share button where the phone cannot share', ({ Given, Then }) => {
+  Scenario('The Verse view has no Share button where the phone cannot share', ({ Given, Then }) => {
     Given('a link {string} is opened', async (_, hash: string) => {
       unshare();
       await openLink(hash);
     });
-    Then('the verse panel has no Share button', async () => {
+    Then('the Verse view has no Share button', async () => {
       await headed('Romans 8');
-      await screen.findByRole('region', { name: 'Reading check' });
+      await screen.findByRole('region', { name: 'Verse view' });
       expect(within(panel()).getByRole('button', { name: 'Copy link' })).toBeInTheDocument();
       expect(within(panel()).queryByRole('button', { name: 'Share' })).toBeNull();
     });
   });
 
-  Scenario('The verse panel shares the https link of its verse where the phone can share', ({ Given, And, When, Then }) => {
+  Scenario('The Verse view shares the https link of its verse where the phone can share', ({ Given, And, When, Then }) => {
     Given('the phone can share', () => {
       shared = [];
       Object.defineProperty(window.navigator, 'share', {
@@ -229,9 +229,9 @@ describeFeature(feature, ({ Scenario }) => {
       });
     });
     And('a link {string} is opened', (_, hash: string) => openLink(hash));
-    When('he taps Share on the verse panel', async () => {
+    When('he taps Share on the Verse view', async () => {
       await headed('Romans 8');
-      await user.click(within(await screen.findByRole('region', { name: 'Reading check' })).getByRole('button', { name: 'Share' }));
+      await user.click(within(await screen.findByRole('region', { name: 'Verse view' })).getByRole('button', { name: 'Share' }));
     });
     Then('the phone is asked to share {string}', async (_, url: string) => {
       await waitFor(() => expect(shared).toHaveLength(1));
@@ -256,11 +256,11 @@ describeFeature(feature, ({ Scenario }) => {
     And('the clipboard refuses', () => {
       stubClipboard(true);
     });
-    When('he taps Copy link on the verse panel', async () => {
+    When('he taps Copy link on the Verse view', async () => {
       await headed('Romans 8');
-      await user.click(within(await screen.findByRole('region', { name: 'Reading check' })).getByRole('button', { name: 'Copy link' }));
+      await user.click(within(await screen.findByRole('region', { name: 'Verse view' })).getByRole('button', { name: 'Copy link' }));
     });
-    Then('the panel shows the link {string} to copy by hand', async (_, url: string) => {
+    Then('the Verse view shows the link {string} to copy by hand', async (_, url: string) => {
       await waitFor(() => expect(within(panel()).getByRole('textbox', { name: 'Link to copy' })).toHaveValue(url));
     });
   });

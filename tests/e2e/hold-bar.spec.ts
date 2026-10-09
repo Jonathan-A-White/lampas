@@ -1,11 +1,11 @@
 // tests/e2e/hold-bar.spec.ts — Postern's hold-to-talk bar (src/cockpit/TalkLineScreen.tsx: h-24 w-full max-w-xl rounded-3xl,
-// a mic over the label) is the one hold control of the Talk sheet, the reader's foot Talk bar and the reading check's
-// whole-verse Read. Layout is only provable in a browser; phone width 360 x 740.
+// a mic over the label) is the one hold control of the Talk sheet, the reader's foot Talk bar and the Verse view's foot bar. Layout is only provable in a browser; phone width 360 x 740.
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { GREEK_READING_ANSWER, makeFakePostern, READING_ANSWER, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { chooseAction, openTalkAbout } from './verse-view';
 
 const VIEWPORT = { width: 360, height: 740 };
 /** Postern's bar: h-24 = 6 rem = 96 px (TalkLineScreen.tsx line 561) */
@@ -48,8 +48,7 @@ test("the Talk sheet's hold-to-talk bar is the last control at the foot, the she
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.goto('/');
-  await page.getByRole('button', { name: 'Verse 28', exact: true }).click();
-  await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
   await expect(sheet).toBeVisible();
 
@@ -93,7 +92,7 @@ test("the reader's foot Talk bar is Postern's bar", async ({ page }) => {
 });
 
 for (const [view, answer] of [['english', READING_ANSWER], ['greek', GREEK_READING_ANSWER]] as const) {
-  test(`the reading check's Read and 'Read the whole verse again' are Postern's bar (${view})`, async ({ page }) => {
+  test(`the Verse view's one hold bar is Postern's bar, in Read it aloud and in 'Read the whole verse again' (${view})`, async ({ page }) => {
     await page.setViewportSize(VIEWPORT);
     const fake = makeFakePostern();
     fake.autoReply = { status: 'answered', answer };
@@ -101,11 +100,14 @@ for (const [view, answer] of [['english', READING_ANSWER], ['greek', GREEK_READI
     await fakeMicrophone(page);
     await openUnlocked(page);
     await page.goto(view === 'greek' ? '/#/?c=8&view=greek' : '/');
-    await page.getByRole('button', { name: 'Verse 28', exact: true }).click();
-    const panel = page.getByRole('region', { name: 'Reading check' });
-    const read = panel.getByRole('button', { name: 'Read', exact: true });
+    const verseView = await chooseAction(page, 28, 'Read it aloud');
+    const panel = verseView.getByRole('region', { name: 'Reading check' });
+    const read = verseView.getByRole('button', { name: 'Hold to read verse 28', exact: true });
     await expect(read).toHaveAttribute('data-hold-bar', '');
+    await expect(page.locator('[data-hold-bar]')).toHaveCount(1);
     expect((await box(read)).height).toBeGreaterThanOrEqual(POSTERN_BAR_HEIGHT - 0.5);
+    // the foot of the view, across its width, the lowest thing on the screen
+    expect((await box(read)).y + (await box(read)).height).toBeLessThanOrEqual(VIEWPORT.height);
 
     const b = await box(read);
     await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
@@ -117,13 +119,13 @@ for (const [view, answer] of [['english', READING_ANSWER], ['greek', GREEK_READI
     const walk = panel.getByRole('group', { name: 'Read these again' });
     for (;;) {
       const next = walk.getByRole('button', { name: /^(Next word|On to the whole verse)$/ });
-      const last = walk.getByRole('button', { name: 'Read the whole verse again', exact: true });
-      if (await last.isVisible()) break;
+      if (!(await next.isVisible())) break;
       await next.click();
     }
-    const again = walk.getByRole('button', { name: 'Read the whole verse again', exact: true });
+    // the same one bar, now for the whole verse
+    const again = verseView.getByRole('button', { name: 'Hold to read the whole verse again', exact: true });
     await expect(again).toHaveAttribute('data-hold-bar', '');
-    await again.scrollIntoViewIfNeeded();
+    await expect(page.locator('[data-hold-bar]')).toHaveCount(1);
     expect((await box(again)).height).toBeGreaterThanOrEqual(POSTERN_BAR_HEIGHT - 0.5);
     if (view === 'english') await shot(page, 'read-whole-verse-bar');
   });

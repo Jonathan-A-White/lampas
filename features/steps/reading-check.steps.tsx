@@ -1,5 +1,4 @@
-// features/steps/reading-check.steps.tsx — runs features/reading-check.feature: the Read button under the selected verse
-// (and on the verse itself), held to record and let go to send; the verse-read grist through a fake Postern
+// features/steps/reading-check.steps.tsx — runs features/reading-check.feature: the Verse view's Read it aloud bar, held to record and let go to send; the verse-read grist through a fake Postern
 // (tests/support/fake-postern.ts) that opens its audio attachment; the answer marked in the verse; the walk through the
 // marked words. The recorder is a fake (tests/support/fake-recorder.ts); the press is user-event pointer input.
 import '@testing-library/react/dont-cleanup-after-each';
@@ -76,6 +75,8 @@ async function open({ reply = 'reading', view = 'english', denied = false, down 
 async function selectVerse28(): Promise<void> {
   const number = await screen.findByRole('button', { name: 'Verse 28', exact: true });
   if (number.getAttribute('aria-pressed') !== 'true') await user.click(number);
+  const view = await screen.findByRole('region', { name: 'Verse view' });
+  await user.click(within(view).getByRole('button', { name: 'Read it aloud', exact: true }));
   await screen.findByRole('region', { name: 'Reading check' });
 }
 
@@ -83,7 +84,8 @@ const panel = () => screen.getByRole('region', { name: 'Reading check' });
 /** A marked word of the result or the walk: the verse above them (the sheet's own text) has tappable words of the same names. */
 const markedWord = async (name: string) =>
   (await within(panel()).findAllByRole('button', { name, exact: true })).filter((b) => !b.closest('[data-sheet-verse]'))[0];
-const readButton = () => within(panel()).getByRole('button', { name: 'Read', exact: true });
+/** The Verse view's one hold bar, while it is the Read it aloud one. */
+const readButton = () => screen.getByRole('button', { name: 'Hold to read verse 28', exact: true });
 
 /** Presses a button and lets go; the clip says it lasted `ms` (the app's 500 ms rule reads that). */
 async function holdAndLetGo(el: HTMLElement, ms: number): Promise<void> {
@@ -120,7 +122,7 @@ const feature = await loadFeature('features/reading-check.feature');
 describeFeature(feature, ({ Scenario }) => {
   const given = 'Lampas is opened on Romans 8 in English with a reading check behind a fake Postern';
   const greekGiven = 'Lampas is opened on Romans 8 in Greek with a reading check behind a fake Postern';
-  const holdRead = 'he holds Read for 2 seconds and lets go';
+  const holdRead = 'he holds the bar for 2 seconds and lets go';
   const millOne = 'the mill received one grist for the lampas app, kind verse-read';
   const millOneSteps = async () => {
     await waitFor(() => expect(fake.received).toHaveLength(1));
@@ -129,9 +131,9 @@ describeFeature(feature, ({ Scenario }) => {
   const verseMarked = 'the verse in the reading check shows {string} and {string} marked to fix';
   const verseMarkedSteps = async () => markedShow();
 
-  Scenario("Holding Read on 8:28 and releasing sends a verse-read grist with the verse's English and one audio attachment", ({ Given, And, When, Then }) => {
+  Scenario("Holding the bar on 8:28 and releasing sends a verse-read grist with the verse's English and one audio attachment", ({ Given, And, When, Then }) => {
     Given(given, () => open());
-    And('he selects verse 28', selectVerse28);
+    And('he opens the reading check of verse 28', selectVerse28);
     When(holdRead, async () => holdAndLetGo(readButton(), 2000));
     Then(millOne, millOneSteps);
     And('its input carries the reference {string}, the English of verse 28 as target_text, and the language {string}', (_, reference: string, lang: string) => {
@@ -151,7 +153,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('The answer marks the focus words in the verse and a tap shows their chunks', ({ Given, And, When, Then }) => {
     Given(given, () => open());
-    And('he selects verse 28', selectVerse28);
+    And('he opens the reading check of verse 28', selectVerse28);
     When(holdRead, async () => holdAndLetGo(readButton(), 2000));
     Then(verseMarked, verseMarkedSteps);
     And('the other words of the verse are not marked', () => {
@@ -171,7 +173,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Read these again walks the marked words and then the whole verse', ({ Given, And, When, Then }) => {
     Given(given, () => open());
-    And('he selects verse 28', selectVerse28);
+    And('he opens the reading check of verse 28', selectVerse28);
     And(holdRead, async () => holdAndLetGo(readButton(), 2000));
     When('he taps {string}', async (_, name: string) => {
       await user.click(await markedWord(name));
@@ -192,12 +194,13 @@ describeFeature(feature, ({ Scenario }) => {
     When('he goes on with {string}', async (_, name: string) => {
       await user.click(within(walk()).getByRole('button', { name, exact: true }));
     });
-    Then('the walk shows the whole verse with the button {string}', async (_, name: string) => {
+    Then('the walk shows the whole verse with the bar {string}', async (_, name: string) => {
       await waitFor(() => expect(walk()).toHaveTextContent(ENGLISH_28));
-      expect(within(walk()).getByRole('button', { name, exact: true })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name, exact: true })).toBeInTheDocument();
+      expect(document.querySelectorAll('[data-hold-bar]')).toHaveLength(1);
     });
-    When('he holds {string} for 2 seconds and lets go', async (_, name: string) => {
-      await holdAndLetGo(within(walk()).getByRole('button', { name, exact: true }), 2000);
+    When('he holds the bar {string} for 2 seconds and lets go', async (_, name: string) => {
+      await holdAndLetGo(screen.getByRole('button', { name, exact: true }), 2000);
     });
     Then('the mill received {int} grists for the lampas app, kind verse-read', async (_, count: number) => {
       await waitFor(() => expect(fake.received).toHaveLength(count));
@@ -208,7 +211,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A reading with nothing to fix says it is well read', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 in English with a reading check that finds nothing to fix', () => open({ reply: 'well-read' }));
-    And('he selects verse 28', selectVerse28);
+    And('he opens the reading check of verse 28', selectVerse28);
     When(holdRead, async () => holdAndLetGo(readButton(), 2000));
     Then('the reading check says {string}', (_, text: string) => says(text)());
     And('there is no Read these again button', () => {
@@ -219,7 +222,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A reading that covers only part of the verse is headed Read the whole verse, not Well read', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 in English with a reading check that heard only part of the verse', () => open({ reply: 'incomplete' }));
-    And('he selects verse 28', selectVerse28);
+    And('he opens the reading check of verse 28', selectVerse28);
     When(holdRead, async () => holdAndLetGo(readButton(), 2000));
     Then('the reading check says {string}', (_, text: string) => says(text)());
     And('the reading check says {string}', (_, text: string) => says(text)());
@@ -235,7 +238,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A reading with words to fix is headed Words to fix', ({ Given, And, When, Then }) => {
     Given(given, () => open());
-    And('he selects verse 28', selectVerse28);
+    And('he opens the reading check of verse 28', selectVerse28);
     When(holdRead, async () => holdAndLetGo(readButton(), 2000));
     Then('the reading check says {string}', (_, text: string) => says(text)());
     And('the reading check does not say {string}', async (_, text: string) => {
@@ -244,26 +247,26 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('A hold under about one second sends nothing and says Hold Read for the whole verse', ({ Given, And, When, Then }) => {
+  Scenario('A hold under about one second sends nothing and says Hold the bar for the whole verse', ({ Given, And, When, Then }) => {
     Given(given, () => open());
-    And('he selects verse 28', selectVerse28);
-    When('he holds Read for 800 milliseconds and lets go', async () => holdAndLetGo(readButton(), 800));
+    And('he opens the reading check of verse 28', selectVerse28);
+    When('he holds the bar for 800 milliseconds and lets go', async () => holdAndLetGo(readButton(), 800));
     Then('the reading check says {string}', (_, text: string) => says(text)());
     And('the mill received no grist', noGrist);
   });
 
   Scenario('A press under 500 ms sends nothing and says Hold while you read', ({ Given, And, When, Then }) => {
     Given(given, () => open());
-    And('he selects verse 28', selectVerse28);
-    When('he presses Read for a fifth of a second and lets go', async () => holdAndLetGo(readButton(), 200));
+    And('he opens the reading check of verse 28', selectVerse28);
+    When('he presses the bar for a fifth of a second and lets go', async () => holdAndLetGo(readButton(), 200));
     Then('the reading check says {string}', (_, text: string) => says(text)());
     And('the mill received no grist', noGrist);
   });
 
-  Scenario('Sliding off the button drops the reading', ({ Given, And, When, Then }) => {
+  Scenario('Sliding off the bar drops the reading', ({ Given, And, When, Then }) => {
     Given(given, () => open());
-    And('he selects verse 28', selectVerse28);
-    When('he holds Read and slides off the button', async () => {
+    And('he opens the reading check of verse 28', selectVerse28);
+    When('he holds the bar and slides off the button', async () => {
       FakeRecorder.durationMs = 2000;
       await user.pointer([
         { keys: '[MouseLeft>]', target: readButton(), coords: AT },
@@ -280,12 +283,12 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('While the mill has not answered the box says Waiting with the seconds', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 in English with a reading check behind a fake Postern that holds its answers', () => open({ reply: 'held' }));
-    And('he selects verse 28', selectVerse28);
+    And('he opens the reading check of verse 28', selectVerse28);
     When(holdRead, async () => holdAndLetGo(readButton(), 2000));
     Then('the reading check says it is waiting, with seconds', async () => {
       await waitFor(() => expect(panel()).toHaveTextContent(/Waiting for the tutor… \d+ s/));
     });
-    And('Read cannot be held while it waits', () => expect(readButton()).toBeDisabled());
+    And('the bar cannot be held while it waits', () => expect(readButton()).toBeDisabled());
     When('the mill answers', async () => {
       await waitFor(() => expect(fake.received).toHaveLength(1));
       fake.answer({ status: 'answered', answer: READING_ANSWER });
@@ -295,7 +298,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A microphone that is turned off says so', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 in English with a reading check and the microphone turned off', () => open({ denied: true }));
-    And('he selects verse 28', selectVerse28);
+    And('he opens the reading check of verse 28', selectVerse28);
     When(holdRead, async () => holdAndLetGo(readButton(), 2000));
     Then('the reading check says {string}', (_, text: string) => says(text)());
     And('the mill received no grist', noGrist);
@@ -303,7 +306,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A backend that cannot be reached shows Could not reach with Retry, and Retry sends the same recording', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 in English with a reading check behind a fake Postern that cannot be reached', () => open({ down: true }));
-    And('he selects verse 28', selectVerse28);
+    And('he opens the reading check of verse 28', selectVerse28);
     When(holdRead, async () => holdAndLetGo(readButton(), 2000));
     Then('the reading check says {string} with a Retry button', async (_, title: string) => {
       await waitFor(() => expect(within(panel()).getByRole('alert')).toHaveTextContent(title));
@@ -318,12 +321,12 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('The result is still there after reopening', ({ Given, And, When, Then }) => {
     Given(given, () => open());
-    And('he selects verse 28', selectVerse28);
+    And('he opens the reading check of verse 28', selectVerse28);
     And(holdRead, async () => holdAndLetGo(readButton(), 2000));
     And('the reading of verse 28 has arrived', async () => {
       await waitFor(async () => expect(await db.readings.count()).toBe(1));
     });
-    When('he reopens Lampas and selects verse 28', async () => {
+    When('he reopens Lampas and opens the reading check of verse 28', async () => {
       cleanup();
       clearBus();
       render(<App />);
@@ -334,22 +337,9 @@ describeFeature(feature, ({ Scenario }) => {
     And(millOne, millOneSteps);
   });
 
-  Scenario('The Read button on the verse itself records the same way and selects the verse', ({ Given, When, Then, And }) => {
-    Given(given, () => open());
-    When('he holds the Read button on verse {int} for 2 seconds and lets go', async (_, n: number) => {
-      const verse = document.querySelector<HTMLElement>(`[data-verse="${n}"]`) as HTMLElement;
-      await holdAndLetGo(within(verse).getByRole('button', { name: `Read verse ${n} aloud`, exact: true }), 2000);
-    });
-    Then('verse {int} is selected', async (_, n: number) => {
-      await waitFor(() => expect(screen.getByRole('button', { name: `Verse ${n}`, exact: true })).toHaveAttribute('aria-pressed', 'true'));
-    });
-    And(millOne, millOneSteps);
-    And(verseMarked, verseMarkedSteps);
-  });
-
-  Scenario("Holding Read on 8:28 in the Greek view sends a verse-read grist with the verse's Greek as target_text and lang el", ({ Given, And, When, Then }) => {
+  Scenario("Holding the bar on 8:28 in the Greek view sends a verse-read grist with the verse's Greek as target_text and lang el", ({ Given, And, When, Then }) => {
     Given(greekGiven, () => open({ view: 'greek' }));
-    And('he selects verse 28', selectVerse28);
+    And('he opens the reading check of verse 28', selectVerse28);
     When(holdRead, async () => holdAndLetGo(readButton(), 2000));
     Then(millOne, millOneSteps);
     And('its input carries the reference {string}, the Greek of verse 28 as target_text, and the language {string}', (_, reference: string, lang: string) => {
@@ -363,7 +353,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A Greek answer marks the Greek words and a tap shows their syllables with a Greek speaker', ({ Given, And, When, Then }) => {
     Given(greekGiven, () => open({ view: 'greek' }));
-    And('he selects verse 28', selectVerse28);
+    And('he opens the reading check of verse 28', selectVerse28);
     When(holdRead, async () => holdAndLetGo(readButton(), 2000));
     Then(verseMarked, greekMarkedSteps);
     And('the other words of the Greek verse are not marked', () => {
@@ -391,7 +381,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Read these again works in the Greek view', ({ Given, And, When, Then }) => {
     Given(greekGiven, () => open({ view: 'greek' }));
-    And('he selects verse 28', selectVerse28);
+    And('he opens the reading check of verse 28', selectVerse28);
     And(holdRead, async () => holdAndLetGo(readButton(), 2000));
     When('he taps {string}', async (_, name: string) => {
       await user.click(await markedWord(name));
@@ -412,13 +402,13 @@ describeFeature(feature, ({ Scenario }) => {
     When('he goes on with {string}', async (_, name: string) => {
       await user.click(within(walk()).getByRole('button', { name, exact: true }));
     });
-    Then('the walk shows the whole Greek verse with the button {string}', async (_, name: string) => {
+    Then('the walk shows the whole Greek verse with the bar {string}', async (_, name: string) => {
       await waitFor(() => expect(walk()).toHaveTextContent(GREEK_28));
       expect(walk().querySelector('[data-walk-verse]')).toHaveAttribute('lang', 'grc');
-      expect(within(walk()).getByRole('button', { name, exact: true })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name, exact: true })).toBeInTheDocument();
     });
-    When('he holds {string} for 2 seconds and lets go', async (_, name: string) => {
-      await holdAndLetGo(within(walk()).getByRole('button', { name, exact: true }), 2000);
+    When('he holds the bar {string} for 2 seconds and lets go', async (_, name: string) => {
+      await holdAndLetGo(screen.getByRole('button', { name, exact: true }), 2000);
     });
     Then('the mill received {int} grists for the lampas app, kind verse-read', async (_, count: number) => {
       await waitFor(() => expect(fake.received).toHaveLength(count));
@@ -431,23 +421,28 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('The English and Greek results of a verse are kept apart', ({ Given, And, When, Then }) => {
     Given(given, () => open());
-    And('he selects verse 28', selectVerse28);
+    And('he opens the reading check of verse 28', selectVerse28);
     And(holdRead, async () => holdAndLetGo(readButton(), 2000));
     And(verseMarked, verseMarkedSteps);
-    When('he switches to the Greek view', async () => {
+    When('he closes the Verse view, switches to the Greek view and opens the reading check again', async () => {
+      await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+      await waitFor(() => expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull());
       await user.click(screen.getByRole('button', { name: 'Greek', exact: true }));
       await waitFor(() => expect(screen.getByRole('button', { name: 'Greek', exact: true })).toHaveAttribute('aria-pressed', 'true'));
-      await screen.findByRole('region', { name: 'Reading check' });
+      await selectVerse28();
     });
     Then('the reading check has no result yet', async () => {
       await new Promise((r) => setTimeout(r, 100));
       expect(panel().querySelector('[data-reading-result]')).toBeNull();
     });
-    When('he holds Read again in Greek for 2 seconds and lets go', async () => holdAndLetGo(readButton(), 2000));
+    When('he holds the bar again in Greek for 2 seconds and lets go', async () => holdAndLetGo(readButton(), 2000));
     Then(verseMarked, greekMarkedSteps);
-    When('he switches to the English view', async () => {
+    When('he closes the Verse view, switches to the English view and opens the reading check again', async () => {
+      await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+      await waitFor(() => expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull());
       await user.click(screen.getByRole('button', { name: 'English', exact: true }));
       await waitFor(() => expect(screen.getByRole('button', { name: 'English', exact: true })).toHaveAttribute('aria-pressed', 'true'));
+      await selectVerse28();
     });
     Then('the English result is still there with {string} and {string} marked to fix', verseMarkedSteps);
   });

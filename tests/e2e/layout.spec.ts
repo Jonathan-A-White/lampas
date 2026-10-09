@@ -89,8 +89,8 @@ test('Paragraph runs the verses on with superscript numbers, every word and numb
 
   await number.click();
   await expect(page.locator('[data-verse="2"]')).toHaveAttribute('data-selected', 'true');
-  await expect(page.getByRole('region', { name: 'Ask the tutor' })).toBeVisible();
-  await number.click();
+  await expect(page.getByRole('region', { name: 'Verse view' })).toBeVisible();
+  await page.getByRole('button', { name: '‹ Reader' }).click();
   await expect(page.locator('[data-verse="2"]')).toHaveAttribute('data-selected', 'false');
 
   await page.getByRole('button', { name: 'Greek', exact: true }).click();

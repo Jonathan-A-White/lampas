@@ -14,7 +14,7 @@ test('a reference link opens Romans 8 with verse 28 selected', async ({ page }) 
   await open(page, '#/?ref=Romans%208:28');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await expect(page.locator('[data-verse="28"]')).toHaveAttribute('data-selected', 'true');
-  await expect(page.getByRole('region', { name: 'Reading check' }).getByRole('heading', { name: 'Romans 8:28' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Verse view' }).getByRole('heading', { name: 'Romans 8:28' })).toBeVisible();
   await expect(page.locator('[data-link-notice]')).toHaveCount(0);
   // the address is the plain reader address now, so Back and a reload keep the place
   await expect.poll(() => page.evaluate(() => window.location.hash)).toMatch(/^#\/\?b=rom&c=8(&view=\w+)?(&weave=[\w+]+)?&v=28$/);
@@ -46,10 +46,10 @@ test('the web+lampas: form the browser hands over opens the same verse', async (
   await expect(page.locator('[data-verse="28"]')).toHaveAttribute('data-selected', 'true');
 });
 
-test('Copy link on a verse panel puts the https link on the clipboard', async ({ page, context }) => {
+test('Copy link in the Verse view puts the https link on the clipboard', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page, '#/?ref=Rom.8.28');
-  const panel = page.getByRole('region', { name: 'Reading check' });
+  const panel = page.getByRole('region', { name: 'Verse view' });
   await panel.getByRole('button', { name: 'Copy link' }).click();
   await expect(panel.getByText('Link copied')).toBeVisible();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('https://lampas.allmymind.org/#/?ref=Rom.8.28');

@@ -3,6 +3,7 @@ import { GREEK_READING_ANSWER, INCOMPLETE_ANSWER, makeFakePostern, READING_ANSWE
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { chooseAction } from './verse-view';
 
 const VIEWPORT = { width: 390, height: 844 };
 
@@ -50,7 +51,7 @@ async function holdFor(page: Page, button: ReturnType<Page['getByRole']>, ms: nu
   await page.mouse.up();
 }
 
-test('holding Read under verse 28 sends the reading and marks the words to fix, at phone width', async ({ page }) => {
+test('holding the bar of Read it aloud on verse 28 sends the reading and marks the words to fix, at phone width', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: READING_ANSWER };
@@ -58,18 +59,18 @@ test('holding Read under verse 28 sends the reading and marks the words to fix, 
   await fakeMicrophone(page);
   await openUnlocked(page);
   await page.goto('/');
-  await page.getByRole('button', { name: 'Verse 28', exact: true }).click();
+  await chooseAction(page, 28, 'Read it aloud');
 
   const panel = page.getByRole('region', { name: 'Reading check' });
-  const read = panel.getByRole('button', { name: 'Read', exact: true });
+  const read = page.getByRole('button', { name: 'Hold to read verse 28', exact: true });
   await expect(panel).toBeInViewport();
   const readBox = await read.boundingBox();
   expect(readBox?.height).toBeGreaterThanOrEqual(43.5);
   expect(readBox?.width).toBeGreaterThanOrEqual(43.5);
-  const inline = page.locator('[data-verse="28"]').getByRole('button', { name: 'Read verse 28 aloud', exact: true });
-  const inlineBox = await inline.boundingBox();
-  expect(inlineBox?.height).toBeGreaterThanOrEqual(43.5);
-  expect(inlineBox?.width).toBeGreaterThanOrEqual(43.5);
+  // the one hold bar of the Verse view, across the width of the phone
+  expect(readBox?.height).toBeGreaterThanOrEqual(95.5);
+  expect(readBox?.width).toBeGreaterThan(300);
+  await expect(page.locator('[data-hold-bar]')).toHaveCount(1);
 
   // a quick press is only a tap
   await holdFor(page, read, 100);
@@ -78,7 +79,7 @@ test('holding Read under verse 28 sends the reading and marks the words to fix, 
 
   // under about a second is too short for a verse: nothing is sent
   await holdFor(page, read, 700);
-  await expect(panel).toContainText('Hold Read for the whole verse');
+  await expect(panel).toContainText('Hold the bar for the whole verse');
   expect(fake.received).toHaveLength(0);
 
   await holdFor(page, read, 1200);
@@ -102,11 +103,11 @@ test('holding Read under verse 28 sends the reading and marks the words to fix, 
   await walk.getByRole('button', { name: 'Next word', exact: true }).click();
   await expect(walk).toContainText('Word 2 of 2');
   await walk.getByRole('button', { name: 'On to the whole verse', exact: true }).click();
-  await expect(walk.getByRole('button', { name: 'Read the whole verse again', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Hold to read the whole verse again', exact: true })).toBeVisible();
   await expectFitsPhone(page);
 });
 
-test('holding Read in the Greek view sends the Greek, marks Greek words and shows their syllables, at phone width', async ({ page }) => {
+test('holding the bar of Read it aloud in the Greek view sends the Greek, marks Greek words and shows their syllables, at phone width', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: GREEK_READING_ANSWER };
@@ -114,17 +115,17 @@ test('holding Read in the Greek view sends the Greek, marks Greek words and show
   await fakeMicrophone(page);
   await openUnlocked(page);
   await page.goto('/#/?c=8&view=greek');
-  await page.getByRole('button', { name: 'Verse 28', exact: true }).click();
+  await chooseAction(page, 28, 'Read it aloud');
   const panel = page.getByRole('region', { name: 'Reading check' });
-  const read = panel.getByRole('button', { name: 'Read', exact: true });
+  const read = page.getByRole('button', { name: 'Hold to read verse 28', exact: true });
   await expect(panel).toBeInViewport();
   const readBox = await read.boundingBox();
   expect(readBox?.height).toBeGreaterThanOrEqual(43.5);
   expect(readBox?.width).toBeGreaterThanOrEqual(43.5);
-  const inline = page.locator('[data-verse="28"]').getByRole('button', { name: 'Read verse 28 aloud', exact: true });
-  const inlineBox = await inline.boundingBox();
-  expect(inlineBox?.height).toBeGreaterThanOrEqual(43.5);
-  expect(inlineBox?.width).toBeGreaterThanOrEqual(43.5);
+  // the one hold bar of the Verse view, across the width of the phone
+  expect(readBox?.height).toBeGreaterThanOrEqual(95.5);
+  expect(readBox?.width).toBeGreaterThan(300);
+  await expect(page.locator('[data-hold-bar]')).toHaveCount(1);
 
   await holdFor(page, read, 1200);
   await expect(panel.locator('[data-fix]')).toHaveText(['συνεργεῖ', 'πρόθεσιν']);
@@ -149,7 +150,7 @@ test('holding Read in the Greek view sends the Greek, marks Greek words and show
   await expect(walk.locator('[data-walk-word]')).toHaveText('συνεργεῖ');
   await walk.getByRole('button', { name: 'Next word', exact: true }).click();
   await walk.getByRole('button', { name: 'On to the whole verse', exact: true }).click();
-  await expect(walk.getByRole('button', { name: 'Read the whole verse again', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Hold to read the whole verse again', exact: true })).toBeVisible();
   await expectFitsPhone(page);
 });
 
@@ -161,9 +162,9 @@ test('a reading of only the first words is headed Read the whole verse, not Well
   await fakeMicrophone(page);
   await openUnlocked(page);
   await page.goto('/');
-  await page.getByRole('button', { name: 'Verse 28', exact: true }).click();
+  await chooseAction(page, 28, 'Read it aloud');
   const panel = page.getByRole('region', { name: 'Reading check' });
-  await holdFor(page, panel.getByRole('button', { name: 'Read', exact: true }), 1200);
+  await holdFor(page, page.getByRole('button', { name: 'Hold to read verse 28', exact: true }), 1200);
   const result = panel.locator('[data-reading-result="incomplete"]');
   await expect(result.getByRole('heading', { name: 'Read the whole verse', exact: true })).toBeVisible();
   await expect(result).toContainText('I heard');
