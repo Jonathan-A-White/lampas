@@ -28,7 +28,7 @@ Feature: Study resources
     And he taps Back on the Settings screen
     And he taps the word "work together" in verse 28
     Then the Study row has a link "Open in Logos: BDAG" to "logosres:LLS:46.30.18;hw=%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89"
-    And the Study row also has a link "Bible Word Study in Logos" to "logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89;ref=Bible.Ro8.28"
+    And the Study row also has a link "Bible Word Study in Logos" to "logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89"
     And the Study row has no link "Open in Logos: Louw-Nida"
 
   Scenario: Each ticked Logos lexicon gives its own Open link
@@ -40,7 +40,7 @@ Feature: Study resources
     And he taps the word "work together" in verse 28
     Then the Study row has a link "Open in Logos: BDAG" to "logosres:LLS:46.30.18;hw=%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89"
     And the Study row also has a link "Open in Logos: Louw-Nida" to "logosres:LLS:46.30.4;hw=%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89"
-    And the Study row has one more link "Bible Word Study in Logos" to "logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89;ref=Bible.Ro8.28"
+    And the Study row has one more link "Bible Word Study in Logos" to "logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89"
 
   Scenario: With EDNT ticked, Open in Logos: EDNT carries the Resource ID Logos prints for EDNT
     Given Lampas is opened on Romans 8 with no study resources on
@@ -59,8 +59,8 @@ Feature: Study resources
     And he taps Back on the Settings screen
     And he taps the word "Jesus," in verse 1
     Then the Study row has a link "Open in Logos: BDAG" to "logosres:LLS:46.30.18;hw=%E1%BC%B8%CE%B7%CF%83%CE%BF%E1%BF%A6%CF%82"
-    And the Study row also has a link "Bible Word Study in Logos" to "logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F%E1%BC%B8%CE%B7%CF%83%CE%BF%E1%BF%A6%CF%82;ref=Bible.Ro8.1"
-    And the Study link "Bible Word Study in Logos" has the fallback "https://ref.ly/logos4/Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F%E1%BC%B8%CE%B7%CF%83%CE%BF%E1%BF%A6%CF%82;ref=Bible.Ro8.1"
+    And the Study row also has a link "Bible Word Study in Logos" to "logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F%E1%BC%B8%CE%B7%CF%83%CE%BF%E1%BF%A6%CF%82"
+    And the Study link "Bible Word Study in Logos" has the fallback "https://ref.ly/logos4/Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F%E1%BC%B8%CE%B7%CF%83%CE%BF%E1%BF%A6%CF%82"
 
   Scenario: A Logos link carries its https address for the case the app cannot be opened
     Given Lampas is opened on Romans 8 with no study resources on

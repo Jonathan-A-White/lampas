@@ -12,7 +12,7 @@ settings registry (`src/settings/registry.ts`), so the Bible talk cannot change 
 | id | Switch | Adds to the Study row | Source of the URL form |
 | --- | --- | --- | --- |
 | `strongs` | Strong's | the word's number, such as `G4903`, a link to `https://www.stepbible.org/?q=strong=G0…` | STEPBible's own search address; STEPBible is the lexicon source Lampas already credits (ATTRIBUTION.md) and its data are CC BY 4.0 |
-| `logos` | Logos | `Open in Logos: <lexicon>` per ticked lexicon: `logosres:<Resource ID>;hw=<lemma>`; and `Bible Word Study in Logos`: `logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F<lemma>;ref=Bible.<book><ch>.<v>` | `logosres:` form: Logos forum post pairing `logosres:becnt65ac;ref=Bible.Ac6.3;off=114` with `https://ref.ly/logosres/becnt65ac?ref=Bible.Ac6.3&off=114` (the `Bible.Ac6.3` reference form is from it); `logos4:` is Logos' older scheme, which its release notes say still works. `hw=` is **UNVERIFIED** (below); the Guide's `lbs%2Fel%2F<lemma>` form is Logos' own, see "Bible Word Study's lemma" below |
+| `logos` | Logos | `Open in Logos: <lexicon>` per ticked lexicon: `logosres:<Resource ID>;hw=<lemma>`; and `Bible Word Study in Logos`: `logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F<lemma>` | `logosres:` form: Logos forum post pairing `logosres:becnt65ac;ref=Bible.Ac6.3;off=114` with `https://ref.ly/logosres/becnt65ac?ref=Bible.Ac6.3&off=114` (the `Bible.Ac6.3` reference form is from it); `logos4:` is Logos' older scheme, which its release notes say still works. `hw=` is **UNVERIFIED** (below); the Guide's `lbs%2Fel%2F<lemma>` form is Logos' own, see "Bible Word Study's lemma" below |
 | `accordance` | Accordance | `Open in Accordance`: `accord://search/<module>?<lemma>` | Accordance's help topic "Using Links for Common Tasks": `accord://search/[module];[field]?[query]` |
 
 STEPBible was chosen over Blue Letter Bible because Lampas already takes its lexicon from STEPBible, so the number and the
@@ -35,7 +35,7 @@ percent-encoded UTF-8, in NFC.
 With Logos on, Settings shows his Logos lexicons as a searchable, scrolling ticked list (`src/ui/SearchableList.tsx`: a search field, the ticked ones first, a box about five rows high that scrolls on its own; BDAG ticked until he changes it; the ticked ids are a JSON
 array in `resourceOption.logos`). The list is data: `LEXICONS` in `src/resources/logos.ts`, in the order Logos' Bible Word Study
 shows them; adding a lexicon is one line there. Each ticked one gives `Open in Logos: <name>` on the word sheet, and one
-`Bible Word Study in Logos` link (at the verse, `ref=Bible.Ro8.28`, when the sheet knows it) always comes with Logos.
+`Bible Word Study in Logos` link (for the lemma alone, no verse) always comes with Logos.
 
 **The scheme first, https only as the fallback.** A link's `href` is the app's own scheme (`logosres:`, `logos4:`); on a phone
 with Logos the tap hands it to the app. A phone with no app for the scheme does nothing on its own, so the tap also starts a
@@ -85,7 +85,7 @@ wrong book, check the Information pane of that book in Logos. The id is confirme
 (rather than only a short file name) is the Governor's check on his phone, see below.
 
 **Not verified on a device (no phone with Logos or Accordance was available).** Unverified: that `logosres:<Resource ID>;hw=<lemma>`
-opens that lexicon at the headword (the `hw` part), that `logos4:Guide;t=Bible%20Word%20Study;lemma=...;ref=...` opens the Bible
+opens that lexicon at the headword (the `hw` part), that `logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F...` opens the Bible
 Word Study guide, that the Logos Android app claims `logosres:` and `logos4:` at all, and that the
 Accordance `accord://search/<module>?<lemma>` form finds a word in a lexicon module. The https fallback is kept for all of them. If a link does not open the
 entry, the fix is in that resource's file.
@@ -98,7 +98,11 @@ and empty Definition, Hebrew words and Greek words (the Governor's phone, 2026-1
 in NFC and percent-encoded. Source: the pull request "Fix UI navigation: use documented L4 link syntax for logos4:/logosref: URLs"
 (https://github.com/robrawks/LogosBibleSoftwareMCP/pull/8), whose form was rewritten to match what Logos emits via Copy location and checked
 in the Windows app: `logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fen%2Flove`. The `lbs/el/λόγος` Greek form is also Logos' search syntax
-(`<Lemma = lbs/el/λόγος>`). The `;ref=` part is kept on the Greek link (not in that source; **UNVERIFIED** whether Logos uses or ignores it).
+(`<Lemma = lbs/el/λόγος>`). The accents and the capital stay (`Ἰησοῦς`, `νόμος`, `ἐν`, in NFC).
+The link has **no `;ref=`** (mw-5r3p30.67): the PR's working forms carry none, and the earlier `;ref=Bible.Ro8.1` was ours, never in a source; with the lemma named,
+the guide needs no verse and the link names no one book or Bible. The Strong's number is not in the link (no source for a Strong's form in a Guide link was found).
+Examples: Ἰησοῦς (G2424) `lemma=lbs%2Fel%2F%E1%BC%B8%CE%B7%CF%83%CE%BF%E1%BF%A6%CF%82`; νόμος (G3551) `lemma=lbs%2Fel%2F%CE%BD%CF%8C%CE%BC%CE%BF%CF%82`; ἐν (G1722) `lemma=lbs%2Fel%2F%E1%BC%90%CE%BD`.
+**Still UNVERIFIED on a device** after the 2026-10-08 22:56Z screenshot (the lbs form landed 17:50 local, an hour before it; whether his phone had the new build is unknown).
 
 ## How to add a resource
 
