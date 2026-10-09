@@ -60,6 +60,7 @@ import { DueBadge } from './DueBadge';
 import { NewWordsStrip } from './NewWordsStrip';
 import { TeachSheet, type NewWordAsk } from './TeachSheet';
 import { useNewWords } from './useNewWords';
+import { usePace } from './usePace';
 import { GoalStrip } from './GoalStrip';
 import { TipCard } from './tips/TipCard';
 import { ReadFromButton, ReadingBar, VersePlay } from './speech/ReadControls';
@@ -434,7 +435,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const [lookup, setLookup] = useState<Lookup | null>(null);
   // The teach sheet (src/TeachSheet.tsx), opened by the 'New words: N' strip.
   const [teaching, setTeaching] = useState(false);
-  const newWords = useNewWords(chapter, solid, learning);
+  const pace = usePace();
+  const newWords = useNewWords(chapter, solid, learning, pace?.count);
   const { asks, ask } = useAsks(BOOK, CHAPTER, TITLE);
   // A request from another screen (the Parsing drill's links) is met once, as the Reader opens: the Talk sheet on that verse,
   // or the Ask box on it holding the question.

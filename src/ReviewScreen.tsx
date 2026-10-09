@@ -3,7 +3,7 @@
 // end card gives the score and says how many come back tomorrow and how many later.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useRef, useState } from 'react';
-import { countDue, reviewsOf } from './data/repositories';
+import { countDue, recordRound, reviewsOf } from './data/repositories';
 import { DAY } from './data/schedule';
 import { type Random } from './data/quiz';
 import { navigate } from './nav/route';
@@ -165,6 +165,8 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
     if (!last) return setRound({ ...round, index: index + 1, picked: null });
     await writing.current;
     const back = await whatComesBack(items);
+    // the round's score is what the pace dial reads (src/data/pace.ts)
+    await recordRound(right, items.length);
     setRound({ status: 'done', total: items.length, right, ...back, move: await moveAfter(items) });
   };
   return (

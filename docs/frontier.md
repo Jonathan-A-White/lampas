@@ -65,7 +65,7 @@ word is not a name.
 
 The Reader shows the frontier as a strip under its header, `New words: N` (`src/NewWordsStrip.tsx`, like `Due: N`; not drawn at 0).
 `N` is the number of candidates `pickFrontier` gives for the open chapter without the words he said Not now to today, at most
-`PACE` (3, a constant in `src/data/frontier.ts` until the pace story makes it a setting). `src/useNewWords.ts` is the one hook.
+the pace (see 'The pace' below). `src/useNewWords.ts` is the one hook.
 
 A tap opens the teach sheet (`src/TeachSheet.tsx`, dialog 'New word') on the first candidate:
 
@@ -80,3 +80,17 @@ A tap opens the teach sheet (`src/TeachSheet.tsx`, dialog 'New word') on the fir
 - Each answer shows the next candidate; the sheet closes when none is left. `frontier-taught` {lemma, outcome} goes on the bus (docs/events.md).
 
 Words lists the words taken here under 'From my reading' (`source: 'frontier'`, lesson 0).
+
+## The pace (mw-bsf54t.7)
+
+Settings > New words > `New words a day` (registry key `newWordsADay`: Off, 3, 5, 10; stored as '0', '3', '5', '10'; 3 until chosen)
+is how many new words the strip offers at a time. `src/data/pace.ts` is pure: `paceFor(setting, dueCount, lastRoundScore, cleanDays)`
+gives `{count, reason}`: 0 with reason `'back'` when more than 20 words are due or the last Review round scored under 60 percent
+(`'Dialled back: clear your reviews first'` under the Settings control), the setting with `'normal'`, and the next notch (never
+above 10) with `'up'` once `cleanDays` reaches 7 (`'Dialled up: a clean week'`). Off stays Off. The thresholds (20, 60 percent,
+a week) are PROVISIONAL.
+
+`src/usePace.ts` is the one hook (the setting, `countDue`, and the kept rounds); `useNewWords` takes its `count`. The last round and
+the start of the clean run are kept by `recordRound` (Review's end card) in the settings store under `paceRounds` as JSON, no table:
+a round under 60 percent, or one more than a week after the last, starts the clean run again, and a week with no round is no clean week.
+It is a pace of how many are offered at a time, not a count of the words taught today.

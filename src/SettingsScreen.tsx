@@ -22,6 +22,7 @@ import {
   getWeave,
   getWeaveGrammar,
   getGrammarMove,
+  getNewWordsADay,
   getPickerGrammar,
   setResourceOn,
   setResourceOption,
@@ -40,9 +41,11 @@ import { APPROACHES, approachOf, nextLessonOf, type GrammarApproach } from './ap
 import { listLevels } from './data/repositories/grammarLevels';
 import { BOOK_INDEX } from './data/bookIndex';
 import { goalText, goalTitle, parseGoal, type Goal } from './data/goal';
+import { paceNote, type NewWordsADay, type Pace } from './data/pace';
 import { LAYOUTS } from './layout/layouts';
 import { navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
+import { usePace } from './usePace';
 import { PHONE_VOICE, writeSetting } from './settings/registry';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { speaksLanguage, useVoices, voiceKey } from './speech/greek';
@@ -150,7 +153,7 @@ function WeaveChoice({ weave, grammar }: { weave: Weave; grammar: WeaveGrammar }
 }
 
 /** One row of New words: the setting's label above, its chips on one line (never wrapped), the hint beneath. `name` is the setting's label in the registry. */
-function NewWordsRow({ name, hint, current, options, settingKey }: { name: string; hint: string; current: string; options: [string, string][]; settingKey: 'pickerGrammar' | 'grammarMove' }) {
+function NewWordsRow({ name, hint, current, options, settingKey, note }: { name: string; hint: string; current: string; options: [string, string][]; settingKey: 'pickerGrammar' | 'grammarMove' | 'newWordsADay'; note?: string | null }) {
   return (
     <div className="pb-3">
       <h3 className="pb-1 text-base font-medium">{name}</h3>
@@ -167,14 +170,27 @@ function NewWordsRow({ name, hint, current, options, settingKey }: { name: strin
           </button>
         ))}
       </div>
+      {note ? (
+        <p data-testid="pace-note" className="pt-1 text-base font-medium">
+          {note}
+        </p>
+      ) : null}
       <p className="pt-1 text-base text-muted">{hint}</p>
     </div>
   );
 }
 
-function NewWordsChoice({ level, move }: { level: PickerGrammar; move: GrammarMove }) {
+function NewWordsChoice({ level, move, perDay, pace }: { level: PickerGrammar; move: GrammarMove; perDay: NewWordsADay; pace: Pace | undefined }) {
   return (
     <>
+      <NewWordsRow
+        name="New words a day"
+        settingKey="newWordsADay"
+        current={String(perDay)}
+        options={[['0', 'Off'], ['3', '3'], ['5', '5'], ['10', '10']]}
+        note={pace ? paceNote(pace.reason) : null}
+        hint="From the chapter you are reading, most common first"
+      />
       <NewWordsRow
         name="New words at"
         settingKey="pickerGrammar"
@@ -700,6 +716,8 @@ export function SettingsScreen() {
   const weaveGrammar = useLiveQuery(getWeaveGrammar, []);
   const pickerGrammar = useLiveQuery(getPickerGrammar, []);
   const grammarMove = useLiveQuery(getGrammarMove, []);
+  const newWordsADay = useLiveQuery(getNewWordsADay, []);
+  const pace = usePace();
   const layout = useLiveQuery(getLayout, []);
   const headings = useLiveQuery(getSectionHeadings, []);
   const tips = useLiveQuery(getTips, []);
@@ -732,8 +750,8 @@ export function SettingsScreen() {
           <Section title="Weave" hint="In the English view, show the Greek of your words in place of their English.">
             {weave && weaveGrammar ? <WeaveChoice weave={weave} grammar={weaveGrammar} /> : null}
           </Section>
-          <Section title="New words" hint="Which new words Lampas offers to learn, by the grammar of their form in the chapter, and whether it moves that level for you.">
-            {pickerGrammar && grammarMove ? <NewWordsChoice level={pickerGrammar} move={grammarMove} /> : null}
+          <Section title="New words" hint="How many new words Lampas offers a day, which ones by the grammar of their form in the chapter, and whether it moves that level for you.">
+            {pickerGrammar && grammarMove && newWordsADay !== undefined ? <NewWordsChoice level={pickerGrammar} move={grammarMove} perDay={newWordsADay} pace={pace} /> : null}
           </Section>
           <Section title="Goal" hint="The passage you are working toward: a whole book, one chapter or a single verse.">
             {goal !== undefined ? <GoalPickers saved={goal} /> : null}
