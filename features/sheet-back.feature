@@ -1,6 +1,6 @@
 Feature: Back closes an open sheet
   The phone's Back (the system gesture or button, and the browser's back) on an open bottom sheet (the word sheet, the Grammar sheet over
-  it, the Talk sheet) closes the sheet exactly as Done does and leaves him on the screen beneath. A second Back does what Back does on
+  it, the idea sheet over that, the Talk sheet) closes the sheet exactly as Done does and leaves him on the screen beneath. A second Back does what Back does on
   that screen. Done, a swipe down, a tap outside or Escape close a sheet without leaving a stray history entry behind, so the next Back
   is not swallowed. One hook (src/ui/sheetBack.ts) gives every sheet this.
 
@@ -27,6 +27,16 @@ Feature: Back closes an open sheet
     Then the Grammar sheet is closed and the word sheet is still open
     When he goes back once more
     Then the word sheet is closed
+
+  Scenario: Back closes the idea sheet
+    Given Lampas is opened on Romans 8 with verse 2 selected
+    And he taps "of the" in verse 2
+    And he taps the term "genitive" on the word sheet
+    And he taps Learn this idea on the Grammar sheet
+    When he goes back
+    Then the idea sheet is closed and the Grammar sheet is still open
+    When he goes back once more
+    Then the Grammar sheet is closed and the word sheet is still open
 
   Scenario: Back on the Talk sheet closes it
     Given Lampas is opened on Romans 8 with verse 2 selected

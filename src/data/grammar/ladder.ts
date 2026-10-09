@@ -291,6 +291,9 @@ for (const term of GRAMMAR_TERMS) {
   if (!IDEA_OF_TERM.has(term)) throw new Error(`Grammar term ${JSON.stringify(term)} has no idea`);
 }
 
+/** The id of the idea that covers this grammar term ('genitive' is 'case-genitive'), or undefined for a word that is no term. */
+export const ideaOfTerm = (term: string): string | undefined => IDEA_OF_TERM.get(term);
+
 /** The idea with this id. Throws on one the ladder does not have. */
 export function ideaOf(id: string): GrammarIdea {
   const idea = BY_ID.get(id);

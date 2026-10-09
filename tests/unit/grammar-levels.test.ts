@@ -13,6 +13,7 @@ import {
   scheduleIdea,
   seedLevelsIfFirstOpen,
   setLevel,
+  teachIdea,
 } from '../../src/data/repositories/grammarLevels';
 
 const NOW = Date.UTC(2026, 9, 8, 9, 0, 0);
@@ -178,5 +179,34 @@ describe('the schedule and grammar ideas', () => {
     expect(await countDue(NOW, 'grammar')).toBe(1);
     expect((await listDue('grammar', NOW)).map((r) => r.id)).toEqual(['x']);
     expect(await countDue(NOW - 1)).toBe(0);
+  });
+});
+
+describe('teachIdea', () => {
+  it('Got it: frontier by the sheet, step 0 due tomorrow, and says so on the bus', async () => {
+    const seen: EventOf<'idea-taught'>[] = [];
+    subscribe('idea-taught', (e) => seen.push(e));
+    await teachIdea('case-genitive', 'got-it', NOW);
+    expect(await getLevel('case-genitive')).toEqual({ id: 'case-genitive', level: 'frontier', since: NOW, how: 'sheet' });
+    expect(await review('case-genitive')).toMatchObject({ step: 0, due: day(1), lastWhen: NOW, lapses: 0, rights: 0 });
+    expect(latest('grammar-level-changed')).toEqual({ kind: 'grammar-level-changed', id: 'case-genitive', level: 'frontier' });
+    expect(seen).toEqual([{ kind: 'idea-taught', id: 'case-genitive', outcome: 'got-it' }]);
+    expect(await countDue(day(1))).toBe(1);
+    expect(await countDue(NOW)).toBe(0);
+  });
+
+  it('I know this: solid by the sheet, the 30-day step due in 30 days', async () => {
+    await teachIdea('case-genitive', 'known', NOW);
+    expect(await getLevel('case-genitive')).toMatchObject({ level: 'solid', how: 'sheet' });
+    expect(await review('case-genitive')).toMatchObject({ step: STEP_DAYS.indexOf(30), due: day(30) });
+  });
+
+  it('puts an idea already on the schedule where he says, keeping its lapses and rights', async () => {
+    await db.reviews.put({ kind: 'grammar', id: 'case-genitive', step: 2, due: day(-1), lastWhen: day(-5), lapses: 2, rights: 1 });
+    await teachIdea('case-genitive', 'known', NOW);
+    expect(await review('case-genitive')).toEqual({ kind: 'grammar', id: 'case-genitive', step: STEP_DAYS.indexOf(30), due: day(30), lastWhen: NOW, lapses: 2, rights: 1 });
+    await teachIdea('case-genitive', 'got-it', NOW);
+    expect(await review('case-genitive')).toMatchObject({ step: 0, due: day(1), lapses: 2 });
+    expect(await getLevel('case-genitive')).toMatchObject({ level: 'frontier' });
   });
 });

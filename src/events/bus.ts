@@ -65,7 +65,9 @@ export type AppEvent =
   /** the reading goal he set in Settings or asked the tutor for; `goal` is null when he cleared it */
   | { kind: 'goal-changed'; goal: Goal | null }
   /** the grammar approach he chose in Settings or asked the tutor for; `approach` is its id in src/approaches/ */
-  | { kind: 'approach-changed'; approach: string };
+  | { kind: 'approach-changed'; approach: string }
+  /** he told the idea sheet of grammar idea `id` Got it ('got-it': it is on the frontier, due tomorrow) or I know this ('known': solid, the 30-day step) */
+  | { kind: 'idea-taught'; id: string; outcome: 'got-it' | 'known' };
 
 export type EventKind = AppEvent['kind'];
 export type EventOf<K extends EventKind> = Extract<AppEvent, { kind: K }>;

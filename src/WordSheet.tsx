@@ -12,6 +12,8 @@ import { parseSegments } from './data/parseCode';
 import { getStudyResources, setResourceOn, type StudyResources } from './data/repositories';
 import { publish, useLatest } from './events/bus';
 import { GrammarSheet } from './GrammarSheet';
+import { IdeaSheet } from './IdeaSheet';
+import { ideaOf, ideaOfTerm, type GrammarIdea } from './data/grammar/ladder';
 import { optionOf, RESOURCES, type StudyLink, type StudyRef, type StudyResource } from './resources';
 import { storeUrl } from './resources/appStore';
 import { armFallback } from './resources/openApp';
@@ -255,9 +257,14 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
   const { drag, handle } = useSheetDrag(onClose);
   // The Grammar sheet takes the Escape while it is open.
   const [grammar, setGrammar] = useState<{ term: string; word: GreekWord; verse: number | undefined } | null>(null);
-  // An example on a Grammar sheet shows its own word here, until the sheet is opened on something else.
-  const [shown, setShown] = useState<{ base: Lookup; lookup: Lookup } | null>(null);
+  // An example on a Grammar sheet or an idea sheet shows its own word here, until the sheet is opened on something else; an idea's
+  // example may stand in another chapter than the Reader's (the goal's), which is then the chapter the sheet reads it from.
+  const [shown, setShown] = useState<{ base: Lookup; lookup: Lookup; chapter?: Chapter } | null>(null);
   const lookup = shown && shown.base === opened ? shown.lookup : opened;
+  const elsewhere = shown && shown.base === opened ? shown.chapter : undefined;
+  const sheetChapter = elsewhere ?? chapter;
+  // The idea sheet over the Grammar sheet (Learn this idea).
+  const [idea, setIdea] = useState<GrammarIdea | null>(null);
   // The sheet that says an app is not on the phone, over this one, after a Study link's app did not open.
   const [missing, setMissing] = useState<StudyResource | null>(null);
   useEscapeToClose(onClose, grammar === null && missing === null);
@@ -265,7 +272,8 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
   const pronunciation = useLatest('pronunciation-changed')?.pronunciation;
   const known = useKnownTerms();
   const study = useLiveQuery(getStudyResources, []);
-  const help = onHelp
+  // A word of another chapter has no verse in the Reader's chapter to help with or ask about.
+  const help = onHelp && !elsewhere
     ? (asked: WordHelp): void => {
         onClose();
         onHelp(asked);
@@ -277,8 +285,9 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
   };
   const askVerse = grammar?.verse;
   const ask =
-    onAskTerm && askVerse !== undefined
+    onAskTerm && askVerse !== undefined && !elsewhere
       ? (term: string): void => {
+          setIdea(null);
           setGrammar(null);
           onClose();
           onAskTerm({ term, verse: askVerse });
@@ -319,7 +328,7 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
           {lookup.words.map((w, i) => (
             <WordCard
               key={i}
-              chapter={chapter}
+              chapter={sheetChapter}
               word={w}
               english={lookup.fromEnglish ? undefined : lookup.english}
               pronunciation={pronunciation}
@@ -334,14 +343,31 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
       </div>
       {grammar ? (
         <GrammarSheet
-          chapter={chapter}
+          chapter={sheetChapter}
           term={grammar.term}
           word={grammar.word}
           known={known.has(grammar.term)}
+          covered={idea !== null}
           onClose={() => setGrammar(null)}
           onTerm={(term) => openTerm(term, grammar.word, grammar.verse)}
           onWord={(word) => {
-            setShown({ base: opened, lookup: { words: [word], fromEnglish: false } });
+            setShown({ base: opened, lookup: { words: [word], fromEnglish: false }, chapter: elsewhere });
+            setGrammar(null);
+          }}
+          onAsk={ask}
+          onLearn={(term) => {
+            const id = ideaOfTerm(term);
+            if (id) setIdea(ideaOf(id));
+          }}
+        />
+      ) : null}
+      {idea ? (
+        <IdeaSheet
+          idea={idea}
+          onClose={() => setIdea(null)}
+          onWord={(from, word) => {
+            setShown({ base: opened, lookup: { words: [word], fromEnglish: false }, chapter: from === chapter ? undefined : from });
+            setIdea(null);
             setGrammar(null);
           }}
           onAsk={ask}
