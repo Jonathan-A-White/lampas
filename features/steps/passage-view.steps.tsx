@@ -10,6 +10,7 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY, LINK_ORIGIN } from '../../src/config';
+import { markSupplied } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
@@ -45,6 +46,9 @@ const ROMANS_8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as {
 /** The text the app sends for verses `from` to `to`: each verse's chunks trimmed and joined by a space, the verses joined by a space. */
 const englishOf = (from: number, to: number): string =>
   ROMANS_8.verses.filter((v) => v.n >= from && v.n <= to).map((v) => v.e.map((c) => c.t.trim()).join(' ')).join(' ');
+/** what the tutor is sent: the supplied words between asterisks */
+const markedEnglishOf = (from: number, to: number): string =>
+  ROMANS_8.verses.filter((v) => v.n >= from && v.n <= to).map((v) => v.e.map(markSupplied).join(' ')).join(' ');
 const greekOf = (from: number, to: number): string =>
   ROMANS_8.verses.filter((v) => v.n >= from && v.n <= to).map((v) => v.g.map((w) => w.t).join(' ')).join(' ');
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
@@ -294,7 +298,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('that grist carries the Greek and the English of verses 1 to 11 and no other', () => {
       expect(fake.received[0].input.greek).toBe(greekOf(1, 11));
-      expect(fake.received[0].input.english).toBe(englishOf(1, 11));
+      expect(fake.received[0].input.english).toBe(markedEnglishOf(1, 11));
     });
     And('the answer shows in the Verse view', async () => {
       await waitFor(() => expect(viewEl().querySelectorAll('[data-answer]')).toHaveLength(1));

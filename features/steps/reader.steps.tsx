@@ -87,6 +87,24 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('Only the words the translators supplied are italic, not the whole chunk', ({ Given, Then, And }) => {
+    const italicsIn = (verse: number, chunk: string): string[] => {
+      const el = [...verseEl(verse).querySelectorAll<HTMLElement>('[data-chunk]')].find((c) => c.textContent?.trim() === chunk);
+      if (!el) throw new Error(`no chunk "${chunk}" in verse ${verse}`);
+      return [...el.querySelectorAll('[data-supplied]')].map((i) => i.textContent ?? '');
+    };
+    Given('Lampas is opened with nothing saved', openFresh);
+    Then('in verse {int} the chunk {string} shows only {string} in italics', (_, verse: number, chunk: string, words: string) => {
+      expect(italicsIn(verse, chunk)).toEqual([words]);
+    });
+    And('in verse {int} the chunk {string} shows only {string} in italics', (_, verse: number, chunk: string, words: string) => {
+      expect(italicsIn(verse, chunk)).toEqual([words]);
+    });
+    And('in verse {int} the chunk {string} has no italics', (_, verse: number, chunk: string) => {
+      expect(italicsIn(verse, chunk)).toEqual([]);
+    });
+  });
+
   Scenario('Tapping Therefore in verse 1 shows the Greek word behind it', ({ Given, When, Then, And }) => {
     Given('Lampas is opened with nothing saved', openFresh);
     When('he taps {string} in verse {int}', async (_, text: string, verse: number) => tapWord(text, verse));

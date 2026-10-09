@@ -100,7 +100,12 @@ Compact: short keys, no indentation, each lexicon entry once per file.
 | `verses[].e` | the English chunks **in English order**, so joined with spaces they read as the MSB verse |
 | `e[].t` | the chunk's English with its punctuation and quotation marks, without the `[ ]` and `{ }` marks |
 | `e[].g` | indexes into the verse's `g` array of the Greek word(s) the chunk renders, in Greek order |
-| `e[].s` | `1` when part of the chunk is supplied (it is in `[square brackets]` in the MSB); absent otherwise |
+| `e[].s` | which words of the chunk the translators supplied (they are in `[square brackets]` in the MSB): their positions, from 0, among the chunk's `t` split on white space (`"was king"` with `s: [0]`: *was* is supplied, *king* is not); sorted, never empty; absent when no word is supplied. Punctuation alone is never supplied, so a chunk is wholly supplied when every word of it with a letter is listed |
+
+The reader draws only the supplied words in italics (`englishRuns` in `src/data/chapter.ts` cuts a chunk into runs), and the tutor is
+sent them between asterisks, as Markdown italics (`markSupplied`: `*was* king of Salem *and* priest of God`), with a section of its
+instructions saying what the marks mean ('Italic words' in `grinds/verse-ask.instructions.md` and `grinds/bible-talk.instructions.md`).
+The Weave still leaves a chunk with any supplied word in English.
 
 Links are mutual: `e[g[i].e].g` contains `i`, and every `g[e[j].g[k]].e` is `j`.
 

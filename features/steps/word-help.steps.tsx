@@ -10,7 +10,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { readFileSync } from 'node:fs';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
-import { type Chapter } from '../../src/data/chapter';
+import { type Chapter, markSupplied } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { clearBus, subscribe, type EventOf } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
@@ -23,7 +23,7 @@ const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Ch
 const verse28 = chapter.verses.find((v) => v.n === 28);
 if (!verse28) throw new Error('no verse 28');
 const greekOf28 = verse28.g.map((w) => w.t).join(' ');
-const englishOf28 = verse28.e.map((c) => c.t.trim()).join(' ');
+const englishOf28 = verse28.e.map(markSupplied).join(' ');
 
 afterAll(() => {
   cleanup();

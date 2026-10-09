@@ -9,7 +9,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { readFileSync } from 'node:fs';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
-import { type Chapter } from '../../src/data/chapter';
+import { type Chapter, markSupplied } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -94,7 +94,7 @@ describeFeature(feature, ({ Scenario }) => {
       const { input } = received();
       expect(input.reference).toBe('Romans 8:28');
       expect(input.greek).toBe(verse28.g.map((w) => w.t).join(' '));
-      expect(input.english).toBe(verse28.e.map((c) => c.t.trim()).join(' '));
+      expect(input.english).toBe(verse28.e.map(markSupplied).join(' '));
     });
     And('its input carries the question {string}', (_, question: string) => {
       expect(received().input.question).toBe(question);

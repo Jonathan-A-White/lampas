@@ -1,7 +1,7 @@
 // The request the bible-talk grind is sent: the scope's text, the last 10 turns, and a fit to the grist's size cap.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import type { Chapter } from '../../src/data/chapter';
+import { type Chapter, markSupplied } from '../../src/data/chapter';
 import { learnerGrammarOf, type LearnerGrammar } from '../../src/data/grammar/learnerGrammar';
 import { MAX_HISTORY_TURNS, MAX_REQUEST_BYTES, MAX_TALK_CHARS, buildTalkRequest, fitHistory, scopeRef, termQuestion, type TalkRequest } from '../../src/services/talk';
 
@@ -39,7 +39,7 @@ describe('buildTalkRequest', () => {
     const r = buildTalkRequest({ title: 'Romans 8', chapter, verse }, '  Why?  ', [], ['θεός']);
     expect(r.reference).toBe('Romans 8:9');
     expect(r.greek).toBe(verse.g.map((w) => w.t).join(' '));
-    expect(r.english).toBe(verse.e.map((c) => c.t.trim()).join(' '));
+    expect(r.english).toBe(verse.e.map(markSupplied).join(' '));
     expect(r.question).toBe('Why?');
     expect(r.solid_words).toEqual(['θεός']);
     expect(r.history).toEqual([]);
@@ -49,7 +49,7 @@ describe('buildTalkRequest', () => {
     const r = buildTalkRequest({ title: 'Romans 8', chapter, verse: null }, 'Why?', [], []);
     expect(r.reference).toBe('Romans 8');
     expect(r.greek).toBe(chapter.verses.slice(0, 3).map((v) => v.g.map((w) => w.t).join(' ')).join(' '));
-    expect(r.english).toBe(chapter.verses.slice(0, 3).map((v) => v.e.map((c) => c.t.trim()).join(' ')).join(' '));
+    expect(r.english).toBe(chapter.verses.slice(0, 3).map((v) => v.e.map(markSupplied).join(' ')).join(' '));
   });
 
   it('sends only the last 10 turns, oldest first', () => {

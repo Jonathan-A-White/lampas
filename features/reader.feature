@@ -41,6 +41,12 @@ Feature: Read Romans 8
     When he taps the first English chunk that renders several Greek words
     Then the word sheet shows every Greek word that chunk renders
 
+  Scenario: Only the words the translators supplied are italic, not the whole chunk
+    Given Lampas is opened with nothing saved
+    Then in verse 1 the chunk "for those who are" shows only "are" in italics
+    And in verse 1 the chunk "the flesh" shows only "the" in italics
+    And in verse 1 the chunk "Therefore" has no italics
+
   Scenario: The word sheet closes by a tap outside it
     Given Lampas is opened with nothing saved
     And he taps "Therefore" in verse 1

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { buildData, cleanDefinition, lemmaFor, parseLexicon, runBuild } from '../../scripts/data-build';
+import { buildData, cleanDefinition, lemmaFor, parseLexicon, runBuild, suppliedWords } from '../../scripts/data-build';
 import type { Chapter, Verse } from '../../src/data/chapter';
 
 const msb = readFileSync('tests/fixtures/data/msb-slice.tsv', 'utf8');
@@ -127,9 +127,29 @@ describe('a chapter file', () => {
   it('marks a chunk that carries supplied [words], and strips the brackets', () => {
     const v = verse('rom/8.json', 1);
     const flesh = v.e.find((c) => c.t === 'the flesh');
-    expect(flesh?.s).toBe(1);
+    expect(flesh?.s).toEqual([0]);
     expect(v.e.find((c) => c.t === 'Therefore')?.s).toBeUndefined();
     expect(englishOf(v)).not.toMatch(/[[\]{}]/);
+  });
+
+  it('keeps which words of a chunk are supplied, not just that one is', () => {
+    const all = built.chapters.flatMap((f) => f.chapter.verses.flatMap((v) => v.e));
+    const supplied = (t: string) => all.find((c) => c.t === t && c.s)?.s;
+    expect(supplied('there is now')).toEqual([0, 1]);
+    expect(supplied('for those who are')).toEqual([3]);
+    expect(supplied('and now')).toEqual([1]);
+    expect(supplied('the one')).toEqual([1]);
+    expect(supplied('but')).toEqual([0]);
+    expect(supplied('Therefore')).toBeUndefined();
+  });
+
+  it('counts a word as supplied only when all its letters are bracketed, and never a bare punctuation mark', () => {
+    expect(suppliedWords('\uE000was\uE001 king')).toEqual([0]);
+    expect(suppliedWords('of \uE000the one who\uE001')).toEqual([1, 2, 3]);
+    expect(suppliedWords('\uE000the\uE001 son')).toEqual([0]);
+    expect(suppliedWords('\uE000Jesus’\uE001 own')).toEqual([0]);
+    expect(suppliedWords('conscience\uE000 ,\uE001')).toEqual([]);
+    expect(suppliedWords('no brackets here')).toEqual([]);
   });
 
   it('gives a Greek word with no English no link, and no empty chunk', () => {
