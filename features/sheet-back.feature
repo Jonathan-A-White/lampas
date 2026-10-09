@@ -12,7 +12,7 @@ Feature: Back closes an open sheet
     And the Reader shows Romans 8 at verse 2
 
   Scenario: Done closes the sheet and the next Back does what it did before the sheet opened
-    Given Lampas is opened on Settings and then on Romans 8 with verse 2 selected
+    Given Lampas is opened on Settings and then on Romans 8
     And he taps "For" in verse 2
     When he taps Done on the word sheet
     Then the word sheet is closed
@@ -39,18 +39,18 @@ Feature: Back closes an open sheet
     Then the Grammar sheet is closed and the word sheet is still open
 
   Scenario: Back on the Talk sheet closes it
-    Given Lampas is opened on Romans 8 with verse 2 selected
+    Given Lampas is opened on Romans 8
     And he opens the Talk sheet
     When he goes back
     Then the Talk sheet is closed
-    And the Reader shows Romans 8 at verse 2
+    And the Reader shows Romans 8
 
   Scenario: Back on the teach sheet closes it
-    Given Lampas is opened on Romans 8 with verse 2 selected
+    Given Lampas is opened on Romans 8
     And he opens the teach sheet
     When he goes back
     Then the teach sheet is closed
-    And the Reader shows Romans 8 at verse 2
+    And the Reader shows Romans 8
 
   Scenario: Back on the Ask for another approach sheet closes it
     Given Lampas is opened on Settings with the Ask for another approach sheet open
@@ -59,7 +59,7 @@ Feature: Back closes an open sheet
     And the Settings screen is open
 
   Scenario: Escape and a tap outside leave no stray entry either
-    Given Lampas is opened on Settings and then on Romans 8 with verse 2 selected
+    Given Lampas is opened on Settings and then on Romans 8
     And he taps "For" in verse 2
     And he taps outside the word sheet
     And he taps "For" in verse 2 again

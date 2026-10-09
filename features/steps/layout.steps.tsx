@@ -164,8 +164,8 @@ describeFeature(feature, ({ Scenario }) => {
       expect(verseEl(a)).toHaveAttribute('data-selected', 'true');
       expect(verseEl(b)).toHaveAttribute('data-selected', 'false');
     });
-    And('the Ask box is shown', async () => {
-      expect(await screen.findByRole('region', { name: 'Ask the tutor' })).toBeVisible();
+    And('the Verse view is shown', async () => {
+      expect(await screen.findByRole('region', { name: 'Verse view' })).toBeVisible();
     });
   });
 

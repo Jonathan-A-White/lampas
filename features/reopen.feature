@@ -9,7 +9,7 @@ Feature: Lampas reopens where he left it
     When he switches to Greek
     And he selects verse 28
     Then the address says Romans chapter 8, the Greek view, no weave and verse 28
-    When he taps verse 28 again
+    When he closes the Verse view
     Then the address names no verse
 
   Scenario: An address that names a verse and a view opens the reader there

@@ -2,7 +2,7 @@ Feature: Lampas takes links in
   A verse or a word can be named in a link, the way Logos names one: https://lampas.allmymind.org/#/?ref=Rom.8.28 opens the
   reader on that verse, and #/?word=G3551 opens the word sheet of νόμος. A reference may be written as OSIS or in English
   ('Rom 8:28', 'Romans 8:28', '1 John 1:9'), in any case, or as a chapter alone. A reference Lampas does not hold opens the
-  nearest place it does hold, with a one-line notice saying what was asked for, never a blank screen. The verse panel and the
+  nearest place it does hold, with a one-line notice saying what was asked for, never a blank screen. The Verse view and the
   word sheet each give back a link: Copy link, and Share where the phone has it. The browser's web+lampas: scheme reaches the
   same addresses (docs/links.md).
 
@@ -67,20 +67,20 @@ Feature: Lampas takes links in
     And the notice reads "“G99999” is not in Lampas; showing Romans 8."
     And no word sheet is open
 
-  Scenario: The verse panel copies the https link of its verse
+  Scenario: The Verse view copies the https link of its verse
     Given a link "#/?ref=Rom.8.28" is opened
-    When he taps Copy link on the verse panel
+    When he taps Copy link on the Verse view
     Then the clipboard holds "https://lampas.allmymind.org/#/?ref=Rom.8.28"
-    And the panel says "Link copied"
+    And the Verse view says "Link copied"
 
-  Scenario: The verse panel has no Share button where the phone cannot share
+  Scenario: The Verse view has no Share button where the phone cannot share
     Given a link "#/?ref=Rom.8.28" is opened
-    Then the verse panel has no Share button
+    Then the Verse view has no Share button
 
-  Scenario: The verse panel shares the https link of its verse where the phone can share
+  Scenario: The Verse view shares the https link of its verse where the phone can share
     Given the phone can share
     And a link "#/?ref=Rom.8.28" is opened
-    When he taps Share on the verse panel
+    When he taps Share on the Verse view
     Then the phone is asked to share "https://lampas.allmymind.org/#/?ref=Rom.8.28"
 
   Scenario: The word sheet copies the https link of its word
@@ -91,5 +91,5 @@ Feature: Lampas takes links in
   Scenario: A phone that refuses the clipboard shows the link to copy by hand
     Given a link "#/?ref=Rom.8.28" is opened
     And the clipboard refuses
-    When he taps Copy link on the verse panel
-    Then the panel shows the link "https://lampas.allmymind.org/#/?ref=Rom.8.28" to copy by hand
+    When he taps Copy link on the Verse view
+    Then the Verse view shows the link "https://lampas.allmymind.org/#/?ref=Rom.8.28" to copy by hand

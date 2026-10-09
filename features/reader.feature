@@ -53,14 +53,14 @@ Feature: Read Romans 8
     When he swipes the word sheet down
     Then no word sheet is open
 
-  Scenario: Tapping a verse number selects that verse
+  Scenario: Tapping a verse number opens that verse on a screen of its own, and closing it selects nothing
     Given Lampas is opened with nothing saved
     When he taps the number of verse 3
-    Then verse 3 is selected
-    When he taps the number of verse 5 instead
-    Then verse 5 is selected and verse 3 is not
-    When he taps the number of verse 5 again
+    Then verse 3 is selected and its Verse view is open
+    When he closes the Verse view
     Then no verse is selected
+    When he taps the number of verse 5
+    Then verse 5 is selected and verse 3 is not
 
   Scenario: The switch is remembered after reload
     Given Lampas is opened with nothing saved

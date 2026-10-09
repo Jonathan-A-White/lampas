@@ -48,7 +48,7 @@ Feature: Reading layout and section headings
     When he closes the word sheet
     And he taps the number of verse 2
     Then verse 2 is selected and verse 1 is not
-    And the Ask box is shown
+    And the Verse view is shown
 
   Scenario: Layout and Section headings survive a reload
     Given Lampas is opened with nothing saved

@@ -4,17 +4,18 @@
 // Greek of his solid words in place of their English (src/data/weave.ts).
 // Settings also holds the Layout (Verse by verse | Paragraph, src/layout/layouts.ts cuts the verses into blocks) and Section
 // headings (On | Off): the MSB's heading (verses[].h) is drawn above its block in either view, in English.
-// A selected verse shows its reading check (src/ReadCheck.tsx: hold Read, read the verse aloud, the words to fix come back
-// marked; in either view: the Greek view reads the verse's Greek) directly under it, so what the hold is doing is on
-// screen while he holds; then its kept tutor answers and the Ask box (src/Ask.tsx). The selection, the view and the weave
-// are told to the rest of the app on the event bus (src/events/bus.ts, docs/events.md); the Reader reads the selection back from it.
+// A tapped verse number opens the Verse view (src/VerseView.tsx, mw-5r3p30.79) over the Reader: the verse big at the top, one row of actions
+// (Listen, Read it aloud, Ask the tutor, Copy link) and one hold bar at the foot. The view is a Back step of its own (src/nav/route.ts openVerse),
+// so Back returns to the Reader where it was; the verse is in the address (v), the address is the truth, and the verse is "selected" while the view
+// is open. The selection, the view and the weave are told to the rest of the app on the event bus (src/events/bus.ts, docs/events.md).
 // The chapter comes from /data/<book>/<n>.json (Romans 8 is precached, any other is fetched when first opened and then kept by the
 // worker), the view and the weave are kept in the settings store. Which chapter is open is the address's (b and c), else the one
 // last open (src/data/readerChapter.ts); a chapter is a ReaderBody keyed by it, so choosing another starts the screen afresh.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Fragment, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AnswerCards, AskBox } from './Ask';
-import { ReadCheckPanel, VerseRead, type ReadHold } from './ReadCheck';
+import type { ReadHold } from './ReadCheck';
+import { VerseView } from './VerseView';
+import { useVerseAction } from './verse/action';
 import { TalkBar, TalkSheet } from './Talk';
 import { type Chapter, type EnglishChunk, type GreekWord, type Verse, loadChapter } from './data/chapter';
 import { formPasses } from './data/grammar/formLevel';
@@ -35,6 +36,7 @@ import {
   type ReaderView,
 } from './data/repositories';
 import { chapterOf, getOpenChapter, setOpenChapter, type OpenChapter } from './data/readerChapter';
+import { verseNeighbours } from './data/neighbours';
 import { ChapterNav } from './ChapterNav';
 import { ChapterPicker } from './ChapterPicker';
 import { weaveVerse, type Woven } from './data/weave';
@@ -45,7 +47,7 @@ import { LinkOpener } from './nav/LinkOpener';
 import { pendingLink, takeLink } from './nav/linkRequest';
 import { lemmaSheet, linkOf } from './nav/links';
 import { pendingRequest, takeRequest } from './nav/readerRequest';
-import { navigate, readerOf, useAddress } from './nav/route';
+import { closeVerse, moveVerse, navigate, openVerse, readerOf, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
 import { useReadChecks } from './useReadChecks';
@@ -213,8 +215,6 @@ interface VerseProps {
   onPlay: () => void;
   onLook: (lookup: Lookup) => void;
   talk: VerseTalk;
-  /** the Read button of this verse (English view only) */
-  read: ReadHold | null;
 }
 
 /** The words of one verse, every one tappable: the Greek in Greek order, or the English chunks (woven or not). */
@@ -276,9 +276,9 @@ const textClass = (view: ReaderView) =>
 const READING_CLASS = 'bg-accent/30';
 
 
-/** Verse by verse: one verse per line, its number a button before it. */
-function VerseView(props: VerseProps) {
-  const { verse, view, selected, reading, onSelect, onPlay, talk, read } = props;
+/** Verse by verse: one verse per line, its number a button before it (a tap opens the Verse view, src/VerseView.tsx). */
+function VerseLine(props: VerseProps) {
+  const { verse, view, selected, reading, onSelect, onPlay, talk } = props;
   return (
     <p
       data-verse={verse.n}
@@ -298,7 +298,6 @@ function VerseView(props: VerseProps) {
       </VerseNumber>
       <VerseText {...props} />
       <VersePlay playing={reading} onPlay={onPlay} className="align-baseline font-sans" />
-      {read ? <VerseRead verse={verse.n} hold={read} className="align-baseline font-sans" /> : null}
     </p>
   );
 }
@@ -306,7 +305,7 @@ function VerseView(props: VerseProps) {
 /** Paragraph: the verses of one MSB paragraph run on, each number a small superscript. The button is still 44 px square
  * (its side margins pull the neighbours back in), and a verse is still selected by its number. The play button of a
  * verse shows only while it is selected, so a paragraph reads as running text. */
-function ParagraphView({ verses, view, woven, selected, reading, onSelect, onPlay, onLook, talk, readOf }: {
+function ParagraphView({ verses, view, woven, selected, reading, onSelect, onPlay, onLook, talk }: {
   verses: Verse[];
   view: ReaderView;
   woven: (Woven[] | null)[];
@@ -317,8 +316,6 @@ function ParagraphView({ verses, view, woven, selected, reading, onSelect, onPla
   onPlay: (n: number) => void;
   onLook: (lookup: Lookup) => void;
   talk: VerseTalk;
-  /** the Read button of a verse, or null (Greek view) */
-  readOf: (verse: Verse) => ReadHold | null;
 }) {
   return (
     <p data-paragraph lang={view === 'greek' ? 'grc' : 'en'} className={`mb-2 break-words px-2 leading-(--lp-leading) ${textClass(view)}`}>
@@ -335,10 +332,7 @@ function ParagraphView({ verses, view, woven, selected, reading, onSelect, onPla
           </VerseNumber>
           <VerseText verse={verse} view={view} woven={woven[i]} onLook={onLook} />
           {selected === verse.n || reading === verse.n ? (
-            <>
-              <VersePlay playing={reading === verse.n} onPlay={() => onPlay(verse.n)} className="align-baseline font-sans" />
-              {readOf(verse) ? <VerseRead verse={verse.n} hold={readOf(verse) as ReadHold} className="align-baseline font-sans" /> : null}
-            </>
+            <VersePlay playing={reading === verse.n} onPlay={() => onPlay(verse.n)} className="align-baseline font-sans" />
           ) : null}
         </span>
       ))}
@@ -480,21 +474,22 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     if (info.focus?.kind === 'sound' && info.syllables?.length) startAnswer(id, syllableRuns(info.syllables));
     else startAnswer(id, answerRuns(answer));
   });
-  // The verse he last tapped: its Ask box scrolls into view. A selection put back by a reopen or Back does not, so it
-  // leaves the text where the scroll memory put it.
-  const [tapped, setTapped] = useState<number | null>(() => (request?.action === 'ask' ? request.verse : link?.verse ?? null));
-  const selectVerse = useCallback(
-    (n: number) => {
-      setTapped(selected === n ? null : n);
-      publish({ kind: 'verse-selected', chapter: CHAPTER, verse: selected === n ? null : n });
-    },
-    [selected, CHAPTER],
-  );
+  // A tap on a verse number opens the Verse view as a Back step of its own; the address then names the verse and the effect below tells the bus.
+  const selectVerse = useCallback((n: number) => openVerse(n), []);
+  const [action, chooseAction] = useVerseAction();
+  // The Parsing drill's Ask the tutor opens the view on the Ask action, holding the question.
+  useEffect(() => {
+    if (request?.action === 'ask') chooseAction('ask');
+  }, [request, chooseAction]);
   const closeSheet = useCallback(() => setLookup(null), []);
   const talkScope = chapter && talkAbout !== undefined ? { title: TITLE, chapter, verse: chapter.verses.find((v) => v.n === talkAbout) ?? null } : null;
+  // What he says goes to the open Talk sheet; with none open, to the tutor about the verse of the open Verse view (its Ask the tutor bar).
+  const viewVerse = chapter && selected !== null ? chapter.verses.find((v) => v.n === selected) : undefined;
+  const viewAsking = viewVerse !== undefined && action === 'ask';
   useEffect(() => {
     sayAbout.current = (message) => {
       if (talkScope) say(talkScope, message);
+      else if (viewAsking && viewVerse) ask(viewVerse, message);
     };
   });
   // Ask the tutor on a paradigm table (src/ParadigmsScreen.tsx): the Talk sheet is open on the chapter; once the chapter is here the first
@@ -566,7 +561,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     [chapter, talkStates, voice, say, BOOK, CHAPTER, TITLE],
   );
   // The verse number on the teach sheet: the reading box is scrolled so that verse stands at its top. The verse is not selected: that
-  // opens its panel and the Ask box under it, and scrolls the verse out of sight again.
+  // would open its Verse view over the Reader.
   const showVerse = useCallback((n: number) => {
     const box = main.current;
     const el = box?.querySelector<HTMLElement>(`[data-verse="${n}"]`);
@@ -574,14 +569,11 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   }, []);
   const closeTeach = useCallback(() => setTeaching(false), []);
   const verseTalk: VerseTalk = { onHold: holdTalk, onRelease: () => void voice.release(), onDrop: voice.abort };
-  // The Read button of a verse: holding it on a verse that is not selected selects it, so its result shows below it.
+  // The Verse view's Read bar: the hold of the reading check for the verse the view shows.
   const readOf = (verse: Verse): ReadHold => {
     const phase = checks.states[verse.n]?.phase;
     return {
-      onPress: () => {
-        if (selected !== verse.n) publish({ kind: 'verse-selected', chapter: CHAPTER, verse: verse.n });
-        checks.press(verse);
-      },
+      onPress: () => checks.press(verse),
       onRelease: checks.release,
       onDrop: checks.drop,
       disabled: phase === 'sending' || phase === 'waiting',
@@ -706,7 +698,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
 
   return (
     <>
-      <header className="flex shrink-0 items-center gap-1 border-b border-line px-2 py-2">
+      <header inert={viewVerse !== undefined} className="flex shrink-0 items-center gap-1 border-b border-line px-2 py-2">
         {/* While the chapter is read the header gives its room to Pause and Stop; the title stays for screen readers. */}
         <h1 className={`chrome-title min-w-0 font-semibold ${chapterReading ? 'sr-only' : 'flex-1'}`}>
           <button
@@ -751,7 +743,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           {wovenCount} {wovenCount === 1 ? 'word' : 'words'} in Greek
         </p>
       ) : null}
-      <main ref={mainRef} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} className="screen min-h-0 flex-1 px-1 pt-2">
+      <main ref={mainRef} inert={viewVerse !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} className="screen min-h-0 flex-1 px-1 pt-2">
         <div>
         {failed ? (
           <div role="alert" className="px-4 pt-6 text-center">
@@ -780,8 +772,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
             {blocks.map((block) => {
               const first = block[0];
               const wovenOf = (v: Verse) => woven?.[chapter.verses.indexOf(v)] ?? null;
-              const withSelection = block.some((v) => v.n === selected);
-              const pick = block.find((v) => v.n === selected);
               return (
                 <Fragment key={first.n}>
                   {headings === 'on' && first.h ? <SectionHeading text={first.h} /> : null}
@@ -796,10 +786,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       onPlay={(n) => readFrom(n, false)}
                       onLook={setLookup}
                       talk={verseTalk}
-                      readOf={readOf}
                     />
                   ) : (
-                    <VerseView
+                    <VerseLine
                       verse={first}
                       view={view}
                       woven={wovenOf(first)}
@@ -809,36 +798,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       onPlay={() => readFrom(first.n, false)}
                       onLook={setLookup}
                       talk={verseTalk}
-                      read={readOf(first)}
                     />
                   )}
-                  {withSelection && selected !== null && pick ? (
-                    <>
-                      <ReadCheckPanel
-                        key={pick.n}
-                        verse={pick}
-                        text={<VerseText verse={pick} view={view} woven={wovenOf(pick)} onLook={setLookup} />}
-                        title={TITLE}
-                        view={view}
-                        book={BOOK}
-                        chapter={CHAPTER}
-                        checks={checks}
-                        hold={readOf(pick)}
-                        onRetry={() => checks.retry(pick)}
-                      />
-                      <AnswerCards verse={selected} book={BOOK} chapter={CHAPTER} />
-                      <AskBox
-                        chapter={chapter}
-                        asks={asks}
-                        onAsk={(verse, question) => {
-                          setPrefill(null);
-                          ask(verse, question);
-                        }}
-                        reveal={tapped === selected}
-                        prefill={prefill}
-                      />
-                    </>
-                  ) : null}
                 </Fragment>
               );
             })}
@@ -855,7 +816,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         )}
         </div>
       </main>
-      {chapter ? (
+      {chapter && !viewVerse ? (
         <TalkBar
           hold={{
             onPress: stopReading,
@@ -891,6 +852,33 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           onClose={closeTeach}
           onShowVerse={showVerse}
           onAsk={askAboutNewWord}
+        />
+      ) : null}
+      {chapter && viewVerse && view ? (
+        <VerseView
+          title={TITLE}
+          book={BOOK}
+          chapter={CHAPTER}
+          verse={viewVerse}
+          view={view}
+          text={<VerseText verse={viewVerse} view={view} woven={woven?.[chapter.verses.indexOf(viewVerse)] ?? null} onLook={setLookup} />}
+          places={verseNeighbours(BOOK, CHAPTER, viewVerse.n)}
+          onMove={moveVerse}
+          onClose={closeVerse}
+          action={action}
+          onAction={chooseAction}
+          listen={{ onHold: () => readFrom(viewVerse.n, true), onRelease: stopReading }}
+          checks={checks}
+          read={readOf(viewVerse)}
+          onRetryRead={() => checks.retry(viewVerse)}
+          ask={asks[viewVerse.n]}
+          onAsk={(verse, question) => {
+            setPrefill(null);
+            ask(verse, question);
+          }}
+          prefill={prefill}
+          voice={voice}
+          onTalk={() => setTalkAbout(viewVerse.n)}
         />
       ) : null}
       {picking ? <ChapterPicker current={open} onClose={closePicker} /> : null}

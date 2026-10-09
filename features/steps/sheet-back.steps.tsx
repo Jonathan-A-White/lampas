@@ -24,8 +24,8 @@ afterAll(() => {
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 
-/** Opens the app on `start` (a hash), then, when `then` is 'reader', moves on to the Reader as a new Back step; verse 2 is selected. */
-async function open(start: string, thenReader: boolean): Promise<void> {
+/** Opens the app on `start` (a hash), then, when `thenReader`, moves on to the Reader as a new Back step; verse 2 is selected unless `select` is false (its Verse view is then open). */
+async function open(start: string, thenReader: boolean, select = true): Promise<void> {
   cleanup();
   stopReading();
   clearBus();
@@ -43,6 +43,7 @@ async function open(start: string, thenReader: boolean): Promise<void> {
   }
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
+  if (!select) return;
   await user.click(await screen.findByRole('button', { name: 'Verse 2' }));
   await waitFor(() => expect(window.location.hash).toContain('v=2'));
 }
@@ -66,7 +67,9 @@ const ideaSheet = () => screen.queryByRole('dialog', { name: 'Idea' });
 const talkSheet = () => screen.queryByRole('dialog', { name: /^Talk about / });
 
 async function tapsWord(text: string, verse: number): Promise<void> {
-  await user.click(within(verseEl(verse)).getByRole('button', { name: text }));
+  // in the Verse view when one is open, else in the Reader's own line
+  const scope = screen.queryByRole('region', { name: 'Verse view' }) ?? verseEl(verse);
+  await user.click(within(scope).getByRole('button', { name: text }));
   await screen.findByRole('dialog', { name: 'Word' });
 }
 
@@ -88,7 +91,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('Done closes the sheet and the next Back does what it did before the sheet opened', ({ Given, And, When, Then }) => {
-    Given('Lampas is opened on Settings and then on Romans 8 with verse 2 selected', () => open('#/settings', true));
+    Given('Lampas is opened on Settings and then on Romans 8', () => open('#/settings', true, false));
     And('he taps "For" in verse 2', () => tapsWord('For', 2));
     When('he taps Done on the word sheet', async () => {
       await user.click(screen.getByRole('button', { name: 'Done' }));
@@ -146,7 +149,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('Back on the Talk sheet closes it', ({ Given, And, When, Then }) => {
-    Given('Lampas is opened on Romans 8 with verse 2 selected', () => open('', false));
+    Given('Lampas is opened on Romans 8', () => open('', false, false));
     And('he opens the Talk sheet', async () => {
       await user.click(await screen.findByRole('button', { name: 'Talk' }));
       await screen.findByRole('dialog', { name: /^Talk about / });
@@ -155,14 +158,14 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Talk sheet is closed', async () => {
       await waitFor(() => expect(talkSheet()).toBeNull());
     });
-    And('the Reader shows Romans 8 at verse 2', () => {
-      expect(window.location.hash).toContain('v=2');
-      expect(screen.getByRole('button', { name: 'Verse 2' }).getAttribute('aria-pressed')).toBe('true');
+    And('the Reader shows Romans 8', () => {
+      expect(screen.getByRole('heading', { level: 1, name: /Romans 8/ })).toBeTruthy();
+      expect(window.location.hash).not.toContain('v=');
     });
   });
 
   Scenario('Back on the teach sheet closes it', ({ Given, And, When, Then }) => {
-    Given('Lampas is opened on Romans 8 with verse 2 selected', () => open('', false));
+    Given('Lampas is opened on Romans 8', () => open('', false, false));
     And('he opens the teach sheet', async () => {
       await user.click(await screen.findByTestId('new-words'));
       await screen.findByRole('dialog', { name: 'New word' });
@@ -171,9 +174,9 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the teach sheet is closed', async () => {
       await waitFor(() => expect(screen.queryByRole('dialog', { name: 'New word' })).toBeNull());
     });
-    And('the Reader shows Romans 8 at verse 2', () => {
-      expect(window.location.hash).toContain('v=2');
-      expect(screen.getByRole('button', { name: 'Verse 2' }).getAttribute('aria-pressed')).toBe('true');
+    And('the Reader shows Romans 8', () => {
+      expect(screen.getByRole('heading', { level: 1, name: /Romans 8/ })).toBeTruthy();
+      expect(window.location.hash).not.toContain('v=');
     });
   });
 
@@ -204,7 +207,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('Escape and a tap outside leave no stray entry either', ({ Given, And, When, Then }) => {
-    Given('Lampas is opened on Settings and then on Romans 8 with verse 2 selected', () => open('#/settings', true));
+    Given('Lampas is opened on Settings and then on Romans 8', () => open('#/settings', true, false));
     And('he taps "For" in verse 2', () => tapsWord('For', 2));
     And('he taps outside the word sheet', async () => {
       await user.click(screen.getByTestId('sheet-backdrop'));

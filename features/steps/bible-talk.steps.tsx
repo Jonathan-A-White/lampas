@@ -71,11 +71,19 @@ async function open(configure: (f: FakePostern) => void = (f) => void (f.autoRep
 async function selectVerse28(): Promise<void> {
   const number = await screen.findByRole('button', { name: 'Verse 28' });
   if (number.getAttribute('aria-pressed') !== 'true') await user.click(number);
+  await screen.findByRole('region', { name: 'Verse view' });
   await waitFor(() => expect(screen.getByRole('button', { name: 'Verse 28' })).toHaveAttribute('aria-pressed', 'true'));
 }
 
+/** Opens the Talk sheet: from the Talk bar, or, with a verse's view open, from its Ask the tutor action ('Talk about verse N'). */
 async function openTalk(): Promise<void> {
-  await user.click(await screen.findByRole('button', { name: 'Talk' }));
+  const view = screen.queryByRole('region', { name: 'Verse view' });
+  if (view) {
+    await user.click(within(view).getByRole('button', { name: 'Ask the tutor', exact: true }));
+    await user.click(await within(view).findByRole('button', { name: 'Talk about verse 28' }));
+  } else {
+    await user.click(await screen.findByRole('button', { name: 'Talk' }));
+  }
   await screen.findByRole('dialog', { name: /^Talk about / });
 }
 
@@ -325,9 +333,9 @@ describeFeature(feature, ({ Scenario }) => {
     And('he sends {string}', (_, question: string) => send(question));
     And('the answer number {int} has arrived', (_, n: number) => turnsKept(n));
     When('he taps Done on the Talk sheet', () => taps('Done'));
-    And('he selects verse 28 again, so that no verse is selected', async () => {
+    And('he closes the Verse view of verse 28, so that no verse is selected', async () => {
       await waitFor(() => expect(screen.queryByRole('dialog', { name: /^Talk about / })).toBeNull());
-      await user.click(screen.getByRole('button', { name: 'Verse 28' }));
+      await user.click(screen.getByRole('button', { name: '‹ Reader' }));
       await waitFor(() => expect(screen.getByRole('button', { name: 'Verse 28' })).toHaveAttribute('aria-pressed', 'false'));
     });
     And('he opens Talk again', openTalk);

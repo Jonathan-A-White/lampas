@@ -3,6 +3,7 @@ import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { openTalkAbout } from './verse-view';
 
 const VIEWPORT = { width: 390, height: 844 };
 
@@ -24,7 +25,6 @@ test('the Talk bar sits at the bottom of the reader and opens a sheet that fits 
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.goto('/');
-  await page.getByRole('button', { name: 'Verse 28', exact: true }).click();
 
   // The bar is the lowest thing on the screen, a thumb-sized button across its width.
   const talk = page.getByRole('button', { name: 'Talk', exact: true });
@@ -36,7 +36,9 @@ test('the Talk bar sits at the bottom of the reader and opens a sheet that fits 
   expect((bar?.y ?? 0) + (bar?.height ?? 0)).toBeGreaterThan(VIEWPORT.height - 70);
   await expectFitsPhone(page);
 
-  await talk.click();
+  // With a verse tapped the Verse view takes the screen and the Talk bar is gone (one hold bar at a time); the verse's talk is under Ask the tutor.
+  await openTalkAbout(page, 28);
+  await expect(talk).toBeHidden();
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
   await expect(sheet).toBeVisible();
   const field = sheet.getByRole('textbox', { name: 'Your message' });

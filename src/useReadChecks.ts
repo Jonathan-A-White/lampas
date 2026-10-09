@@ -21,7 +21,7 @@ export const MIN_READING_MS = 500;
 export const SHORT_READING_MS = 1000;
 
 export const TAP_HINT = 'Hold while you read';
-export const SHORT_HINT = 'Hold Read for the whole verse';
+export const SHORT_HINT = 'Hold the bar for the whole verse';
 export const DROPPED_NOTE = 'Dropped. Hold to try again';
 
 /** What a verse's reading is doing right now. */

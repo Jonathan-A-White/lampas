@@ -79,7 +79,7 @@ Feature: Bible talk
     And he sends "What does συνεργεῖ mean here?"
     And the answer number 1 has arrived
     When he taps Done on the Talk sheet
-    And he selects verse 28 again, so that no verse is selected
+    And he closes the Verse view of verse 28, so that no verse is selected
     And he opens Talk again
     Then the sheet is titled "Talk about Romans 8"
     And the sheet shows no turns yet

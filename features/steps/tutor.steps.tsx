@@ -1,4 +1,4 @@
-// features/steps/tutor.steps.tsx — runs features/tutor.feature: the Ask box under the selected verse, the grist it
+// features/steps/tutor.steps.tsx — runs features/tutor.feature: the Ask box of the Verse view's Ask the tutor action, the grist it
 // sends through a fake Postern (tests/support/fake-postern.ts), the answer card, the failure states and the
 // kept answers. fetch is stubbed: /data/ files from disk, https://postern.allmymind.org to the fake.
 import '@testing-library/react/dont-cleanup-after-each';
@@ -54,6 +54,8 @@ async function open(configure: (f: FakePostern) => void = (f) => void (f.autoRep
 async function selectVerse28(): Promise<void> {
   const number = await screen.findByRole('button', { name: 'Verse 28' });
   if (number.getAttribute('aria-pressed') !== 'true') await user.click(number);
+  const view = await screen.findByRole('region', { name: 'Verse view' });
+  await user.click(within(view).getByRole('button', { name: 'Ask the tutor', exact: true }));
   await screen.findByRole('region', { name: 'Ask the tutor' });
 }
 

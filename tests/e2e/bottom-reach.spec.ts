@@ -8,6 +8,7 @@ import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { openTalkAbout } from './verse-view';
 
 const NAV_BAR = 48;
 const MODES = [
@@ -97,8 +98,7 @@ for (const phone of PHONES) for (const mode of MODES) {
       await openUnlocked(page);
       await page.goto('/');
       await withNavBar(page, mode.inset);
-      await page.getByRole('button', { name: 'Verse 28', exact: true }).click();
-      await page.getByRole('button', { name: 'Talk', exact: true }).click();
+      await openTalkAbout(page, 28);
       const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
       await expect(sheet).toBeVisible();
       await sheet.getByRole('textbox', { name: 'Your message' }).fill('What does συνεργεῖ mean here?');

@@ -36,7 +36,8 @@ async function copy(text: string): Promise<boolean> {
 /** How long 'Link copied' stays. */
 const COPIED_MS = 2500;
 
-export function LinkActions({ url, title, className }: { url: string; title: string; className?: string }) {
+/** `statusClassName` replaces the look of the 'Link copied' line (the Verse view's row has no room for it beside the buttons). */
+export function LinkActions({ url, title, className, statusClassName = 'text-sm text-muted' }: { url: string; title: string; className?: string; statusClassName?: string }) {
   const [state, setState] = useState<'idle' | 'copied' | 'by-hand'>('idle');
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -47,7 +48,7 @@ export function LinkActions({ url, title, className }: { url: string; title: str
     timer.current = setTimeout(() => setState('idle'), COPIED_MS);
   };
   return (
-    <div data-link-actions className={`${className ?? ''} ${state === 'by-hand' ? 'w-full' : ''}`}>
+    <div data-link-actions className={`${className ?? ''} ${state === 'by-hand' ? 'col-span-full w-full' : ''}`}>
       <div className="flex flex-wrap items-center gap-x-1">
         <button type="button" onClick={() => void copy(url).then((done) => (done ? copied() : setState('by-hand')))} className={BUTTON}>
           Copy link
@@ -67,7 +68,7 @@ export function LinkActions({ url, title, className }: { url: string; title: str
           </button>
         ) : null}
         {state === 'copied' ? (
-          <span role="status" className="text-sm text-muted">
+          <span role="status" className={statusClassName}>
             Link copied
           </span>
         ) : null}
