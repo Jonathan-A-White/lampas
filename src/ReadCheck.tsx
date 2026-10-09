@@ -9,7 +9,7 @@ import { createPortal } from 'react-dom';
 import type { Verse } from './data/chapter';
 import { unitId, unitName } from './data/passage';
 import { getGreekPronunciation, getVerseReading, verseRef, type FixWord, type VerseReading } from './data/repositories';
-import { markWords, normalWord, readingLang, readingText, wordsOfText, type ReadingView } from './services/reading';
+import { markWords, normalWord, plainQuotes, readingLang, readingText, wordsOfText, type ReadingView } from './services/reading';
 import { FAILURE_TITLES } from './services/tutor';
 import { pronunciationOf } from './speech/pronunciation';
 import { SpeakButton } from './speech/SpeakButton';
@@ -100,7 +100,7 @@ function Fix({ fix, view, large }: { fix: FixWord; view: ReadingView; large?: bo
       <p data-chunks lang={type.lang} className={`${large ? 'text-3xl' : 'text-2xl'} ${type.chunks} font-semibold tracking-wide`}>
         {chunksLine(fix.chunks)}
       </p>
-      <p className="break-words text-base text-muted">{fix.tip}</p>
+      <p className="break-words text-base text-muted">{plainQuotes(fix.tip)}</p>
       <SpeakButton
         text={fix.word}
         id={`fix-${view}-${fix.word}`}
@@ -178,7 +178,7 @@ function Result({ reading, text, view, onWalk }: { reading: VerseReading; text: 
   return (
     <div data-reading-result={reading.verdict} className="space-y-2">
       <h3 className="text-lg font-semibold">{RESULT_HEADINGS[reading.verdict]}</h3>
-      <p className="break-words text-base">{reading.note}</p>
+      <p className="break-words text-base">{plainQuotes(reading.note)}</p>
       {reading.words.length > 0 ? (
         <>
           <MarkedVerse text={text} view={view} marks={marks} open={open} onOpen={setOpen} />
