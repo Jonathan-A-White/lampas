@@ -30,6 +30,8 @@ export interface VerseAskRequest {
   english: string;
   question: string;
   solid_words: string[];
+  /** where he stands (src/data/learnerSummary.ts): solid count, the learning words, today's new words, what is due */
+  learner?: string;
 }
 
 /** What the grind answers (grinds/verse-ask.answer.schema.json). */
@@ -48,13 +50,14 @@ export function isVerseAnswer(value: unknown): value is VerseAnswer {
   return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));
 }
 
-export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[]): VerseAskRequest {
+export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string): VerseAskRequest {
   return {
     reference,
     greek: verse.g.map((w) => w.t).join(' '),
     english: verse.e.map((c) => c.t.trim()).join(' '),
     question: question.trim(),
     solid_words: solidWords,
+    ...(learner ? { learner } : {}),
   };
 }
 

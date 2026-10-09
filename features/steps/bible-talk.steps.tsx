@@ -17,6 +17,7 @@ import { clearBus, latest } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { expectKeepsItShort, expectLearnerField, expectLearnerSummary, expectTeachesNewWord, instructionsOf, learnWordToday } from '../../tests/support/learner';
 import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
 
@@ -697,5 +698,30 @@ describeFeature(feature, ({ Scenario }) => {
       expect(q?.textContent).toBe(question);
       expect(q?.querySelector('strong')).toBeNull();
     });
+  });
+
+  Scenario('A question in the talk sends the learner summary', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern', () => open());
+    And('he is learning the word {string} which he added today', (_, lemma: string) => learnWordToday(lemma));
+    And('he selects verse 28', selectVerse28);
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('the mill received {int} grists for the lampas app, kind bible-talk', async (_, count: number) => {
+      await waitFor(() => expect(fake.received).toHaveLength(count));
+      expect(received(0).grist).toMatchObject({ app: 'lampas', kind: 'bible-talk' });
+    });
+    And('its input carries a learner summary that names his solid words as a count, {string} among the words he is learning and as new today, and what is due now', (_, lemma: string) =>
+      expectLearnerSummary(received(0).input, lemma),
+    );
+  });
+
+  Scenario("The Bible talk's instructions ask it to teach a new word in his terms", ({ Given, Then, And }) => {
+    let text = '';
+    Given("the bible-talk grind's instructions", () => {
+      text = instructionsOf('bible-talk');
+    });
+    Then('they describe the learner field', () => void expectLearnerField(text));
+    And('they ask for a new word to be taught with its gloss, a memorable hook and one easy example from the chapter', () => void expectTeachesNewWord(text));
+    And('they say to leave out what he already knows and to keep the answer short for a phone', () => void expectKeepsItShort(text));
   });
 });

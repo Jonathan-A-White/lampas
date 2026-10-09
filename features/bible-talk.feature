@@ -249,3 +249,18 @@ Feature: Bible talk
     And he opens Talk
     When he sends "what is **parsing**?"
     Then his question shows as "what is **parsing**?" with its stars
+
+  Scenario: A question in the talk sends the learner summary
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern
+    And he is learning the word "σάρξ" which he added today
+    And he selects verse 28
+    And he opens Talk
+    When he sends "What does σάρξ mean?"
+    Then the mill received 1 grists for the lampas app, kind bible-talk
+    And its input carries a learner summary that names his solid words as a count, "σάρξ" among the words he is learning and as new today, and what is due now
+
+  Scenario: The Bible talk's instructions ask it to teach a new word in his terms
+    Given the bible-talk grind's instructions
+    Then they describe the learner field
+    And they ask for a new word to be taught with its gloss, a memorable hook and one easy example from the chapter
+    And they say to leave out what he already knows and to keep the answer short for a phone

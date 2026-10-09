@@ -2,6 +2,7 @@
 // verse; its answer is stored when it comes. They all stop when the screen goes away.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Verse } from './data/chapter';
+import { learnerSummary } from './data/learnerSummary';
 import { addAnswer, listSolidHeadwords, verseRef } from './data/repositories';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { TutorError, askTutor, buildRequest, type TutorFailure } from './services/tutor';
@@ -44,7 +45,8 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
       set({ phase: 'sending', question: text, startedAt });
       void (async () => {
         try {
-          const request = buildRequest(`${title}:${verse.n}`, verse, text, await listSolidHeadwords());
+          const [solid, learner] = await Promise.all([listSolidHeadwords(), learnerSummary()]);
+          const request = buildRequest(`${title}:${verse.n}`, verse, text, solid, learner);
           const answer = await askTutor(request, {
             key: getDeviceKeyBytes(),
             signal,

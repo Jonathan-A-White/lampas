@@ -21,6 +21,7 @@
       }
     },
     "solid_words": { "description": "The Greek lemmas he already knows well.", "type": "array", "items": { "type": "string" } },
+    "learner": { "description": "Optional. Where he stands in one line: 'solid N words; learning: a, b, c; new today: x, y; due now: M'.", "type": "string", "maxLength": 600 },
     "settings": { "description": "What each of the app's settings holds now, by key.", "type": "object" },
     "focus": {
       "description": "Optional. What he asked for help with: a word (from the word sheet's Help with this word row: the form as it stands, its lemma, its parsing in plain words, and what he wants help with), or a grammar term (from a Grammar sheet's Ask the tutor).",
