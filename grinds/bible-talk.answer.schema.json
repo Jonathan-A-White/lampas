@@ -38,6 +38,43 @@
       "maxItems": 12,
       "items": { "type": "string", "minLength": 1, "maxLength": 80 }
     },
+    "links": {
+      "description": "Links the app turns into buttons that open a word or a verse in the reader's own study resources (lexicons, a Bible); he sees only the ones he has switched on. At most three. Leave it out when no lexicon or verse would help him.",
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "lemma"],
+            "properties": {
+              "kind": { "const": "word" },
+              "lemma": {
+                "description": "The word's dictionary form, in Greek letters, with its accents and breathings.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "reference"],
+            "properties": {
+              "kind": { "const": "verse" },
+              "reference": {
+                "description": "A verse of the New Testament, such as Romans 8:31 or 1 John 1:9.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40
+              }
+            }
+          }
+        ]
+      }
+    },
     "settings_changes": {
       "description": "The settings he asked to change, each applied at once by the app. Only the keys and values the instructions list; leave it out when he asked for no change.",
       "type": "array",

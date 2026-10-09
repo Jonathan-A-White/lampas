@@ -37,6 +37,9 @@ export interface AnswerWord {
   note: string;
 }
 
+/** A link of the tutor's answer to a study resource (mw-5r3p30.75): a word by its lemma (NFC, the dictionary form) or a verse by its reference as the tutor wrote it ('Romans 8:31'). */
+export type AnswerLink = { kind: 'word'; lemma: string } | { kind: 'verse'; reference: string };
+
 /** One answer the tutor gave to a question about a verse, kept so it is there on return. */
 export interface TutorAnswer {
   id?: number;
@@ -69,6 +72,8 @@ export interface TalkTurn {
   already?: string[];
   /** the lemmas the answer asked to add that neither his list nor the lexicon has: not added, and said so */
   unknown?: string[];
+  /** the links the answer carried (at most MAX_LINKS), shown as chips for the study resources he has switched on (src/TutorLinks.tsx) */
+  links?: AnswerLink[];
 }
 
 /** One step of one word in the Parsing drill: 'tense' of λέγω, answered rightly or not. */

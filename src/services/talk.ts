@@ -4,7 +4,7 @@
 import type { Chapter, Verse } from '../data/chapter';
 import { unitId } from '../data/passage';
 import { talkRef } from '../data/repositories/talks';
-import type { AnswerWord } from '../data/db';
+import type { AnswerLink, AnswerWord } from '../data/db';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { SettingValue } from '../settings/registry';
 import { askGrind, type AskOptions } from './tutor';
@@ -150,6 +150,9 @@ export interface TalkRequest {
   mode?: 'quiz';
 }
 
+/** The most links an answer carries (the grind's schema): the app shows the first three of more. */
+export const MAX_LINKS = 3;
+
 /** What the grind answers (grinds/bible-talk.answer.schema.json). */
 export interface TalkAnswer {
   answer: string;
@@ -160,15 +163,21 @@ export interface TalkAnswer {
   words_to_add?: string[];
   /** for a Sound it out question: the syllables of the word, in order (at most 12) */
   syllables?: string[];
+  /** the words and verses the answer links to a study resource (mw-5r3p30.75): the app shows each in the resources he has switched on */
+  links?: AnswerLink[];
 }
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 const isText = (value: unknown, max: number): value is string => typeof value === 'string' && value.length > 0 && value.length <= max;
 
+const isAnswerLink = (value: unknown): value is AnswerLink =>
+  isObject(value) && Object.keys(value).length === 2 && ((value.kind === 'word' && isText(value.lemma, 80)) || (value.kind === 'verse' && isText(value.reference, 40)));
+
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'links')) return false;
+  if ('links' in value && !(Array.isArray(value.links) && value.links.length <= 12 && value.links.every(isAnswerLink))) return false;
   if ('settings_changes' in value && !Array.isArray(value.settings_changes)) return false;
   if ('words_to_add' in value && !(Array.isArray(value.words_to_add) && value.words_to_add.length <= 12 && value.words_to_add.every((l) => isText(l, 80)))) return false;
   if ('syllables' in value && !(Array.isArray(value.syllables) && value.syllables.length <= 12 && value.syllables.every((s) => isText(s, 40)))) return false;
