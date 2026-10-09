@@ -100,3 +100,11 @@ describe('the answer schema and isVerseReadAnswer', () => {
     expect(isVerseReadAnswer(value)).toBe(false);
   });
 });
+
+describe('quotes in the note and the tip', () => {
+  it('tells the model to write plain quotes, never a backslash before one', () => {
+    const text = readFileSync(grind.instructions as string, 'utf8');
+    expect(text).toContain('plain quote marks');
+    expect(text).toContain('never put a backslash before a quote');
+  });
+});

@@ -32,6 +32,13 @@ const SECOND_WHO_ANSWER = {
   note: 'Nearly there: one word to say again.',
 };
 
+/** The grind's model once escaped quotes inside a string the JSON already escapes: the note and tip arrive with backslash-quote (mw-5r3p30.110). */
+const ESCAPED_ANSWER = {
+  verdict: 'some-to-fix',
+  focus_words: [{ word: 'who', index: 16, chunks: ['who'], tip: 'Say it as in \\"who\\" are called.' }],
+  note: 'It sounded like \\"laff\\" ... \\"to us\\".',
+};
+
 afterAll(() => {
   cleanup();
   vi.unstubAllGlobals();
@@ -46,7 +53,7 @@ let fake: FakePostern;
 let synth: FakeSynth;
 
 interface Options {
-  reply?: 'reading' | 'well-read' | 'incomplete' | 'held' | 'second-who';
+  reply?: 'reading' | 'well-read' | 'incomplete' | 'held' | 'second-who' | 'escaped';
   view?: 'english' | 'greek';
   denied?: boolean;
   down?: boolean;
@@ -62,7 +69,7 @@ async function open({ reply = 'reading', view = 'english', denied = false, down 
   FakeRecorder.denied = denied;
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
-  if (reply !== 'held') fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : reply === 'second-who' ? SECOND_WHO_ANSWER : reply === 'incomplete' ? INCOMPLETE_ANSWER : WELL_READ_ANSWER };
+  if (reply !== 'held') fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : reply === 'second-who' ? SECOND_WHO_ANSWER : reply === 'escaped' ? ESCAPED_ANSWER : reply === 'incomplete' ? INCOMPLETE_ANSWER : WELL_READ_ANSWER };
   fake.greekReply = { status: 'answered', answer: GREEK_READING_ANSWER };
   fake.down = down;
   synth = stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
@@ -175,6 +182,24 @@ describeFeature(feature, ({ Scenario }) => {
       expect(detail).not.toBeNull();
       expect(detail?.querySelector('[data-chunks]')).toHaveTextContent(chunks);
       expect(within(detail as HTMLElement).getByRole('button', { name: 'Hear it' })).toBeInTheDocument();
+    });
+  });
+
+  Scenario('A note and a tip that arrive with backslash-quote show plain quote marks', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 in English with a reading check whose note and tip carry backslash-quote', () => open({ reply: 'escaped' }));
+    And('he opens the reading check of verse 28', selectVerse28);
+    When(holdRead, async () => holdAndLetGo(readButton(), 2000));
+    Then('the note shows plain quote marks and no backslash', async () => {
+      await waitFor(() => expect(panel()).toHaveTextContent('It sounded like "laff" ... "to us".'));
+      expect(panel().textContent).not.toContain('\\');
+    });
+    When('he taps the marked word "who"', async () => {
+      await user.click(marked()[0]);
+    });
+    Then('the tip shows plain quote marks and no backslash', () => {
+      const detail = panel().querySelector('[data-fix-detail]');
+      expect(detail).toHaveTextContent('Say it as in "who" are called.');
+      expect(detail?.textContent).not.toContain('\\');
     });
   });
 

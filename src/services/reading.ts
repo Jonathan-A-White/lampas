@@ -66,6 +66,10 @@ export function isVerseReadAnswer(value: unknown): value is VerseReadAnswer {
   );
 }
 
+/** The note and the tip as he reads them: the grind's model has written a quote as backslash-quote inside a string the JSON
+ * already escapes, so a reading kept that way shows plain quote marks (mw-5r3p30.110). */
+export const plainQuotes = (text: string): string => text.replace(/\\+"/g, '"');
+
 export type ReadingView = 'english' | 'greek';
 
 /** The text he is asked to read, as one line: the verse's English, or its Greek words in Greek order. */
