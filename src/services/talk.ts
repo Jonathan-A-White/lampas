@@ -47,8 +47,26 @@ export interface TermFocus {
   kind: 'grammar-term';
 }
 
-/** What a question comes with, when it comes from a word's sheet or a Grammar sheet. */
-export type TalkFocus = WordFocus | TermFocus;
+/** The paradigm table he asked the tutor about (the Paradigms screen's Ask the tutor): its name and the forms he has revealed, each
+ * with its place: 'Genitive Singular Masculine: τοῦ'. At most MAX_REVEALED, the longest table. */
+export interface ParadigmFocus {
+  table: string;
+  revealed: string[];
+  kind: 'paradigm';
+}
+
+/** The most forms a paradigm focus carries (the grind's schema): the largest table holds 40. */
+export const MAX_REVEALED = 40;
+
+/** What a question comes with, when it comes from a word's sheet, a Grammar sheet or a paradigm table. */
+export type TalkFocus = WordFocus | TermFocus | ParadigmFocus;
+
+/** The question the Paradigms screen's Ask the tutor sends: it names the table; the forms he has revealed ride in the focus. */
+export function paradigmQuestion(table: string, revealed: number): string {
+  return revealed > 0
+    ? `I am learning the paradigm table “${table}”. Explain its pattern, then quiz me on the forms I have revealed.`
+    : `I am learning the paradigm table “${table}” and have not revealed any form yet. Explain its pattern and how to learn it.`;
+}
 
 /** The question the word sheet's Help row sends for `focus` in `reference`: it names the word, its lemma, its parsing and the
  * reference, then asks. */
@@ -74,7 +92,7 @@ export interface TalkRequest {
   solid_words: string[];
   /** what each of the app's settings holds now (src/settings/registry.ts currentSettings), by key */
   settings: Record<string, SettingValue>;
-  /** present only when the question comes from the word sheet's Help with this word row, or a Grammar sheet's Ask the tutor */
+  /** present only when the question comes from the word sheet's Help with this word row, a Grammar sheet's Ask the tutor or a paradigm table's */
   focus?: TalkFocus;
   /** where he stands (src/data/learnerSummary.ts): solid count, the learning words, today's new words, what is due */
   learner?: string;

@@ -24,7 +24,7 @@
     "learner": { "description": "Optional. Where he stands in one line: 'solid N words; learning: a, b, c; new today: x, y; due now: M'.", "type": "string", "maxLength": 600 },
     "settings": { "description": "What each of the app's settings holds now, by key.", "type": "object" },
     "focus": {
-      "description": "Optional. What he asked for help with: a word (from the word sheet's Help with this word row: the form as it stands, its lemma, its parsing in plain words, and what he wants help with), or a grammar term (from a Grammar sheet's Ask the tutor).",
+      "description": "Optional. What he asked for help with: a word (from the word sheet's Help with this word row: the form as it stands, its lemma, its parsing in plain words, and what he wants help with), a grammar term (from a Grammar sheet's Ask the tutor), or a paradigm table (from the Paradigms screen's Ask the tutor).",
       "anyOf": [
         {
           "type": "object",
@@ -44,6 +44,21 @@
           "properties": {
             "term": { "description": "The grammar term he asked about, as the word sheet's Parsing writes it: conjunction, aorist, genitive, 3rd person ...", "type": "string", "minLength": 1, "maxLength": 80 },
             "kind": { "description": "grammar-term: explain this term in plain words.", "type": "string", "enum": ["grammar-term"] }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["table", "revealed", "kind"],
+          "properties": {
+            "table": { "description": "The paradigm table he is learning, by its name on the Paradigms screen: The article, Noun endings, εἰμί, Verb endings.", "type": "string", "minLength": 1, "maxLength": 80 },
+            "revealed": {
+              "description": "The forms of the table he has revealed, each with its place: 'Genitive Singular Masculine: τοῦ'. May be empty.",
+              "type": "array",
+              "maxItems": 40,
+              "items": { "type": "string", "minLength": 1, "maxLength": 120 }
+            },
+            "kind": { "description": "paradigm: explain the table's pattern and quiz him on the forms he has revealed.", "type": "string", "enum": ["paradigm"] }
           }
         }
       ]

@@ -49,7 +49,7 @@ import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
 import { useReadChecks } from './useReadChecks';
 import { useTalk } from './useTalk';
-import { helpQuestion, scopeTitle, termQuestion } from './services/talk';
+import { helpQuestion, paradigmQuestion, scopeTitle, termQuestion } from './services/talk';
 import { useVoice } from './useVoice';
 import { useHoldPress } from './ui/holdPress';
 import { HeaderButton } from './ScreenHeader';
@@ -446,7 +446,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const checks = useReadChecks(BOOK, CHAPTER, TITLE, view ?? 'english', pronunciation);
   // The Talk sheet: undefined is closed, a number the verse it was opened on, null the chapter. An answer that arrives while
   // its conversation is open on the sheet is read aloud.
-  const [talkAbout, setTalkAbout] = useState<number | null | undefined>(() => (request?.action === 'talk' ? request.verse : undefined));
+  const [talkAbout, setTalkAbout] = useState<number | null | undefined>(() =>
+    request?.action === 'talk' ? request.verse : request?.action === 'paradigm' ? null : undefined,
+  );
   const openTalk = useRef<string | null>(null);
   useEffect(() => {
     openTalk.current = talkAbout === undefined ? null : talkRef(BOOK, CHAPTER, talkAbout);
@@ -482,6 +484,18 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       if (talkScope) say(talkScope, message);
     };
   });
+  // Ask the tutor on a paradigm table (src/ParadigmsScreen.tsx): the Talk sheet is open on the chapter; once the chapter is here the first
+  // question goes with the table's name and the forms he revealed.
+  const paradigmSent = useRef(false);
+  useEffect(() => {
+    if (request?.action !== 'paradigm' || !chapter || paradigmSent.current) return;
+    paradigmSent.current = true;
+    say({ title: TITLE, chapter, verse: null }, paradigmQuestion(request.table, request.revealed.length), {
+      kind: 'paradigm',
+      table: request.table,
+      revealed: request.revealed,
+    });
+  }, [request, chapter, say, TITLE]);
   // A hold opens the sheet about `about` and listens, unless that conversation is still waiting for its answer.
   const holdTalk = useCallback(
     (about: number | null) => {
