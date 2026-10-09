@@ -5,20 +5,24 @@
 import { verseLink } from './logosBible';
 import type { StudyLink, StudyResource, StudyWord } from './types';
 
+/** The key a lexicon is filed under: the Greek lemma (`hw=<lemma>`), a Strong's number (`ref=GreekStrongs.<n>` or `HebrewStrongs.<n>`, as Greek and Hebrew share numbers),
+ *  or an English topic (`hw=<Topic>`). docs/resources.md says where each lexicon's key comes from and what is UNVERIFIED. */
+type Key = 'lemma' | 'strongs' | 'topic';
+
 /** His Logos lexicons, in the order Logos' Bible Word Study shows them. `id` is kept in the settings store (never change it); `short` is its tile on the word sheet (it must
  *  not wrap in half a 360 px row); `resource` is the Resource ID Logos prints on the product's page (https://www.logos.com/product/<n>, 'Resource ID: LLS:...'; the table is in
  *  docs/resources.md). Adding a lexicon is one line here: copy its Resource ID, never guess a short name (mw-5r3p30.64: the guessed 'ednt' opened nothing). */
-const LEXICONS = [
+const LEXICONS: readonly { id: string; short: string; name: string; resource: string; key?: Key }[] = [
   { id: 'bdag', short: 'BDAG', name: 'BDAG', resource: 'LLS:46.30.18' },
   { id: 'louwnida', short: 'Louw-Nida', name: 'Louw-Nida', resource: 'LLS:46.30.4' },
-  { id: 'lexhamtheolwordbk', short: 'Lexham', name: 'Lexham Theological Wordbook', resource: 'LLS:LXTHEOWRDBK' },
+  { id: 'lexhamtheolwordbk', short: 'Lexham', name: 'Lexham Theological Wordbook', resource: 'LLS:LXTHEOWRDBK', key: 'topic' },
   { id: 'dbl', short: 'DBL Greek', name: 'DBL Greek', resource: 'LLS:46.30.9' },
   { id: 'ednt', short: 'EDNT', name: 'EDNT', resource: 'LLS:46.10.26' },
-  { id: 'nasbdict', short: 'NASB Dict.', name: 'NASB Dictionaries', resource: 'LLS:46.10.12' },
+  { id: 'nasbdict', short: 'NASB Dict.', name: 'NASB Dictionaries', resource: 'LLS:46.10.12', key: 'strongs' },
   { id: 'leh', short: 'LEH LXX', name: 'LEH LXX Lexicon', resource: 'LLS:46.30.22' },
   { id: 'intermediategel', short: 'Intermediate', name: 'An Intermediate Greek-English Lexicon', resource: 'LLS:46.30.1' },
   { id: 'lxgrcanlex', short: 'LXGRCANLEX', name: 'LXGRCANLEX', resource: 'LLS:LXGRCANLEX' },
-  { id: 'newstrongs', short: "New Strong's", name: 'The New Strong\'s Dictionary of Hebrew and Greek Words', resource: 'LLS:46.10.6' },
+  { id: 'newstrongs', short: "New Strong's", name: 'The New Strong\'s Dictionary of Hebrew and Greek Words', resource: 'LLS:46.10.6', key: 'strongs' },
   { id: 'tdnta', short: 'TDNTA', name: 'TDNTA', resource: 'LLS:46.10.1' },
   { id: 'vocab3', short: 'Vocab 3', name: 'Building Your New Testament Greek Vocabulary 3rd Edition', resource: 'LLS:NTGRKVOCAB' },
   { id: 'lxgntlex', short: 'LXGNTLEX', name: 'LXGNTLEX', resource: 'LLS:FBGNTLEX' },
@@ -28,15 +32,34 @@ const LEXICONS = [
   { id: 'lexhamanalyticallxx', short: 'Lexham LXX', name: 'The Lexham Analytical Lexicon of the Septuagint', resource: 'LLS:LXGRKOTANLEX' },
   { id: 'manualgreeklex', short: 'Abbott-Smith', name: 'A Manual Greek Lexicon of the New Testament', resource: 'LLS:MNLGRKLXABBOTSMITH' },
   { id: 'pocketlex', short: 'Pocket Lexicon', name: 'A Pocket Lexicon to the Greek New Testament', resource: 'LLS:PCKTLXCNGRKNWTS' },
-  { id: 'concisedict', short: 'Concise Dict.', name: 'A Concise Dictionary of the Words in the Greek Testament and The Hebrew Bible', resource: 'LLS:STRNGDICHEBGRK' },
+  { id: 'concisedict', short: 'Concise Dict.', name: 'A Concise Dictionary of the Words in the Greek Testament and The Hebrew Bible', resource: 'LLS:STRNGDICHEBGRK', key: 'strongs' },
   { id: 'gelntthayer', short: 'Thayer', name: 'A Greek-English Lexicon of the New Testament', resource: 'LLS:THAYERGELEXNT' },
-] as const;
+];
 
 /** Logos' own name for a Greek lemma is lbs/el/<lemma>, accents and capital kept; the slashes must be escaped or Logos rejects the value (a bare lemma opens a search
  *  'lemma.ιησουσ' that finds nothing). The link names the lemma alone, no ref= (the documented form has none; mw-5r3p30.67). docs/resources.md has the source. */
 const study = (word: StudyWord): { path: string; fallbackPath: string } => {
   const guide = `Guide;t=${encodeURIComponent('Bible Word Study')};lemma=${encodeURIComponent(`lbs/el/${word.lemma.normalize('NFC')}`)}`;
   return { path: `logos4:${guide}`, fallbackPath: `https://ref.ly/logos4/${guide}` };
+};
+
+/** A Strong's number as Logos writes it in a reference: 'G11' is `GreekStrongs.11`, 'H539' is `HebrewStrongs.539`; nothing for a number it cannot read. */
+const strongsRef = (strongs: string): string | undefined => {
+  const m = /^([GH])0*(\d+)[A-Za-z]?$/.exec(strongs);
+  return m ? `${m[1] === 'G' ? 'GreekStrongs' : 'HebrewStrongs'}.${m[2]}` : undefined;
+};
+
+/** The query part of a lexicon link for the key it is filed under, or undefined when Lampas has no such key for the word (the tile is then left out, never a guess). */
+const keyQuery = (key: Key, word: StudyWord): string | undefined => {
+  if (key === 'strongs') {
+    const ref = strongsRef(word.strongs);
+    return ref && `ref=${ref}`;
+  }
+  if (key === 'topic') {
+    const topic = word.topic?.trim();
+    return topic && `hw=${encodeURIComponent(topic.charAt(0).toLocaleUpperCase('en') + topic.slice(1))}`;
+  }
+  return `hw=${encodeURIComponent(word.lemma)}`;
 };
 
 export const logos: StudyResource = {
@@ -53,13 +76,17 @@ export const logos: StudyResource = {
   },
   linksFor: (word, option) => {
     const ticked = (option ?? '').split(',');
-    const lemma = encodeURIComponent(word.lemma);
-    const lexicons: StudyLink[] = LEXICONS.filter((l) => ticked.includes(l.id)).map((l) => ({
-      label: `Open in Logos: ${l.name}`,
-      tile: l.short,
-      url: `logosres:${l.resource};hw=${lemma}`,
-      fallback: `https://ref.ly/logosres/${encodeURIComponent(l.resource)}?hw=${lemma}`,
-    }));
+    const lexicons: StudyLink[] = [];
+    for (const l of LEXICONS.filter((x) => ticked.includes(x.id))) {
+      const key = keyQuery(l.key ?? 'lemma', word);
+      if (!key) continue;
+      lexicons.push({
+        label: `Open in Logos: ${l.name}`,
+        tile: l.short,
+        url: `logosres:${l.resource};${key}`,
+        fallback: `https://ref.ly/logosres/${encodeURIComponent(l.resource)}?${key}`,
+      });
+    }
     const guide = study(word);
     return [...lexicons, { label: 'Bible Word Study in Logos', tile: 'Word Study', url: guide.path, fallback: guide.fallbackPath }];
   },

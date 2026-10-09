@@ -17,6 +17,7 @@ import { ideaOf, ideaOfTerm, type GrammarIdea } from './data/grammar/ladder';
 import { optionOf, RESOURCES, type StudyLink, type StudyRef, type StudyResource } from './resources';
 import { storeUrl } from './resources/appStore';
 import { armFallback } from './resources/openApp';
+import { topicOf } from './resources/topic';
 import { pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
 import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
@@ -96,9 +97,9 @@ interface StudyGroup {
 }
 
 /** The links of every study resource he switched on (Settings > Study resources) for this word, a group per resource. */
-function studyGroups(chosen: StudyResources | undefined, word: GreekWord, ref: StudyRef | undefined): StudyGroup[] {
+function studyGroups(chosen: StudyResources | undefined, word: GreekWord, ref: StudyRef | undefined, gloss: string): StudyGroup[] {
   if (!chosen) return [];
-  const study = { form: word.t, lemma: wordLemma(word), strongs: word.s, ref };
+  const study = { form: word.t, lemma: wordLemma(word), strongs: word.s, topic: topicOf(gloss), ref };
   return RESOURCES.filter((r) => chosen.on.includes(r.id))
     .map((resource) => ({ resource, links: resource.linksFor(study, optionOf(resource, chosen.options[resource.id])) }))
     .filter((g) => g.links.length > 0);
@@ -244,7 +245,7 @@ function WordCard({ chapter, word, english, pronunciation, known, study, onHelp,
           </Fact>
         ) : null}
       </dl>
-      <StudyRow groups={studyGroups(study, word, ref)} onMissing={onMissing} />
+      <StudyRow groups={studyGroups(study, word, ref, wordGloss(chapter, word))} onMissing={onMissing} />
       {onHelp && verse !== undefined ? (
         <HelpRow help={(kind) => onHelp({ kind, form: word.t, lemma: wordLemma(word), parse: wordParse(chapter, word), verse })} />
       ) : null}

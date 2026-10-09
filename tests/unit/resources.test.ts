@@ -95,10 +95,12 @@ describe('the registry', () => {
     };
     const logos = resourceOf('logos');
     expect(Object.keys(IDS).sort()).toEqual((logos?.choices?.items ?? []).map((i) => i.id).sort());
+    // the key after the Resource ID depends on how the lexicon is filed (tests/unit/logos-keys.test.ts); here the topic is given so every lexicon has a tile
+    const word = { ...BIBLOS, topic: 'book' };
     for (const [id, resource] of Object.entries(IDS)) {
-      const link = logos?.linksFor(BIBLOS, id)[0];
-      expect(link?.url, id).toBe(`logosres:${resource};hw=${BIBLOS_URL}`);
-      expect(link?.fallback, id).toBe(`https://ref.ly/logosres/${encodeURIComponent(resource)}?hw=${BIBLOS_URL}`);
+      const link = logos?.linksFor(word, id)[0];
+      expect(link?.url, id).toMatch(new RegExp(`^logosres:${resource.replace(/\./g, '\\.')};(hw|ref)=`));
+      expect(link?.fallback, id).toMatch(new RegExp(`^https://ref\\.ly/logosres/${encodeURIComponent(resource).replace(/\./g, '\\.')}\\?(hw|ref)=`));
     }
   });
 

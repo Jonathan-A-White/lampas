@@ -72,7 +72,7 @@ Feature: An app that is not on the phone says so
 
   Scenario: The Study links are short tiles grouped by app
     Given Lampas is opened on Romans 8 with Logos and Accordance on and Lexham ticked
-    When he taps the word "work together" in verse 28
+    When he taps the word "condemnation" in verse 1
     Then the Study group "Logos" has the tiles "BDAG", "Lexham", "Word Study"
     And the Study group "Accordance" has the tiles "BDAG"
     And the tile "Lexham" is still named "Open in Logos: Lexham Theological Wordbook"

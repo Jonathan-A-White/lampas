@@ -14,6 +14,8 @@ export interface StudyWord {
   form: string;
   lemma: string;
   strongs: string;
+  /** the English topic the word is filed under in a topical wordbook ('condemnation'), when the sheet can name one; a topical wordbook has no tile without it */
+  topic?: string;
   ref?: StudyRef;
 }
 
