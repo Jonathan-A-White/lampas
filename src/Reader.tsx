@@ -19,7 +19,7 @@ import { VerseView } from './VerseView';
 import { useVerseAction } from './verse/action';
 import { AskTutorButton, TALK_BAR_LIFT } from './AskTutor';
 import { TalkBar, TalkSheet } from './Talk';
-import { type Chapter, type EnglishChunk, type GreekWord, type Verse, loadChapter } from './data/chapter';
+import { type Chapter, type EnglishChunk, type GreekWord, type Verse, englishRuns, loadChapter } from './data/chapter';
 import { formPasses } from './data/grammar/formLevel';
 import { listLevels } from './data/repositories/grammarLevels';
 import {
@@ -80,6 +80,26 @@ import { WordSheet, type Lookup, type TermAsk, type WordHelp } from './WordSheet
 // about 1.11 em, a phone's sans about 1.1 em), so an inline word is never under 44 px whatever the font, and the line
 // box stays --lp-tap tall, so the spare pixels cost no layout.
 const TAP_PAD = 'py-[calc((var(--lp-tap)-1em)/2)]';
+
+/** An English chunk with only the words the translators supplied in italics ('was' of 'was king'): [data-supplied]. */
+function SuppliedText({ chunk }: { chunk: EnglishChunk }) {
+  return (
+    <>
+      {englishRuns(chunk).map((run, i) => (
+        <Fragment key={i}>
+          {i > 0 ? ' ' : ''}
+          {run.supplied ? (
+            <i data-supplied className="italic">
+              {run.text}
+            </i>
+          ) : (
+            run.text
+          )}
+        </Fragment>
+      ))}
+    </>
+  );
+}
 
 /** A word he can tap: a span with role button and no chrome. The caller pads it to a 44 px tap height (an inline box
  * is as tall as its font's content area, so the padding is 44 px minus that, which differs by face). The trailing
@@ -247,8 +267,8 @@ function VerseText({ verse, view, woven, onLook }: Pick<VerseProps, 'verse' | 'v
                 )}
               </Tap>
             ) : (
-              <Tap key={i} data-chunk={String(i)} className={`${TAP_PAD} ${c.s ? 'italic' : ''}`} onTap={() => lookEnglish(c)} onLongPress={() => say(c.t, 'english')}>
-                {c.t}
+              <Tap key={i} data-chunk={String(i)} className={TAP_PAD} onTap={() => lookEnglish(c)} onLongPress={() => say(c.t, 'english')}>
+                {c.s ? <SuppliedText chunk={c} /> : c.t}
               </Tap>
             );
           })}
