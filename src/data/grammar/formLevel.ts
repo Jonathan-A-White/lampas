@@ -1,4 +1,5 @@
 // src/data/grammar/formLevel.ts — whether one form's grammar stands at the Weave's grammar dial (mw-hqd5bz.9). Pure.
+import type { GreekWord } from '../chapter';
 import type { GrammarLevel } from '../db';
 import { ALWAYS_NEEDED, ideasOf } from './ladder';
 
@@ -23,3 +24,17 @@ export function formPasses(code: string, levels: ReadonlyMap<string, GrammarLeve
     return level === 'solid' || (dial === 'solid+frontier' && level === 'frontier');
   });
 }
+
+/** At which grammar level the picker offers new words (mw-hqd5bz.11): only words with a form whose grammar he has Solid, or Solid and at the Frontier. */
+export type PickerGrammar = 'solid' | 'frontier';
+
+export const PICKER_GRAMMARS: readonly PickerGrammar[] = ['solid', 'frontier'];
+
+/** The Weave dial the picker's level stands for: Solid grammar is 'solid', Frontier grammar also takes the frontier ideas. */
+export const pickerDial = (level: PickerGrammar): WeaveGrammar => (level === 'solid' ? 'solid' : 'solid+frontier');
+
+/** The test the frontier picker takes for a form: formPasses on the word's parsing at the picker's level. */
+export const pickerPasses = (levels: ReadonlyMap<string, GrammarLevel>, level: PickerGrammar) => {
+  const dial = pickerDial(level);
+  return (word: GreekWord): boolean => formPasses(word.p, levels, dial);
+};

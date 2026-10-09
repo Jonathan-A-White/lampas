@@ -1,7 +1,7 @@
 // src/data/frontier.ts on a made-up chapter (tests/fixtures/frontier.ts), and on Romans 8 with his seed.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import type { Chapter } from '../../src/data/chapter';
+import type { Chapter, GreekWord } from '../../src/data/chapter';
 import { easiestVerse, pickFrontier, type Candidate, type Known } from '../../src/data/frontier';
 import type { FrequencyEntry } from '../../src/data/frequency';
 import { normaliseLemma } from '../../src/data/lemma';
@@ -126,5 +126,81 @@ describe('Romans 8 with his seed', () => {
       expect(seed.solid.has(c.lemma) || seed.learning.has(c.lemma)).toBe(false);
       expect(easiestVerse(c, chapter, seed.solid)).not.toBeNull();
     }
+  });
+});
+
+describe('pickFrontier held to a grammar level (mw-hqd5bz.11)', () => {
+  const GENITIVE = 'N-GSM';
+  /** FIXTURE_CHAPTER with the forms of the lemmas in `where` ('lemma' for every verse, or 'lemma@verse') re-coded as genitives. */
+  const recoded = (...where: string[]): Chapter => ({
+    ...FIXTURE_CHAPTER,
+    verses: FIXTURE_CHAPTER.verses.map((v) => ({
+      ...v,
+      g: v.g.map((w) => (where.includes(w.l) || where.includes(`${w.l}@${v.n}`) ? { ...w, p: GENITIVE } : w)),
+    })),
+  });
+  const notGenitive = (w: GreekWord) => w.p !== GENITIVE;
+
+  it('is unchanged when no test of the form is handed in', () => {
+    expect(pickFrontier(FIXTURE_CHAPTER, known, FIXTURE_FREQUENCY, 100)).toEqual(
+      pickFrontier(FIXTURE_CHAPTER, known, FIXTURE_FREQUENCY, 100, () => true),
+    );
+  });
+
+  it('does not offer a word every form of which fails', () => {
+    const list = lemmas(pickFrontier(recoded('ἀγάπη'), known, FIXTURE_FREQUENCY, 100, notGenitive));
+    expect(list).not.toContain('ἀγάπη');
+    expect(list).toContain('θεός');
+    expect(list).toHaveLength(6);
+  });
+
+  it('offers a word that has one passing form among failing ones', () => {
+    const chapter = recoded('ἀγάπη@3', 'ἀγάπη@7');
+    const list = pickFrontier(chapter, known, FIXTURE_FREQUENCY, 100, notGenitive);
+    expect(lemmas(list)).toContain('ἀγάπη');
+  });
+
+  it('keeps the other rules among the words that stay: the cap counts only them', () => {
+    const list = pickFrontier(recoded('θεός'), known, FIXTURE_FREQUENCY, 2, notGenitive);
+    expect(lemmas(list)).toEqual(['λόγος', 'ἀγάπη']);
+  });
+});
+
+describe('easiestVerse held to a grammar level (mw-hqd5bz.11)', () => {
+  const GENITIVE = 'N-GSM';
+  const recode = (chapter: Chapter, ...where: string[]): Chapter => ({
+    ...chapter,
+    verses: chapter.verses.map((v) => ({
+      ...v,
+      g: v.g.map((w) => (where.includes(`${w.l}@${v.n}`) ? { ...w, p: GENITIVE } : w)),
+    })),
+  });
+  const notGenitive = (w: GreekWord) => w.p !== GENITIVE;
+
+  it('prefers the verse where the word has a passing form, though another verse has more solid words around it', () => {
+    // ἀγάπη stands in verses 3, 5 and 7. Verse 5 has the most solid words; with its form a genitive, verse 3 is the one.
+    const chapter = recode(FIXTURE_CHAPTER, 'ἀγάπη@5');
+    expect(easiestVerse(candidate('ἀγάπη'), chapter, FIXTURE_SOLID)).toBe(5);
+    expect(easiestVerse(candidate('ἀγάπη'), chapter, FIXTURE_SOLID, notGenitive)).toBe(3);
+  });
+
+  it('offers a word with a failing form in its best verse and a passing form elsewhere, placed in the passing verse', () => {
+    const chapter = recode(FIXTURE_CHAPTER, 'ἀγάπη@5');
+    const found = pickFrontier(chapter, known, FIXTURE_FREQUENCY, 100, notGenitive).find((c) => c.lemma === 'ἀγάπη');
+    expect(found).toBeDefined();
+    expect(easiestVerse(found as Candidate, chapter, FIXTURE_SOLID, notGenitive)).toBe(3);
+  });
+
+  it('then prefers a verse whose other words all pass, before the share of solid words', () => {
+    // θεός stands in 1, 3, 4, 6; its own form passes everywhere. Verse 4 has the highest share (2 of 3) and verse 6 ties it
+    // but is longer; make a neighbour word of verse 4 fail and verse 6 (all pass) is preferred.
+    const chapter = recode(FIXTURE_CHAPTER, 'καί@4');
+    expect(easiestVerse(candidate('θεός'), chapter, FIXTURE_SOLID)).toBe(4);
+    expect(easiestVerse(candidate('θεός'), chapter, FIXTURE_SOLID, notGenitive)).toBe(6);
+  });
+
+  it('falls back to the verses as they were when no verse passes', () => {
+    const chapter = recode(FIXTURE_CHAPTER, 'ἀγάπη@3', 'ἀγάπη@5', 'ἀγάπη@7');
+    expect(easiestVerse(candidate('ἀγάπη'), chapter, FIXTURE_SOLID, notGenitive)).toBe(5);
   });
 });
