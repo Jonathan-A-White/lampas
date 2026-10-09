@@ -20,6 +20,8 @@ export interface ReaderAddress {
   view?: ReaderView;
   weave?: Weave;
   verse?: number;
+  /** the first verse of the passage under a section heading, when the Verse view shows that passage (src/data/passage.ts) */
+  passage?: number;
 }
 
 const listeners = new Set<() => void>();
@@ -76,17 +78,20 @@ export function readerOf(hash: string): ReaderAddress {
   if (weave === 'off' || weave === 'solid' || weave === 'solid+learning') address.weave = weave;
   const verse = wholeNumber(params.get('v'));
   if (verse !== undefined) address.verse = verse;
+  const passage = wholeNumber(params.get('p'));
+  if (passage !== undefined) address.passage = passage;
   return address;
 }
 
 /** The reader's address, always in the same order so the same state is the same string. */
-export function readerHash({ book, chapter, view, weave, verse }: ReaderAddress): string {
+export function readerHash({ book, chapter, view, weave, verse, passage }: ReaderAddress): string {
   const params = new URLSearchParams();
   if (book !== undefined) params.set('b', book);
   if (chapter !== undefined) params.set('c', String(chapter));
   if (view) params.set('view', view);
   if (weave) params.set('weave', weave);
   if (verse !== undefined) params.set('v', String(verse));
+  if (passage !== undefined) params.set('p', String(passage));
   const query = params.toString();
   return query ? `#/?${query}` : '#/';
 }
@@ -141,8 +146,17 @@ type VerseEntry = { verseView?: boolean } | null;
 /** Opens the Verse view (src/VerseView.tsx) on `verse` of the chapter the address names, as a new Back step: Back returns to the Reader,
  * which has not moved. */
 export function openVerse(verse: number): void {
-  const next = readerHash({ ...readerOf(window.location.hash), verse });
-  window.history.pushState({ verseView: true } satisfies VerseEntry, '', urlFor(next));
+  const here = readerOf(window.location.hash);
+  delete here.passage;
+  window.history.pushState({ verseView: true } satisfies VerseEntry, '', urlFor(readerHash({ ...here, verse })));
+  notify();
+}
+
+/** Opens the same view on the passage under a section heading, which starts at verse `first` (mw-5r3p30.73), as a new Back step. */
+export function openPassage(first: number): void {
+  const here = readerOf(window.location.hash);
+  delete here.verse;
+  window.history.pushState({ verseView: true } satisfies VerseEntry, '', urlFor(readerHash({ ...here, passage: first })));
   notify();
 }
 
@@ -154,14 +168,23 @@ export function closeVerse(): void {
   }
   const without = readerOf(window.location.hash);
   delete without.verse;
+  delete without.passage;
   replaceHash(readerHash(without));
 }
 
 /** The Verse view moves to another verse, in this chapter or another, on the entry it is on (no new Back step). */
 export function moveVerse(to: { book: string; chapter: number; verse: number }): void {
   const here = readerOf(window.location.hash);
+  delete here.passage;
   const sameChapter = (here.book ?? 'rom') === to.book && here.chapter === to.chapter;
   replaceHash(readerHash(sameChapter ? { ...here, verse: to.verse } : { book: to.book, chapter: to.chapter, verse: to.verse }));
+}
+
+/** The Verse view moves to another passage of the chapter, on the entry it is on (no new Back step). */
+export function movePassage(first: number): void {
+  const here = readerOf(window.location.hash);
+  delete here.verse;
+  replaceHash(readerHash({ ...here, passage: first }));
 }
 
 /** Opens a Paradigms table (or the list, with none) as a new Back step. */

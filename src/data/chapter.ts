@@ -35,6 +35,9 @@ export interface Verse {
   g: GreekWord[];
   /** English chunks in English order */
   e: EnglishChunk[];
+  /** only on a passage made by src/data/passage.ts: the number of its last verse (`n` is its first). The chunks' `g` indices point into
+   * the verse they came from, so a passage's text is for reading, asking and sending, never for the weave. */
+  to?: number;
 }
 
 export interface LexEntry {

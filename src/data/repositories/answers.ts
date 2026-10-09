@@ -3,8 +3,8 @@ import { db, type AnswerWord, type TutorAnswer } from '../db';
 
 export type { AnswerWord, TutorAnswer };
 
-/** The key a verse's answers are kept under: 'rom.8.28'. */
-export const verseRef = (book: string, chapter: number, verse: number): string => `${book}.${chapter}.${verse}`;
+/** The key a verse's answers are kept under: 'rom.8.28'; a passage's, '1-11' for `verse` (src/data/passage.ts unitId): 'rom.8.1-11'. */
+export const verseRef = (book: string, chapter: number, verse: number | string): string => `${book}.${chapter}.${verse}`;
 
 export async function addAnswer(ref: string, question: string, answer: string, words: AnswerWord[], now = Date.now()): Promise<void> {
   await db.answers.add({ ref, question, answer, words, when: now });

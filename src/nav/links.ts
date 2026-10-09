@@ -148,6 +148,11 @@ export function referenceUrl(book: string, chapter: number, verse?: number): str
   return `${LINK_ORIGIN}/#/?ref=${OSIS[book] ?? book}.${chapter}${verse === undefined ? '' : `.${verse}`}`;
 }
 
+/** The https link of a passage, a verse range as Logos writes it: '#/?ref=Rom.8.1-11' (parseReference keeps the first verse, so it opens the reader there). */
+export function passageUrl(book: string, chapter: number, first: number, last: number): string {
+  return `${LINK_ORIGIN}/#/?ref=${OSIS[book] ?? book}.${chapter}.${first}-${last}`;
+}
+
 /** The https link of a word, by its Strong's number. */
 export function wordUrl(strongs: string): string {
   return `${LINK_ORIGIN}/#/?word=${encodeURIComponent(strongs)}`;
