@@ -35,3 +35,13 @@ export const LICENCE_GRACE_MS = 24 * 60 * 60 * 1000;
 
 /** The address a copied link begins with, whatever address the app was opened at: a link must work anywhere (docs/links.md). */
 export const LINK_ORIGIN = 'https://lampas.allmymind.org';
+
+/** The build's plain version number, '0.1.8': what the changelog's versions are compared with (src/whatsNew/). */
+export const APP_SEMVER: string = __APP_SEMVER__;
+
+/** The GitHub repo whose CHANGELOG.md the version in About links to, and whether it is public (checked with `gh repo view --json visibility`, 2026-10-09: PUBLIC). A private repo has no link: About shows its own list. */
+export const REPO = 'Jonathan-A-White/lampas';
+export const REPO_PUBLIC = true;
+
+/** Where the last version whose What's new he has seen is remembered (bsv-kit/whats-new's sheet). */
+export const LAST_SEEN_VERSION_STORAGE_KEY = 'lampas.lastSeenVersion';

@@ -7,6 +7,8 @@ import { navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { useReportScreen } from './tutor/screenContext';
+import { VersionLink } from './whatsNew/VersionLink';
+import { WhatsNewSection } from './whatsNew/WhatsNewSection';
 
 /** A line of markdown as nodes: **bold**, `code` and [Name](url) links marked up. */
 function inline(md: string): ReactNode[] {
@@ -85,7 +87,10 @@ export function About() {
               </ul>
             </section>
           ))}
-          <BuildVersion className="pb-4" onTap={tapVersion} />
+          <WhatsNewSection />
+          <BuildVersion onTap={tapVersion} />
+          <VersionLink />
+          <div className="pb-4" />
           {found ? (
             <p role="status" className="pb-4 text-center text-base font-medium">
               Developer mode is on. Its switch is in Settings.

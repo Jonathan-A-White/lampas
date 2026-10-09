@@ -324,3 +324,17 @@ textarea,
   border: 1px solid var(--color-line);
   padding: 0.25em 0.5em;
 }
+
+/* bsv-kit's What's new (the banner's line, the sheet, About's list and Check for updates) takes its colours from the palette in force. */
+:root {
+  --bk-whats-new-surface: var(--lp-surface);
+  --bk-whats-new-fg: var(--lp-fg);
+  --bk-whats-new-muted: var(--lp-muted);
+  --bk-whats-new-line: var(--lp-line);
+  --bk-whats-new-accent: var(--lp-accent);
+  --bk-whats-new-accent-fg: var(--lp-accent-fg);
+  --bk-whats-new-new: var(--lp-good);
+  --bk-whats-new-fixed: var(--lp-bad);
+  --bk-whats-new-radius: 0.75rem;
+  --bk-whats-new-target: var(--lp-tap);
+}
