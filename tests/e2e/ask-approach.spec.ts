@@ -28,7 +28,7 @@ async function bigPicture(page: import('@playwright/test').Page, shade: number):
 
 test('Ask for another approach at phone width: the sheet, two shrunk pictures, Send above the keyboard, Sent', async ({ page }) => {
   const fake = makeFakePostern();
-  fake.autoReply = { status: 'answered', answer: { received: true } };
+  fake.autoReply = { status: 'answered', answer: { status: 'sent' } };
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.setViewportSize(PHONE);

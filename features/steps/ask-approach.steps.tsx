@@ -45,7 +45,7 @@ async function openSettings(): Promise<void> {
   window.history.replaceState(null, '', '/#/settings');
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
-  fake.autoReply = { status: 'answered', answer: { received: true } };
+  fake.autoReply = { status: 'answered', answer: { status: 'sent' } };
   vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) =>
     String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : Promise.resolve(new Response('{}', { status: 404 })),
   );
@@ -158,13 +158,16 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('The answer shows Sent: the factory has it', ({ Given, When, Then, And }) => {
-    Given('the Ask for another approach sheet is filled in and the mill answers', filledIn);
+  Scenario('The mill\'s forward answer {"status":"sent"} shows Sent: the factory has it, not the could-not-read line', ({ Given, When, Then, And }) => {
+    Given('the Ask for another approach sheet is filled in and the mill answers {"status":"sent"}', filledIn);
     When('he taps Send', async () => {
       await user.click(send());
     });
     Then('the sheet shows {string}', async (_, line: string) => {
       expect(await within(sheet()).findByText(line)).toBeInTheDocument();
+    });
+    And('the sheet does not show {string}', (_, line: string) => {
+      expect(within(sheet()).queryByText(new RegExp(line))).toBeNull();
     });
     And('Done closes the sheet', async () => {
       await user.click(within(sheet()).getByRole('button', { name: 'Done' }));

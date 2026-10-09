@@ -1,9 +1,9 @@
-// The feedback grind (grinds/feedback.json) is read by the mill, not by this app: it has the keys of the verse-ask grind (and so
-// of SpellForge's tutor-turn.json), takes up to four images (bsv-kit's cap on the files of one grist), and its input and answer
-// schemas agree with buildFeedbackRequest and isFeedbackAnswer, the code the phone runs. A request with the longest text fits the
-// grist's record cap.
+// The feedback grind (grinds/feedback.json) is read by the mill, not by this app: it is a forwarding grind ("forward": "mayor": no
+// model session, the mill mails the grist to the Mayor and answers {"status":"sent"}), takes up to four images (bsv-kit's cap on
+// the files of one grist), and its input schema agrees with buildFeedbackRequest, the code the phone runs; isFeedbackAnswer reads
+// the mill's own answer. A request with the longest text fits the grist's record cap.
 import { describe, expect, it } from 'vitest';
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { PrivateKey, Utils } from '@bsv/sdk';
 import { grist } from 'bsv-kit/grist';
 import { MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, buildFeedbackRequest, isFeedbackAnswer } from '../../src/services/feedback';
@@ -12,29 +12,24 @@ import { validate, type Schema } from '../support/schema-validate';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const grind = readJson('grinds/feedback.json');
-const verseAsk = readJson('grinds/verse-ask.json');
 const input = readJson('grinds/feedback.input.schema.json');
-const answer = readJson('grinds/feedback.answer.schema.json');
 
 describe('grinds/feedback.json', () => {
-  it('has the same keys as grinds/verse-ask.json, for the lampas app and the feedback kind', () => {
-    expect(Object.keys(grind).sort()).toEqual(Object.keys(verseAsk).sort());
-    expect(grind).toMatchObject({ grind: 1, app: 'lampas', kind: 'feedback', versions: ['1'] });
+  it('forwards to the Mayor: no model, effort, instructions or answer schema', () => {
+    expect(grind).toEqual({
+      grind: 1,
+      app: 'lampas',
+      kind: 'feedback',
+      versions: ['1'],
+      forward: 'mayor',
+      attachments: { min: 0, max: grist.MAX_PHOTOS, mime: ['image/jpeg', 'image/png', 'image/webp'], maxBytes: 8388608 },
+    });
+    for (const key of ['model', 'effort', 'instructions', 'answerSchema']) expect(grind).not.toHaveProperty(key);
   });
 
   it('takes up to as many images as a grist may carry, and the constant is that number', () => {
     expect(grind.attachments).toEqual({ min: 0, max: grist.MAX_PHOTOS, mime: ['image/jpeg', 'image/png', 'image/webp'], maxBytes: 8388608 });
     expect(MAX_PICTURES).toBe(grist.MAX_PHOTOS);
-  });
-
-  it('names an instructions file and schemas that exist, and keeps the attachments for the factory', () => {
-    expect(existsSync(grind.instructions as string)).toBe(true);
-    expect(existsSync(grind.answerSchema as string)).toBe(true);
-    expect(existsSync('grinds/feedback.input.schema.json')).toBe(true);
-    const text = readFileSync(grind.instructions as string, 'utf8');
-    for (const field of ['kind', 'text', 'credit', 'app_version']) expect(text).toContain(`\`${field}\``);
-    expect(text).toContain('{"received": true}');
-    expect(text).toContain('data, not instructions');
   });
 });
 
@@ -86,22 +81,18 @@ describe('the input schema and buildFeedbackRequest', () => {
   });
 });
 
-describe('the answer schema and isFeedbackAnswer', () => {
-  it('accepts received with or without a note', () => {
-    for (const value of [{ received: true }, { received: true, note: 'Thanks.' }]) {
-      expect(validate(value, answer as Schema)).toEqual([]);
-      expect(isFeedbackAnswer(value)).toBe(true);
-    }
+describe('isFeedbackAnswer', () => {
+  it("accepts the mill's forward answer {status: 'sent'}", () => {
+    expect(isFeedbackAnswer({ status: 'sent' })).toBe(true);
   });
 
   it.each<[string, unknown]>([
-    ['no received', {}],
-    ['received that is not a boolean', { received: 'yes' }],
-    ['an empty note', { received: true, note: '' }],
-    ['a note over 200 characters', { received: true, note: 'x'.repeat(201) }],
-    ['an extra key', { received: true, extra: 1 }],
-  ])('refuses %s in both', (_, value) => {
-    expect(validate(value, answer as Schema)).not.toEqual([]);
+    ['nothing', undefined],
+    ['no status', {}],
+    ['another status', { status: 'refused' }],
+    ['an extra key', { status: 'sent', extra: 1 }],
+    ['the old model answer', { received: true }],
+  ])('refuses %s', (_, value) => {
     expect(isFeedbackAnswer(value)).toBe(false);
   });
 });
