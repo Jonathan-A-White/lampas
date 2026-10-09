@@ -22,6 +22,13 @@ export function talkInReader(book: string, chapter: number, verse: number): void
   openReader({ book, chapter, verse });
 }
 
+/** Opens the Reader on `chapter` of `book` (no verse), with the Talk sheet open on the chapter and a first question sent about the paradigm table `table`,
+ * its name, holding the `revealed` forms (src/data/paradigms). */
+export function askAboutParadigm(book: string, chapter: number, table: string, revealed: string[]): void {
+  publish({ kind: 'reader-requested', id: ++lastId, action: 'paradigm', book, chapter, table, revealed });
+  openReader({ book, chapter });
+}
+
 /** The request the Reader has not met yet, if any. It does not take it (see `takeRequest`), so it can be called while rendering. */
 export function pendingRequest(): ReaderRequest | undefined {
   const request = latest('reader-requested');

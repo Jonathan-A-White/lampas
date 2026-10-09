@@ -168,6 +168,26 @@ describe('the grammar term focus (mw-5r3p30.35)', () => {
   });
 });
 
+describe('the paradigm focus (mw-5r3p30.82)', () => {
+  const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
+  const request = { reference: 'Romans 8', greek: 'Οἴδαμεν', english: 'And we know', question: 'Explain', history: [], solid_words: [], settings: {} };
+  const paradigm = { table: 'The article', revealed: ['Genitive Singular Masculine: τοῦ'], kind: 'paradigm' };
+
+  it('the request schema accepts a paradigm focus, with no forms revealed too, and refuses an incomplete or mixed one', () => {
+    expect(validate({ ...request, focus: paradigm }, input)).toEqual([]);
+    expect(validate({ ...request, focus: { ...paradigm, revealed: [] } }, input)).toEqual([]);
+    expect(validate({ ...request, focus: { ...paradigm, revealed: Array.from({ length: 40 }, () => 'Nominative: ὁ') } }, input)).toEqual([]);
+    for (const bad of [{ table: 'The article', kind: 'paradigm' }, { ...paradigm, kind: 'grammar-term' }, { ...paradigm, extra: 1 }, { ...paradigm, table: '' }, { ...paradigm, revealed: [''] }, { ...paradigm, revealed: Array.from({ length: 41 }, () => 'ὁ') }]) {
+      expect(validate({ ...request, focus: bad }, input), JSON.stringify(bad)).not.toEqual([]);
+    }
+  });
+
+  it('the instructions tell the companion what a paradigm focus is and how to answer it', () => {
+    const text = readFileSync(grind.instructions as string, 'utf8');
+    for (const part of ['`paradigm`', '`focus.revealed`', 'Help with a paradigm table', 'Leave `syllables` out']) expect(text).toContain(part);
+  });
+});
+
 describe('words_to_add in the answer (mw-5r3p30.44)', () => {
   const answer = { answer: 'Adding σάρξ.', words: [] };
 
