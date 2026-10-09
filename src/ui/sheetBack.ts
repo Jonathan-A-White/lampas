@@ -6,7 +6,7 @@
 // closes any other way (Done, a swipe down, a tap outside, Escape) takes its entry off again with history, so the next Back is
 // not swallowed. Sheets that close in one commit are taken off with one history.go; a sheet that opens in the commit another
 // closes in (Help with this word: the word sheet closes, the Talk sheet opens) keeps the entry instead of popping and pushing.
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 
 type SheetState = { sheet?: number } | null;
 
@@ -14,6 +14,18 @@ const depthOf = (): number => (window.history.state as SheetState)?.sheet ?? 0;
 
 /** Sheets mounted now. */
 let open = 0;
+const watchers = new Set<() => void>();
+const tellWatchers = (): void => watchers.forEach((w) => w());
+
+/** True while any sheet is mounted (every sheet calls useSheetBack): the round Ask the tutor control hides itself meanwhile (src/AskTutor.tsx). */
+export const useSheetOpen = (): boolean =>
+  useSyncExternalStore(
+    (listener) => {
+      watchers.add(listener);
+      return () => void watchers.delete(listener);
+    },
+    () => open > 0,
+  );
 /** The depth to settle at once this commit's effects have run, when a sheet closed and left its entry on top. */
 let settleAt: number | null = null;
 
@@ -55,6 +67,7 @@ export function useSheetBack(onClose: () => void): void {
     }
     if (settleAt !== null) settleAt = level;
     open += 1;
+    tellWatchers();
     const onPop = () => {
       if (depthOf() < level) close.current();
     };
@@ -62,6 +75,7 @@ export function useSheetBack(onClose: () => void): void {
     return () => {
       window.removeEventListener('popstate', onPop);
       open -= 1;
+      tellWatchers();
       if (depthOf() >= level) {
         settleAt = settleAt === null ? level - 1 : Math.min(settleAt, level - 1);
         queueMicrotask(settle);

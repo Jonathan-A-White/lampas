@@ -3,11 +3,11 @@
   "title": "Bible Talk Request 1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["reference", "greek", "english", "question", "history", "solid_words", "settings"],
+  "required": ["reference", "question", "history", "solid_words", "settings"],
   "properties": {
-    "reference": { "description": "What the conversation is about: 'Romans 8:28' or 'Romans 8'.", "type": "string", "minLength": 1, "maxLength": 80 },
-    "greek": { "description": "The Greek of the verse or of the passage under a heading (the whole passage), or of the chapter's first three verses.", "type": "string", "minLength": 1 },
-    "english": { "description": "The same text in English (the Majority Standard Bible), of the same verses.", "type": "string", "minLength": 1 },
+    "reference": { "description": "What the conversation is about: 'Romans 8:28' or 'Romans 8'; in a talk from a screen (`screen` is present), the screen's name.", "type": "string", "minLength": 1, "maxLength": 80 },
+    "greek": { "description": "The Greek of the verse or of the passage under a heading (the whole passage), or of the chapter's first three verses. Missing in a talk from a screen (`screen` is present), which is not about a text.", "type": "string", "minLength": 1 },
+    "english": { "description": "The same text in English (the Majority Standard Bible), of the same verses. Missing in a talk from a screen.", "type": "string", "minLength": 1 },
     "question": { "description": "What he just said.", "type": "string", "minLength": 1, "maxLength": 600 },
     "history": {
       "description": "The last turns of the conversation, oldest first.",
@@ -26,6 +26,28 @@
       "type": "array",
       "maxItems": 12,
       "items": { "type": "string", "minLength": 1, "maxLength": 100 }
+    },
+    "screen": {
+      "description": "Optional. Present when he asked from a full screen of the app (the round Ask the tutor button) and not about a text: the screen's name (Goal, Words, Review, Quick test, Parsing drill, Paradigms, Placement, Settings, My study way, Import, About) and what the screen shows, as labelled facts (on Goal: the goal, the solid, frontier and not yet counts of its words and grammar ideas, Learn next and the Next words). `greek` and `english` are then missing.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "facts"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "facts": {
+          "type": "array",
+          "maxItems": 12,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["label", "value"],
+            "properties": {
+              "label": { "type": "string", "minLength": 1, "maxLength": 40 },
+              "value": { "type": "string", "minLength": 1, "maxLength": 200 }
+            }
+          }
+        }
+      }
     },
     "solid_words": { "description": "The Greek lemmas he already knows well.", "type": "array", "items": { "type": "string" } },
     "learner": { "description": "Optional. Where he stands in one line: 'solid N words; learning: a, b, c; new today: x, y; due now: M'.", "type": "string", "maxLength": 600 },

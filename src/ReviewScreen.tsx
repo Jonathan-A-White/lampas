@@ -12,6 +12,8 @@ import { KINDS, kindOf, type ReviewItem } from './review/kinds';
 import { makeMove, moveQuestion, moveSaid, pendingMove, type PendingMove } from './review/pickerMove';
 import { drawReviewRound } from './review/round';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { useReportScreen } from './tutor/screenContext';
+import type { ScreenFact } from './tutor/screen';
 import { focusOnMount } from './ui/focus';
 
 /** What the end card says of New words at (mw-hqd5bz.11): nothing, an offer to move it, or that it was moved. */
@@ -76,12 +78,32 @@ function MoveNote({ card, onChange }: { card: MoveCard; onChange: (card: MoveCar
   );
 }
 
+/** What the Ask the tutor control tells the tutor about Review: the due line, or the item in hand (its answer only once he has answered), or the score. */
+function reviewFacts(round: Round, dueLine: string | undefined): ScreenFact[] {
+  if (round.status === 'start') return [{ label: 'Due today', value: dueLine ?? '' }];
+  if (round.status === 'done') return [{ label: 'Round', value: `Finished: ${round.right} of ${round.total} right` }];
+  if (round.status === 'loading') return [];
+  const item = round.items[round.index];
+  const kind = item.kind === 'word' ? 'a word' : 'a grammar idea';
+  const question = item.kind === 'word' ? item.question.prompt : [item.question.prompt, item.question.form].filter(Boolean).join(' ');
+  const facts: ScreenFact[] = [
+    { label: 'Question', value: `${round.index + 1} of ${round.items.length}, ${kind}` },
+    { label: 'In hand', value: question },
+  ];
+  if (round.picked !== null) {
+    facts.push({ label: 'He chose', value: round.picked });
+    facts.push({ label: 'Right answer', value: item.kind === 'word' ? item.question.gloss : item.question.right });
+  }
+  return facts;
+}
+
 export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
   const [round, setRound] = useState<Round>({ status: 'start' });
   // The answers are written one after the other; the end card waits for the last of them.
   const writing = useRef<Promise<unknown>>(Promise.resolve());
   const due = useLiveQuery(() => Promise.all(KINDS.map((k) => countDue(Date.now(), k.kind))), []);
   const stillDue = due?.reduce((a, b) => a + b, 0);
+  useReportScreen({ name: 'Review', facts: reviewFacts(round, due ? dueText(due) : undefined) });
 
   const start = () => {
     setRound({ status: 'loading' });

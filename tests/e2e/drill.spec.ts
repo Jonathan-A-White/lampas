@@ -71,7 +71,7 @@ test('Ask the tutor leaves for the Reader with the question in the box, and Back
   const word = page.getByTestId('drill-word');
   const verse = await word.getAttribute('data-verse');
   const form = (await word.textContent()) ?? '';
-  await page.getByRole('button', { name: 'Ask the tutor' }).click();
+  await page.getByRole('button', { name: 'Ask the tutor', exact: true }).click();
   const field = page.getByRole('textbox', { name: 'Your question' });
   await expect(field).toBeVisible();
   await expect(field).toHaveValue(new RegExp(`^Parse ${form} in Romans 8:${verse}: why is it .+\\?$`));

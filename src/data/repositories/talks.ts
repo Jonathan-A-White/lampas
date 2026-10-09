@@ -9,6 +9,9 @@ export type { TalkTurn };
 export const talkRef = (book: string, chapter: number, unit: number | string | null, quiz = false): string =>
   (unit === null ? `${book}.${chapter}` : `${book}.${chapter}.${unit}`) + (quiz ? ':quiz' : '');
 
+/** The key a talk from a screen (mw-5r3p30.91) is kept under: 'screen.goal', 'screen.my-study-way'. Not a verse, not a chapter. */
+export const screenRef = (slug: string): string => `screen.${slug}`;
+
 /** What an answer did to the app: the settings changed and a sentence for each one ignored, and the words it put on his list
  * (`added`), found there already (`already`) or could not find in the lexicon (`unknown`). */
 export interface TurnChanges {

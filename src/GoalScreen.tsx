@@ -5,7 +5,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { approachOf, DEFAULT_APPROACH } from './approaches';
-import type { Chapter, GreekWord } from './data/chapter';
+import { NO_CHAPTER, type Chapter, type GreekWord } from './data/chapter';
 import { goalTitle } from './data/goal';
 import { BOOK_INDEX } from './data/bookIndex';
 import { addLemmaToLearn } from './data/answerWord';
@@ -16,6 +16,8 @@ import { addWordToLearn, getGrammarApproach } from './data/repositories';
 import { IdeaSheet } from './IdeaSheet';
 import { navigate, openReader } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { ReportScreen } from './tutor/ReportScreen';
+import { useReportScreen } from './tutor/screenContext';
 import { useGoalProgress, type GoalProgress } from './useGoalProgress';
 import { WordSheet, type Lookup } from './WordSheet';
 
@@ -33,8 +35,11 @@ const SEGMENT: Record<Level, { className: string; style?: CSSProperties }> = {
   notYet: { className: 'bg-surface text-muted' },
 };
 
-/** A stand-in chapter for addLemmaToLearn, which reads it only when the lexicon cannot be fetched (the needs' own gloss is used then). */
-const NO_CHAPTER: Chapter = { book: '', code: '', chapter: 0, lex: {}, parse: {}, verses: [] };
+/** 'Solid 1 · Frontier 2 · Not yet 27', as the bars' legends write it. */
+const legendText = (c: Counts): string => `Solid ${c.solid} · Frontier ${c.frontier} · Not yet ${c.notYet}`;
+
+/** The idea Learn next names, with its lesson when the approach has one: 'The Greek alphabet · Lesson 1'. */
+const learnNextText = (next: NonNullable<ReturnType<typeof learnNext>>): string => `${next.idea.title}${next.lesson ? ` · ${next.lesson.lesson.title}` : ''}`;
 
 const placedText = (when: number): string => {
   const date = new Date(when);
@@ -69,7 +74,7 @@ function Bar({ which, label, counts, open, onToggle }: { which: 'words' | 'ideas
         )}
       </button>
       <p data-testid={`${which}-legend`} className="mt-1 text-base text-muted">
-        Solid {counts.solid} · Frontier {counts.frontier} · Not yet {counts.notYet}
+        {legendText(counts)}
       </p>
     </div>
   );
@@ -95,6 +100,7 @@ export function GoalScreen() {
     return (
       <>
         {header}
+        <ReportScreen name="Goal" facts={[{ label: 'Goal', value: 'None set yet' }]} />
         <main className="screen min-h-0 flex-1 px-6 pt-8 text-center">
           <p className="text-2xl font-semibold">No goal yet</p>
           <p className="mt-2 text-muted">Choose a book, a chapter or a verse to work toward, and this screen shows how close you are.</p>
@@ -134,6 +140,18 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
   const words = nextWords(needs, states);
   const placed = placedAt(rows);
   const title = goalTitle(goal, BOOK_INDEX);
+  // what the round Ask the tutor control hands the tutor (src/tutor/screen.ts): the screen's own numbers and words, as it writes them
+  useReportScreen({
+    name: 'Goal',
+    facts: [
+      { label: 'Goal', value: title },
+      { label: 'Words', value: legendText(progress.progress.words) },
+      { label: 'Grammar ideas', value: legendText(progress.progress.grammar) },
+      { label: 'Placed', value: placed !== undefined ? `On ${placedText(placed)}` : 'Not yet' },
+      { label: 'Learn next', value: next ? learnNextText(next) : 'Every idea this goal needs is on the frontier or solid.' },
+      { label: 'Next words', value: words.length ? words.map((w) => `${w.lemma} (${w.gloss})`).join(', ') : 'Every word this goal needs is on your list.' },
+    ],
+  });
 
   const add = async (lemma: string, gloss: string): Promise<void> => {
     const result = await addLemmaToLearn({ title: '', chapter: NO_CHAPTER, verse: null }, lemma);
@@ -215,7 +233,7 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
               onClick={() => setIdeaId(next.idea.id)}
               className="flex min-h-12 w-full flex-col items-start rounded-xl bg-accent px-4 py-2 text-left text-accent-fg active:opacity-80"
             >
-              <span className="text-lg font-medium">Learn next: {next.idea.title}{next.lesson ? ` · ${next.lesson.lesson.title}` : ''}</span>
+              <span className="text-lg font-medium">Learn next: {learnNextText(next)}</span>
             </button>
           ) : (
             <p data-testid="learn-next-none" className="text-base text-muted">
