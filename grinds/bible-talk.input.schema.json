@@ -22,6 +22,46 @@
     },
     "solid_words": { "description": "The Greek lemmas he already knows well.", "type": "array", "items": { "type": "string" } },
     "learner": { "description": "Optional. Where he stands in one line: 'solid N words; learning: a, b, c; new today: x, y; due now: M'.", "type": "string", "maxLength": 600 },
+    "learner_grammar": {
+      "description": "Optional (an older app does not send it). Where his grammar stands: the reading goal, how many of its words and grammar ideas are solid, at the frontier and not yet, the titles of the ideas at each level (the goal's needs first, at most 12 a list), whether he has been placed, the move the app's New words at setting should make, and the grammar approach with its next lesson. At most 900 bytes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["goal", "words", "ideas", "placed", "suggested_move", "picker_level", "approach"],
+      "properties": {
+        "goal": { "description": "His reading goal, 'Read 1 John 1:1', or null.", "anyOf": [{ "type": "string", "maxLength": 80 }, { "type": "null" }] },
+        "words": {
+          "description": "How many of the goal's words (with no goal, of his own words) are solid, being learned (frontier) and not yet.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["solid", "frontier", "not_yet"],
+          "properties": { "solid": { "type": "number", "minimum": 0 }, "frontier": { "type": "number", "minimum": 0 }, "not_yet": { "type": "number", "minimum": 0 } }
+        },
+        "ideas": {
+          "description": "The titles of the grammar ideas at each level, the goal's needs first, then by rung; at most 12 a list.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["solid", "frontier", "not_yet"],
+          "properties": {
+            "solid": { "type": "array", "maxItems": 12, "items": { "type": "string" } },
+            "frontier": { "type": "array", "maxItems": 12, "items": { "type": "string" } },
+            "not_yet": { "type": "array", "maxItems": 12, "items": { "type": "string" } }
+          }
+        },
+        "placed": { "description": "Whether he has taken the grammar placement.", "type": "boolean" },
+        "suggested_move": { "description": "up: his grammar reviews go well, New words at could move to frontier grammar; down: they go badly, it could move to solid grammar; none.", "type": "string", "enum": ["up", "down", "none"] },
+        "picker_level": { "description": "What the setting New words at holds now.", "type": "string", "enum": ["solid", "frontier"] },
+        "approach": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "credit", "next_lesson"],
+          "properties": {
+            "name": { "description": "The grammar approach he follows: 'BMA Tutor'.", "type": "string" },
+            "credit": { "description": "Whom the approach is credited to, or null.", "anyOf": [{ "type": "string" }, { "type": "null" }] },
+            "next_lesson": { "description": "The title of the lesson he would learn next, or null when he has met every idea.", "anyOf": [{ "type": "string" }, { "type": "null" }] }
+          }
+        }
+      }
+    },
     "settings": { "description": "What each of the app's settings holds now, by key.", "type": "object" },
     "focus": {
       "description": "Optional. What he asked for help with: a word (from the word sheet's Help with this word row: the form as it stands, its lemma, its parsing in plain words, and what he wants help with), a grammar term (from a Grammar sheet's Ask the tutor), or a paradigm table (from the Paradigms screen's Ask the tutor).",

@@ -3,11 +3,11 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
 import { BOOK_INDEX } from './data/bookIndex';
-import { loadChapter } from './data/chapter';
 import type { GrammarLevel } from './data/db';
 import { parseGoal, type Goal } from './data/goal';
 import { levelsOf, wordStatesOf } from './data/grammar/goalProgress';
-import { passageNeeds, progressToward, type Level, type PassageNeeds, type Progress } from './data/grammar/needs';
+import { forgetGoalNeeds, needsOf } from './data/grammar/goalNeeds';
+import { progressToward, type Level, type PassageNeeds, type Progress } from './data/grammar/needs';
 import { getGoal, listLevels, listWords, type WordState } from './data/repositories';
 
 export type GoalProgress =
@@ -25,24 +25,7 @@ export type GoalProgress =
       rows: Map<string, GrammarLevel>;
     };
 
-const needsByGoal = new Map<string, Promise<PassageNeeds>>();
-
-/** The needs of a goal, once per saved goal text; a failure is not kept. */
-function needsOf(text: string, goal: Goal): Promise<PassageNeeds> {
-  const known = needsByGoal.get(text);
-  if (known) return known;
-  const request = passageNeeds(goal, loadChapter, BOOK_INDEX);
-  needsByGoal.set(text, request);
-  request.catch(() => {
-    if (needsByGoal.get(text) === request) needsByGoal.delete(text);
-  });
-  return request;
-}
-
-/** Drops the needs held in memory (tests). */
-export function forgetGoalNeeds(): void {
-  needsByGoal.clear();
-}
+export { forgetGoalNeeds };
 
 /** What the last request for `text` (the `attempt`th) came back with. */
 type Loaded = { text: string; attempt: number; needs: PassageNeeds | 'failed' } | null;

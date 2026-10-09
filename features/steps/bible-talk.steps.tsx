@@ -12,7 +12,8 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
-import { addTurn, getGoal, getSpeechRate, getTheme, talkRef } from '../../src/data/repositories';
+import { addTurn, getGoal, getPickerGrammar, getSpeechRate, getTheme, setLevel, talkRef } from '../../src/data/repositories';
+import { setGoal } from '../../src/data/repositories/settings';
 import { clearBus, latest } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
@@ -723,5 +724,75 @@ describeFeature(feature, ({ Scenario }) => {
     Then('they describe the learner field', () => void expectLearnerField(text));
     And('they ask for a new word to be taught with its gloss, a memorable hook and one easy example from the chapter', () => void expectTeachesNewWord(text));
     And('they say to leave out what he already knows and to keep the answer short for a phone', () => void expectKeepsItShort(text));
+  });
+  Scenario("Asking about ἀρχῆς sends learner_grammar with the goal Read 1 John 1:1", ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern', () => open());
+    And('his goal is {string} and he has the genitive case on the frontier', async (_, goal: string) => {
+      await setGoal(goal);
+      await setLevel('case-genitive', 'frontier', 'sheet');
+    });
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('the mill received {int} grists for the lampas app, kind bible-talk', async (_, count: number) => {
+      await waitFor(() => expect(fake.received).toHaveLength(count));
+      expect(received(0).grist).toMatchObject({ app: 'lampas', kind: 'bible-talk' });
+    });
+    And(
+      'its input carries learner_grammar with the goal {string}, {string} among the frontier ideas and no more than 12 titles a list',
+      (_, goal: string, title: string) => {
+        const field = received(0).input.learner_grammar as { goal: string; ideas: Record<string, string[]>; suggested_move: string; approach: { name: string } };
+        expect(field.goal).toBe(goal);
+        expect(field.ideas.frontier).toContain(title);
+        for (const titles of Object.values(field.ideas)) expect(titles.length).toBeLessThanOrEqual(12);
+        expect(field.suggested_move).toBe('none');
+        expect(field.approach.name).toBe('BMA Tutor');
+        expect(new TextEncoder().encode(JSON.stringify(field)).length).toBeLessThanOrEqual(900);
+      },
+    );
+  });
+
+  Scenario("The tutor's instructions tell it to teach at his level and to offer the move", ({ Given, Then, And }) => {
+    let text = '';
+    Given("the bible-talk grind's instructions", () => {
+      text = instructionsOf('bible-talk');
+    });
+    Then('they describe the learner_grammar field', () => {
+      expect(text).toContain('`learner_grammar`');
+      for (const part of ['`goal`', '`words`', '`ideas`', '`placed`', '`suggested_move`', '`picker_level`', '`approach`']) expect(text).toContain(part);
+    });
+    And('they pitch frontier ideas with a form from the goal and name a not-yet idea only with its plain meaning', () => {
+      expect(text).toMatch(/`frontier` idea is one he is learning now: explain it, and show it with a form from the goal passage/);
+      expect(text).toMatch(/`not_yet` idea is one he has not met: name it only with its plain meaning in the same sentence/);
+      expect(text).toContain('A `solid` idea needs no explaining');
+      expect(text).toContain('never quiz him unasked');
+    });
+    And('they offer the move with one question when suggested_move is up or down and Move it is Ask, and put pickerGrammar in settings_changes on a yes', () => {
+      expect(text).toContain('When `suggested_move` is `up` or `down` and `settings.grammarMove` is "ask", end your answer with ONE question');
+      expect(text).toContain('`{"key": "pickerGrammar", "value": "frontier"}`');
+      expect(text).toContain('`{"key": "pickerGrammar", "value": "solid"}`');
+      expect(text).toContain('`settings_changes`');
+    });
+    And('they name the approach and its next lesson when he asks what to learn next', () => {
+      expect(text).toContain('`approach.next_lesson`');
+      expect(text).toContain('asks what to learn next');
+    });
+  });
+
+  Scenario('Yes to the offer changes New words at and the sheet shows Changed with Undo', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the change pickerGrammar solid', () =>
+      open(changing({ key: 'pickerGrammar', value: 'solid' })),
+    );
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('the sheet shows {string} with an Undo button', async (_, text: string) => {
+      await waitFor(() => expect(changeRows().some((row) => row.textContent?.includes(text))).toBe(true));
+      const row = changeRows().find((r) => r.textContent?.includes(text)) as HTMLElement;
+      expect(within(row).getByRole('button', { name: 'Undo New words at' })).toHaveTextContent('Undo');
+    });
+    And('New words at is saved as Solid grammar', async () => expect(await getPickerGrammar()).toBe('solid'));
+    When('he taps Undo', () => taps('Undo New words at'));
+    Then('New words at is saved as Frontier grammar', async () => {
+      await waitFor(async () => expect(await getPickerGrammar()).toBe('frontier'));
+    });
   });
 });

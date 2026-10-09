@@ -264,3 +264,27 @@ Feature: Bible talk
     Then they describe the learner field
     And they ask for a new word to be taught with its gloss, a memorable hook and one easy example from the chapter
     And they say to leave out what he already knows and to keep the answer short for a phone
+
+  Scenario: Asking about ἀρχῆς sends learner_grammar with the goal Read 1 John 1:1
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern
+    And his goal is "Read 1 John 1:1" and he has the genitive case on the frontier
+    And he opens Talk
+    When he sends "What does ἀρχῆς mean?"
+    Then the mill received 1 grists for the lampas app, kind bible-talk
+    And its input carries learner_grammar with the goal "Read 1 John 1:1", "The genitive case" among the frontier ideas and no more than 12 titles a list
+
+  Scenario: The tutor's instructions tell it to teach at his level and to offer the move
+    Given the bible-talk grind's instructions
+    Then they describe the learner_grammar field
+    And they pitch frontier ideas with a form from the goal and name a not-yet idea only with its plain meaning
+    And they offer the move with one question when suggested_move is up or down and Move it is Ask, and put pickerGrammar in settings_changes on a yes
+    And they name the approach and its next lesson when he asks what to learn next
+
+  Scenario: Yes to the offer changes New words at and the sheet shows Changed with Undo
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the change pickerGrammar solid
+    And he opens Talk
+    When he sends "Yes, move it"
+    Then the sheet shows "Changed: New words at: Solid grammar" with an Undo button
+    And New words at is saved as Solid grammar
+    When he taps Undo
+    Then New words at is saved as Frontier grammar

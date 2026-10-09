@@ -252,4 +252,25 @@ describeFeature(feature, ({ Scenario }) => {
     And('they ask for a new word to be taught with its gloss, a memorable hook and one easy example from the chapter', () => void expectTeachesNewWord(text));
     And('they say to leave out what he already knows and to keep the answer short for a phone', () => void expectKeepsItShort(text));
   });
+  Scenario('Asking about a verse sends learner_grammar, and the instructions say to teach at his level', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern', () => open());
+    And('he selects verse 28', selectVerse28);
+    When('he asks {string}', (_, question: string) => ask(question));
+    Then('the mill received one grist for the lampas app, kind verse-ask', async () => {
+      await waitFor(() => expect(fake.received).toHaveLength(1));
+      expect(received().grist).toMatchObject({ app: 'lampas', kind: 'verse-ask' });
+    });
+    And('its input carries learner_grammar with no goal and the BMA Tutor approach', () => {
+      const field = received().input.learner_grammar as { goal: string | null; approach: { name: string; credit: string } };
+      expect(field.goal).toBeNull();
+      expect(field.approach).toMatchObject({ name: 'BMA Tutor', credit: 'Biblical Mastery Academy' });
+    });
+    And('the verse-ask instructions pitch frontier and not-yet ideas and do not offer the move', () => {
+      const text = instructionsOf('verse-ask');
+      expect(text).toContain('`learner_grammar`');
+      expect(text).toContain('A `frontier` idea is explained');
+      expect(text).toContain('A `not_yet` idea is named only with its plain meaning');
+      expect(text).toContain('do not offer to move New words at here');
+    });
+  });
 });

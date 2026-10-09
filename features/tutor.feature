@@ -82,3 +82,11 @@ Feature: Ask the tutor about a verse
     Then they describe the learner field
     And they ask for a new word to be taught with its gloss, a memorable hook and one easy example from the chapter
     And they say to leave out what he already knows and to keep the answer short for a phone
+
+  Scenario: Asking about a verse sends learner_grammar, and the instructions say to teach at his level
+    Given Lampas is opened on Romans 8 with a tutor behind a fake Postern
+    And he selects verse 28
+    When he asks "What does πρόθεσιν mean here?"
+    Then the mill received one grist for the lampas app, kind verse-ask
+    And its input carries learner_grammar with no goal and the BMA Tutor approach
+    And the verse-ask instructions pitch frontier and not-yet ideas and do not offer the move
