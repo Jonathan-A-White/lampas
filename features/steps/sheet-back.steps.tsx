@@ -62,6 +62,7 @@ const verseEl = (n: number): HTMLElement => {
 };
 const wordSheet = () => screen.queryByRole('dialog', { name: 'Word' });
 const grammarSheet = () => screen.queryByRole('dialog', { name: 'Grammar' });
+const ideaSheet = () => screen.queryByRole('dialog', { name: 'Idea' });
 const talkSheet = () => screen.queryByRole('dialog', { name: /^Talk about / });
 
 async function tapsWord(text: string, verse: number): Promise<void> {
@@ -120,6 +121,30 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('Back closes the idea sheet', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with verse 2 selected', () => open('', false));
+    And('he taps "of the" in verse 2', () => tapsWord('of the', 2));
+    And('he taps the term "genitive" on the word sheet', async () => {
+      await user.click(screen.getByRole('button', { name: 'genitive', exact: true }));
+      await screen.findByRole('dialog', { name: 'Grammar' });
+    });
+    And('he taps Learn this idea on the Grammar sheet', async () => {
+      await user.click(screen.getByRole('button', { name: 'Learn this idea' }));
+      await screen.findByRole('dialog', { name: 'Idea' });
+    });
+    When('he goes back', back);
+    Then('the idea sheet is closed and the Grammar sheet is still open', async () => {
+      await waitFor(() => expect(ideaSheet()).toBeNull());
+      expect(grammarSheet()).not.toBeNull();
+      expect(wordSheet()).not.toBeNull();
+    });
+    When('he goes back once more', back);
+    Then('the Grammar sheet is closed and the word sheet is still open', async () => {
+      await waitFor(() => expect(grammarSheet()).toBeNull());
+      expect(wordSheet()).not.toBeNull();
+    });
+  });
+
   Scenario('Back on the Talk sheet closes it', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 with verse 2 selected', () => open('', false));
     And('he opens the Talk sheet', async () => {
@@ -161,7 +186,7 @@ describeFeature(feature, ({ Scenario }) => {
       const sheets = readdirSync('src')
         .filter((name) => name.endsWith('.tsx'))
         .filter((name) => readFileSync(`src/${name}`, 'utf8').includes('role="dialog"'));
-      expect(sheets.sort()).toEqual(['ChapterPicker.tsx', 'GrammarSheet.tsx', 'Talk.tsx', 'WordSheet.tsx']);
+      expect(sheets.sort()).toEqual(['ChapterPicker.tsx', 'GrammarSheet.tsx', 'IdeaSheet.tsx', 'Talk.tsx', 'WordSheet.tsx']);
       for (const name of sheets) expect(readFileSync(`src/${name}`, 'utf8'), name).toMatch(/useSheetBack\(/);
     });
   });

@@ -11,13 +11,15 @@ import { markTermKnown } from './useKnownTerms';
 
 const BUTTON = 'min-h-12 min-w-0 flex-1 rounded-xl border px-3 text-base font-medium';
 
-export function GrammarSheet({ chapter, term, word, known, onClose, onTerm, onWord, onAsk }: {
+export function GrammarSheet({ chapter, term, word, known, covered, onClose, onTerm, onWord, onAsk, onLearn }: {
   chapter: Chapter;
   term: string;
   /** the word whose sheet the term was tapped on: it is left out of the examples */
   word: GreekWord;
   /** whether he marked this term I know this */
   known: boolean;
+  /** a sheet is open over this one (the idea sheet): it takes the Escape */
+  covered?: boolean;
   onClose: () => void;
   /** a related term was tapped */
   onTerm: (term: string) => void;
@@ -25,9 +27,11 @@ export function GrammarSheet({ chapter, term, word, known, onClose, onTerm, onWo
   onWord: (word: GreekWord) => void;
   /** Ask the tutor; the button is left out when the screen cannot send it anywhere */
   onAsk?: (term: string) => void;
+  /** Learn this idea: the idea sheet of the term's idea; the button is left out when the screen has none */
+  onLearn?: (term: string) => void;
 }) {
   const { drag, handle } = useSheetDrag(onClose);
-  useEscapeToClose(onClose);
+  useEscapeToClose(onClose, !covered);
   useSheetBack(onClose);
   const concept = conceptOf(term);
   const examples = grammarExamples(chapter, term, word);
@@ -78,6 +82,15 @@ export function GrammarSheet({ chapter, term, word, known, onClose, onTerm, onWo
                 </div>
               ) : null}
             </>
+          ) : null}
+          {onLearn ? (
+            <button
+              type="button"
+              onClick={() => onLearn(term)}
+              className="mt-3 min-h-12 w-full rounded-xl border border-accent px-3 text-base font-medium text-accent active:bg-line"
+            >
+              Learn this idea
+            </button>
           ) : null}
           <div className="mt-3">
             <p className="text-sm text-muted">Examples from {title}</p>

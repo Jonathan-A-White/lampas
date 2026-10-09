@@ -76,6 +76,27 @@ beyond `loadChapter`.
 
 A word idea draws `ending` or `tap-form` by its first random draw and falls back to the other. Review (`src/review/kinds.ts` GRAMMAR, kind `grammar`, item id the idea id) draws the due ideas before the due words (PROVISIONAL), asks each as multiple choice below `FLASHCARD_STEP` and as a flashcard (the prompt and the form, Show reveals the answer, I knew it / Not yet) from it up, and records through `recordGrammarAnswer`. `grammarRandom(random)` is the random a round's grammar questions use: a test finds the seed that gives the question it needs through it.
 
+## The idea sheet
+
+`src/IdeaSheet.tsx`, data in `src/data/grammar/ideaSheet.ts` (mw-hqd5bz.7). A bottom sheet that teaches one idea; it opens from the
+**Learn this idea** button of a Grammar sheet (the term's idea: `ideaOfTerm(term)`), over the Grammar sheet and the word sheet.
+
+- **Where the examples come from.** `ideaPassage(goalText, openChapter, loadChapter, index)`: the saved goal (the `goal` row of
+  the settings store, any text `parseGoal` reads): its chapter, its one verse, or the first five chapters of a book goal; with no
+  goal, or one that names nothing, the open chapter (`getOpenChapter()`).
+- `ideaExamples(id, chapters, verse?)`: up to three words whose parsing needs the idea (`ideasOf`), one for each lemma, in text
+  order, each with its chapter and verse ('1 John 1:1'). An idea no word has (a letter, the alphabet) shows none.
+- `paradigmOf(idea, chapters, verse?)`: for a case idea, the article's forms in that case (rows singular, plural; columns
+  masculine, feminine, neuter); for a tense idea, the persons of the one verb that fills most cells in a finite mood (rows singular,
+  plural; columns 1st, 2nd, 3rd person). A cell the passage lacks is blank (–); `null` for any other idea or no form at all. Forms
+  are the passage's own; a capitalised sentence-start form gives way to one in mid-sentence.
+- **Buttons.** `teachIdea(id, outcome)`: *Got it* makes the idea frontier (how `sheet`) and puts it on the schedule at step 0, due
+  tomorrow; *I know this* makes it solid and puts it at the 30-day step, due in 30 days. The row is put in place even if the idea
+  was scheduled, keeping its lapses and rights. Both publish `grammar-level-changed` and `idea-taught` (docs/events.md).
+  *Ask the tutor* is the Talk sheet with focus `{term, kind: 'grammar-term'}`, the idea's first term (its title for an idea with no
+  term). The level shows as a chip ('Frontier since Tuesday').
+- Tapping an example opens its word sheet, over its own chapter when that is not the Reader's.
+
 ## One choice to know
 
 Person and number (`person-1st` ... `number-plural`) sit at the start of the `pronouns` tier, not the `nouns` tier: I, you,
