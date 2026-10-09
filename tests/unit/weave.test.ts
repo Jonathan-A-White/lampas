@@ -80,4 +80,25 @@ describe('weaveVerse', () => {
     const woven = weaveVerse(verse, { solid: new Set(['ἐν']), learning: new Set(['ἐν']) });
     expect(woven[0]?.learning).toBe(false);
   });
+
+  it('leaves a chunk English when formPasses refuses one of its words, and its neighbours stay woven', () => {
+    const all = new Set(['ἐν', 'Χριστός', 'ὁ', 'θεός']);
+    const woven = weaveVerse(verse, { solid: all, formPasses: (w) => w.t !== 'θεοῦ' });
+    expect(woven[0]).not.toBeNull();
+    expect(woven[1]).not.toBeNull();
+    expect(woven[2]).toBeNull();
+  });
+
+  it('weaves every solid chunk as before when formPasses accepts all, or is not given', () => {
+    const solid = new Set(['ἐν', 'Χριστός', 'ὁ', 'θεός']);
+    const plain = weaveVerse(verse, { solid });
+    expect(weaveVerse(verse, { solid, formPasses: () => true })).toEqual(plain);
+    expect(plain.filter(Boolean)).toHaveLength(3);
+  });
+
+  it('asks formPasses about a learning word too', () => {
+    const woven = weaveVerse(verse, { solid: new Set(['ἐν']), learning: new Set(['Χριστός']), formPasses: (w) => w.t !== 'χριστῷ' });
+    expect(woven[0]).not.toBeNull();
+    expect(woven[1]).toBeNull();
+  });
 });
