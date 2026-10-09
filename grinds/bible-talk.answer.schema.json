@@ -121,6 +121,12 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "greekPronunciation" }, "value": { "type": "string", "enum": ["modern"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "logosBible" }, "value": { "type": "string", "maxLength": 80 } }
           }
         ]
       }

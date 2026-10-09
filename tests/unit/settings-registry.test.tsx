@@ -4,7 +4,7 @@ import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
-import { getGreekPronunciation, getLayout, getSectionHeadings, getSpeechRate, getTextSize, getTheme, getVoice, getWeave, getWeaveGrammar } from '../../src/data/repositories';
+import { getGreekPronunciation, getLayout, getLogosBible, getSectionHeadings, getSpeechRate, getTextSize, getTheme, getVoice, getWeave, getWeaveGrammar } from '../../src/data/repositories';
 import { clearBus, latest } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { SETTINGS, applyChanges, currentSettings, settingOf, undoChange } from '../../src/settings/registry';
@@ -34,11 +34,12 @@ describe('the registry lists every Settings row', () => {
     await screen.findByRole('group', { name: 'Grammar' });
     await screen.findByRole('group', { name: 'Goal' });
     await screen.findByRole('radiogroup', { name: 'Grammar approach' });
+    await screen.findByRole('group', { name: 'Bible in Logos' });
     const drawn = [
       ...screen.getAllByRole('group'),
       ...screen.getAllByRole('radiogroup'),
-      // the Goal group's own Book, Chapter and Verse pickers are parts of the one Goal setting
-      ...screen.getAllByRole('combobox').filter((el) => !el.closest('[role="group"][aria-label="Goal"]')),
+      // the Goal group's own Book, Chapter and Verse pickers, and Bible in Logos' own Bible list, are parts of those one settings
+      ...screen.getAllByRole('combobox').filter((el) => !el.closest('[role="group"][aria-label="Goal"], [role="group"][aria-label="Bible in Logos"]')),
       ...screen.getAllByRole('slider'),
     ].map((el) => el.getAttribute('aria-label') ?? el.closest('label')?.querySelector('span')?.textContent ?? '');
     expect(drawn.filter((name) => name === '')).toEqual([]);
@@ -49,13 +50,28 @@ describe('the registry lists every Settings row', () => {
   it('gives every entry a distinct key, a label, a hint, and the values it allows', () => {
     expect(new Set(SETTINGS.map((s) => s.key)).size).toBe(SETTINGS.length);
     expect(SETTINGS.map((s) => s.key).sort()).toEqual(
-      ['englishRate', 'englishVoice', 'goal', 'grammarApproach', 'greekPronunciation', 'greekRate', 'greekVoice', 'layout', 'sectionHeadings', 'textSize', 'theme', 'weave', 'weaveGrammar'],
+      ['englishRate', 'englishVoice', 'goal', 'grammarApproach', 'greekPronunciation', 'greekRate', 'greekVoice', 'layout', 'logosBible', 'sectionHeadings', 'textSize', 'theme', 'weave', 'weaveGrammar'],
     );
     for (const s of SETTINGS) {
       expect(s.label).not.toBe('');
       expect(s.hint).not.toBe('');
       if (s.allowed.kind === 'choice') expect(s.allowed.values.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('Bible in Logos', () => {
+  it('is LSB until chosen; a talked change to a well-formed Resource ID is kept, and a malformed one is refused', async () => {
+    expect(await getLogosBible()).toBe('LLS:LGCYSTNDRDBBLSB');
+    const { applied, refused } = await applyChanges([
+      { key: 'logosBible', value: 'LLS:1.0.710' },
+      { key: 'logosBible', value: 'esv' },
+    ]);
+    expect(applied.map((a) => a.shown)).toEqual(['Bible in Logos: ESV (English Standard Version)']);
+    expect(refused).toHaveLength(1);
+    expect(await getLogosBible()).toBe('LLS:1.0.710');
+    await undoChange(applied[0]);
+    expect(await getLogosBible()).toBe('LLS:LGCYSTNDRDBBLSB');
   });
 });
 
@@ -190,6 +206,7 @@ describe('currentSettings', () => {
       greekPronunciation: 'modern',
       goal: '',
       grammarApproach: 'bma-tutor',
+      logosBible: 'LLS:LGCYSTNDRDBBLSB',
     });
     await applyChanges([{ key: 'greekRate', value: 0.8 }, { key: 'theme', value: 'dark' }]);
     await db.settings.put({ key: 'voice.english', value: 'Some voice' });

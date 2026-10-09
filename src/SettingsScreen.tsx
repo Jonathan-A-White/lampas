@@ -7,6 +7,7 @@ import { TEXT_SIZES } from './appearance/textSizes';
 import { THEMES, type Theme } from './appearance/themes';
 import {
   getGoal,
+  getLogosBible,
   getGrammarApproach,
   getGreekPronunciation,
   getLayout,
@@ -40,6 +41,7 @@ import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from './speech
 import { SearchableList } from './ui/SearchableList';
 import { RESOURCES, tickedOf, type ResourceChoices, type StudyResource } from './resources';
 import { storeUrl } from './resources/appStore';
+import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from './resources/logosBible';
 import { checkApp } from './resources/openApp';
 import { PRONUNCIATIONS, pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
 
@@ -360,6 +362,58 @@ function ResourceRow({ resource, on, typed }: { resource: StudyResource; on: boo
   );
 }
 
+/** Bible in Logos: the Bible an Old Testament chapter opens in, from a short list or by typing its Resource ID. A typed ID is kept as soon as it is well formed. */
+function LogosBiblePicker({ saved }: { saved: string }) {
+  const [typed, setTyped] = useState(saved);
+  const listed = COMMON_BIBLES.some((b) => b.id === saved);
+  const bad = typed.trim() !== '' && !isResourceId(typed);
+  return (
+    <div role="group" aria-label="Bible in Logos">
+      <label className="mt-1 block">
+        <span className="block text-base font-medium">Bible</span>
+        <select
+          value={listed ? saved : ''}
+          onChange={(e) => {
+            if (e.target.value === '') return;
+            setTyped(e.target.value);
+            void writeSetting('logosBible', e.target.value);
+          }}
+          className={PICKER}
+        >
+          {listed ? null : <option value="">Another Bible (typed below)</option>}
+          {COMMON_BIBLES.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="mt-3 block">
+        <span className="block text-base font-medium">Resource ID</span>
+        <input
+          type="text"
+          value={typed}
+          aria-describedby="logos-bible-hint"
+          aria-invalid={bad}
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          onChange={(e) => {
+            setTyped(e.target.value);
+            if (isResourceId(e.target.value)) void writeSetting('logosBible', e.target.value.trim());
+          }}
+          className={PICKER}
+        />
+      </label>
+      <p id="logos-bible-hint" role={bad ? 'alert' : undefined} className="pt-1 text-sm text-muted">
+        {bad
+          ? `That is not a Resource ID. It looks like ${DEFAULT_LOGOS_BIBLE}.`
+          : 'Logos shows a book\'s Resource ID in its Information pane. Old Testament chapters open in this Bible.'}
+      </p>
+    </div>
+  );
+}
+
 const PICKER = 'mt-1 min-h-12 w-full rounded-lg border border-line bg-surface px-3 text-base text-fg disabled:opacity-50';
 const NO_BOOK = 'Choose a book';
 const range = (n: number): number[] => Array.from({ length: n }, (_, i) => i + 1);
@@ -535,6 +589,7 @@ export function SettingsScreen() {
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
   const resources = useLiveQuery(getStudyResources, []);
   const goal = useLiveQuery(getGoal, []);
+  const logosBible = useLiveQuery(getLogosBible, []);
   const approach = useLiveQuery(getGrammarApproach, []);
   const levels = useLiveQuery(listLevels, []);
   return (
@@ -586,6 +641,9 @@ export function SettingsScreen() {
               ? RESOURCES.map((r) => <ResourceRow key={r.id} resource={r} on={resources.on.includes(r.id)} typed={resources.options[r.id] ?? ''} />)
               : null}
           </section>
+          <Section title="Bible in Logos" hint="Lampas has no Old Testament text. Picking an Old Testament chapter opens it in Logos, in this Bible.">
+            {logosBible !== undefined ? <LogosBiblePicker saved={logosBible} /> : null}
+          </Section>
           <Section title="More">
             <LinkRow label="Words" to="words" />
             <LinkRow label="Review" to="review" />

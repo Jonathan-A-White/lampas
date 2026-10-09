@@ -100,6 +100,35 @@ Word Study guide, that the Logos Android app claims `logosres:` and `logos4:` at
 Accordance `accord://search/<module>?<lemma>` form finds a word in a lexicon module. The https fallback is kept for all of them. If a link does not open the
 entry, the fix is in that resource's file.
 
+## Old Testament chapters in Logos (mw-5r3p30.71)
+
+Lampas holds no Old Testament text, so the Reader's chapter picker (`src/ChapterPicker.tsx`) lists the 39 Old Testament books in canon order before
+Matthew, each marked `Opens in Logos ↗` (`OT_BOOKS`, `src/data/otBooks.ts`: our three-letter code, the name, the book's Logos abbreviation and its chapter count). Picking
+a book shows its chapters; each is a link that opens that chapter in his Logos library, in the **Bible in Logos** (Settings > Bible in Logos, the registry setting
+`logosBible`, `LLS:LGCYSTNDRDBBLSB`, the Legacy Standard Bible, until he changes it; a short list of common Bibles, `COMMON_BIBLES` in `src/resources/logosBible.ts`,
+or a typed Resource ID of the form `LLS:...`). The link is built by `chapterLink(book, chapter, resourceId)` in the same two forms as the lexicon links:
+
+| | form | example (Genesis 1, the default) |
+| --- | --- | --- |
+| scheme, first | `logosres:<bible>;ref=Bible.<book><chapter>` | `logosres:lgcystndrdbblsb;ref=Bible.Ge1` |
+| https, fallback | `https://ref.ly/logosres/<bible>?ref=Bible.<book><chapter>` | `https://ref.ly/logosres/lgcystndrdbblsb?ref=Bible.Ge1` |
+
+`<bible>` is the Resource ID without `LLS:`, in lower case (the form the story gave: `lgcystndrdbblsb`). The scheme is the link's `href`; `openApp.ts armFallback` opens the
+https address only when the page is still in front 1.5 s after the tap. Picking an Old Testament chapter opens no Lampas chapter and changes neither the address nor the
+open chapter. With Logos off in Settings > Study resources the books still show; picking one says "Logos is off" and `Turn on Logos` switches it on in one tap (no app check, as
+the link's own fallback covers a phone with no Logos).
+
+**Book abbreviations** (the `ref=Bible.<book><chapter>` part; `Bible.Ac6.3` is the form in the Logos forum post above). Each abbreviation is one on Logos' own list of Bible book
+abbreviations (https://www.logos.com/bible-book-abbreviations, read 2026-10-08, which lists the spellings Logos accepts for each book), taking the two- or three-letter form where the list has one (also the form of the Logos COM API list,
+https://community.logos.com/kb/articles/846, which answers 403 to a script): Ge, Ex, Le, Nu, De, Jos, Jdg, Ru, 1Sa, 2Sa, 1Ki, 2Ki, 1Ch, 2Ch, Ezr, Ne, Es, Job, Ps, Pr, Ec, So, Isa, Jer, La, Eze, Da, Ho, Joel, Am, Ob, Jon, Mic, Na, Hab, Zep, Hag, Zec, Mal.
+`tests/unit/logos-bible.test.ts` holds the table and checks Genesis 1, Psalms 23 and Malachi 4. Joel is written `Joel`, as Logos lists it first (`Jl` is the other form); Judges is `Jdg`
+(`Jud` is Jude).
+
+**Not verified on a device.** Unverified: that the Logos app opens a Bible at a chapter from `logosres:<bible>;ref=Bible.Ge1` (the form is the story's, and the forum post's
+`logosres:becnt65ac;ref=Bible.Ac6.3` has the same shape), that a Resource ID with digits such as `LLS:1.0.710` (ESV) becomes `1.0.710` in the scheme and not a short name such as
+`esv` (the Resource IDs of the short list were read from the library listing, vault `plans/lampas-logos-library-2026-10-08.csv`; the LSB id is the Governor's own), and that every
+abbreviation above is read by the Logos app's link handler as it is by its list. If a Bible does not open, its entry in `COMMON_BIBLES`, or the typed ID, is the thing to change.
+
 ## Bible Word Study's lemma
 
 Logos names a Greek lemma `lbs/el/<lemma>` (Hebrew `lbs/he/…`, English `lbs/en/…`), and in a link its slashes must be escaped as `%2F`

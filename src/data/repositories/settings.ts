@@ -5,6 +5,7 @@ import type { WeaveGrammar } from '../grammar/formLevel';
 import { DEFAULT_LAYOUT, isLayout, type ReadingLayout } from '../../layout/layouts';
 import { DEFAULT_TEXT_PERCENT, normaliseTextPercent } from '../../appearance/textSizes';
 import { DEFAULT_THEME, isTheme, type Theme } from '../../appearance/themes';
+import { DEFAULT_LOGOS_BIBLE, isResourceId } from '../../resources/logosBible';
 import { LANGUAGES, normaliseRate, type SpeechLanguage, type SpeechRates } from '../../speech/languages';
 import { DEFAULT_PRONUNCIATION, isPronunciation, type GreekPronunciation } from '../../speech/pronunciation';
 
@@ -153,6 +154,18 @@ export async function getGoal(): Promise<string> {
 
 export async function setGoal(text: string): Promise<void> {
   await db.settings.put({ key: GOAL_KEY, value: text });
+}
+
+const LOGOS_BIBLE_KEY = 'logosBible';
+
+/** The Resource ID of the Bible an Old Testament chapter opens in, in Logos; the default (the Legacy Standard Bible) while none was chosen or the saved one is malformed. */
+export async function getLogosBible(): Promise<string> {
+  const row = await db.settings.get(LOGOS_BIBLE_KEY);
+  return typeof row?.value === 'string' && isResourceId(row.value) ? row.value.trim() : DEFAULT_LOGOS_BIBLE;
+}
+
+export async function setLogosBible(resourceId: string): Promise<void> {
+  await db.settings.put({ key: LOGOS_BIBLE_KEY, value: resourceId.trim() });
 }
 
 const APPROACH_KEY = 'grammarApproach';

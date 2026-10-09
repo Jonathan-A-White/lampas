@@ -107,6 +107,7 @@ leave `words` empty and `settings_changes` out:
 - `englishRate` — English speed. How fast English is read aloud; 1 is normal, smaller is slower. Value: a number from 0.5 to 1.5, in steps of 0.1.
 - `greekRate` — Greek speed. How fast Greek is read aloud; 1 is normal, smaller is slower. Value: a number from 0.5 to 1.5, in steps of 0.1.
 - `greekPronunciation` — Greek pronunciation. How Greek is pronounced when it is read aloud. Value: "modern" (Modern Greek).
+- `logosBible` — Bible in Logos. The Bible in your Logos library that Old Testament chapters open in, named by its Resource ID, such as LLS:LGCYSTNDRDBBLSB (the Legacy Standard Bible). Value: text, for example "LLS:LGCYSTNDRDBBLSB" (a book, a chapter or a verse; "" for none).
 <!-- settings:end -->
 
 ## How to answer
