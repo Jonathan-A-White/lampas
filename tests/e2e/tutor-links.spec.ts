@@ -73,3 +73,48 @@ test('the tutor\'s links at phone width: chips for the resources he switched on,
   await expect(page.getByRole('region', { name: 'Verse view' })).toBeVisible();
   expect(page.url()).toContain('v=35');
 });
+
+test('an Old Testament verse link opens in his Bible in Logos (LSB today) and has no Reader chip', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  const fake = makeFakePostern();
+  fake.autoReply = {
+    status: 'answered',
+    answer: {
+      answer: 'Paul quotes Genesis 15:6 to show that Abraham was counted righteous by faith, long before the law.',
+      words: [],
+      links: [{ kind: 'verse', reference: 'Genesis 15:6' }],
+    },
+  };
+  await routePostern(page, fake);
+  await openUnlocked(page);
+  await holdAppLinks(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  const section = page.getByRole('region', { name: 'Study resources' });
+  await section.scrollIntoViewIfNeeded();
+  await section.getByRole('switch', { name: 'Logos', exact: true }).click();
+  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+  await expect(section.getByRole('switch', { name: 'Logos', exact: true })).toHaveAttribute('aria-checked', 'true');
+  await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
+
+  await openTalkAbout(page, 28);
+  const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
+  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Where does Paul get that?');
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+
+  const links = sheet.locator('[data-tutor-links]');
+  await expect(links).toBeVisible();
+  const logos = links.getByRole('link', { name: 'Open Genesis 15:6 in Logos', exact: true });
+  await logos.scrollIntoViewIfNeeded();
+  await expect(logos).toBeVisible();
+  await expect(logos).toHaveText('Logos');
+  await expect(logos).toHaveAttribute('href', 'logosres:lgcystndrdbblsb;ref=Bible.Ge15.6');
+  await expect(links.getByRole('button')).toHaveCount(0);
+  const box = await logos.boundingBox();
+  expect(box?.height).toBeGreaterThanOrEqual(43.5);
+  expect(box?.width).toBeGreaterThanOrEqual(43.5);
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
+  await shot(page, 'tutor-links-ot');
+});

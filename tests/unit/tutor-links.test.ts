@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { MAX_LINKS, isTalkAnswer } from '../../src/services/talk';
 import { verseLink } from '../../src/resources/logosBible';
-import { verseChips, wordChips } from '../../src/resources/tutorLinks';
+import { placeOf, verseChips, wordChips } from '../../src/resources/tutorLinks';
 import type { StudyResources } from '../../src/data/repositories';
 import { validate, type Schema } from '../support/schema-validate';
 
@@ -91,6 +91,10 @@ describe('verseLink and verseChips', () => {
       fallback: 'https://ref.ly/logosres/lgcystndrdbblsb?ref=Bible.Ro8.31',
     });
     expect(verseLink('1jn', 1, 9, 'LLS:LGCYSTNDRDBBLSB')?.url).toBe('logosres:lgcystndrdbblsb;ref=Bible.1Jn1.9');
+    expect(verseLink('isa', 53, 5, 'LLS:LGCYSTNDRDBBLSB')).toEqual({
+      url: 'logosres:lgcystndrdbblsb;ref=Bible.Isa53.5',
+      fallback: 'https://ref.ly/logosres/lgcystndrdbblsb?ref=Bible.Isa53.5',
+    });
     expect(verseLink('xyz', 1, 1, 'LLS:LGCYSTNDRDBBLSB')).toBeUndefined();
   });
 
@@ -98,5 +102,48 @@ describe('verseLink and verseChips', () => {
     expect(verseChips({ book: 'rom', chapter: 8, verse: 31 }, 'Romans 8:31', on('strongs', 'accordance'), 'LLS:LGCYSTNDRDBBLSB')).toEqual([]);
     const [chip] = verseChips({ book: 'rom', chapter: 8, verse: 31 }, 'Romans 8:31', on('logos'), 'LLS:1.0.710');
     expect(chip).toMatchObject({ label: 'Open Romans 8:31 in Logos', tile: 'Logos', url: 'logosres:1.0.710;ref=Bible.Ro8.31' });
+  });
+});
+
+describe('an Old Testament verse link', () => {
+  it('schema: takes an Old Testament reference and says any book of the Bible', () => {
+    const value = { ...base, links: [{ kind: 'verse', reference: 'Isaiah 53:5' }, { kind: 'verse', reference: 'Genesis 15:6' }] };
+    expect(validate(value, schema)).toEqual([]);
+    expect(isTalkAnswer(value)).toBe(true);
+    const description = JSON.stringify(schema.properties?.links);
+    expect(description).toMatch(/Old Testament/);
+    expect(description).not.toMatch(/verse of the New Testament/);
+    expect(instructions).toMatch(/any book of the Bible/i);
+  });
+
+  it('is placed by the one canon list: Isaiah 53:5 is a place with no Reader, Romans 8:31 keeps its Reader', () => {
+    expect(placeOf('Isaiah 53:5')).toEqual({ book: 'isa', chapter: 53, verse: 5, name: 'Isaiah 53:5', reader: false });
+    expect(placeOf('Romans 8:31')).toMatchObject({ book: 'rom', chapter: 8, verse: 31, name: 'Romans 8:31', reader: true });
+    expect(placeOf('Psalm 23')).toMatchObject({ book: 'psa', chapter: 23, name: 'Psalms 23', reader: false });
+  });
+
+  it('drops a place the canon lacks: a chapter past the end, a verse 0, an unknown book', () => {
+    for (const text of ['Isaiah 67:1', 'Isaiah 53:0', 'Tobit 3:1', 'Obadiah 2:1', 'Romans 17:1']) expect(placeOf(text), text).toBeNull();
+  });
+
+  it('gives Logos\' chip in his Bible, no Reader chip, and nothing when Logos is off', () => {
+    const place = placeOf('Isaiah 53:5');
+    if (!place) throw new Error('no place');
+    const [chip, ...rest] = verseChips(place, place.name, on('strongs', 'logos', 'accordance'), 'LLS:LGCYSTNDRDBBLSB');
+    expect(rest).toEqual([]);
+    expect(chip).toMatchObject({
+      label: 'Open Isaiah 53:5 in Logos',
+      tile: 'Logos',
+      url: 'logosres:lgcystndrdbblsb;ref=Bible.Isa53.5',
+      fallback: 'https://ref.ly/logosres/lgcystndrdbblsb?ref=Bible.Isa53.5',
+    });
+    expect(verseChips(place, place.name, on('strongs', 'accordance'), 'LLS:LGCYSTNDRDBBLSB')).toEqual([]);
+  });
+
+  it('opens in whatever Bible he chose in Settings, never a fixed one', () => {
+    const place = placeOf('Genesis 15:6');
+    if (!place) throw new Error('no place');
+    expect(verseChips(place, place.name, on('logos'), 'LLS:1.0.710')[0].url).toBe('logosres:1.0.710;ref=Bible.Ge15.6');
+    expect(verseChips(place, place.name, on('logos'), 'LLS:KJV1900')[0].url).toBe('logosres:kjv1900;ref=Bible.Ge15.6');
   });
 });

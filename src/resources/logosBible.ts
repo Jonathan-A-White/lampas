@@ -41,10 +41,11 @@ const NT_LOGOS: Readonly<Record<string, string>> = {
   '1ti': '1Ti', '2ti': '2Ti', tit: 'Tit', phm: 'Phm', heb: 'Heb', jas: 'Jas', '1pe': '1Pe', '2pe': '2Pe', '1jn': '1Jn', '2jn': '2Jn', '3jn': '3Jn', jud: 'Jud', rev: 'Re',
 };
 
-/** The link that opens a New Testament chapter, or one verse of it, in the Bible `resourceId` in Logos (the chapter link's form, `Bible.Ro8.31`); undefined for a book
- *  that is not one of the 27 or a chapter or verse below 1. The tutor's verse links use it (src/resources/tutorLinks.ts). */
+/** The link that opens a chapter, or one verse of it, of any book of the Bible (the 27 above, the 39 of data/otBooks.ts) in the Bible `resourceId` in Logos (the
+ *  chapter link's form, `Bible.Ro8.31`); undefined for a book that is in neither list or a chapter or verse below 1. The tutor's verse links use it
+ *  (src/resources/tutorLinks.ts). */
 export function verseLink(code: string, chapter: number, verse: number | undefined, resourceId: string): { url: string; fallback: string } | undefined {
-  const book = NT_LOGOS[code];
+  const book = NT_LOGOS[code] ?? otBookOf(code)?.logos;
   if (!book || !Number.isInteger(chapter) || chapter < 1) return undefined;
   if (verse !== undefined && (!Number.isInteger(verse) || verse < 1)) return undefined;
   const bible = schemeName(resourceId);
