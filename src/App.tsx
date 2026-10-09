@@ -15,6 +15,7 @@ import { QuizScreen } from './QuizScreen';
 import { ReviewScreen } from './ReviewScreen';
 import { SettingsScreen } from './SettingsScreen';
 import { startSpeechSettingsSync } from './speech/settingsSync';
+import { startUsageLog } from './tips/usageLog';
 import { UpdateBanner } from './UpdateBanner';
 import { WordsScreen } from './WordsScreen';
 
@@ -30,6 +31,11 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
   useEffect(() => startAppearanceSync(), []);
   // The saved voices and pronunciation reach the speaker before the first tap on a speaker button.
   useEffect(() => startSpeechSettingsSync(), []);
+  // What he uses is counted from the bus, a day at a time and without any text, so the tips can tell what he has not met (src/tips/).
+  useEffect(() => {
+    const stop = startUsageLog();
+    return () => void stop();
+  }, []);
   // The first open fills the word list from the example list; every later open finds the flag and does nothing.
   // Then, once, every solid or learning word goes on the back-off schedule (also the first open after the v10 upgrade),
   // and, once, the grammar terms he marked I know this make their ideas solid (the first open after the v11 upgrade).
