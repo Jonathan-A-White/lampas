@@ -1,9 +1,10 @@
 // Which words of the verse the reading check marks: the exact position the grind named (focus word `index`), never every
 // word with the same spelling (mw-5r3p30.94).
 import { describe, expect, it } from 'vitest';
-import { markWords, type FocusWord } from '../../src/services/reading';
+import type { FixWord } from '../../src/data/repositories';
+import { markWords } from '../../src/services/reading';
 
-const fix = (word: string, index?: number): FocusWord => ({ word, chunks: [word], tip: 'Say it again.', ...(index === undefined ? {} : { index }) });
+const fix = (word: string, index?: number): FixWord => ({ word, chunks: [word], tip: 'Say it again.', ...(index === undefined ? {} : { index }) });
 const LIFE = 'And this is the life ... the eternal life ...';
 
 describe('markWords', () => {
