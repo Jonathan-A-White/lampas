@@ -27,6 +27,12 @@ async function whatComesBack(items: ReviewItem[]): Promise<{ tomorrow: number; l
   return { tomorrow, later: rows.length - tomorrow };
 }
 
+/** 'Due today' counts, a kind with none left out: '2 ideas, 3 words'; '0 words' when nothing is due. */
+function dueText(counts: number[]): string {
+  const parts = KINDS.flatMap((k, i) => (counts[i] > 0 ? [k.count(counts[i])] : []));
+  return parts.length > 0 ? parts.join(', ') : (KINDS.find((k) => k.kind === 'word') ?? KINDS[0]).count(0);
+}
+
 export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
   const [round, setRound] = useState<Round>({ status: 'start' });
   // The answers are written one after the other; the end card waits for the last of them.
@@ -53,7 +59,7 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
         {header()}
         <main className="screen min-h-0 flex-1 px-6 pt-8 text-center">
           <p data-testid="due-today" className="text-2xl font-semibold">
-            Due today: {due ? KINDS.map((k, i) => k.count(due[i])).join(', ') : '…'}
+            Due today: {due ? dueText(due) : '…'}
           </p>
           <p className="mt-2 text-muted">
             {stillDue === 0 ? 'Nothing is due. Start still asks ten of your words.' : 'The due ones come first, then other words, up to ten.'}
