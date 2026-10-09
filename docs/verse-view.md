@@ -11,6 +11,8 @@ And if the Spirit of Him who ...              the verse, big, woven as the Reade
 [ Hold to listen to verse 11 ]                ONE hold bar, Postern's, at the foot: what a hold does is the chosen action
 ```
 
+The row is one line while each label has room for two lines of its own (a container query in rem, so a larger text size wraps sooner); narrower, it is three buttons to a row over two rows. A phone with Share draws a sixth button and wraps sooner. No label is ever past two lines and every button is at least 44 px (tests/e2e/verse-actions.spec.ts at 360 and 412 px).
+
 | Action | What it shows | The bar | A hold does |
 | --- | --- | --- | --- |
 | Listen | one line of help | `Hold to listen to verse 11` | the app reads this verse aloud and stops at its end, held or not (the Read aloud span does not apply); letting go stops it at once |
