@@ -32,6 +32,14 @@ describe('grinds/verse-ask.json', () => {
     expect(text).toContain('solid_words');
     expect(text).toContain('parsing');
   });
+
+  it('names settings.hebrewDepth and gives an example for each of its three depths', () => {
+    const text = readFileSync(grind.instructions as string, 'utf8');
+    expect(text).toContain('`settings`');
+    expect(text).toContain('hebrewDepth');
+    for (const depth of ['transliteration', 'both', 'full']) expect(text).toContain(`\`${depth}\``);
+    for (const example of ['tsedeq', 'צֶדֶק tsedeq', 'צֶדֶק']) expect(text).toContain(example);
+  });
 });
 
 describe('the answer schema and isVerseAnswer', () => {

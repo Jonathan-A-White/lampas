@@ -35,6 +35,23 @@
   unicode-range: U+1F00-1FFF;
 }
 
+/* Noto Serif Hebrew (SIL Open Font License, src/fonts/OFL-noto-serif-hebrew.txt): Hebrew with its points (niqqud) and accents, bundled so the tutor's
+ * Hebrew words show and work offline (src/script/scripts.ts, the .script-he class below). */
+@font-face {
+  font-family: "Noto Serif Hebrew";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/noto-serif-hebrew-hebrew-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Noto Serif Hebrew";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./fonts/noto-serif-hebrew-hebrew-700-normal.woff2") format("woff2");
+}
+
 /* Design tokens: every colour the app uses is one of these (dark by default). Two palettes, picked by html[data-theme]
  * (src/appearance/appearanceSync.ts): 'dark' and 'light' are chosen; 'phone' (and no attribute yet) follows the phone's
  * own scheme, live. The light palette is written twice, once for each way into it: tests/unit/themes.test.ts holds
@@ -52,6 +69,7 @@
 
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-greek: "Gentium Plus", "Noto Serif", "Cardo", "Times New Roman", serif;
+  --font-hebrew: "Noto Serif Hebrew", "SBL Hebrew", "Ezra SIL", "Times New Roman", serif;
 }
 
 :root {
@@ -205,6 +223,14 @@ nav {
     /* 16 px at the least, or iOS zooms into the field */
     font-size: max(16px, 1rem);
   }
+}
+
+/* A Hebrew word in the tutor's text (src/script/ScriptText.tsx, src/markdown/scriptRuns.ts): lang="he" dir="rtl" on an inline span, which isolates it from
+ * the English line round it, in the bundled font, a little larger because its points are small. */
+.script-he {
+  font-family: var(--font-hebrew);
+  font-size: 1.25em;
+  line-height: 1.4;
 }
 
 /* The tutor's Markdown (src/markdown/Markdown.tsx): the size and colour of the surroundings, lists with their marks. */

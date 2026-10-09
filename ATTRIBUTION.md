@@ -27,6 +27,10 @@ builds on, with a link to each, its licence and what we changed. Credit is owed 
   [SIL Open Font License 1.1](https://openfontlicense.org/open-font-license-official-text/), Copyright (c) 2003-2022 SIL International;
   the licence text is in `src/fonts/OFL.txt`. The Greek and Greek Extended subsets are bundled as the
   @fontsource/gentium-plus 5.3.0 builds. Changes: none.
+- **[Noto Serif Hebrew](https://github.com/notofonts/hebrew)** by the Noto Project Authors, the Hebrew type of the tutor's answers. Licence:
+  [SIL Open Font License 1.1](https://openfontlicense.org/open-font-license-official-text/), Copyright 2022 The Noto Project Authors;
+  the licence text is in `src/fonts/OFL-noto-serif-hebrew.txt`. The Hebrew subset (letters, points and accents; 400 and 700) is bundled as the
+  @fontsource/noto-serif-hebrew 5.3.0 builds. Changes: none.
 
 ## Libraries the app runs on
 

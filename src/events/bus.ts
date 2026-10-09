@@ -5,6 +5,7 @@ import { useEffect, useRef, useSyncExternalStore } from 'react';
 import type { ReaderView, ReadingLayout, ReadTutor, SectionHeadings, Tips, Weave, WeaveGrammar } from '../data/repositories';
 import type { GrammarLevelName } from '../data/db';
 import type { Goal } from '../data/goal';
+import type { Depth, TutorScript } from '../script/scripts';
 import type { ReadSpan } from '../speech/readSpan';
 import type { Theme } from '../appearance/themes';
 import type { TalkFocus } from '../services/talk';
@@ -26,6 +27,8 @@ export type AppEvent =
   | { kind: 'read-span-changed'; span: ReadSpan }
   /** Read the tutor's responses aloud: whether a verdict or an answer is spoken the moment it arrives */
   | { kind: 'read-tutor-changed'; readTutor: ReadTutor }
+  /** how deep into a language the tutor goes (Settings > Hebrew in the tutor): `script` is the language tag, 'he' */
+  | { kind: 'script-depth-changed'; script: TutorScript['id']; depth: Depth }
   /** the Tips choice: whether the phone may send for a tip and show its card */
   | { kind: 'tips-changed'; tips: Tips }
   /** the voices he chose in Settings, as the phone's voiceURI; null is the phone's default */
