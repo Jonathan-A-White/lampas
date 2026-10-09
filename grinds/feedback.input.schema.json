@@ -1,25 +1,62 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Feedback Request 1",
+  "description": "Feedback to the makers, forwarded to the Mayor. Two kinds: grammar-approach (Ask for another approach, with pictures attached) and tutor-ask (an ask the tutor could not meet, sent by his tap on Send this to the makers).",
   "type": "object",
-  "additionalProperties": false,
-  "required": ["kind", "text", "credit", "app_version"],
-  "properties": {
-    "kind": {
-      "description": "What the feedback is. grammar-approach asks for another way of teaching Greek grammar.",
-      "type": "string",
-      "enum": ["grammar-approach"]
-    },
-    "text": { "description": "What approach he wants and how it teaches, in his words.", "type": "string", "minLength": 1, "maxLength": 1200 },
-    "credit": {
+  "anyOf": [
+    {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name"],
+      "required": ["kind", "text", "credit", "app_version"],
       "properties": {
-        "name": { "description": "Who made the approach, so the factory can credit them.", "type": "string", "minLength": 1, "maxLength": 120 },
-        "url": { "description": "A link to the approach, when there is one.", "type": "string", "minLength": 1, "maxLength": 300 }
+        "kind": {
+          "description": "grammar-approach asks for another way of teaching Greek grammar.",
+          "type": "string",
+          "enum": ["grammar-approach"]
+        },
+        "text": { "description": "What approach he wants and how it teaches, in his words.", "type": "string", "minLength": 1, "maxLength": 1200 },
+        "credit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name"],
+          "properties": {
+            "name": { "description": "Who made the approach, so the factory can credit them.", "type": "string", "minLength": 1, "maxLength": 120 },
+            "url": { "description": "A link to the approach, when there is one.", "type": "string", "minLength": 1, "maxLength": 300 }
+          }
+        },
+        "app_version": { "description": "The Lampas build he sent it from.", "type": "string", "minLength": 1, "maxLength": 80 }
       }
     },
-    "app_version": { "description": "The Lampas build he sent it from.", "type": "string", "minLength": 1, "maxLength": 80 }
-  }
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "text", "summary", "screen", "reference", "app_version"],
+      "properties": {
+        "kind": {
+          "description": "tutor-ask is something he asked the tutor for that Lampas does not do (work with another app, a new setting, a change); the tutor offered to pass it on and he tapped Send this to the makers.",
+          "type": "string",
+          "enum": ["tutor-ask"]
+        },
+        "text": { "description": "What he asked the tutor, in his words.", "type": "string", "minLength": 1, "maxLength": 1200 },
+        "summary": { "description": "The tutor's one-line summary of the ask.", "type": "string", "minLength": 1, "maxLength": 200 },
+        "screen": { "description": "The screen he asked from: its name, or Reader for a talk about the text.", "type": "string", "minLength": 1, "maxLength": 40 },
+        "reference": { "description": "What the talk was about: the screen's name, or the chapter or verse (Romans 8:28).", "type": "string", "minLength": 1, "maxLength": 80 },
+        "facts": {
+          "description": "What the screen showed him, as the tutor was told it. Left out when the talk was about the text.",
+          "type": "array",
+          "maxItems": 12,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["label", "value"],
+            "properties": {
+              "label": { "type": "string", "minLength": 1, "maxLength": 40 },
+              "value": { "type": "string", "minLength": 1, "maxLength": 200 }
+            }
+          }
+        },
+        "app_version": { "description": "The Lampas build he sent it from.", "type": "string", "minLength": 1, "maxLength": 80 }
+      }
+    }
+  ]
 }

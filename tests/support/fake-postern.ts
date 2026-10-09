@@ -39,6 +39,8 @@ export interface FakePostern {
   autoReply: Reply | undefined;
   /** What a grist whose input asks for lang 'el' is answered with instead of `autoReply` (a Greek reading check). */
   greekReply: Reply | undefined;
+  /** What a grist of a given kind is answered with instead of `autoReply` (a forwarding grind such as 'feedback' answers {status:'sent'} while the tutor answers a talk). */
+  kindReplies: Record<string, Reply>;
   /** Refuse every signed call as a backend does a key with no licence. */
   licensed: boolean;
   /** Make every call fail as an unreachable backend does (fetch rejects with a TypeError). */
@@ -153,6 +155,7 @@ export function makeFakePostern(): FakePostern {
     authorizations: [],
     autoReply: undefined,
     greekReply: undefined,
+    kindReplies: {},
     licensed: true,
     down: false,
     answer(reply) {
@@ -210,7 +213,9 @@ export function makeFakePostern(): FakePostern {
       fake.received.push(opened);
       unanswered.push({ txid, from: pubkey, kind: opened.grist.kind });
       const greek = fake.greekReply !== undefined && (opened.input as { lang?: unknown } | undefined)?.lang === 'el';
-      if (fake.autoReply) fake.answer(greek && fake.greekReply ? fake.greekReply : fake.autoReply);
+      const byKind = fake.kindReplies[opened.grist.kind];
+      if (byKind) fake.answer(byKind);
+      else if (fake.autoReply) fake.answer(greek && fake.greekReply ? fake.greekReply : fake.autoReply);
       return json(201, { txid, seq: records.length });
     }
     if (url.pathname === '/api/messages' && method === 'GET') {

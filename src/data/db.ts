@@ -78,6 +78,10 @@ export interface TalkTurn {
   studyWayLine?: string;
   /** the pronunciation guide the answer carried for a Hebrew word (mw-5r3p30.98, src/script/HebrewGuide.tsx HebrewSoundGuide) */
   guide?: HebrewSounds;
+  /** the tutor's one-line summary of an ask the app cannot meet; its presence offers Send this to the makers (src/Talk.tsx FeedbackOffer) */
+  feedbackOffer?: string;
+  /** set once the mill has the feedback this offer made: the offer then reads Sent */
+  feedbackSent?: boolean;
 }
 
 /** How a Hebrew word is said, as the tutor's sound answer gave it: the word, its syllables in Hebrew letters in reading order and how each sounds in Latin letters. */

@@ -50,6 +50,13 @@
       "minLength": 1,
       "maxLength": 100
     },
+    "feedback_offer": {
+      "description": "Only when he asked for something Lampas does not do (to work with another app, a setting it does not have, a change to a screen): the one-line summary of his ask, in plain English and his terms, at most 200 characters. The app shows it as a Send this to the makers button under the answer and sends nothing unless he taps. Never a promise that the change will happen. Leave it out for anything else.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary"],
+      "properties": { "summary": { "description": "One line saying what he wants.", "type": "string", "minLength": 1, "maxLength": 200 } }
+    },
     "links": {
       "description": "Links the app turns into buttons that open a word or a verse in the reader's own study resources (lexicons, a Bible); he sees only the ones he has switched on. At most three. Leave it out when no lexicon or verse would help him.",
       "type": "array",
