@@ -8,6 +8,8 @@ import { THEMES } from '../appearance/themes';
 import {
   getGoal,
   getGrammarApproach,
+  getGrammarMove,
+  getPickerGrammar,
   getGreekPronunciation,
   getLayout,
   getLogosBible,
@@ -22,6 +24,8 @@ import {
   getWeaveGrammar,
   setGoal,
   setGrammarApproach,
+  setGrammarMove,
+  setPickerGrammar,
   setGreekPronunciation,
   setLayout,
   setLogosBible,
@@ -33,6 +37,8 @@ import {
   setVoice,
   setWeave,
   setWeaveGrammar,
+  type GrammarMove,
+  type PickerGrammar,
   type ReadingLayout,
   type SectionHeadings,
   type Tips,
@@ -274,6 +280,33 @@ export const SETTINGS: readonly SettingEntry[] = [
       const approach = approachOf(value)?.id ?? DEFAULT_APPROACH;
       await setGrammarApproach(approach);
       publish({ kind: 'approach-changed', approach });
+    },
+  ),
+  choice(
+    'pickerGrammar',
+    'New words at',
+    'Offer only new words whose form in the chapter uses grammar you have at this level.',
+    [
+      { value: 'solid', label: 'Solid grammar' },
+      { value: 'frontier', label: 'Frontier grammar' },
+    ],
+    getPickerGrammar,
+    async (value) => {
+      await setPickerGrammar(value as PickerGrammar);
+    },
+  ),
+  choice(
+    'grammarMove',
+    'Move it',
+    'Whether the app moves New words at by how your grammar reviews go: Ask offers, Auto moves and says so, Off never.',
+    [
+      { value: 'ask', label: 'Ask' },
+      { value: 'auto', label: 'Auto' },
+      { value: 'off', label: 'Off' },
+    ],
+    getGrammarMove,
+    async (value) => {
+      await setGrammarMove(value as GrammarMove);
     },
   ),
   ...voiceEntries,

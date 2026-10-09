@@ -9,15 +9,19 @@ import { type Random } from './data/quiz';
 import { navigate } from './nav/route';
 import { ItemCard } from './review/ItemCard';
 import { KINDS, kindOf, type ReviewItem } from './review/kinds';
+import { makeMove, moveQuestion, moveSaid, pendingMove, type PendingMove } from './review/pickerMove';
 import { drawReviewRound } from './review/round';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { focusOnMount } from './ui/focus';
+
+/** What the end card says of New words at (mw-hqd5bz.11): nothing, an offer to move it, or that it was moved. */
+type MoveCard = { status: 'none' } | { status: 'offer'; move: PendingMove } | { status: 'said'; move: PendingMove };
 
 type Round =
   | { status: 'start' }
   | { status: 'loading' }
   | { status: 'running'; items: ReviewItem[]; index: number; picked: string | null; right: number }
-  | { status: 'done'; total: number; right: number; tomorrow: number; later: number };
+  | { status: 'done'; total: number; right: number; tomorrow: number; later: number; move: MoveCard };
 
 /** 'N come back tomorrow, M later', from the schedule rows the round's items now have. */
 async function whatComesBack(items: ReviewItem[]): Promise<{ tomorrow: number; later: number }> {
@@ -27,10 +31,49 @@ async function whatComesBack(items: ReviewItem[]): Promise<{ tomorrow: number; l
   return { tomorrow, later: rows.length - tomorrow };
 }
 
+/** The move the round's grammar answers call for: made at once when Move it is Auto, else offered. None when the round asked no grammar. */
+async function moveAfter(items: ReviewItem[]): Promise<MoveCard> {
+  if (!items.some((i) => i.kind === 'grammar')) return { status: 'none' };
+  const move = await pendingMove();
+  if (!move) return { status: 'none' };
+  if (move.how === 'ask') return { status: 'offer', move };
+  await makeMove(move);
+  return { status: 'said', move };
+}
+
 /** 'Due today' counts, a kind with none left out: '2 ideas, 3 words'; '0 words' when nothing is due. */
 function dueText(counts: number[]): string {
   const parts = KINDS.flatMap((k, i) => (counts[i] > 0 ? [k.count(counts[i])] : []));
   return parts.length > 0 ? parts.join(', ') : (KINDS.find((k) => k.kind === 'word') ?? KINDS[0]).count(0);
+}
+
+/** The end card's line about New words at: the offer with Yes · Not now, or what was done. */
+function MoveNote({ card, onChange }: { card: MoveCard; onChange: (card: MoveCard) => void }) {
+  if (card.status === 'none') return null;
+  if (card.status === 'said') {
+    return (
+      <p data-testid="move-said" className="mt-4 text-lg">
+        {moveSaid(card.move.to)}
+      </p>
+    );
+  }
+  const yes = async () => {
+    await makeMove(card.move);
+    onChange({ status: 'said', move: card.move });
+  };
+  return (
+    <div data-testid="move-offer" className="mt-4 rounded-xl border border-line p-4">
+      <p className="text-lg font-medium">{moveQuestion(card.move.to)}</p>
+      <div className="mt-3 grid grid-cols-2 gap-3">
+        <button type="button" onClick={() => void yes()} className="min-h-12 rounded-xl bg-accent text-lg font-medium text-accent-fg">
+          Yes
+        </button>
+        <button type="button" onClick={() => onChange({ status: 'none' })} className="min-h-12 rounded-xl border border-line text-lg font-medium">
+          Not now
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
@@ -86,6 +129,7 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
           <p data-testid="comes-back" className="mt-4 text-lg">
             {round.tomorrow} {round.tomorrow === 1 ? 'comes' : 'come'} back tomorrow, {round.later} later
           </p>
+          <MoveNote card={round.move} onChange={(move) => setRound({ ...round, move })} />
           {stillDue ? <p className="mt-2 text-muted">{stillDue} more {stillDue === 1 ? 'is' : 'are'} still due.</p> : null}
           <div className="mt-6 grid grid-cols-1 gap-3">
             {stillDue ? (
@@ -120,7 +164,8 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
   const next = async () => {
     if (!last) return setRound({ ...round, index: index + 1, picked: null });
     await writing.current;
-    setRound({ status: 'done', total: items.length, right, ...(await whatComesBack(items)) });
+    const back = await whatComesBack(items);
+    setRound({ status: 'done', total: items.length, right, ...back, move: await moveAfter(items) });
   };
   return (
     <>

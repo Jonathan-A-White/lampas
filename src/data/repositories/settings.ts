@@ -1,7 +1,8 @@
 // src/data/repositories/settings.ts — what he has chosen. A repository owns its transactions.
 import { approachOf, DEFAULT_APPROACH } from '../../approaches';
 import { db } from '../db';
-import type { WeaveGrammar } from '../grammar/formLevel';
+import type { PickerGrammar, WeaveGrammar } from '../grammar/formLevel';
+import { MOVE_WINDOW, type GrammarMove } from '../grammar/move';
 import { DEFAULT_LAYOUT, isLayout, type ReadingLayout } from '../../layout/layouts';
 import { DEFAULT_TEXT_PERCENT, normaliseTextPercent } from '../../appearance/textSizes';
 import { DEFAULT_THEME, isTheme, type Theme } from '../../appearance/themes';
@@ -24,7 +25,7 @@ export async function setReaderView(view: ReaderView): Promise<void> {
 }
 
 export type Weave = 'off' | 'solid' | 'solid+learning';
-export type { WeaveGrammar };
+export type { GrammarMove, PickerGrammar, WeaveGrammar };
 
 const WEAVE_KEY = 'weave';
 
@@ -192,4 +193,49 @@ export async function getGrammarApproach(): Promise<string> {
 
 export async function setGrammarApproach(id: string): Promise<void> {
   await db.settings.put({ key: APPROACH_KEY, value: id });
+}
+
+const PICKER_GRAMMAR_KEY = 'pickerGrammar';
+
+/** The grammar level new words are offered at (mw-hqd5bz.11); Frontier grammar when he has not chosen or the saved value is not one of the two. */
+export async function getPickerGrammar(): Promise<PickerGrammar> {
+  const row = await db.settings.get(PICKER_GRAMMAR_KEY);
+  return row?.value === 'solid' ? 'solid' : 'frontier';
+}
+
+export async function setPickerGrammar(level: PickerGrammar): Promise<void> {
+  await db.settings.put({ key: PICKER_GRAMMAR_KEY, value: level });
+}
+
+const GRAMMAR_MOVE_KEY = 'grammarMove';
+
+/** Whether the app moves New words at by how his grammar reviews go; Ask when he has not chosen or the saved value is not one of the three. */
+export async function getGrammarMove(): Promise<GrammarMove> {
+  const row = await db.settings.get(GRAMMAR_MOVE_KEY);
+  return row?.value === 'auto' || row?.value === 'off' ? row.value : 'ask';
+}
+
+export async function setGrammarMove(move: GrammarMove): Promise<void> {
+  await db.settings.put({ key: GRAMMAR_MOVE_KEY, value: move });
+}
+
+const GRAMMAR_ANSWERS_KEY = 'grammarAnswers';
+
+/** His last grammar answers in Review, oldest first, at most MOVE_WINDOW (kept in the settings store as a string of 1 and 0, no table). */
+export async function getGrammarAnswers(): Promise<boolean[]> {
+  const row = await db.settings.get(GRAMMAR_ANSWERS_KEY);
+  return typeof row?.value === 'string' ? [...row.value].filter((c) => c === '1' || c === '0').map((c) => c === '1').slice(-MOVE_WINDOW) : [];
+}
+
+/** Adds one answer to the ring of the last MOVE_WINDOW. */
+export async function pushGrammarAnswer(right: boolean): Promise<void> {
+  await db.transaction('rw', db.settings, async () => {
+    const kept = (await getGrammarAnswers()).concat(right).slice(-MOVE_WINDOW);
+    await db.settings.put({ key: GRAMMAR_ANSWERS_KEY, value: kept.map((r) => (r ? '1' : '0')).join('') });
+  });
+}
+
+/** Forgets the ring: the answers given at one level do not judge the next. */
+export async function clearGrammarAnswers(): Promise<void> {
+  await db.settings.delete(GRAMMAR_ANSWERS_KEY);
 }

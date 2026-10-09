@@ -3,7 +3,11 @@
 export { addImportedWords, addWordToLearn, wordIsListed, listLearningLemmas, listSolidHeadwords, listSolidLemmas, listWords, seedWordsIfFirstOpen, setWordState } from './words';
 export type { Word, WordState } from './words';
 export {
+  clearGrammarAnswers,
   getGoal,
+  getGrammarAnswers,
+  getGrammarMove,
+  getPickerGrammar,
   getGrammarApproach,
   getGreekPronunciation,
   getLayout,
@@ -18,7 +22,10 @@ export {
   getVoice,
   getWeave,
   getWeaveGrammar,
+  pushGrammarAnswer,
   setGoal,
+  setGrammarMove,
+  setPickerGrammar,
   setGrammarApproach,
   setGreekPronunciation,
   setLayout,
@@ -33,7 +40,7 @@ export {
   setWeave,
   setWeaveGrammar,
 } from './settings';
-export type { ReaderView, ReadingLayout, SectionHeadings, Tips, VoiceLanguage, Weave, WeaveGrammar } from './settings';
+export type { GrammarMove, PickerGrammar, ReaderView, ReadingLayout, SectionHeadings, Tips, VoiceLanguage, Weave, WeaveGrammar } from './settings';
 export { listResults, recordAnswer } from './results';
 export type { TestResult } from './results';
 export { countDue, ensureScheduled, listDue, recordReview, reviewsOf, seedScheduleIfFirstOpen } from './reviews';

@@ -20,9 +20,13 @@ import {
   getVoice,
   getWeave,
   getWeaveGrammar,
+  getGrammarMove,
+  getPickerGrammar,
   setResourceOn,
   setResourceOption,
   type ReadingLayout,
+  type GrammarMove,
+  type PickerGrammar,
   type SectionHeadings,
   type Tips,
   type VoiceLanguage,
@@ -137,6 +141,50 @@ function WeaveChoice({ weave, grammar }: { weave: Weave; grammar: WeaveGrammar }
         current={grammar}
         options={[['any', 'Any'], ['solid', 'Solid'], ['solid+frontier', '+ Frontier']]}
         hint="Of the words that stand in Greek, keep only the forms whose grammar you have at this level: Any, Solid, or Solid and frontier."
+      />
+    </>
+  );
+}
+
+/** One row of New words: the setting's label above, its chips on one line (never wrapped), the hint beneath. `name` is the setting's label in the registry. */
+function NewWordsRow({ name, hint, current, options, settingKey }: { name: string; hint: string; current: string; options: [string, string][]; settingKey: 'pickerGrammar' | 'grammarMove' }) {
+  return (
+    <div className="pb-3">
+      <h3 className="pb-1 text-base font-medium">{name}</h3>
+      <div role="group" aria-label={name} className="inline-flex max-w-full flex-nowrap rounded-xl border border-line p-0.5">
+        {options.map(([value, text]) => (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={current === value}
+            onClick={() => void writeSetting(settingKey, value)}
+            className={`min-h-12 min-w-12 whitespace-nowrap rounded-lg px-3 text-base font-medium ${current === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+          >
+            {text}
+          </button>
+        ))}
+      </div>
+      <p className="pt-1 text-base text-muted">{hint}</p>
+    </div>
+  );
+}
+
+function NewWordsChoice({ level, move }: { level: PickerGrammar; move: GrammarMove }) {
+  return (
+    <>
+      <NewWordsRow
+        name="New words at"
+        settingKey="pickerGrammar"
+        current={level}
+        options={[['solid', 'Solid grammar'], ['frontier', 'Frontier grammar']]}
+        hint="Offer only new words whose form in the chapter uses grammar you have at this level."
+      />
+      <NewWordsRow
+        name="Move it"
+        settingKey="grammarMove"
+        current={move}
+        options={[['ask', 'Ask'], ['auto', 'Auto'], ['off', 'Off']]}
+        hint="Whether the app moves New words at by how your grammar reviews go: Ask offers, Auto moves and says so, Off never."
       />
     </>
   );
@@ -629,6 +677,8 @@ export function SettingsScreen() {
   const rates = useLiveQuery(getSpeechRates, []);
   const weave = useLiveQuery(getWeave, []);
   const weaveGrammar = useLiveQuery(getWeaveGrammar, []);
+  const pickerGrammar = useLiveQuery(getPickerGrammar, []);
+  const grammarMove = useLiveQuery(getGrammarMove, []);
   const layout = useLiveQuery(getLayout, []);
   const headings = useLiveQuery(getSectionHeadings, []);
   const tips = useLiveQuery(getTips, []);
@@ -659,6 +709,9 @@ export function SettingsScreen() {
           </Section>
           <Section title="Weave" hint="In the English view, show the Greek of your words in place of their English.">
             {weave && weaveGrammar ? <WeaveChoice weave={weave} grammar={weaveGrammar} /> : null}
+          </Section>
+          <Section title="New words" hint="Which new words Lampas offers to learn, by the grammar of their form in the chapter, and whether it moves that level for you.">
+            {pickerGrammar && grammarMove ? <NewWordsChoice level={pickerGrammar} move={grammarMove} /> : null}
           </Section>
           <Section title="Goal" hint="The passage you are working toward: a whole book, one chapter or a single verse.">
             {goal !== undefined ? <GoalPickers saved={goal} /> : null}

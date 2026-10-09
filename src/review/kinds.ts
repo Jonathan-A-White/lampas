@@ -14,6 +14,7 @@ import { chosenPronunciation, speakWord } from '../speech/greek';
 import {
   getGoal,
   listWords,
+  pushGrammarAnswer,
   recordAnswer,
   recordGrammarAnswer,
   reviewsOf,
@@ -144,7 +145,10 @@ export const GRAMMAR: ReviewKind = {
     if (item.kind === 'grammar' && item.question.say) speakWord(item.question.say, 'greek');
   },
   record: async (item, right) => {
-    if (item.kind === 'grammar') await recordGrammarAnswer(item.id, right);
+    if (item.kind !== 'grammar') return;
+    await recordGrammarAnswer(item.id, right);
+    // the ring of the last 20 grammar answers that decides whether New words at moves (src/review/pickerMove.ts)
+    await pushGrammarAnswer(right);
   },
 };
 

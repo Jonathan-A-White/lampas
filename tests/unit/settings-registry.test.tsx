@@ -32,6 +32,8 @@ describe('the registry lists every Settings row', () => {
     await screen.findByRole('radiogroup', { name: 'Greek pronunciation' });
     await screen.findByRole('group', { name: 'Weave' });
     await screen.findByRole('group', { name: 'Grammar' });
+    await screen.findByRole('group', { name: 'New words at' });
+    await screen.findByRole('group', { name: 'Move it' });
     await screen.findByRole('group', { name: 'Goal' });
     await screen.findByRole('radiogroup', { name: 'Grammar approach' });
     await screen.findByRole('group', { name: 'Bible in Logos' });
@@ -50,7 +52,7 @@ describe('the registry lists every Settings row', () => {
   it('gives every entry a distinct key, a label, a hint, and the values it allows', () => {
     expect(new Set(SETTINGS.map((s) => s.key)).size).toBe(SETTINGS.length);
     expect(SETTINGS.map((s) => s.key).sort()).toEqual(
-      ['englishRate', 'englishVoice', 'goal', 'grammarApproach', 'greekPronunciation', 'greekRate', 'greekVoice', 'layout', 'logosBible', 'sectionHeadings', 'textSize', 'theme', 'tips', 'weave', 'weaveGrammar'],
+      ['englishRate', 'englishVoice', 'goal', 'grammarApproach', 'grammarMove', 'greekPronunciation', 'greekRate', 'greekVoice', 'layout', 'logosBible', 'pickerGrammar', 'sectionHeadings', 'textSize', 'theme', 'tips', 'weave', 'weaveGrammar'],
     );
     for (const s of SETTINGS) {
       expect(s.label).not.toBe('');
@@ -207,6 +209,8 @@ describe('currentSettings', () => {
       greekPronunciation: 'modern',
       goal: '',
       grammarApproach: 'bma-tutor',
+      pickerGrammar: 'frontier',
+      grammarMove: 'ask',
       logosBible: 'LLS:LGCYSTNDRDBBLSB',
     });
     await applyChanges([{ key: 'greekRate', value: 0.8 }, { key: 'theme', value: 'dark' }]);

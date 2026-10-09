@@ -102,6 +102,18 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
+            "properties": { "key": { "const": "pickerGrammar" }, "value": { "type": "string", "enum": ["solid", "frontier"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "grammarMove" }, "value": { "type": "string", "enum": ["ask", "auto", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
             "properties": { "key": { "const": "englishVoice" }, "value": { "type": "string", "enum": ["default"] } }
           },
           {
