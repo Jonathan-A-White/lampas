@@ -15,7 +15,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech } from '../../tests/support/fake-speech';
-import { makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, TIMED_READING_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 
 afterAll(() => {
   cleanup();
@@ -116,6 +116,17 @@ async function readVerse28(): Promise<void> {
   ]);
   await waitFor(() => expect(panel().querySelector('[data-reading-result]')).not.toBeNull());
 }
+
+
+/** The marked word's own span: its word button, its speaker and, with times, its Me button. */
+const markSpan = (word: string): HTMLElement => {
+  const mark = Array.from(panel().querySelectorAll<HTMLElement>('[data-fix]')).find((m) => m.textContent === word);
+  expect(mark, `a marked word ${word}`).toBeDefined();
+  return (mark as HTMLElement).parentElement as HTMLElement;
+};
+/** The button in a marked word's span with this visible text ('Me' or 'Stop'), or null. */
+const meButton = (word: string, text: string): HTMLElement | null =>
+  Array.from(markSpan(word).querySelectorAll<HTMLElement>('button')).find((b) => b.textContent === text) ?? null;
 
 const versionNumber = () => screen.getByTestId('build-version');
 const settingsGroup = () => screen.queryByRole('group', { name: 'Developer mode' });
@@ -263,5 +274,77 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(within(group).getByRole('button', { name: value, exact: true }));
     });
     Then('the switch {string} reads {string}', switchIs);
+  });
+
+  const timedGiven = 'Lampas is opened on Romans 8 with a reading check he has just made, the mill timing {string} from {number} to {number} seconds and not {string}';
+  const timedStart = async () => {
+    await start('');
+    fake.autoReply = { status: 'answered', answer: TIMED_READING_ANSWER };
+    await readVerse28();
+  };
+  const hasMe = async (_: unknown, word: string, speaker: string) => {
+    await waitFor(() => expect(markSpan(word)).toBeDefined());
+    expect(within(markSpan(word)).getByRole('button', { name: speaker, exact: true })).toBeVisible();
+    expect(meButton(word, 'Me')).not.toBeNull();
+    // Me sits right after the speaker, in the same span
+    const buttons = Array.from(markSpan(word).querySelectorAll('button'));
+    expect(buttons.map((b) => b.textContent)).toEqual([word, '', 'Me']);
+  };
+  const hasNoMe = async (_: unknown, word: string, speaker: string) => {
+    await waitFor(() => expect(markSpan(word)).toBeDefined());
+    expect(within(markSpan(word)).getByRole('button', { name: speaker, exact: true })).toBeVisible();
+    expect(meButton(word, 'Me')).toBeNull();
+  };
+  const tapBeside = async (_: unknown, text: string, word: string) => {
+    const button = meButton(word, text);
+    expect(button, `${text} beside ${word}`).not.toBeNull();
+    await user.click(button as HTMLElement);
+  };
+  /** the audio element is paused, and the word's button reads Me again */
+  const stoppedAgain = async (_: unknown, word: string) => {
+    await waitFor(() => expect(meButton(word, 'Me')).not.toBeNull());
+    expect(paused).toContain(audio());
+  };
+
+  Scenario('A flagged word the mill timed has Me beside its speaker, and one it did not time has none', ({ Given, Then, And }) => {
+    Given(timedGiven, timedStart);
+    Then('{string} is marked with its speaker {string} and {string} right beside it', (ctx, word: string, speaker: string) => hasMe(ctx, word, speaker));
+    And('{string} is marked with its speaker {string} and no {string}', (ctx, word: string, speaker: string) => hasNoMe(ctx, word, speaker));
+  });
+
+  Scenario('Me plays only the clip of that word, from its start to its end', ({ Given, When, Then, And }) => {
+    Given(timedGiven, timedStart);
+    When('he taps {string} beside {string}', tapBeside);
+    Then('the audio element plays the recording from {number} seconds', async (_, from: number) => {
+      await waitFor(() => expect(played).toHaveLength(1));
+      expect(played[0]).toBe(audio());
+      expect(audio()?.currentTime).toBeCloseTo(from);
+      expect(urls.get(audio()?.getAttribute('src') ?? '')?.type).toBe('audio/webm');
+    });
+    And('the button beside {string} now says {string}', async (_, word: string, text: string) => {
+      await waitFor(() => expect(meButton(word, text)).not.toBeNull());
+    });
+    When('the recording reaches {number} seconds', async (_, at: number) => {
+      const element = audio() as HTMLAudioElement;
+      expect(paused).not.toContain(element);
+      element.currentTime = at;
+    });
+    Then('the audio element is paused and the button beside {string} says {string}', (ctx, word: string) => stoppedAgain(ctx, word));
+  });
+
+  Scenario('Me can be stopped before the word ends', ({ Given, When, Then, And }) => {
+    Given(timedGiven, timedStart);
+    When('he taps {string} beside {string}', tapBeside);
+    And('he taps {string} beside {string}', tapBeside);
+    Then('the audio element is paused and the button beside {string} says {string}', (ctx, word: string) => stoppedAgain(ctx, word));
+  });
+
+  Scenario('A reading with no clip has no Me, even for a timed word', ({ Given, Then }) => {
+    Given('Lampas is opened on Romans 8 with a reading of verse 28 kept with {string} timed from {number} to {number} seconds and no clip', async (_, word: string, from: number, to: number) => {
+      await start('');
+      await keepVerseReading('rom.8.28', 'some-to-fix', [{ word, index: 7, chunks: ['to', 'geth', 'er'], tip: 'Say the th softly.', start: from, end: to }], 'Nearly there.');
+      await openReadingCheck();
+    });
+    Then('{string} is marked with its speaker {string} and no {string}', (ctx, word: string, speaker: string) => hasNoMe(ctx, word, speaker));
   });
 });

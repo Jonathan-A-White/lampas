@@ -43,3 +43,26 @@ Feature: Play my reading back, and Developer mode
     Then Settings has the switch "Developer mode" set to "On"
     When he sets "Developer mode" to "Off"
     Then the switch "Developer mode" reads "Off"
+
+  Scenario: A flagged word the mill timed has Me beside its speaker, and one it did not time has none
+    Given Lampas is opened on Romans 8 with a reading check he has just made, the mill timing "together" from 1.2 to 1.7 seconds and not "purpose"
+    Then "together" is marked with its speaker "Hear together" and "Me" right beside it
+    And "purpose" is marked with its speaker "Hear purpose" and no "Me"
+
+  Scenario: Me plays only the clip of that word, from its start to its end
+    Given Lampas is opened on Romans 8 with a reading check he has just made, the mill timing "together" from 1.2 to 1.7 seconds and not "purpose"
+    When he taps "Me" beside "together"
+    Then the audio element plays the recording from 1.2 seconds
+    And the button beside "together" now says "Stop"
+    When the recording reaches 1.7 seconds
+    Then the audio element is paused and the button beside "together" says "Me"
+
+  Scenario: Me can be stopped before the word ends
+    Given Lampas is opened on Romans 8 with a reading check he has just made, the mill timing "together" from 1.2 to 1.7 seconds and not "purpose"
+    When he taps "Me" beside "together"
+    And he taps "Stop" beside "together"
+    Then the audio element is paused and the button beside "together" says "Me"
+
+  Scenario: A reading with no clip has no Me, even for a timed word
+    Given Lampas is opened on Romans 8 with a reading of verse 28 kept with "together" timed from 1.2 to 1.7 seconds and no clip
+    Then "together" is marked with its speaker "Hear together" and no "Me"

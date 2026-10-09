@@ -137,6 +137,52 @@ describe('the optional say respelling of a focus word (mw-5r3p30.101)', () => {
   });
 });
 
+describe('the optional start and end of a focus word (mw-5r3p30.96)', () => {
+  const fix = { word: 'together', index: 7, chunks: ['to', 'geth', 'er'], tip: 'Say the th softly.' };
+  const answer = (word: Record<string, unknown>) => ({ verdict: 'some-to-fix', focus_words: [word], note: 'Nearly there.' });
+  const properties = ((schema.properties as Record<string, { items: { properties: Record<string, unknown>; required: string[] } }>).focus_words.items);
+
+  it('gives focus words an optional start and end in the schema, neither required', () => {
+    expect(properties.properties).toHaveProperty('start');
+    expect(properties.properties).toHaveProperty('end');
+    expect(properties.required).not.toContain('start');
+    expect(properties.required).not.toContain('end');
+  });
+
+  it('accepts a word with both times, and a word with neither', () => {
+    const timed = answer({ ...fix, start: 1.25, end: 1.75 });
+    expect(validate(timed, schema as Schema)).toEqual([]);
+    expect(isVerseReadAnswer(timed)).toBe(true);
+    expect(isVerseReadAnswer(answer({ ...fix, say: 'together', start: 0, end: 0.4 }))).toBe(true);
+    expect(isVerseReadAnswer(answer(fix))).toBe(true);
+  });
+
+  it.each([
+    ['a start with no end', { start: 1 }],
+    ['an end with no start', { end: 2 }],
+    ['an end that is not after the start', { start: 2, end: 2 }],
+    ['a negative start', { start: -1, end: 1 }],
+    ['times that are not numbers', { start: '1', end: '2' }],
+  ])('refuses %s on the phone', (_, times) => {
+    expect(isVerseReadAnswer(answer({ ...fix, ...times }))).toBe(false);
+  });
+
+  it.each([
+    ['a negative start', { start: -1, end: 1 }],
+    ['times that are not numbers', { start: '1', end: '2' }],
+  ])('refuses %s in the schema', (_, times) => {
+    expect(validate(answer({ ...fix, ...times }), schema as Schema)).not.toEqual([]);
+  });
+
+  it('tells the model to copy each word\'s start and end from reading_result, and to leave them out when the scorer gave none', () => {
+    const text = readFileSync(grind.instructions as string, 'utf8');
+    expect(text).toContain('`start`');
+    expect(text).toContain('`end`');
+    expect(text).toMatch(/seconds/);
+    expect(text).toMatch(/leave (them|both) out/i);
+  });
+});
+
 describe('quotes in the note and the tip', () => {
   it('tells the model to write plain quotes, never a backslash before one', () => {
     const text = readFileSync(grind.instructions as string, 'utf8');
