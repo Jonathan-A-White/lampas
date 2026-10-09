@@ -60,6 +60,22 @@ beyond `loadChapter`.
   solid, a learning word is frontier, a dropped or unlisted word is not yet; an idea with no level is not yet. `Level`
   (`'solid' | 'frontier' | 'notYet'`) is exported from `needs.ts` until the levels story moves it to its repository.
 
+## Questions that drill an idea
+
+`src/data/grammar/questions.ts` (pure, seeded like `quiz.ts`) turns an idea and a passage into one `GrammarQuestion`; `buildIdeaQuestion(idea, passage, random)` always gives one. The passage is the goal's chapters, or the chapter the Reader has open when there is no goal (a whole-book goal reads at most six of its chapters). The kinds, and which ideas get them:
+
+| kind | what it asks | ideas |
+|---|---|---|
+| `ending` | the form with its ending blanked (`ἀρχ_`), four endings; the wrong three are the endings of other inflected words of the same part of speech in the passage (the common endings when it has too few). The stem is what the lemma and the form share, a stem vowel goes to the ending | any word idea whose forms share a stem with their lemma |
+| `tap-form` | the Greek words of one verse as buttons: 'Tap the dative article'. The prompt names the fewest terms that leave exactly one word of the verse, and the word's text is not repeated in the verse | any word idea the passage has a form of |
+| `letter` | four glyphs: by name or by sound (a letter that sounds like the right one is never offered), vowel pairs, consonant pairs, the iota under a letter, the marks | a letter, the alphabet, `diphthongs`, `consonant-pairs`, `iota-subscript`, `punctuation` |
+| `sound` | Hold to hear says a letter (`speakWord`), four glyphs | a letter, the alphabet |
+| `stress` | the syllables of a word from the chosen pronunciation's respell, the stressed one right | `accents` |
+| `syllables`, `breathing` | how many syllables; rough or smooth | `syllables`, `breathings` |
+| `concept` | which idea this text is, four titles | only an idea the passage has no form of |
+
+A word idea draws `ending` or `tap-form` by its first random draw and falls back to the other. Review (`src/review/kinds.ts` GRAMMAR, kind `grammar`, item id the idea id) draws the due ideas before the due words (PROVISIONAL), asks each as multiple choice below `FLASHCARD_STEP` and as a flashcard (the prompt and the form, Show reveals the answer, I knew it / Not yet) from it up, and records through `recordGrammarAnswer`. `grammarRandom(random)` is the random a round's grammar questions use: a test finds the seed that gives the question it needs through it.
+
 ## One choice to know
 
 Person and number (`person-1st` ... `number-plural`) sit at the start of the `pronouns` tier, not the `nouns` tier: I, you,
