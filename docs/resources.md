@@ -50,8 +50,8 @@ and Accordance may have no Android app) and `Turn off <App>` (the resource goes 
 whether Logos or Accordance is there when he turns it On in Settings, not at the word sheet. Turning an app On opens the app once by its own
 scheme (the resource's `probe`: `logos4:Guide;t=Bible%20Word%20Study`, `accord://`; UNVERIFIED on a device, as the links are) and waits
 (`checkApp` in `src/resources/openApp.ts`, the same 1.5 s and the same sign as the tap on a Study link). If the page goes away (hidden, blurred or left) the app
-opened: the switch stays On and the next return to Lampas shows "Logos found". If the page stays in front, the switch goes back Off and the row says
-"<App> isn't on this phone" with `Install <App>` (`storeUrl`: the Play Store, or the App Store on an iPhone or iPad) right there. Turning an app Off, and a
+opened: the switch stays On and the next return to Lampas shows "Logos found". If the page stays in front, the switch goes back Off, and an Off row shows nothing more
+than its name, its one-line help and the switch (mw-5r3p30.106; the "isn't on this phone" line and Install <App> are no longer drawn there). Turning an app Off, and a
 resource of kind `'number'` (Strong's), are not checked. The word sheet's Study row lists only the resources that are On, so a missing app is caught
 in Settings. The "isn't on this phone" sheet at the word sheet stays only as the fallback for an app removed after it was found. A new resource of kind
 `'app'` gives a `probe` to get the check.

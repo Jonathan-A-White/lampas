@@ -52,7 +52,6 @@ import { speaksLanguage, useVoices, voiceKey } from './speech/greek';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from './speech/languages';
 import { SearchableList } from './ui/SearchableList';
 import { RESOURCES, tickedOf, type ResourceChoices, type StudyResource } from './resources';
-import { storeUrl } from './resources/appStore';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from './resources/logosBible';
 import { checkApp } from './resources/openApp';
 import { PRONUNCIATIONS, pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
@@ -129,6 +128,7 @@ function WeaveRow({ label, name, hint, current, options, settingKey }: { label: 
   );
 }
 
+/** The Grammar row is a detail of the Weave: it is drawn only while the Weave is not Off. */
 function WeaveChoice({ weave, grammar }: { weave: Weave; grammar: WeaveGrammar }) {
   return (
     <>
@@ -140,14 +140,16 @@ function WeaveChoice({ weave, grammar }: { weave: Weave; grammar: WeaveGrammar }
         options={[['off', 'Off'], ['solid', 'Solid'], ['solid+learning', '+ Learning']]}
         hint="Which words stand in Greek: Solid ones, or + Learning too, with their English beneath in small grey until they turn solid."
       />
-      <WeaveRow
-        label="Grammar"
-        name="Grammar"
-        settingKey="weaveGrammar"
-        current={grammar}
-        options={[['any', 'Any'], ['solid', 'Solid'], ['solid+frontier', '+ Frontier']]}
-        hint="Of the words that stand in Greek, keep only the forms whose grammar you have at this level: Any, Solid, or Solid and frontier."
-      />
+      {weave === 'off' ? null : (
+        <WeaveRow
+          label="Grammar"
+          name="Grammar"
+          settingKey="weaveGrammar"
+          current={grammar}
+          options={[['any', 'Any'], ['solid', 'Solid'], ['solid+frontier', '+ Frontier']]}
+          hint="Of the words that stand in Greek, keep only the forms whose grammar you have at this level: Any, Solid, or Solid and frontier."
+        />
+      )}
     </>
   );
 }
@@ -180,6 +182,7 @@ function NewWordsRow({ name, hint, current, options, settingKey, note }: { name:
   );
 }
 
+/** New words at and Move it are details of New words a day: they are drawn only while it is not Off. */
 function NewWordsChoice({ level, move, perDay, pace }: { level: PickerGrammar; move: GrammarMove; perDay: NewWordsADay; pace: Pace | undefined }) {
   return (
     <>
@@ -191,20 +194,24 @@ function NewWordsChoice({ level, move, perDay, pace }: { level: PickerGrammar; m
         note={pace ? paceNote(pace.reason) : null}
         hint="From the chapter you are reading, most common first"
       />
-      <NewWordsRow
-        name="New words at"
-        settingKey="pickerGrammar"
-        current={level}
-        options={[['solid', 'Solid grammar'], ['frontier', 'Frontier grammar']]}
-        hint="Offer only new words whose form in the chapter uses grammar you have at this level."
-      />
-      <NewWordsRow
-        name="Move it"
-        settingKey="grammarMove"
-        current={move}
-        options={[['ask', 'Ask'], ['auto', 'Auto'], ['off', 'Off']]}
-        hint="Whether the app moves New words at by how your grammar reviews go: Ask offers, Auto moves and says so, Off never."
-      />
+      {perDay === 0 ? null : (
+        <>
+          <NewWordsRow
+            name="New words at"
+            settingKey="pickerGrammar"
+            current={level}
+            options={[['solid', 'Solid grammar'], ['frontier', 'Frontier grammar']]}
+            hint="Offer only new words whose form in the chapter uses grammar you have at this level."
+          />
+          <NewWordsRow
+            name="Move it"
+            settingKey="grammarMove"
+            current={move}
+            options={[['ask', 'Ask'], ['auto', 'Auto'], ['off', 'Off']]}
+            hint="Whether the app moves New words at by how your grammar reviews go: Ask offers, Auto moves and says so, Off never."
+          />
+        </>
+      )}
     </>
   );
 }
@@ -376,12 +383,12 @@ function ChoiceList({ resourceId, choices, ticked }: { resourceId: string; choic
   return <SearchableList label={choices.label} hint={choices.hint} noun="lexicon" items={choices.items} ticked={ticked} onToggle={toggle} />;
 }
 
-/** What the check of an app said when he last turned it On: still waiting for the phone, the app opened, or it is not on this phone. */
-type AppCheck = 'checking' | 'found' | 'missing' | null;
+/** What the check of an app said when he last turned it On: still waiting for the phone, or the app opened. An app that is not there turns the switch back Off, and a switch that is Off shows nothing of the app. */
+type AppCheck = 'checking' | 'found' | null;
 
 /** One study resource: its switch (a 44 px row), what it adds, and the field it asks for, if any (kept as he types).
- *  Turning an app On opens it once (openApp.ts checkApp): if the page goes away the app is there and stays On; if not, the switch goes back Off
- *  and the row says so, with Install, here and not at the word sheet. */
+ *  Turning an app On opens it once (openApp.ts checkApp): if the page goes away the app is there and stays On; if not, the switch goes back Off.
+ *  Only an On resource shows more than its row (mw-5r3p30.106): the check's line, its choices and its field. The typed field is kept in the store while hidden. */
 function ResourceRow({ resource, on, typed }: { resource: StudyResource; on: boolean; typed: string }) {
   const [value, setValue] = useState(typed);
   const [check, setCheck] = useState<AppCheck>(null);
@@ -399,7 +406,7 @@ function ResourceRow({ resource, on, typed }: { resource: StudyResource; on: boo
       onBack: () => setCheck('found'),
       onMissing: () => {
         void setResourceOn(resource.id, false);
-        setCheck('missing');
+        setCheck(null);
       },
     });
   };
@@ -421,49 +428,40 @@ function ResourceRow({ resource, on, typed }: { resource: StudyResource; on: boo
         </button>
       </div>
       <p className="text-sm text-muted">{resource.describe}</p>
-      {check === 'checking' ? (
-        <p role="status" className="pt-1 text-sm text-muted">{`Looking for ${resource.name} on this phone…`}</p>
-      ) : null}
-      {check === 'found' ? (
-        <p role="status" className="pt-1 text-base font-medium">{`${resource.name} found`}</p>
-      ) : null}
-      {check === 'missing' ? (
-        <div role="status" className="pt-1">
-          <p className="text-base font-medium">{`${resource.name} isn't on this phone`}</p>
-          <a
-            href={storeUrl(resource.name)}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-1 flex min-h-12 items-center justify-center rounded-xl bg-accent px-4 text-base font-medium text-accent-fg"
-          >
-            {`Install ${resource.name}`}
-          </a>
-        </div>
-      ) : null}
-      {on && resource.choices ? <ChoiceList resourceId={resource.id} choices={resource.choices} ticked={tickedOf(resource, typed)} /> : null}
-      {option ? (
-        <div className="mt-2">
-          <label className="block">
-            <span className="block text-base font-medium">{option.label}</span>
-            <input
-              type="text"
-              value={value}
-              placeholder={option.default}
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-              aria-describedby={`resource-${resource.id}-hint`}
-              onChange={(e) => {
-                setValue(e.target.value);
-                void setResourceOption(resource.id, e.target.value);
-              }}
-              className="mt-1 min-h-12 w-full rounded-lg border border-line bg-surface px-3 text-base text-fg"
-            />
-          </label>
-          <p id={`resource-${resource.id}-hint`} className="pt-1 text-sm text-muted">
-            {option.hint}
-          </p>
-        </div>
+      {on ? (
+        <>
+        {check === 'checking' ? (
+          <p role="status" className="pt-1 text-sm text-muted">{`Looking for ${resource.name} on this phone…`}</p>
+        ) : null}
+        {check === 'found' ? (
+          <p role="status" className="pt-1 text-base font-medium">{`${resource.name} found`}</p>
+        ) : null}
+        {resource.choices ? <ChoiceList resourceId={resource.id} choices={resource.choices} ticked={tickedOf(resource, typed)} /> : null}
+        {option ? (
+          <div className="mt-2">
+            <label className="block">
+              <span className="block text-base font-medium">{option.label}</span>
+              <input
+                type="text"
+                value={value}
+                placeholder={option.default}
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                aria-describedby={`resource-${resource.id}-hint`}
+                onChange={(e) => {
+                  setValue(e.target.value);
+                  void setResourceOption(resource.id, e.target.value);
+                }}
+                className="mt-1 min-h-12 w-full rounded-lg border border-line bg-surface px-3 text-base text-fg"
+              />
+            </label>
+            <p id={`resource-${resource.id}-hint`} className="pt-1 text-sm text-muted">
+              {option.hint}
+            </p>
+          </div>
+        ) : null}
+        </>
       ) : null}
     </div>
   );
@@ -789,9 +787,11 @@ export function SettingsScreen() {
               ? RESOURCES.map((r) => <ResourceRow key={r.id} resource={r} on={resources.on.includes(r.id)} typed={resources.options[r.id] ?? ''} />)
               : null}
           </section>
-          <Section title="Bible in Logos" hint="Lampas has no Old Testament text. Picking an Old Testament chapter opens it in Logos, in this Bible.">
-            {logosBible !== undefined ? <LogosBiblePicker saved={logosBible} /> : null}
-          </Section>
+          {resources?.on.includes('logos') ? (
+            <Section title="Bible in Logos" hint="Lampas has no Old Testament text. Picking an Old Testament chapter opens it in Logos, in this Bible.">
+              {logosBible !== undefined ? <LogosBiblePicker saved={logosBible} /> : null}
+            </Section>
+          ) : null}
           <Section title="Tips" hint="Once a day at most, when you open Lampas and are online, a small tip about something you have not tried. Off sends nothing.">
             {tips ? <TipsChoice tips={tips} /> : null}
           </Section>
