@@ -16,6 +16,8 @@ import { useHoldPress } from './ui/holdPress';
 import { useElapsed } from './ui/useElapsed';
 import { revealInScrollBox } from './ui/reveal';
 import { DROPPED_NOTE, TAP_HINT, type ReadState, type UseReadChecks } from './useReadChecks';
+import { referenceUrl } from './nav/links';
+import { LinkActions } from './ui/LinkActions';
 
 const CHUNK_JOINER = ' · ';
 
@@ -268,8 +270,10 @@ function Walk({ words, text, view, hold, recording, onDone }: { words: FixWord[]
 }
 
 /** The reading check for the selected verse. `hold` is the Read button's hold for this verse; `checks` has the states. */
-export function ReadCheckPanel({ verse, title, view, book, chapter, checks, hold, onRetry }: {
+export function ReadCheckPanel({ verse, text: shownText, title, view, book, chapter, checks, hold, onRetry }: {
   verse: Verse;
+  /** the verse as the reader draws it (the same component, so the view and the weave show alike); tappable as in the reader */
+  text: ReactNode;
   /** the chapter's title ('Romans 8'): the panel is headed by the verse's reference, title and number */
   title: string;
   view: 'english' | 'greek';
@@ -304,15 +308,18 @@ export function ReadCheckPanel({ verse, title, view, book, chapter, checks, hold
   const walking = reading !== undefined && walkFor === reading.when && !sent;
   return (
     <section ref={section} aria-label="Reading check" data-readcheck={verse.n} className="mb-3 space-y-3 rounded-xl border border-line px-3 py-3">
-      <h3 className="text-lg font-semibold">
-        {title}:{verse.n}
-      </h3>
+      <div className="flex flex-wrap items-center justify-between gap-x-2">
+        <h3 className="text-lg font-semibold">
+          {title}:{verse.n}
+        </h3>
+        <LinkActions url={referenceUrl(book, chapter, verse.n)} title={`${title}:${verse.n}`} className="-mr-2" />
+      </div>
       <p
         data-sheet-verse
         lang={shown.lang}
         className={`max-h-52 overflow-y-auto break-words ${shown.face} leading-(--lp-leading)`}
       >
-        {text}
+        {shownText}
       </p>
       {walking && reading ? null : (
         <>

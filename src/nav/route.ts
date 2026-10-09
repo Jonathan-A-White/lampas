@@ -2,6 +2,9 @@
 // The reader's own state rides in the same hash after a '?': book (b, its code as public/data/index.json has it), chapter (c),
 // view, weave and the selected verse (v), e.g. '#/?b=rom&c=8&view=greek&weave=off&v=28'. An address with a chapter and no book
 // is Romans (every address kept before the picker, mw-5r3p30.60, was). src/nav/lastRoute.ts keeps these addresses across a close.
+// A link from outside rides in the same hash on the reader's path: '#/?ref=Rom.8.28' (a reference, also 'Rom 8:28', 'Romans 8:28', '1John.1.9', 'Rom 8') or
+// '#/?word=G3551' (a Strong's number or a lemma); readerOf does not read them. src/nav/links.ts reads and resolves them (docs/links.md), and
+// src/nav/LinkOpener.tsx replaces them by the plain reader address above before the Reader opens, so they are never kept.
 import { useSyncExternalStore } from 'react';
 import { bookOf } from '../data/books';
 import type { ReaderView, Weave } from '../data/repositories';

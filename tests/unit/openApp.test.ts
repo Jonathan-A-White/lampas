@@ -34,10 +34,10 @@ function fakeEnv() {
 describe('armFallback', () => {
   it('opens the https address when nothing took the page away in the wait', () => {
     const f = fakeEnv();
-    armFallback('https://ref.ly/logosres/bdag?hw=x', f.env);
+    armFallback('https://ref.ly/logosres/LLS%3A46.30.18?hw=x', f.env);
     expect(f.opened).toEqual([]);
     f.wait();
-    expect(f.opened).toEqual(['https://ref.ly/logosres/bdag?hw=x']);
+    expect(f.opened).toEqual(['https://ref.ly/logosres/LLS%3A46.30.18?hw=x']);
   });
 
   it('opens nothing when the app took the page away (hidden, blurred or left) before the wait ended', () => {

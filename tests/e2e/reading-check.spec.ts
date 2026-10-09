@@ -127,7 +127,8 @@ test('holding Read in the Greek view sends the Greek, marks Greek words and show
   expect(fake.received[0].input).toMatchObject({ reference: 'Romans 8:28', lang: 'el' });
   expect(String(fake.received[0].input.target_text)).toContain('συνεργεῖ');
 
-  const word = panel.getByRole('button', { name: 'συνεργεῖ', exact: true });
+  // the verse above has tappable words of the same names: the marked word is the one with [data-fix]
+  const word = panel.locator('[data-fix]').filter({ hasText: /^συνεργεῖ$/ });
   expect((await word.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
   await word.click();
   await expect(panel.locator('[data-fix-detail] [data-chunks]')).toHaveText('συν · ερ · γεῖ');

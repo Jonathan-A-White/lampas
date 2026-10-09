@@ -37,6 +37,29 @@ Code: `src/data/grammar/ladder.ts`. It is pure: no store and no screen.
   `case-genitive`, `number-singular`, `gender-feminine`. It throws on a code `decodeParse` does not know, and a test walks
   every parse code of the 260 chapter files.
 
+## What a passage needs
+
+`src/data/goal.ts` and `src/data/grammar/needs.ts` (mw-hqd5bz.2). A goal is `{ book, chapter?, verse? }`: "Read 1 John", "Read 1
+John 1" or "Read 1 John 1:1". Pure data work from the chapter files and the RP code on every token: no tutor, no network
+beyond `loadChapter`.
+
+- `parseGoal(text, index)`: reads '1 John 1:1', '1 John 1', '1 John', the same with a leading 'Read', or a book code
+  ('1jn 1:1'); case and spacing are loose. It is `undefined` for a book that is not one of the 27 (`books.ts`), or a chapter or
+  verse the index does not have ('1 John 9', 'Romans 8:99').
+- `goalText(goal)`: the canonical text to save ('1 John 1:1'; `parseGoal` reads it back to the same goal).
+  `goalTitle(goal, index)`: 'Read 1 John 1:1'.
+- `passageNeeds(goal, loadChapter, index)`: loads the chapter, or every chapter of the book in canonical order (one request
+  each; the index gives the count), and returns
+  - `words`: `{ lemma, gloss, count, firstRef }`, the lemma in its dictionary form (NFC), commonest first and then in order of
+    first use;
+  - `ideas`: `{ id, count, example: { form, code, ref } }`, `ALWAYS_NEEDED` first and then up the ladder by rung (so a
+    passage with no subjunctive lists no subjunctive); `count` is the number of words that need the idea, `example` the first;
+  - `tokens`: the words of the passage, repeats counted.
+  A `ref` is 'book.chapter.verse', as in the answers table ('1jn.1.1').
+- `progressToward(needs, wordStates, levels)`: `{ words, grammar }`, each `{ solid, frontier, notYet, total }`. A solid word is
+  solid, a learning word is frontier, a dropped or unlisted word is not yet; an idea with no level is not yet. `Level`
+  (`'solid' | 'frontier' | 'notYet'`) is exported from `needs.ts` until the levels story moves it to its repository.
+
 ## One choice to know
 
 Person and number (`person-1st` ... `number-plural`) sit at the start of the `pronouns` tier, not the `nouns` tier: I, you,

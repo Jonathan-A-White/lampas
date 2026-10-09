@@ -14,6 +14,8 @@ export const pwaManifest: Partial<ManifestOptions> = {
   scope: '/',
   background_color: THEME_COLOR,
   theme_color: THEME_COLOR,
+  // web+lampas:Rom.8.28 opens the installed app on that verse where the browser supports it (Chrome and Edge, not iOS Safari); docs/links.md.
+  protocol_handlers: [{ protocol: 'web+lampas', url: '/#/?ref=%s' }],
   icons: [
     { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
     { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },

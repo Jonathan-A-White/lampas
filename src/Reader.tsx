@@ -37,6 +37,9 @@ import { weaveVerse, type Woven } from './data/weave';
 import { BuildVersion } from './BuildVersion';
 import { latest, publish, useLatest } from './events/bus';
 import { blocksOf } from './layout/layouts';
+import { LinkOpener } from './nav/LinkOpener';
+import { pendingLink, takeLink } from './nav/linkRequest';
+import { lemmaSheet, linkOf } from './nav/links';
 import { pendingRequest, takeRequest } from './nav/readerRequest';
 import { navigate, readerOf, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
@@ -358,7 +361,15 @@ function openFrom(address: string): OpenChapter {
 }
 
 export function Reader() {
-  const open = openFrom(useAddress());
+  const address = useAddress();
+  // A link in the address (#/?ref=… or #/?word=…) is resolved first and replaced by the plain reader address (src/nav/LinkOpener.tsx).
+  const link = linkOf(address);
+  if (link) return <LinkOpener link={link} />;
+  return <ReaderAt address={address} />;
+}
+
+function ReaderAt({ address }: { address: string }) {
+  const open = openFrom(address);
   // What he has open is kept, so Quick test, the Parsing drill and Review (which draw from it) and the next open follow it.
   const { book, chapter } = open;
   useEffect(() => setOpenChapter(book, chapter), [book, chapter]);
@@ -417,6 +428,13 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   useEffect(() => {
     if (request) takeRequest(request);
   }, [request]);
+  // A link in the address (src/nav/linkRequest.ts) is met once, as the Reader opens: its notice, and for a word link the word's sheet.
+  const [link] = useState(() => pendingLink(BOOK, CHAPTER));
+  useEffect(() => {
+    if (link) takeLink(link);
+  }, [link]);
+  const [notice, setNotice] = useState(link?.notice ?? null);
+  const [linked, setLinked] = useState(() => (link?.word ? lemmaSheet(link.word) : null));
   const [prefill, setPrefill] = useState(() => (request?.action === 'ask' ? { verse: request.verse, text: request.question } : null));
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
   const checks = useReadChecks(BOOK, CHAPTER, TITLE, view ?? 'english', pronunciation);
@@ -443,7 +461,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   });
   // The verse he last tapped: its Ask box scrolls into view. A selection put back by a reopen or Back does not, so it
   // leaves the text where the scroll memory put it.
-  const [tapped, setTapped] = useState<number | null>(() => (request?.action === 'ask' ? request.verse : null));
+  const [tapped, setTapped] = useState<number | null>(() => (request?.action === 'ask' ? request.verse : link?.verse ?? null));
   const selectVerse = useCallback(
     (n: number) => {
       setTapped(selected === n ? null : n);
@@ -637,6 +655,14 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         </button>
       </header>
       {chapterReading ? null : <DueBadge />}
+      {notice ? (
+        <div role="status" data-link-notice className="flex shrink-0 items-center gap-2 border-b border-line bg-surface px-3 py-1 text-sm">
+          <p className="min-w-0 flex-1">{notice}</p>
+          <button type="button" onClick={() => setNotice(null)} className="min-h-11 shrink-0 rounded-lg px-3 text-base font-medium text-accent active:bg-line">
+            Dismiss
+          </button>
+        </div>
+      ) : null}
       <ReadingBar reading={reading} />
       {woven ? (
         <p data-testid="weave-count" className="shrink-0 border-b border-line px-3 py-1 text-right text-sm text-muted">
@@ -709,6 +735,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       <ReadCheckPanel
                         key={pick.n}
                         verse={pick}
+                        text={<VerseText verse={pick} view={view} woven={wovenOf(pick)} onLook={setLookup} />}
                         title={TITLE}
                         view={view}
                         book={BOOK}
@@ -774,6 +801,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         />
       ) : null}
       {picking ? <ChapterPicker current={open} onClose={closePicker} /> : null}
+      {linked ? <WordSheet chapter={linked.chapter} lookup={linked.lookup} onClose={() => setLinked(null)} /> : null}
       {chapter && lookup ? <WordSheet chapter={chapter} lookup={lookup} onClose={closeSheet} onHelp={helpWithWord} onAskTerm={askAboutTerm} /> : null}
     </>
   );

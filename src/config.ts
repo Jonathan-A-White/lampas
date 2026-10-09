@@ -32,3 +32,6 @@ export const LICENCE_CACHE_STORAGE_KEY = 'lampas.licenceHeld';
 
 /** How long a 'held' answer keeps the reader open when the chain cannot be reached. */
 export const LICENCE_GRACE_MS = 24 * 60 * 60 * 1000;
+
+/** The address a copied link begins with, whatever address the app was opened at: a link must work anywhere (docs/links.md). */
+export const LINK_ORIGIN = 'https://lampas.allmymind.org';

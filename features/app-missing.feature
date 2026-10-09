@@ -67,7 +67,7 @@ Feature: An app that is not on the phone says so
     When he taps the word "work together" in verse 28
     And he taps the Study link "Open in Logos: BDAG"
     And the page stays in front for the wait
-    Then the address "https://ref.ly/logosres/bdag?hw=%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89" was opened
+    Then the address "https://ref.ly/logosres/LLS%3A46.30.18?hw=%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89" was opened
     And there is no sheet about a missing app
 
   Scenario: The Study links are short tiles grouped by app
