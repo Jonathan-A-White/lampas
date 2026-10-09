@@ -1,6 +1,6 @@
 // src/data/repositories/talks.ts — the turns of the Bible talk, kept on the phone per conversation. A repository owns its transactions.
 import type { AppliedChange } from '../../settings/registry';
-import { db, type AnswerLink, type AnswerWord, type TalkTurn } from '../db';
+import { db, type AnswerLink, type AnswerWord, type HebrewSounds, type TalkTurn } from '../db';
 
 export type { TalkTurn };
 
@@ -24,6 +24,8 @@ export interface TurnChanges {
   links?: AnswerLink[];
   /** the study way line the answer proposed (mw-5r3p30.76) */
   studyWayLine?: string;
+  /** how the Hebrew word he asked to sound out is said (mw-5r3p30.98) */
+  guide?: HebrewSounds;
 }
 
 /** Keeps one turn and returns its id. */
@@ -36,6 +38,7 @@ export async function addTurn(ref: string, q: string, a: string, words: AnswerWo
   if (done?.unknown?.length) turn.unknown = done.unknown;
   if (done?.links?.length) turn.links = done.links;
   if (done?.studyWayLine) turn.studyWayLine = done.studyWayLine;
+  if (done?.guide) turn.guide = done.guide;
   return (await db.talks.add(turn)) as number;
 }
 

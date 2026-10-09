@@ -86,6 +86,12 @@ the ending shows. Keep to the length below; cite the word in `words` as usual.
   a piece he can say alone), and in `answer` say how each one sounds, which one carries the stress and what the accent or
   breathing tells him. The app reads the word aloud and then each syllable, so do not spell the sounds out at length.
   Leave `syllables` out when `kind` is `grammar` or there is no `focus`.
+  When `focus.language` is `he`, the word is Hebrew (he tapped it in an earlier answer and opened its pronunciation guide): put its
+  syllables in `syllables` in the pointed Hebrew letters, in reading order (the first syllable first), which joined spell the
+  word, and in `transliteration` give how each one sounds in plain Latin letters with no special marks, the same number in the same
+  order, the stressed syllable in capitals (`צֶ`, `דֶק` are `TSE`, `dek`). Say it as modern Israeli Hebrew is spoken. In `answer` say
+  in a sentence or two which syllable carries the stress and anything odd in the vowels. The depth setting does not apply here:
+  the guide always shows both. Leave `transliteration` out for every other question.
 
 ## Help with a Quick test question
 

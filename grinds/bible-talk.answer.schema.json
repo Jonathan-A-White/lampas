@@ -27,7 +27,13 @@
       }
     },
     "syllables": {
-      "description": "Only when the question asked how to sound a word out (its focus kind is sound): the word's syllables in Greek letters, in order, each one short enough to say alone. Leave it out otherwise.",
+      "description": "Only when the question asked how to sound a word out (its focus kind is sound): the word's syllables in Greek letters, in order, each one short enough to say alone; for a Hebrew word (focus language he), in the pointed Hebrew letters. Leave it out otherwise.",
+      "type": "array",
+      "maxItems": 12,
+      "items": { "type": "string", "minLength": 1, "maxLength": 40 }
+    },
+    "transliteration": {
+      "description": "Only for a Hebrew word's sound question (focus kind sound and language he): how each entry of syllables sounds, in plain Latin letters with no special marks, in the same order and the same number, the stressed syllable in capitals (TSE, dek). Leave it out otherwise.",
       "type": "array",
       "maxItems": 12,
       "items": { "type": "string", "minLength": 1, "maxLength": 40 }

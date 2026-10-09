@@ -10,7 +10,8 @@ import { getDeviceKeyBytes } from './services/deviceKey';
 import { TutorError } from './services/tutor';
 import { stopAnswer } from './speech/readAloud';
 import { applyChanges, currentSettings } from './settings/registry';
-import { askTalk, buildTalkRequest, MAX_LINKS, scopeRef, type TalkFocus, type TalkScope } from './services/talk';
+import { askTalk, buildTalkRequest, MAX_LINKS, scopeRef, type TalkAnswer, type TalkFocus, type TalkScope } from './services/talk';
+import type { HebrewSounds } from './data/db';
 import type { AskState } from './useAsks';
 
 type Talks = Record<string, AskState | undefined>;
@@ -45,6 +46,12 @@ async function addWords(scope: TalkScope, lemmas: string[]): Promise<{ added: st
     else if (result === 'unknown') unknown.push(headword);
   }
   return { added, already, unknown };
+}
+
+/** The pronunciation guide of an answer to a Hebrew word's sound question: its syllables over how each sounds; none for any other answer. */
+function hebrewGuideOf(focus: TalkFocus | undefined, answer: TalkAnswer): HebrewSounds | undefined {
+  if (!focus || !('form' in focus) || focus.kind !== 'sound' || focus.language !== 'he' || !answer.syllables?.length) return undefined;
+  return { word: focus.form, syllables: answer.syllables, sounds: answer.transliteration ?? [] };
 }
 
 /** `onAnswered(ref, turnId, answer, info)` is called once an answer has been kept. */
@@ -101,7 +108,7 @@ export function useTalk(book: string, chapter: number, onAnswered: (ref: string,
           // The settings he asked for are applied at once (the registry checks each), then kept with the turn for its Undo.
           const { applied, refused } = await applyChanges(answer.settings_changes);
           const { added, already, unknown } = await addWords(scope, answer.words_to_add ?? []);
-          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined });
+          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, guide: hebrewGuideOf(focus, answer) });
           set(undefined);
           if (!signal.aborted) answered.current(ref, id, answer.answer, { focus, syllables: answer.syllables });
         } catch (err) {

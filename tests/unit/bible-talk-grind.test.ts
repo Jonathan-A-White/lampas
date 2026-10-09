@@ -345,3 +345,32 @@ describe('the screen field (mw-5r3p30.91)', () => {
     for (const part of ['`screen`', '## Talk from a screen', '`facts`', '`kind` `verse`', 'simplest verse', 'no verse text']) expect(text).toContain(part);
   });
 });
+
+describe('the sound kind for a Hebrew word (mw-5r3p30.98)', () => {
+  const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
+  const request = { reference: 'Romans 8:28', greek: 'Οἴδαμεν', english: 'And we know', question: 'Say it', history: [], solid_words: [], settings: {} };
+  const focus = { form: 'צֶדֶק', lemma: 'צֶדֶק', parse: 'Hebrew word', kind: 'sound', language: 'he' };
+  const answer = { answer: 'Say it TSE-dek.', words: [], syllables: ['צֶ', 'דֶק'], transliteration: ['TSE', 'dek'] };
+
+  it('the request schema accepts a word focus in Hebrew, and refuses another language', () => {
+    expect(validate({ ...request, focus }, input)).toEqual([]);
+    expect(validate({ ...request, focus: { ...focus, language: 'fr' } }, input)).not.toEqual([]);
+  });
+
+  it('the answer schema and the app take Hebrew syllables with a transliteration for each, and refuse a transliteration over 12', () => {
+    expect(validate(answer, schema as Schema)).toEqual([]);
+    expect(isTalkAnswer(answer)).toBe(true);
+    const many = { ...answer, transliteration: Array.from({ length: 13 }, () => 'a') };
+    expect(validate(many, schema as Schema)).not.toEqual([]);
+    expect(isTalkAnswer(many)).toBe(false);
+    expect(isTalkAnswer({ ...answer, transliteration: [''] })).toBe(false);
+  });
+
+  it('tells the tutor to put Hebrew syllables in Hebrew letters and their sounds in `transliteration` when the focus language is he', () => {
+    const text = readFileSync(grind.instructions as string, 'utf8');
+    expect(text).toContain('`focus.language`');
+    expect(text).toContain('`transliteration`');
+    expect(text).toMatch(/Hebrew letters/);
+    expect(JSON.stringify(schema)).toContain('transliteration');
+  });
+});
