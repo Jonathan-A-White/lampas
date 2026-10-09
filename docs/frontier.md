@@ -29,9 +29,34 @@ Greek words (solid words over all the Greek words of the verse). So the new word
 the verse with the fewest Greek words wins, and on a further tie the earlier verse. It is `null` when the chapter has none of
 the candidate's verses.
 
+## Held to his grammar level
+
+`pickFrontier(chapter, known, frequency, n, formPasses?)` and `easiestVerse(candidate, chapter, solid, formPasses?)` take an optional test
+of one form (`FormTest`, a `GreekWord` in, a boolean out); the caller builds it with `pickerPasses(levels, level)`
+(`src/data/grammar/formLevel.ts`: `formPasses` on the word's RP parsing, at `solid` for Solid grammar and `solid+frontier` for Frontier
+grammar; `levels` is `listLevels()`). With no test the picker is as it was.
+
+- A word is offered only when at least one of its forms in the chapter passes. `n` counts the words that are kept. `verses` still lists
+  every verse the word stands in.
+- `easiestVerse` puts a verse where a form of the word passes before one where none does, and among those a verse whose Greek words
+  all pass first; then the solid share, the fewest words and the earlier verse, as before.
+- The level is the setting `pickerGrammar` (Settings > New words, **New words at**: Solid grammar | Frontier grammar, default
+  Frontier grammar). A fresh install has no idea at a level yet, so at either level nothing passes until the placement or the idea sheet
+  gives some; the picker has no screen yet.
+
+### Moving the level
+
+`moveFor(level, answers)` (`src/data/grammar/move.ts`, pure; PROVISIONAL, the Governor to confirm) looks at his last 20 grammar answers in
+Review (`pushGrammarAnswer`, `getGrammarAnswers`: a string of 1 and 0 in the settings store under `grammarAnswers`, no table; the
+placement's answers do not count): `up` from Solid grammar when 85 percent or more of them are right, `down` from Frontier grammar when
+under 60 percent are, else `none`; fewer than 20 answers is always `none`. The setting `grammarMove` (**Move it**: Ask | Auto | Off,
+default Ask) says what Review's end card does after a round that asked a grammar idea (`src/review/pickerMove.ts`): Ask shows
+"Move new words to frontier grammar?" with Yes and Not now, Auto moves it and says "Moved new words to solid grammar", Off does
+nothing. A move forgets the ring, so the answers given at the old level do not judge the new one, and publishes `picker-level-moved`.
+
 ## Tests
 
 `features/frontier.feature` (steps in `features/steps/frontier.steps.ts`) and `tests/unit/frontier.test.ts` run on a made-up
 chapter, `tests/fixtures/frontier.ts`, whose word counts are invented so that every rule is proved and nothing changes when the
-data does. Both also run on Romans 8 with his seed (lessons 1 to 9 solid, the rest learning): the list is not empty and its first
+data does. `features/picker-grammar.feature`, `tests/unit/move.test.ts` and `tests/unit/grammar-answers.test.ts` cover the level and the move. Both also run on Romans 8 with his seed (lessons 1 to 9 solid, the rest learning): the list is not empty and its first
 word is not a name.
