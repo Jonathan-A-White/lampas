@@ -1,10 +1,10 @@
 // src/HoldToHear.tsx — the wide bar under a Quick test word: hold it (half a second) to hear the word, let go to stop.
-// The same bar look as the Talk bar and the same engine as a long press on a word of the reader (speakWord in
+// The shared hold bar (src/ui/HoldBar.tsx), the same as the Talk bar and the same engine as a long press on a word of the reader (speakWord in
 // speech/greek.ts); a tap without a hold says nothing, a slide off the bar drops the word.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { hasGreekVoice, noVoiceHelp, speakWord, stopSpeaking, warmVoices } from './speech/greek';
 import { Icon } from './speech/SpeakButton';
-import { useHoldPress } from './ui/holdPress';
+import { HoldBar } from './ui/HoldBar';
 
 const HELP_MS = 7000;
 
@@ -12,7 +12,6 @@ const HELP_MS = 7000;
 export function HoldToHear({ text }: { text: string }) {
   const [help, setHelp] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const heldByKey = useRef(false);
 
   const begin = useCallback(() => {
     if (!speakWord(text, 'greek') || hasGreekVoice() === false) {
@@ -22,7 +21,7 @@ export function HoldToHear({ text }: { text: string }) {
     }
   }, [text]);
 
-  const press = useHoldPress({ onHold: begin, onRelease: stopSpeaking, onDrop: stopSpeaking });
+  const hold = { onHold: begin, onRelease: stopSpeaking, onDrop: stopSpeaking };
 
   useEffect(() => {
     void warmVoices();
@@ -34,27 +33,7 @@ export function HoldToHear({ text }: { text: string }) {
 
   return (
     <>
-      <button
-        type="button"
-        data-testid="hold-to-hear"
-        {...press}
-        onKeyDown={(e) => {
-          if (e.key !== ' ' && e.key !== 'Enter') return;
-          e.preventDefault();
-          if (e.repeat || heldByKey.current) return;
-          heldByKey.current = true;
-          begin();
-        }}
-        onKeyUp={(e) => {
-          if (e.key !== ' ' && e.key !== 'Enter') return;
-          heldByKey.current = false;
-          stopSpeaking();
-        }}
-        className="flex min-h-14 w-full touch-none select-none flex-col items-center justify-center rounded-xl bg-accent px-6 py-1 text-lg font-medium text-accent-fg [-webkit-touch-callout:none]"
-      >
-        <Icon kind="speaker" />
-        Hold to hear
-      </button>
+      <HoldBar hold={hold} name="Hold to hear" label="Hold to hear" icon={<Icon kind="speaker" />} testId="hold-to-hear" keys />
       {help ? (
         <p
           role="status"

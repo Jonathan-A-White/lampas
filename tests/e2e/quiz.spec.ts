@@ -112,7 +112,8 @@ test('Hold to hear speaks the word while held, stops on release, shifts nothing 
   await expect(bar).toBeVisible();
   await expect(bar).toContainText('Hold to hear');
   const box = await bar.boundingBox();
-  expect(box?.height).toBeGreaterThanOrEqual(48);
+  await expect(bar).toHaveAttribute('data-hold-bar', '');
+  expect(box?.height).toBe(96);
   expect(box?.width).toBeGreaterThan(300);
   const first = page.locator('[data-option]').first();
   const before = await first.boundingBox();

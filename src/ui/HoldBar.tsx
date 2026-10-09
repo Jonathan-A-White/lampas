@@ -1,9 +1,10 @@
 // src/ui/HoldBar.tsx — the one hold-to-talk control, Postern's bar (postern src/cockpit/TalkLineScreen.tsx, the button under the
 // model switch: h-24 w-full max-w-xl rounded-3xl, a 26 px microphone over a 16 px semibold label, the accent colour, the alert
 // colour while it listens). The Talk sheet, the reader's foot Talk bar and the reading check's Read buttons are all this
-// component (docs/pwa-best-practices.md section 12: every hold-to-talk control is Postern's bar); only a Read button
-// beside each verse stays small, because a bar per verse cannot fit in the text. What the press does is the caller's:
+// component (docs/pwa-best-practices.md section 12: every hold-to-talk control is Postern's bar), and so is Hold to hear on the
+// Quick test and Review, which changes only the icon (a speaker); only a Read button beside each verse stays small, because a bar per verse cannot fit in the text. What the press does is the caller's:
 // `hold` is useHoldPress's handlers, `holdMs` its delay (0 = a hold from the first touch).
+import type { ReactNode } from 'react';
 import { type HoldHandlers, useHoldPress } from './holdPress';
 
 /** h-24, Postern's bar height: 6 rem, which the root font scaling does not touch (spacing is divided by --lp-scale). */
@@ -18,13 +19,16 @@ export function MicIcon({ size = 26 }: { size?: number }) {
   );
 }
 
-export function HoldBar({ hold, holdMs, name, label, listening = false, disabled = false, keys = false }: {
+export function HoldBar({ hold, holdMs, name, label, icon = <MicIcon />, testId, listening = false, disabled = false, keys = false }: {
   hold: HoldHandlers;
   holdMs?: number;
   /** the accessible name, which stays the same while the label changes */
   name: string;
   /** what the bar says now */
   label: string;
+  /** the icon over the label: the microphone unless the hold is not talking (Hold to hear has a speaker) */
+  icon?: ReactNode;
+  testId?: string;
   /** a hold is going on: the alert colour */
   listening?: boolean;
   disabled?: boolean;
@@ -36,6 +40,7 @@ export function HoldBar({ hold, holdMs, name, label, listening = false, disabled
     <button
       type="button"
       data-hold-bar=""
+      data-testid={testId}
       aria-label={name}
       aria-pressed={listening}
       disabled={disabled}
@@ -55,7 +60,7 @@ export function HoldBar({ hold, holdMs, name, label, listening = false, disabled
         : {})}
       className={`mx-auto flex h-24 w-full max-w-xl touch-none select-none flex-col items-center justify-center gap-1 rounded-3xl text-[16px] font-semibold transition-colors [-webkit-touch-callout:none] disabled:cursor-not-allowed disabled:opacity-45 ${listening ? 'bg-bad text-canvas' : 'bg-accent text-accent-fg'}`}
     >
-      <MicIcon />
+      {icon}
       <span aria-hidden="true">{label}</span>
     </button>
   );
