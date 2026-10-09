@@ -55,7 +55,7 @@ import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
 import { useReadChecks } from './useReadChecks';
 import { useTalk } from './useTalk';
-import { helpQuestion, newWordQuestion, paradigmQuestion, quizQuestion, scopeRef, scopeTitle, termQuestion, type TalkScope, type WordFocus } from './services/talk';
+import { helpQuestion, newWordQuestion, paradigmQuestion, quizMeQuestion, scopeRef, scopeTitle, termQuestion, type TalkScope, type WordFocus } from './services/talk';
 import { useVoice } from './useVoice';
 import { useHoldPress } from './ui/holdPress';
 import { NO_SELECT, useLongPress } from './ui/longPress';
@@ -533,7 +533,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     setQuizUnit(viewUnit);
     setTalkAboutRaw(viewUnit.n);
     if (quizTurns?.length === 0 && !talkStates[quizKey]) {
-      say({ title: TITLE, chapter, verse: viewUnit, quiz: true }, quizQuestion(scopeTitle({ title: TITLE, verse: viewUnit })));
+      say({ title: TITLE, chapter, verse: viewUnit, quiz: true }, quizMeQuestion(scopeTitle({ title: TITLE, verse: viewUnit })));
     }
   }, [chapter, viewUnit, quizKey, quizTurns, talkStates, voice, say, TITLE]);
   useEffect(() => {

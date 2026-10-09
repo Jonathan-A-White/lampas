@@ -187,7 +187,7 @@ export interface TalkScope {
 }
 
 /** The first thing he says in a quiz (the Start the quiz button sends it): the sheet shows it as his turn. */
-export const quizQuestion = (reference: string): string => `Quiz me on ${reference}.`;
+export const quizMeQuestion = (reference: string): string => `Quiz me on ${reference}.`;
 
 const greekOf = (v: Verse): string => v.g.map((w) => w.t).join(' ');
 const englishOf = (v: Verse): string => v.e.map((c) => c.t.trim()).join(' ');
