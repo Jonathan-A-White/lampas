@@ -22,6 +22,7 @@ import { listLevels } from './data/repositories/grammarLevels';
 import {
   getLayout,
   getGreekPronunciation,
+  getReadSpan,
   getReaderView,
   getSectionHeadings,
   getWeave,
@@ -53,7 +54,7 @@ import { helpQuestion, newWordQuestion, paradigmQuestion, scopeTitle, termQuesti
 import { useVoice } from './useVoice';
 import { useHoldPress } from './ui/holdPress';
 import { HeaderButton } from './ScreenHeader';
-import { pauseReading, planOf, startAnswer, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
+import { continueReading, getReading, pauseReading, planOf, startAnswer, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
 import { DueBadge } from './DueBadge';
 import { NewWordsStrip } from './NewWordsStrip';
@@ -381,6 +382,8 @@ function ReaderAt({ address }: { address: string }) {
   // What he has open is kept, so Quick test, the Parsing drill and Review (which draw from it) and the next open follow it.
   const { book, chapter } = open;
   useEffect(() => setOpenChapter(book, chapter), [book, chapter]);
+  // Leaving the reader stops the reading. A reading that goes on into the next chapter outlives the chapter's ReaderBody, not this.
+  useEffect(() => () => stopReading(), []);
   return <ReaderBody key={`${book}/${chapter}`} open={open} />;
 }
 
@@ -400,6 +403,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const learning = useLiveQuery(listLearningLemmas, []);
   const layout = useLiveQuery(getLayout, []);
   const headings = useLiveQuery(getSectionHeadings, []);
+  const readSpan = useLiveQuery(getReadSpan, []);
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -600,9 +604,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const plan = useMemo(() => (chapter && view ? planOf(chapter.verses, view, woven) : null), [chapter, view, woven]);
   const readFrom = useCallback(
     (from: number, continuous: boolean) => {
-      if (plan) startReading({ chapter: CHAPTER, plan, from, continuous });
+      if (plan) startReading({ book: BOOK, chapter: CHAPTER, plan, from, continuous, span: readSpan });
     },
-    [plan, CHAPTER],
+    [plan, BOOK, CHAPTER, readSpan],
   );
   const chapterReading = reading.status !== 'idle' && reading.answer === null;
   const readingVerse = chapterReading ? reading.verse : null;
@@ -646,10 +650,28 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   useEffect(() => {
     if (plan) updatePlan(plan);
   }, [plan]);
-  // Leaving the reader stops the reading.
+  // A reading that went on into this chapter (the Read aloud span, src/speech/readAloud.ts) starts its first verse once the plan is here.
+  const crossing = reading.crossing;
+  const crossingHere = crossing !== null && crossing.book === BOOK && crossing.chapter === CHAPTER;
+  const readingStatus = reading.status;
+  useEffect(() => {
+    if (plan && crossingHere && readingStatus === 'reading') continueReading({ book: BOOK, chapter: CHAPTER, plan });
+  }, [plan, crossingHere, readingStatus, BOOK, CHAPTER]);
+  // A chapter that cannot be fetched ends the reading that was going on into it.
+  useEffect(() => {
+    if (failed && crossingHere) stopReading();
+  }, [failed, crossingHere]);
+  // Choosing another chapter than the one a reading was going on into ends it; going on into this one is not leaving it.
+  useEffect(() => {
+    const going = getReading().crossing;
+    if (going && !(going.book === BOOK && going.chapter === CHAPTER)) stopReading();
+  }, [BOOK, CHAPTER]);
+  // Leaving this chapter stops the reading, unless it is going on into the next (ReaderAt stops it when the reader is left).
   useEffect(() => {
     void warmVoices();
-    return () => stopReading();
+    return () => {
+      if (!getReading().crossing) stopReading();
+    };
   }, []);
   // The verse being read is kept in view, by moving this box and nothing else.
   useEffect(() => {
@@ -699,7 +721,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         </h1>
         {chapterReading ? <span className="flex-1" /> : null}
         {view ? <ViewSwitch view={view} /> : null}
-        {plan ? <ReadFromButton from={selected} reading={reading} onRead={() => readFrom(selected ?? 1, true)} /> : null}
+        {plan || crossingHere ? <ReadFromButton from={selected} reading={reading} onRead={() => readFrom(selected ?? 1, true)} /> : null}
         <button
           type="button"
           aria-label="Settings"
@@ -727,7 +749,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           {wovenCount} {wovenCount === 1 ? 'word' : 'words'} in Greek
         </p>
       ) : null}
-      <main ref={mainRef} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} className="screen min-h-0 flex-1 px-1 pt-2">
+      <main ref={mainRef} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} className="screen min-h-0 flex-1 px-1 pt-2">
         <div>
         {failed ? (
           <div role="alert" className="px-4 pt-6 text-center">

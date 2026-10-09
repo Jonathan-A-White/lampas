@@ -67,7 +67,8 @@ export function ReadingBar({ reading }: { reading: ReadingState }) {
     <div className="shrink-0 border-b border-line bg-surface">
       <div role="group" aria-label="Reading" data-reading-bar className="flex items-center gap-2 px-3 py-1">
         <span className="min-w-0 flex-1 truncate chrome-text text-muted">
-          {paused ? 'Paused at' : 'Reading'} verse {reading.verse}
+          {paused ? 'Paused at' : 'Reading'}
+          {reading.verse === null ? '' : ` verse ${reading.verse}`}
         </span>
       </div>
       {reading.notice ? (

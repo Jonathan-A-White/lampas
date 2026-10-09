@@ -12,6 +12,7 @@ import {
   getGreekPronunciation,
   getLayout,
   getSectionHeadings,
+  getReadSpan,
   getTips,
   getSpeechRates,
   getTextSize,
@@ -28,6 +29,7 @@ import {
   type GrammarMove,
   type PickerGrammar,
   type SectionHeadings,
+  type ReadSpan,
   type Tips,
   type VoiceLanguage,
   type Weave,
@@ -51,6 +53,7 @@ import { storeUrl } from './resources/appStore';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from './resources/logosBible';
 import { checkApp } from './resources/openApp';
 import { PRONUNCIATIONS, pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
+import { READ_SPANS } from './speech/readSpan';
 
 function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
@@ -223,6 +226,24 @@ function HeadingsChoice({ headings }: { headings: SectionHeadings }) {
     <div role="group" aria-label="Section headings" className="inline-flex rounded-xl border border-line p-0.5">
       {choice('on', 'On')}
       {choice('off', 'Off')}
+    </div>
+  );
+}
+
+function ReadSpanChoice({ span }: { span: ReadSpan }) {
+  return (
+    <div role="group" aria-label="Read aloud span" className="inline-flex rounded-xl border border-line p-0.5">
+      {READ_SPANS.map((s) => (
+        <button
+          key={s.id}
+          type="button"
+          aria-pressed={span === s.id}
+          onClick={() => void writeSetting('readSpan', s.id)}
+          className={`min-h-12 min-w-12 rounded-lg px-3 text-base font-medium ${span === s.id ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+        >
+          {s.label}
+        </button>
+      ))}
     </div>
   );
 }
@@ -682,6 +703,7 @@ export function SettingsScreen() {
   const layout = useLiveQuery(getLayout, []);
   const headings = useLiveQuery(getSectionHeadings, []);
   const tips = useLiveQuery(getTips, []);
+  const readSpan = useLiveQuery(getReadSpan, []);
   const english = useLiveQuery(() => getVoice('english'), []);
   const greek = useLiveQuery(() => getVoice('greek'), []);
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
@@ -719,6 +741,12 @@ export function SettingsScreen() {
           <Section title="Grammar approach" hint="The order grammar is taught and tested in.">
             {approach !== undefined && levels !== undefined ? <ApproachPicker chosen={approach} levels={levels} /> : null}
             <AskApproach />
+          </Section>
+          <Section
+            title="Read aloud"
+            hint="How far Read from the top / Read from here goes. Verse stops after that verse; Passage before the next heading; Chapter at the chapter's end; Book goes on into each next chapter to the book's end. The play button on a verse reads just that verse."
+          >
+            {readSpan ? <ReadSpanChoice span={readSpan} /> : null}
           </Section>
           <Section title="Reading voices" hint="Which of this phone's voices reads aloud. Phone default lets the phone choose.">
             {english !== undefined && greek !== undefined ? (

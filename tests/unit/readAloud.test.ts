@@ -2,10 +2,11 @@
 // voice with its language, Read from the top runs to the chapter's end, Pause and Stop. The engine is a fake that records.
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { forgetChapters } from '../../src/data/chapter';
 import { clearBus, latest, subscribe } from '../../src/events/bus';
 import type { Chapter, Verse } from '../../src/data/chapter';
 import { weaveVerse } from '../../src/data/weave';
-import { getReading, pauseReading, planOf, resumeReading, runsOf, startReading, stopReading } from '../../src/speech/readAloud';
+import { continueReading, getReading, pauseReading, planOf, resumeReading, runsOf, startReading, stopReading } from '../../src/speech/readAloud';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../support/fake-speech';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
@@ -165,5 +166,123 @@ describe('reading a chapter', () => {
     synth = stubSpeech([ENGLISH_VOICE]);
     startReading({ chapter: 8, plan: plan('english'), from: 1, continuous: false });
     expect(getReading().notice).toBeNull();
+  });
+});
+
+describe('the Read aloud span', () => {
+  const rom9 = JSON.parse(readFileSync('public/data/rom/9.json', 'utf8')) as Chapter;
+  const chapter9 = (headingOnFirst: boolean): Chapter => ({
+    ...rom9,
+    verses: rom9.verses.map((v, i) => (i === 0 && !headingOnFirst ? { ...v, h: undefined } : v)),
+  });
+  const stubNext = (next: Chapter) =>
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify(next), { status: 200, headers: { 'Content-Type': 'application/json' } })),
+    );
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+  const spokenVerses: number[] = [];
+  beforeEach(() => {
+    forgetChapters();
+    spokenVerses.length = 0;
+    subscribe('verse-reading', (e) => spokenVerses.push(e.verse));
+    window.location.hash = '';
+  });
+  const at = (n: number, span: 'verse' | 'passage' | 'chapter' | 'book', continuous = true) =>
+    startReading({ book: 'rom', chapter: 8, plan: plan('english'), from: n, continuous, span });
+
+  it('Verse reads the verse started from; Passage reads to the next heading; Chapter to the end', () => {
+    at(9, 'verse');
+    synth.finishAll();
+    expect(spokenVerses).toEqual([9]);
+    spokenVerses.length = 0;
+    at(9, 'passage');
+    synth.finishAll();
+    expect(spokenVerses).toEqual([9, 10, 11]);
+    spokenVerses.length = 0;
+    at(37, 'chapter');
+    synth.finishAll();
+    expect(spokenVerses).toEqual([37, 38, 39]);
+    expect(getReading().status).toBe('idle');
+  });
+
+  it('a verse button reading stays one verse whatever the span', () => {
+    at(9, 'book', false);
+    synth.finishAll();
+    expect(spokenVerses).toEqual([9]);
+  });
+
+  it('a Passage ends at the chapter break when the next chapter opens with a heading', async () => {
+    stubNext(chapter9(true));
+    at(36, 'passage');
+    synth.finishAll();
+    await settle();
+    expect(spokenVerses).toEqual([36, 37, 38, 39]);
+    expect(getReading().status).toBe('idle');
+    expect(window.location.hash).toBe('');
+  });
+
+  it('a Passage goes on across a chapter break when the next chapter has no heading before its first verse', async () => {
+    stubNext(chapter9(false));
+    at(36, 'passage');
+    synth.finishAll();
+    await settle();
+    expect(getReading()).toMatchObject({ status: 'reading', verse: null, crossing: { book: 'rom', chapter: 9 } });
+    expect(window.location.hash).toContain('c=9');
+    // the Reader that opens Romans 9 hands over its plan, and the voice starts verse 1 at once
+    const count = synth.spoken.length;
+    continueReading({ book: 'rom', chapter: 9, plan: planOf(rom9.verses, 'english', null) });
+    expect(synth.spoken).toHaveLength(count + 1);
+    expect(spokenVerses).toEqual([36, 37, 38, 39, 1]);
+    expect(getReading()).toMatchObject({ verse: 1, crossing: null });
+    // and goes on to the next heading of Romans 9 (verse 6) only
+    synth.finishAll();
+    expect(spokenVerses).toEqual([36, 37, 38, 39, 1, 2, 3, 4, 5]);
+  });
+
+  it('Book crosses at once, and a plan for another chapter is not taken', async () => {
+    stubNext(chapter9(true));
+    at(39, 'book');
+    synth.finishAll();
+    await settle();
+    expect(getReading().crossing).toEqual({ book: 'rom', chapter: 9 });
+    const count = synth.spoken.length;
+    continueReading({ book: 'rom', chapter: 10, plan: planOf(rom9.verses, 'english', null) });
+    expect(synth.spoken).toHaveLength(count);
+    continueReading({ book: 'rom', chapter: 9, plan: planOf(rom9.verses, 'english', null) });
+    expect(synth.spoken).toHaveLength(count + 1);
+  });
+
+  it('Stop while crossing ends the reading and the Reader\'s plan then starts nothing', async () => {
+    stubNext(chapter9(true));
+    at(39, 'book');
+    synth.finishAll();
+    await settle();
+    stopReading();
+    expect(getReading().status).toBe('idle');
+    const count = synth.spoken.length;
+    continueReading({ book: 'rom', chapter: 9, plan: planOf(rom9.verses, 'english', null) });
+    expect(synth.spoken).toHaveLength(count);
+  });
+
+  it('Pause while crossing waits, and Play lets the next chapter go on', async () => {
+    stubNext(chapter9(true));
+    at(39, 'book');
+    synth.finishAll();
+    await settle();
+    pauseReading();
+    continueReading({ book: 'rom', chapter: 9, plan: planOf(rom9.verses, 'english', null) });
+    expect(getReading().status).toBe('paused');
+    resumeReading();
+    expect(getReading().status).toBe('reading');
+    continueReading({ book: 'rom', chapter: 9, plan: planOf(rom9.verses, 'english', null) });
+    expect(spokenVerses[spokenVerses.length - 1]).toBe(1);
+  });
+
+  it('a reading that has no book never leaves its chapter', async () => {
+    startReading({ chapter: 8, plan: plan('english'), from: 39, continuous: true, span: 'book' });
+    synth.finishAll();
+    await settle();
+    expect(getReading().status).toBe('idle');
   });
 });

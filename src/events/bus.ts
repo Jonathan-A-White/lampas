@@ -5,6 +5,7 @@ import { useEffect, useRef, useSyncExternalStore } from 'react';
 import type { ReaderView, ReadingLayout, SectionHeadings, Tips, Weave, WeaveGrammar } from '../data/repositories';
 import type { GrammarLevelName } from '../data/db';
 import type { Goal } from '../data/goal';
+import type { ReadSpan } from '../speech/readSpan';
 import type { Theme } from '../appearance/themes';
 import type { SpeechLanguage, SpeechRates } from '../speech/languages';
 import type { GreekPronunciation } from '../speech/pronunciation';
@@ -20,6 +21,8 @@ export type AppEvent =
   | { kind: 'weave-grammar-changed'; grammar: WeaveGrammar }
   | { kind: 'layout-changed'; layout: ReadingLayout }
   | { kind: 'headings-changed'; headings: SectionHeadings }
+  /** the Read aloud span: how far the header's Read from the top / Read from here goes */
+  | { kind: 'read-span-changed'; span: ReadSpan }
   /** the Tips choice: whether the phone may send for a tip and show its card */
   | { kind: 'tips-changed'; tips: Tips }
   /** the voices he chose in Settings, as the phone's voiceURI; null is the phone's default */

@@ -12,6 +12,7 @@ export {
   getGreekPronunciation,
   getLayout,
   getLogosBible,
+  getReadSpan,
   getReaderView,
   getSectionHeadings,
   getSpeechRate,
@@ -30,6 +31,7 @@ export {
   setGreekPronunciation,
   setLayout,
   setLogosBible,
+  setReadSpan,
   setReaderView,
   setSectionHeadings,
   setSpeechRate,
@@ -40,6 +42,7 @@ export {
   setWeave,
   setWeaveGrammar,
 } from './settings';
+export type { ReadSpan } from '../../speech/readSpan';
 export type { GrammarMove, PickerGrammar, ReaderView, ReadingLayout, SectionHeadings, Tips, VoiceLanguage, Weave, WeaveGrammar } from './settings';
 export { listResults, recordAnswer } from './results';
 export type { TestResult } from './results';
