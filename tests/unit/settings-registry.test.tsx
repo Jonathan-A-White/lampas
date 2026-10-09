@@ -37,6 +37,7 @@ describe('the registry lists every Settings row', () => {
     await screen.findByRole('group', { name: 'Goal' });
     await screen.findByRole('radiogroup', { name: 'Grammar approach' });
     await screen.findByRole('group', { name: 'Bible in Logos' });
+    await screen.findByRole('group', { name: 'Read aloud span' });
     const drawn = [
       ...screen.getAllByRole('group'),
       ...screen.getAllByRole('radiogroup'),
@@ -52,7 +53,7 @@ describe('the registry lists every Settings row', () => {
   it('gives every entry a distinct key, a label, a hint, and the values it allows', () => {
     expect(new Set(SETTINGS.map((s) => s.key)).size).toBe(SETTINGS.length);
     expect(SETTINGS.map((s) => s.key).sort()).toEqual(
-      ['englishRate', 'englishVoice', 'goal', 'grammarApproach', 'grammarMove', 'greekPronunciation', 'greekRate', 'greekVoice', 'layout', 'logosBible', 'pickerGrammar', 'sectionHeadings', 'textSize', 'theme', 'tips', 'weave', 'weaveGrammar'],
+      ['englishRate', 'englishVoice', 'goal', 'grammarApproach', 'grammarMove', 'greekPronunciation', 'greekRate', 'greekVoice', 'layout', 'logosBible', 'pickerGrammar', 'readSpan', 'sectionHeadings', 'textSize', 'theme', 'tips', 'weave', 'weaveGrammar'],
     );
     for (const s of SETTINGS) {
       expect(s.label).not.toBe('');
@@ -199,6 +200,7 @@ describe('currentSettings', () => {
       textSize: 'normal',
       layout: 'verse',
       sectionHeadings: 'on',
+      readSpan: 'chapter',
       tips: 'on',
       weave: 'off',
       weaveGrammar: 'any',

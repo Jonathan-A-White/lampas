@@ -71,3 +71,22 @@ test('Settings at phone width: the weave, the voices, the Greek pronunciation, W
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-weave', 'solid');
   await expect(page.locator('[data-verse="1"] [data-woven]').first()).toBeVisible();
 });
+
+test('Settings at phone width: Read aloud span has its four choices in one row inside the screen, Chapter chosen', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/settings');
+  const group = page.getByRole('group', { name: 'Read aloud span' });
+  await expect(group).toBeVisible();
+  const names = ['Verse', 'Passage', 'Chapter', 'Book'];
+  for (const name of names) {
+    const box = await group.getByRole('button', { name, exact: true }).boundingBox();
+    expect(box?.height).toBeGreaterThanOrEqual(43.5);
+    expect(box?.width).toBeGreaterThanOrEqual(43.5);
+    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390);
+  }
+  await expect(group.getByRole('button', { name: 'Chapter', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await group.getByRole('button', { name: 'Book', exact: true }).click();
+  await expect(group.getByRole('button', { name: 'Book', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await group.scrollIntoViewIfNeeded();
+  await shot(page, 'settings-read-span');
+});

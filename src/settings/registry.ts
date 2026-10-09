@@ -12,6 +12,7 @@ import {
   getPickerGrammar,
   getGreekPronunciation,
   getLayout,
+  getReadSpan,
   getLogosBible,
   getSectionHeadings,
   getSpeechRate,
@@ -28,6 +29,7 @@ import {
   setPickerGrammar,
   setGreekPronunciation,
   setLayout,
+  setReadSpan,
   setLogosBible,
   setSectionHeadings,
   setSpeechRate,
@@ -52,6 +54,7 @@ import { publish } from '../events/bus';
 import { LAYOUTS } from '../layout/layouts';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from '../speech/languages';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../resources/logosBible';
+import { READ_SPANS, type ReadSpan } from '../speech/readSpan';
 import { PRONUNCIATIONS } from '../speech/pronunciation';
 
 /** The longest text a talked change of a text setting may hold (the grind's schema says the same). */
@@ -223,6 +226,17 @@ export const SETTINGS: readonly SettingEntry[] = [
     async (value) => {
       await setSectionHeadings(value as SectionHeadings);
       publish({ kind: 'headings-changed', headings: value as SectionHeadings });
+    },
+  ),
+  choice(
+    'readSpan',
+    'Read aloud span',
+    `How far the app reads aloud before it stops, from the verse it starts at (the play button on one verse always reads just that verse): ${READ_SPANS.map((s) => `${s.label} stops ${s.stops}`).join('; ')}.`,
+    READ_SPANS.map((s) => ({ value: s.id, label: s.label })),
+    getReadSpan,
+    async (value) => {
+      await setReadSpan(value as ReadSpan);
+      publish({ kind: 'read-span-changed', span: value as ReadSpan });
     },
   ),
   choice(

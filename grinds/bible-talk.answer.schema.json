@@ -72,6 +72,12 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
+            "properties": { "key": { "const": "readSpan" }, "value": { "type": "string", "enum": ["verse", "passage", "chapter", "book"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
             "properties": { "key": { "const": "tips" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
