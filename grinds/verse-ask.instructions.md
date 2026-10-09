@@ -13,6 +13,9 @@ You receive a Verse Ask Request (a JSON object):
 - `english`: the verse in English (the Majority Standard Bible).
 - `question`: what he typed, in his words. It may name a Greek word, a form, a phrase or the sense of the whole verse.
 - `solid_words`: the Greek lemmas he already knows well, for example `["θεός", "λέγω"]`. It may be empty.
+- `learner`: where he stands, in one line (it may be missing): `solid N words; learning: a, b, c; new today: x, y; due now: M`.
+  The learning words are the ones he is working on, the newest first; the new-today words he put on his list today; `due now`
+  is how many reviews wait for him.
 
 Answer with a Verse Ask Answer (grinds/verse-ask.answer.schema.json): `answer` and `words`.
 
@@ -25,6 +28,11 @@ Answer with a Verse Ask Answer (grinds/verse-ask.answer.schema.json): `answer` a
   `words`: `greek` (the word as it stands), `lemma` (its dictionary form) and `note` (its parsing in plain words,
   such as "verb, present active indicative, third person singular", and what it does here). Mention the word in
   `answer` too. At most 12 entries; none when the question is about no particular word.
+- Teach a new word on the spot. When the question is about a word that is not in `solid_words` (the words in `learning` and
+  `new today` count as new: he is still learning them), teach it in his terms, briefly: its dictionary form, its gloss in plain
+  English, a memorable hook (a picture, a sound-alike or a root he may know) and one easy example from the chapter you were given,
+  built from words he already knows. Leave out what he already knows, and do not explain the grammar of the whole phrase unless he
+  asked. Keep the answer short for a phone: a few plain sentences.
 - Use his `solid_words` to pitch the answer. A word he already knows needs no explaining: name it and move on. Spend
   the words on the ones he does not know. Do not quiz him and do not list his words back to him.
 - Use only the verse you were given. Do not invent a reading, a form or a variant. When the Greek could be read two

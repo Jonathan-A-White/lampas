@@ -76,6 +76,8 @@ export interface TalkRequest {
   settings: Record<string, SettingValue>;
   /** present only when the question comes from the word sheet's Help with this word row, or a Grammar sheet's Ask the tutor */
   focus?: TalkFocus;
+  /** where he stands (src/data/learnerSummary.ts): solid count, the learning words, today's new words, what is due */
+  learner?: string;
 }
 
 /** What the grind answers (grinds/bible-talk.answer.schema.json). */
@@ -143,6 +145,7 @@ export function buildTalkRequest(
   solidWords: string[],
   settings: Record<string, SettingValue> = {},
   focus?: TalkFocus,
+  learner?: string,
 ): TalkRequest {
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   return {
@@ -154,6 +157,7 @@ export function buildTalkRequest(
     solid_words: solidWords,
     settings,
     ...(focus ? { focus } : {}),
+    ...(learner ? { learner } : {}),
   };
 }
 

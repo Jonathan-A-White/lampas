@@ -9,6 +9,12 @@ const turn = (i: number, a = `Answer ${i}`) => ({ q: `Question ${i}`, a });
 const size = (r: TalkRequest) => new TextEncoder().encode(JSON.stringify(r)).length;
 
 describe('buildTalkRequest', () => {
+  it('carries the learner summary when given one, and no learner key when not', () => {
+    const scope = { title: 'Romans 8', chapter, verse: null };
+    expect(buildTalkRequest(scope, 'Why?', [], [], {}, undefined, 'solid 1 word; learning: none; new today: none; due now: 0').learner).toBe('solid 1 word; learning: none; new today: none; due now: 0');
+    expect('learner' in buildTalkRequest(scope, 'Why?', [], [])).toBe(false);
+  });
+
   it('about a verse: its reference, its Greek and English', () => {
     const verse = chapter.verses.find((v) => v.n === 9);
     if (!verse) throw new Error('no verse 9');

@@ -68,3 +68,17 @@ Feature: Ask the tutor about a verse
     When he asks "What does συνεργεῖ mean here?"
     Then the box says "Could not reach the tutor" with a Retry button
     And no answer shows under verse 28
+
+  Scenario: Asking about a new word sends the learner summary
+    Given Lampas is opened on Romans 8 with a tutor behind a fake Postern
+    And he is learning the word "σάρξ" which he added today
+    And he selects verse 28
+    When he asks "What does πρόθεσιν mean here?"
+    Then the mill received one grist for the lampas app, kind verse-ask
+    And its input carries a learner summary that names his solid words as a count, "σάρξ" among the words he is learning and as new today, and what is due now
+
+  Scenario: The tutor's instructions ask it to teach a new word in his terms
+    Given the verse-ask grind's instructions
+    Then they describe the learner field
+    And they ask for a new word to be taught with its gloss, a memorable hook and one easy example from the chapter
+    And they say to leave out what he already knows and to keep the answer short for a phone
