@@ -4,11 +4,11 @@ import { db } from '../../src/data/db';
 afterAll(() => db.close());
 
 describe('the Dexie database', () => {
-  it('opens at version 12 with the words, meta, settings, results, answers, talks, drills, readings, grammarKnown, grammarLevels, reviews and usage stores', async () => {
+  it('opens at version 13 with the words, meta, settings, results, answers, talks, drills, readings, grammarKnown, grammarLevels, reviews, usage and tips stores', async () => {
     await db.open();
     expect(db.name).toBe('lampas');
-    expect(db.verno).toBe(12);
-    expect(db.tables.map((t) => t.name).sort()).toEqual(['answers', 'drills', 'grammarKnown', 'grammarLevels', 'meta', 'readings', 'results', 'reviews', 'settings', 'talks', 'usage', 'words']);
+    expect(db.verno).toBe(13);
+    expect(db.tables.map((t) => t.name).sort()).toEqual(['answers', 'drills', 'grammarKnown', 'grammarLevels', 'meta', 'readings', 'results', 'reviews', 'settings', 'talks', 'tips', 'usage', 'words']);
     expect(db.words.schema.primKey.name).toBe('lemma');
     expect(db.words.schema.idxByName['lemmas']?.multi).toBe(true);
     expect(db.settings.schema.primKey.name).toBe('key');
@@ -30,5 +30,7 @@ describe('the Dexie database', () => {
     expect(db.usage.schema.primKey.name).toBe('key');
     expect(db.usage.schema.idxByName['day']).toBeDefined();
     expect(db.usage.schema.idxByName['name']).toBeDefined();
+    expect(db.tips.schema.primKey.name).toBe('id');
+    expect(db.tips.schema.idxByName['status']).toBeDefined();
   });
 });

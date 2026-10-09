@@ -2,7 +2,7 @@
 // publishes what happened; any screen subscribes to the kinds it cares about. The last event of each kind is
 // kept, so a screen that mounts late still knows the current verse. docs/events.md lists every kind.
 import { useEffect, useRef, useSyncExternalStore } from 'react';
-import type { ReaderView, ReadingLayout, SectionHeadings, Weave, WeaveGrammar } from '../data/repositories';
+import type { ReaderView, ReadingLayout, SectionHeadings, Tips, Weave, WeaveGrammar } from '../data/repositories';
 import type { GrammarLevelName } from '../data/db';
 import type { Goal } from '../data/goal';
 import type { Theme } from '../appearance/themes';
@@ -20,6 +20,8 @@ export type AppEvent =
   | { kind: 'weave-grammar-changed'; grammar: WeaveGrammar }
   | { kind: 'layout-changed'; layout: ReadingLayout }
   | { kind: 'headings-changed'; headings: SectionHeadings }
+  /** the Tips choice: whether the phone may send for a tip and show its card */
+  | { kind: 'tips-changed'; tips: Tips }
   /** the voices he chose in Settings, as the phone's voiceURI; null is the phone's default */
   | { kind: 'voices-changed'; english: string | null; greek: string | null }
   | { kind: 'pronunciation-changed'; pronunciation: GreekPronunciation }

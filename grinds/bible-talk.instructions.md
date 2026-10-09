@@ -101,6 +101,7 @@ leave `words` empty and `settings_changes` out:
 - `textSize` — Text size. How big the text is, in steps of the phone's own size. Value: "small" (Small), "normal" (Normal), "large" (Large), "largest" (Largest).
 - `layout` — Layout. How the verses are set on the page: one per line, or run together in paragraphs. Value: "verse" (Verse by verse), "paragraph" (Paragraph).
 - `sectionHeadings` — Section headings. Whether the Bible's headings are shown above their verses. Value: "on" (On), "off" (Off).
+- `tips` — Tips. Whether Lampas may offer one small tip a day, from what you use, to help you get more from the app. On by default; Off sends nothing. Value: "on" (On), "off" (Off).
 - `weave` — Weave. In the English view, whether the Greek of his solid words, and of the words he is learning with their English beneath in small grey, is shown in place of their English. Value: "off" (Off), "solid" (Solid), "solid+learning" (+ Learning).
 - `weaveGrammar` — Grammar. Of the words that stand in Greek, keep only the forms whose grammar you have at this level: Any, Solid, or Solid and frontier. Value: "any" (Any), "solid" (Solid), "solid+frontier" (+ Frontier).
 - `goal` — Goal. The passage you are working toward: a book, a chapter or a verse. Value: text, for example "1 John 1:1" (a book, a chapter or a verse; "" for none).

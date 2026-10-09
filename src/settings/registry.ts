@@ -16,6 +16,7 @@ import {
   getSpeechRates,
   getTextSize,
   getTheme,
+  getTips,
   getVoice,
   getWeave,
   getWeaveGrammar,
@@ -28,11 +29,13 @@ import {
   setSpeechRate,
   setTextSize,
   setTheme,
+  setTips,
   setVoice,
   setWeave,
   setWeaveGrammar,
   type ReadingLayout,
   type SectionHeadings,
+  type Tips,
   type Weave,
   type WeaveGrammar,
 } from '../data/repositories';
@@ -214,6 +217,20 @@ export const SETTINGS: readonly SettingEntry[] = [
     async (value) => {
       await setSectionHeadings(value as SectionHeadings);
       publish({ kind: 'headings-changed', headings: value as SectionHeadings });
+    },
+  ),
+  choice(
+    'tips',
+    'Tips',
+    'Whether Lampas may offer one small tip a day, from what you use, to help you get more from the app. On by default; Off sends nothing.',
+    [
+      { value: 'on', label: 'On' },
+      { value: 'off', label: 'Off' },
+    ],
+    getTips,
+    async (value) => {
+      await setTips(value as Tips);
+      publish({ kind: 'tips-changed', tips: value as Tips });
     },
   ),
   choice(

@@ -14,6 +14,7 @@ export {
   getSpeechRates,
   getTextSize,
   getTheme,
+  getTips,
   getVoice,
   getWeave,
   getWeaveGrammar,
@@ -27,11 +28,12 @@ export {
   setSpeechRate,
   setTextSize,
   setTheme,
+  setTips,
   setVoice,
   setWeave,
   setWeaveGrammar,
 } from './settings';
-export type { ReaderView, ReadingLayout, SectionHeadings, VoiceLanguage, Weave, WeaveGrammar } from './settings';
+export type { ReaderView, ReadingLayout, SectionHeadings, Tips, VoiceLanguage, Weave, WeaveGrammar } from './settings';
 export { listResults, recordAnswer } from './results';
 export type { TestResult } from './results';
 export { countDue, ensureScheduled, listDue, recordReview, reviewsOf, seedScheduleIfFirstOpen } from './reviews';
@@ -52,3 +54,5 @@ export { getStudyResources, setResourceOn, setResourceOption } from './resources
 export type { StudyResources } from './resources';
 export { dayOf, listUsage, recordUsage, savedSettings, usageCounts } from './usage';
 export type { UsageCounts, UsageRow } from './usage';
+export { dismissTip, keepTip, openTip, shownTipIds } from './tips';
+export type { TipRow } from './tips';
