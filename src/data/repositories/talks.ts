@@ -26,6 +26,8 @@ export interface TurnChanges {
   studyWayLine?: string;
   /** how the Hebrew word he asked to sound out is said (mw-5r3p30.98) */
   guide?: HebrewSounds;
+  /** the one-line summary of an ask the app cannot meet, offered to the makers */
+  feedbackOffer?: string;
 }
 
 /** Keeps one turn and returns its id. */
@@ -39,6 +41,7 @@ export async function addTurn(ref: string, q: string, a: string, words: AnswerWo
   if (done?.links?.length) turn.links = done.links;
   if (done?.studyWayLine) turn.studyWayLine = done.studyWayLine;
   if (done?.guide) turn.guide = done.guide;
+  if (done?.feedbackOffer) turn.feedbackOffer = done.feedbackOffer;
   return (await db.talks.add(turn)) as number;
 }
 
@@ -50,6 +53,11 @@ export async function markChangeUndone(turnId: number, index: number): Promise<v
     const changes = turn.changes.map((c, i) => (i === index ? { ...c, undone: true } : c));
     await db.talks.update(turnId, { changes });
   });
+}
+
+/** Marks the turn's feedback offer as sent, so it reads Sent from then on. */
+export async function markFeedbackSent(turnId: number): Promise<void> {
+  await db.talks.update(turnId, { feedbackSent: true });
 }
 
 /** One conversation's turns, the oldest first. */

@@ -9,14 +9,15 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Waiting } from './Ask';
 import { addLemmaToLearn, findGreekWord, glossOf } from './data/answerWord';
 import type { AnswerWord } from './data/db';
-import { addWordToLearn, keepStudyWayLine, listStudyWay, listTurns, markChangeUndone, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
+import { addWordToLearn, keepStudyWayLine, listStudyWay, listTurns, markChangeUndone, markFeedbackSent, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
 import { Markdown } from './markdown/Markdown';
 import { TutorLinks } from './TutorLinks';
 import { settingOf, undoChange, type AppliedChange } from './settings/registry';
 import { hebrewSoundAsk, MAX_TALK_CHARS, scopeTitle, type TalkFocus, type TalkScope } from './services/talk';
 import { HebrewSoundGuide } from './script/HebrewGuide';
 import { HebrewAskContext } from './script/hebrewSpeech';
-import { FAILURE_TITLES } from './services/tutor';
+import { buildTutorAskRequest, submitFeedback } from './services/feedback';
+import { FAILURE_TITLES, TutorError, type TutorFailure } from './services/tutor';
 import { startAnswer, stopAnswer, useReading } from './speech/readAloud';
 import { stopOnTap } from './speech/tutorVoice';
 import { Icon } from './speech/ReadControls';
@@ -196,6 +197,61 @@ function StudyWayProposal({ line }: { line: string }) {
   );
 }
 
+/** The tutor's offer to pass an ask Lampas cannot meet to the makers: its summary and Send this to the makers. The tap sends one feedback grist
+ * through the one sender (src/services/feedback.ts): his words, the summary, the screen's name and what it showed; then the turn reads Sent. */
+function FeedbackOffer({ turn, scope }: { turn: TalkTurn; scope: TalkScope }) {
+  const [phase, setPhase] = useState<{ name: 'idle' } | { name: 'sending' } | { name: 'failed'; failure: TutorFailure; detail: string }>({ name: 'idle' });
+  if (!turn.feedbackOffer) return null;
+  const summary = turn.feedbackOffer;
+  const send = async (): Promise<void> => {
+    if (phase.name === 'sending' || turn.id === undefined) return;
+    setPhase({ name: 'sending' });
+    try {
+      await submitFeedback(
+        buildTutorAskRequest({ text: turn.q, summary, screen: scope.screen?.name ?? 'Reader', reference: scopeTitle(scope), facts: scope.screen?.facts }),
+      );
+      await markFeedbackSent(turn.id);
+    } catch (err) {
+      const error = err instanceof TutorError ? err : new TutorError('unreachable', err instanceof Error ? err.message : 'Something went wrong.');
+      setPhase({ name: 'failed', failure: error.failure, detail: error.message });
+    }
+  };
+  return (
+    <div data-feedback-offer className="mt-2 border-t border-line pt-2">
+      <p className="text-sm text-muted">For the makers</p>
+      <p className="break-words text-lg">{summary}</p>
+      {turn.feedbackSent ? (
+        <div role="status">
+          <p className="min-h-11 py-2 text-base font-medium">Sent</p>
+          <p className="text-base text-muted">The answer will come back.</p>
+        </div>
+      ) : (
+        <>
+          {phase.name === 'failed' ? (
+            <div role="alert" className="space-y-1 pt-1">
+              <p className="text-base font-semibold text-bad">{FAILURE_TITLES[phase.failure]}</p>
+              <p className="break-words text-sm text-muted">{phase.detail}</p>
+            </div>
+          ) : null}
+          {phase.name === 'sending' ? (
+            <p role="status" className="py-1 text-base text-muted">
+              Sending…
+            </p>
+          ) : null}
+          <button
+            type="button"
+            disabled={phase.name === 'sending'}
+            onClick={() => void send()}
+            className="mt-1 min-h-11 rounded-lg border border-accent px-4 text-base font-medium text-accent active:bg-line disabled:opacity-40"
+          >
+            {phase.name === 'failed' ? 'Retry' : 'Send this to the makers'}
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkScope; onLook: (lookup: Lookup) => void; onLeave: () => void }) {
   return (
     <article data-turn className="space-y-2">
@@ -258,6 +314,7 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
         {turn.guide ? <HebrewSoundGuide guide={turn.guide} /> : null}
         {turn.links?.length ? <TutorLinks links={turn.links} onLeave={onLeave} /> : null}
         {turn.studyWayLine ? <StudyWayProposal line={turn.studyWayLine} /> : null}
+        <FeedbackOffer turn={turn} scope={scope} />
         <div className="-mb-1 mt-1 flex justify-end">
           <AnswerSpeaker turn={turn} />
         </div>

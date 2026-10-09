@@ -62,7 +62,7 @@ export { addAnswer, listAnswers, verseRef } from './answers';
 export type { AnswerWord, TutorAnswer } from './answers';
 export { STUDY_WAY_LINE_MAX, STUDY_WAY_MAX, deleteStudyWayLine, editStudyWayLine, keepStudyWayLine, listStudyWay } from './studyWay';
 export type { EditResult, KeepResult } from './studyWay';
-export { addTurn, listTurns, markChangeUndone, talkRef } from './talks';
+export { addTurn, listTurns, markChangeUndone, markFeedbackSent, talkRef } from './talks';
 export type { TalkTurn, TurnChanges } from './talks';
 export { listDrillResults, recordDrillStep } from './drills';
 export type { DrillResult } from './drills';
