@@ -19,6 +19,8 @@ export interface TurnChanges {
   unknown?: string[];
   /** the links of the answer (mw-5r3p30.75) */
   links?: AnswerLink[];
+  /** the study way line the answer proposed (mw-5r3p30.76) */
+  studyWayLine?: string;
 }
 
 /** Keeps one turn and returns its id. */
@@ -30,6 +32,7 @@ export async function addTurn(ref: string, q: string, a: string, words: AnswerWo
   if (done?.already?.length) turn.already = done.already;
   if (done?.unknown?.length) turn.unknown = done.unknown;
   if (done?.links?.length) turn.links = done.links;
+  if (done?.studyWayLine) turn.studyWayLine = done.studyWayLine;
   return (await db.talks.add(turn)) as number;
 }
 

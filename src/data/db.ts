@@ -74,6 +74,8 @@ export interface TalkTurn {
   unknown?: string[];
   /** the links the answer carried (at most MAX_LINKS), shown as chips for the study resources he has switched on (src/TutorLinks.tsx) */
   links?: AnswerLink[];
+  /** the study way line the answer proposed (mw-5r3p30.76); the reader keeps it with Keep this, or not */
+  studyWayLine?: string;
 }
 
 /** One step of one word in the Parsing drill: 'tense' of λέγω, answered rightly or not. */

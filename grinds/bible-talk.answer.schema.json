@@ -38,6 +38,12 @@
       "maxItems": 12,
       "items": { "type": "string", "minLength": 1, "maxLength": 80 }
     },
+    "study_way_line": {
+      "description": "Only in a quiz (mode quiz), and only when he asked for a lasting change to how he is quizzed ('shorter quizzes', 'skip the map', 'more grammar'): one short line, in his terms, that states the change as a standing instruction for later quizzes. The app shows it with a Keep this button and keeps it only if he taps; it is not kept otherwise. Leave it out for anything that is only for today.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
     "links": {
       "description": "Links the app turns into buttons that open a word or a verse in the reader's own study resources (lexicons, a Bible); he sees only the ones he has switched on. At most three. Leave it out when no lexicon or verse would help him.",
       "type": "array",

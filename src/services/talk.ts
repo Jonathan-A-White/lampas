@@ -3,6 +3,7 @@
 // file is the kind's own: the request with the last turns of the conversation, the answer's shape, and the fit to a grist.
 import type { Chapter, Verse } from '../data/chapter';
 import { unitId } from '../data/passage';
+import { STUDY_WAY_LINE_MAX } from '../data/repositories/studyWay';
 import { talkRef } from '../data/repositories/talks';
 import type { AnswerLink, AnswerWord } from '../data/db';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
@@ -148,6 +149,8 @@ export interface TalkRequest {
   learner_grammar?: LearnerGrammar;
   /** present only in a quiz (the Verse view's Quiz me, mw-5r3p30.74): the grind then runs the read, quiz, map method on `greek` and `english` */
   mode?: 'quiz';
+  /** present only in a quiz and only when he has kept any (My study way, mw-5r3p30.76): the lines of how he wants to be quizzed; they override the default method where they conflict */
+  study_way?: string[];
 }
 
 /** The most links an answer carries (the grind's schema): the app shows the first three of more. */
@@ -165,6 +168,8 @@ export interface TalkAnswer {
   syllables?: string[];
   /** the words and verses the answer links to a study resource (mw-5r3p30.75): the app shows each in the resources he has switched on */
   links?: AnswerLink[];
+  /** in a quiz, one line the tutor proposes for his study way (mw-5r3p30.76): shown with Keep this, kept only when he taps it */
+  study_way_line?: string;
 }
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
@@ -176,7 +181,8 @@ const isAnswerLink = (value: unknown): value is AnswerLink =>
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'links')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'links' && k !== 'study_way_line')) return false;
+  if ('study_way_line' in value && !isText(value.study_way_line, STUDY_WAY_LINE_MAX)) return false;
   if ('links' in value && !(Array.isArray(value.links) && value.links.length <= 12 && value.links.every(isAnswerLink))) return false;
   if ('settings_changes' in value && !Array.isArray(value.settings_changes)) return false;
   if ('words_to_add' in value && !(Array.isArray(value.words_to_add) && value.words_to_add.length <= 12 && value.words_to_add.every((l) => isText(l, 80)))) return false;
@@ -235,6 +241,7 @@ export function buildTalkRequest(
   focus?: TalkFocus,
   learner?: string,
   learnerGrammar?: LearnerGrammar,
+  studyWay: string[] = [],
 ): TalkRequest {
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   return {
@@ -249,6 +256,7 @@ export function buildTalkRequest(
     ...(learner ? { learner } : {}),
     ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
     ...(scope.quiz ? { mode: 'quiz' as const } : {}),
+    ...(scope.quiz && studyWay.length > 0 ? { study_way: studyWay } : {}),
   };
 }
 

@@ -21,6 +21,12 @@
       }
     },
     "mode": { "description": "Optional. quiz: the reader chose Quiz me on the verse or passage `reference` names; the grind runs the quizzing and mapping method on `greek` and `english`.", "type": "string", "enum": ["quiz"] },
+    "study_way": {
+      "description": "Optional, and only in a quiz (mode quiz). The reader's own lines about how he wants the read, quiz and map method run (My study way in the app), oldest first, at most 12, each at most 100 characters; he kept each one himself. Where a line conflicts with the default method, the line wins. Missing when he has kept none.",
+      "type": "array",
+      "maxItems": 12,
+      "items": { "type": "string", "minLength": 1, "maxLength": 100 }
+    },
     "solid_words": { "description": "The Greek lemmas he already knows well.", "type": "array", "items": { "type": "string" } },
     "learner": { "description": "Optional. Where he stands in one line: 'solid N words; learning: a, b, c; new today: x, y; due now: M'.", "type": "string", "maxLength": 600 },
     "learner_grammar": {
