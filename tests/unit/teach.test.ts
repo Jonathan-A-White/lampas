@@ -76,7 +76,7 @@ describe('weaveForTeaching', () => {
     ],
     e: [
       { t: 'And', g: [0] },
-      { t: 'his', g: [1], s: 1 },
+      { t: 'his', g: [1], s: [0] },
       { t: 'word', g: [2] },
     ],
   };
