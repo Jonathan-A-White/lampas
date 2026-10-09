@@ -1,4 +1,4 @@
-// src/nav/route.ts — ten screens, told apart by the address hash, so the phone's Back button walks them.
+// src/nav/route.ts — eleven screens, told apart by the address hash, so the phone's Back button walks them.
 // The reader's own state rides in the same hash after a '?': book (b, its code as public/data/index.json has it), chapter (c),
 // view, weave and the selected verse (v), e.g. '#/?b=rom&c=8&view=greek&weave=off&v=28'. An address with a chapter and no book
 // is Romans (every address kept before the picker, mw-5r3p30.60, was). src/nav/lastRoute.ts keeps these addresses across a close.
@@ -7,9 +7,10 @@
 // src/nav/LinkOpener.tsx replaces them by the plain reader address above before the Reader opens, so they are never kept.
 import { useSyncExternalStore } from 'react';
 import { bookOf } from '../data/books';
+import { paradigmById } from '../data/paradigms';
 import type { ReaderView, Weave } from '../data/repositories';
 
-export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'placement' | 'goal' | 'about' | 'settings';
+export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'paradigms' | 'placement' | 'goal' | 'about' | 'settings';
 
 /** What the address says about the reader; a key is missing when the address does not say. */
 export interface ReaderAddress {
@@ -48,6 +49,7 @@ export function routeOf(hash: string): Route {
   if (path === '#/test') return 'test';
   if (path === '#/drill') return 'drill';
   if (path === '#/review') return 'review';
+  if (path === '#/paradigms') return 'paradigms';
   if (path === '#/placement') return 'placement';
   if (path === '#/goal') return 'goal';
   if (path === '#/about') return 'about';
@@ -89,6 +91,33 @@ export function readerHash({ book, chapter, view, weave, verse }: ReaderAddress)
   return query ? `#/?${query}` : '#/';
 }
 
+/** What the address says about the Paradigms screen: no table is the list; a table opens in a mode (study when it is not said). */
+export interface ParadigmAddress {
+  /** the table's id: 'article', 'eimi' */
+  table?: string;
+  mode?: 'study' | 'review';
+}
+
+export function paradigmOf(hash: string): ParadigmAddress {
+  const q = hash.indexOf('?');
+  const params = new URLSearchParams(q < 0 ? '' : hash.slice(q + 1));
+  const address: ParadigmAddress = {};
+  const table = params.get('t');
+  if (table !== null && paradigmById(table)) address.table = table;
+  const mode = params.get('mode');
+  if (address.table !== undefined && (mode === 'study' || mode === 'review')) address.mode = mode;
+  return address;
+}
+
+/** The Paradigms address, always in the same order. */
+export function paradigmHash({ table, mode }: ParadigmAddress): string {
+  const params = new URLSearchParams();
+  if (table !== undefined) params.set('t', table);
+  if (table !== undefined && mode) params.set('mode', mode);
+  const query = params.toString();
+  return query ? `#/paradigms?${query}` : '#/paradigms';
+}
+
 const urlFor = (hash: string) => `${window.location.pathname}${window.location.search}${hash}`;
 
 /** Opens a screen; `replace` swaps the current history entry instead of adding one. */
@@ -103,6 +132,12 @@ export function navigate(route: Route, options: { replace?: boolean } = {}): voi
 /** Opens the reader at a chapter and verse, as a new Back step. */
 export function openReader(address: Pick<ReaderAddress, 'book' | 'chapter' | 'verse'>): void {
   window.history.pushState(null, '', urlFor(readerHash(address)));
+  notify();
+}
+
+/** Opens a Paradigms table (or the list, with none) as a new Back step. */
+export function openParadigm(address: ParadigmAddress): void {
+  window.history.pushState(null, '', urlFor(paradigmHash(address)));
   notify();
 }
 

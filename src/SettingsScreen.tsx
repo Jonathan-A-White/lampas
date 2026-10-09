@@ -586,7 +586,7 @@ function AskApproach() {
   );
 }
 
-function LinkRow({ label, to }: { label: string; to: 'words' | 'review' | 'about' }) {
+function LinkRow({ label, to }: { label: string; to: 'words' | 'review' | 'paradigms' | 'about' }) {
   return (
     <button
       type="button"
@@ -674,6 +674,7 @@ export function SettingsScreen() {
           <Section title="More">
             <LinkRow label="Words" to="words" />
             <LinkRow label="Review" to="review" />
+            <LinkRow label="Paradigms" to="paradigms" />
             <LinkRow label="About" to="about" />
           </Section>
         </div>

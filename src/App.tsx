@@ -10,6 +10,7 @@ import { startReaderAddressSync } from './nav/readerAddress';
 import { routeOf, useAddress } from './nav/route';
 import { Reader } from './Reader';
 import { GoalScreen } from './GoalScreen';
+import { ParadigmsScreen } from './ParadigmsScreen';
 import { PlacementScreen } from './PlacementScreen';
 import { QuizScreen } from './QuizScreen';
 import { ReviewScreen } from './ReviewScreen';
@@ -52,6 +53,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <DrillScreen newRandom={newRandom} />
       ) : route === 'review' ? (
         <ReviewScreen newRandom={newRandom} />
+      ) : route === 'paradigms' ? (
+        <ParadigmsScreen />
       ) : route === 'placement' ? (
         <PlacementScreen newRandom={newRandom} />
       ) : route === 'goal' ? (
