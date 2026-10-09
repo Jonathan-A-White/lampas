@@ -163,6 +163,20 @@ export interface UsageRow {
   count: number;
 }
 
+/** A tip the tips grind offered (src/tips/): kept so its id is sent as shown next time, and so a card he has not answered is still there. */
+export interface TipRow {
+  /** the grind's slug, 'try-review' */
+  id: string;
+  title: string;
+  body: string;
+  /** the screen the tip's button opens, when it has one */
+  action?: { label: string; screen: string };
+  /** the local day it was shown, 'YYYY-MM-DD' */
+  day: string;
+  /** open: the card is up; acted: he tapped Show me; dismissed: Not now or Got it */
+  status: 'open' | 'acted' | 'dismissed';
+}
+
 // Never edit an old version(): repeat the whole stores map on each bump with a '// vN:' comment
 // (docs/pwa-best-practices.md section 15).
 class LampasDB extends Dexie {
@@ -178,6 +192,7 @@ class LampasDB extends Dexie {
   reviews!: EntityTable<Review, 'kind' | 'id'>;
   grammarLevels!: EntityTable<GrammarLevel, 'id'>;
   usage!: EntityTable<UsageRow, 'key'>;
+  tips!: EntityTable<TipRow, 'id'>;
 
   constructor() {
     super('lampas');
@@ -285,6 +300,22 @@ class LampasDB extends Dexie {
       reviews: '[kind+id], due, kind',
       grammarLevels: 'id, level',
       usage: 'key, day, name',
+    });
+    // v13: the tips he was shown {id key, title, body, action?, day, status}; status finds the card still open.
+    this.version(13).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
+      reviews: '[kind+id], due, kind',
+      grammarLevels: 'id, level',
+      usage: 'key, day, name',
+      tips: 'id, status',
     });
   }
 }

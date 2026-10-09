@@ -15,12 +15,21 @@ export async function seedDeviceKey(page: Page, privateKeyHex: string = SEED_PRI
   await page.addInitScript((hex) => window.localStorage.setItem('lampas.deviceKey', hex), privateKeyHex);
 }
 
-/** Past the gate: the seeded key, remembered as holding a licence a minute ago, the chain unreachable. */
-export async function openUnlocked(page: Page): Promise<void> {
+/** The local day as 'YYYY-MM-DD', as src/data/repositories/usage.ts dayOf writes it. */
+function today(): string {
+  const d = new Date();
+  const two = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`;
+}
+
+/** Past the gate: the seeded key, remembered as holding a licence a minute ago, the chain unreachable. Today's tip is marked as asked, so the
+ * sitting sends no tips grist (src/tips/offer.ts); `tips: true` leaves the day free for a spec that wants the grist. */
+export async function openUnlocked(page: Page, options: { tips?: boolean } = {}): Promise<void> {
   await refuseChain(page);
   await seedDeviceKey(page);
   await page.addInitScript(
     ([publicKeyHex, at]) => window.localStorage.setItem('lampas.licenceHeld', JSON.stringify({ publicKeyHex, at })),
     [SEED_PUBLIC_KEY, Date.now() - 60_000] as const,
   );
+  if (!options.tips) await page.addInitScript((day) => window.localStorage.setItem('lampas.tipsDay', day), today());
 }

@@ -105,6 +105,20 @@ export async function setSectionHeadings(headings: SectionHeadings): Promise<voi
   await db.settings.put({ key: HEADINGS_KEY, value: headings });
 }
 
+export type Tips = 'on' | 'off';
+
+const TIPS_KEY = 'tips';
+
+/** The saved Tips choice; on when he has not chosen yet or the saved value is not one of the two. */
+export async function getTips(): Promise<Tips> {
+  const row = await db.settings.get(TIPS_KEY);
+  return row?.value === 'off' ? 'off' : 'on';
+}
+
+export async function setTips(tips: Tips): Promise<void> {
+  await db.settings.put({ key: TIPS_KEY, value: tips });
+}
+
 const THEME_KEY = 'theme';
 
 /** The saved Theme; Phone (the phone's own colour scheme) when he has not chosen or the saved value is not one in the list. */

@@ -105,6 +105,7 @@ describe('docs/events.md', () => {
       'weave-grammar-changed': true,
       'layout-changed': true,
       'headings-changed': true,
+      'tips-changed': true,
       'voices-changed': true,
       'pronunciation-changed': true,
       'theme-changed': true,

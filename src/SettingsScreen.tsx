@@ -12,6 +12,7 @@ import {
   getGreekPronunciation,
   getLayout,
   getSectionHeadings,
+  getTips,
   getSpeechRates,
   getTextSize,
   getTheme,
@@ -23,6 +24,7 @@ import {
   setResourceOption,
   type ReadingLayout,
   type SectionHeadings,
+  type Tips,
   type VoiceLanguage,
   type Weave,
   type WeaveGrammar,
@@ -171,6 +173,25 @@ function HeadingsChoice({ headings }: { headings: SectionHeadings }) {
   );
   return (
     <div role="group" aria-label="Section headings" className="inline-flex rounded-xl border border-line p-0.5">
+      {choice('on', 'On')}
+      {choice('off', 'Off')}
+    </div>
+  );
+}
+
+function TipsChoice({ tips }: { tips: Tips }) {
+  const choice = (value: Tips, label: string) => (
+    <button
+      type="button"
+      aria-pressed={tips === value}
+      onClick={() => void writeSetting('tips', value)}
+      className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${tips === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <div role="group" aria-label="Tips" className="inline-flex rounded-xl border border-line p-0.5">
       {choice('on', 'On')}
       {choice('off', 'Off')}
     </div>
@@ -610,6 +631,7 @@ export function SettingsScreen() {
   const weaveGrammar = useLiveQuery(getWeaveGrammar, []);
   const layout = useLiveQuery(getLayout, []);
   const headings = useLiveQuery(getSectionHeadings, []);
+  const tips = useLiveQuery(getTips, []);
   const english = useLiveQuery(() => getVoice('english'), []);
   const greek = useLiveQuery(() => getVoice('greek'), []);
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
@@ -670,6 +692,9 @@ export function SettingsScreen() {
           </section>
           <Section title="Bible in Logos" hint="Lampas has no Old Testament text. Picking an Old Testament chapter opens it in Logos, in this Bible.">
             {logosBible !== undefined ? <LogosBiblePicker saved={logosBible} /> : null}
+          </Section>
+          <Section title="Tips" hint="Once a day at most, when you open Lampas and are online, a small tip about something you have not tried. Off sends nothing.">
+            {tips ? <TipsChoice tips={tips} /> : null}
           </Section>
           <Section title="More">
             <LinkRow label="Words" to="words" />
