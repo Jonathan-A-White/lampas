@@ -93,6 +93,8 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 and the bus is listened to', openAndListen);
     When('he switches the weave grammar to Solid', async () => {
       await user.click(screen.getByRole('button', { name: 'Settings' }));
+      // the Grammar row is drawn only while the Weave is not Off (mw-5r3p30.106)
+      await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: 'Solid' }));
       await user.click(within(await screen.findByRole('group', { name: 'Grammar' })).getByRole('button', { name: 'Solid' }));
     });
     Then('weave-grammar-changed was published with solid', async () => {

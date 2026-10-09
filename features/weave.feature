@@ -80,7 +80,8 @@ Feature: The diglot weave
     Given Lampas is opened with nothing saved
     When he opens Settings
     Then the Words row is labelled "Words" and offers "Off", "Solid" and "+ Learning"
-    And the Grammar row is labelled "Grammar" and offers "Any", "Solid" and "+ Frontier"
+    When he turns the Weave on in Settings
+    Then the Grammar row is labelled "Grammar" and offers "Any", "Solid" and "+ Frontier"
     And the Grammar setting allows the values "any", "solid" and "solid+frontier"
     And the Grammar row is set to "Any"
 

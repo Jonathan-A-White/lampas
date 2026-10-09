@@ -8,6 +8,9 @@ test('Settings > Weave: a Words row and a Grammar row, each one line of three ch
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  // the Grammar row is drawn only while the Weave is not Off (mw-5r3p30.106)
+  await expect(page.getByRole('group', { name: 'Grammar', exact: true })).toHaveCount(0);
+  await page.getByRole('group', { name: 'Weave', exact: true }).getByRole('button', { name: 'Solid', exact: true }).click();
 
   const rows = [
     { group: page.getByRole('group', { name: 'Weave', exact: true }), chips: ['Off', 'Solid', '+ Learning'], label: 'Words' },

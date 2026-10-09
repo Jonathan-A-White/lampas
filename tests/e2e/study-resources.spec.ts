@@ -179,7 +179,7 @@ test('The Study links are equal tiles in two columns at 360 px, and an app that 
   await shot(page, 'word-sheet-study-grid');
 });
 
-test('Settings: Accordance is not on this phone, so its switch goes back Off and Install is offered there', async ({ page }) => {
+test('Settings: Accordance is not on this phone, so its switch goes back Off and its row shows nothing more', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
   await openUnlocked(page);
   await holdAppLinks(page);
@@ -189,13 +189,12 @@ test('Settings: Accordance is not on this phone, so its switch goes back Off and
   const section = page.getByRole('region', { name: 'Study resources' });
   const accordance = section.getByRole('switch', { name: 'Accordance', exact: true });
   await accordance.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  await expect(section.getByLabel('Accordance resource')).toHaveCount(0);
   await accordance.click();
-  await expect(section.getByText("Accordance isn't on this phone")).toBeVisible({ timeout: 4000 });
-  await expect(accordance).toHaveAttribute('aria-checked', 'false');
-  const install = section.getByRole('link', { name: 'Install Accordance', exact: true });
-  await expect(install).toHaveAttribute('href', /play\.google\.com\/store\/search\?q=Accordance/);
-  const b = await install.boundingBox();
-  expect(b?.height).toBeGreaterThanOrEqual(47.5);
-  expect((b?.x ?? 0) + (b?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
+  await expect(section.getByLabel('Accordance resource')).toBeVisible();
+  await expect(accordance).toHaveAttribute('aria-checked', 'false', { timeout: 4000 });
+  await expect(section.getByLabel('Accordance resource')).toHaveCount(0);
+  await expect(section.getByText("Accordance isn't on this phone")).toHaveCount(0);
+  await expect(section.getByRole('link', { name: 'Install Accordance', exact: true })).toHaveCount(0);
   await shot(page, 'settings-app-missing');
 });

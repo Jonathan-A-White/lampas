@@ -15,7 +15,6 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 const user = userEvent.setup();
 
 const ANDROID = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/126 Mobile Safari/537.36';
-const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1';
 
 let timers: (() => void)[] = [];
 let leavers: (() => void)[] = [];
@@ -106,30 +105,14 @@ describeFeature(feature, ({ Scenario }) => {
   const heldAs = async (_: unknown, key: string, value: string): Promise<void> => {
     await waitFor(async () => expect((await db.settings.get(key))?.value).toBe(value));
   };
-  const installLink = (store: string, pattern: RegExp | string) => async (_: unknown, name: string): Promise<void> => {
-    const href = (await screen.findByRole('link', { name })).getAttribute('href') ?? '';
-    if (typeof pattern === 'string') expect(href, store).toBe(pattern);
-    else expect(href, store).toMatch(pattern);
-  };
 
-  Scenario('Accordance is not on the phone, so the switch goes back Off and Install is offered', ({ Given, When, And, Then }) => {
+  Scenario('Accordance is not on the phone, so the switch goes back Off', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Settings and the phone is an Android phone', android);
     When('he turns the switch {string} On', turnsOn);
     And('the page stays in front for the wait', waits);
     Then('the switch {string} is Off', isSwitch('Off'));
-    And('Settings says {string}', says);
-    And('Settings has an {string} link to the Play Store', installLink('Play Store', /^https:\/\/play\.google\.com\/store\/search\?q=Accordance/));
+    And('Settings does not say {string}', doesNotSay);
     And('the setting {string} holds {string}', heldAs);
-  });
-
-  Scenario('On an iPhone Install Accordance goes to the App Store', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Settings and the phone is an iPhone', () => openSettings(IPHONE));
-    When('he turns the switch {string} On', turnsOn);
-    And('the page stays in front for the wait', waits);
-    Then(
-      'Settings has an {string} link to the App Store',
-      installLink('App Store', 'itms-apps://search.itunes.apple.com/WebObjects/MZSearch.woa/wa/search?media=software&q=Accordance'),
-    );
   });
 
   Scenario('Accordance is on the phone, so the switch stays On and the return says it was found', ({ Given, When, And, Then }) => {
