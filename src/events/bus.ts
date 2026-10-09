@@ -79,18 +79,29 @@ type Listener<K extends EventKind> = (event: EventOf<K>) => void;
 
 const listeners = new Map<EventKind, Set<Listener<EventKind>>>();
 const last = new Map<EventKind, AppEvent>();
+const everyListeners = new Set<(event: AppEvent) => void>();
 
 /** Tells every listener of `event.kind`, in the order they subscribed. A listener that throws is logged and the
  * others still hear it. */
 export function publish(event: AppEvent): void {
   last.set(event.kind, event);
-  for (const listener of [...(listeners.get(event.kind) ?? [])]) {
+  const calls = [...(listeners.get(event.kind) ?? [])].map((l) => () => (l as Listener<EventKind>)(event));
+  for (const every of [...everyListeners]) calls.push(() => every(event));
+  for (const call of calls) {
     try {
-      (listener as Listener<EventKind>)(event);
+      call();
     } catch (error) {
       console.error(`event listener for ${event.kind} threw`, error);
     }
   }
+}
+
+/** Calls `listener` on each later event of any kind, after the listeners of its kind; returns the unsubscribe. For things that
+ * count what happens (src/tips/usageLog.ts), not for screens. */
+export function subscribeAll(listener: (event: AppEvent) => void): () => void {
+  const entry = (event: AppEvent) => listener(event);
+  everyListeners.add(entry);
+  return () => void everyListeners.delete(entry);
 }
 
 /** Calls `listener` on each later event of `kind`; returns the unsubscribe. It is not called with an event
@@ -112,6 +123,7 @@ export function latest<K extends EventKind>(kind: K): EventOf<K> | undefined {
 /** Forgets every listener and every kept event: for tests. */
 export function clearBus(): void {
   listeners.clear();
+  everyListeners.clear();
   last.clear();
 }
 

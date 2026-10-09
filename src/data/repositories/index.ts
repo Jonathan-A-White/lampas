@@ -50,3 +50,5 @@ export { getSavedGoalText } from './goalSaved';
 export { isTermKnown, listKnownTerms, setTermKnown } from './grammar';
 export { getStudyResources, setResourceOn, setResourceOption } from './resources';
 export type { StudyResources } from './resources';
+export { dayOf, listUsage, recordUsage, savedSettings, usageCounts } from './usage';
+export type { UsageCounts, UsageRow } from './usage';

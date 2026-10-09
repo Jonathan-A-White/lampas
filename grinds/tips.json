@@ -1,0 +1,16 @@
+{
+  "grind": 1,
+  "app": "lampas",
+  "kind": "tips",
+  "versions": ["1"],
+  "model": "haiku",
+  "effort": "low",
+  "instructions": "grinds/tips.instructions.md",
+  "answerSchema": "grinds/tips.answer.schema.json",
+  "attachments": {
+    "min": 0,
+    "max": 0,
+    "mime": [],
+    "maxBytes": 0
+  }
+}
