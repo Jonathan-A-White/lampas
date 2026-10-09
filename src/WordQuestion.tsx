@@ -37,7 +37,19 @@ export function WordQuestion({ question, index, picked, onPick }: Props) {
             {question.prompt}
           </p>
         </div>
-        <p className="mt-1 min-h-6 text-base text-muted">{question.reference ?? ''}</p>
+        <p
+          data-testid={answered && question.form ? 'chapter-form' : undefined}
+          data-form={answered ? question.form : undefined}
+          className="mt-1 min-h-6 text-sm text-muted"
+        >
+          {answered && question.form ? (
+            <>
+              in {question.reference} as <span lang="grc">{question.form}</span>
+            </>
+          ) : (
+            ''
+          )}
+        </p>
       </div>
       <div className="mt-4">
         <HoldToHear text={question.prompt} />

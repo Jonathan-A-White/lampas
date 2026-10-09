@@ -131,9 +131,11 @@ export function formsOf(chapter: Chapter, word: Word, others: ReadonlySet<string
 export interface Question {
   /** The store's key for the word. */
   lemma: string;
-  /** What is shown in Greek: the lemma, or its form from the chapter. */
+  /** What is shown in Greek: always the dictionary form (the NFC lemma), never an inflected form. */
   prompt: string;
-  /** Under the prompt when it is a form: 'Romans 8:1'. */
+  /** The word as the open chapter has it, shown small only after the answer (PROVISIONAL); absent when the chapter lacks the word or did not load. */
+  form?: string;
+  /** Where that form is: 'Romans 8:1'. */
   reference?: string;
   /** Where that form is, for Ask the tutor; a round kept before this was added has neither. A round kept before the picker (mw-5r3p30.60) has no book: it was Romans. */
   book?: string;
@@ -150,7 +152,8 @@ export function buildQuestion(word: Word, pool: readonly Distractor[], chapter: 
   const pos = pool.find((p) => p.lemma === word.lemma)?.pos;
   return {
     lemma: word.lemma,
-    prompt: occurrence?.form ?? word.lemma,
+    prompt: nfc(word.lemma),
+    form: occurrence?.form,
     reference: occurrence?.reference,
     book: occurrence?.book,
     chapter: occurrence?.chapter,
@@ -170,7 +173,7 @@ export function askAbout(
   fallback: { book: string; chapter: number; verse: number },
 ): { book: string; chapter: number; verse: number; text: string } {
   if (q.chapter !== undefined && q.verse !== undefined && q.reference) {
-    return { book: q.book ?? 'rom', chapter: q.chapter, verse: q.verse, text: `What does ${q.prompt} mean in ${q.reference}, and why does the verse use that form?` };
+    return { book: q.book ?? 'rom', chapter: q.chapter, verse: q.verse, text: `What does ${q.form ?? q.prompt} mean in ${q.reference}, and why does the verse use that form?` };
   }
   return { ...fallback, text: `What does the Greek word ${q.prompt} mean ("${q.gloss}"), and how is it used in the New Testament?` };
 }
