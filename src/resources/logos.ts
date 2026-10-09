@@ -1,5 +1,5 @@
 // src/resources/logos.ts — I have Logos: 'Open in Logos: <lexicon>' for each lexicon of his library that he ticked in Settings, at the
-// word's headword, and 'Bible Word Study in Logos' for the lemma (at the verse when the sheet knows it). Every link is the Logos app's own
+// word's headword, and 'Bible Word Study in Logos' for the lemma alone. Every link is the Logos app's own
 // scheme first (logosres: for a resource, logos4: for a guide) and carries the https ref.ly address as the fallback, opened only when the
 // phone cannot open the scheme (src/resources/openApp.ts). docs/resources.md names the sources and what is UNVERIFIED.
 import type { StudyLink, StudyResource, StudyWord } from './types';
@@ -31,18 +31,10 @@ const LEXICONS = [
   { id: 'gelntthayer', short: 'Thayer', name: 'A Greek-English Lexicon of the New Testament', resource: 'LLS:THAYERGELEXNT' },
 ] as const;
 
-/** The Logos reference abbreviation of each New Testament book, by the data's book code ('act' -> 'Ac'). */
-const BOOKS: Record<string, string> = {
-  mat: 'Mt', mrk: 'Mk', luk: 'Lk', jhn: 'Jn', act: 'Ac', rom: 'Ro', '1co': '1Co', '2co': '2Co', gal: 'Ga', eph: 'Eph', php: 'Php',
-  col: 'Col', '1th': '1Th', '2th': '2Th', '1ti': '1Ti', '2ti': '2Ti', tit: 'Tit', phm: 'Phm', heb: 'Heb', jas: 'Jas', '1pe': '1Pe',
-  '2pe': '2Pe', '1jn': '1Jn', '2jn': '2Jn', '3jn': '3Jn', jud: 'Jud', rev: 'Re',
-};
-
-/** Logos' own name for a Greek lemma is lbs/el/<lemma>; the slashes must be escaped or Logos rejects the value (a bare lemma opens a search
- *  'lemma.ιησουσ' that finds nothing). docs/resources.md has the source. */
+/** Logos' own name for a Greek lemma is lbs/el/<lemma>, accents and capital kept; the slashes must be escaped or Logos rejects the value (a bare lemma opens a search
+ *  'lemma.ιησουσ' that finds nothing). The link names the lemma alone, no ref= (the documented form has none; mw-5r3p30.67). docs/resources.md has the source. */
 const study = (word: StudyWord): { path: string; fallbackPath: string } => {
-  const logosRef = word.ref && BOOKS[word.ref.book] ? `;ref=Bible.${BOOKS[word.ref.book]}${word.ref.chapter}.${word.ref.verse}` : '';
-  const guide = `Guide;t=${encodeURIComponent('Bible Word Study')};lemma=${encodeURIComponent(`lbs/el/${word.lemma.normalize('NFC')}`)}${logosRef}`;
+  const guide = `Guide;t=${encodeURIComponent('Bible Word Study')};lemma=${encodeURIComponent(`lbs/el/${word.lemma.normalize('NFC')}`)}`;
   return { path: `logos4:${guide}`, fallbackPath: `https://ref.ly/logos4/${guide}` };
 };
 

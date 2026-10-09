@@ -60,12 +60,12 @@ describe('the registry', () => {
     expect(resourceOf('strongs')?.linksFor({ ...WORD, strongs: 'G6856' })).toEqual([]);
   });
 
-  it('builds Logos links by its own scheme first: one Open link per ticked lexicon and the Bible Word Study at the verse', () => {
+  it('builds Logos links by its own scheme first: one Open link per ticked lexicon and the Bible Word Study by lemma alone', () => {
     const links = resourceOf('logos')?.linksFor(BIBLOS, 'bdag,louwnida') ?? [];
     expect(links.map((l) => l.label)).toEqual(['Open in Logos: BDAG', 'Open in Logos: Louw-Nida', 'Bible Word Study in Logos']);
     expect(links[0].url).toBe(`logosres:LLS:46.30.18;hw=${BIBLOS_URL}`);
     expect(links[1].url).toBe(`logosres:LLS:46.30.4;hw=${BIBLOS_URL}`);
-    expect(links[2].url).toBe(`logos4:Guide;t=Bible%20Word%20Study;lemma=${BIBLOS_LEMMA};ref=Bible.Ac19.19`);
+    expect(links[2].url).toBe(`logos4:Guide;t=Bible%20Word%20Study;lemma=${BIBLOS_LEMMA}`);
   });
 
   it('names each lexicon by the Resource ID Logos prints on its own product page (LLS:...), never a guessed short name', () => {
@@ -116,17 +116,32 @@ describe('the registry', () => {
   it('gives every Logos link its https address as the fallback, used only when the scheme cannot open', () => {
     const links = resourceOf('logos')?.linksFor(BIBLOS, 'bdag') ?? [];
     expect(links[0].fallback).toBe(`https://ref.ly/logosres/LLS%3A46.30.18?hw=${BIBLOS_URL}`);
-    expect(links[1].fallback).toBe(`https://ref.ly/logos4/Guide;t=Bible%20Word%20Study;lemma=${BIBLOS_LEMMA};ref=Bible.Ac19.19`);
+    expect(links[1].fallback).toBe(`https://ref.ly/logos4/Guide;t=Bible%20Word%20Study;lemma=${BIBLOS_LEMMA}`);
     for (const link of links) expect(new URL(link.fallback ?? '').protocol).toBe('https:');
   });
 
-  it('names the lemma the way Logos does, lbs/el/<lemma> with its slashes escaped, for Ἰησοῦς alone and at Romans 8:1', () => {
+  it('names the lemma the way Logos does, lbs/el/<lemma> with its slashes escaped, for Ἰησοῦς alone or tapped at Romans 8:1, never naming a verse or a book', () => {
     const alone = resourceOf('logos')?.linksFor({ ...JESUS, ref: undefined }, '') ?? [];
     expect(alone[0].url).toBe(`logos4:Guide;t=Bible%20Word%20Study;lemma=${JESUS_LEMMA}`);
     expect(alone[0].fallback).toBe(`https://ref.ly/logos4/Guide;t=Bible%20Word%20Study;lemma=${JESUS_LEMMA}`);
     const atVerse = resourceOf('logos')?.linksFor(JESUS, '') ?? [];
-    expect(atVerse[0].url).toBe(`logos4:Guide;t=Bible%20Word%20Study;lemma=${JESUS_LEMMA};ref=Bible.Ro8.1`);
-    expect(atVerse[0].fallback).toBe(`https://ref.ly/logos4/Guide;t=Bible%20Word%20Study;lemma=${JESUS_LEMMA};ref=Bible.Ro8.1`);
+    expect(atVerse[0].url).toBe(`logos4:Guide;t=Bible%20Word%20Study;lemma=${JESUS_LEMMA}`);
+    expect(atVerse[0].fallback).toBe(`https://ref.ly/logos4/Guide;t=Bible%20Word%20Study;lemma=${JESUS_LEMMA}`);
+  });
+
+  it('is exactly the documented form, accents kept, for Ἰησοῦς (G2424), νόμος (G3551) and ἐν (G1722)', () => {
+    const word = (lemma: string, strongs: string): StudyWord => ({ form: lemma, lemma, strongs, ref: { book: 'rom', chapter: 8, verse: 2 } });
+    const study = (w: StudyWord) => resourceOf('logos')?.linksFor(w, '')[0];
+    const jesus = study(word('Ἰησοῦς', 'G2424'));
+    expect(jesus?.url).toBe('logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F%E1%BC%B8%CE%B7%CF%83%CE%BF%E1%BF%A6%CF%82');
+    expect(decodeURIComponent(jesus?.url.split('lemma=')[1] ?? '')).toBe('lbs/el/Ἰησοῦς');
+    const nomos = study(word('νόμος', 'G3551'));
+    expect(nomos?.url).toBe('logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F%CE%BD%CF%8C%CE%BC%CE%BF%CF%82');
+    expect(decodeURIComponent(nomos?.url.split('lemma=')[1] ?? '')).toBe('lbs/el/νόμος');
+    const en = study(word('ἐν', 'G1722'));
+    expect(en?.url).toBe('logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F%E1%BC%90%CE%BD');
+    expect(decodeURIComponent(en?.url.split('lemma=')[1] ?? '')).toBe('lbs/el/ἐν');
+    for (const l of [jesus, nomos, en]) expect(l?.url).not.toMatch(/ref=|LLS:/);
   });
 
   it('leaves the verse out of the Bible Word Study link when the word has none, and builds no lexicon link for none ticked', () => {

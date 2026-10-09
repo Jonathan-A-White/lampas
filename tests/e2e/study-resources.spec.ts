@@ -45,7 +45,7 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
   await expect(logos).toHaveAttribute('href', /^logosres:LLS:46\.30\.18;hw=/);
   await expect(logos).toHaveAttribute('data-fallback', /^https:\/\/ref\.ly\/logosres\/LLS%3A46\.30\.18\?hw=/);
   await expect(study.getByRole('link', { name: 'Open in Logos: Louw-Nida', exact: true })).toHaveAttribute('href', /^logosres:LLS:46\.30\.4;hw=/);
-  await expect(study.getByRole('link', { name: 'Bible Word Study in Logos', exact: true })).toHaveAttribute('href', /;ref=Bible\.Ro8\.28$/);
+  await expect(study.getByRole('link', { name: 'Bible Word Study in Logos', exact: true })).toHaveAttribute('href', /^logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F[^;]+$/);
   await expect(study.getByText('G4903')).toHaveCount(1);
   await expect(page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-strongs')).toHaveCount(0);
   const box = await logos.boundingBox();
