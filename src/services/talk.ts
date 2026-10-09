@@ -2,6 +2,8 @@
 // the mill's bible-talk grind (grinds/bible-talk.json). The wire work is the tutor's (src/services/tutor.ts askGrind); this
 // file is the kind's own: the request with the last turns of the conversation, the answer's shape, and the fit to a grist.
 import type { Chapter, Verse } from '../data/chapter';
+import { unitId } from '../data/passage';
+import { talkRef } from '../data/repositories/talks';
 import type { AnswerWord } from '../data/db';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { SettingValue } from '../settings/registry';
@@ -144,6 +146,8 @@ export interface TalkRequest {
   learner?: string;
   /** where his grammar stands (src/data/grammar/learnerGrammar.ts): the goal, the counts, the idea titles by level, the suggested move; fitHistory never cuts it */
   learner_grammar?: LearnerGrammar;
+  /** present only in a quiz (the Verse view's Quiz me, mw-5r3p30.74): the grind then runs the read, quiz, map method on `greek` and `english` */
+  mode?: 'quiz';
 }
 
 /** What the grind answers (grinds/bible-talk.answer.schema.json). */
@@ -172,19 +176,28 @@ export function isTalkAnswer(value: unknown): value is TalkAnswer {
   return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));
 }
 
-/** What a talk is about: the chapter (`verse` null) or one of its verses. */
+/** What a talk is about: the chapter (`verse` null), one of its verses, or a passage under a heading (a Verse with `to`, src/data/passage.ts).
+ * `quiz` makes it the quiz about that verse or passage: a conversation of its own, every request in quiz mode. */
 export interface TalkScope {
   /** the chapter's title: 'Romans 8' */
   title: string;
   chapter: Chapter;
   verse: Verse | null;
+  quiz?: boolean;
 }
+
+/** The first thing he says in a quiz (the Start the quiz button sends it): the sheet shows it as his turn. */
+export const quizQuestion = (reference: string): string => `Quiz me on ${reference}.`;
 
 const greekOf = (v: Verse): string => v.g.map((w) => w.t).join(' ');
 const englishOf = (v: Verse): string => v.e.map((c) => c.t.trim()).join(' ');
 
-/** The title of the sheet and the reference in the request: 'Romans 8' or 'Romans 8:28'. */
-export const scopeTitle = (scope: Pick<TalkScope, 'title' | 'verse'>): string => (scope.verse ? `${scope.title}:${scope.verse.n}` : scope.title);
+/** The title of the sheet and the reference in the request: 'Romans 8', 'Romans 8:28' or, for a passage, 'Romans 8:1-11'. */
+export const scopeTitle = (scope: Pick<TalkScope, 'title' | 'verse'>): string => (scope.verse ? `${scope.title}:${unitId(scope.verse)}` : scope.title);
+
+/** The key the conversation `scope` names is kept under (src/data/repositories/talks.ts talkRef). */
+export const scopeRef = (book: string, chapter: number, scope: Pick<TalkScope, 'verse' | 'quiz'>): string =>
+  talkRef(book, chapter, scope.verse ? unitId(scope.verse) : null, scope.quiz === true);
 
 const sizeOf = (request: TalkRequest): number => new TextEncoder().encode(JSON.stringify(request)).length;
 
@@ -203,7 +216,7 @@ export function fitHistory(request: TalkRequest): TalkRequest {
   return fitted();
 }
 
-/** The request for what he just said: the verse's text, or the chapter's first three verses; the last 10 turns, oldest first; the settings as they stand; the word he asked help with, if he did. */
+/** The request for what he just said: the verse's or the passage's whole text, or the chapter's first three verses; the last 10 turns, oldest first; the settings as they stand; the word he asked help with, if he did. */
 export function buildTalkRequest(
   scope: TalkScope,
   question: string,
@@ -226,6 +239,7 @@ export function buildTalkRequest(
     ...(focus ? { focus } : {}),
     ...(learner ? { learner } : {}),
     ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
+    ...(scope.quiz ? { mode: 'quiz' as const } : {}),
   };
 }
 

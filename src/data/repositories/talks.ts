@@ -4,9 +4,10 @@ import { db, type AnswerWord, type TalkTurn } from '../db';
 
 export type { TalkTurn };
 
-/** The key a conversation is kept under: the chapter 'rom.8', or one of its verses 'rom.8.28'. */
-export const talkRef = (book: string, chapter: number, verse: number | null): string =>
-  verse === null ? `${book}.${chapter}` : `${book}.${chapter}.${verse}`;
+/** The key a conversation is kept under: the chapter 'rom.8', one of its verses 'rom.8.28' or a passage 'rom.8.1-11' (a string, src/data/passage.ts unitId).
+ * A quiz (mw-5r3p30.74) is a conversation of its own beside the talk about the same verses: 'rom.8.1-11:quiz'. */
+export const talkRef = (book: string, chapter: number, unit: number | string | null, quiz = false): string =>
+  (unit === null ? `${book}.${chapter}` : `${book}.${chapter}.${unit}`) + (quiz ? ':quiz' : '');
 
 /** What an answer did to the app: the settings changed and a sentence for each one ignored, and the words it put on his list
  * (`added`), found there already (`already`) or could not find in the lexicon (`unknown`). */

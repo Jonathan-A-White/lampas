@@ -5,11 +5,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { addLemmaToLearn } from './data/answerWord';
 import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { learnerSummary } from './data/learnerSummary';
-import { addTurn, listSolidHeadwords, listTurns, talkRef } from './data/repositories';
+import { addTurn, listSolidHeadwords, listTurns } from './data/repositories';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { TutorError } from './services/tutor';
 import { applyChanges, currentSettings } from './settings/registry';
-import { askTalk, buildTalkRequest, type TalkFocus, type TalkScope } from './services/talk';
+import { askTalk, buildTalkRequest, scopeRef, type TalkFocus, type TalkScope } from './services/talk';
 import type { AskState } from './useAsks';
 
 type Talks = Record<string, AskState | undefined>;
@@ -70,7 +70,7 @@ export function useTalk(book: string, chapter: number, onAnswered: (ref: string,
     (scope: TalkScope, message: string, focusOf?: TalkFocus) => {
       const text = message.trim();
       if (!text) return;
-      const ref = talkRef(book, chapter, scope.verse?.n ?? null);
+      const ref = scopeRef(book, chapter, scope);
       const kept = focused.current[ref];
       const focus = focusOf ?? (kept?.text === text ? kept.focus : undefined);
       focused.current[ref] = focus ? { text, focus } : undefined;
