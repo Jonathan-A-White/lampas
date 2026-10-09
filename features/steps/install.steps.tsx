@@ -28,6 +28,7 @@ interface Manifest {
   short_name: string;
   display: string;
   icons: Icon[];
+  protocol_handlers?: { protocol: string; url: string }[];
 }
 
 const outDir = mkdtempSync(join(tmpdir(), 'lampas-build-'));
@@ -76,6 +77,17 @@ describeFeature(feature, ({ Scenario }) => {
       expect(page).toMatch(/src="\/assets\/[^"]+\.js"/);
       expect(page).toMatch(/href="\/assets\/[^"]+\.css"/);
       expect(page).not.toMatch(/(src|href)="\.\/?assets/);
+    });
+  });
+
+  Scenario('The built manifest hands web+lampas: links to the app', ({ Given, Then }) => {
+    Given('the app is built', () => {
+      buildOnce();
+    });
+
+    Then('the manifest has a protocol handler for web+lampas that opens the reference in the address', () => {
+      const manifest = JSON.parse(readFileSync(join(outDir, 'manifest.webmanifest'), 'utf8')) as Manifest;
+      expect(manifest.protocol_handlers).toEqual([{ protocol: 'web+lampas', url: '/#/?ref=%s' }]);
     });
   });
 

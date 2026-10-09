@@ -6,6 +6,10 @@ Feature: Install Lampas on a phone
     Given the app is built
     Then the manifest names the app Lampas, display standalone, with 192 and 512 icons
 
+  Scenario: The built manifest hands web+lampas: links to the app
+    Given the app is built
+    Then the manifest has a protocol handler for web+lampas that opens the reference in the address
+
   Scenario: The page cannot be zoomed or scrolled
     Given the document and its root stylesheet
     Then the document forbids pinch zoom and double-tap zoom and the body never scrolls under the app

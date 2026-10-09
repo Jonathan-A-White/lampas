@@ -42,6 +42,18 @@ export type AppEvent =
    * 'ask') or to open the Talk sheet (action 'talk'); `id` counts up, so the Reader can tell a request it has not met */
   | { kind: 'reader-requested'; id: number; action: 'ask'; book: string; chapter: number; verse: number; question: string }
   | { kind: 'reader-requested'; id: number; action: 'talk'; book: string; chapter: number; verse: number }
+  /** a link in the address was resolved (src/nav/linkRequest.ts): the reader opens on `chapter` of `book`, with `verse` selected (null: none), the one-line
+   * `notice` that says what was asked for when it is not what is shown, and, for a word link, the `word` whose sheet opens over it; `id` counts up, so the
+   * Reader can tell a link it has not met */
+  | {
+      kind: 'link-opened';
+      id: number;
+      book: string;
+      chapter: number;
+      verse: number | null;
+      notice: string | null;
+      word: { lemma: string; strongs: string; gloss: string } | null;
+    }
   /** the schedule changed (an answer, or items added): `due` is how many items are due now (src/data/schedule.ts) */
   | { kind: 'review-due-changed'; due: number };
 

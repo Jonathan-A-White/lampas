@@ -20,6 +20,8 @@ import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
+import { wordUrl } from './nav/links';
+import { LinkActions } from './ui/LinkActions';
 import { useKnownTerms } from './useKnownTerms';
 
 /** What was tapped: Greek words, and the English they stand for. `english` is the tapped chunk, or a Greek word's own chunk. */
@@ -204,16 +206,21 @@ function WordCard({ chapter, word, english, pronunciation, known, study, onHelp,
         </p>
         <SpeakButton text={word.t} id={`word:${word.t}`} label="Hear it" kind="speaker" className="shrink-0" />
       </div>
-      <p data-testid="sheet-respelling" className="text-xl text-muted">
-        {pronunciationOf(pronunciation).respell(word.t)}
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-x-2">
+        <p data-testid="sheet-respelling" className="min-w-0 break-words text-xl text-muted">
+          {pronunciationOf(pronunciation).respell(word.t)}
+        </p>
+        <LinkActions url={wordUrl(word.s)} title={wordLemma(word)} className="-mr-3" />
+      </div>
       <dl className="mt-2">
         <Fact label="Lemma" testId="sheet-lemma" lang="grc">
           {wordLemma(word)}
         </Fact>
-        <Fact label="Parsing" testId="sheet-parse">
-          <ParseTerms parse={wordParse(chapter, word)} known={known} open={(term) => onTerm(term, word, verse)} />
-        </Fact>
+        {wordParse(chapter, word) ? (
+          <Fact label="Parsing" testId="sheet-parse">
+            <ParseTerms parse={wordParse(chapter, word)} known={known} open={(term) => onTerm(term, word, verse)} />
+          </Fact>
+        ) : null}
         <Fact label="Meaning" testId="sheet-gloss">
           {wordGloss(chapter, word)}
         </Fact>

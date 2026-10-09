@@ -91,6 +91,7 @@ describe('docs/events.md', () => {
       'grammar-term-known': true,
       'chapter-opened': true,
       'reader-requested': true,
+      'link-opened': true,
       'review-due-changed': true,
     };
     const doc = readFileSync('docs/events.md', 'utf8');
