@@ -1,5 +1,6 @@
 // src/script/HebrewWord.tsx — a Hebrew word in the tutor's answer, tappable like a Greek one (mw-5r3p30.98, docs/hebrew.md): a tap says it in the phone's Hebrew
-// voice (he-IL) and opens the pronunciation guide (HebrewGuide.tsx). With no Hebrew voice nothing is spoken and the guide says so.
+// voice (he-IL) and opens the pronunciation guide (HebrewGuide.tsx); a long press says the word and opens nothing (data-hear-word: the app-wide
+// long press, src/ui/HearAnyWord.tsx, treats this button as text). With no Hebrew voice nothing is spoken and the guide says so.
 import { useEffect, useState, type ReactNode } from 'react';
 import { stopIfSpeaking, warmVoices } from '../speech/greek';
 import { HebrewGuide } from './HebrewGuide';
@@ -19,6 +20,7 @@ export function HebrewWord({ children }: { children?: ReactNode }) {
       <button
         type="button"
         aria-haspopup="dialog"
+        data-hear-word=""
         onClick={() => setGuide({ noVoice: !speakHebrew(word) })}
         className="inline-block min-h-11 rounded-lg px-1 align-middle text-accent underline decoration-dotted underline-offset-4 active:bg-line"
       >

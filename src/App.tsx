@@ -20,6 +20,7 @@ import { ReviewScreen } from './ReviewScreen';
 import { SettingsScreen } from './SettingsScreen';
 import { startSpeechSettingsSync } from './speech/settingsSync';
 import { startUsageLog } from './tips/usageLog';
+import { HearAnyWord } from './ui/HearAnyWord';
 import { UpdateBanner } from './UpdateBanner';
 import { WordsScreen } from './WordsScreen';
 
@@ -52,6 +53,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
   return (
     <div data-shell className="flex h-full min-w-0 flex-col overflow-clip">
       <UpdateBanner />
+      {/* a long press on any word of prose says it (src/ui/HearAnyWord.tsx) */}
+      <HearAnyWord />
       {route === 'words' ? (
         <WordsScreen />
       ) : route === 'import' ? (

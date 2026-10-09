@@ -211,6 +211,18 @@ export function speakWord(text: string, language: SpeechLanguage, slow = false):
   return true;
 }
 
+/** Calls `done` once, when the word said by speakWord() is over (it ended, failed or was cut off); returns what takes the watch back. */
+export function watchWordEnd(done: () => void): () => void {
+  const check = () => {
+    if (playing?.key !== WORD_KEY) {
+      listeners.delete(check);
+      done();
+    }
+  };
+  listeners.add(check);
+  return () => void listeners.delete(check);
+}
+
 /** The one line shown when there is no voice for `language`: for Greek, where to get one. */
 export function noVoiceHelp(language: SpeechLanguage = 'greek'): string {
   if (language === 'hebrew') return 'No Hebrew voice on this phone';
