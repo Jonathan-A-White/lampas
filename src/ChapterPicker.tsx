@@ -13,7 +13,7 @@ import type { OpenChapter } from './data/readerChapter';
 import { getLogosBible } from './data/repositories';
 import { OT_BOOKS, otBookOf } from './data/otBooks';
 import { getStudyResources, setResourceOn } from './data/repositories/resources';
-import { openReader } from './nav/route';
+import { navigate, openReader } from './nav/route';
 import { chapterLink } from './resources/logosBible';
 import { armFallback } from './resources/openApp';
 import { focusOnMount } from './ui/focus';
@@ -136,6 +136,7 @@ export function ChapterPicker({ current, onClose }: { current: OpenChapter; onCl
   }, [current.book]);
 
   const shown = matching(ITEMS, query);
+  const preface = matching([{ id: 'preface', name: 'Preface' }], query).length > 0;
   const name = book ? (otBookOf(book) ?? bookOf(book))?.name : undefined;
   const pick = (chapter: number) => {
     if (!book) return;
@@ -195,31 +196,47 @@ export function ChapterPicker({ current, onClose }: { current: OpenChapter; onCl
             ) : (
               <Chapters code={book} current={current} onPick={pick} />
             )
-          ) : shown.length === 0 ? (
-            <p className="px-1 py-3 text-base text-muted">No book matches</p>
           ) : (
-            <div role="group" aria-label="Books" className="rounded-lg border border-line">
-              {shown.map((b) => {
-                const ot = otBookOf(b.id) !== undefined;
-                return (
-                  <button
-                    key={b.id}
-                    type="button"
-                    {...(ot ? { 'data-ot-book': b.id } : { 'data-book': b.id })}
-                    aria-current={b.id === current.book ? 'true' : undefined}
-                    onClick={() => setBook(b.id)}
-                    className={`flex min-h-12 w-full items-center justify-between gap-2 border-t border-line px-3 text-left text-lg first:border-t-0 ${b.id === current.book ? 'font-semibold text-accent' : ''}`}
-                  >
-                    <span data-book-name>{b.name}</span>
-                    {ot ? (
-                      <span data-in-logos className="shrink-0 rounded-md border border-line px-2 text-sm font-medium text-muted">
-                        Opens in Logos ↗
-                      </span>
-                    ) : null}
-                  </button>
-                );
-              })}
-            </div>
+            <>
+              {preface ? (
+                <button
+                  type="button"
+                  data-preface
+                  aria-label="Preface"
+                  onClick={() => navigate('preface')}
+                  className="mb-3 flex min-h-12 w-full items-center justify-between gap-2 rounded-lg border border-line px-3 text-left text-lg"
+                >
+                  <span>Preface</span>
+                  <span className="shrink-0 text-sm font-medium text-muted">About the text</span>
+                </button>
+              ) : null}
+              {shown.length === 0 ? (
+                preface ? null : <p className="px-1 py-3 text-base text-muted">No book matches</p>
+              ) : (
+                <div role="group" aria-label="Books" className="rounded-lg border border-line">
+                  {shown.map((b) => {
+                    const ot = otBookOf(b.id) !== undefined;
+                    return (
+                      <button
+                        key={b.id}
+                        type="button"
+                        {...(ot ? { 'data-ot-book': b.id } : { 'data-book': b.id })}
+                        aria-current={b.id === current.book ? 'true' : undefined}
+                        onClick={() => setBook(b.id)}
+                        className={`flex min-h-12 w-full items-center justify-between gap-2 border-t border-line px-3 text-left text-lg first:border-t-0 ${b.id === current.book ? 'font-semibold text-accent' : ''}`}
+                      >
+                        <span data-book-name>{b.name}</span>
+                        {ot ? (
+                          <span data-in-logos className="shrink-0 rounded-md border border-line px-2 text-sm font-medium text-muted">
+                            Opens in Logos ↗
+                          </span>
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

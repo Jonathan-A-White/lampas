@@ -111,6 +111,7 @@ const SCREENS: { name: string; path: string; ready: (page: Page) => Locator }[] 
   { name: 'Placement', path: '/#/placement', ready: (p) => p.getByRole('heading', { name: 'Placement', level: 1 }) },
   { name: 'Settings', path: '/#/settings', ready: (p) => p.getByRole('heading', { name: 'Settings', level: 1 }) },
   { name: 'My study way', path: '/#/studyway', ready: (p) => p.getByRole('heading', { name: 'My study way', level: 1 }) },
+  { name: 'Preface', path: '/#/preface', ready: (p) => p.getByRole('heading', { name: 'Preface', level: 1 }) },
   { name: 'Import', path: '/#/import', ready: (p) => p.getByRole('heading', { name: 'Import', level: 1 }) },
   { name: 'About', path: '/#/about', ready: (p) => p.getByRole('heading', { name: 'About', level: 1 }) },
 ];
