@@ -4,6 +4,7 @@ export { addImportedWords, addWordToLearn, wordIsListed, listLearningLemmas, lis
 export type { Word, WordState } from './words';
 export {
   getGoal,
+  getGrammarApproach,
   getGreekPronunciation,
   getLayout,
   getReaderView,
@@ -15,6 +16,7 @@ export {
   getVoice,
   getWeave,
   setGoal,
+  setGrammarApproach,
   setGreekPronunciation,
   setLayout,
   setReaderView,

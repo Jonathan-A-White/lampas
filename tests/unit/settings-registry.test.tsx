@@ -32,6 +32,7 @@ describe('the registry lists every Settings row', () => {
     await screen.findByRole('radiogroup', { name: 'Greek pronunciation' });
     await screen.findByRole('group', { name: 'Weave' });
     await screen.findByRole('group', { name: 'Goal' });
+    await screen.findByRole('radiogroup', { name: 'Grammar approach' });
     const drawn = [
       ...screen.getAllByRole('group'),
       ...screen.getAllByRole('radiogroup'),
@@ -47,7 +48,7 @@ describe('the registry lists every Settings row', () => {
   it('gives every entry a distinct key, a label, a hint, and the values it allows', () => {
     expect(new Set(SETTINGS.map((s) => s.key)).size).toBe(SETTINGS.length);
     expect(SETTINGS.map((s) => s.key).sort()).toEqual(
-      ['englishRate', 'englishVoice', 'goal', 'greekPronunciation', 'greekRate', 'greekVoice', 'layout', 'sectionHeadings', 'textSize', 'theme', 'weave'],
+      ['englishRate', 'englishVoice', 'goal', 'grammarApproach', 'greekPronunciation', 'greekRate', 'greekVoice', 'layout', 'sectionHeadings', 'textSize', 'theme', 'weave'],
     );
     for (const s of SETTINGS) {
       expect(s.label).not.toBe('');
@@ -182,6 +183,7 @@ describe('currentSettings', () => {
       greekRate: 1,
       greekPronunciation: 'modern',
       goal: '',
+      grammarApproach: 'bma-tutor',
     });
     await applyChanges([{ key: 'greekRate', value: 0.8 }, { key: 'theme', value: 'dark' }]);
     await db.settings.put({ key: 'voice.english', value: 'Some voice' });

@@ -84,6 +84,12 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
+            "properties": { "key": { "const": "grammarApproach" }, "value": { "type": "string", "enum": ["bma-tutor", "ladder"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
             "properties": { "key": { "const": "englishVoice" }, "value": { "type": "string", "enum": ["default"] } }
           },
           {

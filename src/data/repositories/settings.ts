@@ -1,4 +1,5 @@
 // src/data/repositories/settings.ts — what he has chosen. A repository owns its transactions.
+import { approachOf, DEFAULT_APPROACH } from '../../approaches';
 import { db } from '../db';
 import { DEFAULT_LAYOUT, isLayout, type ReadingLayout } from '../../layout/layouts';
 import { DEFAULT_TEXT_PERCENT, normaliseTextPercent } from '../../appearance/textSizes';
@@ -138,4 +139,16 @@ export async function getGoal(): Promise<string> {
 
 export async function setGoal(text: string): Promise<void> {
   await db.settings.put({ key: GOAL_KEY, value: text });
+}
+
+const APPROACH_KEY = 'grammarApproach';
+
+/** The id of the chosen grammar approach (src/approaches/); the default while none was chosen or the saved one is no longer listed. */
+export async function getGrammarApproach(): Promise<string> {
+  const row = await db.settings.get(APPROACH_KEY);
+  return typeof row?.value === 'string' && approachOf(row.value) ? row.value : DEFAULT_APPROACH;
+}
+
+export async function setGrammarApproach(id: string): Promise<void> {
+  await db.settings.put({ key: APPROACH_KEY, value: id });
 }

@@ -7,6 +7,7 @@ import { TEXT_SIZES } from '../appearance/textSizes';
 import { THEMES } from '../appearance/themes';
 import {
   getGoal,
+  getGrammarApproach,
   getGreekPronunciation,
   getLayout,
   getSectionHeadings,
@@ -17,6 +18,7 @@ import {
   getVoice,
   getWeave,
   setGoal,
+  setGrammarApproach,
   setGreekPronunciation,
   setLayout,
   setSectionHeadings,
@@ -29,6 +31,7 @@ import {
   type SectionHeadings,
   type Weave,
 } from '../data/repositories';
+import { APPROACHES, DEFAULT_APPROACH, approachOf } from '../approaches';
 import { BOOK_INDEX } from '../data/bookIndex';
 import { goalTitle, parseGoal } from '../data/goal';
 import { publish } from '../events/bus';
@@ -211,6 +214,18 @@ export const SETTINGS: readonly SettingEntry[] = [
     },
   ),
   goalEntry,
+  choice(
+    'grammarApproach',
+    'Grammar approach',
+    'The order grammar is taught and tested in.',
+    APPROACHES.map((a) => ({ value: a.id, label: a.name })),
+    getGrammarApproach,
+    async (value) => {
+      const approach = approachOf(value)?.id ?? DEFAULT_APPROACH;
+      await setGrammarApproach(approach);
+      publish({ kind: 'approach-changed', approach });
+    },
+  ),
   ...voiceEntries,
   ...rateEntries,
   choice(

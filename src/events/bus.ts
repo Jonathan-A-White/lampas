@@ -61,7 +61,9 @@ export type AppEvent =
   /** grammar idea `id` (src/data/grammar/ladder.ts) got a level: a review answer, the placement, the idea sheet, the tutor, or the first-open seed */
   | { kind: 'grammar-level-changed'; id: string; level: GrammarLevelName }
   /** the reading goal he set in Settings or asked the tutor for; `goal` is null when he cleared it */
-  | { kind: 'goal-changed'; goal: Goal | null };
+  | { kind: 'goal-changed'; goal: Goal | null }
+  /** the grammar approach he chose in Settings or asked the tutor for; `approach` is its id in src/approaches/ */
+  | { kind: 'approach-changed'; approach: string };
 
 export type EventKind = AppEvent['kind'];
 export type EventOf<K extends EventKind> = Extract<AppEvent, { kind: K }>;
