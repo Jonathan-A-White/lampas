@@ -18,7 +18,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
-import { GREEK_READING_ANSWER, makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, WELL_READ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { GREEK_READING_ANSWER, INCOMPLETE_ANSWER, makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, WELL_READ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse28 = chapter.verses.find((v) => v.n === 28);
@@ -40,7 +40,7 @@ let fake: FakePostern;
 let synth: FakeSynth;
 
 interface Options {
-  reply?: 'reading' | 'well-read' | 'held';
+  reply?: 'reading' | 'well-read' | 'incomplete' | 'held';
   view?: 'english' | 'greek';
   denied?: boolean;
   down?: boolean;
@@ -56,7 +56,7 @@ async function open({ reply = 'reading', view = 'english', denied = false, down 
   FakeRecorder.denied = denied;
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
-  if (reply !== 'held') fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : WELL_READ_ANSWER };
+  if (reply !== 'held') fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : reply === 'incomplete' ? INCOMPLETE_ANSWER : WELL_READ_ANSWER };
   fake.greekReply = { status: 'answered', answer: GREEK_READING_ANSWER };
   fake.down = down;
   synth = stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
@@ -215,6 +215,41 @@ describeFeature(feature, ({ Scenario }) => {
       expect(within(panel()).queryByRole('button', { name: 'Read these again' })).toBeNull();
       expect(marked()).toHaveLength(0);
     });
+  });
+
+  Scenario('A reading that covers only part of the verse is headed Read the whole verse, not Well read', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 in English with a reading check that heard only part of the verse', () => open({ reply: 'incomplete' }));
+    And('he selects verse 28', selectVerse28);
+    When(holdRead, async () => holdAndLetGo(readButton(), 2000));
+    Then('the reading check says {string}', (_, text: string) => says(text)());
+    And('the reading check says {string}', (_, text: string) => says(text)());
+    And('the reading check does not say {string}', async (_, text: string) => {
+      await new Promise((r) => setTimeout(r, 50));
+      expect(panel()).not.toHaveTextContent(text);
+    });
+    And('there is no Read these again button', () => {
+      expect(within(panel()).queryByRole('button', { name: 'Read these again' })).toBeNull();
+      expect(marked()).toHaveLength(0);
+    });
+  });
+
+  Scenario('A reading with words to fix is headed Words to fix', ({ Given, And, When, Then }) => {
+    Given(given, () => open());
+    And('he selects verse 28', selectVerse28);
+    When(holdRead, async () => holdAndLetGo(readButton(), 2000));
+    Then('the reading check says {string}', (_, text: string) => says(text)());
+    And('the reading check does not say {string}', async (_, text: string) => {
+      await new Promise((r) => setTimeout(r, 50));
+      expect(panel()).not.toHaveTextContent(text);
+    });
+  });
+
+  Scenario('A hold under about one second sends nothing and says Hold Read for the whole verse', ({ Given, And, When, Then }) => {
+    Given(given, () => open());
+    And('he selects verse 28', selectVerse28);
+    When('he holds Read for 800 milliseconds and lets go', async () => holdAndLetGo(readButton(), 800));
+    Then('the reading check says {string}', (_, text: string) => says(text)());
+    And('the mill received no grist', noGrist);
   });
 
   Scenario('A press under 500 ms sends nothing and says Hold while you read', ({ Given, And, When, Then }) => {

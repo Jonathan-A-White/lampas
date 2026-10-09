@@ -90,6 +90,13 @@ export const GREEK_READING_ANSWER = {
 /** The answer the fake gives to a reading with nothing to fix. */
 export const WELL_READ_ANSWER = { verdict: 'well-read', focus_words: [], note: 'Clear and steady. Well read.' };
 
+/** The answer the fake gives to a reading that covers only the first words of the verse (verdict incomplete). */
+export const INCOMPLETE_ANSWER = {
+  verdict: 'incomplete',
+  focus_words: [],
+  note: "I heard 'and we know that', then you stopped before 'all things work together'. Hold Read and read the whole verse.",
+};
+
 /** The answer the fake gives to a Bible talk question, in the app's answer shape (grinds/bible-talk.answer.schema.json). */
 export const TALK_ANSWER = {
   answer: 'In this verse συνεργεῖ means "works together": God is the one who weaves every thing toward good for those who love him.',

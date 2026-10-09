@@ -23,7 +23,12 @@ Answer with a Verse Read Answer (grinds/verse-read.answer.schema.json): `verdict
 - Mark only real misreadings. A word read clearly and in a normal accent is right, however it is accented. Do not mark
   a word for a small accuracy dip, an accent, a self-correction, or a pause in the middle of a long sentence. Mark a
   word when it was left out, replaced by another word, or said so that a listener would hear a different word.
-- `verdict` is `well-read` with an empty `focus_words` when nothing needs fixing, and `some-to-fix` otherwise.
+- `verdict` is `well-read` with an empty `focus_words` when the whole of `target_text` was read and nothing needs fixing,
+  and `some-to-fix` when he read it all (or nearly all) and at least one word was misread.
+- `verdict` is `incomplete` when the transcript covers only part of `target_text` (he read the first words and stopped,
+  or skipped a long stretch), or nothing clear was heard. `focus_words` is empty, and `note` names the words you heard
+  (quote them, such as `I heard "and if the Spirit"`) and where he stopped, and asks him to hold Read and read the whole
+  verse. Never call a partial reading `well-read`.
 - Never more than 8 words in `focus_words`: if more were wrong, give the 8 that matter most, and say in `note` that
   the rest can wait. List them in the order they stand in the verse.
 - For each word give `word` (as it stands in `target_text`, without punctuation), `chunks` (the word broken into the
@@ -32,8 +37,8 @@ Answer with a Verse Read Answer (grinds/verse-read.answer.schema.json): `verdict
 - `note` is one or two short sentences to him about the reading: what was good first, then what to try. No sermons,
   no comparisons with other readers, no flattery, and nothing about the meaning of the verse.
 - If `reading_result` is missing, carries only errors, or the recording was too quiet to judge, do not guess: answer
-  `well-read` with an empty `focus_words`, and a `note` that says the reading could not be heard clearly and he may
-  try again.
+  `incomplete` with an empty `focus_words`, and a `note` that says the reading could not be heard clearly and he may
+  try again. Never `well-read` for a reading you could not hear.
 
 ## A Greek reading (`lang` is `el`)
 
