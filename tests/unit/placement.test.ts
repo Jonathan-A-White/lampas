@@ -226,6 +226,7 @@ describe('every answer goes on the schedule', () => {
     const writer: PlacementWriter = {
       answer: async (id, right) => void calls.push(`answer ${id} ${right}`),
       level: async (id, level) => void calls.push(`level ${id} ${level}`),
+      credit: async () => undefined,
     };
     let state = start();
     for (const right of [true, false, false, false]) state = await answerPlacement(state, right, writer);
@@ -242,9 +243,82 @@ describe('every answer goes on the schedule', () => {
 
   it('asks nothing of the writer once the placement is done', async () => {
     const calls: string[] = [];
-    const writer: PlacementWriter = { answer: async () => void calls.push('a'), level: async () => void calls.push('l') };
+    const writer: PlacementWriter = { answer: async () => void calls.push('a'), level: async () => void calls.push('l'), credit: async () => void calls.push('c') };
     const done = times(start(), true, QUESTION_LIMIT);
     await answerPlacement(done, true, writer);
     expect(calls).toEqual([]);
+  });
+});
+
+describe('what his right answers show (mw-hqd5bz.17)', () => {
+  const tap = (right: string) => ({ kind: 'tap-form', ideaId: 'noun', form: undefined, right }) as const;
+  const ask = (state: PlacementState, right: boolean, form: string) => answer(state, right, tap(form));
+
+  it('lifts a letter to solid, inferred, once three forms read right use it, without asking it', () => {
+    let state = start();
+    for (const form of ['λόγος', 'ἄνθρωπος']) state = ask(state, true, form);
+    expect(state.levels.get('letter-omicron')).toBeUndefined();
+    state = ask(state, true, 'θεός');
+    state = ask(state, true, 'κόσμος');
+    expect(state.levels.get('letter-omicron')).toBe('solid');
+    expect(state.inferred).toContain('letter-omicron');
+    expect(state.asked.every((a) => !a.ideaId.startsWith('letter-'))).toBe(true);
+    expect(summarize(state).tiers.find((t) => t.tier === 'letters')!.ideas.find((i) => i.id === 'letter-omicron')).toMatchObject({ level: 'solid', inferred: true });
+  });
+
+  it('steps a miss down to the letters, sounds and marks of the forms missed, not to the whole alphabet', () => {
+    let state = ask(ask(start(), false, 'ζωή'), false, 'ὁ');
+    expect(state.focus).toEqual(expect.arrayContaining(['letter-zeta', 'letter-omega', 'breathings', 'accents']));
+    const seen: string[] = [];
+    while (state.done === null) {
+      seen.push(currentIdea(state)!);
+      state = ask(state, false, 'ζωή');
+    }
+    expect(seen).not.toContain('alphabet');
+    expect(seen).not.toContain('punctuation');
+    expect(seen).not.toContain('letter-beta');
+    expect(seen).toEqual(expect.arrayContaining(['accents', 'breathings', 'letter-omega', 'letter-zeta']));
+  });
+
+  it('passes over a letter of the missed form that is already solid', () => {
+    let state = start(new Map<string, Level>([['letter-omega', 'solid'], ['accents', 'solid']]));
+    state = ask(ask(state, false, 'ζωή'), false, 'ζωή');
+    expect(currentIdea(state)).toBe('letter-eta');
+  });
+
+  it('ends a walk down at a needed idea that is solid, however many letters were left', () => {
+    let state = start();
+    state = ask(ask(state, true, 'ἀρχή'), true, 'ζωή');
+    state = ask(ask(state, false, 'λόγος'), false, 'θεός');
+    expect(state.done).toBe('finished');
+  });
+
+  it('counts a miss on an inferred letter against it', () => {
+    let state = start();
+    for (const form of ['ξένος', 'ξηρός', 'ξύλον']) state = ask(state, true, form);
+    expect(state.levels.get('letter-xi')).toBe('solid');
+    state = answer(state, false, { kind: 'letter', ideaId: 'letter-xi', form: undefined, right: 'ξ' });
+    expect(state.levels.get('letter-xi')).toBe('frontier');
+    expect(state.inferred).not.toContain('letter-xi');
+  });
+
+  it('is unchanged when no question is given: it steps down through every idea below', () => {
+    const state = times(start(), false, 4);
+    expect(currentIdea(state)).toBe('iota-subscript');
+    expect(state.focus).toBeNull();
+  });
+
+  it('writes the idea its own two answers give, then what the answer showed', async () => {
+    const calls: string[] = [];
+    const writer: PlacementWriter = {
+      answer: async (id, right) => void calls.push(`answer ${id} ${right}`),
+      level: async (id, level) => void calls.push(`level ${id} ${level}`),
+      credit: async (q, right) => void calls.push(`credit ${q.right} ${right}`),
+    };
+    let state = start();
+    state = await answerPlacement(state, true, writer, tap('λόγος'));
+    state = await answerPlacement(state, false, writer, tap('ζωή'));
+    expect(calls).toEqual(['answer noun true', 'credit λόγος true', 'answer noun false', 'level noun frontier', 'credit ζωή false']);
+    expect(state.asked[0].form).toBe('λόγος');
   });
 });

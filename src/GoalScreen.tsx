@@ -9,6 +9,7 @@ import { NO_CHAPTER, type Chapter, type GreekWord } from './data/chapter';
 import { goalTitle } from './data/goal';
 import { BOOK_INDEX } from './data/bookIndex';
 import { addLemmaToLearn } from './data/answerWord';
+import { lettersText } from './data/grammar/inference';
 import { groupIdeas, groupWords, learnNext, LEVELS, nextWords, placedAt } from './data/grammar/goalProgress';
 import { ideaOf } from './data/grammar/ladder';
 import type { Counts, Level } from './data/grammar/needs';
@@ -38,8 +39,9 @@ const SEGMENT: Record<Level, { className: string; style?: CSSProperties }> = {
 /** 'Solid 1 · Frontier 2 · Not yet 27', as the bars' legends write it. */
 const legendText = (c: Counts): string => `Solid ${c.solid} · Frontier ${c.frontier} · Not yet ${c.notYet}`;
 
-/** The idea Learn next names, with its lesson when the approach has one: 'The Greek alphabet · Lesson 1'. */
-const learnNextText = (next: NonNullable<ReturnType<typeof learnNext>>): string => `${next.idea.title}${next.lesson ? ` · ${next.lesson.lesson.title}` : ''}`;
+/** The idea Learn next names, with its lesson when the approach has one: 'The Greek alphabet · The Greek letters'; or, when only some letters are weak, those letters: 'ξ and ψ · The Greek letters'. */
+const learnNextText = (next: NonNullable<ReturnType<typeof learnNext>>): string =>
+  `${next.letters ? lettersText(next.letters) : next.idea.title}${next.lesson ? ` · ${next.lesson.lesson.title}` : ''}`;
 
 const placedText = (when: number): string => {
   const date = new Date(when);
