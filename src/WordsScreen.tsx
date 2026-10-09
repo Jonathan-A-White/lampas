@@ -1,4 +1,4 @@
-// src/WordsScreen.tsx — the words he knows, by lesson. Tap a word to change what he knows of it:
+// src/WordsScreen.tsx — the words he knows, by lesson. Tap a word to change what he knows of it (hold it to hear it):
 // solid -> learning -> dropped (after a confirm) -> learning again.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
@@ -6,7 +6,9 @@ import { listWords, setWordState, type Word, type WordState } from './data/repos
 import { navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { speakWord } from './speech/greek';
 import { SpeakButton } from './speech/SpeakButton';
+import { NO_SELECT, useLongPress } from './ui/longPress';
 import { focusOnMount } from './ui/focus';
 import { WordPicture } from './WordPicture';
 
@@ -19,6 +21,32 @@ const PILL: Record<WordState, string> = {
 };
 
 const greek = new Intl.Collator('el');
+
+/** One word of the list: a tap changes what he knows of it, a long press says it (src/ui/longPress.ts). */
+function WordRow({ word: w, onTap }: { word: Word; onTap: (w: Word) => void }) {
+  const press = useLongPress(() => onTap(w), () => void speakWord(w.lemma, 'greek'));
+  return (
+    <li className="flex items-stretch">
+      <SpeakButton text={w.lemma} id={`word:${w.lemma}`} label="Hear it" kind="speaker" className="w-12 shrink-0 rounded-l-xl" />
+      <button
+        type="button"
+        data-lemma={w.lemma}
+        data-state={w.state}
+        {...press}
+        className={`flex min-h-14 min-w-0 flex-1 items-center gap-3 py-2 pl-1 pr-3 text-left ${NO_SELECT}`}
+      >
+        <WordPicture lemma={w.lemma} size={56} className={w.state === 'dropped' ? 'opacity-50' : ''} />
+        <span className="min-w-0 flex-1">
+          <span lang="grc" className={`block break-words font-greek text-2xl ${w.state === 'dropped' ? 'text-muted' : ''}`}>
+            {w.lemma}
+          </span>
+          <span className="block break-words text-sm text-muted">{w.gloss}</span>
+        </span>
+        <span className={`shrink-0 rounded-full border px-3 py-1 text-sm ${PILL[w.state]}`}>{w.state}</span>
+      </button>
+    </li>
+  );
+}
 
 /** The group of the words he took on the teach sheet (source 'frontier', no lesson); it sorts between 'Added by you' and Lesson 1. */
 const FROM_READING = 0.5;
@@ -76,25 +104,7 @@ export function WordsScreen() {
             </h2>
             <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
               {g.words.map((w) => (
-                <li key={w.lemma} className="flex items-stretch">
-                  <SpeakButton text={w.lemma} id={`word:${w.lemma}`} label="Hear it" kind="speaker" className="w-12 shrink-0 rounded-l-xl" />
-                  <button
-                    type="button"
-                    data-lemma={w.lemma}
-                    data-state={w.state}
-                    onClick={() => tap(w)}
-                    className="flex min-h-14 min-w-0 flex-1 items-center gap-3 py-2 pl-1 pr-3 text-left"
-                  >
-                    <WordPicture lemma={w.lemma} size={56} className={w.state === 'dropped' ? 'opacity-50' : ''} />
-                    <span className="min-w-0 flex-1">
-                      <span lang="grc" className={`block break-words font-greek text-2xl ${w.state === 'dropped' ? 'text-muted' : ''}`}>
-                        {w.lemma}
-                      </span>
-                      <span className="block break-words text-sm text-muted">{w.gloss}</span>
-                    </span>
-                    <span className={`shrink-0 rounded-full border px-3 py-1 text-sm ${PILL[w.state]}`}>{w.state}</span>
-                  </button>
-                </li>
+                <WordRow key={w.lemma} word={w} onTap={tap} />
               ))}
             </ul>
           </section>

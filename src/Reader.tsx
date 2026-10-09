@@ -55,6 +55,7 @@ import { useTalk } from './useTalk';
 import { helpQuestion, newWordQuestion, paradigmQuestion, scopeTitle, termQuestion } from './services/talk';
 import { useVoice } from './useVoice';
 import { useHoldPress } from './ui/holdPress';
+import { NO_SELECT, useLongPress } from './ui/longPress';
 import { HeaderButton } from './ScreenHeader';
 import { continueReading, getReading, pauseReading, planOf, startAnswer, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
@@ -75,15 +76,11 @@ import { WordSheet, type Lookup, type TermAsk, type WordHelp } from './WordSheet
 // box stays --lp-tap tall, so the spare pixels cost no layout.
 const TAP_PAD = 'py-[calc((var(--lp-tap)-1em)/2)]';
 
-/** How long a finger must stay on a word to say it, and how far it may wander meanwhile. */
-const LONG_PRESS_MS = 500;
-const LONG_PRESS_SLOP_PX = 10;
-
 /** A word he can tap: a span with role button and no chrome. The caller pads it to a 44 px tap height (an inline box
  * is as tall as its font's content area, so the padding is 44 px minus that, which differs by face). The trailing
  * space is inside so the gap between two words is tappable too. A finger held on it for half a second (`onLongPress`)
- * is a press, not a tap: the click that follows is dropped, and so is one after the finger wandered over 10 px. The
- * word never selects text and never raises the phone's callout menu, so the hold is free for the press. */
+ * is a press, not a tap: the click that follows is dropped, and so is one after the finger wandered over 10 px
+ * (src/ui/longPress.ts). The word never selects text and never raises the phone's callout menu, so the hold is free for the press. */
 function Tap({ onTap, onLongPress, lang, className, children, ...data }: {
   onTap: () => void;
   onLongPress: () => void;
@@ -95,48 +92,21 @@ function Tap({ onTap, onLongPress, lang, className, children, ...data }: {
   'data-learning'?: string;
   'data-word'?: string;
 }) {
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const from = useRef({ x: 0, y: 0 });
-  // the press that is going on was a long press or a drag: its click is not a tap
-  const notATap = useRef(false);
-  const stopTimer = () => clearTimeout(timer.current);
-  useEffect(() => stopTimer, []);
+  const press = useLongPress(onTap, onLongPress);
   return (
     <span
       role="button"
       tabIndex={0}
       lang={lang}
       {...data}
-      onPointerDown={(e) => {
-        if (e.button !== 0) return;
-        notATap.current = false;
-        from.current = { x: e.clientX, y: e.clientY };
-        stopTimer();
-        timer.current = setTimeout(() => {
-          notATap.current = true;
-          navigator.vibrate?.(10);
-          onLongPress();
-        }, LONG_PRESS_MS);
-      }}
-      onPointerMove={(e) => {
-        if (Math.hypot(e.clientX - from.current.x, e.clientY - from.current.y) <= LONG_PRESS_SLOP_PX) return;
-        notATap.current = true;
-        stopTimer();
-      }}
-      onPointerUp={stopTimer}
-      onPointerCancel={stopTimer}
-      onContextMenu={(e) => e.preventDefault()}
-      onClick={() => {
-        if (notATap.current) notATap.current = false;
-        else onTap();
-      }}
+      {...press}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           onTap();
         }
       }}
-      className={`cursor-pointer select-none [-webkit-touch-callout:none] rounded px-[0.1em] active:bg-line ${className ?? ''}`}
+      className={`cursor-pointer ${NO_SELECT} rounded px-[0.1em] active:bg-line ${className ?? ''}`}
     >
       {children}{' '}
     </span>
