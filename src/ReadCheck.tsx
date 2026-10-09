@@ -7,6 +7,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Verse } from './data/chapter';
+import { unitId, unitName } from './data/passage';
 import { getGreekPronunciation, getVerseReading, verseRef, type FixWord, type VerseReading } from './data/repositories';
 import { readingLang, readingText, type ReadingView } from './services/reading';
 import { FAILURE_TITLES } from './services/tutor';
@@ -247,11 +248,11 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
   onRetry: () => void;
   slot: HTMLElement | null;
 }) {
-  const ref = verseRef(book, chapter, verse.n);
+  const ref = verseRef(book, chapter, unitId(verse));
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
   const lang = readingLang(view, pronunciation);
   const reading = useLiveQuery(() => getVerseReading(ref, lang), [ref, lang]);
-  const state = checks.states[verse.n];
+  const state = checks.states[unitId(verse)];
   const sent = state?.phase === 'sending' || state?.phase === 'waiting';
   const out = state?.phase === 'recording' || sent;
   // The walk belongs to the reading it was started on: a new result closes it, and so does sending the next one.
@@ -271,14 +272,14 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
   // The walk stays while its last step is held to record (it would lose the let-go if it went), and ends when the clip is sent.
   const walking = reading !== undefined && walkFor === reading.when && !sent;
   const wholeVerse = walking && reading !== undefined && walkStep >= reading.words.length;
-  const idle = wholeVerse ? 'Hold to read the whole verse again' : `Hold to read verse ${verse.n}`;
+  const idle = wholeVerse ? `Hold to read the whole ${verse.to === undefined ? 'verse' : 'passage'} again` : `Hold to read ${unitName(verse)}`;
   const recording = state?.phase === 'recording';
   return (
     <>
-      <section ref={section} aria-label="Reading check" data-readcheck={verse.n} className="mb-3 space-y-3 px-1">
+      <section ref={section} aria-label="Reading check" data-readcheck={unitId(verse)} className="mb-3 space-y-3 px-1">
         {walking && reading ? null : (
           <>
-            <p className="text-sm text-muted">Read verse {verse.n} aloud{view === 'greek' ? ' in Greek' : ''}</p>
+            <p className="text-sm text-muted">Read {unitName(verse)} aloud{view === 'greek' ? ' in Greek' : ''}</p>
             <p className="text-sm text-muted">Hold the bar below and read the verse aloud. Let go to send.</p>
             {view === 'greek' ? (
               <p className="text-sm text-muted">

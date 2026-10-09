@@ -132,7 +132,7 @@ export function forgetTrail(): void {
 /** Home: the reader with nothing selected. What Back lands on past the oldest kept screen. */
 const HOME_HASH = '#/';
 
-const isHome = (hash: string) => routeOf(hash) === 'home' && readerOf(hash).verse === undefined;
+const isHome = (hash: string) => routeOf(hash) === 'home' && readerOf(hash).verse === undefined && readerOf(hash).passage === undefined;
 
 /**
  * Called once before the first render. A bare address (no hash) is replaced by the last one he was at, and the

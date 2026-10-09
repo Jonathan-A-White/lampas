@@ -7,7 +7,8 @@
 // A tapped verse number opens the Verse view (src/VerseView.tsx, mw-5r3p30.79) over the Reader: the verse big at the top, one row of actions
 // (Listen, Read it aloud, Ask the tutor, Copy link) and one hold bar at the foot. The view is a Back step of its own (src/nav/route.ts openVerse),
 // so Back returns to the Reader where it was; the verse is in the address (v), the address is the truth, and the verse is "selected" while the view
-// is open. The selection, the view and the weave are told to the rest of the app on the event bus (src/events/bus.ts, docs/events.md).
+// is open. A tap on a section heading opens the same view for the passage under it (mw-5r3p30.73, src/data/passage.ts; the address `p` is the
+// passage's first verse). The selection, the view and the weave are told to the rest of the app on the event bus (src/events/bus.ts, docs/events.md).
 // The chapter comes from /data/<book>/<n>.json (Romans 8 is precached, any other is fetched when first opened and then kept by the
 // worker), the view and the weave are kept in the settings store. Which chapter is open is the address's (b and c), else the one
 // last open (src/data/readerChapter.ts); a chapter is a ReaderBody keyed by it, so choosing another starts the screen afresh.
@@ -37,6 +38,7 @@ import {
 } from './data/repositories';
 import { chapterOf, getOpenChapter, setOpenChapter, type OpenChapter } from './data/readerChapter';
 import { verseNeighbours } from './data/neighbours';
+import { type Passage, passageAt, passageVerse, passagesOf, unitId } from './data/passage';
 import { ChapterNav } from './ChapterNav';
 import { ChapterPicker } from './ChapterPicker';
 import { weaveVerse, type Woven } from './data/weave';
@@ -47,7 +49,7 @@ import { LinkOpener } from './nav/LinkOpener';
 import { pendingLink, takeLink } from './nav/linkRequest';
 import { lemmaSheet, linkOf } from './nav/links';
 import { pendingRequest, takeRequest } from './nav/readerRequest';
-import { closeVerse, moveVerse, navigate, openVerse, readerOf, useAddress } from './nav/route';
+import { closeVerse, movePassage, moveVerse, navigate, openPassage, openVerse, readerOf, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
 import { useReadChecks } from './useReadChecks';
@@ -163,6 +165,17 @@ function ViewSwitch({ view }: { view: ReaderView }) {
 }
 
 const EMPTY_LEMMAS: ReadonlySet<string> = new Set();
+
+/** The arrow to the passage `by` places from `passage` in the chapter's passages: null at the chapter's first and last. */
+function stepOf(passages: Passage[], passage: Passage, by: 1 | -1): (() => void) | null {
+  const to = passages[passages.findIndex((p) => p.first === passage.first) + by];
+  return to ? () => movePassage(to.first) : null;
+}
+
+/** The arrow to a verse place (src/data/neighbours.ts), or null when there is none. */
+function stepOfVerse(place: { book: string; chapter: number; verse: number } | null): (() => void) | null {
+  return place ? () => moveVerse(place) : null;
+}
 
 function GearIcon() {
   return (
@@ -340,12 +353,45 @@ function ParagraphView({ verses, view, woven, selected, reading, onSelect, onPla
   );
 }
 
-/** A section heading: the MSB's own English, whichever view is on. */
-function SectionHeading({ text }: { text: string }) {
+/** A section heading: the MSB's own English, whichever view is on. The whole heading is a button that opens the Verse view for its passage; its
+ * padding (the heading's own side padding moved onto it, so it spans the whole width) and the negative margin that takes the vertical padding back keep the text where it was and give a thumb 44 px (`flow-root` keeps the margin inside). */
+function SectionHeading({ text, onOpen }: { text: string; onOpen: () => void }) {
   return (
-    <h2 data-heading lang="en" className="mb-1 mt-5 px-2 font-sans text-lg font-semibold leading-snug text-accent">
-      {text}
+    <h2 data-heading lang="en" className="mb-1 mt-5 flow-root font-sans text-lg font-semibold leading-snug text-accent">
+      <button type="button" onClick={onOpen} className="-my-2.5 block w-full rounded-lg px-2 py-2.5 text-left active:bg-line">
+        {text}
+      </button>
     </h2>
+  );
+}
+
+/** The verses of a passage for the Verse view, one after another with a small number before each, the one being read highlighted; the reading is
+ * followed down the box the view scrolls the passage in (data-passage-box), by moving that box and nothing else. Each verse is the Reader's own VerseText, so the weave and the tappable words follow it. */
+function PassageText({ passage, view, wovenOf, reading, onLook }: {
+  passage: Passage;
+  view: ReaderView;
+  wovenOf: (verse: Verse) => Woven[] | null;
+  reading: number | null;
+  onLook: (lookup: Lookup) => void;
+}) {
+  const box = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const el = reading === null ? null : box.current?.querySelector<HTMLElement>(`[data-passage-verse="${reading}"]`);
+    const scroller = el?.closest<HTMLElement>('[data-passage-box]');
+    if (!el || !scroller) return;
+    const inner = el.getBoundingClientRect();
+    const outer = scroller.getBoundingClientRect();
+    if (inner.top < outer.top || inner.bottom > outer.bottom) scroller.scrollTop += inner.top - outer.top - 8;
+  }, [reading]);
+  return (
+    <span ref={box} data-passage={passage.first}>
+      {passage.verses.map((verse) => (
+        <span key={verse.n} data-passage-verse={verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${reading === verse.n ? READING_CLASS : ''}`}>
+          <sup className="mr-1 font-sans text-xs font-semibold text-muted">{verse.n}</sup>
+          <VerseText verse={verse} view={view} woven={wovenOf(verse)} onLook={onLook} />
+        </span>
+      ))}
+    </span>
   );
 }
 
@@ -485,11 +531,19 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const talkScope = chapter && talkAbout !== undefined ? { title: TITLE, chapter, verse: chapter.verses.find((v) => v.n === talkAbout) ?? null } : null;
   // What he says goes to the open Talk sheet; with none open, to the tutor about the verse of the open Verse view (its Ask the tutor bar).
   const viewVerse = chapter && selected !== null ? chapter.verses.find((v) => v.n === selected) : undefined;
-  const viewAsking = viewVerse !== undefined && action === 'ask';
+  // A heading's passage (the address `p`) opens the same view, with the passage as one Verse; a verse in the address wins.
+  const named = readerOf(address);
+  const wantedPassage = isHere(named, BOOK, CHAPTER) ? named.passage : undefined;
+  const viewPassage = useMemo(
+    () => (chapter && viewVerse === undefined && wantedPassage !== undefined ? passageAt(chapter.verses, wantedPassage) : undefined),
+    [chapter, viewVerse, wantedPassage],
+  );
+  const viewUnit = useMemo(() => viewVerse ?? (viewPassage ? passageVerse(viewPassage) : undefined), [viewVerse, viewPassage]);
+  const viewAsking = viewUnit !== undefined && action === 'ask';
   useEffect(() => {
     sayAbout.current = (message) => {
       if (talkScope) say(talkScope, message);
-      else if (viewAsking && viewVerse) ask(viewVerse, message);
+      else if (viewAsking && viewUnit) ask(viewUnit, message);
     };
   });
   // Ask the tutor on a paradigm table (src/ParadigmsScreen.tsx): the Talk sheet is open on the chapter; once the chapter is here the first
@@ -571,7 +625,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const verseTalk: VerseTalk = { onHold: holdTalk, onRelease: () => void voice.release(), onDrop: voice.abort };
   // The Verse view's Read bar: the hold of the reading check for the verse the view shows.
   const readOf = (verse: Verse): ReadHold => {
-    const phase = checks.states[verse.n]?.phase;
+    const phase = checks.states[unitId(verse)]?.phase;
     return {
       onPress: () => checks.press(verse),
       onRelease: checks.release,
@@ -602,8 +656,16 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     },
     [plan, BOOK, CHAPTER, readSpan],
   );
+  // Listen on a passage: its verses only, to the end of the passage and no further, whatever Settings > Read aloud says.
+  const listenTo = useCallback(
+    (passage: Passage) => {
+      if (plan) startReading({ chapter: CHAPTER, plan: plan.filter((v) => v.n >= passage.first && v.n <= passage.last), from: passage.first, continuous: true, span: 'passage' });
+    },
+    [plan, CHAPTER],
+  );
   const chapterReading = reading.status !== 'idle' && reading.answer === null;
   const readingVerse = chapterReading ? reading.verse : null;
+  const passages = useMemo(() => (chapter ? passagesOf(chapter.verses) : []), [chapter]);
   const blocks = useMemo(() => (chapter && layout ? blocksOf(chapter.verses, layout) : []), [chapter, layout]);
   const wovenCount = woven ? woven.reduce((n, w) => n + w.filter(Boolean).length, 0) : 0;
 
@@ -698,7 +760,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
 
   return (
     <>
-      <header inert={viewVerse !== undefined} className="flex shrink-0 items-center gap-1 border-b border-line px-2 py-2">
+      <header inert={viewUnit !== undefined} className="flex shrink-0 items-center gap-1 border-b border-line px-2 py-2">
         {/* While the chapter is read the header gives its room to Pause and Stop; the title stays for screen readers. */}
         <h1 className={`chrome-title min-w-0 font-semibold ${chapterReading ? 'sr-only' : 'flex-1'}`}>
           <button
@@ -743,7 +805,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           {wovenCount} {wovenCount === 1 ? 'word' : 'words'} in Greek
         </p>
       ) : null}
-      <main ref={mainRef} inert={viewVerse !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} className="screen min-h-0 flex-1 px-1 pt-2">
+      <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} className="screen min-h-0 flex-1 px-1 pt-2">
         <div>
         {failed ? (
           <div role="alert" className="px-4 pt-6 text-center">
@@ -774,7 +836,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
               const wovenOf = (v: Verse) => woven?.[chapter.verses.indexOf(v)] ?? null;
               return (
                 <Fragment key={first.n}>
-                  {headings === 'on' && first.h ? <SectionHeading text={first.h} /> : null}
+                  {headings === 'on' && first.h ? <SectionHeading text={first.h} onOpen={() => openPassage(first.n)} /> : null}
                   {layout === 'paragraph' ? (
                     <ParagraphView
                       verses={block}
@@ -816,7 +878,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         )}
         </div>
       </main>
-      {chapter && !viewVerse ? (
+      {chapter && !viewUnit ? (
         <TalkBar
           hold={{
             onPress: stopReading,
@@ -854,31 +916,43 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           onAsk={askAboutNewWord}
         />
       ) : null}
-      {chapter && viewVerse && view ? (
+      {chapter && viewUnit && view ? (
         <VerseView
           title={TITLE}
           book={BOOK}
           chapter={CHAPTER}
-          verse={viewVerse}
+          verse={viewUnit}
           view={view}
-          text={<VerseText verse={viewVerse} view={view} woven={woven?.[chapter.verses.indexOf(viewVerse)] ?? null} onLook={setLookup} />}
-          places={verseNeighbours(BOOK, CHAPTER, viewVerse.n)}
-          onMove={moveVerse}
+          text={
+            viewPassage ? (
+              <PassageText
+                passage={viewPassage}
+                view={view}
+                wovenOf={(v) => woven?.[chapter.verses.indexOf(v)] ?? null}
+                reading={readingVerse}
+                onLook={setLookup}
+              />
+            ) : (
+              <VerseText verse={viewUnit} view={view} woven={woven?.[chapter.verses.indexOf(viewUnit)] ?? null} onLook={setLookup} />
+            )
+          }
+          previous={viewPassage ? stepOf(passages, viewPassage, -1) : stepOfVerse(verseNeighbours(BOOK, CHAPTER, viewUnit.n).previous)}
+          next={viewPassage ? stepOf(passages, viewPassage, 1) : stepOfVerse(verseNeighbours(BOOK, CHAPTER, viewUnit.n).next)}
           onClose={closeVerse}
           action={action}
           onAction={chooseAction}
-          listen={{ onHold: () => readFrom(viewVerse.n, true), onRelease: stopReading }}
+          listen={viewPassage ? { onHold: () => listenTo(viewPassage), onRelease: stopReading } : { onHold: () => readFrom(viewUnit.n, true), onRelease: stopReading }}
           checks={checks}
-          read={readOf(viewVerse)}
-          onRetryRead={() => checks.retry(viewVerse)}
-          ask={asks[viewVerse.n]}
+          read={readOf(viewUnit)}
+          onRetryRead={() => checks.retry(viewUnit)}
+          ask={asks[unitId(viewUnit)]}
           onAsk={(verse, question) => {
             setPrefill(null);
             ask(verse, question);
           }}
           prefill={prefill}
           voice={voice}
-          onTalk={() => setTalkAbout(viewVerse.n)}
+          onTalk={() => setTalkAbout(viewUnit.n)}
         />
       ) : null}
       {picking ? <ChapterPicker current={open} onClose={closePicker} /> : null}

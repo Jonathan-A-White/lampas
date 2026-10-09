@@ -4,6 +4,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
 import type { Verse } from './data/chapter';
+import { unitId, unitName } from './data/passage';
 import { listAnswers, verseRef, type TutorAnswer } from './data/repositories';
 import { FAILURE_TITLES, MAX_QUESTION_CHARS } from './services/tutor';
 import type { AskState } from './useAsks';
@@ -19,7 +20,8 @@ export function Waiting({ state }: { state: Extract<AskState, { phase: 'sending'
   );
 }
 
-export function AnswerCards({ verse, book, chapter }: { verse: number; book: string; chapter: number }) {
+/** The answers kept for a verse (its number) or a passage (its unitId, '1-11'). */
+export function AnswerCards({ verse, book, chapter }: { verse: number | string; book: string; chapter: number }) {
   const ref = verseRef(book, chapter, verse);
   const answers = useLiveQuery(() => listAnswers(ref), [ref]);
   if (!answers?.length) return null;
@@ -60,7 +62,7 @@ function AnswerCard({ answer }: { answer: TutorAnswer }) {
   );
 }
 
-/** The Ask box for `verse`: the field, with what its last question is doing. */
+/** The Ask box for `verse` (or a passage, src/data/passage.ts): the field, with what its last question is doing. */
 export function AskBox({ verse, state, onAsk, prefill = null }: {
   verse: Verse;
   state: AskState | undefined;
@@ -68,7 +70,7 @@ export function AskBox({ verse, state, onAsk, prefill = null }: {
   /** a question to put in the field when the box opens on that verse (the Parsing drill's link); he sends it himself */
   prefill?: { verse: number; text: string } | null;
 }) {
-  return <AskField key={verse.n} verse={verse} state={state} initial={prefill?.verse === verse.n ? prefill.text : ''} onAsk={(question) => onAsk(verse, question)} />;
+  return <AskField key={unitId(verse)} verse={verse} state={state} initial={verse.to === undefined && prefill?.verse === verse.n ? prefill.text : ''} onAsk={(question) => onAsk(verse, question)} />;
 }
 
 /** The field and the Ask button for one verse, with what its last question is doing. */
@@ -81,12 +83,12 @@ function AskField({ verse, state, initial, onAsk }: { verse: Verse; state: AskSt
     setText('');
   };
   return (
-    <section aria-label="Ask the tutor" data-ask={verse.n} className="mb-3 space-y-2 px-1">
-      <label className="block text-sm text-muted" htmlFor={`ask-${verse.n}`}>
-        Ask the tutor about verse {verse.n}
+    <section aria-label="Ask the tutor" data-ask={unitId(verse)} className="mb-3 space-y-2 px-1">
+      <label className="block text-sm text-muted" htmlFor={`ask-${unitId(verse)}`}>
+        Ask the tutor about {unitName(verse)}
       </label>
       <textarea
-        id={`ask-${verse.n}`}
+        id={`ask-${unitId(verse)}`}
         aria-label="Your question"
         rows={2}
         maxLength={MAX_QUESTION_CHARS}

@@ -7,6 +7,7 @@
 // language shown, a reading in the other one carries on unseen.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Verse } from './data/chapter';
+import { unitId, unitReference } from './data/passage';
 import { keepVerseReading, verseRef } from './data/repositories';
 import { MicUnavailable, recorderSeam, type HoldRecorder, type Recording } from './audio/recorder';
 import { getDeviceKeyBytes } from './services/deviceKey';
@@ -33,11 +34,11 @@ export type ReadState =
   | { phase: 'sending' | 'waiting'; startedAt: number }
   | { phase: 'failed'; failure: TutorFailure | 'mic'; detail: string; recording?: Recording };
 
-type States = Record<number, ReadState | undefined>;
+type States = Record<string, ReadState | undefined>;
 type AllStates = Record<string, ReadState | undefined>;
 
 /** A verse's reading state is kept by verse and language. */
-const stateKey = (verse: number, lang: string): string => `${lang}:${verse}`;
+const stateKey = (verse: string, lang: string): string => `${lang}:${verse}`;
 
 export interface UseReadChecks {
   states: States;
@@ -76,7 +77,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
   const states = useMemo(() => {
     const here: States = {};
     const prefix = `${lang}:`;
-    for (const [key, state] of Object.entries(all)) if (key.startsWith(prefix)) here[Number(key.slice(prefix.length))] = state;
+    for (const [key, state] of Object.entries(all)) if (key.startsWith(prefix)) here[key.slice(prefix.length)] = state;
     return here;
   }, [all, lang]);
   const live = useRef<AbortController>(new AbortController());
@@ -93,7 +94,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
     };
   }, []);
 
-  const set = useCallback((verse: number, language: string, state: ReadState | undefined): void => {
+  const set = useCallback((verse: string, language: string, state: ReadState | undefined): void => {
     if (!live.current.signal.aborted) setAll((states) => ({ ...states, [stateKey(verse, language)]: state }));
   }, []);
 
@@ -101,20 +102,20 @@ export function useReadChecks(book: string, chapter: number, title: string, view
     (verse: Verse, readView: ReadingView, language: string, recording: Recording): void => {
       const signal = live.current.signal;
       const startedAt = Date.now();
-      set(verse.n, language, { phase: 'sending', startedAt });
+      set(unitId(verse), language, { phase: 'sending', startedAt });
       void (async () => {
         try {
-          const answer = await askVerseRead(buildReadingRequest(`${title}:${verse.n}`, verse, readView, language), recording, {
+          const answer = await askVerseRead(buildReadingRequest(unitReference(title, verse), verse, readView, language), recording, {
             key: getDeviceKeyBytes(),
             signal,
-            onSent: () => set(verse.n, language, { phase: 'waiting', startedAt }),
+            onSent: () => set(unitId(verse), language, { phase: 'waiting', startedAt }),
           });
-          await keepVerseReading(verseRef(book, chapter, verse.n), answer.verdict, answer.focus_words, answer.note, language);
-          set(verse.n, language, undefined);
+          await keepVerseReading(verseRef(book, chapter, unitId(verse)), answer.verdict, answer.focus_words, answer.note, language);
+          set(unitId(verse), language, undefined);
         } catch (err) {
           if (signal.aborted) return;
           const failure = err instanceof TutorError ? err.failure : 'unreachable';
-          set(verse.n, language, { phase: 'failed', failure, detail: err instanceof Error ? err.message : 'Something went wrong.', recording });
+          set(unitId(verse), language, { phase: 'failed', failure, detail: err instanceof Error ? err.message : 'Something went wrong.', recording });
         }
       })();
     },
@@ -125,8 +126,8 @@ export function useReadChecks(book: string, chapter: number, title: string, view
   const finish = useCallback(
     (h: Hold, recording: Recording): void => {
       if (hold.current === h) hold.current = null;
-      if (recording.durationMs < MIN_READING_MS) set(h.verse.n, h.lang, { phase: 'tap' });
-      else if (recording.durationMs < SHORT_READING_MS) set(h.verse.n, h.lang, { phase: 'short' });
+      if (recording.durationMs < MIN_READING_MS) set(unitId(h.verse), h.lang, { phase: 'tap' });
+      else if (recording.durationMs < SHORT_READING_MS) set(unitId(h.verse), h.lang, { phase: 'short' });
       else send(h.verse, h.view, h.lang, recording);
     },
     [send, set],
@@ -154,7 +155,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
         over: false,
       };
       hold.current = h;
-      set(verse.n, h.lang, { phase: 'recording' });
+      set(unitId(verse), h.lang, { phase: 'recording' });
       h.recorder.start().then(
         () => {
           h.started = true;
@@ -166,7 +167,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
           if (hold.current === h) hold.current = null;
           if (h.dropped) return;
           const detail = err instanceof MicUnavailable || err instanceof Error ? err.message : 'The microphone could not be used.';
-          set(verse.n, h.lang, { phase: 'failed', failure: 'mic', detail });
+          set(unitId(verse), h.lang, { phase: 'failed', failure: 'mic', detail });
         },
       );
     },
@@ -188,12 +189,12 @@ export function useReadChecks(book: string, chapter: number, title: string, view
     h.dropped = true;
     hold.current = null;
     if (h.started) h.recorder.cancel();
-    set(h.verse.n, h.lang, { phase: 'dropped' });
+    set(unitId(h.verse), h.lang, { phase: 'dropped' });
   }, [set]);
 
   const retry = useCallback(
     (verse: Verse): void => {
-      const state = states[verse.n];
+      const state = states[unitId(verse)];
       if (state?.phase === 'failed' && state.recording) send(verse, view, lang, state.recording);
     },
     [states, send, view, lang],

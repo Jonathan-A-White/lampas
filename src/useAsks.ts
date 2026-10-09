@@ -1,7 +1,8 @@
-// src/useAsks.ts — the questions in flight to the tutor, by verse. A question keeps waiting when he selects another
+// src/useAsks.ts — the questions in flight to the tutor, by verse (or by passage, mw-5r3p30.73: src/data/passage.ts unitId). A question keeps waiting when he selects another
 // verse; its answer is stored when it comes. They all stop when the screen goes away.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Verse } from './data/chapter';
+import { unitId, unitReference } from './data/passage';
 import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { learnerSummary } from './data/learnerSummary';
 import { addAnswer, listSolidHeadwords, verseRef } from './data/repositories';
@@ -13,14 +14,14 @@ export type AskState =
   | { phase: 'sending' | 'waiting'; question: string; startedAt: number }
   | { phase: 'failed'; question: string; failure: TutorFailure; detail: string };
 
-type Asks = Record<number, AskState | undefined>;
+type Asks = Record<string, AskState | undefined>;
 
 export interface UseAsks {
   asks: Asks;
   ask: (verse: Verse, question: string) => void;
 }
 
-/** The questions in flight, by verse number, for one chapter. They stop when the screen goes away. */
+/** The questions in flight, by verse number ('11') or passage ('1-11'), for one chapter. They stop when the screen goes away. */
 export function useAsks(book: string, chapter: number, title: string): UseAsks {
   const [asks, setAsks] = useState<Asks>({});
   const live = useRef<AbortController>(new AbortController());
@@ -40,20 +41,20 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
       if (!text) return;
       const signal = live.current.signal;
       const set = (state: AskState | undefined): void => {
-        if (!signal.aborted) setAsks((all) => ({ ...all, [verse.n]: state }));
+        if (!signal.aborted) setAsks((all) => ({ ...all, [unitId(verse)]: state }));
       };
       const startedAt = Date.now();
       set({ phase: 'sending', question: text, startedAt });
       void (async () => {
         try {
           const [solid, learner, grammar] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined)]);
-          const request = buildRequest(`${title}:${verse.n}`, verse, text, solid, learner, grammar);
+          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar);
           const answer = await askTutor(request, {
             key: getDeviceKeyBytes(),
             signal,
             onSent: () => set({ phase: 'waiting', question: text, startedAt }),
           });
-          await addAnswer(verseRef(book, chapter, verse.n), text, answer.answer, answer.words);
+          await addAnswer(verseRef(book, chapter, unitId(verse)), text, answer.answer, answer.words);
           set(undefined);
         } catch (err) {
           if (signal.aborted) return;
