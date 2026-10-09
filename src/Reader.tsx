@@ -524,7 +524,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     // an answer that comes while he holds waits: page audio can take the microphone from the recogniser
     if (openTalk.current !== ref || holding.current) return;
     // Sound it out: the word was said before the answer; now each syllable it lists, slowly, one after another.
-    if (info.focus?.kind === 'sound' && info.syllables?.length) startAnswer(id, syllableRuns(info.syllables));
+    if (info.focus?.kind === 'sound' && !info.focus.language && info.syllables?.length) startAnswer(id, syllableRuns(info.syllables));
     else speakTutor(id, answerRuns(answer), () => openTalk.current === ref);
   });
   // A tap on a verse number opens the Verse view as a Back step of its own; the address then names the verse and the effect below tells the bus.
@@ -940,7 +940,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           talkRef={talkKey ?? talkRef(BOOK, CHAPTER, talkAbout)}
           state={talkStates[talkKey ?? talkRef(BOOK, CHAPTER, talkAbout)]}
           voice={voice}
-          onSay={(message) => say(talkScope, message)}
+          onSay={(message, focus) => say(talkScope, message, focus)}
           onHelp={helpWithWord}
           onAskTerm={askAboutTerm}
           onClose={() => {
