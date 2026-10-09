@@ -45,6 +45,12 @@ Feature: Back closes an open sheet
     Then the Talk sheet is closed
     And the Reader shows Romans 8 at verse 2
 
+  Scenario: Back on the Ask for another approach sheet closes it
+    Given Lampas is opened on Settings with the Ask for another approach sheet open
+    When he goes back
+    Then the Ask for another approach sheet is closed
+    And the Settings screen is open
+
   Scenario: Escape and a tap outside leave no stray entry either
     Given Lampas is opened on Settings and then on Romans 8 with verse 2 selected
     And he taps "For" in verse 2

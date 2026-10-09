@@ -161,6 +161,32 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('Back on the Ask for another approach sheet closes it', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Settings with the Ask for another approach sheet open', async () => {
+      cleanup();
+      stopReading();
+      clearBus();
+      vi.unstubAllGlobals();
+      window.localStorage.clear();
+      window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
+      window.history.replaceState(null, '', '/#/settings');
+      stubChapterFetch();
+      await db.open();
+      await db.settings.clear();
+      render(<App />);
+      await user.click(await screen.findByRole('button', { name: 'Ask for another approach' }));
+      await screen.findByRole('dialog', { name: 'Ask for another approach' });
+    });
+    When('he goes back', back);
+    Then('the Ask for another approach sheet is closed', async () => {
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Ask for another approach' })).toBeNull());
+    });
+    And('the Settings screen is open', async () => {
+      await screen.findByRole('heading', { name: 'Settings' });
+      expect(window.location.hash).toBe('#/settings');
+    });
+  });
+
   Scenario('Escape and a tap outside leave no stray entry either', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Settings and then on Romans 8 with verse 2 selected', () => open('#/settings', true));
     And('he taps "For" in verse 2', () => tapsWord('For', 2));
@@ -186,7 +212,7 @@ describeFeature(feature, ({ Scenario }) => {
       const sheets = readdirSync('src')
         .filter((name) => name.endsWith('.tsx'))
         .filter((name) => readFileSync(`src/${name}`, 'utf8').includes('role="dialog"'));
-      expect(sheets.sort()).toEqual(['ChapterPicker.tsx', 'GrammarSheet.tsx', 'IdeaSheet.tsx', 'Talk.tsx', 'WordSheet.tsx']);
+      expect(sheets.sort()).toEqual(['AskApproachSheet.tsx', 'ChapterPicker.tsx', 'GrammarSheet.tsx', 'IdeaSheet.tsx', 'Talk.tsx', 'WordSheet.tsx']);
       for (const name of sheets) expect(readFileSync(`src/${name}`, 'utf8'), name).toMatch(/useSheetBack\(/);
     });
   });
