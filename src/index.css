@@ -201,6 +201,27 @@ nav {
   -webkit-user-select: none;
 }
 
+/* A long press on any word says it (src/ui/HearAnyWord.tsx), so prose never selects and never raises the phone's callout menu;
+ * a field keeps its text selectable. */
+body {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+input,
+textarea,
+[contenteditable='true'] {
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-touch-callout: default;
+}
+
+/* The word being said by a long press (src/ui/HearAnyWord.tsx, the CSS Custom Highlight API). */
+::highlight(hear-word) {
+  background-color: color-mix(in srgb, var(--lp-accent) 35%, transparent);
+}
+
 :focus-visible {
   outline: 2px solid var(--lp-accent);
   outline-offset: 2px;
