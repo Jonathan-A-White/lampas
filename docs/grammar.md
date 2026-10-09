@@ -172,3 +172,45 @@ needs nothing from the `nouns` tier, but a plural noun's number idea comes after
 | 100 | joiners | `crasis` | Two words run together | crasis | `conjunction`, `punctuation` |
 | 101 | joiners | `aramaic` | Aramaic words | Aramaic word | `indeclinable` |
 | 102 | joiners | `hebrew` | Hebrew words | Hebrew word | `indeclinable` |
+
+## Approaches
+
+**PROVISIONAL**, the Governor to confirm: BMA Tutor is the default, and the lessons below that the RP codes cannot tell apart are
+mapped to the nearest ideas we have.
+
+An approach is the ORDER the ladder's ideas are taught, tested and suggested in, and how that order teaches. It is data, one file
+each in `src/approaches/` (as `src/resources/` are), listed in `index.ts`. The choice is the `grammarApproach` setting (Settings >
+Grammar approach; the tutor can change it; `getGrammarApproach` / `setGrammarApproach`; `approach-changed` on the bus, docs/events.md).
+Choosing one changes no level: levels belong to the ideas, not to the approach.
+
+- `GrammarApproach` (`types.ts`): `{ id, name, credit, method, stages }`. `credit` is `{ name, url, line }` or `null`; `method` is
+  our own words, under 120; `stages` hold levels, levels hold lessons, and a lesson is `{ title, ideas }`, its title in our own words
+  and `ideas` the ladder ids it teaches.
+- `APPROACHES`, `DEFAULT_APPROACH`, `approachOf(id)`.
+- `orderOf(approach)`: every idea id once, in lesson order (an idea a later lesson names again is a revisit and keeps its first place);
+  the ideas no lesson names follow, by rung. This is the sequence the placement, 'Learn next' and the Goal screen follow.
+- `lessonOf(approach, ideaId)`: `{ stage, level, lesson }` of the first lesson to name the idea, or `undefined`.
+- `nextLessonOf(approach, levelOf)`: the lesson holding the earliest idea in `orderOf` that has no level or is not yet; Settings
+  marks it 'Next'.
+
+An approach's order is not bound by the ladder's `needs`: BMA Tutor teaches the aorist before the genitive. A story that must
+not meet an idea before what it rests on takes `ideasBelow(id)` as well.
+
+### BMA Tutor
+
+Follows the sequence of Biblical Mastery Academy's Greek course, credited in Settings and About (`ATTRIBUTION.md`). Stage 1 has six
+levels of twelve lessons; stages 2 and 3 are one lesson each, 'Reading', until more is known. Only the sequence is followed: every
+lesson title and the method are written here, and no course text, picture or exercise is copied (a test keeps the course's own
+phrases out of `bma-tutor.ts`). Mapping, where the RP codes cannot tell a lesson apart:
+
+- third-declension forms: revisits the noun and its cases (`noun`, `case-genitive`, `case-dative`);
+- athematic verbs: revisits `tense-present` and `second-tenses`;
+- root variations: `attic-form`, the ladder's nearest idea for a verb spelt another way;
+- assimilation (letters changing at a joint): `crasis`, the nearest idea for sounds that run together;
+- the periphrastic, clauses and 'reading Paul' lessons, and level 6 (1, 2 and 3 John), name the ideas that passage uses again.
+
+### Adding an approach
+
+1. One file in `src/approaches/` exporting a `GrammarApproach` (a credit when the order is someone's, with their name and address).
+2. One line in `src/approaches/index.ts` (`APPROACHES`).
+3. `npm run grind:build`, so the tutor may be asked for it. `tests/unit/approaches.test.ts` checks that `orderOf` lists every idea once.

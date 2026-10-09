@@ -16,3 +16,6 @@ Lampas uses these texts, lexicons and libraries.
   Copyright (c) 2003-2022 SIL International; the licence text is in `src/fonts/OFL.txt`. The OFL allows bundling
   and redistributing the font with software. The Greek and Greek Extended subsets are bundled as the
   @fontsource/gentium-plus 5.3.0 builds, unmodified.
+- **Biblical Mastery Academy** (https://biblicalmastery.academy/). The order in which the BMA Tutor grammar approach teaches Greek
+  follows the sequence of the Greek Success Path of Biblical Mastery Academy. Only the sequence is followed: the lesson titles,
+  the method and the drills in Lampas are its own, and no course text, image or exercise is copied.

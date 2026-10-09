@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { parseAttribution, plainText } from '../../src/attribution';
+import { attribution, parseAttribution, plainText } from '../../src/attribution';
 
 const file = readFileSync('ATTRIBUTION.md', 'utf8');
 
@@ -31,5 +31,17 @@ describe('ATTRIBUTION.md carries what CC BY 4.0 requires', () => {
   });
   it('says the MSB is public domain', () => {
     expect(text).toMatch(/Majority Standard Bible[^]*Public domain/);
+  });
+});
+
+describe('ATTRIBUTION.md credits the BMA Tutor approach', () => {
+  const text = plainText(file);
+  it('names Biblical Mastery Academy for the sequence and says the lessons are Lampas\'s own', () => {
+    expect(text).toContain('Biblical Mastery Academy');
+    expect(text).toMatch(/sequence/);
+    expect(text).toMatch(/no course text, image or exercise/);
+  });
+  it('shows on the About screen', () => {
+    expect(attribution.entries.some((e) => plainText(e).includes('Biblical Mastery Academy'))).toBe(true);
   });
 });

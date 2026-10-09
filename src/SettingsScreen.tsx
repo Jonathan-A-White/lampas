@@ -7,6 +7,7 @@ import { TEXT_SIZES } from './appearance/textSizes';
 import { THEMES, type Theme } from './appearance/themes';
 import {
   getGoal,
+  getGrammarApproach,
   getGreekPronunciation,
   getLayout,
   getSectionHeadings,
@@ -23,6 +24,8 @@ import {
   type VoiceLanguage,
   type Weave,
 } from './data/repositories';
+import { APPROACHES, approachOf, nextLessonOf, type GrammarApproach } from './approaches';
+import { listLevels } from './data/repositories/grammarLevels';
 import { BOOK_INDEX } from './data/bookIndex';
 import { goalText, goalTitle, parseGoal, type Goal } from './data/goal';
 import { LAYOUTS } from './layout/layouts';
@@ -345,6 +348,81 @@ function GoalPickers({ saved }: { saved: string }) {
   );
 }
 
+/** The credit line, with the source's name a link when the approach has its address. */
+function CreditLine({ approach }: { approach: GrammarApproach }) {
+  const credit = approach.credit;
+  if (!credit) return null;
+  const at = credit.line.indexOf(credit.name);
+  return (
+    <p data-approach-credit className="pt-3 text-base">
+      {at < 0 ? (
+        credit.line
+      ) : (
+        <>
+          {credit.line.slice(0, at)}
+          <a href={credit.url} target="_blank" rel="noopener noreferrer" className="font-medium text-accent underline">
+            {credit.name}
+          </a>
+          {credit.line.slice(at + credit.name.length)}
+        </>
+      )}
+    </p>
+  );
+}
+
+/** The grammar approach: a choice of the approaches, then the chosen one's credit line, its method and its lessons, with the lesson
+ * that holds the earliest idea he has no level for marked Next. Choosing writes only the approach: his levels are not touched. */
+function ApproachPicker({ chosen, levels }: { chosen: string; levels: ReadonlyMap<string, { level: 'solid' | 'frontier' | 'notYet' }> }) {
+  const approach = approachOf(chosen) ?? APPROACHES[0];
+  const next = nextLessonOf(approach, (id) => levels.get(id)?.level);
+  return (
+    <div>
+      <div role="radiogroup" aria-label="Grammar approach" className="space-y-2">
+        {APPROACHES.map((a) => (
+          <button
+            key={a.id}
+            type="button"
+            role="radio"
+            aria-checked={approach.id === a.id}
+            onClick={() => void writeSetting('grammarApproach', a.id)}
+            className={`block min-h-12 w-full rounded-xl border px-4 py-2 text-left text-base font-medium ${approach.id === a.id ? 'border-accent bg-accent/15' : 'border-line'}`}
+          >
+            {a.name}
+          </button>
+        ))}
+      </div>
+      <CreditLine approach={approach} />
+      <p data-approach-method className="pt-3 text-base">
+        {approach.method}
+      </p>
+      <div data-approach-lessons className="pt-3">
+        {approach.stages.map((stage) => (
+          <div key={stage.title}>
+            <h3 className="pt-3 text-base font-semibold">{stage.title}</h3>
+            {stage.levels.map((level) => (
+              <div key={level.title}>
+                <h4 className="pt-2 text-base font-medium text-muted">{level.title}</h4>
+                <ol className="list-inside list-decimal text-base">
+                  {level.lessons.map((lesson) => (
+                    <li key={lesson.title} className={lesson === next?.lesson ? 'font-medium' : undefined}>
+                      <span data-lesson-title>{lesson.title}</span>
+                      {lesson === next?.lesson ? (
+                        <span data-next className="ml-2 rounded-md bg-accent px-2 text-sm text-accent-fg">
+                          Next
+                        </span>
+                      ) : null}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function LinkRow({ label, to }: { label: string; to: 'words' | 'review' | 'about' }) {
   return (
     <button
@@ -373,6 +451,8 @@ export function SettingsScreen() {
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
   const resources = useLiveQuery(getStudyResources, []);
   const goal = useLiveQuery(getGoal, []);
+  const approach = useLiveQuery(getGrammarApproach, []);
+  const levels = useLiveQuery(listLevels, []);
   return (
     <>
       <ScreenHeader title="Settings" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />
@@ -395,6 +475,9 @@ export function SettingsScreen() {
           </Section>
           <Section title="Goal" hint="The passage you are working toward: a whole book, one chapter or a single verse.">
             {goal !== undefined ? <GoalPickers saved={goal} /> : null}
+          </Section>
+          <Section title="Grammar approach" hint="The order grammar is taught and tested in.">
+            {approach !== undefined && levels !== undefined ? <ApproachPicker chosen={approach} levels={levels} /> : null}
           </Section>
           <Section title="Reading voices" hint="Which of this phone's voices reads aloud. Phone default lets the phone choose.">
             {english !== undefined && greek !== undefined ? (
