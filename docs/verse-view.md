@@ -79,3 +79,23 @@ the whole passage.
 * **Limits worth knowing:** a request is capped at `MAX_REQUEST_BYTES` (6500) and only the history is trimmed to fit, so a very long passage may be refused
   with 'Could not send the question'; Romans 8:1-11 fits. There is no way to start the same quiz over except to say so in the sheet. Links to study
   resources come with the words the tutor cites (each opens its word sheet and Study row).
+
+## My study way (mw-5r3p30.76)
+
+The Governor, Postern general (2026-10-08): "The user should be able to work with the tutor to personalize this in a durable way." The reader shapes the
+quiz method by talking with the tutor, and the phone keeps it for every later quiz.
+
+* **The tutor proposes, the reader keeps.** In a quiz the answer may carry `study_way_line` (answer schema, one line of at most 100 characters). The Talk
+  sheet shows it under the answer, 'For your study way', with **Keep this**; nothing is saved until the tap, then it reads **Kept**. With 12 lines kept it
+  says 'Your study way is full: delete a line in Settings > My study way.' and offers no button. A wish for today ('no tangents today') is not a line: the
+  instructions say so.
+* **Where it lives:** the settings store, key `studyWay`, a JSON list (`src/data/repositories/studyWay.ts`), chosen over a table because it is a short
+  free-text list like the Logos ticks and `paceRounds`: no Dexie version, nothing to migrate. It is outside the settings registry, so the tutor's
+  `settings_changes` can never write it. At most `STUDY_WAY_MAX` (12) lines of at most `STUDY_WAY_LINE_MAX` (100) characters; a line is kept once.
+* **The page:** Settings > My study way (`#/studyway`, `src/StudyWayScreen.tsx`) lists the lines, each with Edit (a field, Save | Cancel) and Delete.
+  It adds none: lines come only from Keep this.
+* **In every quiz request:** `study_way` (input schema, at most 12 lines), sent only in quiz mode and only when lines are kept; `fitHistory` never cuts
+  it. `## My study way` in `grinds/bible-talk.instructions.md` says the reader's lines override the default method where they conflict. They leave the
+  phone only inside a tutor request.
+* **PROVISIONAL, the Governor to confirm:** the page's name 'My study way', 'For your study way', 'Keep this' / 'Kept', the limits of 12 lines and 100
+  characters, and that the lines go in quiz requests only (not in an ordinary talk).
