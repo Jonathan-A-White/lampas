@@ -36,6 +36,8 @@ export { listDrillResults, recordDrillStep } from './drills';
 export type { DrillResult } from './drills';
 export { getVerseReading, keepVerseReading } from './readings';
 export type { FixWord, VerseReading } from './readings';
+export { getLevel, levelFromStep, listLevels, recordGrammarAnswer, scheduleIdea, seedLevelsIfFirstOpen, setLevel, SOLID_STEP } from './grammarLevels';
+export type { GrammarLevel, GrammarLevelHow, GrammarLevelName } from './grammarLevels';
 export { isTermKnown, listKnownTerms, setTermKnown } from './grammar';
 export { getStudyResources, setResourceOn, setResourceOption } from './resources';
 export type { StudyResources } from './resources';

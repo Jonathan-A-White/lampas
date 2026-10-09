@@ -81,16 +81,24 @@ export async function ensureScheduled(
   now = Date.now(),
   start?: (id: string, index: number) => Pick<Review, 'step' | 'due'>,
 ): Promise<number> {
-  const added = await db.transaction('rw', db.reviews, async () => {
-    const there = await scheduled(ids.map((id) => ({ kind, id })));
-    const missing = ids
-      .map((id, index): Review => ({ kind, id, ...(start?.(id, index) ?? { step: 0, due: now }), lastWhen: now, lapses: 0, rights: 0 }))
-      .filter((r) => !there.has(`${r.kind}\0${r.id}`));
-    await db.reviews.bulkAdd(missing);
-    return missing.length;
-  });
+  const added = await db.transaction('rw', db.reviews, () => writeScheduled(kind, ids, now, start));
   if (added > 0) await announceDue(now);
   return added;
+}
+
+/** ensureScheduled inside the caller's transaction (which must include db.reviews), without announcing; the caller calls announceDue. */
+export async function writeScheduled(
+  kind: string,
+  ids: string[],
+  now: number,
+  start?: (id: string, index: number) => Pick<Review, 'step' | 'due'>,
+): Promise<number> {
+  const there = await scheduled(ids.map((id) => ({ kind, id })));
+  const missing = ids
+    .map((id, index): Review => ({ kind, id, ...(start?.(id, index) ?? { step: 0, due: now }), lastWhen: now, lapses: 0, rights: 0 }))
+    .filter((r) => !there.has(`${r.kind}\0${r.id}`));
+  await db.reviews.bulkAdd(missing);
+  return missing.length;
 }
 
 /**
