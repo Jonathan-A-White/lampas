@@ -71,3 +71,15 @@ Feature: Ask the tutor from any screen
     And he opens the Words screen
     And he taps the Ask the tutor control there
     Then the sheet shows no earlier turn
+
+  Scenario: On Settings the request carries every setting, its value and its help, and the sheet suggests questions about settings
+    Given Lampas is opened on #/settings with the goal "1 John 1:1" behind a fake Postern
+    When he taps the Ask the tutor control
+    Then the sheet suggests a question about Accordance, "What would Accordance give me?"
+    When he taps that suggested question
+    Then the mill received 1 grists for the lampas app, kind bible-talk
+    And the grist carries the question "What would Accordance give me?"
+    And the grist is for the screen "Settings" and has no verse text
+    And the grist's screen settings name every setting and study resource with its value now and its help
+    And the grist's screen settings say Accordance is Off and what it adds
+    And the grist carries only fields the input schema allows

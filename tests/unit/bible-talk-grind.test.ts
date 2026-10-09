@@ -354,6 +354,43 @@ describe('the screen field (mw-5r3p30.91)', () => {
   });
 });
 
+describe('the screen settings (mw-5r3p30.107)', () => {
+  const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
+  const base = { reference: 'Settings', question: "What's the benefit of Accordance?", history: [], solid_words: [], settings: {} };
+  const settings = [
+    { name: 'Weave', value: 'Solid words', help: 'Greek words you know stand in the English.' },
+    { name: 'Accordance', value: 'Off', help: 'Adds Open in Accordance: the word in your own lexicon in the Accordance app.' },
+  ];
+
+  it('the request schema takes a screen with settings, each a name, a value and its help, and refuses a bad one', () => {
+    expect(validate({ ...base, screen: { name: 'Settings', facts: [], settings } }, input)).toEqual([]);
+    expect(validate({ ...base, screen: { name: 'Settings', facts: [] } }, input)).toEqual([]);
+    const many = Array.from({ length: 31 }, (_, i) => ({ name: `S${i}`, value: 'On', help: 'h' }));
+    for (const bad of [
+      [{ name: 'Weave', value: 'Off' }],
+      [{ name: '', value: 'Off', help: 'h' }],
+      [{ name: 'Weave', value: 'Off', help: 'h', extra: 1 }],
+      [{ name: 'Weave', value: 'Off', help: 'x'.repeat(101) }],
+      many,
+    ]) {
+      expect(validate({ ...base, screen: { name: 'Settings', facts: [], settings: bad } }, input), JSON.stringify(bad)).not.toEqual([]);
+    }
+  });
+
+  it('the instructions say how to answer about a setting: what it does, what on or off gains and loses, what it needs, and no invented setting', () => {
+    const text = readFileSync(grind.instructions as string, 'utf8');
+    for (const part of ['`screen.settings`', 'what it does', 'gains', 'loses', 'what it needs', 'never invent a setting']) expect(text.toLowerCase()).toContain(part.toLowerCase());
+  });
+
+  it('the instructions work "What\'s the benefit of Accordance?" through: it names Accordance, its Open in Accordance link and the app on the phone', () => {
+    const text = readFileSync(grind.instructions as string, 'utf8');
+    const example = text.slice(text.indexOf("What's the benefit of Accordance?"));
+    expect(example.length).toBeGreaterThan(0);
+    const worked = example.slice(0, 900);
+    for (const part of ['Accordance', 'Open in Accordance', 'lexicon', 'app on his phone']) expect(worked).toContain(part);
+  });
+});
+
 describe('the sound kind for a Hebrew word (mw-5r3p30.98)', () => {
   const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
   const request = { reference: 'Romans 8:28', greek: 'Οἴδαμεν', english: 'And we know', question: 'Say it', history: [], solid_words: [], settings: {} };

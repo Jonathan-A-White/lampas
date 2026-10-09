@@ -46,6 +46,21 @@
               "value": { "type": "string", "minLength": 1, "maxLength": 200 }
             }
           }
+        },
+        "settings": {
+          "description": "Only on Settings: every setting and study-resource switch the screen has, each with the value it holds now (On, Off, Dark, 0.8x) and the line shown under it. A setting that is Off is listed too.",
+          "type": "array",
+          "maxItems": 30,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "value", "help"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1, "maxLength": 40 },
+              "value": { "type": "string", "minLength": 1, "maxLength": 80 },
+              "help": { "type": "string", "minLength": 1, "maxLength": 100 }
+            }
+          }
         }
       }
     },

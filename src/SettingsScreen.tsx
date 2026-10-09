@@ -49,6 +49,8 @@ import { useScrollMemory } from './nav/scrollMemory';
 import { usePace } from './usePace';
 import { PHONE_VOICE, writeSetting } from './settings/registry';
 import { ROWS, SECTIONS, readValues, visibleRows, type SettingsRow } from './settings/rows';
+import { settingsForTutor } from './settings/tutorSettings';
+import { useReportScreen } from './tutor/screenContext';
 import { ScriptText } from './script/ScriptText';
 import { DEPTHS, SCRIPTS, type Depth, type TutorScript } from './script/scripts';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -886,6 +888,9 @@ export function SettingsScreen() {
   const [query, setQuery] = useState('');
   const values = useLiveQuery(readValues, []);
   const rows = visibleRows(values ?? {}, query);
+  // the tutor is told every setting, shown or not (mw-5r3p30.107): he can say what a setting that is off would give
+  const forTutor = useLiveQuery(settingsForTutor, []);
+  useReportScreen({ name: 'Settings', facts: [], settings: forTutor ?? [] });
   return (
     <>
       <ScreenHeader title="Settings" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />
