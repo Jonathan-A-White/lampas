@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tips Request 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["summary", "shown"],
+  "properties": {
+    "summary": {
+      "description": "What he has used and what he has never touched. Counts and ids only.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "days_used",
+        "days_used_last_7",
+        "first_used_days_ago",
+        "screens_visited",
+        "screens_never",
+        "features_used",
+        "features_never",
+        "settings_changed",
+        "settings_never",
+        "turned_off",
+        "counts"
+      ],
+      "properties": {
+        "days_used": { "description": "Days on which he used the app.", "type": "number", "minimum": 0 },
+        "days_used_last_7": { "description": "Of the last seven days, how many he used it.", "type": "number", "minimum": 0, "maximum": 7 },
+        "first_used_days_ago": {
+          "description": "Days since the first day he used it; null when he has not.",
+          "anyOf": [{ "type": "null" }, { "type": "number", "minimum": 0 }]
+        },
+        "screens_visited": { "description": "Screens he has opened, by id.", "type": "array", "items": { "type": "string" } },
+        "screens_never": { "description": "Screens he has never opened, by id.", "type": "array", "items": { "type": "string" } },
+        "features_used": { "description": "Features he has used, by id.", "type": "array", "items": { "type": "string" } },
+        "features_never": { "description": "Features he has never used, by id.", "type": "array", "items": { "type": "string" } },
+        "settings_changed": { "description": "Settings he has chosen a value for, by key.", "type": "array", "items": { "type": "string" } },
+        "settings_never": { "description": "Settings he has never changed, by key.", "type": "array", "items": { "type": "string" } },
+        "turned_off": { "description": "Settings he set to off himself, by key.", "type": "array", "items": { "type": "string" } },
+        "counts": {
+          "description": "How much he has done.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["wordsLearning", "wordsSolid", "talks", "asks", "quizAnswers", "drillAnswers", "readings", "grammarKnown"],
+          "properties": {
+            "wordsLearning": { "type": "number", "minimum": 0 },
+            "wordsSolid": { "type": "number", "minimum": 0 },
+            "talks": { "type": "number", "minimum": 0 },
+            "asks": { "type": "number", "minimum": 0 },
+            "quizAnswers": { "type": "number", "minimum": 0 },
+            "drillAnswers": { "type": "number", "minimum": 0 },
+            "readings": { "type": "number", "minimum": 0 },
+            "grammarKnown": { "type": "number", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "shown": {
+      "description": "The ids of the tips he has already been shown, never to be offered again.",
+      "type": "array",
+      "maxItems": 200,
+      "items": { "type": "string", "minLength": 1, "maxLength": 60 }
+    }
+  }
+}
