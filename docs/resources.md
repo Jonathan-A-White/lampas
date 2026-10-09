@@ -42,9 +42,16 @@ with Logos the tap hands it to the app. A phone with no app for the scheme does 
 timer (`src/resources/openApp.ts`): if the page is still in front 1.5 s later (not hidden, blurred or left), the link's https
 `ref.ly` address is opened instead. Each Logos link carries it (`data-fallback`). Accordance has no web page for its lexicons, so
 its link has no fallback: the word sheet then opens a small sheet over itself, "<App> isn't on this phone", with `Get <App>` (the
-store search of `src/resources/appStore.ts`: the Play Store, or the App Store on an iPhone or iPad; UNVERIFIED that either finds the app,
-and Accordance may have no Android app) and `Turn off <App>` (the resource goes off in Settings at once). Any new resource of kind
+store page of `src/resources/appStore.ts`: the Play Store, or the App Store on an iPhone or iPad) and `Turn off <App>` (the resource goes off in Settings at once). Any new resource of kind
 `'app'` gets this sheet for a link with no `fallback`.
+
+**Store ids (mw-5r3p30.108).** `STORE_IDS` in `src/resources/appStore.ts` holds the id an app has in each store, keyed by the name the Study
+row gives it; an app with an id opens its own page, an app without one keeps a search for its name. Accordance is Accordance Mobile, by OakTree
+Software, free on Google Play as `com.accordancebible.accordance` (`https://play.google.com/store/apps/details?id=com.accordancebible.accordance`;
+named on `https://www.accordancebible.com/Accordance-For-Android`) and, on the App Store, "Accordance Bible Software", id `411970514`
+(`itms-apps://apps.apple.com/app/id411970514`; confirmed on `https://apps.apple.com/us/app/accordance-bible-software/id411970514`, developer
+OakTree Software, 2026-10-09). The earlier note that Accordance might have no Android app was wrong. Logos has no id here yet (it keeps the
+search): add one line to `STORE_IDS` when it is confirmed.
 
 **The check at the switch (mw-5r3p30.68, PROVISIONAL, Governor to confirm).** A web page cannot list the apps on a phone, so Lampas learns
 whether Logos or Accordance is there when he turns it On in Settings, not at the word sheet. Turning an app On opens the app once by its own

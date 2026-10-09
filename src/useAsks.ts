@@ -5,6 +5,7 @@ import type { Verse } from './data/chapter';
 import { unitId, unitReference } from './data/passage';
 import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { learnerSummary } from './data/learnerSummary';
+import { depthSettings } from './script/depthSettings';
 import { addAnswer, listSolidHeadwords, verseRef } from './data/repositories';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { stopAnswer } from './speech/readAloud';
@@ -50,8 +51,8 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
       set({ phase: 'sending', question: text, startedAt });
       void (async () => {
         try {
-          const [solid, learner, grammar] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined)]);
-          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar);
+          const [solid, learner, grammar, settings] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined), depthSettings()]);
+          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, settings);
           const answer = await askTutor(request, {
             key: getDeviceKeyBytes(),
             signal,

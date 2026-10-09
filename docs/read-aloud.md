@@ -45,3 +45,8 @@ English voice and Greek words in the Greek voice):
 
 A new question or message (`useAsks`, `useTalk`), leaving the panel or the cards, and a tap on the response (not on a button in it, `stopOnTap`) stop the speech
 at once. Off, nothing is spoken by itself; the speaker on an answer ('Hear the answer') still reads it.
+
+## Hebrew in the tutor's text (mw-5r3p30.97)
+
+A Hebrew word in a response is for his eyes: `answerRuns` (and so `startAnswer`) leaves Hebrew letters out of what the English voice is given
+(`withoutScripts`, `src/script/scripts.ts`); the transliteration beside it is read as English. A Hebrew voice (he-IL) and tap-to-speak are a later story.

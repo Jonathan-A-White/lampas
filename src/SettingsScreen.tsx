@@ -16,6 +16,7 @@ import {
   getReadTutor,
   getDeveloper,
   setDeveloper,
+  getScriptDepth,
   getTips,
   getSpeechRates,
   getTextSize,
@@ -51,6 +52,8 @@ import { navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { usePace } from './usePace';
 import { PHONE_VOICE, writeSetting } from './settings/registry';
+import { ScriptText } from './script/ScriptText';
+import { DEPTHS, HEBREW, type Depth, type TutorScript } from './script/scripts';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { speaksLanguage, useVoices, voiceKey } from './speech/greek';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from './speech/languages';
@@ -309,6 +312,27 @@ function DeveloperChoice({ developer }: { developer: 'on' | 'off' }) {
     <div role="group" aria-label="Developer mode" className="inline-flex rounded-xl border border-line p-0.5">
       {choice('on', 'On')}
       {choice('off', 'Off')}
+    </div>
+  );
+}
+
+function ScriptDepthChoice({ script, depth }: { script: TutorScript; depth: Depth }) {
+  return (
+    <div role="group" aria-label={script.settingLabel} className="flex flex-col gap-1 rounded-xl border border-line p-0.5">
+      {DEPTHS.map((d) => (
+        <button
+          key={d.id}
+          type="button"
+          aria-pressed={depth === d.id}
+          onClick={() => void writeSetting(script.settingKey, d.id)}
+          className={`flex min-h-12 items-center justify-between gap-3 rounded-lg px-4 text-left text-base font-medium ${depth === d.id ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+        >
+          <span>{d.label}</span>
+          <span className="text-base font-normal opacity-80" aria-hidden="true">
+            <ScriptText text={script.examples[d.id]} />
+          </span>
+        </button>
+      ))}
     </div>
   );
 }
@@ -764,6 +788,7 @@ export function SettingsScreen() {
   const readSpan = useLiveQuery(getReadSpan, []);
   const readTutor = useLiveQuery(getReadTutor, []);
   const developer = useLiveQuery(getDeveloper, []);
+  const hebrewDepth = useLiveQuery(() => getScriptDepth(HEBREW), []);
   const english = useLiveQuery(() => getVoice('english'), []);
   const greek = useLiveQuery(() => getVoice('greek'), []);
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
@@ -813,6 +838,9 @@ export function SettingsScreen() {
             hint="The reading check's verdict and the tutor's answers are read aloud as soon as they arrive, with no tap. Off speaks nothing by itself."
           >
             {readTutor ? <ReadTutorChoice readTutor={readTutor} /> : null}
+          </Section>
+          <Section title={HEBREW.settingLabel} hint="When the tutor writes a Hebrew word: only how it sounds in English letters, the Hebrew letters with how it sounds, or the pointed Hebrew letters alone, as Greek is written.">
+            {hebrewDepth ? <ScriptDepthChoice script={HEBREW} depth={hebrewDepth} /> : null}
           </Section>
           <Section title="Reading voices" hint="Which of this phone's voices reads aloud. Phone default lets the phone choose.">
             {english !== undefined && greek !== undefined ? (

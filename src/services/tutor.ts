@@ -35,6 +35,8 @@ export interface VerseAskRequest {
   learner?: string;
   /** where his grammar stands (src/data/grammar/learnerGrammar.ts) */
   learner_grammar?: LearnerGrammar;
+  /** how he wants a language besides Greek written (src/script/depthSettings.ts): { hebrewDepth: 'both' } */
+  settings?: Record<string, string>;
 }
 
 /** What the grind answers (grinds/verse-ask.answer.schema.json). */
@@ -53,7 +55,7 @@ export function isVerseAnswer(value: unknown): value is VerseAnswer {
   return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));
 }
 
-export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar): VerseAskRequest {
+export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>): VerseAskRequest {
   return {
     reference,
     greek: verse.g.map((w) => w.t).join(' '),
@@ -62,6 +64,7 @@ export function buildRequest(reference: string, verse: Verse, question: string, 
     solid_words: solidWords,
     ...(learner ? { learner } : {}),
     ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
+    ...(settings ? { settings } : {}),
   };
 }
 

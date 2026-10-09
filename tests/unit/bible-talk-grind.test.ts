@@ -42,6 +42,17 @@ describe('grinds/bible-talk.json', () => {
   });
 });
 
+describe('Hebrew in the tutor', () => {
+  it('has hebrewDepth among the settings it is sent and may change, and an example in its instructions for each depth', () => {
+    const text = readFileSync(grind.instructions as string, 'utf8');
+    expect(text).toContain('`settings.hebrewDepth`');
+    expect(text).toContain('`hebrewDepth` — Hebrew in the tutor.');
+    for (const depth of ['transliteration', 'both', 'full']) expect(text).toContain(`\`${depth}\``);
+    for (const example of ['tsedeq', 'צֶדֶק tsedeq', 'צֶדֶק']) expect(text).toContain(example);
+    expect(JSON.stringify(schema)).toContain('hebrewDepth');
+  });
+});
+
 describe('the answer schema and isTalkAnswer', () => {
   const good = { answer: 'It means "works together".', words: [{ greek: 'συνεργεῖ', lemma: 'συνεργέω', note: 'verb, present active indicative' }] };
   const bad: [string, unknown][] = [

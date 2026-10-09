@@ -10,6 +10,7 @@ import { DEFAULT_THEME, isTheme, type Theme } from '../../appearance/themes';
 import { DEFAULT_LOGOS_BIBLE, isResourceId } from '../../resources/logosBible';
 import { DEFAULT_READ_SPAN, isReadSpan, type ReadSpan } from '../../speech/readSpan';
 import { LANGUAGES, normaliseRate, type SpeechLanguage, type SpeechRates } from '../../speech/languages';
+import { DEFAULT_DEPTH, isDepth, type Depth, type TutorScript } from '../../script/scripts';
 import { DEFAULT_PRONUNCIATION, isPronunciation, type GreekPronunciation } from '../../speech/pronunciation';
 
 export type ReaderView = 'english' | 'greek';
@@ -160,6 +161,16 @@ export async function getDeveloper(): Promise<DeveloperMode> {
 
 export async function setDeveloper(mode: 'on' | 'off'): Promise<void> {
   await db.settings.put({ key: DEVELOPER_KEY, value: mode });
+}
+
+/** How deep into a language the tutor goes (Settings > Hebrew in the tutor), kept under the language's setting name ('hebrewDepth'); Hebrew and transliteration when he has not chosen or the saved value is not a depth. */
+export async function getScriptDepth(script: Pick<TutorScript, 'settingKey'>): Promise<Depth> {
+  const row = await db.settings.get(script.settingKey);
+  return isDepth(row?.value) ? row.value : DEFAULT_DEPTH;
+}
+
+export async function setScriptDepth(script: Pick<TutorScript, 'settingKey'>, depth: Depth): Promise<void> {
+  await db.settings.put({ key: script.settingKey, value: depth });
 }
 
 const THEME_KEY = 'theme';
