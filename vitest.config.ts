@@ -24,5 +24,8 @@ export default defineConfig({
     // A few tests run a real vite build; capping workers keeps them from piling up and timing out.
     maxWorkers: 4,
     testTimeout: 20_000,
+    // Console lines go straight to the stream, not over the worker rpc: a line written as the worker closes (a failed
+    // best-effort write after the last test) otherwise fails the run with EnvironmentTeardownError (mw-5r3p30.83).
+    disableConsoleIntercept: true,
   },
 });
