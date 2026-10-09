@@ -692,7 +692,7 @@ function AskApproach() {
   );
 }
 
-function LinkRow({ label, to }: { label: string; to: 'words' | 'review' | 'paradigms' | 'about' }) {
+function LinkRow({ label, to }: { label: string; to: 'words' | 'review' | 'paradigms' | 'studyway' | 'about' }) {
   return (
     <button
       type="button"
@@ -794,6 +794,9 @@ export function SettingsScreen() {
           </Section>
           <Section title="Tips" hint="Once a day at most, when you open Lampas and are online, a small tip about something you have not tried. Off sends nothing.">
             {tips ? <TipsChoice tips={tips} /> : null}
+          </Section>
+          <Section title="My study way" hint="The lines you kept about how the tutor quizzes you.">
+            <LinkRow label="My study way" to="studyway" />
           </Section>
           <Section title="More">
             <LinkRow label="Words" to="words" />
