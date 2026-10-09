@@ -1,4 +1,4 @@
-// src/nav/route.ts — eight screens, told apart by the address hash, so the phone's Back button walks them.
+// src/nav/route.ts — nine screens, told apart by the address hash, so the phone's Back button walks them.
 // The reader's own state rides in the same hash after a '?': book (b, its code as public/data/index.json has it), chapter (c),
 // view, weave and the selected verse (v), e.g. '#/?b=rom&c=8&view=greek&weave=off&v=28'. An address with a chapter and no book
 // is Romans (every address kept before the picker, mw-5r3p30.60, was). src/nav/lastRoute.ts keeps these addresses across a close.
@@ -9,7 +9,7 @@ import { useSyncExternalStore } from 'react';
 import { bookOf } from '../data/books';
 import type { ReaderView, Weave } from '../data/repositories';
 
-export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'about' | 'settings';
+export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'placement' | 'about' | 'settings';
 
 /** What the address says about the reader; a key is missing when the address does not say. */
 export interface ReaderAddress {
@@ -48,6 +48,7 @@ export function routeOf(hash: string): Route {
   if (path === '#/test') return 'test';
   if (path === '#/drill') return 'drill';
   if (path === '#/review') return 'review';
+  if (path === '#/placement') return 'placement';
   if (path === '#/about') return 'about';
   if (path === '#/settings') return 'settings';
   return 'home';

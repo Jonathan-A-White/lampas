@@ -46,6 +46,13 @@ export function lessonOf(approach: GrammarApproach, ideaId: string): LessonPlace
   return undefined;
 }
 
+/** The number of the level (counted from 1 across the stages) whose lesson teaches `ideaId`: 'BMA Tutor L1'; undefined when no lesson does. */
+export function levelNumberOf(approach: GrammarApproach, ideaId: string): number | undefined {
+  const place = lessonOf(approach, ideaId);
+  if (!place) return undefined;
+  return approach.stages.flatMap((s) => s.levels).indexOf(place.level) + 1;
+}
+
 /** The lesson that holds the earliest idea (in `approach`'s order) with no level or 'notYet'; undefined when every idea has one. */
 export function nextLessonOf(approach: GrammarApproach, levelOf: (id: string) => GrammarLevelName | undefined): LessonPlace | undefined {
   const id = orderOf(approach).find((i) => {

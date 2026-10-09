@@ -106,7 +106,7 @@ export const grammarRandom = (random: Random): Random => mulberry32(grammarSeed(
  * The passage grammar questions are about: the chapters of his goal (up to MAX_CHAPTERS of a whole book's) or, with no goal, the chapter the Reader has
  * open. A chapter that cannot be loaded is left out, and a phone that cannot load any is asked questions that need no passage.
  */
-async function loadPassage(chooser: Random): Promise<Chapter[]> {
+export async function loadPassage(chooser: Random): Promise<Chapter[]> {
   const goal = parseGoal(await getGoal(), BOOK_INDEX);
   const open = getOpenChapter();
   const wanted = goal
