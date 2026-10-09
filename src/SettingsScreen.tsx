@@ -2,7 +2,7 @@
 // English and Greek aloud, how fast each is read, and how Greek is pronounced. Each choice is saved in the settings store (src/data/repositories)
 // and told to the bus (src/events/bus.ts); the Study resources (src/resources/) are switched on here; Words and About open from here too.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { TEXT_SIZES } from './appearance/textSizes';
 import { THEMES, type Theme } from './appearance/themes';
 import {
@@ -31,6 +31,8 @@ import { speaksLanguage, useVoices, voiceKey } from './speech/greek';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from './speech/languages';
 import { SearchableList } from './ui/SearchableList';
 import { RESOURCES, tickedOf, type ResourceChoices, type StudyResource } from './resources';
+import { storeUrl } from './resources/appStore';
+import { checkApp } from './resources/openApp';
 import { PRONUNCIATIONS, pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
 
 function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
@@ -229,10 +231,33 @@ function ChoiceList({ resourceId, choices, ticked }: { resourceId: string; choic
   return <SearchableList label={choices.label} hint={choices.hint} noun="lexicon" items={choices.items} ticked={ticked} onToggle={toggle} />;
 }
 
-/** One study resource: its switch (a 44 px row), what it adds, and the field it asks for, if any (kept as he types). */
+/** What the check of an app said when he last turned it On: still waiting for the phone, the app opened, or it is not on this phone. */
+type AppCheck = 'checking' | 'found' | 'missing' | null;
+
+/** One study resource: its switch (a 44 px row), what it adds, and the field it asks for, if any (kept as he types).
+ *  Turning an app On opens it once (openApp.ts checkApp): if the page goes away the app is there and stays On; if not, the switch goes back Off
+ *  and the row says so, with Install, here and not at the word sheet. */
 function ResourceRow({ resource, on, typed }: { resource: StudyResource; on: boolean; typed: string }) {
   const [value, setValue] = useState(typed);
+  const [check, setCheck] = useState<AppCheck>(null);
+  const dropCheck = useRef<(() => void) | null>(null);
   const option = resource.option;
+  useEffect(() => () => dropCheck.current?.(), []);
+  const flip = (): void => {
+    dropCheck.current?.();
+    dropCheck.current = null;
+    setCheck(null);
+    void setResourceOn(resource.id, !on);
+    if (on || !resource.probe) return;
+    setCheck('checking');
+    dropCheck.current = checkApp(resource.probe, {
+      onBack: () => setCheck('found'),
+      onMissing: () => {
+        void setResourceOn(resource.id, false);
+        setCheck('missing');
+      },
+    });
+  };
   return (
     <div className="border-b border-line py-2 last:border-b-0">
       <div className="flex min-h-12 items-center justify-between gap-3">
@@ -244,13 +269,32 @@ function ResourceRow({ resource, on, typed }: { resource: StudyResource; on: boo
           role="switch"
           aria-checked={on}
           aria-label={resource.name}
-          onClick={() => void setResourceOn(resource.id, !on)}
+          onClick={flip}
           className={`min-h-12 min-w-16 rounded-lg px-4 text-base font-medium ${on ? 'bg-accent text-accent-fg' : 'border border-line text-fg'}`}
         >
           {on ? 'On' : 'Off'}
         </button>
       </div>
       <p className="text-sm text-muted">{resource.describe}</p>
+      {check === 'checking' ? (
+        <p role="status" className="pt-1 text-sm text-muted">{`Looking for ${resource.name} on this phone…`}</p>
+      ) : null}
+      {check === 'found' ? (
+        <p role="status" className="pt-1 text-base font-medium">{`${resource.name} found`}</p>
+      ) : null}
+      {check === 'missing' ? (
+        <div role="status" className="pt-1">
+          <p className="text-base font-medium">{`${resource.name} isn't on this phone`}</p>
+          <a
+            href={storeUrl(resource.name)}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-1 flex min-h-12 items-center justify-center rounded-xl bg-accent px-4 text-base font-medium text-accent-fg"
+          >
+            {`Install ${resource.name}`}
+          </a>
+        </div>
+      ) : null}
       {on && resource.choices ? <ChoiceList resourceId={resource.id} choices={resource.choices} ticked={tickedOf(resource, typed)} /> : null}
       {option ? (
         <div className="mt-2">

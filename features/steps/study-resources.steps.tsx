@@ -9,11 +9,18 @@ import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
+import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 
 const user = userEvent.setup();
 
+// Turning an app On opens it to see it is there (mw-5r3p30.68): nothing here waits for real time or leaves the page.
+const real = { ...browserEnv };
+browserEnv.after = () => () => {};
+browserEnv.launch = () => {};
+
 afterAll(() => {
+  Object.assign(browserEnv, real);
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
