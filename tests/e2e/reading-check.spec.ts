@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { GREEK_READING_ANSWER, INCOMPLETE_ANSWER, makeFakePostern, READING_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
+import { honestMic } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction } from './verse-view';
@@ -18,29 +19,9 @@ async function expectFitsPhone(page: Page) {
   expect(scrollTop).toBe(0);
 }
 
-// The Chromium of the gate has no microphone: a stream and a MediaRecorder stand in, enough for the recorder to run.
-async function fakeMicrophone(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    const stream = { getTracks: () => [{ stop() {} }] };
-    Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: async () => stream } });
-    class FakeMediaRecorder {
-      static isTypeSupported = (mime: string) => mime === 'audio/webm;codecs=opus';
-      mimeType = 'audio/webm;codecs=opus';
-      state = 'inactive';
-      ondataavailable: ((e: { data: Blob }) => void) | null = null;
-      onstop: (() => void) | null = null;
-      start() {
-        this.state = 'recording';
-      }
-      stop() {
-        this.state = 'inactive';
-        this.ondataavailable?.({ data: new Blob([new Uint8Array(2000)], { type: 'audio/webm' }) });
-        this.onstop?.();
-      }
-    }
-    Object.defineProperty(window, 'MediaRecorder', { configurable: true, value: FakeMediaRecorder });
-  });
-}
+// The Chromium of the gate has no microphone: bsv-kit's honest one (tests/support/honest-fakes.ts) hands out a stream, a MediaRecorder
+// and a recogniser that take the time a phone takes; a clip of speech plays in real time while the bar is held.
+const fakeMicrophone = (page: Page) => honestMic(page);
 
 async function holdFor(page: Page, button: ReturnType<Page['getByRole']>, ms: number): Promise<void> {
   const box = await button.boundingBox();

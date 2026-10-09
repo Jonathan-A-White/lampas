@@ -3,6 +3,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { GREEK_READING_ANSWER, makeFakePostern, READING_ANSWER, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
+import { honestMic } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction, openTalkAbout } from './verse-view';
@@ -17,29 +18,9 @@ async function box(el: Locator) {
   return b;
 }
 
-async function fakeMicrophone(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    const stream = { getTracks: () => [{ stop() {} }] };
-    Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: async () => stream } });
-    class FakeMediaRecorder {
-      static isTypeSupported = () => true;
-      mimeType = 'audio/webm';
-      state = 'inactive';
-      ondataavailable: ((e: { data: Blob }) => void) | null = null;
-      onstop: (() => void) | null = null;
-      onerror: (() => void) | null = null;
-      start() {
-        this.state = 'recording';
-      }
-      stop() {
-        this.state = 'inactive';
-        this.ondataavailable?.({ data: new Blob([new Uint8Array(4000)], { type: 'audio/webm' }) });
-        this.onstop?.();
-      }
-    }
-    Object.defineProperty(window, 'MediaRecorder', { configurable: true, value: FakeMediaRecorder });
-  });
-}
+// The Chromium of the gate has no microphone: bsv-kit's honest one (tests/support/honest-fakes.ts) hands out a stream, a MediaRecorder
+// and a recogniser that take the time a phone takes; a clip of speech plays in real time while the bar is held.
+const fakeMicrophone = (page: Page) => honestMic(page);
 
 test("the Talk sheet's hold-to-talk bar is the last control at the foot, the sheet's width, Postern's height", async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
