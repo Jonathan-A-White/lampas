@@ -5,7 +5,7 @@
 // and a phone that has not listed its voices yet is still asked to speak with lang 'el-GR' and picks its own.
 import { useRef, useSyncExternalStore } from 'react';
 import { DEFAULT_RATES, LANGUAGES, normaliseRate, type SpeechLanguage, type SpeechRates } from './languages';
-import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation } from './pronunciation';
+import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation, type Pronunciation } from './pronunciation';
 
 /** how long warmVoices() waits for the phone to list its voices */
 const VOICES_WAIT_MS = 1500;
@@ -29,6 +29,9 @@ export const greekLang = (): string => pronunciationOf(pronunciation).lang;
 /** The language tag put on an utterance in `language`. */
 const langOf = (language: SpeechLanguage): string =>
   language === 'greek' ? greekLang() : (LANGUAGES.find((l) => l.id === language)?.lang ?? 'en-US');
+
+/** The pronunciation he chose (its respell cuts a word into syllables). */
+export const chosenPronunciation = (): Pronunciation => pronunciationOf(pronunciation);
 
 export function setGreekPronunciation(next: GreekPronunciation): void {
   pronunciation = next;

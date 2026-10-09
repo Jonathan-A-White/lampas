@@ -51,11 +51,15 @@ export interface Progress {
   grammar: Counts;
 }
 
-/** The chapters a goal covers: its chapter, or every chapter of the book in order, one request each. */
-function chaptersOf(goal: Goal, load: ChapterLoader, index: BookIndex): Promise<Chapter[]> {
+/** The numbers of the chapters a goal covers: its chapter, or every chapter of the book in order. */
+export function goalChapterNumbers(goal: Goal, index: BookIndex): number[] {
   const count = index.books.find((b) => b.code === goal.book)?.chapters ?? 0;
-  const numbers = goal.chapter !== undefined ? [goal.chapter] : Array.from({ length: count }, (_, i) => i + 1);
-  return Promise.all(numbers.map((n) => load(goal.book, n)));
+  return goal.chapter !== undefined ? [goal.chapter] : Array.from({ length: count }, (_, i) => i + 1);
+}
+
+/** The chapters a goal covers, one request each. */
+function chaptersOf(goal: Goal, load: ChapterLoader, index: BookIndex): Promise<Chapter[]> {
+  return Promise.all(goalChapterNumbers(goal, index).map((n) => load(goal.book, n)));
 }
 
 type ChapterLoader = (book: string, n: number) => Promise<Chapter>;
