@@ -15,7 +15,7 @@ import { ideaOf } from './data/grammar/ladder';
 import type { Counts, Level } from './data/grammar/needs';
 import { addWordToLearn, getGrammarApproach } from './data/repositories';
 import { IdeaSheet } from './IdeaSheet';
-import { navigate, openReader } from './nav/route';
+import { navigate, openPlacement, openReader } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { ReportScreen } from './tutor/ReportScreen';
 import { useReportScreen } from './tutor/screenContext';
@@ -216,12 +216,12 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
           {placed !== undefined ? (
             <div className="flex items-center gap-3">
               <p className="min-w-0 flex-1 text-base">Placed on {placedText(placed)}</p>
-              <button type="button" onClick={() => navigate('placement')} className="min-h-12 shrink-0 rounded-xl border border-line px-4 text-base font-medium text-accent">
+              <button type="button" onClick={() => openPlacement('goal')} className="min-h-12 shrink-0 rounded-xl border border-line px-4 text-base font-medium text-accent">
                 Place again
               </button>
             </div>
           ) : (
-            <button type="button" onClick={() => navigate('placement')} className={`${BUTTON} w-full border border-line text-accent`}>
+            <button type="button" onClick={() => openPlacement('goal')} className={`${BUTTON} w-full border border-line text-accent`}>
               Place me
             </button>
           )}
