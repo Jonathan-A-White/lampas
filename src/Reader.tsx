@@ -13,14 +13,14 @@
 // worker), the view and the weave are kept in the settings store. Which chapter is open is the address's (b and c), else the one
 // last open (src/data/readerChapter.ts); a chapter is a ReaderBody keyed by it, so choosing another starts the screen afresh.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Fragment, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReadHold } from './ReadCheck';
 import { VerseView } from './VerseView';
 import { useVerseAction } from './verse/action';
 import { ASK_BUTTON_ROOM, AskTutorButton, TALK_BAR_LIFT } from './AskTutor';
 import { TalkBar, TalkSheet } from './Talk';
 import { ErrorBoundary } from './ErrorBoundary';
-import { type Chapter, type EnglishChunk, type GreekWord, type Verse, englishRuns, loadChapter } from './data/chapter';
+import { type Chapter, type GreekWord, type Verse, loadChapter } from './data/chapter';
 import { formPasses } from './data/grammar/formLevel';
 import { listLevels } from './data/repositories/grammarLevels';
 import {
@@ -44,7 +44,7 @@ import { verseNeighbours } from './data/neighbours';
 import { type Passage, passageAt, passageVerse, passagesOf, unitId } from './data/passage';
 import { ChapterNav } from './ChapterNav';
 import { ChapterPicker } from './ChapterPicker';
-import { weaveVerse, type Woven } from './data/weave';
+import { weaveVerse } from './data/weave';
 import { BuildVersion } from './BuildVersion';
 import { latest, publish, useLatest } from './events/bus';
 import { blocksOf } from './layout/layouts';
@@ -60,8 +60,6 @@ import { READER_SUGGESTIONS } from './tutor/screen';
 import { useTalk } from './useTalk';
 import { helpQuestion, newWordQuestion, paradigmQuestion, quizMeQuestion, scopeRef, scopeTitle, termQuestion, type TalkScope, type WordFocus } from './services/talk';
 import { useVoice } from './useVoice';
-import { useHoldPress } from './ui/holdPress';
-import { NO_SELECT, useLongPress } from './ui/longPress';
 import { HeaderButton } from './ScreenHeader';
 import { speakTutor } from './speech/tutorVoice';
 import { continueReading, getReading, isReadingOf, pauseReading, planOf, startAnswer, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
@@ -71,73 +69,12 @@ import { TeachSheet, type NewWordAsk } from './TeachSheet';
 import { useNewWords } from './useNewWords';
 import { usePace } from './usePace';
 import { TipCard } from './tips/TipCard';
-import { ReadFromButton, ReadingBar, VersePlay } from './speech/ReadControls';
+import { ReadFromButton, ReadingBar } from './speech/ReadControls';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { speakWord, warmVoices } from './speech/greek';
-import type { SpeechLanguage } from './speech/languages';
 import { WordSheet, type Lookup, type TermAsk, type WordHelp } from './WordSheet';
-
-// 44 px (--lp-tap) minus 1 em, halved, top and bottom. Every face's content area is taller than 1 em (Gentium Plus
-// about 1.11 em, a phone's sans about 1.1 em), so an inline word is never under 44 px whatever the font, and the line
-// box stays --lp-tap tall, so the spare pixels cost no layout.
-const TAP_PAD = 'py-[calc((var(--lp-tap)-1em)/2)]';
-
-/** An English chunk with only the words the translators supplied in italics ('was' of 'was king'): [data-supplied]. */
-function SuppliedText({ chunk }: { chunk: EnglishChunk }) {
-  return (
-    <>
-      {englishRuns(chunk).map((run, i) => (
-        <Fragment key={i}>
-          {i > 0 ? ' ' : ''}
-          {run.supplied ? (
-            <i data-supplied className="italic">
-              {run.text}
-            </i>
-          ) : (
-            run.text
-          )}
-        </Fragment>
-      ))}
-    </>
-  );
-}
-
-/** A word he can tap: a span with role button and no chrome. The caller pads it to a 44 px tap height (an inline box
- * is as tall as its font's content area, so the padding is 44 px minus that, which differs by face). The trailing
- * space is inside so the gap between two words is tappable too. It has no horizontal padding: the gap between two words is that one space (mw-5r3p30.127). A finger held on it for half a second (`onLongPress`)
- * is a press, not a tap: the click that follows is dropped, and so is one after the finger wandered over 10 px
- * (src/ui/longPress.ts). The word never selects text and never raises the phone's callout menu, so the hold is free for the press. */
-function Tap({ onTap, onLongPress, lang, className, children, ...data }: {
-  onTap: () => void;
-  onLongPress: () => void;
-  lang?: string;
-  className?: string;
-  children: ReactNode;
-  'data-chunk'?: string;
-  'data-woven'?: string;
-  'data-learning'?: string;
-  'data-word'?: string;
-}) {
-  const press = useLongPress(onTap, onLongPress);
-  return (
-    <span
-      role="button"
-      tabIndex={0}
-      lang={lang}
-      {...data}
-      {...press}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onTap();
-        }
-      }}
-      className={`cursor-pointer ${NO_SELECT} rounded active:bg-line ${className ?? ''}`}
-    >
-      {children}{' '}
-    </span>
-  );
-}
+import { PassageText, ParagraphView, SectionHeading, VerseLine } from './reader/ChapterText';
+import { VerseText, type VerseTalk } from './reader/VerseText';
 
 function ViewSwitch({ view }: { view: ReaderView }) {
   const choice = (value: ReaderView, label: string) => (
@@ -177,215 +114,6 @@ function GearIcon() {
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" />
     </svg>
-  );
-}
-
-/** What a held verse number does: open the talk about that verse and listen, send on release, drop on a slide-away. */
-interface VerseTalk {
-  onHold: (n: number) => void;
-  onRelease: () => void;
-  onDrop: () => void;
-}
-
-/** The button with a verse's number: a tap selects the verse, a hold (half a second) talks about it. */
-function VerseNumber({ n, selected, onSelect, talk, className, children }: {
-  n: number;
-  selected: boolean;
-  onSelect: () => void;
-  talk: VerseTalk;
-  className: string;
-  children: ReactNode;
-}) {
-  const press = useHoldPress({ onTap: onSelect, onHold: () => talk.onHold(n), onRelease: talk.onRelease, onDrop: talk.onDrop });
-  return (
-    <button
-      type="button"
-      {...press}
-      aria-label={`Verse ${n}`}
-      aria-pressed={selected}
-      className={`select-none [-webkit-touch-callout:none] ${className}`}
-    >
-      {children}
-    </button>
-  );
-}
-
-interface VerseProps {
-  verse: Verse;
-  view: ReaderView;
-  /** per English chunk, the Greek words shown in its place or null; null for the whole verse when the weave is off */
-  woven: Woven[] | null;
-  selected: boolean;
-  /** this verse is the one being read aloud */
-  reading: boolean;
-  onSelect: () => void;
-  onPlay: () => void;
-  onLook: (lookup: Lookup) => void;
-  talk: VerseTalk;
-}
-
-/** The words of one verse, every one tappable: the Greek in Greek order, or the English chunks (woven or not). */
-function VerseText({ verse, view, woven, onLook }: Pick<VerseProps, 'verse' | 'view' | 'woven' | 'onLook'>) {
-  const lookGreek = (w: GreekWord) =>
-    onLook({ words: [w], english: w.e === undefined ? undefined : verse.e[w.e]?.t, fromEnglish: false });
-  const lookEnglish = (c: EnglishChunk) => onLook({ words: c.g.map((i) => verse.g[i]), english: c.t, fromEnglish: true });
-  // A long press says the word alone, in its own language, straight from the press (docs/pwa-best-practices.md section 12).
-  // A reading under way is paused first: it would have the speech taken from it anyway.
-  const say = (text: string, language: SpeechLanguage) => {
-    pauseReading();
-    if (speakWord(text, language)) publish({ kind: 'word-spoken', text, language, verse: verse.n });
-  };
-  return (
-    <span data-text>
-      {view === 'greek'
-        ? verse.g.map((w, i) => (
-            <Tap key={i} data-word={String(i)} className={TAP_PAD} onTap={() => lookGreek(w)} onLongPress={() => say(w.t, 'greek')}>
-              {w.t}
-            </Tap>
-          ))
-        : verse.e.map((c, i) => {
-            const weft = woven?.[i];
-            return weft ? (
-              <Tap
-                key={i}
-                data-chunk={String(i)}
-                data-woven=""
-                data-learning={weft.learning ? '' : undefined}
-                lang="grc"
-                className={`font-greek text-[length:var(--lp-greek-size)] text-accent ${TAP_PAD}`}
-                onTap={() => lookEnglish(c)}
-                onLongPress={() => say(weft.words.map((w) => w.t).join(' '), 'greek')}
-              >
-                {weft.learning ? (
-                  <span className="inline-flex flex-col items-center align-top leading-tight">
-                    <span data-greek>{weft.words.map((w) => w.t).join(' ')}</span>
-                    <span data-hint lang="en" className="whitespace-nowrap font-sans text-sm font-normal text-muted">
-                      {c.t}
-                    </span>
-                  </span>
-                ) : (
-                  weft.words.map((w) => w.t).join(' ')
-                )}
-              </Tap>
-            ) : (
-              <Tap key={i} data-chunk={String(i)} className={TAP_PAD} onTap={() => lookEnglish(c)} onLongPress={() => say(c.t, 'english')}>
-                {c.s ? <SuppliedText chunk={c} /> : c.t}
-              </Tap>
-            );
-          })}
-    </span>
-  );
-}
-
-const textClass = (view: ReaderView) =>
-  view === 'greek' ? 'font-greek text-[length:var(--lp-greek-size)]' : 'font-sans text-[length:var(--lp-english-size)]';
-
-const READING_CLASS = 'bg-accent/30';
-
-
-/** Verse by verse: one verse per line, its number a button before it (a tap opens the Verse view, src/VerseView.tsx). */
-function VerseLine(props: VerseProps) {
-  const { verse, view, selected, reading, onSelect, onPlay, talk } = props;
-  return (
-    <p
-      data-verse={verse.n}
-      data-selected={selected}
-      data-reading={reading || undefined}
-      lang={view === 'greek' ? 'grc' : 'en'}
-      className={`mb-1 break-words rounded-xl px-2 leading-(--lp-leading) ${reading ? READING_CLASS : selected ? 'bg-accent/15' : ''} ${textClass(view)}`}
-    >
-      <VerseNumber
-        n={verse.n}
-        selected={selected}
-        onSelect={onSelect}
-        talk={talk}
-        className="inline-block min-h-(--lp-tap) min-w-(--lp-tap) pr-1 text-left align-baseline font-sans text-sm font-semibold leading-(--lp-tap) text-muted"
-      >
-        {verse.n}
-      </VerseNumber>
-      <VerseText {...props} />
-      <VersePlay playing={reading} onPlay={onPlay} className="align-baseline font-sans" />
-    </p>
-  );
-}
-
-/** Paragraph: the verses of one MSB paragraph run on, each number a small superscript. The button is still 44 px square
- * (its side margins pull the neighbours back in), and a verse is still selected by its number. The play button of a
- * verse shows only while it is selected, so a paragraph reads as running text. */
-function ParagraphView({ verses, view, woven, selected, reading, onSelect, onPlay, onLook, talk }: {
-  verses: Verse[];
-  view: ReaderView;
-  woven: (Woven[] | null)[];
-  selected: number | null;
-  /** the verse being read aloud */
-  reading: number | null;
-  onSelect: (n: number) => void;
-  onPlay: (n: number) => void;
-  onLook: (lookup: Lookup) => void;
-  talk: VerseTalk;
-}) {
-  return (
-    <p data-paragraph lang={view === 'greek' ? 'grc' : 'en'} className={`mb-2 break-words px-2 leading-(--lp-leading) ${textClass(view)}`}>
-      {verses.map((verse, i) => (
-        <span key={verse.n} data-verse={verse.n} data-selected={selected === verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${reading === verse.n ? READING_CLASS : selected === verse.n ? 'bg-accent/15' : ''}`}>
-          <VerseNumber
-            n={verse.n}
-            selected={selected === verse.n}
-            onSelect={() => onSelect(verse.n)}
-            talk={talk}
-            className="-mx-3 inline-block min-h-(--lp-tap) min-w-(--lp-tap) text-center align-baseline font-sans leading-(--lp-tap)"
-          >
-            <sup className="text-xs font-semibold text-muted">{verse.n}</sup>
-          </VerseNumber>
-          <VerseText verse={verse} view={view} woven={woven[i]} onLook={onLook} />
-          {selected === verse.n || reading === verse.n ? (
-            <VersePlay playing={reading === verse.n} onPlay={() => onPlay(verse.n)} className="align-baseline font-sans" />
-          ) : null}
-        </span>
-      ))}
-    </p>
-  );
-}
-
-/** A section heading: the MSB's own English, whichever view is on. The whole heading is a button that opens the Verse view for its passage; its
- * padding (the heading's own side padding moved onto it, so it spans the whole width) and the negative margin that takes the vertical padding back keep the text where it was and give a thumb 44 px (`flow-root` keeps the margin inside). */
-function SectionHeading({ text, onOpen }: { text: string; onOpen: () => void }) {
-  return (
-    <h2 data-heading lang="en" className="mb-1 mt-5 flow-root font-sans text-lg font-semibold leading-snug text-accent">
-      <button type="button" onClick={onOpen} className="-my-2.5 block w-full rounded-lg px-2 py-2.5 text-left active:bg-line">
-        {text}
-      </button>
-    </h2>
-  );
-}
-
-/** The verses of a passage for the Verse view, one after another with a small number before each, the one being read highlighted; the reading is
- * followed down the box the view scrolls the passage in (data-passage-box), by moving that box and nothing else. Each verse is the Reader's own VerseText, so the weave and the tappable words follow it. */
-function PassageText({ passage, view, wovenOf, reading, onLook }: {
-  passage: Passage;
-  view: ReaderView;
-  wovenOf: (verse: Verse) => Woven[] | null;
-  reading: number | null;
-  onLook: (lookup: Lookup) => void;
-}) {
-  const box = useRef<HTMLSpanElement>(null);
-  useEffect(() => {
-    const el = reading === null ? null : box.current?.querySelector<HTMLElement>(`[data-passage-verse="${reading}"]`);
-    const scroller = el?.closest<HTMLElement>('[data-passage-box]');
-    if (!el || !scroller) return;
-    const inner = el.getBoundingClientRect();
-    const outer = scroller.getBoundingClientRect();
-    if (inner.top < outer.top || inner.bottom > outer.bottom) scroller.scrollTop += inner.top - outer.top - 8;
-  }, [reading]);
-  return (
-    <span ref={box} data-passage={passage.first}>
-      {passage.verses.map((verse) => (
-        <span key={verse.n} data-passage-verse={verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${reading === verse.n ? READING_CLASS : ''}`}>
-          <sup className="mr-1 font-sans text-xs font-semibold text-muted">{verse.n}</sup>
-          <VerseText verse={verse} view={view} woven={wovenOf(verse)} onLook={onLook} />
-        </span>
-      ))}
-    </span>
   );
 }
 
