@@ -47,6 +47,8 @@ import { ChapterPicker } from './ChapterPicker';
 import { weaveVerse, type Woven } from './data/weave';
 import { BuildVersion } from './BuildVersion';
 import { latest, publish, useLatest } from './events/bus';
+import { weaveSetting } from './settings/definitions';
+import { announceSetting, toldSetting } from './settings/store';
 import { blocksOf } from './layout/layouts';
 import { LinkOpener } from './nav/LinkOpener';
 import { pendingLink, takeLink } from './nav/linkRequest';
@@ -451,7 +453,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const wantView = useRef(opened.view);
   // The weave is switched in Settings, so a reader reached by Back from there must not put an older address's weave
   // back: once the bus has told a weave, the saved setting is the truth and the address only follows it.
-  const wantWeave = useRef(latest('weave-changed') ? undefined : opened.weave);
+  const wantWeave = useRef(toldSetting(weaveSetting) !== undefined ? undefined : opened.weave);
   const scrollRef = useScrollMemory('reader');
   const main = useRef<HTMLElement | null>(null);
   const mainRef = useCallback(
@@ -735,7 +737,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       return;
     }
     wantWeave.current = undefined;
-    publish({ kind: 'weave-changed', weave });
+    announceSetting(weaveSetting, weave);
   }, [weave]);
 
   useEffect(() => {

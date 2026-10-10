@@ -3,8 +3,10 @@
 // phone's scheme live; the Text size becomes html's --lp-scale (the root font size follows it). Both are kept in
 // localStorage as well as the settings store, so restoreAppearance() can paint them before the first render: a Dark
 // reader on a light phone never flashes light.
-import { getTextSize, getTheme } from '../data/repositories';
+import { getTextSize } from '../data/repositories';
 import { publish, subscribe } from '../events/bus';
+import { themeSetting } from '../settings/definitions';
+import { announceSetting, getSetting, onSetting } from '../settings/store';
 import { DEFAULT_TEXT_PERCENT, normaliseTextPercent } from './textSizes';
 import { DEFAULT_THEME, THEME_COLORS, isTheme, paletteOf, type Theme } from './themes';
 
@@ -64,9 +66,9 @@ export function startAppearanceSync(): () => void {
   let sizeWritten = false;
   let reading = false;
   const stops = [
-    subscribe('theme-changed', (e) => {
+    onSetting(themeSetting, (saved) => {
       if (!reading) themeWritten = true;
-      applyTheme(e.theme);
+      applyTheme(saved);
     }),
     subscribe('text-size-changed', (e) => {
       if (!reading) sizeWritten = true;
@@ -78,10 +80,10 @@ export function startAppearanceSync(): () => void {
   scheme?.addEventListener('change', onScheme);
   stops.push(() => scheme?.removeEventListener('change', onScheme));
   paintBar();
-  void Promise.all([getTheme(), getTextSize()]).then(([savedTheme, savedSize]) => {
+  void Promise.all([getSetting(themeSetting), getTextSize()]).then(([savedTheme, savedSize]) => {
     if (!live) return;
     reading = true;
-    if (!themeWritten) publish({ kind: 'theme-changed', theme: savedTheme });
+    if (!themeWritten) announceSetting(themeSetting, savedTheme);
     if (!sizeWritten) publish({ kind: 'text-size-changed', percent: savedSize });
     reading = false;
   });

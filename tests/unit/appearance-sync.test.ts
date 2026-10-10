@@ -7,12 +7,18 @@ const reads = vi.hoisted(() => ({
   size: undefined as unknown as { resolve: (n: number) => void; promise: Promise<number> },
 }));
 vi.mock('../../src/data/repositories', () => ({
-  getTheme: () => reads.theme.promise,
   getTextSize: () => reads.size.promise,
+}));
+// the Theme is declared once (src/settings/definitions/theme.ts): its saved value is read through the store, the only setting appearanceSync reads so
+vi.mock('../../src/settings/store', async (actual) => ({
+  ...(await actual<typeof import('../../src/settings/store')>()),
+  getSetting: () => reads.theme.promise,
 }));
 
 import { startAppearanceSync } from '../../src/appearance/appearanceSync';
 import { clearBus, latest, publish } from '../../src/events/bus';
+import { themeSetting } from '../../src/settings/definitions';
+import { announceSetting, toldSetting } from '../../src/settings/store';
 
 function deferred<T>() {
   let resolve!: (v: T) => void;
@@ -40,7 +46,7 @@ describe('the start-up read of the saved appearance', () => {
     await settle();
     expect(latest('text-size-changed')?.percent).toBe(115);
     expect(scale()).toBe('1.15');
-    expect(latest('theme-changed')?.theme).toBe('light');
+    expect(toldSetting(themeSetting)).toBe('light');
     expect(document.documentElement.dataset.theme).toBe('light');
   });
 
@@ -54,11 +60,11 @@ describe('the start-up read of the saved appearance', () => {
   });
 
   it('lets a Theme written before the read resolves win over the saved one', async () => {
-    publish({ kind: 'theme-changed', theme: 'dark' });
+    announceSetting(themeSetting, 'dark');
     reads.theme.resolve('light');
     reads.size.resolve(100);
     await settle();
-    expect(latest('theme-changed')?.theme).toBe('dark');
+    expect(toldSetting(themeSetting)).toBe('dark');
     expect(document.documentElement.dataset.theme).toBe('dark');
   });
 
