@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.22",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.115",
+    "kind": "fixed",
+    "text": "the round Ask the tutor button no longer covers the end of the lines you are reading."
+  },
+  {
     "version": "0.1.21",
     "date": "2026-10-10",
     "story": "mw-5r3p30.139",

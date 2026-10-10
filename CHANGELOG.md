@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.22
+_2026-10-10_
+- Fixed: the round Ask the tutor button no longer covers the end of the lines you are reading.
+
 ## 0.1.21
 _2026-10-10_
 - Fixed: In the reading check, 'Me' now stops at the end of the flagged word instead of running on into the next words, and a word's comma stays with it.
