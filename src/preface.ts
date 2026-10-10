@@ -12,7 +12,7 @@ export const PREFACE_EDITION_LINE =
 export const PREFACE_PARAGRAPHS: string[] = [
   'The Greek you read in Lampas is the Byzantine Textform, edited by Maurice A. Robinson and William G. Pierpont and published in 2005 as The New Testament in the Original Greek. It is the form of the text found in the large majority of surviving Greek manuscripts, so it is often called the Majority text.',
   PREFACE_EDITION_LINE,
-  'Robinson makes the case that this form of the text goes back to the earliest centuries and should be read as the original line of transmission, not as a late revision. Other scholars, who give most weight to the oldest manuscripts, read the evidence differently, and most modern Bibles follow them. Lampas does not settle that question. It tells you which text it uses and points you to the people who wrote about it. Robinson’s essay, The Case for Byzantine Priority, is here to read in the app, and the original page is linked beneath it.',
+  'Robinson makes the case that this form of the text goes back to the earliest centuries and should be read as the original line of transmission, not as a late revision. Other scholars, who give most weight to the oldest manuscripts, read the evidence differently, and most modern Bibles follow them. Lampas does not settle that question. It tells you which text it uses and points you to the people who wrote about it. Robinson’s essay, The Case for Byzantine Priority, is here to read in the app, as it is printed in the appendix of the 2005 edition, and the older article it grew from is linked beneath it.',
   'The English beside the Greek is the Majority Standard Bible, whose New Testament is translated from the same Robinson and Pierpont text. Its footnotes note where the modern critical texts read differently. The Robinson and Pierpont text and the Majority Standard Bible are both public domain.',
 ];
 
@@ -26,22 +26,28 @@ export interface PrefaceLink {
   copy?: 'essay';
 }
 
-/** Robinson's essay inside the app (mw-5r3p30.138). */
+/** Robinson's essay inside the app (mw-5r3p30.138; the 2005 appendix's text since mw-5r3p30.162). */
 export const ESSAY_TITLE = 'The Case for Byzantine Priority';
+/** The article the journal published in 2001: an earlier form of the essay, which the 2005 release does not cover; linked beneath the copy. */
 export const ESSAY_ORIGINAL = { name: 'Original (TC Journal, 2001)', url: 'http://rosetta.reltech.org/TC/vol06/Robinson2001.html' };
+/** The appendix of the 2005 edition as the editors' site gives it: the text the app carries. */
+export const ESSAY_SOURCE = {
+  name: 'Appendix of the 2005 edition (PDF, byzantinetext.com)',
+  url: 'https://byzantinetext.com/wp-content/uploads/2016/11/editions-rp-11-appendix.pdf',
+};
 /** Under the original link, and on the Preface under the entry: what the old page is like (it answers on plain http only, so Chrome calls it Not secure). */
 export const ESSAY_ORIGINAL_NOTE = 'An old-format page, small on a phone. It answers only on http, so Chrome shows “Not secure” for it.';
 /** The line under the essay's title. */
-export const ESSAY_CREDIT = 'Maurice A. Robinson. First published in TC: A Journal of Biblical Textual Criticism (2001), and printed as the appendix of the 2005 edition.';
-/** Why Lampas may carry the essay: the 2005 edition's own release (https://byzantinetext.com/study/editions/robinson-pierpont/). */
+export const ESSAY_CREDIT = 'Maurice A. Robinson. The appendix of the Robinson-Pierpont 2005 edition (pp. 533 to 586); the essay was first published in TC: A Journal of Biblical Textual Criticism (2001).';
+/** What the copy is and why Lampas may carry it: the 2005 edition's own release of its appendix (https://byzantinetext.com/study/editions/robinson-pierpont/). */
 export const ESSAY_RELEASE =
-  'This is the essay as the journal published it, set for a phone. The editors of the Robinson-Pierpont 2005 edition wrote in its copyright notice: “Likewise, we hereby release into the public domain the introduction and appendix which have been especially prepared for this edition.” The essay is that appendix. Here the Greek, which the journal typed in Latin letters, is set in Greek letters (without accents, as the journal has it), a footnote opens under the paragraph that cites it, and the chart is left on the original page.';
+  'This is the appendix of the Robinson-Pierpont 2005 edition, set for a phone. The editors wrote in the edition’s copyright notice: “Likewise, we hereby release into the public domain the introduction and appendix which have been especially prepared for this edition.” This text is that appendix, taken from the editors’ own PDF of it. It is not the article the journal published in 2001: Robinson revised the essay for the book, and the wording differs in many places, so the 2001 article, which that release does not cover, is only linked below as the older version. Here the Greek, which the PDF types in Latin letters, is set in Greek letters (without accents, as the PDF’s text has none), the signs for the papyri and the great uncials are letters, a footnote opens under the paragraph that cites it, and the chart is left in the edition.';
 
 /** The sources, the Robinson essay first. Its original is only on an older site that answers on plain http; the app carries a copy. */
 export const PREFACE_LINKS: PrefaceLink[] = [
   {
     name: 'Maurice A. Robinson, The Case for Byzantine Priority',
-    about: 'His essay on why he holds the Byzantine form of the text to be the original line (TC: A Journal of Biblical Textual Criticism, 2001), to read here in the app.',
+    about: 'His essay on why he holds the Byzantine form of the text to be the original line, as printed in the appendix of the 2005 edition, to read here in the app.',
     url: ESSAY_ORIGINAL.url,
     copy: 'essay',
   },

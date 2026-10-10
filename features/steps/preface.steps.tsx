@@ -238,6 +238,15 @@ describeFeature(feature, ({ Scenario }) => {
       expect(main).toContain('An old-format page, small on a phone.');
       expect(main).toContain('Not secure');
     });
+    And('About this copy says it is the 2005 appendix, not the 2001 article, and links the appendix', () => {
+      const about = screen.getByRole('region', { name: 'About this copy' });
+      expect(about.textContent).toContain('is the appendix of the Robinson-Pierpont 2005 edition');
+      expect(about.textContent).toContain('It is not the article the journal published in 2001');
+      expect(screen.getByRole('link', { name: 'Appendix of the 2005 edition (PDF, byzantinetext.com)' })).toHaveAttribute(
+        'href',
+        'https://byzantinetext.com/wp-content/uploads/2016/11/editions-rp-11-appendix.pdf',
+      );
+    });
   });
 
   Scenario('Greek in the essay is Greek letters', ({ Given, Then }) => {
