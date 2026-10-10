@@ -7,8 +7,8 @@ Feature: Teaching a new word on the spot
   Background:
     Given Lampas is opened on Romans 8 with his seed words and a fake Postern
 
-  Scenario: The header shows New words: 3 for Romans 8 with his seed
-    Then the strip under the Reader's header reads "New words: 3"
+  Scenario: The row under the header shows the chip New 3 for Romans 8 with his seed
+    Then the chip under the Reader's header reads "New 3"
 
   Scenario: The strip is hidden when no new word is left
     Given every word of Romans 8 is already one he has

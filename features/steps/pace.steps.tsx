@@ -1,5 +1,5 @@
 // features/steps/pace.steps.tsx — runs features/pace.feature: Settings > New words > New words a day (Off, 3, 5, 10), and the pace dial
-// (src/data/pace.ts, src/usePace.ts) that takes the Reader's 'New words: N' strip away while many words are due.
+// (src/data/pace.ts, src/usePace.ts) that takes the Reader's 'New N' chip away while many words are due.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -94,7 +94,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Off hides the New words chip', ({ Given, Then, When }) => {
     Given('Lampas is opened on Romans 8 with his seed words for pace', openReader);
-    Then('the strip under the Reader\'s header reads {string} for pace', async (_, text: string) => {
+    Then('the chip under the Reader\'s header reads {string} for pace', async (_, text: string) => {
       await waitFor(() => expect(screen.getByTestId('new-words')).toHaveTextContent(text));
     });
     When('he turns New words a day Off', async () => {

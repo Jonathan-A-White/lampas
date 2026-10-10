@@ -106,7 +106,7 @@ describeFeature(feature, ({ Scenario }) => {
       const { words, grammar } = await expectedProgress();
       expect(words.solid).toBeGreaterThan(0);
       await waitFor(async () =>
-        expect(await strip()).toHaveTextContent(`${title} · ${words.solid} of ${words.total} words · ${grammar.solid} of ${grammar.total} ideas`),
+        expect(await strip()).toHaveAccessibleName(`${title}, ${words.solid} of ${words.total} words, ${grammar.solid} of ${grammar.total} ideas`),
       );
     });
   });
@@ -125,7 +125,7 @@ describeFeature(feature, ({ Scenario }) => {
       await setGoal(goal);
     });
     Then('the goal strip appears', async () => {
-      expect(await strip()).toHaveTextContent('Goal: 1 John 1:1');
+      expect(await strip()).toHaveAccessibleName(/^Goal: 1 John 1:1, /);
     });
     When('he clears the goal', async () => {
       await setGoal('');

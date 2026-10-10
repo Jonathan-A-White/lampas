@@ -25,8 +25,8 @@ test('the teach sheet fits the phone, its four buttons clear 48 px, and the vers
   await openUnlocked(page);
   await page.goto('/');
   const strip = page.getByTestId('new-words');
-  await expect(strip).toHaveText('New words: 3');
-  expect((await strip.boundingBox())?.height).toBeGreaterThanOrEqual(47.5);
+  await expect(strip).toHaveText('New 3');
+  expect((await strip.boundingBox())?.height).toBeGreaterThanOrEqual(38);
 
   // the verse link first: it closes the sheet and takes the reader to verse 9
   await strip.click();

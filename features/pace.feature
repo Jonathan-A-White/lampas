@@ -18,6 +18,6 @@ Feature: Lampas offers new words at a pace I can keep
 
   Scenario: Off hides the New words chip
     Given Lampas is opened on Romans 8 with his seed words for pace
-    Then the strip under the Reader's header reads "New words: 3" for pace
+    Then the chip under the Reader's header reads "New 3" for pace
     When he turns New words a day Off
     Then the Reader shows no New words strip for pace

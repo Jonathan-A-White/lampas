@@ -4,13 +4,18 @@ import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
-test('the tip card sits under the header, fits the phone, and Show me opens the screen', async ({ page }) => {
+test('the tip chip opens a card that sits under the header, fits the phone, and Show me opens the screen', async ({ page }) => {
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: TIP_ANSWER };
   await routePostern(page, fake);
   await openUnlocked(page, { tips: true });
   await page.goto('/');
 
+  // the tip is a 'Tip' chip in the row under the header; a tap on it opens the card
+  const chip = page.getByTestId('tip-chip');
+  await expect(chip).toHaveText('Tip');
+  await expect(page.getByTestId('tip-card')).toHaveCount(0);
+  await chip.click();
   const card = page.getByTestId('tip-card');
   await expect(card).toBeVisible();
   await expect(card).toContainText('Try Review');
@@ -43,10 +48,13 @@ test('Not now puts the card away and a reload the same day brings nothing back',
   await routePostern(page, fake);
   await openUnlocked(page, { tips: true });
   await page.goto('/');
+  await page.getByTestId('tip-chip').click();
   await page.getByTestId('tip-card').getByRole('button', { name: 'Not now' }).click();
   await expect(page.getByTestId('tip-card')).toHaveCount(0);
+  await expect(page.getByTestId('tip-chip')).toHaveCount(0);
   await page.reload();
   await expect(page.locator('[data-verse]').first()).toBeVisible();
   await expect(page.getByTestId('tip-card')).toHaveCount(0);
+  await expect(page.getByTestId('tip-chip')).toHaveCount(0);
   expect(fake.received).toHaveLength(1);
 });

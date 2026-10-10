@@ -1,4 +1,4 @@
-// features/steps/teach.steps.tsx — runs features/teach.feature: the 'New words: N' strip under the Reader's header and the teach sheet
+// features/steps/teach.steps.tsx — runs features/teach.feature: the 'New N' chip in the Reader's row under the header and the teach sheet
 // it opens (src/TeachSheet.tsx): the first new word of the chapter with its help, Got it, I know this, Not now and Ask the tutor.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
@@ -99,8 +99,8 @@ describeFeature(feature, ({ Background, Scenario }) => {
     Given('Lampas is opened on Romans 8 with his seed words and a fake Postern', open);
   });
 
-  Scenario('The header shows New words: 3 for Romans 8 with his seed', ({ Then }) => {
-    Then("the strip under the Reader's header reads {string}", async (_, text: string) => {
+  Scenario('The row under the header shows the chip New 3 for Romans 8 with his seed', ({ Then }) => {
+    Then("the chip under the Reader's header reads {string}", async (_, text: string) => {
       await waitFor(() => expect(strip()).toHaveTextContent(text));
     });
   });
@@ -250,7 +250,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
     Then('the teach sheet shows {string} and never {string} again', async (_, next: string, skipped: string) => {
       await shows(next);
       expect(nfc(within(sheet()).getByTestId('teach-lemma').textContent ?? '')).not.toBe(nfc(skipped));
-      expect(strip()).toHaveTextContent('New words: 3');
+      expect(strip()).toHaveTextContent('New 3');
     });
   });
 

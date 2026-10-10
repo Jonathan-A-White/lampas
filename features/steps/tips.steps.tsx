@@ -65,9 +65,12 @@ async function freshPhone(answer: unknown, tips: 'on' | 'off' = 'on'): Promise<v
 }
 
 const card = () => document.querySelector('[data-testid="tip-card"]') as HTMLElement | null;
+const chip = () => document.querySelector('[data-testid="tip-chip"]');
 const settle = () => new Promise((resolve) => setTimeout(resolve, 150));
 
+/** The tip waits as the 'Tip' chip in the Reader's row; a tap on it opens the card. */
 async function cardShows(title: string): Promise<HTMLElement> {
+  if (!card()) await user.click(await screen.findByTestId('tip-chip'));
   await waitFor(() => expect(card()).not.toBeNull());
   const el = card() as HTMLElement;
   expect(within(el).getByText(title)).toBeInTheDocument();
@@ -123,6 +126,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('no tip card shows', () => {
       expect(card()).toBeNull();
+      expect(chip()).toBeNull();
     });
   });
 
@@ -148,6 +152,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('no tip card shows', async () => {
       await settle();
       expect(card()).toBeNull();
+      expect(chip()).toBeNull();
     });
   });
 
@@ -211,6 +216,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('no tip card shows', () => {
       expect(card()).toBeNull();
+      expect(chip()).toBeNull();
     });
   });
 
@@ -227,6 +233,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('no tip card shows', () => {
       expect(card()).toBeNull();
+      expect(chip()).toBeNull();
     });
   });
 
@@ -242,6 +249,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('no tip card shows', async () => {
       await settle();
       expect(card()).toBeNull();
+      expect(chip()).toBeNull();
     });
   });
 
