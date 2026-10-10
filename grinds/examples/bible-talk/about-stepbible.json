@@ -190,7 +190,7 @@
   },
   "expect": {
     "answer": {
-      "matches": "(?=[^]*TBESG)(?=[^]*CC BY 4\\.0)"
+      "matches": "TBESG[\\s\\S]*CC BY 4\\.0|CC BY 4\\.0[\\s\\S]*TBESG"
     },
     "settings_changes": {
       "present": false

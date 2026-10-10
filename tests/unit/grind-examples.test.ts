@@ -113,6 +113,27 @@ describe('the scenario checks', () => {
     expect(expectProblems(block, schema)).toContain(problem);
   });
 
+  it.each([
+    ['a lookahead (?=', '(?=.*TBESG)'],
+    ['a negative lookahead (?!', 'TBESG(?!x)'],
+    ['a lookbehind (?<=', '(?<=a)b'],
+    ['a negative lookbehind (?<!', '(?<!a)b'],
+    ['a backreference \\1', '(a)\\1'],
+    ['the empty negated class [^]', '[^]*TBESG'],
+  ])('refuses %s, which the mill\'s Go regexp (RE2) cannot compile', (_name, pattern) => {
+    expect(expectProblems({ level: { matches: pattern } }, schema)).toContain(`level: matches uses syntax RE2 (the mill's Go regexp) cannot compile`);
+  });
+
+  it.each([
+    ['a class that excludes a character', '^[^\\n]{10,200}\\?$'],
+    ['an escaped paren and a class holding (?=', '\\(?=x|[(?=]'],
+    ['an alternation across lines with [\\s\\S]', 'TBESG[\\s\\S]*CC BY 4\\.0|CC BY 4\\.0[\\s\\S]*TBESG'],
+    ['a named group', '(?<word>a)'],
+    ['a literal backslash then 1', '\\\\1'],
+  ])('accepts %s', (_name, pattern) => {
+    expect(expectProblems({ level: { matches: pattern } }, schema)).toEqual([]);
+  });
+
   it('checkExpect names the field, what was wanted and what came', () => {
     const answer = { price: 4.99, level: 'low', note: 'Seen on the tag.' };
     expect(checkExpect({ price: { equals: 4.99 }, level: { one_of: ['low'] }, note: { contains: 'tag', matches: '^Seen' }, gone: { present: false } }, answer)).toEqual([]);
