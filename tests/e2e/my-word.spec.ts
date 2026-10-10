@@ -17,20 +17,32 @@ async function holdFor(page: Page, button: ReturnType<Page['getByRole']>, ms: nu
   await page.mouse.up();
 }
 
-/** Reads verse 28 through the fake mill, which answers with `answer`, and waits for the result. The clip is as long as he holds the bar, 2.2 s here: the timed word (1.2 to 1.7 s) lies inside it. */
-async function readVerse28(page: Page, answer: unknown) {
+/** The Governor's screen of 2026-10-09 (mw-5r3p30.139): Hebrews 7:8, 'In the case of the Levites, mortal men collect the tenth; ...', with 'Levites,' (the
+ * sixth word, with its comma) flagged and timed. */
+const LEVITES_READING_ANSWER = {
+  verdict: 'some-to-fix',
+  focus_words: [{ word: 'Levites', index: 5, chunks: ['Lee', 'vites'], tip: 'The first part is lee; the second rhymes with kites.', start: 1.2, end: 1.7 }],
+  note: 'Nearly there: one word to say again.',
+};
+
+/** Reads verse `verse` of the chapter at `hash` through the fake mill, which answers with `answer`, and waits for the result with the `marked` words.
+ * The clip is as long as he holds the bar, 2.2 s here: the timed word (1.2 to 1.7 s) lies inside it. */
+async function readVerse(page: Page, answer: unknown, { hash, verse, marked }: { hash: string; verse: number; marked: string[] }) {
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer };
   await routePostern(page, fake);
   await fakeMedia(page, 2.2);
   await openUnlocked(page);
-  await page.goto('/');
-  await chooseAction(page, 28, 'Read it aloud');
+  await page.goto(hash);
+  await chooseAction(page, verse, 'Read it aloud');
   const panel = page.getByRole('region', { name: 'Reading check' });
-  await holdFor(page, page.getByRole('button', { name: 'Hold to read verse 28', exact: true }), 2200);
-  await expect(panel.locator('[data-fix]')).toHaveText(['together', 'purpose']);
+  await holdFor(page, page.getByRole('button', { name: `Hold to read verse ${verse}`, exact: true }), 2200);
+  await expect(panel.locator('[data-fix]')).toHaveText(marked);
   return panel;
 }
+
+/** Romans 8:28 read through the fake mill: READING_ANSWER or TIMED_READING_ANSWER, which mark 'together' and 'purpose'. */
+const readVerse28 = (page: Page, answer: unknown) => readVerse(page, answer, { hash: '/', verse: 28, marked: ['together', 'purpose'] });
 
 const seen = (page: Page) => page.evaluate(() => (window as unknown as FakeWindow).plays);
 const paused = (page: Page) => page.evaluate(() => (window as unknown as FakeWindow).pauses);
@@ -68,6 +80,32 @@ test("'Me' beside a timed word's speaker plays only that word of the clip, and s
   expect(at).toBeGreaterThanOrEqual(1.7);
   expect(at).toBeLessThan(1.7 + 0.2);
   await expect(me).toHaveText('Me');
+});
+
+test("A flagged word's comma stays with the word, before its speaker and Me, on one line at phone width: 'Levites,' in Hebrews 7:8", async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  const panel = await readVerse(page, LEVITES_READING_ANSWER, { hash: '/#/?b=heb&c=7', verse: 8, marked: ['Levites'] });
+  const word = panel.locator('[data-fix="levites"]');
+  const speaker = panel.getByRole('button', { name: 'Hear Levites', exact: true });
+  const me = panel.getByRole('button', { name: 'Hear me say Levites', exact: true });
+  // the text right after the word is its comma, drawn right after the word and before the speaker, all on the word's line
+  const comma = await word.evaluate((el) => {
+    const node = el.nextSibling;
+    if (!node || node.nodeType !== Node.TEXT_NODE) return null;
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    const box = range.getBoundingClientRect();
+    return { text: node.textContent, x: box.x, right: box.right, middle: box.y + box.height / 2 };
+  });
+  const [w, s, m] = [await word.boundingBox(), await speaker.boundingBox(), await me.boundingBox()];
+  expect(comma?.text).toBe(',');
+  expect(comma?.x).toBeGreaterThanOrEqual((w?.x ?? 0) + (w?.width ?? 0) - 1);
+  expect(s?.x).toBeGreaterThanOrEqual((comma?.right ?? 0) - 1);
+  expect(m?.x).toBeGreaterThan((s?.x ?? 0) + (s?.width ?? 0) - 1);
+  const line = (w?.y ?? 0) + (w?.height ?? 0) / 2;
+  expect(Math.abs((comma?.middle ?? 0) - line)).toBeLessThan(12);
+  expect(Math.abs((s?.y ?? 0) + (s?.height ?? 0) / 2 - line)).toBeLessThan(12);
+  await shot(page, 'my-word-levites');
 });
 
 test('Stop ends a word before its end, and Play my reading still plays all of the clip', async ({ page }) => {

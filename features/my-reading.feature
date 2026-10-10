@@ -57,6 +57,12 @@ Feature: Play my reading back, and Developer mode
     When the recording reaches 1.7 seconds
     Then the audio element is paused and the button beside "together" says "Me"
 
+  Scenario: Me stops at the word's end on a phone that moves the clip's clock only at its timeupdate events
+    Given Lampas is opened on Romans 8 with a reading check he has just made, the mill timing "together" from 1.2 to 1.7 seconds and not "purpose"
+    And the phone moves the clip's clock only at its timeupdate events, 0.25 seconds apart, the first 0.2 seconds in
+    When he taps "Me" beside "together"
+    Then the clip is paused once the word has ended at 1.7 seconds, ahead of the phone's clock, and the button beside "together" says "Me"
+
   Scenario: Me can be stopped before the word ends
     Given Lampas is opened on Romans 8 with a reading check he has just made, the mill timing "together" from 1.2 to 1.7 seconds and not "purpose"
     When he taps "Me" beside "together"
