@@ -18,6 +18,6 @@
     "shown": ["try-talk", "try-quick-test", "try-review"]
   },
   "expect": {
-    "tip": { "isNull": true }
+    "tip": { "is_null": true }
   }
 }

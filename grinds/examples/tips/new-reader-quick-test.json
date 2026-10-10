@@ -18,7 +18,7 @@
     "shown": []
   },
   "expect": {
-    "tip": { "isNull": false },
+    "tip": { "is_null": false },
     "tip.id": { "matches": "^[a-z0-9-]+$" },
     "tip.title": { "present": true },
     "tip.body": { "present": true }

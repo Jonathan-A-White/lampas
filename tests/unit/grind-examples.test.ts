@@ -91,17 +91,21 @@ describe('the scenario checks', () => {
   };
 
   it('knows every check the README names', () => {
-    expect(CHECKS).toEqual(['equals', 'isNull', 'oneOf', 'contains', 'matches', 'present']);
+    expect(CHECKS).toEqual(['equals', 'is_null', 'one_of', 'contains', 'matches', 'present']);
   });
 
   it('accepts a sound expect, including a place in an array and a branch of anyOf', () => {
-    expect(expectProblems({ price: { isNull: true }, level: { oneOf: ['low', 'high'] }, 'list.0.key': { equals: 'theme' } }, schema)).toEqual([]);
+    expect(expectProblems({ price: { is_null: true }, level: { one_of: ['low', 'high'] }, 'list.0.key': { equals: 'theme' } }, schema)).toEqual([]);
   });
 
   it.each([
     ['a field the answer lacks', { cost: { present: true } }, 'cost: not a field of the answer schema'],
     ['a value the schema never allows', { level: { equals: 'middling' } }, 'level: equals "middling" is never a valid answer'],
-    ['null where it is never null', { level: { isNull: true } }, 'level: is never null in the answer schema'],
+    ['null where it is never null', { level: { is_null: true } }, 'level: is never null in the answer schema'],
+    ['a check spelt in camelCase (isNull)', { price: { isNull: true } }, 'price: unknown check "isNull"'],
+    ['a check spelt in camelCase (oneOf)', { level: { oneOf: ['low'] } }, 'level: unknown check "oneOf"'],
+    ['a bare string that looks like a check name', { price: 'isNull' }, 'price: "isNull" looks like a check name; write { "is_null": true }'],
+    ['a bare string that looks like a check name (oneOf)', { level: 'oneOf' }, 'level: "oneOf" looks like a check name; write { "one_of": [...] }'],
     ['an unknown check', { level: { startsWith: 'l' } }, 'level: unknown check "startsWith"'],
     ['contains on a number', { price: { contains: 'x' } }, 'price: contains needs a string field'],
     ['no checks at all', {}, 'expect: has no checks'],
@@ -111,8 +115,8 @@ describe('the scenario checks', () => {
 
   it('checkExpect names the field, what was wanted and what came', () => {
     const answer = { price: 4.99, level: 'low', note: 'Seen on the tag.' };
-    expect(checkExpect({ price: { equals: 4.99 }, level: { oneOf: ['low'] }, note: { contains: 'tag', matches: '^Seen' }, gone: { present: false } }, answer)).toEqual([]);
-    expect(checkExpect({ price: { isNull: true }, level: { equals: 'high' }, note: { contains: 'shelf' }, gone: { present: true } }, answer)).toEqual([
+    expect(checkExpect({ price: { equals: 4.99 }, level: { one_of: ['low'] }, note: { contains: 'tag', matches: '^Seen' }, gone: { present: false } }, answer)).toEqual([]);
+    expect(checkExpect({ price: { is_null: true }, level: { equals: 'high' }, note: { contains: 'shelf' }, gone: { present: true } }, answer)).toEqual([
       'price: expected null, got 4.99',
       'level: expected "high", got "low"',
       'note: expected to contain "shelf", got "Seen on the tag."',

@@ -31,14 +31,14 @@ shape without a network.
 - `expect`: answer path (a field name; dots for nested fields and a number for a place in a
   list, `settings_changes.0.key`) to checks. Every check given for a path must hold:
   - `equals`: the value is exactly this
-  - `isNull`: `true` the value is null, `false` it is not
-  - `oneOf`: the value is one of these
+  - `is_null`: `true` the value is null, `false` it is not
+  - `one_of`: the value is one of these
   - `contains`: a string field includes this text
   - `matches`: a string field matches this JavaScript regular expression (no `(?i)`)
   - `present`: `true` the field is in the answer, `false` it is left out
 
 Every `expect` path must be a field of the grind's answer schema, and every `equals` or
-`oneOf` value one the schema allows. `feedback` forwards to the Mayor and has no answer
+`one_of` value one the schema allows. `feedback` forwards to the Mayor and has no answer
 schema: its answer is the mill's `{"status":"sent"}`.
 
 A story that changes a grind's behaviour (its instructions, schemas, or what the app sends)
