@@ -55,6 +55,20 @@ export interface TutorAnswer {
   when: number;
 }
 
+/** A picture he sent with a turn of a Bible talk (mw-y3qno5.1), kept as bytes and a mime (a Blob does not survive every store the tests use). */
+export interface TalkPicture {
+  id?: number;
+  /** the turn it went with (talks.id) */
+  turnId: number;
+  /** its place among the turn's pictures, from 0 */
+  place: number;
+  bytes: ArrayBuffer;
+  /** image/jpeg, image/png or image/webp */
+  mime: string;
+  /** the file name it was sent under: 'picture-1.jpg' */
+  name: string;
+}
+
 /** One turn of a Bible talk: what he said and what the companion answered, kept so the conversation is there on return. */
 export interface TalkTurn {
   id?: number;
@@ -231,6 +245,7 @@ class LampasDB extends Dexie {
   grammarLevels!: EntityTable<GrammarLevel, 'id'>;
   usage!: EntityTable<UsageRow, 'key'>;
   tips!: EntityTable<TipRow, 'id'>;
+  talkPictures!: EntityTable<TalkPicture, 'id'>;
 
   constructor() {
     super('lampas');
@@ -354,6 +369,23 @@ class LampasDB extends Dexie {
       grammarLevels: 'id, level',
       usage: 'key, day, name',
       tips: 'id, status',
+    });
+    // v14: the pictures he sent with a turn of a Bible talk {turnId, place, bytes, mime, name}; turnId finds a turn's pictures.
+    this.version(14).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
+      reviews: '[kind+id], due, kind',
+      grammarLevels: 'id, level',
+      usage: 'key, day, name',
+      tips: 'id, status',
+      talkPictures: '++id, turnId',
     });
   }
 }

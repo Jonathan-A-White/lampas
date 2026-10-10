@@ -7,6 +7,7 @@ import { learnerGrammarOf } from '../../src/data/grammar/learnerGrammar';
 import { FEEDBACK_SUMMARY_MAX, NO_SETTING, REFUSAL, isTalkAnswer } from '../../src/services/talk';
 import { formatJson, settingsBlock, withSettingsBlock, withSettingsChanges } from '../../src/settings/grindText';
 import { SETTINGS } from '../../src/settings/registry';
+import { TALK_PICTURE_MAX_BYTES } from '../../src/talk/pictures';
 import { validate, type Schema } from '../support/schema-validate';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
@@ -18,7 +19,7 @@ describe('grinds/bible-talk.json', () => {
   it('has the same keys as grinds/verse-ask.json, for the lampas app and the bible-talk kind', () => {
     expect(Object.keys(grind).sort()).toEqual(Object.keys(verseAsk).sort());
     expect(grind).toMatchObject({ grind: 1, app: 'lampas', kind: 'bible-talk', versions: ['1'], model: 'sonnet', effort: 'medium' });
-    expect(grind.attachments).toEqual({ min: 0, max: 0, mime: [], maxBytes: 0 });
+    expect(grind.attachments).toEqual({ min: 0, max: 4, mime: ['image/jpeg', 'image/png', 'image/webp'], maxBytes: TALK_PICTURE_MAX_BYTES });
   });
 
   it('names an instructions file and an answer schema that exist', () => {

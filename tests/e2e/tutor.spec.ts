@@ -51,7 +51,8 @@ test('the composer of the Verse view on verse 28 sends the question and shows th
   await ask.click();
   const card = page.locator('[data-answers-for="28"] [data-answer]');
   await expect(card).toContainText(SYNERGEI_ANSWER.answer);
-  await expect(card.getByText('συνεργέω', { exact: true })).toBeVisible();
+  // the explained word's lemma in the words list (the answer's own text has the Greek too, as words to tap)
+  await expect(card.locator('dl').getByText('συνεργέω', { exact: true })).toBeVisible();
   await expect(askBar(page)).toBeEnabled();
   await expect(card).toBeInViewport();
   await expectFitsPhone(page);

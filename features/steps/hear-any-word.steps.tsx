@@ -122,6 +122,23 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     s.Then('the pronunciation guide is open', () => expect(screen.getByRole('dialog')).toBeTruthy());
   });
 
+  Scenario("A short tap on a Greek word of a tutor answer says it in Greek, as a Hebrew word's tap does", (s) => {
+    answer(s);
+    s.When('he taps the word {string} of the answer', async (_, word: string) => {
+      await user.click(fingerOn(word));
+    });
+    s.Then('the phone is told to speak {string} in {string}', (_, text: string, language: string) => spokenIn(text, language));
+  });
+
+  Scenario('A short tap on a Greek word with no Greek voice on the phone says so instead of speaking', ({ Given, When, Then, And }) => {
+    Given('a tutor answer is on screen on a phone with only an English voice', () => draw([ENGLISH_VOICE], 'answer'));
+    When('he taps the word {string} of the answer', async (_, word: string) => {
+      await user.click(fingerOn(word));
+    });
+    Then('nothing is spoken', () => expect(synth.spoken).toHaveLength(0));
+    And('the notice {string} is shown', (_, text: string) => expect(screen.getByRole('status').textContent).toContain(text));
+  });
+
   Scenario('A long press on an English word of a tutor answer says it in English', (s) => {
     answer(s);
     s.When('he long presses the word {string} of the answer', (_, word: string) => press(fingerOn(word), HOLD_MS));

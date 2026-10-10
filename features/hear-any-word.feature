@@ -22,6 +22,17 @@ Feature: A long press on any word says it aloud
     When he taps the word "צֶדֶק" of the answer
     Then the pronunciation guide is open
 
+  Scenario: A short tap on a Greek word of a tutor answer says it in Greek, as a Hebrew word's tap does
+    Given a tutor answer is on screen on a phone with Greek, Hebrew and English voices
+    When he taps the word "ἀγαθόν" of the answer
+    Then the phone is told to speak "ἀγαθόν" in "greek"
+
+  Scenario: A short tap on a Greek word with no Greek voice on the phone says so instead of speaking
+    Given a tutor answer is on screen on a phone with only an English voice
+    When he taps the word "ἀγαθόν" of the answer
+    Then nothing is spoken
+    And the notice "No Greek voice" is shown
+
   Scenario: A long press on an English word of a tutor answer says it in English
     Given a tutor answer is on screen on a phone with Greek, Hebrew and English voices
     When he long presses the word "righteousness" of the answer
@@ -40,12 +51,12 @@ Feature: A long press on any word says it aloud
 
   Scenario: A press shorter than half a second says nothing
     Given a tutor answer is on screen on a phone with Greek, Hebrew and English voices
-    When he presses the word "ἀγαθόν" of the answer for 200 ms
+    When he presses the word "righteousness" of the answer for 200 ms
     Then nothing is spoken
 
   Scenario: A press that moves more than 10 px says nothing
     Given a tutor answer is on screen on a phone with Greek, Hebrew and English voices
-    When he presses the word "ἀγαθόν" of the answer and drags 20 px before the half second is up
+    When he presses the word "righteousness" of the answer and drags 20 px before the half second is up
     Then nothing is spoken
 
   Scenario: A long press on a number or a mark says nothing

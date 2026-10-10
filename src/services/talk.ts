@@ -172,6 +172,8 @@ export interface TalkRequest {
   form?: { name: string; fields: FormFieldState[] };
   /** the study resources he has switched on in Settings (mw-5r3p30.123): the only ones the tutor may link; missing in About, whose request is the credits */
   resources?: TutorResource[];
+  /** present only when pictures go with the message (mw-y3qno5.1): how many, 1 to 4. They are the grist's attachments; the tutor reads the text in them */
+  pictures?: number;
 }
 
 /** The most links an answer carries (the grind's schema): the app shows the first three of more. */
@@ -292,6 +294,7 @@ export function buildTalkRequest(
   learnerGrammar?: LearnerGrammar,
   studyWay: string[] = [],
   resources: TutorResource[] = [],
+  pictureCount = 0,
 ): TalkRequest {
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   // About (mw-vtjxh4.2) sends the credits, which take most of the record: the credits are the talk, so his words and his grammar stay home
@@ -310,6 +313,7 @@ export function buildTalkRequest(
     ...(scope.quiz ? { mode: 'quiz' as const } : {}),
     ...(scope.quiz && studyWay.length > 0 ? { study_way: studyWay } : {}),
     ...(aboutCredits ? {} : { resources }),
+    ...(pictureCount > 0 ? { pictures: pictureCount } : {}),
   };
 }
 

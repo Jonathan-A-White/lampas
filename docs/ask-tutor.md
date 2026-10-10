@@ -120,6 +120,31 @@ A phone that refuses the clipboard shows the Markdown in a field, selected, to c
 Checks: `tests/unit/exchange.test.ts`, "Copy on an answer card ..." and "With several answers ..." in `features/tutor.feature`, "Copy on a turn ...",
 "A talk about the chapter ..." and "With several turns ..." in `features/bible-talk.feature`, and `tests/e2e/tutor.spec.ts`.
 
+## Pictures in a talk
+
+The Talk sheet takes pictures (mw-y3qno5.1, `features/talk-pictures.feature`): a screenshot of a lexicon entry, a page, a note. Above the field are
+**Attach a picture** and **Take a photo** (48 px; the labels of bsv-kit's Composer, which the Verse view's Ask uses; the Talk sheet keeps its own field and
+hold bar, so the buttons are its own, `src/talk/PictureControls.tsx`) and a **paste** anywhere in the sheet of a copied picture (`pastedPictures`, a
+clipboard that holds files) is an attachment too; pasted text pastes as before.
+
+- At most **four** pictures a message, JPEG, PNG or WebP (the grind's `attachments`, `grinds/bible-talk.json`: max 4, `maxBytes` 1 MiB). A fifth gets the line
+  "Four pictures at most. The rest were left out."; another kind of file, "Only JPEG, PNG or WebP pictures can be sent."
+- Each is cut down **on the phone** as it is added (`src/talk/pictures.ts`, `shrinkImage` with `{maxEdge: 1600, maxBytes: 1 MiB}`: a JPEG, quality then size
+  lowered until it fits), so Send waits for nothing but the last one ("Getting the picture ready…").
+- A waiting picture is a 56 px thumbnail with a 44 px remove x (`src/talk/usePictureBox.ts`). Send, or words he holds to say (`src/talk/outbox.ts`: the open
+  sheet's waiting pictures go with the Reader's and the screens' hold-to-talk message), sends them as the grist's `attachments` (`picture-N.jpg`) and the request
+  has `pictures: N`. Pictures with no words ask "Read the picture and tell me about it." (`PICTURE_ONLY_QUESTION`; the grind knows it).
+- The turn keeps them in Dexie (`talkPictures`, v14: `{turnId, place, bytes, mime, name}`, written with the turn by `addTurn`; `listTurnPictures`), so a reopened
+  talk shows them. His turn draws them as 64 px thumbnails (`src/talk/TurnPictures.tsx`); a tap opens the picture full screen (a Back step of its own,
+  `useSheetBack`; Close, Back or Escape closes it). While the answer is awaited the thumbnails stand above his question. A message sent again unchanged
+  (Retry) sends the same pictures; a different message does not.
+- The grind (`## Pictures he sends`) tells the tutor to read the text in each picture (Greek, Hebrew, English), say what it is, and **quote every Greek or
+  Hebrew word it discusses as plain text, never only describe it**. Every Greek stretch of an answer is a word to tap (`src/script/GreekWord.tsx`: the Greek
+  voice, `speakWord`, the same engine as a long press; Hebrew was already one), so the quoted words are there to hear. Scenario:
+  `grinds/examples/bible-talk/lexicon-entry-picture.json` (its picture is an invented sample entry).
+- Checks: `features/talk-pictures.feature`, `tests/unit/talk-pictures.test.ts`, `tests/unit/db.test.ts`, and `tests/e2e/talk-pictures.spec.ts` (390 px; shots
+  `talk-pictures-composer`, `talk-pictures-turn`, `talk-pictures-full-screen`).
+
 ## Tests
 
 `features/ask-tutor.feature` (the control, the request, the questions, what is kept), `tests/unit/ask-tutor.test.ts`, the `screen` blocks of

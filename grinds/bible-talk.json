@@ -9,8 +9,8 @@
   "answerSchema": "grinds/bible-talk.answer.schema.json",
   "attachments": {
     "min": 0,
-    "max": 0,
-    "mime": [],
-    "maxBytes": 0
+    "max": 4,
+    "mime": ["image/jpeg", "image/png", "image/webp"],
+    "maxBytes": 1048576
   }
 }

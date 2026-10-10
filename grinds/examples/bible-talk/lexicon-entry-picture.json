@@ -1,0 +1,19 @@
+{
+  "description": "He sent a picture of a lexicon entry for δακρύω with a question about it: the answer says what the picture is and quotes the Greek words it discusses as plain text.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "John 11",
+    "greek": "ἐδάκρυσεν ὁ Ἰησοῦς",
+    "english": "Jesus wept.",
+    "question": "What does this entry say about the word for Jesus weeping?",
+    "history": [],
+    "solid_words": ["ὁ", "καί", "θεός"],
+    "pictures": 1,
+    "settings": { "theme": "phone", "textSize": "normal", "hebrewDepth": "both" }
+  },
+  "photos": ["lexicon-entry.png"],
+  "expect": {
+    "answer": { "matches": "δακρύω" },
+    "settings_changes": { "present": false }
+  }
+}

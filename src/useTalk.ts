@@ -11,6 +11,7 @@ import { getDeviceKeyBytes } from './services/deviceKey';
 import { TutorError } from './services/tutor';
 import { stopAnswer } from './speech/readAloud';
 import { applyChanges, currentSettings } from './settings/registry';
+import { filesOf, type OutgoingPicture } from './talk/pictures';
 import { askTalk, buildTalkRequest, MAX_LINKS, scopeRef, type TalkAnswer, type TalkFocus, type TalkScope } from './services/talk';
 import type { HebrewSounds } from './data/db';
 import type { AskState } from './useAsks';
@@ -20,9 +21,9 @@ type Talks = Record<string, AskState | undefined>;
 export interface UseTalk {
   /** what the message of each conversation (by its ref) is doing now */
   states: Talks;
-  /** says `message` in the conversation `scope` names; `focus` is the word the message asks help with. A message sent again
-   * unchanged (Retry) keeps the focus it was first sent with. */
-  say: (scope: TalkScope, message: string, focus?: TalkFocus) => void;
+  /** says `message` in the conversation `scope` names; `focus` is the word the message asks help with; `pictures` go with it as the grist's
+   * attachments and are kept with the turn. A message sent again unchanged (Retry) keeps the focus and the pictures it was first sent with. */
+  say: (scope: TalkScope, message: string, focus?: TalkFocus, pictures?: OutgoingPicture[]) => void;
 }
 
 /** What `onAnswered` is told besides the answer's text: the focus the message had and the syllables the answer lists. */
@@ -62,6 +63,8 @@ export function useTalk(book: string, chapter: number, onAnswered: (ref: string,
   const answered = useRef(onAnswered);
   // The last message of each conversation that carried a focus, so that Retry (the same text again) sends it again.
   const focused = useRef<Record<string, { text: string; focus: TalkFocus } | undefined>>({});
+  // The pictures of a message that has not been answered, so that Retry (the same text again) sends them again.
+  const pictured = useRef<Record<string, { text: string; pictures: OutgoingPicture[] } | undefined>>({});
   useEffect(() => {
     answered.current = onAnswered;
   });
@@ -76,13 +79,15 @@ export function useTalk(book: string, chapter: number, onAnswered: (ref: string,
   }, []);
 
   const say = useCallback(
-    (scope: TalkScope, message: string, focusOf?: TalkFocus) => {
+    (scope: TalkScope, message: string, focusOf?: TalkFocus, picturesOf?: OutgoingPicture[]) => {
       const text = message.trim();
       if (!text) return;
       const ref = scopeRef(book, chapter, scope);
       const kept = focused.current[ref];
       const focus = focusOf ?? (kept?.text === text ? kept.focus : undefined);
       focused.current[ref] = focus ? { text, focus } : undefined;
+      const pictures = picturesOf?.length ? picturesOf : pictured.current[ref]?.text === text ? pictured.current[ref].pictures : [];
+      pictured.current[ref] = pictures.length ? { text, pictures } : undefined;
       // a new message ends the speech of the last response
       stopAnswer();
       const signal = live.current.signal;
@@ -102,15 +107,17 @@ export function useTalk(book: string, chapter: number, onAnswered: (ref: string,
             scope.quiz ? listStudyWay() : Promise.resolve([]),
             getStudyResources().catch(() => ({ on: [], options: {} })),
           ]);
-          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen)), {
+          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length), {
             key: getDeviceKeyBytes(),
+            files: pictures.length ? filesOf(pictures) : undefined,
             signal,
             onSent: () => set({ phase: 'waiting', question: text, startedAt }),
           });
           // The settings he asked for are applied at once (the registry checks each), then kept with the turn for its Undo.
           const { applied, refused } = await applyChanges(answer.settings_changes);
           const { added, already, unknown } = await addWords(scope, answer.words_to_add ?? []);
-          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, cleanQ: answer.question });
+          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, cleanQ: answer.question, pictures });
+          pictured.current[ref] = undefined;
           set(undefined);
           if (!signal.aborted) answered.current(ref, id, answer.answer, { focus, syllables: answer.syllables });
         } catch (err) {

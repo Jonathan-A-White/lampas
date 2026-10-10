@@ -61,6 +61,7 @@ import { warmVoices } from './speech/greek';
 import { WordSheet, type Lookup } from './WordSheet';
 import { PassageText, ParagraphView, SectionHeading, VerseLine } from './reader/ChapterText';
 import { VerseText, type VerseTalk } from './reader/VerseText';
+import { takeWaitingPictures } from './talk/outbox';
 
 const NO_SETTINGS: Partial<ReaderSettings> = {};
 const EMPTY_LEMMAS: ReadonlySet<string> = new Set();
@@ -191,7 +192,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // What he says goes to the open Talk sheet (the Verse view's Ask the tutor has its own composer, src/Ask.tsx).
   useEffect(() => {
     sayAbout.current = (message) => {
-      if (talkScope) talk.say(talkScope, message);
+      if (talkScope) talk.say(talkScope, message, undefined, takeWaitingPictures());
     };
   });
   // The verse number on the teach sheet: the reading box is scrolled so that verse stands at its top. The verse is not selected: that
@@ -391,7 +392,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           talkRef={talkKey ?? talkRef(BOOK, CHAPTER, talkAbout)}
           state={talk.states[talkKey ?? talkRef(BOOK, CHAPTER, talkAbout)]}
           voice={voice}
-          onSay={(message, focus) => talk.say(talkScope, message, focus)}
+          onSay={(message, focus, pictures) => talk.say(talkScope, message, focus, pictures)}
           onHelp={tutor.helpWithWord}
           onAskTerm={tutor.askAboutTerm}
           onClose={() => {

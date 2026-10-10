@@ -7,6 +7,12 @@ export const MAX_EDGE = 1280;
 /** A shrunk picture is JPEG and, when it can be, under this many bytes. */
 export const MAX_SHRUNK_BYTES = 300 * 1024;
 
+/** What a shrunk picture must fit: the long edge in px and the bytes. */
+export interface ShrinkLimits {
+  maxEdge: number;
+  maxBytes: number;
+}
+
 /** The JPEG qualities tried at each size, best first, and the size is cut to this part of itself when none is small enough. */
 const QUALITIES = [0.85, 0.7, 0.55, 0.4];
 const SHRINK_STEP = 0.8;
@@ -48,16 +54,16 @@ export function fitWithin(width: number, height: number, max: number): { width: 
   return { width: Math.max(1, Math.round(width * scale)), height: Math.max(1, Math.round(height * scale)) };
 }
 
-/** The picture as a JPEG of at most MAX_EDGE on the long edge: the quality is lowered, then the size, until it is under
- * MAX_SHRUNK_BYTES; when it never is, the smallest try is returned. */
-export async function shrinkImage(file: Blob): Promise<Blob> {
+/** The picture as a JPEG of at most `maxEdge` (MAX_EDGE) on the long edge: the quality is lowered, then the size, until it is under
+ * `maxBytes` (MAX_SHRUNK_BYTES); when it never is, the smallest try is returned. */
+export async function shrinkImage(file: Blob, { maxEdge, maxBytes }: ShrinkLimits = { maxEdge: MAX_EDGE, maxBytes: MAX_SHRUNK_BYTES }): Promise<Blob> {
   const decoded = await imageSeam.decode(file);
-  let size = fitWithin(decoded.width, decoded.height, MAX_EDGE);
+  let size = fitWithin(decoded.width, decoded.height, maxEdge);
   let smallest: Blob | null = null;
   for (let round = 0; round < MAX_ROUNDS; round++) {
     for (const quality of QUALITIES) {
       const blob = await imageSeam.encode(decoded, size.width, size.height, quality);
-      if (blob.size <= MAX_SHRUNK_BYTES) return blob;
+      if (blob.size <= maxBytes) return blob;
       if (!smallest || blob.size < smallest.size) smallest = blob;
     }
     size = fitWithin(size.width, size.height, Math.round(Math.max(size.width, size.height) * SHRINK_STEP));
