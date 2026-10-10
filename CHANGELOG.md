@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.48
+_2026-10-10_
+- Fixed: The English word at the top of a word sheet no longer slides half under the tip card when the sheet is scrolled.
+
 ## 0.1.47
 _2026-10-10_
 - New: Tap a Bible reference in the tutor's answer to see the verse in a small card first, then open it in the reader.

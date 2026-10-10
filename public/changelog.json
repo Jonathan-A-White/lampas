@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.48",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.132",
+    "kind": "fixed",
+    "text": "The English word at the top of a word sheet no longer slides half under the tip card when the sheet is scrolled."
+  },
+  {
     "version": "0.1.47",
     "date": "2026-10-10",
     "story": "mw-5r3p30.133",
