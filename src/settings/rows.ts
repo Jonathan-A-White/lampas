@@ -1,10 +1,10 @@
 // src/settings/rows.ts — the one list of every row the Settings screen has: its key, name, one-line hint, longer help, section and what it
-// depends on. The screen draws exactly these rows (src/SettingsScreen.tsx has the control of each), the search at its top filters them by
+// depends on. The screen draws exactly these rows (src/settings/controls/ has the control of each), the search at its top filters them by
 // name and hint, and show-when-on reads `dependsOn` (a detail is drawn only while the setting it depends on is on). The tutor is given
 // the same list. A row is a talkable setting (src/settings/registry.ts SETTINGS: it also carries what to read, write and allow, and the
 // study-resource switches are among them), Developer mode (found on About, kept outside the registry so the tutor cannot change it) or a link
 // to another screen. The tutor may change every row but the last two kinds (tests/unit/settings-registry.test.tsx).
-// A new setting is one entry in the registry (with its section) plus its control in SettingsScreen's CONTROLS; a test fails until both.
+// A new setting is one entry in the registry (with its section) plus its control in src/settings/controls/ (CONTROLS, index.ts); a test fails until both.
 import { getDeveloper } from '../data/repositories';
 import { SETTINGS, settingOf, type Dependency, type SectionId } from './registry';
 
