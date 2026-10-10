@@ -3,6 +3,8 @@ import { makeFakePostern, SYNERGEI_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { askBar, composerOf, questionField } from './ask-composer';
+import { honestMic } from '../support/honest-fakes';
 import { chooseAction } from './verse-view';
 
 // The page never scrolls and never grows wider than the window.
@@ -16,20 +18,24 @@ async function expectFitsPhone(page: Page) {
   expect(scrollTop).toBe(0);
 }
 
-test('the Ask box of the Verse view on verse 28 sends the question and shows the answer, at phone width', async ({ page, context }) => {
+test('the composer of the Verse view on verse 28 sends the question and shows the answer, at phone width', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER };
   await routePostern(page, fake);
+  await honestMic(page);
   await openUnlocked(page);
   await page.goto('/');
   await chooseAction(page, 28, 'Ask the tutor');
 
   const box = page.getByRole('region', { name: 'Ask the tutor' });
-  const field = box.getByRole('textbox', { name: 'Your question' });
-  const ask = box.getByRole('button', { name: 'Ask', exact: true });
   await expect(box).toBeInViewport();
-  await expect(ask).toBeDisabled();
+  // one big bar, and Type a question beneath it; no Ask button
+  await expect(askBar(page)).toHaveText('Hold to ask');
+  await expect(box.getByRole('button', { name: 'Ask', exact: true })).toHaveCount(0);
+  const field = await questionField(page);
+  const ask = composerOf(page).getByRole('button', { name: 'Send', exact: true });
+  await expect(ask).toHaveCount(0);
   await field.fill('What does συνεργεῖ mean here?');
   await expect(ask).toBeEnabled();
 
@@ -46,7 +52,7 @@ test('the Ask box of the Verse view on verse 28 sends the question and shows the
   const card = page.locator('[data-answers-for="28"] [data-answer]');
   await expect(card).toContainText(SYNERGEI_ANSWER.answer);
   await expect(card.getByText('συνεργέω', { exact: true })).toBeVisible();
-  await expect(field).toHaveValue('');
+  await expect(askBar(page)).toBeEnabled();
   await expect(card).toBeInViewport();
   await expectFitsPhone(page);
   expect(fake.received).toHaveLength(1);

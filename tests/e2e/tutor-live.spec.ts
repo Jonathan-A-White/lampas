@@ -8,9 +8,11 @@
 // ~/.config/mw/lampas-test.env; that key holds a lampas licence the Governor issued. It is never printed.
 // With no key, or with a backend that cannot be reached, the test reports a SKIP with the reason, never a pass.
 import { expect, test } from '@playwright/test';
+import { typeQuestion } from './ask-composer';
 import { liveKeyOrSkip, plain } from './live';
 import { shot } from './shot';
 import { seedDeviceKey } from './unlocked';
+import { chooseAction } from './verse-view';
 
 const QUESTION = 'What does συνεργεῖ mean here?';
 
@@ -24,14 +26,11 @@ test('the live tutor answers a question about Romans 8:28', async ({ page }) => 
   await seedDeviceKey(page, key);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 }), 'the gate opened (the test key holds a lampas licence)').toBeVisible({ timeout: 60_000 });
-  await page.getByRole('button', { name: 'Verse 28', exact: true }).click();
-
-  const box = page.getByRole('region', { name: 'Ask the tutor' });
-  await box.getByRole('textbox', { name: 'Your question' }).fill(QUESTION);
-  await box.getByRole('button', { name: 'Ask', exact: true }).click();
+  await chooseAction(page, 28, 'Ask the tutor');
+  await typeQuestion(page, QUESTION);
 
   const card = page.locator('[data-answers-for="28"] [data-answer]').first();
-  const failure = box.getByRole('alert');
+  const failure = page.getByRole('region', { name: 'Verse view' }).getByRole('alert');
   await expect(card.or(failure)).toBeVisible({ timeout: 120_000 });
   if (await failure.isVisible()) throw new Error(`the box failed instead of answering: ${await failure.innerText()}`);
 

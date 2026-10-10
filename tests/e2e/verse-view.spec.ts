@@ -3,6 +3,8 @@
 import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern, SYNERGEI_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
+import { honestMic } from '../support/honest-fakes';
+import { composerOf, expectOneAskBar } from './ask-composer';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openVerseView } from './verse-view';
@@ -26,6 +28,8 @@ async function start(page: Page, hash = '/#/?c=8&view=english&weave=off'): Promi
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER };
   await routePostern(page, fake);
+  // the composer shows its Hold to ask bar on a phone that can recognise speech
+  await honestMic(page);
   await openUnlocked(page);
   await page.goto(hash);
 }
@@ -97,12 +101,14 @@ test('Read it aloud: the reading check above the one bar Hold to read verse 11',
   await shot(page, 'verse-view-read');
 });
 
-test('Ask the tutor: the Ask box above the one bar Hold to ask, and Talk about the verse', async ({ page }) => {
+test('Ask the tutor: the one composer, Hold to ask over Type a question, and Talk about the verse', async ({ page }) => {
   await start(page);
   const view = await openVerseView(page, 11);
   await view.getByRole('button', { name: 'Ask the tutor', exact: true }).click();
   await expect(view.getByRole('region', { name: 'Ask the tutor' })).toBeVisible();
-  await expectOneBar(page, 'Hold to ask');
+  await expectOneAskBar(page, VIEWPORT);
+  await expect(composerOf(page).getByRole('button', { name: 'Type a question', exact: true })).toBeVisible();
+  await expect(view.getByRole('button', { name: 'Ask', exact: true })).toHaveCount(0);
   await expect(view.getByRole('button', { name: 'Talk about verse 11', exact: true })).toBeVisible();
   await expectFitsPhone(page);
   await shot(page, 'verse-view-ask');
@@ -118,7 +124,7 @@ test('the chosen action is kept for the next verse, the arrows move through the 
   await view.getByRole('button', { name: 'Ask the tutor', exact: true }).click();
   await view.getByRole('button', { name: 'Next verse', exact: true }).click();
   await expect(view.getByRole('heading', { name: 'Romans 8:21' })).toBeVisible();
-  await expectOneBar(page, 'Hold to ask');
+  await expectOneAskBar(page, VIEWPORT);
   await view.getByRole('button', { name: 'Previous verse', exact: true }).click();
   await expect(view.getByRole('heading', { name: 'Romans 8:20' })).toBeVisible();
 
