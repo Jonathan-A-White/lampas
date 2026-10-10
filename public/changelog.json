@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.66",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.129",
+    "kind": "fixed",
+    "text": "the arrows on a passage now carry on into the chapter before or after instead of stopping at the chapter's end."
+  },
+  {
     "version": "0.1.62",
     "date": "2026-10-10",
     "story": "mw-5r3p30.126",

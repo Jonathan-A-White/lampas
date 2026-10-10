@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.66
+_2026-10-10_
+- Fixed: the arrows on a passage now carry on into the chapter before or after instead of stopping at the chapter's end.
+
 ## 0.1.62
 _2026-10-10_
 - New: In the Reader you can swipe left for the next chapter and right for the previous one, and at the first and last chapter a short note tells you there is no more.
