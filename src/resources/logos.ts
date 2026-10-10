@@ -5,9 +5,9 @@
 import { verseLink } from './logosBible';
 import type { StudyLink, StudyResource, StudyWord } from './types';
 
-/** The key a lexicon is filed under: the Greek lemma (`hw=<lemma>`), a Strong's number (`ref=GreekStrongs.<n>` or `HebrewStrongs.<n>`, as Greek and Hebrew share numbers),
+/** The key a lexicon is filed under: the Greek lemma (`hw=<lemma>`; `commonLemma` is the same for a book with no proper names), a Strong's number (`ref=GreekStrongs.<n>` or `HebrewStrongs.<n>`, as Greek and Hebrew share numbers),
  *  or an English topic (`hw=<Topic>`). docs/resources.md says where each lexicon's key comes from and what is UNVERIFIED. */
-type Key = 'lemma' | 'strongs' | 'topic';
+type Key = 'lemma' | 'commonLemma' | 'strongs' | 'topic';
 
 /** His Logos lexicons, in the order Logos' Bible Word Study shows them. `id` is kept in the settings store (never change it); `short` is its tile on the word sheet (it must
  *  not wrap in half a 360 px row); `resource` is the Resource ID Logos prints on the product's page (https://www.logos.com/product/<n>, 'Resource ID: LLS:...'; the table is in
@@ -19,15 +19,15 @@ const LEXICONS: readonly { id: string; short: string; name: string; resource: st
   { id: 'dbl', short: 'DBL Greek', name: 'DBL Greek', resource: 'LLS:46.30.9' },
   { id: 'ednt', short: 'EDNT', name: 'EDNT', resource: 'LLS:46.10.26' },
   { id: 'nasbdict', short: 'NASB Dict.', name: 'NASB Dictionaries', resource: 'LLS:46.10.12', key: 'strongs' },
-  { id: 'leh', short: 'LEH LXX', name: 'LEH LXX Lexicon', resource: 'LLS:46.30.22' },
-  { id: 'intermediategel', short: 'Intermediate', name: 'An Intermediate Greek-English Lexicon', resource: 'LLS:46.30.1' },
+  { id: 'leh', short: 'LEH LXX', name: 'LEH LXX Lexicon', resource: 'LLS:46.30.22', key: 'commonLemma' },
+  { id: 'intermediategel', short: 'Intermediate', name: 'An Intermediate Greek-English Lexicon', resource: 'LLS:46.30.1', key: 'commonLemma' },
   { id: 'lxgrcanlex', short: 'LXGRCANLEX', name: 'LXGRCANLEX', resource: 'LLS:LXGRCANLEX' },
   { id: 'newstrongs', short: "New Strong's", name: 'The New Strong\'s Dictionary of Hebrew and Greek Words', resource: 'LLS:46.10.6', key: 'strongs' },
   { id: 'tdnta', short: 'TDNTA', name: 'TDNTA', resource: 'LLS:46.10.1' },
   { id: 'vocab3', short: 'Vocab 3', name: 'Building Your New Testament Greek Vocabulary 3rd Edition', resource: 'LLS:NTGRKVOCAB' },
   { id: 'lxgntlex', short: 'LXGNTLEX', name: 'LXGNTLEX', resource: 'LLS:FBGNTLEX' },
   { id: 'lxlxxlex', short: 'LXLXXLEX', name: 'LXLXXLEX', resource: 'LLS:FBLXXLEX' },
-  { id: 'gelnt', short: 'Greek-English NT', name: 'A Greek and English Lexicon to the New Testament', resource: 'LLS:GRKENGLXCNNTBLMSFIELD' },
+  { id: 'gelnt', short: 'Greek-English NT', name: 'A Greek and English Lexicon to the New Testament', resource: 'LLS:GRKENGLXCNNTBLMSFIELD', key: 'commonLemma' },
   { id: 'biblicotheolexicon', short: 'Cremer', name: 'Biblico-Theological Lexicon of New Testament Greek', resource: 'LLS:LEXNTGRKCREMER' },
   { id: 'lexhamanalyticallxx', short: 'Lexham LXX', name: 'The Lexham Analytical Lexicon of the Septuagint', resource: 'LLS:LXGRKOTANLEX' },
   { id: 'manualgreeklex', short: 'Abbott-Smith', name: 'A Manual Greek Lexicon of the New Testament', resource: 'LLS:MNLGRKLXABBOTSMITH' },
@@ -49,6 +49,12 @@ const strongsRef = (strongs: string): string | undefined => {
   return m ? `${m[1] === 'G' ? 'GreekStrongs' : 'HebrewStrongs'}.${m[2]}` : undefined;
 };
 
+/** A proper name: its lemma opens with a capital (Ἀβραάμ, Μελχισεδέκ, Παῦλος); a common word's never does. A gentilic (Ἰουδαῖος) counts too, which only costs a tile. */
+const isProperName = (lemma: string): boolean => {
+  const first = lemma.normalize('NFC').charAt(0);
+  return first !== first.toLocaleLowerCase('el');
+};
+
 /** The query part of a lexicon link for the key it is filed under, or undefined when Lampas has no such key for the word (the tile is then left out, never a guess). */
 const keyQuery = (key: Key, word: StudyWord): string | undefined => {
   if (key === 'strongs') {
@@ -59,6 +65,7 @@ const keyQuery = (key: Key, word: StudyWord): string | undefined => {
     const topic = word.topic?.trim();
     return topic && `hw=${encodeURIComponent(topic.charAt(0).toLocaleUpperCase('en') + topic.slice(1))}`;
   }
+  if (key === 'commonLemma' && isProperName(word.lemma)) return undefined;
   return `hw=${encodeURIComponent(word.lemma)}`;
 };
 

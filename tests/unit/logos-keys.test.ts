@@ -61,6 +61,47 @@ describe('a lexicon filed by Strong\'s number', () => {
   });
 });
 
+/** Μελχισεδέκ, Hebrews 7:1, G3198 (the lemma as the text's data spells it); the Governor typed Μελχισέδεκ */
+const MELCHIZEDEK: StudyWord = { form: 'Μελχισεδέκ', lemma: 'Μελχισεδέκ', strongs: 'G3198', topic: 'Melchizedek', ref: { book: 'heb', chapter: 7, verse: 1 } };
+const LOGOS: StudyWord = { form: 'λόγος', lemma: 'λόγος', strongs: 'G3056', topic: 'word', ref: { book: 'jhn', chapter: 1, verse: 1 } };
+const LABELS = { leh: 'Open in Logos: LEH LXX Lexicon', intermediategel: 'Open in Logos: An Intermediate Greek-English Lexicon', gelnt: 'Open in Logos: A Greek and English Lexicon to the New Testament' };
+
+// LEH leaves proper nouns out; the Intermediate Liddell-Scott is classical Greek with no biblical names; Bloomfield excludes all proper names (docs/resources.md)
+describe.each([
+  ['leh', 'LLS:46.30.22'],
+  ['intermediategel', 'LLS:46.30.1'],
+  ['gelnt', 'LLS:GRKENGLXCNNTBLMSFIELD'],
+] as const)('a headword lexicon with no proper names: %s', (id, resource) => {
+  it('carries a common word under its Greek headword', () => {
+    const [tile] = links(LOGOS, id);
+    expect(tile.label).toBe(LABELS[id]);
+    expect(tile.url).toBe(`logosres:${resource};hw=${encodeURIComponent('λόγος')}`);
+    expect(tile.fallback).toBe(`https://ref.ly/logosres/${encodeURIComponent(resource)}?hw=${encodeURIComponent('λόγος')}`);
+  });
+
+  it('shows no tile for Μελχισεδέκ, rather than one that opens a stale page', () => {
+    for (const lemma of ['Μελχισεδέκ', 'Μελχισέδεκ']) {
+      expect(links({ ...MELCHIZEDEK, form: lemma, lemma }, id).map((l) => l.label)).toEqual(['Bible Word Study in Logos']);
+    }
+  });
+
+  it('shows no tile for a declined name either (Παῦλος) or an indeclinable one (Ἀβραάμ)', () => {
+    expect(links({ ...MELCHIZEDEK, form: 'Παῦλος', lemma: 'Παῦλος', strongs: 'G3972' }, id)).toHaveLength(1);
+    expect(links(ABRAHAM, id)).toHaveLength(1);
+  });
+});
+
+describe('a name is still looked up where the book has names', () => {
+  it('BDAG, Louw-Nida and LXGRCANLEX keep their tile for Μελχισεδέκ', () => {
+    const ids = 'bdag,louwnida,lxgrcanlex';
+    expect(links(MELCHIZEDEK, ids).map((l) => l.url).slice(0, 3)).toEqual([
+      `logosres:LLS:46.30.18;hw=${encodeURIComponent('Μελχισεδέκ')}`,
+      `logosres:LLS:46.30.4;hw=${encodeURIComponent('Μελχισεδέκ')}`,
+      `logosres:LLS:LXGRCANLEX;hw=${encodeURIComponent('Μελχισεδέκ')}`,
+    ]);
+  });
+});
+
 describe('the topic a gloss can stand for', () => {
   it('takes a plain noun-like gloss and leaves a verb, a pair and a slash alone', async () => {
     const { topicOf } = await import('../../src/resources/topic');
