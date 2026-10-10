@@ -65,7 +65,7 @@ describe('the registry lists every Settings row', () => {
   it('gives every entry a distinct key, a label, a hint, and the values it allows', () => {
     expect(new Set(SETTINGS.map((s) => s.key)).size).toBe(SETTINGS.length);
     expect(SETTINGS.map((s) => s.key).sort()).toEqual(
-      ['englishRate', 'englishVoice', 'goal', 'grammarApproach', 'grammarMove', 'greekPronunciation', 'greekRate', 'greekVoice', 'hebrewDepth', 'immersiveReader', 'layout', 'logosBible', 'newWordsADay', 'pickerGrammar', 'readSpan', 'readTutor', 'resource.accordance', 'resource.logos', 'resource.strongs', 'sectionHeadings', 'textSize', 'theme', 'tips', 'weave', 'weaveGrammar'],
+      ['askBy', 'englishRate', 'englishVoice', 'goal', 'grammarApproach', 'grammarMove', 'greekPronunciation', 'greekRate', 'greekVoice', 'hebrewDepth', 'immersiveReader', 'layout', 'logosBible', 'newWordsADay', 'pickerGrammar', 'readSpan', 'readTutor', 'resource.accordance', 'resource.logos', 'resource.strongs', 'sectionHeadings', 'textSize', 'theme', 'tips', 'weave', 'weaveGrammar'],
     );
     for (const s of SETTINGS) {
       expect(s.label).not.toBe('');
@@ -274,6 +274,7 @@ describe('currentSettings', () => {
       immersiveReader: 'off',
       readSpan: 'chapter',
       readTutor: 'on',
+      askBy: 'speaking',
       hebrewDepth: 'both',
       tips: 'on',
       weave: 'off',
