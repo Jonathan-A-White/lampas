@@ -15,18 +15,21 @@ export interface ReviewRound {
 /** How many of the exact gaps (letters, pairs and breathings he missed) head a round (mw-hqd5bz.18, PROVISIONAL). */
 export const GAP_QUESTIONS = 4;
 
-/** The schedule rows of the gaps he has a level for, in the order they are named: asked first, due or not. */
-async function gapRows(): Promise<Review[]> {
-  const levels = levelsOf(await listLevels());
-  const gaps = gapsOf(levels).filter((i) => levels.has(i.id));
-  return (await reviewsOf(gaps.map((i) => ({ kind: IDEA_KIND, id: i.id })))).slice(0, GAP_QUESTIONS);
+/**
+ * The schedule rows of the gaps the end card and Learn next name, in the order they are named, missed or never asked, due or not. A gap never asked
+ * has no row yet: it is drawn as one at step 0, due now (mw-hqd5bz.23).
+ */
+async function gapRows(now: number): Promise<Review[]> {
+  const gaps = gapsOf(levelsOf(await listLevels())).slice(0, GAP_QUESTIONS);
+  const rows = new Map((await reviewsOf(gaps.map((i) => ({ kind: IDEA_KIND, id: i.id })))).map((r) => [r.id, r]));
+  return gaps.map((i) => rows.get(i.id) ?? { kind: IDEA_KIND, id: i.id, step: 0, due: now, lastWhen: 0, lapses: 0, rights: 0 });
 }
 
 export async function drawReviewRound(random: Random, now = Date.now(), size = ROUND_SIZE): Promise<ReviewRound> {
   // listDue has them longest overdue first and the sort is stable, so ranking by kind keeps that order within a kind
   const owed = (await listDue(undefined, now)).filter((r) => kindRank(r.kind) >= 0).sort((a, b) => kindRank(a.kind) - kindRank(b.kind));
   // the exact gaps of the letters, sounds and marks come first, due or not
-  const gaps = await gapRows();
+  const gaps = await gapRows(now);
   const named = new Set(gaps.map((r) => r.id));
   const due = [...gaps, ...owed.filter((r) => !(r.kind === IDEA_KIND && named.has(r.id)))].slice(0, size);
   const drawn = (await Promise.all(KINDS.map((k) => k.draw(due.filter((r) => r.kind === k.kind), random)))).flat();
