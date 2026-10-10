@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.52
+_2026-10-10_
+- New: Robinson's essay on why he holds the Byzantine text to be original can now be read inside the app, on the Preface, in large type with its footnotes.
+
 ## 0.1.51
 _2026-10-10_
 - Fixed: the tutor that helps fill in a form now asks just one question at a time, with nothing tacked on after it.
