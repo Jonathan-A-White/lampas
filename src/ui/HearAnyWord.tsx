@@ -67,8 +67,9 @@ export function HearAnyWord() {
         spoke = true;
         navigator.vibrate?.(10);
         window.getSelection()?.removeAllRanges();
-        pauseReading();
+        // a reading under way is paused by the word itself (speech/greek.ts speakBeside); with no voice to say it the reading is paused here
         if (hit.language !== 'english' && hasVoice(hit.language) === false) {
+          pauseReading();
           setNotice(noVoiceHelp(hit.language));
           return;
         }

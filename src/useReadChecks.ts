@@ -14,8 +14,8 @@ import { MicUnavailable, recorderSeam, type HoldRecorder, type Recording } from 
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { askVerseRead, buildReadingRequest, readingLang, type ReadingView } from './services/reading';
 import { TutorError, type TutorFailure } from './services/tutor';
-import { stopReading } from './speech/readAloud';
-import { stopSpeaking } from './speech/greek';
+import { interruptListen, stopReading } from './speech/readAloud';
+import { stopSpeaking, stopWordSaid } from './speech/greek';
 
 /** A press shorter than this is a tap, not a reading. */
 export const MIN_READING_MS = 500;
@@ -63,6 +63,8 @@ interface Hold {
   dropped: boolean;
   /** the clip was handed on (by the one-minute cap) */
   over: boolean;
+  /** goes on with the Listen this hold paused, once the recording is over */
+  giveBack: (() => void) | null;
 }
 
 const buzz = (ms: number) => navigator.vibrate?.(ms);
@@ -129,6 +131,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
   const finish = useCallback(
     (h: Hold, recording: Recording): void => {
       if (hold.current === h) hold.current = null;
+      h.giveBack?.();
       if (recording.durationMs < MIN_READING_MS) set(unitId(h.verse), h.lang, { phase: 'tap' });
       else if (recording.durationMs < SHORT_READING_MS) set(unitId(h.verse), h.lang, { phase: 'short' });
       else send(h.verse, h.view, h.lang, recording);
@@ -139,10 +142,15 @@ export function useReadChecks(book: string, chapter: number, title: string, view
   const press = useCallback(
     (verse: Verse): void => {
       if (hold.current) return;
-      // Page audio can take the microphone: nothing is read aloud while he reads.
-      stopReading();
-      stopSpeaking();
+      // Page audio can take the microphone: nothing is read aloud while he reads. A Listen is paused, not ended, and goes on when the recording is over.
+      const giveBack = interruptListen();
+      if (giveBack) stopWordSaid();
+      else {
+        stopReading();
+        stopSpeaking();
+      }
       const h: Hold = {
+        giveBack,
         verse,
         view: shown.current.view,
         lang: shown.current.lang,
@@ -168,6 +176,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
         },
         (err: unknown) => {
           if (hold.current === h) hold.current = null;
+          h.giveBack?.();
           if (h.dropped) return;
           const detail = err instanceof MicUnavailable || err instanceof Error ? err.message : 'The microphone could not be used.';
           set(unitId(verse), h.lang, { phase: 'failed', failure: 'mic', detail });
@@ -191,6 +200,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
     if (!h || h.over) return;
     h.dropped = true;
     hold.current = null;
+    h.giveBack?.();
     if (h.started) h.recorder.cancel();
     set(unitId(h.verse), h.lang, { phase: 'dropped' });
   }, [set]);

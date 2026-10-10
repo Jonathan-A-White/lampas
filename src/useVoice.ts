@@ -4,7 +4,7 @@
 // with no recogniser says so and asks the sheet to focus its typed field (`typing` counts those asks).
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isListenSupported, startListening, type ListenErrorKind, type ListenSession } from './services/listen';
-import { pauseReading } from './speech/readAloud';
+import { interruptListen, pauseReading } from './speech/readAloud';
 
 export interface VoiceNotice {
   kind: ListenErrorKind | 'empty';
@@ -43,22 +43,36 @@ export function useVoice(onSend: (text: string) => void): Voice {
     send.current = onSend;
   });
 
+  // a Listen that this hold paused: it goes on once the hold is over
+  const resumeListen = useRef<(() => void) | null>(null);
+  const giveBackListen = useCallback(() => {
+    const end = resumeListen.current;
+    resumeListen.current = null;
+    end?.();
+  }, []);
+
   const drop = useCallback(() => {
+    giveBackListen();
     hold.current = null;
     session.current?.abort();
     session.current = null;
     setListening(false);
     setReady(false);
     setTranscript('');
-  }, []);
+  }, [giveBackListen]);
   useEffect(() => drop, [drop]);
 
   const press = useCallback(() => {
     if (session.current) return;
-    // Page audio can take the microphone from the recogniser: nothing is read aloud while he talks. The reading is paused, not ended: Resume is on the bar.
-    pauseReading();
+    // Page audio can take the microphone from the recogniser: nothing is read aloud while he talks. The reading is paused, not ended: Resume is on the bar,
+    // and a Listen goes on by itself when the hold is over.
+    if (!resumeListen.current) {
+      resumeListen.current = interruptListen();
+      if (!resumeListen.current) pauseReading();
+    }
     setNotice(undefined);
     if (!isListenSupported()) {
+      giveBackListen();
       setNotice({ kind: 'not-supported', message: 'This phone cannot turn speech into text. Type your question instead.' });
       setTyping((n) => n + 1);
       return;
@@ -77,6 +91,7 @@ export function useVoice(onSend: (text: string) => void): Voice {
       },
     });
     if (!started.ok) {
+      giveBackListen();
       hold.current = null;
       setNotice({ kind: started.error.kind, message: started.error.message });
       if (started.error.kind === 'not-supported') setTyping((n) => n + 1);
@@ -87,7 +102,7 @@ export function useVoice(onSend: (text: string) => void): Voice {
     setListening(true);
     setReady(false);
     setTranscript('');
-  }, [drop]);
+  }, [drop, giveBackListen]);
 
   const release = useCallback(async () => {
     const open = session.current;
@@ -96,6 +111,8 @@ export function useVoice(onSend: (text: string) => void): Voice {
     session.current = null;
     buzz(15);
     const result = await open.stop();
+    // the hold is over; a new hold pressed while the last words were awaited keeps the Listen paused
+    if (hold.current === null || hold.current === thisHold) giveBackListen();
     // Dropped while the last words were awaited (the sheet closed): nothing is sent. Pressed again meanwhile: the new hold
     // owns the screen, and these words, which he released, still go.
     if (hold.current === null) return;
@@ -111,7 +128,7 @@ export function useVoice(onSend: (text: string) => void): Voice {
       return;
     }
     send.current(text);
-  }, []);
+  }, [giveBackListen]);
 
   return { listening, ready, transcript, notice, typing, press, release, abort: drop, clearNotice: () => setNotice(undefined) };
 }

@@ -7,6 +7,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { SpeakingBar } from 'bsv-kit/speech/react';
 import { useBarShown } from './barShown';
+import { restartListen } from './readAloud';
 
 interface Slot {
   el: HTMLElement;
@@ -52,5 +53,16 @@ export function LampasSpeakingBar() {
   const slot = useSyncExternalStore(subscribe, () => top, () => null);
   const shown = useBarShown();
   if (!slot || !shown) return null;
-  return createPortal(<SpeakingBar />, slot);
+  // Restart on a Listen goes back to the first verse of the passage (readAloud.ts restartListen); on any other reading the package restarts the speech.
+  return createPortal(
+    <div
+      className="contents"
+      onClickCapture={(e) => {
+        if ((e.target as HTMLElement).closest('[data-action="restart"]') && restartListen()) e.stopPropagation();
+      }}
+    >
+      <SpeakingBar />
+    </div>,
+    slot,
+  );
 }

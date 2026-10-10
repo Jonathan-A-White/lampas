@@ -19,7 +19,7 @@ import type { ReaderView } from '../data/repositories';
 import type { Woven } from '../data/weave';
 import { publish } from '../events/bus';
 import { openReader } from '../nav/route';
-import { hasGreekVoice, READ_KEY, speakText } from './greek';
+import { besideNow, hasGreekVoice, READ_KEY, speakText, subscribeBeside } from './greek';
 import type { SpeechLanguage } from './languages';
 import type { ReadSpan } from './readSpan';
 import { keepAwake, letSleep } from './wakeLock';
@@ -89,9 +89,12 @@ export interface ReadingState {
   /** the package's bar holds this reading (its Pause, Resume, Restart and Stop are the controls); false when the voice was taken by a
    * word said alone and the reading waits at its verse, with only the header to Resume it */
   onBar: boolean;
+  /** the key of the Listen this reading is (a passage or a verse in the Verse view, listenKeyOf), or null for any other reading: a Listen is paused by an
+   * interruption from inside the app and goes on by itself when it ends */
+  listen: string | null;
 }
 
-const IDLE: ReadingState = { status: 'idle', verse: null, notice: null, answer: null, crossing: null, onBar: false };
+const IDLE: ReadingState = { status: 'idle', verse: null, notice: null, answer: null, crossing: null, onBar: false, listen: null };
 
 let state: ReadingState = IDLE;
 let plan: PlanVerse[] = [];
@@ -109,6 +112,12 @@ let epoch = 0;
 let loading = false;
 /** the package held our speech at its last change */
 let engineHad = false;
+/** how the running reading was started, to start it again where it was (a Listen that a tutor's answer interrupted) */
+let startedWith: StartOptions | null = null;
+/** the Listen a tutor's answer is being read in front of: it goes on from `verse` when the answer has been read to its end */
+let suspended: { options: StartOptions; verse: number } | null = null;
+/** the Listen that last ran to its end by itself: its foot offers Play again */
+let completed: string | null = null;
 const listeners = new Set<() => void>();
 
 function set(next: ReadingState): void {
@@ -127,10 +136,13 @@ export function useReading(): ReadingState {
   return useSyncExternalStore(subscribe, getReading, getReading);
 }
 
-function finish(my: number): void {
+/** The reading is over; `natural` when it ran to its end by itself (a Listen then offers Play again). */
+function finish(my: number, natural = false): void {
   if (my !== epoch) return;
   epoch++;
   letSleep();
+  suspended = null;
+  completed = natural ? state.listen : null;
   set(IDLE);
   publish({ kind: 'reading-stopped' });
 }
@@ -182,14 +194,14 @@ function chapterAhead(): ChapterRef | null {
 /** The plan has no verse after `at`: go on into the next chapter when the span allows, else the reading is over. */
 function cross(my: number): void {
   const to = chapterAhead();
-  if (!to) return finish(my);
+  if (!to) return finish(my, true);
   loading = true;
   loadChapter(to.book, to.chapter).then(
     (c) => {
       loading = false;
       if (my !== epoch) return;
       // a Passage goes on only while the next chapter does not open with a section heading
-      if (reach === 'passage' && c.verses[0]?.h) return finish(my);
+      if (reach === 'passage' && c.verses[0]?.h) return finish(my, true);
       set({ ...state, verse: null, crossing: to, onBar: false });
       openReader(to);
     },
@@ -201,10 +213,18 @@ function cross(my: number): void {
 }
 
 function afterVerse(at: number, my: number): void {
-  if (reach === 'verse') return finish(my);
+  if (reach === 'verse') {
+    // a tutor's answer read in front of a Listen is over: the Listen goes on from the verse it was at
+    if (state.answer !== null && suspended) {
+      const back = suspended;
+      suspended = null;
+      return startReading({ ...back.options, from: back.verse });
+    }
+    return finish(my, true);
+  }
   const next = plan[at + 1];
   if (!next) return cross(my);
-  if (reach === 'passage' && next.heading) return finish(my);
+  if (reach === 'passage' && next.heading) return finish(my, true);
   readVerse(next.n, my);
 }
 
@@ -238,7 +258,7 @@ function greekAhead(from: number, all: boolean): boolean {
 /** Starts reading at verse `from`: that verse only, or on as far as `span` says when `continuous` (the chapter's end when no
  * span is given; `book` is needed for a span that goes into another chapter). It takes the speech from whatever was being
  * read. Call it straight from the tap (docs/pwa-best-practices.md section 12). */
-export function startReading(options: {
+export interface StartOptions {
   chapter: number;
   plan: PlanVerse[];
   from: number;
@@ -248,8 +268,19 @@ export function startReading(options: {
   inBook?: string;
   span?: ReadSpan;
   answer?: number;
-}): void {
+  /** this reading is a Listen (listenKeyOf): an interruption from inside the app pauses it and it goes on by itself afterwards */
+  listen?: string;
+}
+
+export function startReading(options: StartOptions): void {
   epoch++;
+  if (options.answer !== undefined) {
+    // a tutor's answer read while a Listen is playing is read in front of it, and the Listen goes on after it
+    if (state.answer === null && state.status === 'reading' && state.listen !== null && startedWith && state.verse !== null) suspended = { options: startedWith, verse: state.verse };
+  } else suspended = null;
+  startedWith = options.answer === undefined ? options : startedWith;
+  completed = null;
+  resetInterrupts();
   if (getSpeech().status !== 'idle') engineStop();
   plan = options.plan;
   chapterNumber = options.chapter;
@@ -258,7 +289,7 @@ export function startReading(options: {
   reach = options.continuous ? options.span ?? 'chapter' : 'verse';
   queued = null;
   const notice = hasGreekVoice() === false && greekAhead(options.from, reach !== 'verse') ? NO_GREEK_VOICE_NOTICE : null;
-  set({ status: 'reading', verse: options.from, notice, answer: options.answer ?? null, crossing: null, onBar: false });
+  set({ status: 'reading', verse: options.from, notice, answer: options.answer ?? null, crossing: null, onBar: false, listen: options.listen ?? null });
   keepAwake();
   readVerse(options.from, epoch);
 }
@@ -302,11 +333,92 @@ export function resumeReading(): void {
   readVerse(state.verse, epoch);
 }
 
+// An interruption from inside the app (a word said alone, the Hold to ask bar, the reading check's recording) pauses a Listen and gives it back when
+// it ends (mw-5r3p30.130); any other reading is paused and waits for his Resume, as before. `held` counts the interruptions in force; `generation` makes
+// the ends of an old Listen do nothing.
+let held = 0;
+let autoPaused = false;
+let generation = 0;
+let besideEnd: (() => void) | null = null;
+
+function resetInterrupts(): void {
+  held = 0;
+  autoPaused = false;
+  besideEnd = null;
+  generation++;
+}
+
+function holdListen(): () => void {
+  held++;
+  autoPaused = true;
+  const mine = generation;
+  let ended = false;
+  return () => {
+    if (ended || mine !== generation) return;
+    ended = true;
+    held = Math.max(0, held - 1);
+    if (held > 0 || !autoPaused) return;
+    autoPaused = false;
+    // a page that went hidden keeps the Listen paused: it waits for his Resume
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+    if (state.listen !== null && state.status === 'paused') resumeReading();
+  };
+}
+
+/** A Listen is interrupted from inside the app: it is paused now, and the function returned goes on with it once the interruption is over (call it
+ * once). Null when what is going on is not a Listen, so the caller does what it did before; a Listen he paused himself stays paused. */
+export function interruptListen(): (() => void) | null {
+  if (state.listen === null || state.status === 'idle') return null;
+  if (state.status === 'reading') pauseReading();
+  else if (!autoPaused) return () => undefined;
+  return holdListen();
+}
+
+/** A word said beside the reading (greek.ts speakBeside) pauses a Listen and is over when its last sentence ends. */
+function onBeside(): void {
+  const now = besideNow();
+  if (now && now.interrupted && !besideEnd && state.listen !== null && state.status !== 'idle') besideEnd = holdListen();
+  else if (!now && besideEnd) {
+    const end = besideEnd;
+    besideEnd = null;
+    end();
+  }
+}
+
+if (typeof window !== 'undefined') subscribeBeside(onBeside);
+
+/** The speaking bar's Restart on a Listen reads it again from its first verse (the package alone would restart the verse it is in). False when what is
+ * being read is not a Listen: the bar then restarts the speech as it always did. */
+export function restartListen(): boolean {
+  if (state.listen === null || state.status === 'idle' || !startedWith) return false;
+  const first = startedWith.plan[0];
+  if (!first) return false;
+  startReading({ ...startedWith, from: first.n });
+  return true;
+}
+
+/** The key of the Listen on a verse or a passage of a chapter (`unit` is data/passage.ts unitId). */
+export const listenKeyOf = (book: string, chapter: number, unit: string): string => `${book}.${chapter}.${unit}`;
+
+/** The Listen that last ran to its end by itself, or null (it offers Play again). */
+export function useListenCompleted(): string | null {
+  return useSyncExternalStore(subscribe, () => completed, () => completed);
+}
+
 /** Stops for good. */
 export function stopReading(): void {
-  if (state.status === 'idle') return;
+  if (state.status === 'idle') {
+    if (completed !== null) {
+      completed = null;
+      listeners.forEach((l) => l());
+    }
+    return;
+  }
   epoch++;
   letSleep();
+  suspended = null;
+  completed = null;
+  resetInterrupts();
   set(IDLE);
   publish({ kind: 'reading-stopped' });
   if (isSpeaking(READ_KEY)) engineStop();
