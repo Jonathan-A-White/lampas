@@ -8,7 +8,7 @@
   },
   "photos": ["read-8-28.webm"],
   "expect": {
-    "verdict": { "oneOf": ["well-read", "some-to-fix"] },
+    "verdict": { "one_of": ["well-read", "some-to-fix"] },
     "note": { "present": true }
   }
 }
