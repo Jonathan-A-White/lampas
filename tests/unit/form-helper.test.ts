@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { APPROACH_FORM } from '../../src/formHelper/approachForm';
-import { applyFormValues, buildFormRequest, FORM_FIELD_MAX, type FormSpec } from '../../src/formHelper/formHelper';
+import { applyFormValues, buildFormRequest, FORM_FIELD_MAX, oneQuestion, type FormSpec } from '../../src/formHelper/formHelper';
 import { isTalkAnswer, MAX_REQUEST_BYTES } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
 
@@ -74,5 +74,23 @@ describe('what an answer may fill', () => {
   it('cuts a value to the field limit', () => {
     const [filled] = applyFormValues(form, [{ field: 'credit', value: 'a'.repeat(500) }]);
     expect(filled.value.length).toBe(120);
+  });
+});
+
+describe('the tutor asks one question', () => {
+  it('cuts what follows the question: the model sometimes asks, then keeps talking', () => {
+    expect(oneQuestion('Q? More text.')).toBe('Q?');
+    expect(oneQuestion("Who made this approach, so we can credit them? If it's the Greek Colour Method…")).toBe('Who made this approach, so we can credit them?');
+    expect(oneQuestion('Who made it? Is it Anna? Or someone else?')).toBe('Who made it?');
+  });
+
+  it('keeps one line and one sentence of explanation before the question, and an answer with no question as it is', () => {
+    expect(oneQuestion('A credit names whoever made it. Who made it?')).toBe('A credit names whoever made it. Who made it?');
+    expect(oneQuestion('That is everything I need. Read it, then tap Send yourself.')).toBe('That is everything I need. Read it, then tap Send yourself.');
+    expect(oneQuestion('')).toBe('');
+  });
+
+  it('cuts at the question mark that ends a sentence, not one inside a word or a link', () => {
+    expect(oneQuestion('Is it at example.org/a?b=1 or elsewhere? Tell me.')).toBe('Is it at example.org/a?b=1 or elsewhere?');
   });
 });

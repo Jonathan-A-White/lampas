@@ -9,7 +9,7 @@ import { getDeviceKeyBytes } from '../services/deviceKey';
 import { askTalk, MAX_HISTORY_TURNS, type TalkHistoryEntry } from '../services/talk';
 import { FAILURE_TITLES, TutorError, type TutorFailure } from '../services/tutor';
 import { currentSettings } from '../settings/registry';
-import { applyFormValues, buildFormRequest, FORM_START, requiredFilled, type FormSpec } from './formHelper';
+import { applyFormValues, buildFormRequest, FORM_START, oneQuestion, requiredFilled, type FormSpec } from './formHelper';
 
 export const START_LABEL = 'Let the tutor help me fill this in';
 /** What he says for the buttons that answer without typing. */
@@ -59,14 +59,15 @@ export function FormHelper({ form, values, onFill, onPicker, onReady }: FormHelp
       const request = buildFormRequest(latest.current.form, latest.current.values, message, turns.current.slice(-MAX_HISTORY_TURNS), await currentSettings());
       const answer = await askTalk(request, { key: getDeviceKeyBytes(), signal });
       if (signal.aborted) return;
-      turns.current = [...turns.current, { q: message, a: answer.answer }].slice(-MAX_HISTORY_TURNS);
+      const said = oneQuestion(answer.answer);
+      turns.current = [...turns.current, { q: message, a: said }].slice(-MAX_HISTORY_TURNS);
       const merged = { ...latest.current.values };
       for (const { field, value } of applyFormValues(latest.current.form, answer.form_values)) {
         latest.current.onFill(field, value);
         merged[field] = value;
       }
       const next = latest.current.form.fields.some((f) => f.name === answer.form_ask) ? answer.form_ask : undefined;
-      setSay(answer.answer);
+      setSay(said);
       setAsk(next);
       if (!next && requiredFilled(latest.current.form, merged)) latest.current.onReady?.();
       setPhase({ name: 'idle' });
