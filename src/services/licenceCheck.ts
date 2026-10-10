@@ -3,6 +3,7 @@
 // key's, counts only a mint the issuer signed, and ends a licence on the issuer's signed revoke (Postern's W record).
 import { licence } from 'bsv-kit/bsv';
 import { CHAIN, COLLECTION, ISSUER } from '../config';
+import { dexieTxCache } from '../data/repositories/txCache';
 
 export type LicenceStatus = licence.LicenceStatus;
 
@@ -14,6 +15,8 @@ export interface CheckOptions {
   collection?: string;
   chain?: 'testnet' | 'mainnet';
   reader?: licence.ChainReader;
+  /** Where the transactions a check reads are kept; the phone's own store, none where there is no IndexedDB (scripts/check-licence.ts under node). */
+  txCache?: licence.TransactionCache;
 }
 
 /** Throws when the chain cannot be reached, or when no issuer is set. */
@@ -24,5 +27,6 @@ export async function fetchLicenceStatus(publicKeyHex: string, options: CheckOpt
   if ((options.chain ?? CHAIN) !== 'testnet') throw new LicenceConfigError('Only the testnet chain is wired in bsv-kit so far.');
 
   const reader = options.reader ?? new licence.WhatsOnChainReader();
-  return licence.licenceStatus(publicKeyHex, options.collection ?? COLLECTION, { issuer, reader });
+  const txCache = options.txCache ?? (typeof indexedDB === 'undefined' ? undefined : dexieTxCache);
+  return licence.licenceStatus(publicKeyHex, options.collection ?? COLLECTION, { issuer, reader, txCache });
 }

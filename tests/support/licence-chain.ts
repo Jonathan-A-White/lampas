@@ -17,8 +17,9 @@ export const TRANSFER_TXID = 'd'.repeat(64);
 
 type RecordType = 'M' | 'TR' | 'W';
 
+/** The funding transaction's real id, so bsv-kit's transaction cache (which keeps only a copy that hashes to its txid) can hold it. */
 function fundingTxid(owner: PrivateKey): string {
-  return Utils.toHex(Hash.sha256(owner.toPublicKey().encode(true) as number[]));
+  return Transaction.fromHex(fundingTransaction(owner)).id('hex');
 }
 
 /** The transaction that gave `owner` a P2PKH output; the reader can fetch it by txid. */
@@ -70,4 +71,10 @@ export function addTransfer(reader: licence.FakeChainReader, signer: PrivateKey 
 export function addRevoke(reader: licence.FakeChainReader, signer: PrivateKey = ISSUER): void {
   const issuerAddress = ISSUER.toPublicKey().toAddress('testnet');
   reader.addTransaction(issuerAddress, REVOKE_TXID, recordTx('W', { kind: 'revoke', origin: `${MINT_TXID}:0` }, signer));
+}
+
+/** Like addMint, but the transaction is listed under its real id, so a txCache can keep it. */
+export function addMintWithRealId(reader: licence.FakeChainReader, signer: PrivateKey = ISSUER, collection = 'lampas'): void {
+  const hex = recordTx('M', { collection, holder: HOLDER_ADDRESS }, signer);
+  reader.addTransaction(HOLDER_ADDRESS, Transaction.fromHex(hex).id('hex'), hex);
 }
