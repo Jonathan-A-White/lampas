@@ -250,6 +250,8 @@ export interface TalkScope {
   quiz?: boolean;
   /** a talk from a screen (mw-5r3p30.91): what the screen shows. `chapter` is then NO_CHAPTER, `verse` null: the talk is not about a text. */
   screen?: ScreenContext;
+  /** a talk of its own (mw-y3qno5.2): the key it is kept under ('talk.<ms>', src/share/talkPlace.ts newTalkRef). It carries a `screen` that names no screen, and the sheet is a plain talk with the tutor. */
+  free?: string;
 }
 
 /** The first thing he says in a quiz (the Start the quiz button sends it): the sheet shows it as his turn. */
@@ -262,8 +264,8 @@ const englishOf = (v: Verse): string => v.e.map(markSupplied).join(' ');
 export const scopeTitle = (scope: Pick<TalkScope, 'title' | 'verse'>): string => (scope.verse ? `${scope.title}:${unitId(scope.verse)}` : scope.title);
 
 /** The key the conversation `scope` names is kept under (src/data/repositories/talks.ts talkRef). */
-export const scopeRef = (book: string, chapter: number, scope: Pick<TalkScope, 'verse' | 'quiz' | 'screen'>): string =>
-  scope.screen ? screenRef(slugOf(scope.screen.name)) : talkRef(book, chapter, scope.verse ? unitId(scope.verse) : null, scope.quiz === true);
+export const scopeRef = (book: string, chapter: number, scope: Pick<TalkScope, 'verse' | 'quiz' | 'screen' | 'free'>): string =>
+  scope.free ? scope.free : scope.screen ? screenRef(slugOf(scope.screen.name)) : talkRef(book, chapter, scope.verse ? unitId(scope.verse) : null, scope.quiz === true);
 
 const sizeOf = (request: TalkRequest): number => new TextEncoder().encode(JSON.stringify(request)).length;
 

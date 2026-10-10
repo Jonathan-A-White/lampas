@@ -100,3 +100,27 @@ export async function deleteTurns(ref: string): Promise<void> {
     await db.talks.bulkDelete(ids);
   });
 }
+
+/** A conversation as the Share screen lists it: its key, the first thing he said in it and when the last turn came. */
+export interface RecentTalk {
+  ref: string;
+  firstQuestion: string;
+  lastWhen: number;
+}
+
+/** The conversations, the one with the newest turn first (at most `limit`). A turn shows his question as the tutor cleaned it up when it did. */
+export async function listRecentTalks(limit = 20): Promise<RecentTalk[]> {
+  const talks = new Map<string, RecentTalk & { firstWhen: number }>();
+  await db.talks.each((turn) => {
+    const seen = talks.get(turn.ref);
+    const question = (turn.cleanQ ?? turn.q).trim();
+    if (!seen) talks.set(turn.ref, { ref: turn.ref, firstQuestion: question, firstWhen: turn.when, lastWhen: turn.when });
+    else {
+      if (turn.when < seen.firstWhen) Object.assign(seen, { firstQuestion: question, firstWhen: turn.when });
+      if (turn.when > seen.lastWhen) seen.lastWhen = turn.when;
+    }
+  });
+  return Array.from(talks.values(), ({ ref, firstQuestion, lastWhen }) => ({ ref, firstQuestion, lastWhen }))
+    .sort((a, b) => b.lastWhen - a.lastWhen)
+    .slice(0, limit);
+}
