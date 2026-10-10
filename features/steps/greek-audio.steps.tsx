@@ -170,7 +170,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the play button of verse {int}', (_, n: number) => tapPlay(n));
     // bsv-kit/speech waits up to a second for a phone to list its voices (VOICES_WAIT_MS), then speaks with the language alone
     Then('after waiting a moment for its voices the phone is told to speak the Greek of verse {int} in {string}', (_, n: number, lang: string) =>
-      waitFor(() => expectSpoken(verseGreek(n), lang), { timeout: 3000 }),
+      waitFor(() => expectSpoken(verseGreek(n), lang)),
     );
     And('no help line shows', () => {
       expect(screen.queryByRole('status')).toBeNull();
