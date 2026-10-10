@@ -183,6 +183,8 @@ export interface FeedbackOffer {
 export interface TalkAnswer {
   answer: string;
   words: AnswerWord[];
+  /** what he said, cleaned up by the tutor (punctuation, capitals, no fillers); shown in place of his raw words when present */
+  question?: string;
   /** the settings he asked to change, as the grind wrote them: the registry checks each one before it is applied */
   settings_changes?: unknown[];
   /** the lemmas he asked to put on his words-to-learn list ('add σάρξ to my words'): at most 12 */
@@ -208,7 +210,8 @@ const isAnswerLink = (value: unknown): value is AnswerLink =>
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'feedback_offer')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'feedback_offer')) return false;
+  if ('question' in value && !isText(value.question, MAX_TALK_CHARS)) return false;
   if ('study_way_line' in value && !isText(value.study_way_line, STUDY_WAY_LINE_MAX)) return false;
   if ('feedback_offer' in value && !(isObject(value.feedback_offer) && Object.keys(value.feedback_offer).length === 1 && isText(value.feedback_offer.summary, FEEDBACK_SUMMARY_MAX))) return false;
   if ('links' in value && !(Array.isArray(value.links) && value.links.length <= 12 && value.links.every(isAnswerLink))) return false;

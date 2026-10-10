@@ -164,6 +164,9 @@ const MARKDOWN_ANSWER = [
   '',
   '## A heading',
 ].join('\n');
+/** The mill's answer when it has put what he said into clean words: punctuation, capitals, no ums (grinds/bible-talk.answer.schema.json `question`). */
+const cleaning = (f: FakePostern): void =>
+  void (f.autoReply = { status: 'answered', answer: { answer: TALK_ANSWER.answer, words: [], question: 'Why are there italic words? What does it mean for the words to be italic?' } });
 const markdownAnswer = (f: FakePostern): void => void (f.autoReply = { status: 'answered', answer: { answer: MARKDOWN_ANSWER, words: [] } });
 const htmlAnswer = (f: FakePostern): void =>
   void (f.autoReply = { status: 'answered', answer: { answer: 'Here it is: <img src=x onerror=alert(1)>', words: [] } });
@@ -721,6 +724,31 @@ describeFeature(feature, ({ Scenario }) => {
       const q = sheet().querySelector('[data-talk-q]');
       expect(q?.textContent).toBe(question);
       expect(q?.querySelector('strong')).toBeNull();
+    });
+  });
+
+  Scenario('What he said is shown back cleaned up, and the raw words stay kept', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern whose answers clean up his question', () => open(cleaning));
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('his turn shows {string}', async (_, shown: string) => {
+      await turnsKept(1);
+      expect(sheet().querySelector('[data-talk-q]')?.textContent).toBe(shown);
+    });
+    And('the turn kept on the phone has his raw words {string}', async (_, raw: string) => {
+      const kept = await db.talks.toArray();
+      expect(kept).toHaveLength(1);
+      expect(kept[0].q).toBe(raw);
+    });
+  });
+
+  Scenario('An answer with no cleaned question shows his raw words', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern', () => open());
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('his turn shows {string}', async (_, shown: string) => {
+      await turnsKept(1);
+      expect(sheet().querySelector('[data-talk-q]')?.textContent).toBe(shown);
     });
   });
 

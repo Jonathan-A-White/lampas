@@ -43,6 +43,8 @@ export interface VerseAskRequest {
 export interface VerseAnswer {
   answer: string;
   words: AnswerWord[];
+  /** what he asked, cleaned up by the tutor (punctuation, capitals, no fillers); shown in place of his raw words when present */
+  question?: string;
 }
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
@@ -50,7 +52,8 @@ const isText = (value: unknown, max: number): value is string => typeof value ==
 
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isVerseAnswer(value: unknown): value is VerseAnswer {
-  if (!isObject(value) || Object.keys(value).length !== 2 || !isText(value.answer, 1200)) return false;
+  if (!isObject(value) || Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question') || !isText(value.answer, 1200)) return false;
+  if ('question' in value && !isText(value.question, 400)) return false;
   if (!Array.isArray(value.words) || value.words.length > 12) return false;
   return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));
 }

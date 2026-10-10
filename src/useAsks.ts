@@ -58,7 +58,7 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
             signal,
             onSent: () => set({ phase: 'waiting', question: text, startedAt }),
           });
-          await addAnswer(verseRef(book, chapter, unitId(verse)), text, answer.answer, answer.words);
+          await addAnswer(verseRef(book, chapter, unitId(verse)), text, answer.answer, answer.words, Date.now(), answer.question);
           set(undefined);
         } catch (err) {
           if (signal.aborted) return;

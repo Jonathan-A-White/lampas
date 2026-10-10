@@ -21,6 +21,19 @@ Feature: Ask the tutor about a verse
     And the answer names the Greek word "συνεργεῖ" with its lemma "συνεργέω"
     And the Ask box is ready for the next question
 
+  Scenario: What he asked is shown above the answer cleaned up, and the raw words stay kept
+    Given Lampas is opened on Romans 8 with a tutor behind a fake Postern whose answers clean up his question
+    And he selects verse 28
+    When he asks "um why are there uh italic words what does it mean for the words to be italic"
+    Then the answer card shows the question "Why are there italic words? What does it mean for the words to be italic?"
+    And the answer kept on the phone has his raw words "um why are there uh italic words what does it mean for the words to be italic"
+
+  Scenario: An answer with no cleaned question shows his raw words above it
+    Given Lampas is opened on Romans 8 with a tutor behind a fake Postern
+    And he selects verse 28
+    When he asks "um why are there uh italic words"
+    Then the answer card shows the question "um why are there uh italic words"
+
   Scenario: While the tutor has not answered the box says Sending and then Waiting
     Given Lampas is opened on Romans 8 with a tutor behind a fake Postern that holds its answers
     And he selects verse 28

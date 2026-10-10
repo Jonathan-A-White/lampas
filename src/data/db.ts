@@ -45,7 +45,10 @@ export interface TutorAnswer {
   id?: number;
   /** the verse it was asked about: 'rom.8.28' */
   ref: string;
+  /** his words as he said them (the raw transcript) */
   question: string;
+  /** the same question as the tutor cleaned it up (punctuation, capitals, no ums); shown in its place when present */
+  cleanQuestion?: string;
   answer: string;
   words: AnswerWord[];
   /** when it arrived (ms since the epoch) */
@@ -57,7 +60,10 @@ export interface TalkTurn {
   id?: number;
   /** the conversation it belongs to: the chapter 'rom.8', or a verse 'rom.8.28' when it was started on one */
   ref: string;
+  /** his words as he said them (the raw transcript, also what is sent as history) */
   q: string;
+  /** the same question as the tutor cleaned it up (punctuation, capitals, no ums); shown in its place when present */
+  cleanQ?: string;
   a: string;
   words: AnswerWord[];
   /** when the answer arrived (ms since the epoch) */

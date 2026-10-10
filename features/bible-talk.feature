@@ -250,6 +250,19 @@ Feature: Bible talk
     When he sends "what is **parsing**?"
     Then his question shows as "what is **parsing**?" with its stars
 
+  Scenario: What he said is shown back cleaned up, and the raw words stay kept
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern whose answers clean up his question
+    And he opens Talk
+    When he sends "um why are there uh italic words what does it mean for the words to be italic"
+    Then his turn shows "Why are there italic words? What does it mean for the words to be italic?"
+    And the turn kept on the phone has his raw words "um why are there uh italic words what does it mean for the words to be italic"
+
+  Scenario: An answer with no cleaned question shows his raw words
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern
+    And he opens Talk
+    When he sends "um why are there uh italic words"
+    Then his turn shows "um why are there uh italic words"
+
   Scenario: A question in the talk sends the learner summary
     Given Lampas is opened on Romans 8 with a talk behind a fake Postern
     And he is learning the word "σάρξ" which he added today
