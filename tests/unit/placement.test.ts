@@ -53,7 +53,8 @@ describe('where the placement starts', () => {
 
   it('with no goal walks the whole ladder', () => {
     const state = startPlacement(null, NONE, BMA, 1);
-    expect(state.ideas).toEqual(BMA);
+    // a diphthong, a consonant pair or a breathing is an item of the quick round, not an idea of the walk (mw-hqd5bz.18)
+    expect(state.ideas).toEqual(BMA.filter((id) => !ideaOf(id).parent));
     expect(currentIdea(state)).toBe('noun');
   });
 
