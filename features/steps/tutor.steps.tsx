@@ -359,7 +359,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(text).toContain('do not offer to move New words at here');
     });
   });
-  Scenario('A verse the tutor names in its answer is a link that opens that verse', ({ Given, And, When, Then }) => {
+  Scenario('A verse the tutor names in its answer is a link whose card opens that verse', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern that answers with {string}', (_, text: string) =>
       open((f) => void (f.autoReply = { status: 'answered', answer: { answer: text, words: [] } })),
     );
@@ -368,6 +368,9 @@ describeFeature(feature, ({ Scenario }) => {
     And('he taps the link {string} in the answer', async (_, name: string) => {
       await waitFor(() => expect(answersOn28().length).toBe(1));
       await user.click(within(cards()[0]).getByRole('link', { name }));
+    });
+    And('he taps Open on the reference card', async () => {
+      await user.click(await within(await screen.findByRole('dialog', { name: 'Hebrews 7:2' })).findByRole('button', { name: 'Open' }));
     });
     Then('the Verse view shows Hebrews 7:2', async () => {
       const view = await screen.findByRole('region', { name: 'Verse view' });
