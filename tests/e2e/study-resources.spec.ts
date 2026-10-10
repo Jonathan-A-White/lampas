@@ -4,8 +4,6 @@ import { openUnlocked } from './unlocked';
 
 const VIEWPORT = { width: 390, height: 844 };
 
-/** Turning an app On opens it to see it is on the phone (mw-5r3p30.68): headless Chromium has no Logos, so the test plays the app taking the
- *  page away (a blur) after the tap, which is what a phone with the app does. */
 /** Headless Chromium stops at a link to an app scheme (an unanswered prompt eats the clicks that follow); the tap itself still reaches the page. */
 const holdAppLinks = async (page: Page): Promise<void> => {
   await page.addInitScript(() => {
@@ -16,9 +14,9 @@ const holdAppLinks = async (page: Page): Promise<void> => {
   });
 };
 
-const turnsOnWithApp = async (page: Page, section: Locator, name: string): Promise<void> => {
+/** Turning an app On only turns it On (mw-5r3p30.116): nothing is opened, so nothing has to play the app taking the page away. */
+const turnsOnWithApp = async (_page: Page, section: Locator, name: string): Promise<void> => {
   await section.getByRole('switch', { name, exact: true }).click();
-  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
 };
 
 test('Study resources at phone width: thumb-sized switches in Settings, and a Study row on the word sheet', async ({ page }) => {
@@ -179,10 +177,20 @@ test('The Study links are equal tiles in two columns at 360 px, and an app that 
   await shot(page, 'word-sheet-study-grid');
 });
 
-test('Settings: Accordance is not on this phone, so its switch goes back Off and its row shows nothing more', async ({ page }) => {
-  await page.setViewportSize(VIEWPORT);
+test('Settings at 412 px: Accordance On opens nothing, stays On and offers Get Accordance', async ({ page }) => {
+  await page.setViewportSize({ width: 412, height: 915 });
   await openUnlocked(page);
-  await holdAppLinks(page);
+  await page.addInitScript(() => {
+    (window as unknown as { opened: string[] }).opened = [];
+    window.open = (url) => {
+      (window as unknown as { opened: string[] }).opened.push(String(url));
+      return null;
+    };
+    window.addEventListener('click', (e) => {
+      const link = (e.target as Element).closest('a');
+      if (link) (window as unknown as { opened: string[] }).opened.push(link.href);
+    }, true);
+  });
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
@@ -190,11 +198,21 @@ test('Settings: Accordance is not on this phone, so its switch goes back Off and
   const accordance = section.getByRole('switch', { name: 'Accordance', exact: true });
   await accordance.evaluate((el) => el.scrollIntoView({ block: 'center' }));
   await expect(section.getByLabel('Accordance resource')).toHaveCount(0);
+  await expect(section.getByText("Don't have Accordance?")).toHaveCount(0);
   await accordance.click();
   await expect(section.getByLabel('Accordance resource')).toBeVisible();
-  await expect(accordance).toHaveAttribute('aria-checked', 'false', { timeout: 4000 });
-  await expect(section.getByLabel('Accordance resource')).toHaveCount(0);
-  await expect(section.getByText("Accordance isn't on this phone")).toHaveCount(0);
-  await expect(section.getByRole('link', { name: 'Install Accordance', exact: true })).toHaveCount(0);
-  await shot(page, 'settings-app-missing');
+  await expect(section.getByText("Don't have Accordance?")).toBeVisible();
+  const get = section.getByRole('link', { name: 'Get Accordance', exact: true });
+  await expect(get).toHaveAttribute('href', 'https://play.google.com/store/apps/details?id=com.accordancebible.accordance');
+  const box = await get.boundingBox();
+  expect(box?.height).toBeGreaterThanOrEqual(47.5);
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(412);
+  await page.waitForTimeout(3000);
+  await expect(accordance).toHaveAttribute('aria-checked', 'true');
+  await expect(section.getByText(/Looking for| found/)).toHaveCount(0);
+  expect(await page.evaluate(() => (window as unknown as { opened: string[] }).opened)).toEqual([]);
+  const fits = await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+  expect(fits).toBe(true);
+  await accordance.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  await shot(page, 'settings-accordance-on');
 });

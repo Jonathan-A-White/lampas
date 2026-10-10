@@ -61,7 +61,7 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
 - **[Claude](https://www.anthropic.com/claude)** by Anthropic. The model behind the tutor's answers, the reading check, the tips and the help with filling in a form.
   Licence: none needed, it is a service used through the mill; its [terms](https://www.anthropic.com/legal/consumer-terms) apply. Changes: none.
 - **[Logos Bible Software](https://www.logos.com)** and **[Accordance](https://www.accordancebible.com)**. Only if you switch them on in
-  Settings: Lampas links to a word or a verse in the app you already own. No text, image or data is taken from either. Their own licences are yours.
+  Settings: Lampas links to a word or a verse in the app you already own, and offers a link to the app's page in your phone's store if you do not have it yet. No text, image or data is taken from either. Their own licences are yours.
 - **[Blue Letter Bible](https://www.blueletterbible.org)** and **[STEPBible](https://www.stepbible.org)**. Links from a word to its Strong's
   entry, if you switch Strong's on. Links only: nothing is copied. Their own terms apply.
 - **[Web Speech API](https://developer.mozilla.org/docs/Web/API/Web_Speech_API)**. Your phone's own voices speak the Greek and English and its

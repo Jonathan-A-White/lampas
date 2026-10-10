@@ -1,6 +1,6 @@
 // features/steps/settings-details.steps.tsx — runs features/settings-details.feature: Settings shows a setting's details only while it is on.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within, act } from '@testing-library/react';
+import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -8,31 +8,18 @@ import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 
 const user = userEvent.setup();
 
 const ANDROID = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/126 Mobile Safari/537.36';
 
-let timers: (() => void)[] = [];
-let leavers: (() => void)[] = [];
-let returners: (() => void)[] = [];
-
-const real = { ...browserEnv };
-
 afterAll(() => {
-  Object.assign(browserEnv, real);
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
   db.close();
 });
-
-const registered = (list: (() => void)[], fn: () => void, set: (next: (() => void)[]) => void): (() => void) => {
-  list.push(fn);
-  return () => set(list.filter((x) => x !== fn));
-};
 
 async function openSettings(seed: Record<string, string> = {}): Promise<void> {
   cleanup();
@@ -45,15 +32,7 @@ async function openSettings(seed: Record<string, string> = {}): Promise<void> {
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
   for (const [key, value] of Object.entries(seed)) await db.settings.put({ key, value });
-  timers = [];
-  leavers = [];
-  returners = [];
   Object.defineProperty(window.navigator, 'userAgent', { value: ANDROID, configurable: true });
-  browserEnv.after = (fn) => registered(timers, fn, (n) => (timers = n));
-  browserEnv.onAway = (fn) => registered(leavers, fn, (n) => (leavers = n));
-  browserEnv.onReturn = (fn) => registered(returners, fn, (n) => (returners = n));
-  browserEnv.launch = () => {};
-  browserEnv.open = () => {};
   render(<App />);
   await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
@@ -62,11 +41,6 @@ async function openSettings(seed: Record<string, string> = {}): Promise<void> {
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
 }
 
-const run = (list: (() => void)[]): void => {
-  act(() => {
-    for (const fn of [...list]) fn();
-  });
-};
 const switchOf = (name: string): Promise<HTMLElement> => screen.findByRole('switch', { name });
 const settled = async (): Promise<void> => {
   // the screen draws its groups from live queries: wait for the last section before claiming something is absent
@@ -129,26 +103,11 @@ describeFeature(feature, ({ Scenario }) => {
     Then('Settings has no field {string}', noField);
     And('the setting {string} holds {string}', heldAs);
     When('he turns the switch {string} On', turnsOn);
-    And('the app takes the page away', () => run(leavers));
-    And('he comes back to Lampas', () => run(returners));
     Then('Settings again has a field {string} holding {string}', field);
     And('Settings says {string}', says);
   });
 
-  Scenario('An app that is not on the phone leaves its switch Off with no details', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Settings with nothing chosen', openNothing);
-    When('he turns the switch {string} On', turnsOn);
-    And('the page stays in front for the wait', () => run(timers));
-    Then('Settings shows the switch {string} Off with its help {string}', async (_, name: string, help: string) => {
-      await waitFor(async () => expect(await switchOf(name)).toHaveAttribute('aria-checked', 'false'));
-      expect(screen.getByText(help)).toBeInTheDocument();
-    });
-    And('Settings has no field {string}', noField);
-    And('Settings does not say {string}', doesNotSay);
-    And('Settings has no link {string}', noLink);
-  });
-
-  Scenario('Bible in Logos is shown only while Logos is On', ({ Given, When, Then, And }) => {
+  Scenario('Bible in Logos is shown only while Logos is On', ({ Given, When, Then }) => {
     Given('Lampas is opened on Settings with nothing chosen', openNothing);
     Then('Settings has no section {string}', async (_, name: string) => {
       await settled();
@@ -156,7 +115,6 @@ describeFeature(feature, ({ Scenario }) => {
       noGroup(name);
     });
     When('he turns the switch {string} On', turnsOn);
-    And('the app takes the page away', () => run(leavers));
     Then('Settings has the section {string}', async (_, name: string) => {
       expect(await screen.findByRole('heading', { name, level: 2 })).toBeInTheDocument();
       expect(await screen.findByRole('group', { name })).toBeInTheDocument();

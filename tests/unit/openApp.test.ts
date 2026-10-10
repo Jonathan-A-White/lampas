@@ -1,13 +1,11 @@
 // The scheme-then-fallback opener (src/resources/openApp.ts): the app's own scheme is tried first by the link itself; the https
 // address is opened only when the page stayed in front for the wait (the phone found no app for the scheme).
 import { describe, expect, it } from 'vitest';
-import { armFallback, browserEnv, checkApp, type OpenEnv } from '../../src/resources/openApp';
+import { armFallback, browserEnv, type OpenEnv } from '../../src/resources/openApp';
 import { storeUrl } from '../../src/resources/appStore';
 
 function fakeEnv() {
   const away = new Set<() => void>();
-  const back = new Set<() => void>();
-  const launched: string[] = [];
   let timer: (() => void) | null = null;
   const opened: string[] = [];
   const env: OpenEnv = {
@@ -23,17 +21,10 @@ function fakeEnv() {
       return () => away.delete(fn);
     },
     open: (url) => void opened.push(url),
-    launch: (url) => void launched.push(url),
-    onReturn: (fn) => {
-      back.add(fn);
-      return () => back.delete(fn);
-    },
   };
   return {
     env,
     opened,
-    launched,
-    comeBack: () => [...back].forEach((fn) => fn()),
     wait: () => timer?.(),
     goAway: () => [...away].forEach((fn) => fn()),
     armed: () => timer !== null,
@@ -103,45 +94,6 @@ describe('armFallback with an app that may be missing', () => {
 
   it('waits about 1.5 seconds on the page', () => {
     expect(browserEnv.waitMs).toBe(1500);
-  });
-});
-
-describe('checkApp', () => {
-  const handlers = () => {
-    const said: string[] = [];
-    return { said, h: { onOpened: () => said.push('opened'), onBack: () => said.push('back'), onMissing: () => said.push('missing') } };
-  };
-
-  it('opens the app address once and says missing when the page stays in front for the wait', () => {
-    const f = fakeEnv();
-    const { said, h } = handlers();
-    checkApp('accord://', h, f.env);
-    expect(f.launched).toEqual(['accord://']);
-    expect(said).toEqual([]);
-    f.wait();
-    expect(said).toEqual(['missing']);
-  });
-
-  it('says opened when the page goes away, never missing, and back when it returns', () => {
-    const f = fakeEnv();
-    const { said, h } = handlers();
-    checkApp('accord://', h, f.env);
-    f.goAway();
-    expect(f.armed()).toBe(false);
-    f.wait();
-    expect(said).toEqual(['opened']);
-    f.comeBack();
-    f.comeBack();
-    expect(said).toEqual(['opened', 'back']);
-  });
-
-  it('says nothing once dropped', () => {
-    const f = fakeEnv();
-    const { said, h } = handlers();
-    checkApp('accord://', h, f.env)();
-    f.wait();
-    f.goAway();
-    expect(said).toEqual([]);
   });
 });
 

@@ -1,6 +1,6 @@
 Feature: A setting's details show only while it is on
   Settings does not show the details of something that is off. Accordance Off is its row and nothing else: its one-line help and the
-  On | Off control. Turning it On shows the Accordance resource field and what the check of the app says; turning it Off hides them
+  On | Off control. Turning it On shows the Accordance resource field and a Get Accordance link (features/app-on-phone.feature; nothing is opened or checked); turning it Off hides them
   again, and the value typed in the field is kept. The same holds for every setting with details: Bible in Logos is shown only
   while Logos is On, the Weave's Grammar row only while the Weave is not Off, and New words at and Move it only while New words a
   day is not Off. (A reader who wants to know why he would turn one on can ask the tutor from Settings.)
@@ -9,7 +9,7 @@ Feature: A setting's details show only while it is on
     Given Lampas is opened on Settings with nothing chosen
     Then Settings shows the switch "Accordance" Off with its help "Adds Open in Accordance: the word in your own lexicon in the Accordance app."
     And Settings has no field "Accordance resource"
-    And Settings does not say "Accordance found"
+    And Settings does not say "Don't have Accordance?"
     And Settings has no link "Install Accordance"
 
   Scenario: Turning Accordance On shows its details and Off hides them, keeping what was typed
@@ -19,25 +19,13 @@ Feature: A setting's details show only while it is on
     Then Settings has no field "Accordance resource"
     And the setting "resourceOption.accordance" holds "TDNT"
     When he turns the switch "Accordance" On
-    And the app takes the page away
-    And he comes back to Lampas
     Then Settings again has a field "Accordance resource" holding "TDNT"
-    And Settings says "Accordance found"
-
-  Scenario: An app that is not on the phone leaves its switch Off with no details
-    Given Lampas is opened on Settings with nothing chosen
-    When he turns the switch "Accordance" On
-    And the page stays in front for the wait
-    Then Settings shows the switch "Accordance" Off with its help "Adds Open in Accordance: the word in your own lexicon in the Accordance app."
-    And Settings has no field "Accordance resource"
-    And Settings does not say "Accordance isn't on this phone"
-    And Settings has no link "Install Accordance"
+    And Settings says "Don't have Accordance?"
 
   Scenario: Bible in Logos is shown only while Logos is On
     Given Lampas is opened on Settings with nothing chosen
     Then Settings has no section "Bible in Logos"
     When he turns the switch "Logos" On
-    And the app takes the page away
     Then Settings has the section "Bible in Logos"
     When he turns the switch "Logos" Off
     Then Settings no longer has the section "Bible in Logos"
