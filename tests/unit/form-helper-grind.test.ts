@@ -25,6 +25,13 @@ describe('the form helper section of the instructions', () => {
     expect(s).toContain('already holds');
   });
 
+  it('ends the answer at the question mark, with a right and a wrong example (mw-5r3p30.158)', () => {
+    const s = section();
+    expect(s).toContain('stop at the question mark');
+    expect(s).toContain('right:');
+    expect(s).toContain('wrong:');
+  });
+
   it('fills fields from what he said, keeps his meaning, and never sends the form', () => {
     const s = section();
     expect(s).toContain('whole new value');

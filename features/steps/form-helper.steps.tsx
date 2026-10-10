@@ -172,4 +172,16 @@ describeFeature(feature, ({ Scenario }) => {
       expect(within(sheet()).getByRole('button', { name: START })).toBeInTheDocument();
     });
   });
+
+  Scenario("The tutor asks one question even when the model keeps talking after it", ({ Given, And, When, Then }) => {
+    Given('the Ask for another approach sheet is open behind a fake Postern', openSheet);
+    And('the tutor will ask a question and then add more sentences', () => {
+      fake.autoReply = reply(`${Q_CREDIT} If it's the Greek Colour Method, I can note that down for you.`, 'credit');
+    });
+    When('he taps "Let the tutor help me fill this in"', startHelp);
+    Then('the tutor asks one question: {string}', asks);
+    And("the tutor's extra sentences are not shown", () => {
+      expect(within(helper()).queryByText(/Greek Colour Method/)).not.toBeInTheDocument();
+    });
+  });
 });

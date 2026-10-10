@@ -36,3 +36,10 @@ Feature: Let the tutor help me fill this in
     Then the form is unchanged
     When he stops the help
     Then the button "Let the tutor help me fill this in" is offered again
+
+  Scenario: The tutor asks one question even when the model keeps talking after it
+    Given the Ask for another approach sheet is open behind a fake Postern
+    And the tutor will ask a question and then add more sentences
+    When he taps "Let the tutor help me fill this in"
+    Then the tutor asks one question: "Who made this approach, so we can credit them?"
+    And the tutor's extra sentences are not shown

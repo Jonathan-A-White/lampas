@@ -106,3 +106,11 @@ export function applyFormValues(form: FormSpec, given: FormValue[] | undefined):
 /** Whether every required field of `form` holds something (a picture field holds something when `values` says so). */
 export const requiredFilled = (form: FormSpec, values: Record<string, string>): boolean =>
   form.fields.every((f) => !f.required || (values[f.name] ?? '').trim() !== '');
+
+/** The tutor's answer cut after its first question (mw-5r3p30.158): the grind is told to ask one question, and now and then the model asks it and
+ * keeps talking ('Who made this approach? If it's the Greek Colour Method…'), which he would read as a guess he did not ask for. A question mark
+ * inside a word or an address ('a?b=1') does not end it; an answer with no question is as it was. */
+export function oneQuestion(answer: string): string {
+  const end = answer.search(/\?(?=\s|$)/);
+  return end < 0 ? answer : answer.slice(0, end + 1);
+}
