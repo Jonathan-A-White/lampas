@@ -1,7 +1,7 @@
-// features/steps/app-on-phone.steps.tsx — runs features/app-on-phone.feature: Settings opens an app once when he turns it On
-// (Logos, Accordance) and keeps it On only when the page went away; otherwise it goes back Off and offers Install there.
+// features/steps/app-on-phone.steps.tsx — runs features/app-on-phone.feature: turning a study app On in Settings opens nothing and checks
+// nothing; the row offers Get <App>. Nothing here stubs the browser's own opening: a hidden-link click, window.open or a navigation is recorded.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within, act } from '@testing-library/react';
+import { render, screen, cleanup, waitFor, within, act, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -9,47 +9,33 @@ import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 
 const user = userEvent.setup();
 
 const ANDROID = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/126 Mobile Safari/537.36';
 
-let timers: (() => void)[] = [];
-let leavers: (() => void)[] = [];
-let returners: (() => void)[] = [];
-let launched: string[] = [];
+/** every address the page tried to go to: a clicked link (the hidden one Settings used to probe with included) or window.open */
+let opened: string[] = [];
+let openSpy: ReturnType<typeof vi.spyOn> | null = null;
 
-// The scenario's steps are tests of their own, so the stubs live until the file ends rather than until each step does.
-const real = { ...browserEnv };
+const recordClick = (e: MouseEvent): void => {
+  const a = (e.target as Element | null)?.closest?.('a[href]');
+  if (a) {
+    opened.push(a.getAttribute('href') ?? '');
+    e.preventDefault();
+  }
+};
 
 afterAll(() => {
-  Object.assign(browserEnv, real);
+  document.removeEventListener('click', recordClick, true);
+  openSpy?.mockRestore();
+  vi.useRealTimers();
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
   db.close();
 });
-
-const registered = (list: (() => void)[], fn: () => void, set: (next: (() => void)[]) => void): (() => void) => {
-  list.push(fn);
-  return () => set(list.filter((x) => x !== fn));
-};
-
-/** The phone's UA, and the page's clock, exits, returns and launches under the test's hand: nothing waits for real time. */
-function stubPhone(agent: string): void {
-  timers = [];
-  leavers = [];
-  returners = [];
-  launched = [];
-  Object.defineProperty(window.navigator, 'userAgent', { value: agent, configurable: true });
-  browserEnv.after = (fn) => registered(timers, fn, (n) => (timers = n));
-  browserEnv.onAway = (fn) => registered(leavers, fn, (n) => (leavers = n));
-  browserEnv.onReturn = (fn) => registered(returners, fn, (n) => (returners = n));
-  browserEnv.launch = (url) => void launched.push(url);
-  browserEnv.open = () => {};
-}
 
 async function openSettings(agent: string, ons: string[] = []): Promise<void> {
   cleanup();
@@ -62,7 +48,15 @@ async function openSettings(agent: string, ons: string[] = []): Promise<void> {
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
   for (const id of ons) await db.settings.put({ key: `resource.${id}`, value: 'on' });
-  stubPhone(agent);
+  opened = [];
+  Object.defineProperty(window.navigator, 'userAgent', { value: agent, configurable: true });
+  openSpy?.mockRestore();
+  openSpy = vi.spyOn(window, 'open').mockImplementation((url) => {
+    opened.push(String(url));
+    return null;
+  });
+  document.removeEventListener('click', recordClick, true);
+  document.addEventListener('click', recordClick, true);
   render(<App />);
   await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
@@ -77,21 +71,15 @@ const verseEl = (n: number): HTMLElement => {
   if (!el) throw new Error(`no verse ${n} on screen`);
   return el;
 };
-const run = (list: (() => void)[]): void => {
-  act(() => {
-    for (const fn of [...list]) fn();
-  });
-};
 
 const feature = await loadFeature('features/app-on-phone.feature');
 
 describeFeature(feature, ({ Scenario }) => {
   const android = (): Promise<void> => openSettings(ANDROID);
+  const androidWithAccordance = (): Promise<void> => openSettings(ANDROID, ['accordance']);
   const turnsOn = async (_: unknown, name: string): Promise<void> => {
     await user.click(await switchOf(name));
   };
-  const waits = (): void => run(timers);
-  const leaves = (): void => run(leavers);
   const isSwitch = (state: 'On' | 'Off') => async (_: unknown, name: string): Promise<void> => {
     const control = await switchOf(name);
     await waitFor(() => expect(control).toHaveAttribute('aria-checked', state === 'On' ? 'true' : 'false'));
@@ -102,58 +90,90 @@ describeFeature(feature, ({ Scenario }) => {
   const doesNotSay = (_: unknown, text: string): void => {
     expect(screen.queryByText(text)).toBeNull();
   };
+  const hasNoText = (_: unknown, part: string): void => {
+    expect(document.body.textContent ?? '').not.toContain(part);
+  };
+  const hasLink = async (_: unknown, name: string): Promise<void> => {
+    expect(await screen.findByRole('link', { name })).toBeInTheDocument();
+  };
+  const hasNoLink = (_: unknown, name: string): void => {
+    expect(screen.queryByRole('link', { name })).toBeNull();
+  };
   const heldAs = async (_: unknown, key: string, value: string): Promise<void> => {
     await waitFor(async () => expect((await db.settings.get(key))?.value).toBe(value));
   };
+  const openedNothing = (): void => {
+    expect(opened).toEqual([]);
+    expect(openSpy).not.toHaveBeenCalled();
+  };
 
-  Scenario('Accordance is not on the phone, so the switch goes back Off', ({ Given, When, And, Then }) => {
+  Scenario('Turning Logos On opens nothing and offers Get Logos', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Settings and the phone is an Android phone', android);
     When('he turns the switch {string} On', turnsOn);
-    And('the page stays in front for the wait', waits);
-    Then('the switch {string} is Off', isSwitch('Off'));
-    And('Settings does not say {string}', doesNotSay);
-    And('the setting {string} holds {string}', heldAs);
+    Then('nothing was opened: no navigation, no window.open and no app address', openedNothing);
+    And('the switch {string} is On', isSwitch('On'));
+    And('Settings has the group {string}', async (_, name: string) => {
+      expect(await screen.findByRole('group', { name })).toBeInTheDocument();
+    });
+    And('Settings says {string}', says);
+    And('Settings has a link {string}', hasLink);
   });
 
-  Scenario('Accordance is on the phone, so the switch stays On and the return says it was found', ({ Given, When, And, Then }) => {
+  Scenario('Accordance On offers Get Accordance on Google Play and stays On', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Settings and the phone is an Android phone', android);
-    When('he turns the switch {string} On', turnsOn);
-    And('the app takes the page away', leaves);
-    And('he comes back to Lampas', () => run(returners));
-    And('the page stays in front for the wait', waits);
+    When('he turns the switch {string} On', async (_, name: string) => {
+      const control = await switchOf(name);
+      // the page's own clock, under the test's hand, from the tap on
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] });
+      act(() => {
+        fireEvent.click(control);
+      });
+    });
+    And('{int} seconds pass', async (_, seconds: number) => {
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(seconds * 1000);
+      });
+      vi.useRealTimers();
+    });
     Then('the switch {string} is On', isSwitch('On'));
     And('Settings says {string}', says);
-    And('Settings does not say {string}', doesNotSay);
-    And('the setting {string} holds {string}', heldAs);
-  });
-
-  Scenario('Turning on Logos opens the app once, by its own scheme', ({ Given, When, Then }) => {
-    Given('Lampas is opened on Settings and the phone is an Android phone', android);
-    When('he turns the switch {string} On', turnsOn);
-    Then('the app was asked to open with an address that starts {string}', (_, start: string) => {
-      expect(launched).toHaveLength(1);
-      expect(launched[0].startsWith(start)).toBe(true);
+    And('the link {string} goes to {string}', async (_, name: string, href: string) => {
+      expect(await screen.findByRole('link', { name })).toHaveAttribute('href', href);
     });
+    And('the setting {string} holds {string}', heldAs);
+    And('nothing was opened: no navigation, no window.open and no app address', openedNothing);
   });
 
-  Scenario("Strong's needs no app, so it is not checked", ({ Given, When, Then, And }) => {
+  Scenario('Turning an app Off hides its details and says nothing about looking for it', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Settings and the phone is an Android phone with Accordance on', androidWithAccordance);
+    When('he turns the switch {string} Off', turnsOn);
+    Then('the switch {string} is Off', isSwitch('Off'));
+    And('Settings has no link {string}', hasNoLink);
+    And('Settings does not say {string}', doesNotSay);
+    And('Settings also does not say {string}', doesNotSay);
+    And('Settings has no text with {string}', hasNoText);
+    And('nothing was opened: no navigation, no window.open and no app address', openedNothing);
+  });
+
+  Scenario('Settings never says it is looking for an app or that it found one', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Settings and the phone is an Android phone', android);
     When('he turns the switch {string} On', turnsOn);
-    Then('no app was asked to open', () => expect(launched).toEqual([]));
-    And('the switch {string} is On', isSwitch('On'));
+    And('he also turns the switch {string} On', turnsOn);
+    Then('Settings has no text with {string}', hasNoText);
+    And('Settings has no text with {string} either', hasNoText);
   });
 
-  Scenario('Turning an app Off is not checked', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Settings and the phone is an Android phone with Accordance on', () => openSettings(ANDROID, ['accordance']));
-    When('he turns the switch {string} Off', turnsOn);
-    Then('no app was asked to open', () => expect(launched).toEqual([]));
-    And('the switch {string} is Off', isSwitch('Off'));
+  Scenario("Strong's needs no app, so it offers no Get link", ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Settings and the phone is an Android phone', android);
+    When('he turns the switch {string} On', turnsOn);
+    Then('the switch {string} is On', isSwitch('On'));
+    And('Settings has no link {string}', hasNoLink);
+    And('nothing was opened: no navigation, no window.open and no app address', openedNothing);
   });
 
   Scenario("The word sheet's Study lists only the resources that are On", ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Settings and the phone is an Android phone', android);
     When('he turns the switch {string} On', turnsOn);
-    And('the app takes the page away', leaves);
     And('he goes back to the reader', async () => {
       await user.click(screen.getByRole('button', { name: '‹ Reader' }));
       await screen.findByRole('heading', { name: 'Romans 8', level: 1 });

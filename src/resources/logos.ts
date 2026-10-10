@@ -73,7 +73,6 @@ export const logos: StudyResource = {
   id: 'logos',
   name: 'Logos',
   kind: 'app',
-  probe: 'logos4:Guide;t=Bible%20Word%20Study',
   describe: 'Adds Open in Logos for each lexicon you tick, and Bible Word Study in Logos.',
   choices: {
     label: 'Logos lexicons',

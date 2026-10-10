@@ -5,7 +5,7 @@
 // them, section by section, each with the control CONTROLS names for its key. The search field at the top filters that list (visibleRows),
 // and a row that depends on a setting that is off is not drawn.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { TEXT_SIZES } from './appearance/textSizes';
 import { THEMES, type Theme } from './appearance/themes';
 import {
@@ -59,7 +59,7 @@ import { DEFAULT_RATE, RATE_MAX, RATE_MIN, RATE_STEP } from './speech/languages'
 import { SearchableList } from './ui/SearchableList';
 import { tickedOf, type ResourceChoices, type StudyResource } from './resources';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from './resources/logosBible';
-import { checkApp } from './resources/openApp';
+import { storeUrl } from './resources/appStore';
 import { PRONUNCIATIONS, pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
 import { resourceOf } from './resources';
 import { READ_SPANS } from './speech/readSpan';
@@ -344,32 +344,15 @@ function ChoiceList({ resourceId, choices, ticked }: { resourceId: string; choic
   return <SearchableList label={choices.label} hint={choices.hint} noun="lexicon" items={choices.items} ticked={ticked} onToggle={toggle} />;
 }
 
-/** What the check of an app said when he last turned it On: still waiting for the phone, or the app opened. An app that is not there turns the switch back Off, and a switch that is Off shows nothing of the app. */
-type AppCheck = 'checking' | 'found' | null;
-
 /** One study resource: its switch (a 44 px row), what it adds, and the field it asks for, if any (kept as he types).
- *  Turning an app On opens it once (openApp.ts checkApp): if the page goes away the app is there and stays On; if not, the switch goes back Off.
- *  Only an On resource shows more than its row (mw-5r3p30.106): the check's line, its choices and its field. The typed field is kept in the store while hidden. */
+ *  A web page cannot see which native apps a phone has, so turning an app On only turns it On: nothing is opened or checked, and it stays On.
+ *  While an app is On its row says "Don't have <App>?" with Get <App> (appStore.ts storeUrl), so a missing app is never a dead end.
+ *  Only an On resource shows more than its row (mw-5r3p30.106): that line, its choices and its field. The typed field is kept in the store while hidden. */
 function ResourceRow({ row, resource, on, typed }: { row: SettingsRow; resource: StudyResource; on: boolean; typed: string }) {
   const [value, setValue] = useState(typed);
-  const [check, setCheck] = useState<AppCheck>(null);
-  const dropCheck = useRef<(() => void) | null>(null);
   const option = resource.option;
-  useEffect(() => () => dropCheck.current?.(), []);
   const flip = (): void => {
-    dropCheck.current?.();
-    dropCheck.current = null;
-    setCheck(null);
     void setResourceOn(resource.id, !on);
-    if (on || !resource.probe) return;
-    setCheck('checking');
-    dropCheck.current = checkApp(resource.probe, {
-      onBack: () => setCheck('found'),
-      onMissing: () => {
-        void setResourceOn(resource.id, false);
-        setCheck(null);
-      },
-    });
   };
   return (
     <SettingRow
@@ -378,11 +361,18 @@ function ResourceRow({ row, resource, on, typed }: { row: SettingsRow; resource:
       details={
         on ? (
           <>
-            {check === 'checking' ? (
-              <p role="status" className="pt-1 text-sm text-muted">{`Looking for ${resource.name} on this phone…`}</p>
-            ) : null}
-            {check === 'found' ? (
-              <p role="status" className="pt-1 text-base font-medium">{`${resource.name} found`}</p>
+            {resource.kind === 'app' ? (
+              <div className="flex min-h-12 items-center justify-between gap-3 pt-1">
+                <p className="text-base text-muted">{`Don't have ${resource.name}?`}</p>
+                <a
+                  href={storeUrl(resource.name)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-h-12 items-center rounded-lg border border-line px-4 text-base font-medium text-accent"
+                >
+                  {`Get ${resource.name}`}
+                </a>
+              </div>
             ) : null}
             {resource.choices ? <ChoiceList resourceId={resource.id} choices={resource.choices} ticked={tickedOf(resource, typed)} /> : null}
             {option ? (

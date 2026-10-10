@@ -67,9 +67,6 @@ export interface StudyResource {
   kind: 'number' | 'app';
   /** one line under the switch: what turning it on adds to the word sheet */
   describe: string;
-  /** for a resource of kind 'app': the app's own address that opens the app and nothing more; Settings opens it once when the resource is
-   *  turned On, to learn whether the app is on the phone (src/resources/openApp.ts checkApp) */
-  probe?: string;
   option?: ResourceOption;
   choices?: ResourceChoices;
   /** the links for `word`; `option` is `optionOf(resource, kept)`: the typed field, or the ticked ids joined by a comma */
