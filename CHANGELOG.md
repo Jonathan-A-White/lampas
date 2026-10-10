@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.21
+_2026-10-10_
+- Fixed: In the reading check, 'Me' now stops at the end of the flagged word instead of running on into the next words, and a word's comma stays with it.
+
 ## 0.1.20
 _2026-10-10_
 - Fixed: the Logos buttons for three dictionaries that have no entry for a name no longer open a wrong page for names such as Melchizedek.
