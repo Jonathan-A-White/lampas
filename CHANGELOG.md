@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.34
+_2026-10-10_
+- New: When the tutor is reading an answer, a tapped word or holding to talk now pauses him, and 'Resume' goes on from where he stopped, with 'Restart' and 'Stop' beside it.
+
 ## 0.1.32
 _2026-10-10_
 - Fixed: The gaps between words in the Reader are now an even single space instead of wide, uneven gaps.

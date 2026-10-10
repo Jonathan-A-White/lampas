@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.34",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.122",
+    "kind": "new",
+    "text": "When the tutor is reading an answer, a tapped word or holding to talk now pauses him, and 'Resume' goes on from where he stopped, with 'Restart' and 'Stop' beside it."
+  },
+  {
     "version": "0.1.32",
     "date": "2026-10-10",
     "story": "mw-5r3p30.127",
