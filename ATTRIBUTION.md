@@ -57,7 +57,7 @@ builds on, with a link to each, its licence and what we changed. Credit is owed 
   licence. Licence: none needed, it is a service used through its public API and no code or data is copied; its [terms](https://whatsonchain.com/terms) apply. Changes: none.
 - **[Postern](https://github.com/Jonathan-A-White/postern)** and its mill, by Jonathan A. White. Carries your questions to the tutor and
   its answers back. Licence: [MIT](https://github.com/Jonathan-A-White/postern/blob/main/LICENSE). Changes: none.
-- **[Claude](https://www.anthropic.com/claude)** by Anthropic. The model behind the tutor's answers, the reading check and the tips.
+- **[Claude](https://www.anthropic.com/claude)** by Anthropic. The model behind the tutor's answers, the reading check, the tips and the help with filling in a form.
   Licence: none needed, it is a service used through the mill; its [terms](https://www.anthropic.com/legal/consumer-terms) apply. Changes: none.
 - **[Logos Bible Software](https://www.logos.com)** and **[Accordance](https://www.accordancebible.com)**. Only if you switch them on in
   Settings: Lampas links to a word or a verse in the app you already own. No text, image or data is taken from either. Their own licences are yours.

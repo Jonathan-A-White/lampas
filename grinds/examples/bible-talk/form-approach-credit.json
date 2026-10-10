@@ -1,0 +1,27 @@
+{
+  "description": "He has said what the approach is: the tutor puts his words in the approach field, never sends, and asks the next question, who to credit, in one line.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Ask for another approach",
+    "question": "I want the cases taught with colours, one case at a time, like the Greek Colour Method.",
+    "history": [{ "q": "Help me fill this in.", "a": "What approach would you like to suggest, and how does it teach?" }],
+    "solid_words": [],
+    "settings": {},
+    "screen": { "name": "Ask for another approach", "facts": [] },
+    "form": {
+      "name": "Ask for another approach",
+      "fields": [
+        { "name": "approach", "label": "What approach, and how does it teach?", "required": true, "kind": "text", "value": "" },
+        { "name": "pictures", "label": "Add a screenshot or photo", "required": false, "kind": "pictures", "value": "" },
+        { "name": "credit", "label": "Who to credit", "hint": "Required: whoever made the approach or the pictures.", "required": true, "kind": "text", "value": "" },
+        { "name": "link", "label": "Link", "hint": "Optional: where the approach can be found.", "required": false, "kind": "link", "value": "" }
+      ]
+    }
+  },
+  "expect": {
+    "answer": { "matches": "^[^\\n]{10,200}\\?$" },
+    "form_values.0.field": { "equals": "approach" },
+    "form_values.0.value": { "matches": "[Cc]olou?r" },
+    "form_ask": { "equals": "credit" }
+  }
+}

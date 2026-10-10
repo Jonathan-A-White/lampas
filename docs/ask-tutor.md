@@ -72,6 +72,31 @@ one kept before this, shows the raw words. While the answer is on its way the ra
 Checks: `tests/unit/cleaned-question.test.ts`, `grinds/examples/*/cleaned-question.json`, and the scenarios "What he said is shown back cleaned up"
 in `features/bible-talk.feature` and "What he asked is shown above the answer cleaned up" in `features/tutor.feature`.
 
+## Let the tutor help me fill this in (mw-5r3p30.117)
+
+A form must never scare him off, so a form can offer a button at its top, `Let the tutor help me fill this in`. The first is Ask for another
+approach (Settings > Grammar approach). It opens a panel (region `The tutor is helping with this form`, above the form's fields) where the tutor
+asks ONE question at a time in plain words (`What approach would you like to suggest, and how does it teach?`), he answers in the panel's field and
+`Reply`, and the matching field of the form fills and is ringed and scrolled into view, so he sees it fill. When the tutor asks for a photo the panel
+offers `Choose a photo` (the form's own file picker, opened in that tap) and `No photo`; a photo he adds meanwhile is told to the tutor. When every
+required field holds something and the tutor has nothing more to ask, the panel says `Everything required is filled in` and the form scrolls to its
+top for him to read. The tutor never sends: Send is the form's and his. `Stop helping` closes the panel and leaves the form as it is.
+
+It is one reusable piece in `src/formHelper/`. A form describes itself as a `FormSpec` (`formHelper.ts`: name, and per field its `name`, `label`, `hint`,
+`required`, `kind` text | link | pictures, `maxLength`; the approach form is `approachForm.ts`) and adds the button with one element:
+`<FormHelper form={SPEC} values={{ field: 'what it holds now' }} onFill={(field, value) => ...} onPicker={(field) => ...} onReady={...} />`.
+
+The tutor is the `bible-talk` grind in a talk from a screen named for the form (`screen` {name, facts: []}, no verse text), so the mill needs no new
+kind. The request adds `form` {name, fields [{name, label, hint?, required, kind, value}]} (`buildFormRequest`; a value is cut at 600 characters); the
+answer adds `form_values` [{field, value}] (the whole new value of each field) and `form_ask` (the field the question is about, a pictures field when
+it asks for a photo; left out when there is nothing more to ask). `isTalkAnswer` believes both; `applyFormValues` fills only fields the form has,
+never a pictures field, trimmed and cut to the field's `maxLength`. The method is the grind's `## Helping him fill in a form`. The conversation is
+kept in the panel only (no table): closing the sheet ends it.
+
+Checks: `features/form-helper.feature`, `tests/unit/form-helper.test.ts`, `tests/unit/form-helper-grind.test.ts`, the scenarios
+`grinds/examples/bible-talk/form-approach-*.json`, and `tests/e2e/form-helper.spec.ts` (412 px; shots `form-helper-button`, `form-helper-filling`,
+`form-helper-finished`).
+
 ## Tests
 
 `features/ask-tutor.feature` (the control, the request, the questions, what is kept), `tests/unit/ask-tutor.test.ts`, the `screen` blocks of
