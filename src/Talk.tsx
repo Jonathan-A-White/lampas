@@ -9,7 +9,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Waiting } from './Ask';
 import { addLemmaToLearn, findGreekWord, glossOf } from './data/answerWord';
 import type { AnswerWord } from './data/db';
-import { addWordToLearn, keepStudyWayLine, listStudyWay, listTurns, markChangeUndone, markFeedbackSent, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
+import { addWordToLearn, keepStudyWayLine, deleteTurns, listStudyWay, listTurns, markChangeUndone, markFeedbackSent, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
 import { Markdown } from './markdown/Markdown';
 import { TutorLinks } from './TutorLinks';
 import { settingOf, undoChange, type AppliedChange } from './settings/registry';
@@ -333,8 +333,31 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
   );
 }
 
+/** Questions fitted to the screen, as buttons: a tap sends one. */
+function Suggestions({ questions, onAsk, label }: { questions: string[]; onAsk: (question: string) => void; label?: string }) {
+  return (
+    <div className="space-y-2">
+      {label ? <p className="text-sm font-medium text-muted">{label}</p> : null}
+      <ul data-suggestions aria-label="Suggested questions" className="space-y-2">
+        {questions.map((question) => (
+          <li key={question}>
+            <button
+              type="button"
+              data-suggestion
+              onClick={() => onAsk(question)}
+              className="min-h-12 w-full rounded-xl border border-accent px-4 py-2 text-left text-lg text-accent active:bg-line"
+            >
+              {question}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 /** The sheet: the conversation `scope` names, the field, Send, and what the last message is doing. */
-export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSay, onHelp, onAskTerm, onClose }: {
+export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, suggestions, onSay, onHelp, onAskTerm, onClose }: {
   scope: TalkScope;
   /** the key the conversation is kept under (src/data/repositories/talks.ts talkRef) */
   talkRef: string;
@@ -355,6 +378,9 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
   const titleId = useId();
   const turns = useLiveQuery(() => listTurns(ref), [ref]);
   const [text, setText] = useState('');
+  // A failure he cleared with New talk is not shown again (the state itself belongs to useTalk).
+  const [cleared, setCleared] = useState<AskState | undefined>(undefined);
+  const state = liveState === cleared ? undefined : liveState;
   const [lookup, setLookup] = useState<Lookup | null>(null);
   const closeWord = useCallback(() => setLookup(null), []);
   const { drag, handle } = useSheetDrag(onClose);
@@ -362,6 +388,9 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
   useEscapeToClose(onClose, lookup === null);
   useSheetBack(onClose);
   const busy = state?.phase === 'sending' || state?.phase === 'waiting';
+  // Once there is a talk the suggestions he has not used are still offered, under the last answer (or the failure of the first question).
+  const asked = new Set([...(turns ?? []).map((t) => t.q), ...(state ? [state.question] : [])]);
+  const more = (suggestions ?? []).filter((q) => !asked.has(q));
   const list = useRef<HTMLDivElement>(null);
   // The newest turn is kept in view by moving this box and nothing else.
   const turnCount = turns?.length ?? 0;
@@ -431,6 +460,19 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
               <h2 id={titleId} className="min-w-0 flex-1 truncate text-xl font-semibold">
                 {title}
               </h2>
+              {turnCount > 0 && !busy ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    stopAnswer();
+                    setCleared(liveState);
+                    void deleteTurns(ref);
+                  }}
+                  className="min-h-11 shrink-0 rounded-lg px-3 text-base font-medium text-accent"
+                >
+                  New talk
+                </button>
+              ) : null}
               <button
                 type="button"
                 ref={focusOnMount}
@@ -447,22 +489,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
                 {scope.quiz ? 'Nothing said yet. Say “Quiz me” to begin.' : scope.screen ? 'Nothing said yet. Ask about this screen or about where you are.' : 'Nothing said yet. Ask about a word, a verse or what is on your mind.'}
               </p>
             ) : null}
-            {turns?.length === 0 && !state && suggestions?.length ? (
-              <ul data-suggestions aria-label="Suggested questions" className="space-y-2">
-                {suggestions.map((question) => (
-                  <li key={question}>
-                    <button
-                      type="button"
-                      data-suggestion
-                      onClick={() => send(question)}
-                      className="min-h-12 w-full rounded-xl border border-accent px-4 py-2 text-left text-lg text-accent active:bg-line"
-                    >
-                      {question}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
+            {turns?.length === 0 && !state && suggestions?.length ? <Suggestions questions={suggestions} onAsk={send} /> : null}
             <HebrewAskContext.Provider value={hebrew}>
               {turns?.map((turn) => (
                 <Turn key={turn.id} turn={turn} scope={scope} onLook={setLookup} onLeave={onClose} />
@@ -491,6 +518,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
                 )}
               </div>
             ) : null}
+            {turns && !busy && (turns.length > 0 || state) && more.length > 0 ? <Suggestions questions={more} onAsk={send} label="Ask something else" /> : null}
           </div>
           <BarSlot level={3} />
           <div className="shrink-0 space-y-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+var(--lp-bar-inset))]">

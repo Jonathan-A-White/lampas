@@ -91,3 +91,12 @@ export async function markFeedbackSent(turnId: number): Promise<void> {
 export function listTurns(ref: string): Promise<TalkTurn[]> {
   return db.talks.where('[ref+when]').between([ref, -Infinity], [ref, Infinity]).toArray();
 }
+
+/** Forgets one conversation (New talk): its turns and the pictures kept with them. */
+export async function deleteTurns(ref: string): Promise<void> {
+  await db.transaction('rw', db.talks, db.talkPictures, async () => {
+    const ids = (await db.talks.where('[ref+when]').between([ref, -Infinity], [ref, Infinity]).primaryKeys()) as number[];
+    await db.talkPictures.where('turnId').anyOf(ids).delete();
+    await db.talks.bulkDelete(ids);
+  });
+}
