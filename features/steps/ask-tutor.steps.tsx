@@ -89,6 +89,18 @@ async function send(question: string): Promise<void> {
 }
 const turns = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn]'));
 const suggestions = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-suggestion]'));
+const ABOUT_SUGGESTIONS = ['Why do you credit all these?', 'What does each of these do for Lampas?', 'What does STEPBible give me?'];
+const tapsSuggestion = async (question: string) => {
+  await user.click(suggestions().find((s) => s.textContent === question)!);
+};
+const answerArrived = async (n: number) => {
+  await waitFor(() => expect(turns()).toHaveLength(n));
+};
+const canBeTapped = async (question: string) => {
+  const found = suggestions().find((s) => s.textContent === question);
+  expect(found, question).toBeDefined();
+  expect(found).toBeEnabled();
+};
 const closeSheet = async () => {
   await user.click(within(sheet()).getByRole('button', { name: 'Done' }));
   await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
@@ -249,8 +261,8 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
       expect(within(turns()[0]).getByText(SIMPLEST)).toBeInTheDocument();
       expect(turns()[0]).toHaveTextContent(TALK_ANSWER.answer);
     });
-    And('the suggested questions are gone', () => {
-      expect(suggestions()).toHaveLength(0);
+    And('the empty state is gone', () => {
+      expect(sheet().querySelector('[data-talk-empty]')).toBeNull();
     });
   });
 
@@ -289,6 +301,76 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     });
     And('the grist carries only fields the input schema allows', () => {
       expect(validate(sent(0), inputSchema)).toEqual([]);
+    });
+  });
+
+  Scenario('After the first question the other suggestions are still there and a tap sends one', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on #/about with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/about', goal));
+    When('he taps the Ask the tutor control', taps);
+    And('he taps the suggested question {string}', (_, question: string) => tapsSuggestion(question));
+    And('the answer number {int} has arrived', (_, n: number) => answerArrived(n));
+    Then('the suggested question {string} can still be tapped', (_, question: string) => canBeTapped(question));
+    And('the suggested question {string} is not offered again', async (_, question: string) => {
+      expect(suggestions().map((s) => s.textContent)).not.toContain(question);
+    });
+    When('he taps the suggested question {string}', (_, question: string) => tapsSuggestion(question));
+    Then('the mill received {int} grists for the lampas app, kind bible-talk', async (_, count: number) => {
+      await waitFor(() => expect(fake.received).toHaveLength(count));
+    });
+    And('the second grist carries the question {string}', (_, question: string) => {
+      expect(sent(1).question).toBe(question);
+    });
+  });
+
+  Scenario('New talk clears the kept talk and brings back the empty state with all three suggestions, also after a reload', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on #/about with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/about', goal));
+    When('he taps the Ask the tutor control', taps);
+    And('he taps the suggested question {string}', (_, question: string) => tapsSuggestion(question));
+    And('the answer number {int} has arrived', (_, n: number) => answerArrived(n));
+    And('he taps New talk', async () => {
+      await user.click(within(sheet()).getByRole('button', { name: 'New talk' }));
+    });
+    Then('the sheet shows the empty state with all three suggestions and no earlier turn', async () => {
+      await waitFor(() => expect(turns()).toHaveLength(0));
+      expect(sheet().querySelector('[data-talk-empty]')).not.toBeNull();
+      expect(suggestions().map((s) => s.textContent)).toEqual(ABOUT_SUGGESTIONS);
+      expect(within(sheet()).queryByRole('button', { name: 'New talk' })).toBeNull();
+    });
+    When('Lampas is reloaded on #/about', async () => {
+      cleanup();
+      stopReading();
+      clearBus();
+      window.history.replaceState(null, '', '/#/about');
+      render(<App />);
+    });
+    And('he taps the Ask the tutor control after the reload', taps);
+    Then('after the reload the sheet shows the empty state with all three suggestions and no earlier turn', async () => {
+      await screen.findByRole('dialog', { name: 'Ask the tutor: About' });
+      await waitFor(() => expect(sheet().querySelector('[data-talk-empty]')).not.toBeNull());
+      expect(turns()).toHaveLength(0);
+      expect(suggestions().map((s) => s.textContent)).toEqual(ABOUT_SUGGESTIONS);
+    });
+  });
+
+  Scenario('A first question that fails offline still leaves the other suggestions reachable', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on #/about with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/about', goal));
+    When('he taps the Ask the tutor control', taps);
+    And('the mill goes down', () => {
+      fake.down = true;
+    });
+    And('he taps the suggested question {string}', (_, question: string) => tapsSuggestion(question));
+    Then('the sheet says {string} with a Retry button', async (_, title: string) => {
+      expect(await within(sheet()).findByText(title)).toBeInTheDocument();
+      expect(within(sheet()).getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+    });
+    And('the suggested question {string} can still be tapped', (_, question: string) => canBeTapped(question));
+    When('the mill is back and he taps the suggested question {string}', async (_, question: string) => {
+      fake.down = false;
+      await tapsSuggestion(question);
+    });
+    Then('the answer shows under his question {string}', async (_, question: string) => {
+      await waitFor(() => expect(turns()).toHaveLength(1));
+      expect(within(turns()[0]).getByText(question)).toBeInTheDocument();
     });
   });
 

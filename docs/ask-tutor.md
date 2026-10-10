@@ -48,6 +48,9 @@ A New Testament verse the tutor names in an answer ('Hebrews 7:2') is a link to 
 `suggestionsFor(name)` (`src/tutor/screen.ts`): two or three per screen, shown by the sheet as buttons while the talk has no turn and nothing is
 on its way (`TalkSheet`'s `suggestions`, `[data-suggestion]`); a tap sends one. Goal's first is the Governor's own: "What's the simplest verse in the
 New Testament for me to learn first, given where I am?" The Reader's chapter talk has `READER_SUGGESTIONS`.
+Once the talk has a turn (or the first question failed) the ones not yet asked stay under the last answer, headed 'Ask something else'
+(mw-vtjxh4.43). 'New talk' in the sheet's header (shown with a turn and nothing in flight) forgets the kept talk (`deleteTurns`, with its
+pictures) and brings the empty state with all of them back, also after a reload.
 
 ## Kept
 
