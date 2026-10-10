@@ -14,10 +14,38 @@
     "text": "The placement test now checks your letters, letter pairs and breathing marks one by one, says which ones you still need, and Review asks them first."
   },
   {
-    "version": "0.1.7",
-    "date": "2026-10-09",
+    "version": "0.1.12",
+    "date": "2026-10-10",
     "story": "mw-s061bg.4",
     "kind": "new",
     "text": "What's new in the app"
+  },
+  {
+    "version": "0.1.11",
+    "date": "2026-10-09",
+    "story": "mw-hqd5bz.17",
+    "kind": "new",
+    "text": "Lampas now works out which Greek letters, sounds and marks you know from the words you read right, so the Goal screen names only the letters you still need instead of the whole alphabet."
+  },
+  {
+    "version": "0.1.10",
+    "date": "2026-10-09",
+    "story": "mw-5r3p30.86",
+    "kind": "fixed",
+    "text": "The Due strip's checks no longer fail when the computer is busy."
+  },
+  {
+    "version": "0.1.9",
+    "date": "2026-10-09",
+    "story": "mw-5r3p30.131",
+    "kind": "fixed",
+    "text": "Every Logos link on the word sheet now opens the right entry."
+  },
+  {
+    "version": "0.1.8",
+    "date": "2026-10-09",
+    "story": "mw-it6qk5.3",
+    "kind": "new",
+    "text": "The app's tests now use more realistic stand-ins for speech and the microphone."
   }
 ]
