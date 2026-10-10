@@ -104,6 +104,40 @@ async function openReadingCheck(): Promise<void> {
 }
 
 const panel = () => screen.getByRole('region', { name: 'Reading check' });
+
+/** The true position of the clip when pause() came under the coarse clock: what he heard up to; and what the element's clock showed then. */
+let heardTo = -1;
+let shownAtPause = -1;
+let coarseTimer: ReturnType<typeof setTimeout> | undefined;
+/** A phone's audio element (mw-5r3p30.139): the sound plays in real time, but currentTime moves only when a timeupdate comes, every `step`
+ * seconds, the first `first` seconds in; 'playing' comes as the sound starts, with currentTime right at that moment, as the element has it.
+ * pause() keeps where the sound was. */
+function coarseClock(step: number, first: number): void {
+  let position = () => 0;
+  vi.spyOn(HTMLMediaElement.prototype, 'play').mockImplementation(function (this: HTMLMediaElement) {
+    played.push(this);
+    const from = this.currentTime;
+    const playedAt = performance.now();
+    position = () => from + (performance.now() - playedAt) / 1000;
+    setTimeout(() => {
+      this.currentTime = position();
+      this.dispatchEvent(new Event('playing'));
+    }, 0);
+    const update = () => {
+      this.currentTime = position();
+      this.dispatchEvent(new Event('timeupdate'));
+      coarseTimer = setTimeout(update, step * 1000);
+    };
+    coarseTimer = setTimeout(update, first * 1000);
+    return Promise.resolve();
+  });
+  vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(function (this: HTMLMediaElement) {
+    heardTo = position();
+    shownAtPause = this.currentTime;
+    clearTimeout(coarseTimer);
+    paused.push(this);
+  });
+}
 const audio = () => panel().querySelector<HTMLAudioElement>('audio[data-my-reading]');
 
 async function readVerse28(): Promise<void> {
@@ -331,6 +365,24 @@ describeFeature(feature, ({ Scenario }) => {
       element.currentTime = at;
     });
     Then('the audio element is paused and the button beside {string} says {string}', (ctx, word: string) => stoppedAgain(ctx, word));
+  });
+
+  Scenario("Me stops at the word's end on a phone that moves the clip's clock only at its timeupdate events", ({ Given, When, Then, And }) => {
+    Given(timedGiven, timedStart);
+    And("the phone moves the clip's clock only at its timeupdate events, {number} seconds apart, the first {number} seconds in", (_, step: number, first: number) => coarseClock(step, first));
+    When('he taps {string} beside {string}', tapBeside);
+    Then("the clip is paused once the word has ended at {number} seconds, ahead of the phone's clock, and the button beside {string} says {string}", async (_, at: number, word: string, text: string) => {
+      // a plain wait: polling the DOM by role would block the loop, and the player's timer with it, for tenths of a second at a time
+      const began = performance.now();
+      while (paused.length === 0 && performance.now() - began < 3000) await new Promise((resolve) => setTimeout(resolve, 10));
+      expect(paused).toContain(audio());
+      // the whole word was heard, and the stop did not wait for the phone's clock to reach the end (which would be a quarter second late);
+      // how close to the end it stops is tests/unit/clip-player.test.ts's claim, on fake timers
+      expect(heardTo).toBeGreaterThanOrEqual(at - 0.01);
+      expect(shownAtPause).toBeLessThan(at);
+      expect(heardTo).toBeLessThan(at + 0.5);
+      expect(meButton(word, text)).not.toBeNull();
+    });
   });
 
   Scenario('Me can be stopped before the word ends', ({ Given, When, Then, And }) => {
