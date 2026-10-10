@@ -16,6 +16,7 @@ import type { Route } from './nav/route';
 import { useSheetOpen } from './ui/sheetBack';
 import { useTalk } from './useTalk';
 import { useVoice } from './useVoice';
+import { takeWaitingPictures } from './talk/outbox';
 
 /** The button's name for a screen reader and the tests; it starts with the words on the control. */
 export const ASK_TUTOR_LABEL = 'Ask the tutor about this screen';
@@ -81,7 +82,7 @@ export function AskTutor({ route }: { route: Route }) {
   useEffect(() => {
     openRef.current = open ? ref : null;
     sayAbout.current = (message) => {
-      if (scope) say(scope, message);
+      if (scope) say(scope, message, undefined, takeWaitingPictures());
     };
   });
   const close = useCallback(() => {
@@ -106,7 +107,7 @@ export function AskTutor({ route }: { route: Route }) {
           state={states[ref]}
           voice={voice}
           suggestions={suggestionsFor(name)}
-          onSay={(message, focus) => say(scope, message, focus)}
+          onSay={(message, focus, pictures) => say(scope, message, focus, pictures)}
           onHelp={() => {}}
           onAskTerm={() => {}}
           onClose={close}

@@ -18,6 +18,11 @@ import { HebrewSoundGuide } from './script/HebrewGuide';
 import { HebrewAskContext } from './script/hebrewSpeech';
 import { buildTutorAskRequest, submitFeedback } from './services/feedback';
 import { FAILURE_TITLES, TutorError, type TutorFailure } from './services/tutor';
+import { registerOutbox } from './talk/outbox';
+import { pastedPictures, PICTURE_ONLY_QUESTION, type OutgoingPicture } from './talk/pictures';
+import { PictureControls } from './talk/PictureControls';
+import { PictureThumbs, TurnPictures } from './talk/TurnPictures';
+import { usePictureBox, type BoxPicture } from './talk/usePictureBox';
 import { startAnswer, stopAnswer, useReading } from './speech/readAloud';
 import { stopOnTap } from './speech/tutorVoice';
 import { Icon } from './speech/ReadControls';
@@ -258,6 +263,7 @@ function FeedbackOffer({ turn, scope }: { turn: TalkTurn; scope: TalkScope }) {
 function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkScope; onLook: (lookup: Lookup) => void; onLeave: () => void }) {
   return (
     <article data-turn className="space-y-2">
+      <TurnPictures turnId={turn.id} />
       <p data-talk-q className="ml-auto w-fit max-w-[88%] break-words rounded-2xl bg-accent/15 px-3 py-2 text-lg">
         {turn.cleanQ ?? turn.q}
       </p>
@@ -338,7 +344,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
   voice: Voice;
   /** questions fitted to where he asks from (src/tutor/screen.ts): shown as buttons while nothing has been said, a tap sends one */
   suggestions?: string[];
-  onSay: (message: string, focus?: TalkFocus) => void;
+  onSay: (message: string, focus?: TalkFocus, pictures?: OutgoingPicture[]) => void;
   /** a word of an answer was opened and he asked for Grammar or Sound it out on it */
   onHelp: (help: WordHelp) => void;
   /** a word of an answer was opened, a grammar word of its Parsing too, and he asked the tutor about it */
@@ -371,9 +377,22 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
     if (voice.typing > 0) focusQuietly(field.current);
   }, [voice.typing]);
 
+  // The pictures waiting to go (attached, taken or pasted) and, from Send until the answer, the ones in flight, shown under his question.
+  const box = usePictureBox();
+  const [inFlight, setInFlight] = useState<BoxPicture[]>([]);
+  const { take } = box;
+  const takeWaiting = useCallback((): OutgoingPicture[] => {
+    const taken = take();
+    if (taken.length > 0) setInFlight(taken);
+    return taken;
+  }, [take]);
+  // The words he holds to say go with the pictures he has put in (src/talk/outbox.ts).
+  useEffect(() => registerOutbox(takeWaiting), [takeWaiting]);
+  const hasPictures = box.pictures.length > 0;
   const send = (message: string): void => {
-    if (!message.trim() || busy) return;
-    onSay(message);
+    if ((!message.trim() && !hasPictures) || busy || box.working) return;
+    // a message of pictures alone asks what the pictures say
+    onSay(message.trim() || PICTURE_ONLY_QUESTION, undefined, takeWaiting());
     setText('');
   };
   // A Hebrew word of an answer, in its guide, asks how it is said: a sound question with the word as its focus (mw-5r3p30.98).
@@ -398,6 +417,13 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
           aria-labelledby={titleId}
           style={{ transform: drag ? `translateY(${drag}px)` : undefined }}
           className="relative flex h-[85dvh] flex-col rounded-t-2xl border-t border-line bg-surface"
+          onPaste={(e) => {
+            // a copied screenshot becomes an attachment; copied text pastes as it always did
+            const pasted = pastedPictures(e);
+            if (pasted.length === 0) return;
+            e.preventDefault();
+            box.add(pasted);
+          }}
         >
           <div data-testid="sheet-handle" {...handle} className="relative flex shrink-0 touch-none flex-col items-center px-4 pt-2">
             <span aria-hidden="true" className="h-1.5 w-10 rounded-full bg-line" />
@@ -444,6 +470,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
             </HebrewAskContext.Provider>
             {state ? (
               <div data-talk-pending className="space-y-2">
+                {inFlight.length > 0 ? <PictureThumbs pictures={inFlight.map((p) => ({ key: p.id, url: p.url }))} /> : null}
                 <PendingQuestion text={state.question} />
                 {state.phase === 'failed' ? (
                   <div role="alert" className="space-y-2">
@@ -478,6 +505,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
                 {voice.notice.message}
               </p>
             ) : null}
+            <PictureControls box={box} disabled={busy} />
             <div className="flex items-end gap-2">
               <textarea
                 ref={field}
@@ -491,7 +519,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
               />
               <button
                 type="button"
-                disabled={busy || !text.trim()}
+                disabled={busy || box.working || (!text.trim() && !hasPictures)}
                 onClick={() => send(text)}
                 className="min-h-12 shrink-0 rounded-xl bg-accent px-5 text-lg font-medium text-accent-fg disabled:opacity-40"
               >
