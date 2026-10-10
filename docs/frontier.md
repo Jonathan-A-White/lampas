@@ -63,7 +63,7 @@ word is not a name.
 
 ## The teach sheet (mw-bsf54t.4)
 
-The Reader shows the frontier as a strip under its header, `New words: N` (`src/NewWordsStrip.tsx`, like `Due: N`; not drawn at 0).
+The Reader shows the frontier as a chip in the row under its header, `New N` (`src/NewWordsStrip.tsx`, accessible name `New words: N`, beside `Due N`; not drawn at 0).
 `N` is the number of candidates `pickFrontier` gives for the open chapter without the words he said Not now to today, at most
 the pace (see 'The pace' below). `src/useNewWords.ts` is the one hook.
 
