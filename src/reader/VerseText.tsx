@@ -6,7 +6,6 @@ import type { Woven } from '../data/weave';
 import { publish } from '../events/bus';
 import { useHoldPress } from '../ui/holdPress';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
-import { pauseReading } from '../speech/readAloud';
 import { speakWord } from '../speech/greek';
 import type { SpeechLanguage } from '../speech/languages';
 import type { Lookup } from '../WordSheet';
@@ -122,9 +121,8 @@ export function VerseText({ verse, view, woven, onLook }: Pick<VerseProps, 'vers
     onLook({ words: [w], english: w.e === undefined ? undefined : verse.e[w.e]?.t, fromEnglish: false });
   const lookEnglish = (c: EnglishChunk) => onLook({ words: c.g.map((i) => verse.g[i]), english: c.t, fromEnglish: true });
   // A long press says the word alone, in its own language, straight from the press (docs/pwa-best-practices.md section 12).
-  // A reading under way is paused first: it would have the speech taken from it anyway.
+  // A reading under way is paused by the word (speech/greek.ts speakBeside): a Listen goes on by itself when the word is over.
   const say = (text: string, language: SpeechLanguage) => {
-    pauseReading();
     if (speakWord(text, language)) publish({ kind: 'word-spoken', text, language, verse: verse.n });
   };
   return (

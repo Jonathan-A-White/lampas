@@ -20,8 +20,8 @@ async function checkView(page: Page, view: 'greek' | 'english', name: string): P
   expect(((await verse.textContent()) ?? '').length).toBeGreaterThan(30);
   // big: set larger than the Reader's own line
   expect(await verse.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThan(lineSize);
-  // the heading, the verse and the one hold bar are on the screen at once
-  const bar = await screen.locator('[data-hold-bar]').boundingBox();
+  // the heading, the verse and the foot's one control (Listen's Play button) are on the screen at once
+  const bar = await screen.locator('[data-verse-bar] button').boundingBox();
   const head = await screen.getByRole('heading', { name: 'Romans 8:22' }).boundingBox();
   if (!bar || !head) throw new Error('the Verse view is not on the page');
   expect(head.y).toBeGreaterThanOrEqual(0);
@@ -31,10 +31,10 @@ async function checkView(page: Page, view: 'greek' | 'english', name: string): P
   await shot(page, name);
 }
 
-test('the Greek view of the Verse view on verse 22 shows Romans 8:22 big, with its hold bar, at 360 px', async ({ page }) => {
+test('the Greek view of the Verse view on verse 22 shows Romans 8:22 big, with its Play button, at 360 px', async ({ page }) => {
   await checkView(page, 'greek', 'verse-sheet-greek');
 });
 
-test('the English view of the Verse view on verse 22 shows Romans 8:22 big, with its hold bar, at 360 px', async ({ page }) => {
+test('the English view of the Verse view on verse 22 shows Romans 8:22 big, with its Play button, at 360 px', async ({ page }) => {
   await checkView(page, 'english', 'verse-sheet-english');
 });

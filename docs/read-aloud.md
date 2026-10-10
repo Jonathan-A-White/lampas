@@ -2,7 +2,7 @@
 
 Settings > Read aloud has one choice, the **Read aloud span** (registry key `readSpan`, `src/speech/readSpan.ts`; default
 **Chapter**, PROVISIONAL until the Governor confirms). It says how far the header's *Read from the top* / *Read from here*
-goes before the voice stops. It starts at the verse he starts from (the header's Play: verse 1; the Verse view's Listen: its verse, held, and it stops at that verse's end even if still held, mw-5r3p30.79, .92).
+goes before the voice stops. It starts at the verse he starts from (the header's Play: verse 1; the Verse view's Listen: its verse, by a tap on Play, and it stops at that verse's end, mw-5r3p30.79, .92, .130).
 
 | Span | The voice stops |
 | --- | --- |
@@ -42,11 +42,14 @@ Postern's and SpellForge's; its colours are Lampas's (`--bk-speech-*` in `src/in
 
 - A verse is ONE speech under the key `read-aloud` (`greek.ts` READ_KEY): `readAloud.ts` joins its runs with a line break (a run is one language, so the package
   cuts a sentence at the end of every run too and tells the Greek from the English by its letters) and goes on to the next verse when the speech ends. It follows
-  the package: a Pause, Resume or Stop made on the bar moves the reading's state (`syncWithEngine`). `Listen` still stops at the verse end (`span` 'verse').
+  the package: a Pause, Resume or Stop made on the bar moves the reading's state (`syncWithEngine`). `Listen` on a verse stops at the verse end (`span` 'verse'), on a passage at the passage's end.
 - Where the bar is drawn (`src/speech/SpeakingBarSlot.tsx`): a screen with a bottom edge leaves a `<BarSlot level>` and the one bar is drawn into the highest on screen:
   the foot of the shell (0, every screen but the Reader), the Reader above its Talk bar (1), the Verse view above its hold bar (2), the Talk sheet above its foot (3).
   It is in flow, never over text, and the round *Ask the tutor* button rides above it. The header's own Pause / Stop are gone while the bar holds the reading.
 - A word said alone (a long press, a speaker, Hold to hear) is not a reading and has no bar (`isWordSpeech`).
+- **Listen is a Listen** (mw-5r3p30.130, `docs/verse-view.md` 'Listen is a player'): a reading started with `listen: <key>` is paused by an in-app interruption and goes on by itself when it ends
+  (`readAloud.ts` `interruptListen`; a word beside it, a Hold to ask, a recording, a tutor's answer); the speaking bar's Restart on it goes back to the first verse (`restartListen`); one that ran
+  to its end by itself is remembered (`useListenCompleted`) so the Verse view's foot says Play again.
 - **An interruption pauses, it does not end (mw-5r3p30.122).** A word, speaker or Hold to hear that speaks while a reading or a tutor's answer is under way (playing or
   paused) pauses it where it is (the package keeps the sentence, `greek.ts` `speakBeside`) and is said BESIDE it, straight to the phone's synthesiser: the bar stays,
   showing Resume, Restart and Stop, and Resume goes on from the sentence the answer was in (not from the start, not from the next). This covers the tapped Greek or Hebrew

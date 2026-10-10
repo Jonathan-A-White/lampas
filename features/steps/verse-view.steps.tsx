@@ -86,6 +86,7 @@ const queryView = () => screen.queryByRole('region', { name: 'Verse view' });
 const readerLine = (n: number): HTMLElement => document.querySelector<HTMLElement>(`[data-verse="${n}"] [data-text]`) as HTMLElement;
 const verseOfView = () => viewEl().querySelector<HTMLElement>('[data-sheet-verse]') as HTMLElement;
 const bars = () => Array.from(document.querySelectorAll<HTMLElement>('[data-hold-bar]'));
+const foot = (): HTMLElement => viewEl().querySelector<HTMLElement>('[data-verse-bar]') as HTMLElement;
 const bar = () => {
   expect(bars()).toHaveLength(1);
   return bars()[0];
@@ -179,7 +180,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('One row of actions and exactly one hold bar, and no Talk bar', ({ Given, When, Then, And }) => {
+  Scenario('One row of actions and exactly one control at the foot, and no Talk bar', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
     When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
     Then('the row of actions is {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => {
@@ -189,46 +190,32 @@ describeFeature(feature, ({ Scenario }) => {
         .map((button) => button.textContent);
       expect(names).toEqual([a, b, c, d, e]);
     });
-    And('exactly one hold bar is on screen', oneBar);
+    And('exactly one control sits at the foot, the Play button of Listen, and there is no hold bar', () => {
+      expect(bars()).toHaveLength(0);
+      expect(within(foot()).getAllByRole('button')).toHaveLength(1);
+      expect(within(foot()).getByRole('button')).toHaveTextContent('Play verse 11');
+    });
     And("the Reader's Talk bar is not on screen", () => {
       expect(document.querySelector('[data-talk-bar]')).toBeNull();
     });
   });
 
-  Scenario('Listen: the bar says Hold to listen and the verse is read aloud while it is held', ({ Given, When, Then, And }) => {
+  Scenario('Listen: Play reads the verse aloud to its end by itself', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string} and a phone that speaks', (_, weave: string) => open(weaveOf(weave), { speaks: true }));
     When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
     And('he chooses {string}', choose);
-    Then('the hold bar is labelled {string}', labelled);
-    When('he holds the hold bar', async () => {
-      await user.pointer({ keys: '[MouseLeft>]', target: bar(), coords: AT });
+    Then('the Play button says {string}', (_, label: string) => {
+      expect(within(foot()).getByRole('button', { name: label, exact: true })).toHaveTextContent(label);
+    });
+    When('he taps the Play button', async () => {
+      await user.click(within(foot()).getByRole('button'));
     });
     Then('the phone is reading verse 11 aloud', async () => {
       await waitFor(() => expect(getReading().status).toBe('reading'));
       expect(getReading().verse).toBe(11);
       expect(synth?.spoken.length).toBeGreaterThan(0);
     });
-    When('he lets go of the hold bar', async () => {
-      await user.pointer({ keys: '[/MouseLeft]', target: bar(), coords: AT });
-    });
-    Then('the phone has stopped reading', async () => {
-      await waitFor(() => expect(getReading().status).toBe('idle'));
-      expect(synth?.calls[synth.calls.length - 1]).toBe('cancel');
-    });
-  });
-
-  Scenario('Listen stops at the end of the verse even while the bar is still held', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Romans 8 in the English view with the weave {string} and a phone that speaks', (_, weave: string) => open(weaveOf(weave), { speaks: true }));
-    When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
-    And('he chooses {string}', choose);
-    And('he holds the hold bar', async () => {
-      await user.pointer({ keys: '[MouseLeft>]', target: bar(), coords: AT });
-    });
-    Then('the phone is reading verse 11 aloud', async () => {
-      await waitFor(() => expect(getReading().status).toBe('reading'));
-      expect(getReading().verse).toBe(11);
-    });
-    When('a minute goes by with the bar still held', () => {
+    When('a minute goes by', () => {
       act(() => synth?.advance(60_000));
     });
     Then('the phone has stopped reading', async () => {

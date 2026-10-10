@@ -8,14 +8,14 @@ verse?" His answer: a Verse view. Tapping a verse number opens the verse on a fu
 And if the Spirit of Him who ...              the verse, big, woven as the Reader weaves it (words tappable)
 [Listen] [Read it aloud] [Ask the tutor] [Quiz me] [Copy link]     one row; the chosen one is filled
   what the action shows                       Listen: a line; Read it aloud: the reading check; Ask the tutor: answers, the Ask box
-[ Hold to listen to verse 11 ]                ONE hold bar, Postern's, at the foot: what a hold does is the chosen action
+[ Play verse 11 ]                             ONE control at the foot: Listen's Play button, or the hold bar (Postern's) of the other actions
 ```
 
 The row is one line while each label has room for two lines of its own (a container query in rem, so a larger text size wraps sooner); narrower, it is three buttons to a row over two rows. A phone with Share draws a sixth button and wraps sooner. No label is ever past two lines and every button is at least 44 px (tests/e2e/verse-actions.spec.ts at 360 and 412 px).
 
 | Action | What it shows | The bar | A hold does |
 | --- | --- | --- | --- |
-| Listen | one line of help | `Hold to listen to verse 11` | the app reads this verse aloud and stops at its end, held or not (the Read aloud span does not apply); letting go stops it at once |
+| Listen | one line of help: `Tap Play to hear verse 11.` | the button `Play verse 11` (not a hold; `Play again` after it ran to its end) | a tap reads this verse aloud and it stops at its end by itself (the Read aloud span does not apply); see *Listen is a player* below |
 | Read it aloud | the reading check (`ReadCheckPanel`, region 'Reading check'): status, the result with its words to fix, the walk | `Hold to read verse 11`, then `Hold to read the whole verse again` at the end of the walk, `Release to send` while held | records him, sends the verse-read grist on release |
 | Ask the tutor | the kept answers (Markdown), the typed Ask box, `Talk about verse 11` (the Bible talk sheet) | `Hold to ask` | hold-to-talk: his words fill the Ask box's field as he speaks (`Listening…` until the first word; the field is scrolled into view above the bar), and on release go to the tutor about this verse exactly as a typed question; his question then stays shown as his message above `Waiting for the tutor…` until the answer card arrives (`ui/PendingQuestion`, the Talk sheet's look); a failed send puts the question back in the field |
 | Quiz me | one line of help | the button `Start the quiz` (`Continue the quiz` once the quiz has a turn), the size and place of the bar but not a hold | opens the Talk sheet in quiz mode, `Quiz on Romans 8:11` or `Quiz on Romans 8:1-11`, and on the first press sends `Quiz me on Romans 8:1-11.` (see *Quiz me* below) |
@@ -32,6 +32,26 @@ The row is one line while each label has room for two lines of its own (a contai
   `Talk about verse N` under Ask the tutor, and a long press on a verse number still talks about it.
 * The view is under the sheets (z-5): the word sheet, the Grammar sheet and the Talk sheet open over it.
 
+## Listen is a player (mw-5r3p30.130)
+
+The Governor, Postern general (2026-10-09): holding a bar to listen to a long passage "doesn't feel right"; push to talk is fine, push to listen is not. Listen is
+now a tap-to-play player; the hold bars stay for talking (Read it aloud, Ask the tutor), and a long press on a word still says that word.
+
+* **Play** is a button at the foot the size and place of the hold bars (`Play verses 1-11`, `Play verse 11`). A tap starts the reading (`Reader.tsx` `listenTo` /
+  `listenVerse`, `startReading` with `listen: listenKeyOf(book, chapter, unitId)`); it runs on to the end of the verse or passage by itself and stops, and the button then says `Play again`.
+* While it plays or waits, the foot is empty and the one speaking bar above it (`bsv-kit/speech/react`, `docs/read-aloud.md`) has **Pause** / **Resume**, **Restart** and **Stop**.
+  Restart on a Listen goes back to the first verse of the passage (`SpeakingBarSlot.tsx` catches the click, `readAloud.ts` `restartListen`); Stop ends it and the foot says `Play verses 1-11` again.
+* The verse being read is lit (`data-reading`, `READING_CLASS`) in the passage and its box scrolls to keep it in view (`Reader.tsx` `PassageText`).
+* **An interruption from inside the app pauses a Listen and it goes on by itself when the interruption ends** (`readAloud.ts` `interruptListen`, `holdListen`): a word said alone
+  (a long press, a speaker: `greek.ts` `speakBeside` marks the word `interrupted`), the Hold to ask bar (`useVoice.press` until the words are in, or the hold is dropped), the reading check's
+  recording (`useReadChecks.press` until let go), and a tutor's answer read aloud (`startReading` with an `answer` keeps the Listen's options and verse in `suspended`; the Listen starts again from
+  that verse when the answer has been read to its end, not when Stop ends it). A Listen he paused himself stays paused; a hidden page keeps it paused.
+* **Leaving pauses it, and Resume is on the bar**: closing the view, moving to another verse or passage with the arrows (`Reader.tsx`, an effect on the view's key), opening another screen
+  (`ReaderBody` leaving) and the page going hidden (the package) all pause it at the verse it was reading.
+* A reading that is not a Listen (the header's Play, a verse's play button) is unchanged: an interruption pauses it and the bar offers Resume.
+* **PROVISIONAL, the Governor to confirm:** the button's names (`Play …`, `Play again`), the empty foot while the bar has the controls, and that the tutor's answer is read in front of a Listen.
+* Not done here: an interruption from outside the app (a call, another app's audio), which is a later story; only the page going hidden is covered.
+
 ## A passage (mw-5r3p30.73)
 
 The Governor, Postern general: "I should be able to click on a heading and interact with it like a verse (tutor, audio, read to the tutor...)."
@@ -46,7 +66,7 @@ verse's words in order), so every action works on it as it works on a verse.
 | Address | `#/?c=8&v=11` | `#/?c=8&p=1`, `p` the passage's first verse (`nav/route.ts` openPassage / movePassage); `v` wins when both are there |
 | Text | the verse big | the verses one after another with a small number before each, in a box of its own (at most 40% of the screen, scrolls) so the row of actions stays in reach; the verse being read is highlighted and followed |
 | Arrows | the verse before / after, across chapters | `Previous passage` / `Next passage` in the chapter; off at its first and last passage |
-| Listen | `Hold to listen to verse 11` | `Hold to listen to verses 1-11`: reads the passage's verses only, to the passage's end, whatever the Read aloud span says; letting go stops it |
+| Listen | `Play verse 11` | `Play verses 1-11`: reads the passage's verses only, to the passage's end, whatever the Read aloud span says, and stops there |
 | Read it aloud | `Hold to read verse 11` | `Hold to read verses 1-11`: the reading check on the whole passage (`reference` 'Romans 8:1-11', `target_text` every verse's text; the result is kept under `rom.8.1-11`, `rom.8.1-11:el`) |
 | Ask the tutor | `Hold to ask`, the Ask box | the same; the grist's `reference` is 'Romans 8:1-11' and its `greek` / `english` the whole passage; the answers are kept under `rom.8.1-11` |
 | Copy link | `…/#/?ref=Rom.8.11` | `…/#/?ref=Rom.8.1-11` (a verse range; Lampas opens it at the first verse: a link cannot yet open a passage) |

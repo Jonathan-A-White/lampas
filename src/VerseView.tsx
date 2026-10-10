@@ -2,7 +2,8 @@
 // where it was underneath (the phone's Back closes the view, src/nav/route.ts openVerse). At the top the verse big, drawn by the Reader's own
 // VerseText (so the view and the weave follow the Reader, and its words are tappable); under it one row of actions (Listen, Read it aloud,
 // Ask the tutor, Quiz me and Copy link); then what the chosen action shows; and at the foot ONE hold bar
-// that does the chosen action (src/ui/HoldBar.tsx): Hold to listen, Hold to read verse N (the reading check, src/ReadCheck.tsx), Hold to ask.
+// that does the chosen action (src/ui/HoldBar.tsx): Hold to read verse N (the reading check, src/ReadCheck.tsx), Hold to ask. Listen is not a hold
+// (mw-5r3p30.130): its foot is a Play button, and while it plays or waits the speaking bar above has Pause / Resume, Restart and Stop.
 // Quiz me (mw-5r3p30.74) has no hold: its foot is the Start the quiz / Continue the quiz button, which opens the Talk sheet in quiz mode.
 // The Reader's Talk bar is not drawn while the view is open, so two bars never stack. The chosen action is kept (src/verse/action.ts); the
 // arrows go to the verse before and the verse after, across a chapter's end. The action bodies draw their bar into `slot`, the foot of the view.
@@ -16,9 +17,9 @@ import { ReadCheckPanel, type ReadHold } from './ReadCheck';
 import type { Verse } from './data/chapter';
 import { unitId, unitName, unitReference } from './data/passage';
 import { passageUrl, referenceUrl } from './nav/links';
-import { Icon } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
 import { HoldBar } from './ui/HoldBar';
+import { Icon as PlayIcon } from './speech/ReadControls';
 import { LinkActions } from './ui/LinkActions';
 import type { UseReadChecks } from './useReadChecks';
 import { BarSlot } from './speech/SpeakingBarSlot';
@@ -26,10 +27,13 @@ import type { AskState } from './useAsks';
 import type { Voice } from './useVoice';
 import { VERSE_ACTIONS, type VerseAction } from './verse/action';
 
-/** What Listen does: a hold says the verse (and on, as far as the Read aloud span says), a let-go stops it. */
-export interface ListenHold {
-  onHold: () => void;
-  onRelease: () => void;
+/** Listen is a player: Play reads the verse or passage on to its end by itself. */
+export interface ListenPlayer {
+  onPlay: () => void;
+  /** a reading holds the speaking bar (it plays or waits there): the foot has no Play */
+  playing: boolean;
+  /** the Listen ran to its end by itself: the foot says Play again */
+  again: boolean;
 }
 
 export interface VerseViewProps {
@@ -48,7 +52,7 @@ export interface VerseViewProps {
   onClose: () => void;
   action: VerseAction;
   onAction: (action: VerseAction) => void;
-  listen: ListenHold;
+  listen: ListenPlayer;
   checks: Pick<UseReadChecks, 'states'>;
   read: ReadHold;
   onRetryRead: () => void;
@@ -149,7 +153,7 @@ export function VerseView(props: VerseViewProps) {
         <div className="mt-3">
           {action === 'listen' ? (
             <p data-action-help className="px-1 text-sm text-muted">
-              Hold the bar below to hear {name}. Let go to stop.
+              Tap Play to hear {name}.
             </p>
           ) : null}
           {action === 'read' ? (
@@ -179,17 +183,18 @@ export function VerseView(props: VerseViewProps) {
         </div>
       </div>
       <BarSlot level={2} />
-      <div ref={setSlot} data-verse-bar className="shrink-0 border-t border-line bg-surface px-3 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))]">
-        {slot && action === 'listen' ? (
+      <div ref={setSlot} data-verse-bar className="shrink-0 border-t border-line bg-surface px-3 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))] empty:hidden">
+        {slot && action === 'listen' && !listen.playing ? (
           createPortal(
-            <HoldBar
-              hold={{ onHold: listen.onHold, onRelease: listen.onRelease, onDrop: listen.onRelease }}
-              holdMs={0}
-              name={`Hold to listen to ${name}`}
-              label={`Hold to listen to ${name}`}
-              icon={<Icon kind="speaker" />}
-              keys
-            />,
+            // Not a hold: a tap starts it and it runs on by itself. Same size and place as the hold bars.
+            <button
+              type="button"
+              onClick={listen.onPlay}
+              className="mx-auto flex h-24 w-full max-w-xl select-none flex-col items-center justify-center gap-1 rounded-3xl bg-accent text-[16px] font-semibold text-accent-fg"
+            >
+              <PlayIcon kind="play" />
+              <span>{listen.again ? 'Play again' : `Play ${name}`}</span>
+            </button>,
             slot,
           )
         ) : null}

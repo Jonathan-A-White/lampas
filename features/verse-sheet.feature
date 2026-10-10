@@ -1,21 +1,21 @@
 Feature: The Verse view shows the verse
   Tapping a verse number opens the Verse view (mw-5r3p30.79, features/verse-view.feature). It is headed by the verse's
-  reference, and it shows the verse's whole text in the view's language, big, above the actions and the hold bar, so
-  he can read the verse aloud from the view itself. Nothing from another verse ever heads it.
+  reference, and it shows the verse's whole text in the view's language, big, above the actions and the control at the foot (the Play button of Listen), so
+  he can listen to the verse from the view itself. Nothing from another verse ever heads it.
 
   Scenario: The Greek view shows the Greek of Romans 8:22 under the reference
     Given Lampas is opened on Romans 8 in the Greek view
     When he taps the number of verse 22
     Then the Verse view is headed "Romans 8:22"
     And the Verse view shows the Greek of verse 22 in Greek type
-    And the verse comes before the hold bar
+    And the verse comes before the control at the foot
 
   Scenario: The English view shows the English of Romans 8:22 under the reference
     Given Lampas is opened on Romans 8 in the English view
     When he taps the number of verse 22
     Then the Verse view is headed "Romans 8:22"
     And the Verse view shows the English of verse 22 in English type
-    And the verse comes before the hold bar
+    And the verse comes before the control at the foot
 
   Scenario: A kept reading with a word from another verse does not head the panel
     Given Lampas is opened on Romans 8 in the Greek view

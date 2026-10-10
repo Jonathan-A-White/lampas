@@ -63,7 +63,7 @@ import { useTalk } from './useTalk';
 import { useVoice } from './useVoice';
 import { HeaderButton } from './ScreenHeader';
 import { speakTutor } from './speech/tutorVoice';
-import { continueReading, getReading, isReadingOf, pauseReading, planOf, startAnswer, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
+import { continueReading, getReading, isReadingOf, listenKeyOf, pauseReading, planOf, startAnswer, startReading, stopReading, updatePlan, useListenCompleted, useReading } from './speech/readAloud';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
 import { ReaderChips } from './ReaderChips';
 import { TeachSheet } from './TeachSheet';
@@ -260,6 +260,15 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const viewAsking = viewUnit !== undefined && action === 'ask';
   const tutor = useReaderTutor(open, chapter, talk, voice, { request, viewUnit, openTalkRef });
   const { talkScope, talkKey, talkAbout, setTalkAbout, holdTalk } = tutor;
+  // The key of the Listen the Verse view offers; leaving the verse or passage (Back, an arrow) pauses it: the speaking bar then offers Resume at the same verse.
+  const viewKey = viewUnit ? listenKeyOf(BOOK, CHAPTER, unitId(viewUnit)) : null;
+  useEffect(() => {
+    if (viewKey === null) return;
+    return () => {
+      const now = getReading();
+      if (now.listen === viewKey && now.status === 'reading') pauseReading();
+    };
+  }, [viewKey]);
   // What he says goes to the open Talk sheet; with none open, to the tutor about the verse of the open Verse view (its Ask the tutor bar).
   useEffect(() => {
     sayAbout.current = (message) => {
@@ -309,13 +318,30 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     },
     [plan, BOOK, CHAPTER, readSpan],
   );
-  // Listen on a passage: its verses only, to the end of the passage and no further, whatever Settings > Read aloud says.
+  // Listen on a passage: its verses only, to the end of the passage and no further, whatever Settings > Read aloud says. On a verse: that verse only.
+  // A Listen is paused by an interruption from inside the app and goes on by itself (src/speech/readAloud.ts interruptListen).
   const listenTo = useCallback(
     (passage: Passage) => {
-      if (plan) startReading({ inBook: BOOK, chapter: CHAPTER, plan: plan.filter((v) => v.n >= passage.first && v.n <= passage.last), from: passage.first, continuous: true, span: 'passage' });
+      if (plan)
+        startReading({
+          inBook: BOOK,
+          chapter: CHAPTER,
+          plan: plan.filter((v) => v.n >= passage.first && v.n <= passage.last),
+          from: passage.first,
+          continuous: true,
+          span: 'passage',
+          listen: listenKeyOf(BOOK, CHAPTER, unitId(passageVerse(passage))),
+        });
     },
     [plan, BOOK, CHAPTER],
   );
+  const listenVerse = useCallback(
+    (verse: Verse) => {
+      if (plan) startReading({ book: BOOK, chapter: CHAPTER, plan, from: verse.n, continuous: false, span: readSpan, listen: listenKeyOf(BOOK, CHAPTER, unitId(verse)) });
+    },
+    [plan, BOOK, CHAPTER, readSpan],
+  );
+  const listened = useListenCompleted();
   const chapterReading = reading.status !== 'idle' && reading.answer === null;
   const readingVerse = chapterReading ? reading.verse : null;
   const headerButtons = chapterReading && !reading.onBar;
@@ -612,7 +638,11 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           onClose={closeVerse}
           action={action}
           onAction={chooseAction}
-          listen={viewPassage ? { onHold: () => listenTo(viewPassage), onRelease: stopReading } : { onHold: () => readFrom(viewUnit.n, false), onRelease: stopReading }}
+          listen={{
+            onPlay: () => (viewPassage ? listenTo(viewPassage) : listenVerse(viewUnit)),
+            playing: chapterReading,
+            again: listened === viewKey,
+          }}
           checks={checks}
           read={readOf(viewUnit)}
           onRetryRead={() => checks.retry(viewUnit)}

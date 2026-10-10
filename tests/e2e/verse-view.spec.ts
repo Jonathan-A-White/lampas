@@ -43,7 +43,20 @@ async function expectOneBar(page: Page, label: string): Promise<void> {
   await expect(page.locator('[data-talk-bar]')).toHaveCount(0);
 }
 
-test('Listen: the verse big, one row of actions on one line, and the one bar Hold to listen', async ({ page }) => {
+/** Listen's foot: one Play button the size and place of the hold bars, and no hold bar. */
+async function expectPlay(page: Page, label: string): Promise<void> {
+  await expect(page.locator('[data-hold-bar]')).toHaveCount(0);
+  const play = page.locator('[data-verse-bar]').getByRole('button', { name: label, exact: true });
+  await expect(play).toHaveCount(1);
+  const box = await play.boundingBox();
+  if (!box) throw new Error('no Play button');
+  expect(box.height).toBeGreaterThanOrEqual(BAR_HEIGHT - 0.5);
+  expect(box.width).toBeGreaterThan(VIEWPORT.width - 40);
+  expect(box.y + box.height).toBeLessThanOrEqual(VIEWPORT.height);
+  await expect(page.locator('[data-talk-bar]')).toHaveCount(0);
+}
+
+test('Listen: the verse big, one row of actions on one line, and the one Play button', async ({ page }) => {
   await start(page, '/#/?c=8&view=english&weave=solid');
   const line = page.locator('[data-verse="11"] [data-text]');
   const lineSize = await line.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
@@ -69,7 +82,7 @@ test('Listen: the verse big, one row of actions on one line, and the one bar Hol
   await expect(view.getByRole('button', { name: 'Quiz me', exact: true })).toHaveCount(1);
 
   await expect(view.getByRole('button', { name: 'Listen', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await expectOneBar(page, 'Hold to listen to verse 11');
+  await expectPlay(page, 'Play verse 11');
   await expectFitsPhone(page);
   await shot(page, 'verse-view-listen');
 });
