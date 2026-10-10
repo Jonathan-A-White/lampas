@@ -1,0 +1,13 @@
+{
+  "description": "A request for another way of teaching Greek grammar: the mill forwards it and answers that it was sent.",
+  "schemaVersion": "1",
+  "request": {
+    "kind": "grammar-approach",
+    "text": "Please add an approach that teaches the cases with a colour for each one, before any verb.",
+    "credit": { "name": "Anna Example", "url": "https://example.org/greek-cases" },
+    "app_version": "0.1.12"
+  },
+  "expect": {
+    "status": { "equals": "sent" }
+  }
+}
