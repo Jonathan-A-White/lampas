@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.76",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.168",
+    "kind": "fixed",
+    "text": "Read aloud on Robinson's essay no longer reads the footnote numbers."
+  },
+  {
     "version": "0.1.75",
     "date": "2026-10-10",
     "story": "mw-y3qno5.2",

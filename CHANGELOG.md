@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.76
+_2026-10-10_
+- Fixed: Read aloud on Robinson's essay no longer reads the footnote numbers.
+
 ## 0.1.75
 _2026-10-10_
 - New: Share a picture, text or link to Lampas from another app, and choose which tutor talk it goes to.
