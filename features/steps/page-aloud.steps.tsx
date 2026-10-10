@@ -17,6 +17,7 @@ const ADDRESS: Record<string, { hash: string; title: string }> = {
   About: { hash: '#/about', title: 'About' },
   'My study way': { hash: '#/studyway', title: 'My study way' },
   Preface: { hash: '#/preface', title: 'Preface' },
+  "Robinson's essay": { hash: '#/preface/robinson', title: 'The Case for Byzantine Priority' },
 };
 
 let synth: FakeSynth;
@@ -40,6 +41,8 @@ async function open(page: string, canShare: boolean | null): Promise<void> {
   window.history.replaceState(null, '', `/${ADDRESS[page].hash}`);
   render(<App />);
   await screen.findByRole('heading', { name: ADDRESS[page].title, level: 1 });
+  // the essay's text is a lazily loaded chunk
+  if (page === "Robinson's essay") await screen.findByRole('heading', { name: 'Introduction', level: 2 });
 }
 
 afterAll(() => {
@@ -164,5 +167,45 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given('Lampas is opened on the My study way page on a phone that can share', () => open('My study way', true));
     When('he taps {string} in the header', tap);
     Then('the phone is asked to share the title {string}, the first paragraph and the link {string}', sharedWith);
+  });
+
+  const essayWithVoices = "Lampas is opened on Robinson's essay on a phone with an English and a Greek voice";
+  const spokenText = () => synth.spoken.map((u) => u.text);
+  /** The reading as one run of text, the way it sounds: the sentences one after another. */
+  const spokenAll = () => spokenText().join(' ');
+
+  Scenario("Read aloud on Robinson's essay does not read the footnote numbers", ({ Given, When, Then, And }) => {
+    Given(essayWithVoices, () => open("Robinson's essay", false));
+    When('he taps {string} in the header', tap);
+    And('the phone speaks the whole essay', () => {
+      synth.finishAll();
+    });
+    Then('no sentence the phone speaks has a footnote number in it', () => {
+      expect(spokenText().filter((t) => /[.,;!?”"’)]\d{1,3}(?=\s|$)/.test(t))).toEqual([]);
+    });
+    And('the phone speaks {string} as the end of a sentence', (_, text: string) => {
+      expect(spokenAll()).toContain(`${text} `);
+      expect(spokenAll()).not.toContain(`${text}1`);
+    });
+    And('the phone speaks {string} as one sentence', (_, text: string) => {
+      expect(spokenAll()).toContain(text);
+    });
+    And('the phone speaks {string} with the quotation whole', (_, text: string) => {
+      expect(spokenAll()).toContain(text);
+    });
+  });
+
+  Scenario("A quotation's credit is not run into its text", ({ Given, When, Then, And }) => {
+    Given(essayWithVoices, () => open("Robinson's essay", false));
+    When('he taps {string} in the header', tap);
+    And('the phone speaks the whole essay', () => {
+      synth.finishAll();
+    });
+    Then('the phone speaks {string} as one sentence', (_, text: string) => {
+      expect(spokenAll()).toContain(text);
+    });
+    And('the phone never speaks a full stop glued to the word after it', () => {
+      expect(spokenText().filter((t) => /[a-z]{2}[.!?][A-Z]/.test(t))).toEqual([]);
+    });
   });
 });

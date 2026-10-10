@@ -57,3 +57,19 @@ Feature: A page of prose can be read aloud and shared
     Given Lampas is opened on the My study way page on a phone that can share
     When he taps "Share" in the header
     Then the phone is asked to share the title "My study way", the first paragraph and the link "https://lampas.allmymind.org/#/studyway"
+
+  Scenario: Read aloud on Robinson's essay does not read the footnote numbers
+    Given Lampas is opened on Robinson's essay on a phone with an English and a Greek voice
+    When he taps "Read aloud" in the header
+    And the phone speaks the whole essay
+    Then no sentence the phone speaks has a footnote number in it
+    And the phone speaks "as reflected in MSS A/02 and W/032." as the end of a sentence
+    And the phone speaks "in any manner. Rather, the Byzantine Textform" as one sentence
+    And the phone speaks "least interesting” in terms of theory" with the quotation whole
+
+  Scenario: A quotation's credit is not run into its text
+    Given Lampas is opened on Robinson's essay on a phone with an English and a Greek voice
+    When he taps "Read aloud" in the header
+    And the phone speaks the whole essay
+    Then the phone speaks "not really much of a change. Bob Waltz (Internet email)" as one sentence
+    And the phone never speaks a full stop glued to the word after it

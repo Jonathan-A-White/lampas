@@ -19,8 +19,25 @@ const BUTTON = 'flex min-h-11 min-w-11 shrink-0 items-center justify-center roun
 
 const blocksNow = (): HTMLElement[] => [...document.querySelectorAll<HTMLElement>('[data-read-block]')];
 
-/** What a block says when it is read or shared: its text on one line, without the dash that leads a quotation's credit. */
-const textOf = (el: HTMLElement): string => (el.textContent ?? '').replace(/\s+/g, ' ').trim().replace(/^[—–]\s*/, '');
+/** The text a block shows, line by line: a line break ends a line, and anything marked `data-read-skip` (a footnote's number, a paragraph's own number) is left out. */
+function linesOf(node: Node, lines: string[]): void {
+  if (node.nodeType === Node.TEXT_NODE) lines[lines.length - 1] += node.textContent ?? '';
+  else if (node instanceof HTMLElement && node.hasAttribute('data-read-skip')) return;
+  else if (node instanceof HTMLBRElement) lines.push('');
+  else node.childNodes.forEach((child) => linesOf(child, lines));
+}
+
+/** What a block says when it is read or shared: its text on one line, without the dash that leads a quotation's credit, the numbers marked
+ * `data-read-skip`, and a stop between lines (a quotation and its credit) so the voice pauses where the page breaks. */
+const textOf = (el: HTMLElement): string => {
+  const lines = [''];
+  linesOf(el, lines);
+  return lines
+    .map((line) => line.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .reduce((said, line) => (!said ? line : /[.!?:;,…]["”’)]?$/.test(said) ? `${said} ${line}` : `${said}. ${line}`), '')
+    .replace(/^[—–]\s*/, '');
+};
 
 const icon = (path: string): ReactNode => {
   return (
