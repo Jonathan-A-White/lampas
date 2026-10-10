@@ -48,6 +48,13 @@ Feature: The tutor links the reader's study resources
     Then the answer shows no study links
     And the answer text is shown
 
+  Scenario: An answer with an empty list of links shows no link row, even with a resource on
+    Given Lampas is opened on Romans 8 and the tutor answers with an empty list of links
+    And the study resource "Strong's" is switched on
+    When he asks the tutor about verse 28
+    Then the answer shows no study links
+    And the answer text is shown
+
   Scenario: An answer carries at most three links
     Given Lampas is opened on Romans 8 and the tutor answers with links to the words "ἀγάπη", "πίστις", "ἐλπίς" and "χάρις"
     And the study resource "Strong's" is switched on

@@ -1,5 +1,5 @@
 {
-  "description": "A question about another passage (Melchizedek, while on Romans 8:28): the answer says what that passage says, names its verse by book, chapter and verse, and does not send him away to ask elsewhere; with no study resource on, there is no link.",
+  "description": "A question about another passage (Melchizedek, while on Romans 8:28): the answer says what that passage says, names its verse by book, chapter and verse, and does not send him away to ask elsewhere; with no study resource on, there is no link (links left out or an empty list).",
   "schemaVersion": "1",
   "request": {
     "reference": "Romans 8:28",
@@ -13,7 +13,7 @@
   },
   "expect": {
     "answer": { "matches": "Hebrews 7:[12]" },
-    "links": { "present": false },
+    "links.0": { "present": false },
     "settings_changes": { "present": false }
   }
 }
