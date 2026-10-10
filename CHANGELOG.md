@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.68
+_2026-10-10_
+- Fixed: In Ask the tutor, the other suggested questions stay after the first question, and a new 'New talk' button starts the talk afresh.
+
 ## 0.1.67
 _2026-10-10_
 - Fixed: Tapping Next twice quickly in the placement, Review and the Quick test no longer answers the next question for you.

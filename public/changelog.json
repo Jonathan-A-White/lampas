@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.68",
+    "date": "2026-10-10",
+    "story": "mw-vtjxh4.43",
+    "kind": "fixed",
+    "text": "In Ask the tutor, the other suggested questions stay after the first question, and a new 'New talk' button starts the talk afresh."
+  },
+  {
     "version": "0.1.67",
     "date": "2026-10-10",
     "story": "mw-hqd5bz.21",
