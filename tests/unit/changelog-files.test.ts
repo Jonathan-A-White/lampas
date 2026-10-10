@@ -25,6 +25,21 @@ describe('the changelog files', () => {
     for (const { version } of parseChangelog(raw)) expect(headings).toContain(version);
   });
 
+  it('never holds a tool error as a line (0.1.57 once showed a database error)', () => {
+    const bad = /exit status|Dolt server|failed to open database/;
+    for (const { text } of parseChangelog(raw)) expect(text).not.toMatch(bad);
+    expect(md).not.toMatch(bad);
+  });
+
+  it("says 0.1.57's line the same in both files", () => {
+    const line =
+      "An 'Immersive reader' setting lets the top and the Talk button slide away while you read, and come back when you scroll up a little or tap the text with two fingers.";
+    const entry = parseChangelog(raw).find((e) => e.version === '0.1.57');
+    expect(entry?.kind).toBe('new');
+    expect(entry?.text).toBe(line);
+    expect(md).toContain(`## 0.1.57\n_2026-10-10_\n- New: ${line}\n`);
+  });
+
   it('starts the markdown with its title', () => {
     expect(md.startsWith("# What's new\n")).toBe(true);
   });
