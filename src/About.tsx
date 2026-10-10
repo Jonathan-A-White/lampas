@@ -5,6 +5,7 @@ import { BuildVersion } from './BuildVersion';
 import { setDeveloper } from './data/repositories';
 import { navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
+import { usePageActions } from './PageActions';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { CREDITS } from './tutor/credits';
 import { useReportScreen } from './tutor/screenContext';
@@ -36,6 +37,7 @@ export function About() {
   useReportScreen({ name: 'About', facts: [], credits: CREDITS });
   const scrollRef = useScrollMemory('about');
   const { quote, intro, sections } = attribution;
+  const { buttons, notice } = usePageActions('#/about', 'About');
   const taps = useRef({ count: 0, last: 0 });
   const [found, setFound] = useState(false);
   const tapVersion = () => {
@@ -50,16 +52,17 @@ export function About() {
   };
   return (
     <>
-      <ScreenHeader title="About" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />
+      <ScreenHeader title="About" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} action={buttons} />
+      {notice}
       <main ref={scrollRef} className="screen min-h-0 flex-1 px-4">
         <div>
           {quote && (
             <blockquote className="mt-4 border-l-4 border-accent pl-4">
-              <p className="text-xl italic leading-snug">{quote.text}</p>
-              {quote.by && <footer className="mt-1 text-sm text-muted">— {quote.by}</footer>}
+              <p data-read-block className="text-xl italic leading-snug">{quote.text}</p>
+              {quote.by && <footer data-read-block className="mt-1 text-sm text-muted">— {quote.by}</footer>}
             </blockquote>
           )}
-          <p className="pt-4 text-base">{inline(intro)}</p>
+          <p data-read-block className="pt-4 text-base">{inline(intro)}</p>
           <button
             type="button"
             aria-label="Preface"
@@ -72,10 +75,10 @@ export function About() {
           </button>
           {sections.map((section) => (
             <section key={section.title ?? ''} aria-label={section.title ?? undefined}>
-              {section.title && <h2 className="pt-4 text-lg font-semibold">{section.title}</h2>}
+              {section.title && <h2 data-read-block className="pt-4 text-lg font-semibold">{section.title}</h2>}
               <ul className="list-none space-y-4 py-4">
                 {section.entries.map((entry) => (
-                  <li key={entry} className="break-words text-base leading-relaxed">
+                  <li key={entry} data-read-block className="break-words text-base leading-relaxed">
                     {inline(entry)}
                   </li>
                 ))}

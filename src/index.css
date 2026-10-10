@@ -217,6 +217,12 @@ textarea,
   -webkit-touch-callout: default;
 }
 
+/* The line of a page of prose being read aloud (src/PageActions.tsx marks it data-reading). */
+[data-read-block][data-reading] {
+  background-color: color-mix(in srgb, var(--lp-accent) 20%, transparent);
+  border-radius: 6px;
+}
+
 /* The word being said by a long press (src/ui/HearAnyWord.tsx, the CSS Custom Highlight API). */
 ::highlight(hear-word) {
   background-color: color-mix(in srgb, var(--lp-accent) 35%, transparent);
