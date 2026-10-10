@@ -63,8 +63,8 @@ The word sheet's Study row lists only the resources that are On; a Study link wh
 Get <App> and Turn off <App> (`armFallback`). `features/app-on-phone.feature` holds the rules; Settings never says "Looking for" or "found".
 
 **The Study row's grid.** The links are equal tiles, two to a row, under the app's name for a resource of kind `'app'`. A link's `label`
-is its accessible name ('Open in Logos: BDAG'); its optional `tile` is the short text on the tile ('BDAG', 'Word Study'; a Logos lexicon's
-is its `short` in `LEXICONS`). A tile never wraps at 360 px: keep a `tile` to about 16 characters.
+is its accessible name ('Open in Logos: BDAG'); its optional `tile` is the short text on the tile ('BDAG', 'Bible Word Study'; a Logos lexicon's
+is its `short` in `LEXICONS`). A tile names its book in words (mw-5r3p30.135): it may take two lines, never one cut short, so no two tiles are alike and no title is shortened to its first word.
 
 **Resource ids.** The `resource` of each lexicon is the **Resource ID** Logos prints on the product's page (the "resourceId" in the page's data; the
 Information pane of a resource in Logos shows the same), such as `LLS:46.10.26` for EDNT. The earlier short names (`bdag`, `ednt`, `dblgreek` ...) were guesses
