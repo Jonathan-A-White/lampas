@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.25
+_2026-10-10_
+- New: On the Ask for another approach form, a button now lets the tutor take you through it one question at a time, asking for a photo when it is needed and filling in the boxes as you answer.
+
 ## 0.1.22
 _2026-10-10_
 - Fixed: the round Ask the tutor button no longer covers the end of the lines you are reading.

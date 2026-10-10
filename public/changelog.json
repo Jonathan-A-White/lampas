@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.25",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.117",
+    "kind": "new",
+    "text": "On the Ask for another approach form, a button now lets the tutor take you through it one question at a time, asking for a photo when it is needed and filling in the boxes as you answer."
+  },
+  {
     "version": "0.1.22",
     "date": "2026-10-10",
     "story": "mw-5r3p30.115",
