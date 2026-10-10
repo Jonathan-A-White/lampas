@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.35
+_2026-10-10_
+- New: Due, Goal, tip and new-word notices in the Reader now sit in one thin row of small buttons under the header, so the reading starts higher on the screen.
+
 ## 0.1.34
 _2026-10-10_
 - New: When the tutor is reading an answer, a tapped word or holding to talk now pauses him, and 'Resume' goes on from where he stopped, with 'Restart' and 'Stop' beside it.
