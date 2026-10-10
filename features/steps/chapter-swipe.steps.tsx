@@ -156,6 +156,10 @@ describeFeature(feature, ({ Scenario }) => {
       const verse = document.querySelector<HTMLElement>('[data-reader] [data-verse]') as HTMLElement;
       await user.click(within(verse).getAllByRole('button')[1]);
       await screen.findByRole('dialog', { name: 'Word' });
+      // The dialog is drawn a render before the Reader hears a sheet is up (useSheetOpen), which is what turns the swipe off: the round Ask button
+      // goes with that render, so wait for it to go and let the swipe hook's effect run, or a drag that starts at once still swipes.
+      await waitFor(() => expect(document.querySelector('[data-ask-tutor]')).toBeNull());
+      await act(async () => {});
     });
     When('he drags from {int},{int} to {int},{int} over {int} ms', dragged);
     Then('the reader is headed {string}', stillHeaded);
