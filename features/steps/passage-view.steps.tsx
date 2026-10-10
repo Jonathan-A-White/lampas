@@ -229,10 +229,10 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(getReading().status).toBe('idle'));
     });
     And('the phone never spoke verse 12', () => {
-      const spoken = synth?.spoken.map((u) => squash(u.text)) ?? [];
-      expect(spoken).toHaveLength(11);
-      expect(spoken[10]).toBe(englishOf(11, 11));
-      expect(spoken).not.toContain(englishOf(12, 12));
+      // the package speaks a verse a sentence at a time: what was spoken, put together, is verses 1 to 11 and nothing of verse 12
+      const spoken = squash(synth?.spoken.map((u) => u.text).join(' '));
+      expect(spoken).toBe(squash(englishOf(1, 11)));
+      expect(spoken).not.toContain(squash(englishOf(12, 12)).slice(0, 30));
     });
   });
 

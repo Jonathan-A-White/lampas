@@ -243,6 +243,23 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('The tutor\'s answer read aloud shows the same bar as every reading', ({ Given, And, When, Then }) => {
+    const speakingBar = () => screen.queryByRole('region', { name: 'Speaking' });
+    const buttons = () => within(speakingBar() as HTMLElement).getAllByRole('button').map((b) => b.textContent);
+    const onBar = (name: string) => user.click(within(speakingBar() as HTMLElement).getByRole('button', { name }));
+    Given(readOn, () => open({ aloud: true, reply: 'answer' }));
+    And(askFirst, askIt);
+    And('the phone is speaking the answer', speaking);
+    Then('the speaking bar shows Pause, Restart and Stop', () => expect(buttons()).toEqual(['Pause', 'Restart', 'Stop']));
+    When('he taps Pause on the speaking bar', () => onBar('Pause'));
+    Then('the speaking bar shows Resume, Restart and Stop', () => expect(buttons()).toEqual(['Resume', 'Restart', 'Stop']));
+    When('he taps Stop on the speaking bar', () => onBar('Stop'));
+    Then('the speech has stopped', stopped);
+    And('there is no speaking bar', async () => {
+      await waitFor(() => expect(speakingBar()).toBeNull());
+    });
+  });
+
   Scenario('Settings has the switch, On until he turns it Off, and it is kept', ({ Given, When, Then, And }) => {
     const settings = () => open({ aloud: true, hash: '#/settings', reply: 'answer' });
     Given('Lampas is opened on its Settings screen', settings);

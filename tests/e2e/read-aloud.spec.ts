@@ -35,7 +35,7 @@ async function expectFitsPhone(page: Page) {
   expect(scrollTop).toBe(0);
 }
 
-test('Read from the top reads the chapter on, with a bar, a highlight kept in view, Pause and Stop', async ({ page }) => {
+test('Read from the top reads the chapter on, with a bar, a highlight kept in view and the speaking bar to Pause, Resume and Stop', async ({ page }) => {
   await withVoices(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
@@ -53,11 +53,14 @@ test('Read from the top reads the chapter on, with a bar, a highlight kept in vi
 
   await header.click();
   const bar = page.locator('[data-reading-bar]');
+  const speaking = page.getByRole('region', { name: 'Speaking', exact: true });
   await expect(bar).toContainText('Reading verse 1');
   await expect(page.locator('[data-verse="1"]')).toHaveAttribute('data-reading', 'true');
   const head = page.locator('header');
-  for (const name of ['Pause', 'Stop']) {
-    const box = await head.getByRole('button', { name, exact: true }).boundingBox();
+  // the header's buttons give way to the speaking bar
+  for (const name of ['Pause', 'Stop', 'Read from the top']) await expect(head.getByRole('button', { name, exact: true })).toHaveCount(0);
+  for (const name of ['Pause', 'Restart', 'Stop']) {
+    const box = await speaking.getByRole('button', { name, exact: true }).boundingBox();
     expect(box?.height).toBeGreaterThanOrEqual(43.5);
     expect(box?.width).toBeGreaterThanOrEqual(43.5);
     expect(box && box.x >= 0 && box.x + box.width <= 390).toBe(true);
@@ -75,32 +78,35 @@ test('Read from the top reads the chapter on, with a bar, a highlight kept in vi
   await expectFitsPhone(page);
   await shot(page, 'read-aloud');
 
-  await head.getByRole('button', { name: 'Pause', exact: true }).click();
+  await speaking.getByRole('button', { name: 'Pause', exact: true }).click();
   await expect(bar).toContainText('Paused at verse 12');
   const count = (await spoken(page)).length;
-  await head.getByRole('button', { name: 'Play', exact: true }).click();
+  await speaking.getByRole('button', { name: 'Resume', exact: true }).click();
   await expect(bar).toContainText('Reading verse 12');
-  expect((await spoken(page)).length).toBe(count + 1);
+  expect((await spoken(page)).length).toBeGreaterThan(count);
 
-  await head.getByRole('button', { name: 'Stop', exact: true }).click();
+  await speaking.getByRole('button', { name: 'Stop', exact: true }).click();
   await expect(bar).toHaveCount(0);
+  await expect(speaking).toHaveCount(0);
   await expect(head.getByRole('button', { name: 'Read from the top', exact: true })).toBeVisible();
-  await expect(head.getByRole('button', { name: 'Pause', exact: true })).toHaveCount(0);
   await expect(page.locator('[data-reading]')).toHaveCount(0);
-  expect((await spoken(page)).length).toBe(count + 1);
+  const stoppedAt = (await spoken(page)).length;
+  await page.clock.runFor(3000);
+  expect((await spoken(page)).length).toBe(stoppedAt);
 });
 
-test('at 360 x 740 the top bar holds Pause and Stop while reading, fitting beside the title and the gear', async ({ page }) => {
+test('at 360 x 740 the speaking bar fits the phone and the header keeps the title, the language switch and the gear', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 740 });
   await withVoices(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.getByRole('button', { name: 'Read from the top', exact: true }).click();
   const head = page.locator('header');
-  await expect(head.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
+  const speaking = page.getByRole('region', { name: 'Speaking', exact: true });
+  await expect(speaking.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
   const boxes = [];
-  for (const name of ['Pause', 'Stop', 'Settings']) {
-    const box = await head.getByRole('button', { name, exact: true }).boundingBox();
+  for (const name of ['Pause', 'Restart', 'Stop']) {
+    const box = await speaking.getByRole('button', { name, exact: true }).boundingBox();
     expect(box?.height).toBeGreaterThanOrEqual(43.5);
     expect(box?.width).toBeGreaterThanOrEqual(43.5);
     expect(box && box.x >= 0 && box.x + box.width <= 360).toBe(true);
@@ -108,12 +114,12 @@ test('at 360 x 740 the top bar holds Pause and Stop while reading, fitting besid
   }
   expect(boxes[0] && boxes[1] && boxes[0].x + boxes[0].width <= boxes[1].x + 0.5).toBe(true);
   expect(boxes[1] && boxes[2] && boxes[1].x + boxes[1].width <= boxes[2].x + 0.5).toBe(true);
-  // the title gives its room to the buttons while reading but stays for a screen reader
-  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeAttached();
-  const group = await head.getByRole('group', { name: 'Language' }).boundingBox();
-  expect(group && boxes[0] && group.x + group.width <= boxes[0].x + 0.5).toBe(true);
+  // the header is as it is when nothing is read: the title is a button the Governor can see
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  const gear = await head.getByRole('button', { name: 'Settings', exact: true }).boundingBox();
+  expect(gear && gear.x >= 0 && gear.x + gear.width <= 360).toBe(true);
   await expectFitsPhone(page);
   await shot(page, 'read-aloud-pause-stop');
-  await head.getByRole('button', { name: 'Stop', exact: true }).click();
+  await speaking.getByRole('button', { name: 'Stop', exact: true }).click();
   await expect(head.getByRole('button', { name: 'Read from the top', exact: true })).toBeVisible();
 });

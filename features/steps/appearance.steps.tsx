@@ -121,7 +121,7 @@ async function greekRateOfAButton(): Promise<number> {
 }
 function englishRate(): number {
   const before = synth.spoken.length;
-  speak('Hello', 'test:english', undefined, 'english');
+  speak('Hello', 'test:english', 'english');
   expect(synth.spoken.length).toBe(before + 1);
   expect(synth.spoken[before].lang).toMatch(/^en/);
   stopSpeaking();

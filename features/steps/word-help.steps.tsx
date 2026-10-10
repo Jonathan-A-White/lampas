@@ -160,16 +160,18 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the Greek syllables {string}, {string} and {string} are spoken one after another in Greek, slowly', async (_, a: string, b: string, c: string) => {
       const engine = synth as FakeSynth;
-      await waitFor(() => expect(engine.spoken).toHaveLength(2));
+      // the package queues the syllables at once, one sentence each; the phone says them one after another
+      await waitFor(() => expect(engine.spoken).toHaveLength(4));
       for (const [i, syllable] of [a, b, c].entries()) {
-        await waitFor(() => expect(engine.spoken).toHaveLength(i + 2));
         const spoken = engine.spoken[i + 1];
         expect(spoken.text).toBe(syllable);
         expect(spoken.lang).toBe('el-GR');
         expect(spoken.rate).toBeLessThan(1);
+        expect(engine.speaking).toBe(true);
         act(() => engine.finish());
       }
       expect(engine.spoken).toHaveLength(4);
+      expect(engine.speaking).toBe(false);
     });
   });
 

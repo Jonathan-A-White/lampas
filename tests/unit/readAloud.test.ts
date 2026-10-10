@@ -1,12 +1,14 @@
 // tests/unit/readAloud.test.ts — read aloud (mw-5r3p30.21): what is read is exactly what is shown, a woven verse changes
 // voice with its language, Read from the top runs to the chapter's end, Pause and Stop. The engine is a fake that records.
 import { readFileSync } from 'node:fs';
+import { pause as enginePause, resume as engineResume, restart as engineRestart, stop as engineStop } from 'bsv-kit/speech';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { forgetChapters } from '../../src/data/chapter';
 import { clearBus, latest, subscribe } from '../../src/events/bus';
 import type { Chapter, Verse } from '../../src/data/chapter';
 import { weaveVerse } from '../../src/data/weave';
 import { continueReading, getReading, pauseReading, planOf, resumeReading, runsOf, startReading, stopReading } from '../../src/speech/readAloud';
+import { speakWord } from '../../src/speech/greek';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../support/fake-speech';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
@@ -284,5 +286,94 @@ describe('the Read aloud span', () => {
     synth.finishAll();
     await settle();
     expect(getReading().status).toBe('idle');
+  });
+});
+
+describe('following bsv-kit/speech (mw-m7v5kc.3)', () => {
+  const settle = () => new Promise<void>((resolve) => queueMicrotask(resolve));
+  const english = plan('english');
+  // verse 3's English has two sentences: the package speaks it one after the other
+  const sentences = (n: number) => englishOf(verse(n)).split(/(?<=[.!?…])\s+/);
+
+  it('a verse is one speech: its sentences are queued at once, each in its own utterance', () => {
+    startReading({ chapter: 8, plan: english, from: 3, continuous: false });
+    expect(synth.spoken.map((u) => u.text)).toEqual(sentences(3));
+    expect(getReading()).toMatchObject({ status: 'reading', verse: 3, onBar: true });
+  });
+
+  it("Pause and Resume made on the package's bar move the reading, and Resume goes on from the sentence", () => {
+    startReading({ chapter: 8, plan: english, from: 3, continuous: false });
+    synth.finish();
+    enginePause();
+    expect(getReading()).toMatchObject({ status: 'paused', verse: 3, onBar: true });
+    const count = synth.spoken.length;
+    engineResume();
+    expect(getReading().status).toBe('reading');
+    expect(synth.spoken.slice(count).map((u) => u.text)).toEqual([sentences(3)[1]]);
+  });
+
+  it('Restart on the bar speaks the verse from its first sentence and the reading goes on', () => {
+    startReading({ chapter: 8, plan: english, from: 3, continuous: false });
+    synth.finish();
+    engineRestart();
+    expect(synth.since.map((u) => u.text)).toEqual(sentences(3));
+    expect(getReading().status).toBe('reading');
+  });
+
+  it('Stop on the bar ends the reading, once the turn has run', async () => {
+    startReading({ chapter: 8, plan: english, from: 3, continuous: true });
+    engineStop();
+    await settle();
+    expect(getReading().status).toBe('idle');
+    expect(latest('reading-stopped')).toBeDefined();
+  });
+
+  it('the end of one verse is not a Stop: the reading goes on to the next', async () => {
+    startReading({ chapter: 8, plan: english, from: 3, continuous: true });
+    synth.finish();
+    synth.finish();
+    await settle();
+    expect(getReading()).toMatchObject({ status: 'reading', verse: 4 });
+  });
+
+  it('a page that hides pauses the reading and Pause is kept until Resume', () => {
+    startReading({ chapter: 8, plan: english, from: 3, continuous: true });
+    Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+    Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+    expect(getReading()).toMatchObject({ status: 'paused', verse: 3 });
+    resumeReading();
+    expect(getReading().status).toBe('reading');
+  });
+
+  it('a word said alone takes the voice: the reading waits at its verse off the bar, and Resume reads the verse again', async () => {
+    startReading({ chapter: 8, plan: english, from: 3, continuous: true });
+    expect(speakWord('λόγος', 'greek')).toBe(true);
+    await settle();
+    expect(getReading()).toMatchObject({ status: 'paused', verse: 3, onBar: false });
+    synth.finishAll();
+    await settle();
+    expect(getReading().status).toBe('paused');
+    const count = synth.spoken.length;
+    resumeReading();
+    expect(getReading()).toMatchObject({ status: 'reading', verse: 3 });
+    expect(synth.spoken.slice(count).map((u) => u.text)).toEqual(sentences(3));
+  });
+
+  it('an answer is over, not waited for, when a word takes the voice; paused on the bar it can be resumed', async () => {
+    startReading({ chapter: 0, plan: [{ n: 7, runs: [{ text: 'First. Second.', language: 'english' }] }], from: 7, continuous: false, answer: 7 });
+    enginePause();
+    expect(getReading()).toMatchObject({ status: 'paused', answer: 7 });
+    engineResume();
+    expect(getReading().status).toBe('reading');
+    speakWord('λόγος', 'greek');
+    await settle();
+    expect(getReading().status).toBe('idle');
+  });
+
+  it("a Greek run and an English run are told apart by their letters, a run to a line", () => {
+    const woven = weaveVerse(verse(1), { solid: new Set(['Χριστός']) });
+    startReading({ chapter: 8, plan: planOf(chapter.verses, 'english', chapter.verses.map((v) => (v.n === 1 ? woven : null))), from: 1, continuous: false });
+    expect(synth.spoken.map((u) => u.lang)).toEqual(['en-US', 'el-GR', 'en-US']);
   });
 });
