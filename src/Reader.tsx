@@ -46,7 +46,7 @@ import { useTalk } from './useTalk';
 import { useVoice } from './useVoice';
 import { HeaderButton } from './ScreenHeader';
 import { speakTutor } from './speech/tutorVoice';
-import { continueReading, getReading, isReadingOf, listenKeyOf, pauseReading, startAnswer, stopReading, updatePlan, useListenCompleted, useReading } from './speech/readAloud';
+import { continueReading, getReading, isReadingOf, pauseReading, startAnswer, stopReading, updatePlan, useReading } from './speech/readAloud';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
 import { ReaderChips } from './ReaderChips';
 import { TeachSheet } from './TeachSheet';
@@ -184,15 +184,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const viewAsking = viewUnit !== undefined && action === 'ask';
   const tutor = useReaderTutor(open, chapter, talk, voice, { request, viewUnit, openTalkRef });
   const { talkScope, talkKey, talkAbout, setTalkAbout, holdTalk } = tutor;
-  // The key of the Listen the Verse view offers; leaving the verse or passage (Back, an arrow) pauses it: the speaking bar then offers Resume at the same verse.
-  const viewKey = viewUnit ? listenKeyOf(BOOK, CHAPTER, unitId(viewUnit)) : null;
-  useEffect(() => {
-    if (viewKey === null) return;
-    return () => {
-      const now = getReading();
-      if (now.listen === viewKey && now.status === 'reading') pauseReading();
-    };
-  }, [viewKey]);
   // What he says goes to the open Talk sheet; with none open, to the tutor about the verse of the open Verse view (its Ask the tutor bar).
   useEffect(() => {
     sayAbout.current = (message) => {
@@ -212,16 +203,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // The Verse view's Read bar: the hold of the reading check for the verse the view shows.
   const readOf = (verse: Verse): ReadHold => {
     const phase = checks.states[unitId(verse)]?.phase;
-    return {
-      onPress: () => checks.press(verse),
-      onRelease: checks.release,
-      onDrop: checks.drop,
-      disabled: phase === 'sending' || phase === 'waiting',
-    };
+    return { onPress: () => checks.press(verse), onRelease: checks.release, onDrop: checks.drop, disabled: phase === 'sending' || phase === 'waiting' };
   };
   const woven = useWoven(chapter, settings);
-  const { plan, readFrom, listenTo, listenVerse } = useReadFrom(BOOK, CHAPTER, chapter, view, woven, readSpan);
-  const listened = useListenCompleted();
+  const { plan, readFrom, listenTo, listenVerse, listenedView } = useReadFrom(BOOK, CHAPTER, chapter, view, woven, readSpan, viewUnit);
   const chapterReading = reading.status !== 'idle' && reading.answer === null;
   const readingVerse = chapterReading ? reading.verse : null;
   const passages = useMemo(() => (chapter ? passagesOf(chapter.verses) : []), [chapter]);
@@ -439,7 +424,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           listen={{
             onPlay: () => (viewPassage ? listenTo(viewPassage) : listenVerse(viewUnit)),
             playing: chapterReading,
-            again: listened === viewKey,
+            again: listenedView,
           }}
           checks={checks}
           read={readOf(viewUnit)}
