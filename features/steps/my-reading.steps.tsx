@@ -219,7 +219,8 @@ describeFeature(feature, ({ Scenario }) => {
       await tapVersion(times);
     });
     Then('About says {string}', async (_, text: string) => {
-      expect(await screen.findByRole('status')).toHaveTextContent(text);
+      // About's Check for updates (src/whatsNew/) has a status of its own, empty until he checks: find the one that says it
+      await waitFor(() => expect(screen.getAllByRole('status').map((s) => s.textContent ?? '').some((t) => t.includes(text))).toBe(true));
     });
     And('Settings has the switch {string} set to {string}', async (_, name: string, value: string) => {
       await goToSettings();

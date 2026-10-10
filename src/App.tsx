@@ -22,6 +22,7 @@ import { startSpeechSettingsSync } from './speech/settingsSync';
 import { startUsageLog } from './tips/usageLog';
 import { HearAnyWord } from './ui/HearAnyWord';
 import { UpdateBanner } from './UpdateBanner';
+import { WhatsNewOnUpdate } from './whatsNew/WhatsNewOnUpdate';
 import { WordsScreen } from './WordsScreen';
 
 /** `newRandom` makes the random source of each Quick test round and Parsing drill; tests pass a seeded one. */
@@ -53,6 +54,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
   return (
     <div data-shell className="flex h-full min-w-0 flex-col overflow-clip">
       <UpdateBanner />
+      {/* what's new, once after an update (bsv-kit/whats-new) */}
+      <WhatsNewOnUpdate />
       {/* a long press on any word of prose says it (src/ui/HearAnyWord.tsx) */}
       <HearAnyWord />
       {route === 'words' ? (

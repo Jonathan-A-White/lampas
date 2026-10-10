@@ -9,6 +9,8 @@ export default defineConfig({
   plugins: [react()],
   define: {
     __APP_VERSION__: JSON.stringify(buildVersion(pkg.version, new Date(), shortCommit())),
+    // The plain version number (what changelog.json's versions are compared with), without the build's time and commit.
+    __APP_SEMVER__: JSON.stringify(pkg.version),
   },
   test: {
     globals: true,

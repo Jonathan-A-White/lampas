@@ -38,8 +38,8 @@ builds on, with a link to each, its licence and what we changed. Credit is owed 
   Licence: [MIT](https://github.com/facebook/react/blob/main/LICENSE). Changes: none.
 - **[Dexie](https://dexie.org/)** (`dexie`, `dexie-react-hooks`) by David Fahlander. Keeps your words, answers and settings on the phone
   (IndexedDB). Licence: [Apache-2.0](https://github.com/dexie/Dexie.js/blob/master/LICENSE). Changes: none.
-- **[bsv-kit](https://github.com/Jonathan-A-White/bsv-kit)** (`bsv-kit`) by Jonathan A. White. The licence gate and the tutor's payments
-  and messages; in our tests, its honest speech and microphone fakes (`bsv-kit/testing`, whose two clips are spoken by
+- **[bsv-kit](https://github.com/Jonathan-A-White/bsv-kit)** (`bsv-kit`) by Jonathan A. White. The licence gate, the tutor's payments
+  and messages, and What's new (the Update ready banner's line, the sheet after an update, the list of versions in About and its Check for updates button); in our tests, its honest speech and microphone fakes (`bsv-kit/testing`, whose two clips are spoken by
   [eSpeak NG](https://github.com/espeak-ng/espeak-ng)). Licence: [MIT](https://github.com/Jonathan-A-White/bsv-kit/blob/main/LICENSE). Changes: none.
 - **[BSV SDK](https://github.com/bsv-blockchain/ts-stack/tree/main/packages/sdk)** (`@bsv/sdk`) by the BSV Association. Keys, signatures
   and transactions under bsv-kit. Licence: [Open BSV License](https://github.com/bsv-blockchain/ts-stack/blob/main/packages/sdk/LICENSE.txt).

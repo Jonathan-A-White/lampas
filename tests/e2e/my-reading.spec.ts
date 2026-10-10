@@ -41,7 +41,8 @@ async function findDeveloperMode(page: Page): Promise<void> {
   await version.scrollIntoViewIfNeeded();
   expect((await version.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
   for (let i = 0; i < 7; i++) await version.click();
-  await expect(page.getByRole('status')).toContainText('Developer mode is on');
+  // About's Check for updates has an empty status of its own: find the one that says it
+  await expect(page.getByRole('status').filter({ hasText: 'Developer mode is on' })).toBeVisible();
 }
 
 test('Play my reading plays the clip he recorded, and Download my recording is not there', async ({ page }) => {

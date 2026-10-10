@@ -210,6 +210,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario("Reading asks for nothing but the app's own Romans 8 file", ({ Given, When, Then }) => {
     Given('Lampas is opened with nothing saved', openFresh);
     When('he taps {string} in verse {int}', async (_, text: string, verse: number) => tapWord(text, verse));
-    Then('the only request made was {string}', (_, url: string) => expect(network.requests).toEqual([url]));
+    // What's new (src/whatsNew/) asks for the app's own changelog.json once, whatever the reader does: it is not the reader's request.
+    Then('the only request made was {string}', (_, url: string) => expect(network.requests.filter((r) => r !== '/changelog.json')).toEqual([url]));
   });
 });
