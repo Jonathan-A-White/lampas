@@ -32,6 +32,16 @@ const SECOND_WHO_ANSWER = {
   note: 'Nearly there: one word to say again.',
 };
 
+/** A word whose tip spells the sound in capitals and gives no `say` (mw-5r3p30.140): the speaker must say the tip's respelling. */
+const LEVITES_ANSWER = {
+  verdict: 'some-to-fix',
+  focus_words: [
+    { word: 'together', index: 7, chunks: ['to', 'geth', 'er'], tip: 'Stress the second part: say it as tuh-GETH-er.' },
+    READING_ANSWER.focus_words[1],
+  ],
+  note: 'Nearly there: two words to say again.',
+};
+
 /** The grind's model once escaped quotes inside a string the JSON already escapes: the note and tip arrive with backslash-quote (mw-5r3p30.110). */
 const ESCAPED_ANSWER = {
   verdict: 'some-to-fix',
@@ -53,7 +63,7 @@ let fake: FakePostern;
 let synth: FakeSynth;
 
 interface Options {
-  reply?: 'reading' | 'well-read' | 'incomplete' | 'held' | 'second-who' | 'escaped';
+  reply?: 'reading' | 'well-read' | 'incomplete' | 'held' | 'second-who' | 'escaped' | 'tip-respelling';
   view?: 'english' | 'greek';
   denied?: boolean;
   down?: boolean;
@@ -69,7 +79,7 @@ async function open({ reply = 'reading', view = 'english', denied = false, down 
   FakeRecorder.denied = denied;
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
-  if (reply !== 'held') fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : reply === 'second-who' ? SECOND_WHO_ANSWER : reply === 'escaped' ? ESCAPED_ANSWER : reply === 'incomplete' ? INCOMPLETE_ANSWER : WELL_READ_ANSWER };
+  if (reply !== 'held') fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : reply === 'second-who' ? SECOND_WHO_ANSWER : reply === 'escaped' ? ESCAPED_ANSWER : reply === 'tip-respelling' ? LEVITES_ANSWER : reply === 'incomplete' ? INCOMPLETE_ANSWER : WELL_READ_ANSWER };
   fake.greekReply = { status: 'answered', answer: GREEK_READING_ANSWER };
   fake.down = down;
   synth = stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
@@ -232,6 +242,15 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the phone says only {string}, the respelling the answer gave, in the English voice', saysOnly('en-US'));
     When('he then taps the speaker beside {string}', tapSpeakerBeside);
     Then('the phone says only {string}, the word itself, in the English voice', saysOnly('en-US'));
+  });
+
+  Scenario("A flagged word whose tip spells the sound in capitals is spoken as the tip spells it, without a say", ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 in English with a reading check whose tip spells the sound and gives no say', () => open({ reply: 'tip-respelling' }));
+    And('he opens the reading check of verse 28', selectVerse28);
+    And(holdRead, async () => holdAndLetGo(readButton(), 2000));
+    And(verseMarked, verseMarkedSteps);
+    When('he taps the speaker beside {string}', tapSpeakerBeside);
+    Then('the phone says only {string}, the respelling its tip spelled in capitals, in the English voice', saysOnly('en-US'));
   });
 
   Scenario("A flagged Greek word's speaker says the Greek word in the Greek voice", ({ Given, And, When, Then }) => {

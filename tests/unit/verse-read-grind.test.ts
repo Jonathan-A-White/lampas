@@ -190,3 +190,21 @@ describe('quotes in the note and the tip', () => {
     expect(text).toContain('never put a backslash before a quote');
   });
 });
+
+describe('say whenever the tip names a sound or a stress (mw-5r3p30.140)', () => {
+  const text = (): string => readFileSync(grind.instructions as string, 'utf8').replace(/\s+/g, ' ');
+
+  it('requires say when the tip names a sound or a stress, with the Levites example', () => {
+    expect(text()).toMatch(/`say` is required when the `tip` names a sound or a stress/);
+    expect(text()).toContain('LEE-vites');
+    expect(text()).toContain('lee vites');
+  });
+
+  it('gives a name or a Bible name a say unless it is a common English word', () => {
+    expect(text()).toMatch(/proper noun[^.]*Bible name[^.]*`say`[^.]*common English word/i);
+  });
+
+  it('no longer calls say optional for such a word', () => {
+    expect(text()).not.toContain('`say` is optional');
+  });
+});

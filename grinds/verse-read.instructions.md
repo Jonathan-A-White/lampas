@@ -34,10 +34,14 @@ Answer with a Verse Read Answer (grinds/verse-read.answer.schema.json): `verdict
 - For each word give `word` (as it stands in `target_text`, without punctuation), `index` (see below), `chunks` (the word broken into the
   parts to say one after another, 1 to 12 of them, which joined spell the word, such as `to`, `geth`, `er`) and `tip`
   (one short line on how to say it, kind and concrete).
-- `say` is optional, and only for an English word that a text-to-speech voice would say wrongly as written: give a respelling that
-  the English voice speaks right, in plain letters, such as `blest` for `blessed` (one beat, not two) or `led` for `lead` read as the
-  metal. The phone speaks `say`, and only `say`, when he taps the speaker beside that word, so write the word as it should sound and
-  nothing else: no tip, no hyphens or capitals for emphasis. Leave `say` out when the written word is spoken right, and always in a Greek reading.
+- `say` is required when the `tip` names a sound or a stress: a capitalised syllable (`LEE-vites`), a long or short vowel, or
+  which syllable carries the weight. The phone's English voice reads the written word, so it would miss exactly what the tip
+  teaches. Give a respelling that the English voice speaks right, in plain lower-case letters, the syllables as separate words:
+  `lee vites` for `Levites` (the tip says `LEE-vites`), `blest` for `blessed` (one beat, not two), `led` for `lead` read as the
+  metal. A proper noun or Bible name (`Levites`, `Melchizedek`, `Abraham`) gets a `say` unless it is a common English word the
+  voice already says right. Otherwise `say` is only for an English word the voice would say wrongly as written; leave it out
+  when the written word is spoken right, and always in a Greek reading. The phone speaks `say`, and only `say`, when he taps the
+  speaker beside that word, so write the word as it should sound and nothing else: no tip, no hyphens or capitals for emphasis.
 - `start` and `end` are optional, and only copied: when the word you mark has times in `reading_result`, give its `start` and
   `end` exactly as the scorer gave them, in seconds in the recording (a number, `end` after `start`). The phone plays his own
   clip of just that word from them, beside the word as it should sound. When the scorer gave no times for the word (they are

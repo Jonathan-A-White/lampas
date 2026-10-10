@@ -102,7 +102,7 @@ const typeOf = (view: ReadingView) =>
 function SayWord({ fix, view, id, label, className }: { fix: FixWord; view: ReadingView; id: string; label: string; className?: string }) {
   return (
     <SpeakButton
-      text={sayOf(fix)}
+      text={sayOf(fix, view)}
       id={id}
       label={label}
       kind="speaker"
