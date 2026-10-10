@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.18",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.103",
+    "kind": "new",
+    "text": "The tutor now shows your question back with proper punctuation and capitals, with the ums and false starts taken out."
+  },
+  {
     "version": "0.1.15",
     "date": "2026-10-10",
     "story": "mw-5r3p30.121",
