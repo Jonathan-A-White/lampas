@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.79",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.176",
+    "kind": "fixed",
+    "text": "the Unlock screen on a short or sideways phone no longer cuts off its top; you can scroll to all of it."
+  },
+  {
     "version": "0.1.78",
     "date": "2026-10-10",
     "story": "mw-hqd5bz.23",

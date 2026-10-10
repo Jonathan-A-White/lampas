@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.79
+_2026-10-10_
+- Fixed: the Unlock screen on a short or sideways phone no longer cuts off its top; you can scroll to all of it.
+
 ## 0.1.78
 _2026-10-10_
 - Fixed: Review now asks the letters and letter pairs you were told to work on first, including ones you were never asked.
