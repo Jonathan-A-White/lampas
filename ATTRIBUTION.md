@@ -63,9 +63,9 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
 
 - **[WhatsOnChain](https://whatsonchain.com)**. A public Bitcoin SV block explorer. Lampas asks it whether your phone's key holds a Lampas
   licence. Licence: none needed, it is a service used through its public API and no code or data is copied; its [terms](https://whatsonchain.com/terms) apply. Changes: none.
-- **[Postern](https://github.com/Jonathan-A-White/postern)** and its mill, by Jonathan A. White. Carries your questions to the tutor and
+- **[Postern](https://github.com/Jonathan-A-White/postern)** and its mill, by Jonathan A. White. Carries your questions to the tutor, with any pictures you attach, and
   its answers back. Licence: [MIT](https://github.com/Jonathan-A-White/postern/blob/main/LICENSE). Changes: none.
-- **[Claude](https://www.anthropic.com/claude)** by Anthropic. The model behind the tutor's answers, the reading check, the tips and the help with filling in a form.
+- **[Claude](https://www.anthropic.com/claude)** by Anthropic. The model behind the tutor's answers (including its reading of the pictures you send it), the reading check, the tips and the help with filling in a form.
   Licence: none needed, it is a service used through the mill; its [terms](https://www.anthropic.com/legal/consumer-terms) apply. Changes: none.
 - **[Logos Bible Software](https://www.logos.com)** and **[Accordance](https://www.accordancebible.com)**. Only if you switch them on in
   Settings: Lampas links to a word or a verse in the app you already own, and offers a link to the app's page in your phone's store if you do not have it yet. No text, image or data is taken from either. Their own licences are yours.
