@@ -1,17 +1,11 @@
-// src/Reader.tsx — a chapter verse by verse (Romans 8 on a fresh install; the title opens the picker, src/ChapterPicker.tsx).
-// The header switches English (the MSB) | Greek (Byzantine); every word is tappable and opens the word sheet; a verse number selects the verse. The gear opens Settings
-// (src/SettingsScreen.tsx), where the Weave (Off | Solid words | Solid and learning words) is switched: with it on, the English view shows the
-// Greek of his solid words in place of their English (src/data/weave.ts).
-// Settings also holds the Layout (Verse by verse | Paragraph, src/layout/layouts.ts cuts the verses into blocks) and Section
-// headings (On | Off): the MSB's heading (verses[].h) is drawn above its block in either view, in English.
-// A tapped verse number opens the Verse view (src/VerseView.tsx, mw-5r3p30.79) over the Reader: the verse big at the top, one row of actions
-// (Listen, Read it aloud, Ask the tutor, Copy link) and one hold bar at the foot. The view is a Back step of its own (src/nav/route.ts openVerse),
-// so Back returns to the Reader where it was; the verse is in the address (v), the address is the truth, and the verse is "selected" while the view
-// is open. A tap on a section heading opens the same view for the passage under it (mw-5r3p30.73, src/data/passage.ts; the address `p` is the
-// passage's first verse). The selection, the view and the weave are told to the rest of the app on the event bus (src/events/bus.ts, docs/events.md).
-// The chapter comes from /data/<book>/<n>.json (Romans 8 is precached, any other is fetched when first opened and then kept by the
-// worker), the view and the weave are kept in the settings store. Which chapter is open is the address's (b and c), else the one
-// last open (src/data/readerChapter.ts); a chapter is a ReaderBody keyed by it, so choosing another starts the screen afresh.
+// src/Reader.tsx — a chapter verse by verse (Romans 8 on a fresh install; the title opens the picker, src/ChapterPicker.tsx): the composition (docs/module-map.md R1).
+// It draws with src/reader/ (ChapterText, VerseText, ReaderHeader, ChapterFailed), reads through useReaderSettings, useChapter, useWoven, useReadFrom and
+// useReaderTutor, and keeps the scroll, reading-position and selection effects. English (the MSB) | Greek (Byzantine); every word is tappable and opens the
+// word sheet; a tapped verse number opens the Verse view (src/VerseView.tsx, docs/verse-view.md) over the Reader as a Back step of its own (src/nav/route.ts
+// openVerse), and a section heading opens it for its passage (src/data/passage.ts). The address is the truth: its verse (v) is "selected" while the view is open.
+// The selection, the view and the weave are told to the rest of the app on the event bus (src/events/bus.ts, docs/events.md). The chapter comes from
+// /data/<book>/<n>.json; which chapter is open is the address's (b and c), else the one last open (src/data/readerChapter.ts); a chapter is a
+// ReaderBody keyed by it, so choosing another starts the screen afresh.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReadHold } from './ReadCheck';
@@ -20,111 +14,54 @@ import { useVerseAction } from './verse/action';
 import { ASK_BUTTON_ROOM, AskTutorButton, TALK_BAR_LIFT } from './AskTutor';
 import { TalkBar, TalkSheet } from './Talk';
 import { ErrorBoundary } from './ErrorBoundary';
-import { type Chapter, type GreekWord, type Verse, loadChapter } from './data/chapter';
-import { formPasses } from './data/grammar/formLevel';
-import { listLevels } from './data/repositories/grammarLevels';
-import {
-  getLayout,
-  getGreekPronunciation,
-  getReadSpan,
-  getReaderView,
-  getSectionHeadings,
-  getWeave,
-  getWeaveGrammar,
-  listLearningLemmas,
-  listSolidLemmas,
-  setReaderView,
-  setWeave,
-  talkRef,
-  type ReaderView,
-} from './data/repositories';
+import type { Verse } from './data/chapter';
+import { getGreekPronunciation, setReaderView, talkRef } from './data/repositories';
 import { chapterOf, getOpenChapter, setOpenChapter, type OpenChapter } from './data/readerChapter';
 import { verseNeighbours } from './data/neighbours';
-import { type Passage, passageAt, passageVerse, passagesOf, unitId } from './data/passage';
+import { passageAt, passageVerse, passagesOf, unitId } from './data/passage';
 import { ChapterNav } from './ChapterNav';
 import { ChapterPicker } from './ChapterPicker';
-import { weaveVerse } from './data/weave';
 import { BuildVersion } from './BuildVersion';
 import { latest, publish, useLatest } from './events/bus';
-import { weaveSetting } from './settings/definitions';
-import { announceSetting, toldSetting } from './settings/store';
 import { blocksOf } from './layout/layouts';
 import { LinkOpener } from './nav/LinkOpener';
 import { pendingLink, takeLink } from './nav/linkRequest';
 import { lemmaSheet, linkOf } from './nav/links';
 import { pendingRequest, takeRequest } from './nav/readerRequest';
-import { closeVerse, movePassage, moveVerse, navigate, openPassage, openVerse, readerOf, routeOf, useAddress } from './nav/route';
+import { closeVerse, navigate, openPassage, openVerse, readerOf, routeOf, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
 import { useReadChecks } from './useReadChecks';
+import { stepOf, stepOfVerse } from './reader/steps';
+import { LinkNotice } from './reader/LinkNotice';
+import { ChapterFailed } from './reader/ChapterFailed';
+import { useChapter } from './reader/useChapter';
+import { useReadFrom } from './reader/useReadFrom';
+import { useWoven } from './reader/useWoven';
+import { ReaderHeader } from './reader/ReaderHeader';
+import { useReaderSettings, type ReaderSettings } from './reader/useReaderSettings';
 import { useReaderTutor } from './reader/useReaderTutor';
 import { READER_SUGGESTIONS } from './tutor/screen';
 import { useTalk } from './useTalk';
 import { useVoice } from './useVoice';
 import { HeaderButton } from './ScreenHeader';
 import { speakTutor } from './speech/tutorVoice';
-import { continueReading, getReading, isReadingOf, listenKeyOf, pauseReading, planOf, startAnswer, startReading, stopReading, updatePlan, useListenCompleted, useReading } from './speech/readAloud';
+import { continueReading, getReading, isReadingOf, listenKeyOf, pauseReading, startAnswer, stopReading, updatePlan, useListenCompleted, useReading } from './speech/readAloud';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
 import { ReaderChips } from './ReaderChips';
 import { TeachSheet } from './TeachSheet';
 import { useNewWords } from './useNewWords';
 import { usePace } from './usePace';
 import { TipCard } from './tips/TipCard';
-import { ReadFromButton, ReadingBar } from './speech/ReadControls';
+import { ReadingBar } from './speech/ReadControls';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { warmVoices } from './speech/greek';
 import { WordSheet, type Lookup } from './WordSheet';
 import { PassageText, ParagraphView, SectionHeading, VerseLine } from './reader/ChapterText';
 import { VerseText, type VerseTalk } from './reader/VerseText';
 
-function ViewSwitch({ view }: { view: ReaderView }) {
-  const choice = (value: ReaderView, label: string) => (
-    <button
-      type="button"
-      aria-pressed={view === value}
-      onClick={() => void setReaderView(value)}
-      className={`min-h-11 min-w-11 rounded-lg px-2.5 chrome-text font-medium ${view === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
-    >
-      {label}
-    </button>
-  );
-  return (
-    <div role="group" aria-label="Language" className="flex shrink-0 rounded-xl border border-line p-0.5">
-      {choice('english', 'English')}
-      {choice('greek', 'Greek')}
-    </div>
-  );
-}
-
+const NO_SETTINGS: Partial<ReaderSettings> = {};
 const EMPTY_LEMMAS: ReadonlySet<string> = new Set();
-
-/** The arrow to the passage `by` places from `passage` in the chapter's passages: null at the chapter's first and last. */
-function stepOf(passages: Passage[], passage: Passage, by: 1 | -1): (() => void) | null {
-  const to = passages[passages.findIndex((p) => p.first === passage.first) + by];
-  return to ? () => movePassage(to.first) : null;
-}
-
-/** The arrow to a verse place (src/data/neighbours.ts), or null when there is none. */
-function stepOfVerse(place: { book: string; chapter: number; verse: number } | null): (() => void) | null {
-  return place ? () => moveVerse(place) : null;
-}
-
-function GearIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" />
-    </svg>
-  );
-}
-
-function ChevronIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="m6 9 6 6 6-6" />
-    </svg>
-  );
-}
 
 /** The chapter the Reader shows: the one the address names (a book and chapter; a chapter alone is Romans), else the one last open. */
 function openFrom(address: string): OpenChapter {
@@ -162,25 +99,12 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const { book: BOOK, chapter: CHAPTER, title: TITLE } = open;
   const [picking, setPicking] = useState(false);
   const closePicker = useCallback(() => setPicking(false), []);
-  const view = useLiveQuery(getReaderView, []);
-  const weave = useLiveQuery(getWeave, []);
-  const weaveGrammar = useLiveQuery(getWeaveGrammar, []);
-  const grammarLevels = useLiveQuery(listLevels, []);
-  const solid = useLiveQuery(listSolidLemmas, []);
-  const learning = useLiveQuery(listLearningLemmas, []);
-  const layout = useLiveQuery(getLayout, []);
-  const headings = useLiveQuery(getSectionHeadings, []);
-  const readSpan = useLiveQuery(getReadSpan, []);
-  const [chapter, setChapter] = useState<Chapter | null>(null);
-  const [failed, setFailed] = useState(false);
-  const [attempt, setAttempt] = useState(0);
-  // What the address said when the reader opened (a reopen, Back to an earlier place): the selected verse, and the view
-  // and weave to put back in the settings. The address is the place; the settings follow it.
+  const settings = useReaderSettings() ?? NO_SETTINGS;
+  const { view, weave, solid, learning, layout, headings, readSpan } = settings;
+  const { chapter, failed, retry } = useChapter(BOOK, CHAPTER);
+  // What the address said when the reader opened (a reopen, Back to an earlier place): the selected verse (the view and weave it names are
+  // put back in the settings by useReaderSettings). The address is the place; the settings follow it.
   const [opened] = useState(() => readerOf(window.location.hash));
-  const wantView = useRef(opened.view);
-  // The weave is switched in Settings, so a reader reached by Back from there must not put an older address's weave
-  // back: once the bus has told a weave, the saved setting is the truth and the address only follows it.
-  const wantWeave = useRef(toldSetting(weaveSetting) !== undefined ? undefined : opened.weave);
   const scrollRef = useScrollMemory('reader');
   const main = useRef<HTMLElement | null>(null);
   const mainRef = useCallback(
@@ -295,60 +219,14 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       disabled: phase === 'sending' || phase === 'waiting',
     };
   };
-  const weaving = view === 'english' && (weave === 'solid' || weave === 'solid+learning');
-  const withLearning = weave === 'solid+learning';
-  // The grammar dial: with it on, a form stays English unless every idea its parsing needs is at that level (the dial is not in the address).
-  const woven = useMemo(() => {
-    if (!chapter || !weaving) return null;
-    const formOk =
-      weaveGrammar === undefined || grammarLevels === undefined
-        ? () => false // the dial is still loading: weave nothing rather than flash a verse that then narrows
-        : weaveGrammar === 'any'
-          ? undefined
-          : (w: GreekWord) => formPasses(w.p, grammarLevels, weaveGrammar);
-    return chapter.verses.map((v) =>
-      weaveVerse(v, { solid: solid ?? EMPTY_LEMMAS, learning: withLearning ? learning ?? EMPTY_LEMMAS : undefined, formPasses: formOk }),
-    );
-  }, [chapter, weaving, withLearning, solid, learning, weaveGrammar, grammarLevels]);
-  // What is read is what is shown: the plan follows the view and the weave.
-  const plan = useMemo(() => (chapter && view ? planOf(chapter.verses, view, woven) : null), [chapter, view, woven]);
-  const readFrom = useCallback(
-    (from: number, continuous: boolean) => {
-      if (plan) startReading({ book: BOOK, chapter: CHAPTER, plan, from, continuous, span: readSpan });
-    },
-    [plan, BOOK, CHAPTER, readSpan],
-  );
-  // Listen on a passage: its verses only, to the end of the passage and no further, whatever Settings > Read aloud says. On a verse: that verse only.
-  // A Listen is paused by an interruption from inside the app and goes on by itself (src/speech/readAloud.ts interruptListen).
-  const listenTo = useCallback(
-    (passage: Passage) => {
-      if (plan)
-        startReading({
-          inBook: BOOK,
-          chapter: CHAPTER,
-          plan: plan.filter((v) => v.n >= passage.first && v.n <= passage.last),
-          from: passage.first,
-          continuous: true,
-          span: 'passage',
-          listen: listenKeyOf(BOOK, CHAPTER, unitId(passageVerse(passage))),
-        });
-    },
-    [plan, BOOK, CHAPTER],
-  );
-  const listenVerse = useCallback(
-    (verse: Verse) => {
-      if (plan) startReading({ book: BOOK, chapter: CHAPTER, plan, from: verse.n, continuous: false, span: readSpan, listen: listenKeyOf(BOOK, CHAPTER, unitId(verse)) });
-    },
-    [plan, BOOK, CHAPTER, readSpan],
-  );
+  const woven = useWoven(chapter, settings);
+  const { plan, readFrom, listenTo, listenVerse } = useReadFrom(BOOK, CHAPTER, chapter, view, woven, readSpan);
   const listened = useListenCompleted();
   const chapterReading = reading.status !== 'idle' && reading.answer === null;
   const readingVerse = chapterReading ? reading.verse : null;
-  const headerButtons = chapterReading && !reading.onBar;
   const passages = useMemo(() => (chapter ? passagesOf(chapter.verses) : []), [chapter]);
   const blocks = useMemo(() => (chapter && layout ? blocksOf(chapter.verses, layout) : []), [chapter, layout]);
   const wovenCount = woven ? woven.reduce((n, w) => n + w.filter(Boolean).length, 0) : 0;
-
   // The selection is not kept when the reader goes away; the bus holds it only while the reader is on screen.
   useEffect(() => {
     const verse = isHere(opened, BOOK, CHAPTER) ? opened.verse ?? null : null;
@@ -364,25 +242,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     const { view: shown } = current.current;
     if (here.view && shown && here.view !== shown) void setReaderView(here.view);
   }, [address, BOOK, CHAPTER]);
-  useEffect(() => {
-    if (!view) return;
-    if (wantView.current && wantView.current !== view) {
-      void setReaderView(wantView.current);
-      return;
-    }
-    wantView.current = undefined;
-    publish({ kind: 'view-changed', view });
-  }, [view]);
-  useEffect(() => {
-    if (!weave) return;
-    if (wantWeave.current && wantWeave.current !== weave) {
-      void setWeave(wantWeave.current);
-      return;
-    }
-    wantWeave.current = undefined;
-    announceSetting(weaveSetting, weave);
-  }, [weave]);
-
   useEffect(() => {
     if (plan) updatePlan(plan);
   }, [plan]);
@@ -425,53 +284,19 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     if (rect.top < bar.top + margin || rect.bottom > bar.bottom - margin) box.scrollTop += rect.top - bar.top - margin;
   }, [readingVerse]);
 
-  useEffect(() => {
-    if (layout) publish({ kind: 'layout-changed', layout });
-  }, [layout]);
-  useEffect(() => {
-    if (headings) publish({ kind: 'headings-changed', headings });
-  }, [headings]);
-
-  useEffect(() => {
-    let current = true;
-    loadChapter(BOOK, CHAPTER).then(
-      (c) => current && (setFailed(false), setChapter(c)),
-      () => current && setFailed(true),
-    );
-    return () => {
-      current = false;
-    };
-  }, [attempt, BOOK, CHAPTER]);
-
   return (
     <>
-      <header inert={viewUnit !== undefined} className="flex shrink-0 items-center gap-1 border-b border-line px-2">
-        {/* While a reading the bar does not hold waits for Pause or Play, the header gives its room to those and Stop; the title stays for screen readers. */}
-        <h1 className={`chrome-title min-w-0 font-semibold ${headerButtons ? 'sr-only' : 'flex-1'}`}>
-          <button
-            type="button"
-            aria-haspopup="dialog"
-            onClick={() => setPicking(true)}
-            className="flex min-h-12 max-w-full items-center gap-0.5 rounded-lg text-left font-semibold active:bg-line"
-          >
-            <span className="truncate">{TITLE}</span>
-            <span className="shrink-0 text-accent">
-              <ChevronIcon />
-            </span>
-          </button>
-        </h1>
-        {headerButtons ? <span className="flex-1" /> : null}
-        {view ? <ViewSwitch view={view} /> : null}
-        {plan || crossingHere ? <ReadFromButton from={selected} reading={reading} onRead={() => readFrom(selected ?? 1, true)} /> : null}
-        <button
-          type="button"
-          aria-label="Settings"
-          onClick={() => navigate('settings')}
-          className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-lg text-accent active:bg-line"
-        >
-          <GearIcon />
-        </button>
-      </header>
+      <ReaderHeader
+        title={TITLE}
+        view={view}
+        chapterReading={chapterReading}
+        reading={reading}
+        from={selected}
+        canRead={plan !== null || crossingHere}
+        inert={viewUnit !== undefined}
+        onPick={() => setPicking(true)}
+        onRead={() => readFrom(selected ?? 1, true)}
+      />
       <ReaderChips
         hidden={chapterReading}
         newWords={newWords?.length ?? 0}
@@ -481,39 +306,12 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         wovenCount={woven ? wovenCount : null}
       />
       {chapterReading || !tipOpen ? null : <TipCard onClose={() => setTipOpen(false)} />}
-      {notice ? (
-        <div role="status" data-link-notice className="flex shrink-0 items-center gap-2 border-b border-line bg-surface px-3 py-1 text-sm">
-          <p className="min-w-0 flex-1">{notice}</p>
-          <button type="button" onClick={() => setNotice(null)} className="min-h-11 shrink-0 rounded-lg px-3 text-base font-medium text-accent active:bg-line">
-            Dismiss
-          </button>
-        </div>
-      ) : null}
+      {notice ? <LinkNotice text={notice} onDismiss={() => setNotice(null)} /> : null}
       <ReadingBar reading={reading} />
       <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} style={chapter ? { marginBottom: `calc(${ASK_BUTTON_ROOM})` } : undefined} className="screen min-h-0 flex-1 px-1 pt-2">
         <div>
         {failed ? (
-          <div role="alert" className="px-4 pt-6 text-center">
-            {navigator.onLine === false ? (
-              <p className="text-lg">{TITLE} is not on this phone yet, and you are offline. Connect to read it.</p>
-            ) : (
-              <p className="text-lg">Could not load {TITLE}.</p>
-            )}
-            <button
-              type="button"
-              onClick={() => setAttempt((n) => n + 1)}
-              className="mt-4 min-h-12 rounded-xl bg-accent px-6 text-lg font-medium text-accent-fg"
-            >
-              Try again
-            </button>
-            <button
-              type="button"
-              onClick={() => setPicking(true)}
-              className="mt-3 block min-h-12 w-full rounded-xl border border-line text-lg font-medium"
-            >
-              Choose another chapter
-            </button>
-          </div>
+          <ChapterFailed title={TITLE} onRetry={retry} onPick={() => setPicking(true)} />
         ) : chapter && view && layout && headings ? (
           <>
             {blocks.map((block) => {
