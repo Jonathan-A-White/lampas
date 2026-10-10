@@ -56,6 +56,18 @@ const scrollText = (page: Page, by: number) =>
 const scrollTop = (page: Page) => page.evaluate(() => (document.querySelector('[data-reader]') as HTMLElement).scrollTop);
 const textHeight = (page: Page) => page.evaluate(() => (document.querySelector('[data-reader]') as HTMLElement).getBoundingClientRect().height);
 
+/** The text box's height once the page has stopped moving (a row that arrives late, such as a tip, changes it): two reads 400 ms apart agree. */
+async function settledHeight(page: Page) {
+  let last = await textHeight(page);
+  for (let i = 0; i < 25; i++) {
+    await page.waitForTimeout(400);
+    const now = await textHeight(page);
+    if (now === last) return now;
+    last = now;
+  }
+  throw new Error(`the text box never stopped changing height (last ${last})`);
+}
+
 async function expectAll(page: Page, state: 'visible' | 'hidden') {
   for (const el of all(page)) await (state === 'visible' ? expect(el).toBeVisible() : expect(el).toBeHidden());
 }
@@ -78,7 +90,7 @@ async function twoFingerTap(page: Page, at = { x: 150, y: 450 }, moveBy = 0) {
 test('scrolling down slides the bars away, scrolling up 24 px brings them back', async ({ page }) => {
   await openReader(page, 'on');
   await expectAll(page, 'visible');
-  const before = await textHeight(page);
+  const before = await settledHeight(page);
   await shot(page, 'immersive-shown');
 
   await scrollText(page, 200);
@@ -119,6 +131,8 @@ test('a two-finger tap brings the bars back and opens no word sheet; a one-finge
   // a finger on a word opens its sheet as ever
   const word = page.locator('[data-verse="3"] [role="button"][data-chunk]').first();
   await word.scrollIntoViewIfNeeded();
+  // scrolling up may bring the bars back, and they slide: measure the word once the page has stopped moving
+  await settledHeight(page);
   const at = await word.boundingBox();
   if (!at) throw new Error('no word');
   await page.touchscreen.tap(at.x + at.width / 2, at.y + at.height / 2);
