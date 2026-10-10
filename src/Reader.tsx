@@ -800,7 +800,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
 
   return (
     <>
-      <header inert={viewUnit !== undefined} className="flex shrink-0 items-center gap-1 border-b border-line px-2 py-1">
+      <header inert={viewUnit !== undefined} className="flex shrink-0 items-center gap-1 border-b border-line px-2">
         {/* While a reading the bar does not hold waits for Pause or Play, the header gives its room to those and Stop; the title stays for screen readers. */}
         <h1 className={`chrome-title min-w-0 font-semibold ${headerButtons ? 'sr-only' : 'flex-1'}`}>
           <button
