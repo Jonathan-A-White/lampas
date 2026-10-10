@@ -62,6 +62,21 @@ Postern's and SpellForge's; its colours are Lampas's (`--bk-speech-*` in `src/in
   mw-5r3p30.122 kept this as it was; the Governor's rule, pwa-best-practices section 12, would pause them too, for a later story to decide). A page that hides pauses both
   (the package), and Resume continues from the same sentence on coming back.
 
+## Pages of prose (mw-5r3p30.128)
+
+About, My study way and the Preface have two round 44 px buttons in their header (`src/PageActions.tsx`, `usePageActions(hash, title)`: `buttons` for the
+header's `action`, `notice` under the header):
+
+- **Read aloud** (aria-label `Read aloud`, `aria-pressed` while its own reading is on; a second tap stops it) reads the page top to bottom. The page marks each
+  paragraph, heading or line worth reading with `data-read-block`; each block is one "verse" of a plan handed to `startReading` under the answer id
+  `PAGE_READING_ID`, so the speaking bar (Pause, Resume, Restart, Stop) and the package's sentence-keeping are the ones above, and Resume goes on from the same
+  sentence. Greek and Hebrew stretches are runs of their own (`src/speech/pageRuns.ts`, the cut a long press and `answerRuns` make). The block being read has
+  `data-reading` (the highlight in `src/index.css`) and is scrolled into view; leaving the page stops its reading, and only its own. A new page of prose is
+  `usePageActions` plus `data-read-block` on its text.
+- **Share** (aria-label `Share`) calls `navigator.share({ title, text, url })` with the page's name, its first block and its own link
+  (`https://lampas.allmymind.org/#/about`, `#/studyway`, `#/preface`); with no `navigator.share` (or one that fails for a reason other than the sheet being
+  closed) it copies the link and says 'Link copied', or shows the link in a field to copy by hand when the clipboard refuses.
+
 ## The tutor's responses (mw-5r3p30.93)
 
 Settings > The tutor's responses has one choice, **Read the tutor's responses aloud** (registry key `readTutor`, On by default, so the tutor can change it
