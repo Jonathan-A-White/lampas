@@ -108,7 +108,7 @@ export function useTalk(book: string, chapter: number, onAnswered: (ref: string,
           // The settings he asked for are applied at once (the registry checks each), then kept with the turn for its Undo.
           const { applied, refused } = await applyChanges(answer.settings_changes);
           const { added, already, unknown } = await addWords(scope, answer.words_to_add ?? []);
-          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary });
+          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, cleanQ: answer.question });
           set(undefined);
           if (!signal.aborted) answered.current(ref, id, answer.answer, { focus, syllables: answer.syllables });
         } catch (err) {

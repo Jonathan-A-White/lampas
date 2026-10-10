@@ -11,6 +11,12 @@
       "minLength": 1,
       "maxLength": 1500
     },
+    "question": {
+      "description": "What he just said, put into clean written words: the capitals and punctuation it needs (question marks, full stops), the ums, uhs, repeated words and dropped starts taken out, the meaning and his own words kept. Never an answer or an explanation; unchanged when it was clean already. At most the length of what he said.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600
+    },
     "words": {
       "description": "The Greek words the answer speaks about, each with its lemma and a short note that includes its parsing. Empty when the answer is about no particular word.",
       "type": "array",

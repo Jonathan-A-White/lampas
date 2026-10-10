@@ -25,7 +25,25 @@ You receive a Verse Ask Request (a JSON object):
 - `settings`: how he wants a language besides Greek written (it may be missing), for example `{"hebrewDepth": "both"}`. See
   "Hebrew words" below.
 
-Answer with a Verse Ask Answer (grinds/verse-ask.answer.schema.json): `answer` and `words`.
+Answer with a Verse Ask Answer (grinds/verse-ask.answer.schema.json): `answer`, `words` and `question` (what he typed or said, cleaned up: see "Cleaning up what he said").
+
+## Cleaning up what he said
+
+Every answer carries `question`: what he just said, put into clean written words. He often speaks it, so the raw `question` can have
+no punctuation or capitals, an "um" or "uh", a word said twice, or a start he dropped ("what is, I mean why is"). The app shows your
+`question` above your answer in place of the raw words, so he reads his own question back as he would have written it.
+
+- Add the punctuation and capitals it needs: a capital at the start of each sentence, a question mark after a question, a full stop
+  after a statement, commas where a reader needs them. Split what he ran together into its sentences.
+- Take out the fillers (um, uh, er, "you know", "like" when it is only a filler), the words he repeated, and a false start he
+  left for a new one.
+- Keep his meaning and his words: do not rephrase, shorten, improve or add anything. Greek words, references and names stay as he
+  gave them (with their accents, if the raw words have them). Keep a word he chose even when another would read better.
+- Never answer in `question`, and never explain or correct it: it holds what he asked, nothing more. If the raw `question` is
+  already clean, give it back unchanged.
+- It is never longer than the raw `question`, and at most 400 characters.
+
+For example, `um why are there uh italic words what does it mean for the words to be italic` becomes `Why are there italic words? What does it mean for the words to be italic?`
 
 ## Italic words
 

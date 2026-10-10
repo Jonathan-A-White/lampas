@@ -257,7 +257,7 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
   return (
     <article data-turn className="space-y-2">
       <p data-talk-q className="ml-auto w-fit max-w-[88%] break-words rounded-2xl bg-accent/15 px-3 py-2 text-lg">
-        {turn.q}
+        {turn.cleanQ ?? turn.q}
       </p>
       <div data-talk-a onClick={stopOnTap} className="rounded-2xl border border-line px-3 py-2">
         <div data-answer-text className="break-words text-lg leading-snug">

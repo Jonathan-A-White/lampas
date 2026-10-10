@@ -65,7 +65,7 @@ export function AnswerCards({ verse, book, chapter }: { verse: number | string; 
 function AnswerCard({ answer }: { answer: TutorAnswer }) {
   return (
     <article data-answer onClick={stopOnTap} className="rounded-xl border border-line bg-surface p-3">
-      <p className="break-words text-sm text-muted">{answer.question}</p>
+      <p data-answer-question className="break-words text-sm text-muted">{answer.cleanQuestion ?? answer.question}</p>
       <div className="mt-1 break-words text-lg leading-snug">
         <Markdown text={answer.answer} />
       </div>

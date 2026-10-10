@@ -28,6 +28,8 @@ export interface TurnChanges {
   guide?: HebrewSounds;
   /** the one-line summary of an ask the app cannot meet, offered to the makers */
   feedbackOffer?: string;
+  /** what he said, cleaned up by the tutor; shown in place of the raw words, which stay as `q` */
+  cleanQ?: string;
 }
 
 /** Keeps one turn and returns its id. */
@@ -42,6 +44,7 @@ export async function addTurn(ref: string, q: string, a: string, words: AnswerWo
   if (done?.studyWayLine) turn.studyWayLine = done.studyWayLine;
   if (done?.guide) turn.guide = done.guide;
   if (done?.feedbackOffer) turn.feedbackOffer = done.feedbackOffer;
+  if (done?.cleanQ) turn.cleanQ = done.cleanQ;
   return (await db.talks.add(turn)) as number;
 }
 

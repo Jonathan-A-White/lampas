@@ -6,8 +6,9 @@ export type { AnswerWord, TutorAnswer };
 /** The key a verse's answers are kept under: 'rom.8.28'; a passage's, '1-11' for `verse` (src/data/passage.ts unitId): 'rom.8.1-11'. */
 export const verseRef = (book: string, chapter: number, verse: number | string): string => `${book}.${chapter}.${verse}`;
 
-export async function addAnswer(ref: string, question: string, answer: string, words: AnswerWord[], now = Date.now()): Promise<void> {
-  await db.answers.add({ ref, question, answer, words, when: now });
+/** Keeps an answer with the question as he said it and, when the tutor gave one, the question cleaned up (shown in its place). */
+export async function addAnswer(ref: string, question: string, answer: string, words: AnswerWord[], now = Date.now(), cleanQuestion?: string): Promise<void> {
+  await db.answers.add({ ref, question, ...(cleanQuestion ? { cleanQuestion } : {}), answer, words, when: now });
 }
 
 /** One verse's answers, the oldest first. */

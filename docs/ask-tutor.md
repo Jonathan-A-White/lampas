@@ -61,6 +61,17 @@ screen's facts (the last facts give way when the request is over `MAX_ASK_BYTES`
 The turn (`TalkTurn.feedbackOffer`, `feedbackSent`, no table change) then reads **Sent** and "The answer will come back."; a failure shows the usual
 title and Retry. The bus hears `feedback-sent` with `feedback: 'tutor-ask'`.
 
+## What he said, cleaned up
+
+He often speaks his question, so the words that reach the grist can have no punctuation, an "um", a repeat or a dropped start. Both tutor grinds
+that take a question (`bible-talk` and `verse-ask`) give it back as the answer's `question` (their instructions' "Cleaning up what he said"): his
+words with capitals and punctuation, the fillers, repeats and false starts taken out, the meaning unchanged. The Talk sheet's turn
+(`TalkTurn.cleanQ`) and the Verse view's answer card (`TutorAnswer.cleanQuestion`, `[data-answer-question]`) show that in place of the raw
+transcript; the raw words stay kept as `q` / `question` (and `q` is what goes in the next request's history). An answer with no `question`, such as
+one kept before this, shows the raw words. While the answer is on its way the raw words show, as before. No table change (the fields are not indexed).
+Checks: `tests/unit/cleaned-question.test.ts`, `grinds/examples/*/cleaned-question.json`, and the scenarios "What he said is shown back cleaned up"
+in `features/bible-talk.feature` and "What he asked is shown above the answer cleaned up" in `features/tutor.feature`.
+
 ## Tests
 
 `features/ask-tutor.feature` (the control, the request, the questions, what is kept), `tests/unit/ask-tutor.test.ts`, the `screen` blocks of

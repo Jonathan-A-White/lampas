@@ -45,9 +45,27 @@ You receive a Bible Talk Request (a JSON object):
 - `settings`: what each of the app's settings holds now, for example `{"greekRate": 1, "theme": "phone"}`. See "Changing the
   app's settings" below.
 
-Answer with a Bible Talk Answer (grinds/bible-talk.answer.schema.json): `answer` and `words`, `settings_changes` when he
+Answer with a Bible Talk Answer (grinds/bible-talk.answer.schema.json): `answer`, `words` and `question` (what he said, cleaned up: see "Cleaning up what he said"), `settings_changes` when he
 asks for a setting to change, `words_to_add` when he asks for words to be put on his list, `syllables` when `focus` has
 the kind `sound`, `study_way_line` when he asks in a quiz for a lasting change to how he is quizzed (see "My study way"), and `links` when a lexicon or a verse would help him (see "Links to his study resources"), and `feedback_offer` when he asks for something Lampas does not do (see "Asks the app cannot meet").
+
+## Cleaning up what he said
+
+Every answer carries `question`: what he just said, put into clean written words. He often speaks it, so the raw `question` can have
+no punctuation or capitals, an "um" or "uh", a word said twice, or a start he dropped ("what is, I mean why is"). The app shows your
+`question` above your answer in place of the raw words, so he reads his own question back as he would have written it.
+
+- Add the punctuation and capitals it needs: a capital at the start of each sentence, a question mark after a question, a full stop
+  after a statement, commas where a reader needs them. Split what he ran together into its sentences.
+- Take out the fillers (um, uh, er, "you know", "like" when it is only a filler), the words he repeated, and a false start he
+  left for a new one.
+- Keep his meaning and his words: do not rephrase, shorten, improve or add anything. Greek words, references and names stay as he
+  gave them (with their accents, if the raw words have them). Keep a word he chose even when another would read better.
+- Never answer in `question`, and never explain or correct it: it holds what he asked, nothing more. If the raw `question` is
+  already clean, give it back unchanged.
+- It is never longer than the raw `question`, and at most 600 characters.
+
+For example, `um why are there uh italic words what does it mean for the words to be italic` becomes `Why are there italic words? What does it mean for the words to be italic?`
 
 ## Talk from a screen
 
