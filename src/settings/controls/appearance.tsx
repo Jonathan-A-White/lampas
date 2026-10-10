@@ -1,7 +1,9 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { TEXT_SIZES } from '../../appearance/textSizes';
 import { THEMES, type Theme } from '../../appearance/themes';
-import { getLayout, getSectionHeadings, getTextSize, getTheme, type ReadingLayout } from '../../data/repositories';
+import { getLayout, getSectionHeadings, getTextSize, type ReadingLayout } from '../../data/repositories';
+import { themeSetting } from '../definitions';
+import { useSetting } from '../store';
 import { LAYOUTS } from '../../layout/layouts';
 import { writeSetting } from '../registry';
 import { OnOff, SettingRow } from './SettingRow';
@@ -62,7 +64,7 @@ function LayoutChoice({ layout }: { layout: ReadingLayout }) {
 }
 
 export const AppearanceControl: Control = ({ row }) => {
-  const theme = useLiveQuery(getTheme, []);
+  const theme = useSetting(themeSetting);
   const textSize = useLiveQuery(getTextSize, []);
   const isTheme = row.key === 'theme';
   return (

@@ -6,12 +6,16 @@ import type { PickerGrammar, WeaveGrammar } from '../grammar/formLevel';
 import { MOVE_WINDOW, type GrammarMove } from '../grammar/move';
 import { DEFAULT_LAYOUT, isLayout, type ReadingLayout } from '../../layout/layouts';
 import { DEFAULT_TEXT_PERCENT, normaliseTextPercent } from '../../appearance/textSizes';
-import { DEFAULT_THEME, isTheme, type Theme } from '../../appearance/themes';
+import type { Theme } from '../../appearance/themes';
 import { DEFAULT_LOGOS_BIBLE, isResourceId } from '../../resources/logosBible';
 import { DEFAULT_READ_SPAN, isReadSpan, type ReadSpan } from '../../speech/readSpan';
 import { LANGUAGES, normaliseRate, type SettableLanguage, type SpeechRates } from '../../speech/languages';
 import { DEFAULT_DEPTH, isDepth, type Depth, type TutorScript } from '../../script/scripts';
 import { DEFAULT_PRONUNCIATION, isPronunciation, type GreekPronunciation } from '../../speech/pronunciation';
+import { themeSetting, tipsSetting, weaveSetting } from '../../settings/definitions';
+import type { Tips } from '../../settings/definitions/tips';
+import type { Weave } from '../../settings/definitions/weave';
+import { getSetting, setSetting } from '../../settings/store';
 
 export type ReaderView = 'english' | 'greek';
 
@@ -27,20 +31,13 @@ export async function setReaderView(view: ReaderView): Promise<void> {
   await db.settings.put({ key: READER_VIEW_KEY, value: view });
 }
 
-export type Weave = 'off' | 'solid' | 'solid+learning';
-export type { GrammarMove, PickerGrammar, WeaveGrammar };
+export type { GrammarMove, PickerGrammar, Tips, Weave, WeaveGrammar };
 
-const WEAVE_KEY = 'weave';
-
+// Theme, Weave and Tips are declared once (src/settings/definitions/): these are their old names over the store, until their callers move.
 /** The saved Weave choice; off when he has not chosen yet or the saved value is not one of the three. */
-export async function getWeave(): Promise<Weave> {
-  const row = await db.settings.get(WEAVE_KEY);
-  return row?.value === 'solid' || row?.value === 'solid+learning' ? row.value : 'off';
-}
-
-export async function setWeave(weave: Weave): Promise<void> {
-  await db.settings.put({ key: WEAVE_KEY, value: weave });
-}
+export const getWeave = (): Promise<Weave> => getSetting(weaveSetting);
+/** Saves the Weave and tells the bus (setting-changed). */
+export const setWeave = (weave: Weave): Promise<void> => setSetting(weaveSetting, weave);
 
 const WEAVE_GRAMMAR_KEY = 'weaveGrammar';
 
@@ -121,19 +118,10 @@ export async function setReadSpan(span: ReadSpan): Promise<void> {
   await db.settings.put({ key: READ_SPAN_KEY, value: span });
 }
 
-export type Tips = 'on' | 'off';
-
-const TIPS_KEY = 'tips';
-
 /** The saved Tips choice; on when he has not chosen yet or the saved value is not one of the two. */
-export async function getTips(): Promise<Tips> {
-  const row = await db.settings.get(TIPS_KEY);
-  return row?.value === 'off' ? 'off' : 'on';
-}
-
-export async function setTips(tips: Tips): Promise<void> {
-  await db.settings.put({ key: TIPS_KEY, value: tips });
-}
+export const getTips = (): Promise<Tips> => getSetting(tipsSetting);
+/** Saves the Tips choice and tells the bus (setting-changed). */
+export const setTips = (tips: Tips): Promise<void> => setSetting(tipsSetting, tips);
 
 export type ReadTutor = 'on' | 'off';
 
@@ -173,17 +161,10 @@ export async function setScriptDepth(script: Pick<TutorScript, 'settingKey'>, de
   await db.settings.put({ key: script.settingKey, value: depth });
 }
 
-const THEME_KEY = 'theme';
-
 /** The saved Theme; Phone (the phone's own colour scheme) when he has not chosen or the saved value is not one in the list. */
-export async function getTheme(): Promise<Theme> {
-  const row = await db.settings.get(THEME_KEY);
-  return isTheme(row?.value) ? row.value : DEFAULT_THEME;
-}
-
-export async function setTheme(theme: Theme): Promise<void> {
-  await db.settings.put({ key: THEME_KEY, value: theme });
-}
+export const getTheme = (): Promise<Theme> => getSetting(themeSetting);
+/** Saves the Theme and tells the bus (setting-changed). */
+export const setTheme = (theme: Theme): Promise<void> => setSetting(themeSetting, theme);
 
 const TEXT_SIZE_KEY = 'textSize';
 

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { clearBus, latest, publish, subscribe, subscribeAll, type AppEvent } from '../../src/events/bus';
+import { clearBus, latest, latestSetting, publish, subscribe, subscribeAll, type AppEvent } from '../../src/events/bus';
 
 afterEach(clearBus);
 
@@ -66,6 +66,18 @@ describe('the event bus', () => {
     expect(latest('view-changed')).toEqual({ kind: 'view-changed', view: 'greek' });
     expect(latest('weave-changed')).toBeUndefined();
   });
+
+  it('keeps the last setting-changed of each setting by its key, and forgets them on clearBus', () => {
+    expect(latestSetting('theme')).toBeUndefined();
+    publish({ kind: 'setting-changed', key: 'theme', value: 'dark' });
+    publish({ kind: 'setting-changed', key: 'weave', value: 'solid' });
+    publish({ kind: 'setting-changed', key: 'theme', value: 'light' });
+    expect(latestSetting('theme')).toEqual({ kind: 'setting-changed', key: 'theme', value: 'light' });
+    expect(latestSetting('weave')).toEqual({ kind: 'setting-changed', key: 'weave', value: 'solid' });
+    expect(latest('setting-changed')).toEqual({ kind: 'setting-changed', key: 'theme', value: 'light' });
+    clearBus();
+    expect(latestSetting('weave')).toBeUndefined();
+  });
 });
 
 describe('subscribeAll', () => {
@@ -99,6 +111,7 @@ describe('docs/events.md', () => {
   it('names every kind in the AppEvent union', () => {
     // Each key is a kind; the Record type makes this list fail to compile when the union grows without it.
     const kinds: Record<AppEvent['kind'], true> = {
+      'setting-changed': true,
       'verse-selected': true,
       'view-changed': true,
       'weave-changed': true,

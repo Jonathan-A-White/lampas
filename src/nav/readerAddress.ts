@@ -2,6 +2,8 @@
 // he is and reopening can put it back. The reader tells the bus what changed (src/events/bus.ts); this listens and
 // writes it into the address of the entry he is on (replaceState: a tap on a verse number is not a Back step).
 import { subscribe } from '../events/bus';
+import { weaveSetting } from '../settings/definitions';
+import { onSetting } from '../settings/store';
 import { readerHash, readerOf, replaceHash, routeOf, type ReaderAddress } from './route';
 
 function update(patch: ReaderAddress, without: (keyof ReaderAddress)[] = []): void {
@@ -26,7 +28,7 @@ export function startReaderAddressSync(): () => void {
     // The Reader says which book it shows, so a bare open (no address) comes to name it.
     subscribe('chapter-opened', ({ book, chapter }) => update({ book, chapter })),
     subscribe('view-changed', ({ view }) => update({ view })),
-    subscribe('weave-changed', ({ weave }) => update({ weave })),
+    onSetting(weaveSetting, (weave) => update({ weave })),
   ];
   return () => stops.forEach((stop) => stop());
 }
