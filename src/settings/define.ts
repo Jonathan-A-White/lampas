@@ -17,6 +17,7 @@ export type SectionId =
   | 'appearance'
   | 'layout'
   | 'headings'
+  | 'immersive'
   | 'weave'
   | 'newWords'
   | 'goal'

@@ -12,7 +12,8 @@ import { DEFAULT_READ_SPAN, isReadSpan, type ReadSpan } from '../../speech/readS
 import { LANGUAGES, normaliseRate, type SettableLanguage, type SpeechRates } from '../../speech/languages';
 import { DEFAULT_DEPTH, isDepth, type Depth, type TutorScript } from '../../script/scripts';
 import { DEFAULT_PRONUNCIATION, isPronunciation, type GreekPronunciation } from '../../speech/pronunciation';
-import { themeSetting, tipsSetting, weaveSetting } from '../../settings/definitions';
+import { immersiveSetting, themeSetting, tipsSetting, weaveSetting } from '../../settings/definitions';
+import type { Immersive } from '../../settings/definitions/immersive';
 import type { Tips } from '../../settings/definitions/tips';
 import type { Weave } from '../../settings/definitions/weave';
 import { getSetting, setSetting } from '../../settings/store';
@@ -31,7 +32,7 @@ export async function setReaderView(view: ReaderView): Promise<void> {
   await db.settings.put({ key: READER_VIEW_KEY, value: view });
 }
 
-export type { GrammarMove, PickerGrammar, Tips, Weave, WeaveGrammar };
+export type { GrammarMove, Immersive, PickerGrammar, Tips, Weave, WeaveGrammar };
 
 // Theme, Weave and Tips are declared once (src/settings/definitions/): these are their old names over the store, until their callers move.
 /** The saved Weave choice; off when he has not chosen yet or the saved value is not one of the three. */
@@ -117,6 +118,11 @@ export async function getReadSpan(): Promise<ReadSpan> {
 export async function setReadSpan(span: ReadSpan): Promise<void> {
   await db.settings.put({ key: READ_SPAN_KEY, value: span });
 }
+
+/** The saved Immersive reader choice; off when he has not chosen yet or the saved value is not one of the two. */
+export const getImmersive = (): Promise<Immersive> => getSetting(immersiveSetting);
+/** Saves the Immersive reader choice and tells the bus (setting-changed). */
+export const setImmersive = (immersive: Immersive): Promise<void> => setSetting(immersiveSetting, immersive);
 
 /** The saved Tips choice; on when he has not chosen yet or the saved value is not one of the two. */
 export const getTips = (): Promise<Tips> => getSetting(tipsSetting);

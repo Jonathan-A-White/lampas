@@ -4,7 +4,7 @@
 // when he taps (it calls `write` here), so a change he asks for in the Bible talk takes the same path. The bible-talk grind is
 // told this list (src/settings/grindText.ts builds its schema and instructions from it): a new setting is talkable by adding it
 // here, and tests/unit/settings-registry.test.tsx fails if a control of the Settings screen has no entry. A setting declared once
-// (src/settings/definitions/: theme, weave, tips so far) gets its entry from its definition (`fromDefinition`), in its place in the list.
+// (src/settings/definitions/: theme, weave, tips, immersive so far) gets its entry from its definition (`fromDefinition`), in its place in the list.
 import { TEXT_SIZES } from '../appearance/textSizes';
 import type { Theme } from '../appearance/themes';
 import {
@@ -63,7 +63,8 @@ import { READ_SPANS, type ReadSpan } from '../speech/readSpan';
 import { PRONUNCIATIONS } from '../speech/pronunciation';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS, type Depth } from '../script/scripts';
 import type { Allowed, Dependency, SectionId, SettingDef, SettingValue } from './define';
-import { themeSetting, tipsSetting, weaveSetting } from './definitions';
+import { immersiveSetting, themeSetting, tipsSetting, weaveSetting } from './definitions';
+import type { Immersive } from './definitions/immersive';
 import type { Tips } from './definitions/tips';
 import type { Weave } from './definitions/weave';
 import { getSetting, setSetting } from './store';
@@ -127,6 +128,7 @@ const OLD_KINDS: Readonly<Record<string, (value: SettingValue) => AppEvent>> = {
   theme: (value) => ({ kind: 'theme-changed', theme: value as Theme }),
   weave: (value) => ({ kind: 'weave-changed', weave: value as Weave }),
   tips: (value) => ({ kind: 'tips-changed', tips: value as Tips }),
+  immersiveReader: (value) => ({ kind: 'immersive-changed', immersive: value as Immersive }),
 };
 
 /** The entry of a setting declared once (src/settings/definitions/): read and saved through src/settings/store.ts. */
@@ -312,6 +314,7 @@ export const SETTINGS: readonly SettingEntry[] = [
     },
     { section: 'headings' },
   ),
+  fromDefinition(immersiveSetting),
   choice(
     'readSpan',
     'Read aloud span',

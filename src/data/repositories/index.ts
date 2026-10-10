@@ -26,6 +26,7 @@ export {
   getReadTutor,
   getDeveloper,
   getScriptDepth,
+  getImmersive,
   getTips,
   getVoice,
   getWeave,
@@ -47,13 +48,14 @@ export {
   setReadTutor,
   setDeveloper,
   setScriptDepth,
+  setImmersive,
   setTips,
   setVoice,
   setWeave,
   setWeaveGrammar,
 } from './settings';
 export type { ReadSpan } from '../../speech/readSpan';
-export type { DeveloperMode, GrammarMove, PickerGrammar, ReaderView, ReadingLayout, ReadTutor, SectionHeadings, Tips, VoiceLanguage, Weave, WeaveGrammar } from './settings';
+export type { DeveloperMode, GrammarMove, Immersive, PickerGrammar, ReaderView, ReadingLayout, ReadTutor, SectionHeadings, Tips, VoiceLanguage, Weave, WeaveGrammar } from './settings';
 export { listResults, recordAnswer } from './results';
 export type { TestResult } from './results';
 export { countDue, ensureScheduled, listDue, recordReview, reviewsOf, seedScheduleIfFirstOpen } from './reviews';
