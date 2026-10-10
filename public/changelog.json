@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.19",
+    "date": "2026-10-10",
+    "story": "mw-m7v5kc.3",
+    "kind": "new",
+    "text": "Everything Lampas reads aloud now has a Pause, Resume, Restart and Stop bar that remembers where you were, and leaving a screen pauses the reading."
+  },
+  {
     "version": "0.1.18",
     "date": "2026-10-10",
     "story": "mw-5r3p30.103",
