@@ -116,6 +116,13 @@ function studyGroupsOf(chapter: Chapter, word: GreekWord, study: StudyResources 
 /** More tiles than this and the sheet is a long one: a Close button sits under its scroll box and a fade says there is more below. */
 const MANY_TILES = 6;
 
+/** The facts' box's height and foot: the heading above it (a line and its padding) takes its room out of the box, so the sheet stays as tall as before. */
+function scrollHeight(many: boolean, heading: unknown): string {
+  if (many) return heading ? 'max-h-[calc(50dvh-2.75rem)] pb-4' : 'max-h-[50dvh] pb-4';
+  const foot = 'pb-[calc(1rem+var(--lp-end-inset))]';
+  return heading ? `max-h-[calc(58dvh-2.75rem)] ${foot}` : `max-h-[58dvh] ${foot}`;
+}
+
 /** true while the box has more to show below what is in view (a few pixels of slack for rounding). */
 function useMoreBelow(box: { current: HTMLElement | null }, remeasure: unknown): boolean {
   const [more, setMore] = useState(false);
@@ -314,6 +321,7 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
   const study = useLiveQuery(getStudyResources, []);
   const tiles = lookup.words.reduce((n, w) => n + studyGroupsOf(sheetChapter, w, study).reduce((m, g) => m + g.links.length, 0), 0);
   const many = tiles > MANY_TILES;
+  const heading = lookup.fromEnglish && lookup.english;
   const scroll = useRef<HTMLDivElement>(null);
   const moreBelow = useMoreBelow(scroll, `${tiles}:${lookup.words.length}`);
   // A word of another chapter has no verse in the Reader's chapter to help with or ask about.
@@ -367,17 +375,18 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
         <HintCard event={WORD_SHEET_OPENED} className="mx-4 mt-1" />
         {/* a reading or answer paused by the word he tapped keeps its Resume in view (the sheet is over the screen's own bar) */}
         <BarSlot level={4} />
+        {/* the English he tapped is a heading of its own under the tip, outside the scrolling facts: it never slides half under the tip's edge */}
+        {heading ? (
+          <p className="pl-4 pr-14 pt-3 text-lg text-muted">
+            <span className="sr-only">English: </span>“{lookup.english}”
+          </p>
+        ) : null}
         <div className="relative">
           <div
             ref={scroll}
             data-testid="sheet-scroll"
-            className={`overflow-y-auto overscroll-contain px-4 pt-3 ${many ? 'max-h-[50dvh] pb-4' : 'max-h-[58dvh] pb-[calc(1rem+var(--lp-end-inset))]'}`}
+            className={`overflow-y-auto overscroll-contain px-4 pt-3 ${scrollHeight(many, heading)}`}
           >
-            {lookup.fromEnglish && lookup.english ? (
-              <p className="mb-3 pr-14 text-lg text-muted">
-                <span className="sr-only">English: </span>“{lookup.english}”
-              </p>
-            ) : null}
             {lookup.words.map((w, i) => (
               <WordCard
                 key={i}
