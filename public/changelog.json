@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.67",
+    "date": "2026-10-10",
+    "story": "mw-hqd5bz.21",
+    "kind": "fixed",
+    "text": "Tapping Next twice quickly in the placement, Review and the Quick test no longer answers the next question for you."
+  },
+  {
     "version": "0.1.66",
     "date": "2026-10-10",
     "story": "mw-5r3p30.129",

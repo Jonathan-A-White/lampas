@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.67
+_2026-10-10_
+- Fixed: Tapping Next twice quickly in the placement, Review and the Quick test no longer answers the next question for you.
+
 ## 0.1.66
 _2026-10-10_
 - Fixed: the arrows on a passage now carry on into the chapter before or after instead of stopping at the chapter's end.
