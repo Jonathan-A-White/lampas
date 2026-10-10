@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.20",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.134",
+    "kind": "fixed",
+    "text": "the Logos buttons for three dictionaries that have no entry for a name no longer open a wrong page for names such as Melchizedek."
+  },
+  {
     "version": "0.1.19",
     "date": "2026-10-10",
     "story": "mw-m7v5kc.3",

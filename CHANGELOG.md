@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.20
+_2026-10-10_
+- Fixed: the Logos buttons for three dictionaries that have no entry for a name no longer open a wrong page for names such as Melchizedek.
+
 ## 0.1.19
 _2026-10-10_
 - New: Everything Lampas reads aloud now has a Pause, Resume, Restart and Stop bar that remembers where you were, and leaving a screen pauses the reading.
