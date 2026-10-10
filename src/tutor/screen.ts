@@ -16,12 +16,21 @@ export interface ScreenSetting {
   help: string;
 }
 
+/** One credit as About shows it (mw-vtjxh4.2): the source's name, what it gives this reader, its licence and its link. */
+export interface ScreenCredit {
+  name: string;
+  use: string;
+  licence: string;
+  link: string;
+}
+
 /** The screen he asks from: its name, as the screen's own title has it, and what it shows (grinds/bible-talk.input.schema.json `screen`).
- *  Settings also lists every setting it has in `settings`, so the tutor can speak of one that is off. */
+ *  Settings also lists every setting it has in `settings`, so the tutor can speak of one that is off; About lists every credit in `credits`. */
 export interface ScreenContext {
   name: string;
   facts: ScreenFact[];
   settings?: ScreenSetting[];
+  credits?: ScreenCredit[];
 }
 
 /** The most facts a screen sends, the longest label and the longest value (the input schema's limits). */
@@ -33,6 +42,12 @@ export const MAX_SETTINGS = 30;
 export const SETTING_NAME_MAX = 40;
 export const SETTING_VALUE_MAX = 80;
 export const SETTING_HELP_MAX = 100;
+/** The most credits a screen sends and the longest name, use, licence and link of one (the input schema's limits). */
+export const MAX_CREDITS = 40;
+export const CREDIT_NAME_MAX = 40;
+export const CREDIT_USE_MAX = 160;
+export const CREDIT_LICENCE_MAX = 60;
+export const CREDIT_LINK_MAX = 120;
 
 /** The name each full screen but the Reader goes by (its title, or the name the Settings list has for it). */
 export const SCREEN_NAMES: Record<Exclude<Route, 'home'>, string> = {
@@ -58,12 +73,20 @@ export function fitScreen(context: ScreenContext): ScreenContext {
     .map((f) => ({ label: cut(f.label.trim(), FACT_LABEL_MAX), value: cut(f.value.trim(), FACT_VALUE_MAX) }))
     .filter((f) => f.label !== '' && f.value !== '')
     .slice(0, MAX_FACTS);
-  if (!context.settings) return { name: context.name, facts };
-  const settings = context.settings
-    .map((x) => ({ name: cut(x.name.trim(), SETTING_NAME_MAX), value: cut(x.value.trim(), SETTING_VALUE_MAX), help: cut(x.help.trim(), SETTING_HELP_MAX) }))
-    .filter((x) => x.name !== '' && x.value !== '' && x.help !== '')
-    .slice(0, MAX_SETTINGS);
-  return { name: context.name, facts, settings };
+  const fitted: ScreenContext = { name: context.name, facts };
+  if (context.settings) {
+    fitted.settings = context.settings
+      .map((x) => ({ name: cut(x.name.trim(), SETTING_NAME_MAX), value: cut(x.value.trim(), SETTING_VALUE_MAX), help: cut(x.help.trim(), SETTING_HELP_MAX) }))
+      .filter((x) => x.name !== '' && x.value !== '' && x.help !== '')
+      .slice(0, MAX_SETTINGS);
+  }
+  if (context.credits) {
+    fitted.credits = context.credits
+      .map((c) => ({ name: cut(c.name.trim(), CREDIT_NAME_MAX), use: cut(c.use.trim(), CREDIT_USE_MAX), licence: cut(c.licence.trim(), CREDIT_LICENCE_MAX), link: c.link.trim() }))
+      .filter((c) => c.name !== '' && c.use !== '' && c.licence !== '' && c.link !== '' && c.link.length <= CREDIT_LINK_MAX)
+      .slice(0, MAX_CREDITS);
+  }
+  return fitted;
 }
 
 /** The key part of a screen's name: 'My study way' is 'my-study-way' (the talk is kept under 'screen.my-study-way'). */
@@ -84,7 +107,7 @@ const SUGGESTIONS: Record<string, string[]> = {
   'My study way': ['What should I write in my study way?', 'How does the tutor use my study way?'],
   Import: ['What words should I add to my list?', 'How do I write a word list to import?'],
   Preface: ['Why does Lampas read the Byzantine text?', 'How does the Majority text differ from the critical text?'],
-  About: ['What is Lampas for?', 'Which texts does Lampas use?', 'What does each of these do for Lampas?'],
+  About: ['Why do you credit all these?', 'What does each of these do for Lampas?', 'What does STEPBible give me?'],
 };
 
 /** The two or three questions the sheet opens with on the screen `name`; none for a name it does not know. */

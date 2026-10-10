@@ -5,6 +5,7 @@
 
 Lampas stands on other people's work, so it names every text, lexicon, library, font, service and idea it
 builds on, with a link to each, its licence and what we changed. Credit is owed whether or not a licence asks for it.
+Tap the round Ask the tutor button to ask what any of it gives you, what its licence lets us do, or why we credit it at all.
 
 ## Texts and data
 

@@ -278,17 +278,19 @@ export function buildTalkRequest(
   studyWay: string[] = [],
 ): TalkRequest {
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
+  // About (mw-vtjxh4.2) sends the credits, which take most of the record: the credits are the talk, so his words and his grammar stay home
+  const aboutCredits = scope.screen?.credits !== undefined;
   return {
     reference: scopeTitle(scope),
     // a talk from a screen is not about a text: it carries the screen and no verse text
     ...(scope.screen ? { screen: scope.screen } : { greek: verses.map(greekOf).join(' '), english: verses.map(englishOf).join(' ') }),
     question: question.trim(),
     history: turns.slice(-MAX_HISTORY_TURNS).map(({ q, a }) => ({ q, a })),
-    solid_words: solidWords,
+    solid_words: aboutCredits ? [] : solidWords,
     settings,
     ...(focus ? { focus } : {}),
     ...(learner ? { learner } : {}),
-    ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
+    ...(learnerGrammar && !aboutCredits ? { learner_grammar: learnerGrammar } : {}),
     ...(scope.quiz ? { mode: 'quiz' as const } : {}),
     ...(scope.quiz && studyWay.length > 0 ? { study_way: studyWay } : {}),
   };
