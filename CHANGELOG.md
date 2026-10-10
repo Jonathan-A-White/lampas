@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.29
+_2026-10-10_
+- Fixed: Turning Logos or Accordance on in Settings no longer opens the app or switches itself off; it stays on and offers a Get button if you don't have the app.
+
 ## 0.1.28
 _2026-10-10_
 - New: Every question and answer from the tutor now has a Copy button that puts the whole exchange on your clipboard as Markdown, with a link to the verse.

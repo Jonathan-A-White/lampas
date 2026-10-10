@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.29",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.116",
+    "kind": "fixed",
+    "text": "Turning Logos or Accordance on in Settings no longer opens the app or switches itself off; it stays on and offers a Get button if you don't have the app."
+  },
+  {
     "version": "0.1.28",
     "date": "2026-10-10",
     "story": "mw-5r3p30.104",
