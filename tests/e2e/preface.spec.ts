@@ -19,12 +19,15 @@ test('the Preface opens from the picker at phone width, with its links', async (
 
   await expect(page).toHaveURL(/#\/preface$/);
   await expect(page.getByRole('heading', { name: 'Preface', level: 1 })).toBeVisible();
-  const essay = page.getByRole('link', { name: /The Case for Byzantine Priority/ });
+  const essay = page.getByRole('button', { name: /The Case for Byzantine Priority/ });
+  const original = page.getByRole('link', { name: 'Original (TC Journal, 2001)' });
   const msb = page.getByRole('link', { name: /Majority Standard Bible/ });
   await essay.scrollIntoViewIfNeeded(); // the edition paragraph (mw-5r3p30.136) pushes it below the first screen
   await expect(essay).toBeInViewport();
-  await expect(essay).toHaveAttribute('target', '_blank');
-  await expect(essay).toHaveAttribute('rel', /noreferrer/);
+  await expect(original).toHaveAttribute('href', 'http://rosetta.reltech.org/TC/vol06/Robinson2001.html');
+  await expect(original).toHaveAttribute('target', '_blank');
+  await expect(original).toHaveAttribute('rel', /noreferrer/);
+  await expect(page.getByText('An old-format page, small on a phone.')).toBeVisible();
   await msb.scrollIntoViewIfNeeded();
   await expect(msb).toBeVisible();
   await expect(msb).toHaveAttribute('href', 'https://majoritybible.com/');
@@ -48,4 +51,32 @@ test('About links to the Preface', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Preface', level: 1 })).toBeVisible();
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'About', level: 1 })).toBeVisible();
+});
+
+test('the Robinson entry opens the essay inside the app, readable at phone width', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/preface');
+  await page.getByRole('button', { name: /The Case for Byzantine Priority/ }).click();
+  await expect(page).toHaveURL(/#\/preface\/robinson$/);
+  await expect(page.getByRole('heading', { name: 'The Case for Byzantine Priority', level: 1 })).toBeVisible();
+  const first = page.getByRole('heading', { name: 'Introduction', level: 2 });
+  await expect(first).toBeVisible();
+  const body = page.locator('main [data-essay-paragraph]').first();
+  await expect(body).toBeVisible();
+  expect(await body.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
+
+  const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    clientWidth: document.documentElement.clientWidth,
+  }));
+  expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+  const wide = await page.evaluate(() => [...document.querySelectorAll('main *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 1).length);
+  expect(wide).toBe(0);
+
+  await page.getByRole('button', { name: 'Footnote 1' }).first().click();
+  await expect(page.locator('[data-footnote="1"]')).toBeVisible();
+  await shot(page, 'essay-robinson');
+
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: 'Preface', level: 1 })).toBeVisible();
 });

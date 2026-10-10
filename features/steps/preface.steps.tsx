@@ -50,6 +50,21 @@ async function openPreface(): Promise<void> {
   await screen.findByRole('heading', { name: 'Preface', level: 1 });
 }
 
+async function openEssay(): Promise<void> {
+  cleanup();
+  clearBus();
+  forgetTrail();
+  vi.unstubAllGlobals();
+  window.localStorage.clear();
+  stubChapterFetch();
+  await db.open();
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear()]);
+  window.history.replaceState(null, '', '/#/preface/robinson');
+  render(<App />);
+  await screen.findByRole('heading', { name: 'The Case for Byzantine Priority', level: 1 });
+  await screen.findByRole('heading', { name: 'Introduction', level: 2 });
+}
+
 async function back(): Promise<void> {
   await act(async () => {
     window.history.back();
@@ -117,9 +132,14 @@ describeFeature(feature, ({ Scenario }) => {
       expect(text).toContain(a);
       expect(text).toContain(b);
     });
-    And('it links to the Robinson essay {string} at {string}', (_, name: string, url: string) => {
-      const link = screen.getByRole('link', { name: new RegExp(name) });
+    And('it links to the original of the Robinson essay {string} at {string}', (_, name: string, url: string) => {
+      const link = screen.getByRole('link', { name });
       expect(link).toHaveAttribute('href', url);
+    });
+    And('the original is marked as an old-format page that answers only on http', () => {
+      const main = document.querySelector('main')?.textContent ?? '';
+      expect(main).toContain('An old-format page, small on a phone.');
+      expect(main).toContain('Not secure');
     });
     And('it links to the Majority Standard Bible at {string}', (_, url: string) => {
       expect(pageLinks().map((a) => a.getAttribute('href'))).toContain(url);
@@ -155,6 +175,77 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the reader is headed {string}', async (_, title: string) => {
       expect(await screen.findByRole('heading', { name: title, level: 1 })).toBeVisible();
+    });
+  });
+
+  Scenario('The Robinson entry opens the essay inside the app', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on the Preface', openPreface);
+    When('he taps {string}', async (_, label: string) => {
+      await user.click(screen.getByRole('button', { name: new RegExp(label) }));
+    });
+    Then('the screen is headed {string}', async (_, title: string) => {
+      expect(await screen.findByRole('heading', { name: title, level: 1 })).toBeVisible();
+    });
+    And('the address is {string}', (_, hash: string) => {
+      expect(window.location.hash).toBe(hash);
+    });
+    And("the essay's first heading is {string}", async (_, title: string) => {
+      const first = (await screen.findAllByRole('heading', { level: 2 }))[0];
+      expect(first).toHaveTextContent(title);
+    });
+    And('the essay has the heading {string}', (_, title: string) => {
+      expect(screen.getByRole('heading', { name: title, level: 2 })).toBeVisible();
+    });
+    When('he goes back', back);
+    Then('he is back on the screen headed {string}', async (_, title: string) => {
+      expect(await screen.findByRole('heading', { name: title, level: 1 })).toBeVisible();
+    });
+  });
+
+  Scenario("The essay's footnotes open and close in place", ({ Given, When, Then }) => {
+    Given('Lampas is opened on the essay', openEssay);
+    When('he taps the footnote number {string}', async (_, n: string) => {
+      await user.click(screen.getAllByRole('button', { name: `Footnote ${n}` })[0]);
+    });
+    Then("the footnote's text is shown under the paragraph", () => {
+      const note = document.querySelector('[data-footnote="1"]');
+      expect(note).not.toBeNull();
+      expect((note?.textContent ?? '').length).toBeGreaterThan(20);
+    });
+    When('he taps the same footnote number {string} again', async (_, n: string) => {
+      await user.click(screen.getAllByRole('button', { name: `Footnote ${n}` })[0]);
+    });
+    Then("the footnote's text is hidden", () => {
+      expect(document.querySelector('[data-footnote="1"]')).toBeNull();
+    });
+  });
+
+  Scenario('The essay says where it comes from and keeps the original beneath', ({ Given, Then, And }) => {
+    Given('Lampas is opened on the essay', openEssay);
+    Then("the essay says it is released into the public domain with the 2005 edition's appendix", () => {
+      const text = document.querySelector('main')?.textContent ?? '';
+      expect(text).toContain('public domain');
+      expect(text).toContain('2005');
+      expect(text).toContain('appendix');
+    });
+    And('it links to the original of the Robinson essay {string} at {string}', (_, name: string, url: string) => {
+      const link = screen.getByRole('link', { name });
+      expect(link).toHaveAttribute('href', url);
+      expect(link).toHaveAttribute('target', '_blank');
+    });
+    And('the original is marked as an old-format page that answers only on http', () => {
+      const main = document.querySelector('main')?.textContent ?? '';
+      expect(main).toContain('An old-format page, small on a phone.');
+      expect(main).toContain('Not secure');
+    });
+  });
+
+  Scenario('Greek in the essay is Greek letters', ({ Given, Then }) => {
+    Given('Lampas is opened on the essay', openEssay);
+    Then('the essay shows {string} with no transliteration markup left in it', (_, greek: string) => {
+      const text = document.querySelector('main')?.textContent ?? '';
+      expect(text).toContain(greek);
+      expect(text).not.toMatch(/SPIonic|<font|<\/?[a-z]+>/);
     });
   });
 });

@@ -14,6 +14,11 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   Source: the msb_nt_tables.tsv file at majoritybible.com. Its Greek is the Robinson-Pierpont 2005 edition (public domain), found by comparing it word by word
   with the [byztxt Byzantine text on GitHub](https://github.com/byztxt/byzantine-majority-text), also public domain (scripts/greek-edition.ts, docs/greek-edition.md); nothing of that repository is in the app.
   Changes: cut into one file per chapter, with short keys (scripts/data-build.ts, docs/data.md).
+- **[Maurice A. Robinson, "The Case for Byzantine Priority"](https://byzantinetext.com/study/editions/robinson-pierpont/).** Public domain. Printed as the appendix of
+  the Robinson-Pierpont 2005 edition, whose copyright notice says: "we hereby release into the public domain the introduction and appendix which have been especially prepared for this edition"
+  (the same notice is on the edition's page there). The text is the essay as *TC: A Journal of Biblical Textual Criticism* published it in 2001, read in the app on the Preface's Robinson entry.
+  Changes: the page's Greek, typed in Latin letters, is set in Greek letters; footnotes open under the paragraph that cites them; Chart 1 is left on the original page
+  (scripts/essay-build.ts, src/essay/robinson.json). The original stays linked as "Original (TC Journal, 2001)".
 - **[Tyndale House's Brief lexicon of the Greek NT, extended (TBESG), from STEPBible](https://www.stepbible.org).** Licensed
   [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Credit: STEPBible, Tyndale House, Cambridge. The words' lemmas,
   glosses and definitions (the definitions are Abbott-Smith's). Data used under the licence.
