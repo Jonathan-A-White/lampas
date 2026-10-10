@@ -7,6 +7,7 @@ import { decodeParse, parseSegments, splitParse } from '../parseCode';
 import { shuffle, type Random } from '../quiz';
 import { MODERN } from '../../speech/schemes/modern';
 import { LADDER, ideasOf, type GrammarIdea } from './ladder';
+import { quickQuestion } from './quickRound';
 
 export type GrammarKind = 'ending' | 'tap-form' | 'letter' | 'sound' | 'stress' | 'breathing' | 'syllables' | 'concept';
 
@@ -393,11 +394,13 @@ export function buildConcept(idea: GrammarIdea, random: Random): GrammarQuestion
 // ---- Any idea ----
 
 /**
- * A question that drills `idea` over `passage`. A letter is asked by name or sound; the sounds, the marks and the accents are asked of
+ * A question that drills `idea` over `passage`. A letter is asked by name or sound, and so is one diphthong, consonant pair or breathing (quickRound.ts); the sounds, the marks and the accents are asked of
  * letters and words; every other idea is asked as the ending of a form or the form to tap, whichever the first draw gives, then the
  * other when the passage cannot make the first; and an idea the passage has no form of is asked by what it says. Always gives a question.
  */
 export function buildIdeaQuestion(idea: GrammarIdea, passage: readonly Chapter[], random: Random, respell: Respell = DEFAULT_RESPELL): GrammarQuestion {
+  // one diphthong, consonant pair or breathing (mw-hqd5bz.18): heard or seen, as the quick round asks it
+  if (idea.parent) return quickQuestion({ id: idea.id, mode: random() < 0.5 ? 'hear' : 'see' }, random);
   if (idea.glyphs || idea.id === 'alphabet') return random() < 0.5 ? buildLetter(idea, random) : buildSound(idea, random);
   switch (idea.id) {
     case 'diphthongs':

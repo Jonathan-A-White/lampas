@@ -9,7 +9,7 @@ import { inferFromAnswer, inferFromWord, isInferredSolid, type Evidence, type Ev
 import { IDEA_KIND } from '../grammar/ladder';
 import type { GrammarQuestion } from '../grammar/questions';
 import { DAY, STEP_DAYS } from '../schedule';
-import { announceAlphabet, syncAlphabet } from './grammarLevels';
+import { announceAlphabet, syncAlphabet, type GroupMoved } from './grammarLevels';
 import { announceDue, writeScheduled } from './reviews';
 
 const KEY = 'grammarEvidence';
@@ -37,7 +37,7 @@ const keep = (evidence: EvidenceMap): Promise<unknown> =>
 /** What settling an answer changed: the ideas whose level moved, and the alphabet's new level when it moved. */
 export interface Credited {
   changed: { id: string; level: 'solid' | 'frontier' }[];
-  alphabet: 'solid' | 'frontier' | undefined;
+  alphabet: GroupMoved[];
 }
 
 /**
@@ -61,7 +61,7 @@ async function apply(infer: (evidence: EvidenceMap) => Inferred, now: number): P
     await db.grammarLevels.put({ id, level: 'frontier', since: now, how: 'inferred' });
     changed.push({ id, level: 'frontier' });
   }
-  return { changed, alphabet: changed.length > 0 ? ((await syncAlphabet(now)) as Credited['alphabet']) : undefined };
+  return { changed, alphabet: changed.length > 0 ? await syncAlphabet(now) : [] };
 }
 
 /** Tells the bus and the schedule what a committed `apply` changed. */
