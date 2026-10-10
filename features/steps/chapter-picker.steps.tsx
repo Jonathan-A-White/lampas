@@ -34,6 +34,9 @@ function setOnLine(value: boolean): void {
 
 async function openFresh(): Promise<void> {
   cleanup();
+  // Unmounting the last scenario's open sheet steps history back (useSheetBack); jsdom lands that popstate a moment later, and it must land before
+  // this scenario's address is set, not in the middle of it.
+  await new Promise((resolve) => setTimeout(resolve, 30));
   clearBus();
   forgetTrail();
   vi.unstubAllGlobals();
