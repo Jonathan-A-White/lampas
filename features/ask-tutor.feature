@@ -49,7 +49,39 @@ Feature: Ask the tutor from any screen
     Then the mill received 1 grists for the lampas app, kind bible-talk
     And the grist carries the question "What's the simplest verse in the New Testament for me to learn first, given where I am?"
     And the answer shows in the sheet under his question
-    And the suggested questions are gone
+    And the empty state is gone
+
+  Scenario: After the first question the other suggestions are still there and a tap sends one
+    Given Lampas is opened on #/about with the goal "1 John 1:1" behind a fake Postern
+    When he taps the Ask the tutor control
+    And he taps the suggested question "What does STEPBible give me?"
+    And the answer number 1 has arrived
+    Then the suggested question "Why do you credit all these?" can still be tapped
+    And the suggested question "What does STEPBible give me?" is not offered again
+    When he taps the suggested question "Why do you credit all these?"
+    Then the mill received 2 grists for the lampas app, kind bible-talk
+    And the second grist carries the question "Why do you credit all these?"
+
+  Scenario: New talk clears the kept talk and brings back the empty state with all three suggestions, also after a reload
+    Given Lampas is opened on #/about with the goal "1 John 1:1" behind a fake Postern
+    When he taps the Ask the tutor control
+    And he taps the suggested question "What does STEPBible give me?"
+    And the answer number 1 has arrived
+    And he taps New talk
+    Then the sheet shows the empty state with all three suggestions and no earlier turn
+    When Lampas is reloaded on #/about
+    And he taps the Ask the tutor control after the reload
+    Then after the reload the sheet shows the empty state with all three suggestions and no earlier turn
+
+  Scenario: A first question that fails offline still leaves the other suggestions reachable
+    Given Lampas is opened on #/about with the goal "1 John 1:1" behind a fake Postern
+    When he taps the Ask the tutor control
+    And the mill goes down
+    And he taps the suggested question "What does STEPBible give me?"
+    Then the sheet says "Could not reach the tutor" with a Retry button
+    And the suggested question "Why do you credit all these?" can still be tapped
+    When the mill is back and he taps the suggested question "Why do you credit all these?"
+    Then the answer shows under his question "Why do you credit all these?"
 
   Scenario: On About the request carries every credit and the sheet suggests questions about the credits
     Given Lampas is opened on #/about with the goal "1 John 1:1" behind a fake Postern

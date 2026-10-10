@@ -9,7 +9,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Waiting } from './Ask';
 import { addLemmaToLearn, findGreekWord, glossOf } from './data/answerWord';
 import type { AnswerWord } from './data/db';
-import { addWordToLearn, keepStudyWayLine, listStudyWay, listTurns, markChangeUndone, markFeedbackSent, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
+import { addWordToLearn, keepStudyWayLine, deleteTurns, listStudyWay, listTurns, markChangeUndone, markFeedbackSent, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
 import { Markdown } from './markdown/Markdown';
 import { TutorLinks } from './TutorLinks';
 import { settingOf, undoChange, type AppliedChange } from './settings/registry';
@@ -64,6 +64,7 @@ function HoldToTalk({ voice, disabled }: { voice: Voice; disabled: boolean }) {
       listening={voice.listening}
       disabled={disabled}
       keys
+      compactWhenShort
     />
   );
 }
@@ -333,8 +334,31 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
   );
 }
 
+/** Questions fitted to the screen, as buttons: a tap sends one. */
+function Suggestions({ questions, onAsk, label }: { questions: string[]; onAsk: (question: string) => void; label?: string }) {
+  return (
+    <div className="space-y-2">
+      {label ? <p className="text-sm font-medium text-muted">{label}</p> : null}
+      <ul data-suggestions aria-label="Suggested questions" className="space-y-2">
+        {questions.map((question) => (
+          <li key={question}>
+            <button
+              type="button"
+              data-suggestion
+              onClick={() => onAsk(question)}
+              className="min-h-12 w-full rounded-xl border border-accent px-4 py-2 text-left text-lg text-accent active:bg-line"
+            >
+              {question}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 /** The sheet: the conversation `scope` names, the field, Send, and what the last message is doing. */
-export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSay, onHelp, onAskTerm, onClose }: {
+export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, suggestions, onSay, onHelp, onAskTerm, onClose }: {
   scope: TalkScope;
   /** the key the conversation is kept under (src/data/repositories/talks.ts talkRef) */
   talkRef: string;
@@ -355,6 +379,9 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
   const titleId = useId();
   const turns = useLiveQuery(() => listTurns(ref), [ref]);
   const [text, setText] = useState('');
+  // A failure he cleared with New talk is not shown again (the state itself belongs to useTalk).
+  const [cleared, setCleared] = useState<AskState | undefined>(undefined);
+  const state = liveState === cleared ? undefined : liveState;
   const [lookup, setLookup] = useState<Lookup | null>(null);
   const closeWord = useCallback(() => setLookup(null), []);
   const { drag, handle } = useSheetDrag(onClose);
@@ -362,13 +389,21 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
   useEscapeToClose(onClose, lookup === null);
   useSheetBack(onClose);
   const busy = state?.phase === 'sending' || state?.phase === 'waiting';
+  // Once there is a talk the suggestions he has not used are still offered, under the last answer (or the failure of the first question).
+  const asked = new Set([...(turns ?? []).map((t) => t.q), ...(state ? [state.question] : [])]);
+  const more = (suggestions ?? []).filter((q) => !asked.has(q));
   const list = useRef<HTMLDivElement>(null);
-  // The newest turn is kept in view by moving this box and nothing else.
+  // The newest turn is kept in view by moving this box and nothing else: a question still waiting shows at the foot; an answer is read from its
+  // top (question first), so in a short window the suggestions left under it do not push its first lines out of the box (mw-vtjxh4.44).
   const turnCount = turns?.length ?? 0;
+  const waiting = state !== undefined;
   useEffect(() => {
     const box = list.current;
-    if (box) box.scrollTop = box.scrollHeight;
-  }, [turnCount, state?.phase]);
+    if (!box) return;
+    const newest = waiting ? null : Array.from(box.querySelectorAll<HTMLElement>('[data-turn]')).pop();
+    if (newest) box.scrollTop += newest.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
+    else box.scrollTop = box.scrollHeight;
+  }, [turnCount, state?.phase, waiting]);
   // Closing the sheet takes its answer's speech with it.
   useEffect(() => () => stopAnswer(), []);
   // A phone with no recogniser sends a hold to the typed field.
@@ -416,7 +451,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
           aria-modal="true"
           aria-labelledby={titleId}
           style={{ transform: drag ? `translateY(${drag}px)` : undefined }}
-          className="relative flex h-[85dvh] flex-col rounded-t-2xl border-t border-line bg-surface"
+          className="relative flex h-[85dvh] flex-col short:h-dvh rounded-t-2xl border-t border-line bg-surface"
           onPaste={(e) => {
             // a copied screenshot becomes an attachment; copied text pastes as it always did
             const pasted = pastedPictures(e);
@@ -427,10 +462,23 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
         >
           <div data-testid="sheet-handle" {...handle} className="relative flex shrink-0 touch-none flex-col items-center px-4 pt-2">
             <span aria-hidden="true" className="h-1.5 w-10 rounded-full bg-line" />
-            <div className="flex min-h-12 w-full items-center gap-2">
+            <div className="flex min-h-12 w-full items-center gap-2 short:min-h-11">
               <h2 id={titleId} className="min-w-0 flex-1 truncate text-xl font-semibold">
                 {title}
               </h2>
+              {turnCount > 0 && !busy ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    stopAnswer();
+                    setCleared(liveState);
+                    void deleteTurns(ref);
+                  }}
+                  className="min-h-11 shrink-0 rounded-lg px-3 text-base font-medium text-accent"
+                >
+                  New talk
+                </button>
+              ) : null}
               <button
                 type="button"
                 ref={focusOnMount}
@@ -441,28 +489,13 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
               </button>
             </div>
           </div>
-          <div ref={list} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain border-t border-line px-4 py-3">
+          <div ref={list} data-talk-list className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain border-t border-line px-4 py-3 short:space-y-2 short:py-2">
             {turns?.length === 0 && !state ? (
               <p data-talk-empty className="text-base text-muted">
                 {scope.quiz ? 'Nothing said yet. Say “Quiz me” to begin.' : scope.screen ? 'Nothing said yet. Ask about this screen or about where you are.' : 'Nothing said yet. Ask about a word, a verse or what is on your mind.'}
               </p>
             ) : null}
-            {turns?.length === 0 && !state && suggestions?.length ? (
-              <ul data-suggestions aria-label="Suggested questions" className="space-y-2">
-                {suggestions.map((question) => (
-                  <li key={question}>
-                    <button
-                      type="button"
-                      data-suggestion
-                      onClick={() => send(question)}
-                      className="min-h-12 w-full rounded-xl border border-accent px-4 py-2 text-left text-lg text-accent active:bg-line"
-                    >
-                      {question}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
+            {turns?.length === 0 && !state && suggestions?.length ? <Suggestions questions={suggestions} onAsk={send} /> : null}
             <HebrewAskContext.Provider value={hebrew}>
               {turns?.map((turn) => (
                 <Turn key={turn.id} turn={turn} scope={scope} onLook={setLookup} onLeave={onClose} />
@@ -491,22 +524,23 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
                 )}
               </div>
             ) : null}
+            {turns && !busy && (turns.length > 0 || state) && more.length > 0 ? <Suggestions questions={more} onAsk={send} label="Ask something else" /> : null}
           </div>
           <BarSlot level={3} />
-          <div className="shrink-0 space-y-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+var(--lp-bar-inset))]">
+          <div className="shrink-0 space-y-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+var(--lp-bar-inset))] short:flex short:flex-wrap short:items-end short:gap-x-2 short:space-y-0 short:gap-y-2">
             {voice.listening ? (
-              <div data-talk-live role="status" className="rounded-2xl border border-bad px-3 py-2">
+              <div data-talk-live role="status" className="rounded-2xl border border-bad px-3 py-2 short:basis-full">
                 <p className="text-sm font-medium text-bad">{voice.ready ? 'Listening… let go to send, slide away to cancel' : 'Starting the microphone…'}</p>
                 <p className="min-h-7 break-words text-lg">{voice.transcript}</p>
               </div>
             ) : null}
             {voice.notice ? (
-              <p role="alert" className="break-words text-base text-bad">
+              <p role="alert" className="break-words text-base text-bad short:basis-full">
                 {voice.notice.message}
               </p>
             ) : null}
             <PictureControls box={box} disabled={busy} />
-            <div className="flex items-end gap-2">
+            <div className="flex items-end gap-2 short:min-w-0 short:flex-1">
               <textarea
                 ref={field}
                 aria-label="Your message"
@@ -515,7 +549,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
                 value={text}
                 disabled={busy}
                 onChange={(e) => setText(e.target.value)}
-                className="block min-w-0 flex-1 resize-none rounded-lg border border-line bg-canvas px-3 py-2 text-lg"
+                className="block min-w-0 flex-1 resize-none rounded-lg border border-line bg-canvas px-3 py-2 text-lg short:h-14"
               />
               <button
                 type="button"
@@ -526,7 +560,9 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
                 Send
               </button>
             </div>
-            <HoldToTalk voice={voice} disabled={busy} />
+            <div className="short:w-48 short:shrink-0">
+              <HoldToTalk voice={voice} disabled={busy} />
+            </div>
           </div>
         </div>
       </div>

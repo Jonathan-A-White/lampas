@@ -216,7 +216,11 @@ test('from Goal: the control, the sheet that fits the phone with its questions, 
 
   await questions.first().click();
   await expect(sheet.locator('[data-turn]')).toHaveCount(1);
-  await expect(sheet.locator('[data-suggestion]')).toHaveCount(0);
+  // the two not yet asked stay, and New talk is in the header beside Done, inside the phone
+  await expect(sheet.locator('[data-suggestion]')).toHaveCount(2);
+  const newTalk = await rectOf(sheet.getByRole('button', { name: 'New talk' }));
+  expect(newTalk.height).toBeGreaterThanOrEqual(43.5);
+  expect(newTalk.x + newTalk.width).toBeLessThanOrEqual(VIEWPORT.width);
   expect(fake.received).toHaveLength(1);
   expect(fake.received[0].input).toMatchObject({ reference: 'Goal', screen: { name: 'Goal' } });
 

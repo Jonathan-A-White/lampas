@@ -14,11 +14,17 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   Source: the msb_nt_tables.tsv file at majoritybible.com. Its Greek is the Robinson-Pierpont 2005 edition (public domain), found by comparing it word by word
   with the [byztxt Byzantine text on GitHub](https://github.com/byztxt/byzantine-majority-text), also public domain (scripts/greek-edition.ts, docs/greek-edition.md); nothing of that repository is in the app.
   Changes: cut into one file per chapter, with short keys (scripts/data-build.ts, docs/data.md).
-- **[Maurice A. Robinson, "The Case for Byzantine Priority"](https://byzantinetext.com/study/editions/robinson-pierpont/).** Public domain. Printed as the appendix of
-  the Robinson-Pierpont 2005 edition, whose copyright notice says: "we hereby release into the public domain the introduction and appendix which have been especially prepared for this edition"
-  (the same notice is on the edition's page there). The text is the essay as *TC: A Journal of Biblical Textual Criticism* published it in 2001, read in the app on the Preface's Robinson entry.
-  Changes: the page's Greek, typed in Latin letters, is set in Greek letters; footnotes open under the paragraph that cites them; Chart 1 is left on the original page
-  (scripts/essay-build.ts, src/essay/robinson.json). The original stays linked as "Original (TC Journal, 2001)".
+- **[Maurice A. Robinson, "The Case for Byzantine Priority"](https://byzantinetext.com/study/editions/robinson-pierpont/).** Public domain. The text read in the app is the appendix
+  of the Robinson-Pierpont 2005 edition (pp. 533 to 586), whose copyright notice says: "we hereby release into the public domain the introduction and appendix which have been especially prepared for this edition"
+  (the same notice is on the edition's page there). It is that appendix, not the article *TC: A Journal of Biblical Textual Criticism* published in 2001: the two differ (Robinson
+  revised the essay for the book), so the 2001 article, which that release does not cover, is only linked, never copied. Compared (mw-5r3p30.162): the 2005 text has 168 footnotes to the journal's 167, opens with a note on where the essay was first
+  presented, and numbers its principles in the text where the journal numbered paragraphs 1 to 113; it differs in wording throughout ("predominated among the Greek-speaking world" for the journal's "in the Greek-speaking world",
+  "can more easily account for the rise and dominance" for "explain", and many longer rewrites).
+  Source: [the appendix as a PDF from the editors’ site](https://byzantinetext.com/wp-content/uploads/2016/11/editions-rp-11-appendix.pdf), checked against the page images of the edition's
+  [scan at the Internet Archive](https://archive.org/details/RP2005KoineGreekNTinByzantineTextform).
+  Changes: the PDF's Greek, typed in Latin letters, is set in Greek letters (the PDF's text has no accents, so the Greek here has none); the signs the PDF draws as pictures for the papyri, aleph and the Majority text
+  are the letters 𝔓, ℵ and 𝔐; footnotes open under the paragraph that cites them; Chart 1 is left in the edition; the list of abbreviations (p. 587) is not carried
+  (scripts/essay-build.ts, src/essay/robinson.json). The 2001 article stays linked as "Original (TC Journal, 2001)", as the older text.
 - **[Tyndale House's Brief lexicon of the Greek NT, extended (TBESG), from STEPBible](https://www.stepbible.org).** Licensed
   [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Credit: STEPBible, Tyndale House, Cambridge. The words' lemmas,
   glosses and definitions (the definitions are Abbott-Smith's). Data used under the licence.
@@ -56,6 +62,8 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   tutor's answers, which are written in Markdown. Licence: [MIT](https://github.com/remarkjs/react-markdown/blob/main/license). Changes: none.
 - **[remark-gfm](https://github.com/remarkjs/remark-gfm)** (`remark-gfm`) by Titus Wormer and the unified collective. Tables, lists and
   strike-through in those answers. Licence: [MIT](https://github.com/remarkjs/remark-gfm/blob/main/license). Changes: none.
+- **[node-qrcode](https://github.com/soldair/node-qrcode)** (`qrcode`) by Ryan Day. Draws this phone's key as a QR code on the unlock screen,
+  so Postern can scan it to issue a licence. Licence: [MIT](https://github.com/soldair/node-qrcode/blob/master/license). Changes: none.
 - **[Workbox](https://developer.chrome.com/docs/workbox)** (`workbox-precaching`, `workbox-routing`, `workbox-strategies`) from Google Chrome.
   The service worker that lets Lampas open with no signal. Licence: [MIT](https://github.com/GoogleChrome/workbox/blob/v7/LICENSE). Changes: none.
 

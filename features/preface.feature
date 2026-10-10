@@ -3,7 +3,8 @@ Feature: A Preface about the text
   Bible's English. A Preface page says so in a few plain paragraphs and links to the sources: Robinson's
   essay on Byzantine priority, the Robinson-Pierpont edition and the Majority Standard Bible's site. It is
   reached from the top of the chapter picker and from About. The essay is also in the app, in a phone-sized copy
-  (the 2005 edition's release into the public domain names its appendix, where the essay is printed).
+  of the appendix of the 2005 edition (its release into the public domain names that appendix; the 2001 journal
+  article differs, so it is only linked).
 
   Scenario: The chapter picker opens the Preface from above Matthew
     Given Lampas is opened with nothing saved
@@ -60,6 +61,7 @@ Feature: A Preface about the text
     Then the essay says it is released into the public domain with the 2005 edition's appendix
     And it links to the original of the Robinson essay "Original (TC Journal, 2001)" at "http://rosetta.reltech.org/TC/vol06/Robinson2001.html"
     And the original is marked as an old-format page that answers only on http
+    And About this copy says it is the 2005 appendix, not the 2001 article, and links the appendix
 
   Scenario: Greek in the essay is Greek letters
     Given Lampas is opened on the essay

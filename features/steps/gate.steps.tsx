@@ -9,6 +9,7 @@ import type { licence } from 'bsv-kit/bsv';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { Gate } from '../../src/gate/Gate';
+import { qrPath } from '../../src/gate/qr';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { fetchLicenceStatus } from '../../src/services/licenceCheck';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -106,6 +107,19 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario }) => {
     });
     Then('the clipboard holds the device key', async () => {
       expect(copied).toBe(keyText());
+    });
+  });
+
+  Scenario('The device key is also shown as a QR code for Postern to scan', ({ Given, Then, And }) => {
+    Given('Lampas is opened for the first time on a phone with no licence', async () => {
+      answer = { state: 'none', checkedAt: checkedAt() };
+      await open();
+    });
+    Then('he sees the Unlock screen', seeUnlock);
+    And('the Unlock screen shows the device key as a QR code', async () => {
+      await waitFor(() => expect(keyText()).toMatch(/^0[23][0-9a-f]{64}$/));
+      const qr = screen.getByRole('img', { name: 'This phone’s key as a QR code' });
+      expect(qr.querySelector('path')?.getAttribute('d')).toBe(qrPath(keyText()).path);
     });
   });
 
