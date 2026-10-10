@@ -1,13 +1,13 @@
 // src/Essay.tsx — Robinson's "The Case for Byzantine Priority" inside the app (mw-5r3p30.138, #/preface/robinson, kept in KEPT_PATHS), reached from
-// the Preface's Robinson entry. The text is src/essay/robinson.json (made by scripts/essay-build.ts from the TC Journal's page), loaded when the page
+// the Preface's Robinson entry. The text is src/essay/robinson.json (made by scripts/essay-build.ts from the appendix of the 2005 edition), loaded when the page
 // opens so the main bundle does not carry it; the worker precaches that chunk, so the page reads offline. A footnote's number opens its note under
-// the paragraph and a second tap closes it. The original page stays linked at the foot, marked as the old-format page it is.
+// the paragraph and a second tap closes it. The 2001 article stays linked at the foot, marked as the old-format page it is, as the older text.
 import { Fragment, useEffect, useState, type ReactNode } from 'react';
 import type { Block, Essay as EssayData, Run } from './essay/types';
 import { navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { usePageActions } from './PageActions';
-import { ESSAY_CREDIT, ESSAY_ORIGINAL, ESSAY_ORIGINAL_NOTE, ESSAY_RELEASE, ESSAY_TITLE } from './preface';
+import { ESSAY_CREDIT, ESSAY_ORIGINAL, ESSAY_ORIGINAL_NOTE, ESSAY_RELEASE, ESSAY_SOURCE, ESSAY_TITLE } from './preface';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { useReportScreen } from './tutor/screenContext';
 
@@ -101,8 +101,8 @@ export function Essay() {
   useReportScreen({
     name: ESSAY_TITLE,
     facts: [
-      { label: 'Essay', value: `${ESSAY_TITLE}, Maurice A. Robinson, first in TC: A Journal of Biblical Textual Criticism (2001)` },
-      { label: 'Also printed in', value: 'the appendix of the Robinson-Pierpont 2005 edition, released into the public domain' },
+      { label: 'Essay', value: `${ESSAY_TITLE}, Maurice A. Robinson, the appendix of the Robinson-Pierpont 2005 edition` },
+      { label: 'Release', value: 'the 2005 edition released its appendix into the public domain; the copy is that text, not the 2001 journal article' },
     ],
   });
   const scrollRef = useScrollMemory('essay');
@@ -145,7 +145,10 @@ export function Essay() {
             <section aria-label="About this copy" className="mt-8 border-t border-line pt-4">
               <h2 data-read-block className="text-lg font-semibold">About this copy</h2>
               <p data-read-block className="break-words pt-3 text-base leading-relaxed">{ESSAY_RELEASE}</p>
-              <a href={ESSAY_ORIGINAL.url} target="_blank" rel="noreferrer" className="mt-3 inline-block min-h-11 text-accent underline">
+              <a href={ESSAY_SOURCE.url} target="_blank" rel="noreferrer" className="mt-3 inline-block min-h-11 text-accent underline">
+                {ESSAY_SOURCE.name}
+              </a>
+              <a href={ESSAY_ORIGINAL.url} target="_blank" rel="noreferrer" className="mt-1 inline-block min-h-11 text-accent underline">
                 {ESSAY_ORIGINAL.name}
               </a>
               <p className="text-sm text-muted">{ESSAY_ORIGINAL_NOTE}</p>
