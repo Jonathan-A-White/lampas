@@ -138,8 +138,9 @@ function MarkedVerse({ text, view, marks, open, onOpen, player }: { text: string
   const type = typeOf(view);
   const tokens = useMemo(() => wordsOfText(text), [text]);
   // each flagged word has its speaker right after it (a sibling of the word's button): it says only how the word should sound; with times and a clip,
-  // 'Me' follows the speaker and plays his own clip of the word
-  const markButton = (fix: FixWord, label: string, key: string) => (
+  // 'Me' follows the speaker and plays his own clip of the word. The word's own punctuation (`after`: 'Levites,') stays with the word, right after its
+  // button and before the speaker, and the whole group stays on one line (mw-5r3p30.139)
+  const markButton = (fix: FixWord, label: string, key: string, after = '') => (
     <span key={key} className="whitespace-nowrap">
       <button
         type="button"
@@ -150,6 +151,7 @@ function MarkedVerse({ text, view, marks, open, onOpen, player }: { text: string
       >
         {label}
       </button>
+      {after}
       <SayWord fix={fix} view={view} id={`say-${view}-${key}`} label={`Hear ${label}`} className="align-middle" />
       {player ? <MeButton fix={fix} word={label} id={`me-${key}`} player={player} className="ml-1 align-middle" /> : null}
     </span>
@@ -163,8 +165,7 @@ function MarkedVerse({ text, view, marks, open, onOpen, player }: { text: string
           return (
             <span key={i}>
               {before}
-              {mark ? markButton(mark, core, String(i)) : core}
-              {after}{' '}
+              {mark ? markButton(mark, core, String(i), after) : core + after}{' '}
             </span>
           );
         })}
