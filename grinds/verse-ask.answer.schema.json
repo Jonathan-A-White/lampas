@@ -17,6 +17,20 @@
       "minLength": 1,
       "maxLength": 400
     },
+    "settings_changes": {
+      "description": "Only when he asked in words to switch how Ask the tutor opens: askBy to typing (\"let me type\") or to speaking (\"switch back to speaking\"). The app applies it at once; say in `answer` what you did. Leave it out otherwise, and never change any other setting.",
+      "type": "array",
+      "maxItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "value"],
+        "properties": {
+          "key": { "const": "askBy" },
+          "value": { "type": "string", "enum": ["speaking", "typing"] }
+        }
+      }
+    },
     "words": {
       "description": "The Greek words of the verse the answer speaks about, each with its lemma and a short note that includes its parsing. Empty when the answer is about no particular word.",
       "type": "array",

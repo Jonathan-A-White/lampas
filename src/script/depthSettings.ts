@@ -1,5 +1,5 @@
 // src/script/depthSettings.ts — the depth he chose for each language, by the setting's name, as a request to a grind carries it
-// ({ hebrewDepth: 'both' }): the verse-ask request's `settings`, and the part of the Bible talk's `settings` that is these.
+// ({ hebrewDepth: 'both' }): the verse-ask request's `settings` (with askBy, src/useAsks.ts), and the part of the Bible talk's `settings` that is these.
 import { getScriptDepth } from '../data/repositories';
 import { SCRIPTS, type Depth } from './scripts';
 

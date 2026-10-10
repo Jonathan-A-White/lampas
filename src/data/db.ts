@@ -53,6 +53,8 @@ export interface TutorAnswer {
   words: AnswerWord[];
   /** when it arrived (ms since the epoch) */
   when: number;
+  /** the settings the answer changed (Ask by, when he asked the tutor to switch it): shown under the answer as 'Changed: Ask by: Typing' */
+  changes?: AppliedChange[];
 }
 
 /** A picture he sent with a turn of a Bible talk (mw-y3qno5.1), kept as bytes and a mime (a Blob does not survive every store the tests use). */

@@ -2,10 +2,10 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { getReadTutor, getScriptDepth } from '../../data/repositories';
 import { ScriptText } from '../../script/ScriptText';
 import { DEPTHS, SCRIPTS, type Depth, type TutorScript } from '../../script/scripts';
-import { tipsSetting } from '../definitions';
+import { askBySetting, tipsSetting } from '../definitions';
 import { writeSetting } from '../registry';
 import { useSetting } from '../store';
-import { ON_COLOUR, OnOff, SettingRow } from './SettingRow';
+import { ChipRow, ON_COLOUR, OnOff, SettingRow } from './SettingRow';
 import type { Control } from './types';
 
 function ScriptDepthChoice({ script, depth }: { script: TutorScript; depth: Depth }) {
@@ -43,4 +43,23 @@ export const ScriptDepthControl: Control = ({ row }) => {
   const script = SCRIPTS.find((s) => s.settingKey === row.key);
   const depth = useLiveQuery(() => (script ? getScriptDepth(script) : Promise.resolve(undefined)), [script]);
   return <SettingRow row={row}>{script && depth ? <ScriptDepthChoice script={script} depth={depth} /> : null}</SettingRow>;
+};
+
+export const AskByControl: Control = ({ row }) => {
+  const askBy = useSetting(askBySetting);
+  return (
+    <SettingRow row={row}>
+      {askBy ? (
+        <ChipRow
+          name={row.label}
+          current={askBy}
+          options={[
+            ['speaking', 'Speaking'],
+            ['typing', 'Typing'],
+          ]}
+          settingKey="askBy"
+        />
+      ) : null}
+    </SettingRow>
+  );
 };

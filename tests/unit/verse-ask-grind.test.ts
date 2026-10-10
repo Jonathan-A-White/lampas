@@ -51,6 +51,9 @@ describe('the answer schema and isVerseAnswer', () => {
     ['an extra key on a word', { ...good, words: [{ greek: 'a', lemma: 'b', note: 'c', extra: 1 }] }],
     ['13 words', { ...good, words: Array.from({ length: 13 }, () => good.words[0]) }],
     ['an answer that is not a string', { ...good, answer: 42 }],
+    ['a change of a setting other than askBy', { ...good, settings_changes: [{ key: 'theme', value: 'dark' }] }],
+    ['an askBy value it does not allow', { ...good, settings_changes: [{ key: 'askBy', value: 'shouting' }] }],
+    ['two changes at once', { ...good, settings_changes: [{ key: 'askBy', value: 'typing' }, { key: 'askBy', value: 'speaking' }] }],
   ];
 
   it('accepts a good answer and an answer with no words', () => {
@@ -58,6 +61,14 @@ describe('the answer schema and isVerseAnswer', () => {
     expect(isVerseAnswer(good)).toBe(true);
     expect(validate({ answer: 'x', words: [] }, schema as Schema)).toEqual([]);
     expect(isVerseAnswer({ answer: 'x', words: [] })).toBe(true);
+  });
+
+  it('accepts a switch of Ask by in both', () => {
+    for (const value of ['typing', 'speaking']) {
+      const switched = { answer: 'Done.', words: [], settings_changes: [{ key: 'askBy', value }] };
+      expect(validate(switched, schema as Schema)).toEqual([]);
+      expect(isVerseAnswer(switched)).toBe(true);
+    }
   });
 
   it.each(bad)('refuses %s in both', (_, value) => {

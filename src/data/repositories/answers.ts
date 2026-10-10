@@ -1,4 +1,5 @@
 // src/data/repositories/answers.ts — what the tutor answered about a verse, kept on the phone. A repository owns its transactions.
+import type { AppliedChange } from '../../settings/registry';
 import { db, type AnswerWord, type TutorAnswer } from '../db';
 
 export type { AnswerWord, TutorAnswer };
@@ -7,8 +8,8 @@ export type { AnswerWord, TutorAnswer };
 export const verseRef = (book: string, chapter: number, verse: number | string): string => `${book}.${chapter}.${verse}`;
 
 /** Keeps an answer with the question as he said it and, when the tutor gave one, the question cleaned up (shown in its place). */
-export async function addAnswer(ref: string, question: string, answer: string, words: AnswerWord[], now = Date.now(), cleanQuestion?: string): Promise<void> {
-  await db.answers.add({ ref, question, ...(cleanQuestion ? { cleanQuestion } : {}), answer, words, when: now });
+export async function addAnswer(ref: string, question: string, answer: string, words: AnswerWord[], now = Date.now(), cleanQuestion?: string, changes?: AppliedChange[]): Promise<void> {
+  await db.answers.add({ ref, question, ...(cleanQuestion ? { cleanQuestion } : {}), answer, words, when: now, ...(changes?.length ? { changes } : {}) });
 }
 
 /** One verse's answers, the oldest first. */

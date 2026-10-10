@@ -51,7 +51,7 @@ export function SettingRow({ row, children, details, className = 'pb-3' }: { row
 }
 
 /** The three chips of a weave or New words row, on one line (never wrapped); `name` is the setting's label in the registry. */
-export function ChipRow({ name, current, options, settingKey }: { name: string; current: string; options: [string, string][]; settingKey: 'weave' | 'weaveGrammar' | 'pickerGrammar' | 'grammarMove' | 'newWordsADay' }) {
+export function ChipRow({ name, current, options, settingKey }: { name: string; current: string; options: [string, string][]; settingKey: 'weave' | 'weaveGrammar' | 'pickerGrammar' | 'grammarMove' | 'newWordsADay' | 'askBy' }) {
   return (
     <div role="group" aria-label={name} className="inline-flex max-w-full min-w-0 flex-nowrap rounded-xl border border-line p-0.5">
       {options.map(([value, text]) => (

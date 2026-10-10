@@ -172,6 +172,12 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
+            "properties": { "key": { "const": "askBy" }, "value": { "type": "string", "enum": ["speaking", "typing"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
             "properties": { "key": { "const": "hebrewDepth" }, "value": { "type": "string", "enum": ["transliteration", "both", "full"] } }
           },
           {

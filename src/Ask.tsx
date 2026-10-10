@@ -7,6 +7,8 @@ import { useEffect, useRef } from 'react';
 import type { Verse } from './data/chapter';
 import { unitId } from './data/passage';
 import { listAnswers, verseRef, type TutorAnswer } from './data/repositories';
+import { askBySetting } from './settings/definitions';
+import { useSetting } from './settings/store';
 import { FAILURE_TITLES, MAX_QUESTION_CHARS } from './services/tutor';
 import type { AskState } from './useAsks';
 import { Markdown } from './markdown/Markdown';
@@ -72,6 +74,11 @@ function AnswerCard({ answer }: { answer: TutorAnswer }) {
       <div className="mt-1 break-words text-lg leading-snug">
         <Markdown text={answer.answer} />
       </div>
+      {answer.changes?.map((change) => (
+        <p key={change.key} data-answer-change className="mt-1 text-base text-muted">
+          Changed: {change.shown}
+        </p>
+      ))}
       {answer.words.length > 0 ? (
         <dl className="mt-2 space-y-1 border-t border-line pt-2">
           {answer.words.map((w, i) => (
@@ -122,7 +129,7 @@ export function AskStatus({ verse, state, onAsk }: { verse: Verse; state: AskSta
   );
 }
 
-/** The composer for `verse` (or a passage, src/data/passage.ts): bsv-kit's Composer in speak mode, drawn at the foot of the Verse view. Hold to ask streams
+/** The composer for `verse` (or a passage, src/data/passage.ts): bsv-kit's Composer, speak-first or, by the setting Ask by, type-first, drawn at the foot of the Verse view. Hold to ask streams
  * his words as he speaks and a release asks; Type a question brings out the field and Send asks. The tutor takes no photo or file, so there is no attach
  * or camera. A question that failed comes back into the field to be sent again. */
 export function AskComposer({ verse, state, onAsk, prefill = null }: {
@@ -132,6 +139,7 @@ export function AskComposer({ verse, state, onAsk, prefill = null }: {
   /** a question to put in the field when the composer opens on that verse (the Parsing drill's link); he sends it himself */
   prefill?: { verse: number; text: string } | null;
 }) {
+  const askBy = useSetting(askBySetting) ?? 'speaking';
   const busy = state?.phase === 'sending' || state?.phase === 'waiting';
   const failed = state?.phase === 'failed' ? state.question : '';
   const prefilled = verse.to === undefined && prefill?.verse === verse.n ? prefill.text : '';
@@ -147,7 +155,7 @@ export function AskComposer({ verse, state, onAsk, prefill = null }: {
       {/* a failed question remounts the composer with it in the field */}
       <Composer
         key={`${unitId(verse)}:${failed}`}
-        mode="speak"
+        mode={askBy === 'typing' ? 'type' : 'speak'}
         transcriber={askTranscriber}
         lang="en-US"
         appName="Lampas"
