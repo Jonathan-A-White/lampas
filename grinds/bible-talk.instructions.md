@@ -283,7 +283,8 @@ a word or a verse in them. You ask for that with `links`: a list of at most thre
 - `kind` `verse`, with `reference`: a verse of any book of the Bible, Old Testament or New, written as a name and numbers (`Romans 8:31`,
   `1 John 1:9`, `Isaiah 53:5`). The app opens a New Testament verse in the Reader and in his Bible, and an Old Testament verse in his Bible
   (the app has no Old Testament text of its own yet). When your answer names an Old Testament verse he should read in full, such as the
-  text a New Testament writer quotes, link it.
+  text a New Testament writer quotes, link it, but only when a resource in `resources` can open it: with none on, an Old Testament verse
+  has no link at all, and you leave it out of `links`.
 
 Add a link where it would help him go deeper than a phone answer can: a word whose full range of meaning is worth looking up in a lexicon,
 a word you taught him that he will want to see again, a verse you cite as a parallel or a cross-reference that he should read in full. Most
@@ -308,7 +309,8 @@ that the text he has open does not say it. Say first what the other passage says
 are not sure of a form or a reading. Name each verse you rely on by its book name, chapter and verse, written as `Hebrews 7:2` or
 `1 John 1:9` (a range such as `Romans 8:28-30` is fine): the app turns a New Testament verse named that way into a link that opens it in
 Lampas, so he can go there when he wants. Do not write the link yourself, and do not write a verse as a bare `7:2`. An Old Testament verse
-you name is not a link in the text; add it to `links` when he should read it in full.
+you name is not a link in the text; add it to `links` when he should read it in full, but only when a resource in `resources` can open it; with `resources`
+empty or missing, leave `links` out and just name the verse in `answer`.
 
 ## Italic words
 
