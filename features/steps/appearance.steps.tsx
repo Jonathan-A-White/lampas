@@ -5,6 +5,7 @@ import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, fireEvent, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
+import Dexie from 'dexie';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { THEME_COLORS } from '../../src/appearance/themes';
@@ -42,8 +43,10 @@ async function waitForReader(): Promise<void> {
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
 
-/** Nothing saved, the phone in `dark` or light, the reader open. */
-async function openOnPhone(dark: boolean): Promise<void> {
+/** Nothing saved, the phone in `dark` or light, the reader open. With `slowMs` the settings store answers that many ms late
+ * once the reader is up, as a loaded host does: Settings draws its heading before its controls (they wait for their saved values). */
+async function openOnPhone(dark: boolean, slowMs = 0): Promise<void> {
+  vi.restoreAllMocks();
   cleanup();
   clearBus();
   forgetTrail();
@@ -64,10 +67,20 @@ async function openOnPhone(dark: boolean): Promise<void> {
   window.history.replaceState(null, '', '/');
   render(<App />);
   await waitForReader();
+  if (slowMs > 0) slowSettingsReads(slowMs);
   await openSettings();
 }
 
+/** Every read of the settings table answers `ms` late until the next openOnPhone. */
+function slowSettingsReads(ms: number): void {
+  // the real read is made at once, so a live query still watches the table; only its answer is late
+  const get = db.settings.get.bind(db.settings) as (key: string) => Promise<unknown>;
+  vi.spyOn(db.settings, 'get').mockImplementation(((key: string) =>
+    get(key).then((row) => new Dexie.Promise((resolve) => setTimeout(() => resolve(row), ms)))) as unknown as typeof db.settings.get);
+}
+
 afterAll(() => {
+  vi.restoreAllMocks();
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
@@ -75,17 +88,24 @@ afterAll(() => {
 });
 
 async function openSettings(): Promise<void> {
-  await user.click(screen.getByRole('button', { name: 'Settings' }));
+  await user.click(await screen.findByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
 }
 async function backToReader(): Promise<void> {
-  await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+  await user.click(await screen.findByRole('button', { name: '‹ Reader' }));
   await waitForReader();
 }
 
-const choiceIn = (group: string, label: string) => within(screen.getByRole('group', { name: group })).getByRole('button', { name: label });
-const expectPressed = async (group: string, label: string) =>
-  waitFor(() => expect(choiceIn(group, label)).toHaveAttribute('aria-pressed', 'true'));
+/** A Settings control draws once its saved value is read, which can be after the heading: wait for the group, then the button. */
+const choiceIn = async (group: string, label: string) =>
+  within(await screen.findByRole('group', { name: group })).findByRole('button', { name: label });
+const pickChoice = async (group: string, label: string) => user.click(await choiceIn(group, label));
+const expectPressed = async (group: string, label: string) => {
+  await screen.findByRole('group', { name: group });
+  await waitFor(() =>
+    expect(within(screen.getByRole('group', { name: group })).getByRole('button', { name: label })).toHaveAttribute('aria-pressed', 'true'),
+  );
+};
 const slider = (name: string) => screen.getByRole('slider', { name });
 const setSpeed = async (name: 'English speed' | 'Greek speed', value: string) => {
   await screen.findByRole('slider', { name });
@@ -106,7 +126,7 @@ const speedsAre = async (english: number, greek: number) =>
 async function greekRateOfAButton(): Promise<number> {
   await backToReader();
   if (document.querySelector('[data-reader]')?.getAttribute('data-view') !== 'greek') {
-    await user.click(screen.getByRole('button', { name: 'Greek' }));
+    await user.click(await screen.findByRole('button', { name: 'Greek' }));
     await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-view')).toBe('greek'));
   }
   const play = within(document.querySelector<HTMLElement>('[data-verse="1"]')!).getByRole('button', { name: 'Hear the verse' });
@@ -147,20 +167,30 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Theme Dark makes the reader dark whatever the phone says', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone whose colour scheme is light, with nothing saved', () => openOnPhone(false));
     Then('the browser bar colour is the light one', () => waitFor(() => expect(barColour()).toBe(THEME_COLORS.light)));
-    When('he sets Theme to Dark in Settings', () => user.click(choiceIn('Theme', 'Dark')));
+    When('he sets Theme to Dark in Settings', () => pickChoice('Theme', 'Dark'));
     Then('the bus has heard the theme is dark', () => waitFor(() => expect(latest('theme-changed')?.theme).toBe('dark')));
     And('the page is dark', () => waitFor(() => expect(pageTheme()).toBe('dark')));
     And('the browser bar colour is the dark one', () => waitFor(() => expect(barColour()).toBe(THEME_COLORS.dark)));
-    When('he sets Theme to Light in Settings', () => user.click(choiceIn('Theme', 'Light')));
+    When('he sets Theme to Light in Settings', () => pickChoice('Theme', 'Light'));
     Then('the page is light', () => waitFor(() => expect(pageTheme()).toBe('light')));
     And('the browser bar colour is the light one', () => waitFor(() => expect(barColour()).toBe(THEME_COLORS.light)));
+  });
+
+  Scenario('Theme and Text size can be set on a loaded phone whose Settings draws its controls late', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on a phone whose colour scheme is light, with nothing saved, and Settings is slow to draw its controls', () =>
+      openOnPhone(false, 400),
+    );
+    When('he sets Theme to Dark in Settings', () => pickChoice('Theme', 'Dark'));
+    And('he sets Text size to Largest in Settings', () => pickChoice('Text size', 'Largest'));
+    Then('the page is dark', () => waitFor(() => expect(pageTheme()).toBe('dark')));
+    And('the Text size in Settings is Largest', () => expectPressed('Text size', 'Largest'));
   });
 
   Scenario('Text size Large makes the verse text larger and every tap target stays at least 44 px tall', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone whose colour scheme is dark, with nothing saved', () => openOnPhone(true));
     Then('the Text size in Settings is Normal', () => expectPressed('Text size', 'Normal'));
     And("the page text is at 100% of the phone's size", () => waitFor(() => expect(textScale()).toBe(1)));
-    When('he sets Text size to Large in Settings', () => user.click(choiceIn('Text size', 'Large')));
+    When('he sets Text size to Large in Settings', () => pickChoice('Text size', 'Large'));
     Then('the bus has heard the text size is {int}', (_, percent: number) =>
       waitFor(() => expect(latest('text-size-changed')?.percent).toBe(percent)),
     );
@@ -188,8 +218,8 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Theme, Text size and both rates survive a reload', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on a phone whose colour scheme is light, with nothing saved', () => openOnPhone(false));
-    When('he sets Theme to Dark in Settings', () => user.click(choiceIn('Theme', 'Dark')));
-    And('he sets Text size to Largest in Settings', () => user.click(choiceIn('Text size', 'Largest')));
+    When('he sets Theme to Dark in Settings', () => pickChoice('Theme', 'Dark'));
+    And('he sets Text size to Largest in Settings', () => pickChoice('Text size', 'Largest'));
     And('he sets the English speed to {number} in Settings', (_, value: number) => setSpeed('English speed', String(value)));
     And('he sets the Greek speed to {number} in Settings', (_, value: number) => setSpeed('Greek speed', String(value)));
     And('Lampas is reopened at the Settings address', async () => {

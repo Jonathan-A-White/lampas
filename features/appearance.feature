@@ -25,6 +25,13 @@ Feature: Appearance and speech speed in Settings
     Then the page is light
     And the browser bar colour is the light one
 
+  Scenario: Theme and Text size can be set on a loaded phone whose Settings draws its controls late
+    Given Lampas is opened on a phone whose colour scheme is light, with nothing saved, and Settings is slow to draw its controls
+    When he sets Theme to Dark in Settings
+    And he sets Text size to Largest in Settings
+    Then the page is dark
+    And the Text size in Settings is Largest
+
   Scenario: Text size Large makes the verse text larger and every tap target stays at least 44 px tall
     Given Lampas is opened on a phone whose colour scheme is dark, with nothing saved
     Then the Text size in Settings is Normal

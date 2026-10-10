@@ -74,7 +74,7 @@ const goBack = async () => {
   await waitForReader();
 };
 const setWeaveInSettings = async (label: 'Off' | 'Solid') => {
-  await user.click(within(screen.getByRole('group', { name: 'Weave' })).getByRole('button', { name: label }));
+  await user.click(await within(await screen.findByRole('group', { name: 'Weave' })).findByRole('button', { name: label }));
   await waitFor(() => expect(latest('weave-changed')?.weave).toBe(label === 'Off' ? 'off' : 'solid'));
 };
 
