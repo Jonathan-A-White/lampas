@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.53",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.144",
+    "kind": "fixed",
+    "text": "a word you read right twice now becomes solid even if your phone's clock was set back in between."
+  },
+  {
     "version": "0.1.52",
     "date": "2026-10-10",
     "story": "mw-5r3p30.138",

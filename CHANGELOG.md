@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.53
+_2026-10-10_
+- Fixed: a word you read right twice now becomes solid even if your phone's clock was set back in between.
+
 ## 0.1.52
 _2026-10-10_
 - New: Robinson's essay on why he holds the Byzantine text to be original can now be read inside the app, on the Preface, in large type with its footnotes.
