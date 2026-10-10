@@ -10,6 +10,11 @@ Feature: The licence gate
     When he taps Copy
     Then the clipboard holds the device key
 
+  Scenario: The device key is also shown as a QR code for Postern to scan
+    Given Lampas is opened for the first time on a phone with no licence
+    Then he sees the Unlock screen
+    And the Unlock screen shows the device key as a QR code
+
   Scenario: A held licence opens the reader
     Given the chain says this phone's key holds a licence
     When Lampas is opened
