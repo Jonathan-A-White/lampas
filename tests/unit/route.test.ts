@@ -27,6 +27,8 @@ describe('the address', () => {
     expect(routeOf('#/preface/robinson')).toBe('essay');
     expect(routeOf('#/import')).toBe('import');
     expect(routeOf('#/settings')).toBe('settings');
+    expect(routeOf('#/share?s=1-abc')).toBe('share');
+    expect(routeOf('#/share?talk=rom.8.28')).toBe('share');
   });
 
   it('carries the book, chapter, view, weave and verse of the reader', () => {

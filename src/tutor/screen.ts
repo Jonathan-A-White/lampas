@@ -50,7 +50,7 @@ export const CREDIT_LICENCE_MAX = 60;
 export const CREDIT_LINK_MAX = 120;
 
 /** The name each full screen but the Reader goes by (its title, or the name the Settings list has for it). */
-export const SCREEN_NAMES: Record<Exclude<Route, 'home'>, string> = {
+export const SCREEN_NAMES: Record<Exclude<Route, 'home' | 'share'>, string> = {
   goal: 'Goal',
   words: 'Words',
   review: 'Review',

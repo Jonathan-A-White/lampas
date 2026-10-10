@@ -49,6 +49,9 @@ describe('the trail of places he visited', () => {
     expect(isKeptHash('#/review')).toBe(true);
     expect(isKeptHash('#/placement')).toBe(true);
     expect(isKeptHash('#/goal')).toBe(true);
+    // the Share screen and the talk a share was placed in (mw-y3qno5.2): a reopen finds him in it
+    expect(isKeptHash('#/share?s=1-abc')).toBe(true);
+    expect(isKeptHash('#/share?talk=rom.8.28')).toBe(true);
     expect(isKeptHash('#/paradigms')).toBe(true);
     expect(isKeptHash('#/studyway')).toBe(true);
     expect(isKeptHash('#/preface')).toBe(true);

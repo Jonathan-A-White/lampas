@@ -148,6 +148,38 @@ clipboard that holds files) is an attachment too; pasted text pastes as before.
 - Checks: `features/talk-pictures.feature`, `tests/unit/talk-pictures.test.ts`, `tests/unit/db.test.ts`, and `tests/e2e/talk-pictures.spec.ts` (390 px; shots
   `talk-pictures-composer`, `talk-pictures-turn`, `talk-pictures-full-screen`).
 
+## Share to Lampas
+
+Lampas is in the phone's share sheet (mw-y3qno5.2, `features/share-target.feature`): Share > Lampas from the Photos app, Logos or any app that shares a picture,
+words or a link opens Lampas on **Share to Lampas**, which asks which talk they go to. Chrome lists an installed web app in the share sheet from its manifest, so
+a phone that installed Lampas before this version may need it removed and installed again from Chrome before **Lampas** appears in the list.
+
+- **The manifest** (`pwa-manifest.ts`) has `share_target`: action `/share-target`, POST, `multipart/form-data`, `title`, `text`, `url` and `files` (`image/*`).
+  `tests/unit/manifest.test.ts` holds it to `src/share/target.ts`.
+- **The worker** (`src/sw.ts`, `src/share/target.ts` `receiveShare`) answers the POST: it reads the files and words, keeps them in Dexie (`shares`, v15,
+  `{id, createdAt, text?, files}`; one share waits, a new one replaces it; `src/data/repositories/shares.ts`) and redirects (303) to `/#/share?s=<id>`. A GET to
+  `/share-target` is not answered (it is a page load). A share with nothing in it opens Home. The worker reaches Dexie through `src/data/db.ts`, so that file
+  imports no screen or registry (`src/settings/applied.ts` holds the one type it needed): `tsconfig.sw.json` would otherwise pull the whole app in.
+  `tests/unit/sw-share.test.ts` runs the worker's listener with a fake POST (a stand-in request: Node's Request cannot parse a jsdom File).
+- **The screen** (`#/share`, route `share`, in `KEPT_PATHS`; `src/share/ShareScreen.tsx`) is behind the licence gate like every screen. The sheet **Share to
+  Lampas** (`useSheetBack`) says what is waiting ("2 pictures and some words from another app") and offers, in this order: **Continue: <the newest talk> ·
+  <when>** (the default, the focused one; only when a talk was ever had), **New talk**, **Choose a talk** (the recent talks, newest first, at most 20, each with its
+  name, its date and its first question; `repositories/talks.ts` `listRecentTalks`: the app had no list of past talks, this is the smallest one) and **Cancel**.
+  The sheet is drawn once the talks are read, so a tap never lands on a button that moved.
+- **A pick** takes the share off the phone's store and opens the talk in the Talk sheet over its own scope (`src/share/talkScope.ts`, `ShareTalk.tsx`): the
+  address becomes `#/share?talk=<key>` (kept, so after leaving the app and coming back he is in that talk, with its turns; the pictures and words were
+  placed once and are not kept). The pictures wait in the composer (`TalkSheet`'s `shared` prop: `usePictureBox().add`, cut down like any picture) and the words
+  in its field, **not sent**; the sheet opens scrolled to the talk's end. A talk about a chapter, verse or passage, or a quiz on one, is the Talk sheet over
+  the chapter (fetched; offline and never read says so, with Try again), with Help with this word and a grammar term asking the tutor in that talk; a talk from a
+  screen (`screen.<name>`) is the Ask the tutor sheet's scope; **New talk** is a talk of its own (`talk.<ms>`, `TalkScope.free`, titled **Talk with the
+  tutor**, a `screen` {name 'A talk with the tutor'} so the tutor knows it is about no text and no screen). `src/share/talkPlace.ts` reads a key (`placeOf`) and
+  names it (`talkLabel`, `timeAgo`).
+- **Cancel**, the phone's Back, Escape and a swipe down drop the share (`dropShares`) and open Home; Done or Back on the talk opens Home.
+- Pictures only JPEG, PNG or WebP join the composer (`image/*` from the share sheet may bring a GIF or HEIC: the composer says "Only JPEG, PNG or WebP pictures can
+  be sent." as it does for an attach); at most four.
+- Checks: `features/share-target.feature`, `tests/unit/sw-share.test.ts`, `tests/unit/share-talks.test.ts`, `tests/unit/manifest.test.ts`, and
+  `tests/e2e/share-target.spec.ts` (390 px, through the built worker, which that spec lets run; shots `share-target-sheet`, `share-target-talk`).
+
 ## Tests
 
 `features/ask-tutor.feature` (the control, the request, the questions, what is kept), `tests/unit/ask-tutor.test.ts`, the `screen` blocks of

@@ -5,6 +5,7 @@
 // told this list (src/settings/grindText.ts builds its schema and instructions from it): a new setting is talkable by adding it
 // here, and tests/unit/settings-registry.test.tsx fails if a control of the Settings screen has no entry. A setting declared once
 // (src/settings/definitions/: theme, weave, tips, immersive, askBy so far) gets its entry from its definition (`fromDefinition`), in its place in the list.
+import type { AppliedChange } from './applied';
 import { TEXT_SIZES } from '../appearance/textSizes';
 import type { Theme } from '../appearance/themes';
 import {
@@ -477,16 +478,7 @@ function allowedValue(entry: SettingEntry, value: unknown): SettingValue | undef
   return typeof value === 'number' && Number.isFinite(value) && value >= allowed.min && value <= allowed.max ? value : undefined;
 }
 
-/** One change that was made: what it replaced (`from`), so Undo can put it back. `undone` is set once it has been. */
-export interface AppliedChange {
-  key: string;
-  label: string;
-  from: SettingValue;
-  to: SettingValue;
-  /** 'Greek speed 0.8x': what the talk shows after 'Changed:' */
-  shown: string;
-  undone?: boolean;
-}
+export type { AppliedChange };
 
 export interface ChangeResult {
   applied: AppliedChange[];

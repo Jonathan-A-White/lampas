@@ -64,8 +64,8 @@ export { addAnswer, listAnswers, verseRef } from './answers';
 export type { AnswerWord, TutorAnswer } from './answers';
 export { STUDY_WAY_LINE_MAX, STUDY_WAY_MAX, deleteStudyWayLine, editStudyWayLine, keepStudyWayLine, listStudyWay } from './studyWay';
 export type { EditResult, KeepResult } from './studyWay';
-export { addTurn, deleteTurns, listTurnPictures, listTurns, markChangeUndone, markFeedbackSent, talkRef } from './talks';
-export type { KeptPicture, TalkPicture, TalkTurn, TurnChanges } from './talks';
+export { addTurn, deleteTurns, listRecentTalks, listTurnPictures, listTurns, markChangeUndone, markFeedbackSent, talkRef } from './talks';
+export type { KeptPicture, RecentTalk, TalkPicture, TalkTurn, TurnChanges } from './talks';
 export { listDrillResults, recordDrillStep } from './drills';
 export type { DrillResult } from './drills';
 export { getVerseReading, keepVerseReading } from './readings';
@@ -81,3 +81,5 @@ export { dayOf, listUsage, recordUsage, savedSettings, usageCounts } from './usa
 export type { UsageCounts, UsageRow } from './usage';
 export { dismissTip, keepTip, openTip, shownTipIds } from './tips';
 export type { TipRow } from './tips';
+export { dropShares, parkShare, waitingShare } from './shares';
+export type { ShareRow } from './shares';
