@@ -6,10 +6,11 @@
 import type { ScreenCredit } from './screen';
 
 /** The most the credits weigh as JSON in UTF-8, so the screen, his words and a little history still fit MAX_REQUEST_BYTES (src/services/talk.ts). */
-export const MAX_CREDITS_BYTES = 3900;
+export const MAX_CREDITS_BYTES = 4100;
 
 export const CREDITS: ScreenCredit[] = [
   { name: 'Majority Standard Bible', use: 'The Greek you read, aligned to its English, with Strong\'s and parsing', licence: 'Public domain', link: 'https://majoritybible.com' },
+  { name: 'Byzantine Priority', use: 'Robinson\'s essay, read on the Preface', licence: 'Public domain', link: 'https://byzantinetext.com/study/editions/robinson-pierpont/' },
   { name: 'TBESG', use: 'STEPBible (Tyndale House): each word\'s lemma, gloss and definition', licence: 'CC BY 4.0', link: 'https://www.stepbible.org' },
   { name: 'Biblical Mastery Academy', use: 'Only the order BMA Tutor teaches grammar in; the lessons are ours', licence: 'none taken; nothing copied', link: 'https://biblicalmastery.academy/' },
   { name: 'Gentium Plus', use: 'The Greek type of the reader', licence: 'SIL OFL 1.1', link: 'https://software.sil.org/gentium/' },

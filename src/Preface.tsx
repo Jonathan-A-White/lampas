@@ -2,7 +2,7 @@
 // Reached from the top of the chapter picker and from About. The words and links are in src/preface.ts; each link opens in a new tab.
 import { navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
-import { PREFACE_LINKS, PREFACE_PARAGRAPHS } from './preface';
+import { ESSAY_ORIGINAL, ESSAY_ORIGINAL_NOTE, PREFACE_LINKS, PREFACE_PARAGRAPHS } from './preface';
 import { usePageActions } from './PageActions';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { useReportScreen } from './tutor/screenContext';
@@ -33,10 +33,24 @@ export function Preface() {
           <ul className="list-none space-y-4 py-3">
             {PREFACE_LINKS.map((l) => (
               <li key={l.url} data-read-block className="break-words text-base leading-relaxed">
-                <a href={l.url} target="_blank" rel="noreferrer" className="inline-block min-h-11 text-accent underline">
-                  {l.name}
-                </a>
+                {l.copy ? (
+                  <button type="button" onClick={() => navigate('essay')} className="inline-block min-h-11 text-left text-accent underline">
+                    {l.name}
+                  </button>
+                ) : (
+                  <a href={l.url} target="_blank" rel="noreferrer" className="inline-block min-h-11 text-accent underline">
+                    {l.name}
+                  </a>
+                )}
                 <p className="text-sm text-muted">{l.about}</p>
+                {l.copy && (
+                  <>
+                    <a href={l.url} target="_blank" rel="noreferrer" className="mt-1 inline-block min-h-11 text-accent underline">
+                      {ESSAY_ORIGINAL.name}
+                    </a>
+                    <p className="text-sm text-muted">{ESSAY_ORIGINAL_NOTE}</p>
+                  </>
+                )}
               </li>
             ))}
           </ul>

@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect } from 'react';
 import { seedLevelsIfFirstOpen, seedScheduleIfFirstOpen, seedWordsIfFirstOpen } from './data/repositories';
 import { About } from './About';
+import { Essay } from './Essay';
 import { Preface } from './Preface';
 import { AskTutor } from './AskTutor';
 import { startAppearanceSync } from './appearance/appearanceSync';
@@ -81,6 +82,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <About />
       ) : route === 'preface' ? (
         <Preface />
+      ) : route === 'essay' ? (
+        <Essay />
       ) : route === 'settings' ? (
         <SettingsScreen />
       ) : (

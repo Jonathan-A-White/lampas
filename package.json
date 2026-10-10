@@ -21,6 +21,7 @@
     "data:build": "tsx scripts/data-build.ts",
     "check:step": "tsx scripts/step-check.ts",
     "greek:edition": "tsx scripts/greek-edition.ts",
+    "essay:build": "tsx scripts/essay-build.ts",
     "grind:build": "tsx scripts/grind-build.ts",
     "check:licence": "tsx scripts/check-licence.ts"
   },

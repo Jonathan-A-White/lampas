@@ -52,6 +52,7 @@ describe('the trail of places he visited', () => {
     expect(isKeptHash('#/paradigms')).toBe(true);
     expect(isKeptHash('#/studyway')).toBe(true);
     expect(isKeptHash('#/preface')).toBe(true);
+    expect(isKeptHash('#/preface/robinson')).toBe(true);
     expect(isKeptHash('#/paradigms?t=eimi&mode=review')).toBe(true);
     expect(isKeptHash('#/unlock')).toBe(false);
     expect(isKeptHash('#/licence')).toBe(false);
