@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.71
+_2026-10-10_
+- Fixed: Ask the tutor is usable with the phone held sideways: the questions can be tapped and an answer has room to be read.
+
 ## 0.1.70
 _2026-10-10_
 - New: The unlock screen shows this phone's key as a QR code for Postern to scan.
