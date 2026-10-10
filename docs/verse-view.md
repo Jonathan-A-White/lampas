@@ -65,7 +65,7 @@ verse's words in order), so every action works on it as it works on a verse.
 | Title | `Romans 8:11` | the heading, with the range under it: `Walking by the Spirit` / `Romans 8:1-11` (accessible name `Walking by the Spirit, Romans 8:1-11`) |
 | Address | `#/?c=8&v=11` | `#/?c=8&p=1`, `p` the passage's first verse (`nav/route.ts` openPassage / movePassage); `v` wins when both are there |
 | Text | the verse big | the verses one after another with a small number before each, in a box of its own (at most 40% of the screen, scrolls) so the row of actions stays in reach; the verse being read is highlighted and followed |
-| Arrows | the verse before / after, across chapters | `Previous passage` / `Next passage` in the chapter; off at its first and last passage |
+| Arrows | the verse before / after, across chapters | `Previous passage` / `Next passage`; at a chapter's first or last passage they go into the last passage of the chapter before or the first of the chapter after, across books (`reader/steps.ts` `stepOf`; the other chapter is fetched, mw-5r3p30.129); off only at Matthew 1's first and Revelation 22's last |
 | Listen | `Play verse 11` | `Play verses 1-11`: reads the passage's verses only, to the passage's end, whatever the Read aloud span says, and stops there |
 | Read it aloud | `Hold to read verse 11` | `Hold to read verses 1-11`: the reading check on the whole passage (`reference` 'Romans 8:1-11', `target_text` every verse's text; the result is kept under `rom.8.1-11`, `rom.8.1-11:el`) |
 | Ask the tutor | `Hold to ask`, `Type a question` | the same; the grist's `reference` is 'Romans 8:1-11' and its `greek` / `english` the whole passage; the answers are kept under `rom.8.1-11` |
@@ -73,8 +73,7 @@ verse's words in order), so every action works on it as it works on a verse.
 | Talk about verse N | opens the Bible talk sheet | not offered: the Talk sheet is about a verse or a chapter |
 
 * **Carried over from V:** Listen, Read it aloud, Ask the tutor, Copy link, the one hold bar, the kept chosen action, Back as a step of its own, the
-  weave and tappable words in the text. **Not carried over:** *Talk about verse N* (no passage scope in the Talk sheet) and the arrows across a
-  chapter's end (a chapter's last passage has no next; the next chapter's first heading is not loaded by the view).
+  weave and tappable words in the text. **Not carried over:** *Talk about verse N* (no passage scope in the Talk sheet).
 * **PROVISIONAL, the Governor to confirm:** the title (heading over range), the 40% box, and that Listen on a passage always stops at its end.
 * **Limits worth knowing:** the reading check records at most 60 seconds, so a long passage read aloud is scored as incomplete; a grist record is capped at
   10 KiB, so a very long passage asked about may be refused with 'Could not send the question'.

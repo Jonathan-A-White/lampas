@@ -322,21 +322,53 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario("The arrows go to the passage before and the passage after, and are off at the chapter's ends", ({ Given, When, Then }) => {
+  Scenario('The arrows go to the passage before and the passage after', ({ Given, When, Then }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
     When('he taps the heading {string}', tapHeading);
-    Then('the previous passage arrow is off', arrowOff('previous'));
     When('he goes to the next passage', step('next'));
     Then('the Verse view is headed {string}', headed);
     When('he goes to the previous passage', step('previous'));
     Then('the Verse view is again headed {string}', headed);
   });
 
-  Scenario('The last passage of the chapter has no next passage', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
-    When('he taps the heading {string}', tapHeading);
+  const openAt = (_: unknown, book: string, chapter: number, first: number) =>
+    open({ hash: `#/?b=${book}&c=${chapter}&view=english&weave=off&p=${first}` });
+  const arrowOn = (name: 'next' | 'previous') => () => {
+    expect(within(viewEl()).getByRole('button', { name: `${name === 'next' ? 'Next' : 'Previous'} passage` })).toBeEnabled();
+  };
+
+  Scenario("At a chapter's first passage the previous arrow goes to the last passage of the chapter before", ({ Given, When, Then, And }) => {
+    Given('Lampas is opened at the book {string} chapter {number}, the passage that starts at verse {number}', openAt);
     Then('the Verse view is open, headed {string}', headed);
-    And('the next passage arrow is off', arrowOff('next'));
+    And('the previous passage arrow is on', arrowOn('previous'));
+    When('he goes to the previous passage', step('previous'));
+    Then('the Verse view is headed {string}', headed);
+  });
+
+  Scenario("At a chapter's last passage the next arrow goes to the first passage of the chapter after", ({ Given, When, Then }) => {
+    Given('Lampas is opened at the book {string} chapter {number}, the passage that starts at verse {number}', openAt);
+    Then('the Verse view is open, headed {string}', headed);
+    When('he goes to the next passage', step('next'));
+    Then('the Verse view is headed {string}', headed);
+  });
+
+  Scenario('The next arrow crosses from one book to the next', ({ Given, When, Then }) => {
+    Given('Lampas is opened at the book {string} chapter {number}, the passage that starts at verse {number}', openAt);
+    Then('the Verse view is open, headed {string}', headed);
+    When('he goes to the next passage', step('next'));
+    Then('the Verse view is headed {string}', headed);
+  });
+
+  Scenario("Matthew 1's first passage has no previous arrow", ({ Given, Then, And }) => {
+    Given('Lampas is opened at the book {string} chapter {number}, the passage that starts at verse {number}', openAt);
+    Then('the previous passage arrow is off', arrowOff('previous'));
+    And('the next passage arrow is on', arrowOn('next'));
+  });
+
+  Scenario("Revelation 22's last passage has no next arrow", ({ Given, Then, And }) => {
+    Given('Lampas is opened at the book {string} chapter {number}, the passage that starts at verse {number}', openAt);
+    Then('the next passage arrow is off', arrowOff('next'));
+    And('the previous passage arrow is on', arrowOn('previous'));
   });
 
   Scenario('A link or a reopen at a passage opens its view', ({ Given, Then }) => {

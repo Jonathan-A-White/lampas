@@ -68,20 +68,42 @@ Feature: A section heading opens the Verse view for its passage
     Then the phone's clipboard holds the link of Romans 8:1-11
     And the Verse view says "Link copied"
 
-  Scenario: The arrows go to the passage before and the passage after, and are off at the chapter's ends
+  Scenario: The arrows go to the passage before and the passage after
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
     When he taps the heading "Walking by the Spirit"
-    Then the previous passage arrow is off
     When he goes to the next passage
     Then the Verse view is headed "Heirs with Christ, Romans 8:12-17"
     When he goes to the previous passage
     Then the Verse view is again headed "Walking by the Spirit, Romans 8:1-11"
 
-  Scenario: The last passage of the chapter has no next passage
-    Given Lampas is opened on Romans 8 in the English view with the weave "Off"
-    When he taps the heading "More than Conquerors"
+  Scenario: At a chapter's first passage the previous arrow goes to the last passage of the chapter before
+    Given Lampas is opened at the book "rom" chapter 8, the passage that starts at verse 1
+    Then the Verse view is open, headed "Walking by the Spirit, Romans 8:1-11"
+    And the previous passage arrow is on
+    When he goes to the previous passage
+    Then the Verse view is headed "Struggling with Sin, Romans 7:13-25"
+
+  Scenario: At a chapter's last passage the next arrow goes to the first passage of the chapter after
+    Given Lampas is opened at the book "rom" chapter 8, the passage that starts at verse 35
     Then the Verse view is open, headed "More than Conquerors, Romans 8:35-39"
-    And the next passage arrow is off
+    When he goes to the next passage
+    Then the Verse view is headed "Paul’s Concern for the Jews, Romans 9:1-5"
+
+  Scenario: The next arrow crosses from one book to the next
+    Given Lampas is opened at the book "rom" chapter 16, the passage that starts at verse 21
+    Then the Verse view is open, headed "Greetings from Paul’s Fellow Workers, Romans 16:21-24"
+    When he goes to the next passage
+    Then the Verse view is headed "Greetings from Paul and Sosthenes, 1 Corinthians 1:1-3"
+
+  Scenario: Matthew 1's first passage has no previous arrow
+    Given Lampas is opened at the book "mat" chapter 1, the passage that starts at verse 1
+    Then the previous passage arrow is off
+    And the next passage arrow is on
+
+  Scenario: Revelation 22's last passage has no next arrow
+    Given Lampas is opened at the book "rev" chapter 22, the passage that starts at verse 18
+    Then the next passage arrow is off
+    And the previous passage arrow is on
 
   Scenario: A link or a reopen at a passage opens its view
     Given Lampas is opened on Romans 8 at the passage that starts at verse 12

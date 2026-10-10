@@ -444,8 +444,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
               <VerseText verse={viewUnit} view={view} woven={woven?.[chapter.verses.indexOf(viewUnit)] ?? null} onLook={setLookup} />
             )
           }
-          previous={viewPassage ? stepOf(passages, viewPassage, -1) : stepOfVerse(verseNeighbours(BOOK, CHAPTER, viewUnit.n).previous)}
-          next={viewPassage ? stepOf(passages, viewPassage, 1) : stepOfVerse(verseNeighbours(BOOK, CHAPTER, viewUnit.n).next)}
+          previous={viewPassage ? stepOf(BOOK, CHAPTER, passages, viewPassage, -1) : stepOfVerse(verseNeighbours(BOOK, CHAPTER, viewUnit.n).previous)}
+          next={viewPassage ? stepOf(BOOK, CHAPTER, passages, viewPassage, 1) : stepOfVerse(verseNeighbours(BOOK, CHAPTER, viewUnit.n).next)}
           onClose={closeVerse}
           action={action}
           onAction={chooseAction}
