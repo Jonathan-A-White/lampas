@@ -87,20 +87,22 @@ async function openWithGoal(page: Page, goal: string) {
   await page.reload();
 }
 
-test('the strip under the Reader header is one line beside Due and opens the Goal screen', async ({ page }) => {
+test('the Goal chip under the Reader header is on one row with Due and opens the Goal screen', async ({ page }) => {
   await openWithGoal(page, '1 John 1:1');
   const strip = page.getByTestId('goal-strip');
-  await expect(strip).toHaveText(/^Goal: 1 John 1:1 · \d+ of 16 words · \d+ of 30 ideas$/);
+  await expect(strip).toHaveText(/^Goal \d+\/16$/);
+  await expect(strip).toHaveAccessibleName(/^Goal: 1 John 1:1, \d+ of 16 words, \d+ of 30 ideas$/);
   const box = await strip.boundingBox();
-  expect(box?.height).toBeGreaterThanOrEqual(47.5);
-  expect(box?.height).toBeLessThan(60);
-  // the whole line shows: it is not cut short
+  expect(box?.height).toBeGreaterThanOrEqual(38);
+  expect(box?.height).toBeLessThanOrEqual(40);
+  // the whole chip shows: it is not cut short
   expect(await strip.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
-  // beside Due: the two strips sit one above the other under the header
+  // beside Due: the two chips share the one row under the header
   const due = page.getByRole('button', { name: /^Due: \d+$/ });
   await expect(due).toBeVisible();
   const dueBox = await due.boundingBox();
-  expect(Math.abs((dueBox?.y ?? 0) + (dueBox?.height ?? 0) - (box?.y ?? 0))).toBeLessThanOrEqual(1);
+  expect(Math.abs((dueBox?.y ?? 0) - (box?.y ?? 0))).toBeLessThanOrEqual(1);
+  expect((dueBox?.x ?? 0) + (dueBox?.width ?? 0)).toBeLessThanOrEqual(box?.x ?? 0);
   await expectFitsPhone(page);
   await shot(page, 'goal-strip');
 
@@ -108,7 +110,7 @@ test('the strip under the Reader header is one line beside Due and opens the Goa
   await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
 });
 
-test('no goal, no strip', async ({ page }) => {
+test('no goal, no chip', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();

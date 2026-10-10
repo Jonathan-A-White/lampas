@@ -1,22 +1,23 @@
-// src/GoalStrip.tsx — 'Goal: 1 John 1:1 · 12 of 31 words · 8 of 14 ideas' under the Reader's header, next to Due (mw-hqd5bz.10): how many of the words and
-// grammar ideas his goal needs are solid. A strip of its own for the same reason as DueBadge (the header has no room at 360 px). Not drawn with no goal,
-// or while the passage is still being counted; a tap opens the Goal screen.
+// src/GoalStrip.tsx — the 'Goal 6/16' chip in the Reader's row under the header (mw-hqd5bz.10, src/ReaderChips.tsx): how many of the words his goal
+// needs are solid. Its accessible name is the old strip's full text, 'Goal: 1 John 1:1, 6 of 16 words, 1 of 30 ideas'. Not drawn with no goal, or
+// while the passage is still being counted; a tap opens the Goal screen.
 import { goalText } from './data/goal';
 import { navigate } from './nav/route';
-import { useGoalProgress } from './useGoalProgress';
+import { CHIP, CHIP_PLAIN } from './chipStyle';
+import type { GoalProgress } from './useGoalProgress';
 
-export function GoalStrip() {
-  const progress = useGoalProgress();
+export function GoalChip({ progress }: { progress: GoalProgress }) {
   if (progress.status !== 'ready') return null;
   const { words, grammar } = progress.progress;
   return (
     <button
       type="button"
       data-testid="goal-strip"
+      aria-label={`Goal: ${goalText(progress.goal)}, ${words.solid} of ${words.total} words, ${grammar.solid} of ${grammar.total} ideas`}
       onClick={() => navigate('goal')}
-      className="chrome-small min-h-12 w-full shrink-0 truncate border-b border-line bg-surface px-3 text-center font-semibold text-accent active:bg-line"
+      className={`${CHIP} ${CHIP_PLAIN}`}
     >
-      Goal: {goalText(progress.goal)} · {words.solid} of {words.total} words · {grammar.solid} of {grammar.total} ideas
+      Goal {words.solid}/{words.total}
     </button>
   );
 }

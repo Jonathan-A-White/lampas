@@ -23,7 +23,7 @@ afterAll(async () => {
 });
 
 
-it('finds the Due strip on the Reader without reading the style of the whole page', async () => {
+it('finds the Due chip on the Reader without reading the style of the whole page', async () => {
   stubChapterFetch();
   await db.open();
   await seedWordsIfFirstOpen();
@@ -34,13 +34,13 @@ it('finds the Due strip on the Reader without reading the style of the whole pag
   window.history.replaceState(null, '', '/');
   render(<App />);
   await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
-  await screen.findByText('Due: 3');
+  await screen.findByText('Due 3');
   expect(document.querySelectorAll('*').length).toBeGreaterThan(500); // the Reader is heavy: that is the point
 
   const reads = vi.spyOn(window, 'getComputedStyle');
-  const strip = await findButton('Due: 3');
+  const chip = await findButton('Due: 3');
   const used = reads.mock.calls.length;
   reads.mockRestore();
-  expect(strip).toBeVisible();
+  expect(chip).toBeVisible();
   expect(used, 'style reads to find one button').toBeLessThan(50);
 });

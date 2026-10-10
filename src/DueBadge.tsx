@@ -1,19 +1,13 @@
-// src/DueBadge.tsx — 'Due: N' under the Reader's header: how many items are due on the back-off schedule; it opens Review.
-// Not drawn at 0. It is a strip of its own because the header has no room for it at 360 px (the title already truncates).
-import { useLiveQuery } from 'dexie-react-hooks';
-import { countDue } from './data/repositories';
+// src/DueBadge.tsx — the 'Due 9' chip in the Reader's row under the header (src/ReaderChips.tsx): how many items are due on the back-off
+// schedule; it opens Review. Not drawn at 0. Its accessible name is the old strip's text, 'Due: 9'.
 import { navigate } from './nav/route';
+import { CHIP, CHIP_ACCENT } from './chipStyle';
 
-export function DueBadge() {
-  const due = useLiveQuery(() => countDue(), []);
+export function DueChip({ due }: { due: number | undefined }) {
   if (!due) return null;
   return (
-    <button
-      type="button"
-      onClick={() => navigate('review')}
-      className="chrome-small min-h-12 w-full shrink-0 border-b border-line bg-accent/10 px-3 text-center font-semibold text-accent active:bg-line"
-    >
-      Due: {due}
+    <button type="button" aria-label={`Due: ${due}`} onClick={() => navigate('review')} className={`${CHIP} ${CHIP_ACCENT}`}>
+      Due {due}
     </button>
   );
 }

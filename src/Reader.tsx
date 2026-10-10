@@ -66,12 +66,10 @@ import { HeaderButton } from './ScreenHeader';
 import { speakTutor } from './speech/tutorVoice';
 import { continueReading, getReading, isReadingOf, pauseReading, planOf, startAnswer, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
-import { DueBadge } from './DueBadge';
-import { NewWordsStrip } from './NewWordsStrip';
+import { ReaderChips } from './ReaderChips';
 import { TeachSheet, type NewWordAsk } from './TeachSheet';
 import { useNewWords } from './useNewWords';
 import { usePace } from './usePace';
-import { GoalStrip } from './GoalStrip';
 import { TipCard } from './tips/TipCard';
 import { ReadFromButton, ReadingBar, VersePlay } from './speech/ReadControls';
 import { BarSlot } from './speech/SpeakingBarSlot';
@@ -472,8 +470,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const selectedEvent = useLatest('verse-selected');
   const selected = selectedEvent?.chapter === CHAPTER ? selectedEvent.verse : null;
   const [lookup, setLookup] = useState<Lookup | null>(null);
-  // The teach sheet (src/TeachSheet.tsx), opened by the 'New words: N' strip.
+  // The teach sheet (src/TeachSheet.tsx), opened by the 'New N' chip.
   const [teaching, setTeaching] = useState(false);
+  const [tipOpen, setTipOpen] = useState(false);
   const pace = usePace();
   const newWords = useNewWords(chapter, solid, learning, pace?.count);
   const { asks, ask } = useAsks(BOOK, CHAPTER, TITLE);
@@ -801,7 +800,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
 
   return (
     <>
-      <header inert={viewUnit !== undefined} className="flex shrink-0 items-center gap-1 border-b border-line px-2 py-2">
+      <header inert={viewUnit !== undefined} className="flex shrink-0 items-center gap-1 border-b border-line px-2">
         {/* While a reading the bar does not hold waits for Pause or Play, the header gives its room to those and Stop; the title stays for screen readers. */}
         <h1 className={`chrome-title min-w-0 font-semibold ${headerButtons ? 'sr-only' : 'flex-1'}`}>
           <button
@@ -828,10 +827,15 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           <GearIcon />
         </button>
       </header>
-      {chapterReading ? null : <DueBadge />}
-      {chapterReading ? null : <GoalStrip />}
-      {chapterReading ? null : <TipCard />}
-      {chapterReading ? null : <NewWordsStrip count={newWords?.length ?? 0} onOpen={() => setTeaching(true)} />}
+      <ReaderChips
+        hidden={chapterReading}
+        newWords={newWords?.length ?? 0}
+        onTeach={() => setTeaching(true)}
+        tipOpen={tipOpen}
+        onTip={() => setTipOpen((open) => !open)}
+        wovenCount={woven ? wovenCount : null}
+      />
+      {chapterReading || !tipOpen ? null : <TipCard onClose={() => setTipOpen(false)} />}
       {notice ? (
         <div role="status" data-link-notice className="flex shrink-0 items-center gap-2 border-b border-line bg-surface px-3 py-1 text-sm">
           <p className="min-w-0 flex-1">{notice}</p>
@@ -841,11 +845,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         </div>
       ) : null}
       <ReadingBar reading={reading} />
-      {woven ? (
-        <p data-testid="weave-count" className="shrink-0 border-b border-line px-3 py-1 text-right text-sm text-muted">
-          {wovenCount} {wovenCount === 1 ? 'word' : 'words'} in Greek
-        </p>
-      ) : null}
       <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} style={chapter ? { marginBottom: `calc(${ASK_BUTTON_ROOM})` } : undefined} className="screen min-h-0 flex-1 px-1 pt-2">
         <div>
         {failed ? (

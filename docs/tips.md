@@ -51,7 +51,7 @@ once at the start of each sitting). All of these must hold, checked in this orde
 The grist is `askGrind('tips', {summary, shown})` as the tutor sends one; `shown` is every id in the `tips` table. An answer of `{tip: null}`
 leaves no card; a tip whose id was shown before is dropped (the grind is told never to repeat).
 
-**The card** (`src/tips/TipCard.tsx`, drawn by the Reader under the header's strips, after Due and Goal, not while a chapter is read aloud):
+**The chip and the card** (`src/tips/TipCard.tsx`): a waiting tip is a small 'Tip' chip in the Reader's row of chips under the header (`src/ReaderChips.tsx`, with Due, Goal and New; not while a chapter is read aloud); a tap on the chip opens the card below the row, which closes again with its buttons. The card has
 the title, the body and two buttons. **Show me** (only when the tip has an action; the action's `label` is not shown) opens the action's screen
 and marks the tip `acted`; **Not now** marks it `dismissed` (a tip with no screen has **Got it** instead). Both keep the row, so the id is sent
 as shown next time and never offered again.
@@ -61,7 +61,7 @@ as shown next time and never offered again.
 **Tests**: `features/tips.feature` (a fake Postern whose mill answers with `TIP_ANSWER`), `tests/e2e/tips.spec.ts`. In e2e `openUnlocked(page)`
 marks today as asked so no spec sends a tips grist by accident; `openUnlocked(page, { tips: true })` leaves the day free.
 
-PROVISIONAL: once a day, the card's place under the header strips, haiku.
+PROVISIONAL: once a day, the chip's place in the row under the header, haiku.
 
 ## One-time tips written in the app (`src/tips/hints.ts`, mw-5r3p30.80)
 

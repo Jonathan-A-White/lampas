@@ -13,16 +13,16 @@ async function expectFitsPhone(page: Page) {
   expect(scrollTop).toBe(0);
 }
 
-test('the Reader shows Due: N, which opens Review; a round ends with what comes back tomorrow', async ({ page }) => {
+test('the Reader shows the Due N chip, which opens Review; a round ends with what comes back tomorrow', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/');
   // his learning words are due on the first open
   const badge = page.getByRole('button', { name: /^Due: \d+$/ });
   await expect(badge).toBeVisible();
-  expect((await badge.boundingBox())?.height).toBeGreaterThanOrEqual(48);
+  expect((await badge.boundingBox())?.height).toBeGreaterThanOrEqual(38);
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await expectFitsPhone(page);
-  const due = Number((await badge.innerText()).replace('Due: ', ''));
+  const due = Number((await badge.innerText()).replace('Due ', ''));
 
   await badge.click();
   await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible();
@@ -55,7 +55,7 @@ test('the Reader shows Due: N, which opens Review; a round ends with what comes 
   await shot(page, 'review');
 });
 
-test('the Due: N strip fits the Reader at 360 px and leaves the header as it was', async ({ browser }) => {
+test('the Due N chip fits the Reader at 360 px and leaves the header as it was', async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 360, height: 740 } });
   const page = await context.newPage();
   await openUnlocked(page);
@@ -64,8 +64,8 @@ test('the Due: N strip fits the Reader at 360 px and leaves the header as it was
   await expect(badge).toBeVisible();
   const box = await badge.boundingBox();
   expect(box && box.x + box.width).toBeLessThanOrEqual(360);
-  expect(box?.height).toBeGreaterThanOrEqual(48);
-  // the strip sits under the header, so the header's own buttons keep their room
+  expect(box?.height).toBeGreaterThanOrEqual(38);
+  // the chip sits under the header, so the header's own buttons keep their room
   expect((await page.getByRole('button', { name: 'Settings' }).boundingBox())?.width).toBeGreaterThanOrEqual(48);
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await expectFitsPhone(page);
