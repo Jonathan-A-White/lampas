@@ -64,6 +64,7 @@ function HoldToTalk({ voice, disabled }: { voice: Voice; disabled: boolean }) {
       listening={voice.listening}
       disabled={disabled}
       keys
+      compactWhenShort
     />
   );
 }
@@ -392,12 +393,17 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
   const asked = new Set([...(turns ?? []).map((t) => t.q), ...(state ? [state.question] : [])]);
   const more = (suggestions ?? []).filter((q) => !asked.has(q));
   const list = useRef<HTMLDivElement>(null);
-  // The newest turn is kept in view by moving this box and nothing else.
+  // The newest turn is kept in view by moving this box and nothing else: a question still waiting shows at the foot; an answer is read from its
+  // top (question first), so in a short window the suggestions left under it do not push its first lines out of the box (mw-vtjxh4.44).
   const turnCount = turns?.length ?? 0;
+  const waiting = state !== undefined;
   useEffect(() => {
     const box = list.current;
-    if (box) box.scrollTop = box.scrollHeight;
-  }, [turnCount, state?.phase]);
+    if (!box) return;
+    const newest = waiting ? null : Array.from(box.querySelectorAll<HTMLElement>('[data-turn]')).pop();
+    if (newest) box.scrollTop += newest.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
+    else box.scrollTop = box.scrollHeight;
+  }, [turnCount, state?.phase, waiting]);
   // Closing the sheet takes its answer's speech with it.
   useEffect(() => () => stopAnswer(), []);
   // A phone with no recogniser sends a hold to the typed field.
@@ -445,7 +451,7 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
           aria-modal="true"
           aria-labelledby={titleId}
           style={{ transform: drag ? `translateY(${drag}px)` : undefined }}
-          className="relative flex h-[85dvh] flex-col rounded-t-2xl border-t border-line bg-surface"
+          className="relative flex h-[85dvh] flex-col short:h-dvh rounded-t-2xl border-t border-line bg-surface"
           onPaste={(e) => {
             // a copied screenshot becomes an attachment; copied text pastes as it always did
             const pasted = pastedPictures(e);
@@ -456,7 +462,7 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
         >
           <div data-testid="sheet-handle" {...handle} className="relative flex shrink-0 touch-none flex-col items-center px-4 pt-2">
             <span aria-hidden="true" className="h-1.5 w-10 rounded-full bg-line" />
-            <div className="flex min-h-12 w-full items-center gap-2">
+            <div className="flex min-h-12 w-full items-center gap-2 short:min-h-11">
               <h2 id={titleId} className="min-w-0 flex-1 truncate text-xl font-semibold">
                 {title}
               </h2>
@@ -483,7 +489,7 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
               </button>
             </div>
           </div>
-          <div ref={list} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain border-t border-line px-4 py-3">
+          <div ref={list} data-talk-list className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain border-t border-line px-4 py-3 short:space-y-2 short:py-2">
             {turns?.length === 0 && !state ? (
               <p data-talk-empty className="text-base text-muted">
                 {scope.quiz ? 'Nothing said yet. Say “Quiz me” to begin.' : scope.screen ? 'Nothing said yet. Ask about this screen or about where you are.' : 'Nothing said yet. Ask about a word, a verse or what is on your mind.'}
@@ -521,20 +527,20 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
             {turns && !busy && (turns.length > 0 || state) && more.length > 0 ? <Suggestions questions={more} onAsk={send} label="Ask something else" /> : null}
           </div>
           <BarSlot level={3} />
-          <div className="shrink-0 space-y-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+var(--lp-bar-inset))]">
+          <div className="shrink-0 space-y-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+var(--lp-bar-inset))] short:flex short:flex-wrap short:items-end short:gap-x-2 short:space-y-0 short:gap-y-2">
             {voice.listening ? (
-              <div data-talk-live role="status" className="rounded-2xl border border-bad px-3 py-2">
+              <div data-talk-live role="status" className="rounded-2xl border border-bad px-3 py-2 short:basis-full">
                 <p className="text-sm font-medium text-bad">{voice.ready ? 'Listening… let go to send, slide away to cancel' : 'Starting the microphone…'}</p>
                 <p className="min-h-7 break-words text-lg">{voice.transcript}</p>
               </div>
             ) : null}
             {voice.notice ? (
-              <p role="alert" className="break-words text-base text-bad">
+              <p role="alert" className="break-words text-base text-bad short:basis-full">
                 {voice.notice.message}
               </p>
             ) : null}
             <PictureControls box={box} disabled={busy} />
-            <div className="flex items-end gap-2">
+            <div className="flex items-end gap-2 short:min-w-0 short:flex-1">
               <textarea
                 ref={field}
                 aria-label="Your message"
@@ -543,7 +549,7 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
                 value={text}
                 disabled={busy}
                 onChange={(e) => setText(e.target.value)}
-                className="block min-w-0 flex-1 resize-none rounded-lg border border-line bg-canvas px-3 py-2 text-lg"
+                className="block min-w-0 flex-1 resize-none rounded-lg border border-line bg-canvas px-3 py-2 text-lg short:h-14"
               />
               <button
                 type="button"
@@ -554,7 +560,9 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
                 Send
               </button>
             </div>
-            <HoldToTalk voice={voice} disabled={busy} />
+            <div className="short:w-48 short:shrink-0">
+              <HoldToTalk voice={voice} disabled={busy} />
+            </div>
           </div>
         </div>
       </div>

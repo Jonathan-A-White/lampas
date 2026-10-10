@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* A phone held sideways (844x390): the sheets and their feet give the text the room (mw-vtjxh4.44). */
+@custom-variant short (@media (max-height: 500px));
+
 /* Gentium Plus (SIL Open Font License, src/fonts/OFL.txt): Greek with polytonic accents, bundled so it works offline.
  * Two files per weight: basic Greek and Greek Extended (the breathings and accents of the Byzantine text). */
 @font-face {
