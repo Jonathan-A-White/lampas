@@ -1,0 +1,16 @@
+{
+  "description": "A question spoken with fillers and no punctuation comes back in the answer's question field as clean written words, the meaning unchanged.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "question": "um why are there uh italic words what does it mean for the words to be italic",
+    "history": [],
+    "solid_words": ["ὁ", "καί", "θεός"],
+    "settings": {}
+  },
+  "expect": {
+    "question": { "equals": "Why are there italic words? What does it mean for the words to be italic?" }
+  }
+}
