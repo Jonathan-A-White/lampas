@@ -25,6 +25,7 @@ import { BarSlot } from './speech/SpeakingBarSlot';
 import { answerRuns } from './speech/answerRuns';
 import { focusOnMount, focusQuietly } from './ui/focus';
 import { HoldBar } from './ui/HoldBar';
+import { PendingQuestion } from './ui/PendingQuestion';
 import type { HoldHandlers } from './ui/holdPress';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
@@ -441,7 +442,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
             </HebrewAskContext.Provider>
             {state ? (
               <div data-talk-pending className="space-y-2">
-                <p className="ml-auto w-fit max-w-[88%] break-words rounded-2xl bg-accent/15 px-3 py-2 text-lg">{state.question}</p>
+                <PendingQuestion text={state.question} />
                 {state.phase === 'failed' ? (
                   <div role="alert" className="space-y-2">
                     <p className="text-base font-semibold text-bad">{FAILURE_TITLES[state.failure]}</p>

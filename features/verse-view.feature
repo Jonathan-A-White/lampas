@@ -67,7 +67,7 @@ Feature: The Verse view
     Then the mill received one grist for the lampas app, kind verse-ask, about "Romans 8:11" with the question "What does ζωοποιήσει mean?"
     And the answer shows in the Verse view
 
-  Scenario: Hold to ask shows his words as he says them, not only when the clip ends
+  Scenario: Hold to ask shows his words in the Ask box as he says them, not only when the clip ends
     Given Lampas is opened on Romans 8 in the English view with the weave "Off" and a tutor and a microphone that hears a clip
     When he taps the number of verse 11
     And he chooses "Ask the tutor"
@@ -79,6 +79,24 @@ Feature: The Verse view
     When he lets go of the hold bar
     And a moment goes by
     Then the mill received one grist for the lampas app, kind verse-ask, about "Romans 8:11" with the question of the whole clip
+
+  Scenario: His question stays shown above Waiting for the tutor until the answer comes
+    Given Lampas is opened on Romans 8 in the English view with the weave "Off" and a tutor and a recogniser behind a fake Postern that holds its answers
+    When he taps the number of verse 11
+    And he chooses "Ask the tutor"
+    And he holds the hold bar and says "What does ζωοποιήσει mean?" and lets go
+    Then the Ask box shows his question "What does ζωοποιήσει mean?" above Waiting for the tutor
+    When the tutor answers
+    Then the answer shows in the Verse view
+    And the Ask box shows no pending question
+
+  Scenario: A question that could not be sent comes back into the Ask box
+    Given Lampas is opened on Romans 8 in the English view with the weave "Off" and a tutor and a recogniser behind a fake Postern that holds no licence for this phone
+    When he taps the number of verse 11
+    And he chooses "Ask the tutor"
+    And he holds the hold bar and says "What does ζωοποιήσει mean?" and lets go
+    Then the Ask box says "No licence"
+    And the Ask field holds "What does ζωοποιήσει mean?"
 
   Scenario: Copy link copies the verse's link
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
