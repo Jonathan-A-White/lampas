@@ -1,5 +1,5 @@
 {
-  "description": "A question about another passage (Melchizedek, while on Romans 8:28): the answer says what that passage says, names its verse by book, chapter and verse, and does not send him away to ask elsewhere; with no study resource on, there is no link (links left out or an empty list).",
+  "description": "A question about another passage (Melchizedek, while on Romans 8:28): the answer says what that passage says, names its verse by book, chapter and verse, and does not send him away to ask elsewhere; with no study resource on the app draws no link whatever `links` holds (tests/unit/links-grind.test.ts and features/tutor-links.feature), so this example does not demand that `links` is empty.",
   "schemaVersion": "1",
   "request": {
     "reference": "Romans 8:28",
@@ -13,7 +13,6 @@
   },
   "expect": {
     "answer": { "matches": "Hebrews 7:[12]" },
-    "links.0": { "present": false },
     "settings_changes": { "present": false }
   }
 }
