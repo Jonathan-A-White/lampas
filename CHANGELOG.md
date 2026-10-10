@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.30
+_2026-10-10_
+- Fixed: none (the fix itself shipped with mw-5r3p30.115; this adds a test).
+
 ## 0.1.29
 _2026-10-10_
 - Fixed: Turning Logos or Accordance on in Settings no longer opens the app or switches itself off; it stays on and offers a Get button if you don't have the app.

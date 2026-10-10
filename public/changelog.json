@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.30",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.118",
+    "kind": "fixed",
+    "text": "none (the fix itself shipped with mw-5r3p30.115; this adds a test)."
+  },
+  {
     "version": "0.1.29",
     "date": "2026-10-10",
     "story": "mw-5r3p30.116",
