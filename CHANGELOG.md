@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.61
+_2026-10-10_
+- New: Ask by in Settings lets you choose whether Ask the tutor starts with speaking or typing, and you can ask the tutor to switch it for you.
+
 ## 0.1.60
 _2026-10-10_
 - New: You can send the tutor a screenshot, a photo or a copied picture in a talk, and the Greek words it quotes are tap-to-hear.

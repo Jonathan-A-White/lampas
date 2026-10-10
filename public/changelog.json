@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.61",
+    "date": "2026-10-10",
+    "story": "mw-jtzpw0.4",
+    "kind": "new",
+    "text": "Ask by in Settings lets you choose whether Ask the tutor starts with speaking or typing, and you can ask the tutor to switch it for you."
+  },
+  {
     "version": "0.1.60",
     "date": "2026-10-10",
     "story": "mw-y3qno5.1",
