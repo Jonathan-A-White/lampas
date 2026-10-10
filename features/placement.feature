@@ -37,6 +37,8 @@ Feature: Test me on the grammar, and meet me where I am
     And he starts the placement
     And he answers 8 questions right
     And he answers 2 questions wrong
+    Then the question line says "Quick round 1 of"
+    When he stops the quick round
     Then the end card says "Where you are: solid 12, frontier 0, not yet 1; untested 24"
     And the end card lists "The noun" as "Solid" under Nouns
     And the bus has heard the placement is done

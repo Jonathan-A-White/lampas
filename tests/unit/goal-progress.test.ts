@@ -72,12 +72,12 @@ describe('learnNext names weak letters (mw-hqd5bz.17)', () => {
   it('names the alphabet while no letter is solid', () => {
     const next = learnNext(withAlphabet, bma, new Map())!;
     expect(next.idea.id).toBe('alphabet');
-    expect(next.letters).toBeUndefined();
+    expect(next.gaps).toBeUndefined();
   });
 
   it('names the letters that are not solid once some are, and opens the first of them', () => {
     const next = learnNext(withAlphabet, bma, letters('letter-xi', 'letter-psi'))!;
-    expect(next.letters?.map((l) => l.id)).toEqual(['letter-xi', 'letter-psi']);
+    expect(next.gaps?.map((l) => l.id)).toEqual(['letter-xi', 'letter-psi']);
     expect(next.idea.id).toBe('letter-xi');
     expect(next.lesson?.lesson.title).toBe('The Greek letters');
   });

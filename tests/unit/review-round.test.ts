@@ -5,6 +5,7 @@ import { setGoal } from '../../src/data/repositories/settings';
 import { seedWordsIfFirstOpen } from '../../src/data/repositories/words';
 import { DAY } from '../../src/data/schedule';
 import { mulberry32 } from '../../src/data/quiz';
+import { ITEM_GROUPS, itemsOf } from '../../src/data/grammar/ladder';
 import { KINDS } from '../../src/review/kinds';
 import { drawReviewRound } from '../../src/review/round';
 import { stubChapterFetch } from '../support/chapter-fetch';
@@ -34,6 +35,19 @@ describe('a Review round', () => {
     expect(idea.kind === 'grammar' && idea.question.ideaId).toBe('case-genitive');
     // the question is drawn from the goal's chapter, 1 John 1
     expect(idea.kind === 'grammar' && idea.question.ref).toMatch(/^1 John 1:/);
+  });
+
+  it('asks the exact gaps of the letters and sounds first, due or not (mw-hqd5bz.18)', async () => {
+    await setGoal('1 John 1');
+    const items = [...ITEM_GROUPS.flatMap((g) => itemsOf(g).map((i) => i.id))];
+    const missed = ['letter-xi', 'letter-psi', 'diphthong-ou'];
+    await db.grammarLevels.bulkPut(items.map((id) => ({ id, level: missed.includes(id) ? ('notYet' as const) : ('solid' as const), since: NOW, how: 'placement' as const })));
+    // the missed ones come back tomorrow (not due); a due idea and a due word are waiting too
+    await db.reviews.bulkPut([...missed.map((id) => ({ ...due('grammar', id, 0), due: NOW + DAY })), due('grammar', 'case-genitive', 60_000), due('word', 'λέγω', 5 * DAY)]);
+    const round = await drawReviewRound(mulberry32(7), NOW);
+    expect(round.items.slice(0, 4).map((i) => `${i.kind}:${i.id}`)).toEqual(['grammar:letter-xi', 'grammar:letter-psi', 'grammar:diphthong-ou', 'grammar:case-genitive']);
+    const first = round.items[0];
+    expect(first.kind === 'grammar' && first.question.ideaId).toBe('letter-xi');
   });
 
   it('draws from the open chapter when he has no goal', async () => {

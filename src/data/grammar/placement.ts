@@ -4,6 +4,8 @@
 //   Two ideas missed in a row: nothing above is asked, the walk only goes down.
 //   It stops when a step down lands on a solid idea (the ceiling is found), when no idea is left in that direction, or at QUESTION_LIMIT
 //   questions in a sitting ('paused': the state is kept so he goes on another day).
+// A walk that has reached the letters, sounds and marks ends in the quick round (quickRound.ts, mw-hqd5bz.18, PROVISIONAL): one tap on each letter, diphthong,
+// consonant pair and breathing not yet solid, outside the 20 questions.
 // 'Up' is later in the sequence, 'down' earlier; the letters, sounds and marks are always on the walk below what the goal needs, so a walk
 // of misses can reach the letters. Nothing here touches the store or the screen; the question for an idea is built by questions.ts.
 // What his right answers show (mw-hqd5bz.17, inference.ts, PROVISIONAL): a form read right credits its letters, sounds and marks, and one with enough
@@ -12,6 +14,7 @@
 import { formOfQuestion, foundationOf, inferFromAnswer, isInferredSolid, type Evidence } from './inference';
 import { TIERS, ideaOf, type Tier } from './ladder';
 import type { Level, PassageNeeds } from './needs';
+import type { QuickRound } from './quickRound';
 import type { GrammarQuestion } from './questions';
 
 /** Questions in one sitting. PROVISIONAL. */
@@ -62,6 +65,8 @@ export interface PlacementState {
   inferred: string[];
   /** the letters, sounds and marks of the forms of the idea last missed: a walk down asks only these of the foundation; null asks them all */
   focus: string[] | null;
+  /** the quick round over the letters, pairs and breathings not yet solid (quickRound.ts), once the walk has reached them; null before it starts */
+  quick: QuickRound | null;
 }
 
 /** The seed of the question being asked: the same state gives the same question, and each question differs. */
@@ -86,7 +91,8 @@ export function startPlacement(
   evidence: ReadonlyMap<string, Evidence> = new Map(),
 ): PlacementState {
   const wanted = needs ? new Set(needs.ideas.map((i) => i.id)) : null;
-  const ideas = order.filter((id) => wanted === null || wanted.has(id) || FOUNDATION.includes(ideaOf(id).tier));
+  // a diphthong, a consonant pair or a breathing is an item of the quick round, not an idea of the walk
+  const ideas = order.filter((id) => !ideaOf(id).parent && (wanted === null || wanted.has(id) || FOUNDATION.includes(ideaOf(id).tier)));
   const levels = new Map(ideas.flatMap((id): [string, Level][] => (known.has(id) ? [[id, known.get(id)!]] : [])));
   const past = ideas.findIndex((id) => !FOUNDATION.includes(ideaOf(id).tier));
   const first = past < 0 ? -1 : ideas.findIndex((id, i) => i >= past && levels.get(id) !== 'solid');
@@ -105,8 +111,16 @@ export function startPlacement(
     evidence: new Map(evidence),
     inferred: [],
     focus: null,
+    quick: null,
   };
 }
+
+/**
+ * True when the walk has reached the letters, sounds and marks: it asked one of them, or stepped down to the ones its missed forms use. A walk that
+ * had nothing to ask (everything the goal needs was solid already, as when he places himself again) has not probed them either, so it counts.
+ */
+export const reachedFoundation = (state: PlacementState): boolean =>
+  state.asked.length === 0 || state.focus !== null || state.asked.some((a) => FOUNDATION.includes(ideaOf(a.ideaId).tier));
 
 export const levelOfAnswers = (rights: number): Level => (rights >= ANSWERS_PER_IDEA ? 'solid' : rights > 0 ? 'frontier' : 'notYet');
 

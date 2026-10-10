@@ -140,6 +140,9 @@ describeFeature(feature, ({ Scenario }) => {
     And('he starts the placement', started);
     And('he answers {int} questions wrong', wrong);
     And('he answers {int} questions right', right);
+    Then('the question line says {string}', asks);
+    // the walk reached the letters, so the quick round (features/quick-round.feature) comes before the end card
+    When('he stops the quick round', async () => user.click(await screen.findByRole('button', { name: 'Stop here' })));
     Then('the end card says {string}', async (_, text: string) => {
       await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent(text));
       expect(screen.getByTestId('where').textContent).toMatch(/untested \d+$/);

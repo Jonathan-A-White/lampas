@@ -7,16 +7,20 @@ import { approachOf, DEFAULT_APPROACH, levelNumberOf, orderOf, type GrammarAppro
 import { BOOK_INDEX } from './data/bookIndex';
 import { loadChapter, type Chapter } from './data/chapter';
 import { goalTitle, parseGoal } from './data/goal';
-import { ideaOf } from './data/grammar/ladder';
+import { gapsOf, lettersText } from './data/grammar/inference';
+import { levelsOf } from './data/grammar/goalProgress';
+import { ideaOf, type GrammarIdea } from './data/grammar/ladder';
 import { passageNeeds, type Level } from './data/grammar/needs';
 import {
   answer,
+  reachedFoundation,
   resumePlacement,
   startPlacement,
   summarize,
   type PlacementState,
 } from './data/grammar/placement';
-import { writeAnswer } from './data/grammar/placementWrite';
+import { writeAnswer, writeQuick } from './data/grammar/placementWrite';
+import { answerQuick, currentQuick, quickOver, quickProgress, quickQuestion, quickSeed, startQuick, stopQuick, type QuickRound } from './data/grammar/quickRound';
 import { questionFor } from './data/grammar/placementQuestion';
 import type { GrammarQuestion } from './data/grammar/questions';
 import { clearPlacement, readPlacement, savePlacement, type SavedPlacement } from './data/placementKeep';
@@ -27,7 +31,7 @@ import { navigate } from './nav/route';
 import { ItemCard } from './review/ItemCard';
 import { GRAMMAR, loadPassage, type GrammarItem } from './review/kinds';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
-import { chosenPronunciation } from './speech/greek';
+import { chosenPronunciation, speakWord } from './speech/greek';
 import { focusOnMount } from './ui/focus';
 
 /** What a placement is of: the saved goal text ('' for none), the approach it walks and 'Read 1 John 1:1' for the goal. */
@@ -42,7 +46,8 @@ type Run =
   | { status: 'intro'; kept: SavedPlacement | null }
   | { status: 'starting' }
   | { status: 'asking'; state: PlacementState; item: GrammarItem; picked: string | null; after: PlacementState | null }
-  | { status: 'over'; state: PlacementState };
+  | { status: 'quick'; state: PlacementState; round: QuickRound; item: GrammarItem; picked: string | null; after: QuickRound | null }
+  | { status: 'over'; state: PlacementState; gaps: GrammarIdea[] };
 
 const LEVEL_WORDS: Record<Level, string> = { solid: 'Solid', frontier: 'Frontier', notYet: 'Not yet' };
 
@@ -84,19 +89,51 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
 
   /** Shows the question the state asks, or the end when it asks none. */
   const ask = async (state: PlacementState): Promise<void> => {
-    if (state.done === 'finished') return finish(state);
-    if (state.done === 'paused') return setRun({ status: 'over', state });
+    if (state.done === 'finished') return afterWalk(state);
+    if (state.done === 'paused') return setRun({ status: 'over', state, gaps: [] });
     if (passage.current.length === 0) passage.current = await loadPassage(mulberry32(state.seed));
     const question = questionFor(state, passage.current, lastQuestion.current, chosenPronunciation().respell);
     lastQuestion.current = question;
     setRun({ status: 'asking', state, item: itemOf(question), picked: null, after: null });
   };
 
-  const finish = (state: PlacementState): void => {
+  /** The walk is over: the quick round over the letters, pairs and breathings not yet solid when the walk reached them, then the end card. */
+  const afterWalk = async (state: PlacementState): Promise<void> => {
+    if (state.quick === null && reachedFoundation(state)) {
+      await writing.current;
+      const rows = await listLevels();
+      // a group he said he knows whole (I know this on the alphabet) is not asked again
+      const claimed = new Set(Array.from(rows.values()).filter((r) => r.level === 'solid' && (r.how === 'sheet' || r.how === 'marked')).map((r) => r.id));
+      const round = startQuick(levelsOf(rows), state.seed, claimed);
+      if (round) return askQuick({ ...state, quick: round });
+    } else if (state.quick !== null && !quickOver(state.quick)) {
+      return askQuick(state);
+    }
+    return finish(state);
+  };
+
+  const askQuick = (state: PlacementState): void => {
+    const round = state.quick!;
+    const item = currentQuick(round)!;
+    const question = quickQuestion(item, mulberry32(quickSeed(round)));
+    savePlacement({ goal: session.goal, approach: session.approach.id, state });
+    setRun({ status: 'quick', state, round, item: { kind: 'grammar', id: item.id, question, mode: 'choice' }, picked: null, after: null });
+    // Hear and pick: the app says it as the question comes
+    if (question.say) speakWord(question.say, 'greek');
+  };
+
+  const finish = async (walked: PlacementState): Promise<void> => {
+    await writing.current;
     clearPlacement();
+    // the letters the quick round answered count where he stands, as the walk's own answers do
+    const levels = new Map(walked.levels);
+    for (const { id, right } of walked.quick?.answers ?? []) if (walked.ideas.includes(id)) levels.set(id, right ? 'solid' : 'notYet');
+    const state = { ...walked, levels };
     const { solid, frontier, notYet, untested } = summarize(state);
     publish({ kind: 'placement-done', goal: session.goal, approach: session.approach.id, solid, frontier, notYet, untested });
-    setRun({ status: 'over', state });
+    // the exact gaps, as the store has them now
+    const gaps = gapsOf(levelsOf(await listLevels()));
+    setRun({ status: 'over', state, gaps });
   };
 
   const begin = async (kept: SavedPlacement | null, resume: boolean): Promise<void> => {
@@ -158,6 +195,58 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
     );
   }
 
+  if (run.status === 'quick') {
+    const { state, round, item, picked, after } = run;
+    const hear = item.question.kind === 'sound';
+    const answered = picked !== null;
+    const over = after !== null && quickOver(after);
+    const stop = () => {
+      const stopped = stopQuick(after ?? round);
+      void afterWalk({ ...state, quick: stopped });
+    };
+    const pickQuick = (option: string) => {
+      if (answered) return;
+      const right = GRAMMAR.isRight(item, option);
+      const next = answerQuick(round, right);
+      writing.current = writing.current.then(() => writeQuick(item.id, right, item.question)).catch((error: unknown) => console.error('could not record the answer', error));
+      savePlacement({ goal: session.goal, approach: session.approach.id, state: { ...state, quick: next } });
+      setRun({ ...run, picked: option, after: next });
+      GRAMMAR.hear?.(item);
+    };
+    return (
+      <>
+        {header}
+        <main className="screen min-h-0 flex-1 px-4 pt-4">
+          <p data-testid="placement-goal" className="text-center text-base text-muted">
+            Placement: {session.title}
+          </p>
+          <p data-testid="placement-question" className="mb-3 text-center text-base font-medium">
+            Quick round {quickProgress(round)} · {hear ? 'Hear and pick' : 'See and pick'}
+          </p>
+          <ItemCard item={item} index={round.at} picked={picked} onPick={pickQuick} />
+          {hear && !answered ? (
+            <button type="button" data-testid="say-again" onClick={() => speakWord(item.question.say!, 'greek')} className={`${BUTTON} mt-3 border border-line`}>
+              Say it again
+            </button>
+          ) : null}
+          {answered ? (
+            <div className="mt-2">
+              <button type="button" data-testid="next" ref={focusOnMount} onClick={() => void afterWalk({ ...state, quick: after! })} className={`${BUTTON} bg-accent text-accent-fg`}>
+                {over ? 'Finish' : 'Next'}
+              </button>
+            </div>
+          ) : null}
+          {!over ? (
+            <button type="button" data-testid="stop-here" onClick={stop} className={`${BUTTON} mt-3 border border-line`}>
+              Stop here
+            </button>
+          ) : null}
+          <div className="pb-4" />
+        </main>
+      </>
+    );
+  }
+
   if (run.status === 'over') {
     const sum = summarize(run.state);
     const paused = run.state.done === 'paused';
@@ -171,6 +260,11 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
           <p data-testid="where" className="mt-2 text-center text-lg">
             {paused ? 'So far: ' : 'Where you are: '}solid {sum.solid}, frontier {sum.frontier}, not yet {sum.notYet}; untested {sum.untested}
           </p>
+          {run.gaps.length > 0 ? (
+            <p data-testid="gaps" className="mt-2 text-center text-lg">
+              Gaps to work on: {lettersText(run.gaps)}
+            </p>
+          ) : null}
           <div className="mt-4 grid grid-cols-1 gap-3">
             {paused ? (
               <button
@@ -221,7 +315,8 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
     const right = GRAMMAR.isRight(item, option);
     const next = answer(state, right, item.question);
     writing.current = writing.current.then(() => writeAnswer(state, next, right, undefined, item.question)).catch((error: unknown) => console.error('could not record the answer', error));
-    if (next.done === 'finished') clearPlacement();
+    // a walk that reached the foundation goes on to the quick round, so it is kept until that is done
+    if (next.done === 'finished' && !reachedFoundation(next)) clearPlacement();
     else savePlacement({ goal: session.goal, approach: session.approach.id, state: next });
     setRun({ ...run, picked: option, after: next });
     GRAMMAR.hear?.(item);
