@@ -1,21 +1,24 @@
 // src/markdown/Markdown.tsx — the tutor writes Markdown; this draws it (bold, italics, lists, headings, links, tables, code) as
 // Postern's src/markdown/Markdown.tsx does, with react-markdown and remark-gfm. No rehype-raw: raw HTML in the source is never
 // parsed into elements, so an answer is safe to render as it comes. The text takes the size of its surroundings. Hebrew in it is set apart as a
-// right-to-left span in its own font (scriptRuns.ts) and is a button that says the word (src/script/HebrewWord.tsx). A Bible reference the answer names
+// right-to-left span in its own font (scriptRuns.ts) and is a button that says the word (src/script/HebrewWord.tsx); Greek in it is a button that says the word in the Greek voice (src/script/GreekWord.tsx). A Bible reference the answer names
 // ('Hebrews 7:2', 'Ps. 110') is a link that opens a card with the passage first (verseLinks.ts, ReferenceCard.tsx); a link the model wrote to a host no study resource builds links on is shown as text.
 import { memo, useEffect, useMemo, useRef } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { isKnownLink } from '../resources/hosts';
+import { GreekWord } from '../script/GreekWord';
 import { HebrewWord } from '../script/HebrewWord';
 import { remarkScripts } from './scriptRuns';
 import { ReferenceLink } from './ReferenceCard';
 import { remarkVerses, writtenOf } from './verseLinks';
 
 const spanOf: Components['span'] = ({ lang, dir, className, children }) =>
-  // A Hebrew stretch (scriptRuns.ts) is tappable: it speaks in the Hebrew voice and opens the pronunciation guide.
+  // A Hebrew stretch (scriptRuns.ts) is tappable: it speaks in the Hebrew voice and opens the pronunciation guide. A Greek one speaks in the Greek voice.
   lang === 'he' ? (
     <HebrewWord>{children}</HebrewWord>
+  ) : lang === 'grc' ? (
+    <GreekWord>{children}</GreekWord>
   ) : (
     <span lang={lang} dir={dir} className={className}>
       {children}

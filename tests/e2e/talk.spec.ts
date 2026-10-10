@@ -56,7 +56,8 @@ test('the Talk bar sits at the bottom of the reader and opens a sheet that fits 
   await send.click();
   const turn = sheet.locator('[data-turn]');
   await expect(turn).toContainText(TALK_ANSWER.answer);
-  const word = turn.getByRole('button', { name: 'συνεργεῖ', exact: true });
+  // the explained word under the answer (the answer's own text has it too, as a word to tap to hear)
+  const word = turn.locator('[data-talk-words]').getByRole('button', { name: 'συνεργεῖ', exact: true });
   await expect(word).toBeVisible();
   expect((await word.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
   expect(fake.received).toHaveLength(1);

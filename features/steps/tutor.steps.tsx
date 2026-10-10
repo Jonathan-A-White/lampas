@@ -144,9 +144,10 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the answer names the Greek word {string} with its lemma {string}', (_, greek: string, lemma: string) => {
       const card = answersOn28()[0] as HTMLElement;
-      const word = within(card).getByText(greek, { selector: '[lang="grc"]' });
-      expect(word).toBeInTheDocument();
-      expect(within(card).getByText(lemma, { selector: '[lang="grc"]' })).toBeInTheDocument();
+      // the words list under the answer: its Greek is also written in the answer's own text, where it is a word to tap
+      const list = card.querySelector('dl') as HTMLElement;
+      expect(within(list).getByText(greek, { selector: '[lang="grc"]' })).toBeInTheDocument();
+      expect(within(list).getByText(lemma, { selector: '[lang="grc"]' })).toBeInTheDocument();
       expect(card).toHaveTextContent('third person singular');
     });
     And('the Ask box is ready for the next question', () =>

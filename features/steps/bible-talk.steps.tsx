@@ -296,7 +296,9 @@ describeFeature(feature, ({ Scenario }) => {
     And('he sends {string}', (_, question: string) => send(question));
     When('he taps the Greek word {string} in the answer', async (_, word: string) => {
       await turnsKept(1);
-      await user.click(within(turns()[0]).getByRole('button', { name: word }));
+      // the explained word under the answer; the same word in the answer's own text is a word to tap to hear (features/talk-pictures.feature)
+      const explained = turns()[0].querySelector('[data-talk-words]') as HTMLElement;
+      await user.click(within(explained).getByRole('button', { name: word }));
     });
     Then('the word sheet shows {string} with its lemma {string}', async (_, word: string, lemma: string) => {
       const word_sheet = await screen.findByRole('dialog', { name: 'Word' });
@@ -703,10 +705,11 @@ describeFeature(feature, ({ Scenario }) => {
     When('he sends {string}', (_, question: string) => send(question));
     Then('the Greek word {string} in the answer is as large as the rest of the answer', async (_, word: string) => {
       await waitFor(() => expect(answerBox()).toHaveTextContent(word));
-      // The Greek sits in the answer's own text: no wrapper that changes its size, so it has the answer's text-lg.
+      // The Greek sits in the answer's own text: no wrapper that changes its size (a colour class such as text-accent does not), so it has the answer's text-lg.
       const holder = Array.from(answerBox().querySelectorAll('p')).find((p) => p.textContent?.includes(word));
       expect(holder?.closest('[data-answer-text]')?.className).toContain('text-lg');
-      expect(holder?.querySelector('[class*="text-"]')).toBeNull();
+      const sizes = Array.from(holder?.querySelectorAll('*') ?? []).flatMap((el) => Array.from(el.classList)).filter((c) => /^text-(xs|sm|base|lg|xl|\dxl)$/.test(c));
+      expect(sizes).toEqual([]);
     });
   });
 
