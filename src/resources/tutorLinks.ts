@@ -70,3 +70,18 @@ export function verseChips(place: StudyPlace, name: string, chosen: StudyResourc
   }
   return chips;
 }
+
+/** A study resource as the tutor is told of it (the request's `resources`, mw-5r3p30.123): what it is called and what the app can open in it. */
+export interface TutorResource {
+  id: string;
+  name: string;
+  /** a word's entry can be opened in it (`links` of kind word) */
+  words: boolean;
+  /** a verse can be opened in it (`links` of kind verse) */
+  verses: boolean;
+}
+
+/** The resources he has switched on, in the order Settings lists them: the only ones the tutor is told of, so it never offers a link the app would not draw. */
+export function resourcesForTutor(chosen: StudyResources): TutorResource[] {
+  return switchedOn(chosen).map((r) => ({ id: r.id, name: r.name, words: true, verses: r.versesFor !== undefined }));
+}

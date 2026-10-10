@@ -5,7 +5,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { addLemmaToLearn } from './data/answerWord';
 import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { learnerSummary } from './data/learnerSummary';
-import { addTurn, listSolidHeadwords, listStudyWay, listTurns } from './data/repositories';
+import { addTurn, getStudyResources, listSolidHeadwords, listStudyWay, listTurns } from './data/repositories';
+import { resourcesForTutor } from './resources/tutorLinks';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { TutorError } from './services/tutor';
 import { stopAnswer } from './speech/readAloud';
@@ -92,15 +93,16 @@ export function useTalk(book: string, chapter: number, onAnswered: (ref: string,
       set({ phase: 'sending', question: text, startedAt });
       void (async () => {
         try {
-          const [turns, solid, settings, learner, grammar, way] = await Promise.all([
+          const [turns, solid, settings, learner, grammar, way, chosen] = await Promise.all([
             listTurns(ref),
             listSolidHeadwords(),
             currentSettings(),
             learnerSummary(),
             learnerGrammar().catch(() => undefined),
             scope.quiz ? listStudyWay() : Promise.resolve([]),
+            getStudyResources().catch(() => ({ on: [], options: {} })),
           ]);
-          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way), {
+          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen)), {
             key: getDeviceKeyBytes(),
             signal,
             onSent: () => set({ phase: 'waiting', question: text, startedAt }),
