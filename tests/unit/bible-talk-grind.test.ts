@@ -464,3 +464,43 @@ describe('the feedback offer', () => {
     expect(JSON.stringify(answer)).not.toMatch(/\bwill (build|add|make|do)\b/i);
   });
 });
+
+describe('the screen credits (mw-vtjxh4.2)', () => {
+  const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
+  const base = { reference: 'About', question: 'What does STEPBible give me?', history: [], solid_words: [], settings: {} };
+  const credits = [
+    { name: 'TBESG', use: "STEPBible (Tyndale House): each word's lemma, gloss and definition", licence: 'CC BY 4.0', link: 'https://www.stepbible.org' },
+    { name: 'Majority Standard Bible', use: 'The Greek you read, aligned to its English', licence: 'Public domain', link: 'https://majoritybible.com' },
+  ];
+
+  it('the request schema takes a screen with credits, each a name, a use, a licence and a link, and refuses a bad one', () => {
+    expect(validate({ ...base, screen: { name: 'About', facts: [], credits } }, input)).toEqual([]);
+    expect(validate({ ...base, screen: { name: 'About', facts: [] } }, input)).toEqual([]);
+    const many = Array.from({ length: 41 }, (_, i) => ({ ...credits[0], name: `C${i}` }));
+    for (const bad of [
+      [{ name: 'TBESG', use: 'u', licence: 'CC BY 4.0' }],
+      [{ ...credits[0], name: '' }],
+      [{ ...credits[0], extra: 1 }],
+      [{ ...credits[0], use: 'x'.repeat(161) }],
+      many,
+    ]) {
+      expect(validate({ ...base, screen: { name: 'About', facts: [], credits: bad } }, input), JSON.stringify(bad)).not.toEqual([]);
+    }
+  });
+
+  it('the instructions say how to talk about a credit: what it is, who made it, what it gives this reader, what its licence lets us do, and why we credit', () => {
+    const text = readFileSync(grind.instructions as string, 'utf8');
+    for (const part of ['### Talk from About', '`screen.credits`', 'what it is', 'who made it', 'what it gives this reader', 'licence lets', 'standing on the shoulders', 'TBESG', 'CC BY 4.0', 'never invent a credit']) {
+      expect(text).toContain(part);
+    }
+  });
+
+  it('has a scenario that asks what STEPBible gives him and expects TBESG and its licence in the answer', () => {
+    const example = readJson('grinds/examples/bible-talk/about-stepbible.json') as { request: { question: string; screen: { credits: unknown[] } }; expect: { answer: { matches: string } } };
+    expect(example.request.question).toBe('What does STEPBible give me?');
+    expect(example.request.screen.credits.length).toBeGreaterThan(20);
+    const matches = new RegExp(example.expect.answer.matches);
+    expect(matches.test('It gives you TBESG, the lexicon, under CC BY 4.0.')).toBe(true);
+    expect(matches.test('It gives you a lexicon.')).toBe(false);
+  });
+});
