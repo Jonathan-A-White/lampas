@@ -7,7 +7,7 @@ import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { useReportScreen } from './tutor/screenContext';
 
 const FACTS = [
-  { label: 'Greek text', value: 'Byzantine Textform, Robinson and Pierpont, 2005 (public domain)' },
+  { label: 'Greek text', value: 'Byzantine Textform, Robinson and Pierpont, the 2005 edition (public domain)' },
   { label: 'English text', value: 'Majority Standard Bible (public domain)' },
   { label: 'Sources linked', value: PREFACE_LINKS.map((l) => l.name).join('; ') },
 ];
