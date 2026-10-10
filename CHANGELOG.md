@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.69
+_2026-10-10_
+- Fixed: The Robinson essay in the Preface is now the text from the 2005 edition's appendix, which is the version the edition released into the public domain, and the page says so.
+
 ## 0.1.68
 _2026-10-10_
 - Fixed: In Ask the tutor, the other suggested questions stay after the first question, and a new 'New talk' button starts the talk afresh.
