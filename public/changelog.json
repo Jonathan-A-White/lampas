@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.13",
+    "date": "2026-10-10",
+    "story": "mw-hqd5bz.18",
+    "kind": "new",
+    "text": "The placement test now checks your letters, letter pairs and breathing marks one by one, says which ones you still need, and Review asks them first."
+  },
+  {
     "version": "0.1.7",
     "date": "2026-10-09",
     "story": "mw-s061bg.4",
