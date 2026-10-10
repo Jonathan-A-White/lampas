@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.62
+_2026-10-10_
+- New: In the Reader you can swipe left for the next chapter and right for the previous one, and at the first and last chapter a short note tells you there is no more.
+
 ## 0.1.61
 _2026-10-10_
 - New: Ask by in Settings lets you choose whether Ask the tutor starts with speaking or typing, and you can ask the tutor to switch it for you.
