@@ -47,6 +47,10 @@ const LIFT: Partial<Record<Route, string>> = { import: 'var(--spacing) * 20 + 3r
 /** The Reader's Talk bar: its border, 96 px of bar and 8 px above and below (src/Talk.tsx TalkBar). */
 export const TALK_BAR_LIFT = 'var(--spacing) * 28 + 1px';
 
+/** The room the Reader leaves under its reading box, above the Talk bar, for the round button (mw-5r3p30.115): its 56 px, the 12 px gap
+ * below it and 4 px of air. The box ends where the button begins, so no line of text is ever behind it. */
+export const ASK_BUTTON_ROOM = 'var(--spacing) * 18';
+
 /** The context the sheet sends: the facts the screen reported, if they are the screen's own, else its name alone. */
 function contextOf(name: string, reported: ScreenContext | null): ScreenContext {
   return fitScreen(reported?.name === name ? reported : { name, facts: [] });

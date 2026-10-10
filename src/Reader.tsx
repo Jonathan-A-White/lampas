@@ -17,7 +17,7 @@ import { Fragment, type ReactNode, useCallback, useEffect, useMemo, useRef, useS
 import type { ReadHold } from './ReadCheck';
 import { VerseView } from './VerseView';
 import { useVerseAction } from './verse/action';
-import { AskTutorButton, TALK_BAR_LIFT } from './AskTutor';
+import { ASK_BUTTON_ROOM, AskTutorButton, TALK_BAR_LIFT } from './AskTutor';
 import { TalkBar, TalkSheet } from './Talk';
 import { ErrorBoundary } from './ErrorBoundary';
 import { type Chapter, type EnglishChunk, type GreekWord, type Verse, englishRuns, loadChapter } from './data/chapter';
@@ -841,7 +841,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           {wovenCount} {wovenCount === 1 ? 'word' : 'words'} in Greek
         </p>
       ) : null}
-      <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} className="screen min-h-0 flex-1 px-1 pt-2">
+      <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} style={chapter ? { marginBottom: `calc(${ASK_BUTTON_ROOM})` } : undefined} className="screen min-h-0 flex-1 px-1 pt-2">
         <div>
         {failed ? (
           <div role="alert" className="px-4 pt-6 text-center">
