@@ -17,6 +17,7 @@ import { readerOf } from '../../src/nav/route';
 import { getReading, stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { holdBarsIn } from '../../tests/support/composer';
 import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';
 import { type StubbedMic, stubMic } from '../../tests/support/fake-mic';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
@@ -57,7 +58,8 @@ async function open(weave: 'off' | 'solid', { speaks = false, tutor = false, mic
   fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER };
   synth = speaks ? stubSpeech([GREEK_VOICE, ENGLISH_VOICE]) : undefined;
-  if (tutor) stubRecognizer();
+  // Ask the tutor's composer shows its Hold to ask bar only on a phone with a recogniser
+  if (tutor || !hears) stubRecognizer();
   mic = hears ? stubMic() : undefined;
   stubChapterFetch();
   const chapterFetch = globalThis.fetch;
@@ -85,15 +87,20 @@ const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
 const queryView = () => screen.queryByRole('region', { name: 'Verse view' });
 const readerLine = (n: number): HTMLElement => document.querySelector<HTMLElement>(`[data-verse="${n}"] [data-text]`) as HTMLElement;
 const verseOfView = () => viewEl().querySelector<HTMLElement>('[data-sheet-verse]') as HTMLElement;
-const bars = () => Array.from(document.querySelectorAll<HTMLElement>('[data-hold-bar]'));
+/** The one bar at the view's foot: a HoldBar, or for Ask the tutor the Composer's Hold to ask bar. */
+const bars = () => [...Array.from(document.querySelectorAll<HTMLElement>('[data-hold-bar]')), ...holdBarsIn(document.body)];
 const foot = (): HTMLElement => viewEl().querySelector<HTMLElement>('[data-verse-bar]') as HTMLElement;
 const bar = () => {
   expect(bars()).toHaveLength(1);
   return bars()[0];
 };
-/** The words he has said so far, as the Verse view shows them while he holds: they fill the Ask box's field, 'Listening…' its placeholder before the first. */
+/** The text box of the composer, which a failed question comes back into. */
 const askField = (): HTMLTextAreaElement => within(viewEl()).getByRole('textbox', { name: 'Your question' });
-const askLive = (): string => askField().value;
+/** The words he has said so far, as the composer shows them above the bar while he holds ('Listening…' and 'Starting the mic…' come before the first). */
+const askLive = (): string => {
+  const said = within(viewEl()).queryByTestId('live-transcript')?.textContent ?? '';
+  return said === 'Listening…' || said === 'Starting the mic…' ? '' : said;
+};
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 const feature = await loadFeature('features/verse-view.feature');
@@ -129,7 +136,8 @@ describeFeature(feature, ({ Scenario }) => {
     await user.click(within(viewEl()).getByRole('button', { name: action, exact: true }));
   };
   const labelled = (_: unknown, label: string) => {
-    expect(bar()).toHaveAttribute('aria-label', label);
+    // a HoldBar is named by its aria-label; the composer's bar by the words on it
+    if (bar().hasAttribute('data-hold-bar')) expect(bar()).toHaveAttribute('aria-label', label);
     expect(bar()).toHaveTextContent(label);
   };
   const oneBar = () => {

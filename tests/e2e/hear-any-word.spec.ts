@@ -5,6 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestSpeech, spoken } from '../support/honest-fakes';
+import { typeQuestion } from './ask-composer';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction } from './verse-view';
@@ -25,9 +26,7 @@ async function openAnswer(page: Page) {
   await openUnlocked(page);
   await page.goto('/');
   const view = await chooseAction(page, 28, 'Ask the tutor');
-  const box = view.getByRole('region', { name: 'Ask the tutor' });
-  await box.getByRole('textbox', { name: 'Your question' }).fill('Where does righteousness come from?');
-  await box.getByRole('button', { name: 'Ask', exact: true }).click();
+  await typeQuestion(page, 'Where does righteousness come from?');
   const card = view.locator('[data-answer]');
   await expect(card).toContainText('ἀγαθόν');
   // the answer is read aloud when it arrives: only what the press adds counts

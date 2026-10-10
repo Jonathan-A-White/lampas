@@ -15,6 +15,7 @@ import { clearBus } from '../../src/events/bus';
 import { getReading, startAnswer, stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { holdBarsIn } from '../../tests/support/composer';
 import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
@@ -76,7 +77,8 @@ async function open({ tutor = false, recorder = false }: Options = {}): Promise<
 }
 
 const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
-const holdBars = () => Array.from(document.querySelectorAll<HTMLElement>('[data-hold-bar]'));
+/** The hold bar at the view's foot: a HoldBar, or for Ask the tutor the Composer's Hold to ask bar. */
+const holdBars = () => [...Array.from(document.querySelectorAll<HTMLElement>('[data-hold-bar]')), ...holdBarsIn(document.body)];
 const speakingBar = () => screen.getByRole('region', { name: 'Speaking' });
 const barButtons = () => within(speakingBar()).getAllByRole('button').map((b) => b.textContent);
 const onBar = (name: string) => user.click(within(speakingBar()).getByRole('button', { name }));

@@ -4,7 +4,8 @@
 import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern, SYNERGEI_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
-import { honestSpeech, spoken } from '../support/honest-fakes';
+import { honestMic, honestSpeech, spoken } from '../support/honest-fakes';
+import { expectOneAskBar } from './ask-composer';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -17,6 +18,8 @@ async function start(page: Page, hash = '/#/?c=8&view=english&weave=solid'): Pro
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER };
   await routePostern(page, fake);
+  // the composer shows its Hold to ask bar on a phone that can recognise speech
+  await honestMic(page);
   await openUnlocked(page);
   await page.goto(hash);
 }
@@ -98,8 +101,7 @@ test('Listen: the heading and range at the top, the passage big, the row of acti
 
   // the passage scrolls inside the view, the bar stays; Back returns to the Reader
   await view.getByRole('button', { name: 'Ask the tutor', exact: true }).click();
-  await expect(bars).toHaveCount(1);
-  await expect(bars.first()).toHaveAttribute('aria-label', 'Hold to ask');
+  await expectOneAskBar(page, VIEWPORT);
   await shot(page, 'passage-view-ask');
   await page.goBack();
   await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);

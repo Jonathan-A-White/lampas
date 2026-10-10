@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import 'bsv-kit/whats-new/styles.css';
 import 'bsv-kit/speech/styles.css';
+import 'bsv-kit/composer/styles.css';
 import { registerSW } from 'virtual:pwa-register';
 import { App } from './App';
 import { restoreAppearance } from './appearance/appearanceSync';

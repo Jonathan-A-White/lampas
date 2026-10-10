@@ -1,5 +1,5 @@
 Feature: Ask the tutor about a verse
-  The Verse view's Ask the tutor action holds an Ask box. He types a question (or holds Hold to ask and says it); Lampas sends a grist through Postern
+  The Verse view's Ask the tutor action is the shared composer (features/ask-composer.feature). He types a question (or holds Hold to ask and says it); Lampas sends a grist through Postern
   (bsv-kit/grist) with the verse's Greek and English, his question and his solid words, and shows the
   tutor's answer under the verse. The answers are kept on the phone. These scenarios run against a fake
   Postern whose mill opens the grist and answers it; the live backend is tried by `npm run e2e:live`.
@@ -87,14 +87,14 @@ Feature: Ask the tutor about a verse
     Then the answer shows under verse 28
     And the fake Postern was not asked again
 
-  Scenario: Ask cannot be tapped with nothing typed
+  Scenario: Send is not offered with nothing typed
     Given Lampas is opened on Romans 8 with a tutor behind a fake Postern
-    When he selects verse 28
-    Then the Ask button is off
+    When he selects verse 28 and taps Type a question
+    Then there is no Send button
     When he types "   "
-    Then the Ask button is still off
+    Then there is still no Send button
     When he types "Why?" instead
-    Then the Ask button is on
+    Then the Send button is on
 
   Scenario: An answer in the wrong shape is not kept
     Given Lampas is opened on Romans 8 with a tutor behind a fake Postern that answers in the wrong shape

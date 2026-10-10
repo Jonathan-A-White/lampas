@@ -16,7 +16,9 @@ import { clearBus, latest } from '../../src/events/bus';
 import { tutorTimings } from '../../src/services/tutor';
 import { getReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { holdBarIn, typeQuestion } from '../../tests/support/composer';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
+import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 
@@ -48,6 +50,7 @@ async function open({ aloud, hash = '', reply }: { aloud: boolean; hash?: string
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
   window.location.hash = hash;
   stubRecorder();
+  stubRecognizer();
   FakeRecorder.denied = false;
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
@@ -86,10 +89,9 @@ async function holdAndLetGo(): Promise<void> {
   ]);
 }
 
-const askBox = () => screen.getByRole('region', { name: 'Ask the tutor' });
+const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
 async function ask(question: string): Promise<void> {
-  await user.type(within(askBox()).getByRole('textbox', { name: 'Your question' }), question);
-  await user.click(within(askBox()).getByRole('button', { name: 'Ask' }));
+  await typeQuestion(user, viewEl(), question);
 }
 
 /** Waits for the speech to begin and lets every utterance run to its end, noting each as it was asked of the engine. */
@@ -184,7 +186,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the phone is speaking the answer', speaking);
     When('he asks the tutor {string} a second question', async (_, question: string) => {
       fake.autoReply = undefined;
-      await waitFor(() => expect(within(askBox()).getByRole('button', { name: 'Ask' })).toBeDisabled());
+      await waitFor(() => expect(holdBarIn(viewEl())).toBeEnabled());
       await ask(question);
     });
     Then('the speech has stopped', stopped);

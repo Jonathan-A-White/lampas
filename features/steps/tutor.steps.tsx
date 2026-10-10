@@ -14,6 +14,8 @@ import { db } from '../../src/data/db';
 import { readerOf } from '../../src/nav/route';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { stubRecognizer } from '../../tests/support/fake-recognizer';
+import { composerIn, holdBarIn, questionField, typeQuestion } from '../../tests/support/composer';
 import { expectKeepsItShort, expectLearnerField, expectLearnerSummary, expectTeachesNewWord, instructionsOf, learnWordToday } from '../../tests/support/learner';
 import { exchangeMarkdown, stubClipboard } from '../../tests/support/exchange';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
@@ -40,6 +42,8 @@ async function open(configure: (f: FakePostern) => void = (f) => void (f.autoRep
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
   window.location.hash = '';
   tutorTimings.pollMs = 20;
+  // the composer shows its Hold to ask bar only on a phone with a recogniser
+  stubRecognizer();
   clipboard = stubClipboard();
   fake = makeFakePostern();
   configure(fake);
@@ -63,14 +67,14 @@ async function selectVerse28(): Promise<void> {
   await screen.findByRole('region', { name: 'Ask the tutor' });
 }
 
-const askBox = () => screen.getByRole('region', { name: 'Ask the tutor' });
-const field = () => within(askBox()).getByRole('textbox', { name: 'Your question' });
-const askButton = () => within(askBox()).getByRole('button', { name: 'Ask' });
+const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
+/** What the last question is doing (Sending, Waiting, a failure with Retry) is in the view, above the composer at its foot. */
+const askBox = viewEl;
+const sendButton = () => within(composerIn(viewEl())).getByRole('button', { name: 'Send' });
 const answersOn28 = () => document.querySelectorAll('[data-answers-for="28"] [data-answer]');
 
 async function ask(question: string): Promise<void> {
-  await user.type(field(), question);
-  await user.click(askButton());
+  await typeQuestion(user, viewEl(), question);
 }
 
 async function answerShows(): Promise<void> {
@@ -85,7 +89,7 @@ async function askAndWait(question: string): Promise<void> {
   const before = cards().length;
   await ask(question);
   await waitFor(() => expect(cards().length).toBe(before + 1));
-  await waitFor(() => expect(field()).toBeEnabled());
+  await waitFor(() => expect(holdBarIn(viewEl())).toBeEnabled());
 }
 
 const card = (ordinal: string): HTMLElement => cards()[ORDINALS.indexOf(ordinal)];
@@ -147,8 +151,8 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the Ask box is ready for the next question', () =>
       waitFor(() => {
-        expect(field()).toHaveValue('');
-        expect(field()).toBeEnabled();
+        expect(holdBarIn(viewEl())).toBeEnabled();
+        expect(within(composerIn(viewEl())).queryByRole('textbox', { name: 'Your question' })).toBeNull();
       }),
     );
   });
@@ -224,10 +228,10 @@ describeFeature(feature, ({ Scenario }) => {
     And('he selects verse 28', selectVerse28);
     When('he asks {string}', (_, question: string) => ask(question));
     Then('the box says Waiting and nothing can be asked until the answer comes', async () => {
-      const status = await within(askBox()).findByRole('status');
+      await waitFor(() => expect(askBox().querySelector('[data-ask-pending]')).not.toBeNull());
+      const status = within(askBox().querySelector('[data-ask-pending]') as HTMLElement).getByRole('status');
       await waitFor(() => expect(status).toHaveTextContent(/^Waiting for the tutor… \d+ s$/));
-      expect(field()).toBeDisabled();
-      expect(askButton()).toBeDisabled();
+      expect(holdBarIn(viewEl())).toBeDisabled();
     });
     When('the tutor answers', () => {
       fake.answer({ status: 'answered', answer: SYNERGEI_ANSWER });
@@ -286,19 +290,28 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Ask cannot be tapped with nothing typed', ({ Given, When, Then }) => {
+  Scenario('Send is not offered with nothing typed', ({ Given, When, Then }) => {
     Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern', () => open());
-    When('he selects verse 28', selectVerse28);
-    Then('the Ask button is off', () => {
-      expect(askButton()).toBeDisabled();
+    When('he selects verse 28 and taps Type a question', async () => {
+      await selectVerse28();
+      await questionField(user, viewEl());
     });
-    When('he types {string}', (_, text: string) => user.type(field(), text));
-    Then('the Ask button is still off', () => {
-      expect(askButton()).toBeDisabled();
+    Then('there is no Send button', () => {
+      expect(within(composerIn(viewEl())).queryByRole('button', { name: 'Send' })).toBeNull();
     });
-    When('he types {string} instead', (_, text: string) => user.clear(field()).then(() => user.type(field(), text)));
-    Then('the Ask button is on', () => {
-      expect(askButton()).toBeEnabled();
+    When('he types {string}', async (_, text: string) => {
+      await user.type(await questionField(user, viewEl()), text);
+    });
+    Then('there is still no Send button', () => {
+      expect(within(composerIn(viewEl())).queryByRole('button', { name: 'Send' })).toBeNull();
+    });
+    When('he types {string} instead', async (_, text: string) => {
+      const field = await questionField(user, viewEl());
+      await user.clear(field);
+      await user.type(field, text);
+    });
+    Then('the Send button is on', () => {
+      expect(sendButton()).toBeEnabled();
     });
   });
 

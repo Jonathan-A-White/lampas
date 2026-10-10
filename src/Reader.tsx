@@ -181,14 +181,12 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     [chapter, viewVerse, wantedPassage],
   );
   const viewUnit = useMemo(() => viewVerse ?? (viewPassage ? passageVerse(viewPassage) : undefined), [viewVerse, viewPassage]);
-  const viewAsking = viewUnit !== undefined && action === 'ask';
   const tutor = useReaderTutor(open, chapter, talk, voice, { request, viewUnit, openTalkRef });
   const { talkScope, talkKey, talkAbout, setTalkAbout, holdTalk } = tutor;
-  // What he says goes to the open Talk sheet; with none open, to the tutor about the verse of the open Verse view (its Ask the tutor bar).
+  // What he says goes to the open Talk sheet (the Verse view's Ask the tutor has its own composer, src/Ask.tsx).
   useEffect(() => {
     sayAbout.current = (message) => {
       if (talkScope) talk.say(talkScope, message);
-      else if (viewAsking && viewUnit) ask(viewUnit, message);
     };
   });
   // The verse number on the teach sheet: the reading box is scrolled so that verse stands at its top. The verse is not selected: that
@@ -435,7 +433,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
             ask(verse, question);
           }}
           prefill={prefill}
-          voice={voice}
           onTalk={() => setTalkAbout(viewUnit.n)}
           quiz={{ started: tutor.quizStarted, onOpen: tutor.openQuiz }}
         />

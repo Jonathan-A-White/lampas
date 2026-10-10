@@ -18,6 +18,7 @@ import { readerOf } from '../../src/nav/route';
 import { getReading, stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { holdBarsIn } from '../../tests/support/composer';
 import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
@@ -95,7 +96,8 @@ async function open({ speaks = false, tutor = false, recorder = false, hash = ''
 
 const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
 const queryView = () => screen.queryByRole('region', { name: 'Verse view' });
-const bars = () => Array.from(document.querySelectorAll<HTMLElement>('[data-hold-bar]'));
+/** The one bar at the view's foot: a HoldBar, or for Ask the tutor the Composer's Hold to ask bar. */
+const bars = () => [...Array.from(document.querySelectorAll<HTMLElement>('[data-hold-bar]')), ...holdBarsIn(document.body)];
 const foot = (): HTMLElement => viewEl().querySelector<HTMLElement>('[data-verse-bar]') as HTMLElement;
 const bar = () => {
   expect(bars()).toHaveLength(1);
@@ -129,7 +131,8 @@ describeFeature(feature, ({ Scenario }) => {
     await user.click(within(viewEl()).getByRole('button', { name: action, exact: true }));
   };
   const labelled = (_: unknown, label: string) => {
-    expect(bar()).toHaveAttribute('aria-label', label);
+    // a HoldBar is named by its aria-label; the composer's bar by the words on it
+    if (bar().hasAttribute('data-hold-bar')) expect(bar()).toHaveAttribute('aria-label', label);
     expect(bar()).toHaveTextContent(label);
   };
   const oneBar = () => {
