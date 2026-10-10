@@ -19,3 +19,5 @@ longer a dependency fails it, and so does a bundled font or data file with no cr
 ## Code map
 
 [docs/module-map.md](docs/module-map.md) maps the modules under `src/`, the files most stories collide on, the refactors that would let stories run in parallel, and the code that could live in a shared library.
+
+[docs/best-practices-audit.md](docs/best-practices-audit.md) marks every line of the owner's PWA checklist and the newer rules pass, fail or n/a with its evidence, and ranks the failures into fix stories.
