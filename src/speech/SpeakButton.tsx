@@ -22,7 +22,7 @@ export function Icon({ kind }: { kind: 'speaker' | 'play' | 'stop' }) {
 }
 
 /** `id` names what is spoken, so two buttons for the same text agree on whether it is playing. */
-export function SpeakButton({ text, id, label, kind, language, className, onSpeak }: {
+export function SpeakButton({ text, id, label, kind, language, className }: {
   text: string;
   id: string;
   label: string;
@@ -30,8 +30,6 @@ export function SpeakButton({ text, id, label, kind, language, className, onSpea
   /** the language of `text`: Greek unless said; its speed and voice are the ones he set for it */
   language?: SpeechLanguage;
   className?: string;
-  /** called on a tap, before the word is spoken (a tutor response being read aloud is stopped here, so only the word is heard) */
-  onSpeak?: () => void;
 }) {
   const playing = useSpeakingKey() === id;
   const [help, setHelp] = useState<string | null>(null);
@@ -59,7 +57,6 @@ export function SpeakButton({ text, id, label, kind, language, className, onSpea
         aria-pressed={playing}
         onClick={() => {
           setHelp(null);
-          onSpeak?.();
           if (speak(text, id, language) === 'no-voice') showHelp();
         }}
         className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-accent active:bg-line ${className ?? ''}`}

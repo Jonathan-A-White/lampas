@@ -98,7 +98,7 @@ const typeOf = (view: ReadingView) =>
     : { lang: 'en', face: 'font-sans text-[length:var(--lp-english-size)]', chunks: '' };
 
 /** The speaker for a flagged word: it says the word as it should sound (the answer's `say`, else the word) in the voice of the language read, and
- * nothing else; a response being read aloud is stopped by the tap (stopAnswer), so he hears only the word. */
+ * nothing else; a response being read aloud is paused by the tap (speech/greek.ts speakBeside), so he hears only the word and can Resume it. */
 function SayWord({ fix, view, id, label, className }: { fix: FixWord; view: ReadingView; id: string; label: string; className?: string }) {
   return (
     <SpeakButton
@@ -108,7 +108,6 @@ function SayWord({ fix, view, id, label, className }: { fix: FixWord; view: Read
       kind="speaker"
       language={view === 'greek' ? 'greek' : 'english'}
       className={className}
-      onSpeak={stopAnswer}
     />
   );
 }

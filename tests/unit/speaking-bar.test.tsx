@@ -3,7 +3,8 @@
 import { act, cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { clearBus } from '../../src/events/bus';
-import { speakWord } from '../../src/speech/greek';
+import { getSpeech } from 'bsv-kit/speech';
+import { speak, speakWord, stopSpeaking, watchWordEnd } from '../../src/speech/greek';
 import { startAnswer, stopReading } from '../../src/speech/readAloud';
 import { BarSlot, LampasSpeakingBar } from '../../src/speech/SpeakingBarSlot';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../support/fake-speech';
@@ -83,5 +84,86 @@ describe('a page that hides', () => {
     act(() => answer());
     act(hide);
     expect(within(screen.getByRole('region', { name: 'Speaking' })).getAllByRole('button').map((b) => b.textContent)).toEqual(['Resume', 'Restart', 'Stop']);
+  });
+});
+
+describe('a word said while a reading is under way', () => {
+  const buttons = () => within(screen.getByRole('region', { name: 'Speaking' })).getAllByRole('button').map((b) => b.textContent);
+  const reading = () => startAnswer(1, [{ text: 'First sentence. Second sentence. Third sentence.', language: 'english' }]);
+
+  it('pauses the reading where it was and is said beside it', () => {
+    render(<><BarSlot level={0} /><LampasSpeakingBar /></>);
+    act(() => reading());
+    act(() => synth.finish());
+    act(() => void speakWord('λόγος', 'greek'));
+    expect(buttons()).toEqual(['Resume', 'Restart', 'Stop']);
+    expect(synth.since.map((u) => u.text)).toEqual(['λόγος']);
+    expect(getSpeech()).toMatchObject({ key: 'read-aloud', status: 'paused', index: 1 });
+  });
+
+  it('lets Resume go on from the sentence it was in once the word is over', () => {
+    render(<><BarSlot level={0} /><LampasSpeakingBar /></>);
+    act(() => reading());
+    act(() => synth.finish());
+    act(() => void speakWord('λόγος', 'greek'));
+    act(() => synth.finishAll());
+    const before = synth.spoken.length;
+    act(() => void screen.getByRole('button', { name: 'Resume' }).click());
+    expect(synth.spoken.slice(before).map((u) => u.text)).toEqual(['Second sentence.', 'Third sentence.']);
+  });
+
+  it('leaves a reading he had paused paused, and says the word', () => {
+    render(<><BarSlot level={0} /><LampasSpeakingBar /></>);
+    act(() => reading());
+    act(() => void screen.getByRole('button', { name: 'Pause' }).click());
+    act(() => void speakWord('λόγος', 'greek'));
+    expect(buttons()).toEqual(['Resume', 'Restart', 'Stop']);
+    expect(synth.speaking).toBe(true);
+  });
+
+  it('is told apart from the reading: watchWordEnd, a second tap and stopSpeaking see only the word', () => {
+    const done = vi.fn();
+    act(() => reading());
+    act(() => void speakWord('λόγος', 'greek'));
+    watchWordEnd(done);
+    expect(done).not.toHaveBeenCalled();
+    act(() => synth.finishAll());
+    expect(done).toHaveBeenCalledTimes(1);
+
+    act(() => void speakWord('λόγος', 'greek'));
+    act(() => stopSpeaking());
+    expect(synth.speaking).toBe(false);
+    expect(getSpeech()).toMatchObject({ key: 'read-aloud', status: 'paused' });
+
+    expect(speak('λόγος', 'speaker-1')).toBe('speaking');
+    expect(speak('λόγος', 'speaker-1')).toBe('stopped');
+    expect(synth.speaking).toBe(false);
+    expect(getSpeech().status).toBe('paused');
+  });
+
+  it('is cut off by the next word without ending the reading', () => {
+    act(() => reading());
+    act(() => void speakWord('λόγος', 'greek'));
+    act(() => void speakWord('ἀγάπη', 'greek'));
+    expect(synth.since.map((u) => u.text)).toEqual(['ἀγάπη']);
+    expect(getSpeech().status).toBe('paused');
+    act(() => synth.finishAll());
+    expect(getSpeech().status).toBe('paused');
+  });
+
+  it('is ended with the reading by Stop on the bar', () => {
+    render(<><BarSlot level={0} /><LampasSpeakingBar /></>);
+    act(() => reading());
+    act(() => void speakWord('λόγος', 'greek'));
+    act(() => void screen.getByRole('button', { name: 'Stop' }).click());
+    expect(synth.speaking).toBe(false);
+    expect(bar()).toBeNull();
+  });
+
+  it('with no reading is a plain word, with no bar', () => {
+    render(<><BarSlot level={0} /><LampasSpeakingBar /></>);
+    act(() => void speakWord('λόγος', 'greek'));
+    expect(bar()).toBeNull();
+    expect(getSpeech().key).toBe('word-press');
   });
 });

@@ -346,29 +346,30 @@ describe('following bsv-kit/speech (mw-m7v5kc.3)', () => {
     expect(getReading().status).toBe('reading');
   });
 
-  it('a word said alone takes the voice: the reading waits at its verse off the bar, and Resume reads the verse again', async () => {
+  it('a word said alone interrupts the reading: it is paused on the bar at its sentence, and Resume goes on from that sentence', async () => {
     startReading({ chapter: 8, plan: english, from: 3, continuous: true });
+    synth.finish();
     expect(speakWord('λόγος', 'greek')).toBe(true);
     await settle();
-    expect(getReading()).toMatchObject({ status: 'paused', verse: 3, onBar: false });
+    expect(getReading()).toMatchObject({ status: 'paused', verse: 3, onBar: true });
     synth.finishAll();
     await settle();
     expect(getReading().status).toBe('paused');
     const count = synth.spoken.length;
     resumeReading();
     expect(getReading()).toMatchObject({ status: 'reading', verse: 3 });
-    expect(synth.spoken.slice(count).map((u) => u.text)).toEqual(sentences(3));
+    expect(synth.spoken.slice(count).map((u) => u.text)).toEqual(sentences(3).slice(1));
   });
 
-  it('an answer is over, not waited for, when a word takes the voice; paused on the bar it can be resumed', async () => {
+  it('an answer is paused, not ended, when a word interrupts it; Stop on the bar ends it', async () => {
     startReading({ chapter: 0, plan: [{ n: 7, runs: [{ text: 'First. Second.', language: 'english' }] }], from: 7, continuous: false, answer: 7 });
-    enginePause();
-    expect(getReading()).toMatchObject({ status: 'paused', answer: 7 });
-    engineResume();
-    expect(getReading().status).toBe('reading');
+    synth.finish();
     speakWord('λόγος', 'greek');
     await settle();
+    expect(getReading()).toMatchObject({ status: 'paused', answer: 7 });
+    stopReading();
     expect(getReading().status).toBe('idle');
+    expect(synth.speaking).toBe(false);
   });
 
   it("a Greek run and an English run are told apart by their letters, a run to a line", () => {

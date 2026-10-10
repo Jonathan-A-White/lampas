@@ -165,14 +165,14 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Pressing while a verse is being read stops the reading', ({ Given, And, When, Then }) => {
+  Scenario('Pressing while a verse is being read pauses the reading', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 with a talk behind a fake Postern, a recogniser and a phone that speaks English', () => open({ speaks: true }));
     And('verse {int} is being read aloud', async (_, n: number) => {
       await user.click(within(document.querySelector<HTMLElement>(`[data-verse="${n}"]`) as HTMLElement).getByRole('button', { name: 'Hear the verse' }));
       expect(getReading().status).toBe('reading');
     });
     When('he presses the Talk button', () => pressDown(talkButton()));
-    Then('the reading has stopped', () => expect(getReading().status).toBe('idle'));
+    Then('the reading is paused', () => expect(getReading().status).toBe('paused'));
     And('the Talk button has not yet opened the sheet', () => {
       expect(screen.queryByRole('dialog', { name: /^Talk about / })).toBeNull();
     });

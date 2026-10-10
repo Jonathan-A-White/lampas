@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom';
 import type { HebrewSounds } from '../data/db';
 import { SpeakButton } from '../speech/SpeakButton';
 import { speak } from '../speech/greek';
+import { BarSlot } from '../speech/SpeakingBarSlot';
 import { HebrewAskContext, hebrewKey, noHebrewVoice } from './hebrewSpeech';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
@@ -47,6 +48,8 @@ export function HebrewGuide({ word, noVoice, onClose }: { word: string; noVoice:
             </button>
           </div>
         </div>
+        {/* the answer this word interrupted waits paused: its Resume stays in view over the Talk sheet's own bar */}
+        <BarSlot level={4} />
         <div className="space-y-3 border-t border-line px-4 py-3">
           <p className="break-words text-center text-5xl">
             <HebrewLetters text={word} />
