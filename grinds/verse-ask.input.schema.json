@@ -12,6 +12,6 @@
     "solid_words": { "description": "The Greek lemmas he already knows well.", "type": "array", "items": { "type": "string" } },
     "learner": { "description": "Optional. Where he stands in one line: 'solid N words; learning: a, b, c; new today: x, y; due now: M'.", "type": "string", "maxLength": 600 },
     "learner_grammar": { "description": "Optional. Where his grammar stands, as in the Bible talk's request (grinds/bible-talk.input.schema.json learner_grammar).", "type": "object" },
-    "settings": { "description": "Optional. How he wants a language besides Greek written, by key: { \"hebrewDepth\": \"both\" }.", "type": "object" }
+    "settings": { "description": "Optional. How he wants a language besides Greek written, and how Ask the tutor opens (askBy: \"speaking\" or \"typing\"), by key: { \"hebrewDepth\": \"both\", \"askBy\": \"speaking\" }.", "type": "object" }
   }
 }

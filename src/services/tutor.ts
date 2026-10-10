@@ -35,7 +35,7 @@ export interface VerseAskRequest {
   learner?: string;
   /** where his grammar stands (src/data/grammar/learnerGrammar.ts) */
   learner_grammar?: LearnerGrammar;
-  /** how he wants a language besides Greek written (src/script/depthSettings.ts): { hebrewDepth: 'both' } */
+  /** how he wants a language besides Greek written (src/script/depthSettings.ts) and how Ask the tutor opens: { hebrewDepth: 'both', askBy: 'speaking' } */
   settings?: Record<string, string>;
 }
 
@@ -45,15 +45,21 @@ export interface VerseAnswer {
   words: AnswerWord[];
   /** what he asked, cleaned up by the tutor (punctuation, capitals, no fillers); shown in place of his raw words when present */
   question?: string;
+  /** the one setting the tutor may switch when he asks, Ask by (grinds/verse-ask.answer.schema.json): applied at once by the app */
+  settings_changes?: { key: 'askBy'; value: 'speaking' | 'typing' }[];
 }
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 const isText = (value: unknown, max: number): value is string => typeof value === 'string' && value.length > 0 && value.length <= max;
 
+const isAskByChange = (change: unknown): boolean =>
+  isObject(change) && Object.keys(change).length === 2 && change.key === 'askBy' && (change.value === 'speaking' || change.value === 'typing');
+
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isVerseAnswer(value: unknown): value is VerseAnswer {
-  if (!isObject(value) || Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question') || !isText(value.answer, 1200)) return false;
+  if (!isObject(value) || Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes') || !isText(value.answer, 1200)) return false;
   if ('question' in value && !isText(value.question, 400)) return false;
+  if ('settings_changes' in value && !(Array.isArray(value.settings_changes) && value.settings_changes.length <= 1 && value.settings_changes.every(isAskByChange))) return false;
   if (!Array.isArray(value.words) || value.words.length > 12) return false;
   return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));
 }

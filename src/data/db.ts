@@ -53,6 +53,8 @@ export interface TutorAnswer {
   words: AnswerWord[];
   /** when it arrived (ms since the epoch) */
   when: number;
+  /** the settings the answer changed (Ask by, when he asked the tutor to switch it): shown under the answer as 'Changed: Ask by: Typing' */
+  changes?: AppliedChange[];
 }
 
 /** One turn of a Bible talk: what he said and what the companion answered, kept so the conversation is there on return. */

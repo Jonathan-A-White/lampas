@@ -1,11 +1,14 @@
 // src/useAsks.ts — the questions in flight to the tutor, by verse (or by passage, mw-5r3p30.73: src/data/passage.ts unitId). A question keeps waiting when he selects another
-// verse; its answer is stored when it comes. They all stop when the screen goes away.
+// verse; its answer is stored when it comes (an Ask by change it carries is applied then). They all stop when the screen goes away.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Verse } from './data/chapter';
 import { unitId, unitReference } from './data/passage';
 import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { learnerSummary } from './data/learnerSummary';
 import { depthSettings } from './script/depthSettings';
+import { askBySetting } from './settings/definitions';
+import { applyChanges } from './settings/registry';
+import { getSetting } from './settings/store';
 import { addAnswer, listSolidHeadwords, verseRef } from './data/repositories';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { stopAnswer } from './speech/readAloud';
@@ -51,14 +54,16 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
       set({ phase: 'sending', question: text, startedAt });
       void (async () => {
         try {
-          const [solid, learner, grammar, settings] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined), depthSettings()]);
-          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, settings);
+          const [solid, learner, grammar, depths, askBy] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined), depthSettings(), getSetting(askBySetting)]);
+          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, { ...depths, [askBySetting.key]: askBy });
           const answer = await askTutor(request, {
             key: getDeviceKeyBytes(),
             signal,
             onSent: () => set({ phase: 'waiting', question: text, startedAt }),
           });
-          await addAnswer(verseRef(book, chapter, unitId(verse)), text, answer.answer, answer.words, Date.now(), answer.question);
+          // The one setting this tutor may switch is Ask by; the registry checks it like any talked change.
+          const { applied } = await applyChanges(answer.settings_changes);
+          await addAnswer(verseRef(book, chapter, unitId(verse)), text, answer.answer, answer.words, Date.now(), answer.question, applied);
           set(undefined);
         } catch (err) {
           if (signal.aborted) return;
