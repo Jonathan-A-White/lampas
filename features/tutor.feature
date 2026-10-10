@@ -34,6 +34,27 @@ Feature: Ask the tutor about a verse
     When he asks "um why are there uh italic words"
     Then the answer card shows the question "um why are there uh italic words"
 
+  Scenario: Copy on an answer card puts the exchange on the clipboard as Markdown
+    Given Lampas is opened on Romans 8 with a tutor behind a fake Postern whose answers clean up his question
+    And he selects verse 28
+    When he asks "um why are there uh italic words what does it mean for the words to be italic"
+    And he taps Copy on the first answer card
+    Then the clipboard holds the Markdown of "Romans 8:28" asking "Why are there italic words? What does it mean for the words to be italic?" answered by the tutor
+    And the first answer card says "Copied"
+
+  Scenario: With several answers on the screen each Copy copies only its own
+    Given Lampas is opened on Romans 8 with a tutor behind a fake Postern
+    And he selects verse 28
+    When he asks "What does συνεργεῖ mean here?"
+    And the tutor will answer "It means works together."
+    And he then asks "Who is doing the working?"
+    And he taps Copy on the second answer card
+    Then the clipboard holds the Markdown of "Romans 8:28" asking "Who is doing the working?" answered "It means works together."
+    And the first answer card does not say "Copied"
+    When he taps Copy on the first answer card again
+    Then the clipboard then holds the Markdown of "Romans 8:28" asking "What does συνεργεῖ mean here?" answered by the tutor
+    And the first answer card says "Copied"
+
   Scenario: While the tutor has not answered the box says Sending and then Waiting
     Given Lampas is opened on Romans 8 with a tutor behind a fake Postern that holds its answers
     And he selects verse 28

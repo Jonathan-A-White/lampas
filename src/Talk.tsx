@@ -27,6 +27,7 @@ import { focusOnMount, focusQuietly } from './ui/focus';
 import { HoldBar } from './ui/HoldBar';
 import { PendingQuestion } from './ui/PendingQuestion';
 import type { HoldHandlers } from './ui/holdPress';
+import { CopyExchange } from './share/CopyExchange';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import type { AskState } from './useAsks';
@@ -317,7 +318,8 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
         {turn.links?.length ? <TutorLinks links={turn.links} onLeave={onLeave} /> : null}
         {turn.studyWayLine ? <StudyWayProposal line={turn.studyWayLine} /> : null}
         <FeedbackOffer turn={turn} scope={scope} />
-        <div className="-mb-1 mt-1 flex justify-end">
+        <div className="-mb-1 mt-1 flex flex-wrap items-start justify-end gap-1">
+          <CopyExchange place={turn.ref} question={turn.cleanQ ?? turn.q} answer={turn.a} />
           <AnswerSpeaker turn={turn} />
         </div>
       </div>

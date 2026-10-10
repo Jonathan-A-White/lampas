@@ -263,6 +263,35 @@ Feature: Bible talk
     When he sends "um why are there uh italic words"
     Then his turn shows "um why are there uh italic words"
 
+  Scenario: Copy on a turn puts the exchange on the clipboard as Markdown
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern whose answers clean up his question
+    And he selects verse 28
+    And he opens Talk
+    When he sends "um why are there uh italic words what does it mean for the words to be italic"
+    And he taps Copy on the first turn
+    Then the clipboard holds the Markdown of "Romans 8:28" asking "Why are there italic words? What does it mean for the words to be italic?" answered by the talk
+    And the first turn says "Copied"
+
+  Scenario: A talk about the chapter copies the chapter's link
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern
+    And he opens Talk
+    When he sends "What is this chapter about?"
+    And he taps Copy on the first turn
+    Then the clipboard holds the Markdown of "Romans 8" asking "What is this chapter about?" answered by the talk
+
+  Scenario: With several turns in the sheet each Copy copies only its own
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern
+    And he selects verse 28
+    And he opens Talk
+    When he sends "What does συνεργεῖ mean here?"
+    And the talk will answer "It means works together."
+    And he then sends "Who is doing the working?"
+    And he taps Copy on the second turn
+    Then the clipboard holds the Markdown of "Romans 8:28" asking "Who is doing the working?" answered "It means works together."
+    And the first turn does not say "Copied"
+    When he taps Copy on the first turn again
+    Then the clipboard then holds the Markdown of "Romans 8:28" asking "What does συνεργεῖ mean here?" answered by the talk
+
   Scenario: A question in the talk sends the learner summary
     Given Lampas is opened on Romans 8 with a talk behind a fake Postern
     And he is learning the word "σάρξ" which he added today
