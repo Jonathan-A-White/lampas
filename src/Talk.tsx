@@ -33,6 +33,7 @@ import { HoldBar } from './ui/HoldBar';
 import { PendingQuestion } from './ui/PendingQuestion';
 import type { HoldHandlers } from './ui/holdPress';
 import { CopyExchange } from './share/CopyExchange';
+import type { SharedContent } from './share/shared';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import type { AskState } from './useAsks';
@@ -358,7 +359,7 @@ function Suggestions({ questions, onAsk, label }: { questions: string[]; onAsk: 
 }
 
 /** The sheet: the conversation `scope` names, the field, Send, and what the last message is doing. */
-export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, suggestions, onSay, onHelp, onAskTerm, onClose }: {
+export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, suggestions, shared, onSay, onHelp, onAskTerm, onClose }: {
   scope: TalkScope;
   /** the key the conversation is kept under (src/data/repositories/talks.ts talkRef) */
   talkRef: string;
@@ -368,6 +369,8 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
   voice: Voice;
   /** questions fitted to where he asks from (src/tutor/screen.ts): shown as buttons while nothing has been said, a tap sends one */
   suggestions?: string[];
+  /** what came in through Share > Lampas (mw-y3qno5.2): its pictures wait in the composer and its words in the field, as he opened the sheet, NOT sent */
+  shared?: SharedContent;
   onSay: (message: string, focus?: TalkFocus, pictures?: OutgoingPicture[]) => void;
   /** a word of an answer was opened and he asked for Grammar or Sound it out on it */
   onHelp: (help: WordHelp) => void;
@@ -375,10 +378,10 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
   onAskTerm: (ask: TermAsk) => void;
   onClose: () => void;
 }) {
-  const title = scope.screen ? `Ask the tutor: ${scope.screen.name}` : scope.quiz ? `Quiz on ${scopeTitle(scope)}` : `Talk about ${scopeTitle(scope)}`;
+  const title = scope.free ? 'Talk with the tutor' : scope.screen ? `Ask the tutor: ${scope.screen.name}` : scope.quiz ? `Quiz on ${scopeTitle(scope)}` : `Talk about ${scopeTitle(scope)}`;
   const titleId = useId();
   const turns = useLiveQuery(() => listTurns(ref), [ref]);
-  const [text, setText] = useState('');
+  const [text, setText] = useState(shared?.text ?? '');
   // A failure he cleared with New talk is not shown again (the state itself belongs to useTalk).
   const [cleared, setCleared] = useState<AskState | undefined>(undefined);
   const state = liveState === cleared ? undefined : liveState;
@@ -423,6 +426,15 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
   }, [take]);
   // The words he holds to say go with the pictures he has put in (src/talk/outbox.ts).
   useEffect(() => registerOutbox(takeWaiting), [takeWaiting]);
+  // The pictures that came in through the share sheet wait in the composer, once.
+  const { add: addToBox } = box;
+  const sharedFiles = shared?.files;
+  const placed = useRef<File[] | undefined>(undefined);
+  useEffect(() => {
+    if (!sharedFiles?.length || placed.current === sharedFiles) return;
+    placed.current = sharedFiles;
+    addToBox(sharedFiles);
+  }, [sharedFiles, addToBox]);
   const hasPictures = box.pictures.length > 0;
   const send = (message: string): void => {
     if ((!message.trim() && !hasPictures) || busy || box.working) return;
@@ -492,7 +504,7 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
           <div ref={list} data-talk-list className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain border-t border-line px-4 py-3 short:space-y-2 short:py-2">
             {turns?.length === 0 && !state ? (
               <p data-talk-empty className="text-base text-muted">
-                {scope.quiz ? 'Nothing said yet. Say “Quiz me” to begin.' : scope.screen ? 'Nothing said yet. Ask about this screen or about where you are.' : 'Nothing said yet. Ask about a word, a verse or what is on your mind.'}
+                {scope.quiz ? 'Nothing said yet. Say “Quiz me” to begin.' : scope.screen && !scope.free ? 'Nothing said yet. Ask about this screen or about where you are.' : 'Nothing said yet. Ask about a word, a verse or what is on your mind.'}
               </p>
             ) : null}
             {turns?.length === 0 && !state && suggestions?.length ? <Suggestions questions={suggestions} onAsk={send} /> : null}

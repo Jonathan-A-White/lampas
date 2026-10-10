@@ -1,5 +1,21 @@
 # What's new
 
+## 0.1.79
+_2026-10-10_
+- Fixed: the Unlock screen on a short or sideways phone no longer cuts off its top; you can scroll to all of it.
+
+## 0.1.78
+_2026-10-10_
+- Fixed: Review now asks the letters and letter pairs you were told to work on first, including ones you were never asked.
+
+## 0.1.76
+_2026-10-10_
+- Fixed: Read aloud on Robinson's essay no longer reads the footnote numbers.
+
+## 0.1.75
+_2026-10-10_
+- New: Share a picture, text or link to Lampas from another app, and choose which tutor talk it goes to.
+
 ## 0.1.74
 _2026-10-10_
 - Fixed: Hear a word says the right sound even when the tip first names the wrong one.

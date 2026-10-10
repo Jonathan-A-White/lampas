@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { pwaManifest, THEME_COLOR } from '../../pwa-manifest';
 import { injectManifestOptions } from '../../pwa-precache';
+import { SHARE_FILE_ACCEPT, SHARE_FILES_FIELD, SHARE_TARGET_PATH } from '../../src/share/target';
 
 const html = readFileSync('index.html', 'utf-8');
 
@@ -29,6 +30,16 @@ describe('pwaManifest', () => {
 
   it('hands web+lampas: links to the reference in the address', () => {
     expect(pwaManifest.protocol_handlers).toEqual([{ protocol: 'web+lampas', url: '/#/?ref=%s' }]);
+  });
+
+  it('is a share target: a POST of multipart/form-data with the pictures, title, text and link', () => {
+    expect(pwaManifest.share_target).toEqual({
+      action: SHARE_TARGET_PATH,
+      method: 'POST',
+      enctype: 'multipart/form-data',
+      params: { title: 'title', text: 'text', url: 'url', files: [{ name: SHARE_FILES_FIELD, accept: SHARE_FILE_ACCEPT }] },
+    });
+    expect(SHARE_FILE_ACCEPT).toEqual(['image/*']);
   });
 
   it('raises the precache size limit past workbox default of 2 MiB', () => {

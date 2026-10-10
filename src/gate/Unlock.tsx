@@ -42,36 +42,39 @@ export function Unlock({ locked, publicKeyHex, onCheckAgain }: Props) {
   return (
     <div data-gate className="flex h-full min-w-0 flex-col overflow-clip">
       <UpdateBanner />
-      <main className="screen flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-        <img src="/icon.svg" alt="" width={72} height={72} className="rounded-2xl" />
-        <h1 className="text-3xl font-semibold">Unlock</h1>
-        <div role="status" className="flex flex-col gap-1">
-          <p className="text-xl font-medium">{words.title}</p>
-          {words.hint ? <p className="text-base text-muted">{words.hint}</p> : null}
-        </div>
-        <section aria-label="This phone’s key" className="flex w-full max-w-sm flex-col gap-2">
-          <p className="text-sm text-muted">This phone’s key</p>
-          <KeyQr text={publicKeyHex} label="This phone’s key as a QR code" />
-          <p data-testid="device-key" className="select-all break-all rounded-xl border border-line bg-surface p-3 font-mono slashed-zero text-base">
-            {publicKeyHex}
-          </p>
+      <main className="screen flex min-h-0 flex-1 flex-col px-6 text-center">
+        {/* my-auto centres the content when it fits and, unlike justify-center, lets it scroll from its top when it does not */}
+        <div className="my-auto flex flex-col items-center gap-4">
+          <img src="/icon.svg" alt="" width={72} height={72} className="rounded-2xl" />
+          <h1 className="text-3xl font-semibold">Unlock</h1>
+          <div role="status" className="flex flex-col gap-1">
+            <p className="text-xl font-medium">{words.title}</p>
+            {words.hint ? <p className="text-base text-muted">{words.hint}</p> : null}
+          </div>
+          <section aria-label="This phone’s key" className="flex w-full max-w-sm flex-col gap-2">
+            <p className="text-sm text-muted">This phone’s key</p>
+            <KeyQr text={publicKeyHex} label="This phone’s key as a QR code" />
+            <p data-testid="device-key" className="select-all break-all rounded-xl border border-line bg-surface p-3 font-mono slashed-zero text-base">
+              {publicKeyHex}
+            </p>
+            <button
+              type="button"
+              onClick={() => void copy()}
+              className="min-h-12 rounded-xl bg-accent px-6 text-lg font-medium text-accent-fg"
+            >
+              {copied ? 'Copied' : 'Copy'}
+            </button>
+          </section>
           <button
             type="button"
-            onClick={() => void copy()}
-            className="min-h-12 rounded-xl bg-accent px-6 text-lg font-medium text-accent-fg"
+            onClick={onCheckAgain}
+            disabled={locked.kind === 'checking'}
+            className="min-h-12 rounded-xl border border-line px-6 text-lg font-medium disabled:opacity-60"
           >
-            {copied ? 'Copied' : 'Copy'}
+            Check again
           </button>
-        </section>
-        <button
-          type="button"
-          onClick={onCheckAgain}
-          disabled={locked.kind === 'checking'}
-          className="min-h-12 rounded-xl border border-line px-6 text-lg font-medium disabled:opacity-60"
-        >
-          Check again
-        </button>
-        <BuildVersion />
+          <BuildVersion />
+        </div>
       </main>
     </div>
   );

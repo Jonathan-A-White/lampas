@@ -74,7 +74,7 @@ export function AskTutor({ route }: { route: Route }) {
   const [openOn, setOpenOn] = useState<Route | null>(null);
   const open = openOn === route;
   const reported = useScreenContext();
-  const name = route === 'home' ? undefined : SCREEN_NAMES[route];
+  const name = route === 'home' || route === 'share' ? undefined : SCREEN_NAMES[route];
   const sayAbout = useRef<(message: string) => void>(() => {});
   const voice = useVoice((message) => sayAbout.current(message));
   const openRef = useRef<string | null>(null);

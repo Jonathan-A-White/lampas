@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
-import type { AppliedChange } from '../settings/registry';
+import type { AppliedChange } from '../settings/applied';
 
 export type WordState = 'solid' | 'learning' | 'dropped';
 
@@ -55,6 +55,17 @@ export interface TutorAnswer {
   when: number;
   /** the settings the answer changed (Ask by, when he asked the tutor to switch it): shown under the answer as 'Changed: Ask by: Typing' */
   changes?: AppliedChange[];
+}
+
+/** A share waiting to be placed (mw-y3qno5.2): what another app sent to Lampas's share target, until he picks the talk it goes to or cancels. */
+export interface ShareRow {
+  /** 'time-random': the share route names the share by it */
+  id: string;
+  createdAt: number;
+  /** the shared title, text and link, one to a line; none for a share of pictures alone */
+  text?: string;
+  /** the shared files: their bytes and kind, as the service worker read them */
+  files: { name: string; type: string; bytes: ArrayBuffer }[];
 }
 
 /** A picture he sent with a turn of a Bible talk (mw-y3qno5.1), kept as bytes and a mime (a Blob does not survive every store the tests use). */
@@ -248,6 +259,7 @@ class LampasDB extends Dexie {
   usage!: EntityTable<UsageRow, 'key'>;
   tips!: EntityTable<TipRow, 'id'>;
   talkPictures!: EntityTable<TalkPicture, 'id'>;
+  shares!: EntityTable<ShareRow, 'id'>;
 
   constructor() {
     super('lampas');
@@ -388,6 +400,24 @@ class LampasDB extends Dexie {
       usage: 'key, day, name',
       tips: 'id, status',
       talkPictures: '++id, turnId',
+    });
+    // v15: the share waiting to be placed {id key, createdAt, text?, files}, written by the service worker (src/share/target.ts).
+    this.version(15).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
+      reviews: '[kind+id], due, kind',
+      grammarLevels: 'id, level',
+      usage: 'key, day, name',
+      tips: 'id, status',
+      talkPictures: '++id, turnId',
+      shares: 'id, createdAt',
     });
   }
 }

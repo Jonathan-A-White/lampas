@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.1.79",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.176",
+    "kind": "fixed",
+    "text": "the Unlock screen on a short or sideways phone no longer cuts off its top; you can scroll to all of it."
+  },
+  {
+    "version": "0.1.78",
+    "date": "2026-10-10",
+    "story": "mw-hqd5bz.23",
+    "kind": "fixed",
+    "text": "Review now asks the letters and letter pairs you were told to work on first, including ones you were never asked."
+  },
+  {
+    "version": "0.1.76",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.168",
+    "kind": "fixed",
+    "text": "Read aloud on Robinson's essay no longer reads the footnote numbers."
+  },
+  {
+    "version": "0.1.75",
+    "date": "2026-10-10",
+    "story": "mw-y3qno5.2",
+    "kind": "new",
+    "text": "Share a picture, text or link to Lampas from another app, and choose which tutor talk it goes to."
+  },
+  {
     "version": "0.1.74",
     "date": "2026-10-10",
     "story": "mw-5r3p30.166",

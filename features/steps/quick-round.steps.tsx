@@ -12,6 +12,7 @@ import { LADDER, ITEM_GROUPS, itemName, itemsOf } from '../../src/data/grammar/l
 import { currentQuick, quickQuestion, quickSeed } from '../../src/data/grammar/quickRound';
 import { readPlacement } from '../../src/data/placementKeep';
 import { mulberry32 } from '../../src/data/quiz';
+import { recordGrammarAnswer } from '../../src/data/repositories/grammarLevels';
 import { setGoal } from '../../src/data/repositories/settings';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
@@ -89,6 +90,17 @@ const rowOf = (name: string) => db.grammarLevels.get(idOf(name));
 const feature = await loadFeature('features/quick-round.feature');
 
 describeFeature(feature, ({ Scenario }) => {
+  const reviewFirst = async (_: unknown, ids: string) => {
+    const round = await drawReviewRound(mulberry32(1));
+    const wanted = names(ids);
+    expect(round.items.slice(0, wanted.length).map((i) => i.id)).toEqual(wanted);
+  };
+  const noWordFirst = async () => {
+    const round = await drawReviewRound(mulberry32(1));
+    const lastGrammar = round.items.map((i) => i.kind).lastIndexOf('grammar');
+    expect(round.items.slice(0, lastGrammar + 1).every((i) => i.kind === 'grammar')).toBe(true);
+    expect(round.items.slice(3).find((i) => i.kind === 'word')).toBeDefined();
+  };
   const given = (_: unknown, goal: string, except: string) => freshStore(goal, names(except));
   const opened = () => openAt('#/placement');
   const started = async () => user.click(await screen.findByRole('button', { name: 'Start' }));
@@ -209,5 +221,18 @@ describeFeature(feature, ({ Scenario }) => {
       const round = await drawReviewRound(mulberry32(1));
       expect(round.items.slice(0, 3).map((i) => i.id)).toEqual(names(ids));
     });
+  });
+
+  Scenario('Review asks the gaps nobody has asked yet before any word', ({ Given, Then, And }) => {
+    Given('his goal is {string} and his grammar is known except {string}', given);
+    Then("Review's first grammar questions are on {string}", reviewFirst);
+    And('no word is asked before them', noWordFirst);
+  });
+
+  Scenario('Review asks a missed gap and the never-asked ones in the order the end card names them', ({ Given, When, Then, And }) => {
+    Given('his goal is {string} and his grammar is known except {string}', given);
+    When('he gets {string} wrong in Review', async (_, name: string) => recordGrammarAnswer(idOf(name), false));
+    Then("Review's first grammar questions are on {string}", reviewFirst);
+    And('no word is asked before them', noWordFirst);
   });
 });

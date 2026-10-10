@@ -57,3 +57,14 @@ Feature: The placement probes the letters and sounds one by one
     When he taps "Back to the goal"
     Then Learn next says "ξ, ψ and ου"
     And Review's next grammar questions are on "letter-xi, letter-psi, diphthong-ou"
+
+  Scenario: Review asks the gaps nobody has asked yet before any word
+    Given his goal is "Read 1 John 1:1" and his grammar is known except "ξ, ψ, ου"
+    Then Review's first grammar questions are on "letter-xi, letter-psi, diphthong-ou"
+    And no word is asked before them
+
+  Scenario: Review asks a missed gap and the never-asked ones in the order the end card names them
+    Given his goal is "Read 1 John 1:1" and his grammar is known except "ξ, ψ, ου"
+    When he gets "ξ" wrong in Review
+    Then Review's first grammar questions are on "letter-xi, letter-psi, diphthong-ou"
+    And no word is asked before them

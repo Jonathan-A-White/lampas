@@ -65,7 +65,8 @@ async function goBack(): Promise<void> {
 }
 async function choose(group: 'Layout' | 'Section headings', label: string): Promise<void> {
   if (!screen.queryByRole('heading', { name: 'Settings', level: 1 })) await openSettings();
-  await user.click(within(screen.getByRole('group', { name: group })).getByRole('button', { name: label }));
+  // the control draws once its saved value is read, which can be after the Settings heading
+  await user.click(await within(await screen.findByRole('group', { name: group })).findByRole('button', { name: label }));
 }
 
 const feature = await loadFeature('features/layout.feature');
