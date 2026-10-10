@@ -36,7 +36,7 @@ function Runs({ runs, open, toggle }: { runs: Run[]; open: ReadonlySet<number>; 
         if (run.n !== undefined) {
           const n = run.n;
           return (
-            <button key={i} type="button" aria-label={`Footnote ${n}`} aria-expanded={open.has(n)} onClick={() => toggle(n)} className={NOTE_BUTTON}>
+            <button key={i} type="button" data-read-skip aria-label={`Footnote ${n}`} aria-expanded={open.has(n)} onClick={() => toggle(n)} className={NOTE_BUTTON}>
               {n}
             </button>
           );
@@ -89,7 +89,7 @@ function BlockView({ block, notes, open, toggle }: { block: Block; notes: EssayD
         data-essay-paragraph
         className={`break-words pt-3 text-base leading-relaxed ${indent} ${block.q ? 'border-l-2 border-line pl-3 text-muted' : ''}`}
       >
-        {block.n && <span className="mr-1 font-semibold text-muted">{block.n}.</span>}
+        {block.n && <span data-read-skip className="mr-1 font-semibold text-muted">{block.n}.</span>}
         <Runs runs={block.runs} open={open} toggle={toggle} />
       </p>
       {below}
