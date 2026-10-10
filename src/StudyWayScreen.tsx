@@ -5,6 +5,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
 import { deleteStudyWayLine, editStudyWayLine, listStudyWay, STUDY_WAY_LINE_MAX, STUDY_WAY_MAX } from './data/repositories';
 import { navigate } from './nav/route';
+import { usePageActions } from './PageActions';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 
 const BUTTON = 'min-h-12 min-w-12 rounded-lg px-3 text-base font-medium text-accent active:bg-line';
@@ -56,7 +57,7 @@ function Line({ line }: { line: string }) {
   }
   return (
     <li data-study-way-line className="border-b border-line py-3">
-      <p data-line-text className="break-words text-lg">
+      <p data-line-text data-read-block className="break-words text-lg">
         {line}
       </p>
       <div className="flex justify-end gap-2 pt-1">
@@ -73,18 +74,20 @@ function Line({ line }: { line: string }) {
 
 export function StudyWayScreen() {
   const lines = useLiveQuery(listStudyWay, []);
+  const { buttons, notice } = usePageActions('#/studyway', 'My study way');
   return (
     <>
-      <ScreenHeader title="My study way" back={<HeaderButton onClick={() => navigate('settings')}>‹ Settings</HeaderButton>} />
+      <ScreenHeader title="My study way" back={<HeaderButton onClick={() => navigate('settings')}>‹ Settings</HeaderButton>} action={buttons} />
+      {notice}
       <main className="screen min-h-0 flex-1 px-4">
         <div>
-          <p className="py-4 text-base text-muted">
+          <p data-read-block className="py-4 text-base text-muted">
             How you want the tutor to quiz you. Every quiz is sent these lines, and where one conflicts with the tutor&apos;s usual method, yours wins. To add one,
             tell the tutor in a quiz how you want it different; when it proposes a line, tap Keep this. Up to {STUDY_WAY_MAX} lines. They stay on this phone and
             go only to the tutor, in a quiz.
           </p>
           {lines === undefined ? null : lines.length === 0 ? (
-            <p data-study-way-empty className="py-4 text-lg">
+            <p data-study-way-empty data-read-block className="py-4 text-lg">
               Nothing kept yet. In a quiz, say how you want it different, such as “shorter quizzes” or “skip the map”.
             </p>
           ) : (
