@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.47
+_2026-10-10_
+- New: Tap a Bible reference in the tutor's answer to see the verse in a small card first, then open it in the reader.
+
 ## 0.1.46
 _2026-10-10_
 - Fixed: The Reading check's speaker now says a word the way its tip spells it, so 'Levites' is said LEE-vites.

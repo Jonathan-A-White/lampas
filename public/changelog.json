@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.47",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.133",
+    "kind": "new",
+    "text": "Tap a Bible reference in the tutor's answer to see the verse in a small card first, then open it in the reader."
+  },
+  {
     "version": "0.1.46",
     "date": "2026-10-10",
     "story": "mw-5r3p30.140",
