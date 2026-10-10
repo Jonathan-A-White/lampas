@@ -17,6 +17,7 @@ describe('the address', () => {
     expect(routeOf('#/studyway')).toBe('studyway');
     expect(routeOf('#/about')).toBe('about');
     expect(routeOf('#/preface')).toBe('preface');
+    expect(routeOf('#/preface/robinson')).toBe('essay');
     expect(routeOf('#/import')).toBe('import');
     expect(routeOf('#/settings')).toBe('settings');
   });

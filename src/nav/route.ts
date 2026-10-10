@@ -1,4 +1,4 @@
-// src/nav/route.ts — twelve screens, told apart by the address hash, so the phone's Back button walks them.
+// src/nav/route.ts — thirteen screens, told apart by the address hash, so the phone's Back button walks them.
 // The reader's own state rides in the same hash after a '?': book (b, its code as public/data/index.json has it), chapter (c),
 // view, weave and the selected verse (v), e.g. '#/?b=rom&c=8&view=greek&weave=off&v=28'. An address with a chapter and no book
 // is Romans (every address kept before the picker, mw-5r3p30.60, was). src/nav/lastRoute.ts keeps these addresses across a close.
@@ -10,7 +10,7 @@ import { bookOf } from '../data/books';
 import { paradigmById } from '../data/paradigms';
 import type { ReaderView, Weave } from '../data/repositories';
 
-export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'paradigms' | 'placement' | 'goal' | 'studyway' | 'about' | 'preface' | 'settings';
+export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'paradigms' | 'placement' | 'goal' | 'studyway' | 'about' | 'preface' | 'essay' | 'settings';
 
 /** What the address says about the reader; a key is missing when the address does not say. */
 export interface ReaderAddress {
@@ -57,11 +57,15 @@ export function routeOf(hash: string): Route {
   if (path === '#/studyway') return 'studyway';
   if (path === '#/about') return 'about';
   if (path === '#/preface') return 'preface';
+  if (path === ESSAY_PATH) return 'essay';
   if (path === '#/settings') return 'settings';
   return 'home';
 }
 
-const hashFor = (route: Route) => (route === 'home' ? '#/' : `#/${route}`);
+/** The in-app copy of Robinson's essay (src/Essay.tsx), a page under the Preface. */
+export const ESSAY_PATH = '#/preface/robinson';
+
+const hashFor = (route: Route) => (route === 'home' ? '#/' : route === 'essay' ? ESSAY_PATH : `#/${route}`);
 
 const wholeNumber = (text: string | null): number | undefined => (text !== null && /^[1-9]\d{0,3}$/.test(text) ? Number(text) : undefined);
 
