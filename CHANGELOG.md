@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.41
+_2026-10-10_
+- New: About, the Preface and My study way can now be read aloud to you and shared as a link from their top bar.
+
 ## 0.1.36
 _2026-10-10_
 - New: When the tutor names a New Testament verse in an answer, such as Hebrews 7:2, you can tap it to open that verse, and the tutor now answers questions about other passages right there.
