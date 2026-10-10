@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.70
+_2026-10-10_
+- New: The unlock screen shows this phone's key as a QR code for Postern to scan.
+
 ## 0.1.69
 _2026-10-10_
 - Fixed: The Robinson essay in the Preface is now the text from the 2005 edition's appendix, which is the version the edition released into the public domain, and the page says so.
