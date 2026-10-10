@@ -63,3 +63,25 @@ describe('the speaking bar', () => {
     expect(within(screen.getByTestId('shell')).queryByRole('region', { name: 'Speaking' })).not.toBeNull();
   });
 });
+
+describe('a page that hides', () => {
+  const hide = () => {
+    Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+    Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+  };
+
+  it('ends a word said alone (it has no bar to Resume from)', () => {
+    act(() => void speakWord('λόγος', 'greek'));
+    act(hide);
+    expect(synth.speaking).toBe(false);
+    expect(synth.calls[synth.calls.length - 1]).toBe('cancel');
+  });
+
+  it('only pauses a reading: its bar offers Resume', () => {
+    render(<><BarSlot level={0} /><LampasSpeakingBar /></>);
+    act(() => answer());
+    act(hide);
+    expect(within(screen.getByRole('region', { name: 'Speaking' })).getAllByRole('button').map((b) => b.textContent)).toEqual(['Resume', 'Restart', 'Stop']);
+  });
+});

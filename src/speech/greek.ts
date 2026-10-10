@@ -145,9 +145,6 @@ export function stopIfSpeaking(key: string): void {
   if (isSpeaking(key)) stopEngine();
 }
 
-/** Whether an engine error is a cancel (deliberate or the phone's own) rather than a failure. */
-export const isCancelError = (error: string): boolean => error === 'canceled' || error === 'interrupted';
-
 /** The key the read-aloud sequence (src/speech/readAloud.ts) speaks under: a verse, a chapter, a tutor's answer. Its speech has the bar. */
 export const READ_KEY = 'read-aloud';
 
@@ -189,6 +186,14 @@ export function speakWord(text: string, language: SpeechLanguage, slowly = false
 
 /** Whether the speech now is a single word or speaker (not a reading): it has no bar. */
 export const isWordSpeech = (key: string | null): boolean => key !== null && key !== READ_KEY;
+
+// A page that goes to the background has its speech paused by the package. A reading waits for his Resume on the bar; a word or a speaker
+// has no bar, and it would come back mid-sentence: it is ended instead.
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && isWordSpeech(getSpeech().key)) stopEngine();
+  });
+}
 
 /** Calls `done` once, when the word said by speakWord() is over (it ended, failed or was cut off); returns what takes the watch back. */
 export function watchWordEnd(done: () => void): () => void {
