@@ -201,8 +201,13 @@ web address the model writes is never trusted. In the text of an answer, `src/ma
 `RESOURCE_HOSTS` (the hosts the resources build links on; tests/unit/tutor-resources.test.ts holds the list against the builders) or at a credit's own address (About's talk
 hands the tutor those, `src/tutor/credits.ts`), and shows any other address as text.
 
-**A New Testament verse named in the text** (`Hebrews 7:2`, `Heb 7:2`, `Romans 8:28-30`; `src/markdown/verseLinks.ts`) is a link to the reader's address of the verse
-(`#/?b=heb&c=7&v=2`; a range opens its first verse): a tap closes the Talk sheet, if it is the one showing, and opens the Verse view as a new Back step
-(`nav/route.ts` `openVerseAt`). A name needs a capital letter and the verse a colon (`a 7:2 ratio` and `Romans 8` are not references); an Old Testament verse is left as
-text in the answer and keeps its jumping-off chips under it. The instructions of both talk grinds say to answer a question about another passage there and then
+**A Bible reference named in the text** (`Hebrews 7:2`, `Heb 7:1-3`, `Romans 8:28`, `Romans 8`, `Ps. 110`; `src/markdown/verseLinks.ts`, mw-5r3p30.133) is a link, in the
+form Lampas takes in (`#/?ref=Heb%207%3A1-3`, the reference as written). A tap opens a card under it (`src/markdown/ReferenceCard.tsx`, as the Logos verse pop-up does):
+the reference as its heading (`Hebrews 7:1-3`; a whole chapter shows and is headed by its first verse, `Romans 8:1`; a range ends at the chapter's last verse at most),
+the verse's English from the chapter file (the Majority Standard Bible, named on the card) and **Open**, which closes the Talk sheet if it is the one showing and opens
+the Verse view on the first verse as a new Back step (`nav/route.ts` `openVerseAt`). A tap outside the card, Close, Escape or Back (the card is a `useSheetBack` sheet)
+closes it and nothing moves; it stands below the words tapped, or above them when there is no room, and its text scrolls when it is longer than the room. A book of the
+Old Testament has a card too, headed `Psalm 110`, saying `Not in Lampas yet`, with no Open; its jumping-off chips stay under the answer. The book and numbers are
+read by `nav/links.ts` and `resources/tutorLinks.ts` `placeOf` (no second parser). A name needs a capital letter (`a 7:2 ratio` is not a reference), and one that names no
+book or a chapter or verse the book lacks is plain text. The instructions of both talk grinds say to answer a question about another passage there and then
 and to name its verse this way, never to send him to ask elsewhere.
