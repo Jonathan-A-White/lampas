@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.57",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.120",
+    "kind": "new",
+    "text": "line: bd comments mw-5r3p30.120 --json: exit status 1: Error: failed to open database: Dolt server unreachable at 10.88.0.2:3307: dial tcp 10.88.0.2:3307: i/o timeout"
+  },
+  {
     "version": "0.1.54",
     "date": "2026-10-10",
     "story": "mw-jtzpw0.3",

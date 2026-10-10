@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.57
+_2026-10-10_
+- New: line: bd comments mw-5r3p30.120 --json: exit status 1: Error: failed to open database: Dolt server unreachable at 10.88.0.2:3307: dial tcp 10.88.0.2:3307: i/o timeout
+
 ## 0.1.54
 _2026-10-10_
 - New: Asking the tutor about a verse now uses the same big hold-to-talk bar as Postern, with your words showing as you speak and a quiet "Type a question" beneath it.
