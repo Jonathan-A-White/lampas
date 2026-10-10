@@ -41,7 +41,7 @@ async function freshStore(): Promise<void> {
   localStorage.clear();
   stubChapterFetch();
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.results.clear(), db.reviews.clear(), db.settings.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.results.clear(), db.reviews.clear(), db.settings.clear(), db.grammarLevels.clear()]);
   await seedWordsIfFirstOpen();
   await seedScheduleIfFirstOpen();
   await db.reviews.clear();
@@ -416,6 +416,8 @@ describeFeature(feature, ({ Scenario }) => {
       await db.reviews.update(['word', lemma], { due: Date.now() - 60_000 });
     });
     And('he starts another round', async () => {
+      // the words read right credited some letters, so the letters not yet asked would head the next round (mw-hqd5bz.23): this scenario is about the word
+      await db.grammarLevels.clear();
       await user.click(await screen.findByRole('button', { name: 'Another round' }));
       await screen.findByTestId('prompt');
     });
