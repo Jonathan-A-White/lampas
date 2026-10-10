@@ -36,6 +36,10 @@ import { useAsks } from './useAsks';
 import { useReadChecks } from './useReadChecks';
 import { stepOf, stepOfVerse } from './reader/steps';
 import { LinkNotice } from './reader/LinkNotice';
+import { SwipeNote } from './reader/SwipeNote';
+import { type SwipeEnd, useChapterSwipe } from './reader/useChapterSwipe';
+import { useSheetOpen } from './ui/sheetBack';
+import { BOOKS } from './data/books';
 import { ChapterFailed } from './reader/ChapterFailed';
 import { useChapter } from './reader/useChapter';
 import { useReadFrom } from './reader/useReadFrom';
@@ -150,6 +154,12 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     if (link) takeLink(link);
   }, [link]);
   const [notice, setNotice] = useState(link?.notice ?? null);
+  // Swiping the text goes to the next or previous chapter (src/reader/useChapterSwipe.ts); past Matthew 1 or Revelation 22 a short note says so.
+  const sheetOpen = useSheetOpen();
+  const inner = useRef<HTMLDivElement | null>(null);
+  const [swipeEnd, setSwipeEnd] = useState<SwipeEnd | null>(null);
+  const dismissSwipeNote = useCallback(() => setSwipeEnd(null), []);
+  useChapterSwipe(main, inner, BOOK, CHAPTER, sheetOpen, setSwipeEnd);
   const [linked, setLinked] = useState(() => (link?.word ? lemmaSheet(link.word) : null));
   const [prefill, setPrefill] = useState(() => (request?.action === 'ask' ? { verse: request.verse, text: request.question } : null));
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
@@ -306,9 +316,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       {chapterReading || !tipOpen ? null : <TipCard onClose={() => setTipOpen(false)} />}
       </Away>
       {notice ? <LinkNotice text={notice} onDismiss={() => setNotice(null)} /> : null}
+      {swipeEnd ? <SwipeNote end={swipeEnd} lastBook={BOOKS[BOOKS.length - 1].name} onDismiss={dismissSwipeNote} /> : null}
       <ReadingBar reading={reading} />
-      <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} data-immersive={immersive ? 'on' : 'off'} style={chapter ? { marginBottom: away ? 0 : `calc(${ASK_BUTTON_ROOM})`, transition: immersive ? 'margin-bottom 200ms ease' : undefined } : undefined} className="screen min-h-0 flex-1 px-1 pt-2">
-        <div>
+      <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} data-immersive={immersive ? 'on' : 'off'} style={chapter ? { marginBottom: away ? 0 : `calc(${ASK_BUTTON_ROOM})`, transition: immersive ? 'margin-bottom 200ms ease' : undefined } : undefined} className="screen min-h-0 flex-1 touch-pan-y px-1 pt-2">
+        <div ref={inner}>
         {failed ? (
           <ChapterFailed title={TITLE} onRetry={retry} onPick={() => setPicking(true)} />
         ) : chapter && view && layout && headings ? (
