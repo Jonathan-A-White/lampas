@@ -124,3 +124,10 @@ Feature: Ask the tutor about a verse
     Then the mill received one grist for the lampas app, kind verse-ask
     And its input carries learner_grammar with no goal and the BMA Tutor approach
     And the verse-ask instructions pitch frontier and not-yet ideas and do not offer the move
+
+  Scenario: A verse the tutor names in its answer is a link that opens that verse
+    Given Lampas is opened on Romans 8 with a tutor behind a fake Postern that answers with "Melchizedek is in Hebrews 7:2, where he is called king of righteousness."
+    And he selects verse 28
+    When he asks "Who is Melchizedek?"
+    And he taps the link "Hebrews 7:2" in the answer
+    Then the Verse view shows Hebrews 7:2

@@ -11,6 +11,7 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { type Chapter, markSupplied } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
+import { readerOf } from '../../src/nav/route';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { expectKeepsItShort, expectLearnerField, expectLearnerSummary, expectTeachesNewWord, instructionsOf, learnWordToday } from '../../tests/support/learner';
@@ -356,6 +357,22 @@ describeFeature(feature, ({ Scenario }) => {
       expect(text).toContain('A `frontier` idea is explained');
       expect(text).toContain('A `not_yet` idea is named only with its plain meaning');
       expect(text).toContain('do not offer to move New words at here');
+    });
+  });
+  Scenario('A verse the tutor names in its answer is a link that opens that verse', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern that answers with {string}', (_, text: string) =>
+      open((f) => void (f.autoReply = { status: 'answered', answer: { answer: text, words: [] } })),
+    );
+    And('he selects verse 28', selectVerse28);
+    When('he asks {string}', (_, question: string) => ask(question));
+    And('he taps the link {string} in the answer', async (_, name: string) => {
+      await waitFor(() => expect(answersOn28().length).toBe(1));
+      await user.click(within(cards()[0]).getByRole('link', { name }));
+    });
+    Then('the Verse view shows Hebrews 7:2', async () => {
+      const view = await screen.findByRole('region', { name: 'Verse view' });
+      await waitFor(() => expect(within(view).getByRole('heading', { name: 'Hebrews 7:2' })).toBeInTheDocument());
+      expect(readerOf(window.location.hash)).toMatchObject({ book: 'heb', chapter: 7, verse: 2 });
     });
   });
 });

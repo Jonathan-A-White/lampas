@@ -154,6 +154,13 @@ export function openVerse(verse: number): void {
   notify();
 }
 
+/** Opens the Verse view on a verse of any New Testament chapter (a verse the tutor named, mw-5r3p30.123), as a new Back step: the Reader opens that chapter at the verse and
+ * Back returns to where he was. */
+export function openVerseAt(place: Pick<ReaderAddress, 'book' | 'chapter' | 'verse'>): void {
+  window.history.pushState({ verseView: true } satisfies VerseEntry, '', urlFor(readerHash(place)));
+  notify();
+}
+
 /** Opens the same view on the passage under a section heading, which starts at verse `first` (mw-5r3p30.73), as a new Back step. */
 export function openPassage(first: number): void {
   const here = readerOf(window.location.hash);

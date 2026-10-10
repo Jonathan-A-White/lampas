@@ -263,7 +263,7 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
       </p>
       <div data-talk-a onClick={stopOnTap} className="rounded-2xl border border-line px-3 py-2">
         <div data-answer-text className="break-words text-lg leading-snug">
-          <Markdown text={turn.a} />
+          <Markdown text={turn.a} onOpen={onLeave} />
         </div>
         {turn.changes?.length || turn.refused?.length || turn.added?.length || turn.already?.length || turn.unknown?.length ? (
           <ul data-talk-changes className="mt-2 border-t border-line pt-1">
