@@ -13,6 +13,8 @@ Lampas builds on other people's work, and credits all of it, by name, with a lin
 the type, every library it runs on, the services and apps it links to, and the ideas we borrowed. The one list is [ATTRIBUTION.md](ATTRIBUTION.md);
 the app's About screen (Settings > About) is built from that file, so the two cannot differ, and a test fails when a package in
 `package.json`'s dependencies is not credited there.
+A source added or removed changes its credit in the same commit, and the test says so: a package the Libraries section names that is no
+longer a dependency fails it, and so does a bundled font or data file with no credit.
 
 ## Code map
 
