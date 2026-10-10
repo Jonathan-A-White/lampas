@@ -48,6 +48,12 @@ touch the network. `fetchLicenceStatus` is tested with bsv-kit's `FakeChainReade
 
 Opt-in live check, not in the gate: `npm run check:licence -- <public key>` asks testnet what the gate would answer (held, revoked, indexing or none).
 
+## A new question card's settling moment
+
+A question card (the placement's, Review's, the Quick test's) ignores taps for `SETTLE_MS` (300 ms, `src/ui/settle.ts`) after it appears,
+so the second tap of a double tap on Next chooses nothing. Tests tap the instant a card is drawn, so `tests/setup.ts` sets `settle.ms` to 0
+and `openUnlocked(page)` plants `lampas.settleMs` = `0`; `features/double-tap.feature` and `tests/unit/settle.test.tsx` put the moment back.
+
 ## The tutor's tests
 
 - `features/tutor.feature` runs against `tests/support/fake-postern.ts`: signed `/api/challenge`, `/api/me`, `/api/messages`;

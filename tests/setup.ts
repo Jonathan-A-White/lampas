@@ -3,6 +3,7 @@ import '@testing-library/jest-dom/vitest';
 // Not '@testing-library/react': importing it here would register its auto-unmount before
 // the step files' dont-cleanup-after-each import can switch that off.
 import { configure } from '@testing-library/dom';
+import { settle } from '../src/ui/settle';
 import { ASYNC_WAIT_MS } from './support/timeouts';
 
 // waitFor/findBy default to 1 s, which a loaded host outruns; ASYNC_WAIT_MS (tests/support/timeouts.ts) is the one wait. vitest's testTimeout (20 s) stays above it.
@@ -20,3 +21,7 @@ Date.now = (): number => {
   const real = nativeNow();
   return (latest = real > latest ? real : latest + 1);
 };
+
+// A new question card ignores taps for SETTLE_MS (src/ui/settle.ts, mw-hqd5bz.21); a step taps the instant a card is drawn, so the moment is 0 here.
+// features/double-tap.feature puts it back.
+settle.ms = 0;

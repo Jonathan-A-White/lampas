@@ -23,7 +23,7 @@ function today(): string {
 }
 
 /** Past the gate: the seeded key, remembered as holding a licence a minute ago, the chain unreachable. Today's tip is marked as asked, so the
- * sitting sends no tips grist (src/tips/offer.ts); `tips: true` leaves the day free for a spec that wants the grist. */
+ * sitting sends no tips grist (src/tips/offer.ts), and a new question card takes a tap at once (`lampas.settleMs` 0); `tips: true` leaves the day free for a spec that wants the grist. */
 export async function openUnlocked(page: Page, options: { tips?: boolean } = {}): Promise<void> {
   await refuseChain(page);
   await seedDeviceKey(page);
@@ -31,5 +31,7 @@ export async function openUnlocked(page: Page, options: { tips?: boolean } = {})
     ([publicKeyHex, at]) => window.localStorage.setItem('lampas.licenceHeld', JSON.stringify({ publicKeyHex, at })),
     [SEED_PUBLIC_KEY, Date.now() - 60_000] as const,
   );
+  // a new question card ignores taps for a moment (src/ui/settle.ts, mw-hqd5bz.21); a spec taps the instant a card is drawn
+  await page.addInitScript(() => window.localStorage.setItem('lampas.settleMs', '0'));
   if (!options.tips) await page.addInitScript((day) => window.localStorage.setItem('lampas.tipsDay', day), today());
 }
