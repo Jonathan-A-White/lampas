@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.60
+_2026-10-10_
+- New: You can send the tutor a screenshot, a photo or a copied picture in a talk, and the Greek words it quotes are tap-to-hear.
+
 ## 0.1.57
 _2026-10-10_
 - New: line: bd comments mw-5r3p30.120 --json: exit status 1: Error: failed to open database: Dolt server unreachable at 10.88.0.2:3307: dial tcp 10.88.0.2:3307: i/o timeout
