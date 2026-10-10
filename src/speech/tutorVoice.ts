@@ -29,7 +29,10 @@ export function verdictRuns(heading: string, note: string, words: readonly { wor
   return [heading, note, ...words.map((w) => `${w.word}: ${w.tip}`)].flatMap((piece) => answerRuns(plainQuotes(piece)));
 }
 
-/** A tap on a response (not on a button or link in it) stops its speech at once. */
+/** A tap on a response (not on a button or link in it) stops its speech at once. A tap in a sheet the response opened (a portal, such as the
+ * Hebrew guide) bubbles here through React's tree though it is not in the response's DOM: it is the sheet's, and the answer waits paused. */
 export function stopOnTap(event: MouseEvent): void {
-  if (!(event.target as Element).closest('button, a')) stopAnswer();
+  const target = event.target as Element;
+  if (!event.currentTarget.contains(target)) return;
+  if (!target.closest('button, a')) stopAnswer();
 }

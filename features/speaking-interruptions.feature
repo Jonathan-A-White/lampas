@@ -36,6 +36,36 @@ Feature: Whatever is read aloud can be paused, resumed, restarted and stopped, a
     When he taps Resume on the speaking bar
     Then the phone speaks the answer on from its second sentence
 
+  Scenario Outline: Closing a word's How to say it sheet any way keeps the tutor paused, ready to Resume
+    Given Lampas is opened on a phone with a Hebrew voice, and the tutor's answer of three sentences is being read aloud
+    And the phone has finished the first sentence
+    When he taps the Hebrew word "צֶדֶק"
+    And he taps <place> of the How to say it sheet
+    Then the answer is paused, not ended
+    And the speaking bar shows Resume, Restart and Stop
+    When he taps Resume on the speaking bar
+    Then the phone speaks the answer on from its second sentence
+
+    Examples:
+      | place                                  |
+      | the dim backdrop                       |
+      | the big Hebrew word                    |
+      | empty space inside the guide           |
+      | Done                                   |
+
+  Scenario Outline: A quick double tap on a Hebrew word leaves Resume available
+    Given Lampas is opened on a phone with a Hebrew voice, and the tutor's answer of three sentences is being read aloud
+    And the phone has finished the first sentence
+    When he taps the Hebrew word "צֶדֶק" and again <gap> ms later where it was
+    Then the answer is paused, not ended
+    And the speaking bar shows Resume, Restart and Stop
+
+    Examples:
+      | gap |
+      | 0   |
+      | 150 |
+      | 400 |
+
   Scenario: Holding the Talk bar to speak pauses the answer
     Given Lampas is opened on a phone with a Hebrew voice, and the tutor's answer of three sentences is being read aloud
     When he holds the sheet's Hold to talk bar
