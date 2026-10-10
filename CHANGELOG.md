@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.28
+_2026-10-10_
+- New: Every question and answer from the tutor now has a Copy button that puts the whole exchange on your clipboard as Markdown, with a link to the verse.
+
 ## 0.1.27
 _2026-10-10_
 - New: On the About screen you can now ask the tutor what any credit is, what it gives you and what its licence lets us do, or why we credit them all.
