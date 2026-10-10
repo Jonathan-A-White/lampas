@@ -3,6 +3,8 @@
 // credit, with a link if there is one. Send posts a 'feedback' grist to the factory (src/services/feedback.ts). Send waits for the
 // text and the credit; Back, Done, Escape, a swipe down or a tap outside close the sheet (src/ui/sheetBack.ts).
 import { useEffect, useId, useRef, useState } from 'react';
+import { FormHelper } from './formHelper/FormHelper';
+import { APPROACH_FORM, CREDIT_HINT, LINK_HINT } from './formHelper/approachForm';
 import { shrinkImage } from './images/shrink';
 import { buildFeedbackRequest, MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, submitFeedback } from './services/feedback';
 import { FAILURE_TITLES, TutorError, type TutorFailure } from './services/tutor';
@@ -37,6 +39,10 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
   const [shrinking, setShrinking] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
   const [phase, setPhase] = useState<Phase>({ name: 'editing' });
+  const [filled, setFilled] = useState<string | null>(null);
+  const picker = useRef<HTMLInputElement>(null);
+  const scroller = useRef<HTMLDivElement>(null);
+  const atTop = useRef(false);
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
@@ -52,6 +58,16 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
       for (const url of made) URL.revokeObjectURL(url);
     };
   }, []);
+
+  const FILL: Record<string, (value: string) => void> = { approach: setText, credit: setName, link: setLink };
+  /** The tutor filled a field: the field shows it, ringed, and is scrolled into view. */
+  function fill(field: string, value: string): void {
+    FILL[field]?.(value);
+    setFilled(field);
+    atTop.current = false;
+    requestAnimationFrame(() => atTop.current || document.getElementById(ids[field === 'approach' ? 'text' : field === 'credit' ? 'name' : 'link'])?.scrollIntoView?.({ block: 'nearest' }));
+  }
+  const ring = (field: string): string => (filled === field ? ' ring-2 ring-accent' : '');
 
   const busy = phase.name === 'sending';
   const ready = text.trim().length > 0 && name.trim().length > 0 && shrinking === 0;
@@ -123,6 +139,18 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
             </button>
           </div>
         </div>
+        {sent || busy ? null : (
+          <FormHelper
+            form={APPROACH_FORM}
+            values={{ approach: text, pictures: pictures.length ? `${pictures.length} ${pictures.length === 1 ? 'picture' : 'pictures'} added` : '', credit: name, link }}
+            onFill={fill}
+            onPicker={() => picker.current?.click()}
+            onReady={() => {
+              atTop.current = true;
+              scroller.current?.scrollTo?.({ top: 0 });
+            }}
+          />
+        )}
         {sent ? (
           <div className="min-h-0 flex-1 border-t border-line px-4 py-4">
             <p role="status" className="text-lg font-semibold">
@@ -131,7 +159,7 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
           </div>
         ) : (
           <>
-            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain border-t border-line px-4 py-3">
+            <div ref={scroller} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain border-t border-line px-4 py-3">
               <div>
                 <label htmlFor={ids.text} className="block pb-1 text-base font-medium">
                   What approach, and how does it teach?
@@ -143,7 +171,7 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
                   value={text}
                   disabled={busy}
                   onChange={(e) => setText(e.target.value)}
-                  className={`${FIELD} resize-none py-2`}
+                  className={`${FIELD} resize-none py-2${ring('approach')}`}
                 />
               </div>
               <div>
@@ -153,6 +181,7 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
                     type="file"
                     accept="image/*"
                     multiple
+                    ref={picker}
                     disabled={busy}
                     className="sr-only"
                     onChange={(e) => {
@@ -208,10 +237,10 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
                   autoComplete="off"
                   disabled={busy}
                   onChange={(e) => setName(e.target.value)}
-                  className={`${FIELD} min-h-12`}
+                  className={`${FIELD} min-h-12${ring('credit')}`}
                 />
                 <p id={ids.nameHint} className="pt-1 text-sm text-muted">
-                  Required: whoever made the approach or the pictures.
+                  {CREDIT_HINT}
                 </p>
               </div>
               <div>
@@ -230,10 +259,10 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
                   spellCheck={false}
                   disabled={busy}
                   onChange={(e) => setLink(e.target.value)}
-                  className={`${FIELD} min-h-12`}
+                  className={`${FIELD} min-h-12${ring('link')}`}
                 />
                 <p id={ids.linkHint} className="pt-1 text-sm text-muted">
-                  Optional: where the approach can be found.
+                  {LINK_HINT}
                 </p>
               </div>
             </div>
