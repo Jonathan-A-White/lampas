@@ -1,16 +1,18 @@
-// src/Ask.tsx — the Verse view's 'Ask the tutor' action (src/VerseView.tsx): the Ask box and the answers kept above it. AskBox is the field,
-// the Sending and Waiting lines and the failures; AnswerCards the kept answers (the tutor writes Markdown, src/markdown/). The questions in
-// flight are src/useAsks.ts; the hold bar that asks by voice is the Verse view's.
+// src/Ask.tsx — the Verse view's 'Ask the tutor' action (src/VerseView.tsx): the answers kept, what the last question is doing, and the composer that asks.
+// AskComposer is bsv-kit's Composer (Hold to ask, Type a question; mw-jtzpw0.3), drawn at the foot of the view; AskStatus the Sending and Waiting lines and
+// the failures; AnswerCards the kept answers (the tutor writes Markdown, src/markdown/). The questions in flight are src/useAsks.ts.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useRef, useState } from 'react';
+import { Composer, type ComposerLabels, type ComposerMessage } from 'bsv-kit/composer';
+import { useEffect, useRef } from 'react';
 import type { Verse } from './data/chapter';
-import { unitId, unitName } from './data/passage';
+import { unitId } from './data/passage';
 import { listAnswers, verseRef, type TutorAnswer } from './data/repositories';
 import { FAILURE_TITLES, MAX_QUESTION_CHARS } from './services/tutor';
 import type { AskState } from './useAsks';
 import { Markdown } from './markdown/Markdown';
 import { CopyExchange } from './share/CopyExchange';
 import { answerRuns } from './speech/answerRuns';
+import { askTranscriber } from './speech/askTranscriber';
 import { stopAnswer } from './speech/readAloud';
 import { askAnswerId, speakTutor, stopOnTap } from './speech/tutorVoice';
 import { PendingQuestion } from './ui/PendingQuestion';
@@ -94,88 +96,75 @@ function AnswerCard({ answer }: { answer: TutorAnswer }) {
   );
 }
 
-/** The Ask box for `verse` (or a passage, src/data/passage.ts): the field, with what its last question is doing. */
-export function AskBox({ verse, state, onAsk, prefill = null, hearing = null }: {
+/** What the question for `verse` (or a passage) is doing: its failure, with Retry, and the question shown above Waiting until the answer comes. */
+export function AskStatus({ verse, state, onAsk }: { verse: Verse; state: AskState | undefined; onAsk: (verse: Verse, question: string) => void }) {
+  const busy = state?.phase === 'sending' || state?.phase === 'waiting';
+  if (state?.phase === 'failed') {
+    return (
+      <div role="alert" data-ask-failed={unitId(verse)} className="mb-3 space-y-2 px-1">
+        <p className="text-base font-semibold text-bad">{FAILURE_TITLES[state.failure]}</p>
+        <p className="break-words text-sm text-muted">{state.detail}</p>
+        {state.failure === 'not-sent' ? null : (
+          <button type="button" onClick={() => onAsk(verse, state.question)} className="min-h-12 rounded-xl border border-line px-5 text-base font-medium">
+            Retry
+          </button>
+        )}
+      </div>
+    );
+  }
+  if (!busy) return null;
+  // his question stays shown, as in the Talk sheet, until the answer card arrives
+  return (
+    <div data-ask-pending className="mb-3 space-y-2 px-1">
+      <PendingQuestion text={state.question} />
+      <Waiting state={state} />
+    </div>
+  );
+}
+
+/** The composer for `verse` (or a passage, src/data/passage.ts): bsv-kit's Composer in speak mode, drawn at the foot of the Verse view. Hold to ask streams
+ * his words as he speaks and a release asks; Type a question brings out the field and Send asks. The tutor takes no photo or file, so there is no attach
+ * or camera. A question that failed comes back into the field to be sent again. */
+export function AskComposer({ verse, state, onAsk, prefill = null }: {
   verse: Verse;
   state: AskState | undefined;
   onAsk: (verse: Verse, question: string) => void;
-  /** while he holds Hold to ask: his words so far fill the field as he speaks (null when he is not holding) */
-  hearing?: { transcript: string } | null;
-  /** a question to put in the field when the box opens on that verse (the Parsing drill's link); he sends it himself */
+  /** a question to put in the field when the composer opens on that verse (the Parsing drill's link); he sends it himself */
   prefill?: { verse: number; text: string } | null;
 }) {
-  return <AskField key={unitId(verse)} verse={verse} state={state} hearing={hearing} initial={verse.to === undefined && prefill?.verse === verse.n ? prefill.text : ''} onAsk={(question) => onAsk(verse, question)} />;
-}
-
-/** The field and the Ask button for one verse, with what its last question is doing. */
-function AskField({ verse, state, hearing, initial, onAsk }: { verse: Verse; state: AskState | undefined; hearing: { transcript: string } | null; initial: string; onAsk: (question: string) => void }) {
-  // null: nothing typed since the last send, so a question that failed shows in the field (to send again) and otherwise it is empty
-  const [typed, setTyped] = useState<string | null>(initial || null);
   const busy = state?.phase === 'sending' || state?.phase === 'waiting';
-  const field = useRef<HTMLTextAreaElement>(null);
-  const text = typed ?? (state?.phase === 'failed' ? state.question : '');
-  const submit = (question: string): void => {
-    if (!question.trim() || busy) return;
-    onAsk(question);
-    setTyped(null);
+  const failed = state?.phase === 'failed' ? state.question : '';
+  const prefilled = verse.to === undefined && prefill?.verse === verse.n ? prefill.text : '';
+  const send = ({ text }: ComposerMessage): boolean => {
+    const question = text.trim();
+    if (!question || busy) return false;
+    if (question.length > MAX_QUESTION_CHARS) throw new Error(`A question can be at most ${MAX_QUESTION_CHARS} characters; yours is ${question.length}.`);
+    onAsk(verse, question);
+    return true;
   };
-  // His first word brings the field into view above the hold bar, where he is looking (docs/pwa-best-practices.md section 12).
-  const heard = hearing !== null && hearing.transcript !== '';
-  useEffect(() => {
-    // (jsdom has no scrollIntoView)
-    if (heard) field.current?.scrollIntoView?.({ block: 'nearest' });
-  }, [heard]);
   return (
-    <section aria-label="Ask the tutor" data-ask={unitId(verse)} className="mb-3 space-y-2 px-1">
-      <label className="block text-sm text-muted" htmlFor={`ask-${unitId(verse)}`}>
-        Ask the tutor about {unitName(verse)}
-      </label>
-      <textarea
-        ref={field}
-        id={`ask-${unitId(verse)}`}
-        aria-label="Your question"
-        rows={2}
-        maxLength={MAX_QUESTION_CHARS}
-        value={hearing ? hearing.transcript : text}
-        placeholder={hearing ? 'Listening…' : undefined}
-        readOnly={hearing !== null}
+    <section aria-label="Ask the tutor" data-ask={unitId(verse)}>
+      {/* a failed question remounts the composer with it in the field */}
+      <Composer
+        key={`${unitId(verse)}:${failed}`}
+        mode="speak"
+        transcriber={askTranscriber}
+        lang="en-US"
+        appName="Lampas"
+        labels={ASK_LABELS}
+        initialText={failed || prefilled}
         disabled={busy}
-        onChange={(e) => setTyped(e.target.value)}
-        className="block w-full resize-none rounded-lg border border-line bg-canvas px-3 py-2 text-lg"
+        onSend={send}
       />
-      {state?.phase === 'failed' ? (
-        <div role="alert" className="space-y-2">
-          <p className="text-base font-semibold text-bad">{FAILURE_TITLES[state.failure]}</p>
-          <p className="break-words text-sm text-muted">{state.detail}</p>
-          {state.failure === 'not-sent' ? null : (
-            <button
-              type="button"
-              onClick={() => {
-                onAsk(state.question);
-                setTyped(null);
-              }}
-              className="min-h-12 rounded-xl border border-line px-5 text-base font-medium"
-            >
-              Retry
-            </button>
-          )}
-        </div>
-      ) : null}
-      {busy ? (
-        // his question stays shown, as in the Talk sheet, until the answer card arrives
-        <div data-ask-pending className="space-y-2">
-          <PendingQuestion text={state.question} />
-          <Waiting state={state} />
-        </div>
-      ) : null}
-      <button
-        type="button"
-        disabled={busy || !text.trim()}
-        onClick={() => submit(text)}
-        className="min-h-12 w-full rounded-xl bg-accent px-6 text-lg font-medium text-accent-fg disabled:opacity-40"
-      >
-        Ask
-      </button>
     </section>
   );
 }
+
+/** The composer's words for asking the tutor. */
+const ASK_LABELS: Partial<ComposerLabels> = {
+  hold: 'Hold to ask',
+  typeInstead: 'Type a question',
+  placeholder: 'Type a question',
+  message: 'Your question',
+  speak: 'Ask by speaking',
+};

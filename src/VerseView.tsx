@@ -1,8 +1,9 @@
 // src/VerseView.tsx — the Verse view (mw-5r3p30.79): a tapped verse number opens the verse on a screen of its own, over the Reader, which stays
 // where it was underneath (the phone's Back closes the view, src/nav/route.ts openVerse). At the top the verse big, drawn by the Reader's own
 // VerseText (so the view and the weave follow the Reader, and its words are tappable); under it one row of actions (Listen, Read it aloud,
-// Ask the tutor, Quiz me and Copy link); then what the chosen action shows; and at the foot ONE hold bar
-// that does the chosen action (src/ui/HoldBar.tsx): Hold to read verse N (the reading check, src/ReadCheck.tsx), Hold to ask. Listen is not a hold
+// Ask the tutor, Quiz me and Copy link); then what the chosen action shows; and at the foot ONE control
+// that does the chosen action: Hold to read verse N (the reading check, src/ReadCheck.tsx, a src/ui/HoldBar.tsx), or for Ask the tutor bsv-kit's Composer
+// (src/Ask.tsx AskComposer, mw-jtzpw0.3: the Hold to ask bar with his words above it, and Type a question beneath). Listen is not a hold
 // (mw-5r3p30.130): its foot is a Play button, and while it plays or waits the speaking bar above has Pause / Resume, Restart and Stop.
 // Quiz me (mw-5r3p30.74) has no hold: its foot is the Start the quiz / Continue the quiz button, which opens the Talk sheet in quiz mode.
 // The Reader's Talk bar is not drawn while the view is open, so two bars never stack. The chosen action is kept (src/verse/action.ts); the
@@ -12,19 +13,17 @@
 // before and after in the chapter. Nothing else differs, so there is one view engine.
 import { type ReactNode, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AnswerCards, AskBox } from './Ask';
+import { AnswerCards, AskComposer, AskStatus } from './Ask';
 import { ReadCheckPanel, type ReadHold } from './ReadCheck';
 import type { Verse } from './data/chapter';
 import { unitId, unitName, unitReference } from './data/passage';
 import { passageUrl, referenceUrl } from './nav/links';
 import { focusOnMount } from './ui/focus';
-import { HoldBar } from './ui/HoldBar';
 import { Icon as PlayIcon } from './speech/ReadControls';
 import { LinkActions } from './ui/LinkActions';
 import type { UseReadChecks } from './useReadChecks';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import type { AskState } from './useAsks';
-import type { Voice } from './useVoice';
 import { VERSE_ACTIONS, type VerseAction } from './verse/action';
 
 /** Listen is a player: Play reads the verse or passage on to its end by itself. */
@@ -56,11 +55,10 @@ export interface VerseViewProps {
   checks: Pick<UseReadChecks, 'states'>;
   read: ReadHold;
   onRetryRead: () => void;
-  /** the question in flight for this verse (Ask the tutor), and the way to send one, by hand or by voice */
+  /** the question in flight for this verse (Ask the tutor), and the way to send one (the composer at the foot, by voice or by hand) */
   ask: AskState | undefined;
   onAsk: (verse: Verse, question: string) => void;
   prefill: { verse: number; text: string } | null;
-  voice: Voice;
   /** Talk about this verse: the Bible talk's sheet (src/Talk.tsx) on the verse, for a talk with history */
   onTalk: () => void;
   /** Quiz me: opens the Talk sheet in quiz mode on this verse or passage (src/Talk.tsx, the bible-talk grind's `mode` quiz); `started` once the quiz has a turn or one on its way */
@@ -77,18 +75,14 @@ function Arrow({ move, name, glyph }: { move: (() => void) | null; name: string;
   );
 }
 
-/** What Ask the tutor's bar says, as the Talk sheet's does: Hold to ask, Starting the mic…, Release to send. */
-const askLabel = (voice: Voice): string => (voice.listening ? (voice.ready ? 'Release to send' : 'Starting the mic…') : 'Hold to ask');
-
 export function VerseView(props: VerseViewProps) {
-  const { title, book, chapter, verse, view, text, previous, next, onClose, action, onAction, listen, checks, read, onRetryRead, ask, onAsk, prefill, voice, onTalk, quiz } = props;
+  const { title, book, chapter, verse, view, text, previous, next, onClose, action, onAction, listen, checks, read, onRetryRead, ask, onAsk, prefill, onTalk, quiz } = props;
   // The foot of the view, where the chosen action draws its bar.
   const [slot, setSlot] = useState<HTMLDivElement | null>(null);
   const reference = unitReference(title, verse);
   const passage = verse.to !== undefined;
   const name = unitName(verse);
   const noun = passage ? 'passage' : 'verse';
-  const busy = ask?.phase === 'sending' || ask?.phase === 'waiting';
   const canShare = typeof navigator.share === 'function';
   const big = view === 'greek' ? 'font-greek [--lp-greek-size:2.25rem]' : 'font-sans [--lp-english-size:1.75rem] [--lp-greek-size:2.25rem]';
   const size = view === 'greek' ? 'text-[length:var(--lp-greek-size)]' : 'text-[length:var(--lp-english-size)]';
@@ -162,12 +156,7 @@ export function VerseView(props: VerseViewProps) {
           {action === 'ask' ? (
             <>
               <AnswerCards verse={unitId(verse)} book={book} chapter={chapter} />
-              <AskBox verse={verse} state={ask} onAsk={onAsk} prefill={prefill} hearing={voice.listening ? { transcript: voice.transcript } : null} />
-              {voice.notice ? (
-                <p role="status" className="px-1 text-sm text-bad">
-                  {voice.notice.message}
-                </p>
-              ) : null}
+              <AskStatus verse={verse} state={ask} onAsk={onAsk} />
               {passage ? null : (
                 <button type="button" onClick={onTalk} className="min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium active:bg-line">
                   Talk about verse {verse.n}
@@ -200,15 +189,8 @@ export function VerseView(props: VerseViewProps) {
         ) : null}
         {slot && action === 'ask' ? (
           createPortal(
-            <HoldBar
-              hold={{ onHold: voice.press, onRelease: () => void voice.release(), onDrop: voice.abort }}
-              holdMs={0}
-              name="Hold to ask"
-              label={askLabel(voice)}
-              listening={voice.listening}
-              disabled={busy}
-              keys
-            />,
+            // bsv-kit's Composer (mw-jtzpw0.3): the one Hold to ask bar with his words above it, and Type a question beneath
+            <AskComposer verse={verse} state={ask} onAsk={onAsk} prefill={prefill} />,
             slot,
           )
         ) : null}

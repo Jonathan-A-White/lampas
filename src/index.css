@@ -368,3 +368,29 @@ textarea,
   background: var(--lp-surface);
   padding-bottom: var(--lp-bar-inset);
 }
+
+/* bsv-kit's composer (Ask the tutor, src/Ask.tsx; bsv-kit/composer) takes its colours from the palette in force, keeps the gold bar and the phone's
+ * own size, like the header; the Verse view's foot already has the border and the bar inset, so the composer draws neither of its own. */
+.bk-composer {
+  --bk-composer-surface: var(--lp-surface);
+  --bk-composer-fg: var(--lp-fg);
+  --bk-composer-muted: var(--lp-muted);
+  --bk-composer-faint: var(--lp-muted);
+  --bk-composer-line: var(--lp-line);
+  --bk-composer-sunken: var(--lp-canvas);
+  --bk-composer-accent: var(--lp-accent);
+  --bk-composer-accent-fg: var(--lp-accent-fg);
+  --bk-composer-listening: var(--lp-bad);
+  --bk-composer-danger: var(--lp-bad);
+  --bk-composer-on-strong: var(--lp-canvas);
+  --bk-composer-bar-height: 96px;
+  --bk-composer-button-size: var(--lp-tap);
+  --bk-composer-font-size: calc(1rem / var(--lp-scale));
+}
+[data-verse-bar] .bk-composer {
+  border-top: 0;
+  background: transparent;
+}
+[data-verse-bar] .bk-composer__speak {
+  padding: 0.25rem 0 0;
+}
