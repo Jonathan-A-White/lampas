@@ -2,6 +2,7 @@
 // four glosses to tap, and the line that says right or wrong. The Quick test and Review both draw their questions with it.
 import type { Question } from './data/quiz';
 import { HoldToHear } from './HoldToHear';
+import { useSettled } from './ui/settle';
 import { WordPicture } from './WordPicture';
 
 const OPTION_BASE = 'block min-h-14 w-full rounded-xl border px-4 py-3 text-left text-lg disabled:opacity-100';
@@ -23,6 +24,8 @@ interface Props {
 
 export function WordQuestion({ question, index, picked, onPick }: Props) {
   const answered = picked !== null;
+  // a tap in the moment after the card appears is the second tap of a double tap on Next (src/ui/settle.ts)
+  const settled = useSettled(index);
   const lookOf = (option: string): keyof typeof OPTION_LOOK => {
     if (!answered) return 'idle';
     if (option === question.gloss) return 'right';
@@ -64,7 +67,7 @@ export function WordQuestion({ question, index, picked, onPick }: Props) {
                 data-option
                 data-result={look === 'right' || look === 'wrong' ? look : undefined}
                 disabled={answered}
-                onClick={() => onPick(option)}
+                onClick={() => settled() && onPick(option)}
                 className={`${OPTION_BASE} ${OPTION_LOOK[look]}`}
               >
                 {option}

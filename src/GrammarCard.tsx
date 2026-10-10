@@ -6,6 +6,7 @@ import type { GrammarQuestion } from './data/grammar/questions';
 import type { QuestionMode } from './data/schedule';
 import { KNEW_IT } from './review/kinds';
 import { HoldToHear } from './HoldToHear';
+import { useSettled } from './ui/settle';
 import { SelfGrade } from './ui/SelfGrade';
 
 const LOOK = {
@@ -83,6 +84,8 @@ function Choice({ question, picked, onPick }: Omit<Props, 'mode'>) {
   // the place he tapped: a verse can hold the same word twice, and only the one he tapped is wrong
   const [at, setAt] = useState<number | null>(null);
   const answered = picked !== null;
+  // a tap in the moment after the card appears is the second tap of a double tap on Next (src/ui/settle.ts)
+  const settled = useSettled();
   const tapForm = question.kind === 'tap-form';
   const lookOf = (option: string, i: number): keyof typeof LOOK => {
     if (!answered) return 'idle';
@@ -101,6 +104,7 @@ function Choice({ question, picked, onPick }: Omit<Props, 'mode'>) {
         lang={greek ? 'grc' : undefined}
         disabled={answered}
         onClick={() => {
+          if (!settled()) return;
           setAt(i);
           onPick(option);
         }}
