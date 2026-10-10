@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Verse Ask Request 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["reference", "greek", "english", "question", "solid_words"],
+  "properties": {
+    "reference": { "description": "The verse he asks about: 'Romans 8:28', or a passage under a heading ('Romans 8:1-11').", "type": "string", "minLength": 1, "maxLength": 80 },
+    "greek": { "description": "The Greek of the verse (the Byzantine text), in Greek word order.", "type": "string" },
+    "english": { "description": "The same verse in English (the Majority Standard Bible); words the translators supplied are between asterisks.", "type": "string" },
+    "question": { "description": "What he asked, at most 400 characters.", "type": "string", "minLength": 1, "maxLength": 400 },
+    "solid_words": { "description": "The Greek lemmas he already knows well.", "type": "array", "items": { "type": "string" } },
+    "learner": { "description": "Optional. Where he stands in one line: 'solid N words; learning: a, b, c; new today: x, y; due now: M'.", "type": "string", "maxLength": 600 },
+    "learner_grammar": { "description": "Optional. Where his grammar stands, as in the Bible talk's request (grinds/bible-talk.input.schema.json learner_grammar).", "type": "object" },
+    "settings": { "description": "Optional. How he wants a language besides Greek written, by key: { \"hebrewDepth\": \"both\" }.", "type": "object" }
+  }
+}
