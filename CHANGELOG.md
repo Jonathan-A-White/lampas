@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.42
+_2026-10-10_
+- Fixed: With many Logos lexicons switched on, the word sheet shows every one, each named in full, with a "More below" hint and a Close button at the bottom within thumb reach.
+
 ## 0.1.41
 _2026-10-10_
 - New: About, the Preface and My study way can now be read aloud to you and shared as a link from their top bar.
