@@ -3,7 +3,7 @@
 // frequency.json and the word counts) at the library's 1 s, or at a short wait of its own, refuses an unrelated landing.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { getConfig } from '@testing-library/react';
+import { getConfig, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
 
@@ -34,5 +34,15 @@ describe('the wait of findBy* and waitFor in jsdom tests', () => {
         });
     }
     expect(offences).toEqual([]);
+  });
+
+  it('is what a bare waitFor really waits: a row that turns solid after the old 1 s default is still found', async () => {
+    // The shape of quick-test.steps.tsx's solid-words wait (mw-5r3p30.143): a store that settles late on a loaded host.
+    const row = document.createElement('div');
+    row.setAttribute('data-state', 'learning');
+    setTimeout(() => row.setAttribute('data-state', 'solid'), 1500);
+    const started = Date.now();
+    await waitFor(() => expect(row.getAttribute('data-state')).toBe('solid'));
+    expect(Date.now() - started).toBeGreaterThanOrEqual(1400);
   });
 });

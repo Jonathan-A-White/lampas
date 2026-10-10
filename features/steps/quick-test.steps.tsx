@@ -125,7 +125,8 @@ const wordRow = (lemma: string): HTMLElement => {
 async function expectOnWordsScreen(lemmas: string[], state: string): Promise<void> {
   await openWordsScreen();
   expect(lemmas.length).toBeGreaterThan(0);
-  for (const l of lemmas) await waitFor(() => expect(wordRow(l).getAttribute('data-state')).toBe(state));
+  // One wait for every row, at the shared ASYNC_WAIT_MS (tests/setup.ts): a loaded host settles the store row by row, so the rows share one deadline.
+  await waitFor(() => expect(lemmas.map((l) => wordRow(l).getAttribute('data-state'))).toEqual(lemmas.map(() => state)));
 }
 
 async function expectInStore(lemmas: string[], state: string): Promise<void> {
