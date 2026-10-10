@@ -87,10 +87,12 @@ export function isVerseReadAnswer(value: unknown): value is VerseReadAnswer {
 
 /** The respelling a tip spells out in capitals ('say it as LEE-vites', 'luh-VY-tees'), as the voice should speak it: lower case, the
  * hyphens as spaces ('lee vites'). It is a hyphenated run of letters with at least one part in capitals of two letters or more, so a
- * hyphenated word ('well-known') or a shouted word ('NOW') is not one. null when the tip gives none. */
+ * hyphenated word ('well-known') or a shouted word ('NOW') is not one. A run the tip warns against ('Not LEV-its; say LEE-vites.',
+ * after not, never, instead of or rather than) is skipped (mw-5r3p30.166). null when the tip gives none. */
 export function tipRespelling(tip: string): string | null {
-  for (const run of tip.match(/[A-Za-z]+(?:-[A-Za-z]+)+/g) ?? []) {
-    if (run.split('-').some((part) => /^[A-Z]{2,}$/.test(part))) return run.toLowerCase().replace(/-/g, ' ');
+  for (const run of tip.matchAll(/[A-Za-z]+(?:-[A-Za-z]+)+/g)) {
+    if (/\b(?:not|never|instead of|rather than)\s*["'“‘(]*$/i.test(tip.slice(0, run.index))) continue;
+    if (run[0].split('-').some((part) => /^[A-Z]{2,}$/.test(part))) return run[0].toLowerCase().replace(/-/g, ' ');
   }
   return null;
 }
