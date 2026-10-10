@@ -61,6 +61,22 @@
               "help": { "type": "string", "minLength": 1, "maxLength": 100 }
             }
           }
+        },
+        "credits": {
+          "description": "Only on About: every source Lampas credits, each with its name, what it gives this reader, its licence (or why none is needed) and its link.",
+          "type": "array",
+          "maxItems": 40,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "use", "licence", "link"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1, "maxLength": 40 },
+              "use": { "type": "string", "minLength": 1, "maxLength": 160 },
+              "licence": { "type": "string", "minLength": 1, "maxLength": 60 },
+              "link": { "type": "string", "minLength": 1, "maxLength": 120 }
+            }
+          }
         }
       }
     },

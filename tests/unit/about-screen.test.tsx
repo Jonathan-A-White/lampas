@@ -21,8 +21,8 @@ describe('the About screen and ATTRIBUTION.md', () => {
     render(<About />);
     const context = screenContextNow();
     expect(context?.name).toBe('About');
-    const said = context?.facts.map((f) => `${f.label}: ${f.value}`).join('\n') ?? '';
-    for (const name of ['React', 'Dexie', 'WhatsOnChain', 'Gentium Plus', 'Beads']) expect(said).toContain(name);
+    const said = context?.credits?.map((c) => `${c.name}: ${c.use} (${c.licence}) ${c.link}`).join('\n') ?? '';
+    for (const name of ['React', 'Dexie', 'WhatsOnChain', 'Gentium Plus', 'Beads', 'TBESG']) expect(said).toContain(name);
     expect(suggestionsFor('About')).toContain('What does each of these do for Lampas?');
   });
 });

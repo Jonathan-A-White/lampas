@@ -8,6 +8,8 @@ import { readFileSync } from 'node:fs';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
+import { attribution, plainText } from '../../src/attribution';
+import { CREDITS } from '../../src/tutor/credits';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { BOOK_INDEX } from '../../src/data/bookIndex';
 import type { Chapter } from '../../src/data/chapter';
@@ -284,6 +286,43 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     And("the grist's screen settings say Accordance is Off and what it adds", () => {
       const got = (sent(0).screen as { settings: { name: string; value: string; help: string }[] }).settings;
       expect(got.find((s) => s.name === 'Accordance')).toMatchObject({ value: 'Off', help: expect.stringContaining('Open in Accordance') });
+    });
+    And('the grist carries only fields the input schema allows', () => {
+      expect(validate(sent(0), inputSchema)).toEqual([]);
+    });
+  });
+
+  Scenario('On About the request carries every credit and the sheet suggests questions about the credits', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on #/about with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/about', goal));
+    When('he taps the Ask the tutor control', taps);
+    Then('the sheet suggests questions about the credits, one of them {string}', async (_, question: string) => {
+      await screen.findByRole('dialog', { name: 'Ask the tutor: About' });
+      expect(suggestions().length).toBeGreaterThanOrEqual(2);
+      expect(suggestions().map((s) => s.textContent)).toContain(question);
+    });
+    When('he taps the suggested question {string}', async (_, question: string) => {
+      await user.click(suggestions().find((s) => s.textContent === question)!);
+    });
+    Then('the mill received {int} grists for the lampas app, kind bible-talk', async (_, count: number) => {
+      await waitFor(() => expect(fake.received).toHaveLength(count));
+    });
+    And('the grist carries the question {string}', (_, question: string) => {
+      expect(sent(0).question).toBe(question);
+    });
+    And('the grist is for the screen {string} and has no verse text', (_, name: string) => {
+      expect(sent(0).screen).toMatchObject({ name });
+      expect(sent(0)).not.toHaveProperty('greek');
+    });
+    And("the grist's screen credits name every source About lists, each with what it gives, its licence and its link", () => {
+      const got = (sent(0).screen as { credits: { name: string; use: string; licence: string; link: string }[] }).credits;
+      expect(got).toEqual(CREDITS);
+      for (const entry of attribution.entries) {
+        expect(got.some((c) => plainText(entry).includes(c.name) && entry.includes(c.link)), plainText(entry).slice(0, 50)).toBe(true);
+      }
+    });
+    And("the grist's screen credits say TBESG is CC BY 4.0", () => {
+      const got = (sent(0).screen as { credits: { name: string; licence: string }[] }).credits;
+      expect(got.find((c) => c.name === 'TBESG')?.licence).toBe('CC BY 4.0');
     });
     And('the grist carries only fields the input schema allows', () => {
       expect(validate(sent(0), inputSchema)).toEqual([]);

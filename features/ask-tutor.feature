@@ -51,6 +51,18 @@ Feature: Ask the tutor from any screen
     And the answer shows in the sheet under his question
     And the suggested questions are gone
 
+  Scenario: On About the request carries every credit and the sheet suggests questions about the credits
+    Given Lampas is opened on #/about with the goal "1 John 1:1" behind a fake Postern
+    When he taps the Ask the tutor control
+    Then the sheet suggests questions about the credits, one of them "Why do you credit all these?"
+    When he taps the suggested question "Why do you credit all these?"
+    Then the mill received 1 grists for the lampas app, kind bible-talk
+    And the grist carries the question "Why do you credit all these?"
+    And the grist is for the screen "About" and has no verse text
+    And the grist's screen credits name every source About lists, each with what it gives, its licence and its link
+    And the grist's screen credits say TBESG is CC BY 4.0
+    And the grist carries only fields the input schema allows
+
   Scenario: Other screens suggest their own questions
     Given Lampas is opened on #/words with the goal "1 John 1:1" behind a fake Postern
     When he taps the Ask the tutor control

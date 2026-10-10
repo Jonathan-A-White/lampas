@@ -6,6 +6,7 @@ import { setDeveloper } from './data/repositories';
 import { navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { CREDITS } from './tutor/credits';
 import { useReportScreen } from './tutor/screenContext';
 import { VersionLink } from './whatsNew/VersionLink';
 import { WhatsNewSection } from './whatsNew/WhatsNewSection';
@@ -27,18 +28,12 @@ function inline(md: string): ReactNode[] {
   });
 }
 
-/** The name each credit leads with (its first link's text), by section: what the tutor is told About holds. */
-const FACTS = attribution.sections.map((section) => ({
-  label: section.title ?? 'Credits',
-  value: section.entries.map((e) => /\[([^\]]+)\]\(/.exec(e)?.[1]).filter(Boolean).join(', '),
-}));
-
 /** Developer mode is found by tapping the version number this many times, each within DEVELOPER_TAP_WINDOW_MS of the one before (as in SpellForge). */
 export const DEVELOPER_TAPS = 7;
 export const DEVELOPER_TAP_WINDOW_MS = 3000;
 
 export function About() {
-  useReportScreen({ name: 'About', facts: FACTS });
+  useReportScreen({ name: 'About', facts: [], credits: CREDITS });
   const scrollRef = useScrollMemory('about');
   const { quote, intro, sections } = attribution;
   const taps = useRef({ count: 0, last: 0 });
