@@ -157,12 +157,7 @@ export function VerseView(props: VerseViewProps) {
           {action === 'ask' ? (
             <>
               <AnswerCards verse={unitId(verse)} book={book} chapter={chapter} />
-              <AskBox verse={verse} state={ask} onAsk={onAsk} prefill={prefill} />
-              {voice.listening ? (
-                <p role="status" data-ask-live className="px-1 text-base text-muted">
-                  {voice.transcript || 'Listening…'}
-                </p>
-              ) : null}
+              <AskBox verse={verse} state={ask} onAsk={onAsk} prefill={prefill} hearing={voice.listening ? { transcript: voice.transcript } : null} />
               {voice.notice ? (
                 <p role="status" className="px-1 text-sm text-bad">
                   {voice.notice.message}

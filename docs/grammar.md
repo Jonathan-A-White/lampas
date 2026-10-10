@@ -108,6 +108,7 @@ A word idea draws `ending` or `tap-form` by its first random draw and falls back
 - **A miss steps down to what the missed forms use (PROVISIONAL, mw-hqd5bz.17).** Each question that shows a Greek form is kept with the form (`Asked.form`). When a needed idea comes out not yet, the state's `focus` becomes the letters, sounds and marks of the forms asked on it (`foundationOf`, with those of the idea missed just before while the walk is going down), and the walk down asks only those of the foundation: the others are passed over, so is one that is solid already, and 'alphabet' (one idea standing for 24 letters) is never asked. A solid needed idea below still ends the walk (the ceiling); a solid letter in the focus does not, the next one is asked. A kept placement from before has no focus and steps down through every idea, as it did.
 - **A right answer shows what the form is spelt with (PROVISIONAL, mw-hqd5bz.17).** `answer(state, right, question)` also runs the inference (below) on its own copy of the evidence (`state.evidence`, loaded from the store at the start): a letter, pair or mark that reaches three right uses with no miss since is solid without being asked (`state.inferred`; the end card writes it 'Solid (from your answers)') and stops a walk down as a solid idea does. The store gets the same through `noteAnswer` (`placementWrite.ts` `credit`); an idea's level is what its own two answers give, then the inference may lift it.
 - It stops when a step down lands on a solid idea (already solid, or solid just now: the ceiling is found), when no idea is left in that direction, or after 20 questions in a sitting (`paused`: the state is kept in `localStorage` `lampas.placement`, `placementKeep.ts`, and Go on resumes it, even after a reopen).
+- **The quick round (PROVISIONAL, mw-hqd5bz.18).** A walk that reached the letters, sounds and marks (it asked one, stepped down to the ones its missed forms use, or had nothing to ask because everything the goal needs was solid, as when he places himself again) ends in a quick round (`quickRound.ts`, pure; the screen's status `quick`, kept in `PlacementState.quick` so a reopen goes on): one tap on each letter, diphthong, consonant pair and breathing that is not solid yet, asked or inferred (`quickItems`), in the ladder's order, at most 40 taps (`QUICK_LIMIT`), outside the 20 questions of the walk. **Hear and pick** (kind `sound`): the app says the letter or pair in Greek (`speakWord`, `src/speech`) as the question comes and he taps it, among four that sound different from it; 'Say it again' and Hold to hear say it again. **See and pick** (kind `letter`): it shows the letter or pair large and he taps its sound (`shortSound`: the part of the sound before the first semicolon), among four. The two alternate, from the seed; a breathing is only seen, on a word that begins with it (Modern Greek does not say it). One tap an item: right is solid, wrong is not yet, each its own level with `setLevel(id, level, 'placement')` (`placementWrite.ts` `writeQuick`, which also puts the answer on the schedule and counts a miss against the item). **Stop here** keeps what was answered and goes to the end card; an alphabet, pair group or breathing he said he knows whole (I know this on its idea sheet, or a marked term: `how` 'sheet' or 'marked') is not asked. The end card adds 'Gaps to work on: ξ, ψ and ου' (`gapsOf`, below).
 - Every answer goes on the back-off schedule (`recordGrammarAnswer`, kind `grammar`) and an idea that has had its two questions gets its level with `setLevel(id, level, 'placement')` (`placementWrite.ts`). The end card, 'Where you are: solid N, frontier M, not yet K; untested J', lists the counted ideas by tier; the numbers are over the ideas the goal needs and any other idea the walk gave a level. `placement-done` goes on the bus.
 
 ## What his right answers show
@@ -119,6 +120,7 @@ A word idea draws `ending` or `tap-form` by its first random draw and falls back
 - **Three right uses and no miss make it solid.** `INFERRED_RIGHTS` 3. A foundation idea's evidence is `{run, misses}`: right uses since its last miss, and its misses. At `run` 3 the idea is written solid, `how` 'inferred', whatever it was (a placement's not yet too: three reads since the miss outweigh it), and put on the back-off schedule at the 30-day step like a term he marked I know this. A solid he set himself is left alone.
 - **A miss counts against it.** A miss on a question about a letter (`letter-*`, or the alphabet's question, whose right glyph says which letter), about the pairs, the breathing or the accent (`questionFoundation`) starts the run again; a letter held only by inference falls back to the frontier (how 'inferred'). Asked misses are the ones that reach the idea's own level (`recordGrammarAnswer`).
 - **The alphabet is solid when all 24 letters are.** `syncAlphabet` (grammarLevels.ts) runs after every write of a level (`setLevel`, `recordGrammarAnswer`, `teachIdea`, the inference) and writes 'alphabet' solid, how 'inferred', as soon as the 24th letter is solid, asked or inferred; an alphabet that was solid only by that falls back to the frontier when a letter does. One he set himself stays.
+- **One item for each letter and each combination (PROVISIONAL, mw-hqd5bz.18).** Where the ladder has one idea for a group, each combination is an item of its own under it, as the 24 letters sit under `alphabet`: `diphthong-ai` ... `diphthong-eeu` (αι ει οι υι ου αυ ευ ηυ), `pair-mp` ... `pair-gks` (μπ ντ γκ γγ γχ γξ), `breathing-rough` and `breathing-smooth` (`GrammarIdea.parent`, `pair`, `sound`; `itemsOf(group)`, `ITEM_GROUPS`). The items are not on the placement's walk (`startPlacement` leaves out an idea with a `parent`); they are asked in the quick round, and `foundationOf` credits the item as well as its group, so a form read right moves them too. **A group is solid when every item is** (`syncAlphabet` in grammarLevels.ts, now for all four groups: `diphthongs`, `consonant-pairs` and `breathings` become solid, how 'inferred', and, unlike the alphabet, never fall back). **The exact gaps** (`gapsOf`): the items that are not solid in each group that is partly known; a group none of whose items is solid has no gap yet, it is the whole idea that is missing.
 - **It keeps running.** The evidence is in the settings store under `grammarEvidence` (`{id: [run, misses]}`, no table), so every answer anywhere moves the Goal bars live; nothing runs only in the placement.
 
 ## The Goal screen
@@ -128,7 +130,7 @@ The strip and the screen that show his goal moving (mw-hqd5bz.10). Both read `us
 - **The strip** (`GoalStrip.tsx`), under the Reader's header and under Due: 'Goal: 1 John 1:1 · 12 of 31 words · 8 of 14 ideas', the solid ones of the ones needed. One line, 48 px; not drawn with no goal or while the passage is still being counted; a tap opens `#/goal`.
 - **The screen** (`GoalScreen.tsx`, `#/goal`, kept across a reopen; '‹ Reader' goes back): the goal as the title with Change (to Settings > Goal), then two bars, Words and Grammar ideas. Each bar is three segments, solid (filled), frontier (striped) and not yet (empty), with the count written in each and 'Solid 6 · Frontier 0 · Not yet 10' beneath, so colour is never the only sign. 'Solid when both are full.' A tap on a bar opens the list behind it, the items grouped by level (a word with its meaning; an idea opens its idea sheet).
 - **Place me** opens `#/placement`; once any level was set by the placement it reads 'Placed on 3 Oct' with Place again (the date is the newest `since` of a level whose `how` is 'placement'; nothing else is stored). The placement's 'Back to the goal' comes here.
-- **Learn next** (`goalProgress.ts` `learnNext`): the earliest idea in the chosen approach's sequence (`orderOf`) that the goal needs and that is not yet or untested, 'Learn next: The noun · Your first words' (the lesson from `lessonOf`); a tap opens its idea sheet. When none is left it says so. PROVISIONAL (mw-hqd5bz.17): when that idea is the alphabet and some letters are solid (asked or inferred), it names the letters that are not, never the whole alphabet: 'Learn next: ξ and ψ · The Greek letters' (`lettersText`: all of them up to six, then 'ξ, ψ, φ, χ, ζ, θ and 5 more letters'), and a tap opens the first of them; with no letter solid it still says 'The Greek alphabet'. An alphabet whose 24 letters are solid is solid, so Learn next goes on to the next idea.
+- **Learn next** (`goalProgress.ts` `learnNext`): the earliest idea in the chosen approach's sequence (`orderOf`) that the goal needs and that is not yet or untested, 'Learn next: The noun · Your first words' (the lesson from `lessonOf`); a tap opens its idea sheet. When none is left it says so. PROVISIONAL (mw-hqd5bz.17): when that idea is the alphabet and some letters are solid (asked or inferred), it names the letters that are not, never the whole alphabet: 'Learn next: ξ and ψ · The Greek letters' (`lettersText`: all of them up to six, then 'ξ, ψ, φ, χ, ζ, θ and 5 more letters'), and a tap opens the first of them; with no letter solid it still says 'The Greek alphabet'. An alphabet whose 24 letters are solid is solid, so Learn next goes on to the next idea. PROVISIONAL (mw-hqd5bz.18): it names the exact gaps of every partly known group together ('Learn next: ξ, ψ and ου · The Greek letters': letters, vowel pairs, consonant pairs and breathings; `LearnNext.gaps`), even a group the goal does not need (no goal needs the diphthongs), and a tap opens the first gap. **Review draws the gaps first** (`review/round.ts`): up to four (`GAP_QUESTIONS`) of the items he has a level for that are gaps, due or not, ahead of the due ideas; each is asked as a hear-and-pick or see-and-pick (`buildIdeaQuestion` on an item).
 - **Next words** (`nextWords`): the three most frequent needed words he has no state for (not on his list and not dropped), in dictionary form with their meaning; a tap is Add to my words (`addLemmaToLearn`: the word becomes learning, so it is frontier and the bar moves).
 - **Read it** opens the Reader on the goal: its chapter and verse, or chapter 1 for a whole book.
 
@@ -170,82 +172,98 @@ needs nothing from the `nouns` tier, but a plural noun's number idea comes after
 | 24 | letters | `letter-psi` | Psi (ψ Ψ) | – | `alphabet` |
 | 25 | letters | `letter-omega` | Omega (ω Ω) | – | `alphabet` |
 | 26 | sounds | `diphthongs` | Pairs of vowels | – | `letter-alpha`, `letter-epsilon`, `letter-eta`, `letter-iota`, `letter-omicron`, `letter-upsilon` |
-| 27 | sounds | `consonant-pairs` | Pairs of consonants | – | `letter-mu`, `letter-nu`, `letter-pi`, `letter-tau`, `letter-gamma`, `letter-kappa`, `letter-chi`, `letter-xi` |
-| 28 | sounds | `syllables` | Syllables | – | `diphthongs`, `consonant-pairs` |
-| 29 | marks | `breathings` | Breathing marks | – | `syllables` |
-| 30 | marks | `accents` | Accents and stress | – | `syllables` |
-| 31 | marks | `iota-subscript` | The iota under a letter | – | `letter-iota`, `letter-alpha`, `letter-eta`, `letter-omega` |
-| 32 | marks | `punctuation` | Punctuation and small marks | – | `accents` |
-| 33 | nouns | `noun` | The noun | noun | `accents` |
-| 34 | nouns | `article` | The article | article | `noun` |
-| 35 | nouns | `case-nominative` | The nominative case | nominative | `noun` |
-| 36 | nouns | `case-accusative` | The accusative case | accusative | `case-nominative` |
-| 37 | nouns | `case-genitive` | The genitive case | genitive | `case-nominative` |
-| 38 | nouns | `case-dative` | The dative case | dative | `case-genitive` |
-| 39 | nouns | `case-vocative` | The vocative case | vocative | `case-nominative` |
-| 40 | nouns | `gender-masculine` | The masculine gender | masculine | `noun` |
-| 41 | nouns | `gender-feminine` | The feminine gender | feminine | `gender-masculine` |
-| 42 | nouns | `gender-neuter` | The neuter gender | neuter | `gender-masculine` |
-| 43 | nouns | `adjective` | The adjective | adjective | `noun`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
-| 44 | nouns | `comparative` | The comparative | comparative | `adjective` |
-| 45 | nouns | `superlative` | The superlative | superlative | `comparative` |
-| 46 | nouns | `numeral` | Number words | numeral | `adjective` |
-| 47 | nouns | `proper-name` | Proper names | proper name | `noun` |
-| 48 | nouns | `indeclinable` | Words that never change | indeclinable, letter | `proper-name`, `case-genitive` |
-| 49 | pronouns | `person-1st` | The first person | 1st person | `noun` |
-| 50 | pronouns | `person-2nd` | The second person | 2nd person | `person-1st` |
-| 51 | pronouns | `person-3rd` | The third person | 3rd person | `person-2nd` |
-| 52 | pronouns | `number-singular` | The singular | singular | `person-1st` |
-| 53 | pronouns | `number-plural` | The plural | plural | `number-singular` |
-| 54 | pronouns | `pronoun` | The pronoun | – | `noun`, `person-3rd`, `number-plural` |
-| 55 | pronouns | `pronoun-personal` | The personal pronoun | personal pronoun | `pronoun`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative` |
-| 56 | pronouns | `pronoun-demonstrative` | The demonstrative pronoun | demonstrative pronoun | `pronoun-personal`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
-| 57 | pronouns | `pronoun-relative` | The relative pronoun | relative pronoun | `pronoun-demonstrative` |
-| 58 | pronouns | `pronoun-interrogative` | The interrogative pronoun | interrogative pronoun | `pronoun-relative` |
-| 59 | pronouns | `pronoun-indefinite` | The indefinite pronoun | indefinite pronoun | `pronoun-interrogative` |
-| 60 | pronouns | `pronoun-reflexive` | The reflexive pronoun | reflexive pronoun | `pronoun-personal` |
-| 61 | pronouns | `pronoun-possessive` | The possessive pronoun | possessive pronoun, possessor | `pronoun-reflexive` |
-| 62 | pronouns | `pronoun-reciprocal` | The reciprocal pronoun | reciprocal pronoun | `pronoun-reflexive` |
-| 63 | pronouns | `pronoun-correlative` | The correlative pronoun | correlative pronoun | `pronoun-relative`, `pronoun-demonstrative` |
-| 64 | pronouns | `pronoun-correlative-interrogative` | The correlative or interrogative pronoun | correlative or interrogative pronoun | `pronoun-correlative`, `pronoun-interrogative` |
-| 65 | prepositions | `preposition` | The preposition | preposition | `case-genitive`, `case-dative`, `case-accusative` |
-| 66 | verbs | `verb` | The verb | verb | `person-1st`, `person-2nd`, `person-3rd`, `number-singular`, `number-plural` |
-| 67 | verbs | `tense-present` | The present tense | present | `verb` |
-| 68 | verbs | `tense-imperfect` | The imperfect tense | imperfect | `tense-present` |
-| 69 | verbs | `tense-future` | The future tense | future | `tense-present` |
-| 70 | verbs | `tense-aorist` | The aorist tense | aorist | `tense-imperfect` |
-| 71 | verbs | `tense-perfect` | The perfect tense | perfect | `tense-aorist` |
-| 72 | verbs | `tense-pluperfect` | The pluperfect tense | pluperfect | `tense-perfect` |
-| 73 | verbs | `second-tenses` | Second aorists and perfects | second | `tense-aorist`, `tense-perfect` |
-| 74 | verbs | `voice-active` | The active voice | active | `verb` |
-| 75 | verbs | `voice-middle` | The middle voice | middle | `voice-active` |
-| 76 | verbs | `voice-passive` | The passive voice | passive | `voice-active` |
-| 77 | verbs | `voice-middle-or-passive` | The middle or passive voice | middle or passive | `voice-middle`, `voice-passive` |
-| 78 | verbs | `voice-middle-deponent` | The middle deponent | middle deponent | `voice-middle-or-passive` |
-| 79 | verbs | `voice-passive-deponent` | The passive deponent | passive deponent | `voice-middle-deponent` |
-| 80 | verbs | `voice-middle-or-passive-deponent` | The middle or passive deponent | middle or passive deponent | `voice-passive-deponent` |
-| 81 | verbs | `voice-middle-significance` | A middle meaning in an active form | middle significance | `voice-middle` |
-| 82 | verbs | `voice-impersonal-active` | The impersonal active | impersonal active | `voice-active` |
-| 83 | verbs | `voice-none` | A verb with no voice | no voice | `voice-active` |
-| 84 | verbs | `mood-indicative` | The indicative mood | indicative | `tense-present`, `voice-active` |
-| 85 | verbs | `mood-imperative` | The imperative mood | imperative | `mood-indicative` |
-| 86 | verbs | `mood-subjunctive` | The subjunctive mood | subjunctive | `mood-indicative` |
-| 87 | verbs | `mood-optative` | The optative mood | optative | `mood-subjunctive` |
-| 88 | verbs | `mood-infinitive` | The infinitive | infinitive | `mood-indicative` |
-| 89 | verbs | `mood-participle` | The participle | participle | `mood-infinitive`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative`, `gender-masculine`, `gender-feminine`, `gender-neuter`, `adjective` |
-| 90 | verbs | `mood-participle-imperative` | The participle with the sense of a command | imperative-sense participle | `mood-participle`, `mood-imperative` |
-| 91 | joiners | `conjunction` | The conjunction | conjunction | `noun`, `verb` |
-| 92 | joiners | `particle` | The particle | particle | `conjunction` |
-| 93 | joiners | `adverb` | The adverb | adverb | `adjective`, `verb` |
-| 94 | joiners | `negative` | The negative | negative | `particle` |
-| 95 | joiners | `interrogative` | Words that ask a question | interrogative | `particle` |
-| 96 | joiners | `conditional` | The conditional | conditional | `conjunction`, `mood-indicative`, `mood-subjunctive` |
-| 97 | joiners | `interjection` | The interjection | interjection | `particle` |
-| 98 | joiners | `attic-form` | Attic spellings | Attic form | `verb` |
-| 99 | joiners | `poetic` | Poetic forms | poetic | `attic-form` |
-| 100 | joiners | `crasis` | Two words run together | crasis | `conjunction`, `punctuation` |
-| 101 | joiners | `aramaic` | Aramaic words | Aramaic word | `indeclinable` |
-| 102 | joiners | `hebrew` | Hebrew words | Hebrew word | `indeclinable` |
+| 27 | sounds | `diphthong-ai` | The vowel pair αι | – | `diphthongs` |
+| 28 | sounds | `diphthong-ei` | The vowel pair ει | – | `diphthongs` |
+| 29 | sounds | `diphthong-oi` | The vowel pair οι | – | `diphthongs` |
+| 30 | sounds | `diphthong-ui` | The vowel pair υι | – | `diphthongs` |
+| 31 | sounds | `diphthong-ou` | The vowel pair ου | – | `diphthongs` |
+| 32 | sounds | `diphthong-au` | The vowel pair αυ | – | `diphthongs` |
+| 33 | sounds | `diphthong-eu` | The vowel pair ευ | – | `diphthongs` |
+| 34 | sounds | `diphthong-eeu` | The vowel pair ηυ | – | `diphthongs` |
+| 35 | sounds | `consonant-pairs` | Pairs of consonants | – | `letter-mu`, `letter-nu`, `letter-pi`, `letter-tau`, `letter-gamma`, `letter-kappa`, `letter-chi`, `letter-xi` |
+| 36 | sounds | `pair-mp` | The consonant pair μπ | – | `consonant-pairs` |
+| 37 | sounds | `pair-nt` | The consonant pair ντ | – | `consonant-pairs` |
+| 38 | sounds | `pair-gk` | The consonant pair γκ | – | `consonant-pairs` |
+| 39 | sounds | `pair-gg` | The consonant pair γγ | – | `consonant-pairs` |
+| 40 | sounds | `pair-gch` | The consonant pair γχ | – | `consonant-pairs` |
+| 41 | sounds | `pair-gks` | The consonant pair γξ | – | `consonant-pairs` |
+| 42 | sounds | `syllables` | Syllables | – | `diphthongs`, `consonant-pairs` |
+| 43 | marks | `breathings` | Breathing marks | – | `syllables` |
+| 44 | marks | `breathing-rough` | The rough breathing | – | `breathings` |
+| 45 | marks | `breathing-smooth` | The smooth breathing | – | `breathings` |
+| 46 | marks | `accents` | Accents and stress | – | `syllables` |
+| 47 | marks | `iota-subscript` | The iota under a letter | – | `letter-iota`, `letter-alpha`, `letter-eta`, `letter-omega` |
+| 48 | marks | `punctuation` | Punctuation and small marks | – | `accents` |
+| 49 | nouns | `noun` | The noun | noun | `accents` |
+| 50 | nouns | `article` | The article | article | `noun` |
+| 51 | nouns | `case-nominative` | The nominative case | nominative | `noun` |
+| 52 | nouns | `case-accusative` | The accusative case | accusative | `case-nominative` |
+| 53 | nouns | `case-genitive` | The genitive case | genitive | `case-nominative` |
+| 54 | nouns | `case-dative` | The dative case | dative | `case-genitive` |
+| 55 | nouns | `case-vocative` | The vocative case | vocative | `case-nominative` |
+| 56 | nouns | `gender-masculine` | The masculine gender | masculine | `noun` |
+| 57 | nouns | `gender-feminine` | The feminine gender | feminine | `gender-masculine` |
+| 58 | nouns | `gender-neuter` | The neuter gender | neuter | `gender-masculine` |
+| 59 | nouns | `adjective` | The adjective | adjective | `noun`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
+| 60 | nouns | `comparative` | The comparative | comparative | `adjective` |
+| 61 | nouns | `superlative` | The superlative | superlative | `comparative` |
+| 62 | nouns | `numeral` | Number words | numeral | `adjective` |
+| 63 | nouns | `proper-name` | Proper names | proper name | `noun` |
+| 64 | nouns | `indeclinable` | Words that never change | indeclinable, letter | `proper-name`, `case-genitive` |
+| 65 | pronouns | `person-1st` | The first person | 1st person | `noun` |
+| 66 | pronouns | `person-2nd` | The second person | 2nd person | `person-1st` |
+| 67 | pronouns | `person-3rd` | The third person | 3rd person | `person-2nd` |
+| 68 | pronouns | `number-singular` | The singular | singular | `person-1st` |
+| 69 | pronouns | `number-plural` | The plural | plural | `number-singular` |
+| 70 | pronouns | `pronoun` | The pronoun | – | `noun`, `person-3rd`, `number-plural` |
+| 71 | pronouns | `pronoun-personal` | The personal pronoun | personal pronoun | `pronoun`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative` |
+| 72 | pronouns | `pronoun-demonstrative` | The demonstrative pronoun | demonstrative pronoun | `pronoun-personal`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
+| 73 | pronouns | `pronoun-relative` | The relative pronoun | relative pronoun | `pronoun-demonstrative` |
+| 74 | pronouns | `pronoun-interrogative` | The interrogative pronoun | interrogative pronoun | `pronoun-relative` |
+| 75 | pronouns | `pronoun-indefinite` | The indefinite pronoun | indefinite pronoun | `pronoun-interrogative` |
+| 76 | pronouns | `pronoun-reflexive` | The reflexive pronoun | reflexive pronoun | `pronoun-personal` |
+| 77 | pronouns | `pronoun-possessive` | The possessive pronoun | possessive pronoun, possessor | `pronoun-reflexive` |
+| 78 | pronouns | `pronoun-reciprocal` | The reciprocal pronoun | reciprocal pronoun | `pronoun-reflexive` |
+| 79 | pronouns | `pronoun-correlative` | The correlative pronoun | correlative pronoun | `pronoun-relative`, `pronoun-demonstrative` |
+| 80 | pronouns | `pronoun-correlative-interrogative` | The correlative or interrogative pronoun | correlative or interrogative pronoun | `pronoun-correlative`, `pronoun-interrogative` |
+| 81 | prepositions | `preposition` | The preposition | preposition | `case-genitive`, `case-dative`, `case-accusative` |
+| 82 | verbs | `verb` | The verb | verb | `person-1st`, `person-2nd`, `person-3rd`, `number-singular`, `number-plural` |
+| 83 | verbs | `tense-present` | The present tense | present | `verb` |
+| 84 | verbs | `tense-imperfect` | The imperfect tense | imperfect | `tense-present` |
+| 85 | verbs | `tense-future` | The future tense | future | `tense-present` |
+| 86 | verbs | `tense-aorist` | The aorist tense | aorist | `tense-imperfect` |
+| 87 | verbs | `tense-perfect` | The perfect tense | perfect | `tense-aorist` |
+| 88 | verbs | `tense-pluperfect` | The pluperfect tense | pluperfect | `tense-perfect` |
+| 89 | verbs | `second-tenses` | Second aorists and perfects | second | `tense-aorist`, `tense-perfect` |
+| 90 | verbs | `voice-active` | The active voice | active | `verb` |
+| 91 | verbs | `voice-middle` | The middle voice | middle | `voice-active` |
+| 92 | verbs | `voice-passive` | The passive voice | passive | `voice-active` |
+| 93 | verbs | `voice-middle-or-passive` | The middle or passive voice | middle or passive | `voice-middle`, `voice-passive` |
+| 94 | verbs | `voice-middle-deponent` | The middle deponent | middle deponent | `voice-middle-or-passive` |
+| 95 | verbs | `voice-passive-deponent` | The passive deponent | passive deponent | `voice-middle-deponent` |
+| 96 | verbs | `voice-middle-or-passive-deponent` | The middle or passive deponent | middle or passive deponent | `voice-passive-deponent` |
+| 97 | verbs | `voice-middle-significance` | A middle meaning in an active form | middle significance | `voice-middle` |
+| 98 | verbs | `voice-impersonal-active` | The impersonal active | impersonal active | `voice-active` |
+| 99 | verbs | `voice-none` | A verb with no voice | no voice | `voice-active` |
+| 100 | verbs | `mood-indicative` | The indicative mood | indicative | `tense-present`, `voice-active` |
+| 101 | verbs | `mood-imperative` | The imperative mood | imperative | `mood-indicative` |
+| 102 | verbs | `mood-subjunctive` | The subjunctive mood | subjunctive | `mood-indicative` |
+| 103 | verbs | `mood-optative` | The optative mood | optative | `mood-subjunctive` |
+| 104 | verbs | `mood-infinitive` | The infinitive | infinitive | `mood-indicative` |
+| 105 | verbs | `mood-participle` | The participle | participle | `mood-infinitive`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative`, `gender-masculine`, `gender-feminine`, `gender-neuter`, `adjective` |
+| 106 | verbs | `mood-participle-imperative` | The participle with the sense of a command | imperative-sense participle | `mood-participle`, `mood-imperative` |
+| 107 | joiners | `conjunction` | The conjunction | conjunction | `noun`, `verb` |
+| 108 | joiners | `particle` | The particle | particle | `conjunction` |
+| 109 | joiners | `adverb` | The adverb | adverb | `adjective`, `verb` |
+| 110 | joiners | `negative` | The negative | negative | `particle` |
+| 111 | joiners | `interrogative` | Words that ask a question | interrogative | `particle` |
+| 112 | joiners | `conditional` | The conditional | conditional | `conjunction`, `mood-indicative`, `mood-subjunctive` |
+| 113 | joiners | `interjection` | The interjection | interjection | `particle` |
+| 114 | joiners | `attic-form` | Attic spellings | Attic form | `verb` |
+| 115 | joiners | `poetic` | Poetic forms | poetic | `attic-form` |
+| 116 | joiners | `crasis` | Two words run together | crasis | `conjunction`, `punctuation` |
+| 117 | joiners | `aramaic` | Aramaic words | Aramaic word | `indeclinable` |
+| 118 | joiners | `hebrew` | Hebrew words | Hebrew word | `indeclinable` |
 
 ## Approaches
 

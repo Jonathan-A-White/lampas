@@ -4,6 +4,7 @@
 import { ideaOf } from './grammar/ladder';
 import type { Level } from './grammar/needs';
 import type { Evidence } from './grammar/inference';
+import type { QuickItem, QuickRound } from './grammar/quickRound';
 import { ANSWERS_PER_IDEA, type Asked, type PlacementDone, type PlacementState } from './grammar/placement';
 
 const KEY = 'lampas.placement';
@@ -26,6 +27,20 @@ const isIdea = (v: unknown): v is string => {
   } catch {
     return false;
   }
+};
+const isQuick = (v: unknown): v is QuickRound => {
+  const q = v as Partial<QuickRound> | null;
+  return (
+    !!q &&
+    Array.isArray(q.items) &&
+    q.items.every((i: Partial<QuickItem>) => isIdea(i?.id) && (i.mode === 'hear' || i.mode === 'see')) &&
+    count(q.at) &&
+    q.at <= q.items.length &&
+    Array.isArray(q.answers) &&
+    q.answers.every((a) => isIdea(a?.id) && typeof a.right === 'boolean') &&
+    typeof q.stopped === 'boolean' &&
+    count(q.seed)
+  );
 };
 const count = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0;
 
@@ -60,7 +75,7 @@ export function readPlacement(): SavedPlacement | null {
     const saved = JSON.parse(store()?.getItem(KEY) ?? 'null') as { goal?: unknown; approach?: unknown; state?: Record<string, unknown> } | null;
     const s = saved?.state;
     if (!saved || !s || typeof saved.goal !== 'string' || typeof saved.approach !== 'string') return null;
-    const { ideas, needed, at, asked, levels, done, questionsLeft, down, onlyDown, last, seed, evidence, inferred, focus } = s;
+    const { ideas, needed, at, asked, levels, done, questionsLeft, down, onlyDown, last, seed, evidence, inferred, focus, quick } = s;
     if (!Array.isArray(ideas) || !ideas.every(isIdea) || !Array.isArray(needed) || !needed.every(isIdea)) return null;
     if (!count(at) || at >= Math.max(ideas.length, 1) || !count(questionsLeft) || !count(seed)) return null;
     if (!Array.isArray(asked) || !asked.every((a: Partial<Asked>) => typeof a?.ideaId === 'string' && ideas.includes(a.ideaId) && typeof a.right === 'boolean' && (a.form === undefined || typeof a.form === 'string'))) return null;
@@ -71,6 +86,8 @@ export function readPlacement(): SavedPlacement | null {
     if (evidence !== undefined && !(Array.isArray(evidence) && evidence.every((e) => Array.isArray(e) && typeof e[0] === 'string' && count(e[1]?.run) && count(e[1]?.misses)))) return null;
     if (inferred !== undefined && !(Array.isArray(inferred) && inferred.every((i) => typeof i === 'string'))) return null;
     if (focus !== undefined && focus !== null && !(Array.isArray(focus) && focus.every((i) => typeof i === 'string'))) return null;
+    // a placement kept before the quick round existed has none
+    if (quick !== undefined && quick !== null && !isQuick(quick)) return null;
     const idea = ideas[at];
     if (done === null && idea !== undefined && (asked as Asked[]).filter((a) => a.ideaId === idea).length >= ANSWERS_PER_IDEA) return null;
     return {
@@ -91,6 +108,7 @@ export function readPlacement(): SavedPlacement | null {
         evidence: new Map((evidence as [string, Evidence][] | undefined) ?? []),
         inferred: (inferred as string[] | undefined) ?? [],
         focus: (focus as string[] | null | undefined) ?? null,
+        quick: (quick as QuickRound | null | undefined) ?? null,
       },
     };
   } catch {

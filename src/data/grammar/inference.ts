@@ -5,7 +5,7 @@
 //   sound counts against it (the run of right uses starts again); 'alphabet' is solid when all 24 letters are solid, asked or inferred.
 // The store half is src/data/repositories/inference.ts; the placement (placement.ts) runs the same rules on its own copy of the evidence.
 import { breathingOf, type GrammarQuestion } from './questions';
-import { LADDER, type GrammarIdea } from './ladder';
+import { ITEM_GROUPS, LADDER, groupOfItem, itemName, itemsOf, type GrammarIdea } from './ladder';
 import type { Level } from './needs';
 
 /** Right uses, with no miss since, that make a letter, sound or mark solid. PROVISIONAL. */
@@ -24,8 +24,11 @@ const LETTERS: readonly GrammarIdea[] = LADDER.filter((i) => i.glyphs);
 export const LETTER_IDS: readonly string[] = LETTERS.map((i) => i.id);
 
 const NON_LETTER_IDS: readonly string[] = ['diphthongs', 'consonant-pairs', 'breathings', 'accents', 'iota-subscript'];
-/** The ideas a form can be evidence for: the 24 letters, the pairs, the marks. */
-export const FOUNDATION_IDS: readonly string[] = [...LETTER_IDS, ...NON_LETTER_IDS];
+/** The combination items (mw-hqd5bz.18): one for each diphthong, consonant pair and breathing. */
+const COMBINATIONS: readonly GrammarIdea[] = LADDER.filter((i) => i.parent);
+const ITEM_OF_PAIR = new Map(COMBINATIONS.filter((i) => i.parent !== 'breathings').map((i) => [i.pair!, i.id]));
+/** The ideas a form can be evidence for: the 24 letters, the pairs, the marks, and each combination. */
+export const FOUNDATION_IDS: readonly string[] = [...LETTER_IDS, ...NON_LETTER_IDS, ...COMBINATIONS.map((i) => i.id)];
 export const isFoundation = (id: string): boolean => FOUNDATION_IDS.includes(id);
 
 const LETTER_OF_BASE = new Map(LETTERS.map((i) => [i.glyphs![0], i.id]));
@@ -62,10 +65,20 @@ export function foundationOf(form: string): string[] {
     if (!next) return;
     const pair = l.base + next.base;
     // a pair of vowels is one sound unless the first carries the stress or the second has two dots over it
-    if (DIPHTHONGS.has(pair) && !ACCENTS.test(l.marks) && !next.marks.includes(DIAERESIS)) found.add('diphthongs');
-    if (CONSONANT_PAIRS.has(pair)) found.add('consonant-pairs');
+    if (DIPHTHONGS.has(pair) && !ACCENTS.test(l.marks) && !next.marks.includes(DIAERESIS)) {
+      found.add('diphthongs');
+      found.add(ITEM_OF_PAIR.get(pair)!);
+    }
+    if (CONSONANT_PAIRS.has(pair)) {
+      found.add('consonant-pairs');
+      found.add(ITEM_OF_PAIR.get(pair)!);
+    }
   });
-  if (breathingOf(form.normalize('NFC'))) found.add('breathings');
+  const breathing = breathingOf(form.normalize('NFC'));
+  if (breathing) {
+    found.add('breathings');
+    found.add(`breathing-${breathing.toLowerCase()}`);
+  }
   return FOUNDATION_IDS.filter((id) => found.has(id));
 }
 
@@ -155,10 +168,39 @@ export function weakLetters(levels: ReadonlyMap<string, Level>): GrammarIdea[] {
 /** True when all 24 letters are solid: then 'alphabet' is solid. */
 export const alphabetIsSolid = (levels: ReadonlyMap<string, Level>): boolean => weakLetters(levels).length === 0;
 
-/** How the Goal screen writes the letters Learn next names: 'ξ', 'ξ and ψ', 'ξ, ψ and φ', and, past six, 'ξ, ψ, φ, χ, ζ, θ and 5 more letters'. */
-export function lettersText(letters: readonly GrammarIdea[], shown = 6): string {
-  const glyphs = letters.map((l) => l.glyphs![0]);
-  if (glyphs.length <= shown) return glyphs.length <= 1 ? (glyphs[0] ?? '') : `${glyphs.slice(0, -1).join(', ')} and ${glyphs[glyphs.length - 1]}`;
-  const more = glyphs.length - shown;
-  return `${glyphs.slice(0, shown).join(', ')} and ${more} more ${more === 1 ? 'letter' : 'letters'}`;
+/**
+ * How the Goal screen and the placement's end card write the gaps (letters, pairs and breathings) they name: 'ξ', 'ξ and ψ', 'ξ, ψ and ου', and,
+ * past six, 'ξ, ψ, φ, χ, ζ, θ and 5 more letters' ('gaps' when they are not all letters).
+ */
+export function lettersText(items: readonly GrammarIdea[], shown = 6): string {
+  const names = items.map(itemName);
+  if (names.length <= shown) return names.length <= 1 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+  const more = names.length - shown;
+  const noun = items.every((i) => i.glyphs) ? 'letter' : 'gap';
+  return `${names.slice(0, shown).join(', ')} and ${more} more ${noun}${more === 1 ? '' : 's'}`;
+}
+
+// ---- The items of the quick round (mw-hqd5bz.18, PROVISIONAL) ----
+
+/** The items of one group that are not solid, in the ladder's order. */
+export const weakItems = (levels: ReadonlyMap<string, Level>, group: string): GrammarIdea[] => itemsOf(group).filter((i) => levels.get(i.id) !== 'solid');
+
+/** True when every item of the group is solid: then the group's idea ('diphthongs') is solid too. */
+export const groupIsSolid = (levels: ReadonlyMap<string, Level>, group: string): boolean => weakItems(levels, group).length === 0;
+
+/**
+ * The exact gaps: the items not solid in every group that is partly known (some of its items solid, some not), group by group. A group none of
+ * whose items is solid has no exact gap yet, it is the whole idea that is missing, so Learn next names the idea.
+ */
+export function gapsOf(levels: ReadonlyMap<string, Level>): GrammarIdea[] {
+  return ITEM_GROUPS.flatMap((group) => {
+    const weak = weakItems(levels, group);
+    return weak.length > 0 && weak.length < itemsOf(group).length ? weak : [];
+  });
+}
+
+/** The group an item id sits under, or undefined for an id that is no item. */
+export function groupOf(id: string): string | undefined {
+  const idea = LADDER.find((i) => i.id === id);
+  return idea ? groupOfItem(idea) : undefined;
 }

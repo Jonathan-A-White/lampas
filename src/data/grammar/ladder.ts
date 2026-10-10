@@ -28,8 +28,12 @@ export interface GrammarIdea {
   needs: string[];
   /** A letter's lower and upper case. */
   glyphs?: [string, string];
-  /** A letter's sound, in the Modern Greek pronunciation (docs/pronunciation.md). */
+  /** A letter's or a combination's sound, in the Modern Greek pronunciation (docs/pronunciation.md). */
   sound?: string;
+  /** A combination item (mw-hqd5bz.18, PROVISIONAL): the group idea it belongs to ('diphthongs', 'consonant-pairs', 'breathings'). The 24 letters sit under 'alphabet' without it. */
+  parent?: string;
+  /** A combination's Greek, as it is written: 'ου', 'γγ'. */
+  pair?: string;
 }
 
 /** Every token needs these, so ideasOf never lists them: 'alphabet' is the parent of the 24 letters. */
@@ -46,6 +50,50 @@ function conceptText(term: string): string {
 }
 
 type Def = Omit<GrammarIdea, 'rung' | 'text'> & { text?: string };
+
+// ---- The combinations (mw-hqd5bz.18, PROVISIONAL): one item per diphthong, consonant pair and breathing, under its group idea, as the letters sit under 'alphabet' ----
+
+// [id suffix, pair, sound]. The sounds are Modern Greek's (docs/pronunciation.md).
+const DIPHTHONG_ITEMS: [string, string, string][] = [
+  ['ai', 'αι', 'e, as in “bed”'],
+  ['ei', 'ει', 'ee, as in “feet”'],
+  ['oi', 'οι', 'ee, as in “feet”'],
+  ['ui', 'υι', 'ee, as in “feet”'],
+  ['ou', 'ου', 'oo, as in “food”'],
+  ['au', 'αυ', 'av or af'],
+  ['eu', 'ευ', 'ev or ef'],
+  ['eeu', 'ηυ', 'iv or if'],
+];
+const PAIR_ITEMS: [string, string, string][] = [
+  ['mp', 'μπ', 'b at the start of a word, mb inside it'],
+  ['nt', 'ντ', 'd at the start of a word, nd inside it'],
+  ['gk', 'γκ', 'g at the start of a word, ng inside it'],
+  ['gg', 'γγ', 'ng'],
+  ['gch', 'γχ', 'ng and kh'],
+  ['gks', 'γξ', 'nks'],
+];
+
+const pairItem = (parent: string, prefix: string, kind: string) => ([key, pair, sound]: [string, string, string]): Def => ({
+  ...def(`${prefix}-${key}`, 'sounds', `The ${kind} ${pair}`, [], [parent], `${pair} is one of the ${kind === 'vowel pair' ? 'pairs of vowels' : 'pairs of consonants'}. In Modern Greek it sounds like ${sound}.`),
+  parent,
+  pair,
+  sound,
+});
+
+const breathingItems = (): Def[] => [
+  {
+    ...def('breathing-rough', 'marks', 'The rough breathing', [], ['breathings'], 'The rough breathing (ʽ) sits over a vowel at the start of a word and adds an h sound in older Greek: ὁ is “ho”. In Modern Greek it is not said aloud, but you must know it when you see it.'),
+    parent: 'breathings',
+    pair: 'ʽ',
+    sound: 'an h, which Modern Greek does not say',
+  },
+  {
+    ...def('breathing-smooth', 'marks', 'The smooth breathing', [], ['breathings'], 'The smooth breathing (᾿) sits over a vowel at the start of a word and adds nothing: ἐν is “en”. It is the commoner of the two.'),
+    parent: 'breathings',
+    pair: '᾿',
+    sound: 'nothing',
+  },
+];
 
 const def = (id: string, tier: Tier, title: string, terms: string[], needs: string[], text?: string): Def => ({ id, tier, title, terms, needs, text });
 
@@ -120,6 +168,7 @@ const DEFS: Def[] = [
     ['letter-alpha', 'letter-epsilon', 'letter-eta', 'letter-iota', 'letter-omicron', 'letter-upsilon'],
     'Some vowels pair up and make one sound: αι is e, ει, οι and υι are ee, and ου is oo. In αυ, ευ and ηυ the υ is a v or an f. If the first vowel carries the stress mark, or the second has two dots over it, they are two sounds, not one.',
   ),
+  ...DIPHTHONG_ITEMS.map(pairItem('diphthongs', 'diphthong', 'vowel pair')),
   def(
     'consonant-pairs',
     'sounds',
@@ -128,6 +177,7 @@ const DEFS: Def[] = [
     ['letter-mu', 'letter-nu', 'letter-pi', 'letter-tau', 'letter-gamma', 'letter-kappa', 'letter-chi', 'letter-xi'],
     'Some consonants team up. In the middle of a word μπ is mb, ντ is nd and γκ is ng; at the start they are b, d and g. γγ is ng, γχ is ng plus kh, and γξ is nks. A doubled consonant is said once.',
   ),
+  ...PAIR_ITEMS.map(pairItem('consonant-pairs', 'pair', 'consonant pair')),
   def(
     'syllables',
     'sounds',
@@ -146,6 +196,7 @@ const DEFS: Def[] = [
     ['syllables'],
     'A word that begins with a vowel carries a small mark over it. The rough breathing (ʽ) adds an h sound at the start: ὁ is “ho”. The smooth breathing (᾿) adds nothing: ἐν is “en”. Words that begin with ρ always take a rough breathing, and so does υ.',
   ),
+  ...breathingItems(),
   def(
     'accents',
     'marks',
@@ -290,6 +341,18 @@ for (const idea of LADDER) {
 for (const term of GRAMMAR_TERMS) {
   if (!IDEA_OF_TERM.has(term)) throw new Error(`Grammar term ${JSON.stringify(term)} has no idea`);
 }
+
+/** The groups whose items the quick round asks one by one, in the order they are named: the 24 letters, the diphthongs, the consonant pairs, the breathings. */
+export const ITEM_GROUPS: readonly string[] = ['alphabet', 'diphthongs', 'consonant-pairs', 'breathings'];
+
+/** The items of a group: the 24 letters of 'alphabet', or the combinations that name it as their parent; none for any other idea. */
+export const itemsOf = (group: string): GrammarIdea[] => (group === 'alphabet' ? LADDER.filter((i) => i.glyphs) : LADDER.filter((i) => i.parent === group));
+
+/** The group an item sits under ('alphabet' for a letter), or undefined for an idea that is no item. */
+export const groupOfItem = (idea: GrammarIdea): string | undefined => idea.parent ?? (idea.glyphs ? 'alphabet' : undefined);
+
+/** How an item is written when it is named in a line: 'ξ', 'ου', 'rough breathing'. */
+export const itemName = (idea: GrammarIdea): string => idea.glyphs?.[0] ?? (idea.id.startsWith('breathing-') ? idea.title.replace(/^The /, '') : (idea.pair ?? idea.title));
 
 /** The id of the idea that covers this grammar term ('genitive' is 'case-genitive'), or undefined for a word that is no term. */
 export const ideaOfTerm = (term: string): string | undefined => IDEA_OF_TERM.get(term);

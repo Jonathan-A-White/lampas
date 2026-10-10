@@ -90,8 +90,9 @@ const bar = () => {
   expect(bars()).toHaveLength(1);
   return bars()[0];
 };
-/** The words he has said so far, as the Verse view shows them while he holds. */
-const askLive = (): string => viewEl().querySelector('[data-ask-live]')?.textContent?.trim() ?? '';
+/** The words he has said so far, as the Verse view shows them while he holds: they fill the Ask box's field, 'Listening…' its placeholder before the first. */
+const askField = (): HTMLTextAreaElement => within(viewEl()).getByRole('textbox', { name: 'Your question' });
+const askLive = (): string => askField().value;
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 const feature = await loadFeature('features/verse-view.feature');
@@ -104,6 +105,19 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const headed = async (_: unknown, reference: string) => {
     await waitFor(() => expect(within(viewEl()).getByRole('heading', { name: reference })).toBeInTheDocument());
+  };
+  const saysAndLetsGo = async (_: unknown, words: string) => {
+    await user.pointer({ keys: '[MouseLeft>]', target: bar(), coords: AT });
+    await waitFor(() => expect(FakeRecognizer.instances.length).toBeGreaterThan(0));
+    act(() => {
+      FakeRecognizer.last().open();
+      FakeRecognizer.last().say([result(words, false)]);
+    });
+    await user.pointer({ keys: '[/MouseLeft]', target: bar(), coords: AT });
+  };
+  const answerShows = async () => {
+    await waitFor(() => expect(viewEl().querySelectorAll('[data-answer]')).toHaveLength(1));
+    expect(viewEl().querySelector('[data-answer]')).toHaveTextContent(SYNERGEI_ANSWER.answer);
   };
   const closed = () => waitFor(() => expect(queryView()).toBeNull());
   const back = async () => {
@@ -243,7 +257,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('exactly one hold bar is on screen', oneBar);
   });
 
-  Scenario('Hold to ask shows his words as he says them, not only when the clip ends', ({ Given, When, Then, And }) => {
+  Scenario('Hold to ask shows his words in the Ask box as he says them, not only when the clip ends', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string} and a tutor and a microphone that hears a clip', (_, weave: string) =>
       open(weaveOf(weave), { mic: true }),
     );
@@ -258,7 +272,6 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the words on screen are the start of the clip, and not all of it', async () => {
       const whole = mic?.transcript ?? '';
       await waitFor(() => expect(askLive()).not.toBe(''));
-      expect(askLive()).not.toBe('Listening…');
       expect(whole.startsWith(askLive())).toBe(true);
       expect(askLive()).not.toBe(whole);
     });
@@ -289,24 +302,54 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
     And('he chooses {string}', choose);
     Then('the hold bar is labelled {string}', labelled);
-    When('he holds the hold bar and says {string} and lets go', async (_, words: string) => {
-      await user.pointer({ keys: '[MouseLeft>]', target: bar(), coords: AT });
-      await waitFor(() => expect(FakeRecognizer.instances.length).toBeGreaterThan(0));
-      act(() => {
-        FakeRecognizer.last().open();
-        FakeRecognizer.last().say([result(words, false)]);
-      });
-      await user.pointer({ keys: '[/MouseLeft]', target: bar(), coords: AT });
-    });
+    When('he holds the hold bar and says {string} and lets go', saysAndLetsGo);
     Then('the mill received one grist for the lampas app, kind verse-ask, about {string} with the question {string}', async (_, reference: string, question: string) => {
       await waitFor(() => expect(fake.received).toHaveLength(1));
       expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind: 'verse-ask' });
       expect(fake.received[0].input.reference).toBe(reference);
       expect(fake.received[0].input.question).toBe(question);
     });
-    And('the answer shows in the Verse view', async () => {
-      await waitFor(() => expect(viewEl().querySelectorAll('[data-answer]')).toHaveLength(1));
-      expect(viewEl().querySelector('[data-answer]')).toHaveTextContent(SYNERGEI_ANSWER.answer);
+    And('the answer shows in the Verse view', answerShows);
+  });
+
+  Scenario('His question stays shown above Waiting for the tutor until the answer comes', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 in the English view with the weave {string} and a tutor and a recogniser behind a fake Postern that holds its answers', async (_, weave: string) => {
+      await open(weaveOf(weave), { tutor: true });
+      fake.autoReply = undefined;
+    });
+    When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
+    And('he chooses {string}', choose);
+    And('he holds the hold bar and says {string} and lets go', saysAndLetsGo);
+    Then('the Ask box shows his question {string} above Waiting for the tutor', async (_, question: string) => {
+      await waitFor(() => {
+        const [said, waiting] = Array.from(viewEl().querySelectorAll('[data-ask-pending] p'));
+        expect(said).toHaveTextContent(question);
+        expect(waiting).toHaveTextContent(/Waiting for the tutor/);
+      });
+    });
+    When('the tutor answers', async () => {
+      await waitFor(() => expect(fake.received).toHaveLength(1));
+      fake.answer({ status: 'answered', answer: SYNERGEI_ANSWER });
+    });
+    Then('the answer shows in the Verse view', answerShows);
+    And('the Ask box shows no pending question', () => {
+      expect(viewEl().querySelector('[data-ask-pending]')).toBeNull();
+    });
+  });
+
+  Scenario('A question that could not be sent comes back into the Ask box', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 in the English view with the weave {string} and a tutor and a recogniser behind a fake Postern that holds no licence for this phone', async (_, weave: string) => {
+      await open(weaveOf(weave), { tutor: true });
+      fake.licensed = false;
+    });
+    When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
+    And('he chooses {string}', choose);
+    And('he holds the hold bar and says {string} and lets go', saysAndLetsGo);
+    Then('the Ask box says {string}', async (_, words: string) => {
+      expect(await within(viewEl()).findByText(words)).toBeInTheDocument();
+    });
+    And('the Ask field holds {string}', async (_, question: string) => {
+      await waitFor(() => expect(askField().value).toBe(question));
     });
   });
 

@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
+import { LADDER } from '../../src/data/grammar/ladder';
+import { honestSpeech, spoken } from '../support/honest-fakes';
 import { openUnlocked } from './unlocked';
 
 // Puts rows in the app's own store through raw IndexedDB, as the app wrote them.
@@ -50,6 +52,9 @@ const NEEDED = [
   'voice-active', 'voice-middle-deponent', 'mood-indicative', 'conjunction', 'attic-form',
 ];
 
+// every letter, diphthong, consonant pair and breathing (the items of the quick round), by id
+const ITEMS = LADDER.filter((i) => i.glyphs || i.parent).map((i) => i.id);
+
 test('Place me in Settings > Goal opens the placement; a question fits the phone and a reload goes on', async ({ page }) => {
   await openWithGoal(page, '1 John 1:1');
   await page.goto('/#/settings');
@@ -97,7 +102,8 @@ test('a sitting of tapped answers ends on a card that fits: Where you are, or Pa
   await page.goto('/#/placement');
   await page.getByRole('button', { name: 'Start' }).click();
   const end = page.getByTestId('where');
-  for (let i = 0; i < 25 && !(await end.isVisible()); i += 1) {
+  // twenty questions of the walk, then up to forty taps of the quick round
+  for (let i = 0; i < 65 && !(await end.isVisible()); i += 1) {
     await page.locator('[data-option]').first().click();
     await page.getByTestId('next').click();
     await expect(page.getByTestId('placement-question').or(end)).toBeVisible();
@@ -112,16 +118,84 @@ test('a sitting of tapped answers ends on a card that fits: Where you are, or Pa
 test('the end card: Where you are, by tier, with Back to the goal in reach', async ({ page }) => {
   await openWithGoal(page, '1 John 1:1');
   const now = Date.now();
-  await put(page, 'grammarLevels', NEEDED.map((id) => ({ id, level: 'solid', since: now, how: 'marked' })));
+  await put(page, 'grammarLevels', [...new Set([...NEEDED, ...ITEMS])].map((id) => ({ id, level: 'solid', since: now, how: 'marked' })));
   await page.goto('/#/placement');
-  // everything the goal needs is solid already: nothing is left to ask, so Start ends on the card
+  // everything the goal needs is solid already, and every letter and combination too: nothing is left to ask, so Start ends on the card
   await page.getByRole('button', { name: 'Start' }).click();
   await expect(page.getByTestId('placement-title')).toHaveText('Where you are');
-  await expect(page.getByTestId('where')).toHaveText(`Where you are: solid ${NEEDED.length}, frontier 0, not yet 0; untested 0`);
+  await expect(page.getByTestId('where')).toHaveText(`Where you are: solid ${NEEDED.length + 24}, frontier 0, not yet 0; untested 0`);
   const nouns = page.getByRole('region', { name: 'nouns' });
   await expect(nouns.getByRole('listitem').filter({ hasText: 'The noun' })).toContainText('Solid');
   const back = page.getByRole('button', { name: 'Back to the goal' });
   expect((await back.boundingBox())?.height).toBeGreaterThanOrEqual(47.5);
   await expectFitsPhone(page);
   await shot(page, 'placement');
+});
+
+// the quick round (mw-hqd5bz.18): everything is solid but ξ, ψ and ου, so Start (as Place again does) goes straight to the three taps
+async function knownExceptThree(page: Page) {
+  await honestSpeech(page, { langs: ['el-GR'] });
+  await openWithGoal(page, '1 John 1:1');
+  const now = Date.now();
+  const missed = ['letter-xi', 'letter-psi', 'diphthong-ou'];
+  const rest = [...new Set([...NEEDED, ...ITEMS])].filter((id) => !missed.includes(id) && !['alphabet', 'diphthongs'].includes(id));
+  await put(page, 'grammarLevels', rest.map((id) => ({ id, level: 'solid', since: now, how: 'marked' })));
+  await page.goto('/#/placement');
+  await page.getByRole('button', { name: 'Start' }).click();
+}
+
+// the three missed items, as the quick round asks them: the letter or pair, and its sound
+const MISSED = [
+  { glyph: 'ξ', sound: 'ks, as in “box”' },
+  { glyph: 'ψ', sound: 'ps, as in “lips”' },
+  { glyph: 'ου', sound: 'oo, as in “food”' },
+];
+
+/** The text of the right option of question `i`: the letter when it is said (Hear and pick), its sound when it is shown (See and pick). */
+async function rightOption(page: Page, i: number): Promise<string> {
+  await expect(page.getByTestId('placement-question')).toHaveText(new RegExp(`^Quick round ${i + 1} of 3 · (Hear|See) and pick$`));
+  const hear = (await page.getByTestId('placement-question').textContent())!.includes('Hear and pick');
+  return hear ? MISSED[i].glyph : MISSED[i].sound;
+}
+
+test('a quick-round question fits the phone: Hear and pick says it, See and pick shows it', async ({ page }) => {
+  await knownExceptThree(page);
+  const options = page.locator('[data-option]');
+  for (let i = 0; i < 3; i += 1) {
+    const right = await rightOption(page, i);
+    const hear = right === MISSED[i].glyph;
+    if (hear) await expect.poll(async () => (await spoken(page)).map((s) => s.text)).toContain(MISSED[i].glyph);
+    else await expect(page.getByTestId('grammar-form')).toHaveText(MISSED[i].glyph);
+    expect(await options.count()).toBe(4);
+    for (let n = 0; n < 4; n += 1) {
+      const box = await options.nth(n).boundingBox();
+      expect(box?.height).toBeGreaterThanOrEqual(47.5);
+      expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390);
+    }
+    expect((await page.getByTestId('stop-here').boundingBox())?.height).toBeGreaterThanOrEqual(47.5);
+    await expectFitsPhone(page);
+    if (i === 1) {
+      await shot(page, 'placement-quick');
+    }
+    await options.filter({ hasText: new RegExp(`^${right}$`) }).click();
+    await page.getByTestId('next').click();
+  }
+  await expect(page.getByTestId('placement-title')).toHaveText('Where you are');
+  await expect(page.getByTestId('gaps')).toHaveCount(0);
+});
+
+test('the end card of a quick round names the gaps', async ({ page }) => {
+  await knownExceptThree(page);
+  for (let i = 0; i < 3; i += 1) {
+    const right = await rightOption(page, i);
+    await page.locator('[data-option]').filter({ hasNotText: new RegExp(`^${right}$`) }).first().click();
+    await page.getByTestId('next').click();
+  }
+  await expect(page.getByTestId('placement-title')).toHaveText('Where you are');
+  await expect(page.getByTestId('gaps')).toHaveText('Gaps to work on: ξ, ψ and ου');
+  const back = page.getByRole('button', { name: 'Back to the goal' });
+  const box = await back.boundingBox();
+  expect(box && box.y + box.height).toBeLessThanOrEqual(844 + 1);
+  await expectFitsPhone(page);
+  await shot(page, 'placement-gaps');
 });

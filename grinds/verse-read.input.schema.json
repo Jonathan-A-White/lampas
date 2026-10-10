@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Verse Read Request 1",
+  "description": "The request of the reading check; the recording he made travels beside it as the grist's one attachment.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["reference", "target_text", "lang"],
+  "properties": {
+    "reference": { "description": "The verse he read: 'Romans 8:28'.", "type": "string", "minLength": 1, "maxLength": 80 },
+    "target_text": { "description": "The text he was to read: the English of the verse, or its Greek words in order. The mill scores the recording against it.", "type": "string", "minLength": 1 },
+    "lang": { "description": "The language the mill scores in (the grind's scoring.langs): en for English, el for the Greek read in modern pronunciation.", "type": "string", "enum": ["en", "el"] }
+  }
+}

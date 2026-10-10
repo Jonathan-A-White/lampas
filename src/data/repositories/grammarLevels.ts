@@ -4,8 +4,8 @@
 // level follows its step; the row exists as well so a level can be set by hand.
 import { db, type GrammarLevel, type GrammarLevelHow, type GrammarLevelName } from '../db';
 import { publish } from '../../events/bus';
-import { alphabetIsSolid, LETTER_IDS } from '../grammar/inference';
-import { IDEA_KIND, LADDER } from '../grammar/ladder';
+import { groupIsSolid } from '../grammar/inference';
+import { IDEA_KIND, ITEM_GROUPS, LADDER, itemsOf } from '../grammar/ladder';
 import { DAY, STEP_DAYS } from '../schedule';
 import { announceDue, writeReview, writeScheduled } from './reviews';
 
@@ -34,31 +34,40 @@ export async function listLevels(): Promise<Map<string, GrammarLevel>> {
   return new Map((await db.grammarLevels.toArray()).map((row) => [row.id, row]));
 }
 
-/**
- * Keeps 'alphabet' in step with the 24 letters (mw-hqd5bz.17, PROVISIONAL): it is solid, how 'inferred', once all of them are, however each got
- * there, and an alphabet that was solid only by that falls back to the frontier when a letter is not. Runs inside the caller's transaction (which
- * must include db.grammarLevels and db.reviews); the caller publishes what this returns and announces the schedule. Returns the alphabet's new level.
- */
-export async function syncAlphabet(now: number): Promise<GrammarLevelName | undefined> {
-  const letters = await db.grammarLevels.bulkGet([...LETTER_IDS]);
-  const solid = alphabetIsSolid(new Map(letters.flatMap((row) => (row ? [[row.id, row.level] as const] : []))));
-  const alphabet = await db.grammarLevels.get('alphabet');
-  if (solid && alphabet?.level !== 'solid') {
-    await db.grammarLevels.put({ id: 'alphabet', level: 'solid', since: now, how: 'inferred' });
-    await writeScheduled(IDEA_KIND, ['alphabet'], now, () => knownStart(now));
-    return 'solid';
-  }
-  if (!solid && alphabet?.how === 'inferred' && alphabet.level === 'solid') {
-    await db.grammarLevels.put({ id: 'alphabet', level: 'frontier', since: now, how: 'inferred' });
-    return 'frontier';
-  }
-  return undefined;
+/** A group idea whose level moved because its items did. */
+export interface GroupMoved {
+  id: string;
+  level: GrammarLevelName;
 }
 
-/** Tells the bus the alphabet moved, when syncAlphabet says it did. */
-export async function announceAlphabet(level: GrammarLevelName | undefined, now: number): Promise<void> {
-  if (level === undefined) return;
-  publish({ kind: 'grammar-level-changed', id: 'alphabet', level });
+/**
+ * Keeps each group idea in step with its items (mw-hqd5bz.17, .18, PROVISIONAL): 'alphabet' is solid, how 'inferred', once all 24 letters are, however
+ * each got there, and an alphabet that was solid only by that falls back to the frontier when a letter is not; 'diphthongs', 'consonant-pairs' and
+ * 'breathings' become solid, how 'inferred', when every one of their items is (they never fall back: they may be solid by his own say). Runs inside the
+ * caller's transaction (which must include db.grammarLevels and db.reviews); the caller publishes what this returns and announces the schedule.
+ */
+export async function syncAlphabet(now: number): Promise<GroupMoved[]> {
+  const moved: GroupMoved[] = [];
+  for (const group of ITEM_GROUPS) {
+    const rows = await db.grammarLevels.bulkGet(itemsOf(group).map((i) => i.id));
+    const solid = groupIsSolid(new Map(rows.flatMap((row) => (row ? [[row.id, row.level] as const] : []))), group);
+    const parent = await db.grammarLevels.get(group);
+    if (solid && parent?.level !== 'solid') {
+      await db.grammarLevels.put({ id: group, level: 'solid', since: now, how: 'inferred' });
+      await writeScheduled(IDEA_KIND, [group], now, () => knownStart(now));
+      moved.push({ id: group, level: 'solid' });
+    } else if (!solid && group === 'alphabet' && parent?.how === 'inferred' && parent.level === 'solid') {
+      await db.grammarLevels.put({ id: group, level: 'frontier', since: now, how: 'inferred' });
+      moved.push({ id: group, level: 'frontier' });
+    }
+  }
+  return moved;
+}
+
+/** Tells the bus the group ideas moved, when syncAlphabet says they did. */
+export async function announceAlphabet(moved: readonly GroupMoved[], now: number): Promise<void> {
+  if (moved.length === 0) return;
+  for (const { id, level } of moved) publish({ kind: 'grammar-level-changed', id, level });
   await announceDue(now);
 }
 
@@ -83,7 +92,7 @@ export async function recordGrammarAnswer(id: string, right: boolean, now = Date
     const review = await writeReview(IDEA_KIND, id, right, now);
     const before = (await db.grammarLevels.get(id))?.level;
     const after = right && before === 'solid' ? 'solid' : levelFromStep(review.step);
-    if (after === before) return { level: after, changed: false, alphabet: undefined };
+    if (after === before) return { level: after, changed: false, alphabet: [] as GroupMoved[] };
     await db.grammarLevels.put({ id, level: after, since: now, how: 'review' });
     return { level: after, changed: true, alphabet: await syncAlphabet(now) };
   });

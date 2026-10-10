@@ -12,6 +12,7 @@ import { Markdown } from './markdown/Markdown';
 import { answerRuns } from './speech/answerRuns';
 import { stopAnswer } from './speech/readAloud';
 import { askAnswerId, speakTutor, stopOnTap } from './speech/tutorVoice';
+import { PendingQuestion } from './ui/PendingQuestion';
 import { useElapsed } from './ui/useElapsed';
 
 export function Waiting({ state }: { state: Extract<AskState, { phase: 'sending' | 'waiting' }> }) {
@@ -90,38 +91,52 @@ function AnswerCard({ answer }: { answer: TutorAnswer }) {
 }
 
 /** The Ask box for `verse` (or a passage, src/data/passage.ts): the field, with what its last question is doing. */
-export function AskBox({ verse, state, onAsk, prefill = null }: {
+export function AskBox({ verse, state, onAsk, prefill = null, hearing = null }: {
   verse: Verse;
   state: AskState | undefined;
   onAsk: (verse: Verse, question: string) => void;
+  /** while he holds Hold to ask: his words so far fill the field as he speaks (null when he is not holding) */
+  hearing?: { transcript: string } | null;
   /** a question to put in the field when the box opens on that verse (the Parsing drill's link); he sends it himself */
   prefill?: { verse: number; text: string } | null;
 }) {
-  return <AskField key={unitId(verse)} verse={verse} state={state} initial={verse.to === undefined && prefill?.verse === verse.n ? prefill.text : ''} onAsk={(question) => onAsk(verse, question)} />;
+  return <AskField key={unitId(verse)} verse={verse} state={state} hearing={hearing} initial={verse.to === undefined && prefill?.verse === verse.n ? prefill.text : ''} onAsk={(question) => onAsk(verse, question)} />;
 }
 
 /** The field and the Ask button for one verse, with what its last question is doing. */
-function AskField({ verse, state, initial, onAsk }: { verse: Verse; state: AskState | undefined; initial: string; onAsk: (question: string) => void }) {
-  const [text, setText] = useState(initial);
+function AskField({ verse, state, hearing, initial, onAsk }: { verse: Verse; state: AskState | undefined; hearing: { transcript: string } | null; initial: string; onAsk: (question: string) => void }) {
+  // null: nothing typed since the last send, so a question that failed shows in the field (to send again) and otherwise it is empty
+  const [typed, setTyped] = useState<string | null>(initial || null);
   const busy = state?.phase === 'sending' || state?.phase === 'waiting';
+  const field = useRef<HTMLTextAreaElement>(null);
+  const text = typed ?? (state?.phase === 'failed' ? state.question : '');
   const submit = (question: string): void => {
     if (!question.trim() || busy) return;
     onAsk(question);
-    setText('');
+    setTyped(null);
   };
+  // His first word brings the field into view above the hold bar, where he is looking (docs/pwa-best-practices.md section 12).
+  const heard = hearing !== null && hearing.transcript !== '';
+  useEffect(() => {
+    // (jsdom has no scrollIntoView)
+    if (heard) field.current?.scrollIntoView?.({ block: 'nearest' });
+  }, [heard]);
   return (
     <section aria-label="Ask the tutor" data-ask={unitId(verse)} className="mb-3 space-y-2 px-1">
       <label className="block text-sm text-muted" htmlFor={`ask-${unitId(verse)}`}>
         Ask the tutor about {unitName(verse)}
       </label>
       <textarea
+        ref={field}
         id={`ask-${unitId(verse)}`}
         aria-label="Your question"
         rows={2}
         maxLength={MAX_QUESTION_CHARS}
-        value={text}
+        value={hearing ? hearing.transcript : text}
+        placeholder={hearing ? 'Listening…' : undefined}
+        readOnly={hearing !== null}
         disabled={busy}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => setTyped(e.target.value)}
         className="block w-full resize-none rounded-lg border border-line bg-canvas px-3 py-2 text-lg"
       />
       {state?.phase === 'failed' ? (
@@ -131,7 +146,10 @@ function AskField({ verse, state, initial, onAsk }: { verse: Verse; state: AskSt
           {state.failure === 'not-sent' ? null : (
             <button
               type="button"
-              onClick={() => onAsk(state.question)}
+              onClick={() => {
+                onAsk(state.question);
+                setTyped(null);
+              }}
               className="min-h-12 rounded-xl border border-line px-5 text-base font-medium"
             >
               Retry
@@ -139,7 +157,13 @@ function AskField({ verse, state, initial, onAsk }: { verse: Verse; state: AskSt
           )}
         </div>
       ) : null}
-      {busy ? <Waiting state={state} /> : null}
+      {busy ? (
+        // his question stays shown, as in the Talk sheet, until the answer card arrives
+        <div data-ask-pending className="space-y-2">
+          <PendingQuestion text={state.question} />
+          <Waiting state={state} />
+        </div>
+      ) : null}
       <button
         type="button"
         disabled={busy || !text.trim()}

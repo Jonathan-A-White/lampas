@@ -44,3 +44,23 @@ export async function answerPlacement(state: PlacementState, right: boolean, wri
   await writeAnswer(state, next, right, writer, question);
   return next;
 }
+
+/** What a tap of the quick round (quickRound.ts) writes: the answer on the schedule, the item's own level, and a miss counted against it. */
+export interface QuickWriter {
+  answer: (id: string, right: boolean) => Promise<unknown>;
+  level: (id: string, level: Level) => Promise<unknown>;
+  miss: (question: AnsweredQuestion) => Promise<unknown>;
+}
+
+export const QUICK_STORE_WRITER: QuickWriter = {
+  answer: (id, right) => recordGrammarAnswer(id, right),
+  level: (id, level) => setLevel(id, level, 'placement'),
+  miss: (question) => noteAnswer(question, false),
+};
+
+/** Writes one tap of the quick round: right makes the item solid, wrong makes it not yet (PROVISIONAL, one tap an item). */
+export async function writeQuick(id: string, right: boolean, question: AnsweredQuestion, writer: QuickWriter = QUICK_STORE_WRITER): Promise<void> {
+  await writer.answer(id, right);
+  await writer.level(id, right ? 'solid' : 'notYet');
+  if (!right) await writer.miss(question);
+}

@@ -10,6 +10,8 @@ const lesson = (title: string, ...ideas: string[]): ApproachLesson => ({ title, 
 
 /** The alphabet and its 24 letters, which the ladder holds as ideas of the letters tier. */
 const LETTERS = LADDER.filter((i) => i.tier === 'letters').map((i) => i.id);
+/** The pairs of vowels, the pairs of consonants and the two breathings, which the ladder holds as an item each (mw-hqd5bz.18). */
+const itemsOfGroup = (group: string): string[] => LADDER.filter((i) => i.parent === group).map((i) => i.id);
 
 export const bmaTutor: GrammarApproach = {
   id: 'bma-tutor',
@@ -29,8 +31,8 @@ export const bmaTutor: GrammarApproach = {
           title: 'Letters, sounds and first sentences',
           lessons: [
             lesson('The Greek letters', ...LETTERS),
-            lesson('Saying words aloud', 'diphthongs', 'consonant-pairs', 'syllables'),
-            lesson('Marks over the letters', 'breathings', 'accents', 'iota-subscript', 'punctuation'),
+            lesson('Saying words aloud', 'diphthongs', ...itemsOfGroup('diphthongs'), 'consonant-pairs', ...itemsOfGroup('consonant-pairs'), 'syllables'),
+            lesson('Marks over the letters', 'breathings', ...itemsOfGroup('breathings'), 'accents', 'iota-subscript', 'punctuation'),
             lesson('Your first words', 'noun', 'article', 'proper-name'),
             lesson('Who acts and who is acted on', 'case-nominative', 'case-accusative'),
             lesson('Being: I am, you are, he is', 'person-1st', 'person-2nd', 'person-3rd', 'number-singular', 'number-plural', 'verb'),

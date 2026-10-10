@@ -1,0 +1,23 @@
+{
+  "description": "A talk from the Goal screen, not about a text: no Greek or English is sent, and the answer is plain English that explains the screen without inventing a Bible passage.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Goal",
+    "question": "What do the three colours in the bar mean?",
+    "history": [],
+    "solid_words": ["ὁ", "καί"],
+    "settings": {},
+    "screen": {
+      "name": "Goal",
+      "facts": [
+        { "label": "Goal", "value": "Read 1 John 1:1" },
+        { "label": "Words", "value": "12 solid, 6 frontier, 13 not yet" },
+        { "label": "Grammar ideas", "value": "8 solid, 3 frontier, 3 not yet" }
+      ]
+    }
+  },
+  "expect": {
+    "answer": { "matches": "[Ss]olid" },
+    "settings_changes": { "present": false }
+  }
+}

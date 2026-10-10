@@ -3,14 +3,13 @@
 import type { GrammarApproach, LessonPlace } from '../../approaches';
 import { lessonOf, orderOf } from '../../approaches';
 import type { GrammarLevel, WordState } from '../db';
-import { alphabetIsSolid, LETTER_IDS, weakLetters } from './inference';
-import { ideaOf, type GrammarIdea } from './ladder';
+import { gapsOf, groupIsSolid } from './inference';
+import { ideaOf, ITEM_GROUPS, type GrammarIdea } from './ladder';
 import type { Level, NeededIdea, NeededWord, PassageNeeds } from './needs';
 
 /** How many words Next words offers. */
 export const NEXT_WORDS = 3;
 
-const LETTER_COUNT = LETTER_IDS.length;
 
 /** The levels, in the order the bars and lists show them. */
 export const LEVELS: readonly Level[] = ['solid', 'frontier', 'notYet'];
@@ -36,25 +35,34 @@ export const levelsOf = (rows: ReadonlyMap<string, GrammarLevel>): Map<string, L
 export const wordLevel = (state: WordState | undefined): Level => (state === 'solid' ? 'solid' : state === 'learning' ? 'frontier' : 'notYet');
 
 export interface LearnNext {
-  /** the idea it opens: the first weak letter when `letters` is set */
+  /** the idea it opens: the first gap when `gaps` is set */
   idea: GrammarIdea;
   /** the lesson of the approach that teaches it; none when the approach has no lesson for it */
   lesson: LessonPlace | undefined;
-  /** the letters that are not solid yet, when some letters are: Learn next names these, not the whole alphabet (mw-hqd5bz.17, PROVISIONAL) */
-  letters?: GrammarIdea[];
+  /** the exact gaps, when some letters, pairs or breathings are solid and others are not: Learn next names these ('ξ, ψ and ου'), not the whole idea (mw-hqd5bz.17, .18, PROVISIONAL) */
+  gaps?: GrammarIdea[];
 }
 
 /**
- * The earliest idea in the approach's sequence that the goal needs and that is not yet or untested; undefined when none is left. The alphabet is
- * solid when all 24 letters are; while some letters are solid and others are not it is the weak letters that are named, never the whole alphabet.
+ * The earliest idea in the approach's sequence that the goal needs and that is not yet or untested; undefined when none is left. A group of the
+ * foundation (the alphabet, the diphthongs, the consonant pairs, the breathings) is solid when every one of its items is. While some items of a group
+ * are solid and others are not, it is the exact gaps that are named, from every such group, never the whole idea; a group that is partly known counts
+ * even when the goal does not need it (the diphthongs are not in any goal's needs).
  */
 export function learnNext(needs: Pick<PassageNeeds, 'ideas'>, approach: GrammarApproach, levels: ReadonlyMap<string, Level>): LearnNext | undefined {
   const needed = new Set(needs.ideas.map((i) => i.id));
-  const id = orderOf(approach).find((i) => needed.has(i) && (levels.get(i) ?? 'notYet') === 'notYet' && !(i === 'alphabet' && alphabetIsSolid(levels)));
+  const partial = new Set(gapsOf(levels).map((i) => i.parent ?? 'alphabet'));
+  const grouped = new Set(ITEM_GROUPS);
+  // a group with exact gaps is named while its idea is not solid, whatever else its level says; any other idea only while not yet or untested
+  const id = orderOf(approach).find((i) =>
+    partial.has(i)
+      ? levels.get(i) !== 'solid'
+      : needed.has(i) && (levels.get(i) ?? 'notYet') === 'notYet' && !(grouped.has(i) && groupIsSolid(levels, i)),
+  );
   if (id === undefined) return undefined;
-  if (id === 'alphabet') {
-    const weak = weakLetters(levels);
-    if (weak.length < LETTER_COUNT) return { idea: weak[0], lesson: lessonOf(approach, weak[0].id), letters: weak };
+  if (partial.has(id)) {
+    const gaps = gapsOf(levels);
+    return { idea: gaps[0], lesson: lessonOf(approach, gaps[0].id), gaps };
   }
   return { idea: ideaOf(id), lesson: lessonOf(approach, id) };
 }
