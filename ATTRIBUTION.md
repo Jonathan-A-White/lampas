@@ -75,6 +75,9 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   factory that builds Lampas keeps its work: small tracked tasks, and agents that take them one at a time. Licence:
   [MIT](https://github.com/steveyegge/beads/blob/main/LICENSE) (Beads), [MIT](https://github.com/steveyegge/gastown/blob/main/LICENSE) (Gas Town).
   Changes: our factory, [millwright](https://github.com/Jonathan-A-White/millwright), uses the ideas in its own code.
+- **[Logos Bible Software](https://www.logos.com)**'s verse pop-up. The idea of the card a Bible reference in the tutor's answer opens before it takes you
+  there: the reference, the verse and an Open button. Only the idea is borrowed: the card is our own, and nothing is
+  taken from Logos. Licence: none needed, it is an idea. Changes: none.
 - **[Claude Code](https://www.anthropic.com/claude-code)** by Anthropic. Writes most of Lampas's code and the files of its lamp icon and
   memory pictures, under Jonathan's direction. Licence: none needed, it is a tool; Anthropic's [terms](https://www.anthropic.com/legal/commercial-terms) apply.
   Changes: none.
