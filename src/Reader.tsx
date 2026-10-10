@@ -106,7 +106,7 @@ function SuppliedText({ chunk }: { chunk: EnglishChunk }) {
 
 /** A word he can tap: a span with role button and no chrome. The caller pads it to a 44 px tap height (an inline box
  * is as tall as its font's content area, so the padding is 44 px minus that, which differs by face). The trailing
- * space is inside so the gap between two words is tappable too. A finger held on it for half a second (`onLongPress`)
+ * space is inside so the gap between two words is tappable too. It has no horizontal padding: the gap between two words is that one space (mw-5r3p30.127). A finger held on it for half a second (`onLongPress`)
  * is a press, not a tap: the click that follows is dropped, and so is one after the finger wandered over 10 px
  * (src/ui/longPress.ts). The word never selects text and never raises the phone's callout menu, so the hold is free for the press. */
 function Tap({ onTap, onLongPress, lang, className, children, ...data }: {
@@ -134,7 +134,7 @@ function Tap({ onTap, onLongPress, lang, className, children, ...data }: {
           onTap();
         }
       }}
-      className={`cursor-pointer ${NO_SELECT} rounded px-[0.1em] active:bg-line ${className ?? ''}`}
+      className={`cursor-pointer ${NO_SELECT} rounded active:bg-line ${className ?? ''}`}
     >
       {children}{' '}
     </span>
