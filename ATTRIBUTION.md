@@ -56,6 +56,8 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   tutor's answers, which are written in Markdown. Licence: [MIT](https://github.com/remarkjs/react-markdown/blob/main/license). Changes: none.
 - **[remark-gfm](https://github.com/remarkjs/remark-gfm)** (`remark-gfm`) by Titus Wormer and the unified collective. Tables, lists and
   strike-through in those answers. Licence: [MIT](https://github.com/remarkjs/remark-gfm/blob/main/license). Changes: none.
+- **[node-qrcode](https://github.com/soldair/node-qrcode)** (`qrcode`) by Ryan Day. Draws this phone's key as a QR code on the unlock screen,
+  so Postern can scan it to issue a licence. Licence: [MIT](https://github.com/soldair/node-qrcode/blob/master/license). Changes: none.
 - **[Workbox](https://developer.chrome.com/docs/workbox)** (`workbox-precaching`, `workbox-routing`, `workbox-strategies`) from Google Chrome.
   The service worker that lets Lampas open with no signal. Licence: [MIT](https://github.com/GoogleChrome/workbox/blob/v7/LICENSE). Changes: none.
 

@@ -6,7 +6,7 @@
 import type { ScreenCredit } from './screen';
 
 /** The most the credits weigh as JSON in UTF-8, so the screen, his words and a little history still fit MAX_REQUEST_BYTES (src/services/talk.ts). */
-export const MAX_CREDITS_BYTES = 4100;
+export const MAX_CREDITS_BYTES = 4300;
 
 export const CREDITS: ScreenCredit[] = [
   { name: 'Majority Standard Bible', use: 'The Greek you read, aligned to its English, with Strong\'s and parsing', licence: 'Public domain', link: 'https://majoritybible.com' },
@@ -21,6 +21,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'BSV SDK', use: 'Keys and signatures under bsv-kit', licence: 'Open BSV License', link: 'https://github.com/bsv-blockchain/ts-stack/tree/main/packages/sdk' },
   { name: 'react-markdown', use: 'Draws the tutor\'s answers', licence: 'MIT', link: 'https://github.com/remarkjs/react-markdown' },
   { name: 'remark-gfm', use: 'Tables and lists in them', licence: 'MIT', link: 'https://github.com/remarkjs/remark-gfm' },
+  { name: 'node-qrcode', use: 'The key as a QR code', licence: 'MIT', link: 'https://github.com/soldair/node-qrcode' },
   { name: 'Workbox', use: 'Lets Lampas open offline', licence: 'MIT', link: 'https://developer.chrome.com/docs/workbox' },
   { name: 'WhatsOnChain', use: 'Checks your key holds a licence', licence: 'none needed; public API', link: 'https://whatsonchain.com' },
   { name: 'Postern', use: 'Carries your questions and pictures to the tutor and back', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/postern' },

@@ -1,6 +1,7 @@
 // src/gate/Unlock.tsx — the screen the licence gate shows until the phone's key holds a licence: the answer
-// so far, the phone's key as hex with a Copy (to issue the licence from Postern's Key screen), Check again.
+// so far, the phone's key as a QR code (for Postern's scanner) and as hex with a Copy (to issue the licence from Postern's Key screen), Check again.
 import { useState } from 'react';
+import { KeyQr } from './KeyQr';
 import { BuildVersion } from '../BuildVersion';
 import { UpdateBanner } from '../UpdateBanner';
 
@@ -50,7 +51,8 @@ export function Unlock({ locked, publicKeyHex, onCheckAgain }: Props) {
         </div>
         <section aria-label="This phone’s key" className="flex w-full max-w-sm flex-col gap-2">
           <p className="text-sm text-muted">This phone’s key</p>
-          <p data-testid="device-key" className="select-all break-all rounded-xl border border-line bg-surface p-3 font-mono text-base">
+          <KeyQr text={publicKeyHex} label="This phone’s key as a QR code" />
+          <p data-testid="device-key" className="select-all break-all rounded-xl border border-line bg-surface p-3 font-mono slashed-zero text-base">
             {publicKeyHex}
           </p>
           <button

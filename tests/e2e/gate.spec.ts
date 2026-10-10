@@ -9,6 +9,20 @@ test('a phone with no licence sees Unlock with its key, a Copy and nothing scrol
   await expect(page.getByRole('heading', { name: 'Unlock' })).toBeVisible();
   await expect(page.getByTestId('device-key')).toHaveText(SEED_PUBLIC_KEY);
   await expect(page.getByRole('button', { name: 'Copy', exact: true })).toBeVisible();
+
+  // The QR, the key text and Copy are all on the one 390x844 screen, the QR at least 192 px and above them.
+  const qr = page.getByRole('img', { name: 'This phone’s key as a QR code' });
+  await expect(qr).toBeVisible();
+  const box = await qr.boundingBox();
+  const keyBox = await page.getByTestId('device-key').boundingBox();
+  const copyBox = await page.getByRole('button', { name: 'Copy', exact: true }).boundingBox();
+  const height = page.viewportSize()?.height ?? 844;
+  expect(box!.width).toBeGreaterThanOrEqual(192);
+  expect(box!.height).toBeGreaterThanOrEqual(192);
+  expect(box!.y).toBeGreaterThanOrEqual(0);
+  expect(box!.y + box!.height).toBeLessThanOrEqual(keyBox!.y);
+  expect(keyBox!.y + keyBox!.height).toBeLessThanOrEqual(copyBox!.y);
+  expect(copyBox!.y + copyBox!.height).toBeLessThanOrEqual(height);
   await expect(page.getByTestId('build-version')).toHaveText(/^v\d+\.\d+\.\d+ · /);
   await expect(page.getByRole('heading', { name: 'Lampas' })).toHaveCount(0);
 
