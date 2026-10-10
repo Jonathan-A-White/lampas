@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.27
+_2026-10-10_
+- New: On the About screen you can now ask the tutor what any credit is, what it gives you and what its licence lets us do, or why we credit them all.
+
 ## 0.1.25
 _2026-10-10_
 - New: On the Ask for another approach form, a button now lets the tutor take you through it one question at a time, asking for a photo when it is needed and filling in the boxes as you answer.
