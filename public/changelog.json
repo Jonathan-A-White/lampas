@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.32",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.127",
+    "kind": "fixed",
+    "text": "The gaps between words in the Reader are now an even single space instead of wide, uneven gaps."
+  },
+  {
     "version": "0.1.30",
     "date": "2026-10-10",
     "story": "mw-5r3p30.118",

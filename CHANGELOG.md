@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.32
+_2026-10-10_
+- Fixed: The gaps between words in the Reader are now an even single space instead of wide, uneven gaps.
+
 ## 0.1.30
 _2026-10-10_
 - Fixed: none (the fix itself shipped with mw-5r3p30.115; this adds a test).
