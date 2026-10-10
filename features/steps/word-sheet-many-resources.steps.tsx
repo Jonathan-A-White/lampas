@@ -44,7 +44,10 @@ const taps = async (_: unknown, text: string, verse: number): Promise<void> => {
   const el = document.querySelector<HTMLElement>(`[data-verse="${verse}"]`);
   if (!el) throw new Error(`no verse ${verse}`);
   await user.click(within(el).getByRole('button', { name: text }));
-  await screen.findByRole('dialog', { name: 'Word' });
+  const dialog = await screen.findByRole('dialog', { name: 'Word' });
+  // The sheet mounts before its study resources are read (a liveQuery answers later, later still on a loaded host): wait for the Study row,
+  // or a step can look for the tiles or Close before they are drawn (two full runs failed so, mw-5r3p30.135).
+  await within(dialog).findByRole('group', { name: 'Study', exact: true });
 };
 const sheet = (): HTMLElement => screen.getByRole('dialog', { name: 'Word' });
 const study = (): HTMLElement => within(sheet()).getByRole('group', { name: 'Study', exact: true });
@@ -132,7 +135,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened with every Logos lexicon ticked', openWithEveryLexicon);
     When('he taps the word {string} in verse {int}', taps);
     And('he taps Close on the sheet', async () => {
-      await user.click(within(sheet()).getByRole('button', { name: 'Close' }));
+      await user.click(await within(sheet()).findByRole('button', { name: 'Close' }));
     });
     Then('the word sheet is gone', async () => {
       await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Word' })).toBeNull());
