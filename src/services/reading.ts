@@ -85,8 +85,20 @@ export function isVerseReadAnswer(value: unknown): value is VerseReadAnswer {
   );
 }
 
-/** What a speaker beside a flagged word says: the respelling the answer gave, else the word as written. */
-export const sayOf = (fix: { word: string; say?: string }): string => fix.say ?? fix.word;
+/** The respelling a tip spells out in capitals ('say it as LEE-vites', 'luh-VY-tees'), as the voice should speak it: lower case, the
+ * hyphens as spaces ('lee vites'). It is a hyphenated run of letters with at least one part in capitals of two letters or more, so a
+ * hyphenated word ('well-known') or a shouted word ('NOW') is not one. null when the tip gives none. */
+export function tipRespelling(tip: string): string | null {
+  for (const run of tip.match(/[A-Za-z]+(?:-[A-Za-z]+)+/g) ?? []) {
+    if (run.split('-').some((part) => /^[A-Z]{2,}$/.test(part))) return run.toLowerCase().replace(/-/g, ' ');
+  }
+  return null;
+}
+
+/** What a speaker beside a flagged word says: the respelling the answer gave, else (English only) the respelling its tip spells in
+ * capitals, since the phone's voice reads 'Levites' as LEV-its though the tip says LEE-vites (mw-5r3p30.140), else the word as written. */
+export const sayOf = (fix: { word: string; tip?: string; say?: string }, view: ReadingView = 'english'): string =>
+  fix.say ?? (view === 'english' && fix.tip ? tipRespelling(fix.tip) : null) ?? fix.word;
 
 /** The note and the tip as he reads them: the grind's model has written a quote as backslash-quote inside a string the JSON
  * already escapes, so a reading kept that way shows plain quote marks (mw-5r3p30.110). */
