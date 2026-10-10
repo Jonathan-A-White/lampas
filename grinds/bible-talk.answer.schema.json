@@ -63,6 +63,26 @@
       "required": ["summary"],
       "properties": { "summary": { "description": "One line saying what he wants.", "type": "string", "minLength": 1, "maxLength": 200 } }
     },
+    "form_values": {
+      "description": "Only while he is being helped to fill in a form (`form` in the request): the values to put in its fields from what he just said, each the field's `name` and the field's whole new value. Only text and link fields, never pictures; never a field the form does not list. Leave it out when his words fill nothing.",
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["field", "value"],
+        "properties": {
+          "field": { "description": "The `name` of one field of `form`.", "type": "string", "minLength": 1, "maxLength": 30 },
+          "value": { "description": "The whole new value of the field.", "type": "string", "minLength": 1, "maxLength": 1200 }
+        }
+      }
+    },
+    "form_ask": {
+      "description": "Only while he is being helped to fill in a form: the `name` of the field the question in `answer` is about (a pictures field when you ask for a photo). Leave it out when there is nothing more to ask, which is when every required field is filled and he has nothing to add.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 30
+    },
     "links": {
       "description": "Links the app turns into buttons that open a word or a verse in the reader's own study resources (lexicons, a Bible); he sees only the ones he has switched on. At most three. Leave it out when no lexicon or verse would help him.",
       "type": "array",

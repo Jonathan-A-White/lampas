@@ -64,6 +64,32 @@
         }
       }
     },
+    "form": {
+      "description": "Optional. Present while he is being helped to fill in a form of the app (the button 'Let the tutor help me fill this in'): the form's name and its fields in screen order, each with the name you answer with, the label he sees, the hint under it if any, whether it is required, its kind and what it holds now ('' when empty; for pictures, how many he has added). `screen` is also present, with the form's name and no facts; `greek` and `english` are missing.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "fields"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "fields": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "label", "required", "kind", "value"],
+            "properties": {
+              "name": { "description": "The field's key: the name `form_values` and `form_ask` use.", "type": "string", "minLength": 1, "maxLength": 30 },
+              "label": { "description": "What the form calls the field on screen.", "type": "string", "minLength": 1, "maxLength": 80 },
+              "hint": { "description": "The line under the field, when the form has one.", "type": "string", "minLength": 1, "maxLength": 120 },
+              "required": { "description": "Whether the form cannot be sent without it.", "type": "boolean" },
+              "kind": { "description": "text: any words; link: a web address; pictures: screenshots or photos, which only he can add (you cannot fill them).", "type": "string", "enum": ["text", "link", "pictures"] },
+              "value": { "description": "What the field holds now, cut at 600 characters; empty when nothing is in it. For pictures, a count such as '2 pictures added'.", "type": "string", "maxLength": 600 }
+            }
+          }
+        }
+      }
+    },
     "solid_words": { "description": "The Greek lemmas he already knows well.", "type": "array", "items": { "type": "string" } },
     "learner": { "description": "Optional. Where he stands in one line: 'solid N words; learning: a, b, c; new today: x, y; due now: M'.", "type": "string", "maxLength": 600 },
     "learner_grammar": {

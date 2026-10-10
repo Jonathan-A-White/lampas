@@ -9,6 +9,7 @@ import type { AnswerLink, AnswerWord } from '../data/db';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { SettingValue } from '../settings/registry';
 import { slugOf, type ScreenContext } from '../tutor/screen';
+import type { FormFieldState, FormValue } from '../formHelper/formHelper';
 import { MAX_SUMMARY } from './feedback';
 import { askGrind, type AskOptions } from './tutor';
 
@@ -166,6 +167,8 @@ export interface TalkRequest {
   mode?: 'quiz';
   /** present only in a quiz and only when he has kept any (My study way, mw-5r3p30.76): the lines of how he wants to be quizzed; they override the default method where they conflict */
   study_way?: string[];
+  /** present only while the tutor helps him fill in a form (mw-5r3p30.117, src/formHelper/): the form's name and its fields with what each holds now */
+  form?: { name: string; fields: FormFieldState[] };
 }
 
 /** The most links an answer carries (the grind's schema): the app shows the first three of more. */
@@ -199,6 +202,10 @@ export interface TalkAnswer {
   study_way_line?: string;
   /** an ask the app cannot meet (another app, a new setting, a change): the summary the app offers to send to the makers */
   feedback_offer?: FeedbackOffer;
+  /** while the tutor helps with a form (`form` in the request): the values to put in its fields, by field name; the form ignores a name it does not have */
+  form_values?: FormValue[];
+  /** the name of the field the question in `answer` is about; missing when there is nothing more to ask */
+  form_ask?: string;
 }
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
@@ -207,13 +214,18 @@ const isText = (value: unknown, max: number): value is string => typeof value ==
 const isAnswerLink = (value: unknown): value is AnswerLink =>
   isObject(value) && Object.keys(value).length === 2 && ((value.kind === 'word' && isText(value.lemma, 80)) || (value.kind === 'verse' && isText(value.reference, 40)));
 
+const isFormValue = (value: unknown): value is FormValue =>
+  isObject(value) && Object.keys(value).length === 2 && isText(value.field, 30) && isText(value.value, 1200);
+
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'feedback_offer')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'feedback_offer' && k !== 'form_values' && k !== 'form_ask')) return false;
   if ('question' in value && !isText(value.question, MAX_TALK_CHARS)) return false;
   if ('study_way_line' in value && !isText(value.study_way_line, STUDY_WAY_LINE_MAX)) return false;
   if ('feedback_offer' in value && !(isObject(value.feedback_offer) && Object.keys(value.feedback_offer).length === 1 && isText(value.feedback_offer.summary, FEEDBACK_SUMMARY_MAX))) return false;
+  if ('form_ask' in value && !isText(value.form_ask, 30)) return false;
+  if ('form_values' in value && !(Array.isArray(value.form_values) && value.form_values.length <= 8 && value.form_values.every(isFormValue))) return false;
   if ('links' in value && !(Array.isArray(value.links) && value.links.length <= 12 && value.links.every(isAnswerLink))) return false;
   if ('settings_changes' in value && !Array.isArray(value.settings_changes)) return false;
   if ('words_to_add' in value && !(Array.isArray(value.words_to_add) && value.words_to_add.length <= 12 && value.words_to_add.every((l) => isText(l, 80)))) return false;
