@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.51
+_2026-10-10_
+- Fixed: the tutor that helps fill in a form now asks just one question at a time, with nothing tacked on after it.
+
 ## 0.1.49
 _2026-10-10_
 - New: Listening to a passage now starts with one tap on Play, reads on by itself with Pause, Restart and Stop, and pauses and carries on when you ask the tutor, long-press a word or leave the screen.

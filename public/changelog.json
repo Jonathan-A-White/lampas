@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.51",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.158",
+    "kind": "fixed",
+    "text": "the tutor that helps fill in a form now asks just one question at a time, with nothing tacked on after it."
+  },
+  {
     "version": "0.1.49",
     "date": "2026-10-10",
     "story": "mw-5r3p30.130",
