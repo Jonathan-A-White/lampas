@@ -3,9 +3,10 @@
 // are not talkable (the study-resource switches, the links) and is the one list the Settings screen draws, searches and hides from. Writing saves the choice (src/data/repositories) and tells the bus, which is all the Settings screen does
 // when he taps (it calls `write` here), so a change he asks for in the Bible talk takes the same path. The bible-talk grind is
 // told this list (src/settings/grindText.ts builds its schema and instructions from it): a new setting is talkable by adding it
-// here, and tests/unit/settings-registry.test.tsx fails if a control of the Settings screen has no entry.
+// here, and tests/unit/settings-registry.test.tsx fails if a control of the Settings screen has no entry. A setting declared once
+// (src/settings/definitions/: theme, weave, tips so far) gets its entry from its definition (`fromDefinition`), in its place in the list.
 import { TEXT_SIZES } from '../appearance/textSizes';
-import { THEMES } from '../appearance/themes';
+import type { Theme } from '../appearance/themes';
 import {
   getGoal,
   getGrammarApproach,
@@ -23,10 +24,7 @@ import {
   getSpeechRates,
   getStudyResources,
   getTextSize,
-  getTheme,
-  getTips,
   getVoice,
-  getWeave,
   getWeaveGrammar,
   setGoal,
   setGrammarApproach,
@@ -43,25 +41,20 @@ import {
   setSpeechRate,
   setResourceOn,
   setTextSize,
-  setTheme,
-  setTips,
   setVoice,
-  setWeave,
   setWeaveGrammar,
   type GrammarMove,
   type PickerGrammar,
   type ReadingLayout,
   type ReadTutor,
   type SectionHeadings,
-  type Tips,
-  type Weave,
   type WeaveGrammar,
 } from '../data/repositories';
 import { APPROACHES, DEFAULT_APPROACH, approachOf } from '../approaches';
 import { BOOK_INDEX } from '../data/bookIndex';
 import { goalTitle, parseGoal } from '../data/goal';
 import { normaliseNewWordsADay } from '../data/pace';
-import { publish } from '../events/bus';
+import { publish, type AppEvent } from '../events/bus';
 import { LAYOUTS } from '../layout/layouts';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from '../speech/languages';
 import { RESOURCES } from '../resources';
@@ -69,50 +62,19 @@ import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../resources/l
 import { READ_SPANS, type ReadSpan } from '../speech/readSpan';
 import { PRONUNCIATIONS } from '../speech/pronunciation';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS, type Depth } from '../script/scripts';
+import type { Allowed, Dependency, SectionId, SettingDef, SettingValue } from './define';
+import { themeSetting, tipsSetting, weaveSetting } from './definitions';
+import type { Tips } from './definitions/tips';
+import type { Weave } from './definitions/weave';
+import { getSetting, setSetting } from './store';
+
+export type { Allowed, Dependency, SectionId, SettingValue };
 
 /** The longest text a talked change of a text setting may hold (the grind's schema says the same). */
 export const TEXT_MAX = 80;
 
-/** What a setting holds: a choice's value (text) or a speed (number). */
-export type SettingValue = string | number;
-
 /** The voice value that means the phone's own pick; a voice he chose in Settings is its voiceURI, which a talk cannot name. */
 export const PHONE_VOICE = 'default';
-
-export type Allowed =
-  | { kind: 'choice'; values: readonly { value: string; label: string }[] }
-  | { kind: 'number'; min: number; max: number; step: number }
-  /** free text the entry checks itself: `valid` takes the text a person or the tutor wrote; `example` is one it takes */
-  | { kind: 'text'; valid(value: string): boolean; example: string };
-
-/** The sections of the Settings screen, in the order it draws them (src/settings/rows.ts SECTIONS has their titles). */
-export type SectionId =
-  | 'appearance'
-  | 'layout'
-  | 'headings'
-  | 'weave'
-  | 'newWords'
-  | 'goal'
-  | 'approach'
-  | 'readAloud'
-  | 'readTutor'
-  | 'hebrew'
-  | 'voices'
-  | 'speed'
-  | 'pronunciation'
-  | 'resources'
-  | 'logos'
-  | 'tips'
-  | 'developer'
-  | 'studyWay'
-  | 'more';
-
-/** A row that is a detail of another: shown only while `shown(value)` says so of the other's value (as text: 'off', '0', 'on'). */
-export interface Dependency {
-  /** the other row's key: a setting's, or 'resource.<id>' for a study resource's switch */
-  key: string;
-  shown(value: string): boolean;
-}
 
 /** What the Settings screen needs of a row besides its control. */
 export interface RowMeta {
@@ -156,6 +118,37 @@ function choice(
     read,
     write: (value) => write(String(value)),
     show: (value) => `${label}: ${values.find((v) => v.value === value)?.label ?? String(value)}`,
+  };
+}
+
+// The per-setting kinds the declared settings published before setting-changed, still published after it while feature steps read them
+// (docs/module-map.md R2a); nothing in the app listens to them any more.
+const OLD_KINDS: Readonly<Record<string, (value: SettingValue) => AppEvent>> = {
+  theme: (value) => ({ kind: 'theme-changed', theme: value as Theme }),
+  weave: (value) => ({ kind: 'weave-changed', weave: value as Weave }),
+  tips: (value) => ({ kind: 'tips-changed', tips: value as Tips }),
+};
+
+/** The entry of a setting declared once (src/settings/definitions/): read and saved through src/settings/store.ts. */
+function fromDefinition<T extends SettingValue>(def: SettingDef<T>): SettingEntry {
+  const { key, label, hint, help, section, dependsOn, allowed } = def;
+  return {
+    key,
+    label,
+    hint,
+    help,
+    section,
+    dependsOn,
+    allowed,
+    read: () => getSetting(def),
+    write: async (value) => {
+      const parsed = def.parse(value);
+      await setSetting(def, parsed);
+      const old = OLD_KINDS[key];
+      if (old) publish(old(parsed));
+    },
+    show: (value) =>
+      allowed.kind === 'choice' ? `${label}: ${allowed.values.find((v) => v.value === value)?.label ?? String(value)}` : `${label}: ${String(value)}`,
   };
 }
 
@@ -278,19 +271,7 @@ const resourceEntries = RESOURCES.map((r) =>
 
 /** Every talkable Settings item. (The screen draws them in src/settings/rows.ts's order, section by section.) */
 export const SETTINGS: readonly SettingEntry[] = [
-  choice(
-    'theme',
-    'Theme',
-    "Light, dark, or the phone's own.",
-    THEMES.map((t) => ({ value: t.id, label: t.label })),
-    getTheme,
-    async (value) => {
-      const theme = THEMES.find((t) => t.id === value)?.id ?? 'phone';
-      await setTheme(theme);
-      publish({ kind: 'theme-changed', theme });
-    },
-    { section: 'appearance', help: "The colours: Phone follows the phone's own light or dark setting." },
-  ),
+  fromDefinition(themeSetting),
   choice(
     'textSize',
     'Text size',
@@ -365,40 +346,8 @@ export const SETTINGS: readonly SettingEntry[] = [
     },
   ),
   ...depthEntries,
-  choice(
-    'tips',
-    'Tips',
-    'One small tip a day, from what you use.',
-    ON_OFF,
-    getTips,
-    async (value) => {
-      await setTips(value as Tips);
-      publish({ kind: 'tips-changed', tips: value as Tips });
-    },
-    {
-      section: 'tips',
-      help: 'Whether Lampas may offer one small tip a day, from what you use, to help you get more from the app. Once a day at most, when you open Lampas and are online. On by default; Off sends nothing.',
-    },
-  ),
-  choice(
-    'weave',
-    'Weave',
-    'The Greek of your words in place of their English.',
-    [
-      { value: 'off', label: 'Off' },
-      { value: 'solid', label: 'Solid' },
-      { value: 'solid+learning', label: '+ Learning' },
-    ],
-    getWeave,
-    async (value) => {
-      await setWeave(value as Weave);
-      publish({ kind: 'weave-changed', weave: value as Weave });
-    },
-    {
-      section: 'weave',
-      help: 'In the English view, whether the Greek of his solid words, and of the words he is learning with their English beneath in small grey, is shown in place of their English. Solid shows the solid ones; + Learning shows the ones being learned too, with their English beneath in small grey until they turn solid.',
-    },
-  ),
+  fromDefinition(tipsSetting),
+  fromDefinition(weaveSetting),
   choice(
     'weaveGrammar',
     'Grammar',

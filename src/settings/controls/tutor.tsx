@@ -1,8 +1,10 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { getReadTutor, getScriptDepth, getTips } from '../../data/repositories';
+import { getReadTutor, getScriptDepth } from '../../data/repositories';
 import { ScriptText } from '../../script/ScriptText';
 import { DEPTHS, SCRIPTS, type Depth, type TutorScript } from '../../script/scripts';
+import { tipsSetting } from '../definitions';
 import { writeSetting } from '../registry';
+import { useSetting } from '../store';
 import { ON_COLOUR, OnOff, SettingRow } from './SettingRow';
 import type { Control } from './types';
 
@@ -28,7 +30,7 @@ function ScriptDepthChoice({ script, depth }: { script: TutorScript; depth: Dept
 }
 
 export const TipsControl: Control = ({ row }) => {
-  const tips = useLiveQuery(getTips, []);
+  const tips = useSetting(tipsSetting);
   return <SettingRow row={row}>{tips ? <OnOff name={row.label} current={tips} settingKey="tips" /> : null}</SettingRow>;
 };
 
