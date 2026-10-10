@@ -13,3 +13,11 @@ export function revealInScrollBox(el: HTMLElement | null, keep?: HTMLElement | n
   const limit = (keep ?? el).getBoundingClientRect().top - outer.top;
   if (past > 0) box.scrollTop += Math.min(past + 8, Math.max(0, limit));
 }
+
+/** Scrolls the nearest scrolling ancestor so the top of `el` sits at the top of the box (as far as the content allows), so its first lines show: a tutor's
+ * answer arriving under a long passage. Like revealInScrollBox it moves the box and never the document. */
+export function revealTop(el: HTMLElement | null): void {
+  const box = el?.closest<HTMLElement>('.screen');
+  if (!el || !box) return;
+  box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
+}

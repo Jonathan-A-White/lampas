@@ -18,6 +18,7 @@ import { askTranscriber } from './speech/askTranscriber';
 import { stopAnswer } from './speech/readAloud';
 import { askAnswerId, speakTutor, stopOnTap } from './speech/tutorVoice';
 import { PendingQuestion } from './ui/PendingQuestion';
+import { revealTop } from './ui/reveal';
 import { useElapsed } from './ui/useElapsed';
 
 export function Waiting({ state }: { state: Extract<AskState, { phase: 'sending' | 'waiting' }> }) {
@@ -37,6 +38,7 @@ export function AnswerCards({ verse, book, chapter }: { verse: number | string; 
   // when the cards open are not, and leaving them stops the speech.
   const known = useRef<{ ref: string; ids: Set<number> } | null>(null);
   const mounted = useRef(true);
+  const cards = useRef<HTMLDivElement>(null);
   useEffect(() => {
     mounted.current = true;
     return () => {
@@ -55,11 +57,15 @@ export function AnswerCards({ verse, book, chapter }: { verse: number | string; 
     const fresh = stored.filter((a) => !seen.has(a.id));
     for (const a of fresh) seen.add(a.id);
     const newest = fresh[fresh.length - 1];
-    if (newest) speakTutor(askAnswerId(newest.id), answerRuns(newest.answer), () => mounted.current);
+    if (newest) {
+      speakTutor(askAnswerId(newest.id), answerRuns(newest.answer), () => mounted.current);
+      // the answer comes under a long passage: bring its first lines into view, clear of the composer and the speaking bar (mw-5r3p30.170)
+      revealTop(cards.current?.querySelector<HTMLElement>('[data-answer]:last-of-type') ?? null);
+    }
   }, [answers, ref]);
   if (!answers?.length) return null;
   return (
-    <div data-answers-for={verse} className="mb-2 space-y-2 px-1">
+    <div ref={cards} data-answers-for={verse} className="mb-2 space-y-2 px-1">
       {answers.map((a) => (
         <AnswerCard key={a.id} answer={a} />
       ))}
