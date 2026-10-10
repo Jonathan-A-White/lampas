@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.36
+_2026-10-10_
+- New: When the tutor names a New Testament verse in an answer, such as Hebrews 7:2, you can tap it to open that verse, and the tutor now answers questions about other passages right there.
+
 ## 0.1.35
 _2026-10-10_
 - New: Due, Goal, tip and new-word notices in the Reader now sit in one thin row of small buttons under the header, so the reading starts higher on the screen.

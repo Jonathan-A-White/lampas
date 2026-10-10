@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.36",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.123",
+    "kind": "new",
+    "text": "When the tutor names a New Testament verse in an answer, such as Hebrews 7:2, you can tap it to open that verse, and the tutor now answers questions about other passages right there."
+  },
+  {
     "version": "0.1.35",
     "date": "2026-10-10",
     "story": "mw-5r3p30.119",
