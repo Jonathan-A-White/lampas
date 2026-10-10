@@ -164,3 +164,33 @@ describe('bible-talk/other-passage-in-place (mw-5r3p30.153)', () => {
     expect(checkExpect(example.expect, { ...answer, settings_changes: [{ key: 'theme', value: 'dark' }] })).not.toEqual([]);
   });
 });
+
+// mw-5r3p30.164: the tutor's cleaned wording varies run to run, so the cleaned-question scenarios check what cleaning promises
+// (no filler, a question that ends in '?', a capital start, the meaning word), never one exact string. Smoke failed at 17:07Z on an `equals`.
+describe.each(['verse-ask', 'bible-talk'])('%s/cleaned-question (mw-5r3p30.164)', (kind) => {
+  const example = readJson(`grinds/examples/${kind}/cleaned-question.json`) as unknown as GrindExample;
+  const answered = (question: string) => checkExpect(example.expect, { question });
+
+  it('has no exact equals on the question', () => {
+    expect(example.expect.question?.equals).toBeUndefined();
+  });
+
+  it.each([
+    'Why are there italic words? What does it mean for the words to be italic?',
+    'Why are there italic words? What does it mean for those words to be italic?',
+    'Why are there italic words? What is meant by words being italic?',
+  ])('accepts a clean rewording: %s', (question) => {
+    expect(answered(question)).toEqual([]);
+  });
+
+  it.each([
+    ['the 17:07Z answer', 'Um, why are there, uh, italic words? What does it mean for the words to be ita…'],
+    ['the whole 17:07Z answer', 'Um, why are there, uh, italic words? What does it mean for the words to be italic?'],
+    ['a filler mid-sentence', 'Why are there italic words? What does it, uh, mean for the words to be italic?'],
+    ['no question mark at the end', 'Why are there italic words? What does it mean for the words to be italic'],
+    ['no capital at the start', 'why are there italic words? What does it mean for the words to be italic?'],
+    ['the meaning lost', 'Why are there words? What does it mean for the words to be marked?'],
+  ])('refuses %s', (_name, question) => {
+    expect(answered(question)).not.toEqual([]);
+  });
+});

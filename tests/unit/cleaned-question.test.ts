@@ -56,6 +56,8 @@ describe.each(KINDS)('$kind: the cleaned question', ({ kind, max, guard }) => {
   it('has a scenario whose spoken question comes back clean', () => {
     const example = JSON.parse(readFileSync(`grinds/examples/${kind}/cleaned-question.json`, 'utf8')) as { request: { question: string }; expect: Record<string, unknown> };
     expect(example.request.question).toBe(SPOKEN);
-    expect(example.expect.question).toEqual({ equals: CLEAN });
+    // mw-5r3p30.164: the wording varies run to run, so the scenario checks the promise, not one string (tests/unit/grind-examples.test.ts runs both answers through it)
+    expect(example.expect.question).toEqual({ matches: '^Why are there italic words\\? [A-Z][^,]*\\?$', contains: 'italic' });
+    expect(new RegExp((example.expect.question as { matches: string }).matches).test(CLEAN)).toBe(true);
   });
 });

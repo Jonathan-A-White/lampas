@@ -11,6 +11,6 @@
     "settings": {}
   },
   "expect": {
-    "question": { "equals": "Why are there italic words? What does it mean for the words to be italic?" }
+    "question": { "matches": "^Why are there italic words\\? [A-Z][^,]*\\?$", "contains": "italic" }
   }
 }
