@@ -213,4 +213,17 @@ describeFeature(feature, ({ Scenario }) => {
       expect(turn().querySelector('[data-tutor-links]')).toBeNull();
     });
   });
+
+  Scenario('An Old Testament verse link the tutor adds with no study resource on is dropped', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 and the tutor answers with a link to the verse {string}', verse);
+    When('he asks the tutor about verse 28', ask);
+    Then('the answer shows no study links', async () => {
+      await waitFor(() => expect(turn()).toHaveTextContent('Love is the word'));
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(turn().querySelector('[data-tutor-links]')).toBeNull();
+    });
+    And('the answer has no Reader button', () => {
+      expect(within(turn()).queryAllByRole('button', { name: /in Lampas/ })).toEqual([]);
+    });
+  });
 });

@@ -79,3 +79,9 @@ Feature: The tutor links the reader's study resources
     Given Lampas is opened on Romans 8 and the tutor answers with a link to the verse "Genesis 15:6"
     When he asks the tutor about verse 28
     Then the answer shows no study links
+
+  Scenario: An Old Testament verse link the tutor adds with no study resource on is dropped
+    Given Lampas is opened on Romans 8 and the tutor answers with a link to the verse "Genesis 14:18"
+    When he asks the tutor about verse 28
+    Then the answer shows no study links
+    And the answer has no Reader button

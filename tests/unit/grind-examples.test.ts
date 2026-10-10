@@ -150,17 +150,17 @@ describe('bible-talk/other-passage-in-place (mw-5r3p30.153)', () => {
   const example = readJson('grinds/examples/bible-talk/other-passage-in-place.json') as unknown as GrindExample;
   const answer = { answer: 'Melchizedek is the priest-king of Salem (Hebrews 7:1-2).', words: [] };
 
+  // mw-5r3p30.160: the app draws no link with no study resource on (features/tutor-links.feature), so what the example guards is the passage, not the links
   it.each([
     ['leaves links out', answer],
     ['sends an empty list of links', { ...answer, links: [] }],
-  ])('passes when the mill %s: no link is no link', (_name, given) => {
+    ['sends a verse link the app will drop', { ...answer, links: [{ kind: 'verse', reference: 'Genesis 14:18' }] }],
+  ])('passes when the mill %s', (_name, given) => {
     expect(checkExpect(example.expect, given)).toEqual([]);
   });
 
-  it('still fails when the mill sends a link, or no passage', () => {
-    expect(checkExpect(example.expect, { ...answer, links: [{ kind: 'verse', reference: 'Hebrews 7:1' }] })).toEqual([
-      'links.0: expected absent, got {"kind":"verse","reference":"Hebrews 7:1"}',
-    ]);
+  it('still fails when the answer names no passage, or changes a setting', () => {
     expect(checkExpect(example.expect, { ...answer, answer: 'A priest.' })).not.toEqual([]);
+    expect(checkExpect(example.expect, { ...answer, settings_changes: [{ key: 'theme', value: 'dark' }] })).not.toEqual([]);
   });
 });
