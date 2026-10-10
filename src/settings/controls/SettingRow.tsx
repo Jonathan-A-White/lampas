@@ -74,7 +74,7 @@ export const PICKER = 'mt-1 min-h-12 w-full rounded-lg border border-line bg-sur
 export const ON_COLOUR = 'bg-accent text-accent-fg';
 
 /** An On | Off choice of a talkable setting. */
-export function OnOff({ name, current, settingKey }: { name: string; current: 'on' | 'off'; settingKey: 'sectionHeadings' | 'tips' | 'readTutor' }) {
+export function OnOff({ name, current, settingKey }: { name: string; current: 'on' | 'off'; settingKey: 'sectionHeadings' | 'tips' | 'readTutor' | 'immersiveReader' }) {
   return (
     <div role="group" aria-label={name} className="inline-flex rounded-xl border border-line p-0.5">
       {(['on', 'off'] as const).map((value) => (

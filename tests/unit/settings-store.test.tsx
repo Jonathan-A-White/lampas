@@ -1,5 +1,5 @@
 // A setting declared once (docs/module-map.md R2): src/settings/define.ts declares it, src/settings/store.ts reads, saves and tells the bus,
-// and src/settings/definitions/ lists the settings declared so (the pilot: theme, weave, tips). The registry and the rows are made from them.
+// and src/settings/definitions/ lists the settings declared so (the pilot: theme, weave, tips, immersive). The registry and the rows are made from them.
 import '@testing-library/react/dont-cleanup-after-each';
 import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
@@ -130,7 +130,7 @@ describe('defineSetting', () => {
 
 describe('the definitions', () => {
   it('lists the settings declared once: the pilot', () => {
-    expect(DEFINITIONS.map((d) => d.key)).toEqual(['theme', 'weave', 'tips']);
+    expect(DEFINITIONS.map((d) => d.key)).toEqual(['theme', 'weave', 'tips', 'immersiveReader']);
   });
 
   it('make the registry entries and rows of the settings they declare', () => {

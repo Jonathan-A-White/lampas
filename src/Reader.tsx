@@ -11,11 +11,13 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import type { ReadHold } from './ReadCheck';
 import { VerseView } from './VerseView';
 import { useVerseAction } from './verse/action';
+import { Away } from './Away';
+import { useImmersive } from './immersive';
 import { ASK_BUTTON_ROOM, AskTutorButton, TALK_BAR_LIFT } from './AskTutor';
 import { TalkBar, TalkSheet } from './Talk';
 import { ErrorBoundary } from './ErrorBoundary';
 import type { Verse } from './data/chapter';
-import { getGreekPronunciation, setReaderView, talkRef } from './data/repositories';
+import { getGreekPronunciation, getImmersive, setReaderView, talkRef } from './data/repositories';
 import { chapterOf, getOpenChapter, setOpenChapter, type OpenChapter } from './data/readerChapter';
 import { verseNeighbours } from './data/neighbours';
 import { passageAt, passageVerse, passagesOf, unitId } from './data/passage';
@@ -101,6 +103,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const closePicker = useCallback(() => setPicking(false), []);
   const settings = useReaderSettings() ?? NO_SETTINGS;
   const { view, weave, solid, learning, layout, headings, readSpan } = settings;
+  const immersive = useLiveQuery(getImmersive, []) === 'on';
   const { chapter, failed, retry } = useChapter(BOOK, CHAPTER);
   // What the address said when the reader opened (a reopen, Back to an earlier place): the selected verse (the view and weave it names are
   // put back in the settings by useReaderSettings). The address is the place; the settings follow it.
@@ -114,6 +117,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     },
     [scrollRef],
   );
+  // The Immersive reader (src/immersive.ts): the bars slide away while he scrolls the text down.
+  const bars = useImmersive(immersive, main);
   const reading = useReading();
   const address = useAddress();
   const current = useRef({ view });
@@ -207,6 +212,14 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const { plan, readFrom, listenTo, listenVerse, listenedView } = useReadFrom(BOOK, CHAPTER, chapter, view, woven, readSpan, viewUnit);
   const chapterReading = reading.status !== 'idle' && reading.answer === null;
   const readingVerse = chapterReading ? reading.verse : null;
+  const headerButtons = chapterReading && !reading.onBar;
+  // The bars come back whenever a sheet closes (or the Verse view does) and reading aloud stops, and stay away only while the header holds no reading control.
+  const covered = Boolean(lookup || linked || talkAbout !== undefined || teaching || picking || viewUnit !== undefined || chapterReading);
+  const { show: showBars } = bars;
+  useEffect(() => {
+    if (!covered) showBars();
+  }, [covered, showBars]);
+  const away = bars.away && !headerButtons;
   const passages = useMemo(() => (chapter ? passagesOf(chapter.verses) : []), [chapter]);
   const blocks = useMemo(() => (chapter && layout ? blocksOf(chapter.verses, layout) : []), [chapter, layout]);
   const wovenCount = woven ? woven.reduce((n, w) => n + w.filter(Boolean).length, 0) : 0;
@@ -269,6 +282,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
 
   return (
     <>
+      <Away enabled={immersive} away={away}>
       <ReaderHeader
         title={TITLE}
         view={view}
@@ -289,9 +303,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         wovenCount={woven ? wovenCount : null}
       />
       {chapterReading || !tipOpen ? null : <TipCard onClose={() => setTipOpen(false)} />}
+      </Away>
       {notice ? <LinkNotice text={notice} onDismiss={() => setNotice(null)} /> : null}
       <ReadingBar reading={reading} />
-      <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} style={chapter ? { marginBottom: `calc(${ASK_BUTTON_ROOM})` } : undefined} className="screen min-h-0 flex-1 px-1 pt-2">
+      <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} data-immersive={immersive ? 'on' : 'off'} style={chapter ? { marginBottom: away ? 0 : `calc(${ASK_BUTTON_ROOM})`, transition: immersive ? 'margin-bottom 200ms ease' : undefined } : undefined} className="screen min-h-0 flex-1 px-1 pt-2">
         <div>
         {failed ? (
           <ChapterFailed title={TITLE} onRetry={retry} onPick={() => setPicking(true)} />
@@ -346,18 +361,21 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       </main>
       <BarSlot level={1} />
       {chapter && !viewUnit ? (
-        <TalkBar
-          hold={{
-            onPress: pauseReading,
-            onTap: () => setTalkAbout(selected),
-            onHold: () => holdTalk(selected),
-            onRelease: () => void voice.release(),
-            onDrop: voice.abort,
-          }}
-        />
+        <Away enabled={immersive} away={away}>
+          <TalkBar
+            hold={{
+              onPress: pauseReading,
+              onTap: () => setTalkAbout(selected),
+              onHold: () => holdTalk(selected),
+              onRelease: () => void voice.release(),
+              onDrop: voice.abort,
+            }}
+          />
+        </Away>
       ) : null}
       {chapter && !viewUnit ? (
         <AskTutorButton
+          away={immersive ? away : undefined}
           lift={TALK_BAR_LIFT}
           onClick={() => {
             stopReading();

@@ -20,6 +20,7 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'appearance', title: 'Appearance' },
   { id: 'layout', title: 'Layout' },
   { id: 'headings', title: 'Section headings' },
+  { id: 'immersive', title: 'Immersive reader' },
   { id: 'weave', title: 'Weave' },
   { id: 'newWords', title: 'New words' },
   { id: 'goal', title: 'Goal' },

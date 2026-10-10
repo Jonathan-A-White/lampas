@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { TEXT_SIZES } from '../../appearance/textSizes';
 import { THEMES, type Theme } from '../../appearance/themes';
 import { getLayout, getSectionHeadings, getTextSize, type ReadingLayout } from '../../data/repositories';
-import { themeSetting } from '../definitions';
+import { immersiveSetting, themeSetting } from '../definitions';
 import { useSetting } from '../store';
 import { LAYOUTS } from '../../layout/layouts';
 import { writeSetting } from '../registry';
@@ -78,6 +78,11 @@ export const AppearanceControl: Control = ({ row }) => {
 export const LayoutControl: Control = ({ row }) => {
   const layout = useLiveQuery(getLayout, []);
   return <SettingRow row={row}>{layout ? <LayoutChoice layout={layout} /> : null}</SettingRow>;
+};
+
+export const ImmersiveControl: Control = ({ row }) => {
+  const immersive = useSetting(immersiveSetting);
+  return <SettingRow row={row}>{immersive ? <OnOff name={row.label} current={immersive} settingKey="immersiveReader" /> : null}</SettingRow>;
 };
 
 export const HeadingsControl: Control = ({ row }) => {

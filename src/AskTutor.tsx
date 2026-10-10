@@ -24,8 +24,9 @@ export const ASK_TUTOR_LABEL = 'Ask the tutor about this screen';
 const SPEAKING_BAR_LIFT = 'var(--lp-tap) + 1.25rem';
 
 /** The round button. `lift` raises it above a pinned bar the screen has at its foot (the Reader's Talk bar, Import's Add bar); it also clears the
- * speaking bar while one is up. */
-export function AskTutorButton({ onClick, lift = '0px' }: { onClick: () => void; lift?: string }) {
+ * speaking bar while one is up. `away` (the Reader's Immersive reader, src/immersive.ts) slides it out of view: true or false makes the button slide,
+ * and while it is true it is not in the tab order or the accessibility tree; undefined (every other screen) is the button as ever. */
+export function AskTutorButton({ onClick, lift = '0px', away }: { onClick: () => void; lift?: string; away?: boolean }) {
   const hidden = useSheetOpen();
   const speaking = useBarShown();
   if (hidden) return null;
@@ -33,6 +34,10 @@ export function AskTutorButton({ onClick, lift = '0px' }: { onClick: () => void;
     <button
       type="button"
       data-ask-tutor
+      data-slides={away === undefined ? undefined : ''}
+      data-away={away ? '' : undefined}
+      aria-hidden={away ? true : undefined}
+      tabIndex={away ? -1 : undefined}
       aria-label={ASK_TUTOR_LABEL}
       onClick={onClick}
       style={{ bottom: `calc(var(--lp-bar-inset) + var(--spacing) * 3 + ${lift}${speaking ? ` + ${SPEAKING_BAR_LIFT}` : ''})` }}

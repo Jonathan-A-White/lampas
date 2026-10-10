@@ -1,6 +1,6 @@
 import { SCRIPTS } from '../../script/scripts';
 import { ROWS } from '../rows';
-import { AppearanceControl, HeadingsControl, LayoutControl } from './appearance';
+import { AppearanceControl, HeadingsControl, ImmersiveControl, LayoutControl } from './appearance';
 import { ApproachControl } from './approach';
 import { DeveloperControl } from './developer';
 import { GoalControl } from './goal';
@@ -18,6 +18,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   textSize: AppearanceControl,
   layout: LayoutControl,
   sectionHeadings: HeadingsControl,
+  immersiveReader: ImmersiveControl,
   weave: WeaveControl,
   weaveGrammar: WeaveControl,
   newWordsADay: NewWordsControl,

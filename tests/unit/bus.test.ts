@@ -118,6 +118,7 @@ describe('docs/events.md', () => {
       'weave-grammar-changed': true,
       'layout-changed': true,
       'headings-changed': true,
+      'immersive-changed': true,
       'tips-changed': true,
       'read-tutor-changed': true,
       'script-depth-changed': true,
