@@ -4,7 +4,7 @@
 // with no recogniser says so and asks the sheet to focus its typed field (`typing` counts those asks).
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isListenSupported, startListening, type ListenErrorKind, type ListenSession } from './services/listen';
-import { stopReading } from './speech/readAloud';
+import { pauseReading } from './speech/readAloud';
 
 export interface VoiceNotice {
   kind: ListenErrorKind | 'empty';
@@ -55,8 +55,8 @@ export function useVoice(onSend: (text: string) => void): Voice {
 
   const press = useCallback(() => {
     if (session.current) return;
-    // Page audio can take the microphone from the recogniser: nothing is read aloud while he talks.
-    stopReading();
+    // Page audio can take the microphone from the recogniser: nothing is read aloud while he talks. The reading is paused, not ended: Resume is on the bar.
+    pauseReading();
     setNotice(undefined);
     if (!isListenSupported()) {
       setNotice({ kind: 'not-supported', message: 'This phone cannot turn speech into text. Type your question instead.' });

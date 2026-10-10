@@ -26,6 +26,7 @@ import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { wordUrl } from './nav/links';
 import { LinkActions } from './ui/LinkActions';
 import { useKnownTerms } from './useKnownTerms';
+import { BarSlot } from './speech/SpeakingBarSlot';
 import { HintCard } from './tips/HintCard';
 import { WORD_SHEET_OPENED } from './tips/hints';
 
@@ -329,6 +330,8 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
         </div>
         {/* the tip stays above the scrolling facts, so it is seen without a scroll; the facts' box is 2 dvh shorter to make room, so the sheet stays below 30% of the screen */}
         <HintCard event={WORD_SHEET_OPENED} className="mx-4 mt-1" />
+        {/* a reading or answer paused by the word he tapped keeps its Resume in view (the sheet is over the screen's own bar) */}
+        <BarSlot level={4} />
         <div className="max-h-[58dvh] overflow-y-auto overscroll-contain px-4 pb-[calc(1rem+var(--lp-end-inset))] pt-3">
           {lookup.fromEnglish && lookup.english ? (
             <p className="mb-3 pr-14 text-lg text-muted">

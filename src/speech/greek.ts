@@ -7,7 +7,18 @@
 // tap loses user activation on Android Chrome), so it never waits: the voice list is loaded ahead by warmVoices(), and a phone that
 // has not listed its voices yet is still asked to speak with the language alone and picks its own voice.
 import { useRef, useSyncExternalStore } from 'react';
-import { getSpeech, isSpeaking, speak as engineSpeak, stop as stopEngine, subscribe as subscribeEngine } from 'bsv-kit/speech';
+import {
+  getSpeech,
+  isSpeaking,
+  languageOf,
+  pause as pauseEngine,
+  preferredVoice,
+  sentencesOf,
+  speak as engineSpeak,
+  speechText,
+  stop as stopEngine,
+  subscribe as subscribeEngine,
+} from 'bsv-kit/speech';
 import { useSpeech } from 'bsv-kit/speech/react';
 import { DEFAULT_RATE, DEFAULT_RATES, HEBREW_LANG, LANGUAGES, normaliseRate, type SettableLanguage, type SpeechLanguage, type SpeechRates } from './languages';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation, type Pronunciation } from './pronunciation';
@@ -135,14 +146,48 @@ function chooseVoices(synth: SpeechSynthesis): void {
   };
 }
 
-/** Stops whatever is being read. */
-export function stopSpeaking(): void {
-  stopEngine();
+// A word, a speaker or a hold that speaks while a reading or a tutor's answer is under way INTERRUPTS it (docs/read-aloud.md 'The speaking bar'): the
+// package's speech is paused where it is, so its bar offers Resume and the sentence reached is kept, and the word is said BESIDE it, straight to the
+// phone's synthesiser. `beside` is that word (or speaker's text); it is over when its last sentence ends, is stopped, or is cut off.
+interface Beside {
+  key: string;
+}
+let beside: Beside | null = null;
+/** counts the words said beside a reading, so the events of one cut off by the next do nothing */
+let besideEpoch = 0;
+const besideListeners = new Set<() => void>();
+
+function setBeside(next: Beside | null): void {
+  beside = next;
+  besideListeners.forEach((l) => l());
 }
 
-/** Stops only if `key` is what is being read (a button that goes away takes its speech with it). */
+function subscribeBeside(listener: () => void): () => void {
+  besideListeners.add(listener);
+  return () => besideListeners.delete(listener);
+}
+
+/** Ends the word said beside a reading, leaving the reading where it is (paused). */
+function stopBeside(): void {
+  if (!beside) return;
+  besideEpoch++;
+  setBeside(null);
+  const synth = synthesis();
+  // a reading that was resumed meanwhile has its sentences queued behind the word: pausing keeps its place, a cancel alone would lose it
+  if (getSpeech().key === READ_KEY && getSpeech().status === 'playing') pauseEngine();
+  else synth?.cancel();
+}
+
+/** Stops whatever is being said: a word said beside a reading (the reading stays paused where it was), else the reading or word the package holds. */
+export function stopSpeaking(): void {
+  if (beside) stopBeside();
+  else stopEngine();
+}
+
+/** Stops only if `key` is what is being said (a button that goes away takes its speech with it). */
 export function stopIfSpeaking(key: string): void {
-  if (isSpeaking(key)) stopEngine();
+  if (beside?.key === key) stopBeside();
+  else if (isSpeaking(key)) stopEngine();
 }
 
 /** The key the read-aloud sequence (src/speech/readAloud.ts) speaks under: a verse, a chapter, a tutor's answer. Its speech has the bar. */
@@ -160,7 +205,40 @@ export function speakText(text: string, key: string, options: { onEnd?: () => vo
   chooseVoices(synth);
   slow = options.slowly ?? false;
   forced = options.language ? langOf(options.language) : null;
+  // anything that is not a reading, said while a reading is under way (playing or paused), interrupts it instead of replacing it
+  if (key !== READ_KEY && getSpeech().key === READ_KEY) return speakBeside(synth, text, key);
+  if (beside) {
+    besideEpoch++;
+    setBeside(null);
+  }
   engineSpeak(text, { key, lang: LANGUAGES[0].lang, onEnd: options.onEnd });
+  return true;
+}
+
+/** Says `text` beside the reading the package holds: the reading is paused (or already is) and keeps its sentence, the text goes to the phone itself. */
+function speakBeside(synth: SpeechSynthesis, text: string, key: string): boolean {
+  const mine = ++besideEpoch;
+  // pause() cancels the phone's queue; with the reading already paused only a word still being said needs cancelling
+  if (getSpeech().status === 'playing') pauseEngine();
+  else synth.cancel();
+  const spoken = speechText(text);
+  const sentences = sentencesOf(spoken);
+  const parts = sentences.length > 0 ? sentences : [spoken];
+  const voices = synth.getVoices();
+  setBeside({ key });
+  const over = () => {
+    if (mine === besideEpoch) setBeside(null);
+  };
+  parts.forEach((part, i) => {
+    const utterance = new SpeechSynthesisUtterance(part);
+    // the language is told from the letters unless the caller named it; applyChoices (the wrapped speak) puts his speed and voice on it
+    utterance.lang = forced ?? languageOf(part, { lang: LANGUAGES[0].lang });
+    const voice = preferredVoice(voices, utterance.lang);
+    if (voice) utterance.voice = voice;
+    utterance.onerror = over;
+    if (i === parts.length - 1) utterance.onend = over;
+    synth.speak(utterance);
+  });
   return true;
 }
 
@@ -170,8 +248,8 @@ export function speakText(text: string, key: string, options: { onEnd?: () => vo
 export function speak(text: string, key: string, language: SpeechLanguage = 'greek'): SpeakOutcome {
   const synth = synthesis();
   if (!synth || ((language === 'greek' || language === 'hebrew') && hasVoice(language) === false)) return 'no-voice';
-  if (isSpeaking(key)) {
-    stopEngine();
+  if (beside?.key === key || isSpeaking(key)) {
+    stopIfSpeaking(key);
     return 'stopped';
   }
   return speakText(text, key, { language }) ? 'speaking' : 'no-voice';
@@ -191,18 +269,26 @@ export const isWordSpeech = (key: string | null): boolean => key !== null && key
 // has no bar, and it would come back mid-sentence: it is ended instead.
 if (typeof document !== 'undefined') {
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden' && isWordSpeech(getSpeech().key)) stopEngine();
+    if (document.visibilityState !== 'hidden') return;
+    if (beside) stopBeside();
+    else if (isWordSpeech(getSpeech().key)) stopEngine();
   });
 }
 
 /** Calls `done` once, when the word said by speakWord() is over (it ended, failed or was cut off); returns what takes the watch back. */
 export function watchWordEnd(done: () => void): () => void {
-  const off = subscribeEngine(() => {
-    if (getSpeech().key !== WORD_KEY) {
+  const check = () => {
+    if (beside?.key !== WORD_KEY && getSpeech().key !== WORD_KEY) {
       off();
       done();
     }
-  });
+  };
+  const offEngine = subscribeEngine(check);
+  besideListeners.add(check);
+  const off = () => {
+    offEngine();
+    besideListeners.delete(check);
+  };
   return off;
 }
 
@@ -217,7 +303,8 @@ export function noVoiceHelp(language: SpeechLanguage = 'greek'): string {
 /** The key being read aloud right now, or null. */
 export function useSpeakingKey(): string | null {
   const speech = useSpeech();
-  return speech.status === 'idle' ? null : speech.key;
+  const aside = useSyncExternalStore(subscribeBeside, () => beside?.key ?? null, () => null);
+  return aside ?? (speech.status === 'idle' ? null : speech.key);
 }
 
 /** The phone's voices, re-read when it lists more (Android Chrome fills the list late). */

@@ -46,14 +46,21 @@ Postern's and SpellForge's; its colours are Lampas's (`--bk-speech-*` in `src/in
 - Where the bar is drawn (`src/speech/SpeakingBarSlot.tsx`): a screen with a bottom edge leaves a `<BarSlot level>` and the one bar is drawn into the highest on screen:
   the foot of the shell (0, every screen but the Reader), the Reader above its Talk bar (1), the Verse view above its hold bar (2), the Talk sheet above its foot (3).
   It is in flow, never over text, and the round *Ask the tutor* button rides above it. The header's own Pause / Stop are gone while the bar holds the reading.
-- A word said alone (a long press, a speaker, Hold to hear) is not a reading and has no bar (`isWordSpeech`). It takes the voice from a reading: the chapter's
-  reading then waits paused at its verse with the header's Play and Stop (`ReadingState.onBar` false), and Resume reads that verse again from its start; a tutor's answer
-  is over instead.
+- A word said alone (a long press, a speaker, Hold to hear) is not a reading and has no bar (`isWordSpeech`).
+- **An interruption pauses, it does not end (mw-5r3p30.122).** A word, speaker or Hold to hear that speaks while a reading or a tutor's answer is under way (playing or
+  paused) pauses it where it is (the package keeps the sentence, `greek.ts` `speakBeside`) and is said BESIDE it, straight to the phone's synthesiser: the bar stays,
+  showing Resume, Restart and Stop, and Resume goes on from the sentence the answer was in (not from the start, not from the next). This covers the tapped Greek or Hebrew
+  word, the speaker beside a flagged word of the reading check, the word sheet's and the guide's Hear it, and a hold on a Talk bar to talk (`useVoice.press` and the Reader's
+  Talk bar `onPress` call `pauseReading`). The word has its own key for `useSpeakingKey` (its speaker shows Stop), `watchWordEnd`, `stopSpeaking` and a second tap, which end
+  only the word. A second word cuts the first off; Resume tapped while a word still sounds goes on after it; Stop on the bar ends everything. The word sheet and the Hebrew
+  guide, which sit over the screen's own bar, leave a `<BarSlot level={4}>` so Resume stays in view. Only a new question, the panel being left (below) or Stop ends an answer.
 - What the package lacks stays in `src/speech/greek.ts`: his **speed** for a language and the **voice he picked** (the package names a language and takes the phone's
   voice; the app puts the rate and the chosen voice on each utterance as it is handed to the phone, by wrapping `speechSynthesis.speak` once), the slow speed of a
   word being sounded out, the no-voice help line and the word said alone (`speakWord`). A phone that lists no voices yet is waited for up to a second by the package
   before the first sentence (`warmVoices` ahead of a tap avoids it).
-- Leaving the Reader for another screen **pauses** the chapter's reading and coming back offers Resume; the tutor's answers still stop when their panel goes.
+- Leaving the Reader for another screen **pauses** the chapter's reading and coming back offers Resume; the tutor's answers still stop when their panel goes (the story
+  mw-5r3p30.122 kept this as it was; the Governor's rule, pwa-best-practices section 12, would pause them too, for a later story to decide). A page that hides pauses both
+  (the package), and Resume continues from the same sentence on coming back.
 
 ## The tutor's responses (mw-5r3p30.93)
 
@@ -67,7 +74,7 @@ English voice and Greek words in the Greek voice):
   Ask the tutor from any screen (as the Talk sheet already read them, now through the setting). 'Sound it out' still sounds the syllables out: he asked for that.
 
 A new question or message (`useAsks`, `useTalk`), leaving the panel or the cards, and a tap on the response (not on a button in it, `stopOnTap`) stop the speech
-at once. Off, nothing is spoken by itself; the speaker on an answer ('Hear the answer') still reads it.
+at once; a tapped word, a speaker or a hold to talk only pause it (above). Off, nothing is spoken by itself; the speaker on an answer ('Hear the answer') still reads it.
 
 ## Hebrew in the tutor's text (mw-5r3p30.97)
 

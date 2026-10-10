@@ -223,7 +223,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the speech has stopped', stopped);
   });
 
-  Scenario("A tap on a flagged word's speaker while the verdict is read stops the reading and says only the word", ({ Given, And, When, Then }) => {
+  Scenario("A tap on a flagged word's speaker while the verdict is read pauses the reading and says only the word", ({ Given, And, When, Then }) => {
     Given(readOn, () => open({ aloud: true, reply: 'reading' }));
     And(readOpen, () => openVerse28('Read it aloud'));
     And(holdRead, holdAndLetGo);
@@ -232,8 +232,9 @@ describeFeature(feature, ({ Scenario }) => {
       const region = await screen.findByRole('region', { name: 'Reading check' });
       await user.click(within(region).getByRole('button', { name: `Hear ${word}`, exact: true }));
     });
-    Then("the verdict's reading has stopped", async () => {
-      await waitFor(() => expect(getReading().status).toBe('idle'));
+    Then("the verdict's reading is paused, not ended", async () => {
+      await waitFor(() => expect(getReading().status).toBe('paused'));
+      expect(getReading().answer).not.toBeNull();
     });
     And('the phone says only {string} and not the tip or the note', (_, text: string) => {
       const last = synth.spoken[synth.spoken.length - 1];

@@ -58,13 +58,13 @@ Feature: The tutor's responses are read aloud
     When he taps the verdict
     Then the speech has stopped
 
-  Scenario: A tap on a flagged word's speaker while the verdict is read stops the reading and says only the word
+  Scenario: A tap on a flagged word's speaker while the verdict is read pauses the reading and says only the word
     Given Lampas is opened on Romans 8 with the tutor's responses read aloud
     And he opens the reading check of verse 28
     And he holds the bar for 2 seconds and lets go
     And the phone is speaking the verdict
     When he taps the speaker beside the flagged word "purpose"
-    Then the verdict's reading has stopped
+    Then the verdict's reading is paused, not ended
     And the phone says only "perpus" and not the tip or the note
 
   Scenario: Settings has the switch, On until he turns it Off, and it is kept

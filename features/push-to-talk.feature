@@ -33,11 +33,11 @@ Feature: Push-to-talk
     Then the Talk sheet is open, titled "Talk about Romans 8", and the phone is not listening
     And no recogniser was started
 
-  Scenario: Pressing while a verse is being read stops the reading
+  Scenario: Pressing while a verse is being read pauses the reading
     Given Lampas is opened on Romans 8 with a talk behind a fake Postern, a recogniser and a phone that speaks English
     And verse 3 is being read aloud
     When he presses the Talk button
-    Then the reading has stopped
+    Then the reading is paused
     And the Talk button has not yet opened the sheet
 
   Scenario: Sliding the finger off the button drops what he said

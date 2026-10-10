@@ -4,8 +4,8 @@
 // handed to bsv-kit/speech as ONE speech under READ_KEY, a run to a line: the package cuts it into sentences, reads each in the
 // language of its letters, keeps the sentence reached on Pause and shows its one bar (Pause / Resume, Restart, Stop). This file
 // goes on to the next verse when a verse is over and the reading is continuous, publishes verse-reading as each verse starts, and
-// follows the package: a Pause, Resume or Stop made on the bar moves the state here (syncWithEngine). A speech that takes the voice
-// from a reading (a word said by a long press) leaves it paused at its verse; Resume then reads that verse again from its start.
+// follows the package: a Pause, Resume or Stop made on the bar moves the state here (syncWithEngine). A word said while a reading is under
+// way (a long press, a speaker) PAUSES it (greek.ts speakBeside says the word beside it), so Resume goes on from the sentence it was in.
 // How far a reading goes is the Read aloud span (src/speech/readSpan.ts, docs/read-aloud.md): the verse, to the next section
 // heading, to the chapter's end, or on through the book. Where it goes into another chapter (Book always, Passage when the next
 // chapter's first verse has no heading) it asks the Reader to turn to it (openReader) and waits as `crossing`; the Reader that

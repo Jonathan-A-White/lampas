@@ -923,7 +923,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       {chapter && !viewUnit ? (
         <TalkBar
           hold={{
-            onPress: stopReading,
+            onPress: pauseReading,
             onTap: () => setTalkAbout(selected),
             onHold: () => holdTalk(selected),
             onRelease: () => void voice.release(),
