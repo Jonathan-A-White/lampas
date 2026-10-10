@@ -17,9 +17,12 @@ export async function recordAnswer(lemma: string, right: boolean, now = Date.now
     const word = await db.words.get(lemma);
     if (!word) return null;
     const earlier = await db.results.where('[lemma+when]').between([lemma, word.since], [lemma, Infinity]).toArray();
-    await db.results.add({ lemma, when: now, right });
+    // The count reads the answers by their time, so the time kept must never go back past the word's since or its last answer
+    // (a phone clock steps back with an NTP correction, a time-zone change or a restore from backup): the answer keeps its place in the order.
+    const when = Math.max(now, word.since, ...earlier.map((r) => r.when));
+    await db.results.add({ lemma, when, right });
     const state = nextState(word.state, [...earlier.map((r) => r.right), right]);
-    if (state !== word.state) await db.words.update(lemma, { state, since: now });
+    if (state !== word.state) await db.words.update(lemma, { state, since: when });
     // The answer also moves the word on the back-off schedule (src/data/schedule.ts), in the same transaction.
     await writeReview('word', lemma, right, now);
     // A word read right shows its letters, sounds and marks (src/data/grammar/inference.ts), written in the same transaction.
