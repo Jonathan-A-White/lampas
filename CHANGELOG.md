@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.74
+_2026-10-10_
+- Fixed: Hear a word says the right sound even when the tip first names the wrong one.
+
 ## 0.1.73
 _2026-10-10_
 - Fixed: after twenty placement questions you can now go back to the Goal screen, and 'Go on another day' returns to where you started instead of Settings.
