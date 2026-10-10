@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.54",
+    "date": "2026-10-10",
+    "story": "mw-jtzpw0.3",
+    "kind": "new",
+    "text": "Asking the tutor about a verse now uses the same big hold-to-talk bar as Postern, with your words showing as you speak and a quiet \"Type a question\" beneath it."
+  },
+  {
     "version": "0.1.53",
     "date": "2026-10-10",
     "story": "mw-5r3p30.144",

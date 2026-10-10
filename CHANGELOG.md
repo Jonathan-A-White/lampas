@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.54
+_2026-10-10_
+- New: Asking the tutor about a verse now uses the same big hold-to-talk bar as Postern, with your words showing as you speak and a quiet "Type a question" beneath it.
+
 ## 0.1.53
 _2026-10-10_
 - Fixed: a word you read right twice now becomes solid even if your phone's clock was set back in between.
