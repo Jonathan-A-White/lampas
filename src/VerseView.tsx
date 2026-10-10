@@ -21,6 +21,7 @@ import { focusOnMount } from './ui/focus';
 import { HoldBar } from './ui/HoldBar';
 import { LinkActions } from './ui/LinkActions';
 import type { UseReadChecks } from './useReadChecks';
+import { BarSlot } from './speech/SpeakingBarSlot';
 import type { AskState } from './useAsks';
 import type { Voice } from './useVoice';
 import { VERSE_ACTIONS, type VerseAction } from './verse/action';
@@ -182,6 +183,7 @@ export function VerseView(props: VerseViewProps) {
           ) : null}
         </div>
       </div>
+      <BarSlot level={2} />
       <div ref={setSlot} data-verse-bar className="shrink-0 border-t border-line bg-surface px-3 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))]">
         {slot && action === 'listen' ? (
           createPortal(

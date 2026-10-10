@@ -35,8 +35,9 @@ export function VersePlay({ playing, onPlay, className }: { playing: boolean; on
 const HEADER_BUTTON = 'flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-accent active:bg-line';
 
 /** The header's reading buttons. Nothing being read (or a talk answer, which has its own Stop): the one Play button, which
- * reads from verse 1 or from the selected verse. While the chapter is read: Pause and Stop. While paused: Play, which goes on
- * from the verse it waits at, and Stop (which returns to the one Play button). */
+ * reads from verse 1 or from the selected verse. While the chapter is read the package's bar (src/speech/SpeakingBarSlot.tsx) has Pause /
+ * Resume, Restart and Stop, and the header has none. Only a reading the bar does not hold (the voice was taken by a word said alone, or it
+ * waits at the door of the next chapter) keeps Pause or Play, which goes on from the verse it waits at, and Stop. */
 export function ReadFromButton({ from, reading, onRead }: { from: number | null; reading: ReadingState; onRead: () => void }) {
   if (reading.status === 'idle' || reading.answer !== null) {
     return (
@@ -45,6 +46,7 @@ export function ReadFromButton({ from, reading, onRead }: { from: number | null;
       </button>
     );
   }
+  if (reading.onBar) return null;
   const paused = reading.status === 'paused';
   return (
     <>

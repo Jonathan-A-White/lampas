@@ -52,7 +52,7 @@ import { LinkOpener } from './nav/LinkOpener';
 import { pendingLink, takeLink } from './nav/linkRequest';
 import { lemmaSheet, linkOf } from './nav/links';
 import { pendingRequest, takeRequest } from './nav/readerRequest';
-import { closeVerse, movePassage, moveVerse, navigate, openPassage, openVerse, readerOf, useAddress } from './nav/route';
+import { closeVerse, movePassage, moveVerse, navigate, openPassage, openVerse, readerOf, routeOf, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
 import { useReadChecks } from './useReadChecks';
@@ -64,7 +64,7 @@ import { useHoldPress } from './ui/holdPress';
 import { NO_SELECT, useLongPress } from './ui/longPress';
 import { HeaderButton } from './ScreenHeader';
 import { speakTutor } from './speech/tutorVoice';
-import { continueReading, getReading, pauseReading, planOf, startAnswer, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
+import { continueReading, getReading, isReadingOf, pauseReading, planOf, startAnswer, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
 import { DueBadge } from './DueBadge';
 import { NewWordsStrip } from './NewWordsStrip';
@@ -74,6 +74,7 @@ import { usePace } from './usePace';
 import { GoalStrip } from './GoalStrip';
 import { TipCard } from './tips/TipCard';
 import { ReadFromButton, ReadingBar, VersePlay } from './speech/ReadControls';
+import { BarSlot } from './speech/SpeakingBarSlot';
 import { speakWord, warmVoices } from './speech/greek';
 import type { SpeechLanguage } from './speech/languages';
 import { WordSheet, type Lookup, type TermAsk, type WordHelp } from './WordSheet';
@@ -418,8 +419,6 @@ function ReaderAt({ address }: { address: string }) {
   // What he has open is kept, so Quick test, the Parsing drill and Review (which draw from it) and the next open follow it.
   const { book, chapter } = open;
   useEffect(() => setOpenChapter(book, chapter), [book, chapter]);
-  // Leaving the reader stops the reading. A reading that goes on into the next chapter outlives the chapter's ReaderBody, not this.
-  useEffect(() => () => stopReading(), []);
   // A throw while the chapter draws shows the error screen with Reload, not a black page (src/ErrorBoundary.tsx); another chapter starts afresh.
   return (
     <ErrorBoundary key={`${book}/${chapter}`} where="reader">
@@ -695,12 +694,13 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // Listen on a passage: its verses only, to the end of the passage and no further, whatever Settings > Read aloud says.
   const listenTo = useCallback(
     (passage: Passage) => {
-      if (plan) startReading({ chapter: CHAPTER, plan: plan.filter((v) => v.n >= passage.first && v.n <= passage.last), from: passage.first, continuous: true, span: 'passage' });
+      if (plan) startReading({ inBook: BOOK, chapter: CHAPTER, plan: plan.filter((v) => v.n >= passage.first && v.n <= passage.last), from: passage.first, continuous: true, span: 'passage' });
     },
-    [plan, CHAPTER],
+    [plan, BOOK, CHAPTER],
   );
   const chapterReading = reading.status !== 'idle' && reading.answer === null;
   const readingVerse = chapterReading ? reading.verse : null;
+  const headerButtons = chapterReading && !reading.onBar;
   const passages = useMemo(() => (chapter ? passagesOf(chapter.verses) : []), [chapter]);
   const blocks = useMemo(() => (chapter && layout ? blocksOf(chapter.verses, layout) : []), [chapter, layout]);
   const wovenCount = woven ? woven.reduce((n, w) => n + w.filter(Boolean).length, 0) : 0;
@@ -758,13 +758,18 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     const going = getReading().crossing;
     if (going && !(going.book === BOOK && going.chapter === CHAPTER)) stopReading();
   }, [BOOK, CHAPTER]);
-  // Leaving this chapter stops the reading, unless it is going on into the next (ReaderAt stops it when the reader is left).
+  // Leaving this screen for another pauses the reading, and coming back offers Resume on the bar (bsv-kit/speech); opening another chapter ends it,
+  // and so does coming to a chapter that is not the one a paused reading belongs to. Going on into the next chapter is not leaving.
   useEffect(() => {
     void warmVoices();
+    const paused = getReading();
+    if (paused.status === 'paused' && paused.answer === null && !paused.crossing && !isReadingOf(BOOK, CHAPTER)) stopReading();
     return () => {
-      if (!getReading().crossing) stopReading();
+      if (getReading().crossing) return;
+      if (routeOf(window.location.hash) === 'home') stopReading();
+      else pauseReading();
     };
-  }, []);
+  }, [BOOK, CHAPTER]);
   // The verse being read is kept in view, by moving this box and nothing else.
   useEffect(() => {
     const box = main.current;
@@ -797,8 +802,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   return (
     <>
       <header inert={viewUnit !== undefined} className="flex shrink-0 items-center gap-1 border-b border-line px-2 py-2">
-        {/* While the chapter is read the header gives its room to Pause and Stop; the title stays for screen readers. */}
-        <h1 className={`chrome-title min-w-0 font-semibold ${chapterReading ? 'sr-only' : 'flex-1'}`}>
+        {/* While a reading the bar does not hold waits for Pause or Play, the header gives its room to those and Stop; the title stays for screen readers. */}
+        <h1 className={`chrome-title min-w-0 font-semibold ${headerButtons ? 'sr-only' : 'flex-1'}`}>
           <button
             type="button"
             aria-haspopup="dialog"
@@ -811,7 +816,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
             </span>
           </button>
         </h1>
-        {chapterReading ? <span className="flex-1" /> : null}
+        {headerButtons ? <span className="flex-1" /> : null}
         {view ? <ViewSwitch view={view} /> : null}
         {plan || crossingHere ? <ReadFromButton from={selected} reading={reading} onRead={() => readFrom(selected ?? 1, true)} /> : null}
         <button
@@ -914,6 +919,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         )}
         </div>
       </main>
+      <BarSlot level={1} />
       {chapter && !viewUnit ? (
         <TalkBar
           hold={{

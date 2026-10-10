@@ -21,6 +21,7 @@ import { FAILURE_TITLES, TutorError, type TutorFailure } from './services/tutor'
 import { startAnswer, stopAnswer, useReading } from './speech/readAloud';
 import { stopOnTap } from './speech/tutorVoice';
 import { Icon } from './speech/ReadControls';
+import { BarSlot } from './speech/SpeakingBarSlot';
 import { answerRuns } from './speech/answerRuns';
 import { focusOnMount, focusQuietly } from './ui/focus';
 import { HoldBar } from './ui/HoldBar';
@@ -461,6 +462,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, onSa
               </div>
             ) : null}
           </div>
+          <BarSlot level={3} />
           <div className="shrink-0 space-y-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+var(--lp-bar-inset))]">
             {voice.listening ? (
               <div data-talk-live role="status" className="rounded-2xl border border-bad px-3 py-2">

@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { NO_CHAPTER } from './data/chapter';
 import { TalkSheet } from './Talk';
 import { stopReading } from './speech/readAloud';
+import { useBarShown } from './speech/barShown';
 import { speakTutor } from './speech/tutorVoice';
 import { answerRuns } from './speech/answerRuns';
 import { scopeRef, type TalkScope } from './services/talk';
@@ -19,9 +20,14 @@ import { useVoice } from './useVoice';
 /** The button's name for a screen reader and the tests; it starts with the words on the control. */
 export const ASK_TUTOR_LABEL = 'Ask the tutor about this screen';
 
-/** The round button. `lift` raises it above a pinned bar the screen has at its foot (the Reader's Talk bar, Import's Add bar). */
+/** How far the speaking bar (bsv-kit/speech) raises the button while something is read aloud: a button's height, and the bar's padding and border. */
+const SPEAKING_BAR_LIFT = 'var(--lp-tap) + 1.25rem';
+
+/** The round button. `lift` raises it above a pinned bar the screen has at its foot (the Reader's Talk bar, Import's Add bar); it also clears the
+ * speaking bar while one is up. */
 export function AskTutorButton({ onClick, lift = '0px' }: { onClick: () => void; lift?: string }) {
   const hidden = useSheetOpen();
+  const speaking = useBarShown();
   if (hidden) return null;
   return (
     <button
@@ -29,7 +35,7 @@ export function AskTutorButton({ onClick, lift = '0px' }: { onClick: () => void;
       data-ask-tutor
       aria-label={ASK_TUTOR_LABEL}
       onClick={onClick}
-      style={{ bottom: `calc(var(--lp-bar-inset) + var(--spacing) * 3 + ${lift})` }}
+      style={{ bottom: `calc(var(--lp-bar-inset) + var(--spacing) * 3 + ${lift}${speaking ? ` + ${SPEAKING_BAR_LIFT}` : ''})` }}
       className="fixed right-3 z-4 flex size-14 items-center justify-center rounded-full bg-accent text-accent-fg shadow-lg active:opacity-80"
     >
       <svg aria-hidden="true" viewBox="0 0 24 24" className="size-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
