@@ -47,6 +47,12 @@ npm run data:build   # data/raw (git-ignored, downloaded if absent) -> public/da
                      #   the output is committed and a second run changes nothing (docs/data.md)
 ```
 
+## Grinds and their examples
+
+Each grind (`grinds/<kind>.json`) keeps BDD-style scenarios under `grinds/examples/<kind>/<name>.json`: the request (with `schemaVersion`), the recording beside it where the grind takes one (verse-read), and an `expect` block of simple checks on answer fields. Format: `grinds/examples/README.md`. `mw grist smoke lampas` runs them against the live grist; `tests/unit/grind-examples.test.ts` validates every request against `grinds/<kind>.input.schema.json` and every `expect` path against the answer schema, and fails when a grind has no scenario or no input schema.
+
+**When you change a grind's behaviour (its instructions, schemas, or what the app sends), update or add its examples in the same story. A new grind ships with an input schema and at least one example.**
+
 ## Tests
 
 - Test-first: write the failing test or scenario before the code that makes it pass.

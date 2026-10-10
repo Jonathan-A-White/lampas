@@ -1,0 +1,23 @@
+{
+  "description": "Someone who has used every screen, feature and setting that exists: nothing would help right now, so the answer's tip is null.",
+  "schemaVersion": "1",
+  "request": {
+    "summary": {
+      "days_used": 60,
+      "days_used_last_7": 7,
+      "first_used_days_ago": 70,
+      "screens_visited": ["words", "import", "test", "drill", "review", "placement", "goal", "about", "settings"],
+      "screens_never": [],
+      "features_used": ["ask", "talk", "quick-test", "parsing-drill", "review", "reading-check", "read-aloud", "long-press-speak", "word-help", "grammar-sheet", "know-grammar", "weave", "study-links", "other-chapters", "goal", "placement"],
+      "features_never": [],
+      "settings_changed": ["theme", "textSize", "layout", "weave", "readSpan", "tips"],
+      "settings_never": [],
+      "turned_off": [],
+      "counts": { "wordsLearning": 40, "wordsSolid": 300, "talks": 80, "asks": 50, "quizAnswers": 900, "drillAnswers": 400, "readings": 60, "grammarKnown": 30 }
+    },
+    "shown": ["try-talk", "try-quick-test", "try-review"]
+  },
+  "expect": {
+    "tip": { "isNull": true }
+  }
+}

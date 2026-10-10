@@ -1,0 +1,15 @@
+{
+  "description": "An ask the tutor could not meet, sent with the tap on Send this to the makers: the mill forwards it and answers that it was sent.",
+  "schemaVersion": "1",
+  "request": {
+    "kind": "tutor-ask",
+    "text": "Can Lampas open the verse in my Logos library at the interlinear?",
+    "summary": "Open a verse in the Logos interlinear",
+    "screen": "Reader",
+    "reference": "Romans 8:28",
+    "app_version": "0.1.12"
+  },
+  "expect": {
+    "status": { "equals": "sent" }
+  }
+}

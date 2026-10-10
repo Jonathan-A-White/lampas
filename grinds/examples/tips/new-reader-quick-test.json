@@ -1,0 +1,26 @@
+{
+  "description": "Someone with words being learned who has never opened the Quick test, three days in: a tip is offered, with an id, a title and a body.",
+  "schemaVersion": "1",
+  "request": {
+    "summary": {
+      "days_used": 3,
+      "days_used_last_7": 3,
+      "first_used_days_ago": 4,
+      "screens_visited": ["words", "settings"],
+      "screens_never": ["import", "test", "drill", "review", "placement", "goal", "about"],
+      "features_used": ["read-aloud", "other-chapters"],
+      "features_never": ["ask", "talk", "quick-test", "parsing-drill", "review", "reading-check", "long-press-speak", "word-help", "grammar-sheet", "know-grammar", "weave", "study-links", "goal", "placement"],
+      "settings_changed": ["theme"],
+      "settings_never": ["textSize", "layout", "weave", "readSpan"],
+      "turned_off": [],
+      "counts": { "wordsLearning": 9, "wordsSolid": 4, "talks": 0, "asks": 0, "quizAnswers": 0, "drillAnswers": 0, "readings": 0, "grammarKnown": 0 }
+    },
+    "shown": []
+  },
+  "expect": {
+    "tip": { "isNull": false },
+    "tip.id": { "matches": "^[a-z0-9-]+$" },
+    "tip.title": { "present": true },
+    "tip.body": { "present": true }
+  }
+}
