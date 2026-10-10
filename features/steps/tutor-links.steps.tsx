@@ -157,6 +157,20 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('An answer with an empty list of links shows no link row, even with a resource on', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 and the tutor answers with an empty list of links', () => open([]));
+    And('the study resource {string} is switched on', switchOn);
+    When('he asks the tutor about verse 28', ask);
+    Then('the answer shows no study links', async () => {
+      await waitFor(() => expect(turn()).toHaveTextContent('Love is the word'));
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(turn().querySelector('[data-tutor-links]')).toBeNull();
+    });
+    And('the answer text is shown', () => {
+      expect(turn()).toHaveTextContent('Love is the word Paul keeps coming back to.');
+    });
+  });
+
   Scenario('An answer carries at most three links', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 and the tutor answers with links to the words {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) =>
       open([a, b, c, d].map((lemma) => ({ kind: 'word' as const, lemma }))),

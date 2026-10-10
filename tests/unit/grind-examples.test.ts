@@ -145,3 +145,22 @@ describe('the scenario checks', () => {
     ]);
   });
 });
+
+describe('bible-talk/other-passage-in-place (mw-5r3p30.153)', () => {
+  const example = readJson('grinds/examples/bible-talk/other-passage-in-place.json') as unknown as GrindExample;
+  const answer = { answer: 'Melchizedek is the priest-king of Salem (Hebrews 7:1-2).', words: [] };
+
+  it.each([
+    ['leaves links out', answer],
+    ['sends an empty list of links', { ...answer, links: [] }],
+  ])('passes when the mill %s: no link is no link', (_name, given) => {
+    expect(checkExpect(example.expect, given)).toEqual([]);
+  });
+
+  it('still fails when the mill sends a link, or no passage', () => {
+    expect(checkExpect(example.expect, { ...answer, links: [{ kind: 'verse', reference: 'Hebrews 7:1' }] })).toEqual([
+      'links.0: expected absent, got {"kind":"verse","reference":"Hebrews 7:1"}',
+    ]);
+    expect(checkExpect(example.expect, { ...answer, answer: 'A priest.' })).not.toEqual([]);
+  });
+});
