@@ -34,7 +34,6 @@ import {
   listLearningLemmas,
   listSolidLemmas,
   setReaderView,
-  listTurns,
   setWeave,
   talkRef,
   type ReaderView,
@@ -58,23 +57,23 @@ import { closeVerse, movePassage, moveVerse, navigate, openPassage, openVerse, r
 import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
 import { useReadChecks } from './useReadChecks';
+import { useReaderTutor } from './reader/useReaderTutor';
 import { READER_SUGGESTIONS } from './tutor/screen';
 import { useTalk } from './useTalk';
-import { helpQuestion, newWordQuestion, paradigmQuestion, quizMeQuestion, scopeRef, scopeTitle, termQuestion, type TalkScope, type WordFocus } from './services/talk';
 import { useVoice } from './useVoice';
 import { HeaderButton } from './ScreenHeader';
 import { speakTutor } from './speech/tutorVoice';
 import { continueReading, getReading, isReadingOf, pauseReading, planOf, startAnswer, startReading, stopReading, updatePlan, useReading } from './speech/readAloud';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
 import { ReaderChips } from './ReaderChips';
-import { TeachSheet, type NewWordAsk } from './TeachSheet';
+import { TeachSheet } from './TeachSheet';
 import { useNewWords } from './useNewWords';
 import { usePace } from './usePace';
 import { TipCard } from './tips/TipCard';
 import { ReadFromButton, ReadingBar } from './speech/ReadControls';
 import { BarSlot } from './speech/SpeakingBarSlot';
-import { speakWord, warmVoices } from './speech/greek';
-import { WordSheet, type Lookup, type TermAsk, type WordHelp } from './WordSheet';
+import { warmVoices } from './speech/greek';
+import { WordSheet, type Lookup } from './WordSheet';
 import { PassageText, ParagraphView, SectionHeading, VerseLine } from './reader/ChapterText';
 import { VerseText, type VerseTalk } from './reader/VerseText';
 
@@ -225,24 +224,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const [prefill, setPrefill] = useState(() => (request?.action === 'ask' ? { verse: request.verse, text: request.question } : null));
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
   const checks = useReadChecks(BOOK, CHAPTER, TITLE, view ?? 'english', pronunciation);
-  // The Talk sheet: undefined is closed, a number the verse it was opened on, null the chapter. An answer that arrives while
-  // its conversation is open on the sheet is read aloud.
-  const [talkAbout, setTalkAboutRaw] = useState<number | null | undefined>(() =>
-    request?.action === 'talk' || request?.action === 'word' ? request.verse : request?.action === 'paradigm' ? null : undefined,
-  );
-  // The quiz (the Verse view's Quiz me, mw-5r3p30.74): the verse or passage the open Talk sheet quizzes, else null. Every other way of opening
-  // or closing the sheet goes through setTalkAbout, which ends the quiz.
-  const [quizUnit, setQuizUnit] = useState<Verse | null>(null);
-  const setTalkAbout = useCallback((about: number | null | undefined) => {
-    setQuizUnit(null);
-    setTalkAboutRaw(about);
-  }, []);
-  const openTalk = useRef<string | null>(null);
-  useEffect(() => {
-    openTalk.current = talkAbout === undefined ? null : quizUnit ? scopeRef(BOOK, CHAPTER, { verse: quizUnit, quiz: true }) : talkRef(BOOK, CHAPTER, talkAbout);
-  }, [talkAbout, quizUnit, BOOK, CHAPTER]);
-  // A Reader that is gone has no talk open: an answer that came as it went, and is read a moment later (speakTutor reads the saved choice first), is not spoken (mw-5r3p30.114).
-  useEffect(() => () => void (openTalk.current = null), []);
+  // The conversation the Talk sheet is open on (kept current by useReaderTutor); an answer that comes while its sheet is open is read aloud.
+  const openTalkRef = useRef<string | null>(null);
   // Push-to-talk (src/useVoice.ts): what he says goes as the turn of the conversation the sheet is open on.
   const sayAbout = useRef<(message: string) => void>(() => {});
   const voice = useVoice((message) => sayAbout.current(message));
@@ -250,12 +233,12 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   useEffect(() => {
     holding.current = voice.listening;
   });
-  const { states: talkStates, say } = useTalk(BOOK, CHAPTER, (ref, id, answer, info) => {
+  const talk = useTalk(BOOK, CHAPTER, (ref, id, answer, info) => {
     // an answer that comes while he holds waits: page audio can take the microphone from the recogniser
-    if (openTalk.current !== ref || holding.current) return;
+    if (openTalkRef.current !== ref || holding.current) return;
     // Sound it out: the word was said before the answer; now each syllable it lists, slowly, one after another.
     if (info.focus?.kind === 'sound' && !info.focus.language && info.syllables?.length) startAnswer(id, syllableRuns(info.syllables));
-    else speakTutor(id, answerRuns(answer), () => openTalk.current === ref);
+    else speakTutor(id, answerRuns(answer), () => openTalkRef.current === ref);
   });
   // A tap on a verse number opens the Verse view as a Back step of its own; the address then names the verse and the effect below tells the bus.
   const selectVerse = useCallback((n: number) => openVerse(n), []);
@@ -265,14 +248,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     if (request?.action === 'ask') chooseAction('ask');
   }, [request, chooseAction]);
   const closeSheet = useCallback(() => setLookup(null), []);
-  const talkScope: TalkScope | null =
-    chapter && talkAbout !== undefined
-      ? quizUnit
-        ? { title: TITLE, chapter, verse: quizUnit, quiz: true }
-        : { title: TITLE, chapter, verse: chapter.verses.find((v) => v.n === talkAbout) ?? null }
-      : null;
-  const talkKey = talkScope ? scopeRef(BOOK, CHAPTER, talkScope) : null;
-  // What he says goes to the open Talk sheet; with none open, to the tutor about the verse of the open Verse view (its Ask the tutor bar).
   const viewVerse = chapter && selected !== null ? chapter.verses.find((v) => v.n === selected) : undefined;
   // A heading's passage (the address `p`) opens the same view, with the passage as one Verse; a verse in the address wins.
   const named = readerOf(address);
@@ -283,101 +258,15 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   );
   const viewUnit = useMemo(() => viewVerse ?? (viewPassage ? passageVerse(viewPassage) : undefined), [viewVerse, viewPassage]);
   const viewAsking = viewUnit !== undefined && action === 'ask';
-  // Quiz me: the quiz about the unit the view shows is begun when it has no turn yet and nothing is on its way; the button then says Continue.
-  const quizKey = viewUnit ? scopeRef(BOOK, CHAPTER, { verse: viewUnit, quiz: true }) : null;
-  const quizTurns = useLiveQuery(() => (quizKey ? listTurns(quizKey) : Promise.resolve([])), [quizKey]);
-  const openQuiz = useCallback(() => {
-    if (!chapter || !viewUnit || !quizKey) return;
-    voice.abort();
-    setQuizUnit(viewUnit);
-    setTalkAboutRaw(viewUnit.n);
-    if (quizTurns?.length === 0 && !talkStates[quizKey]) {
-      say({ title: TITLE, chapter, verse: viewUnit, quiz: true }, quizMeQuestion(scopeTitle({ title: TITLE, verse: viewUnit })));
-    }
-  }, [chapter, viewUnit, quizKey, quizTurns, talkStates, voice, say, TITLE]);
+  const tutor = useReaderTutor(open, chapter, talk, voice, { request, viewUnit, openTalkRef });
+  const { talkScope, talkKey, talkAbout, setTalkAbout, holdTalk } = tutor;
+  // What he says goes to the open Talk sheet; with none open, to the tutor about the verse of the open Verse view (its Ask the tutor bar).
   useEffect(() => {
     sayAbout.current = (message) => {
-      if (talkScope) say(talkScope, message);
+      if (talkScope) talk.say(talkScope, message);
       else if (viewAsking && viewUnit) ask(viewUnit, message);
     };
   });
-  // Ask the tutor on a paradigm table (src/ParadigmsScreen.tsx): the Talk sheet is open on the chapter; once the chapter is here the first
-  // question goes with the table's name and the forms he revealed.
-  const paradigmSent = useRef(false);
-  useEffect(() => {
-    if (request?.action !== 'paradigm' || !chapter || paradigmSent.current) return;
-    paradigmSent.current = true;
-    say({ title: TITLE, chapter, verse: null }, paradigmQuestion(request.table, request.revealed.length), {
-      kind: 'paradigm',
-      table: request.table,
-      revealed: request.revealed,
-    });
-  }, [request, chapter, say, TITLE]);
-  // The Quick test's Ask the tutor: the Talk sheet is open on the word's verse; once the chapter is here the first question goes with
-  // the focus it was asked with (the word, the question, his answers so far).
-  const wordSent = useRef(false);
-  useEffect(() => {
-    if (request?.action !== 'word' || !chapter || wordSent.current) return;
-    wordSent.current = true;
-    const verse = chapter.verses.find((v) => v.n === request.verse) ?? null;
-    say({ title: TITLE, chapter, verse }, request.question, request.focus);
-  }, [request, chapter, say, TITLE]);
-  // A hold opens the sheet about `about` and listens, unless that conversation is still waiting for its answer.
-  const holdTalk = useCallback(
-    (about: number | null) => {
-      setTalkAbout(about);
-      const state = talkStates[talkRef(BOOK, CHAPTER, about)];
-      if (state?.phase === 'sending' || state?.phase === 'waiting') return;
-      voice.press();
-    },
-    [talkStates, voice, setTalkAbout, BOOK, CHAPTER],
-  );
-  // Help with this word (the word sheet's Grammar | Sound it out): the Talk sheet on the word's verse, the first question sent.
-  // Sound it out says the word, slowly, now (straight from the tap); a conversation still waiting for its answer is only shown.
-  const helpWithWord = useCallback(
-    (help: WordHelp) => {
-      if (!chapter) return;
-      const verse = chapter.verses.find((v) => v.n === help.verse) ?? null;
-      const scope = { title: TITLE, chapter, verse };
-      const focus: WordFocus = { form: help.form, lemma: help.lemma, parse: help.parse, kind: help.kind };
-      publish({ kind: 'word-help', help: help.kind, form: focus.form, lemma: focus.lemma, parse: focus.parse, chapter: CHAPTER, verse: help.verse });
-      voice.abort();
-      setTalkAbout(help.verse);
-      const state = talkStates[talkRef(BOOK, CHAPTER, help.verse)];
-      if (state?.phase === 'sending' || state?.phase === 'waiting') return;
-      if (help.kind === 'sound') speakWord(help.form, 'greek', true);
-      say(scope, helpQuestion(focus, scopeTitle(scope)), focus);
-    },
-    [chapter, talkStates, voice, say, setTalkAbout, BOOK, CHAPTER, TITLE],
-  );
-  // Ask the tutor on a Grammar sheet: the Talk sheet on the verse of the word the term was tapped on, the first question sent.
-  const askAboutTerm = useCallback(
-    (ask: TermAsk) => {
-      if (!chapter) return;
-      const verse = chapter.verses.find((v) => v.n === ask.verse) ?? null;
-      const scope = { title: TITLE, chapter, verse };
-      voice.abort();
-      setTalkAbout(ask.verse);
-      const state = talkStates[talkRef(BOOK, CHAPTER, ask.verse)];
-      if (state?.phase === 'sending' || state?.phase === 'waiting') return;
-      say(scope, termQuestion(ask.term, scopeTitle(scope)), { term: ask.term, kind: 'grammar-term' });
-    },
-    [chapter, talkStates, voice, say, setTalkAbout, BOOK, CHAPTER, TITLE],
-  );
-  // Ask the tutor on the teach sheet: the Talk sheet on the verse the new word was shown in, the first question sent.
-  const askAboutNewWord = useCallback(
-    (asked: NewWordAsk) => {
-      if (!chapter) return;
-      const verse = chapter.verses.find((v) => v.n === asked.verse) ?? null;
-      const scope = { title: TITLE, chapter, verse };
-      voice.abort();
-      setTalkAbout(asked.verse);
-      const state = talkStates[talkRef(BOOK, CHAPTER, asked.verse)];
-      if (state?.phase === 'sending' || state?.phase === 'waiting') return;
-      say(scope, newWordQuestion(asked.lemma, asked.gloss, scopeTitle(scope)));
-    },
-    [chapter, talkStates, voice, say, setTalkAbout, BOOK, CHAPTER, TITLE],
-  );
   // The verse number on the teach sheet: the reading box is scrolled so that verse stands at its top. The verse is not selected: that
   // would open its Verse view over the Reader.
   const showVerse = useCallback((n: number) => {
@@ -675,11 +564,11 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           scope={talkScope}
           suggestions={talkScope.verse === null && !talkScope.quiz ? READER_SUGGESTIONS : undefined}
           talkRef={talkKey ?? talkRef(BOOK, CHAPTER, talkAbout)}
-          state={talkStates[talkKey ?? talkRef(BOOK, CHAPTER, talkAbout)]}
+          state={talk.states[talkKey ?? talkRef(BOOK, CHAPTER, talkAbout)]}
           voice={voice}
-          onSay={(message, focus) => say(talkScope, message, focus)}
-          onHelp={helpWithWord}
-          onAskTerm={askAboutTerm}
+          onSay={(message, focus) => talk.say(talkScope, message, focus)}
+          onHelp={tutor.helpWithWord}
+          onAskTerm={tutor.askAboutTerm}
           onClose={() => {
             voice.abort();
             voice.clearNotice();
@@ -695,7 +584,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           solid={solid ?? EMPTY_LEMMAS}
           onClose={closeTeach}
           onShowVerse={showVerse}
-          onAsk={askAboutNewWord}
+          onAsk={tutor.askAboutNewWord}
         />
       ) : null}
       {chapter && viewUnit && view ? (
@@ -735,12 +624,12 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           prefill={prefill}
           voice={voice}
           onTalk={() => setTalkAbout(viewUnit.n)}
-          quiz={{ started: (quizTurns?.length ?? 0) > 0 || (quizKey !== null && talkStates[quizKey] !== undefined), onOpen: openQuiz }}
+          quiz={{ started: tutor.quizStarted, onOpen: tutor.openQuiz }}
         />
       ) : null}
       {picking ? <ChapterPicker current={open} onClose={closePicker} /> : null}
       {linked ? <WordSheet chapter={linked.chapter} lookup={linked.lookup} onClose={() => setLinked(null)} /> : null}
-      {chapter && lookup ? <WordSheet chapter={chapter} lookup={lookup} onClose={closeSheet} onHelp={helpWithWord} onAskTerm={askAboutTerm} /> : null}
+      {chapter && lookup ? <WordSheet chapter={chapter} lookup={lookup} onClose={closeSheet} onHelp={tutor.helpWithWord} onAskTerm={tutor.askAboutTerm} /> : null}
     </>
   );
 }
