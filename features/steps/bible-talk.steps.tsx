@@ -19,6 +19,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { expectKeepsItShort, expectLearnerField, expectLearnerSummary, expectTeachesNewWord, instructionsOf, learnWordToday } from '../../tests/support/learner';
+import { exchangeMarkdown, stubClipboard } from '../../tests/support/exchange';
 import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
 
@@ -42,6 +43,7 @@ const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 const QUESTION = 'What does συνεργεῖ mean here?';
 let fake: FakePostern;
+let clipboard = stubClipboard();
 let synth: FakeSynth | undefined;
 
 async function open(configure: (f: FakePostern) => void = (f) => void (f.autoReply = { status: 'answered', answer: TALK_ANSWER }), speaks = false): Promise<void> {
@@ -58,6 +60,7 @@ async function open(configure: (f: FakePostern) => void = (f) => void (f.autoRep
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
   window.location.hash = '';
   tutorTimings.pollMs = 20;
+  clipboard = stubClipboard();
   fake = makeFakePostern();
   configure(fake);
   stubChapterFetch();
@@ -99,6 +102,18 @@ const turns = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn
 async function send(question: string): Promise<void> {
   await user.type(field(), question);
   await user.click(sendButton());
+}
+
+const ORDINALS = ['first', 'second'];
+const turn = (ordinal: string): HTMLElement => turns()[ORDINALS.indexOf(ordinal)];
+const copyButton = (ordinal: string) => within(turn(ordinal)).getByRole('button', { name: 'Copy this exchange' });
+
+/** Sends and waits for the answer: one more turn, and the field free again. */
+async function sendAndWait(question: string): Promise<void> {
+  const before = turns().length;
+  await send(question);
+  await turnsKept(before + 1);
+  await waitFor(() => expect(field()).toBeEnabled());
 }
 
 async function turnsKept(n: number): Promise<void> {
@@ -750,6 +765,52 @@ describeFeature(feature, ({ Scenario }) => {
     Then('his turn shows {string}', async (_, shown: string) => {
       await turnsKept(1);
       expect(sheet().querySelector('[data-talk-q]')?.textContent).toBe(shown);
+    });
+  });
+
+  Scenario('Copy on a turn puts the exchange on the clipboard as Markdown', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern whose answers clean up his question', () => open(cleaning));
+    And('he selects verse 28', selectVerse28);
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => sendAndWait(question));
+    And('he taps Copy on the {word} turn', (_, ordinal: string) => user.click(copyButton(ordinal)));
+    Then('the clipboard holds the Markdown of {string} asking {string} answered by the talk', (_, reference: string, question: string) => {
+      expect(clipboard.copied).toEqual([exchangeMarkdown(reference, question, TALK_ANSWER.answer)]);
+    });
+    And('the {word} turn says {string}', async (_, ordinal: string, text: string) => {
+      await waitFor(() => expect(within(turn(ordinal)).getByRole('status')).toHaveTextContent(text));
+    });
+  });
+
+  Scenario("A talk about the chapter copies the chapter's link", ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern', () => open());
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => sendAndWait(question));
+    And('he taps Copy on the {word} turn', (_, ordinal: string) => user.click(copyButton(ordinal)));
+    Then('the clipboard holds the Markdown of {string} asking {string} answered by the talk', (_, reference: string, question: string) => {
+      expect(clipboard.copied).toEqual([exchangeMarkdown(reference, question, TALK_ANSWER.answer)]);
+    });
+  });
+
+  Scenario('With several turns in the sheet each Copy copies only its own', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern', () => open());
+    And('he selects verse 28', selectVerse28);
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => sendAndWait(question));
+    And('the talk will answer {string}', (_, answer: string) => {
+      fake.autoReply = { status: 'answered', answer: { ...TALK_ANSWER, answer } };
+    });
+    And('he then sends {string}', (_, question: string) => sendAndWait(question));
+    And('he taps Copy on the {word} turn', (_, ordinal: string) => user.click(copyButton(ordinal)));
+    Then('the clipboard holds the Markdown of {string} asking {string} answered {string}', (_, reference: string, question: string, answer: string) => {
+      expect(clipboard.copied).toEqual([exchangeMarkdown(reference, question, answer)]);
+    });
+    And('the {word} turn does not say {string}', (_, ordinal: string, text: string) => {
+      expect(turn(ordinal)).not.toHaveTextContent(text);
+    });
+    When('he taps Copy on the {word} turn again', (_, ordinal: string) => user.click(copyButton(ordinal)));
+    Then('the clipboard then holds the Markdown of {string} asking {string} answered by the talk', (_, reference: string, question: string) => {
+      expect(clipboard.copied.slice(-1)).toEqual([exchangeMarkdown(reference, question, TALK_ANSWER.answer)]);
     });
   });
 

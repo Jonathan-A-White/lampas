@@ -7,7 +7,6 @@ export const accordance: StudyResource = {
   name: 'Accordance',
   kind: 'app',
   describe: 'Adds Open in Accordance: the word in your own lexicon in the Accordance app.',
-  probe: 'accord://',
   option: {
     label: 'Accordance resource',
     default: 'BDAG',

@@ -2,36 +2,9 @@
 // referenceUrl, wordUrl). Copying says 'Link copied'; a phone that refuses the clipboard shows the link itself, selected, to copy by hand: the tap
 // never ends in nothing. Used under a verse's panel (ReadCheck.tsx) and on the word sheet.
 import { useEffect, useRef, useState } from 'react';
+import { copy } from './clipboard';
 
 const BUTTON = 'min-h-11 rounded-lg px-3 text-base font-medium text-accent active:bg-line';
-
-/** The clipboard through the old way, for a page the modern API refuses. */
-function copyOld(text: string): boolean {
-  if (typeof document.execCommand !== 'function') return false;
-  const field = document.createElement('textarea');
-  field.value = text;
-  field.setAttribute('readonly', '');
-  field.style.position = 'fixed';
-  field.style.opacity = '0';
-  document.body.appendChild(field);
-  field.select();
-  try {
-    return document.execCommand('copy');
-  } catch {
-    return false;
-  } finally {
-    field.remove();
-  }
-}
-
-async function copy(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    return copyOld(text);
-  }
-}
 
 /** How long 'Link copied' stays. */
 const COPIED_MS = 2500;

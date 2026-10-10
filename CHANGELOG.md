@@ -1,5 +1,21 @@
 # What's new
 
+## 0.1.32
+_2026-10-10_
+- Fixed: The gaps between words in the Reader are now an even single space instead of wide, uneven gaps.
+
+## 0.1.30
+_2026-10-10_
+- Fixed: none (the fix itself shipped with mw-5r3p30.115; this adds a test).
+
+## 0.1.29
+_2026-10-10_
+- Fixed: Turning Logos or Accordance on in Settings no longer opens the app or switches itself off; it stays on and offers a Get button if you don't have the app.
+
+## 0.1.28
+_2026-10-10_
+- New: Every question and answer from the tutor now has a Copy button that puts the whole exchange on your clipboard as Markdown, with a link to the verse.
+
 ## 0.1.27
 _2026-10-10_
 - New: On the About screen you can now ask the tutor what any credit is, what it gives you and what its licence lets us do, or why we credit them all.

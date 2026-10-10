@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.1.32",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.127",
+    "kind": "fixed",
+    "text": "The gaps between words in the Reader are now an even single space instead of wide, uneven gaps."
+  },
+  {
+    "version": "0.1.30",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.118",
+    "kind": "fixed",
+    "text": "none (the fix itself shipped with mw-5r3p30.115; this adds a test)."
+  },
+  {
+    "version": "0.1.29",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.116",
+    "kind": "fixed",
+    "text": "Turning Logos or Accordance on in Settings no longer opens the app or switches itself off; it stays on and offers a Get button if you don't have the app."
+  },
+  {
+    "version": "0.1.28",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.104",
+    "kind": "new",
+    "text": "Every question and answer from the tutor now has a Copy button that puts the whole exchange on your clipboard as Markdown, with a link to the verse."
+  },
+  {
     "version": "0.1.27",
     "date": "2026-10-10",
     "story": "mw-vtjxh4.2",

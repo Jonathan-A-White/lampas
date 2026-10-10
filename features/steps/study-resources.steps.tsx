@@ -14,10 +14,9 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 
 const user = userEvent.setup();
 
-// Turning an app On opens it to see it is there (mw-5r3p30.68): nothing here waits for real time or leaves the page.
+// A tap on a Study link arms a wait for the page to stay in front: nothing here waits for real time or leaves the page.
 const real = { ...browserEnv };
 browserEnv.after = () => () => {};
-browserEnv.launch = () => {};
 
 afterAll(() => {
   Object.assign(browserEnv, real);

@@ -9,6 +9,7 @@ import { listAnswers, verseRef, type TutorAnswer } from './data/repositories';
 import { FAILURE_TITLES, MAX_QUESTION_CHARS } from './services/tutor';
 import type { AskState } from './useAsks';
 import { Markdown } from './markdown/Markdown';
+import { CopyExchange } from './share/CopyExchange';
 import { answerRuns } from './speech/answerRuns';
 import { stopAnswer } from './speech/readAloud';
 import { askAnswerId, speakTutor, stopOnTap } from './speech/tutorVoice';
@@ -86,6 +87,9 @@ function AnswerCard({ answer }: { answer: TutorAnswer }) {
           ))}
         </dl>
       ) : null}
+      <div className="-mb-1 mt-1 flex justify-end">
+        <CopyExchange place={answer.ref} question={answer.cleanQuestion ?? answer.question} answer={answer.answer} />
+      </div>
     </article>
   );
 }

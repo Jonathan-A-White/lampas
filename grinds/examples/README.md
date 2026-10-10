@@ -34,7 +34,8 @@ shape without a network.
   - `is_null`: `true` the value is null, `false` it is not
   - `one_of`: the value is one of these
   - `contains`: a string field includes this text
-  - `matches`: a string field matches this JavaScript regular expression (no `(?i)`)
+  - `matches`: a string field matches this regular expression, which the app's test (JavaScript) and the mill (Go's RE2) must both read:
+    no `(?i)`, no lookaround (`(?=` `(?!` `(?<=` `(?<!`), no backreference (`\1`), no `[^]` (write `[\s\S]`); the unit test refuses them
   - `present`: `true` the field is in the answer, `false` it is left out
 
 Every `expect` path must be a field of the grind's answer schema, and every `equals` or

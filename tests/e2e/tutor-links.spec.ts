@@ -34,13 +34,12 @@ test('the tutor\'s links at phone width: chips for the resources he switched on,
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 
-  // Strong's and Logos on in Settings (turning an app On opens it once; the blur plays the app taking the page away).
+  // Strong's and Logos on in Settings (turning an app On only turns it On).
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   const section = page.getByRole('region', { name: 'Study resources' });
   await section.scrollIntoViewIfNeeded();
   await section.getByRole('switch', { name: "Strong's", exact: true }).click();
   await section.getByRole('switch', { name: 'Logos', exact: true }).click();
-  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
   await expect(section.getByRole('switch', { name: 'Logos', exact: true })).toHaveAttribute('aria-checked', 'true');
   await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
 
@@ -95,7 +94,6 @@ test('an Old Testament verse link opens in his Bible in Logos (LSB today) and ha
   const section = page.getByRole('region', { name: 'Study resources' });
   await section.scrollIntoViewIfNeeded();
   await section.getByRole('switch', { name: 'Logos', exact: true }).click();
-  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
   await expect(section.getByRole('switch', { name: 'Logos', exact: true })).toHaveAttribute('aria-checked', 'true');
   await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
 

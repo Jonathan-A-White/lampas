@@ -53,15 +53,14 @@ named on `https://www.accordancebible.com/Accordance-For-Android`) and, on the A
 OakTree Software, 2026-10-09). The earlier note that Accordance might have no Android app was wrong. Logos has no id here yet (it keeps the
 search): add one line to `STORE_IDS` when it is confirmed.
 
-**The check at the switch (mw-5r3p30.68, PROVISIONAL, Governor to confirm).** A web page cannot list the apps on a phone, so Lampas learns
-whether Logos or Accordance is there when he turns it On in Settings, not at the word sheet. Turning an app On opens the app once by its own
-scheme (the resource's `probe`: `logos4:Guide;t=Bible%20Word%20Study`, `accord://`; UNVERIFIED on a device, as the links are) and waits
-(`checkApp` in `src/resources/openApp.ts`, the same 1.5 s and the same sign as the tap on a Study link). If the page goes away (hidden, blurred or left) the app
-opened: the switch stays On and the next return to Lampas shows "Logos found". If the page stays in front, the switch goes back Off, and an Off row shows nothing more
-than its name, its one-line help and the switch (mw-5r3p30.106; the "isn't on this phone" line and Install <App> are no longer drawn there). Turning an app Off, and a
-resource of kind `'number'` (Strong's), are not checked. The word sheet's Study row lists only the resources that are On, so a missing app is caught
-in Settings. The "isn't on this phone" sheet at the word sheet stays only as the fallback for an app removed after it was found. A new resource of kind
-`'app'` gives a `probe` to get the check.
+**No check at the switch (mw-5r3p30.116, PROVISIONAL, Governor to confirm; it replaces mw-5r3p30.68's check).** A web page cannot list the apps on a
+phone (`getInstalledRelatedApps` sees only apps that declare the site), and the only other way, opening the app and seeing whether the page goes away,
+opened Logos on an empty Bible Word Study page and flipped a missing Accordance Off with no way to get it. So turning an app On in Settings opens nothing,
+checks nothing, and the switch stays On. While it is On, its row (a resource of kind `'app'`) says "Don't have <App>?" with a **Get <App>** link
+(`storeUrl(app)` in `src/resources/appStore.ts`: Accordance's own Play page by id on Android, the App Store page on an iPhone, a store search for an app
+with no id). An Off row shows nothing more than its name, its one-line help and the switch (mw-5r3p30.106). Strong's (kind `'number'`) has no Get link.
+The word sheet's Study row lists only the resources that are On; a Study link whose app does not open still shows the "isn't on this phone" sheet with
+Get <App> and Turn off <App> (`armFallback`). `features/app-on-phone.feature` holds the rules; Settings never says "Looking for" or "found".
 
 **The Study row's grid.** The links are equal tiles, two to a row, under the app's name for a resource of kind `'app'`. A link's `label`
 is its accessible name ('Open in Logos: BDAG'); its optional `tile` is the short text on the tile ('BDAG', 'Word Study'; a Logos lexicon's

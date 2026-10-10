@@ -37,6 +37,30 @@ const CAMEL_CHECKS: Record<string, string> = { isNull: '{ "is_null": true }', on
 /** The mill's answer to a forwarding grind (no answer schema of its own). */
 export const FORWARD_ANSWER_SCHEMA: Schema = { type: 'object', properties: { status: { type: 'string', enum: ['sent'] } }, required: ['status'], additionalProperties: false };
 
+/**
+ * True when a JavaScript pattern uses what the mill's Go regexp (RE2) cannot compile: lookarounds (?= (?! (?<= (?<!, a backreference
+ * (\1 to \9) and the empty negated class [^] (write [\s\S] for "any character"). Escapes and the inside of a class are skipped.
+ */
+export function usesBeyondRe2(pattern: string): boolean {
+  let inClass = false;
+  for (let i = 0; i < pattern.length; i++) {
+    const ch = pattern[i];
+    if (ch === '\\') {
+      if (!inClass && /[1-9]/.test(pattern[i + 1] ?? '')) return true;
+      i++;
+    } else if (inClass) {
+      if (ch === ']') inClass = false;
+    } else if (ch === '[') {
+      if (pattern.startsWith('[^]', i)) return true;
+      inClass = true;
+      if (pattern[i + 1] === '^') i++;
+    } else if (ch === '(' && /^\(\?(=|!|<=|<!)/.test(pattern.slice(i, i + 4))) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /** The schemas a path can stand at: a field name, or an array place (a number) into `items`; anyOf branches are all tried. */
 function schemasAt(root: Schema, path: string): Schema[] {
   let nodes: Schema[] = [root];
@@ -100,6 +124,7 @@ export function expectProblems(expectBlock: unknown, answerSchema: Schema): stri
       } catch {
         problems.push(`${path}: matches is not a valid pattern`);
       }
+      if (usesBeyondRe2(c.matches)) problems.push(`${path}: matches uses syntax RE2 (the mill's Go regexp) cannot compile`);
     }
   }
   return problems;

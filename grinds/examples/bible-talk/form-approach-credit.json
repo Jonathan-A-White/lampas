@@ -1,5 +1,5 @@
 {
-  "description": "He has said what the approach is: the tutor puts his words in the approach field, never sends, and asks the next question, who to credit, in one line.",
+  "description": "He has said what the approach is: the tutor puts his words in the approach field, never sends, and asks the next question, who to credit or whether he has a photo, in one line.",
   "schemaVersion": "1",
   "request": {
     "reference": "Ask for another approach",
@@ -22,6 +22,6 @@
     "answer": { "matches": "^[^\\n]{10,200}\\?$" },
     "form_values.0.field": { "equals": "approach" },
     "form_values.0.value": { "matches": "[Cc]olou?r" },
-    "form_ask": { "equals": "credit" }
+    "form_ask": { "one_of": ["credit", "pictures"] }
   }
 }

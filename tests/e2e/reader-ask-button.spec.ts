@@ -98,3 +98,49 @@ test('scrolled anywhere in the chapter, no line of text is behind the button', a
   }, top);
   await shot(page, 'reader-ask-button-mid');
 });
+
+/** The rectangle of every word of the reading box and every verse number button, as it is on screen (what the box clips is not counted). */
+const wordsAndNumbersOnScreen = (page: Page) =>
+  page.evaluate(() => {
+    const box = document.querySelector<HTMLElement>('[data-reader]');
+    if (!box) return [];
+    const bounds = box.getBoundingClientRect();
+    const out: { what: string; x: number; y: number; width: number; height: number }[] = [];
+    const add = (what: string, r: DOMRect) => {
+      const top = Math.max(r.top, bounds.top);
+      const bottom = Math.min(r.bottom, bounds.bottom);
+      if (r.width < 1 || bottom - top < 2) return;
+      out.push({ what, x: r.x, y: top, width: r.width, height: bottom - top });
+    };
+    for (const number of box.querySelectorAll<HTMLElement>('button[aria-label^="Verse "]')) add(number.getAttribute('aria-label') ?? 'verse number', number.getBoundingClientRect());
+    const walker = document.createTreeWalker(box, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const text = node.textContent ?? '';
+      for (const m of text.matchAll(/\S+/g)) {
+        const range = document.createRange();
+        range.setStart(node, m.index ?? 0);
+        range.setEnd(node, (m.index ?? 0) + m[0].length);
+        for (const r of range.getClientRects()) add(m[0], r);
+      }
+    }
+    return out;
+  });
+
+test('the button meets no word and no verse number, at rest and at the chapter end (Hebrews 7, English)', async ({ page }) => {
+  await open(page);
+  const reading = page.locator('[data-reader]');
+  const button = await page.locator(BUTTON).boundingBox();
+  if (!button) throw new Error('no button');
+  expect(button.width).toBeGreaterThanOrEqual(44);
+  expect(button.height).toBeGreaterThanOrEqual(44);
+  for (const place of ['rest', 'end'] as const) {
+    if (place === 'end')
+      await reading.evaluate((el) => {
+        el.scrollTop = el.scrollHeight;
+      });
+    const items = await wordsAndNumbersOnScreen(page);
+    expect(items.length, `${place}: words are on screen`).toBeGreaterThan(20);
+    expect(items.filter((item) => meets(item, button)).map((item) => item.what), `${place}: behind the button`).toEqual([]);
+    await shot(page, `reader-ask-button-words-${place}`);
+  }
+});
