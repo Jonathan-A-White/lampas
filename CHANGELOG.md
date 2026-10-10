@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.49
+_2026-10-10_
+- New: Listening to a passage now starts with one tap on Play, reads on by itself with Pause, Restart and Stop, and pauses and carries on when you ask the tutor, long-press a word or leave the screen.
+
 ## 0.1.48
 _2026-10-10_
 - Fixed: The English word at the top of a word sheet no longer slides half under the tip card when the sheet is scrolled.

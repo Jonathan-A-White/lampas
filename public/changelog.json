@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.49",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.130",
+    "kind": "new",
+    "text": "Listening to a passage now starts with one tap on Play, reads on by itself with Pause, Restart and Stop, and pauses and carries on when you ask the tutor, long-press a word or leave the screen."
+  },
+  {
     "version": "0.1.48",
     "date": "2026-10-10",
     "story": "mw-5r3p30.132",
