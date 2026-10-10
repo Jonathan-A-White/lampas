@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.73
+_2026-10-10_
+- Fixed: after twenty placement questions you can now go back to the Goal screen, and 'Go on another day' returns to where you started instead of Settings.
+
 ## 0.1.71
 _2026-10-10_
 - Fixed: Ask the tutor is usable with the phone held sideways: the questions can be tapped and an answer has room to be read.

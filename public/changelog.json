@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.73",
+    "date": "2026-10-10",
+    "story": "mw-hqd5bz.22",
+    "kind": "fixed",
+    "text": "after twenty placement questions you can now go back to the Goal screen, and 'Go on another day' returns to where you started instead of Settings."
+  },
+  {
     "version": "0.1.71",
     "date": "2026-10-10",
     "story": "mw-vtjxh4.44",
