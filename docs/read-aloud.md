@@ -25,12 +25,35 @@ next chapter of the same book. (The MSB data heads every chapter's first verse t
    verse 1 at once, the highlight and following on screen work as in any chapter, and the open chapter
    (`src/data/readerChapter.ts`) becomes it.
 
-`ReaderBody` (keyed by chapter) does not stop a reading that is crossing when it unmounts; `ReaderAt` (the screen) does, so
-leaving the Reader still stops it. A chapter that cannot be fetched ends the reading before the Reader turns. Stop ends a
+`ReaderBody` (keyed by chapter) does not touch a reading that is crossing when it unmounts; leaving the Reader for another screen
+pauses it (the speaking bar below offers Resume there and on coming back), and opening another chapter ends it. A chapter that cannot be fetched ends the reading before the Reader turns. Stop ends a
 reading in every span, crossing included.
 
 The verse being read keeps doing what it did: `verse-reading` on the bus per verse, the highlight, the scroll that keeps it in
 view, and the wake lock.
+
+## The speaking bar (mw-m7v5kc.3)
+
+Everything read aloud goes through bsv-kit's speech package (`bsv-kit/speech`, the engine Postern's read-aloud was lifted into, pinned by commit with the rest
+of bsv-kit): the text is spoken a sentence at a time, each sentence in the language of its letters (`el-GR` for Greek, `he-IL` for Hebrew, the English voice
+for Latin letters), and **Pause** keeps the sentence reached, **Resume** goes on from it, **Restart** goes back to the first and **Stop** clears it. A page
+that hides pauses it. One bar, `<SpeakingBar />` of `bsv-kit/speech/react`, shows whenever a verse, a chapter or the tutor's answer is read, and is the same as
+Postern's and SpellForge's; its colours are Lampas's (`--bk-speech-*` in `src/index.css`).
+
+- A verse is ONE speech under the key `read-aloud` (`greek.ts` READ_KEY): `readAloud.ts` joins its runs with a line break (a run is one language, so the package
+  cuts a sentence at the end of every run too and tells the Greek from the English by its letters) and goes on to the next verse when the speech ends. It follows
+  the package: a Pause, Resume or Stop made on the bar moves the reading's state (`syncWithEngine`). `Listen` still stops at the verse end (`span` 'verse').
+- Where the bar is drawn (`src/speech/SpeakingBarSlot.tsx`): a screen with a bottom edge leaves a `<BarSlot level>` and the one bar is drawn into the highest on screen:
+  the foot of the shell (0, every screen but the Reader), the Reader above its Talk bar (1), the Verse view above its hold bar (2), the Talk sheet above its foot (3).
+  It is in flow, never over text, and the round *Ask the tutor* button rides above it. The header's own Pause / Stop are gone while the bar holds the reading.
+- A word said alone (a long press, a speaker, Hold to hear) is not a reading and has no bar (`isWordSpeech`). It takes the voice from a reading: the chapter's
+  reading then waits paused at its verse with the header's Play and Stop (`ReadingState.onBar` false), and Resume reads that verse again from its start; a tutor's answer
+  is over instead.
+- What the package lacks stays in `src/speech/greek.ts`: his **speed** for a language and the **voice he picked** (the package names a language and takes the phone's
+  voice; the app puts the rate and the chosen voice on each utterance as it is handed to the phone, by wrapping `speechSynthesis.speak` once), the slow speed of a
+  word being sounded out, the no-voice help line and the word said alone (`speakWord`). A phone that lists no voices yet is waited for up to a second by the package
+  before the first sentence (`warmVoices` ahead of a tap avoids it).
+- Leaving the Reader for another screen **pauses** the chapter's reading and coming back offers Resume; the tutor's answers still stop when their panel goes.
 
 ## The tutor's responses (mw-5r3p30.93)
 
