@@ -25,7 +25,7 @@
     "date": "2026-10-10",
     "story": "mw-5r3p30.120",
     "kind": "new",
-    "text": "line: bd comments mw-5r3p30.120 --json: exit status 1: Error: failed to open database: Dolt server unreachable at 10.88.0.2:3307: dial tcp 10.88.0.2:3307: i/o timeout"
+    "text": "An 'Immersive reader' setting lets the top and the Talk button slide away while you read, and come back when you scroll up a little or tap the text with two fingers."
   },
   {
     "version": "0.1.54",
