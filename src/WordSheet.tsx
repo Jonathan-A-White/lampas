@@ -6,7 +6,7 @@
 // the term I know this, plain after. A Study link whose app did not open (src/resources/openApp.ts) opens the sheet that says the app is not on this phone: Get it, or Turn off its resource. A Study row holds the links of the study resources he switched on in Settings (src/resources/),
 // and is not drawn when none is on.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { type Chapter, type GreekWord, wordGloss, wordLemma, wordParse } from './data/chapter';
 import { parseSegments } from './data/parseCode';
 import { getStudyResources, setResourceOn, type StudyResources } from './data/repositories';
@@ -106,11 +106,43 @@ function studyGroups(chosen: StudyResources | undefined, word: GreekWord, ref: S
     .filter((g) => g.links.length > 0);
 }
 
+/** The Study groups of a word as the sheet draws them: the verse it stands in is the chapter's, which a link may name. */
+function studyGroupsOf(chapter: Chapter, word: GreekWord, study: StudyResources | undefined): StudyGroup[] {
+  const verse = chapter.verses.find((v) => v.g.includes(word))?.n;
+  const ref = verse === undefined ? undefined : { book: chapter.code, chapter: chapter.chapter, verse };
+  return studyGroups(study, word, ref, wordGloss(chapter, word));
+}
+
+/** More tiles than this and the sheet is a long one: a Close button sits under its scroll box and a fade says there is more below. */
+const MANY_TILES = 6;
+
+/** true while the box has more to show below what is in view (a few pixels of slack for rounding). */
+function useMoreBelow(box: { current: HTMLElement | null }, remeasure: unknown): boolean {
+  const [more, setMore] = useState(false);
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const measure = (): void => setMore(el.scrollHeight - el.scrollTop - el.clientHeight > 4);
+    measure();
+    el.addEventListener('scroll', measure, { passive: true });
+    const resize = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(measure);
+    resize?.observe(el);
+    return () => {
+      el.removeEventListener('scroll', measure);
+      resize?.disconnect();
+    };
+  }, [box, remeasure]);
+  return more;
+}
+
+/** A title longer than this is set a size smaller, so it fits two lines in half a row at 360 px. */
+const LONG_TILE = 18;
+
 const TILE_BASE = 'flex min-h-12 min-w-0 items-center justify-center rounded-xl px-2 text-base font-medium';
-const TILE = `${TILE_BASE} border border-line text-accent active:bg-line`;
+const TILE = `${TILE_BASE} border border-line py-1 text-center leading-tight text-accent active:bg-line`;
 
 /** The Study row: the links of each switched-on resource as equal tiles, two to a row, an app's under its name; nothing at all when none is on.
- *  A tap on an app's link also arms the wait for the app to open (openApp.ts); `onMissing` hears of an app that did not. */
+ *  A tile's words wrap to a second line rather than being cut. A tap on an app's link also arms the wait for the app to open (openApp.ts); `onMissing` hears of an app that did not. */
 function StudyRow({ groups, onMissing }: { groups: StudyGroup[]; onMissing: (resource: StudyResource) => void }) {
   if (groups.length === 0) return null;
   return (
@@ -130,7 +162,7 @@ function StudyRow({ groups, onMissing }: { groups: StudyGroup[]; onMissing: (res
                 {...(link.url.startsWith('https:') ? { target: '_blank', rel: 'noreferrer' } : {})}
                 className={TILE}
               >
-                <span className="truncate">{link.tile ?? link.label}</span>
+                <span className={`min-w-0 break-words ${(link.tile ?? link.label).length > LONG_TILE ? 'text-sm' : ''}`}>{link.tile ?? link.label}</span>
               </a>
             ))}
           </div>
@@ -208,7 +240,6 @@ function WordCard({ chapter, word, english, pronunciation, known, study, onHelp,
   const verse = chapter.verses.find((v) => v.g.includes(word))?.n;
   // The Strong's resource shows the number as its link in the Study row; the plain fact would say it twice.
   const strongsOn = study?.on.includes('strongs') ?? false;
-  const ref = verse === undefined ? undefined : { book: chapter.code, chapter: chapter.chapter, verse };
   return (
     <section className="border-t border-line py-3 first:border-t-0 first:pt-0">
       <div className="flex items-start justify-between gap-2">
@@ -246,7 +277,7 @@ function WordCard({ chapter, word, english, pronunciation, known, study, onHelp,
           </Fact>
         ) : null}
       </dl>
-      <StudyRow groups={studyGroups(study, word, ref, wordGloss(chapter, word))} onMissing={onMissing} />
+      <StudyRow groups={studyGroupsOf(chapter, word, study)} onMissing={onMissing} />
       {onHelp && verse !== undefined ? (
         <HelpRow help={(kind) => onHelp({ kind, form: word.t, lemma: wordLemma(word), parse: wordParse(chapter, word), verse })} />
       ) : null}
@@ -281,6 +312,10 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
   const pronunciation = useLatest('pronunciation-changed')?.pronunciation;
   const known = useKnownTerms();
   const study = useLiveQuery(getStudyResources, []);
+  const tiles = lookup.words.reduce((n, w) => n + studyGroupsOf(sheetChapter, w, study).reduce((m, g) => m + g.links.length, 0), 0);
+  const many = tiles > MANY_TILES;
+  const scroll = useRef<HTMLDivElement>(null);
+  const moreBelow = useMoreBelow(scroll, `${tiles}:${lookup.words.length}`);
   // A word of another chapter has no verse in the Reader's chapter to help with or ask about.
   const help = onHelp && !elsewhere
     ? (asked: WordHelp): void => {
@@ -332,27 +367,49 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
         <HintCard event={WORD_SHEET_OPENED} className="mx-4 mt-1" />
         {/* a reading or answer paused by the word he tapped keeps its Resume in view (the sheet is over the screen's own bar) */}
         <BarSlot level={4} />
-        <div className="max-h-[58dvh] overflow-y-auto overscroll-contain px-4 pb-[calc(1rem+var(--lp-end-inset))] pt-3">
-          {lookup.fromEnglish && lookup.english ? (
-            <p className="mb-3 pr-14 text-lg text-muted">
-              <span className="sr-only">English: </span>“{lookup.english}”
-            </p>
+        <div className="relative">
+          <div
+            ref={scroll}
+            data-testid="sheet-scroll"
+            className={`overflow-y-auto overscroll-contain px-4 pt-3 ${many ? 'max-h-[50dvh] pb-4' : 'max-h-[58dvh] pb-[calc(1rem+var(--lp-end-inset))]'}`}
+          >
+            {lookup.fromEnglish && lookup.english ? (
+              <p className="mb-3 pr-14 text-lg text-muted">
+                <span className="sr-only">English: </span>“{lookup.english}”
+              </p>
+            ) : null}
+            {lookup.words.map((w, i) => (
+              <WordCard
+                key={i}
+                chapter={sheetChapter}
+                word={w}
+                english={lookup.fromEnglish ? undefined : lookup.english}
+                pronunciation={pronunciation}
+                known={known}
+                study={study}
+                onHelp={help}
+                onTerm={openTerm}
+                onMissing={setMissing}
+              />
+            ))}
+          </div>
+          {many && moreBelow ? (
+            <div
+              data-testid="sheet-scroll-fade"
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 bottom-0 flex h-14 items-end justify-center bg-gradient-to-t from-surface via-surface/90 to-transparent pb-1 text-sm text-muted"
+            >
+              ▾ More below
+            </div>
           ) : null}
-          {lookup.words.map((w, i) => (
-            <WordCard
-              key={i}
-              chapter={sheetChapter}
-              word={w}
-              english={lookup.fromEnglish ? undefined : lookup.english}
-              pronunciation={pronunciation}
-              known={known}
-              study={study}
-              onHelp={help}
-              onTerm={openTerm}
-              onMissing={setMissing}
-            />
-          ))}
         </div>
+        {many ? (
+          <div className="border-t border-line px-4 pb-[calc(0.5rem+var(--lp-end-inset))] pt-2">
+            <button type="button" onClick={onClose} className="min-h-12 w-full rounded-xl border border-line text-base font-medium text-accent active:bg-line">
+              Close
+            </button>
+          </div>
+        ) : null}
       </div>
       {grammar ? (
         <GrammarSheet
