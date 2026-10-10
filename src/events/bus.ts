@@ -11,13 +11,18 @@ import type { Theme } from '../appearance/themes';
 import type { TalkFocus } from '../services/talk';
 import type { SpeechLanguage, SpeechRates } from '../speech/languages';
 import type { GreekPronunciation } from '../speech/pronunciation';
+import type { SettingValue } from '../settings/define';
 
 export type AppEvent =
+  /** a setting declared once (src/settings/definitions/) now holds `value`: saved by src/settings/store.ts setSetting, or told once at
+   * start by whoever loads it; read it with src/settings/store.ts onSetting / toldSetting, which parse it */
+  | { kind: 'setting-changed'; key: string; value: SettingValue }
   /** `verse` is null when no verse is selected any more (the same verse tapped again, or the reader left) */
   | { kind: 'verse-selected'; chapter: number; verse: number | null }
   /** the Reader shows this chapter (it opens, or he chose another in the picker); `book` is the code public/data/index.json has */
   | { kind: 'chapter-opened'; book: string; chapter: number }
   | { kind: 'view-changed'; view: ReaderView }
+  /** kept for the pilot (docs/module-map.md R2a): the registry still publishes it after setting-changed; listen to setting-changed */
   | { kind: 'weave-changed'; weave: Weave }
   /** the Weave's grammar dial: which forms of the woven words keep their Greek (Any | Solid | Solid and frontier) */
   | { kind: 'weave-grammar-changed'; grammar: WeaveGrammar }
@@ -29,12 +34,12 @@ export type AppEvent =
   | { kind: 'read-tutor-changed'; readTutor: ReadTutor }
   /** how deep into a language the tutor goes (Settings > Hebrew in the tutor): `script` is the language tag, 'he' */
   | { kind: 'script-depth-changed'; script: TutorScript['id']; depth: Depth }
-  /** the Tips choice: whether the phone may send for a tip and show its card */
+  /** the Tips choice: whether the phone may send for a tip and show its card (kept for the pilot, as weave-changed) */
   | { kind: 'tips-changed'; tips: Tips }
   /** the voices he chose in Settings, as the phone's voiceURI; null is the phone's default */
   | { kind: 'voices-changed'; english: string | null; greek: string | null }
   | { kind: 'pronunciation-changed'; pronunciation: GreekPronunciation }
-  /** the Theme he chose in Settings */
+  /** the Theme he chose in Settings (kept for the pilot, as weave-changed) */
   | { kind: 'theme-changed'; theme: Theme }
   /** the Text size he chose, as a percent of the phone's own (85 to 160) */
   | { kind: 'text-size-changed'; percent: number }
@@ -98,12 +103,15 @@ type Listener<K extends EventKind> = (event: EventOf<K>) => void;
 
 const listeners = new Map<EventKind, Set<Listener<EventKind>>>();
 const last = new Map<EventKind, AppEvent>();
+/** the last setting-changed of each setting, by its key: one kind carries every setting */
+const lastSetting = new Map<string, EventOf<'setting-changed'>>();
 const everyListeners = new Set<(event: AppEvent) => void>();
 
 /** Tells every listener of `event.kind`, in the order they subscribed. A listener that throws is logged and the
  * others still hear it. */
 export function publish(event: AppEvent): void {
   last.set(event.kind, event);
+  if (event.kind === 'setting-changed') lastSetting.set(event.key, event);
   const calls = [...(listeners.get(event.kind) ?? [])].map((l) => () => (l as Listener<EventKind>)(event));
   for (const every of [...everyListeners]) calls.push(() => every(event));
   for (const call of calls) {
@@ -139,11 +147,17 @@ export function latest<K extends EventKind>(kind: K): EventOf<K> | undefined {
   return last.get(kind) as EventOf<K> | undefined;
 }
 
+/** The last setting-changed of the setting `key`, or undefined if none has been (`latest('setting-changed')` is of any setting). */
+export function latestSetting(key: string): EventOf<'setting-changed'> | undefined {
+  return lastSetting.get(key);
+}
+
 /** Forgets every listener and every kept event: for tests. */
 export function clearBus(): void {
   listeners.clear();
   everyListeners.clear();
   last.clear();
+  lastSetting.clear();
 }
 
 /** Calls `listener` on each event of `kind` while the component is mounted. The latest `listener` is called, so
