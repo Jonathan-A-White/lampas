@@ -19,4 +19,4 @@ export const hebrewKey = (text: string): string => `he:${text}`;
 export const noHebrewVoice = 'No Hebrew voice on this phone';
 
 /** Says `text` in the Hebrew voice; false when the phone has none (nothing is spoken then). */
-export const speakHebrew = (text: string): boolean => speak(text, hebrewKey(text), undefined, 'hebrew') !== 'no-voice';
+export const speakHebrew = (text: string): boolean => speak(text, hebrewKey(text), 'hebrew') !== 'no-voice';
