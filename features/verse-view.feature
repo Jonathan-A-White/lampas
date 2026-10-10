@@ -1,7 +1,7 @@
 Feature: The Verse view
   Tapping a verse number opens the verse on a screen of its own (mw-5r3p30.79): the verse big at the top, woven as the Reader
-  weaves it, one row of actions under it (Listen, Read it aloud, Ask the tutor, Quiz me, Copy link) and ONE hold bar at the bottom that
-  does the chosen action. The phone's Back returns to the Reader where it was. The Reader's Talk bar is not shown under it.
+  weaves it, one row of actions under it (Listen, Read it aloud, Ask the tutor, Quiz me, Copy link) and ONE control at the bottom that
+  does the chosen action: Listen's Play button, or the hold bar of Read it aloud and Ask the tutor. The phone's Back returns to the Reader where it was. The Reader's Talk bar is not shown under it.
 
   Scenario: Tapping verse 11 opens the Verse view with the verse big and woven
     Given Lampas is opened on Romans 8 in the English view with the weave "Solid words"
@@ -22,30 +22,21 @@ Feature: The Verse view
     Then the Verse view is closed
     And the address names no verse
 
-  Scenario: One row of actions and exactly one hold bar, and no Talk bar
+  Scenario: One row of actions and exactly one control at the foot, and no Talk bar
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
     When he taps the number of verse 11
     Then the row of actions is "Listen", "Read it aloud", "Ask the tutor", "Quiz me" and "Copy link"
-    And exactly one hold bar is on screen
+    And exactly one control sits at the foot, the Play button of Listen, and there is no hold bar
     And the Reader's Talk bar is not on screen
 
-  Scenario: Listen: the bar says Hold to listen and the verse is read aloud while it is held
+  Scenario: Listen: Play reads the verse aloud to its end by itself
     Given Lampas is opened on Romans 8 in the English view with the weave "Off" and a phone that speaks
     When he taps the number of verse 11
     And he chooses "Listen"
-    Then the hold bar is labelled "Hold to listen to verse 11"
-    When he holds the hold bar
+    Then the Play button says "Play verse 11"
+    When he taps the Play button
     Then the phone is reading verse 11 aloud
-    When he lets go of the hold bar
-    Then the phone has stopped reading
-
-  Scenario: Listen stops at the end of the verse even while the bar is still held
-    Given Lampas is opened on Romans 8 in the English view with the weave "Off" and a phone that speaks
-    When he taps the number of verse 11
-    And he chooses "Listen"
-    And he holds the hold bar
-    Then the phone is reading verse 11 aloud
-    When a minute goes by with the bar still held
+    When a minute goes by
     Then the phone has stopped reading
     And the phone never spoke verse 12
     And the phone said verse 11 to its end

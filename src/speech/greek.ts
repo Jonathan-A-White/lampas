@@ -151,6 +151,8 @@ function chooseVoices(synth: SpeechSynthesis): void {
 // phone's synthesiser. `beside` is that word (or speaker's text); it is over when its last sentence ends, is stopped, or is cut off.
 interface Beside {
   key: string;
+  /** a reading was playing and this word paused it (it was not already paused): a Listen goes on by itself when the word is over */
+  interrupted: boolean;
 }
 let beside: Beside | null = null;
 /** counts the words said beside a reading, so the events of one cut off by the next do nothing */
@@ -162,7 +164,9 @@ function setBeside(next: Beside | null): void {
   besideListeners.forEach((l) => l());
 }
 
-function subscribeBeside(listener: () => void): () => void {
+export const besideNow = (): Beside | null => beside;
+
+export function subscribeBeside(listener: () => void): () => void {
   besideListeners.add(listener);
   return () => besideListeners.delete(listener);
 }
@@ -176,6 +180,11 @@ function stopBeside(): void {
   // a reading that was resumed meanwhile has its sentences queued behind the word: pausing keeps its place, a cancel alone would lose it
   if (getSpeech().key === READ_KEY && getSpeech().status === 'playing') pauseEngine();
   else synth?.cancel();
+}
+
+/** Stops a word said beside a reading, and nothing else. */
+export function stopWordSaid(): void {
+  if (beside) stopBeside();
 }
 
 /** Stops whatever is being said: a word said beside a reading (the reading stays paused where it was), else the reading or word the package holds. */
@@ -218,6 +227,7 @@ export function speakText(text: string, key: string, options: { onEnd?: () => vo
 /** Says `text` beside the reading the package holds: the reading is paused (or already is) and keeps its sentence, the text goes to the phone itself. */
 function speakBeside(synth: SpeechSynthesis, text: string, key: string): boolean {
   const mine = ++besideEpoch;
+  const interrupted = getSpeech().key === READ_KEY && getSpeech().status === 'playing';
   // pause() cancels the phone's queue; with the reading already paused only a word still being said needs cancelling
   if (getSpeech().status === 'playing') pauseEngine();
   else synth.cancel();
@@ -225,7 +235,7 @@ function speakBeside(synth: SpeechSynthesis, text: string, key: string): boolean
   const sentences = sentencesOf(spoken);
   const parts = sentences.length > 0 ? sentences : [spoken];
   const voices = synth.getVoices();
-  setBeside({ key });
+  setBeside({ key, interrupted: interrupted || (beside?.interrupted ?? false) });
   const over = () => {
     if (mine === besideEpoch) setBeside(null);
   };

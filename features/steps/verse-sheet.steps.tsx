@@ -76,7 +76,7 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const verseBeforeRead = () => {
     const text = panel().querySelector('[data-sheet-verse]') as HTMLElement;
-    const bar = within(panel()).getByRole('button', { name: /^Hold to / });
+    const bar = within(panel()).getByRole('button', { name: /^(Hold to|Play) / });
     expect(text.compareDocumentPosition(bar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   };
 
@@ -85,7 +85,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the number of verse 22', tapNumber);
     Then('the Verse view is headed {string}', headed);
     And('the Verse view shows the Greek of verse 22 in Greek type', showsVerse('greek', 'grc'));
-    And('the verse comes before the hold bar', verseBeforeRead);
+    And('the verse comes before the control at the foot', verseBeforeRead);
   });
 
   Scenario('The English view shows the English of Romans 8:22 under the reference', ({ Given, When, Then, And }) => {
@@ -93,7 +93,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the number of verse 22', tapNumber);
     Then('the Verse view is headed {string}', headed);
     And('the Verse view shows the English of verse 22 in English type', showsVerse('english', 'en'));
-    And('the verse comes before the hold bar', verseBeforeRead);
+    And('the verse comes before the control at the foot', verseBeforeRead);
   });
 
   Scenario('A kept reading with a word from another verse does not head the panel', ({ Given, And, When, Then }) => {

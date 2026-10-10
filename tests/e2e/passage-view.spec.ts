@@ -4,6 +4,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern, SYNERGEI_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
+import { honestSpeech, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -77,10 +78,11 @@ test('Listen: the heading and range at the top, the passage big, the row of acti
   expect(rowBox.y + rowBox.height).toBeLessThanOrEqual(VIEWPORT.height - BAR_HEIGHT);
 
   const bars = page.locator('[data-hold-bar]');
-  await expect(bars).toHaveCount(1);
-  await expect(bars.first()).toHaveAttribute('aria-label', 'Hold to listen to verses 1-11');
-  const bar = await bars.first().boundingBox();
-  if (!bar) throw new Error('no bar');
+  await expect(bars).toHaveCount(0);
+  const play = view.locator('[data-verse-bar]').getByRole('button', { name: 'Play verses 1-11', exact: true });
+  await expect(play).toHaveCount(1);
+  const bar = await play.boundingBox();
+  if (!bar) throw new Error('no Play button');
   expect(bar.height).toBeGreaterThanOrEqual(BAR_HEIGHT - 0.5);
   expect(bar.y + bar.height).toBeLessThanOrEqual(VIEWPORT.height);
   await expect(page.locator('[data-talk-bar]')).toHaveCount(0);
@@ -96,6 +98,7 @@ test('Listen: the heading and range at the top, the passage big, the row of acti
 
   // the passage scrolls inside the view, the bar stays; Back returns to the Reader
   await view.getByRole('button', { name: 'Ask the tutor', exact: true }).click();
+  await expect(bars).toHaveCount(1);
   await expect(bars.first()).toHaveAttribute('aria-label', 'Hold to ask');
   await shot(page, 'passage-view-ask');
   await page.goBack();
@@ -113,4 +116,32 @@ test('Read it aloud: the reading check for the passage above the one bar', async
   await expect(page.locator('[data-hold-bar]')).toHaveCount(1);
   await expect(page.locator('[data-hold-bar]').first()).toHaveAttribute('aria-label', 'Hold to read verses 12-17');
   await shot(page, 'passage-view-read');
+});
+
+test('Listen: Play reads the passage on by itself, lights the verse being read and keeps it in view in the passage box', async ({ page }) => {
+  await honestSpeech(page, { langs: ['en-US', 'el-GR'], msPerWord: 30 });
+  await start(page);
+  await page.locator('[data-heading]', { hasText: HEADING }).getByRole('button').click();
+  const view = page.getByRole('region', { name: 'Verse view' });
+  await view.getByRole('button', { name: 'Play verses 1-11', exact: true }).click();
+  // the speaking bar takes over from Play: Pause, Restart and Stop, and no hold bar anywhere
+  const bar = page.getByRole('region', { name: 'Speaking' });
+  await expect(bar.getByRole('button')).toHaveText(['Pause', 'Restart', 'Stop']);
+  await expect(page.locator('[data-hold-bar]')).toHaveCount(0);
+  await expect(view.locator('[data-passage-verse="1"][data-reading]')).toHaveCount(1);
+  // it moves verse to verse by itself; the verse lit starts inside the box (a verse taller than the box has its top at the box's top)
+  const box = view.locator('[data-passage-box]');
+  for (const n of [4, 8, 11]) {
+    const lit = view.locator(`[data-passage-verse="${n}"][data-reading]`);
+    await expect(lit).toHaveCount(1, { timeout: 60_000 });
+    const [outer, inner] = [await box.boundingBox(), await lit.boundingBox()];
+    if (!outer || !inner) throw new Error('no boxes');
+    expect(inner.y).toBeGreaterThanOrEqual(outer.y - 1);
+    expect(inner.y).toBeLessThan(outer.y + outer.height - 20);
+    if (inner.height <= outer.height) expect(inner.y + inner.height).toBeLessThanOrEqual(outer.y + outer.height + 1);
+  }
+  await shot(page, 'passage-view-listening');
+  // the end of the passage: it stops by itself and offers Play again
+  await expect(view.getByRole('button', { name: 'Play again', exact: true })).toBeVisible({ timeout: 60_000 });
+  expect((await spoken(page)).some((u) => u.text.includes('Therefore there is now no condemnation'))).toBe(true);
 });

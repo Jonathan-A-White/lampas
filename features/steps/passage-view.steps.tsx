@@ -96,6 +96,7 @@ async function open({ speaks = false, tutor = false, recorder = false, hash = ''
 const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
 const queryView = () => screen.queryByRole('region', { name: 'Verse view' });
 const bars = () => Array.from(document.querySelectorAll<HTMLElement>('[data-hold-bar]'));
+const foot = (): HTMLElement => viewEl().querySelector<HTMLElement>('[data-verse-bar]') as HTMLElement;
 const bar = () => {
   expect(bars()).toHaveLength(1);
   return bars()[0];
@@ -147,11 +148,6 @@ describeFeature(feature, ({ Scenario }) => {
   const letGo = async () => {
     await user.pointer({ keys: '[/MouseLeft]', target: bar(), coords: AT });
   };
-  const stopped = async () => {
-    await waitFor(() => expect(getReading().status).toBe('idle'));
-    expect(synth?.calls[synth.calls.length - 1]).toBe('cancel');
-  };
-
   Scenario('Tapping the heading of Romans 8:1-11 opens the Verse view headed with the heading and its range', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
     And('the Reader is scrolled a little down', () => {
@@ -193,22 +189,29 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('The passage has the same one row of actions and exactly one hold bar', ({ Given, When, Then, And }) => {
+  Scenario('The passage has the same one row of actions and exactly one control at the foot', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
     When('he taps the heading {string}', tapHeading);
     Then('the row of actions is {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => {
       const row = within(viewEl()).getByRole('group', { name: 'Actions' });
       expect(within(row).getAllByRole('button').map((button) => button.textContent)).toEqual([a, b, c, d, e]);
     });
-    And('exactly one hold bar is on screen', oneBar);
+    And('exactly one control sits at the foot, the Play button of Listen, and there is no hold bar', () => {
+      expect(bars()).toHaveLength(0);
+      expect(within(foot()).getAllByRole('button')).toHaveLength(1);
+      expect(within(foot()).getByRole('button')).toHaveTextContent('Play verses 1-11');
+    });
   });
 
-  Scenario('Listen reads the whole passage aloud and stops at its end', ({ Given, When, Then, And }) => {
+  Scenario('Listen reads the whole passage aloud to its end by itself', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string} and a phone that speaks', () => open({ speaks: true }));
     When('he taps the heading {string}', tapHeading);
-    And('he chooses {string}', choose);
-    Then('the hold bar is labelled {string}', labelled);
-    When('he holds the hold bar', holdBar);
+    Then('the Play button says {string}', (_, label: string) => {
+      expect(within(foot()).getByRole('button', { name: label, exact: true })).toHaveTextContent(label);
+    });
+    When('he taps the Play button', async () => {
+      await user.click(within(foot()).getByRole('button'));
+    });
     Then('the phone is reading verse 1 aloud', async () => {
       await waitFor(() => expect(getReading().status).toBe('reading'));
       expect(getReading().verse).toBe(1);
@@ -234,14 +237,6 @@ describeFeature(feature, ({ Scenario }) => {
       expect(spoken).toBe(squash(englishOf(1, 11)));
       expect(spoken).not.toContain(squash(englishOf(12, 12)).slice(0, 30));
     });
-  });
-
-  Scenario('Letting go of the hold bar stops the passage being read', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 in the English view with the weave {string} and a phone that speaks', () => open({ speaks: true }));
-    When('he taps the heading {string}', tapHeading);
-    And('he holds the hold bar', holdBar);
-    And('he lets go of the hold bar', letGo);
-    Then('the phone has stopped reading', stopped);
   });
 
   Scenario("Read it aloud sends the whole passage's English to be scored", ({ Given, When, And, Then }) => {

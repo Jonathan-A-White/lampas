@@ -1,7 +1,7 @@
 Feature: A section heading opens the Verse view for its passage
   Tapping a section heading in the Reader opens the same Verse view a verse number opens (mw-5r3p30.73), for the passage under the
   heading (the heading to the next heading): the heading and its verse range at the top, the passage's verses big, the same one row of
-  actions (Listen, Read it aloud, Ask the tutor, Quiz me, Copy link) and the same ONE hold bar, each doing its action for the whole passage.
+  actions (Listen, Read it aloud, Ask the tutor, Quiz me, Copy link) and the same ONE control at the foot, each doing its action for the whole passage.
   Romans 8 has five headings: 8:1-11, 8:12-17, 8:18-27, 8:28-34 and 8:35-39. The phone's Back returns to the Reader.
 
   Scenario: Tapping the heading of Romans 8:1-11 opens the Verse view headed with the heading and its range
@@ -21,31 +21,23 @@ Feature: A section heading opens the Verse view for its passage
     Then every section heading is one button holding its whole text
     And the heading "Walking by the Spirit" is still a level 2 heading
 
-  Scenario: The passage has the same one row of actions and exactly one hold bar
+  Scenario: The passage has the same one row of actions and exactly one control at the foot
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
     When he taps the heading "Walking by the Spirit"
     Then the row of actions is "Listen", "Read it aloud", "Ask the tutor", "Quiz me" and "Copy link"
-    And exactly one hold bar is on screen
+    And exactly one control sits at the foot, the Play button of Listen, and there is no hold bar
 
-  Scenario: Listen reads the whole passage aloud and stops at its end
+  Scenario: Listen reads the whole passage aloud to its end by itself
     Given Lampas is opened on Romans 8 in the English view with the weave "Off" and a phone that speaks
     When he taps the heading "Walking by the Spirit"
-    And he chooses "Listen"
-    Then the hold bar is labelled "Hold to listen to verses 1-11"
-    When he holds the hold bar
+    Then the Play button says "Play verses 1-11"
+    When he taps the Play button
     Then the phone is reading verse 1 aloud
     When the phone finishes speaking until verse 11 is being read
     Then verse 11 is the one highlighted in the Verse view
     When the phone finishes speaking
     Then the phone has stopped reading
     And the phone never spoke verse 12
-
-  Scenario: Letting go of the hold bar stops the passage being read
-    Given Lampas is opened on Romans 8 in the English view with the weave "Off" and a phone that speaks
-    When he taps the heading "Walking by the Spirit"
-    And he holds the hold bar
-    And he lets go of the hold bar
-    Then the phone has stopped reading
 
   Scenario: Read it aloud sends the whole passage's English to be scored
     Given Lampas is opened on Romans 8 in the English view with the weave "Off" and a reading check behind a fake Postern
