@@ -35,6 +35,10 @@ npm run shots        # Playwright at 390x844 against `vite preview` of dist/ (ru
 npm run icons        # re-render public/icon-192.png and icon-512.png from public/icon.svg
 npm run seed:build   # rebuild src/data/seed-words.ts from docs/example-words.md (plain node, 22.18+)
 npm run check:licence -- <pubkey>  # live testnet licence check, opt-in, not in the gate
+npx playwright test  # all e2e, no flags (use --workers=2): the 'chromium' project (1280 wide) and 'shots' (390x844); chromium leaves out the specs that only pass at a phone's width
+                     #   (tests/support/e2e-projects.ts PHONE_WIDTH_SPECS: add a spec there when it passes under shots and fails under chromium; tests/unit/playwright-live-config.test.ts holds the list
+                     #   to the config); the 'live' project is in the config only for `npm run e2e:live` (LAMPAS_E2E=live), so a plain run is green on a clean main; playwright.config.ts also gives the specs the
+                     #   __APP_SEMVER__ global that src/config.ts needs (Vite defines it, Playwright does not)
 npm run e2e:live     # the live tests (tests/e2e/*-live.spec.ts: tutor-live asks the tutor about Romans 8:28, talk-live asks the Bible talk, read-live reads 8:28 aloud to the mill through Chromium's fake microphone playing tests/fixtures/read-8-28.wav, and its Greek case plays read-8-28-el.wav; Playwright project 'live'): drives the DEPLOYED app
                      #   (LAMPAS_LIVE_URL, default https://lampas.allmymind.org; no build, no preview server; Postern's CORS allows
                      #   only that origin) and asks the real Postern tutor about Romans 8:28 with LAMPAS_TEST_KEY (or
