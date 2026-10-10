@@ -11,7 +11,9 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
 
 - **[Majority Standard Bible (MSB), New Testament tables](https://majoritybible.com).** Public domain. Byzantine Greek word-aligned
   to the MSB English, with Strong's numbers and Robinson-Pierpont parsing codes: the text and the English you read.
-  Source: the msb_nt_tables.tsv file at majoritybible.com. Changes: cut into one file per chapter, with short keys (scripts/data-build.ts, docs/data.md).
+  Source: the msb_nt_tables.tsv file at majoritybible.com. Its Greek is the Robinson-Pierpont 2005 edition (public domain), found by comparing it word by word
+  with the [byztxt Byzantine text on GitHub](https://github.com/byztxt/byzantine-majority-text), also public domain (scripts/greek-edition.ts, docs/greek-edition.md); nothing of that repository is in the app.
+  Changes: cut into one file per chapter, with short keys (scripts/data-build.ts, docs/data.md).
 - **[Tyndale House's Brief lexicon of the Greek NT, extended (TBESG), from STEPBible](https://www.stepbible.org).** Licensed
   [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Credit: STEPBible, Tyndale House, Cambridge. The words' lemmas,
   glosses and definitions (the definitions are Abbott-Smith's). Data used under the licence.

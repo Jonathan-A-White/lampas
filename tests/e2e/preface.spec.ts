@@ -21,6 +21,7 @@ test('the Preface opens from the picker at phone width, with its links', async (
   await expect(page.getByRole('heading', { name: 'Preface', level: 1 })).toBeVisible();
   const essay = page.getByRole('link', { name: /The Case for Byzantine Priority/ });
   const msb = page.getByRole('link', { name: /Majority Standard Bible/ });
+  await essay.scrollIntoViewIfNeeded(); // the edition paragraph (mw-5r3p30.136) pushes it below the first screen
   await expect(essay).toBeInViewport();
   await expect(essay).toHaveAttribute('target', '_blank');
   await expect(essay).toHaveAttribute('rel', /noreferrer/);

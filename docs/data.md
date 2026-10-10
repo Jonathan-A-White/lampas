@@ -22,6 +22,8 @@ build no longer produces are deleted. Tests use the small slices in `tests/fixtu
 | Majority Standard Bible NT tables, https://majoritybible.com/msb_nt_tables.tsv | public domain | the Byzantine Greek, its Strong's numbers, Robinson-Pierpont (RP) parsing codes, transliteration, and the MSB English aligned word by word |
 | STEPBible TBESG (Translators Brief lexicon of Extended Strongs for Greek), https://github.com/STEPBible/STEPBible-Data | CC BY 4.0, credit STEPBible / Tyndale House, Cambridge | lemma, gloss and definition per Strong's number |
 
+The table's Greek is the Robinson-Pierpont 2005 edition, not 2018: `docs/greek-edition.md` (`npm run greek:edition`) has the word-by-word comparison.
+
 `ATTRIBUTION.md` names both. TBESG's definitions are Abbott-Smith's; the build changes them (see Changes).
 
 ## `index.json`
