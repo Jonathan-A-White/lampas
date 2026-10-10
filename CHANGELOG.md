@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.46
+_2026-10-10_
+- Fixed: The Reading check's speaker now says a word the way its tip spells it, so 'Levites' is said LEE-vites.
+
 ## 0.1.42
 _2026-10-10_
 - Fixed: With many Logos lexicons switched on, the word sheet shows every one, each named in full, with a "More below" hint and a Close button at the bottom within thumb reach.

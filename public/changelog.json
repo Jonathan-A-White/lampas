@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.46",
+    "date": "2026-10-10",
+    "story": "mw-5r3p30.140",
+    "kind": "fixed",
+    "text": "The Reading check's speaker now says a word the way its tip spells it, so 'Levites' is said LEE-vites."
+  },
+  {
     "version": "0.1.42",
     "date": "2026-10-10",
     "story": "mw-5r3p30.135",
