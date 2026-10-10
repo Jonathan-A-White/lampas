@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.78
+_2026-10-10_
+- Fixed: Review now asks the letters and letter pairs you were told to work on first, including ones you were never asked.
+
 ## 0.1.76
 _2026-10-10_
 - Fixed: Read aloud on Robinson's essay no longer reads the footnote numbers.
