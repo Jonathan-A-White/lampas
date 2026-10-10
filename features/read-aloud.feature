@@ -2,7 +2,8 @@ Feature: Lampas reads aloud what is shown
   A play button on each verse reads that verse; Read from the top (Read from here when a verse is selected) in the
   header reads on to the chapter's end. What is read is what is shown: the English view in an English voice, the Greek
   view in the phone's Greek voice, a woven verse changing voice where the language does. The verse being read is
-  highlighted; the top button turns into Pause and Stop (Play and Stop while paused); the screen stays awake. The phone's own voices, no server.
+  highlighted; the header's button gives way to the one speaking bar (Pause or Resume, Restart, Stop: features/speaking-bar.feature); the screen
+  stays awake. The phone's own voices, no server, through bsv-kit's speech package.
 
   Scenario: A verse in the English view is read in English
     Given Lampas is opened on a phone with an English and a Greek voice
@@ -44,30 +45,30 @@ Feature: Lampas reads aloud what is shown
     Then the phone speaks the English of verse 5 in "en-US"
     And verse 5 is highlighted as being read
 
-  Scenario: Pause keeps the verse and Play reads it again
+  Scenario: Pause keeps the verse and Resume goes on from it
     Given Lampas is opened on a phone with an English and a Greek voice
     And he taps Read from the top
     And the phone finishes speaking verse 1
     When he taps Pause
     Then the phone is told to stop
     And the reading bar says "Paused at verse 2"
-    When he taps Play
+    When he taps Resume
     Then the phone speaks the English of verse 2 in "en-US"
     And the reading bar now says "Reading verse 2"
 
-  Scenario: The top button turns into Pause and Stop while reading and is Play again after Stop
+  Scenario: The top button gives way to the speaking bar while reading and is back after Stop
     Given Lampas is opened on a phone with an English and a Greek voice
-    Then the top bar has Read from the top and no Pause or Stop
+    Then the top bar has Read from the top and there is no speaking bar
     When he taps Read from the top
-    Then the top bar has Pause and Stop and no Read from the top
+    Then the top bar has no Read from the top, Pause, Play or Stop and the speaking bar has Pause
     When he taps Pause
-    Then the top bar has Play and Stop and no Pause
+    Then the speaking bar has Resume and no Pause
     And the reading is paused
-    When he taps Play
-    Then the top bar has Pause and Stop and no Play
+    When he taps Resume
+    Then the speaking bar has Pause and no Resume
     And the reading is going
     When he taps Stop
-    Then the top bar is back to Read from the top with no Pause or Stop
+    Then the top bar is back to Read from the top and there is no speaking bar
     And nothing is being read
 
   Scenario: Stop speaks nothing more
@@ -80,7 +81,7 @@ Feature: Lampas reads aloud what is shown
     And no verse is highlighted as being read
     And nothing more is spoken
 
-  Scenario: Leaving the reader stops the reading
+  Scenario: Leaving the reader pauses the reading
     Given Lampas is opened on a phone with an English and a Greek voice
     And he taps Read from the top
     When he opens Settings

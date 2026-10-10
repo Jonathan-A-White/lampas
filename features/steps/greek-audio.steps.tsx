@@ -168,8 +168,9 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on a phone that has not listed its voices', () => openWith([]));
     And('he switches the reader to Greek', switchToGreek);
     When('he taps the play button of verse {int}', (_, n: number) => tapPlay(n));
-    Then('the phone is told to speak the Greek of verse {int} in {string}', (_, n: number, lang: string) =>
-      expectSpoken(verseGreek(n), lang),
+    // bsv-kit/speech waits up to a second for a phone to list its voices (VOICES_WAIT_MS), then speaks with the language alone
+    Then('after waiting a moment for its voices the phone is told to speak the Greek of verse {int} in {string}', (_, n: number, lang: string) =>
+      waitFor(() => expectSpoken(verseGreek(n), lang)),
     );
     And('no help line shows', () => {
       expect(screen.queryByRole('status')).toBeNull();

@@ -1,23 +1,25 @@
 // src/speech/readAloud.ts — Lampas reads aloud what is shown (mw-5r3p30.21). A verse becomes runs: the English view's
 // chunks in English order (en-US), the Greek view's words in Greek order (el-GR), and with the weave on each chunk in its
-// own language, neighbours of one language joined so the voice changes only where the language does. A reading speaks the
-// runs of a verse one after another (src/speech/greek.ts speakPart: the one engine), publishes verse-reading as each verse
-// starts, and goes on to the next verse when it is continuous. Pause stops the speech and keeps the verse; Resume reads that
-// verse again from its start (a half-spoken sentence cannot be picked up on every phone). Every stop bumps an epoch, so an
-// utterance that ends late starts nothing.
+// own language, neighbours of one language joined so the voice changes only where the language does. The runs of a verse are
+// handed to bsv-kit/speech as ONE speech under READ_KEY, a run to a line: the package cuts it into sentences, reads each in the
+// language of its letters, keeps the sentence reached on Pause and shows its one bar (Pause / Resume, Restart, Stop). This file
+// goes on to the next verse when a verse is over and the reading is continuous, publishes verse-reading as each verse starts, and
+// follows the package: a Pause, Resume or Stop made on the bar moves the state here (syncWithEngine). A speech that takes the voice
+// from a reading (a word said by a long press) leaves it paused at its verse; Resume then reads that verse again from its start.
 // How far a reading goes is the Read aloud span (src/speech/readSpan.ts, docs/read-aloud.md): the verse, to the next section
 // heading, to the chapter's end, or on through the book. Where it goes into another chapter (Book always, Passage when the next
 // chapter's first verse has no heading) it asks the Reader to turn to it (openReader) and waits as `crossing`; the Reader that
 // opens that chapter hands over its plan (continueReading) and the voice starts verse 1 at once, so the chapter turns just as
 // the voice reaches it.
 import { useSyncExternalStore } from 'react';
+import { getSpeech, isSpeaking, pause as enginePause, resume as engineResume, stop as engineStop, subscribe as subscribeEngine } from 'bsv-kit/speech';
 import { loadChapter, type Verse } from '../data/chapter';
 import { neighbours } from '../data/neighbours';
 import type { ReaderView } from '../data/repositories';
 import type { Woven } from '../data/weave';
 import { publish } from '../events/bus';
 import { openReader } from '../nav/route';
-import { hasGreekVoice, isCancelError, speakPart, stopSpeaking } from './greek';
+import { hasGreekVoice, READ_KEY, speakText } from './greek';
 import type { SpeechLanguage } from './languages';
 import type { ReadSpan } from './readSpan';
 import { keepAwake, letSleep } from './wakeLock';
@@ -84,20 +86,29 @@ export interface ReadingState {
   /** the chapter the reading is going on into: the Reader has been asked to turn to it and the voice waits for its plan
    * (verse is null meanwhile); null otherwise */
   crossing: ChapterRef | null;
+  /** the package's bar holds this reading (its Pause, Resume, Restart and Stop are the controls); false when the voice was taken by a
+   * word said alone and the reading waits at its verse, with only the header to Resume it */
+  onBar: boolean;
 }
 
-const IDLE: ReadingState = { status: 'idle', verse: null, notice: null, answer: null, crossing: null };
+const IDLE: ReadingState = { status: 'idle', verse: null, notice: null, answer: null, crossing: null, onBar: false };
 
 let state: ReadingState = IDLE;
 let plan: PlanVerse[] = [];
 let chapterNumber = 0;
 /** the code of the book being read, or null for a reading that never leaves its plan (an answer) */
 let bookCode: string | null = null;
+/** the book the plan is of, for a reading that never leaves its plan (a passage); with bookCode it tells which chapter a paused reading belongs to */
+let planBook: string | null = null;
 /** how far this reading goes (a verse button's reading is 'verse') */
 let reach: ReadSpan = 'verse';
 /** a plan for the verses after the one being read: the chapter was shown differently meanwhile */
 let queued: PlanVerse[] | null = null;
 let epoch = 0;
+/** the chapter after this one is being fetched: the voice is silent meanwhile, and the reading is not over */
+let loading = false;
+/** the package held our speech at its last change */
+let engineHad = false;
 const listeners = new Set<() => void>();
 
 function set(next: ReadingState): void {
@@ -124,15 +135,42 @@ function finish(my: number): void {
   publish({ kind: 'reading-stopped' });
 }
 
-/** The phone stopped the speech by itself (another button spoke, the engine was interrupted): wait where we are. */
-function interrupted(my: number): void {
-  if (my !== epoch) return;
-  // An answer has no bar to Resume from: an interrupted one is over.
-  if (state.answer !== null) return finish(my);
-  epoch++;
-  letSleep();
-  set({ ...state, status: 'paused' });
+/** The package's speech changed: a Pause or Resume made on its bar moves the reading with it, and a reading it no longer holds is over (Stop on the
+ * bar) or waits at its verse (a word took the voice). The end of a verse also empties the package for a moment, until the next verse is handed
+ * to it, so that is judged only once this turn has run. */
+function syncWithEngine(): void {
+  const speech = getSpeech();
+  const ours = speech.key === READ_KEY && speech.status !== 'idle';
+  const had = engineHad;
+  engineHad = ours;
+  if (state.status === 'idle') return;
+  if (ours) {
+    if (speech.status === 'paused' && state.status === 'reading') {
+      letSleep();
+      set({ ...state, status: 'paused', onBar: true });
+    } else if (speech.status === 'playing' && state.status === 'paused') {
+      keepAwake();
+      set({ ...state, status: 'reading', onBar: true });
+    } else if (!state.onBar) {
+      set({ ...state, onBar: true });
+    }
+    return;
+  }
+  if (!had) return;
+  const my = epoch;
+  queueMicrotask(() => {
+    if (my !== epoch || state.status === 'idle' || state.crossing || loading) return;
+    const now = getSpeech();
+    if (now.status === 'idle') return finish(my);
+    if (now.key === READ_KEY) return;
+    // an answer is not waited at: when another speech takes the voice it is over
+    if (state.answer !== null) return finish(my);
+    letSleep();
+    set({ ...state, status: 'paused', onBar: false });
+  });
 }
+
+if (typeof window !== 'undefined') subscribeEngine(syncWithEngine);
 
 /** The chapter after the one being read, when this reading may go into it: never for a verse or a chapter, never out of the book. */
 function chapterAhead(): ChapterRef | null {
@@ -145,15 +183,20 @@ function chapterAhead(): ChapterRef | null {
 function cross(my: number): void {
   const to = chapterAhead();
   if (!to) return finish(my);
+  loading = true;
   loadChapter(to.book, to.chapter).then(
     (c) => {
+      loading = false;
       if (my !== epoch) return;
       // a Passage goes on only while the next chapter does not open with a section heading
       if (reach === 'passage' && c.verses[0]?.h) return finish(my);
-      set({ ...state, verse: null, crossing: to });
+      set({ ...state, verse: null, crossing: to, onBar: false });
       openReader(to);
     },
-    () => finish(my),
+    () => {
+      loading = false;
+      finish(my);
+    },
   );
 }
 
@@ -162,34 +205,28 @@ function afterVerse(at: number, my: number): void {
   const next = plan[at + 1];
   if (!next) return cross(my);
   if (reach === 'passage' && next.heading) return finish(my);
-  readRun(next.n, 0, my);
+  readVerse(next.n, my);
 }
 
-function readRun(verse: number, run: number, my: number): void {
+/** The runs of a verse as the one text handed to the package: a run to a line, so the package cuts a sentence at the end of every run too. */
+const textOf = (runs: Run[]): string => runs.map((r) => r.text).join('\n');
+
+function readVerse(verse: number, my: number): void {
   if (my !== epoch) return;
-  if (run === 0 && queued) {
+  if (queued) {
     plan = queued;
     queued = null;
   }
   const at = plan.findIndex((v) => v.n === verse);
   const entry = plan[at];
   if (!entry) return finish(my);
-  if (run === 0) {
-    if (state.verse !== verse) set({ ...state, verse });
-    if (state.answer === null) publish({ kind: 'verse-reading', chapter: chapterNumber, verse });
-    // the last verse starts the next chapter's load, so the voice need not wait for it
-    const ahead = at === plan.length - 1 ? chapterAhead() : null;
-    if (ahead) loadChapter(ahead.book, ahead.chapter).catch(() => {});
-  }
-  const part = entry.runs[run];
-  if (!part) return afterVerse(at, my);
-  const spoke = speakPart(
-    part.text,
-    part.language,
-    () => readRun(verse, run + 1, my),
-    (error) => (isCancelError(error) ? interrupted(my) : finish(my)),
-    part.slow,
-  );
+  if (state.verse !== verse) set({ ...state, verse });
+  if (state.answer === null) publish({ kind: 'verse-reading', chapter: chapterNumber, verse });
+  // the last verse starts the next chapter's load, so the voice need not wait for it
+  const ahead = at === plan.length - 1 ? chapterAhead() : null;
+  if (ahead) loadChapter(ahead.book, ahead.chapter).catch(() => {});
+  if (entry.runs.length === 0) return afterVerse(at, my);
+  const spoke = speakText(textOf(entry.runs), READ_KEY, { onEnd: () => afterVerse(at, my), slowly: entry.runs.every((r) => r.slow) });
   if (!spoke) finish(my);
 }
 
@@ -207,20 +244,23 @@ export function startReading(options: {
   from: number;
   continuous: boolean;
   book?: string;
+  /** the book `plan` is of when `book` is left out because the reading must not go on into the next chapter */
+  inBook?: string;
   span?: ReadSpan;
   answer?: number;
 }): void {
   epoch++;
-  stopSpeaking();
+  if (getSpeech().status !== 'idle') engineStop();
   plan = options.plan;
   chapterNumber = options.chapter;
   bookCode = options.book ?? null;
+  planBook = options.inBook ?? options.book ?? null;
   reach = options.continuous ? options.span ?? 'chapter' : 'verse';
   queued = null;
   const notice = hasGreekVoice() === false && greekAhead(options.from, reach !== 'verse') ? NO_GREEK_VOICE_NOTICE : null;
-  set({ status: 'reading', verse: options.from, notice, answer: options.answer ?? null, crossing: null });
+  set({ status: 'reading', verse: options.from, notice, answer: options.answer ?? null, crossing: null, onBar: false });
   keepAwake();
-  readRun(options.from, 0, epoch);
+  readVerse(options.from, epoch);
 }
 
 /** The Reader that opened the chapter a reading was going on into hands over that chapter's plan, and the voice starts its
@@ -232,44 +272,44 @@ export function continueReading(options: { book: string; chapter: number; plan: 
   plan = options.plan;
   chapterNumber = options.chapter;
   bookCode = options.book;
+  planBook = options.book;
   queued = null;
   if (!first) return finish(epoch);
   const notice = hasGreekVoice() === false && greekAhead(first.n, true) ? NO_GREEK_VOICE_NOTICE : state.notice;
   set({ ...state, verse: first.n, notice, crossing: null });
-  readRun(first.n, 0, epoch);
+  readVerse(first.n, epoch);
 }
 
-/** Stops the speech and keeps the verse, so Resume can go on from it. */
+/** Pauses the speech where it is: the package keeps the sentence reached, and its bar offers Resume. */
 export function pauseReading(): void {
   if (state.status !== 'reading') return;
-  // An answer is not waited at: pausing it (the page went to the background) ends it.
-  if (state.answer !== null) return stopReading();
-  epoch++;
-  stopSpeaking();
+  if (isSpeaking(READ_KEY)) return enginePause();
+  // nothing is speaking: the reading waits at a chapter's door
   letSleep();
   set({ ...state, status: 'paused' });
 }
 
-/** Reads on from the verse it was paused at, from the start of that verse. */
+/** Reads on from the sentence it was paused at; when the voice was taken meanwhile (a word said alone), from the start of the verse. */
 export function resumeReading(): void {
   if (state.status !== 'paused' || (state.verse === null && !state.crossing)) return;
+  const speech = getSpeech();
+  if (speech.key === READ_KEY && speech.status === 'paused') return engineResume();
   epoch++;
-  stopSpeaking();
-  set({ ...state, status: 'reading' });
+  set({ ...state, status: 'reading', onBar: false });
   keepAwake();
   // waiting at a chapter's door: the Reader that opens it carries on
   if (state.crossing || state.verse === null) return;
-  readRun(state.verse, 0, epoch);
+  readVerse(state.verse, epoch);
 }
 
 /** Stops for good. */
 export function stopReading(): void {
   if (state.status === 'idle') return;
   epoch++;
-  stopSpeaking();
   letSleep();
   set(IDLE);
   publish({ kind: 'reading-stopped' });
+  if (isSpeaking(READ_KEY)) engineStop();
 }
 
 /** The chapter is shown differently now (the view or the weave changed): the verses still to be read follow it, from the
@@ -284,13 +324,12 @@ export function startAnswer(id: number, runs: Run[]): void {
   startReading({ chapter: 0, plan: [{ n: id, runs }], from: id, continuous: false, answer: id });
 }
 
+/** Whether the chapter reading going on or paused is of this chapter (a Reader that opens another chapter ends a paused one). */
+export function isReadingOf(book: string, chapter: number): boolean {
+  return state.status !== 'idle' && state.answer === null && chapterNumber === chapter && planBook === book;
+}
+
 /** Stops the Bible talk answer being read, and only that: the chapter's own reading is left alone. */
 export function stopAnswer(): void {
   if (state.answer !== null) stopReading();
 }
-
-// A page that goes to the background has its speech suspended: wait at the verse; he taps Resume when he is back.
-if (typeof document !== 'undefined') {
-  document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && pauseReading());
-}
-

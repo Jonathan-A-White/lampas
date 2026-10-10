@@ -139,12 +139,9 @@ const tapSpeakerBeside = async (_: unknown, word: string) => {
 };
 /** The last thing the engine was asked to say is exactly `text`, in `lang`; neither the tip nor the note was spoken. */
 const saysOnly = (lang: string) => (_: unknown, text: string) => {
-  const last = synth.spoken[synth.spoken.length - 1];
-  expect(last.text).toBe(text);
-  expect(last.lang).toBe(lang);
-  const spokenAll = synth.spoken.map((u) => u.text).join(' ');
-  expect(spokenAll).not.toContain('Say the th softly');
-  expect(spokenAll).not.toContain('Nearly there');
+  // the verdict read before the tap was cut off by it: what is asked of the engine since its last cancel is the word alone
+  expect(synth.since.map((u) => u.text)).toEqual([text]);
+  expect(synth.since[0].lang).toBe(lang);
 };
 
 const feature = await loadFeature('features/reading-check.feature');

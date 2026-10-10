@@ -107,7 +107,7 @@ function SyllableButton({ syllable, sound }: { syllable: string; sound: string |
     <button
       type="button"
       aria-label={`Hear ${syllable}`}
-      onClick={() => void speak(syllable, hebrewKey(syllable), undefined, 'hebrew')}
+      onClick={() => void speak(syllable, hebrewKey(syllable), 'hebrew')}
       className="flex min-h-14 min-w-14 flex-col items-center justify-center rounded-xl border border-line px-3 py-1 text-3xl active:bg-line"
     >
       <HebrewLetters text={syllable} />

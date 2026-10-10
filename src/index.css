@@ -338,3 +338,27 @@ textarea,
   --bk-whats-new-radius: 0.75rem;
   --bk-whats-new-target: var(--lp-tap);
 }
+
+/* bsv-kit's speaking bar (Pause / Resume, Restart, Stop: bsv-kit/speech) takes its colours from the palette in force and keeps the phone's own size, like the header. */
+:root {
+  --bk-speech-surface: var(--lp-surface);
+  --bk-speech-fg: var(--lp-fg);
+  --bk-speech-line: var(--lp-line);
+  --bk-speech-button-bg: var(--lp-canvas);
+  --bk-speech-accent: var(--lp-accent);
+  --bk-speech-accent-fg: var(--lp-accent-fg);
+  --bk-speech-button-size: var(--lp-tap);
+  --bk-speech-font-size: calc(1rem / var(--lp-scale));
+}
+
+/* Where the bar is drawn (src/speech/SpeakingBarSlot.tsx): nothing at all while no bar is in it; the one at the foot of the shell pads with the phone's bar inset. */
+.speaking-slot:empty {
+  display: none;
+}
+.speaking-slot {
+  flex-shrink: 0;
+}
+.speaking-inset:not(:empty) {
+  background: var(--lp-surface);
+  padding-bottom: var(--lp-bar-inset);
+}

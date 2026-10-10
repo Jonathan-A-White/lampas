@@ -18,6 +18,7 @@ import { PlacementScreen } from './PlacementScreen';
 import { QuizScreen } from './QuizScreen';
 import { ReviewScreen } from './ReviewScreen';
 import { SettingsScreen } from './SettingsScreen';
+import { BarSlot, LampasSpeakingBar } from './speech/SpeakingBarSlot';
 import { startSpeechSettingsSync } from './speech/settingsSync';
 import { startUsageLog } from './tips/usageLog';
 import { HearAnyWord } from './ui/HearAnyWord';
@@ -87,6 +88,9 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
       )}
       {/* the round Ask the tutor control of every screen but the Reader, which draws its own beside its Talk bar */}
       {route === 'home' ? null : <AskTutor route={route} />}
+      {/* the one bar for anything read aloud (bsv-kit/speech): drawn into the highest BarSlot on screen, this one at the shell's foot when no screen has its own */}
+      <BarSlot level={0} inset />
+      <LampasSpeakingBar />
     </div>
   );
 }

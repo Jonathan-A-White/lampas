@@ -60,5 +60,5 @@ Feature: Hear it in modern Greek
     Given Lampas is opened on a phone that has not listed its voices
     And he switches the reader to Greek
     When he taps the play button of verse 1
-    Then the phone is told to speak the Greek of verse 1 in "el-GR"
+    Then after waiting a moment for its voices the phone is told to speak the Greek of verse 1 in "el-GR"
     And no help line shows

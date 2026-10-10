@@ -60,7 +60,7 @@ export function SpeakButton({ text, id, label, kind, language, className, onSpea
         onClick={() => {
           setHelp(null);
           onSpeak?.();
-          if (speak(text, id, showHelp, language) === 'no-voice') showHelp();
+          if (speak(text, id, language) === 'no-voice') showHelp();
         }}
         className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-accent active:bg-line ${className ?? ''}`}
       >

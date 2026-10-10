@@ -1,9 +1,14 @@
 // src/speech/greek.ts — the phone's own voice reading aloud (Web Speech), no server: modern Greek (el-GR) first, and any
 // language in src/speech/languages.ts at its own speed.
-// speak() is called straight from the tap handler (docs/pwa-best-practices.md section 12: a speak() that leaves the
-// tap loses user activation on Android Chrome), so it never waits: the voice list is loaded ahead by warmVoices(),
-// and a phone that has not listed its voices yet is still asked to speak with lang 'el-GR' and picks its own.
+// Everything is spoken by bsv-kit/speech (mw-m7v5kc.3): the sentence queue, Pause / Resume / Restart / Stop, the language and voice
+// of each sentence from its letters, a page that hides pausing it. This file is what the app adds: his speed for a language and the
+// voice he picked in Settings (the package has neither), the help line for a language the phone has no voice for, and the words
+// said alone. speak() is called straight from the tap handler (docs/pwa-best-practices.md section 12: a speak() that leaves the
+// tap loses user activation on Android Chrome), so it never waits: the voice list is loaded ahead by warmVoices(), and a phone that
+// has not listed its voices yet is still asked to speak with the language alone and picks its own voice.
 import { useRef, useSyncExternalStore } from 'react';
+import { getSpeech, isSpeaking, speak as engineSpeak, stop as stopEngine, subscribe as subscribeEngine } from 'bsv-kit/speech';
+import { useSpeech } from 'bsv-kit/speech/react';
 import { DEFAULT_RATE, DEFAULT_RATES, HEBREW_LANG, LANGUAGES, normaliseRate, type SettableLanguage, type SpeechLanguage, type SpeechRates } from './languages';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation, type Pronunciation } from './pronunciation';
 
@@ -12,11 +17,6 @@ const VOICES_WAIT_MS = 1500;
 
 /** 'speaking': asked of the phone; 'stopped': it was this very text playing and is now stopped; 'no-voice': nothing spoken */
 export type SpeakOutcome = 'speaking' | 'stopped' | 'no-voice';
-
-interface Playing {
-  key: string;
-  utterance: SpeechSynthesisUtterance;
-}
 
 // What he chose in Settings (src/speech/settingsSync.ts hands it over; speak() cannot wait for a database read).
 let pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION;
@@ -50,19 +50,10 @@ export function setSpeechRate(language: SettableLanguage, rate: number): void {
   rates[language] = normaliseRate(rate);
 }
 
-let playing: Playing | null = null;
-let watching = false;
-const listeners = new Set<() => void>();
-
 function synthesis(): SpeechSynthesis | null {
   return typeof window !== 'undefined' && 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined'
     ? window.speechSynthesis
     : null;
-}
-
-function setPlaying(next: Playing | null): void {
-  playing = next;
-  listeners.forEach((l) => l());
 }
 
 /** Whether a voice speaks a language: the tag's first part, 'el' for 'el-GR'. */
@@ -105,122 +96,114 @@ export function warmVoices(): Promise<void> {
   return warm;
 }
 
-function pickVoice(synth: SpeechSynthesis, language: SpeechLanguage): SpeechSynthesisVoice | null {
-  const voices = synth.getVoices();
-  const lang = langOf(language).toLowerCase();
-  const fits = isLanguage(language);
-  const chosenVoice = language === 'hebrew' ? null : chosenVoices[language];
-  const chosen = chosenVoice === null ? undefined : voices.find((v) => voiceKey(v) === chosenVoice && fits(v));
-  return chosen ?? voices.find((v) => v.lang.replace('_', '-').toLowerCase() === lang) ?? voices.find(fits) ?? null;
-}
-
-/** Stops whatever is being read. */
-export function stopSpeaking(): void {
-  const synth = synthesis();
-  if (synth && (playing || synth.speaking || synth.pending)) synth.cancel();
-  if (playing) setPlaying(null);
-}
-
-/** Stops only if `key` is what is being read (a button that goes away takes its speech with it). */
-export function stopIfSpeaking(key: string): void {
-  if (playing?.key === key) stopSpeaking();
-}
-
-/** A page that goes to the background has its speech suspended, and it comes back mid-sentence: end it instead. */
-function watchVisibility(): void {
-  if (watching) return;
-  watching = true;
-  document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && stopSpeaking());
+/** The language a voice is chosen for, from the tag the speech package put on an utterance (it chooses the tag from the text's letters). */
+function languageOfTag(tag: string): SpeechLanguage {
+  const primary = tag.split(/[-_]/)[0].toLowerCase();
+  return primary === 'el' ? 'greek' : primary === 'he' || primary === 'iw' ? 'hebrew' : 'english';
 }
 
 /** How much slower than his speed a word is said when it is being sounded out (src/speech/soundOut.ts). */
 export const SLOW_FACTOR = 0.6;
 
-/** One utterance in `language` with its tag, its speed and the voice he chose, handed to the phone. `onEnd` is called
- * when it ends; `onError` with the engine's error name when it does not (a cancel reports 'canceled' or 'interrupted'). */
-function utter(text: string, key: string, language: SpeechLanguage, synth: SpeechSynthesis, onEnd: () => void, onError: (error: string) => void, slow = false): void {
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = langOf(language);
+// bsv-kit/speech queues the sentences, names each one's language from its letters and picks a voice for it. What it does not
+// know are the choices of this app: his speed for the language and the voice he picked (Settings), and the slow speed of a word
+// being sounded out. They are put on each utterance as it is handed to the phone, by wrapping speak() of the phone's synthesiser once.
+let slow = false;
+/** the language of the word being said alone, when it is known (a reading's sentences are told by their letters) */
+let forced: string | null = null;
+const wrapped = new WeakSet<object>();
+
+function applyChoices(utterance: SpeechSynthesisUtterance, synth: SpeechSynthesis): void {
+  if (forced) utterance.lang = forced;
+  const language = languageOfTag(utterance.lang);
+  // the Greek of the pronunciation he chose (the package names the Greek of its letters el-GR)
+  if (language === 'greek') utterance.lang = greekLang();
   utterance.rate = slow ? rateOf(language) * SLOW_FACTOR : rateOf(language);
-  const voice = pickVoice(synth, language);
+  const chosen = language === 'hebrew' ? null : chosenVoices[language];
+  if (chosen === null) return;
+  const voice = synth.getVoices().find((v) => voiceKey(v) === chosen && isLanguage(language)(v));
   if (voice) utterance.voice = voice;
-  const ended = () => {
-    // a cancelled utterance reports after the next one has started: only its own end clears the state
-    if (playing?.utterance === utterance) setPlaying(null);
-  };
-  utterance.onend = () => {
-    ended();
-    onEnd();
-  };
-  utterance.onerror = (e) => {
-    ended();
-    onError(e.error);
-  };
-  setPlaying({ key, utterance });
-  synth.resume();
-  synth.speak(utterance);
 }
 
-/** Whether an engine error is a cancel (deliberate or the phone's own) rather than a failure. */
-export const isCancelError = (error: string): boolean => error === 'canceled' || error === 'interrupted';
-
-/** Reads `text` aloud in `language` (Greek unless said), at that language's speed, or stops it when `key` is already
- * being read. A different key's speech is cancelled first. `onFail` is called if the phone's engine reports it cannot
- * speak it (after the call returned 'speaking'). Only Greek and Hebrew are refused for want of a voice: the help is about them, and
- * the phone's default voice would read either one as English. */
-export function speak(text: string, key: string, onFail?: () => void, language: SpeechLanguage = 'greek'): SpeakOutcome {
-  const synth = synthesis();
-  if (!synth || ((language === 'greek' || language === 'hebrew') && hasVoice(language) === false)) return 'no-voice';
-  watchVisibility();
-  if (playing?.key === key) {
-    stopSpeaking();
-    return 'stopped';
-  }
-  if (playing || synth.speaking || synth.pending) synth.cancel();
-  utter(text, key, language, synth, () => {}, (error) => !isCancelError(error) && onFail?.());
-  return 'speaking';
+function chooseVoices(synth: SpeechSynthesis): void {
+  if (wrapped.has(synth)) return;
+  wrapped.add(synth);
+  const speakOn = synth.speak.bind(synth);
+  synth.speak = (utterance: SpeechSynthesisUtterance) => {
+    applyChoices(utterance, synth);
+    speakOn(utterance);
+  };
 }
 
-/** The key the read-aloud sequence (src/speech/readAloud.ts) speaks under. */
+/** Stops whatever is being read. */
+export function stopSpeaking(): void {
+  stopEngine();
+}
+
+/** Stops only if `key` is what is being read (a button that goes away takes its speech with it). */
+export function stopIfSpeaking(key: string): void {
+  if (isSpeaking(key)) stopEngine();
+}
+
+/** The key the read-aloud sequence (src/speech/readAloud.ts) speaks under: a verse, a chapter, a tutor's answer. Its speech has the bar. */
 export const READ_KEY = 'read-aloud';
-
-/** One part of a sequence read aloud, in `language`, even with no voice for it (Greek then goes to the phone's default
- * voice with its lang set). Unlike speak() it does not cancel what is playing and does not toggle: the sequence calls
- * stopSpeaking() once at its start, and the next part when `onEnd` says this one is over. `onError` gets the engine's
- * error name. Returns false when the phone cannot speak at all. */
-export function speakPart(text: string, language: SpeechLanguage, onEnd: () => void, onError: (error: string) => void, slow = false): boolean {
-  const synth = synthesis();
-  if (!synth) return false;
-  watchVisibility();
-  utter(text, READ_KEY, language, synth, onEnd, onError, slow);
-  return true;
-}
 
 /** The key a word said by a long press speaks under (the sheet's and the Words speakers have their own). */
 const WORD_KEY = 'word-press';
 
+/** Asks the speech package to say `text` under `key`, in his speed and voice: it cancels what is speaking, cuts the text into sentences
+ * (one per line break too) and reads each in the language of its letters. `slowly` is the speed of a word being sounded out. Returns false
+ * when the phone cannot speak at all. */
+export function speakText(text: string, key: string, options: { onEnd?: () => void; slowly?: boolean; language?: SpeechLanguage } = {}): boolean {
+  const synth = synthesis();
+  if (!synth) return false;
+  chooseVoices(synth);
+  slow = options.slowly ?? false;
+  forced = options.language ? langOf(options.language) : null;
+  engineSpeak(text, { key, lang: LANGUAGES[0].lang, onEnd: options.onEnd });
+  return true;
+}
+
+/** Reads `text` aloud in `language` (Greek unless said), at that language's speed, or stops it when `key` is already
+ * being read. A different key's speech is cancelled first. Only Greek and Hebrew are refused for want of a voice: the help is about
+ * them, and the phone's default voice would read either one as English. */
+export function speak(text: string, key: string, language: SpeechLanguage = 'greek'): SpeakOutcome {
+  const synth = synthesis();
+  if (!synth || ((language === 'greek' || language === 'hebrew') && hasVoice(language) === false)) return 'no-voice';
+  if (isSpeaking(key)) {
+    stopEngine();
+    return 'stopped';
+  }
+  return speakText(text, key, { language }) ? 'speaking' : 'no-voice';
+}
+
 /** Says one word in `language`, now: what is playing is cancelled first, and it never toggles (pressing the same word
  * again says it again). With no Greek voice it still speaks, to the phone's default voice with lang set, as a reading
  * does; the speaker buttons carry the help line. Returns false when the phone cannot speak at all. */
-export function speakWord(text: string, language: SpeechLanguage, slow = false): boolean {
-  const synth = synthesis();
-  if (!synth) return false;
-  watchVisibility();
-  if (playing || synth.speaking || synth.pending) synth.cancel();
-  utter(text, WORD_KEY, language, synth, () => {}, () => {}, slow);
-  return true;
+export function speakWord(text: string, language: SpeechLanguage, slowly = false): boolean {
+  return speakText(text, WORD_KEY, { slowly, language });
+}
+
+/** Whether the speech now is a single word or speaker (not a reading): it has no bar. */
+export const isWordSpeech = (key: string | null): boolean => key !== null && key !== READ_KEY;
+
+// A page that goes to the background has its speech paused by the package. A reading waits for his Resume on the bar; a word or a speaker
+// has no bar, and it would come back mid-sentence: it is ended instead.
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && isWordSpeech(getSpeech().key)) stopEngine();
+  });
 }
 
 /** Calls `done` once, when the word said by speakWord() is over (it ended, failed or was cut off); returns what takes the watch back. */
 export function watchWordEnd(done: () => void): () => void {
-  const check = () => {
-    if (playing?.key !== WORD_KEY) {
-      listeners.delete(check);
+  const off = subscribeEngine(() => {
+    if (getSpeech().key !== WORD_KEY) {
+      off();
       done();
     }
-  };
-  listeners.add(check);
-  return () => void listeners.delete(check);
+  });
+  return off;
 }
 
 /** The one line shown when there is no voice for `language`: for Greek, where to get one. */
@@ -231,14 +214,10 @@ export function noVoiceHelp(language: SpeechLanguage = 'greek'): string {
     : 'No Greek voice on this device: install a Greek text-to-speech voice in its system settings';
 }
 
-const subscribe = (listener: () => void): (() => void) => {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-};
-
 /** The key being read aloud right now, or null. */
 export function useSpeakingKey(): string | null {
-  return useSyncExternalStore(subscribe, () => playing?.key ?? null);
+  const speech = useSpeech();
+  return speech.status === 'idle' ? null : speech.key;
 }
 
 /** The phone's voices, re-read when it lists more (Android Chrome fills the list late). */

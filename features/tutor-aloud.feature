@@ -75,3 +75,14 @@ Feature: The tutor's responses are read aloud
     And the bus has heard the tutor is not read aloud
     When he reopens Lampas on its Settings screen
     Then "Read the tutor's responses aloud" is still Off
+
+  Scenario: The tutor's answer read aloud shows the same bar as every reading
+    Given Lampas is opened on Romans 8 with the tutor's responses read aloud
+    And he asks the tutor "What does συνεργεῖ mean here?" about verse 28
+    And the phone is speaking the answer
+    Then the speaking bar shows Pause, Restart and Stop
+    When he taps Pause on the speaking bar
+    Then the speaking bar shows Resume, Restart and Stop
+    When he taps Stop on the speaking bar
+    Then the speech has stopped
+    And there is no speaking bar
