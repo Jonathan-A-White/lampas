@@ -1,8 +1,8 @@
 // src/data/repositories/talks.ts — the turns of the Bible talk, kept on the phone per conversation. A repository owns its transactions.
 import type { AppliedChange } from '../../settings/registry';
-import { db, type AnswerLink, type AnswerWord, type HebrewSounds, type TalkTurn } from '../db';
+import { db, type AnswerLink, type AnswerWord, type HebrewSounds, type TalkPicture, type TalkTurn } from '../db';
 
-export type { TalkTurn };
+export type { TalkPicture, TalkTurn };
 
 /** The key a conversation is kept under: the chapter 'rom.8', one of its verses 'rom.8.28' or a passage 'rom.8.1-11' (a string, src/data/passage.ts unitId).
  * A quiz (mw-5r3p30.74) is a conversation of its own beside the talk about the same verses: 'rom.8.1-11:quiz'. */
@@ -30,6 +30,15 @@ export interface TurnChanges {
   feedbackOffer?: string;
   /** what he said, cleaned up by the tutor; shown in place of the raw words, which stay as `q` */
   cleanQ?: string;
+  /** the pictures he sent with it (mw-y3qno5.1), kept in their own table */
+  pictures?: KeptPicture[];
+}
+
+/** A picture to keep with a turn: the bytes that were sent. */
+export interface KeptPicture {
+  bytes: Uint8Array;
+  mime: string;
+  name: string;
 }
 
 /** Keeps one turn and returns its id. */
@@ -45,7 +54,22 @@ export async function addTurn(ref: string, q: string, a: string, words: AnswerWo
   if (done?.guide) turn.guide = done.guide;
   if (done?.feedbackOffer) turn.feedbackOffer = done.feedbackOffer;
   if (done?.cleanQ) turn.cleanQ = done.cleanQ;
-  return (await db.talks.add(turn)) as number;
+  return db.transaction('rw', db.talks, db.talkPictures, async () => {
+    const id = (await db.talks.add(turn)) as number;
+    if (done?.pictures?.length) {
+      await db.talkPictures.bulkAdd(done.pictures.map((p, place) => ({ turnId: id, place, bytes: bufferOf(p.bytes), mime: p.mime, name: p.name })));
+    }
+    return id;
+  });
+}
+
+/** The bytes as an ArrayBuffer of their own (a view may sit in a bigger buffer). */
+const bufferOf = (bytes: Uint8Array): ArrayBuffer => bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
+
+/** The pictures kept with a turn, in the order they were sent. */
+export async function listTurnPictures(turnId: number): Promise<TalkPicture[]> {
+  const rows = await db.talkPictures.where('turnId').equals(turnId).toArray();
+  return rows.sort((a, b) => a.place - b.place);
 }
 
 /** Marks change number `index` of a turn as undone, so its Undo is not offered again. */
