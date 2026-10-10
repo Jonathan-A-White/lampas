@@ -9,31 +9,31 @@ import type { StudyLink, StudyResource, StudyWord } from './types';
  *  or an English topic (`hw=<Topic>`). docs/resources.md says where each lexicon's key comes from and what is UNVERIFIED. */
 type Key = 'lemma' | 'commonLemma' | 'strongs' | 'topic';
 
-/** His Logos lexicons, in the order Logos' Bible Word Study shows them. `id` is kept in the settings store (never change it); `short` is its tile on the word sheet (it must
- *  not wrap in half a 360 px row); `resource` is the Resource ID Logos prints on the product's page (https://www.logos.com/product/<n>, 'Resource ID: LLS:...'; the table is in
+/** His Logos lexicons, in the order Logos' Bible Word Study shows them. `id` is kept in the settings store (never change it); `short` is its tile on the word sheet: the book's title in words that tell it from every other (two lines fit in half a row; the
+ *  distinguishing word is never cut, and no two are alike); `resource` is the Resource ID Logos prints on the product's page (https://www.logos.com/product/<n>, 'Resource ID: LLS:...'; the table is in
  *  docs/resources.md). Adding a lexicon is one line here: copy its Resource ID, never guess a short name (mw-5r3p30.64: the guessed 'ednt' opened nothing). */
 const LEXICONS: readonly { id: string; short: string; name: string; resource: string; key?: Key }[] = [
   { id: 'bdag', short: 'BDAG', name: 'BDAG', resource: 'LLS:46.30.18' },
   { id: 'louwnida', short: 'Louw-Nida', name: 'Louw-Nida', resource: 'LLS:46.30.4' },
-  { id: 'lexhamtheolwordbk', short: 'Lexham', name: 'Lexham Theological Wordbook', resource: 'LLS:LXTHEOWRDBK', key: 'topic' },
+  { id: 'lexhamtheolwordbk', short: 'Lexham Theological Wordbook', name: 'Lexham Theological Wordbook', resource: 'LLS:LXTHEOWRDBK', key: 'topic' },
   { id: 'dbl', short: 'DBL Greek', name: 'DBL Greek', resource: 'LLS:46.30.9' },
   { id: 'ednt', short: 'EDNT', name: 'EDNT', resource: 'LLS:46.10.26' },
-  { id: 'nasbdict', short: 'NASB Dict.', name: 'NASB Dictionaries', resource: 'LLS:46.10.12', key: 'strongs' },
-  { id: 'leh', short: 'LEH LXX', name: 'LEH LXX Lexicon', resource: 'LLS:46.30.22', key: 'commonLemma' },
-  { id: 'intermediategel', short: 'Intermediate', name: 'An Intermediate Greek-English Lexicon', resource: 'LLS:46.30.1', key: 'commonLemma' },
+  { id: 'nasbdict', short: 'NASB Dictionaries', name: 'NASB Dictionaries', resource: 'LLS:46.10.12', key: 'strongs' },
+  { id: 'leh', short: 'LEH LXX Lexicon', name: 'LEH LXX Lexicon', resource: 'LLS:46.30.22', key: 'commonLemma' },
+  { id: 'intermediategel', short: 'Intermediate Greek-English Lexicon', name: 'An Intermediate Greek-English Lexicon', resource: 'LLS:46.30.1', key: 'commonLemma' },
   { id: 'lxgrcanlex', short: 'LXGRCANLEX', name: 'LXGRCANLEX', resource: 'LLS:LXGRCANLEX' },
-  { id: 'newstrongs', short: "New Strong's", name: 'The New Strong\'s Dictionary of Hebrew and Greek Words', resource: 'LLS:46.10.6', key: 'strongs' },
+  { id: 'newstrongs', short: "New Strong's Dictionary", name: 'The New Strong\'s Dictionary of Hebrew and Greek Words', resource: 'LLS:46.10.6', key: 'strongs' },
   { id: 'tdnta', short: 'TDNTA', name: 'TDNTA', resource: 'LLS:46.10.1' },
-  { id: 'vocab3', short: 'Vocab 3', name: 'Building Your New Testament Greek Vocabulary 3rd Edition', resource: 'LLS:NTGRKVOCAB' },
+  { id: 'vocab3', short: 'NT Greek Vocabulary', name: 'Building Your New Testament Greek Vocabulary 3rd Edition', resource: 'LLS:NTGRKVOCAB' },
   { id: 'lxgntlex', short: 'LXGNTLEX', name: 'LXGNTLEX', resource: 'LLS:FBGNTLEX' },
   { id: 'lxlxxlex', short: 'LXLXXLEX', name: 'LXLXXLEX', resource: 'LLS:FBLXXLEX' },
-  { id: 'gelnt', short: 'Greek-English NT', name: 'A Greek and English Lexicon to the New Testament', resource: 'LLS:GRKENGLXCNNTBLMSFIELD', key: 'commonLemma' },
-  { id: 'biblicotheolexicon', short: 'Cremer', name: 'Biblico-Theological Lexicon of New Testament Greek', resource: 'LLS:LEXNTGRKCREMER' },
-  { id: 'lexhamanalyticallxx', short: 'Lexham LXX', name: 'The Lexham Analytical Lexicon of the Septuagint', resource: 'LLS:LXGRKOTANLEX' },
-  { id: 'manualgreeklex', short: 'Abbott-Smith', name: 'A Manual Greek Lexicon of the New Testament', resource: 'LLS:MNLGRKLXABBOTSMITH' },
-  { id: 'pocketlex', short: 'Pocket Lexicon', name: 'A Pocket Lexicon to the Greek New Testament', resource: 'LLS:PCKTLXCNGRKNWTS' },
-  { id: 'concisedict', short: 'Concise Dict.', name: 'A Concise Dictionary of the Words in the Greek Testament and The Hebrew Bible', resource: 'LLS:STRNGDICHEBGRK', key: 'strongs' },
-  { id: 'gelntthayer', short: 'Thayer', name: 'A Greek-English Lexicon of the New Testament', resource: 'LLS:THAYERGELEXNT' },
+  { id: 'gelnt', short: 'Greek and English Lexicon to the NT', name: 'A Greek and English Lexicon to the New Testament', resource: 'LLS:GRKENGLXCNNTBLMSFIELD', key: 'commonLemma' },
+  { id: 'biblicotheolexicon', short: 'Cremer Biblico-Theological Lexicon', name: 'Biblico-Theological Lexicon of New Testament Greek', resource: 'LLS:LEXNTGRKCREMER' },
+  { id: 'lexhamanalyticallxx', short: 'Lexham Analytical Lexicon of the LXX', name: 'The Lexham Analytical Lexicon of the Septuagint', resource: 'LLS:LXGRKOTANLEX' },
+  { id: 'manualgreeklex', short: 'Abbott-Smith Manual Lexicon', name: 'A Manual Greek Lexicon of the New Testament', resource: 'LLS:MNLGRKLXABBOTSMITH' },
+  { id: 'pocketlex', short: 'Pocket Lexicon to the Greek NT', name: 'A Pocket Lexicon to the Greek New Testament', resource: 'LLS:PCKTLXCNGRKNWTS' },
+  { id: 'concisedict', short: "New Strong's Concise Dictionary", name: 'A Concise Dictionary of the Words in the Greek Testament and The Hebrew Bible', resource: 'LLS:STRNGDICHEBGRK', key: 'strongs' },
+  { id: 'gelntthayer', short: "Thayer's Greek-English Lexicon", name: 'A Greek-English Lexicon of the New Testament', resource: 'LLS:THAYERGELEXNT' },
 ];
 
 /** Logos' own name for a Greek lemma is lbs/el/<lemma>, accents and capital kept; the slashes must be escaped or Logos rejects the value (a bare lemma opens a search
@@ -94,7 +94,7 @@ export const logos: StudyResource = {
       });
     }
     const guide = study(word);
-    return [...lexicons, { label: 'Bible Word Study in Logos', tile: 'Word Study', url: guide.path, fallback: guide.fallbackPath }];
+    return [...lexicons, { label: 'Bible Word Study in Logos', tile: 'Bible Word Study', url: guide.path, fallback: guide.fallbackPath }];
   },
   versesFor: (place, bible) => {
     const link = verseLink(place.book, place.chapter, place.verse, bible);

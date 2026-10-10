@@ -137,7 +137,7 @@ test('The Study links are equal tiles in two columns at 360 px, and an app that 
   const study = page.getByRole('dialog', { name: 'Word' }).getByRole('group', { name: 'Study', exact: true });
   const logos = study.getByRole('group', { name: 'Logos', exact: true });
   const tiles = logos.getByRole('link');
-  await expect(tiles).toHaveText(['BDAG', 'Lexham', 'Word Study']);
+  await expect(tiles).toHaveText(['BDAG', 'Lexham Theological Wordbook', 'Bible Word Study']);
   const boxes = await study.getByRole('link').evaluateAll((els) => els.map((el) => {
     const r = el.getBoundingClientRect();
     const label = el.querySelector('span') as HTMLElement;
@@ -149,7 +149,7 @@ test('The Study links are equal tiles in two columns at 360 px, and an app that 
     expect(b.w).toBeCloseTo(boxes[0].w, 0);
     expect(b.right).toBeLessThanOrEqual(360);
     expect(b.wrapped).toBe(false);
-    expect(b.lines).toBe(1);
+    expect(b.lines).toBeLessThanOrEqual(2);
   }
   expect(new Set(boxes.map((b) => Math.round(b.x))).size).toBe(2);
 

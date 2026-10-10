@@ -29,7 +29,7 @@ export interface StudyPlace {
 export interface StudyLink {
   /** what the link is called: its accessible name, and what it says on the word sheet unless `tile` is given */
   label: string;
-  /** the short words on the link's tile in the word sheet's grid ('BDAG', 'Word Study'); `label` when absent */
+  /** the short words on the link's tile in the word sheet's grid ('BDAG', 'Bible Word Study'); `label` when absent */
   tile?: string;
   /** the app's own scheme (logosres:, logos4:, accord:), or https for a web page */
   url: string;

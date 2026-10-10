@@ -41,8 +41,9 @@ describe('the wait of findBy* and waitFor in jsdom tests', () => {
     const row = document.createElement('div');
     row.setAttribute('data-state', 'learning');
     setTimeout(() => row.setAttribute('data-state', 'solid'), 1500);
-    const started = Date.now();
+    // performance.now, not Date.now: tests/setup.ts bends Date.now (it never runs backwards, so after a clock step it moves 1 ms a reading).
+    const started = performance.now();
     await waitFor(() => expect(row.getAttribute('data-state')).toBe('solid'));
-    expect(Date.now() - started).toBeGreaterThanOrEqual(1400);
+    expect(performance.now() - started).toBeGreaterThanOrEqual(1400);
   });
 });
