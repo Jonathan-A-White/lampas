@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.75
+_2026-10-10_
+- New: Share a picture, text or link to Lampas from another app, and choose which tutor talk it goes to.
+
 ## 0.1.74
 _2026-10-10_
 - Fixed: Hear a word says the right sound even when the tip first names the wrong one.
