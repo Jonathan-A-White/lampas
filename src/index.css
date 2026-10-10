@@ -234,6 +234,40 @@ textarea,
   border-radius: 6px;
 }
 
+/* The Immersive reader (src/Away.tsx, src/immersive.ts): a bar collapses to nothing and its box, hidden once it is shut, leaves the tab order.
+ * The round Ask button (src/AskTutor.tsx) slides down instead. With reduced motion there is no slide: it shows or hides at once. */
+.away-box {
+  display: grid;
+  grid-template-rows: 1fr;
+  flex-shrink: 0;
+  transition: grid-template-rows 200ms ease, visibility 0s;
+}
+.away-box[data-away] {
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition: grid-template-rows 200ms ease, visibility 0s 200ms;
+}
+.away-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+[data-ask-tutor][data-slides] {
+  transition: transform 200ms ease, visibility 0s;
+}
+[data-ask-tutor][data-away] {
+  transform: translateY(calc(100% + 14rem));
+  visibility: hidden;
+  transition: transform 200ms ease, visibility 0s 200ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .away-box,
+  .away-box[data-away],
+  [data-ask-tutor][data-slides],
+  [data-ask-tutor][data-away] {
+    transition: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
