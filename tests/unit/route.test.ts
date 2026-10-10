@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { paradigmHash, paradigmOf, readerHash, readerOf, routeOf } from '../../src/nav/route';
+import { paradigmHash, paradigmOf, placementOriginOf, readerHash, readerOf, routeOf } from '../../src/nav/route';
 
 describe('the address', () => {
+  it('says where the placement was started from', () => {
+    expect(placementOriginOf('#/placement?from=goal')).toBe('goal');
+    expect(placementOriginOf('#/placement')).toBe('settings');
+    expect(placementOriginOf('#/placement?from=else')).toBe('settings');
+    expect(routeOf('#/placement?from=goal')).toBe('placement');
+  });
+
   it('names the screen', () => {
     expect(routeOf('')).toBe('home');
     expect(routeOf('#/')).toBe('home');

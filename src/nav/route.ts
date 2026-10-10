@@ -200,6 +200,20 @@ export function movePassage(first: number): void {
   replaceHash(readerHash({ ...here, passage: first }));
 }
 
+/** Where the placement was started from: its address says so ('#/placement?from=goal'), and no word means Settings, where Place me was first. */
+export type PlacementOrigin = 'goal' | 'settings';
+
+export function placementOriginOf(hash: string): PlacementOrigin {
+  const q = hash.indexOf('?');
+  return new URLSearchParams(q < 0 ? '' : hash.slice(q + 1)).get('from') === 'goal' ? 'goal' : 'settings';
+}
+
+/** Opens the placement as a new Back step, remembering where it was started from so its way out returns there. */
+export function openPlacement(from: PlacementOrigin): void {
+  window.history.pushState(null, '', urlFor(from === 'goal' ? '#/placement?from=goal' : '#/placement'));
+  notify();
+}
+
 /** Opens a Paradigms table (or the list, with none) as a new Back step. */
 export function openParadigm(address: ParadigmAddress): void {
   window.history.pushState(null, '', urlFor(paradigmHash(address)));

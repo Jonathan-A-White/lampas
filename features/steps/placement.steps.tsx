@@ -201,4 +201,50 @@ describeFeature(feature, ({ Scenario }) => {
     Then('it says {string}', says);
     And('the screen offers {string}', says);
   });
+
+  const goalScreen = () => openAt('#/goal');
+  const tapped = async (_: unknown, name: string) => user.click(await screen.findByRole('button', { name }));
+
+  Scenario('A paused placement has the way back to the goal, and the Goal screen shows the new answers', ({ Given, When, And, Then }) => {
+    Given('his goal is {string} and he knows nothing yet', given);
+    When('he opens the Goal screen', goalScreen);
+    And('he taps {string}', tapped);
+    And('he starts the placement', started);
+    And('he answers {int} questions right', right);
+    Then('it says {string}', says);
+    When('he taps {string}', tapped);
+    Then('the Goal screen is open', async () => {
+      await screen.findByRole('heading', { name: 'Goal', level: 1 });
+    });
+    And('the Goal screen counts some solid ideas', async () => {
+      const bar = await screen.findByTestId('ideas-bar');
+      await waitFor(() => expect(bar.getAttribute('aria-label')).not.toMatch(/: 0 solid/));
+    });
+  });
+
+  Scenario('Go on another day returns to the Goal screen when the placement was started there', ({ Given, When, And, Then }) => {
+    Given('his goal is {string} and he knows nothing yet', given);
+    When('he opens the Goal screen', goalScreen);
+    And('he taps {string}', tapped);
+    And('he starts the placement', started);
+    And('he answers {int} questions right', right);
+    Then('it says {string}', says);
+    When('he taps {string}', tapped);
+    Then('the Goal screen is open', async () => {
+      await screen.findByRole('heading', { name: 'Goal', level: 1 });
+    });
+  });
+
+  Scenario('Go on another day returns to Settings when the placement was started there', ({ Given, When, And, Then }) => {
+    Given('his goal is {string} and he knows nothing yet', given);
+    When('he opens Settings', () => openAt('#/settings'));
+    And('he taps {string}', tapped);
+    And('he starts the placement', started);
+    And('he answers {int} questions right', right);
+    Then('it says {string}', says);
+    When('he taps {string}', tapped);
+    Then('Settings is open', async () => {
+      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+    });
+  });
 });

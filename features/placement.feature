@@ -70,3 +70,34 @@ Feature: Test me on the grammar, and meet me where I am
     And Lampas is closed and opened again
     Then it says "Placement: Read 1 John 1:1"
     And the screen offers "3 questions answered so far"
+
+  Scenario: A paused placement has the way back to the goal, and the Goal screen shows the new answers
+    Given his goal is "Read 1 John 1:1" and he knows nothing yet
+    When he opens the Goal screen
+    And he taps "Place me"
+    And he starts the placement
+    And he answers 20 questions right
+    Then it says "Paused after 20 questions"
+    When he taps "Back to the goal"
+    Then the Goal screen is open
+    And the Goal screen counts some solid ideas
+
+  Scenario: Go on another day returns to the Goal screen when the placement was started there
+    Given his goal is "Read 1 John 1:1" and he knows nothing yet
+    When he opens the Goal screen
+    And he taps "Place me"
+    And he starts the placement
+    And he answers 20 questions right
+    Then it says "Paused after 20 questions"
+    When he taps "Go on another day"
+    Then the Goal screen is open
+
+  Scenario: Go on another day returns to Settings when the placement was started there
+    Given his goal is "Read 1 John 1:1" and he knows nothing yet
+    When he opens Settings
+    And he taps "Place me"
+    And he starts the placement
+    And he answers 20 questions right
+    Then it says "Paused after 20 questions"
+    When he taps "Go on another day"
+    Then Settings is open

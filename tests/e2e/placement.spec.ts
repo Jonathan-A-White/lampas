@@ -1,6 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
+import { approachOf, orderOf } from '../../src/approaches';
 import { LADDER } from '../../src/data/grammar/ladder';
+import { startPlacement } from '../../src/data/grammar/placement';
 import { honestSpeech, spoken } from '../support/honest-fakes';
 import { openUnlocked } from './unlocked';
 
@@ -110,9 +112,34 @@ test('a sitting of tapped answers ends on a card that fits: Where you are, or Pa
   }
   await expect(end).toHaveText(/^(Where you are|So far): solid \d+, frontier \d+, not yet \d+; untested \d+$/);
   await expectFitsPhone(page);
-  const back = page.getByRole('button', { name: /^(Back to the goal|Go on another day)$/ });
+  const back = page.getByRole('button', { name: /^(Back to the goal|Go on another day)$/ }).last();
   const box = await back.boundingBox();
   expect(box && box.y + box.height).toBeLessThanOrEqual(844 + 1);
+});
+
+// the paused card (mw-hqd5bz.22): a placement started from the Goal screen whose next answer is the twentieth
+test('the paused card has Back to the goal, and Go on another day returns to the Goal screen', async ({ page }) => {
+  await openWithGoal(page, '1 John 1:1');
+  const order = orderOf(approachOf('bma-tutor')!);
+  const first = startPlacement(null, new Map(), order, 7);
+  // nineteen answers on ideas already past, so the next is the twentieth
+  const state = { ...first, asked: Array.from({ length: 19 }, () => ({ ideaId: 'alphabet', right: true })), questionsLeft: 1 };
+  const kept = { goal: '1 John 1:1', approach: 'bma-tutor', state: { ...state, levels: [...state.levels], evidence: [...state.evidence] } };
+  await page.evaluate((saved) => localStorage.setItem('lampas.placement', JSON.stringify(saved)), kept);
+  await page.goto('/#/goal');
+  await page.getByRole('button', { name: /^Place (me|again)$/ }).click();
+  await expect(page.getByTestId('placement-goal')).toHaveText('Placement: Read 1 John 1:1');
+  await page.getByRole('button', { name: 'Go on' }).click();
+  await page.locator('[data-option]').first().click();
+  await page.getByTestId('next').click();
+  await expect(page.getByTestId('placement-title')).toHaveText(/^Paused after \d+ questions$/);
+  const back = page.getByRole('button', { name: 'Back to the goal' });
+  await expect(back).toBeVisible();
+  expect((await back.boundingBox())?.height).toBeGreaterThanOrEqual(47.5);
+  await expectFitsPhone(page);
+  await shot(page, 'placement-paused');
+  await page.getByRole('button', { name: 'Go on another day' }).click();
+  await expect(page.getByRole('heading', { name: 'Goal', level: 1 })).toBeVisible();
 });
 
 test('the end card: Where you are, by tier, with Back to the goal in reach', async ({ page }) => {

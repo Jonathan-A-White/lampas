@@ -27,7 +27,7 @@ import { clearPlacement, readPlacement, savePlacement, type SavedPlacement } fro
 import { mulberry32, type Random } from './data/quiz';
 import { getEvidence, getGoal, getGrammarApproach, listLevels } from './data/repositories';
 import { publish } from './events/bus';
-import { navigate } from './nav/route';
+import { navigate, placementOriginOf, useAddress } from './nav/route';
 import { ItemCard } from './review/ItemCard';
 import { GRAMMAR, loadPassage, type GrammarItem } from './review/kinds';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -60,6 +60,9 @@ const BUTTON = 'min-h-12 w-full rounded-xl text-lg font-medium';
 
 export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
   const [run, setRun] = useState<Run>({ status: 'loading' });
+  // where Place me was tapped: the Goal screen or Settings; the ways out return there
+  const origin = placementOriginOf(useAddress());
+  const leave = () => navigate(origin);
   // The answers are written one after the other; the next question waits for the last of them.
   const writing = useRef<Promise<unknown>>(Promise.resolve());
   const passage = useRef<Chapter[]>([]);
@@ -84,7 +87,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
   }, []);
 
   const header = (
-    <ScreenHeader title="Placement" back={<HeaderButton onClick={() => navigate('settings')}>‹ Settings</HeaderButton>} />
+    <ScreenHeader title="Placement" back={<HeaderButton onClick={leave}>{origin === 'goal' ? '‹ Goal' : '‹ Settings'}</HeaderButton>} />
   );
 
   /** Shows the question the state asks, or the end when it asks none. */
@@ -186,8 +189,8 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
                 Start
               </button>
             )}
-            <button type="button" onClick={() => navigate('settings')} className={`${BUTTON} border border-line`}>
-              Back to Settings
+            <button type="button" onClick={leave} className={`${BUTTON} border border-line`}>
+              {origin === 'goal' ? 'Back to the goal' : 'Back to Settings'}
             </button>
           </div>
         </main>
@@ -279,8 +282,13 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
                 Go on
               </button>
             ) : null}
-            <button type="button" onClick={() => navigate(paused ? 'settings' : 'goal')} className={`${BUTTON} ${paused ? 'border border-line' : 'bg-accent text-accent-fg'}`}>
-              {paused ? 'Go on another day' : 'Back to the goal'}
+            {paused ? (
+              <button type="button" onClick={leave} className={`${BUTTON} border border-line`}>
+                Go on another day
+              </button>
+            ) : null}
+            <button type="button" onClick={() => navigate('goal')} className={`${BUTTON} ${paused ? 'border border-line' : 'bg-accent text-accent-fg'}`}>
+              Back to the goal
             </button>
           </div>
           <div className="mt-6 space-y-4" data-testid="where-list">
