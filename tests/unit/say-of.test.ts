@@ -10,6 +10,10 @@ describe('sayOf', () => {
     expect(sayOf(levites)).toBe('lee vites');
   });
 
+  it('speaks the right respelling when the tip names the wrong one first', () => {
+    expect(sayOf({ word: 'Levites', tip: 'Not LEV-its; say LEE-vites.' })).toBe('lee vites');
+  });
+
   it('prefers the answer\'s say over the tip', () => {
     expect(sayOf({ ...levites, say: 'lee vights' })).toBe('lee vights');
   });
@@ -33,6 +37,20 @@ describe('sayOf', () => {
 });
 
 describe('tipRespelling', () => {
+  it('skips a run named after not, never, instead of or rather than', () => {
+    expect(tipRespelling('LEE-vites')).toBe('lee vites');
+    expect(tipRespelling('Not LEV-its; say LEE-vites.')).toBe('lee vites');
+    expect(tipRespelling('say LEE-vites, not LEV-its')).toBe('lee vites');
+    expect(tipRespelling('instead of LEV-its, LEE-vites')).toBe('lee vites');
+    expect(tipRespelling('Never LEV-its, always LEE-vites.')).toBe('lee vites');
+    expect(tipRespelling('Rather than LEV-its, say LEE-vites.')).toBe('lee vites');
+  });
+
+  it('gives nothing when the only run is one to avoid', () => {
+    expect(tipRespelling('Not LEV-its.')).toBeNull();
+    expect(sayOf({ word: 'Levites', tip: 'Not LEV-its.' })).toBe('Levites');
+  });
+
   it('is null for a tip with none', () => {
     expect(tipRespelling('Say it again.')).toBeNull();
   });

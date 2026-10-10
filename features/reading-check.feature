@@ -43,6 +43,14 @@ Feature: Reading check, in English and in Greek
     When he taps the speaker beside "together"
     Then the phone says only "tuh geth er", the respelling its tip spelled in capitals, in the English voice
 
+  Scenario: A tip that names the wrong sound first is spoken as the right one
+    Given Lampas is opened on Romans 8 in English with a reading check whose tip says "Not TOG-ether; say tuh-GETH-er." and gives no say
+    And he opens the reading check of verse 28
+    And he holds the bar for 2 seconds and lets go
+    And the verse in the reading check shows "together" and "purpose" marked to fix
+    When he taps the speaker beside "together"
+    Then the phone says only "tuh geth er", the right respelling and not the wrong one the tip names first, in the English voice
+
   Scenario: A flagged Greek word's speaker says the Greek word in the Greek voice
     Given Lampas is opened on Romans 8 in Greek with a reading check behind a fake Postern
     And he opens the reading check of verse 28
