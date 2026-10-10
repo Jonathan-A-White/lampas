@@ -16,6 +16,13 @@ export const pwaManifest: Partial<ManifestOptions> = {
   theme_color: THEME_COLOR,
   // web+lampas:Rom.8.28 opens the installed app on that verse where the browser supports it (Chrome and Edge, not iOS Safari); docs/links.md.
   protocol_handlers: [{ protocol: 'web+lampas', url: '/#/?ref=%s' }],
+  // Lampas in the phone's share sheet (mw-y3qno5.2): src/sw.ts parks the pictures and words and the window opens on the Share screen (src/share/).
+  share_target: {
+    action: '/share-target', // src/share/target.ts SHARE_TARGET_PATH (tests/unit/manifest.test.ts holds them equal)
+    method: 'POST',
+    enctype: 'multipart/form-data',
+    params: { title: 'title', text: 'text', url: 'url', files: [{ name: 'files', accept: ['image/*'] }] },
+  },
   icons: [
     { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
     { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },

@@ -8,6 +8,7 @@ import { NavigationRoute, registerRoute } from 'workbox-routing';
 import { CacheFirst } from 'workbox-strategies';
 import { DATA_CACHE, dropOldDataCaches } from './dataCache';
 import { healPrecache, isGuardedAsset, serveAsset } from './precacheGuard';
+import { isShareRequest, receiveShare } from './share/target';
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -24,6 +25,12 @@ self.addEventListener('fetch', (event) => {
 // claimed, so the page's controllerchange tells it the new build is in control.
 self.addEventListener('activate', (event) => {
   event.waitUntil(Promise.all([healPrecache(self.caches), dropOldDataCaches(self.caches), self.clients.claim()]));
+});
+
+// Share > Lampas from another app POSTs the pictures and words here (the manifest's share_target); they are parked in Dexie and the window opens on
+// the Share screen (src/share/target.ts). Registered before the precache's own listener; a GET to the same path is a page load and is not answered here.
+self.addEventListener('fetch', (event) => {
+  if (isShareRequest(event.request, self.location.origin)) event.respondWith(receiveShare(event.request));
 });
 
 precacheAndRoute(self.__WB_MANIFEST);
