@@ -193,3 +193,16 @@ he chose in Settings (`Open Genesis 15:6 in Logos`, `logosres:<bible>;ref=Bible.
 Testament text: `TutorPlace.reader` is the one flag, and an Old Testament reader later only turns it on. A chapter's last verse is not checked for the Old Testament (no counts). Accordance gives no verse chip: its field names a lexicon module, not a Bible.
 More than three links in an answer: the app keeps the first three (the schema's limit is for the mill). A resource that can show a Bible gives `versesFor(place, bible)`;
 one that cannot has none.
+
+**What the tutor is told, and what a link in the text may be** (mw-5r3p30.123, PROVISIONAL, Governor to confirm). The bible-talk request carries `resources`
+(`resourcesForTutor` in `tutorLinks.ts`): the study resources that are On in Settings, each `{id, name, words, verses}` (an empty list when none is; absent only in
+a talk from About). The instructions say to link only what those can open, only when it truly helps the question, never as decoration, and only through `links`: a
+web address the model writes is never trusted. In the text of an answer, `src/markdown/Markdown.tsx` draws a link only to a host in `src/resources/hosts.ts`
+`RESOURCE_HOSTS` (the hosts the resources build links on; tests/unit/tutor-resources.test.ts holds the list against the builders) or at a credit's own address (About's talk
+hands the tutor those, `src/tutor/credits.ts`), and shows any other address as text.
+
+**A New Testament verse named in the text** (`Hebrews 7:2`, `Heb 7:2`, `Romans 8:28-30`; `src/markdown/verseLinks.ts`) is a link to the reader's address of the verse
+(`#/?b=heb&c=7&v=2`; a range opens its first verse): a tap closes the Talk sheet, if it is the one showing, and opens the Verse view as a new Back step
+(`nav/route.ts` `openVerseAt`). A name needs a capital letter and the verse a colon (`a 7:2 ratio` and `Romans 8` are not references); an Old Testament verse is left as
+text in the answer and keeps its jumping-off chips under it. The instructions of both talk grinds say to answer a question about another passage there and then
+and to name its verse this way, never to send him to ask elsewhere.

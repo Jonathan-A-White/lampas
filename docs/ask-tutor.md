@@ -40,6 +40,9 @@ live. A screen that reports nothing sends its name alone.
 | About | no facts; `screen.credits` instead (mw-vtjxh4.2): every credit of ATTRIBUTION.md as `{ name, use, licence, link }` (`TBESG`, `STEPBible (Tyndale House): each word's lemma, gloss and definition`, `CC BY 4.0`, `https://www.stepbible.org`), at most 40, from `src/tutor/credits.ts` (the short form of the bullets; `tests/unit/credits-for-tutor.test.tsx` fails when it drifts from ATTRIBUTION.md: a bullet with no credit, or a credit whose name, link or licence the bullet lacks; it weighs at most `MAX_CREDITS_BYTES` 3900). The credits take most of the 6500-byte record, so on a talk with credits `buildTalkRequest` sends no `solid_words` and no `learner_grammar`. The instructions' "Talk from About" say how to explain a source: what it is, who made it, what it gives this reader, what its licence lets us do, and why we credit (Newton's line). A new credit is a bullet in ATTRIBUTION.md and an entry in CREDITS |
 | the rest | the name |
 
+A request also carries `resources` (mw-5r3p30.123): the study resources he has switched on, so the tutor links one only when it truly helps (docs/resources.md "The tutor's links").
+A New Testament verse the tutor names in an answer ('Hebrews 7:2') is a link to that verse's Verse view, in the Talk sheet and in the Ask box alike.
+
 ## Suggested questions
 
 `suggestionsFor(name)` (`src/tutor/screen.ts`): two or three per screen, shown by the sheet as buttons while the talk has no turn and nothing is
