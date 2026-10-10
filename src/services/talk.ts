@@ -8,6 +8,7 @@ import { screenRef, talkRef } from '../data/repositories/talks';
 import type { AnswerLink, AnswerWord } from '../data/db';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { SettingValue } from '../settings/registry';
+import type { TutorResource } from '../resources/tutorLinks';
 import { slugOf, type ScreenContext } from '../tutor/screen';
 import type { FormFieldState, FormValue } from '../formHelper/formHelper';
 import { MAX_SUMMARY } from './feedback';
@@ -169,6 +170,8 @@ export interface TalkRequest {
   study_way?: string[];
   /** present only while the tutor helps him fill in a form (mw-5r3p30.117, src/formHelper/): the form's name and its fields with what each holds now */
   form?: { name: string; fields: FormFieldState[] };
+  /** the study resources he has switched on in Settings (mw-5r3p30.123): the only ones the tutor may link; missing in About, whose request is the credits */
+  resources?: TutorResource[];
 }
 
 /** The most links an answer carries (the grind's schema): the app shows the first three of more. */
@@ -288,6 +291,7 @@ export function buildTalkRequest(
   learner?: string,
   learnerGrammar?: LearnerGrammar,
   studyWay: string[] = [],
+  resources: TutorResource[] = [],
 ): TalkRequest {
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   // About (mw-vtjxh4.2) sends the credits, which take most of the record: the credits are the talk, so his words and his grammar stay home
@@ -305,6 +309,7 @@ export function buildTalkRequest(
     ...(learnerGrammar && !aboutCredits ? { learner_grammar: learnerGrammar } : {}),
     ...(scope.quiz ? { mode: 'quiz' as const } : {}),
     ...(scope.quiz && studyWay.length > 0 ? { study_way: studyWay } : {}),
+    ...(aboutCredits ? {} : { resources }),
   };
 }
 

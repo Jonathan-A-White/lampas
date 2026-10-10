@@ -27,6 +27,22 @@
       "maxItems": 12,
       "items": { "type": "string", "minLength": 1, "maxLength": 100 }
     },
+    "resources": {
+      "description": "Optional. The study resources he has switched on in Settings, in the order Settings lists them: the only ones the answer's `links` may count on. An empty list means none is on. Missing only in a talk from About.",
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "words", "verses"],
+        "properties": {
+          "id": { "description": "The resource's key: strongs, logos or accordance.", "type": "string" },
+          "name": { "description": "What Settings calls it: Strong's, Logos, Accordance.", "type": "string" },
+          "words": { "description": "True when a word's entry can be opened in it (a link of kind word).", "type": "boolean" },
+          "verses": { "description": "True when a verse can be opened in it (a link of kind verse).", "type": "boolean" }
+        }
+      }
+    },
     "screen": {
       "description": "Optional. Present when he asked from a full screen of the app (the round Ask the tutor button) and not about a text: the screen's name (Goal, Words, Review, Quick test, Parsing drill, Paradigms, Placement, Settings, My study way, Import, About) and what the screen shows, as labelled facts (on Goal: the goal, the solid, frontier and not yet counts of its words and grammar ideas, Learn next and the Next words). `greek` and `english` are then missing.",
       "type": "object",

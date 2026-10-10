@@ -12,7 +12,7 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { type Chapter, markSupplied } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
-import { addTurn, getGoal, getPickerGrammar, getSpeechRate, getStudyResources, getTheme, setLevel, talkRef } from '../../src/data/repositories';
+import { addTurn, getGoal, getPickerGrammar, getSpeechRate, getStudyResources, getTheme, setLevel, setResourceOn, talkRef } from '../../src/data/repositories';
 import { setGoal } from '../../src/data/repositories/settings';
 import { clearBus, latest } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
@@ -923,6 +923,20 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps Undo', () => taps("Undo Strong's"));
     Then("the Strong's resource is switched off", async () => {
       await waitFor(async () => expect((await getStudyResources()).on).toEqual([]));
+    });
+  });
+  Scenario('A question in the talk tells the tutor only the study resources he has on', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern', () => open());
+    And('the Logos study resource is switched on', () => setResourceOn('logos', true));
+    And('he selects verse 28', selectVerse28);
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('the mill received {int} grists for the lampas app, kind bible-talk', async (_, count: number) => {
+      await waitFor(() => expect(fake.received).toHaveLength(count));
+      expect(received(0).grist).toMatchObject({ app: 'lampas', kind: 'bible-talk' });
+    });
+    And('its input lists the resource Logos and no other', () => {
+      expect(received(0).input.resources).toEqual([{ id: 'logos', name: 'Logos', words: true, verses: true }]);
     });
   });
 });

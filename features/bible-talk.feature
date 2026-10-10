@@ -339,3 +339,12 @@ Feature: Bible talk
     And the Strong's resource is switched on
     When he taps Undo
     Then the Strong's resource is switched off
+
+  Scenario: A question in the talk tells the tutor only the study resources he has on
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern
+    And the Logos study resource is switched on
+    And he selects verse 28
+    And he opens Talk
+    When he sends "Which lexicon has the fullest entry for ἀγάπη?"
+    Then the mill received 1 grists for the lampas app, kind bible-talk
+    And its input lists the resource Logos and no other
