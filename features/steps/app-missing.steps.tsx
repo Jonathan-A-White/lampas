@@ -91,7 +91,10 @@ const feature = await loadFeature('features/app-missing.feature');
 describeFeature(feature, ({ Scenario }) => {
   const taps = async (_: unknown, text: string, verse: number): Promise<void> => {
     await user.click(within(verseEl(verse)).getByRole('button', { name: text }));
-    await screen.findByRole('dialog', { name: 'Word' });
+    const dialog = await screen.findByRole('dialog', { name: 'Word' });
+    // The sheet mounts before its study resources are read (a liveQuery answers later, later still on a loaded host): every scenario here
+    // has an app On, so wait for the Study row before a step looks for its links (same race as mw-5r3p30.135).
+    await within(dialog).findByRole('group', { name: 'Study' });
   };
   const tapsLink = async (_: unknown, name: string): Promise<void> => {
     const row = studyRow();

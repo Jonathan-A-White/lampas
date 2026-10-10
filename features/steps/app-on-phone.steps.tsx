@@ -181,7 +181,9 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('he taps the word {string} in verse {int}', async (_, text: string, verse: number) => {
       await user.click(within(verseEl(verse)).getByRole('button', { name: text }));
-      await screen.findByRole('dialog', { name: 'Word' });
+      // The sheet mounts before its study resources are read (a liveQuery answers later, later still on a loaded host): wait for the Study row
+      // (same race as mw-5r3p30.135).
+      await within(await screen.findByRole('dialog', { name: 'Word' })).findByRole('group', { name: 'Study' });
     });
     Then('the Study group {string} is listed', async (_, group: string) => {
       const row = within(screen.getByRole('dialog', { name: 'Word' })).getByRole('group', { name: 'Study' });

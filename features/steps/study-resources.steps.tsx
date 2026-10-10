@@ -1,12 +1,13 @@
 // features/steps/study-resources.steps.tsx — runs features/study-resources.feature: the Study resources section of Settings
 // (a switch per registered resource, a name field for Logos' and Accordance's lexicon) and the Study row of the word sheet.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { render, screen, cleanup, waitFor, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
+import { getStudyResources } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { browserEnv } from '../../src/resources/openApp';
@@ -103,9 +104,22 @@ const hasLink = (_: unknown, label: string, href: string): void => {
   if (!found) throw new Error(`no link ${label}`);
   expect(found).toHaveAttribute('href', href);
 };
-const taps = async (_: unknown, text: string, verse: number): Promise<void> => {
+const tapWord = async (text: string, verse: number): Promise<HTMLElement> => {
   await user.click(within(verseEl(verse)).getByRole('button', { name: text }));
-  await screen.findByRole('dialog', { name: 'Word' });
+  return screen.findByRole('dialog', { name: 'Word' });
+};
+// The sheet mounts before its study resources are read (a liveQuery answers later, later still on a loaded host): when a resource is On,
+// wait for the Study row before a step looks for its links (same race as mw-5r3p30.135).
+const taps = async (_: unknown, text: string, verse: number): Promise<void> => {
+  const dialog = await tapWord(text, verse);
+  await within(dialog).findByRole('group', { name: 'Study' });
+};
+// With none On there is no row to wait for: let the sheet's own read of the resources finish (it began first, so ours ends after it).
+const tapsWithNoneOn = async (_: unknown, text: string, verse: number): Promise<void> => {
+  await tapWord(text, verse);
+  await act(async () => {
+    await getStudyResources();
+  });
 };
 const studyRow = () => within(screen.getByRole('dialog', { name: 'Word' })).queryByRole('group', { name: 'Study' });
 
@@ -117,7 +131,10 @@ describeFeature(feature, ({ Scenario }) => {
     When("he taps the gear in the reader's header", openSettings);
     Then("the Study resources section lists Strong's, Logos and Accordance", async () => {
       const section = await screen.findByRole('region', { name: 'Study resources' });
-      expect(within(section).getAllByRole('switch').map((s) => s.getAttribute('aria-label'))).toEqual(["Strong's", 'Logos', 'Accordance']);
+      // The switches are drawn once the resources are read (a liveQuery answers later): wait for them.
+      await waitFor(() =>
+        expect(within(section).getAllByRole('switch').map((s) => s.getAttribute('aria-label'))).toEqual(["Strong's", 'Logos', 'Accordance']),
+      );
     });
     And('every study resource is switched off', () => {
       for (const s of within(screen.getByRole('region', { name: 'Study resources' })).getAllByRole('switch')) {
@@ -224,7 +241,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('With none on, the word sheet has no Study row', ({ Given, When, Then }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
-    When('he taps the word {string} in verse {int}', taps);
+    When('he taps the word {string} in verse {int}', tapsWithNoneOn);
     Then('the word sheet has no Study row', () => expect(studyRow()).toBeNull());
   });
 
