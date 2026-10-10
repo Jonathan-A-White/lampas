@@ -97,6 +97,25 @@ Checks: `features/form-helper.feature`, `tests/unit/form-helper.test.ts`, `tests
 `grinds/examples/bible-talk/form-approach-*.json`, and `tests/e2e/form-helper.spec.ts` (412 px; shots `form-helper-button`, `form-helper-filling`,
 `form-helper-finished`).
 
+## Copy an exchange
+
+Each answer card of the Verse view and each turn of the Talk sheet ends with a **Copy** (`src/share/CopyExchange.tsx`, aria-label "Copy this
+exchange", 44 px). It puts that one exchange on the clipboard as Markdown (`src/share/exchange.ts`, pure) and says **Copied** for a moment:
+
+```
+[Romans 8:28](https://lampas.allmymind.org/#/?ref=Rom.8.28)
+
+**Q:** Why are there italic words? What does it mean for the words to be italic?
+
+<the tutor's answer, as written>
+```
+
+The reference comes from the key the exchange is kept under (`exchangeReference`: a verse, a passage `Rom.8.1-11`, a chapter, a quiz key is its passage;
+a talk from a screen has no text, so it links the app itself as "Lampas: goal"). The question is the one shown (the cleaned one when there is one).
+A phone that refuses the clipboard shows the Markdown in a field, selected, to copy by hand. The tap does not stop an answer being read aloud.
+Checks: `tests/unit/exchange.test.ts`, "Copy on an answer card ..." and "With several answers ..." in `features/tutor.feature`, "Copy on a turn ...",
+"A talk about the chapter ..." and "With several turns ..." in `features/bible-talk.feature`, and `tests/e2e/tutor.spec.ts`.
+
 ## Tests
 
 `features/ask-tutor.feature` (the control, the request, the questions, what is kept), `tests/unit/ask-tutor.test.ts`, the `screen` blocks of

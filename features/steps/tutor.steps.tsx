@@ -14,6 +14,7 @@ import { db } from '../../src/data/db';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { expectKeepsItShort, expectLearnerField, expectLearnerSummary, expectTeachesNewWord, instructionsOf, learnWordToday } from '../../tests/support/learner';
+import { exchangeMarkdown, stubClipboard } from '../../tests/support/exchange';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
@@ -30,6 +31,7 @@ const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 const QUESTION = 'What does συνεργεῖ mean here?';
 let fake: FakePostern;
+let clipboard = stubClipboard();
 
 async function open(configure: (f: FakePostern) => void = (f) => void (f.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER })): Promise<void> {
   cleanup();
@@ -37,6 +39,7 @@ async function open(configure: (f: FakePostern) => void = (f) => void (f.autoRep
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
   window.location.hash = '';
   tutorTimings.pollMs = 20;
+  clipboard = stubClipboard();
   fake = makeFakePostern();
   configure(fake);
   stubChapterFetch();
@@ -72,6 +75,20 @@ async function ask(question: string): Promise<void> {
 async function answerShows(): Promise<void> {
   await waitFor(() => expect(answersOn28().length).toBe(1));
 }
+
+const cards = () => Array.from(document.querySelectorAll<HTMLElement>('[data-answers-for="28"] [data-answer]'));
+const ORDINALS = ['first', 'second'];
+
+/** Asks and waits for the answer card that comes of it (the Ask box is busy until then). */
+async function askAndWait(question: string): Promise<void> {
+  const before = cards().length;
+  await ask(question);
+  await waitFor(() => expect(cards().length).toBe(before + 1));
+  await waitFor(() => expect(field()).toBeEnabled());
+}
+
+const card = (ordinal: string): HTMLElement => cards()[ORDINALS.indexOf(ordinal)];
+const copyButton = (ordinal: string) => within(card(ordinal)).getByRole('button', { name: 'Copy this exchange' });
 
 const received = () => {
   expect(fake.received).toHaveLength(1);
@@ -159,6 +176,45 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the answer card shows the question {string}', async (_, shown: string) => {
       await answerShows();
       expect(answersOn28()[0].querySelector('[data-answer-question]')?.textContent).toBe(shown);
+    });
+  });
+
+  Scenario('Copy on an answer card puts the exchange on the clipboard as Markdown', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern whose answers clean up his question', () =>
+      open((f) => void (f.autoReply = { status: 'answered', answer: { ...SYNERGEI_ANSWER, question: 'Why are there italic words? What does it mean for the words to be italic?' } })),
+    );
+    And('he selects verse 28', selectVerse28);
+    When('he asks {string}', (_, question: string) => askAndWait(question));
+    And('he taps Copy on the {word} answer card', (_, ordinal: string) => user.click(copyButton(ordinal)));
+    Then('the clipboard holds the Markdown of {string} asking {string} answered by the tutor', (_, reference: string, question: string) => {
+      expect(clipboard.copied).toEqual([exchangeMarkdown(reference, question, SYNERGEI_ANSWER.answer)]);
+    });
+    And('the {word} answer card says {string}', async (_, ordinal: string, text: string) => {
+      await waitFor(() => expect(within(card(ordinal)).getByRole('status')).toHaveTextContent(text));
+    });
+  });
+
+  Scenario('With several answers on the screen each Copy copies only its own', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern', () => open());
+    And('he selects verse 28', selectVerse28);
+    When('he asks {string}', (_, question: string) => askAndWait(question));
+    And('the tutor will answer {string}', (_, answer: string) => {
+      fake.autoReply = { status: 'answered', answer: { ...SYNERGEI_ANSWER, answer } };
+    });
+    And('he then asks {string}', (_, question: string) => askAndWait(question));
+    And('he taps Copy on the {word} answer card', (_, ordinal: string) => user.click(copyButton(ordinal)));
+    Then('the clipboard holds the Markdown of {string} asking {string} answered {string}', (_, reference: string, question: string, answer: string) => {
+      expect(clipboard.copied).toEqual([exchangeMarkdown(reference, question, answer)]);
+    });
+    And('the {word} answer card does not say {string}', (_, ordinal: string, text: string) => {
+      expect(card(ordinal)).not.toHaveTextContent(text);
+    });
+    When('he taps Copy on the {word} answer card again', (_, ordinal: string) => user.click(copyButton(ordinal)));
+    Then('the clipboard then holds the Markdown of {string} asking {string} answered by the tutor', (_, reference: string, question: string) => {
+      expect(clipboard.copied.slice(-1)).toEqual([exchangeMarkdown(reference, question, SYNERGEI_ANSWER.answer)]);
+    });
+    And('the {word} answer card says {string}', async (_, ordinal: string, text: string) => {
+      await waitFor(() => expect(within(card(ordinal)).getByRole('status')).toHaveTextContent(text));
     });
   });
 

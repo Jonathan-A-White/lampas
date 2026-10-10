@@ -16,7 +16,8 @@ async function expectFitsPhone(page: Page) {
   expect(scrollTop).toBe(0);
 }
 
-test('the Ask box of the Verse view on verse 28 sends the question and shows the answer, at phone width', async ({ page }) => {
+test('the Ask box of the Verse view on verse 28 sends the question and shows the answer, at phone width', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER };
   await routePostern(page, fake);
@@ -49,5 +50,16 @@ test('the Ask box of the Verse view on verse 28 sends the question and shows the
   await expect(card).toBeInViewport();
   await expectFitsPhone(page);
   expect(fake.received).toHaveLength(1);
+
+  // Copy: a thumb-sized button that puts the exchange on the clipboard as Markdown and says Copied.
+  const copy = card.getByRole('button', { name: 'Copy this exchange' });
+  const copyBox = await copy.boundingBox();
+  expect(copyBox?.height).toBeGreaterThanOrEqual(43.5);
+  expect(copyBox?.width).toBeGreaterThanOrEqual(43.5);
+  await copy.click();
+  await expect(card.getByRole('status')).toHaveText('Copied');
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copied).toBe(`[Romans 8:28](https://lampas.allmymind.org/#/?ref=Rom.8.28)\n\n**Q:** What does συνεργεῖ mean here?\n\n${SYNERGEI_ANSWER.answer}`);
+  await expectFitsPhone(page);
   await shot(page, 'answer');
 });
