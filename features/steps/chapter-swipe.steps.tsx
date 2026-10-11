@@ -37,16 +37,26 @@ async function openOn(bookName: string, n: number): Promise<void> {
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
 
-/** One drag on the first verse line: press, move to the end in a few steps, wait, release. */
+/**
+ * One drag on the first verse line: press, move to the end in a few steps, let `ms` pass, release. The swipe hook times a drag with Date.now()
+ * (SWIPE_MAX_MS), so for the length of the drag that clock is held by hand: it moves only by the `ms` the step says, never because the host is slow
+ * (a fast swipe taking over 600 ms) or because the wall clock stepped back (tests/setup.ts freezes Date.now then: a slow drag read as a quick one).
+ */
 async function drag(x1: number, y1: number, x2: number, y2: number, ms: number): Promise<void> {
   const target = document.querySelector<HTMLElement>('[data-reader] [data-verse]');
   if (!target) throw new Error('no verse on screen');
-  await user.pointer({ keys: '[MouseLeft>]', target, coords: { clientX: x1, clientY: y1 } });
-  for (let i = 1; i <= 3; i++) {
-    await user.pointer({ target, coords: { clientX: x1 + ((x2 - x1) * i) / 3, clientY: y1 + ((y2 - y1) * i) / 3 } });
+  let held = Date.now();
+  const clock = vi.spyOn(Date, 'now').mockImplementation(() => held);
+  try {
+    await user.pointer({ keys: '[MouseLeft>]', target, coords: { clientX: x1, clientY: y1 } });
+    for (let i = 1; i <= 3; i++) {
+      await user.pointer({ target, coords: { clientX: x1 + ((x2 - x1) * i) / 3, clientY: y1 + ((y2 - y1) * i) / 3 } });
+    }
+    held += ms;
+    await user.pointer({ keys: '[/MouseLeft]', target, coords: { clientX: x2, clientY: y2 } });
+  } finally {
+    clock.mockRestore();
   }
-  await new Promise((resolve) => setTimeout(resolve, ms));
-  await user.pointer({ keys: '[/MouseLeft]', target, coords: { clientX: x2, clientY: y2 } });
 }
 
 const dragged = (_: unknown, x1: number, y1: number, x2: number, y2: number, ms: number) => drag(x1, y1, x2, y2, ms);
