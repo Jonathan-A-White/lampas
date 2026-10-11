@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.92",
+    "date": "2026-10-11",
+    "story": "mw-5r3p30.183",
+    "kind": "fixed",
+    "text": "the Unlock screen has room above the icon again."
+  },
+  {
     "version": "0.1.91",
     "date": "2026-10-11",
     "story": "mw-hqd5bz.30",

@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.92
+_2026-10-11_
+- Fixed: the Unlock screen has room above the icon again.
+
 ## 0.1.91
 _2026-10-11_
 - Fixed: Review's 'Another round' no longer turns into a round of dozens of questions; a round stays at ten.
