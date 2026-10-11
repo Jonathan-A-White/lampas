@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.99
+_2026-10-11_
+- Fixed: Held sideways, the Reader's Talk bar now fits whole on the screen.
+
 ## 0.1.98
 _2026-10-11_
 - Fixed: The question shown above the tutor's answer no longer keeps stray "um" and "uh" from what you said.

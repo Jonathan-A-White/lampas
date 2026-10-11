@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.99",
+    "date": "2026-10-11",
+    "story": "mw-5r3p30.194",
+    "kind": "fixed",
+    "text": "Held sideways, the Reader's Talk bar now fits whole on the screen."
+  },
+  {
     "version": "0.1.98",
     "date": "2026-10-11",
     "story": "mw-5r3p30.193",
