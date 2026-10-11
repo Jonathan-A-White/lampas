@@ -87,9 +87,18 @@ const hebrewWord = (word: string): HTMLElement => {
 /** the text of the utterances asked of the phone from `from` on */
 const spokenFrom = (from: number): string[] => synth.spoken.slice(from).map((u) => u.text);
 
+const guideSheet = () => screen.getByRole('dialog', { name: 'How to say it' });
+const backdrop = () => guideSheet().parentElement?.querySelector<HTMLElement>('[data-testid="sheet-backdrop"]') as HTMLElement;
+const placeInGuide = (place: string): HTMLElement => {
+  if (place === 'the dim backdrop') return backdrop();
+  if (place === 'the big Hebrew word') return guideSheet().querySelector<HTMLElement>('[lang="he"]') as HTMLElement;
+  if (place === 'Done') return within(guideSheet()).getByRole('button', { name: 'Done' });
+  return guideSheet().querySelector<HTMLElement>('.space-y-3') as HTMLElement;
+};
+
 const feature = await loadFeature('features/speaking-interruptions.feature');
 
-describeFeature(feature, ({ Scenario }) => {
+describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   const opened = "Lampas is opened on a phone with a Hebrew voice, and the tutor's answer of three sentences is being read aloud";
   const firstDone = 'the phone has finished the first sentence';
   const finishFirst = () => {
@@ -213,5 +222,40 @@ describeFeature(feature, ({ Scenario }) => {
     Then('there is no speaking bar', async () => {
       await waitFor(() => expect(speakingBar()).toBeNull());
     });
+  });
+  ScenarioOutline(
+    "Closing a word's How to say it sheet any way keeps the tutor paused, ready to Resume",
+    ({ Given, And, When, Then }, row: { place: string }) => {
+      Given(opened, openAnswerBeingRead);
+      And(firstDone, finishFirst);
+      When('he taps the Hebrew word {string}', async (_, word: string) => {
+        mark = synth.spoken.length;
+        await user.click(hebrewWord(word));
+      });
+      And('he taps <place> of the How to say it sheet', async () => {
+        await user.click(placeInGuide(row.place));
+      });
+      Then('the answer is paused, not ended', notEnded);
+      And(paused, showsPaused);
+      When('he taps Resume on the speaking bar', async () => {
+        synth.finishAll();
+        mark = synth.spoken.length;
+        await onBar('Resume');
+      });
+      Then('the phone speaks the answer on from its second sentence', onFromSecond);
+    },
+  );
+
+  ScenarioOutline('A quick double tap on a Hebrew word leaves Resume available', ({ Given, And, When, Then }, row: { gap: string }) => {
+    Given(opened, openAnswerBeingRead);
+    And(firstDone, finishFirst);
+    When('he taps the Hebrew word {string} and again <gap> ms later where it was', async (_, word: string) => {
+      await user.click(hebrewWord(word));
+      await sleep(Number(row.gap));
+      // the guide's dim backdrop now covers the spot where the word was
+      await user.click(backdrop());
+    });
+    Then('the answer is paused, not ended', notEnded);
+    And(paused, showsPaused);
   });
 });

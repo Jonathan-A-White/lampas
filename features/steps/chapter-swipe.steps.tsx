@@ -50,8 +50,19 @@ async function drag(x1: number, y1: number, x2: number, y2: number, ms: number):
 }
 
 const dragged = (_: unknown, x1: number, y1: number, x2: number, y2: number, ms: number) => drag(x1, y1, x2, y2, ms);
+// The title is read straight off the page's h1 (findByRole works out every element's accessibility under jsdom, which a loaded host cannot do
+// in time), and a failure says which headings were on screen and whether the Verse view had opened over the Reader.
 const headed = async (_: unknown, title: string) => {
-  await screen.findByRole('heading', { name: title, level: 1 });
+  await waitFor(() => {
+    const titles = [...document.querySelectorAll('h1')].map((h) => h.textContent?.trim());
+    const verseView = document.querySelector('[data-verse-view]') !== null;
+    expect({ titles, verseView }, `the Reader should be headed ${title}`).toEqual({ titles: expect.arrayContaining([title]), verseView: false });
+  });
+};
+/** After a drag that must do nothing: wait out the slide (140 ms) and a click's chance, then the title must still be the same. */
+const stillHeaded = async (_: unknown, title: string) => {
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  await headed(_, title);
 };
 const notes = () => document.querySelectorAll('[data-swipe-note]');
 
@@ -113,7 +124,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('A mostly vertical drag does not change chapter', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on {string} chapter {int}', (_, book: string, n: number) => openOn(book, n));
     When('he drags from {int},{int} to {int},{int} over {int} ms', dragged);
-    Then('the reader is headed {string}', headed);
+    Then('the reader is headed {string}', stillHeaded);
     And('there is no note', () => {
       expect(notes()).toHaveLength(0);
     });
@@ -122,27 +133,21 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('A short drag does not change chapter', ({ Given, When, Then }) => {
     Given('Lampas is opened on {string} chapter {int}', (_, book: string, n: number) => openOn(book, n));
     When('he drags from {int},{int} to {int},{int} over {int} ms', dragged);
-    Then('the reader is headed {string}', headed);
+    Then('the reader is headed {string}', stillHeaded);
   });
 
   for (const side of ['left', 'right']) {
     Scenario(`A swipe that starts at the ${side} edge does nothing`, ({ Given, When, Then }) => {
       Given('Lampas is opened on {string} chapter {int}', (_, book: string, n: number) => openOn(book, n));
       When('he drags from {int},{int} to {int},{int} over {int} ms', dragged);
-      Then('the reader is headed {string}', async (_, title: string) => {
-        await new Promise((resolve) => setTimeout(resolve, 400));
-        await headed(_, title);
-      });
+      Then('the reader is headed {string}', stillHeaded);
     });
   }
 
   Scenario('A slow drag does not change chapter', ({ Given, When, Then }) => {
     Given('Lampas is opened on {string} chapter {int}', (_, book: string, n: number) => openOn(book, n));
     When('he drags from {int},{int} to {int},{int} over {int} ms', dragged);
-    Then('the reader is headed {string}', async (_, title: string) => {
-      await new Promise((resolve) => setTimeout(resolve, 400));
-      await headed(_, title);
-    });
+    Then('the reader is headed {string}', stillHeaded);
   });
 
   Scenario('A swipe over an open sheet does not change chapter', ({ Given, And, When, Then }) => {
@@ -151,11 +156,12 @@ describeFeature(feature, ({ Scenario }) => {
       const verse = document.querySelector<HTMLElement>('[data-reader] [data-verse]') as HTMLElement;
       await user.click(within(verse).getAllByRole('button')[1]);
       await screen.findByRole('dialog', { name: 'Word' });
+      // The dialog is drawn a render before the Reader hears a sheet is up (useSheetOpen), which is what turns the swipe off: the round Ask button
+      // goes with that render, so wait for it to go and let the swipe hook's effect run, or a drag that starts at once still swipes.
+      await waitFor(() => expect(document.querySelector('[data-ask-tutor]')).toBeNull());
+      await act(async () => {});
     });
     When('he drags from {int},{int} to {int},{int} over {int} ms', dragged);
-    Then('the reader is headed {string}', async (_, title: string) => {
-      await new Promise((resolve) => setTimeout(resolve, 400));
-      await headed(_, title);
-    });
+    Then('the reader is headed {string}', stillHeaded);
   });
 });
