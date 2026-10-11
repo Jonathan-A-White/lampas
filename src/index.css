@@ -114,13 +114,46 @@
 
   /* The room the Reader leaves under its reading box for the round Ask button (src/AskTutor.tsx ASK_BUTTON_ROOM). */
   --lp-ask-room: calc(var(--spacing) * 18);
+
+  /* Upright the button has its room under the box; sideways it has this gutter at the box's right instead (src/AskTutor.tsx ASK_BUTTON_GUTTER). */
+  --lp-ask-gutter: 0px;
+}
+
+/* The Reader's header and chips row in one box (src/Reader.tsx): no box of its own upright, one row in a short window (below). */
+.reader-top {
+  display: contents;
 }
 
 @media (max-height: 500px) {
   :root {
     --lp-talk-lift: calc(var(--spacing) * 18 + 1px);
-    /* 30 px less: header, chips row, the 136 px box, this room and the 121 px Talk bar came to 420 px in a 390 px window (mw-5r3p30.194). */
-    --lp-ask-room: calc(var(--spacing) * 10.5);
+    /* Sideways the round button sits in a gutter beside the text, not in a row under it: header, chips row, the box, a 72 px room and the 121 px Talk bar
+     * left a 136 px box in a 390 px window (mw-5r3p30.194, mw-5r3p30.195). Its 56 px, the 12 px at the screen's edge and 4 px of air. */
+    --lp-ask-room: 0px;
+    --lp-ask-gutter: calc(var(--spacing) * 18);
+  }
+
+  /* Sideways the chips row joins the header's row (src/Reader.tsx .reader-top): 40 px more for the text. The row's border is the wrapper's, so one
+   * line runs under both; a tip opened from the Tip chip takes a full row of its own under them. */
+  .reader-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    border-bottom: 1px solid var(--lp-line);
+  }
+  .reader-top > header {
+    flex: 1 1 0;
+    min-width: 0;
+    border-bottom-width: 0;
+  }
+  .reader-top > [data-testid="reader-chips"] {
+    flex: 0 1 auto;
+    min-width: 0;
+    border-bottom-width: 0;
+    align-self: center;
+  }
+  .reader-top > :not(header):not([data-testid="reader-chips"]) {
+    flex: 1 0 100%;
   }
 }
 
