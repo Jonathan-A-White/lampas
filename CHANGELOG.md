@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.110
+_2026-10-11_
+- New: Your requests shows what became of each idea you sent (filed, being built, adopted in a version with a link, declined with a reason, or now a setting), and the tutor can tell you too.
+
 ## 0.1.109
 _2026-10-11_
 - Fixed: The chapter title in the header is no longer cut off, the tutor says "Already on" when asked for the chapter you are on, and an answer that comes after you close Talk offers to open the chapter.
