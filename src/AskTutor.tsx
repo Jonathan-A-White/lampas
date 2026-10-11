@@ -56,8 +56,8 @@ export function AskTutorButton({ onClick, lift = '0px', away }: { onClick: () =>
 /** How far a screen's pinned bottom bar raises the button: Import's Add bar (a summary line over a 48 px button, padded). */
 const LIFT: Partial<Record<Route, string>> = { import: 'var(--spacing) * 20 + 3rem' };
 
-/** The Reader's Talk bar: its border, 96 px of bar and 8 px above and below (src/Talk.tsx TalkBar). */
-export const TALK_BAR_LIFT = 'var(--spacing) * 28 + 1px';
+/** The Reader's Talk bar: its border, 96 px of bar (56 in a short window) and 8 px above and below (src/Talk.tsx TalkBar); src/index.css --lp-talk-lift. */
+export const TALK_BAR_LIFT = 'var(--lp-talk-lift)';
 
 /** The room the Reader leaves under its reading box, above the Talk bar, for the round button (mw-5r3p30.115): its 56 px, the 12 px gap
  * below it and 4 px of air. The box ends where the button begins, so no line of text is ever behind it. */
