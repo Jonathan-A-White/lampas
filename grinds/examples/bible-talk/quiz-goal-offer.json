@@ -1,5 +1,5 @@
 {
-  "description": "He has said he wants to understand the passage and is not learning Greek: the tutor quizzes to match in plain English, asks once whether this is how he wants to be quizzed from now on, and offers the goal in quiz_goal_offer.",
+  "description": "He has said he wants to understand the passage and is not learning Greek: the tutor quizzes to match in plain English, and offers the goal in quiz_goal_offer; the app itself asks whether this is how he wants to be quizzed from now on.",
   "schemaVersion": "1",
   "request": {
     "reference": "Romans 8:1",
@@ -13,7 +13,6 @@
     "quiz_goal": null
   },
   "expect": {
-    "answer": { "contains": "Is this how you want me to quiz you from now on?" },
     "quiz_goal_offer": { "present": true },
     "settings_changes": { "present": false }
   }
