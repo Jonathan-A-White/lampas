@@ -12,7 +12,7 @@ function ViewSwitch({ view }: { view: ReaderView }) {
       type="button"
       aria-pressed={view === value}
       onClick={() => void setReaderView(value)}
-      className={`min-h-11 min-w-11 rounded-lg px-2.5 chrome-text font-medium ${view === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+      className={`min-h-11 min-w-11 rounded-lg px-1 chrome-text font-medium ${view === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
     >
       {label}
     </button>
@@ -59,20 +59,42 @@ export interface ReaderHeaderProps {
   onRead(): void;
 }
 
+const TITLE_MIN_PX = 11;
+const TITLE_MAX_PX = 18;
+
+/** The title as its two halves: the book's name ('1 Thessalonians', never broken) and the chapter ('5'), which may drop to a second line. */
+function partsOf(title: string): { name: string; chapter: string } {
+  const at = title.search(/\s\d+$/);
+  return at < 0 ? { name: title, chapter: '' } : { name: title.slice(0, at), chapter: title.slice(at + 1) };
+}
+
+/** The title's type size in px: the largest the header holds, smaller only as far as the book's name needs to stand whole on a line in the room the
+ * title has (`100cqw` is the title box's width; a name's letters average up to about 0.68 em in semibold). The chapter is never cut. */
+function titleSize(name: string): string {
+  return `clamp(${TITLE_MIN_PX}px, calc(100cqw / ${(name.length * 0.68).toFixed(2)}), ${TITLE_MAX_PX}px)`;
+}
+
 export function ReaderHeader({ title, view, chapterReading, reading, from, canRead, inert, onPick, onRead }: ReaderHeaderProps) {
   const headerButtons = chapterReading && !reading.onBar;
+  const { name, chapter } = partsOf(title);
   return (
-    <header inert={inert} className="flex shrink-0 items-center gap-1 border-b border-line px-2">
-      <h1 className={`chrome-title min-w-0 font-semibold ${headerButtons ? 'sr-only' : 'flex-1'}`}>
+    <header inert={inert} className="flex shrink-0 items-center gap-1 border-b border-line px-1">
+      <h1 className={`min-w-0 font-semibold leading-tight [container-type:inline-size] ${headerButtons ? 'sr-only' : 'flex-1'}`}>
         <button
           type="button"
           aria-haspopup="dialog"
           onClick={onPick}
-          className="flex min-h-12 max-w-full items-center gap-0.5 rounded-lg text-left font-semibold active:bg-line"
+          className="flex min-h-12 w-full items-center rounded-lg px-1 text-left font-semibold active:bg-line"
         >
-          <span className="truncate">{title}</span>
-          <span className="shrink-0 text-accent">
-            <ChevronIcon />
+          <span className="min-w-0" style={{ fontSize: titleSize(name) }}>
+            <span className="whitespace-nowrap">{name}</span>
+            {chapter ? ' ' : null}
+            <span className="whitespace-nowrap">
+              {chapter}
+              <span className="ml-0.5 inline-block align-middle text-accent">
+                <ChevronIcon />
+              </span>
+            </span>
           </span>
         </button>
       </h1>
