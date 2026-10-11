@@ -13,6 +13,7 @@ import { scopeRef, type TalkScope } from './services/talk';
 import { fitScreen, SCREEN_NAMES, suggestionsFor, type ScreenContext } from './tutor/screen';
 import { useScreenContext } from './tutor/screenContext';
 import type { Route } from './nav/route';
+import { openedByTutor } from './nav/readerRequest';
 import { useSheetOpen } from './ui/sheetBack';
 import { useTalk } from './useTalk';
 import { useVoice } from './useVoice';
@@ -83,6 +84,10 @@ export function AskTutor({ route }: { route: Route }) {
   const { states, say } = useTalk('', 0, (ref, id, answer) => {
     if (openRef.current !== ref || voice.listening) return;
     speakTutor(id, answerRuns(answer), () => openRef.current === ref);
+  }, {
+    // the tutor takes him to a chapter (the answer's `go`) while this screen's sheet is open: the Reader opens there as a new Back step, and Back returns to this screen
+    allowed: (ref) => openRef.current === ref,
+    open: (place) => openedByTutor(place.book, place.chapter),
   });
   const scope: TalkScope | null = name ? { title: name, chapter: NO_CHAPTER, verse: null, screen: contextOf(name, reported) } : null;
   const ref = scope ? scopeRef('', 0, scope) : null;
