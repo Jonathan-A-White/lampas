@@ -27,6 +27,19 @@ Feature: The placement probes the letters and sounds one by one
     And the item "ου" also has no level
     And the end card names the gaps "ψ and ου"
 
+  Scenario: A second tap on Next does not stop the quick round
+    The Tester (mw-hqd5bz.26): the control that moves up under the second finger of a double tap on Next is not tapped in the card's settling moment.
+
+    Given his goal is "Read 1 John 1:1" and his grammar is known except "ξ, ψ, ου"
+    When he opens the placement
+    And he starts the placement
+    And he answers the quick round right and taps Next and at once "Stop here"
+    Then the quick round says "Quick round 2 of 3"
+    When he reads the question for a moment
+    And he taps "Stop here"
+    Then the item "ψ" has no level
+    And the end card names the gaps "ψ and ου"
+
   Scenario: Hear and pick says the sound and See and pick shows it
     Given his goal is "Read 1 John 1:1" and his grammar is known except "ξ, ψ, ου"
     When he opens the placement

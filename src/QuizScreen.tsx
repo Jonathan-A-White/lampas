@@ -14,6 +14,7 @@ import { getOpenChapter } from './data/readerChapter';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { WordQuestion } from './WordQuestion';
 import { focusOnMount } from './ui/focus';
+import { useSettled } from './ui/settle';
 
 type Round = { status: 'loading' } | { status: 'offer' } | { status: 'ready'; questions: Question[] };
 
@@ -31,12 +32,16 @@ async function drawRound(random: Random): Promise<Question[]> {
   return drawWords(words, random).map((w) => buildQuestion(w, pool, chapter, random));
 }
 
-/** The way into the Parsing drill from the Test screen. */
-function DrillLink() {
+/**
+ * The way into the Parsing drill from the Test screen. It sits under the Next row, so it moves up under the second finger of a double tap on Next:
+ * `card` is the question it sits under, and a tap in the card's settling moment does nothing (src/ui/settle.ts, mw-hqd5bz.26).
+ */
+function DrillLink({ card = 0 }: { card?: number }) {
+  const settled = useSettled(card);
   return (
     <button
       type="button"
-      onClick={() => navigate('drill')}
+      onClick={() => settled() && navigate('drill')}
       className="mt-3 min-h-12 w-full rounded-xl border border-line text-base font-medium"
     >
       Parsing drill: {getOpenChapter().title}
@@ -241,7 +246,7 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
           </div>
         ) : null}
         <div className="pb-4">
-          <DrillLink />
+          <DrillLink card={index} />
         </div>
       </main>
     </>

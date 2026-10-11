@@ -2,7 +2,8 @@
 // an option (or Show) now sits where Next was; the card then shows red or green with no choice made, and a miss he never made is counted. A card
 // settles for SETTLE_MS before its options take a tap; a tap in that moment does nothing at all (no look, no answer, nothing written). A deliberate
 // tap is never that quick: he has to read the question first. Every question card (WordQuestion, GrammarCard, SelfGrade: Placement, Review and the
-// Quick test) asks `useSettled` for its answer.
+// Quick test) asks `useSettled` for its answer, and so does every control that moves up into the place Next sat when the next card is drawn (the Quick
+// test's Parsing drill button, the placement's quick round Say it again and Stop here; mw-hqd5bz.26). Review and the placement's walk have none.
 import { useCallback, useEffect, useRef } from 'react';
 
 /** How long a new card ignores taps. The Tester's double taps were 120 ms apart; reading a question takes longer than this. PROVISIONAL */

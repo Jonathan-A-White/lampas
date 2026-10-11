@@ -28,6 +28,7 @@ import { mulberry32, type Random } from './data/quiz';
 import { getEvidence, getGoal, getGrammarApproach, listLevels } from './data/repositories';
 import { publish } from './events/bus';
 import { navigate, placementOriginOf, useAddress } from './nav/route';
+import { useSettled } from './ui/settle';
 import { ItemCard } from './review/ItemCard';
 import { GRAMMAR, loadPassage, type GrammarItem } from './review/kinds';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -60,6 +61,9 @@ const BUTTON = 'min-h-12 w-full rounded-xl text-lg font-medium';
 
 export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
   const [run, setRun] = useState<Run>({ status: 'loading' });
+  // The quick round's Say it again and Stop here sit where Next sat, so the second tap of a double tap on Next lands on them: they take no tap in the
+  // moment after a new item is drawn (src/ui/settle.ts, mw-hqd5bz.26).
+  const settled = useSettled(run.status === 'quick' ? run.round.at : run.status);
   // where Place me was tapped: the Goal screen or Settings; the ways out return there
   const origin = placementOriginOf(useAddress());
   const leave = () => navigate(origin);
@@ -228,7 +232,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
           </p>
           <ItemCard item={item} index={round.at} picked={picked} onPick={pickQuick} />
           {hear && !answered ? (
-            <button type="button" data-testid="say-again" onClick={() => speakWord(item.question.say!, 'greek')} className={`${BUTTON} mt-3 border border-line`}>
+            <button type="button" data-testid="say-again" onClick={() => settled() && speakWord(item.question.say!, 'greek')} className={`${BUTTON} mt-3 border border-line`}>
               Say it again
             </button>
           ) : null}
@@ -240,7 +244,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
             </div>
           ) : null}
           {!over ? (
-            <button type="button" data-testid="stop-here" onClick={stop} className={`${BUTTON} mt-3 border border-line`}>
+            <button type="button" data-testid="stop-here" onClick={() => settled() && stop()} className={`${BUTTON} mt-3 border border-line`}>
               Stop here
             </button>
           ) : null}

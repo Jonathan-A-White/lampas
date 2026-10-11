@@ -17,12 +17,14 @@ import { setGoal } from '../../src/data/repositories/settings';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { drawReviewRound } from '../../src/review/round';
+import { settle, SETTLE_MS } from '../../src/ui/settle';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 
 let synth: FakeSynth;
 
 afterAll(() => {
+  settle.ms = 0;
   cleanup();
   clearBus();
   db.close();
@@ -40,6 +42,7 @@ const names = (list: string): string[] => list.split(',').map((n) => n.trim());
 
 /** Everything the ladder has is solid (marked), except these items and the groups that stand for them. */
 async function freshStore(goal: string, except: string[]): Promise<void> {
+  settle.ms = 0;
   cleanup();
   clearBus();
   forgetTrail();
@@ -135,6 +138,29 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the item {string} is solid from the placement', solidFrom);
     And('the item {string} has no level', async (_, name: string) => expect(await rowOf(name)).toBeUndefined());
     And('the item {string} also has no level', async (_, name: string) => expect(await rowOf(name)).toBeUndefined());
+    And('the end card names the gaps {string}', gaps);
+  });
+
+  Scenario('A second tap on Next does not stop the quick round', ({ Given, When, And, Then }) => {
+    Given('his goal is {string} and his grammar is known except {string}', given);
+    When('he opens the placement', opened);
+    And('he starts the placement', started);
+    And('he answers the quick round right and taps Next and at once {string}', async (_, name: string) => {
+      const round = readPlacement()!.state.quick!;
+      await screen.findByTestId('grammar-prompt');
+      const question = quickQuestion(currentQuick(round)!, mulberry32(quickSeed(round)));
+      await user.click([...document.querySelectorAll<HTMLElement>('[data-option]')].find((o) => o.textContent === question.right)!);
+      // from here a new card ignores taps for a moment
+      settle.ms = SETTLE_MS;
+      await user.click(await screen.findByTestId('next'));
+      await waitFor(() => expect(screen.getByTestId('placement-question')).toHaveTextContent('Quick round 2 of 3'));
+      // the second tap of the double tap: Stop here has moved up under the finger
+      await user.click(screen.getByRole('button', { name }));
+    });
+    Then('the quick round says {string}', roundSays);
+    When('he reads the question for a moment', () => new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS + 50)));
+    And('he taps {string}', taps);
+    Then('the item {string} has no level', async (_, name: string) => expect(await rowOf(name)).toBeUndefined());
     And('the end card names the gaps {string}', gaps);
   });
 

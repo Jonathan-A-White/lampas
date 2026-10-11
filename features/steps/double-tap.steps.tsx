@@ -159,4 +159,32 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(async () => expect(await counted()).toBe(n));
     });
   });
+
+  Scenario('A second tap on Next does not open the Parsing drill from the Quick test', ({ Given, And, When, Then }) => {
+    const drillButton = () => screen.getByRole('button', { name: /^Parsing drill/ });
+    Given('his words are seeded and a new question ignores taps for a moment', async () => {
+      await freshStore();
+      settling();
+    });
+    When('he opens the Quick test', () => openAt('#/test'));
+    And('he answers the first question', answersFirst);
+    And('he taps Next and {int} ms later taps the Parsing drill button', async (_, ms: number) => {
+      await user.click(await screen.findByTestId('next'));
+      await newCard();
+      // the Next row is gone and the button has moved up under the finger
+      await sleep(ms);
+      await user.click(drillButton());
+    });
+    Then('the Quick test is still on question 2', async () => {
+      expect(screen.getByText(/^2 of \d+$/)).toBeInTheDocument();
+    });
+    And('the Parsing drill is not open', async () => {
+      expect(window.location.hash).toBe('#/test');
+    });
+    When('he reads the question for a moment', reads);
+    And('he taps the Parsing drill button', async () => user.click(drillButton()));
+    Then('the Parsing drill is open', async () => {
+      await waitFor(() => expect(window.location.hash).toBe('#/drill'));
+    });
+  });
 });

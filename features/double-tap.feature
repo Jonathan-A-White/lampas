@@ -42,3 +42,16 @@ Feature: A double tap on Next does not answer the next question for me
     And he taps an option
     Then the second question shows its answer
     And 2 answers are counted
+
+  Scenario: A second tap on Next does not open the Parsing drill from the Quick test
+    The Tester (mw-hqd5bz.26): the Next row goes away when the next card is drawn and "Parsing drill: Romans 8" moves up under the second finger.
+
+    Given his words are seeded and a new question ignores taps for a moment
+    When he opens the Quick test
+    And he answers the first question
+    And he taps Next and 120 ms later taps the Parsing drill button
+    Then the Quick test is still on question 2
+    And the Parsing drill is not open
+    When he reads the question for a moment
+    And he taps the Parsing drill button
+    Then the Parsing drill is open
