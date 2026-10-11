@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.107",
+    "date": "2026-10-11",
+    "story": "mw-5r3p30.195",
+    "kind": "fixed",
+    "text": "Held sideways, the Reader now shows much more of the text, with the Ask button beside it."
+  },
+  {
     "version": "0.1.106",
     "date": "2026-10-11",
     "story": "mw-5r3p30.200",

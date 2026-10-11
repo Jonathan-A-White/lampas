@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.107
+_2026-10-11_
+- Fixed: Held sideways, the Reader now shows much more of the text, with the Ask button beside it.
+
 ## 0.1.106
 _2026-10-11_
 - Fixed: In Settings, the Quiz goal now has a clear label and shows your goal, and Save stays off until you have typed something.
