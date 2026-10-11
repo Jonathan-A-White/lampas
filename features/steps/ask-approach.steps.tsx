@@ -54,7 +54,7 @@ async function openSettings(): Promise<void> {
   imageSeam.encode = async () => new Blob([new Uint8Array(120_000).fill(7)], { type: 'image/jpeg' });
   picture = 0;
   await db.open();
-  await db.settings.clear();
+  await Promise.all([db.settings.clear(), db.requests.clear()]);
   render(<SettingsScreen />);
   await screen.findByRole('radiogroup', { name: 'Grammar approach' });
 }
@@ -155,6 +155,12 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the bus has heard feedback-sent for grammar-approach', async () => {
       await waitFor(() => expect(latest('feedback-sent')).toEqual({ kind: 'feedback-sent', feedback: 'grammar-approach' }));
+    });
+    And('the phone keeps one request row with the grist\'s id, kind grammar-approach, the approach text, the app version, when it was sent and status sent', async () => {
+      const rows = await db.requests.toArray();
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toEqual({ txid: fake.txids[0], kind: 'grammar-approach', text: APPROACH, app_version: __APP_VERSION__, sentAt: expect.any(Number), status: 'sent' });
+      expect(Math.abs(rows[0].sentAt - Date.now())).toBeLessThan(60_000);
     });
   });
 

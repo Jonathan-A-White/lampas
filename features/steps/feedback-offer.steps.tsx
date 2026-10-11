@@ -58,7 +58,7 @@ async function openAt(address: string, offers: boolean): Promise<void> {
     String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init),
   );
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.reviews.clear(), db.grammarLevels.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.reviews.clear(), db.grammarLevels.clear(), db.requests.clear()]);
   render(<App />);
   await waitFor(async () => expect(await db.meta.get('grammarLevelsSeeded')).toBeDefined());
 }
@@ -125,6 +125,12 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the bus has heard feedback-sent for tutor-ask', async () => {
       await waitFor(() => expect(latest('feedback-sent')).toEqual({ kind: 'feedback-sent', feedback: 'tutor-ask' }));
+    });
+    And('the phone keeps one request row with the grist\'s id, kind tutor-ask, the tutor\'s summary, the app version, when it was sent and status sent', async () => {
+      const rows = await db.requests.toArray();
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toEqual({ txid: fake.txids[1], kind: 'tutor-ask', summary: SUMMARY, app_version: __APP_VERSION__, sentAt: expect.any(Number), status: 'sent' });
+      expect(Math.abs(rows[0].sentAt - Date.now())).toBeLessThan(60_000);
     });
   });
 
