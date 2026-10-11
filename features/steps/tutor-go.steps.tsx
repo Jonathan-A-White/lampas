@@ -2,7 +2,7 @@
 // Postern is the fake (tests/support/fake-postern.ts) whose mill answers every grist with the answer a scenario sets; fetch serves the chapter
 // files and the lexicon from disk.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { act, render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -161,5 +161,31 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the answer shows in the sheet', shows);
     And('the sheet says {string} and nothing was opened', saysNothingOpened);
     And('the Reader is open on {string}', onThe);
+  });
+  Scenario("Asked from Settings, the tutor opens the chapter there and Back returns to Settings", ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 and the tutor answers with go {string} {int}', goTo as never);
+    And('he opens Settings and the round Ask button', async () => {
+      await act(async () => {
+        window.location.hash = '#/settings';
+      });
+      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await user.click(await screen.findByRole('button', { name: 'Ask the tutor about this screen' }));
+      await screen.findByRole('dialog', { name: 'Ask the tutor: Settings' });
+    });
+    When('he sends {string} from the screen', async (_, question: string) => {
+      const dialog = screen.getByRole('dialog', { name: 'Ask the tutor: Settings' });
+      await user.type(within(dialog).getByRole('textbox', { name: 'Your message' }), question);
+      await user.click(within(dialog).getByRole('button', { name: 'Send' }));
+    });
+    Then('the Reader is open on {string}', onThe);
+    And('the Reader says {string}', async (_, line: string) => {
+      expect(await screen.findByRole('status')).toHaveTextContent(line);
+    });
+    When("he taps the phone's Back", async () => {
+      window.history.back();
+    });
+    Then('Settings is open', async () => {
+      expect(await screen.findByRole('heading', { name: 'Settings', level: 1 })).toBeInTheDocument();
+    });
   });
 });
