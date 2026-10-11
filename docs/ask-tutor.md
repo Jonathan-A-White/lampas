@@ -95,6 +95,8 @@ credits), and `fitHistory` drops the oldest lines when nothing is left of the hi
 or his yes makes it; `settings_changes` only when he asks in words); verse-ask can change only Ask by, so for any other setting it says where Settings has it.
 Scenarios: `features/tutor-requests.feature`, `grinds/examples/{bible-talk,verse-ask}/request-<status>.json`.
 
+The whole loop is walked at 390x844 by `tests/e2e/feedback-loop-demo.spec.ts` (mw-vy3ghg.7: three requests sent, the fake mill's filed, building, landed with its link, declined and adopted-as-setting, then 'What happened to my idea?'; shots `your-requests-demo-1-sent` to `-6-tutor`). Live: he sends from the tutor, the Mayor runs `mw grist request <bead> <txid>`, and Your requests moves on its own.
+
 ## Answering an offer by voice (mw-5r3p30.186)
 
 The tutor leaves three kinds of offer for a tap: **Send this to the makers** (`feedback_offer`), a setting change (`setting_offer` `{key, value}`, checked by
