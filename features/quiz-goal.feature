@@ -49,6 +49,22 @@ Feature: Quiz me asks what he wants from the quiz
     Then no quiz goal is kept on the phone
     And Settings shows no Quiz goal kept
 
+  Scenario: The Quiz goal row has a visible label and says which goal is kept
+    Given Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal "understanding the passage"
+    And the phone was given the quiz goal "understanding what the passage says"
+    When he opens Settings
+    Then the Quiz goal row shows the visible text "Quiz goal"
+    And the Quiz goal row says "Quiz goal: understanding what the passage says"
+
+  Scenario: Save is off for a field of only spaces and Clear still clears
+    Given Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal "understanding the passage"
+    And the phone was given the quiz goal "learning Greek"
+    When he opens Settings
+    And he types only spaces in the Quiz goal
+    Then the Quiz goal Save button is off
+    When he clears the Quiz goal
+    Then no quiz goal is kept on the phone
+
   Scenario: A kept goal is sent with the first request of a quiz
     Given Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal "understanding the passage"
     And the phone was given the quiz goal "learning English"
