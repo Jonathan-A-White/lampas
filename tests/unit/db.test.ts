@@ -8,7 +8,7 @@ describe('the Dexie database', () => {
     await db.open();
     expect(db.name).toBe('lampas');
     expect(db.verno).toBe(16);
-    expect(db.tables.map((t) => t.name).sort()).toEqual(['answers', 'drills', 'grammarKnown', 'grammarLevels', 'meta', 'readings', 'results', 'requests', 'reviews', 'settings', 'shares', 'talkPictures', 'talks', 'tips', 'usage', 'words']);
+    expect(db.tables.map((t) => t.name).sort()).toEqual(['answers', 'drills', 'grammarKnown', 'grammarLevels', 'meta', 'readings', 'requests', 'results', 'reviews', 'settings', 'shares', 'talkPictures', 'talks', 'tips', 'usage', 'words']);
     expect(db.words.schema.primKey.name).toBe('lemma');
     expect(db.words.schema.idxByName['lemmas']?.multi).toBe(true);
     expect(db.settings.schema.primKey.name).toBe('key');

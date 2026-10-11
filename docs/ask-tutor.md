@@ -67,6 +67,9 @@ a `feedback` grist of kind `tutor-ask` with his words, the summary, the screen's
 screen's facts (the last facts give way when the request is over `MAX_ASK_BYTES`); the mill forwards it to the Mayor and answers `{"status":"sent"}`.
 The turn (`TalkTurn.feedbackOffer`, `feedbackSent`, no table change) then reads **Sent** and "The answer will come back."; a failure shows the usual
 title and Retry. The bus hears `feedback-sent` with `feedback: 'tutor-ask'`.
+Every send, of either kind, also keeps a row in Dexie `requests` (v16: `{txid, kind, summary?, text?, app_version, sentAt, status}`, key `txid` = the
+grist's id, status `'sent'`; `src/data/repositories/requests.ts` `keepRequest`, `listRequests`), written as soon as the grist is out (askGrind's `onSent(txid)`),
+so a status that comes back can be matched to it. A tutor-ask keeps the tutor's `summary`, a grammar approach his `text`; a Retry is a new grist and a new row.
 
 ## What he said, cleaned up
 

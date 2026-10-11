@@ -5,6 +5,7 @@
 // ("forward": "mayor"): no model reads it, the mill mails it to the Mayor with the pictures and answers {"status":"sent"}.
 import { grist } from 'bsv-kit/grist';
 import { publish } from '../events/bus';
+import { keepRequest } from '../data/repositories/requests';
 import { getDeviceKeyBytes } from './deviceKey';
 import { askGrind, TutorError, type AskOptions } from './tutor';
 
@@ -104,19 +105,35 @@ export function isFeedbackAnswer(value: unknown): value is FeedbackAnswer {
   return Object.keys(answer).length === 1 && answer.status === 'sent';
 }
 
+/** What the requests table keeps of a request: the tutor's summary for a tutor-ask, his words for a grammar approach. */
+function kept(request: FeedbackRequest, txid: string, sentAt: number): Parameters<typeof keepRequest>[0] {
+  const what = request.kind === 'tutor-ask' ? { summary: request.summary } : { text: request.text };
+  return { txid, kind: request.kind, ...what, app_version: request.app_version, sentAt };
+}
+
 /** Sends the feedback with its pictures (JPEG files, at most MAX_PICTURES) and waits for the mill's receipt. Throws a TutorError. */
 function sendFeedback(request: FeedbackRequest, files: grist.GristFile[], options: AskOptions): Promise<FeedbackAnswer> {
   return askGrind(FEEDBACK_KIND, request, isFeedbackAnswer, { ...options, files });
 }
 
-/** Sends `request` (with its pictures, if any) with the phone's key, waits for the mill's receipt and tells the bus ('feedback-sent').
- * Throws a TutorError whatever went wrong; nothing is announced then. A `signal` that aborts stops the wait. */
+/** Sends `request` (with its pictures, if any) with the phone's key, keeps it in the requests table with its grist id once it is sent,
+ * waits for the mill's receipt and tells the bus ('feedback-sent'). Throws a TutorError whatever went wrong; nothing is announced then. A `signal` that aborts stops the wait. */
 export async function submitFeedback(request: FeedbackRequest, options: { files?: grist.GristFile[]; signal?: AbortSignal } = {}): Promise<void> {
+  let keeping: Promise<void> = Promise.resolve();
   try {
-    await sendFeedback(request, options.files ?? [], { key: getDeviceKeyBytes(), signal: options.signal });
+    await sendFeedback(request, options.files ?? [], {
+      key: getDeviceKeyBytes(),
+      signal: options.signal,
+      // A grist that went out is kept even if the receipt never comes; a failed write never turns a sent request into a failed one.
+      onSent: (txid) => {
+        keeping = keepRequest(kept(request, txid, Date.now())).catch(() => undefined);
+      },
+    });
   } catch (err) {
+    await keeping;
     throw err instanceof TutorError ? err : new TutorError('unreachable', err instanceof Error ? err.message : 'Something went wrong.');
   }
+  await keeping;
   if (options.signal?.aborted) return;
   publish({ kind: 'feedback-sent', feedback: request.kind });
 }
