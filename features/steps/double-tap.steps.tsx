@@ -1,7 +1,7 @@
 // features/steps/double-tap.steps.tsx — runs features/double-tap.feature: a second tap that lands on the next question's option within the card's
 // settling moment (src/ui/settle.ts) chooses nothing and counts nothing, on the placement, Review and the Quick test; a tap after it answers.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -20,6 +20,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 
 afterAll(async () => {
   settle.ms = 0;
+  vi.restoreAllMocks();
   cleanup();
   clearBus();
   await usageWritesSettled();
@@ -28,7 +29,17 @@ afterAll(async () => {
 });
 
 const user = userEvent.setup();
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+// The settle window counts performance.now() (src/ui/settle.ts), so the scenarios hold that clock by hand: it moves only when a step says how long
+// he took, never because the host is slow. A tap 'at once' lands 0 ms after the card, however long the steps in between took on the wall clock.
+let elapsed = 0;
+const holdClock = () => {
+  if (!vi.isMockFunction(performance.now)) vi.spyOn(performance, 'now').mockImplementation(() => elapsed);
+};
+const passTime = async (ms: number) => {
+  // a card stamps its moment in an effect: let the card on screen stamp it before the clock moves, or the time would pass before it began
+  await act(async () => {});
+  elapsed += ms;
+};
 const options = (): HTMLElement[] => [...document.querySelectorAll<HTMLElement>('[data-option]')];
 
 /** Which screen the scenario is on, and so how its answers are counted. */
@@ -70,12 +81,13 @@ const feature = await loadFeature('features/double-tap.feature');
 
 describeFeature(feature, ({ Scenario }) => {
   const settling = () => {
+    holdClock();
     settle.ms = SETTLE_MS;
   };
   const answersFirst = async () => {
     await waitFor(() => expect(options().length).toBeGreaterThan(0));
     // the first card is answered after it has settled, as he would
-    await sleep(SETTLE_MS + 50);
+    await passTime(SETTLE_MS + 50);
     await user.click(firstOption());
     await screen.findByTestId('next');
   };
@@ -90,7 +102,14 @@ describeFeature(feature, ({ Scenario }) => {
     expect(screen.queryByTestId('next')).toBeNull();
   };
   const countIs = async (_: unknown, n: number) => expect(await counted()).toBe(n);
-  const reads = () => sleep(SETTLE_MS + 50);
+  // he reads what is on screen: the clock moves on only once the screen he means has been drawn, or it would be drawn after the time had passed
+  const readsOnce = (drawn?: () => Promise<unknown>) => async () => {
+    await drawn?.();
+    await passTime(SETTLE_MS + 50);
+  };
+  const reads = readsOnce();
+  const readsIntro = readsOnce(() => screen.findByRole('button', { name: 'Start over' }));
+  const readsConfirm = readsOnce(() => screen.findByTestId('start-over-confirm'));
   const taps = async () => user.click(firstOption());
   const shows = async () => {
     await waitFor(() => expect(answered()).toBe(true));
@@ -108,7 +127,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he opens the placement', () => openAt('#/placement'));
     // the intro settles like a card: he reads it before he taps Start
     And('he starts the placement', async () => {
-      await reads();
+      await readsOnce(() => screen.findByRole('button', { name: 'Start' }))();
       await user.click(await screen.findByRole('button', { name: 'Start' }));
     });
     And('he answers the first question', async () => {
@@ -176,7 +195,7 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(await screen.findByTestId('next'));
       await newCard();
       // the Next row is gone and the button has moved up under the finger
-      await sleep(ms);
+      await passTime(ms);
       await user.click(drillButton());
     });
     Then('the Quick test is still on question 2', async () => {
@@ -221,7 +240,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he taps Place me and {int} ms later taps where Start over now sits', async (_, ms: number) => {
       await user.click(await screen.findByRole('button', { name: /^Place (me|again)/ }));
       await screen.findByRole('button', { name: 'Start over' });
-      await sleep(ms);
+      await passTime(ms);
       await user.click(screen.getByRole('button', { name: 'Start over' }));
     });
     Then('the placement intro shows with his {int} answers kept', async (_, n: number) => {
@@ -242,7 +261,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('his goal is {string} and he has answered {int} placement questions', async (_, goal: string, n: number) => seedKept(goal, n));
     And('a new question ignores taps for a moment', settling);
     When('he opens the placement', () => openAt('#/placement'));
-    And('he reads the question for a moment', reads);
+    And('he reads the question for a moment', readsIntro);
     And('he taps Start over', () => tapNamed('Start over'));
     Then('it asks whether to throw his {int} answers away', async (_, n: number) => {
       expect(await screen.findByTestId('start-over-confirm')).toHaveTextContent(`${n} answers`);
@@ -250,16 +269,16 @@ describeFeature(feature, ({ Scenario }) => {
     And('{int} answers are still kept', (_, n: number) => {
       expect(keptCount()).toBe(n);
     });
-    When('he waits a moment on the question', reads);
+    When('he waits a moment on the question', readsConfirm);
     And('he taps Keep my answers', () => tapNamed('Keep my answers'));
     Then('the placement intro shows with his {int} answers kept', async (_, n: number) => {
       await intro(n);
     });
     When('he taps Start over again', async () => {
-      await reads();
+      await readsIntro();
       await tapNamed('Start over');
     });
-    And('he waits a little longer on the question', reads);
+    And('he waits a little longer on the question', readsConfirm);
     And('he taps Yes, start over', () => tapNamed('Yes, start over'));
     Then('the question line says {string}', async (_, text: string) => {
       await waitFor(() => expect(screen.getByTestId('placement-question')).toHaveTextContent(text));
