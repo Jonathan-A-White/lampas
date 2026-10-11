@@ -1,0 +1,40 @@
+{
+  "description": "A setting change waits (Change Theme: Dark) and he says yes in loose dictation ('yeah yes please do that'): the tutor takes it as a confirm and offers nothing more.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Goal",
+    "question": "yeah yes please do that",
+    "history": [
+      {
+        "q": "Can this work with Olive Tree?",
+        "a": "I can switch the theme to Dark for you."
+      }
+    ],
+    "solid_words": [
+      "ὁ",
+      "καί"
+    ],
+    "settings": {},
+    "screen": {
+      "name": "Goal",
+      "facts": [
+        {
+          "label": "Goal",
+          "value": "Read 1 John 1:1"
+        }
+      ]
+    },
+    "pending_offer": {
+      "kind": "setting",
+      "text": "Change Theme: Dark"
+    }
+  },
+  "expect": {
+    "offer_reply": {
+      "equals": "confirm"
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

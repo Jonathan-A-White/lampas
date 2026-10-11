@@ -37,6 +37,16 @@
       "minLength": 1,
       "maxLength": 80
     },
+    "pending_offer": {
+      "description": "Optional. Present only while an offer of yours waits for his tap: the newest such offer of this conversation. `kind` is 'feedback' (Send this to the makers; `text` is the summary it would send), 'setting' (a setting change from `setting_offer`; `text` is what it would change, such as 'Change Theme: Dark') or 'quiz-goal' (the goal from `quiz_goal_offer`; `text` is the goal). Decide from `question` whether he confirms, declines or asks to hear it, and say so in `offer_reply`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "text"],
+      "properties": {
+        "kind": { "type": "string", "enum": ["feedback", "setting", "quiz-goal"] },
+        "text": { "type": "string", "minLength": 1, "maxLength": 200 }
+      }
+    },
     "resources": {
       "description": "Optional. The study resources he has switched on in Settings, in the order Settings lists them: the only ones the answer's `links` may count on. An empty list means none is on. Missing only in a talk from About.",
       "type": "array",
