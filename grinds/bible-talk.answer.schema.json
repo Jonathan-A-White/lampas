@@ -120,6 +120,48 @@
         ]
       }
     },
+    "go": {
+      "description": "Only when he asked, in words, to be taken to a chapter of the New Testament ('switch to Colossians 1', 'open John 3', 'take me to Romans 12'): the book and the chapter. The app opens the Reader there at once and says Opened; say in answer where you are taking him. Never for a chapter outside the 27 books of the New Testament, never on your own, and leave it out when he asked for no move.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["book", "chapter"],
+      "properties": {
+        "book": {
+          "description": "The book's name exactly as in the list.",
+          "type": "string",
+          "enum": [
+            "Matthew",
+            "Mark",
+            "Luke",
+            "John",
+            "Acts",
+            "Romans",
+            "1 Corinthians",
+            "2 Corinthians",
+            "Galatians",
+            "Ephesians",
+            "Philippians",
+            "Colossians",
+            "1 Thessalonians",
+            "2 Thessalonians",
+            "1 Timothy",
+            "2 Timothy",
+            "Titus",
+            "Philemon",
+            "Hebrews",
+            "James",
+            "1 Peter",
+            "2 Peter",
+            "1 John",
+            "2 John",
+            "3 John",
+            "Jude",
+            "Revelation"
+          ]
+        },
+        "chapter": { "description": "The chapter number, from 1 to the book's last chapter.", "type": "number", "minimum": 1, "maximum": 28 }
+      }
+    },
     "settings_changes": {
       "description": "The settings he asked to change, each applied at once by the app. Only when he asked for the change in words, never on your own; only the keys and values the instructions list; leave it out when he asked for no change.",
       "type": "array",
