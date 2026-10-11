@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.84",
+    "date": "2026-10-11",
+    "story": "mw-hqd5bz.26",
+    "kind": "fixed",
+    "text": "Tapping Next twice quickly in the Quick test no longer opens the Parsing drill by accident."
+  },
+  {
     "version": "0.1.82",
     "date": "2026-10-11",
     "story": "mw-5r3p30.170",

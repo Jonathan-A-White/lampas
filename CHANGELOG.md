@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.84
+_2026-10-11_
+- Fixed: Tapping Next twice quickly in the Quick test no longer opens the Parsing drill by accident.
+
 ## 0.1.82
 _2026-10-11_
 - Fixed: Ask the tutor brings the answer into view when it comes, and fits in landscape.
