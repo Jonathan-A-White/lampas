@@ -106,7 +106,11 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('a new question ignores taps for a moment', settling);
     When('he opens the placement', () => openAt('#/placement'));
-    And('he starts the placement', async () => user.click(await screen.findByRole('button', { name: 'Start' })));
+    // the intro settles like a card: he reads it before he taps Start
+    And('he starts the placement', async () => {
+      await reads();
+      await user.click(await screen.findByRole('button', { name: 'Start' }));
+    });
     And('he answers the first question', async () => {
       await answersFirst();
     });
@@ -185,6 +189,83 @@ describeFeature(feature, ({ Scenario }) => {
     And('he taps the Parsing drill button', async () => user.click(drillButton()));
     Then('the Parsing drill is open', async () => {
       await waitFor(() => expect(window.location.hash).toBe('#/drill'));
+    });
+  });
+  const keptCount = () => readPlacement()?.state.asked.length ?? 0;
+  const intro = async (n: number) => {
+    expect(await screen.findByTestId('placement-kept')).toHaveTextContent(`${n} questions answered so far`);
+    expect(keptCount()).toBe(n);
+  };
+  const tapNamed = async (name: string) => user.click(await screen.findByRole('button', { name }));
+  const seedKept = async (goal: string, n: number) => {
+    await freshStore();
+    await setGoal(goal.replace(/^Read /, ''));
+    settle.ms = 0;
+    await openAt('#/placement');
+    await user.click(await screen.findByRole('button', { name: 'Start' }));
+    for (let i = 0; i < n; i += 1) {
+      await waitFor(() => expect(options().length).toBeGreaterThan(0));
+      await waitFor(() => expect(screen.getByTestId('placement-question')).toHaveTextContent(`Question ${i + 1} ·`));
+      await user.click(firstOption());
+      await user.click(await screen.findByTestId('next'));
+    }
+    await waitFor(() => expect(keptCount()).toBe(n));
+    cleanup();
+    clearBus();
+  };
+
+  Scenario('A second tap on Place me does not throw away the placement he kept', ({ Given, And, When, Then }) => {
+    Given('his goal is {string} and he has answered {int} placement questions', async (_, goal: string, n: number) => seedKept(goal, n));
+    And('a new question ignores taps for a moment', settling);
+    When('he opens the Goal screen', () => openAt('#/goal'));
+    And('he taps Place me and {int} ms later taps where Start over now sits', async (_, ms: number) => {
+      await user.click(await screen.findByRole('button', { name: /^Place (me|again)/ }));
+      await screen.findByRole('button', { name: 'Start over' });
+      await sleep(ms);
+      await user.click(screen.getByRole('button', { name: 'Start over' }));
+    });
+    Then('the placement intro shows with his {int} answers kept', async (_, n: number) => {
+      await intro(n);
+      expect(screen.queryByRole('button', { name: 'Yes, start over' })).toBeNull();
+    });
+    And('Go on is still offered', () => {
+      expect(screen.getByRole('button', { name: 'Go on' })).toBeInTheDocument();
+    });
+    When('he reads the question for a moment', reads);
+    And('he taps Go on', () => tapNamed('Go on'));
+    Then('the question line says {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('placement-question')).toHaveTextContent(text));
+    });
+  });
+
+  Scenario('A deliberate Start over asks first and then starts over', ({ Given, And, When, Then }) => {
+    Given('his goal is {string} and he has answered {int} placement questions', async (_, goal: string, n: number) => seedKept(goal, n));
+    And('a new question ignores taps for a moment', settling);
+    When('he opens the placement', () => openAt('#/placement'));
+    And('he reads the question for a moment', reads);
+    And('he taps Start over', () => tapNamed('Start over'));
+    Then('it asks whether to throw his {int} answers away', async (_, n: number) => {
+      expect(await screen.findByTestId('start-over-confirm')).toHaveTextContent(`${n} answers`);
+    });
+    And('{int} answers are still kept', (_, n: number) => {
+      expect(keptCount()).toBe(n);
+    });
+    When('he waits a moment on the question', reads);
+    And('he taps Keep my answers', () => tapNamed('Keep my answers'));
+    Then('the placement intro shows with his {int} answers kept', async (_, n: number) => {
+      await intro(n);
+    });
+    When('he taps Start over again', async () => {
+      await reads();
+      await tapNamed('Start over');
+    });
+    And('he waits a little longer on the question', reads);
+    And('he taps Yes, start over', () => tapNamed('Yes, start over'));
+    Then('the question line says {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('placement-question')).toHaveTextContent(text));
+    });
+    And('only {int} answers are kept', async (_, n: number) => {
+      await waitFor(() => expect(keptCount()).toBe(n));
     });
   });
 });

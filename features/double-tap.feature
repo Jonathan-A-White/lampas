@@ -55,3 +55,33 @@ Feature: A double tap on Next does not answer the next question for me
     When he reads the question for a moment
     And he taps the Parsing drill button
     Then the Parsing drill is open
+
+  Scenario: A second tap on Place me does not throw away the placement he kept
+    The Tester (mw-hqd5bz.27): "A quick double tap on 'Place me' / 'Place again' with a placement already kept throws that placement away. The second tap lands on 'Start over'." The intro ignores taps for the same moment a question card does, and Start over asks before the answers go.
+
+    Given his goal is "Read 1 John 1:1" and he has answered 2 placement questions
+    And a new question ignores taps for a moment
+    When he opens the Goal screen
+    And he taps Place me and 120 ms later taps where Start over now sits
+    Then the placement intro shows with his 2 answers kept
+    And Go on is still offered
+    When he reads the question for a moment
+    And he taps Go on
+    Then the question line says "Question 3"
+
+  Scenario: A deliberate Start over asks first and then starts over
+    Given his goal is "Read 1 John 1:1" and he has answered 2 placement questions
+    And a new question ignores taps for a moment
+    When he opens the placement
+    And he reads the question for a moment
+    And he taps Start over
+    Then it asks whether to throw his 2 answers away
+    And 2 answers are still kept
+    When he waits a moment on the question
+    And he taps Keep my answers
+    Then the placement intro shows with his 2 answers kept
+    When he taps Start over again
+    And he waits a little longer on the question
+    And he taps Yes, start over
+    Then the question line says "Question 1"
+    And only 0 answers are kept
