@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.98",
+    "date": "2026-10-11",
+    "story": "mw-5r3p30.193",
+    "kind": "fixed",
+    "text": "The question shown above the tutor's answer no longer keeps stray \"um\" and \"uh\" from what you said."
+  },
+  {
     "version": "0.1.97",
     "date": "2026-10-11",
     "story": "mw-5r3p30.186",

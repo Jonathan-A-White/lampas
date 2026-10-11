@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.98
+_2026-10-11_
+- Fixed: The question shown above the tutor's answer no longer keeps stray "um" and "uh" from what you said.
+
 ## 0.1.97
 _2026-10-11_
 - New: You can now answer the tutor's offers by voice: say yes, no or 'read it back' instead of tapping Send this to the makers or a setting change.
