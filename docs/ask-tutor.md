@@ -71,6 +71,19 @@ Every send, of either kind, also keeps a row in Dexie `requests` (v16: `{txid, k
 grist's id, status `'sent'`; `src/data/repositories/requests.ts` `keepRequest`, `listRequests`), written as soon as the grist is out (askGrind's `onSent(txid)`),
 so a status that comes back can be matched to it. A tutor-ask keeps the tutor's `summary`, a grammar approach his `text`; a Retry is a new grist and a new row.
 
+## Answering an offer by voice (mw-5r3p30.186)
+
+The tutor leaves three kinds of offer for a tap: **Send this to the makers** (`feedback_offer`), a setting change (`setting_offer` `{key, value}`, checked by
+`offeredChange` in `src/settings/registry.ts`; the button reads 'Change Theme: Dark') and the quiz goal (`quiz_goal_offer`, Yes, from now on | Just this time).
+He may say yes, no or 'read it back' instead, in Talk, spoken or typed. `src/talk/offers.ts` `pendingOfferOf(turns)` finds the newest turn of the talk with an
+offer nobody has settled; `useTalk.say` sends it with his next turn as `pending_offer` `{kind: 'feedback' | 'setting' | 'quiz-goal', text}` (the exact text it would
+send or do). The bible-talk grind, not a word list in the app, decides from his words and answers `offer_reply`: `confirm`, `decline` or `read_back`
+(`grinds/bible-talk.instructions.md` "Answering an offer by voice"; five examples under `grinds/examples/bible-talk/offer-*.json`). `settleOffer` then does it:
+confirm does exactly what the tap does (feedback: `sendMakersOffer`, the one function the button calls too; setting: `takeSettingOffer`, the change lands on the
+answer's turn with its Undo; quiz goal: keeps it), decline withdraws it (**Not sent**, **Not changed**, **Not kept**; nothing is sent), read_back changes nothing and the
+answer, which the app reads aloud like any answer, holds the text word for word. No `offer_reply`, or no offer waiting, is an ordinary question: the offer and its
+button stay and ride with the next turn. A step that fails on a yes (the mill is down) is said under the answer and the button is still there.
+
 ## What he said, cleaned up
 
 He often speaks his question, so the words that reach the grist can have no punctuation, an "um", a repeat or a dropped start. Both tutor grinds
@@ -79,7 +92,9 @@ words with capitals and punctuation, the fillers, repeats and false starts taken
 (`TalkTurn.cleanQ`) and the Verse view's answer card (`TutorAnswer.cleanQuestion`, `[data-answer-question]`) show that in place of the raw
 transcript; the raw words stay kept as `q` / `question` (and `q` is what goes in the next request's history). An answer with no `question`, such as
 one kept before this, shows the raw words. While the answer is on its way the raw words show, as before. No table change (the fields are not indexed).
-Checks: `tests/unit/cleaned-question.test.ts`, `grinds/examples/*/cleaned-question.json`, and the scenarios "What he said is shown back cleaned up"
+The model sometimes keeps a lone um, uh or er in the Verse view's cleaned question, so `src/services/fillers.ts` `withoutFillers` strips them (and the commas
+around them) before it is kept (mw-5r3p30.193; `umbrella` and `Uh-oh` are not touched); the Bible talk's `cleanQ` has no such guard yet.
+Checks: `tests/unit/fillers.test.ts`, `tests/unit/cleaned-question.test.ts`, `grinds/examples/*/cleaned-question.json`, and the scenarios "What he said is shown back cleaned up"
 in `features/bible-talk.feature` and "What he asked is shown above the answer cleaned up" in `features/tutor.feature`.
 
 ## Let the tutor help me fill this in (mw-5r3p30.117)
@@ -195,4 +210,4 @@ a phone that installed Lampas before this version may need it removed and instal
 `features/ask-tutor.feature` (the control, the request, the questions, what is kept), `tests/unit/ask-tutor.test.ts`, the `screen` blocks of
 `tests/unit/talk-request.test.ts` and `bible-talk-grind.test.ts`, and `tests/e2e/ask-tutor.spec.ts` (place, size and clearance at 390 px; the shots
 `ask-tutor-goal`, `ask-tutor-reader`, `ask-tutor-sheet`); the offer: `features/feedback-offer.feature`, `tests/unit/feedback-shared.test.ts`,
-`tests/e2e/feedback-offer.spec.ts` (shots `feedback-offer`, `feedback-offer-sent`).
+`tests/e2e/feedback-offer.spec.ts` (shots `feedback-offer`, `feedback-offer-sent`); answering an offer by voice: `features/voice-offers.feature`, `tests/unit/voice-offers.test.ts`.

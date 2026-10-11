@@ -111,11 +111,16 @@
   /* How far the Reader's Talk bar raises the round Ask button: its border, the bar's 96 px and 8 px above and below (mw-5r3p30.182: in a short window the bar
    * is a 56 px row, see below). */
   --lp-talk-lift: calc(var(--spacing) * 28 + 1px);
+
+  /* The room the Reader leaves under its reading box for the round Ask button (src/AskTutor.tsx ASK_BUTTON_ROOM). */
+  --lp-ask-room: calc(var(--spacing) * 18);
 }
 
 @media (max-height: 500px) {
   :root {
     --lp-talk-lift: calc(var(--spacing) * 18 + 1px);
+    /* 30 px less: header, chips row, the 136 px box, this room and the 121 px Talk bar came to 420 px in a 390 px window (mw-5r3p30.194). */
+    --lp-ask-room: calc(var(--spacing) * 10.5);
   }
 }
 

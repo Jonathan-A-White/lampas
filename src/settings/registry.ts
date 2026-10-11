@@ -538,6 +538,17 @@ export async function applyChanges(changes: unknown, options: { skipUnchanged?: 
   return result;
 }
 
+/** A setting change the tutor offers instead of making (mw-5r3p30.186): `{key, value}` checked as applyChanges would check it, with the sentence the button and the
+ * spoken read-back use ('Change Theme: Dark'); undefined for anything the registry would refuse. */
+export function offeredChange(change: unknown): { key: string; value: string | number; text: string } | undefined {
+  if (typeof change !== 'object' || change === null) return undefined;
+  const asked = change as Record<string, unknown>;
+  const entry = typeof asked.key === 'string' ? settingOf(asked.key) : undefined;
+  const value = entry ? allowedValue(entry, asked.value) : undefined;
+  if (!entry || value === undefined) return undefined;
+  return { key: entry.key, value, text: `Change ${entry.show(value)}` };
+}
+
 /** Puts back what `change` replaced, the same way it was written. */
 export async function undoChange(change: AppliedChange): Promise<void> {
   await settingOf(change.key)?.write(change.from);

@@ -1,0 +1,40 @@
+{
+  "description": "A feedback offer waits and he says 'no not now': the tutor takes it as a decline and nothing is offered again.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Goal",
+    "question": "no not now",
+    "history": [
+      {
+        "q": "Can this work with Olive Tree?",
+        "a": "Lampas does not work with Olive Tree. I can pass your wish to the makers; I cannot say what they will decide."
+      }
+    ],
+    "solid_words": [
+      "ὁ",
+      "καί"
+    ],
+    "settings": {},
+    "screen": {
+      "name": "Goal",
+      "facts": [
+        {
+          "label": "Goal",
+          "value": "Read 1 John 1:1"
+        }
+      ]
+    },
+    "pending_offer": {
+      "kind": "feedback",
+      "text": "He wants Lampas to work with the Olive Tree app."
+    }
+  },
+  "expect": {
+    "offer_reply": {
+      "equals": "decline"
+    },
+    "feedback_offer": {
+      "present": false
+    }
+  }
+}

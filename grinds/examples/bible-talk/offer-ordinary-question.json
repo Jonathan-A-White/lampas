@@ -1,0 +1,40 @@
+{
+  "description": "A feedback offer waits and he asks an ordinary question about the screen: the tutor answers it, leaves offer_reply out and does not offer the feedback again.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Goal",
+    "question": "What do the colours in the bar mean?",
+    "history": [
+      {
+        "q": "Can this work with Olive Tree?",
+        "a": "Lampas does not work with Olive Tree. I can pass your wish to the makers; I cannot say what they will decide."
+      }
+    ],
+    "solid_words": [
+      "ὁ",
+      "καί"
+    ],
+    "settings": {},
+    "screen": {
+      "name": "Goal",
+      "facts": [
+        {
+          "label": "Goal",
+          "value": "Read 1 John 1:1"
+        }
+      ]
+    },
+    "pending_offer": {
+      "kind": "feedback",
+      "text": "He wants Lampas to work with the Olive Tree app."
+    }
+  },
+  "expect": {
+    "offer_reply": {
+      "present": false
+    },
+    "feedback_offer": {
+      "present": false
+    }
+  }
+}

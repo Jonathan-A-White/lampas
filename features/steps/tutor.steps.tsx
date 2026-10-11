@@ -179,6 +179,26 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     });
   });
 
+  Scenario('A cleaned question that kept his ums and uhs is shown without them', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern whose answers keep the fillers in his question', () =>
+      open((f) => void (f.autoReply = { status: 'answered', answer: { ...SYNERGEI_ANSWER, question: 'Um, why are there, uh, italic words? What does it mean?' } })),
+    );
+    And('he selects verse 28', selectVerse28);
+    When('he asks {string}', (_, question: string) => ask(question));
+    Then('the answer card shows the question {string}', async (_, shown: string) => {
+      await answerShows();
+      expect(answersOn28()[0].querySelector('[data-answer-question]')?.textContent).toBe(shown);
+    });
+    And('the answer kept on the phone has his raw words {string}', async (_, raw: string) => {
+      const kept = await db.answers.toArray();
+      expect(kept).toHaveLength(1);
+      expect(kept[0].question).toBe(raw);
+    });
+    And('the answer kept on the phone has the cleaned question {string}', async (_, clean: string) => {
+      expect((await db.answers.toArray())[0].cleanQuestion).toBe(clean);
+    });
+  });
+
   Scenario('An answer with no cleaned question shows his raw words above it', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern', () => open());
     And('he selects verse 28', selectVerse28);

@@ -11,7 +11,8 @@ import { getDeviceKeyBytes } from './services/deviceKey';
 import { TutorError } from './services/tutor';
 import { stopAnswer } from './speech/readAloud';
 import { readGo, type GoPlace } from './talk/go';
-import { applyChanges, currentSettings } from './settings/registry';
+import { applyChanges, currentSettings, offeredChange } from './settings/registry';
+import { pendingOfferOf, settleOffer } from './talk/offers';
 import { filesOf, type OutgoingPicture } from './talk/pictures';
 import { askTalk, buildTalkRequest, MAX_LINKS, scopeRef, type TalkAnswer, type TalkFocus, type TalkScope } from './services/talk';
 import type { HebrewSounds } from './data/db';
@@ -49,6 +50,12 @@ async function addWords(scope: TalkScope, lemmas: string[]): Promise<{ added: st
     else if (result === 'unknown') unknown.push(headword);
   }
   return { added, already, unknown };
+}
+
+/** The setting change an answer offers, if the registry would take it: just its key and value. */
+function settingOfferOf(answer: TalkAnswer): { key: string; value: string | number } | undefined {
+  const offered = offeredChange(answer.setting_offer);
+  return offered ? { key: offered.key, value: offered.value } : undefined;
 }
 
 /** The pronunciation guide of an answer to a Hebrew word's sound question: its syllables over how each sounds; none for any other answer. */
@@ -123,9 +130,11 @@ export function useTalk(
             getStudyResources().catch(() => ({ on: [], options: {} })),
             scope.quiz ? getQuizGoal() : Promise.resolve(''),
           ]);
+          // an offer still waiting for his tap rides with this message: the grind decides from his words whether it is a yes, a no or a request to hear it
+          const waiting = pendingOfferOf(turns);
           // a goal he chose Just this time for earlier in this quiz is sent for this quiz alone
           const once = turns.findLast((t) => t.quizGoalChoice === 'once')?.quizGoalOffer;
-          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }), {
+          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer), {
             key: getDeviceKeyBytes(),
             files: pictures.length ? filesOf(pictures) : undefined,
             signal,
@@ -133,12 +142,16 @@ export function useTalk(
           });
           // The settings he asked for are applied at once (the registry checks each), then kept with the turn for its Undo.
           const { applied, refused } = await applyChanges(answer.settings_changes);
+          // What his words did to the offer that waited (mw-5r3p30.186): a yes does what its tap does, a no withdraws it, a request to hear it changes nothing.
+          const settled = await settleOffer(waiting ? answer.offer_reply : undefined, waiting, scope);
+          applied.push(...settled.applied);
+          refused.push(...settled.refused);
           const { added, already, unknown } = await addWords(scope, answer.words_to_add ?? []);
           // A chapter he asked to be taken to: opened only while this talk's sheet is open; any other go is said not to have happened.
           const go = readGo(answer.go);
           const place = go?.ok && going.current?.allowed(ref) ? go.place : undefined;
           if (go && !place) refused.push(`Could not open ${go.ok ? go.place.title : go.title}`);
-          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { opened: place?.title, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? answer.quiz_goal_offer : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, cleanQ: answer.question, pictures });
+          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { opened: place?.title, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? answer.quiz_goal_offer : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, settingOffer: settingOfferOf(answer), cleanQ: answer.question, pictures });
           pictured.current[ref] = undefined;
           set(undefined);
           if (signal.aborted) return;

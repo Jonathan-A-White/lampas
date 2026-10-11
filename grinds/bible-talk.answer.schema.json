@@ -69,6 +69,24 @@
       "required": ["summary"],
       "properties": { "summary": { "description": "One line saying what he wants.", "type": "string", "minLength": 1, "maxLength": 200 } }
     },
+    "setting_offer": {
+      "description": "Only when you propose a setting change he did not ask for outright (for example moving New words at to Frontier grammar): the one change, `key` and `value` as in `settings_changes`. The app shows it as a button, Change <setting>: <value>, and makes the change on his tap or when his next words are a yes (see `offer_reply`). A change he asked for outright goes in `settings_changes`. Leave it out for anything else.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "value"],
+      "properties": {
+        "key": { "description": "A setting's key from the settings block.", "type": "string", "minLength": 1, "maxLength": 60 },
+        "value": {
+          "description": "The new value, as the settings block lists it.",
+          "anyOf": [{ "type": "string", "minLength": 1, "maxLength": 80 }, { "type": "number" }]
+        }
+      }
+    },
+    "offer_reply": {
+      "description": "Only when the request carried `pending_offer`, and only when his words are about that offer: 'confirm' when he says yes (the app then does exactly what a tap on the offer's button does), 'decline' when he says no (the offer is withdrawn and nothing is done), 'read_back' when he asks to hear it first (the offer stays; your answer speaks its exact text and asks for his yes). Leave it out for an ordinary question or when you are not sure: the offer then stays and nothing is done.",
+      "type": "string",
+      "enum": ["confirm", "decline", "read_back"]
+    },
     "form_values": {
       "description": "Only while he is being helped to fill in a form (`form` in the request): the values to put in its fields from what he just said, each the field's `name` and the field's whole new value. Only text and link fields, never pictures; never a field the form does not list. Leave it out when his words fill nothing.",
       "type": "array",

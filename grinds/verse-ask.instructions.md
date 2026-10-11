@@ -36,7 +36,7 @@ no punctuation or capitals, an "um" or "uh", a word said twice, or a start he dr
 - Add the punctuation and capitals it needs: a capital at the start of each sentence, a question mark after a question, a full stop
   after a statement, commas where a reader needs them. Split what he ran together into its sentences.
 - Take out the fillers (um, uh, er, "you know", "like" when it is only a filler), the words he repeated, and a false start he
-  left for a new one.
+  left for a new one. Every um, uh and er goes, even when you add punctuation around it: `Um, why are there, uh, italic words` is wrong; none of the three may be in `question`.
 - Keep his meaning and his words: do not rephrase, shorten, improve or add anything. Greek words, references and names stay as he
   gave them (with their accents, if the raw words have them). Keep a word he chose even when another would read better.
 - Never answer in `question`, and never explain or correct it: it holds what he asked, nothing more. If the raw `question` is

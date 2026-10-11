@@ -175,18 +175,26 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
           <p data-testid="placement-goal" className="text-2xl font-semibold">
             Placement: {session.title}
           </p>
-          <p className="mt-2 text-muted">
-            Questions on the grammar it needs, in the order of {session.approach.name}. Miss the easy things and it goes easier, down to the letters. Twenty questions at a time.
-          </p>
+          {/* While Start over asks its question, it and its two answers are all that is up (mw-hqd5bz.34): on a phone sideways they would fall below the fold,
+              and two filled buttons with opposite meanings (Go on, Keep my answers) would sit together. Go on is back when he keeps his answers. */}
+          {!confirming && (
+            <p className="mt-2 text-muted">
+              Questions on the grammar it needs, in the order of {session.approach.name}. Miss the easy things and it goes easier, down to the letters. Twenty questions at a time.
+            </p>
+          )}
           <div className="mt-6 grid grid-cols-1 gap-3">
             {kept ? (
               <>
-                <button type="button" onClick={() => settled() && void begin(kept, true)} className={`${BUTTON} bg-accent text-accent-fg`}>
-                  Go on
-                </button>
-                <p data-testid="placement-kept" className="text-muted">
-                  {kept.state.asked.length} {kept.state.asked.length === 1 ? 'question' : 'questions'} answered so far.
-                </p>
+                {!confirming && (
+                  <>
+                    <button type="button" onClick={() => settled() && void begin(kept, true)} className={`${BUTTON} bg-accent text-accent-fg`}>
+                      Go on
+                    </button>
+                    <p data-testid="placement-kept" className="text-muted">
+                      {kept.state.asked.length} {kept.state.asked.length === 1 ? 'question' : 'questions'} answered so far.
+                    </p>
+                  </>
+                )}
                 {confirming ? (
                   <div role="group" aria-label="Start over?" className="grid grid-cols-1 gap-3">
                     <p data-testid="start-over-confirm" className="text-lg">

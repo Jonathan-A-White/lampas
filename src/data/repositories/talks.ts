@@ -32,6 +32,8 @@ export interface TurnChanges {
   guide?: HebrewSounds;
   /** the one-line summary of an ask the app cannot meet, offered to the makers */
   feedbackOffer?: string;
+  /** a setting change the answer offered, checked against the registry (mw-5r3p30.186) */
+  settingOffer?: { key: string; value: string | number };
   /** what he said, cleaned up by the tutor; shown in place of the raw words, which stay as `q` */
   cleanQ?: string;
   /** the pictures he sent with it (mw-y3qno5.1), kept in their own table */
@@ -59,6 +61,7 @@ export async function addTurn(ref: string, q: string, a: string, words: AnswerWo
   if (done?.quizGoalOffer) turn.quizGoalOffer = done.quizGoalOffer;
   if (done?.guide) turn.guide = done.guide;
   if (done?.feedbackOffer) turn.feedbackOffer = done.feedbackOffer;
+  if (done?.settingOffer) turn.settingOffer = done.settingOffer;
   if (done?.cleanQ) turn.cleanQ = done.cleanQ;
   return db.transaction('rw', db.talks, db.talkPictures, async () => {
     const id = (await db.talks.add(turn)) as number;
@@ -88,13 +91,31 @@ export async function markChangeUndone(turnId: number, index: number): Promise<v
   });
 }
 
+/** Adds changes to a turn's list, so its rows show them with Undo (a setting offer taken by its button). */
+export async function addTurnChanges(turnId: number, added: AppliedChange[]): Promise<void> {
+  await db.transaction('rw', db.talks, async () => {
+    const turn = await db.talks.get(turnId);
+    if (turn) await db.talks.update(turnId, { changes: [...(turn.changes ?? []), ...added] });
+  });
+}
+
 /** Marks the turn's feedback offer as sent, so it reads Sent from then on. */
 export async function markFeedbackSent(turnId: number): Promise<void> {
   await db.talks.update(turnId, { feedbackSent: true });
 }
 
-/** Records what he did with a turn's quiz goal offer: 'kept' (Yes, from now on; the caller keeps the goal) or 'once' (Just this time). */
-export async function markQuizGoalChoice(turnId: number, choice: 'kept' | 'once'): Promise<void> {
+/** Marks the turn's feedback offer as withdrawn (he said no): nothing is sent and the offer reads Not sent. */
+export async function markFeedbackWithdrawn(turnId: number): Promise<void> {
+  await db.talks.update(turnId, { feedbackWithdrawn: true });
+}
+
+/** Records what became of a turn's setting offer: 'taken' (the caller changed the setting) or 'declined'. */
+export async function markSettingChoice(turnId: number, choice: 'taken' | 'declined'): Promise<void> {
+  await db.talks.update(turnId, { settingChoice: choice });
+}
+
+/** Records what he did with a turn's quiz goal offer: 'kept' (Yes, from now on; the caller keeps the goal), 'once' (Just this time) or 'declined' (no: nothing kept). */
+export async function markQuizGoalChoice(turnId: number, choice: 'kept' | 'once' | 'declined'): Promise<void> {
   await db.talks.update(turnId, { quizGoalChoice: choice });
 }
 
