@@ -73,6 +73,16 @@ export function About() {
             Preface
             <span id="preface-about" className="block text-sm font-normal text-muted">Why the Byzantine (Majority) text, and where to read more</span>
           </button>
+          <button
+            type="button"
+            aria-label="Your requests"
+            aria-describedby="requests-about"
+            onClick={() => navigate('requests')}
+            className="mt-3 min-h-12 w-full rounded-xl border border-line bg-surface px-4 text-left text-base font-medium"
+          >
+            Your requests
+            <span id="requests-about" className="block text-sm font-normal text-muted">What became of the things you asked for</span>
+          </button>
           {sections.map((section) => (
             <section key={section.title ?? ''} aria-label={section.title ?? undefined}>
               {section.title && <h2 data-read-block className="pt-4 text-lg font-semibold">{section.title}</h2>}

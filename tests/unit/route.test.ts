@@ -22,6 +22,7 @@ describe('the address', () => {
     expect(routeOf('#/paradigms?t=article&mode=review')).toBe('paradigms');
     expect(routeOf('#/goal')).toBe('goal');
     expect(routeOf('#/studyway')).toBe('studyway');
+    expect(routeOf('#/requests')).toBe('requests');
     expect(routeOf('#/about')).toBe('about');
     expect(routeOf('#/preface')).toBe('preface');
     expect(routeOf('#/preface/robinson')).toBe('essay');

@@ -49,6 +49,11 @@ export interface FakePostern {
   down: boolean;
   /** Answer the oldest grist not yet answered. */
   answer(reply: Reply): void;
+  /** the `since` of every GET /api/messages, in order */
+  sinces: number[];
+  /** Puts a request-status record (docs/protocol.md section 19) for the key `to` (a public key in hex) on the backend, sealed by the mill unless
+   * `sealedBy` (a private key in hex) says another key sealed it. The plaintext is sent as given. */
+  sendStatus(to: string, plaintext: Record<string, unknown>, sealedBy?: string): void;
 }
 
 const json = (status: number, body: unknown) =>
@@ -161,6 +166,13 @@ export function makeFakePostern(): FakePostern {
     kindReplies: {},
     licensed: true,
     down: false,
+    sinces: [],
+    sendStatus(to, plaintext, sealedBy) {
+      const sealer = sealedBy ? Uint8Array.from(Utils.toArray(sealedBy, 'hex')) : millBytes;
+      const envelope = grist.sealEnvelope(JSON.stringify(plaintext), sealer, to, 1_790_000_000);
+      const signer = sealedBy ? PrivateKey.fromHex(sealedBy).toPublicKey().toString() : MILL_PUBLIC_KEY;
+      records.push({ seq: records.length + 1, txid: `direct:${hex(Hash.sha256(Utils.toArray(`status-${records.length}`, 'utf8')))}`, signer, payload: { ...envelope } });
+    },
     answer(reply) {
       const next = unanswered.shift();
       if (!next) throw new Error('no grist is waiting for an answer');
@@ -224,6 +236,7 @@ export function makeFakePostern(): FakePostern {
     }
     if (url.pathname === '/api/messages' && method === 'GET') {
       const since = Number(url.searchParams.get('since') ?? '0');
+      fake.sinces.push(since);
       const visible = records.filter((r) => r.seq > since && (r.payload.to === pubkey || r.payload.from === pubkey));
       return json(200, { records: visible, next: records.length });
     }

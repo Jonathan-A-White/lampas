@@ -82,8 +82,19 @@ export interface RequestRow {
   app_version: string;
   /** when the mill took it, ms since the epoch */
   sentAt: number;
-  /** where it stands; 'sent' until a status says otherwise */
+  /** where it stands: 'sent' until a request-status record says otherwise, then that record's status (src/data/repositories/requests.ts) */
   status: string;
+  /** the status record the row last took: when the mill sent it (ms), and the bead the factory filed (mw-vy3ghg.5; no index, no version bump) */
+  statusAt?: number;
+  bead?: string;
+  /** landed: the app version it shipped in, the commit and its link on GitHub */
+  version?: string;
+  commit?: string;
+  url?: string;
+  /** declined: one plain sentence */
+  reason?: string;
+  /** adopted as a setting: the setting's name */
+  setting?: string;
 }
 
 /** A picture he sent with a turn of a Bible talk (mw-y3qno5.1), kept as bytes and a mime (a Blob does not survive every store the tests use). */
