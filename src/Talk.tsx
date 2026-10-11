@@ -11,6 +11,7 @@ import { addLemmaToLearn, findGreekWord, glossOf } from './data/answerWord';
 import type { AnswerWord } from './data/db';
 import { addTurnChanges, addWordToLearn, keepStudyWayLine, deleteTurns, listStudyWay, listTurns, markChangeUndone, markQuizGoalChoice, setQuizGoal, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
 import { Markdown } from './markdown/Markdown';
+import { openedByTutor } from './nav/readerRequest';
 import { TutorLinks } from './TutorLinks';
 import { offeredChange, settingOf, undoChange, type AppliedChange } from './settings/registry';
 import { sendMakersOffer, takeSettingOffer } from './talk/offers';
@@ -363,6 +364,7 @@ function SettingOffer({ turn }: { turn: TalkTurn }) {
 }
 
 function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkScope; onLook: (lookup: Lookup) => void; onLeave: () => void }) {
+  const { unopened } = turn;
   return (
     <article data-turn className="space-y-2">
       <TurnPictures turnId={turn.id} />
@@ -373,7 +375,7 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
         <div data-answer-text className="break-words text-lg leading-snug">
           <Markdown text={turn.a} onOpen={onLeave} />
         </div>
-        {turn.changes?.length || turn.refused?.length || turn.opened || turn.added?.length || turn.already?.length || turn.unknown?.length ? (
+        {turn.changes?.length || turn.refused?.length || turn.opened || turn.stayed || turn.unopened || turn.added?.length || turn.already?.length || turn.unknown?.length ? (
           <ul data-talk-changes className="mt-2 border-t border-line pt-1">
             {turn.changes?.map((c, i) => (
               <ChangeRow key={i} turn={turn} change={c} index={i} />
@@ -386,6 +388,26 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
             {turn.opened ? (
               <li data-talk-opened className="py-1 text-base">
                 Opened {turn.opened}
+              </li>
+            ) : null}
+            {turn.stayed ? (
+              <li data-talk-stayed className="py-1 text-base">
+                Already on {turn.stayed}
+              </li>
+            ) : null}
+            {unopened ? (
+              <li data-talk-unopened className="py-1 text-base text-muted">
+                <p>You closed Talk before this came, so {unopened.title} was not opened</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onLeave();
+                    openedByTutor(unopened.book, unopened.chapter);
+                  }}
+                  className="mt-1 min-h-11 rounded-lg border border-line px-3 text-base font-medium text-accent active:bg-line"
+                >
+                  Open {unopened.title}
+                </button>
               </li>
             ) : null}
             {turn.added?.length ? <WordsLine lemmas={turn.added} before="Added " after=" to your words" /> : null}

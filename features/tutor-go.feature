@@ -3,7 +3,8 @@ Feature: The tutor takes him to a chapter
   to, open, go to or take him to a chapter ('can you switch to Colossians 1'), the tutor says where it is taking him and the app opens
   the Reader there as a new Back step, with the line 'Opened Colossians 1' under the header. The talk he left keeps the same line on
   that turn. The app reads `go` itself and never free text: a go it cannot take is ignored, the answer is still shown and the talk says
-  'Could not open ...' so the text never claims a move that did not happen.
+  'Could not open ...' so the text never claims a move that did not happen. A go to the chapter he is already on moves nothing ('Already on Romans 8', no
+  new Back step), and an answer that comes after he pressed Done says that is why it did not move him, with a button that opens the chapter then.
 
   Scenario: Switching to Colossians 1 opens the Reader there, and Back returns to Romans 8
     Given Lampas is opened on Romans 8 and the tutor answers with go "Colossians" 1
@@ -50,8 +51,21 @@ Feature: The tutor takes him to a chapter
     And the tutor answers
     And he opens Talk again
     Then the answer shows in the sheet
-    And the sheet says "Could not open Colossians 1" and nothing was opened
+    And the sheet says "You closed Talk before this came, so Colossians 1 was not opened" and nothing was opened
     And the Reader is open on "Romans 8"
+    When he taps "Open Colossians 1" in the sheet
+    Then the Reader is open on "Colossians 1"
+    And the Talk sheet is closed
+    And the Reader says "Opened Colossians 1"
+
+  Scenario: A go to the chapter he is already on moves nothing and the talk says so
+    Given Lampas is opened on Romans 8 and the tutor answers with go "Romans" 8
+    And he opens Talk
+    When he sends "open Romans 8"
+    Then the answer shows in the sheet
+    And the sheet says "Already on Romans 8" and nothing was opened
+    And the Reader is open on "Romans 8"
+    And the phone's Back has no extra step
 
   Scenario: Asked from Settings, the tutor opens the chapter there and Back returns to Settings
     Given Lampas is opened on Romans 8 and the tutor answers with go "Colossians" 1

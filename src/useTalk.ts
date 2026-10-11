@@ -66,9 +66,11 @@ function hebrewGuideOf(focus: TalkFocus | undefined, answer: TalkAnswer): Hebrew
 }
 
 /** How the Reader lets an answer take him to a chapter (mw-5r3p30.172): `allowed(ref)` is true while the sheet of that conversation is open, the only time he is
- * there to be taken; `open(place)` opens the chapter once the answer is kept. */
+ * there to be taken; `open(place)` opens the chapter once the answer is kept; `here(place)` (the Reader's) is true for the chapter he is on, where nothing moves
+ * and the answer says 'Already on ...' (mw-5r3p30.199). */
 export interface GoTo {
   allowed: (ref: string) => boolean;
+  here?: (place: GoPlace) => boolean;
   open: (place: GoPlace) => void;
 }
 
@@ -149,11 +151,15 @@ export function useTalk(
           applied.push(...settled.applied);
           refused.push(...settled.refused);
           const { added, already, unknown } = await addWords(scope, answer.words_to_add ?? []);
-          // A chapter he asked to be taken to: opened only while this talk's sheet is open; any other go is said not to have happened.
+          // A chapter he asked to be taken to: opened only while this talk's sheet is open. The chapter he is on stays (said so); one that came after he closed the
+          // sheet is kept to open with a tap (said so); any other go is said not to have happened.
           const go = readGo(answer.go);
-          const place = go?.ok && going.current?.allowed(ref) ? go.place : undefined;
-          if (go && !place) refused.push(`Could not open ${go.ok ? go.place.title : go.title}`);
-          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { opened: place?.title, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? answer.quiz_goal_offer : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, settingOffer: settingOfferOf(answer), cleanQ: answer.question, pictures });
+          const door = going.current;
+          const place = go?.ok && door?.allowed(ref) && !door.here?.(go.place) ? go.place : undefined;
+          const stayed = go?.ok && door?.here?.(go.place) ? go.place.title : undefined;
+          const unopened = go?.ok && door && !door.allowed(ref) && !stayed ? go.place : undefined;
+          if (go && !place && !stayed && !unopened) refused.push(`Could not open ${go.ok ? go.place.title : go.title}`);
+          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { opened: place?.title, stayed, unopened, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? answer.quiz_goal_offer : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, settingOffer: settingOfferOf(answer), cleanQ: answer.question, pictures });
           pictured.current[ref] = undefined;
           set(undefined);
           if (signal.aborted) return;

@@ -130,6 +130,11 @@ export interface TalkTurn {
   refused?: string[];
   /** the chapter the answer took him to ('Colossians 1', mw-5r3p30.172): shown as 'Opened Colossians 1' */
   opened?: string;
+  /** the chapter the answer would have taken him to had Talk still been open (mw-5r3p30.199): the answer said so after he pressed Done, so nothing moved; shown as
+   * 'You closed Talk before this came, so John 3 was not opened' with a button that opens it then */
+  unopened?: { book: string; chapter: number; title: string };
+  /** the chapter the answer took him to that he was already on (mw-5r3p30.199): nothing moved; shown as 'Already on Romans 8' */
+  stayed?: string;
   /** the lemmas the answer put on his words-to-learn list (words_to_add), each one new to it */
   added?: string[];
   /** the lemmas the answer asked to add that were on his list already */

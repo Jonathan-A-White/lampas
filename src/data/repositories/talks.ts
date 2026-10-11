@@ -22,6 +22,10 @@ export interface TurnChanges {
   unknown?: string[];
   /** the chapter the answer took him to (mw-5r3p30.172) */
   opened?: string;
+  /** the chapter he was already on (mw-5r3p30.199): nothing moved */
+  stayed?: string;
+  /** the chapter the answer would have opened had he not closed Talk first (mw-5r3p30.199) */
+  unopened?: { book: string; chapter: number; title: string };
   /** the links of the answer (mw-5r3p30.75) */
   links?: AnswerLink[];
   /** the study way line the answer proposed (mw-5r3p30.76) */
@@ -53,6 +57,8 @@ export async function addTurn(ref: string, q: string, a: string, words: AnswerWo
   if (done && done.changes.length > 0) turn.changes = done.changes;
   if (done && done.refused.length > 0) turn.refused = done.refused;
   if (done?.opened) turn.opened = done.opened;
+  if (done?.stayed) turn.stayed = done.stayed;
+  if (done?.unopened) turn.unopened = done.unopened;
   if (done?.added?.length) turn.added = done.added;
   if (done?.already?.length) turn.already = done.already;
   if (done?.unknown?.length) turn.unknown = done.unknown;

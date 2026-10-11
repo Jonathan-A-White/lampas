@@ -171,7 +171,10 @@ Asked in the Talk sheet to switch to, open, go to or take him to a chapter ('can
 
 - A `go` the app can take, while that talk's sheet is open (`useTalk`'s `GoTo.allowed`): the turn is kept with `opened` ('Colossians 1', shown under the answer as `Opened Colossians 1`), the sheet closes and `nav/readerRequest.ts` `openedByTutor` opens the Reader there as a new Back step, which shows the notice `Opened Colossians 1` under the header. The phone's Back returns to the chapter he was on. The answer is not read aloud (the Reader that would read it is gone).
 - The same from the round Ask button of any other screen (mw-5r3p30.198, `src/AskTutor.tsx`, `tests/e2e/ask-tutor-go.spec.ts`): the screen's sheet is the talk whose sheet must be open; the Reader opens on the chapter with `Opened Colossians 1` and the phone's Back returns to the screen he asked from. Share links (`ShareTalk.tsx`) keep not opening a go.
-- A `go` the app cannot take (no such book, a chapter the book lacks, a shape it refuses) or one that arrives after he closed the sheet: nothing moves, the answer is shown, and the turn says `Could not open <x>`, so the tutor's text never claims a move that did not happen.
+- A `go` to the chapter he is already on (mw-5r3p30.199, `GoTo.here`): nothing moves (the sheet stays, the address keeps its view and weave, no Back step) and the turn says `Already on Romans 8` (`TalkTurn.stayed`).
+- A `go` that arrives after he closed the sheet (pressed Done): nothing moves, the answer is shown, and the turn says `You closed Talk before this came, so John 3 was not opened` with a button `Open John 3` (`TalkTurn.unopened`, kept with the turn): the tap closes the sheet and opens the chapter as `Opened John 3` does.
+- A `go` the app cannot take (no such book, a chapter the book lacks, a shape it refuses), or any go in a talk that has no door to the Reader (Share links): nothing moves, the answer is shown, and the turn says `Could not open <x>`, so the tutor's text never claims a move that did not happen.
+- The Reader's header shows the whole chapter title at 360 px and up (`src/reader/ReaderHeader.tsx`): the book's name is never cut, its type shrinks (18 px down to 11 px) to the room the title has, and the chapter number may drop to a second line (`tests/e2e/tutor-go-details.spec.ts`).
 
 ## Pictures in a talk
 

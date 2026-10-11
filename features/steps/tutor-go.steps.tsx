@@ -57,6 +57,8 @@ async function open(go: unknown, hold = false): Promise<void> {
 }
 
 let holding: unknown;
+/** the number of history entries when the message was sent (the open sheet's own entry included) */
+let stepsBefore = 0;
 
 const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
 const sheetGone = () => waitFor(() => expect(screen.queryByRole('dialog', { name: /^Talk about / })).toBeNull());
@@ -161,6 +163,29 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the answer shows in the sheet', shows);
     And('the sheet says {string} and nothing was opened', saysNothingOpened);
     And('the Reader is open on {string}', onThe);
+    When('he taps {string} in the sheet', async (_, name: string) => {
+      await user.click(within(sheet()).getByRole('button', { name }));
+    });
+    Then('the Reader is open on {string}', onThe);
+    And('the Talk sheet is closed', sheetGone);
+    And('the Reader says {string}', async (_, line: string) => {
+      expect(await screen.findByRole('status')).toHaveTextContent(line);
+    });
+  });
+
+  Scenario('A go to the chapter he is already on moves nothing and the talk says so', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 and the tutor answers with go {string} {int}', goTo as never);
+    And('he opens Talk', openTalk);
+    When('he sends {string}', async (_, question: string) => {
+      stepsBefore = window.history.length;
+      await send(question);
+    });
+    Then('the answer shows in the sheet', shows);
+    And('the sheet says {string} and nothing was opened', saysNothingOpened);
+    And('the Reader is open on {string}', onThe);
+    And("the phone's Back has no extra step", () => {
+      expect(window.history.length).toBe(stepsBefore);
+    });
   });
   Scenario("Asked from Settings, the tutor opens the chapter there and Back returns to Settings", ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 and the tutor answers with go {string} {int}', goTo as never);

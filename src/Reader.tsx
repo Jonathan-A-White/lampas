@@ -183,6 +183,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   }, {
     // the tutor takes him to a chapter (the answer's `go`) while this talk's sheet is open: the sheet closes, the Reader opens there as a new Back step
     allowed: (ref) => openTalkRef.current === ref,
+    here: (place) => place.book === BOOK && place.chapter === CHAPTER,
     open: (place) => {
       closeTalk.current();
       openedByTutor(place.book, place.chapter);
