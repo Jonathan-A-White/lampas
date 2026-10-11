@@ -52,3 +52,12 @@ Feature: The tutor takes him to a chapter
     Then the answer shows in the sheet
     And the sheet says "Could not open Colossians 1" and nothing was opened
     And the Reader is open on "Romans 8"
+
+  Scenario: Asked from Settings, the tutor opens the chapter there and Back returns to Settings
+    Given Lampas is opened on Romans 8 and the tutor answers with go "Colossians" 1
+    And he opens Settings and the round Ask button
+    When he sends "take me to Colossians 1" from the screen
+    Then the Reader is open on "Colossians 1"
+    And the Reader says "Opened Colossians 1"
+    When he taps the phone's Back
+    Then Settings is open
