@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.102",
+    "date": "2026-10-11",
+    "story": "mw-hqd5bz.35",
+    "kind": "fixed",
+    "text": "Review's final score now says 'Score' so it is not mistaken for the question counter, and sideways the answer options no longer sit under the Ask button."
+  },
+  {
     "version": "0.1.101",
     "date": "2026-10-11",
     "story": "mw-5r3p30.198",

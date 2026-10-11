@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.102
+_2026-10-11_
+- Fixed: Review's final score now says 'Score' so it is not mistaken for the question counter, and sideways the answer options no longer sit under the Ask button.
+
 ## 0.1.101
 _2026-10-11_
 - Fixed: Asking the tutor to take you to a chapter now works from every screen, not only the Reader.
