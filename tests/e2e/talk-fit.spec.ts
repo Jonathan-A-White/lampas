@@ -37,6 +37,12 @@ for (const viewport of [{ width: 844, height: 390 }, { width: 390, height: 844 }
     expect((await box(talk)).height).toBeGreaterThanOrEqual(43.5);
     // the reading box keeps some height to read in
     expect((await box(page.locator('[data-reader]'))).height).toBeGreaterThan(viewport.height > 500 ? 300 : 120);
+    // sideways the box is no smaller than it was (136 px with the chips row up) and the Talk button stays 56 px (mw-5r3p30.194)
+    if (viewport.height < 500) {
+      await expect(page.getByTestId('reader-chips')).toBeVisible();
+      expect((await box(page.locator('[data-reader]'))).height).toBeGreaterThanOrEqual(135.5);
+      expect((await box(talk)).height).toBeCloseTo(56, 0);
+    }
     // the round Ask button sits above the bar, not over it
     const ask = await box(page.locator('[data-ask-tutor]'));
     expect(ask.y + ask.height).toBeLessThanOrEqual((await box(page.locator('[data-talk-bar]'))).y + 0.5);

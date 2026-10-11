@@ -60,8 +60,10 @@ const LIFT: Partial<Record<Route, string>> = { import: 'var(--spacing) * 20 + 3r
 export const TALK_BAR_LIFT = 'var(--lp-talk-lift)';
 
 /** The room the Reader leaves under its reading box, above the Talk bar, for the round button (mw-5r3p30.115): its 56 px, the 12 px gap
- * below it and 4 px of air. The box ends where the button begins, so no line of text is ever behind it. */
-export const ASK_BUTTON_ROOM = 'var(--spacing) * 18';
+ * below it and 4 px of air. The box ends where the button begins, so no line of text is ever behind it. In a short window (a phone held sideways) the
+ * room is 42 px: the box's own 128 px of padding at its end is empty too, and the 30 px saved keep the whole Talk bar inside the window
+ * (mw-5r3p30.194, src/index.css --lp-ask-room). */
+export const ASK_BUTTON_ROOM = 'var(--lp-ask-room)';
 
 /** The context the sheet sends: the facts the screen reported, if they are the screen's own, else its name alone. */
 function contextOf(name: string, reported: ScreenContext | null): ScreenContext {
