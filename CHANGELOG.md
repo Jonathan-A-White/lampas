@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.101
+_2026-10-11_
+- Fixed: Asking the tutor to take you to a chapter now works from every screen, not only the Reader.
+
 ## 0.1.100
 _2026-10-11_
 - Fixed: When you tap Start over in the placement, its question and both answers now fit on screen (even sideways) and only Keep my answers is highlighted.

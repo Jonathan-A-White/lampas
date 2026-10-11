@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.101",
+    "date": "2026-10-11",
+    "story": "mw-5r3p30.198",
+    "kind": "fixed",
+    "text": "Asking the tutor to take you to a chapter now works from every screen, not only the Reader."
+  },
+  {
     "version": "0.1.100",
     "date": "2026-10-11",
     "story": "mw-hqd5bz.34",
