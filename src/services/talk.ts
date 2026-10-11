@@ -211,6 +211,8 @@ export interface TalkAnswer {
   form_values?: FormValue[];
   /** the name of the field the question in `answer` is about; missing when there is nothing more to ask */
   form_ask?: string;
+  /** a chapter he asked to be taken to (mw-5r3p30.172): {book, chapter}. Read by src/talk/go.ts; whatever else arrives is ignored there, not refused here. */
+  go?: unknown;
 }
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
@@ -225,7 +227,7 @@ const isFormValue = (value: unknown): value is FormValue =>
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'feedback_offer' && k !== 'form_values' && k !== 'form_ask')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'feedback_offer' && k !== 'form_values' && k !== 'form_ask' && k !== 'go')) return false;
   if ('question' in value && !isText(value.question, MAX_TALK_CHARS)) return false;
   if ('study_way_line' in value && !isText(value.study_way_line, STUDY_WAY_LINE_MAX)) return false;
   if ('feedback_offer' in value && !(isObject(value.feedback_offer) && Object.keys(value.feedback_offer).length === 1 && isText(value.feedback_offer.summary, FEEDBACK_SUMMARY_MAX))) return false;

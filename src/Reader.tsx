@@ -29,7 +29,7 @@ import { blocksOf } from './layout/layouts';
 import { LinkOpener } from './nav/LinkOpener';
 import { pendingLink, takeLink } from './nav/linkRequest';
 import { lemmaSheet, linkOf } from './nav/links';
-import { pendingRequest, takeRequest } from './nav/readerRequest';
+import { openedByTutor, pendingRequest, takeRequest } from './nav/readerRequest';
 import { closeVerse, navigate, openPassage, openVerse, readerOf, routeOf, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
@@ -153,7 +153,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   useEffect(() => {
     if (link) takeLink(link);
   }, [link]);
-  const [notice, setNotice] = useState(link?.notice ?? null);
+  const [notice, setNotice] = useState(link?.notice ?? (request?.action === 'opened' ? `Opened ${TITLE}` : null));
   // Swiping the text goes to the next or previous chapter (src/reader/useChapterSwipe.ts); past Matthew 1 or Revelation 22 a short note says so.
   const sheetOpen = useSheetOpen();
   const inner = useRef<HTMLDivElement | null>(null);
@@ -173,12 +173,20 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   useEffect(() => {
     holding.current = voice.listening;
   });
+  const closeTalk = useRef<() => void>(() => {});
   const talk = useTalk(BOOK, CHAPTER, (ref, id, answer, info) => {
     // an answer that comes while he holds waits: page audio can take the microphone from the recogniser
     if (openTalkRef.current !== ref || holding.current) return;
     // Sound it out: the word was said before the answer; now each syllable it lists, slowly, one after another.
     if (info.focus?.kind === 'sound' && !info.focus.language && info.syllables?.length) startAnswer(id, syllableRuns(info.syllables));
     else speakTutor(id, answerRuns(answer), () => openTalkRef.current === ref);
+  }, {
+    // the tutor takes him to a chapter (the answer's `go`) while this talk's sheet is open: the sheet closes, the Reader opens there as a new Back step
+    allowed: (ref) => openTalkRef.current === ref,
+    open: (place) => {
+      closeTalk.current();
+      openedByTutor(place.book, place.chapter);
+    },
   });
   // A tap on a verse number opens the Verse view as a Back step of its own; the address then names the verse and the effect below tells the bus.
   const selectVerse = useCallback((n: number) => openVerse(n), []);
@@ -199,6 +207,14 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const viewUnit = useMemo(() => viewVerse ?? (viewPassage ? passageVerse(viewPassage) : undefined), [viewVerse, viewPassage]);
   const tutor = useReaderTutor(open, chapter, talk, voice, { request, viewUnit, openTalkRef });
   const { talkScope, talkKey, talkAbout, setTalkAbout, holdTalk } = tutor;
+  // The Talk sheet's own close (Done), which the answer's `go` calls before the Reader opens the other chapter.
+  useEffect(() => {
+    closeTalk.current = () => {
+      voice.abort();
+      voice.clearNotice();
+      setTalkAbout(undefined);
+    };
+  });
   // What he says goes to the open Talk sheet (the Verse view's Ask the tutor has its own composer, src/Ask.tsx).
   useEffect(() => {
     sayAbout.current = (message) => {
@@ -406,11 +422,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           onSay={(message, focus, pictures) => talk.say(talkScope, message, focus, pictures)}
           onHelp={tutor.helpWithWord}
           onAskTerm={tutor.askAboutTerm}
-          onClose={() => {
-            voice.abort();
-            voice.clearNotice();
-            setTalkAbout(undefined);
-          }}
+          onClose={() => closeTalk.current()}
         />
       ) : null}
       {chapter && teaching && newWords ? (

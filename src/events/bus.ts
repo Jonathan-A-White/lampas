@@ -68,6 +68,8 @@ export type AppEvent =
   | { kind: 'reader-requested'; id: number; action: 'paradigm'; book: string; chapter: number; table: string; revealed: string[] }
   /** the Quick test's Ask the tutor: the Talk sheet on `verse`, the first question `question` sent with `focus` (a QuizFocus: the word, the question, his answers) */
   | { kind: 'reader-requested'; id: number; action: 'word'; book: string; chapter: number; verse: number; question: string; focus: TalkFocus }
+  /** the tutor took him to `chapter` of `book` (mw-5r3p30.172, the answer's `go`): the Reader shows the one-line notice 'Opened <title>' as it opens */
+  | { kind: 'reader-requested'; id: number; action: 'opened'; book: string; chapter: number }
   /** a link in the address was resolved (src/nav/linkRequest.ts): the reader opens on `chapter` of `book`, with `verse` selected (null: none), the one-line
    * `notice` that says what was asked for when it is not what is shown, and, for a word link, the `word` whose sheet opens over it; `id` counts up, so the
    * Reader can tell a link it has not met */

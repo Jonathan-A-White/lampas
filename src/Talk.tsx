@@ -273,7 +273,7 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
         <div data-answer-text className="break-words text-lg leading-snug">
           <Markdown text={turn.a} onOpen={onLeave} />
         </div>
-        {turn.changes?.length || turn.refused?.length || turn.added?.length || turn.already?.length || turn.unknown?.length ? (
+        {turn.changes?.length || turn.refused?.length || turn.opened || turn.added?.length || turn.already?.length || turn.unknown?.length ? (
           <ul data-talk-changes className="mt-2 border-t border-line pt-1">
             {turn.changes?.map((c, i) => (
               <ChangeRow key={i} turn={turn} change={c} index={i} />
@@ -283,6 +283,11 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
                 {r}
               </li>
             ))}
+            {turn.opened ? (
+              <li data-talk-opened className="py-1 text-base">
+                Opened {turn.opened}
+              </li>
+            ) : null}
             {turn.added?.length ? <WordsLine lemmas={turn.added} before="Added " after=" to your words" /> : null}
             {turn.already?.length ? <WordsLine lemmas={turn.already} before="" after={turn.already.length === 1 ? ' is already on your words' : ' are already on your words'} /> : null}
             {turn.unknown?.length ? <WordsLine lemmas={turn.unknown} before="I do not know " after="" /> : null}

@@ -99,6 +99,8 @@ export interface TalkTurn {
   changes?: AppliedChange[];
   /** a sentence for each change the answer asked for that was ignored */
   refused?: string[];
+  /** the chapter the answer took him to ('Colossians 1', mw-5r3p30.172): shown as 'Opened Colossians 1' */
+  opened?: string;
   /** the lemmas the answer put on his words-to-learn list (words_to_add), each one new to it */
   added?: string[];
   /** the lemmas the answer asked to add that were on his list already */

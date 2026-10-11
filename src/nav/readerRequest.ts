@@ -37,6 +37,12 @@ export function askAboutWord(book: string, chapter: number, verse: number, quest
   openReader({ book, chapter, verse });
 }
 
+/** The tutor takes him to `chapter` of `book` (the Bible talk answer's `go`, mw-5r3p30.172): the Reader opens there as a new Back step, with the notice 'Opened <title>'. */
+export function openedByTutor(book: string, chapter: number): void {
+  publish({ kind: 'reader-requested', id: ++lastId, action: 'opened', book, chapter });
+  openReader({ book, chapter });
+}
+
 /** The request the Reader has not met yet, if any. It does not take it (see `takeRequest`), so it can be called while rendering. */
 export function pendingRequest(): ReaderRequest | undefined {
   const request = latest('reader-requested');

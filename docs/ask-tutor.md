@@ -123,6 +123,13 @@ A phone that refuses the clipboard shows the Markdown in a field, selected, to c
 Checks: `tests/unit/exchange.test.ts`, "Copy on an answer card ..." and "With several answers ..." in `features/tutor.feature`, "Copy on a turn ...",
 "A talk about the chapter ..." and "With several turns ..." in `features/bible-talk.feature`, and `tests/e2e/tutor.spec.ts`.
 
+## Taking him to a chapter (mw-5r3p30.172)
+
+Asked in the Talk sheet to switch to, open, go to or take him to a chapter ('can you switch to Colossians 1'), the tutor puts `go` {book, chapter} in its answer (the book's name from the app's own list, `src/data/books.ts`, a chapter in range; `grinds/bible-talk.instructions.md` 'Taking him to a chapter') and says where it is taking him. The app reads `go` itself, never the text: `src/talk/go.ts` `readGo`. `isTalkAnswer` lets any `go` through, so a shape the app refuses never costs him the answer.
+
+- A `go` the app can take, while that talk's sheet is open (`useTalk`'s `GoTo.allowed`): the turn is kept with `opened` ('Colossians 1', shown under the answer as `Opened Colossians 1`), the sheet closes and `nav/readerRequest.ts` `openedByTutor` opens the Reader there as a new Back step, which shows the notice `Opened Colossians 1` under the header. The phone's Back returns to the chapter he was on. The answer is not read aloud (the Reader that would read it is gone).
+- A `go` the app cannot take (no such book, a chapter the book lacks, a shape it refuses) or one that arrives after he closed the sheet: nothing moves, the answer is shown, and the turn says `Could not open <x>`, so the tutor's text never claims a move that did not happen.
+
 ## Pictures in a talk
 
 The Talk sheet takes pictures (mw-y3qno5.1, `features/talk-pictures.feature`): a screenshot of a lexicon entry, a page, a note. Above the field are
