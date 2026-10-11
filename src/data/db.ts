@@ -131,13 +131,18 @@ export interface TalkTurn {
   studyWayLine?: string;
   /** the goal the answer offered to keep as his quiz goal (mw-5r3p30.185); `quizGoalChoice` says what he did with the offer, absent while he has not answered it */
   quizGoalOffer?: string;
-  quizGoalChoice?: 'kept' | 'once';
+  quizGoalChoice?: 'kept' | 'once' | 'declined';
   /** the pronunciation guide the answer carried for a Hebrew word (mw-5r3p30.98, src/script/HebrewGuide.tsx HebrewSoundGuide) */
   guide?: HebrewSounds;
   /** the tutor's one-line summary of an ask the app cannot meet; its presence offers Send this to the makers (src/Talk.tsx FeedbackOffer) */
   feedbackOffer?: string;
   /** set once the mill has the feedback this offer made: the offer then reads Sent */
   feedbackSent?: boolean;
+  /** set when he said no to the feedback offer (mw-5r3p30.186): nothing was sent and the offer reads Not sent */
+  feedbackWithdrawn?: boolean;
+  /** a setting change the answer offered (mw-5r3p30.186): shown as a button; `settingChoice` says what became of it, absent while it waits */
+  settingOffer?: { key: string; value: string | number };
+  settingChoice?: 'taken' | 'declined';
 }
 
 /** How a Hebrew word is said, as the tutor's sound answer gave it: the word, its syllables in Hebrew letters in reading order and how each sounds in Latin letters. */

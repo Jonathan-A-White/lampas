@@ -179,6 +179,8 @@ export interface TalkRequest {
   resources?: TutorResource[];
   /** present only when pictures go with the message (mw-y3qno5.1): how many, 1 to 4. They are the grist's attachments; the tutor reads the text in them */
   pictures?: number;
+  /** present only while an offer waits for his tap (mw-5r3p30.186): the newest one in this talk, its kind and the exact text */
+  pending_offer?: PendingOffer;
 }
 
 /** The most links an answer carries (the grind's schema): the app shows the first three of more. */
@@ -191,6 +193,17 @@ export const FEEDBACK_SUMMARY_MAX = MAX_SUMMARY;
 export interface FeedbackOffer {
   summary: string;
 }
+
+/** The offer waiting for his tap that his next turn carries (mw-5r3p30.186): its kind and the exact text it would send or do, so the tutor can read it back word for word
+ * and tell from his words whether he confirms, declines or asks to hear it. */
+export interface PendingOffer {
+  kind: 'feedback' | 'setting' | 'quiz-goal';
+  text: string;
+}
+
+/** What the tutor decided his words were, when an offer was waiting: yes, no or 'read it back'. Left out for an ordinary question, and the offer stays. */
+export type OfferReply = 'confirm' | 'decline' | 'read_back';
+export const OFFER_REPLIES: readonly OfferReply[] = ['confirm', 'decline', 'read_back'];
 
 /** What the grind answers (grinds/bible-talk.answer.schema.json). */
 export interface TalkAnswer {
@@ -214,6 +227,10 @@ export interface TalkAnswer {
   quiz_goal_offer?: string;
   /** an ask the app cannot meet (another app, a new setting, a change): the summary the app offers to send to the makers */
   feedback_offer?: FeedbackOffer;
+  /** a setting change to offer instead of making it (mw-5r3p30.186): the app shows a button and changes it on his tap or his spoken yes; the registry checks it */
+  setting_offer?: { key: string; value: string | number };
+  /** only when the request carried `pending_offer`: what his words did with it */
+  offer_reply?: OfferReply;
   /** while the tutor helps with a form (`form` in the request): the values to put in its fields, by field name; the form ignores a name it does not have */
   form_values?: FormValue[];
   /** the name of the field the question in `answer` is about; missing when there is nothing more to ask */
@@ -234,11 +251,13 @@ const isFormValue = (value: unknown): value is FormValue =>
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'feedback_offer' && k !== 'form_values' && k !== 'form_ask' && k !== 'go')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'form_values' && k !== 'form_ask' && k !== 'go')) return false;
   if ('question' in value && !isText(value.question, MAX_TALK_CHARS)) return false;
   if ('study_way_line' in value && !isText(value.study_way_line, STUDY_WAY_LINE_MAX)) return false;
   if ('quiz_goal_offer' in value && !isText(value.quiz_goal_offer, QUIZ_GOAL_MAX)) return false;
   if ('feedback_offer' in value && !(isObject(value.feedback_offer) && Object.keys(value.feedback_offer).length === 1 && isText(value.feedback_offer.summary, FEEDBACK_SUMMARY_MAX))) return false;
+  if ('offer_reply' in value && !OFFER_REPLIES.includes(value.offer_reply as OfferReply)) return false;
+  if ('setting_offer' in value && !(isObject(value.setting_offer) && Object.keys(value.setting_offer).length === 2 && isText(value.setting_offer.key, 60) && (isText(value.setting_offer.value, 80) || typeof value.setting_offer.value === 'number'))) return false;
   if ('form_ask' in value && !isText(value.form_ask, 30)) return false;
   if ('form_values' in value && !(Array.isArray(value.form_values) && value.form_values.length <= 8 && value.form_values.every(isFormValue))) return false;
   if ('links' in value && !(Array.isArray(value.links) && value.links.length <= 12 && value.links.every(isAnswerLink))) return false;
@@ -308,6 +327,7 @@ export function buildTalkRequest(
   resources: TutorResource[] = [],
   pictureCount = 0,
   quizGoal: { kept: string; once?: string } = { kept: '' },
+  pendingOffer?: PendingOffer,
 ): TalkRequest {
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   // About (mw-vtjxh4.2) sends the credits, which take most of the record: the credits are the talk, so his words and his grammar stay home
@@ -329,6 +349,7 @@ export function buildTalkRequest(
     ...(scope.quiz && quizGoal.kept === '' && quizGoal.once ? { quiz_goal_once: quizGoal.once } : {}),
     ...(aboutCredits ? {} : { resources }),
     ...(pictureCount > 0 ? { pictures: pictureCount } : {}),
+    ...(pendingOffer ? { pending_offer: pendingOffer } : {}),
   };
 }
 
