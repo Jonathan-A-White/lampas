@@ -1,0 +1,46 @@
+{
+  "description": "An idea that became the setting Theme while Theme is Light: the tutor says it is a setting now and offers to set it to Dark in setting_offer, changing nothing itself.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Goal",
+    "question": "What happened to my idea?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί"
+    ],
+    "settings": {
+      "theme": "light"
+    },
+    "screen": {
+      "name": "Goal",
+      "facts": [
+        {
+          "label": "Goal",
+          "value": "Read 1 John 1:1"
+        }
+      ]
+    },
+    "requests": [
+      {
+        "summary": "Let me read in a dark theme",
+        "status": "adopted-as-setting",
+        "setting": "Settings > Appearance > Theme"
+      }
+    ]
+  },
+  "expect": {
+    "answer": {
+      "matches": "[Ss]etting"
+    },
+    "setting_offer.key": {
+      "equals": "theme"
+    },
+    "setting_offer.value": {
+      "equals": "dark"
+    },
+    "settings_changes": {
+      "present": false
+    }
+  }
+}

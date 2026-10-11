@@ -1,0 +1,34 @@
+{
+  "description": "A landed request: the tutor says it shipped, in version 0.1.86.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "question": "What happened to my idea?",
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {
+      "hebrewDepth": "both",
+      "askBy": "speaking"
+    },
+    "requests": [
+      {
+        "summary": "Add a sepia theme",
+        "status": "landed",
+        "version": "0.1.86"
+      }
+    ]
+  },
+  "expect": {
+    "answer": {
+      "matches": "0\\.1\\.86"
+    },
+    "settings_changes": {
+      "present": false
+    }
+  }
+}

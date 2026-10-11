@@ -110,3 +110,23 @@ describe('askByChange: the one change Ask the tutor makes', () => {
     expect(askByChange({ answer: 'x', words: [] })).toEqual([]);
   });
 });
+
+describe('his requests (mw-vy3ghg.6)', () => {
+  const text = readFileSync('grinds/verse-ask.instructions.md', 'utf8').replace(/\s+/g, ' ');
+
+  it('tells the tutor to answer questions about his requests from `requests`, status by status', () => {
+    expect(text).toContain('- `requests`:');
+    expect(text).toContain('## His requests');
+    for (const status of ['sent', 'filed', 'building', 'landed', 'declined', 'adopted-as-setting']) {
+      expect(text, status).toContain(`- \`${status}\``);
+      const example = readJson(`grinds/examples/verse-ask/request-${status}.json`) as { request: { requests: { status: string }[] } };
+      expect(example.request.requests[0].status).toBe(status);
+    }
+    expect(text).toContain('what happened to my idea');
+  });
+
+  it('lets it switch on an adopted setting only when that is Ask by, and only after he says so', () => {
+    expect(text).toMatch(/adopted-as-setting[\s\S]{0,400}can change\s+only Ask by/);
+    expect(text).toContain('For any other setting do not put it in `settings_changes`');
+  });
+});

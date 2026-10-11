@@ -1,0 +1,42 @@
+{
+  "description": "A request that is only sent: the tutor says the makers have not answered yet and does not say it is filed or built.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Goal",
+    "question": "What happened to my idea?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί"
+    ],
+    "settings": {
+      "theme": "light"
+    },
+    "screen": {
+      "name": "Goal",
+      "facts": [
+        {
+          "label": "Goal",
+          "value": "Read 1 John 1:1"
+        }
+      ]
+    },
+    "requests": [
+      {
+        "summary": "Add a sepia theme",
+        "status": "sent"
+      }
+    ]
+  },
+  "expect": {
+    "answer": {
+      "matches": "[Nn]ot (yet|answered)|no answer|waiting|hasn.t"
+    },
+    "setting_offer": {
+      "present": false
+    },
+    "settings_changes": {
+      "present": false
+    }
+  }
+}

@@ -505,3 +505,40 @@ describe('the screen credits (mw-vtjxh4.2)', () => {
     expect(matches.test('It gives you a lexicon.')).toBe(false);
   });
 });
+
+describe('his requests (mw-vy3ghg.6)', () => {
+  const text = readFileSync('grinds/bible-talk.instructions.md', 'utf8').replace(/\s+/g, ' ');
+  const statuses = ['sent', 'filed', 'building', 'landed', 'declined', 'adopted-as-setting'];
+
+  it('tells the tutor to answer questions about his requests from `requests`, status by status, and not to refuse them', () => {
+    expect(text).toContain('- `requests`:');
+    expect(text).toContain('## His requests');
+    for (const status of statuses) expect(text, status).toContain(`- \`${status}\``);
+    expect(text).toContain('what happened to my idea');
+    expect(text).toMatch(/does not get the one-sentence refusal/);
+    expect(text).toMatch(/never invent a status/i);
+  });
+
+  it('tells it to offer an adopted setting in setting_offer, not to make it unasked', () => {
+    expect(text).toMatch(/adopted-as-setting[\s\S]{0,300}switched on from here/);
+    expect(text).toContain('`setting_offer`');
+    expect(text).toMatch(/Do not put it in `settings_changes` unless he\s+has asked for it in words/);
+  });
+
+  it('carries a worked example that is a valid answer and offers a real setting', () => {
+    const block = /<!-- requests-example:start -->\s*```json\s*([\s\S]*?)```\s*<!-- requests-example:end -->/.exec(text);
+    expect(block, 'the example answer block').not.toBeNull();
+    const answer = JSON.parse((block as RegExpExecArray)[1]) as { setting_offer?: { key: string; value: string } };
+    expect(validate(answer, schema as Schema)).toEqual([]);
+    expect(isTalkAnswer(answer)).toBe(true);
+    expect(answer.setting_offer).toEqual({ key: 'theme', value: 'dark' });
+    expect(SETTINGS.some((s) => s.key === 'theme')).toBe(true);
+  });
+
+  it('has a scenario for each status', () => {
+    for (const name of ['sent', 'filed', 'building', 'landed', 'declined', 'adopted-as-setting']) {
+      const example = readJson(`grinds/examples/bible-talk/request-${name}.json`) as { request: { requests: { status: string }[] } };
+      expect(example.request.requests[0].status).toBe(name);
+    }
+  });
+});
