@@ -13,11 +13,11 @@ import { useReportScreen } from './tutor/screenContext';
 
 const GREEK = /([Ͱ-Ͽἀ-῿][Ͱ-Ͽἀ-῿ ,-]*[Ͱ-Ͽἀ-῿]|[Ͱ-Ͽἀ-῿])/;
 
-/** A stretch of text with its Greek marked, so the Greek font and the Greek voice find it. */
+/** A stretch of text with its Greek marked, so the Greek font and the Greek voice find it; drawn in the app's Greek type (Gentium Plus at --lp-greek-size) as everywhere else. */
 function greekMarked(text: string): ReactNode {
   return text.split(GREEK).map((part, i) =>
     i % 2 === 1 ? (
-      <span key={i} lang="grc">
+      <span key={i} lang="grc" className="font-greek text-[length:var(--lp-greek-size)]">
         {part}
       </span>
     ) : (

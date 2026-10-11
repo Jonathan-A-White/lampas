@@ -80,3 +80,30 @@ test('the Robinson entry opens the essay inside the app, readable at phone width
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Preface', level: 1 })).toBeVisible();
 });
+
+test('Greek words in the essay use the app\'s Greek type, in Gentium Plus', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/preface/robinson');
+  await expect(page.getByRole('heading', { name: 'Introduction', level: 2 })).toBeVisible();
+  const greek = page.locator('main [data-essay-paragraph] [lang="grc"]');
+  expect(await greek.count()).toBeGreaterThan(0);
+  const target = page.locator('main [data-essay-paragraph]', { hasText: 'ευθυς' }).first();
+  await target.scrollIntoViewIfNeeded();
+  const appGreek = await page.evaluate(() => {
+    const probe = document.createElement('span');
+    probe.className = 'font-greek text-[length:var(--lp-greek-size)]';
+    document.body.append(probe);
+    const style = getComputedStyle(probe);
+    const out = { family: style.fontFamily, size: style.fontSize };
+    probe.remove();
+    return out;
+  });
+  expect(appGreek.family).toMatch(/^"?Gentium Plus"?/);
+  const wrong = await greek.evaluateAll((els) => els.map((el) => ({ text: el.textContent, family: getComputedStyle(el).fontFamily, size: getComputedStyle(el).fontSize })));
+  for (const w of wrong) {
+    expect(w.family, `family of ${w.text}`).toMatch(/^"?Gentium Plus"?/);
+    expect(w.size, `size of ${w.text}`).toBe(appGreek.size);
+  }
+  await target.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  await shot(page, 'essay-greek');
+});
