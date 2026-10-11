@@ -12,6 +12,23 @@
     "solid_words": { "description": "The Greek lemmas he already knows well.", "type": "array", "items": { "type": "string" } },
     "learner": { "description": "Optional. Where he stands in one line: 'solid N words; learning: a, b, c; new today: x, y; due now: M'.", "type": "string", "maxLength": 600 },
     "learner_grammar": { "description": "Optional. Where his grammar stands, as in the Bible talk's request (grinds/bible-talk.input.schema.json learner_grammar).", "type": "object" },
+    "requests": {
+      "description": "Optional. The requests he has sent to the factory (an ask the tutor offered to pass on, an approach he asked for), at most the 10 newest, newest first, each with where it stands. Missing when he has sent none. status: sent (the factory has it, nothing more yet), filed (the makers have it on their list), building (being built now), landed (built and shipped; `version` is the app version it is in), declined (the makers decided not to; `reason` is why) or adopted-as-setting (it became a setting; `setting` is where Settings has it). Answer 'what happened to my idea' from this, never from a guess.",
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["summary", "status"],
+        "properties": {
+          "summary": { "description": "What he asked for, in one line.", "type": "string", "minLength": 1, "maxLength": 120 },
+          "status": { "type": "string", "enum": ["sent", "filed", "building", "landed", "declined", "adopted-as-setting"] },
+          "version": { "description": "Only with landed: the app version the idea shipped in.", "type": "string", "minLength": 1, "maxLength": 40 },
+          "setting": { "description": "Only with adopted-as-setting: the setting's name, as the makers wrote it ('Settings > Appearance > Sepia').", "type": "string", "minLength": 1, "maxLength": 80 },
+          "reason": { "description": "Only with declined: why, in one plain sentence.", "type": "string", "minLength": 1, "maxLength": 120 }
+        }
+      }
+    },
     "settings": { "description": "Optional. How he wants a language besides Greek written, and how Ask the tutor opens (askBy: \"speaking\" or \"typing\"), by key: { \"hebrewDepth\": \"both\", \"askBy\": \"speaking\" }.", "type": "object" }
   }
 }
