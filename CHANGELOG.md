@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.82
+_2026-10-11_
+- Fixed: Ask the tutor brings the answer into view when it comes, and fits in landscape.
+
 ## 0.1.81
 _2026-10-10_
 - Fixed: Tapping outside the Hebrew word's 'How to say it' sheet no longer ends the tutor's spoken answer; Resume stays.
