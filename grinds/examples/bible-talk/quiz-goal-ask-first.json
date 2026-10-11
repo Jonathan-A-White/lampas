@@ -1,0 +1,20 @@
+{
+  "description": "Quiz me with no quiz goal kept and an empty history: the tutor does not start the quiz, it asks in one short plain question why he wants it, offers no goal yet and changes no setting.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:1",
+    "greek": "Οὐδὲν ἄρα νῦν κατάκριμα τοῖς ἐν χριστῷ Ἰησοῦ μὴ κατὰ σάρκα περιπατοῦσιν ἀλλὰ κατὰ πνεῦμα",
+    "english": "Therefore there is now no condemnation for those who are in Christ Jesus, who do not walk according to the flesh but according to the Spirit.",
+    "question": "Quiz me on Romans 8:1.",
+    "history": [],
+    "solid_words": ["ὁ", "καί"],
+    "settings": {},
+    "mode": "quiz",
+    "quiz_goal": null
+  },
+  "expect": {
+    "answer": { "matches": "\\?" },
+    "quiz_goal_offer": { "present": false },
+    "settings_changes": { "present": false }
+  }
+}

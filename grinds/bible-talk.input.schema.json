@@ -27,6 +27,16 @@
       "maxItems": 12,
       "items": { "type": "string", "minLength": 1, "maxLength": 100 }
     },
+    "quiz_goal": {
+      "description": "Optional, and only in a quiz (mode quiz). Why the reader wants the quiz, in his words (Quiz goal in the app, at most 80 characters), or null when he has kept none: the quiz then opens by asking him why.",
+      "anyOf": [{ "type": "string", "minLength": 1, "maxLength": 80 }, { "type": "null" }]
+    },
+    "quiz_goal_once": {
+      "description": "Optional, and only in a quiz with `quiz_goal` null. A goal he chose 'Just this time' for earlier in this quiz (at most 80 characters): quiz to match it, do not ask again and do not offer to keep it again.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
     "resources": {
       "description": "Optional. The study resources he has switched on in Settings, in the order Settings lists them: the only ones the answer's `links` may count on. An empty list means none is on. Missing only in a talk from About.",
       "type": "array",

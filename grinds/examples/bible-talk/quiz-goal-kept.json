@@ -1,0 +1,20 @@
+{
+  "description": "Quiz me with the goal understanding kept: the tutor does not ask why again and does not offer the goal, it begins the quiz in plain English, and changes no setting.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:1",
+    "greek": "Οὐδὲν ἄρα νῦν κατάκριμα τοῖς ἐν χριστῷ Ἰησοῦ μὴ κατὰ σάρκα περιπατοῦσιν ἀλλὰ κατὰ πνεῦμα",
+    "english": "Therefore there is now no condemnation for those who are in Christ Jesus, who do not walk according to the flesh but according to the Spirit.",
+    "question": "Quiz me on Romans 8:1.",
+    "history": [],
+    "solid_words": ["ὁ", "καί"],
+    "settings": {},
+    "mode": "quiz",
+    "quiz_goal": "understanding what the passage says"
+  },
+  "expect": {
+    "answer": { "matches": "\\?" },
+    "quiz_goal_offer": { "present": false },
+    "settings_changes": { "present": false }
+  }
+}
