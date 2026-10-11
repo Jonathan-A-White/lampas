@@ -446,6 +446,12 @@ textarea,
 [data-verse-view] .screen {
   padding-bottom: 1rem;
 }
+/* Unlock has no round Ask button either, so it keeps no 140 px floor under its last row, and it keeps room above its icon (mw-5r3p30.183): the content
+ * centres in what is left and scrolls from its top when it does not fit. */
+[data-gate] .screen {
+  padding-top: 1.5rem;
+  padding-bottom: calc(1rem + var(--lp-end-inset));
+}
 [data-verse-bar] .bk-composer__type-instead {
   min-height: var(--lp-tap);
 }
