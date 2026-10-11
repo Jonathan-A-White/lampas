@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.100",
+    "date": "2026-10-11",
+    "story": "mw-hqd5bz.34",
+    "kind": "fixed",
+    "text": "When you tap Start over in the placement, its question and both answers now fit on screen (even sideways) and only Keep my answers is highlighted."
+  },
+  {
     "version": "0.1.99",
     "date": "2026-10-11",
     "story": "mw-5r3p30.194",

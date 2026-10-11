@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.100
+_2026-10-11_
+- Fixed: When you tap Start over in the placement, its question and both answers now fit on screen (even sideways) and only Keep my answers is highlighted.
+
 ## 0.1.99
 _2026-10-11_
 - Fixed: Held sideways, the Reader's Talk bar now fits whole on the screen.
