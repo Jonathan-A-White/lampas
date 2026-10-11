@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.103",
+    "date": "2026-10-11",
+    "story": "mw-5r3p30.196",
+    "kind": "fixed",
+    "text": "The Quiz me goal question now always shows with its Yes, from now on and Just this time buttons, in view without scrolling."
+  },
+  {
     "version": "0.1.102",
     "date": "2026-10-11",
     "story": "mw-hqd5bz.35",

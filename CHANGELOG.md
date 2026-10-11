@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.103
+_2026-10-11_
+- Fixed: The Quiz me goal question now always shows with its Yes, from now on and Just this time buttons, in view without scrolling.
+
 ## 0.1.102
 _2026-10-11_
 - Fixed: Review's final score now says 'Score' so it is not mistaken for the question counter, and sideways the answer options no longer sit under the Ask button.
