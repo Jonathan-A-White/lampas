@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.106
+_2026-10-11_
+- Fixed: In Settings, the Quiz goal now has a clear label and shows your goal, and Save stays off until you have typed something.
+
 ## 0.1.104
 _2026-10-11_
 - New: Settings and About now have "Your requests", which lists what you asked the factory for and shows whether it was filed, is being built, was adopted in a version (with a link), declined with a reason, or became a setting.

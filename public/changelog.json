@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.106",
+    "date": "2026-10-11",
+    "story": "mw-5r3p30.200",
+    "kind": "fixed",
+    "text": "In Settings, the Quiz goal now has a clear label and shows your goal, and Save stays off until you have typed something."
+  },
+  {
     "version": "0.1.104",
     "date": "2026-10-11",
     "story": "mw-vy3ghg.5",
