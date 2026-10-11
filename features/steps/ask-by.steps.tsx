@@ -10,6 +10,8 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { setReaderView, setWeave } from '../../src/data/repositories';
+import { askBySetting } from '../../src/settings/definitions/askBy';
+import { setSetting } from '../../src/settings/store';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stopReading } from '../../src/speech/readAloud';
@@ -197,6 +199,43 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('Ask by is now saved as {string}', savedAs);
     And('Ask the tutor shows the Hold to ask bar and a Type a question button and no text box', speakFirst);
+  });
+
+  const tutorAnswers = async (text: string, changes: unknown) => {
+    fake.received.length = 0;
+    fake.autoReply = { status: 'answered', answer: { ...SYNERGEI_ANSWER, answer: text, words: [], settings_changes: changes } };
+    const composer = composerIn(viewEl());
+    if (!within(composer).queryByRole('textbox', { name: 'Your question' })) await user.click(within(composer).getByRole('button', { name: 'Type a question' }));
+    await user.type(within(composerIn(viewEl())).getByRole('textbox', { name: 'Your question' }), 'What does it mean?');
+    await user.click(within(composerIn(viewEl())).getByRole('button', { name: 'Send' }));
+  };
+  const answerShows = async (_: unknown, text: string) => {
+    expect(await within(viewEl()).findByText(text)).toBeInTheDocument();
+  };
+  const noText = async (_: unknown, text: string) => {
+    // the answer is on screen by now (the step before awaited it), so a failure or a card would be too
+    expect(within(viewEl()).queryByText(new RegExp(text))).toBeNull();
+  };
+
+  Scenario('A setting change the app refuses never costs him the tutor\'s answer', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on the Verse view of Romans 8 with Ask the tutor chosen', openAskView);
+    When('the tutor answers {string} and also asks to change the theme', (_, text: string) => tutorAnswers(text, [{ key: 'theme', value: 'dark' }, { key: 'askBy', value: 'typing' }]));
+    Then('the answer shows {string}', answerShows);
+    And('no {string} is shown', noText);
+    And('no {string} card is shown', noText);
+    And('Ask by is still speaking', async () => {
+      expect(await askBySaved()).not.toBe('typing');
+    });
+  });
+
+  Scenario('A change to the value already set shows no Changed card', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on the Verse view of Romans 8 with Ask the tutor chosen', openAskView);
+    When('the tutor answers {string} and also asks for Ask by Typing while it is Typing', async (_, text: string) => {
+      await setSetting(askBySetting, 'typing');
+      await tutorAnswers(text, [{ key: 'askBy', value: 'typing' }]);
+    });
+    Then('the answer shows {string}', answerShows);
+    And('no {string} card is shown', noText);
   });
 
   Scenario("The tutor's instructions say to switch Ask by only when he asks", ({ Given, Then }) => {

@@ -45,21 +45,29 @@ export interface VerseAnswer {
   words: AnswerWord[];
   /** what he asked, cleaned up by the tutor (punctuation, capitals, no fillers); shown in place of his raw words when present */
   question?: string;
-  /** the one setting the tutor may switch when he asks, Ask by (grinds/verse-ask.answer.schema.json): applied at once by the app */
-  settings_changes?: { key: 'askBy'; value: 'speaking' | 'typing' }[];
+  /** the one setting the tutor may switch when he asks, Ask by (grinds/verse-ask.answer.schema.json). The schema holds the tutor to one exact change,
+   * but the app reads whatever arrives and takes only what askByChange accepts: a change it refuses never costs him the answer (mw-5r3p30.171). */
+  settings_changes?: unknown;
 }
+
+export type AskByChange = { key: 'askBy'; value: 'speaking' | 'typing' };
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 const isText = (value: unknown, max: number): value is string => typeof value === 'string' && value.length > 0 && value.length <= max;
 
-const isAskByChange = (change: unknown): boolean =>
-  isObject(change) && Object.keys(change).length === 2 && change.key === 'askBy' && (change.value === 'speaking' || change.value === 'typing');
+/** The change the app makes from an answer: the first entry, when it is Ask by set to Speaking or Typing (any case); anything else is ignored. */
+export function askByChange(answer: VerseAnswer): AskByChange[] {
+  const list = answer.settings_changes;
+  const first = Array.isArray(list) ? (list[0] as unknown) : undefined;
+  if (!isObject(first) || first.key !== 'askBy' || typeof first.value !== 'string') return [];
+  const value = first.value.trim().toLowerCase();
+  return value === 'speaking' || value === 'typing' ? [{ key: 'askBy', value }] : [];
+}
 
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isVerseAnswer(value: unknown): value is VerseAnswer {
   if (!isObject(value) || Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes') || !isText(value.answer, 1200)) return false;
   if ('question' in value && !isText(value.question, 400)) return false;
-  if ('settings_changes' in value && !(Array.isArray(value.settings_changes) && value.settings_changes.length <= 1 && value.settings_changes.every(isAskByChange))) return false;
   if (!Array.isArray(value.words) || value.words.length > 12) return false;
   return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));
 }
