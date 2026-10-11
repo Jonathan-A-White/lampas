@@ -431,3 +431,11 @@ textarea,
 [data-verse-bar] .bk-composer__speak {
   padding: 0.25rem 0 0;
 }
+/* The Verse view's foot is its own bar and the round Ask button is not drawn over it, so its scrolling box keeps no room at the end for either: in a short
+ * window (landscape) that padding alone would push the composer below the screen's edge (mw-5r3p30.170). Type a question is a 44 px thumb target. */
+[data-verse-view] .screen {
+  padding-bottom: 1rem;
+}
+[data-verse-bar] .bk-composer__type-instead {
+  min-height: var(--lp-tap);
+}
