@@ -35,6 +35,20 @@ Feature: Ask by Speaking or Typing
     And Ask by is now saved as "speaking"
     And Ask the tutor shows the Hold to ask bar and a Type a question button and no text box
 
+  Scenario: A setting change the app refuses never costs him the tutor's answer
+    Given Lampas is opened on the Verse view of Romans 8 with Ask the tutor chosen
+    When the tutor answers "Here is the meaning." and also asks to change the theme
+    Then the answer shows "Here is the meaning."
+    And no "Could not reach the tutor" is shown
+    And no "Changed:" card is shown
+    And Ask by is still speaking
+
+  Scenario: A change to the value already set shows no Changed card
+    Given Lampas is opened on the Verse view of Romans 8 with Ask the tutor chosen
+    When the tutor answers "You are already typing." and also asks for Ask by Typing while it is Typing
+    Then the answer shows "You are already typing."
+    And no "Changed:" card is shown
+
   Scenario: The tutor's instructions say to switch Ask by only when he asks
     Given the verse-ask grind
     Then its answer schema lets an answer change only Ask by to Speaking or Typing, and its instructions say when

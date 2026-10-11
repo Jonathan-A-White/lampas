@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.85",
+    "date": "2026-10-11",
+    "story": "mw-5r3p30.171",
+    "kind": "fixed",
+    "text": "The tutor's answer always shows, even when a setting he asked to change cannot be changed."
+  },
+  {
     "version": "0.1.84",
     "date": "2026-10-11",
     "story": "mw-hqd5bz.26",

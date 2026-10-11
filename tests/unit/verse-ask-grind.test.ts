@@ -3,7 +3,7 @@
 // validator for the keywords it uses, and isVerseAnswer, the guard the phone runs, agrees with it.
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
-import { isVerseAnswer } from '../../src/services/tutor';
+import { askByChange, isVerseAnswer } from '../../src/services/tutor';
 import { validate, type Schema } from '../support/schema-validate';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
@@ -71,8 +71,42 @@ describe('the answer schema and isVerseAnswer', () => {
     }
   });
 
-  it.each(bad)('refuses %s in both', (_, value) => {
+  const refusedChanges = bad.filter(([name]) => /change|askBy value|two changes/.test(name));
+  const refusedOnlyBySchema = new Set(refusedChanges.map(([name]) => name));
+
+  it.each(bad.filter(([name]) => !refusedOnlyBySchema.has(name)))('refuses %s in both', (_, value) => {
     expect(validate(value, schema as Schema)).not.toEqual([]);
     expect(isVerseAnswer(value)).toBe(false);
+  });
+
+  // The schema is what the tutor is held to; the app never loses a reply over a change it will not make (mw-5r3p30.171).
+  it.each(refusedChanges)('the schema refuses %s but the app still reads the answer', (_, value) => {
+    expect(validate(value, schema as Schema)).not.toEqual([]);
+    expect(isVerseAnswer(value)).toBe(true);
+  });
+
+  it('still reads an answer whose settings_changes is not even a list', () => {
+    expect(isVerseAnswer({ ...good, settings_changes: 'dark' })).toBe(true);
+    expect(isVerseAnswer({ ...good, settings_changes: [null, 3, { key: 7 }] })).toBe(true);
+  });
+});
+
+describe('askByChange: the one change Ask the tutor makes', () => {
+  const of = (settings_changes: unknown) => askByChange({ answer: 'x', words: [], settings_changes } as never);
+
+  it('takes askBy to typing or speaking, in any case', () => {
+    expect(of([{ key: 'askBy', value: 'typing' }])).toEqual([{ key: 'askBy', value: 'typing' }]);
+    expect(of([{ key: 'askBy', value: 'Typing' }])).toEqual([{ key: 'askBy', value: 'typing' }]);
+    expect(of([{ key: 'askBy', value: ' SPEAKING ' }])).toEqual([{ key: 'askBy', value: 'speaking' }]);
+  });
+
+  it('ignores any other setting, a bad value, a change after the first and a malformed list', () => {
+    expect(of([{ key: 'theme', value: 'dark' }])).toEqual([]);
+    expect(of([{ key: 'askBy', value: 'shouting' }])).toEqual([]);
+    expect(of([{ key: 'askBy', value: 'typing' }, { key: 'askBy', value: 'speaking' }])).toEqual([{ key: 'askBy', value: 'typing' }]);
+    expect(of([{ key: 'theme', value: 'dark' }, { key: 'askBy', value: 'typing' }])).toEqual([]);
+    expect(of('dark')).toEqual([]);
+    expect(of([null, 3, { key: 7 }])).toEqual([]);
+    expect(askByChange({ answer: 'x', words: [] })).toEqual([]);
   });
 });

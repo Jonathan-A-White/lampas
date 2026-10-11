@@ -493,7 +493,7 @@ const describe = (value: unknown): string => (typeof value === 'string' ? `"${va
 
 /** Checks each change the grind asked for against the registry and applies the valid ones in order, one after the other (so a
  * later change of the same setting is from the earlier one). Anything else is ignored and said so in `refused`. */
-export async function applyChanges(changes: unknown): Promise<ChangeResult> {
+export async function applyChanges(changes: unknown, options: { skipUnchanged?: boolean } = {}): Promise<ChangeResult> {
   const result: ChangeResult = { applied: [], refused: [] };
   if (!Array.isArray(changes)) return result;
   for (const change of changes.slice(0, MAX_CHANGES)) {
@@ -509,6 +509,8 @@ export async function applyChanges(changes: unknown): Promise<ChangeResult> {
         result.refused.push(`Left out ${entry.label}: ${describe(asked.value)} is not a value it allows.`);
       } else {
         const from = await entry.read();
+        // already set that way: nothing changed, so nothing is written and no card says so (Ask the tutor; the Talk keeps its card)
+        if (options.skipUnchanged && from === value) continue;
         await entry.write(value);
         result.applied.push({ key: entry.key, label: entry.label, from, to: value, shown: entry.show(value) });
       }

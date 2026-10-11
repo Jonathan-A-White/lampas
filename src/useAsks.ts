@@ -12,7 +12,7 @@ import { getSetting } from './settings/store';
 import { addAnswer, listSolidHeadwords, verseRef } from './data/repositories';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { stopAnswer } from './speech/readAloud';
-import { TutorError, askTutor, buildRequest, type TutorFailure } from './services/tutor';
+import { TutorError, askByChange, askTutor, buildRequest, type TutorFailure } from './services/tutor';
 
 /** What a question is doing right now. */
 export type AskState =
@@ -62,7 +62,7 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
             onSent: () => set({ phase: 'waiting', question: text, startedAt }),
           });
           // The one setting this tutor may switch is Ask by; the registry checks it like any talked change.
-          const { applied } = await applyChanges(answer.settings_changes);
+          const { applied } = await applyChanges(askByChange(answer), { skipUnchanged: true });
           await addAnswer(verseRef(book, chapter, unitId(verse)), text, answer.answer, answer.words, Date.now(), answer.question, applied);
           set(undefined);
         } catch (err) {
