@@ -10,6 +10,7 @@ import { resourcesForTutor } from './resources/tutorLinks';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { TutorError } from './services/tutor';
 import { stopAnswer } from './speech/readAloud';
+import { readGo, type GoPlace } from './talk/go';
 import { applyChanges, currentSettings } from './settings/registry';
 import { filesOf, type OutgoingPicture } from './talk/pictures';
 import { askTalk, buildTalkRequest, MAX_LINKS, scopeRef, type TalkAnswer, type TalkFocus, type TalkScope } from './services/talk';
@@ -56,17 +57,31 @@ function hebrewGuideOf(focus: TalkFocus | undefined, answer: TalkAnswer): Hebrew
   return { word: focus.form, syllables: answer.syllables, sounds: answer.transliteration ?? [] };
 }
 
-/** `onAnswered(ref, turnId, answer, info)` is called once an answer has been kept. */
-export function useTalk(book: string, chapter: number, onAnswered: (ref: string, turnId: number, answer: string, info: AnswerInfo) => void): UseTalk {
+/** How the Reader lets an answer take him to a chapter (mw-5r3p30.172): `allowed(ref)` is true while the sheet of that conversation is open, the only time he is
+ * there to be taken; `open(place)` opens the chapter once the answer is kept. */
+export interface GoTo {
+  allowed: (ref: string) => boolean;
+  open: (place: GoPlace) => void;
+}
+
+/** `onAnswered(ref, turnId, answer, info)` is called once an answer has been kept, unless the answer took him to another chapter (`goTo.open`). */
+export function useTalk(
+  book: string,
+  chapter: number,
+  onAnswered: (ref: string, turnId: number, answer: string, info: AnswerInfo) => void,
+  goTo?: GoTo,
+): UseTalk {
   const [states, setStates] = useState<Talks>({});
   const live = useRef<AbortController>(new AbortController());
   const answered = useRef(onAnswered);
+  const going = useRef(goTo);
   // The last message of each conversation that carried a focus, so that Retry (the same text again) sends it again.
   const focused = useRef<Record<string, { text: string; focus: TalkFocus } | undefined>>({});
   // The pictures of a message that has not been answered, so that Retry (the same text again) sends them again.
   const pictured = useRef<Record<string, { text: string; pictures: OutgoingPicture[] } | undefined>>({});
   useEffect(() => {
     answered.current = onAnswered;
+    going.current = goTo;
   });
 
   useEffect(() => {
@@ -116,10 +131,16 @@ export function useTalk(book: string, chapter: number, onAnswered: (ref: string,
           // The settings he asked for are applied at once (the registry checks each), then kept with the turn for its Undo.
           const { applied, refused } = await applyChanges(answer.settings_changes);
           const { added, already, unknown } = await addWords(scope, answer.words_to_add ?? []);
-          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, cleanQ: answer.question, pictures });
+          // A chapter he asked to be taken to: opened only while this talk's sheet is open; any other go is said not to have happened.
+          const go = readGo(answer.go);
+          const place = go?.ok && going.current?.allowed(ref) ? go.place : undefined;
+          if (go && !place) refused.push(`Could not open ${go.ok ? go.place.title : go.title}`);
+          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { opened: place?.title, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, cleanQ: answer.question, pictures });
           pictured.current[ref] = undefined;
           set(undefined);
-          if (!signal.aborted) answered.current(ref, id, answer.answer, { focus, syllables: answer.syllables });
+          if (signal.aborted) return;
+          if (place) going.current?.open(place);
+          else answered.current(ref, id, answer.answer, { focus, syllables: answer.syllables });
         } catch (err) {
           if (signal.aborted) return;
           const failure = err instanceof TutorError ? err.failure : 'unreachable';

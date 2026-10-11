@@ -1,0 +1,19 @@
+{
+  "description": "In a talk on Romans 8 he asks to switch to Colossians 1: the answer carries go for Colossians 1, says where it is taking him, and changes no setting.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8",
+    "greek": "Οὐδὲν ἄρα νῦν κατάκριμα τοῖς ἐν Χριστῷ Ἰησοῦ",
+    "english": "Therefore, there is now no condemnation for those who are in Christ Jesus.",
+    "question": "can you switch to Colossians 1",
+    "history": [],
+    "solid_words": [],
+    "settings": { "theme": "light", "textSize": "normal" }
+  },
+  "expect": {
+    "go.book": { "equals": "Colossians" },
+    "go.chapter": { "equals": 1 },
+    "answer": { "contains": "Colossians" },
+    "settings_changes": { "present": false }
+  }
+}
