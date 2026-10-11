@@ -56,6 +56,21 @@ Feature: Quiz me asks what he wants from the quiz
     Then the mill received 1 grist
     And grist number 1 carries the quiz goal "learning English"
 
+  Scenario: The app asks the goal question beside the buttons when the answer leaves it out
+    Given Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal "understanding the passage"
+    When he starts the quiz on the passage "Walking by the Spirit"
+    Then the offer shows the line "Is this how you want me to quiz you from now on?" exactly once, above the buttons "Yes, from now on" and "Just this time"
+
+  Scenario: The question is not shown twice when the answer already asks it
+    Given Lampas is opened on Romans 8 with a quiz behind a fake Postern whose answer already asks the goal question and offers the quiz goal "understanding the passage"
+    When he starts the quiz on the passage "Walking by the Spirit"
+    Then the goal question "Is this how you want me to quiz you from now on?" shows exactly once in the whole turn, beside the buttons "Yes, from now on" and "Just this time"
+
+  Scenario: A turn with no quiz goal offer shows no goal question
+    Given Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers no quiz goal
+    When he starts the quiz on the passage "Walking by the Spirit"
+    Then the turn shows no goal question and no offer
+
   Scenario: The instructions pitch a quiz with the goal understanding in plain English
     Given the bible-talk grind's instructions
     Then they say that with the goal understanding the questions are in plain English and leave the Greek out unless he asks

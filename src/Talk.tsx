@@ -207,7 +207,17 @@ function StudyWayProposal({ line }: { line: string }) {
   );
 }
 
-/** The goal the tutor understood from him (mw-5r3p30.185): Yes, from now on keeps it as his Quiz goal (Settings), Just this time keeps nothing; once he has chosen, the turn says which. */
+/** The fixed question the buttons answer; the app asks it itself (mw-5r3p30.196) so the offer never stands under an answer that asked him nothing. */
+const QUIZ_GOAL_QUESTION = 'Is this how you want me to quiz you from now on?';
+
+/** True when the answer already asks the goal question, whatever Markdown marks or spacing the tutor put around it. */
+function asksGoalQuestion(answer: string): boolean {
+  const plain = (text: string) => text.replace(/[*_`]/g, '').replace(/\s+/g, ' ').toLowerCase();
+  return plain(answer).includes(plain(QUIZ_GOAL_QUESTION));
+}
+
+/** The goal the tutor understood from him (mw-5r3p30.185): Yes, from now on keeps it as his Quiz goal (Settings), Just this time keeps nothing; once he has chosen, the turn says which.
+ * While he has not chosen, the question they answer stands just above the buttons unless the tutor's answer already asked it. */
 function QuizGoalOffer({ turn }: { turn: TalkTurn }) {
   const [busy, setBusy] = useState(false);
   if (!turn.quizGoalOffer || turn.id === undefined) return null;
@@ -234,13 +244,20 @@ function QuizGoalOffer({ turn }: { turn: TalkTurn }) {
       ) : turn.quizGoalChoice === 'declined' ? (
         <p className="min-h-11 py-2 text-base font-medium text-muted">Not kept</p>
       ) : (
-        <div className="mt-1 flex flex-wrap gap-2">
-          <button type="button" disabled={busy} onClick={() => void choose('kept')} className={button}>
-            Yes, from now on
-          </button>
-          <button type="button" disabled={busy} onClick={() => void choose('once')} className={button}>
-            Just this time
-          </button>
+        <div data-quiz-goal-buttons className="mt-1">
+          {asksGoalQuestion(turn.a) ? null : (
+            <p data-quiz-goal-question className="text-lg">
+              {QUIZ_GOAL_QUESTION}
+            </p>
+          )}
+          <div className="mt-1 flex flex-wrap gap-2">
+            <button type="button" disabled={busy} onClick={() => void choose('kept')} className={button}>
+              Yes, from now on
+            </button>
+            <button type="button" disabled={busy} onClick={() => void choose('once')} className={button}>
+              Just this time
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -494,8 +511,36 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
     const box = list.current;
     if (!box) return;
     const newest = waiting ? null : Array.from(box.querySelectorAll<HTMLElement>('[data-turn]')).pop();
-    if (newest) box.scrollTop += newest.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
-    else box.scrollTop = box.scrollHeight;
+    if (!newest) {
+      box.scrollTop = box.scrollHeight;
+      return;
+    }
+    // An answer with the goal offer waiting shows the question and both buttons: the box moves on until the offer's foot is in view, and no
+    // further than the question's top (mw-5r3p30.196). The quiz question after it may sit below.
+    const align = () => {
+      box.scrollTop += newest.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
+      const offer = newest.querySelector<HTMLElement>('[data-quiz-goal-buttons]');
+      if (!offer) return;
+      const room = box.getBoundingClientRect();
+      const question = (newest.querySelector<HTMLElement>('[data-quiz-goal-question]') ?? offer).getBoundingClientRect().top;
+      box.scrollTop += Math.max(0, Math.min(offer.getBoundingClientRect().bottom - room.bottom + 8, question - room.top - 8));
+    };
+    align();
+    if (!newest.querySelector('[data-quiz-goal-buttons]') || typeof ResizeObserver === 'undefined') return;
+    // The sheet and the answer settle for a moment after they draw: keep the offer in view until they have, or until he scrolls himself.
+    const watch = new ResizeObserver(align);
+    watch.observe(box);
+    watch.observe(newest);
+    const stop = () => watch.disconnect();
+    const timer = window.setTimeout(stop, 1500);
+    box.addEventListener('wheel', stop, { once: true });
+    box.addEventListener('touchstart', stop, { once: true });
+    return () => {
+      window.clearTimeout(timer);
+      box.removeEventListener('wheel', stop);
+      box.removeEventListener('touchstart', stop);
+      stop();
+    };
   }, [turnCount, state?.phase, waiting]);
   // Closing the sheet takes its answer's speech with it.
   useEffect(() => () => stopAnswer(), []);
