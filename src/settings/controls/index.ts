@@ -6,6 +6,7 @@ import { DeveloperControl } from './developer';
 import { GoalControl } from './goal';
 import { LinkControl } from './links';
 import { NewWordsControl } from './newWords';
+import { QuizGoalControl } from './quizGoal';
 import { LogosBibleControl, ResourceControl } from './resources';
 import { AskByControl, ReadTutorControl, ScriptDepthControl, TipsControl } from './tutor';
 import type { Control } from './types';
@@ -37,6 +38,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   readTutor: ReadTutorControl,
   askBy: AskByControl,
   developer: DeveloperControl,
+  quizGoal: QuizGoalControl,
   ...Object.fromEntries(SCRIPTS.map((s) => [s.settingKey, ScriptDepthControl])),
   ...Object.fromEntries(ROWS.filter((r) => r.key.startsWith('resource.')).map((r) => [r.key, ResourceControl])),
   ...Object.fromEntries(ROWS.filter((r) => r.key.startsWith('link.')).map((r) => [r.key, LinkControl])),

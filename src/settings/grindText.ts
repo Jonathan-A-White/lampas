@@ -10,7 +10,7 @@ export const SETTINGS_END = '<!-- settings:end -->';
 function valueText(entry: SettingEntry): string {
   const { allowed } = entry;
   if (allowed.kind === 'choice') return allowed.values.map((v) => `"${v.value}" (${v.label})`).join(', ');
-  if (allowed.kind === 'text') return `text, for example "${allowed.example}" (a book, a chapter or a verse; "" for none)`;
+  if (allowed.kind === 'text') return `text, for example "${allowed.example}" (${allowed.note ?? 'a book, a chapter or a verse; "" for none'})`;
   return `a number from ${allowed.min} to ${allowed.max}, in steps of ${allowed.step}`;
 }
 

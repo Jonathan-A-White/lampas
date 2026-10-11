@@ -3,6 +3,7 @@
 // file is the kind's own: the request with the last turns of the conversation, the answer's shape, and the fit to a grist.
 import { markSupplied, type Chapter, type Verse } from '../data/chapter';
 import { unitId } from '../data/passage';
+import { QUIZ_GOAL_MAX } from '../data/repositories/settings';
 import { STUDY_WAY_LINE_MAX } from '../data/repositories/studyWay';
 import { screenRef, talkRef } from '../data/repositories/talks';
 import type { AnswerLink, AnswerWord } from '../data/db';
@@ -168,6 +169,10 @@ export interface TalkRequest {
   mode?: 'quiz';
   /** present only in a quiz and only when he has kept any (My study way, mw-5r3p30.76): the lines of how he wants to be quizzed; they override the default method where they conflict */
   study_way?: string[];
+  /** present only in a quiz (mw-5r3p30.185): why he wants the quiz, in his words, as he kept it (Settings > Quiz goal), or null when he has kept none: the tutor then opens by asking */
+  quiz_goal?: string | null;
+  /** present only in a quiz in which he chose Just this time for a goal the tutor offered: that goal, for this quiz alone (`quiz_goal` stays null) */
+  quiz_goal_once?: string;
   /** present only while the tutor helps him fill in a form (mw-5r3p30.117, src/formHelper/): the form's name and its fields with what each holds now */
   form?: { name: string; fields: FormFieldState[] };
   /** the study resources he has switched on in Settings (mw-5r3p30.123): the only ones the tutor may link; missing in About, whose request is the credits */
@@ -205,6 +210,8 @@ export interface TalkAnswer {
   links?: AnswerLink[];
   /** in a quiz, one line the tutor proposes for his study way (mw-5r3p30.76): shown with Keep this, kept only when he taps it */
   study_way_line?: string;
+  /** in a quiz, the goal the tutor understood from him (mw-5r3p30.185), at most QUIZ_GOAL_MAX characters: shown with Yes, from now on | Just this time, kept only when he taps Yes */
+  quiz_goal_offer?: string;
   /** an ask the app cannot meet (another app, a new setting, a change): the summary the app offers to send to the makers */
   feedback_offer?: FeedbackOffer;
   /** while the tutor helps with a form (`form` in the request): the values to put in its fields, by field name; the form ignores a name it does not have */
@@ -227,9 +234,10 @@ const isFormValue = (value: unknown): value is FormValue =>
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'feedback_offer' && k !== 'form_values' && k !== 'form_ask' && k !== 'go')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'feedback_offer' && k !== 'form_values' && k !== 'form_ask' && k !== 'go')) return false;
   if ('question' in value && !isText(value.question, MAX_TALK_CHARS)) return false;
   if ('study_way_line' in value && !isText(value.study_way_line, STUDY_WAY_LINE_MAX)) return false;
+  if ('quiz_goal_offer' in value && !isText(value.quiz_goal_offer, QUIZ_GOAL_MAX)) return false;
   if ('feedback_offer' in value && !(isObject(value.feedback_offer) && Object.keys(value.feedback_offer).length === 1 && isText(value.feedback_offer.summary, FEEDBACK_SUMMARY_MAX))) return false;
   if ('form_ask' in value && !isText(value.form_ask, 30)) return false;
   if ('form_values' in value && !(Array.isArray(value.form_values) && value.form_values.length <= 8 && value.form_values.every(isFormValue))) return false;
@@ -299,6 +307,7 @@ export function buildTalkRequest(
   studyWay: string[] = [],
   resources: TutorResource[] = [],
   pictureCount = 0,
+  quizGoal: { kept: string; once?: string } = { kept: '' },
 ): TalkRequest {
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   // About (mw-vtjxh4.2) sends the credits, which take most of the record: the credits are the talk, so his words and his grammar stay home
@@ -316,6 +325,8 @@ export function buildTalkRequest(
     ...(learnerGrammar && !aboutCredits ? { learner_grammar: learnerGrammar } : {}),
     ...(scope.quiz ? { mode: 'quiz' as const } : {}),
     ...(scope.quiz && studyWay.length > 0 ? { study_way: studyWay } : {}),
+    ...(scope.quiz ? { quiz_goal: quizGoal.kept === '' ? null : quizGoal.kept } : {}),
+    ...(scope.quiz && quizGoal.kept === '' && quizGoal.once ? { quiz_goal_once: quizGoal.once } : {}),
     ...(aboutCredits ? {} : { resources }),
     ...(pictureCount > 0 ? { pictures: pictureCount } : {}),
   };

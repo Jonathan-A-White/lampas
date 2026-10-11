@@ -111,6 +111,9 @@ export interface TalkTurn {
   links?: AnswerLink[];
   /** the study way line the answer proposed (mw-5r3p30.76); the reader keeps it with Keep this, or not */
   studyWayLine?: string;
+  /** the goal the answer offered to keep as his quiz goal (mw-5r3p30.185); `quizGoalChoice` says what he did with the offer, absent while he has not answered it */
+  quizGoalOffer?: string;
+  quizGoalChoice?: 'kept' | 'once';
   /** the pronunciation guide the answer carried for a Hebrew word (mw-5r3p30.98, src/script/HebrewGuide.tsx HebrewSoundGuide) */
   guide?: HebrewSounds;
   /** the tutor's one-line summary of an ask the app cannot meet; its presence offers Send this to the makers (src/Talk.tsx FeedbackOffer) */

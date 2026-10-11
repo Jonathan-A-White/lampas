@@ -211,6 +211,21 @@ export async function setGoal(text: string): Promise<void> {
   await db.settings.put({ key: GOAL_KEY, value: text });
 }
 
+const QUIZ_GOAL_KEY = 'quizGoal';
+
+/** The longest a kept quiz goal is, in characters (the grind's schemas say the same). */
+export const QUIZ_GOAL_MAX = 80;
+
+/** Why he wants the quiz, in his words ('understanding the passage'); '' when he has kept none (the settings store keeps text, no table of its own). */
+export async function getQuizGoal(): Promise<string> {
+  const row = await db.settings.get(QUIZ_GOAL_KEY);
+  return typeof row?.value === 'string' ? row.value.trim().slice(0, QUIZ_GOAL_MAX) : '';
+}
+
+export async function setQuizGoal(text: string): Promise<void> {
+  await db.settings.put({ key: QUIZ_GOAL_KEY, value: text.trim().slice(0, QUIZ_GOAL_MAX) });
+}
+
 const LOGOS_BIBLE_KEY = 'logosBible';
 
 /** The Resource ID of the Bible an Old Testament chapter opens in, in Logos; the default (the Legacy Standard Bible) while none was chosen or the saved one is malformed. */

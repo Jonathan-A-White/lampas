@@ -15,6 +15,7 @@ const FILES = [
   'resources.tsx',
   'tutor.tsx',
   'developer.tsx',
+  'quizGoal.tsx',
 ];
 
 describe('the Settings controls (docs/module-map.md R3)', () => {
