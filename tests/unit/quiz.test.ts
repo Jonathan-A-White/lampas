@@ -83,6 +83,24 @@ describe('drawWords: ten different words, biased to the learning ones', () => {
     expect(drawWords([], mulberry32(5))).toEqual([]);
   });
 
+  it('draws exactly the size asked, even when it is fewer than the learning share (mw-hqd5bz.30)', () => {
+    const four = [...many(4, 'learning', 'l'), ...many(59, 'solid', 's')];
+    for (let size = 0; size <= 10; size += 1) {
+      for (let seed = 1; seed <= 5; seed += 1) {
+        const round = drawWords(four, mulberry32(seed), size);
+        expect(round).toHaveLength(size);
+        expect(new Set(round.map((w) => w.lemma)).size).toBe(size);
+      }
+    }
+  });
+
+  it('returns every word when there are fewer than the size asked', () => {
+    const few = [...many(2, 'learning', 'l'), ...many(3, 'solid', 's')];
+    expect(drawWords(few, mulberry32(4), 10)).toHaveLength(5);
+    expect(drawWords(few, mulberry32(4), 7)).toHaveLength(5);
+    expect(drawWords(few, mulberry32(4), 1)).toHaveLength(1);
+  });
+
   it('gives the same round for the same random source', () => {
     const lemmas = (seed: number) => drawWords(pool, mulberry32(seed)).map((w) => w.lemma);
     expect(lemmas(9)).toEqual(lemmas(9));

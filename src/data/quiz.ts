@@ -51,7 +51,8 @@ export function nextState(state: WordState, answers: readonly boolean[]): WordSt
 export function drawWords(words: readonly Word[], random: Random, size = ROUND_SIZE): Word[] {
   const learning = shuffle(words.filter((w) => w.state === 'learning'), random);
   const solid = shuffle(words.filter((w) => w.state === 'solid'), random);
-  const fromLearning = Math.min(learning.length, LEARNING_SHARE);
+  // never more than the places asked for: a round with fewer than LEARNING_SHARE places left (mw-hqd5bz.30) has no room for the full share
+  const fromLearning = Math.min(learning.length, LEARNING_SHARE, size);
   const fromSolid = Math.min(solid.length, size - fromLearning);
   // When the solid words run short, learning ones fill the rest.
   const extra = Math.min(learning.length - fromLearning, size - fromLearning - fromSolid);
