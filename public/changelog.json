@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.95",
+    "date": "2026-10-11",
+    "story": "mw-5r3p30.185",
+    "kind": "new",
+    "text": "Quiz me asks what you want from the quiz, and can keep it as your default."
+  },
+  {
     "version": "0.1.94",
     "date": "2026-10-11",
     "story": "mw-5r3p30.188",

@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.95
+_2026-10-11_
+- New: Quiz me asks what you want from the quiz, and can keep it as your default.
+
 ## 0.1.94
 _2026-10-11_
 - Fixed: Ask the tutor in landscape: the answer now has room to be read, and Hold to ask and Type a question share one row.
