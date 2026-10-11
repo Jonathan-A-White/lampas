@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.88
+_2026-10-11_
+- Fixed: the Reader's Talk bar fits on a sideways phone.
+
 ## 0.1.85
 _2026-10-11_
 - Fixed: The tutor's answer always shows, even when a setting he asked to change cannot be changed.
