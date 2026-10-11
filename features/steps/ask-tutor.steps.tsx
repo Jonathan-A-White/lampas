@@ -6,6 +6,7 @@ import { act, cleanup, render, screen, waitFor, within } from '@testing-library/
 import userEvent from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { afterAll, expect, vi } from 'vitest';
+import Dexie from 'dexie';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { attribution, plainText } from '../../src/attribution';
@@ -26,6 +27,7 @@ import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '
 import { validate, type Schema } from '../../tests/support/schema-validate';
 
 afterAll(() => {
+  vi.restoreAllMocks();
   cleanup();
   stopReading();
   clearBus();
@@ -42,7 +44,8 @@ const chapterFile = (book: string, n: number) => JSON.parse(readFileSync(`public
 let fake: FakePostern;
 
 /** Opens the app at `address` with the goal saved and a fake Postern behind it; his seed words and levels are the first open's. */
-async function openAt(address: string, goal: string | undefined = '1 John 1:1'): Promise<void> {
+async function openAt(address: string, goal: string | undefined = '1 John 1:1', slowWriteMs = 0): Promise<void> {
+  vi.restoreAllMocks();
   cleanup();
   stopReading();
   clearBus();
@@ -62,8 +65,17 @@ async function openAt(address: string, goal: string | undefined = '1 John 1:1'):
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.reviews.clear(), db.grammarLevels.clear()]);
   if (goal !== undefined) await setGoal(goal);
+  if (slowWriteMs > 0) slowTalkWrites(slowWriteMs);
   render(<App />);
   await waitFor(async () => expect(await db.meta.get('grammarLevelsSeeded')).toBeDefined());
+}
+
+/** Every write to the talk store is made at once (so a live query draws the turn) but only reports it done `ms` late, as a loaded host does:
+ * the turn is on screen while the message is still in flight, and the sheet has no New talk button yet. */
+function slowTalkWrites(ms: number): void {
+  const add = db.talks.add.bind(db.talks) as (turn: unknown) => Promise<unknown>;
+  vi.spyOn(db.talks, 'add').mockImplementation(((turn: unknown) =>
+    add(turn).then((id) => new Dexie.Promise((resolve) => setTimeout(() => resolve(id), ms)))) as unknown as typeof db.talks.add);
 }
 
 const control = () => screen.queryAllByRole('button', { name: CONTROL });
@@ -100,6 +112,10 @@ const canBeTapped = async (question: string) => {
   const found = suggestions().find((s) => s.textContent === question);
   expect(found, question).toBeDefined();
   expect(found).toBeEnabled();
+};
+/** New talk draws once the turn is stored and nothing is in flight, which can be after the turn itself: wait for it, then tap. */
+const tapsNewTalk = async () => {
+  await user.click(await within(sheet()).findByRole('button', { name: 'New talk' }));
 };
 const closeSheet = async () => {
   await user.click(within(sheet()).getByRole('button', { name: 'Done' }));
@@ -327,9 +343,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     When('he taps the Ask the tutor control', taps);
     And('he taps the suggested question {string}', (_, question: string) => tapsSuggestion(question));
     And('the answer number {int} has arrived', (_, n: number) => answerArrived(n));
-    And('he taps New talk', async () => {
-      await user.click(within(sheet()).getByRole('button', { name: 'New talk' }));
-    });
+    And('he taps New talk', tapsNewTalk);
     Then('the sheet shows the empty state with all three suggestions and no earlier turn', async () => {
       await waitFor(() => expect(turns()).toHaveLength(0));
       expect(sheet().querySelector('[data-talk-empty]')).not.toBeNull();
@@ -348,6 +362,21 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
       await screen.findByRole('dialog', { name: 'Ask the tutor: About' });
       await waitFor(() => expect(sheet().querySelector('[data-talk-empty]')).not.toBeNull());
       expect(turns()).toHaveLength(0);
+      expect(suggestions().map((s) => s.textContent)).toEqual(ABOUT_SUGGESTIONS);
+    });
+  });
+
+  Scenario('New talk can be tapped on a loaded phone that finishes storing the answer late', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on #/about with the goal {string} behind a fake Postern and a phone slow to finish storing an answer', (_, goal: string) =>
+      openAt('#/about', goal, 1500),
+    );
+    When('he taps the Ask the tutor control', taps);
+    And('he taps the suggested question {string}', (_, question: string) => tapsSuggestion(question));
+    And('the answer number {int} has arrived', (_, n: number) => answerArrived(n));
+    And('he taps New talk', tapsNewTalk);
+    Then('the sheet shows the empty state with all three suggestions and no earlier turn', async () => {
+      await waitFor(() => expect(turns()).toHaveLength(0));
+      expect(sheet().querySelector('[data-talk-empty]')).not.toBeNull();
       expect(suggestions().map((s) => s.textContent)).toEqual(ABOUT_SUGGESTIONS);
     });
   });

@@ -73,6 +73,14 @@ Feature: Ask the tutor from any screen
     And he taps the Ask the tutor control after the reload
     Then after the reload the sheet shows the empty state with all three suggestions and no earlier turn
 
+  Scenario: New talk can be tapped on a loaded phone that finishes storing the answer late
+    Given Lampas is opened on #/about with the goal "1 John 1:1" behind a fake Postern and a phone slow to finish storing an answer
+    When he taps the Ask the tutor control
+    And he taps the suggested question "What does STEPBible give me?"
+    And the answer number 1 has arrived
+    And he taps New talk
+    Then the sheet shows the empty state with all three suggestions and no earlier turn
+
   Scenario: A first question that fails offline still leaves the other suggestions reachable
     Given Lampas is opened on #/about with the goal "1 John 1:1" behind a fake Postern
     When he taps the Ask the tutor control
