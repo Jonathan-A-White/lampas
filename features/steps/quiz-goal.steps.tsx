@@ -217,6 +217,38 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('The Quiz goal row has a visible label and says which goal is kept', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal {string}', openWith);
+    And('the phone was given the quiz goal {string}', given);
+    When('he opens Settings', openSettings);
+    Then('the Quiz goal row shows the visible text {string}', async (_, text: string) => {
+      await goalField();
+      expect(within(goalRow()).getByText(text, { exact: true })).toBeVisible();
+    });
+    And('the Quiz goal row says {string}', async (_, text: string) => {
+      await goalField();
+      expect(within(goalRow()).getByText(text, { exact: true })).toBeVisible();
+    });
+  });
+
+  Scenario('Save is off for a field of only spaces and Clear still clears', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal {string}', openWith);
+    And('the phone was given the quiz goal {string}', given);
+    When('he opens Settings', openSettings);
+    And('he types only spaces in the Quiz goal', async () => {
+      const field = await goalField();
+      await user.clear(field);
+      await user.type(field, '   ');
+    });
+    Then('the Quiz goal Save button is off', () => {
+      expect(within(goalRow()).getByRole('button', { name: 'Save' })).toBeDisabled();
+    });
+    When('he clears the Quiz goal', async () => {
+      await user.click(within(goalRow()).getByRole('button', { name: 'Clear' }));
+    });
+    Then('no quiz goal is kept on the phone', () => waitFor(async () => expect(await kept()).toBe('')));
+  });
+
   Scenario('A kept goal is sent with the first request of a quiz', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal {string}', openWith);
     And('the phone was given the quiz goal {string}', given);

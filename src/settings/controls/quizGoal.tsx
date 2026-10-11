@@ -1,21 +1,26 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { getQuizGoal, QUIZ_GOAL_MAX } from '../../data/repositories';
 import { writeSetting } from '../registry';
 import { SettingRow } from './SettingRow';
 import type { Control } from './types';
 
-/** The kept goal in a field he can change (Save) or empty (Clear); with none kept the row says so and the tutor asks at the next quiz. */
+/** The kept goal in a field he can change (Save) or empty (Clear); with none kept the row says so and the tutor asks at the next quiz. Save needs words: only Clear drops a kept goal. */
 function QuizGoalField({ saved }: { saved: string }) {
   const [draft, setDraft] = useState<string | undefined>(undefined);
   const text = draft ?? saved;
-  const changed = text.trim() !== saved;
+  const trimmed = text.trim();
+  const changed = trimmed !== '' && trimmed !== saved;
+  const fieldId = useId();
   return (
     <div role="group" aria-label="Quiz goal">
-      <p className="text-base font-medium">{saved === '' ? 'No goal kept' : 'Kept'}</p>
+      <label htmlFor={fieldId} className="block text-base font-medium">
+        Quiz goal
+      </label>
+      <p className="text-base text-muted">{saved === '' ? 'No goal kept' : `Quiz goal: ${saved}`}</p>
       <input
+        id={fieldId}
         type="text"
-        aria-label="Quiz goal"
         value={text}
         maxLength={QUIZ_GOAL_MAX}
         placeholder="Why you want a quiz"
