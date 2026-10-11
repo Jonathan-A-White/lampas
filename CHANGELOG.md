@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.94
+_2026-10-11_
+- Fixed: Ask the tutor in landscape: the answer now has room to be read, and Hold to ask and Type a question share one row.
+
 ## 0.1.92
 _2026-10-11_
 - Fixed: the Unlock screen has room above the icon again.
