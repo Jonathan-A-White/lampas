@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.89
+_2026-10-11_
+- New: Ask the tutor to take you to a chapter ("switch to Colossians 1") and the Reader opens there.
+
 ## 0.1.88
 _2026-10-11_
 - Fixed: the Reader's Talk bar fits on a sideways phone.
