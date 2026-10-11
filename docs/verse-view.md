@@ -122,3 +122,22 @@ quiz method by talking with the tutor, and the phone keeps it for every later qu
   phone only inside a tutor request.
 * **PROVISIONAL, the Governor to confirm:** the page's name 'My study way', 'For your study way', 'Keep this' / 'Kept', the limits of 12 lines and 100
   characters, and that the lines go in quiz requests only (not in an ordinary talk).
+
+## Quiz goal (mw-5r3p30.185)
+
+The Governor, through the tutor (2026-10-11): some readers use Lampas to learn Greek, some to learn English, some to read the Bible and understand it, and
+others for reasons nobody listed; the quiz should begin by talking with him about why he wants it, then offer to keep that as his default.
+
+* **The tutor asks, not the app.** The quiz request carries `quiz_goal` (input schema; a string of at most 80 characters, or `null` when none is kept) in
+  quiz mode only. With `null`, no `quiz_goal_once` and an empty history, `### His quiz goal` in `grinds/bible-talk.instructions.md` makes the tutor open by
+  asking why he wants the quiz in one short plain question with no list of options, ask at most one follow-up, then quiz to match (understanding: plain
+  English, no Greek unless he asks; Greek; English; reading the Bible; anything else in his words). There is no list in the app either.
+* **The offer.** In that turn it asks once 'Is this how you want me to quiz you from now on?' and the answer carries `quiz_goal_offer` (at most 80
+  characters). The Talk sheet shows it under the answer, 'Your quiz goal', with **Yes, from now on** (keeps it as the setting `quizGoal`) and **Just this
+  time** (keeps nothing); the turn then reads 'Kept as your quiz goal' or 'Just this time' (`TalkTurn.quizGoalChoice`). After Just this time the later
+  requests of that quiz carry `quiz_goal_once` (the offer's text, found in the quiz's own turns) so the tutor does not ask or offer again.
+* **Where it lives:** the settings store, key `quizGoal`, plain text ('' = none), a registry setting (section My study way, label **Quiz goal**: a field with
+  Save and Clear, `src/settings/controls/quizGoal.tsx`), so he can change or clear it in Settings and the tutor may change it in a talk outside a quiz. With a
+  goal kept, Quiz me skips the opening question and every quiz request carries it; 'Change my quiz goal' said in a quiz makes the tutor ask again.
+* **PROVISIONAL, the Governor to confirm:** the names 'Quiz goal', 'Your quiz goal', 'Yes, from now on' / 'Just this time', the 80-character limit, and that
+  the goal goes in quiz requests only.

@@ -19,6 +19,9 @@ import {
   getReadTutor,
   getScriptDepth,
   getLogosBible,
+  getQuizGoal,
+  QUIZ_GOAL_MAX,
+  setQuizGoal,
   getNewWordsADay,
   getSectionHeadings,
   getSpeechRate,
@@ -236,6 +239,20 @@ const goalEntry: SettingEntry = {
     const goal = goalOf(String(value));
     return `Goal: ${goal ? goalTitle(goal, INDEX) : 'none'}`;
   },
+};
+
+const quizGoalEntry: SettingEntry = {
+  section: 'studyWay',
+  key: 'quizGoal',
+  label: 'Quiz goal',
+  hint: 'Why you want Quiz me; the tutor quizzes to match. Empty: it asks.',
+  help: 'What you want from a quiz, in your own words, such as understanding the passage, learning Greek, learning English or just reading the Bible. A kept goal is sent with every quiz and the tutor quizzes to match; with none kept, Quiz me opens by asking you.',
+  allowed: { kind: 'text', valid: (value) => value.trim().length <= QUIZ_GOAL_MAX, example: 'understanding the passage', note: `a short phrase in his words, at most ${QUIZ_GOAL_MAX} characters; "" for none` },
+  read: getQuizGoal,
+  write: async (value) => {
+    await setQuizGoal(String(value));
+  },
+  show: (value) => `Quiz goal: ${String(value).trim() === '' ? 'none' : String(value).trim()}`,
 };
 
 const logosBibleEntry: SettingEntry = {
@@ -459,6 +476,7 @@ export const SETTINGS: readonly SettingEntry[] = [
   ),
   ...resourceEntries,
   logosBibleEntry,
+  quizGoalEntry,
 ];
 
 export const settingOf = (key: string): SettingEntry | undefined => SETTINGS.find((s) => s.key === key);

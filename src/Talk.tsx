@@ -9,7 +9,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Waiting } from './Ask';
 import { addLemmaToLearn, findGreekWord, glossOf } from './data/answerWord';
 import type { AnswerWord } from './data/db';
-import { addWordToLearn, keepStudyWayLine, deleteTurns, listStudyWay, listTurns, markChangeUndone, markFeedbackSent, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
+import { addWordToLearn, keepStudyWayLine, deleteTurns, listStudyWay, listTurns, markChangeUndone, markFeedbackSent, markQuizGoalChoice, setQuizGoal, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
 import { Markdown } from './markdown/Markdown';
 import { TutorLinks } from './TutorLinks';
 import { settingOf, undoChange, type AppliedChange } from './settings/registry';
@@ -207,6 +207,44 @@ function StudyWayProposal({ line }: { line: string }) {
   );
 }
 
+/** The goal the tutor understood from him (mw-5r3p30.185): Yes, from now on keeps it as his Quiz goal (Settings), Just this time keeps nothing; once he has chosen, the turn says which. */
+function QuizGoalOffer({ turn }: { turn: TalkTurn }) {
+  const [busy, setBusy] = useState(false);
+  if (!turn.quizGoalOffer || turn.id === undefined) return null;
+  const id = turn.id;
+  const goal = turn.quizGoalOffer;
+  const choose = async (choice: 'kept' | 'once'): Promise<void> => {
+    setBusy(true);
+    try {
+      if (choice === 'kept') await setQuizGoal(goal);
+      await markQuizGoalChoice(id, choice);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const button = 'min-h-11 rounded-lg border border-accent px-4 text-base font-medium text-accent active:bg-line disabled:opacity-40';
+  return (
+    <div data-quiz-goal className="mt-2 border-t border-line pt-2">
+      <p className="text-sm text-muted">Your quiz goal</p>
+      <p className="break-words text-lg">{goal}</p>
+      {turn.quizGoalChoice === 'kept' ? (
+        <p className="min-h-11 py-2 text-base font-medium text-muted">Kept as your quiz goal</p>
+      ) : turn.quizGoalChoice === 'once' ? (
+        <p className="min-h-11 py-2 text-base font-medium text-muted">Just this time</p>
+      ) : (
+        <div className="mt-1 flex flex-wrap gap-2">
+          <button type="button" disabled={busy} onClick={() => void choose('kept')} className={button}>
+            Yes, from now on
+          </button>
+          <button type="button" disabled={busy} onClick={() => void choose('once')} className={button}>
+            Just this time
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** The tutor's offer to pass an ask Lampas cannot meet to the makers: its summary and Send this to the makers. The tap sends one feedback grist
  * through the one sender (src/services/feedback.ts): his words, the summary, the screen's name and what it showed; then the turn reads Sent. */
 function FeedbackOffer({ turn, scope }: { turn: TalkTurn; scope: TalkScope }) {
@@ -330,6 +368,7 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
         {turn.guide ? <HebrewSoundGuide guide={turn.guide} /> : null}
         {turn.links?.length ? <TutorLinks links={turn.links} onLeave={onLeave} /> : null}
         {turn.studyWayLine ? <StudyWayProposal line={turn.studyWayLine} /> : null}
+        <QuizGoalOffer turn={turn} />
         <FeedbackOffer turn={turn} scope={scope} />
         <div className="-mb-1 mt-1 flex flex-wrap items-start justify-end gap-1">
           <CopyExchange place={turn.ref} question={turn.cleanQ ?? turn.q} answer={turn.a} />

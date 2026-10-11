@@ -1,0 +1,20 @@
+{
+  "description": "He has said he wants to understand the passage and is not learning Greek: the tutor quizzes to match in plain English, asks once whether this is how he wants to be quizzed from now on, and offers the goal in quiz_goal_offer.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:1",
+    "greek": "Οὐδὲν ἄρα νῦν κατάκριμα τοῖς ἐν χριστῷ Ἰησοῦ μὴ κατὰ σάρκα περιπατοῦσιν ἀλλὰ κατὰ πνεῦμα",
+    "english": "Therefore there is now no condemnation for those who are in Christ Jesus, who do not walk according to the flesh but according to the Spirit.",
+    "question": "I just want to understand what Paul is saying. I'm not learning Greek.",
+    "history": [{ "q": "Quiz me on Romans 8:1.", "a": "Before we begin: what would you like this quiz to do for you?" }],
+    "solid_words": ["ὁ", "καί"],
+    "settings": {},
+    "mode": "quiz",
+    "quiz_goal": null
+  },
+  "expect": {
+    "answer": { "contains": "Is this how you want me to quiz you from now on?" },
+    "quiz_goal_offer": { "present": true },
+    "settings_changes": { "present": false }
+  }
+}

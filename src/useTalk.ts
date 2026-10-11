@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { addLemmaToLearn } from './data/answerWord';
 import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { learnerSummary } from './data/learnerSummary';
-import { addTurn, getStudyResources, listSolidHeadwords, listStudyWay, listTurns } from './data/repositories';
+import { addTurn, getQuizGoal, getStudyResources, listSolidHeadwords, listStudyWay, listTurns } from './data/repositories';
 import { resourcesForTutor } from './resources/tutorLinks';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { TutorError } from './services/tutor';
@@ -113,7 +113,7 @@ export function useTalk(
       set({ phase: 'sending', question: text, startedAt });
       void (async () => {
         try {
-          const [turns, solid, settings, learner, grammar, way, chosen] = await Promise.all([
+          const [turns, solid, settings, learner, grammar, way, chosen, goal] = await Promise.all([
             listTurns(ref),
             listSolidHeadwords(),
             currentSettings(),
@@ -121,8 +121,11 @@ export function useTalk(
             learnerGrammar().catch(() => undefined),
             scope.quiz ? listStudyWay() : Promise.resolve([]),
             getStudyResources().catch(() => ({ on: [], options: {} })),
+            scope.quiz ? getQuizGoal() : Promise.resolve(''),
           ]);
-          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length), {
+          // a goal he chose Just this time for earlier in this quiz is sent for this quiz alone
+          const once = turns.findLast((t) => t.quizGoalChoice === 'once')?.quizGoalOffer;
+          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }), {
             key: getDeviceKeyBytes(),
             files: pictures.length ? filesOf(pictures) : undefined,
             signal,
@@ -135,7 +138,7 @@ export function useTalk(
           const go = readGo(answer.go);
           const place = go?.ok && going.current?.allowed(ref) ? go.place : undefined;
           if (go && !place) refused.push(`Could not open ${go.ok ? go.place.title : go.title}`);
-          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { opened: place?.title, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, cleanQ: answer.question, pictures });
+          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { opened: place?.title, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? answer.quiz_goal_offer : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, cleanQ: answer.question, pictures });
           pictured.current[ref] = undefined;
           set(undefined);
           if (signal.aborted) return;

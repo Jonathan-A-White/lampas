@@ -10,7 +10,7 @@ export type Allowed =
   | { kind: 'choice'; values: readonly { value: string; label: string }[] }
   | { kind: 'number'; min: number; max: number; step: number }
   /** free text the entry checks itself: `valid` takes the text a person or the tutor wrote; `example` is one it takes */
-  | { kind: 'text'; valid(value: string): boolean; example: string };
+  | { kind: 'text'; valid(value: string): boolean; example: string; /** what the grind is told about the value, after the example; the goal's by default */ note?: string };
 
 /** The sections of the Settings screen, in the order it draws them (src/settings/rows.ts SECTIONS has their titles). */
 export type SectionId =

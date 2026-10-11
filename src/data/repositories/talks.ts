@@ -26,6 +26,8 @@ export interface TurnChanges {
   links?: AnswerLink[];
   /** the study way line the answer proposed (mw-5r3p30.76) */
   studyWayLine?: string;
+  /** the goal the answer offered to keep as his quiz goal (mw-5r3p30.185) */
+  quizGoalOffer?: string;
   /** how the Hebrew word he asked to sound out is said (mw-5r3p30.98) */
   guide?: HebrewSounds;
   /** the one-line summary of an ask the app cannot meet, offered to the makers */
@@ -54,6 +56,7 @@ export async function addTurn(ref: string, q: string, a: string, words: AnswerWo
   if (done?.unknown?.length) turn.unknown = done.unknown;
   if (done?.links?.length) turn.links = done.links;
   if (done?.studyWayLine) turn.studyWayLine = done.studyWayLine;
+  if (done?.quizGoalOffer) turn.quizGoalOffer = done.quizGoalOffer;
   if (done?.guide) turn.guide = done.guide;
   if (done?.feedbackOffer) turn.feedbackOffer = done.feedbackOffer;
   if (done?.cleanQ) turn.cleanQ = done.cleanQ;
@@ -88,6 +91,11 @@ export async function markChangeUndone(turnId: number, index: number): Promise<v
 /** Marks the turn's feedback offer as sent, so it reads Sent from then on. */
 export async function markFeedbackSent(turnId: number): Promise<void> {
   await db.talks.update(turnId, { feedbackSent: true });
+}
+
+/** Records what he did with a turn's quiz goal offer: 'kept' (Yes, from now on; the caller keeps the goal) or 'once' (Just this time). */
+export async function markQuizGoalChoice(turnId: number, choice: 'kept' | 'once'): Promise<void> {
+  await db.talks.update(turnId, { quizGoalChoice: choice });
 }
 
 /** One conversation's turns, the oldest first. */
