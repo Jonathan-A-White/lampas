@@ -11,6 +11,7 @@ import { applyChanges } from './settings/registry';
 import { getSetting } from './settings/store';
 import { addAnswer, listSolidHeadwords, verseRef } from './data/repositories';
 import { getDeviceKeyBytes } from './services/deviceKey';
+import { withoutFillers } from './services/fillers';
 import { stopAnswer } from './speech/readAloud';
 import { TutorError, askByChange, askTutor, buildRequest, type TutorFailure } from './services/tutor';
 
@@ -63,7 +64,7 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
           });
           // The one setting this tutor may switch is Ask by; the registry checks it like any talked change.
           const { applied } = await applyChanges(askByChange(answer), { skipUnchanged: true });
-          await addAnswer(verseRef(book, chapter, unitId(verse)), text, answer.answer, answer.words, Date.now(), answer.question, applied);
+          await addAnswer(verseRef(book, chapter, unitId(verse)), text, answer.answer, answer.words, Date.now(), answer.question && withoutFillers(answer.question), applied);
           set(undefined);
         } catch (err) {
           if (signal.aborted) return;

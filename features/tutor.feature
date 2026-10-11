@@ -28,6 +28,14 @@ Feature: Ask the tutor about a verse
     Then the answer card shows the question "Why are there italic words? What does it mean for the words to be italic?"
     And the answer kept on the phone has his raw words "um why are there uh italic words what does it mean for the words to be italic"
 
+  Scenario: A cleaned question that kept his ums and uhs is shown without them
+    Given Lampas is opened on Romans 8 with a tutor behind a fake Postern whose answers keep the fillers in his question
+    And he selects verse 28
+    When he asks "um why are there uh italic words what does it mean"
+    Then the answer card shows the question "Why are there italic words? What does it mean?"
+    And the answer kept on the phone has his raw words "um why are there uh italic words what does it mean"
+    And the answer kept on the phone has the cleaned question "Why are there italic words? What does it mean?"
+
   Scenario: An answer with no cleaned question shows his raw words above it
     Given Lampas is opened on Romans 8 with a tutor behind a fake Postern
     And he selects verse 28

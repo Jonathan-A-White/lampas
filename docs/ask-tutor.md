@@ -92,7 +92,9 @@ words with capitals and punctuation, the fillers, repeats and false starts taken
 (`TalkTurn.cleanQ`) and the Verse view's answer card (`TutorAnswer.cleanQuestion`, `[data-answer-question]`) show that in place of the raw
 transcript; the raw words stay kept as `q` / `question` (and `q` is what goes in the next request's history). An answer with no `question`, such as
 one kept before this, shows the raw words. While the answer is on its way the raw words show, as before. No table change (the fields are not indexed).
-Checks: `tests/unit/cleaned-question.test.ts`, `grinds/examples/*/cleaned-question.json`, and the scenarios "What he said is shown back cleaned up"
+The model sometimes keeps a lone um, uh or er in the Verse view's cleaned question, so `src/services/fillers.ts` `withoutFillers` strips them (and the commas
+around them) before it is kept (mw-5r3p30.193; `umbrella` and `Uh-oh` are not touched); the Bible talk's `cleanQ` has no such guard yet.
+Checks: `tests/unit/fillers.test.ts`, `tests/unit/cleaned-question.test.ts`, `grinds/examples/*/cleaned-question.json`, and the scenarios "What he said is shown back cleaned up"
 in `features/bible-talk.feature` and "What he asked is shown above the answer cleaned up" in `features/tutor.feature`.
 
 ## Let the tutor help me fill this in (mw-5r3p30.117)
