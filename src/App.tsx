@@ -14,6 +14,7 @@ import { routeOf, useAddress } from './nav/route';
 import { Reader } from './Reader';
 import { GoalScreen } from './GoalScreen';
 import { ParadigmsScreen } from './ParadigmsScreen';
+import { RequestsScreen } from './RequestsScreen';
 import { StudyWayScreen } from './StudyWayScreen';
 import { PlacementScreen } from './PlacementScreen';
 import { QuizScreen } from './QuizScreen';
@@ -79,6 +80,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <GoalScreen />
       ) : route === 'studyway' ? (
         <StudyWayScreen />
+      ) : route === 'requests' ? (
+        <RequestsScreen />
       ) : route === 'about' ? (
         <About />
       ) : route === 'preface' ? (
