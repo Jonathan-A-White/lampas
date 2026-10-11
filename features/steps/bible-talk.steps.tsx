@@ -195,7 +195,11 @@ const lines = () => turns().map((t) => t.textContent ?? '').join('\n');
 
 const feature = await loadFeature('features/bible-talk.feature');
 
-describeFeature(feature, ({ Scenario }) => {
+describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
+  // learnWordToday pins the clock at noon (tests/support/learner.ts); no later scenario keeps it
+  AfterEachScenario(() => {
+    vi.useRealTimers();
+  });
   Scenario("A question about 8:28 sends a bible-talk grist with the verse's Greek and English, the question, the solid words and the earlier turns", ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 with a talk behind a fake Postern', () => open());
     And('he selects verse 28', selectVerse28);

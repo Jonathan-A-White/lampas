@@ -102,7 +102,11 @@ const received = () => {
 
 const feature = await loadFeature('features/tutor.feature');
 
-describeFeature(feature, ({ Scenario }) => {
+describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
+  // learnWordToday pins the clock at noon (tests/support/learner.ts); no later scenario keeps it
+  AfterEachScenario(() => {
+    vi.useRealTimers();
+  });
   Scenario("Asking about 8:28 sends a grist whose input carries the verse's Greek, English, the question and the solid words", ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern', () => open());
     And('he selects verse 28', selectVerse28);

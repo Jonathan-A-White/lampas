@@ -1,11 +1,22 @@
 // tests/support/learner.ts — what the tutor features share about the learner summary (src/data/learnerSummary.ts): putting a word
 // he added today on his list, checking the 'learner' field of a grist the fake mill opened, and reading a grind's instructions.
 import { readFileSync } from 'node:fs';
-import { expect } from 'vitest';
+import { expect, vi } from 'vitest';
 import { db } from '../../src/data/db';
 
-/** Puts `lemma` on his list as a word he is learning, added just now. */
+/**
+ * Freezes the clock (Date only: Dexie and the timers still run) at noon of the current local day, so "today" cannot end between
+ * a word being put and the request being sent (mw-5r3p30.180: a gate that ran across midnight failed). Undo with vi.useRealTimers().
+ */
+export function pinClockAtNoon(): void {
+  const noon = new Date();
+  noon.setHours(12, 0, 0, 0);
+  vi.useFakeTimers({ toFake: ['Date'], now: noon });
+}
+
+/** Puts `lemma` on his list as a word he is learning, added just now, with the clock pinned at noon (see pinClockAtNoon). */
 export async function learnWordToday(lemma: string): Promise<void> {
+  pinClockAtNoon();
   await db.words.put({ lemma, lemmas: [], gloss: 'flesh', lesson: 0, state: 'learning', since: Date.now() });
 }
 
