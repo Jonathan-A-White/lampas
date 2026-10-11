@@ -71,6 +71,19 @@ Every send, of either kind, also keeps a row in Dexie `requests` (v16: `{txid, k
 grist's id, status `'sent'`; `src/data/repositories/requests.ts` `keepRequest`, `listRequests`), written as soon as the grist is out (askGrind's `onSent(txid)`),
 so a status that comes back can be matched to it. A tutor-ask keeps the tutor's `summary`, a grammar approach his `text`; a Retry is a new grist and a new row.
 
+### Your requests
+
+`#/requests` (route `requests`, kept; Settings > More > Your requests and a button on About) lists the rows of `requests`, newest first, each with its summary
+(or his words), what kind it was and one status line (`src/RequestsScreen.tsx`): **Sent**, **Filed**, **Being built**, **Adopted in 0.1.86** (a link to the
+record's `url`, new tab), **Declined: <reason>**, **Now a setting: <name>**. The backend pushes nothing for a grist (Postern protocol section 9 item 6), so the
+screen pulls `GET /api/messages?since=` when it opens and every `requestTimings.pollMs` (20 s) while it is up, never overlapping and not while the page is hidden
+(`src/services/requestStatus.ts` `pullStatuses`). The cursor is the backend's `next`, kept in the settings store (`requestsCursor`, no table;
+`getRequestsCursor` / `setRequestsCursor`, it never goes back), so a record is read once. A record counts only when it is a `grist` record from the mill
+to this key, signed (when the backend says who) and sealed by the mill, whose plaintext is a `request-status` (§19) for a request the phone holds
+(`applyRequestStatus`); anything else is skipped and the cursor passes it. A row takes a record only when its `ts` is newer than the one it already took
+(`statusAt`), so the newest by `ts` shows whatever order they arrive in. The row keeps `bead`, and `version`/`commit`/`url`, `reason` or `setting` for the status that carries them
+(optional fields, no Dexie version). A failed pull shows 'Could not check for news just now' and leaves the list as it was.
+
 ## Answering an offer by voice (mw-5r3p30.186)
 
 The tutor leaves three kinds of offer for a tap: **Send this to the makers** (`feedback_offer`), a setting change (`setting_offer` `{key, value}`, checked by
