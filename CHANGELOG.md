@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.97
+_2026-10-11_
+- New: You can now answer the tutor's offers by voice: say yes, no or 'read it back' instead of tapping Send this to the makers or a setting change.
+
 ## 0.1.96
 _2026-10-11_
 - Fixed: Greek words in Robinson's essay use the app's Greek type.
