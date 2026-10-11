@@ -145,6 +145,9 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
       <>
         {header()}
         <main className="screen min-h-0 flex-1 px-6 pt-8 text-center">
+          <p data-testid="score-label" className="text-lg text-muted">
+            Score
+          </p>
           <p data-testid="score" className="text-4xl font-semibold">
             {round.right} of {round.total}
           </p>
@@ -194,7 +197,8 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
   return (
     <>
       {header(`${index + 1} of ${items.length}`)}
-      <main className="screen min-h-0 flex-1 px-4 pt-6">
+      {/* sideways the round Ask button (56 px, right-3) sits over the options' right edge: the options leave it its room (mw-hqd5bz.35) */}
+      <main className="screen min-h-0 flex-1 px-4 pt-6 short:pr-20">
         <ItemCard item={item} index={index} picked={picked} onPick={pick} />
         {picked !== null ? (
           <div className="mt-2">
