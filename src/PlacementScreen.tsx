@@ -61,9 +61,12 @@ const BUTTON = 'min-h-12 w-full rounded-xl text-lg font-medium';
 
 export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
   const [run, setRun] = useState<Run>({ status: 'loading' });
+  // Start over on the intro asks first: his kept answers go only on the second, deliberate tap (mw-hqd5bz.27)
+  const [confirming, setConfirming] = useState(false);
   // The quick round's Say it again and Stop here sit where Next sat, so the second tap of a double tap on Next lands on them: they take no tap in the
-  // moment after a new item is drawn (src/ui/settle.ts, mw-hqd5bz.26).
-  const settled = useSettled(run.status === 'quick' ? run.round.at : run.status);
+  // moment after a new item is drawn (src/ui/settle.ts, mw-hqd5bz.26). The intro's buttons sit where Place me / Place again sat on the Goal screen, so
+  // they take none in the moment after the intro is drawn, nor after Start over turns into its question (mw-hqd5bz.27).
+  const settled = useSettled(run.status === 'quick' ? run.round.at : confirming ? 'confirm' : run.status);
   // where Place me was tapped: the Goal screen or Settings; the ways out return there
   const origin = placementOriginOf(useAddress());
   const leave = () => navigate(origin);
@@ -178,22 +181,36 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
           <div className="mt-6 grid grid-cols-1 gap-3">
             {kept ? (
               <>
-                <button type="button" onClick={() => void begin(kept, true)} className={`${BUTTON} bg-accent text-accent-fg`}>
+                <button type="button" onClick={() => settled() && void begin(kept, true)} className={`${BUTTON} bg-accent text-accent-fg`}>
                   Go on
                 </button>
                 <p data-testid="placement-kept" className="text-muted">
                   {kept.state.asked.length} {kept.state.asked.length === 1 ? 'question' : 'questions'} answered so far.
                 </p>
-                <button type="button" onClick={() => void begin(kept, false)} className={`${BUTTON} border border-line`}>
-                  Start over
-                </button>
+                {confirming ? (
+                  <div role="group" aria-label="Start over?" className="grid grid-cols-1 gap-3">
+                    <p data-testid="start-over-confirm" className="text-lg">
+                      Start over and throw away your {kept.state.asked.length} {kept.state.asked.length === 1 ? 'answer' : 'answers'}?
+                    </p>
+                    <button type="button" onClick={() => settled() && setConfirming(false)} className={`${BUTTON} bg-accent text-accent-fg`}>
+                      Keep my answers
+                    </button>
+                    <button type="button" onClick={() => settled() && void begin(kept, false)} className={`${BUTTON} border border-line`}>
+                      Yes, start over
+                    </button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => settled() && setConfirming(true)} className={`${BUTTON} border border-line`}>
+                    Start over
+                  </button>
+                )}
               </>
             ) : (
-              <button type="button" onClick={() => void begin(null, false)} className={`${BUTTON} bg-accent text-accent-fg`}>
+              <button type="button" onClick={() => settled() && void begin(null, false)} className={`${BUTTON} bg-accent text-accent-fg`}>
                 Start
               </button>
             )}
-            <button type="button" onClick={leave} className={`${BUTTON} border border-line`}>
+            <button type="button" onClick={() => settled() && leave()} className={`${BUTTON} border border-line`}>
               {origin === 'goal' ? 'Back to the goal' : 'Back to Settings'}
             </button>
           </div>
