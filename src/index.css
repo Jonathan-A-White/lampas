@@ -107,6 +107,16 @@
    * --lp-end-inset under the last row of a scroll box. */
   --lp-bar-inset: max(env(safe-area-inset-bottom), 48px);
   --lp-end-inset: max(env(safe-area-inset-bottom), 48px);
+
+  /* How far the Reader's Talk bar raises the round Ask button: its border, the bar's 96 px and 8 px above and below (mw-5r3p30.182: in a short window the bar
+   * is a 56 px row, see below). */
+  --lp-talk-lift: calc(var(--spacing) * 28 + 1px);
+}
+
+@media (max-height: 500px) {
+  :root {
+    --lp-talk-lift: calc(var(--spacing) * 18 + 1px);
+  }
 }
 
 @media (prefers-color-scheme: light) {

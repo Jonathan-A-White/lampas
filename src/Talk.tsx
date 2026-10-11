@@ -42,11 +42,11 @@ import { WordSheet, type Lookup, type TermAsk, type WordHelp } from './WordSheet
 
 /** The bar pinned at the bottom of the reader: Postern's big hold-to-talk bar (src/ui/HoldBar.tsx) labelled Talk. A tap opens
  * the sheet; a hold (half a second) opens it and listens, and what he says goes on release. It is the lowest bar, so it alone
- * keeps the safe-area inset. */
+ * keeps the safe-area inset. In a short window (a phone held sideways) the bar is a 56 px row (mw-5r3p30.182). */
 export function TalkBar({ hold }: { hold: HoldHandlers }) {
   return (
     <div data-talk-bar className="shrink-0 border-t border-line bg-surface px-3 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))]">
-      <HoldBar hold={hold} name="Talk" label="Talk" />
+      <HoldBar hold={hold} name="Talk" label="Talk" compactWhenShort />
     </div>
   );
 }
