@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.96
+_2026-10-11_
+- Fixed: Greek words in Robinson's essay use the app's Greek type.
+
 ## 0.1.95
 _2026-10-11_
 - New: Quiz me asks what you want from the quiz, and can keep it as your default.
