@@ -61,9 +61,12 @@ export const TALK_BAR_LIFT = 'var(--lp-talk-lift)';
 
 /** The room the Reader leaves under its reading box, above the Talk bar, for the round button (mw-5r3p30.115): its 56 px, the 12 px gap
  * below it and 4 px of air. The box ends where the button begins, so no line of text is ever behind it. In a short window (a phone held sideways) the
- * room is 42 px: the box's own 128 px of padding at its end is empty too, and the 30 px saved keep the whole Talk bar inside the window
- * (mw-5r3p30.194, src/index.css --lp-ask-room). */
+ * room is 0 and the button has a gutter beside the text instead (ASK_BUTTON_GUTTER; mw-5r3p30.194 had cut the room to 42 px, src/index.css --lp-ask-room). */
 export const ASK_BUTTON_ROOM = 'var(--lp-ask-room)';
+
+/** The strip the Reader leaves at the right of its reading box for the round button in a short window (a phone held sideways, mw-5r3p30.195): the
+ * button sits beside the text, not in a row of its own under it, so the box gets the 42 px back and no line is ever behind the button. 0 upright. */
+export const ASK_BUTTON_GUTTER = 'var(--lp-ask-gutter)';
 
 /** The context the sheet sends: the facts the screen reported, if they are the screen's own, else its name alone. */
 function contextOf(name: string, reported: ScreenContext | null): ScreenContext {
