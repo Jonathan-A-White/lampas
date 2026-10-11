@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.104
+_2026-10-11_
+- New: Settings and About now have "Your requests", which lists what you asked the factory for and shows whether it was filed, is being built, was adopted in a version (with a link), declined with a reason, or became a setting.
+
 ## 0.1.103
 _2026-10-11_
 - Fixed: The Quiz me goal question now always shows with its Yes, from now on and Just this time buttons, in view without scrolling.

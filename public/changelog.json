@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.104",
+    "date": "2026-10-11",
+    "story": "mw-vy3ghg.5",
+    "kind": "new",
+    "text": "Settings and About now have \"Your requests\", which lists what you asked the factory for and shows whether it was filed, is being built, was adopted in a version (with a link), declined with a reason, or became a setting."
+  },
+  {
     "version": "0.1.103",
     "date": "2026-10-11",
     "story": "mw-5r3p30.196",
