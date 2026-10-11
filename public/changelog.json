@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.90",
+    "date": "2026-10-11",
+    "story": "mw-hqd5bz.27",
+    "kind": "fixed",
+    "text": "Tapping Place me twice quickly no longer throws away the placement you had started, and Start over now asks before it does."
+  },
+  {
     "version": "0.1.89",
     "date": "2026-10-11",
     "story": "mw-5r3p30.172",
