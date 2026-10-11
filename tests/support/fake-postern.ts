@@ -31,6 +31,8 @@ export interface FakePostern {
   calls: string[];
   /** every grist the phone sent, opened */
   received: ReceivedGrist[];
+  /** the txid the fake gave each grist in `received`, in the same order */
+  txids: string[];
   /** every sealed upload the phone made to POST /api/blobs: its hash and byte length (a grist's attachments name them) */
   blobs: { hash: string; size: number }[];
   /** the Authorization header of each signed call */
@@ -151,6 +153,7 @@ export function makeFakePostern(): FakePostern {
     fetch: undefined as unknown as typeof fetch,
     calls: [],
     received: [],
+    txids: [],
     blobs: [],
     authorizations: [],
     autoReply: undefined,
@@ -211,6 +214,7 @@ export function makeFakePostern(): FakePostern {
       records.push({ seq: records.length + 1, txid, signer: pubkey, payload: { ...envelope } });
       const opened = JSON.parse(grist.openCt(envelope.ct, millBytes)) as ReceivedGrist;
       fake.received.push(opened);
+      fake.txids.push(txid);
       unanswered.push({ txid, from: pubkey, kind: opened.grist.kind });
       const greek = fake.greekReply !== undefined && (opened.input as { lang?: unknown } | undefined)?.lang === 'el';
       const byKind = fake.kindReplies[opened.grist.kind];

@@ -29,6 +29,7 @@ Feature: Ask for another approach
     And its input has kind grammar-approach, the text, the credit name and link and the app version
     And it carries two image attachments, each shrunk and under 300 KB
     And the bus has heard feedback-sent for grammar-approach
+    And the phone keeps one request row with the grist's id, kind grammar-approach, the approach text, the app version, when it was sent and status sent
 
   Scenario: The mill's forward answer {"status":"sent"} shows Sent: the factory has it, not the could-not-read line
     Given the Ask for another approach sheet is filled in and the mill answers {"status":"sent"}

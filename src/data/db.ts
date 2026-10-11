@@ -68,6 +68,24 @@ export interface ShareRow {
   files: { name: string; type: string; bytes: ArrayBuffer }[];
 }
 
+/** A request Lampas sent to the factory (mw-vy3ghg.2), kept with the grist's id so a status that comes back can be matched to it. */
+export interface RequestRow {
+  /** the grist's transaction id: the key */
+  txid: string;
+  /** 'grammar-approach' or 'tutor-ask' (src/services/feedback.ts FeedbackKind) */
+  kind: string;
+  /** the tutor's one-line summary of the ask (tutor-ask) */
+  summary?: string;
+  /** his words (grammar-approach: the approach he described) */
+  text?: string;
+  /** the build that sent it (config __APP_VERSION__) */
+  app_version: string;
+  /** when the mill took it, ms since the epoch */
+  sentAt: number;
+  /** where it stands; 'sent' until a status says otherwise */
+  status: string;
+}
+
 /** A picture he sent with a turn of a Bible talk (mw-y3qno5.1), kept as bytes and a mime (a Blob does not survive every store the tests use). */
 export interface TalkPicture {
   id?: number;
@@ -262,6 +280,7 @@ class LampasDB extends Dexie {
   tips!: EntityTable<TipRow, 'id'>;
   talkPictures!: EntityTable<TalkPicture, 'id'>;
   shares!: EntityTable<ShareRow, 'id'>;
+  requests!: EntityTable<RequestRow, 'txid'>;
 
   constructor() {
     super('lampas');
@@ -420,6 +439,25 @@ class LampasDB extends Dexie {
       tips: 'id, status',
       talkPictures: '++id, turnId',
       shares: 'id, createdAt',
+    });
+    // v16: the requests he sent to the factory {txid key, kind, summary?, text?, app_version, sentAt, status}, written by src/services/feedback.ts.
+    this.version(16).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
+      reviews: '[kind+id], due, kind',
+      grammarLevels: 'id, level',
+      usage: 'key, day, name',
+      tips: 'id, status',
+      talkPictures: '++id, turnId',
+      shares: 'id, createdAt',
+      requests: 'txid, sentAt, status',
     });
   }
 }

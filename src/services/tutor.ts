@@ -124,8 +124,8 @@ export interface AskOptions {
   key: Uint8Array;
   /** Stops the wait (the screen went away); nothing is thrown away that was already kept. */
   signal?: AbortSignal;
-  /** Called once the question has been sent and the wait for the answer begins. */
-  onSent?: () => void;
+  /** Called once the question has been sent and the wait for the answer begins, with the grist's id. */
+  onSent?: (txid: string) => void;
   /** Files sent with the grist: a recording of him reading (src/services/reading.ts). */
   files?: grist.GristFile[];
   baseUrl?: string;
@@ -146,7 +146,7 @@ export async function askGrind<Answer>(kind: string, request: object, isAnswer: 
   const timer = setTimeout(stop, tutorTimings.deadlineMs);
   try {
     const txid = await grist.sendGrist({ door: d, key, app: TUTOR_APP, kind, v: TUTOR_VERSION, input: request, photos: [], attachments: options.files });
-    options.onSent?.();
+    options.onSent?.(txid);
     const reply = await grist.awaitAnswer(txid, { door: d, key, intervalMs: tutorTimings.pollMs, signal: deadline.signal });
     if (reply.status !== 'answered') {
       throw new TutorError('no-answer', reply.reason ? `The tutor could not answer: ${reply.reason}` : 'The tutor could not answer.');
