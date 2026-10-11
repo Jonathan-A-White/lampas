@@ -1,0 +1,43 @@
+{
+  "description": "A declined request: the tutor says kindly that it was declined and gives the reason.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Goal",
+    "question": "What happened to my idea?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί"
+    ],
+    "settings": {
+      "theme": "light"
+    },
+    "screen": {
+      "name": "Goal",
+      "facts": [
+        {
+          "label": "Goal",
+          "value": "Read 1 John 1:1"
+        }
+      ]
+    },
+    "requests": [
+      {
+        "summary": "Add a sepia theme",
+        "status": "declined",
+        "reason": "outside what this app is for"
+      }
+    ]
+  },
+  "expect": {
+    "answer": {
+      "matches": "outside what this app is for"
+    },
+    "setting_offer": {
+      "present": false
+    },
+    "settings_changes": {
+      "present": false
+    }
+  }
+}

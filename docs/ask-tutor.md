@@ -84,6 +84,17 @@ to this key, signed (when the backend says who) and sealed by the mill, whose pl
 (`statusAt`), so the newest by `ts` shows whatever order they arrive in. The row keeps `bead`, and `version`/`commit`/`url`, `reason` or `setting` for the status that carries them
 (optional fields, no Dexie version). A failed pull shows 'Could not check for news just now' and leaves the list as it was.
 
+#### The tutor knows his requests (mw-vy3ghg.6)
+
+Every verse-ask and bible-talk request carries `requests`: the 10 newest rows, newest first, each `{summary, status, version?, setting?, reason?}`
+(`src/data/requestsForTutor.ts` `requestsForTutor` / `requestsOf`; the status is `sent` or a record's `filed`, `building`, `landed`, `declined`,
+`adopted-as-setting`, and a line holds only the field its status carries; a grammar approach is named by his words; texts are cut to 120/80/40
+characters so ten lines stay a few KB). Both input schemas take it (`maxItems` 10), it is missing when he has sent none and in About (whose request is the
+credits), and `fitHistory` drops the oldest lines when nothing is left of the history to cut. Both grinds' instructions have '## His requests': answer
+'what happened to my idea' from it, status by status, never inventing one. For `adopted-as-setting` the Talk puts the change in `setting_offer` (his tap
+or his yes makes it; `settings_changes` only when he asks in words); verse-ask can change only Ask by, so for any other setting it says where Settings has it.
+Scenarios: `features/tutor-requests.feature`, `grinds/examples/{bible-talk,verse-ask}/request-<status>.json`.
+
 ## Answering an offer by voice (mw-5r3p30.186)
 
 The tutor leaves three kinds of offer for a tap: **Send this to the makers** (`feedback_offer`), a setting change (`setting_offer` `{key, value}`, checked by

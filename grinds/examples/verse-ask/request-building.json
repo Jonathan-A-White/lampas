@@ -1,0 +1,33 @@
+{
+  "description": "A request being built: the tutor says it is being built and gives no date.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "question": "What happened to my idea?",
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {
+      "hebrewDepth": "both",
+      "askBy": "speaking"
+    },
+    "requests": [
+      {
+        "summary": "Add a sepia theme",
+        "status": "building"
+      }
+    ]
+  },
+  "expect": {
+    "answer": {
+      "matches": "[Bb]uil"
+    },
+    "settings_changes": {
+      "present": false
+    }
+  }
+}

@@ -8,6 +8,7 @@ import { STUDY_WAY_LINE_MAX } from '../data/repositories/studyWay';
 import { screenRef, talkRef } from '../data/repositories/talks';
 import type { AnswerLink, AnswerWord } from '../data/db';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
+import type { TutorRequest } from '../data/requestsForTutor';
 import type { SettingValue } from '../settings/registry';
 import type { TutorResource } from '../resources/tutorLinks';
 import { slugOf, type ScreenContext } from '../tutor/screen';
@@ -181,6 +182,8 @@ export interface TalkRequest {
   pictures?: number;
   /** present only while an offer waits for his tap (mw-5r3p30.186): the newest one in this talk, its kind and the exact text */
   pending_offer?: PendingOffer;
+  /** present only when he has sent requests to the factory (mw-vy3ghg.6, src/data/requestsForTutor.ts): up to 10, newest first, each with where it stands; none in About, whose request is the credits */
+  requests?: TutorRequest[];
 }
 
 /** The most links an answer carries (the grind's schema): the app shows the first three of more. */
@@ -300,16 +303,19 @@ const sizeOf = (request: TalkRequest): number => new TextEncoder().encode(JSON.s
 
 /**
  * Makes the request fit a grist: while it is too big the oldest long answer in the history is cut short, and when none is
- * left to cut the oldest turn is dropped. The newest turn is the last to be touched.
+ * left to cut the oldest turn is dropped. The newest turn is the last to be touched. With the history gone, the oldest of his
+ * requests (the last in the list, newest first) go one at a time.
  */
 export function fitHistory(request: TalkRequest): TalkRequest {
   let history = request.history.map((t) => ({ ...t }));
-  const fitted = (): TalkRequest => ({ ...request, history });
+  let requests = request.requests;
+  const fitted = (): TalkRequest => ({ ...request, history, ...(requests ? { requests } : {}) });
   while (history.length > 0 && sizeOf(fitted()) > MAX_REQUEST_BYTES) {
     const long = history.findIndex((t) => t.a.length > CLIPPED_CHARS);
     if (long >= 0) history[long] = { ...history[long], a: history[long].a.slice(0, CLIPPED_CHARS - CLIP_MARK.length).trimEnd() + CLIP_MARK };
     else history = history.slice(1);
   }
+  while (requests && requests.length > 0 && sizeOf(fitted()) > MAX_REQUEST_BYTES) requests = requests.slice(0, -1);
   return fitted();
 }
 
@@ -328,6 +334,7 @@ export function buildTalkRequest(
   pictureCount = 0,
   quizGoal: { kept: string; once?: string } = { kept: '' },
   pendingOffer?: PendingOffer,
+  requests: TutorRequest[] = [],
 ): TalkRequest {
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   // About (mw-vtjxh4.2) sends the credits, which take most of the record: the credits are the talk, so his words and his grammar stay home
@@ -350,6 +357,7 @@ export function buildTalkRequest(
     ...(aboutCredits ? {} : { resources }),
     ...(pictureCount > 0 ? { pictures: pictureCount } : {}),
     ...(pendingOffer ? { pending_offer: pendingOffer } : {}),
+    ...(requests.length > 0 && !aboutCredits ? { requests } : {}),
   };
 }
 
