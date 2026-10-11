@@ -23,6 +23,8 @@ The row is one line while each label has room for two lines of its own (a contai
 
 * **PROVISIONAL, the Governor to confirm:** what each action's hold does (above), Listen as the first action and the one a new phone starts on, the
   bar names, and that Share sits beside Copy link.
+* Sideways (a window under 500 px tall, `src/index.css` at the end) the Ask composer is one row: a 56 px `Hold to ask` bar with `Type a question` beside it, and no hint line, so an answer
+  has a scrolling box tall enough to read in under the speaking bar (mw-5r3p30.188, `tests/e2e/ask-fit.spec.ts`).
 * The chosen action is kept (`localStorage` `lampas.verseAction`), so the next verse opens on it. An arrow goes to the next verse of the chapter, and past
   a chapter's last verse to the first of the next (Romans 8:39, 9:1); there is none before Matthew 1:1 or after Revelation 22:21.
 * Back: `nav/route.ts` `openVerse` pushes a history entry (state `{verseView: true}`), so the phone's Back closes the view and the Reader is where it was

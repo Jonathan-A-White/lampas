@@ -449,3 +449,34 @@ textarea,
 [data-verse-bar] .bk-composer__type-instead {
   min-height: var(--lp-tap);
 }
+
+/* Sideways (a short window) the composer's three stacked rows (his words or the hint, the 96 px bar, Type a question) plus the speaking bar left the scrolling box
+ * 28 px, so a tutor's answer could not be read (mw-5r3p30.188). The bar is a 56 px row with Type a question beside it, and the hint line is not drawn (the bar says
+ * Hold to ask); his live words and a notice still have their line. Same cut as the Talk bar's (HoldBar compactWhenShort). */
+@media (max-height: 500px) {
+  [data-verse-bar] .bk-composer {
+    --bk-composer-bar-height: 56px;
+  }
+  [data-verse-bar] .bk-composer[data-layout='bar'] .bk-composer__speak {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 0.5rem;
+    row-gap: 0.25rem;
+  }
+  [data-verse-bar] .bk-composer__status {
+    grid-column: 1 / -1;
+    min-height: 0;
+  }
+  [data-verse-bar] .bk-composer__status:has(.bk-composer__hint:not(.bk-composer__error)) {
+    display: none;
+  }
+  [data-verse-bar] .bk-composer__bar-row,
+  [data-verse-bar] .bk-composer__quiet-row {
+    width: auto;
+  }
+  [data-verse-bar] .bk-composer__bar {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+}
