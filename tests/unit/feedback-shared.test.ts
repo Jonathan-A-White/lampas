@@ -12,10 +12,11 @@ const sources = (dir: string): string[] =>
 const text = (path: string): string => readFileSync(path, 'utf8');
 
 describe('the one feedback sender', () => {
-  it('is used by the tutor (Talk.tsx) and by Ask for another approach (AskApproachSheet.tsx)', () => {
-    for (const file of ['src/Talk.tsx', 'src/AskApproachSheet.tsx']) {
-      expect(text(file), file).toMatch(/import \{[^}]*\bsubmitFeedback\b[^}]*\} from '\.\/services\/feedback'/);
+  it('is used by the tutor (src/talk/offers.ts, which the Send this to the makers button and a spoken yes both call) and by Ask for another approach (AskApproachSheet.tsx)', () => {
+    for (const file of ['src/talk/offers.ts', 'src/AskApproachSheet.tsx']) {
+      expect(text(file), file).toMatch(/import \{[^}]*\bsubmitFeedback\b[^}]*\} from '\.{1,2}\/services\/feedback'/);
     }
+    expect(text('src/Talk.tsx')).toMatch(/\bsendMakersOffer\b/);
   });
 
   it('is the only code that sends the feedback kind: no other file asks the grind itself', () => {

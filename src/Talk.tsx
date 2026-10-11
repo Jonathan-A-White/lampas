@@ -9,14 +9,14 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Waiting } from './Ask';
 import { addLemmaToLearn, findGreekWord, glossOf } from './data/answerWord';
 import type { AnswerWord } from './data/db';
-import { addWordToLearn, keepStudyWayLine, deleteTurns, listStudyWay, listTurns, markChangeUndone, markFeedbackSent, markQuizGoalChoice, setQuizGoal, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
+import { addTurnChanges, addWordToLearn, keepStudyWayLine, deleteTurns, listStudyWay, listTurns, markChangeUndone, markQuizGoalChoice, setQuizGoal, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
 import { Markdown } from './markdown/Markdown';
 import { TutorLinks } from './TutorLinks';
-import { settingOf, undoChange, type AppliedChange } from './settings/registry';
+import { offeredChange, settingOf, undoChange, type AppliedChange } from './settings/registry';
+import { sendMakersOffer, takeSettingOffer } from './talk/offers';
 import { hebrewSoundAsk, MAX_TALK_CHARS, scopeTitle, type TalkFocus, type TalkScope } from './services/talk';
 import { HebrewSoundGuide } from './script/HebrewGuide';
 import { HebrewAskContext } from './script/hebrewSpeech';
-import { buildTutorAskRequest, submitFeedback } from './services/feedback';
 import { FAILURE_TITLES, TutorError, type TutorFailure } from './services/tutor';
 import { registerOutbox } from './talk/outbox';
 import { pastedPictures, PICTURE_ONLY_QUESTION, type OutgoingPicture } from './talk/pictures';
@@ -231,6 +231,8 @@ function QuizGoalOffer({ turn }: { turn: TalkTurn }) {
         <p className="min-h-11 py-2 text-base font-medium text-muted">Kept as your quiz goal</p>
       ) : turn.quizGoalChoice === 'once' ? (
         <p className="min-h-11 py-2 text-base font-medium text-muted">Just this time</p>
+      ) : turn.quizGoalChoice === 'declined' ? (
+        <p className="min-h-11 py-2 text-base font-medium text-muted">Not kept</p>
       ) : (
         <div className="mt-1 flex flex-wrap gap-2">
           <button type="button" disabled={busy} onClick={() => void choose('kept')} className={button}>
@@ -255,10 +257,7 @@ function FeedbackOffer({ turn, scope }: { turn: TalkTurn; scope: TalkScope }) {
     if (phase.name === 'sending' || turn.id === undefined) return;
     setPhase({ name: 'sending' });
     try {
-      await submitFeedback(
-        buildTutorAskRequest({ text: turn.q, summary, screen: scope.screen?.name ?? 'Reader', reference: scopeTitle(scope), facts: scope.screen?.facts }),
-      );
-      await markFeedbackSent(turn.id);
+      await sendMakersOffer(turn, scope);
     } catch (err) {
       const error = err instanceof TutorError ? err : new TutorError('unreachable', err instanceof Error ? err.message : 'Something went wrong.');
       setPhase({ name: 'failed', failure: error.failure, detail: error.message });
@@ -273,6 +272,8 @@ function FeedbackOffer({ turn, scope }: { turn: TalkTurn; scope: TalkScope }) {
           <p className="min-h-11 py-2 text-base font-medium">Sent</p>
           <p className="text-base text-muted">The answer will come back.</p>
         </div>
+      ) : turn.feedbackWithdrawn ? (
+        <p className="min-h-11 py-2 text-base font-medium text-muted">Not sent</p>
       ) : (
         <>
           {phase.name === 'failed' ? (
@@ -293,6 +294,50 @@ function FeedbackOffer({ turn, scope }: { turn: TalkTurn; scope: TalkScope }) {
             className="mt-1 min-h-11 rounded-lg border border-accent px-4 text-base font-medium text-accent active:bg-line disabled:opacity-40"
           >
             {phase.name === 'failed' ? 'Retry' : 'Send this to the makers'}
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** A setting change the tutor offered (mw-5r3p30.186): its text as a button. The tap changes the setting exactly as a spoken yes does, and the turn then shows the change with Undo. */
+function SettingOffer({ turn }: { turn: TalkTurn }) {
+  const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+  const offer = turn.settingOffer ? offeredChange(turn.settingOffer) : undefined;
+  if (!offer || turn.id === undefined) return null;
+  const id = turn.id;
+  const take = async (): Promise<void> => {
+    setBusy(true);
+    try {
+      const result = await takeSettingOffer(turn);
+      if (result.applied.length > 0) await addTurnChanges(id, result.applied);
+      else setProblem(result.refused[0] ?? 'The setting was not changed.');
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div data-setting-offer className="mt-2 border-t border-line pt-2">
+      {turn.settingChoice === 'taken' ? (
+        <p className="min-h-11 py-2 text-base font-medium">Changed</p>
+      ) : turn.settingChoice === 'declined' ? (
+        <p className="min-h-11 py-2 text-base font-medium text-muted">Not changed</p>
+      ) : (
+        <>
+          {problem ? (
+            <p role="alert" className="text-base text-bad">
+              {problem}
+            </p>
+          ) : null}
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void take()}
+            className="min-h-11 rounded-lg border border-accent px-4 text-base font-medium text-accent active:bg-line disabled:opacity-40"
+          >
+            {offer.text}
           </button>
         </>
       )}
@@ -369,6 +414,7 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
         {turn.links?.length ? <TutorLinks links={turn.links} onLeave={onLeave} /> : null}
         {turn.studyWayLine ? <StudyWayProposal line={turn.studyWayLine} /> : null}
         <QuizGoalOffer turn={turn} />
+        <SettingOffer turn={turn} />
         <FeedbackOffer turn={turn} scope={scope} />
         <div className="-mb-1 mt-1 flex flex-wrap items-start justify-end gap-1">
           <CopyExchange place={turn.ref} question={turn.cleanQ ?? turn.q} answer={turn.a} />
