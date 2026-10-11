@@ -132,8 +132,9 @@ others for reasons nobody listed; the quiz should begin by talking with him abou
   quiz mode only. With `null`, no `quiz_goal_once` and an empty history, `### His quiz goal` in `grinds/bible-talk.instructions.md` makes the tutor open by
   asking why he wants the quiz in one short plain question with no list of options, ask at most one follow-up, then quiz to match (understanding: plain
   English, no Greek unless he asks; Greek; English; reading the Bible; anything else in his words). There is no list in the app either.
-* **The offer.** In that turn it asks once 'Is this how you want me to quiz you from now on?' and the answer carries `quiz_goal_offer` (at most 80
-  characters). The Talk sheet shows it under the answer, 'Your quiz goal', with **Yes, from now on** (keeps it as the setting `quizGoal`) and **Just this
+* **The offer.** In that turn the answer carries `quiz_goal_offer` (at most 80
+  characters). The Talk sheet shows it under the answer, with the app's own line 'Is this how you want me to quiz you from now on?' above the buttons
+  (not drawn when the answer already asks it, mw-5r3p30.196; the box scrolls so the line and both buttons are in view), 'Your quiz goal', with **Yes, from now on** (keeps it as the setting `quizGoal`) and **Just this
   time** (keeps nothing); the turn then reads 'Kept as your quiz goal' or 'Just this time' (`TalkTurn.quizGoalChoice`). After Just this time the later
   requests of that quiz carry `quiz_goal_once` (the offer's text, found in the quiz's own turns) so the tutor does not ask or offer again.
 * **Where it lives:** the settings store, key `quizGoal`, plain text ('' = none), a registry setting (section My study way, label **Quiz goal**: a field with

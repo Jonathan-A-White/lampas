@@ -40,7 +40,7 @@ async function waitForReader(): Promise<void> {
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
 
-async function open(goal: string): Promise<void> {
+async function open(goal: string, answer: string = QUIZ_ANSWER.answer): Promise<void> {
   cleanup();
   stopReading();
   clearBus();
@@ -50,7 +50,7 @@ async function open(goal: string): Promise<void> {
   window.history.replaceState(null, '', '/');
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
-  fake.autoReply = { status: 'answered', answer: { ...QUIZ_ANSWER, quiz_goal_offer: goal } };
+  fake.autoReply = { status: 'answered', answer: { ...QUIZ_ANSWER, answer, ...(goal ? { quiz_goal_offer: goal } : {}) } };
   stubChapterFetch();
   const chapterFetch = globalThis.fetch;
   vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) =>
@@ -98,6 +98,12 @@ describeFeature(feature, ({ Scenario }) => {
     await user.click(within(view).getByRole('button', { name: 'Start the quiz', exact: true }));
     await screen.findByRole('dialog', { name: 'Quiz on Romans 8:1-11' });
   };
+  const QUESTION = 'Is this how you want me to quiz you from now on?';
+  const countIn = (el: HTMLElement) => (squash(el.textContent).split(QUESTION).length - 1);
+  const buttonsOf = (yes: string, once: string) => {
+    expect(within(offer()).getByRole('button', { name: yes, exact: true })).toBeInTheDocument();
+    expect(within(offer()).getByRole('button', { name: once, exact: true })).toBeInTheDocument();
+  };
   const given = (_: unknown, goal: string) => db.settings.put({ key: 'quizGoal', value: goal });
   const grists = (_: unknown, n: number) => waitFor(() => expect(fake.received).toHaveLength(n));
   const keptIs = (_: unknown, goal: string) => waitFor(async () => expect(await kept()).toBe(goal));
@@ -137,6 +143,46 @@ describeFeature(feature, ({ Scenario }) => {
     And('the bible-talk instructions say to ask at most one follow-up and then quiz to match the goal', () => {
       const text = squash(instructionsOf('bible-talk')).toLowerCase();
       for (const phrase of ['at most one follow-up', 'quiz to match']) expect(text).toContain(phrase);
+    });
+  });
+
+  Scenario('The app asks the goal question beside the buttons when the answer leaves it out', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal {string}', openWith);
+    When('he starts the quiz on the passage {string}', startQuiz);
+    Then('the offer shows the line {string} exactly once, above the buttons {string} and {string}', async (_, line: string, yes: string, once: string) => {
+      await waitFor(() => expect(turns()).toHaveLength(1));
+      await offerShown();
+      expect(line).toBe(QUESTION);
+      expect(countIn(turns()[0])).toBe(1);
+      expect(countIn(offer())).toBe(1);
+      buttonsOf(yes, once);
+      const question = Array.from(offer().querySelectorAll('p')).find((p) => squash(p.textContent) === QUESTION);
+      const first = within(offer()).getByRole('button', { name: yes, exact: true });
+      expect(question).toBeTruthy();
+      expect(question!.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+  });
+
+  Scenario('The question is not shown twice when the answer already asks it', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern whose answer already asks the goal question and offers the quiz goal {string}', (_: unknown, goal: string) =>
+      open(goal, `I will quiz you in plain English. ${QUESTION} Question 1: how does the passage begin?`));
+    When('he starts the quiz on the passage {string}', startQuiz);
+    Then('the goal question {string} shows exactly once in the whole turn, beside the buttons {string} and {string}', async (_, line: string, yes: string, once: string) => {
+      await waitFor(() => expect(turns()).toHaveLength(1));
+      await offerShown();
+      expect(line).toBe(QUESTION);
+      expect(countIn(turns()[0])).toBe(1);
+      buttonsOf(yes, once);
+    });
+  });
+
+  Scenario('A turn with no quiz goal offer shows no goal question', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers no quiz goal', () => open(''));
+    When('he starts the quiz on the passage {string}', startQuiz);
+    Then('the turn shows no goal question and no offer', async () => {
+      await waitFor(() => expect(turns()).toHaveLength(1));
+      expect(countIn(turns()[0])).toBe(0);
+      expect(sheet().querySelector('[data-quiz-goal]')).toBeNull();
     });
   });
 
