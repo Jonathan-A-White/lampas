@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.108
+_2026-10-11_
+- New: The tutor can now tell you what became of the ideas you sent to the makers, and offer to switch on one that became a setting.
+
 ## 0.1.107
 _2026-10-11_
 - Fixed: Held sideways, the Reader now shows much more of the text, with the Ask button beside it.
