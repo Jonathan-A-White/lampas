@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.85
+_2026-10-11_
+- Fixed: The tutor's answer always shows, even when a setting he asked to change cannot be changed.
+
 ## 0.1.84
 _2026-10-11_
 - Fixed: Tapping Next twice quickly in the Quick test no longer opens the Parsing drill by accident.
