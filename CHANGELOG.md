@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.109
+_2026-10-11_
+- Fixed: The chapter title in the header is no longer cut off, the tutor says "Already on" when asked for the chapter you are on, and an answer that comes after you close Talk offers to open the chapter.
+
 ## 0.1.108
 _2026-10-11_
 - New: The tutor can now tell you what became of the ideas you sent to the makers, and offer to switch on one that became a setting.

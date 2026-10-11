@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.109",
+    "date": "2026-10-11",
+    "story": "mw-5r3p30.199",
+    "kind": "fixed",
+    "text": "The chapter title in the header is no longer cut off, the tutor says \"Already on\" when asked for the chapter you are on, and an answer that comes after you close Talk offers to open the chapter."
+  },
+  {
     "version": "0.1.108",
     "date": "2026-10-11",
     "story": "mw-vy3ghg.6",
