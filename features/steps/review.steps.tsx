@@ -7,6 +7,7 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
+import { LADDER } from '../../src/data/grammar/ladder';
 import { mulberry32 } from '../../src/data/quiz';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { seedWordsIfFirstOpen, setWordState } from '../../src/data/repositories/words';
@@ -390,6 +391,40 @@ describeFeature(feature, ({ Scenario }) => {
     Then('{string} is on step {int} and has lapsed once', async (_, lemma: string, step: number) => {
       await waitFor(async () => expect((await review(lemma)).step).toBe(step));
       expect((await review(lemma)).lapses).toBe(1);
+    });
+  });
+
+  Scenario('Another round after letter gaps is still a round of ten', ({ Given, When, And, Then }) => {
+    Given('{int} words are due', async (_, n: number) => {
+      await freshStore();
+      const lemmas = (await db.words.toArray()).slice(0, n).map((w) => w.lemma);
+      await makeDue(lemmas);
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    And('he answers every question right and goes on to the end', async () => {
+      for (let i = 0; i < 10; i += 1) {
+        await screen.findByTestId('prompt');
+        await answerCurrent(true);
+        await goOn();
+      }
+    });
+    And('the card says {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByText(text, { exact: false })).toBeVisible());
+    });
+    When('he starts another round with four letters to ask', async () => {
+      // the words read right credited some letters: put it back to every idea solid but four letters, which head the round as gaps (mw-hqd5bz.23)
+      const gaps = new Set(['letter-xi', 'letter-psi', 'letter-zeta', 'letter-theta']);
+      await db.grammarLevels.clear();
+      await db.grammarLevels.bulkPut(
+        LADDER.filter((i) => !gaps.has(i.id) && i.id !== 'alphabet').map((i) => ({ id: i.id, level: 'solid' as const, since: 1, how: 'marked' as const })),
+      );
+      await user.click(await screen.findByRole('button', { name: 'Another round' }));
+      await screen.findByText(/^1 of \d+$/);
+    });
+    Then('the counter reads {string}', (_, text: string) => {
+      expect(screen.getByText(/^1 of \d+$/)).toHaveTextContent(text);
     });
   });
 
