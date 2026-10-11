@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.91",
+    "date": "2026-10-11",
+    "story": "mw-hqd5bz.30",
+    "kind": "fixed",
+    "text": "Review's 'Another round' no longer turns into a round of dozens of questions; a round stays at ten."
+  },
+  {
     "version": "0.1.90",
     "date": "2026-10-11",
     "story": "mw-hqd5bz.27",

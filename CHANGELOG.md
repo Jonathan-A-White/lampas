@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.91
+_2026-10-11_
+- Fixed: Review's 'Another round' no longer turns into a round of dozens of questions; a round stays at ten.
+
 ## 0.1.90
 _2026-10-11_
 - Fixed: Tapping Place me twice quickly no longer throws away the placement you had started, and Start over now asks before it does.
