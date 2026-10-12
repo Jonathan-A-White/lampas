@@ -32,7 +32,8 @@ import { useSettled } from './ui/settle';
 import { ItemCard } from './review/ItemCard';
 import { GRAMMAR, loadPassage, type GrammarItem } from './review/kinds';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
-import { chosenPronunciation, speakWord } from './speech/greek';
+import { chosenPronunciation } from './speech/greek';
+import { speakQuestion } from './speech/speakQuestion';
 import { focusOnMount } from './ui/focus';
 
 /** What a placement is of: the saved goal text ('' for none), the approach it walks and 'Read 1 John 1:1' for the goal. */
@@ -129,7 +130,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
     savePlacement({ goal: session.goal, approach: session.approach.id, state });
     setRun({ status: 'quick', state, round, item: { kind: 'grammar', id: item.id, question, mode: 'choice' }, picked: null, after: null });
     // Hear and pick: the app says it as the question comes
-    if (question.say) speakWord(question.say, 'greek');
+    speakQuestion(question);
   };
 
   const finish = async (walked: PlacementState): Promise<void> => {
@@ -274,7 +275,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
           </p>
           <ItemCard item={item} index={round.at} picked={picked} onPick={pickQuick} />
           {hear && !answered ? (
-            <button type="button" data-testid="say-again" onClick={() => settled() && speakWord(item.question.say!, 'greek')} className={`${BUTTON} mt-3 border border-line`}>
+            <button type="button" data-testid="say-again" onClick={() => settled() && speakQuestion(item.question)} className={`${BUTTON} mt-3 border border-line`}>
               Say it again
             </button>
           ) : null}

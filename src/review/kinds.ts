@@ -11,6 +11,7 @@ import { getOpenChapter } from '../data/readerChapter';
 import { modeFor, type QuestionMode } from '../data/schedule';
 import { buildQuestion, drawWords, mulberry32, seedDistractors, shuffle, type Question, type Random } from '../data/quiz';
 import { chosenPronunciation, speakWord } from '../speech/greek';
+import { speakQuestion } from '../speech/speakQuestion';
 import {
   getGoal,
   listWords,
@@ -143,7 +144,7 @@ export const GRAMMAR: ReviewKind = {
   },
   isRight: (item, picked) => item.kind === 'grammar' && (item.mode === 'flashcard' ? picked === KNEW_IT : picked === item.question.right),
   hear: (item) => {
-    if (item.kind === 'grammar' && item.question.say) speakWord(item.question.say, 'greek');
+    if (item.kind === 'grammar') speakQuestion(item.question);
   },
   record: async (item, right) => {
     if (item.kind !== 'grammar') return;
