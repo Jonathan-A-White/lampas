@@ -337,6 +337,8 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
   const state = checks.states[unitId(verse)];
   const sent = state?.phase === 'sending' || state?.phase === 'waiting';
   const out = state?.phase === 'recording' || sent;
+  // A reading that failed has no result of its own: the one kept from the reading before would sit beneath the error as if it were this one's.
+  const failed = state?.phase === 'failed';
   // The walk belongs to the reading it was started on: a new result closes it, and so does sending the next one.
   const [walkFor, setWalkFor] = useState<number | null>(null);
   const [walkStep, setWalkStep] = useState(0);
@@ -396,7 +398,7 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
           </>
         )}
         <Status state={state} onRetry={onRetry} />
-        {reading && (walking || !out) ? (
+        {reading && !failed && (walking || !out) ? (
           walking ? (
             <Walk key={reading.when} words={reading.words} text={text} view={view} step={walkStep} onStep={setWalkStep} onDone={() => setWalkFor(null)} />
           ) : (

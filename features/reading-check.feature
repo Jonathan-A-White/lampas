@@ -156,6 +156,15 @@ Feature: Reading check, in English and in Greek
     When the backend comes back and he taps Retry
     Then the verse in the reading check shows "together" and "purpose" marked to fix
 
+  Scenario: A reading that fails does not leave the reading before it on show as its result
+    Given Lampas is opened on Romans 8 in English with a reading check behind a fake Postern
+    And he opens the reading check of verse 28
+    And he holds the bar for 2 seconds and lets go
+    And the verse in the reading check shows "together" and "purpose" marked to fix
+    When the backend goes away and he reads verse 28 again
+    Then the reading check says "Could not reach the tutor" with a Retry button
+    And the reading check shows no result
+
   Scenario: The result is still there after reopening
     Given Lampas is opened on Romans 8 in English with a reading check behind a fake Postern
     And he opens the reading check of verse 28
