@@ -5,6 +5,8 @@ New Testament in Koine Greek. Served at https://lampas.allmymind.org from the VP
 the Laptop's after_landing builds `dist/` and rsyncs it). There is no GitHub Pages workflow; do not
 add one, and do not change `.github/workflows/` unless a story says so. Never bump `package.json`'s version.
 
+VISION.md is the Governor's vision for this app: a change that would cross one of its lines stops and says so.
+
 ## Gate command
 
 ```bash
