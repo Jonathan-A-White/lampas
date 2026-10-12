@@ -5,7 +5,9 @@
 // ids, so an id, once shipped, is not renamed.
 import { GRAMMAR_CONCEPTS } from '../grammar-concepts';
 import { DEFAULT_PRONUNCIATION, pronunciationOf } from '../../speech/pronunciation';
+import { bookOf } from '../books';
 import { GRAMMAR_TERMS, decodeParse, parseSegments, splitParse } from '../parseCode';
+import { PREPOSITIONS, type Preposition } from './prepositions';
 
 /** The kind string of a schedule row whose item is a grammar idea (src/data/repositories/reviews.ts). */
 export const IDEA_KIND = 'grammar';
@@ -159,6 +161,32 @@ function letterText(name: string, lower: string, upper: string, sound: string, k
 
 // ---- The ladder, in order; the rung of an idea is its place in this list ----
 
+// ---- The prepositions one by one (mw-86e9r1.5, PROVISIONAL): an idea for each, its meaning per case and a real phrase in each ----
+
+const CASE_IDEAS = { genitive: 'case-genitive', dative: 'case-dative', accusative: 'case-accusative' } as const;
+const prepId = (p: Preposition): string => `preposition-${p.key}`;
+
+/** The lesson: how it is spelt before a vowel, then each case it takes with its meaning and a New Testament phrase. */
+function prepositionText(p: Preposition): string {
+  const forms = p.before.length > 0 ? ` (${p.before.join(' or ')} before a vowel)` : '';
+  const cases = p.uses.length === 1 ? `the ${p.uses[0].case}` : `${p.uses.length === 2 ? 'two cases' : 'three cases'}, and the case decides what it means`;
+  const intro = `${p.greek}${forms} is followed by ${cases}.`;
+  const uses = p.uses.map((u) => `With the ${u.case} it means “${u.meaning}”: ${u.phrase}, “${u.gloss}” (${bookOf(u.ref.book)?.name} ${u.ref.chapter}:${u.ref.verse}).`);
+  return [intro, ...uses].join(' ');
+}
+
+const prepositionIdeas = (): Def[] =>
+  PREPOSITIONS.map((p) =>
+    def(
+      prepId(p),
+      'prepositions',
+      `The preposition ${p.greek}`,
+      [],
+      ['preposition', ...(p.before.length > 0 ? ['movable-letters'] : []), ...p.uses.map((u) => CASE_IDEAS[u.case])],
+      prepositionText(p),
+    ),
+  );
+
 const NOUN_CASES = ['case-nominative', 'case-genitive', 'case-dative', 'case-accusative'];
 const GENDERS = ['gender-masculine', 'gender-feminine', 'gender-neuter'];
 const PERSONS_AND_NUMBERS = ['person-1st', 'person-2nd', 'person-3rd', 'number-singular', 'number-plural'];
@@ -299,9 +327,18 @@ const DEFS: Def[] = [
 
   // prepositions
   def('preposition', 'prepositions', 'The preposition', ['preposition'], ['case-genitive', 'case-dative', 'case-accusative']),
+  ...prepositionIdeas(),
 
   // verbs: person and number (above) first, then the present, the active and the indicative, the other tenses, the voices, the moods
   def('verb', 'verbs', 'The verb', ['verb'], PERSONS_AND_NUMBERS),
+  def(
+    'compound-verbs',
+    'verbs',
+    'Compound verbs',
+    [],
+    ['verb', 'preposition', ...PREPOSITIONS.map(prepId)],
+    'Many Greek verbs are a preposition joined to a verb, and the preposition keeps its meaning: ἐκ + βάλλω is ἐκβάλλω, “throw out”; εἰς + ἔρχομαι is εἰσέρχομαι, “go in”; κατά + βαίνω is καταβαίνω, “go down”. The preposition may change to fit: ἐκ becomes ἐξ before a vowel (ἐξεβάλομεν), and κατά loses its last vowel (κατέβη). Sometimes the meaning drifts: μετανοέω is “change one’s mind”.',
+  ),
   def('tense-present', 'verbs', 'The present tense', ['present'], ['verb']),
   def('voice-active', 'verbs', 'The active voice', ['active'], ['verb']),
   def('mood-indicative', 'verbs', 'The indicative mood', ['indicative'], ['tense-present', 'voice-active']),
@@ -411,6 +448,15 @@ export function ideasOf(code: string): string[] {
   ids.add(pos === 'pronoun' ? 'pronoun' : termIdea(pos));
   for (const segment of parseSegments(decodeParse(code))) if (segment.term) ids.add(termIdea(segment.term));
   return [...ids].sort((a, b) => ideaOf(a).rung - ideaOf(b).rung);
+}
+
+const PREPOSITION_IDEA_OF_LEMMA = new Map(PREPOSITIONS.map((p) => [p.greek.normalize('NFC'), prepId(p)]));
+
+/** ideasOf for a word of the text (mw-86e9r1.5): a preposition of the twelve also needs its own idea, which its parsing code cannot name. */
+export function ideasOfWord(word: { l: string; p: string }): string[] {
+  const ids = ideasOf(word.p);
+  const own = word.p === 'PREP' ? PREPOSITION_IDEA_OF_LEMMA.get(word.l.normalize('NFC')) : undefined;
+  return own ? [...ids, own].sort((a, b) => ideaOf(a).rung - ideaOf(b).rung) : ids;
 }
 
 function termIdea(term: string): string {
