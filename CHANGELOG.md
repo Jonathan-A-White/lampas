@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.122
+_2026-10-12_
+- New: Changed: In the Immersive reader the bars no longer come back when you scroll up; tap the text with three fingers (or two) to bring them back or send them away.
+
 ## 0.1.120
 _2026-10-12_
 - Fixed: Read it aloud no longer says it could not reach the tutor when your connection drops for a moment; it keeps waiting for the answer.

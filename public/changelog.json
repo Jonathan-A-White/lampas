@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.122",
+    "date": "2026-10-12",
+    "story": "mw-5r3p30.227",
+    "kind": "new",
+    "text": "Changed: In the Immersive reader the bars no longer come back when you scroll up; tap the text with three fingers (or two) to bring them back or send them away."
+  },
+  {
     "version": "0.1.120",
     "date": "2026-10-12",
     "story": "mw-5r3p30.208",
