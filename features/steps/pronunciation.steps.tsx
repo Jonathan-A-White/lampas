@@ -84,6 +84,7 @@ describeFeature(feature, ({ Scenario }) => {
         scoringLang: 'el',
         note: 'Test scheme.',
         respell: (word) => word.normalize('NFD').replace(/\p{M}/gu, '').toUpperCase(),
+        keyWords: {},
       });
     });
     When("he taps the gear in the reader's header", async () => {

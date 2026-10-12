@@ -6,7 +6,7 @@ import type { Chapter, GreekWord, Verse } from '../chapter';
 import { decodeParse, parseSegments, splitParse } from '../parseCode';
 import { shuffle, type Random } from '../quiz';
 import { MODERN } from '../../speech/schemes/modern';
-import { LADDER, ideasOf, type GrammarIdea } from './ladder';
+import { LADDER, ideasOf, keyedSound, type GrammarIdea } from './ladder';
 import { quickQuestion } from './quickRound';
 
 export type GrammarKind = 'ending' | 'tap-form' | 'letter' | 'sound' | 'stress' | 'breathing' | 'syllables' | 'concept';
@@ -265,7 +265,7 @@ export function buildSound(idea: GrammarIdea, random: Random): GrammarQuestion {
 }
 
 // [pair, sound] — one pair for each sound, from the sounds ideas' text
-const DIPHTHONGS: [string, string][] = [['αι', 'e, as in “bed”'], ['ει', 'ee, as in “feet”'], ['ου', 'oo, as in “food”'], ['αυ', 'av or af'], ['ευ', 'ev or ef']];
+const DIPHTHONGS: [string, string][] = [['αι', keyedSound('e')], ['ει', keyedSound('ee')], ['ου', keyedSound('oo')], ['αυ', 'av or af'], ['ευ', 'ev or ef']];
 const CONSONANT_PAIRS: [string, string][] = [['μπ', 'mb'], ['ντ', 'nd'], ['γκ', 'ng'], ['γχ', 'ng and kh']];
 const PUNCTUATION: [string, string][] = [['Which mark is a question mark in Greek?', ';'], ['Which mark is a colon or a semicolon in Greek?', '·']];
 

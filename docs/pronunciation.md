@@ -11,7 +11,7 @@ sound-alikes for the letters.
 ## How it is built
 
 `src/speech/pronunciation.ts` is the registry: a list of `Pronunciation` entries
-`{ id, label, lang, scoringLang, note, respell(greekWord) }`. Settings lists the entries, the word sheet calls
+`{ id, label, lang, scoringLang, note, respell(greekWord), keyWords }`. `keyWords` gives each sound the respelling writes an English word that has it (`e` is the e of pet); the grammar lessons (`src/data/grammar/ladder.ts`) say every sound as 'e as in pet' from it, so a second scheme changes the lessons. Settings lists the entries, the word sheet calls
 `pronunciationOf(chosen).respell(word.t)`, and `lang` is the language tag of the voice that speaks (Settings keeps
 the chosen id under `greekPronunciation`). Each scheme is one file in `src/speech/schemes/`.
 
@@ -38,7 +38,7 @@ moving to the next syllable the longest group of consonants that can open a Gree
 ## Adding a scheme (Erasmian next, not built yet)
 
 1. Write `src/speech/schemes/<id>.ts` exporting a `Pronunciation` (see `modern.ts`): its `respell` takes the Greek
-   word and returns the respelling. Erasmian's table (the story's note): μπ `mp`, ντ `nt`, γκ `nk`, γχ `nk`.
+   word and returns the respelling; its `keyWords` name an English word for each sound it writes. Erasmian's table (the story's note): μπ `mp`, ντ `nt`, γκ `nk`, γχ `nk`.
 2. Put it in `SCHEMES` in `src/speech/pronunciation.ts`, after Modern Greek. Settings, the saved choice and the word
    sheet pick it up; nothing else names an id.
 3. Add the id's voice language: `lang` is what the utterance uses. If the phone has no voice for it, say so in `note`.

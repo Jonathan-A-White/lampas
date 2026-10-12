@@ -286,4 +286,22 @@ describeFeature(feature, ({ Scenario }) => {
       expect(ideaSheet().textContent).not.toContain(text);
     });
   });
+
+  Scenario('The Pairs of vowels sheet gives every sound an English key word', ({ Given, When, Then, And }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the idea sheet of {string} from the Goal screen', async (_, id: string) => {
+      window.location.hash = '#/goal';
+      await user.click(await screen.findByTestId('ideas-bar'));
+      await user.click(within(await screen.findByTestId('ideas-list')).getByRole('button', { name: ideaOf(id).title }));
+      await screen.findByRole('dialog', { name: 'Idea' });
+      await waitFor(() => expect(within(ideaSheet()).queryByTestId('idea-loading')).toBeNull());
+    });
+    Then('the idea sheet text says {string}, {string} and {string}', (_, a: string, b: string, c: string) => {
+      const text = within(ideaSheet()).getByTestId('idea-text');
+      for (const phrase of [a, b, c]) expect(text).toHaveTextContent(phrase);
+    });
+    And('the idea sheet text says it follows {string}', (_, way: string) => {
+      expect(within(ideaSheet()).getByTestId('idea-text')).toHaveTextContent(way);
+    });
+  });
 });
