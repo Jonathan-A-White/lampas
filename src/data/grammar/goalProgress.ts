@@ -44,27 +44,18 @@ export interface LearnNext {
 }
 
 /**
- * The earliest idea in the approach's sequence that the goal needs and that is not yet or untested; undefined when none is left. A group of the
- * foundation (the alphabet, the diphthongs, the consonant pairs, the breathings) is solid when every one of its items is. While some items of a group
- * are solid and others are not, it is the exact gaps that are named, from every such group, never the whole idea; a group that is partly known counts
- * even when the goal does not need it (the diphthongs are not in any goal's needs).
+ * The exact gaps first (mw-hqd5bz.31), the same ones in the same order as the placement's end card and the head of a Review round: the letters, pairs
+ * and breathings not solid in every group that is partly known, whatever else the approach's sequence says is earlier (a group none of whose items is
+ * solid has no exact gap, it is the whole idea that is missing). With no gaps, the earliest idea in the approach's sequence that the goal needs and
+ * that is not yet or untested; undefined when none is left. A group of the foundation is solid when every one of its items is.
  */
 export function learnNext(needs: Pick<PassageNeeds, 'ideas'>, approach: GrammarApproach, levels: ReadonlyMap<string, Level>): LearnNext | undefined {
+  const gaps = gapsOf(levels);
+  if (gaps.length > 0) return { idea: gaps[0], lesson: lessonOf(approach, gaps[0].id), gaps };
   const needed = new Set(needs.ideas.map((i) => i.id));
-  const partial = new Set(gapsOf(levels).map((i) => i.parent ?? 'alphabet'));
   const grouped = new Set(ITEM_GROUPS);
-  // a group with exact gaps is named while its idea is not solid, whatever else its level says; any other idea only while not yet or untested
-  const id = orderOf(approach).find((i) =>
-    partial.has(i)
-      ? levels.get(i) !== 'solid'
-      : needed.has(i) && (levels.get(i) ?? 'notYet') === 'notYet' && !(grouped.has(i) && groupIsSolid(levels, i)),
-  );
-  if (id === undefined) return undefined;
-  if (partial.has(id)) {
-    const gaps = gapsOf(levels);
-    return { idea: gaps[0], lesson: lessonOf(approach, gaps[0].id), gaps };
-  }
-  return { idea: ideaOf(id), lesson: lessonOf(approach, id) };
+  const id = orderOf(approach).find((i) => needed.has(i) && (levels.get(i) ?? 'notYet') === 'notYet' && !(grouped.has(i) && groupIsSolid(levels, i)));
+  return id === undefined ? undefined : { idea: ideaOf(id), lesson: lessonOf(approach, id) };
 }
 
 /** The most frequent needed words he has no state for (not on his list and not dropped), in dictionary form. */

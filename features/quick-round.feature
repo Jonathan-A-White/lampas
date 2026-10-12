@@ -68,3 +68,29 @@ Feature: The placement probes the letters and sounds one by one
     When he gets "ξ" wrong in Review
     Then Review's first grammar questions are on "letter-xi, letter-psi, diphthong-ou"
     And no word is asked before them
+
+  Scenario: Learn next names a gap that is not a letter, though no letter is known yet
+    The Tester (mw-hqd5bz.28): the end card said "Gaps to work on: rough breathing", Learn next said "The Greek alphabet · The Greek letters", and Review asked the breathing first.
+
+    Given his goal is "Read 1 John 1:1", no letter is known, and his grammar is known except "rough breathing"
+    When he opens the Goal screen
+    Then Learn next says "rough breathing"
+    And Review's first grammar questions are on "breathing-rough"
+
+  Scenario: Learn next names the same gaps as the end card, letters first and a mark last
+    Given his goal is "Read 1 John 1:1" and his grammar is known except "ξ, ψ, ου, rough breathing"
+    When he opens the placement
+    And he starts the placement
+    And he answers the quick round wrong, wrong, wrong and wrong
+    Then the end card names the gaps "ξ, ψ, ου and rough breathing"
+    When he taps "Back to the goal"
+    Then Learn next says "ξ, ψ, ου and rough breathing"
+    And Review's first grammar questions are on "letter-xi, letter-psi, diphthong-ou, breathing-rough"
+
+  Scenario: With no goal set, the Goal screen still names the gaps under Learn next
+    Given no goal is set and his grammar is known except "ξ, ψ, ου"
+    When he opens the Goal screen
+    Then the Goal screen says "No goal yet"
+    And Learn next says "ξ, ψ and ου"
+    When he taps Learn next
+    Then the idea sheet is open

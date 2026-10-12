@@ -18,7 +18,6 @@ import { IdeaSheet } from './IdeaSheet';
 import { LadderStart } from './ReadingLadder';
 import { navigate, openPlacement, openReader } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
-import { ReportScreen } from './tutor/ReportScreen';
 import { useReportScreen } from './tutor/screenContext';
 import { useGoalProgress, type GoalProgress } from './useGoalProgress';
 import { WordSheet, type Lookup } from './WordSheet';
@@ -43,6 +42,61 @@ const legendText = (c: Counts): string => `Solid ${c.solid} · Frontier ${c.fron
 /** The idea Learn next names, with its lesson when the approach has one: 'The Greek alphabet · The Greek letters'; or, when only some letters, pairs or breathings are weak, those gaps: 'ξ, ψ and ου · The Greek letters'. */
 const learnNextText = (next: NonNullable<ReturnType<typeof learnNext>>): string =>
   `${next.gaps ? lettersText(next.gaps) : next.idea.title}${next.lesson ? ` · ${next.lesson.lesson.title}` : ''}`;
+
+function LearnNextButton({ next, onOpen }: { next: NonNullable<ReturnType<typeof learnNext>>; onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      data-testid="learn-next"
+      onClick={onOpen}
+      className="flex min-h-12 w-full flex-col items-start rounded-xl bg-accent px-4 py-2 text-left text-accent-fg active:opacity-80"
+    >
+      <span className="text-lg font-medium">Learn next: {learnNextText(next)}</span>
+    </button>
+  );
+}
+
+/** With no goal set there are no needs, so Learn next can name only the exact gaps (mw-hqd5bz.31); with none, nothing is drawn. */
+function NoGoalBody({ levels }: { levels: ReadonlyMap<string, Level> }) {
+  const [ideaId, setIdeaId] = useState<string | null>(null);
+  const [word, setWord] = useState<Lookup | null>(null);
+  const [wordChapter, setWordChapter] = useState<Chapter | null>(null);
+  const approachId = useLiveQuery(getGrammarApproach, []);
+  const approach = approachOf(approachId ?? DEFAULT_APPROACH) ?? approachOf(DEFAULT_APPROACH)!;
+  const next = learnNext({ ideas: [] }, approach, levels);
+  useReportScreen({ name: 'Goal', facts: [{ label: 'Goal', value: 'None set yet' }, ...(next ? [{ label: 'Learn next', value: learnNextText(next) }] : [])] });
+  return (
+    <>
+      <main className="screen min-h-0 flex-1 px-6 pt-8 text-center">
+        <p className="text-2xl font-semibold">No goal yet</p>
+        <p className="mt-2 text-muted">Choose a book, a chapter or a verse to work toward, and this screen shows how close you are.</p>
+        <button type="button" onClick={() => navigate('settings')} className={`${BUTTON} mt-6 w-full bg-accent text-accent-fg`}>
+          Choose a goal
+        </button>
+        {next ? (
+          <section className="mt-5 text-left">
+            <LearnNextButton next={next} onOpen={() => setIdeaId(next.idea.id)} />
+          </section>
+        ) : null}
+        <div className="text-left">
+          <ReadingLadderSection />
+        </div>
+      </main>
+      {ideaId ? (
+        <IdeaSheet
+          idea={ideaOf(ideaId)}
+          onClose={() => setIdeaId(null)}
+          onWord={(chapter: Chapter, tapped: GreekWord) => {
+            setIdeaId(null);
+            setWordChapter(chapter);
+            setWord({ words: [tapped], fromEnglish: false });
+          }}
+        />
+      ) : null}
+      {word && wordChapter ? <WordSheet chapter={wordChapter} lookup={word} onClose={() => setWord(null)} /> : null}
+    </>
+  );
+}
 
 /** The reading ladder (src/ReadingLadder.tsx): one entry per language he reads in, each starting at the easiest verse to say and keeping its own place. */
 function ReadingLadderSection() {
@@ -111,24 +165,7 @@ export function GoalScreen() {
   const progress = useGoalProgress();
   const header = <ScreenHeader title="Goal" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />;
   if (progress.status === 'loading') return <>{header}<main className="screen min-h-0 flex-1" aria-busy="true" /></>;
-  if (progress.status === 'none') {
-    return (
-      <>
-        {header}
-        <ReportScreen name="Goal" facts={[{ label: 'Goal', value: 'None set yet' }]} />
-        <main className="screen min-h-0 flex-1 px-6 pt-8 text-center">
-          <p className="text-2xl font-semibold">No goal yet</p>
-          <p className="mt-2 text-muted">Choose a book, a chapter or a verse to work toward, and this screen shows how close you are.</p>
-          <button type="button" onClick={() => navigate('settings')} className={`${BUTTON} mt-6 w-full bg-accent text-accent-fg`}>
-            Choose a goal
-          </button>
-          <div className="text-left">
-            <ReadingLadderSection />
-          </div>
-        </main>
-      </>
-    );
-  }
+  if (progress.status === 'none') return <>{header}<NoGoalBody levels={progress.levels} /></>;
   if (progress.status === 'failed') {
     return (
       <>
@@ -245,14 +282,7 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
 
         <section className="mt-5">
           {next ? (
-            <button
-              type="button"
-              data-testid="learn-next"
-              onClick={() => setIdeaId(next.idea.id)}
-              className="flex min-h-12 w-full flex-col items-start rounded-xl bg-accent px-4 py-2 text-left text-accent-fg active:opacity-80"
-            >
-              <span className="text-lg font-medium">Learn next: {learnNextText(next)}</span>
-            </button>
+            <LearnNextButton next={next} onOpen={() => setIdeaId(next.idea.id)} />
           ) : (
             <p data-testid="learn-next-none" className="text-base text-muted">
               Every idea this goal needs is on the frontier or solid.
