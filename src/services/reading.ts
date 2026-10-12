@@ -2,6 +2,7 @@
 // the recording attached, scored by the mill and answered by its verse-read grind (grinds/verse-read.json). The wire work is
 // src/services/tutor.ts's askGrind; this file is the request, the answer's shape and the check the phone runs on it.
 import type { Verse } from '../data/chapter';
+import type { LearnerProfile } from '../data/learnerProfile';
 import type { Recording } from '../audio/recorder';
 import { extensionOf } from '../audio/recorder';
 import { pronunciationOf } from '../speech/pronunciation';
@@ -26,6 +27,8 @@ export interface VerseReadRequest {
   reference: string;
   target_text: string;
   lang: string;
+  /** who he is as a student (src/data/learnerProfile.ts, Settings > About you): missing when he has filled in nothing */
+  learner_profile?: LearnerProfile;
 }
 
 /** One word he misread, broken into chunks to say. */
@@ -116,8 +119,8 @@ export const readingText = (verse: Verse, view: ReadingView = 'english'): string
 export const readingLang = (view: ReadingView, pronunciation: unknown): string =>
   view === 'greek' ? pronunciationOf(pronunciation).scoringLang : 'en';
 
-export function buildReadingRequest(reference: string, verse: Verse, view: ReadingView = 'english', lang: string = readingLang(view, undefined)): VerseReadRequest {
-  return { reference, target_text: readingText(verse, view), lang };
+export function buildReadingRequest(reference: string, verse: Verse, view: ReadingView = 'english', lang: string = readingLang(view, undefined), learnerProfile?: LearnerProfile): VerseReadRequest {
+  return { reference, target_text: readingText(verse, view), lang, ...(learnerProfile ? { learner_profile: learnerProfile } : {}) };
 }
 
 /** Sends the recording of a verse read aloud and waits for the mill's answer (the verse-read grind). Throws a TutorError. */

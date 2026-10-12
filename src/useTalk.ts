@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { addLemmaToLearn } from './data/answerWord';
 import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { requestsForTutor } from './data/requestsForTutor';
+import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
 import { addTurn, getQuizGoal, getStudyResources, listSolidHeadwords, listStudyWay, listTurns } from './data/repositories';
 import { resourcesForTutor } from './resources/tutorLinks';
@@ -123,7 +124,7 @@ export function useTalk(
       set({ phase: 'sending', question: text, startedAt });
       void (async () => {
         try {
-          const [turns, solid, settings, learner, grammar, way, chosen, goal, requests] = await Promise.all([
+          const [turns, solid, settings, learner, grammar, way, chosen, goal, requests, profile] = await Promise.all([
             listTurns(ref),
             listSolidHeadwords(),
             currentSettings(),
@@ -133,12 +134,13 @@ export function useTalk(
             getStudyResources().catch(() => ({ on: [], options: {} })),
             scope.quiz ? getQuizGoal() : Promise.resolve(''),
             requestsForTutor().catch(() => []),
+            learnerProfile().catch(() => undefined),
           ]);
           // an offer still waiting for his tap rides with this message: the grind decides from his words whether it is a yes, a no or a request to hear it
           const waiting = pendingOfferOf(turns);
           // a goal he chose Just this time for earlier in this quiz is sent for this quiz alone
           const once = turns.findLast((t) => t.quizGoalChoice === 'once')?.quizGoalOffer;
-          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer, requests), {
+          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile), {
             key: getDeviceKeyBytes(),
             files: pictures.length ? filesOf(pictures) : undefined,
             signal,

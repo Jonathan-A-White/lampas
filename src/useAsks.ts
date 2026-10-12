@@ -5,6 +5,7 @@ import type { Verse } from './data/chapter';
 import { unitId, unitReference } from './data/passage';
 import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { requestsForTutor } from './data/requestsForTutor';
+import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
 import { depthSettings } from './script/depthSettings';
 import { askBySetting } from './settings/definitions';
@@ -56,8 +57,8 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
       set({ phase: 'sending', question: text, startedAt });
       void (async () => {
         try {
-          const [solid, learner, grammar, depths, askBy, requests] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined), depthSettings(), getSetting(askBySetting), requestsForTutor().catch(() => [])]);
-          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, { ...depths, [askBySetting.key]: askBy }, requests);
+          const [solid, learner, grammar, depths, askBy, requests, profile] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined), depthSettings(), getSetting(askBySetting), requestsForTutor().catch(() => []), learnerProfile().catch(() => undefined)]);
+          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, { ...depths, [askBySetting.key]: askBy }, requests, profile);
           const answer = await askTutor(request, {
             key: getDeviceKeyBytes(),
             signal,

@@ -7,6 +7,7 @@ import { POSTERN_DOOR } from '../config';
 import { markSupplied, type Verse } from '../data/chapter';
 import type { AnswerWord } from '../data/db';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
+import type { LearnerProfile } from '../data/learnerProfile';
 import type { TutorRequest } from '../data/requestsForTutor';
 
 /** The app and kind the mill runs the grind under (grinds/verse-ask.json), and the version of the request below. */
@@ -95,6 +96,8 @@ export interface VerseAskRequest {
   learner?: string;
   /** where his grammar stands (src/data/grammar/learnerGrammar.ts) */
   learner_grammar?: LearnerGrammar;
+  /** who he is as a student (src/data/learnerProfile.ts, Settings > About you): missing when he has filled in nothing */
+  learner_profile?: LearnerProfile;
   /** how he wants a language besides Greek written (src/script/depthSettings.ts) and how Ask the tutor opens: { hebrewDepth: 'both', askBy: 'speaking' } */
   settings?: Record<string, string>;
   /** the requests he sent to the factory and where each stands (src/data/requestsForTutor.ts): up to 10, newest first; missing when he has sent none */
@@ -134,7 +137,7 @@ export function isVerseAnswer(value: unknown): value is VerseAnswer {
   return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));
 }
 
-export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = []): VerseAskRequest {
+export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = [], learnerProfile?: LearnerProfile): VerseAskRequest {
   return {
     reference,
     greek: verse.g.map((w) => w.t).join(' '),
@@ -143,6 +146,7 @@ export function buildRequest(reference: string, verse: Verse, question: string, 
     solid_words: solidWords,
     ...(learner ? { learner } : {}),
     ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
+    ...(learnerProfile ? { learner_profile: learnerProfile } : {}),
     ...(settings ? { settings } : {}),
     ...(requests.length > 0 ? { requests } : {}),
   };
