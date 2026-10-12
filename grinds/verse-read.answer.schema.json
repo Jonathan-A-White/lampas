@@ -1,17 +1,17 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Verse Read Answer 1",
+  "title": "Verse Read Answer 2",
   "type": "object",
   "additionalProperties": false,
   "required": ["verdict", "focus_words", "note"],
   "properties": {
     "verdict": {
-      "description": "well-read when nothing needs fixing; some-to-fix when at least one word was truly misread; incomplete when the transcript covers only part of target_text, or nothing clear could be heard.",
+      "description": "well-read when nothing needs fixing; some-to-fix when at least one word was truly misread; partial when he read the start of target_text and stopped (give reached and next_word); incomplete only when nothing clear could be heard. An answer of version 1 may call a partial reading incomplete.",
       "type": "string",
-      "enum": ["well-read", "some-to-fix", "incomplete"]
+      "enum": ["well-read", "some-to-fix", "partial", "incomplete"]
     },
     "focus_words": {
-      "description": "The words he misread, in the order they stand in the verse, each broken into chunks to say. Empty when well-read or incomplete.",
+      "description": "The words he misread, in the order they stand in the verse, each broken into chunks to say. In a partial reading only words within the part he read. Empty when well-read or incomplete.",
       "type": "array",
       "maxItems": 8,
       "items": {
@@ -33,6 +33,31 @@
           "start": { "description": "Optional. Where this word begins in the recording, in seconds, copied from this word's start in reading_result. The phone plays just his clip of the word from here. Give it with end, or leave both out when reading_result gave no times for the word.", "type": "number", "minimum": 0, "maximum": 600 },
           "end": { "description": "Optional. Where this word ends in the recording, in seconds, copied from this word's end in reading_result. Always after start. Give it with start, or leave both out.", "type": "number", "minimum": 0, "maximum": 600 }
         }
+      }
+    },
+    "reached": {
+      "description": "Only for partial: the index in target_text of the last word he read, counting from 0 as the scorer's word list does. The words from 0 to reached were read; reached + 1 is next_word.",
+      "type": "number",
+      "minimum": 0,
+      "maximum": 2000
+    },
+    "next_word": {
+      "description": "Only for partial: the word he stopped at, the first one he did not read (index reached + 1), broken into chunks with a tip by the same rules as a focus word. It has no start or end: he did not say it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["word", "index", "chunks", "tip"],
+      "properties": {
+        "word": { "description": "The word as it stands in the verse, without punctuation.", "type": "string", "minLength": 1, "maxLength": 60 },
+        "index": { "description": "Where this word stands in target_text, counting from 0: reached + 1.", "type": "number", "minimum": 0, "maximum": 2000 },
+        "chunks": {
+          "description": "The word in parts to say one after another, such as to, geth, er. Joined they spell the word.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "items": { "type": "string", "minLength": 1, "maxLength": 20 }
+        },
+        "tip": { "description": "One short, kind line on how to say it.", "type": "string", "minLength": 1, "maxLength": 200 },
+        "say": { "description": "Optional. How to spell the word so that a text-to-speech voice says it right when it would say the written word wrongly, such as blest for blessed. The phone speaks this, and only this, when he taps the speaker. Leave it out when the written word is spoken right.", "type": "string", "minLength": 1, "maxLength": 60 }
       }
     },
     "note": {

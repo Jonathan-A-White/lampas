@@ -119,6 +119,25 @@ export const INCOMPLETE_ANSWER = {
   note: "I heard 'and we know that', then you stopped before 'all things work together'. Hold Read and read the whole verse.",
 };
 
+/** The answer the fake gives to a reading that covers the first six words of Romans 8:28 and stops (verdict partial, version 2 of the grind):
+ * 'know' misread within the part he read, and 'work' (index 6) the word he stopped at. */
+export const PARTIAL_ANSWER = {
+  verdict: 'partial',
+  focus_words: [{ word: 'know', index: 2, chunks: ['know'], tip: 'The k is silent: say no.', say: 'no' }],
+  note: 'Good start: I heard "and we know that all things", then you stopped.',
+  reached: 5,
+  next_word: { word: 'work', index: 6, chunks: ['work'], tip: 'It rhymes with jerk, not with fork.', say: 'wurk' },
+};
+
+/** The next reading of the same verse, two words further: 'for' (index 8) is where he stopped. */
+export const PARTIAL_FURTHER_ANSWER = {
+  verdict: 'partial',
+  focus_words: [],
+  note: 'Better: you read through "work together" this time.',
+  reached: 7,
+  next_word: { word: 'for', index: 8, chunks: ['for'], tip: 'Say it softly, as in fur.' },
+};
+
 /** The answer the fake gives to a Bible talk question, in the app's answer shape (grinds/bible-talk.answer.schema.json). */
 export const TALK_ANSWER = {
   answer: 'In this verse συνεργεῖ means "works together": God is the one who weaves every thing toward good for those who love him.',

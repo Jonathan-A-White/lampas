@@ -8,14 +8,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Verse } from './data/chapter';
 import { unitId, unitReference } from './data/passage';
-import { keepVerseReading, verseRef } from './data/repositories';
+import { keepVerseReading, reachOf, verseRef } from './data/repositories';
 import { clipOf } from './audio/clip';
 import { MicUnavailable, recorderSeam, type HoldRecorder, type Recording } from './audio/recorder';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
-import { askVerseRead, buildReadingRequest, readingLang, type ReadingView } from './services/reading';
+import { askVerseRead, buildReadingRequest, readingLang, wordsOfText, type ReadingView } from './services/reading';
 import { TutorError, type TutorFailure } from './services/tutor';
 import { interruptListen, stopReading } from './speech/readAloud';
 import { stopSpeaking, stopWordSaid } from './speech/greek';
@@ -113,14 +113,16 @@ export function useReadChecks(book: string, chapter: number, title: string, view
         try {
           // the profile, the words and the grammar are the tutor's context: a failure to read one sends the reading without it
           const [profile, learner, grammar] = await Promise.all([learnerProfile().catch(() => undefined), learnerSummary().catch(() => undefined), learnerGrammar().catch(() => undefined)]);
-          const answer = await askVerseRead(buildReadingRequest(unitReference(title, verse), verse, readView, language, profile, learner, grammar), recording, {
+          const request = buildReadingRequest(unitReference(title, verse), verse, readView, language, profile, learner, grammar);
+          const answer = await askVerseRead(request, recording, {
             key: getDeviceKeyBytes(),
             signal,
             onSent: () => set(unitId(verse), language, { phase: 'waiting', startedAt }),
           });
           // the clip is kept with the result so he can hear himself (src/audio/clip.ts); a result is kept even if the clip cannot be
           const clip = await clipOf(recording).catch(() => undefined);
-          await keepVerseReading(verseRef(book, chapter, unitId(verse)), answer.verdict, answer.focus_words, answer.note, language, Date.now(), clip);
+          const reach = reachOf(answer.verdict, wordsOfText(request.target_text).length, answer.reached === undefined ? undefined : { reached: answer.reached, next: answer.next_word });
+          await keepVerseReading(verseRef(book, chapter, unitId(verse)), answer.verdict, answer.focus_words, answer.note, language, Date.now(), clip, reach);
           set(unitId(verse), language, undefined);
         } catch (err) {
           if (signal.aborted) return;

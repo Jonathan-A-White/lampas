@@ -2,7 +2,7 @@
   "grind": 1,
   "app": "lampas",
   "kind": "verse-read",
-  "versions": ["1"],
+  "versions": ["1", "2"],
   "model": "sonnet",
   "effort": "medium",
   "instructions": "grinds/verse-read.instructions.md",

@@ -78,7 +78,7 @@ verse's words in order), so every action works on it as it works on a verse.
 * **Carried over from V:** Listen, Read it aloud, Ask the tutor, Copy link, the one hold bar, the kept chosen action, Back as a step of its own, the
   weave and tappable words in the text. **Not carried over:** *Talk about verse N* (no passage scope in the Talk sheet).
 * **PROVISIONAL, the Governor to confirm:** the title (heading over range), the 40% box, and that Listen on a passage always stops at its end.
-* **Limits worth knowing:** the reading check records at most 60 seconds, so a long passage read aloud is scored as incomplete; a grist record is capped at
+* **Limits worth knowing:** the reading check records at most 60 seconds, so a long passage read aloud is scored as a partial reading (graded as far as it went); a grist record is capped at
   10 KiB, so a very long passage asked about may be refused with 'Could not send the question'.
 
 ## Quiz me (mw-5r3p30.74)

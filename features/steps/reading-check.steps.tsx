@@ -17,7 +17,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
-import { GREEK_READING_ANSWER, INCOMPLETE_ANSWER, makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, WELL_READ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { GREEK_READING_ANSWER, INCOMPLETE_ANSWER, makeFakePostern, PARTIAL_ANSWER, PARTIAL_FURTHER_ANSWER, POSTERN_ORIGIN, READING_ANSWER, WELL_READ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse28 = chapter.verses.find((v) => v.n === 28);
@@ -72,7 +72,7 @@ let fake: FakePostern;
 let synth: FakeSynth;
 
 interface Options {
-  reply?: 'reading' | 'well-read' | 'incomplete' | 'held' | 'second-who' | 'escaped' | 'tip-respelling' | 'tip-not-first';
+  reply?: 'reading' | 'well-read' | 'incomplete' | 'partial' | 'held' | 'second-who' | 'escaped' | 'tip-respelling' | 'tip-not-first';
   view?: 'english' | 'greek';
   denied?: boolean;
   down?: boolean;
@@ -88,7 +88,7 @@ async function open({ reply = 'reading', view = 'english', denied = false, down 
   FakeRecorder.denied = denied;
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
-  if (reply !== 'held') fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : reply === 'second-who' ? SECOND_WHO_ANSWER : reply === 'escaped' ? ESCAPED_ANSWER : reply === 'tip-respelling' ? LEVITES_ANSWER : reply === 'tip-not-first' ? NOT_FIRST_ANSWER : reply === 'incomplete' ? INCOMPLETE_ANSWER : WELL_READ_ANSWER };
+  if (reply !== 'held') fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : reply === 'second-who' ? SECOND_WHO_ANSWER : reply === 'escaped' ? ESCAPED_ANSWER : reply === 'tip-respelling' ? LEVITES_ANSWER : reply === 'tip-not-first' ? NOT_FIRST_ANSWER : reply === 'incomplete' ? INCOMPLETE_ANSWER : reply === 'partial' ? PARTIAL_ANSWER : WELL_READ_ANSWER };
   fake.greekReply = { status: 'answered', answer: GREEK_READING_ANSWER };
   fake.down = down;
   synth = stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
@@ -368,6 +368,45 @@ describeFeature(feature, ({ Scenario }) => {
       expect(within(panel()).queryByRole('button', { name: 'Read these again' })).toBeNull();
       expect(marked()).toHaveLength(0);
     });
+  });
+
+  Scenario('A partial reading is graded as far as he went and offers the next word', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 in English with a reading check that heard the first words of the verse', () => open({ reply: 'partial' }));
+    And('he opens the reading check of verse 28', selectVerse28);
+    When(holdRead, async () => holdAndLetGo(readButton(), 2000));
+    Then('the reading check says {string}', (_, text: string) => says(text)());
+    And('the reading check says {string}', (_, text: string) => says(text)());
+    And('the reading check does not say {string}', async (_, text: string) => {
+      await new Promise((r) => setTimeout(r, 50));
+      expect(panel()).not.toHaveTextContent(text);
+    });
+    And('the marked words are {string}', async (_, names: string) => {
+      await waitFor(() => expect(marked().map((m) => m.textContent)).toEqual(names.split(', ')));
+    });
+    And('the Next word shows {string} in chunks {string} with its tip and a speaker', async (_, word: string, chunks: string) => {
+      const block = await waitFor(() => {
+        const found = panel().querySelector<HTMLElement>('[data-next-word]');
+        expect(found).not.toBeNull();
+        return found as HTMLElement;
+      });
+      expect(block).toHaveTextContent(word);
+      expect(block.querySelector('[data-chunks]')).toHaveTextContent(chunks);
+      expect(block).toHaveTextContent('It rhymes with jerk');
+      expect(within(block).getByRole('button', { name: 'Hear it' })).toBeInTheDocument();
+    });
+  });
+
+  Scenario('Reading further than last time says so', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 in English with a reading check that heard the first words of the verse', () => open({ reply: 'partial' }));
+    And('he opens the reading check of verse 28', selectVerse28);
+    And(holdRead, async () => holdAndLetGo(readButton(), 2000));
+    And('the reading check shows {string}', (_, text: string) => says(text)());
+    When('he reads again and the mill hears two words more', async () => {
+      fake.autoReply = { status: 'answered', answer: PARTIAL_FURTHER_ANSWER };
+      await holdAndLetGo(readButton(), 2000);
+    });
+    Then('the reading check says {string}', (_, text: string) => says(text)());
+    And('the reading check says {string}', (_, text: string) => says(text)());
   });
 
   Scenario('A reading with words to fix is headed Words to fix', ({ Given, And, When, Then }) => {

@@ -104,6 +104,25 @@ Feature: Reading check, in English and in Greek
     And the reading check does not say "Well read"
     And there is no Read these again button
 
+  Scenario: A partial reading is graded as far as he went and offers the next word
+    Given Lampas is opened on Romans 8 in English with a reading check that heard the first words of the verse
+    And he opens the reading check of verse 28
+    When he holds the bar for 2 seconds and lets go
+    Then the reading check says "You read 6 of 23 words"
+    And the reading check does not say "Read the whole verse"
+    And the marked words are "know"
+    And the Next word shows "work" in chunks "work" with its tip and a speaker
+    And the reading check says "go further"
+
+  Scenario: Reading further than last time says so
+    Given Lampas is opened on Romans 8 in English with a reading check that heard the first words of the verse
+    And he opens the reading check of verse 28
+    And he holds the bar for 2 seconds and lets go
+    And the reading check shows "You read 6 of 23 words"
+    When he reads again and the mill hears two words more
+    Then the reading check says "You read 8 of 23 words"
+    And the reading check says "Further than last time"
+
   Scenario: A reading with words to fix is headed Words to fix
     Given Lampas is opened on Romans 8 in English with a reading check behind a fake Postern
     And he opens the reading check of verse 28
