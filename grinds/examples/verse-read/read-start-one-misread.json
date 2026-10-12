@@ -1,0 +1,19 @@
+{
+  "description": "The first seven words of Romans 8:28 are read and the recording stops, with 'all' said as 'tall': the reading is partial, the misread word within the part he read is in focus_words, and the word he stopped at is his next word.",
+  "schemaVersion": "2",
+  "request": {
+    "reference": "Romans 8:28",
+    "target_text": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "lang": "en"
+  },
+  "photos": ["read-8-28-partial-misread.webm"],
+  "expect": {
+    "verdict": { "equals": "partial" },
+    "reached": { "present": true },
+    "focus_words.0.word": { "equals": "all" },
+    "focus_words.0.index": { "equals": 4 },
+    "next_word.word": { "present": true },
+    "next_word.tip": { "present": true },
+    "note": { "present": true }
+  }
+}

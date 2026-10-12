@@ -50,11 +50,15 @@ export interface FocusWord {
   end?: number;
 }
 
-/** What the grind answers (grinds/verse-read.answer.schema.json). */
+/** What the grind answers (grinds/verse-read.answer.schema.json). A `partial` reading (version 2) covers the start of the verse and stops: `reached` is the
+ * index in target_text of the last word he read and `next_word` the word he stopped at (reached + 1, no times). `incomplete` is nothing clear heard,
+ * or, in an answer of version 1, a partial reading as well. */
 export interface VerseReadAnswer {
-  verdict: 'well-read' | 'some-to-fix' | 'incomplete';
+  verdict: 'well-read' | 'some-to-fix' | 'partial' | 'incomplete';
   focus_words: FocusWord[];
   note: string;
+  reached?: number;
+  next_word?: Omit<FocusWord, 'start' | 'end'>;
 }
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
@@ -68,29 +72,41 @@ const hasTimes = (f: Record<string, unknown>): boolean => {
   return typeof start === 'number' && typeof end === 'number' && start >= 0 && end > start && end <= MAX_SECONDS;
 };
 
-/** The app's own check of an answer, run before anything is kept (the schema's limits). */
+/** One focus word as the schema limits it; the next word has no times. */
+function isFocusWord(f: unknown, withTimes: boolean): boolean {
+  const optional = withTimes ? OPTIONAL_KEYS : (['say'] as const);
+  return (
+    isObject(f) &&
+    Object.keys(f).length === 4 + optional.filter((k) => f[k] !== undefined).length &&
+    (f.say === undefined || isText(f.say, MAX_SAY)) &&
+    (!withTimes || hasTimes(f)) &&
+    isText(f.word, 60) &&
+    typeof f.index === 'number' &&
+    Number.isInteger(f.index) &&
+    f.index >= 0 &&
+    f.index <= MAX_WORD_INDEX &&
+    isText(f.tip, 200) &&
+    Array.isArray(f.chunks) &&
+    f.chunks.length >= 1 &&
+    f.chunks.length <= MAX_CHUNKS &&
+    f.chunks.every((c) => isText(c, 20))
+  );
+}
+
+/** The app's own check of an answer, run before anything is kept (the schema's limits). A partial reading must carry `reached` and `next_word`; no other
+ * verdict may (an old `incomplete` answer has neither). */
 export function isVerseReadAnswer(value: unknown): value is VerseReadAnswer {
-  if (!isObject(value) || Object.keys(value).length !== 3) return false;
-  if (value.verdict !== 'well-read' && value.verdict !== 'some-to-fix' && value.verdict !== 'incomplete') return false;
+  if (!isObject(value)) return false;
+  const partial = value.verdict === 'partial';
+  if (Object.keys(value).length !== (partial ? 5 : 3)) return false;
+  if (!partial && value.verdict !== 'well-read' && value.verdict !== 'some-to-fix' && value.verdict !== 'incomplete') return false;
   if (!isText(value.note, 400)) return false;
   if (!Array.isArray(value.focus_words) || value.focus_words.length > MAX_FOCUS_WORDS) return false;
-  return value.focus_words.every(
-    (f) =>
-      isObject(f) &&
-      Object.keys(f).length === 4 + OPTIONAL_KEYS.filter((k) => f[k] !== undefined).length &&
-      (f.say === undefined || isText(f.say, MAX_SAY)) &&
-      hasTimes(f) &&
-      isText(f.word, 60) &&
-      typeof f.index === 'number' &&
-      Number.isInteger(f.index) &&
-      f.index >= 0 &&
-      f.index <= MAX_WORD_INDEX &&
-      isText(f.tip, 200) &&
-      Array.isArray(f.chunks) &&
-      f.chunks.length >= 1 &&
-      f.chunks.length <= MAX_CHUNKS &&
-      f.chunks.every((c) => isText(c, 20)),
-  );
+  if (partial) {
+    if (typeof value.reached !== 'number' || !Number.isInteger(value.reached) || value.reached < 0 || value.reached > MAX_WORD_INDEX) return false;
+    if (!isFocusWord(value.next_word, false)) return false;
+  }
+  return value.focus_words.every((f) => isFocusWord(f, true));
 }
 
 /** The respelling a tip spells out in capitals ('say it as LEE-vites', 'luh-VY-tees'), as the voice should speak it: lower case, the

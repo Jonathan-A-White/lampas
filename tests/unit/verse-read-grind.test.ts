@@ -15,7 +15,7 @@ const verseAsk = readJson('grinds/verse-ask.json');
 describe('grinds/verse-read.json', () => {
   it('has the keys of verse-ask.json plus scoring, for the lampas app and the verse-read kind', () => {
     expect(Object.keys(grind).sort()).toEqual([...Object.keys(verseAsk), 'scoring'].sort());
-    expect(grind).toMatchObject({ grind: 1, app: 'lampas', kind: 'verse-read', versions: ['1'], model: 'sonnet', effort: 'medium' });
+    expect(grind).toMatchObject({ grind: 1, app: 'lampas', kind: 'verse-read', versions: ['1', '2'], model: 'sonnet', effort: 'medium' });
   });
 
   it('takes one recording of audio/webm, audio/ogg or audio/mp4, up to 8 MiB, and scores it against target_text', () => {
@@ -77,10 +77,10 @@ describe('the answer schema and isVerseReadAnswer', () => {
     expect(isVerseReadAnswer(partial)).toBe(true);
   });
 
-  it('tells the model to use incomplete when the transcript covers only part of target_text or nothing clear', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+  it('tells the model to use partial when he read the start of target_text and stopped, and incomplete only when nothing clear was heard', () => {
+    const text = readFileSync(grind.instructions as string, 'utf8').replace(/\s+/g, ' ');
     expect(text).toContain('`incomplete`');
-    expect(text).toMatch(/only part of `target_text`/);
+    expect(text).toMatch(/read the start of `target_text` and stopped/);
     expect(text).toMatch(/where he stopped/);
   });
 
@@ -206,5 +206,65 @@ describe('say whenever the tip names a sound or a stress (mw-5r3p30.140)', () =>
 
   it('no longer calls say optional for such a word', () => {
     expect(text()).not.toContain('`say` is optional');
+  });
+});
+
+describe('a partial reading (mw-neuq78.7)', () => {
+  const next = { word: 'all', index: 4, chunks: ['all'], tip: 'Say it with an open mouth, as in call.' };
+  const fix = { word: 'know', index: 2, chunks: ['know'], tip: 'The k is silent: say no.', say: 'no' };
+  const partial = { verdict: 'partial', focus_words: [], note: 'Good start. You read 4 of 8 words.', reached: 3, next_word: next };
+  const text = (): string => readFileSync(grind.instructions as string, 'utf8').replace(/\s+/g, ' ');
+
+  it('keeps both versions in the grind, so the mill takes older answers and new ones', () => {
+    expect(grind.versions).toEqual(['1', '2']);
+  });
+
+  it('accepts a partial answer with reached and next_word, with and without a misread word in the part read', () => {
+    expect(validate(partial, schema as Schema)).toEqual([]);
+    expect(isVerseReadAnswer(partial)).toBe(true);
+    const withFix = { ...partial, focus_words: [fix] };
+    expect(validate(withFix, schema as Schema)).toEqual([]);
+    expect(isVerseReadAnswer(withFix)).toBe(true);
+  });
+
+  it('still accepts an old incomplete answer, which has no reached and no next_word', () => {
+    const old = { verdict: 'incomplete', focus_words: [], note: 'I heard "and we know", then you stopped.' };
+    expect(validate(old, schema as Schema)).toEqual([]);
+    expect(isVerseReadAnswer(old)).toBe(true);
+  });
+
+  it('gives the next word the same say as a misread word, but no times', () => {
+    expect(isVerseReadAnswer({ ...partial, next_word: { ...next, say: 'awl' } })).toBe(true);
+    expect(isVerseReadAnswer({ ...partial, next_word: { ...next, start: 1, end: 2 } })).toBe(false);
+  });
+
+  it.each([
+    ['a partial answer with no reached', { verdict: 'partial', focus_words: [], note: 'x', next_word: next }],
+    ['a partial answer with no next_word', { verdict: 'partial', focus_words: [], note: 'x', reached: 3 }],
+    ['a reached that is not a whole number', { ...partial, reached: 1.5 }],
+    ['a negative reached', { ...partial, reached: -1 }],
+    ['a next_word with no chunks', { ...partial, next_word: { ...next, chunks: [] } }],
+    ['a next_word with no tip', { ...partial, next_word: { word: 'all', index: 4, chunks: ['all'] } }],
+    ['reached on a well-read answer', { verdict: 'well-read', focus_words: [], note: 'x', reached: 3 }],
+    ['next_word on an incomplete answer', { verdict: 'incomplete', focus_words: [], note: 'x', next_word: next }],
+  ])('refuses %s on the phone', (_, value) => {
+    expect(isVerseReadAnswer(value)).toBe(false);
+  });
+
+  it.each([
+    ['a negative reached', { ...partial, reached: -1 }],
+    ['a next_word with no chunks', { ...partial, next_word: { ...next, chunks: [] } }],
+    ['an unknown key in next_word', { ...partial, next_word: { ...next, extra: 1 } }],
+  ])('refuses %s in the schema', (_, value) => {
+    expect(validate(value, schema as Schema)).not.toEqual([]);
+  });
+
+  it('tells the model when to answer partial, what reached and next_word are, and that incomplete is for nothing clear', () => {
+    expect(text()).toContain('`partial`');
+    expect(text()).toContain('`reached`');
+    expect(text()).toContain('`next_word`');
+    expect(text()).toMatch(/`incomplete` only when nothing clear was heard/);
+    expect(text()).toMatch(/misread[^.]*only within the part he read/i);
+    expect(text()).toMatch(/Never call a partial reading `well-read`/);
   });
 });
