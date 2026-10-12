@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.133
+_2026-10-12_
+- New: A new lesson, Movable letters, teaches the little letter changes in Greek (the ν that comes and goes, οὐ/οὐκ/οὐχ, ἐκ/ἐξ), and the ending questions now show that ν in brackets.
+
 ## 0.1.132
 _2026-10-12_
 - New: The tutor now knows your words and grammar when it checks your reading and when it offers a tip, and every answer is pitched to what you told it in About you.
