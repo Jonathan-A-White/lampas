@@ -197,6 +197,13 @@ export function respellModern(word: string): string {
   return parts.map((p, i) => (i === stressed && parts.length > 1 ? p.toUpperCase() : p)).join('-');
 }
 
+/** The sounds respellModern writes, each with an English word that has it; the lessons say 'e as in pet'. */
+export const MODERN_KEY_WORDS: Readonly<Record<string, string>> = {
+  a: 'father', e: 'pet', ee: 'see', o: 'lot', oo: 'food',
+  v: 'vase', f: 'fan', b: 'bed', d: 'dog', g: 'go', h: 'hat',
+  mb: 'number', nd: 'under', ng: 'finger', nks: 'thanks', kh: 'loch',
+};
+
 export const MODERN: Pronunciation = {
   id: 'modern',
   label: 'Modern Greek',
@@ -204,4 +211,5 @@ export const MODERN: Pronunciation = {
   scoringLang: 'el',
   note: "How Greek is spoken today, by the phone's Greek voice.",
   respell: respellModern,
+  keyWords: MODERN_KEY_WORDS,
 };

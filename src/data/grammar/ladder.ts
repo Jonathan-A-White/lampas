@@ -4,6 +4,7 @@
 // back-off that drills words can drill an idea. The tiers and rungs are PROVISIONAL (docs/grammar.md); other stories key on the
 // ids, so an id, once shipped, is not renamed.
 import { GRAMMAR_CONCEPTS } from '../grammar-concepts';
+import { DEFAULT_PRONUNCIATION, pronunciationOf } from '../../speech/pronunciation';
 import { GRAMMAR_TERMS, decodeParse, parseSegments, splitParse } from '../parseCode';
 
 /** The kind string of a schedule row whose item is a grammar idea (src/data/repositories/reviews.ts). */
@@ -54,26 +55,38 @@ function conceptText(term: string): string {
 
 type Def = Omit<GrammarIdea, 'rung' | 'text'> & { text?: string };
 
+// The lessons say each sound with an English key word from the Greek pronunciation they follow (Modern Greek), so another scheme changes them.
+const WAY = pronunciationOf(DEFAULT_PRONUNCIATION);
+const keyWord = (sound: string): string => {
+  const word = WAY.keyWords[sound];
+  if (!word) throw new Error(`${WAY.label} has no key word for ${JSON.stringify(sound)}`);
+  return word;
+};
+/** In a lesson's prose: 'e as in pet'. */
+const asIn = (sound: string): string => `${sound} as in ${keyWord(sound)}`;
+/** As an idea's `sound`: 'e, as in “pet”'. */
+export const keyedSound = (sound: string): string => `${sound}, as in “${keyWord(sound)}”`;
+
 // ---- The combinations (mw-hqd5bz.18, PROVISIONAL): one item per diphthong, consonant pair and breathing, under its group idea, as the letters sit under 'alphabet' ----
 
 // [id suffix, pair, sound]. The sounds are Modern Greek's (docs/pronunciation.md).
 const DIPHTHONG_ITEMS: [string, string, string][] = [
-  ['ai', 'αι', 'e, as in “bed”'],
-  ['ei', 'ει', 'ee, as in “feet”'],
-  ['oi', 'οι', 'ee, as in “feet”'],
-  ['ui', 'υι', 'ee, as in “feet”'],
-  ['ou', 'ου', 'oo, as in “food”'],
-  ['au', 'αυ', 'av or af'],
-  ['eu', 'ευ', 'ev or ef'],
-  ['eeu', 'ηυ', 'iv or if'],
+  ['ai', 'αι', keyedSound('e')],
+  ['ei', 'ει', keyedSound('ee')],
+  ['oi', 'οι', keyedSound('ee')],
+  ['ui', 'υι', keyedSound('ee')],
+  ['ou', 'ου', keyedSound('oo')],
+  ['au', 'αυ', `${asIn('a')} plus ${asIn('v')} or ${asIn('f')}`],
+  ['eu', 'ευ', `${asIn('e')} plus ${asIn('v')} or ${asIn('f')}`],
+  ['eeu', 'ηυ', `${asIn('ee')} plus ${asIn('v')} or ${asIn('f')}`],
 ];
 const PAIR_ITEMS: [string, string, string][] = [
-  ['mp', 'μπ', 'b at the start of a word, mb inside it'],
-  ['nt', 'ντ', 'd at the start of a word, nd inside it'],
-  ['gk', 'γκ', 'g at the start of a word, ng inside it'],
-  ['gg', 'γγ', 'ng'],
-  ['gch', 'γχ', 'ng and kh'],
-  ['gks', 'γξ', 'nks'],
+  ['mp', 'μπ', `${asIn('b')} at the start of a word, ${asIn('mb')} inside it`],
+  ['nt', 'ντ', `${asIn('d')} at the start of a word, ${asIn('nd')} inside it`],
+  ['gk', 'γκ', `${asIn('g')} at the start of a word, ${asIn('ng')} inside it`],
+  ['gg', 'γγ', asIn('ng')],
+  ['gch', 'γχ', `${asIn('ng')} plus ${asIn('kh')}`],
+  ['gks', 'γξ', asIn('nks')],
 ];
 
 const pairItem = (parent: string, prefix: string, kind: string) => ([key, pair, sound]: [string, string, string]): Def => ({
@@ -85,13 +98,13 @@ const pairItem = (parent: string, prefix: string, kind: string) => ([key, pair, 
 
 const breathingItems = (): Def[] => [
   {
-    ...def('breathing-rough', 'marks', 'The rough breathing', [], ['breathings'], 'The rough breathing (ʽ) sits over a vowel at the start of a word and adds an h sound in older Greek: ὁ is “ho”. In Modern Greek it is not said aloud, but you must know it when you see it.'),
+    ...def('breathing-rough', 'marks', 'The rough breathing', [], ['breathings'], `The rough breathing (ʽ) sits over a vowel at the start of a word and adds an ${asIn('h')} in older Greek: ὁ is “ho”. In Modern Greek it is not said aloud, but you must know it when you see it.`),
     parent: 'breathings',
     pair: 'ʽ',
-    sound: 'an h, which Modern Greek does not say',
+    sound: `an ${asIn('h')}, which Modern Greek does not say`,
   },
   {
-    ...def('breathing-smooth', 'marks', 'The smooth breathing', [], ['breathings'], 'The smooth breathing (᾿) sits over a vowel at the start of a word and adds nothing: ἐν is “en”. It is the commoner of the two.'),
+    ...def('breathing-smooth', 'marks', 'The smooth breathing', [], ['breathings'], `The smooth breathing (᾿) sits over a vowel at the start of a word and adds nothing: ἐν is “en”, which starts with ${asIn('e')}. It is the commoner of the two.`),
     parent: 'breathings',
     pair: '᾿',
     sound: 'nothing',
@@ -108,22 +121,22 @@ const LETTERS: [string, string, string, string, string][] = [
   ['beta', 'Beta', 'β', 'Β', 'v, as in “vase”'],
   ['gamma', 'Gamma', 'γ', 'Γ', 'gh, a soft throaty g; before e and i it is y, as in “yes”'],
   ['delta', 'Delta', 'δ', 'Δ', 'dh, the th of “this”'],
-  ['epsilon', 'Epsilon', 'ε', 'Ε', 'e, as in “bed”'],
+  ['epsilon', 'Epsilon', 'ε', 'Ε', keyedSound('e')],
   ['zeta', 'Zeta', 'ζ', 'Ζ', 'z, as in “zoo”'],
-  ['eta', 'Eta', 'η', 'Η', 'ee, as in “feet”'],
+  ['eta', 'Eta', 'η', 'Η', keyedSound('ee')],
   ['theta', 'Theta', 'θ', 'Θ', 'th, as in “thin”'],
-  ['iota', 'Iota', 'ι', 'Ι', 'ee, as in “feet”'],
+  ['iota', 'Iota', 'ι', 'Ι', keyedSound('ee')],
   ['kappa', 'Kappa', 'κ', 'Κ', 'k, as in “kite”'],
   ['lambda', 'Lambda', 'λ', 'Λ', 'l, as in “lamp”'],
   ['mu', 'Mu', 'μ', 'Μ', 'm, as in “mother”'],
   ['nu', 'Nu', 'ν', 'Ν', 'n, as in “now”'],
   ['xi', 'Xi', 'ξ', 'Ξ', 'ks, as in “box”'],
-  ['omicron', 'Omicron', 'ο', 'Ο', 'o, as in “lot”'],
+  ['omicron', 'Omicron', 'ο', 'Ο', keyedSound('o')],
   ['pi', 'Pi', 'π', 'Π', 'p, as in “pen”'],
   ['rho', 'Rho', 'ρ', 'Ρ', 'r, lightly rolled'],
   ['sigma', 'Sigma', 'σ', 'Σ', 's, as in “sun”'],
   ['tau', 'Tau', 'τ', 'Τ', 't, as in “top”'],
-  ['upsilon', 'Upsilon', 'υ', 'Υ', 'ee, as in “feet”'],
+  ['upsilon', 'Upsilon', 'υ', 'Υ', keyedSound('ee')],
   ['phi', 'Phi', 'φ', 'Φ', 'f, as in “fan”'],
   ['chi', 'Chi', 'χ', 'Χ', 'kh, like the ch of Scottish “loch”; before e and i it is a breathy h'],
   ['psi', 'Psi', 'ψ', 'Ψ', 'ps, as in “lips”'],
@@ -169,7 +182,7 @@ const DEFS: Def[] = [
     'Pairs of vowels',
     [],
     ['letter-alpha', 'letter-epsilon', 'letter-eta', 'letter-iota', 'letter-omicron', 'letter-upsilon'],
-    'Some vowels pair up and make one sound: αι is e, ει, οι and υι are ee, and ου is oo. In αυ, ευ and ηυ the υ is a v or an f. Marks you meet soon will show when two vowels are not a pair.',
+    `Some vowels pair up and make one sound, said the Modern Greek way: αι is the ${asIn('e')} (like ε), ει, οι and υι are the ${asIn('ee')}, and ου is the ${asIn('oo')}. In αυ, ευ and ηυ the υ is a ${asIn('v')} or an ${asIn('f')}. Marks you meet soon will show when two vowels are not a pair.`,
   ),
   ...DIPHTHONG_ITEMS.map(pairItem('diphthongs', 'diphthong', 'vowel pair')),
   def(
@@ -178,7 +191,7 @@ const DEFS: Def[] = [
     'Pairs of consonants',
     [],
     ['letter-mu', 'letter-nu', 'letter-pi', 'letter-tau', 'letter-gamma', 'letter-kappa', 'letter-chi', 'letter-xi'],
-    'Some consonants team up. In the middle of a word μπ is mb, ντ is nd and γκ is ng; at the start they are b, d and g. γγ is ng, γχ is ng plus kh, and γξ is nks. A doubled consonant is said once.',
+    `Some consonants team up, said the Modern Greek way. In the middle of a word μπ is ${asIn('mb')}, ντ is ${asIn('nd')} and γκ is ${asIn('ng')}; at the start they are ${asIn('b')}, ${asIn('d')} and ${asIn('g')}. γγ is ${asIn('ng')}, γχ is ng plus ${asIn('kh')}, and γξ is ${asIn('nks')}. A doubled consonant is said once.`,
   ),
   ...PAIR_ITEMS.map(pairItem('consonant-pairs', 'pair', 'consonant pair')),
   def(
@@ -197,7 +210,7 @@ const DEFS: Def[] = [
     'Breathing marks',
     [],
     ['syllables'],
-    'A word that begins with a vowel carries a small mark over it. The rough breathing (ʽ) adds an h sound at the start: ὁ is “ho”. The smooth breathing (᾿) adds nothing: ἐν is “en”. Words that begin with ρ always take a rough breathing, and so does υ.',
+    `A word that begins with a vowel carries a small mark over it. The rough breathing (ʽ) adds an ${asIn('h')} at the start in older Greek: ὁ is “ho”. Modern Greek does not say it. The smooth breathing (᾿) adds nothing: ἐν is “en”. Words that begin with ρ always take a rough breathing, and so does υ.`,
   ),
   ...breathingItems(),
   def(
