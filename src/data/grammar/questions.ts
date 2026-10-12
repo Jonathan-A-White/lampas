@@ -378,14 +378,31 @@ export function buildBreathing(idea: GrammarIdea, passage: readonly Chapter[], r
 
 // ---- When the passage has no form of the idea ----
 
-/** Which idea this is, from what it says: used only for an idea the passage gives no form of. */
+const BLANK = '___';
+/** Title words that say nothing of the idea, so they stay in the text. */
+const PLAIN_TITLE_WORDS = new Set(['words', 'never', 'change', 'under']);
+const escapeRegExp = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * What the idea says of itself with its own name taken out (mw-86e9r1.3): the pronunciation hint '(say AIR-ist)' goes, and the title, the terms
+ * and, for an idea with no terms, every long word of the title become a blank, the whole word with them ('pronoun' for the term 'noun'), so the text no longer hands over its answer.
+ */
+export function blankedText(idea: GrammarIdea): string {
+  // an idea with terms is named by them; one with none (the pronoun, syllables, accents) by the long words of its title
+  const titleWords = idea.terms.length > 0 ? [] : idea.title.split(/\s+/).filter((w) => w.length >= 5 && !PLAIN_TITLE_WORDS.has(w.toLowerCase()));
+  const secrets = [idea.title, idea.title.replace(/^The /, ''), ...idea.terms, ...titleWords].sort((a, b) => b.length - a.length);
+  const pattern = new RegExp(`\\w*(?:${secrets.map(escapeRegExp).join('|')})\\w*`, 'giu');
+  return idea.text.replace(/\s*\(say [^)]*\)/gi, '').replace(pattern, BLANK);
+}
+
+/** Which idea this is, from what it says with its own name blanked: used only for an idea the passage gives no form of. */
 export function buildConcept(idea: GrammarIdea, random: Random): GrammarQuestion {
   const near = shuffle(LADDER.filter((o) => o.id !== idea.id && o.tier === idea.tier), random);
   const far = shuffle(LADDER.filter((o) => o.id !== idea.id && o.tier !== idea.tier), random);
   return {
     kind: 'concept',
     ideaId: idea.id,
-    prompt: `Which idea is this? ${idea.text}`,
+    prompt: `Which idea is this? ${blankedText(idea)}`,
     options: shuffle([idea.title, ...[...near, ...far].slice(0, OPTION_COUNT - 1).map((o) => o.title)], random),
     right: idea.title,
   };

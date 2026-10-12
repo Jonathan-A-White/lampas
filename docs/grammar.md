@@ -72,7 +72,7 @@ beyond `loadChapter`.
 | `sound` | Hold to hear says a letter (`speakWord`), four glyphs | a letter, the alphabet |
 | `stress` | the syllables of a word from the chosen pronunciation's respell, the stressed one right | `accents` |
 | `syllables`, `breathing` | how many syllables; rough or smooth | `syllables`, `breathings` |
-| `concept` | which idea this text is, four titles | only an idea the passage has no form of |
+| `concept` | which idea this text is, four titles; the idea's own title, terms and pronunciation hint are blanked (`___`) from the text | only an idea the passage has no form of |
 
 A word idea draws `ending` or `tap-form` by its first random draw and falls back to the other. Review (`src/review/kinds.ts` GRAMMAR, kind `grammar`, item id the idea id) draws the due ideas before the due words (PROVISIONAL), asks each as multiple choice below `FLASHCARD_STEP` and as a flashcard (the prompt and the form, Show reveals the answer, I knew it / Not yet) from it up, and records through `recordGrammarAnswer`. `grammarRandom(random)` is the random a round's grammar questions use: a test finds the seed that gives the question it needs through it.
 
