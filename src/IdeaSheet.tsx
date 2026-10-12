@@ -1,11 +1,12 @@
 // src/IdeaSheet.tsx — the sheet that teaches one grammar idea (mw-hqd5bz.7), opened by Learn this idea on a Grammar sheet: the idea's
-// title and plain text, up to three example forms from the goal passage (or, with no goal, the open chapter) with their verses, a
+// title and plain text, up to three example forms from the goal passage (or, with no goal, the open chapter) with their verses (an idea of
+// spelling, such as the alphabet, a pair of vowels or a breathing, shows more words with the letters it is about marked), a
 // speaker on each, and a tap opens the word; for a case or a tense, a paradigm table built from the passage's own forms. At the foot
 // Got it (frontier, due tomorrow), I know this (solid, the 30-day step) and Ask the tutor; the level shows as a chip.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { loadChapter, loadIndex, wordGloss, type Chapter, type GreekWord } from './data/chapter';
-import { ideaExamples, ideaPassage, paradigmOf, type IdeaExample, type IdeaPassage, type Paradigm } from './data/grammar/ideaSheet';
+import { ideaExamples, ideaPassage, isSpellingIdea, paradigmOf, type IdeaExample, type IdeaPassage, type Paradigm } from './data/grammar/ideaSheet';
 import type { GrammarIdea } from './data/grammar/ladder';
 import { getOpenChapter } from './data/readerChapter';
 import { getLevel, getSavedGoalText, teachIdea, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
@@ -102,7 +103,15 @@ function Example({ example, onWord }: { example: IdeaExample; onWord: (chapter: 
         className="flex min-h-12 min-w-0 flex-1 items-center justify-between gap-3 rounded-xl border border-line px-3 py-1 text-left active:bg-line"
       >
         <span lang="grc" className="font-greek text-2xl">
-          {word.t}
+          {example.parts.map((part, i) =>
+            part.marked ? (
+              <span key={i} data-marked className="font-bold text-accent underline decoration-2 underline-offset-4">
+                {part.text}
+              </span>
+            ) : (
+              part.text
+            ),
+          )}
         </span>
         <span className="min-w-0 flex-1 truncate text-base text-muted">{wordGloss(chapter, word)}</span>
         <span data-testid="idea-verse" className="shrink-0 text-sm text-muted">
@@ -184,7 +193,11 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
                     ))}
                   </ul>
                 ) : (
-                  <p className="pt-1 text-base text-muted">No word of {loaded.passage.title} has this idea in its parsing.</p>
+                  <p className="pt-1 text-base text-muted">
+                    {isSpellingIdea(idea.id)
+                      ? `No word of ${loaded.passage.title} is spelt with this.`
+                      : `No word of ${loaded.passage.title} has this idea in its parsing.`}
+                  </p>
                 )}
               </div>
               {table ? <ParadigmTable table={table} /> : null}

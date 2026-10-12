@@ -45,41 +45,98 @@ const ACCENTS = /[̀́͂]/;
 const DIAERESIS = '̈';
 const IOTA_SUBSCRIPT = 'ͅ';
 
-/** The letters, sounds and marks a Greek form is spelt with, as ladder ids in the ladder's order. */
-export function foundationOf(form: string): string[] {
-  const letters = [...form.normalize('NFD')].reduce<{ base: string; marks: string }[]>((all, c) => {
+/** A Greek form cut into clusters: a letter with the marks over and under it, or a sign that is no letter (an apostrophe). */
+export interface FormCluster {
+  /** the letter or sign as written, without its marks */
+  text: string;
+  /** the letter lowercased, a final sigma as a sigma */
+  base: string;
+  /** the combining marks, NFD */
+  marks: string;
+  letter: boolean;
+}
+
+/** The clusters of a form, in order; a cluster's NFC text is `(text + marks).normalize('NFC')`, and the clusters together spell the form's NFC. */
+export function clustersOf(form: string): FormCluster[] {
+  return [...form.normalize('NFD')].reduce<FormCluster[]>((all, c) => {
     if (/\p{M}/u.test(c)) {
       if (all.length > 0) all[all.length - 1].marks += c;
-    } else if (/\p{L}/u.test(c)) {
-      all.push({ base: c.toLowerCase() === 'ς' ? 'σ' : c.toLowerCase(), marks: '' });
+    } else {
+      const letter = /\p{L}/u.test(c);
+      all.push({ text: c, base: letter ? (c.toLowerCase() === 'ς' ? 'σ' : c.toLowerCase()) : c, marks: '', letter });
     }
     return all;
   }, []);
-  const found = new Set<string>();
-  letters.forEach((l, i) => {
+}
+
+/** A stretch of a form's clusters: from `start`, up to but not including `end`. */
+export interface Span {
+  start: number;
+  end: number;
+}
+
+const VOWELS = 'αεηιουω';
+const BREATHING_MARKS = /[\u0313\u0314]/;
+
+/**
+ * Where in a Greek form each letter, sound and mark it is spelt with stands (mw-86e9r1.13): a map from ladder id to the spans of clusters, for
+ * the letters (letter-*), the diphthongs and consonant pairs (the group and the item), the breathings (the group and rough/smooth, on the vowel
+ * that carries it), accents, iota-subscript, and also 'syllables' (each vowel sound, a pair once) and 'punctuation' (a sign that is no letter, a
+ * diaeresis). foundationOf is its keys.
+ */
+export function foundationSpans(form: string): Map<string, Span[]> {
+  const clusters = clustersOf(form);
+  const found = new Map<string, Span[]>();
+  const add = (id: string, start: number, end: number): void => {
+    found.set(id, [...(found.get(id) ?? []), { start, end }]);
+  };
+  const places = clusters.flatMap((c, k) => (c.letter ? [k] : []));
+  const isPair = (a: FormCluster, b: FormCluster, set: ReadonlySet<string>): boolean => set.has(a.base + b.base);
+  // a pair of vowels is one sound unless the first carries the stress or the second has two dots over it
+  const isDiphthong = (a: FormCluster, b: FormCluster): boolean => isPair(a, b, DIPHTHONGS) && !ACCENTS.test(a.marks) && !b.marks.includes(DIAERESIS);
+  let nucleusEnd = -1;
+  places.forEach((k, j) => {
+    const l = clusters[k];
     const id = LETTER_OF_BASE.get(l.base);
-    if (id) found.add(id);
-    if (ACCENTS.test(l.marks)) found.add('accents');
-    if (l.marks.includes(IOTA_SUBSCRIPT)) found.add('iota-subscript');
-    const next = letters[i + 1];
+    if (id) add(id, k, k + 1);
+    if (ACCENTS.test(l.marks)) add('accents', k, k + 1);
+    if (l.marks.includes(IOTA_SUBSCRIPT)) add('iota-subscript', k, k + 1);
+    if (l.marks.includes(DIAERESIS)) add('punctuation', k, k + 1);
+    const next = places[j + 1] === undefined ? undefined : clusters[places[j + 1]];
+    if (VOWELS.includes(l.base) && k >= nucleusEnd) {
+      const pair = next !== undefined && isDiphthong(l, next);
+      add('syllables', k, pair ? places[j + 1] + 1 : k + 1);
+      nucleusEnd = pair ? places[j + 1] + 1 : k + 1;
+    }
     if (!next) return;
-    const pair = l.base + next.base;
-    // a pair of vowels is one sound unless the first carries the stress or the second has two dots over it
-    if (DIPHTHONGS.has(pair) && !ACCENTS.test(l.marks) && !next.marks.includes(DIAERESIS)) {
-      found.add('diphthongs');
-      found.add(ITEM_OF_PAIR.get(pair)!);
+    const [pair, end] = [l.base + next.base, places[j + 1] + 1];
+    if (isDiphthong(l, next)) {
+      add('diphthongs', k, end);
+      add(ITEM_OF_PAIR.get(pair)!, k, end);
     }
     if (CONSONANT_PAIRS.has(pair)) {
-      found.add('consonant-pairs');
-      found.add(ITEM_OF_PAIR.get(pair)!);
+      add('consonant-pairs', k, end);
+      add(ITEM_OF_PAIR.get(pair)!, k, end);
     }
+  });
+  clusters.forEach((c, k) => {
+    if (!c.letter) add('punctuation', k, k + 1);
   });
   const breathing = breathingOf(form.normalize('NFC'));
   if (breathing) {
-    found.add('breathings');
-    found.add(`breathing-${breathing.toLowerCase()}`);
+    const at = places.slice(0, 2).find((k) => BREATHING_MARKS.test(clusters[k].marks));
+    if (at !== undefined) {
+      add('breathings', at, at + 1);
+      add(`breathing-${breathing.toLowerCase()}`, at, at + 1);
+    }
   }
-  return FOUNDATION_IDS.filter((id) => found.has(id));
+  return found;
+}
+
+/** The letters, sounds and marks a Greek form is spelt with, as ladder ids in the ladder's order. */
+export function foundationOf(form: string): string[] {
+  const spans = foundationSpans(form);
+  return FOUNDATION_IDS.filter((id) => spans.has(id));
 }
 
 /** The whole Greek form a question shows: the word of a stress, syllable or breathing question, the right word of a tap-form, the form with its ending put back. */

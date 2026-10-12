@@ -93,9 +93,92 @@ describe('the examples of an idea', () => {
     expect(found.every((e) => e.chapter === romans)).toBe(true);
   });
 
-  it('are none for an idea no word has, such as a letter', () => {
-    expect(ideaExamples('letter-alpha', [john])).toEqual([]);
-    expect(ideaExamples('alphabet', [john])).toEqual([]);
+  it('are none for an idea no word has, such as a case the passage lacks', () => {
+    expect(ideaExamples('case-vocative', [john])).toEqual([]);
+  });
+});
+
+/** The marked stretches of an example, in order. */
+const markedOf = (e: { parts: { text: string; marked: boolean }[] }): string[] => e.parts.filter((p) => p.marked).map((p) => p.text);
+const formsOf = (id: string, verse = 1) => ideaExamples(id, [john], verse).map((e) => e.word.t);
+
+describe('the examples of a foundation idea (letters, pairs, marks, syllables, punctuation) over 1 John 1:1', () => {
+  it('diphthongs include λόγου and καὶ, with the pair marked', () => {
+    const found = ideaExamples('diphthongs', [john], 1);
+    const pairs = new Map(found.map((e) => [e.word.t, markedOf(e)]));
+    expect(pairs.get('λόγου')).toEqual(['ου']);
+    expect(pairs.get('καὶ')).toEqual(['αὶ']);
+    expect(pairs.get('τοῖς')).toEqual(['οῖ']);
+  });
+
+  it('breathings include ἑωράκαμεν and αἱ, with the vowel that carries the breathing marked', () => {
+    const found = ideaExamples('breathings', [john], 1);
+    const marks = new Map(found.map((e) => [e.word.t, markedOf(e)]));
+    expect(marks.get('ἑωράκαμεν')).toEqual(['ἑ']);
+    expect(marks.get('αἱ')).toEqual(['ἱ']);
+  });
+
+  it('the alphabet returns words from the verse', () => {
+    const found = ideaExamples('alphabet', [john], 1);
+    expect(found.length).toBeGreaterThan(0);
+    const verse = new Set(john.verses[0].g.map((w) => w.t));
+    expect(found.every((e) => verse.has(e.word.t) && e.verse === 1)).toBe(true);
+  });
+
+  it('a letter marks that letter wherever it stands, a capital too', () => {
+    const found = ideaExamples('letter-omicron', [john], 1);
+    const marks = new Map(found.map((e) => [e.word.t, markedOf(e)]));
+    expect(marks.get('λόγου')).toEqual(['ό', 'ο']);
+    expect(marks.get('ὀφθαλμοῖς')).toEqual(['ὀ', 'ο']);
+  });
+
+  it('a final sigma is a sigma', () => {
+    const marks = new Map(ideaExamples('letter-sigma', [john], 1).map((e) => [e.word.t, markedOf(e)]));
+    expect(marks.get('ἀρχῆς')).toEqual(['ς']);
+  });
+
+  it('an item of a group marks only its own pair', () => {
+    const found = ideaExamples('diphthong-ou', [john], 1);
+    expect(found.map((e) => e.word.t)).toEqual(['τοῦ', 'λόγου']);
+    expect(found.map(markedOf)).toEqual([['οῦ'], ['ου']]);
+  });
+
+  it('accents mark the accented vowel', () => {
+    const marks = new Map(ideaExamples('accents', [john], 1).map((e) => [e.word.t, markedOf(e)]));
+    expect(marks.get('ἀρχῆς')).toEqual(['ῆ']);
+    expect(marks.get('ἀκηκόαμεν')).toEqual(['ό']);
+  });
+
+  it('syllables mark each vowel sound, a pair once, in words of two or more', () => {
+    const marks = new Map(ideaExamples('syllables', [john], 1).map((e) => [e.word.t, markedOf(e)]));
+    expect(marks.get('λόγου')).toEqual(['ό', 'ου']);
+    expect(marks.has('ἦν')).toBe(false);
+  });
+
+  it('punctuation marks the apostrophe of a dropped vowel', () => {
+    const found = ideaExamples('punctuation', [john], 1);
+    expect(found.map((e) => e.word.t)).toEqual(["ἀπ'"]);
+    expect(markedOf(found[0])).toEqual(["'"]);
+  });
+
+  it('consonant pairs, found in 1 John 1:3, mark the pair', () => {
+    // γγ in ἀπαγγέλλομεν
+    const found = ideaExamples('consonant-pairs', [john], 3);
+    expect(found.some((e) => markedOf(e).includes('γγ'))).toBe(true);
+  });
+
+  it('are none, not an error, for a mark the verse lacks (iota subscript in 1:1)', () => {
+    expect(formsOf('iota-subscript')).toEqual([]);
+  });
+
+  it('give each form once, however many words are spelt so', () => {
+    const forms = formsOf('breathings');
+    expect(new Set(forms.map((f) => f.toLowerCase())).size).toBe(forms.length);
+  });
+
+  it('a word that no foundation rule marks is shown whole, unmarked, for a grammar idea', () => {
+    const found = ideaExamples('case-genitive', [john], 1);
+    expect(found[0].parts).toEqual([{ text: found[0].word.t, marked: false }]);
   });
 });
 
