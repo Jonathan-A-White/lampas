@@ -1,6 +1,6 @@
 // An answer is English with Greek words in it: read aloud, each Greek stretch goes to the Greek voice and the rest to the English one.
 import { describe, expect, it } from 'vitest';
-import { answerRuns } from '../../src/speech/answerRuns';
+import { answerRuns, syllableRuns } from '../../src/speech/answerRuns';
 
 describe('answerRuns', () => {
   it('splits English from Greek words, in the order they come', () => {
@@ -41,5 +41,30 @@ describe('answerRuns', () => {
       { text: 'συνεργεῖ', language: 'greek' },
       { text: 'means works together.', language: 'english' },
     ]);
+  });
+});
+
+// A voice given one letter on its own says the letter's name ('Alpha'), not its sound; the package makes every run a sentence of its own.
+describe('syllableRuns', () => {
+  const textsOf = (syllables: string[]): string[] => syllableRuns(syllables).map((r) => r.text);
+  const lettersIn = (text: string): number => text.normalize('NFD').replace(/\p{M}/gu, '').length;
+
+  it('hands the voice every syllable of a word in Greek, slowly, one run each', () => {
+    expect(syllableRuns(['συν', 'ερ', 'γεῖ'])).toEqual([
+      { text: 'συν', language: 'greek', slow: true },
+      { text: 'ερ', language: 'greek', slow: true },
+      { text: 'γεῖ', language: 'greek', slow: true },
+    ]);
+  });
+
+  it.each(['ἁ', 'ὁ', 'ἡ', 'ε', 'ι', 'ω'])('never hands the voice the lone letter %s, which it would spell out by name', (letter) => {
+    const [run] = syllableRuns([letter]);
+    expect(lettersIn(run.text)).toBeGreaterThan(1);
+    expect(run).toMatchObject({ language: 'greek', slow: true });
+    expect(run.text.normalize('NFD').replace(/\p{M}/gu, '')).toBe(letter.normalize('NFD').replace(/\p{M}/gu, '').repeat(2));
+  });
+
+  it('leaves the other syllables of the word as they are', () => {
+    expect(textsOf(['ἁ', 'μάρ', 'τη', 'τε'])).toEqual([expect.stringMatching(/^ἁ.$/u), 'μάρ', 'τη', 'τε']);
   });
 });
