@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.139
+_2026-10-12_
+- New: Read it aloud now grades a reading you stop part-way through, as far as you got, and helps you with the next word so each try goes further.
+
 ## 0.1.138
 _2026-10-12_
 - New: Greek words you say out loud to the tutor are now matched to the words of the verse, and the tutor tells you which word it took.
