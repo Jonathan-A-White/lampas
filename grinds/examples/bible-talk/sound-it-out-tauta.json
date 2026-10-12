@@ -1,0 +1,20 @@
+{
+  "description": "Sound it out on ταῦτα (Romans 8:31): the explanation describes αυ by the app's modern respelling, TAF-ta, never as aw, and the syllables keep the diphthong whole.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:31",
+    "greek": "Τί οὖν ἐροῦμεν πρὸς ταῦτα Εἰ ὁ θεὸς ὑπὲρ ἡμῶν τίς καθ' ἡμῶν",
+    "english": "What then shall we say in response to these things? If God is for us, who can be against us?",
+    "question": "The word ταῦτα (lemma οὗτος; demonstrative pronoun, accusative plural neuter) in Romans 8:31. Help me pronounce this word: its syllables and how each sounds.",
+    "history": [],
+    "solid_words": ["ὁ", "καί", "θεός"],
+    "settings": { "greekPronunciation": "modern" },
+    "pronunciation": "modern",
+    "focus": { "form": "ταῦτα", "lemma": "οὗτος", "parse": "demonstrative pronoun, accusative plural neuter", "kind": "sound", "respelling": "TAF-ta" }
+  },
+  "expect": {
+    "answer": { "contains": "TAF", "matches": "^(?:[^aA]|[aA]+[^aAwW])*[aA]*$" },
+    "syllables.0": { "matches": "^τα[υῦύ]" },
+    "settings_changes": { "present": false }
+  }
+}

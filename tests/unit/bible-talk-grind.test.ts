@@ -542,3 +542,47 @@ describe('his requests (mw-vy3ghg.6)', () => {
     }
   });
 });
+
+// mw-5r3p30.241: Sound it out said 'aw' for αυ, where modern Greek (the app's voice and respelling) says af or av
+describe('Sound it out speaks the app\'s pronunciation (mw-5r3p30.241)', () => {
+  const text = readFileSync('grinds/bible-talk.instructions.md', 'utf8').replace(/\s+/g, ' ');
+  const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
+  const base = { reference: 'John 5:1', question: 'Help me pronounce this word.', history: [], solid_words: [], settings: {} };
+  const sound = { form: 'ταῦτα', lemma: 'οὗτος', parse: 'demonstrative pronoun', kind: 'sound' };
+
+  it('the request schema takes the pronunciation and a sound focus\'s respelling, and refuses a respelling of nothing', () => {
+    expect(validate({ ...base, pronunciation: 'modern', focus: { ...sound, respelling: 'TAF-ta' } }, input)).toEqual([]);
+    expect(validate({ ...base, focus: sound }, input)).toEqual([]);
+    expect(validate({ ...base, focus: { ...sound, respelling: '' } }, input)).not.toEqual([]);
+    expect(validate({ ...base, pronunciation: '' }, input)).not.toEqual([]);
+  });
+
+  it('the instructions name the pronunciation and the respelling the request carries', () => {
+    expect(text).toContain('- `pronunciation`:');
+    expect(text).toContain('`focus.respelling`');
+  });
+
+  it('they say to describe each syllable by the respelling and the modern rules, never by English or Erasmian habit', () => {
+    expect(text).toMatch(/describe each syllable's sound by `focus\.respelling`/i);
+    for (const rule of ['αυ and ευ are af and ef', 'av and ev', 'αι is e', 'ει, οι, υι, η, ι and υ are ee', 'ου is oo', 'β is v', 'δ is dh', 'γ is gh', 'or y before e or i']) {
+      expect(text, rule).toContain(rule);
+    }
+    expect(text).toMatch(/never by English spelling habit or by the Erasmian/);
+    expect(text).toMatch(/never "aw"/);
+  });
+
+  it('they say never to cut a diphthong across two syllables', () => {
+    expect(text).toMatch(/never split a pair of letters that makes one sound[^.]*αυ, ευ, ηυ, ου, αι, ει, οι, υι/i);
+    expect(text).toMatch(/unless the second letter carries a diaeresis/);
+  });
+
+  it('has a scenario that asks how to sound ταῦτα and expects TAF and no aw', () => {
+    const example = readJson('grinds/examples/bible-talk/sound-it-out-tauta.json') as { request: { pronunciation: string; focus: { respelling: string; kind: string } }; expect: Record<string, Record<string, string>> };
+    expect(example.request.pronunciation).toBe('modern');
+    expect(example.request.focus).toMatchObject({ kind: 'sound', respelling: 'TAF-ta' });
+    expect(example.expect.answer.contains).toBe('TAF');
+    const noAw = new RegExp(example.expect.answer.matches);
+    expect(noAw.test('ταῦτα is said TAF-ta: the stress falls on TAF, where αυ is af.')).toBe(true);
+    for (const wrong of ['ταῦτα is said TAW-ta.', 'The αυ sounds like aw in saw.', 'It sounds like Aw-ta.']) expect(noAw.test(wrong), wrong).toBe(false);
+  });
+});

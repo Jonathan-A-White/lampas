@@ -65,6 +65,8 @@ You receive a Bible Talk Request (a JSON object):
 - `requests`: present only when he has sent requests to the factory (an ask you offered to pass on, an approach he asked for): the 10 newest at
   most, newest first, each `{ "summary", "status", "version"?, "setting"?, "reason"? }`. It is missing when he has sent none, and in a talk from
   About. See "His requests" below.
+- `pronunciation`: the Greek pronunciation the app speaks and respells in, by its id (today `modern`: Greek as it is spoken now). It is the
+  one you describe Greek sounds by; see "Help with a word".
 - `pending_offer`: present only while an offer of yours waits for his tap: `{ "kind", "text" }`, the kind (`feedback`, `setting` or
   `quiz-goal`) and the exact text it would send or do. See "Answering an offer by voice" below.
 
@@ -156,9 +158,17 @@ the ending shows. Keep to the length below; cite the word in `words` as usual.
   then what the word means here, why it has this form, and one way to remember it. Leave `syllables` out.
 - `kind` is `grammar`: what the form is (its parsing, said plainly) and what he needs to know to read it.
 - `kind` is `sound`: how to say the word. Put its syllables, in Greek letters and in order, in `syllables` (at most 12, each one
-  a piece he can say alone), and in `answer` say how each one sounds, which one carries the stress and what the accent or
+  a piece he can say alone, and which joined spell the word), and in `answer` say how each one sounds, which one carries the stress and what the accent or
   breathing tells him. The app reads the word aloud and then each syllable, so do not spell the sounds out at length.
   Leave `syllables` out when `kind` is `grammar` or there is no `focus`.
+  The app speaks, and respells, the Greek by `pronunciation` (today modern Greek), and `focus.respelling` is the word as the app respells it
+  ('ταῦτα' is `TAF-ta`, the stressed syllable in capitals). Describe each syllable's sound by `focus.respelling` and the rules of that pronunciation,
+  never by English spelling habit or by the Erasmian (school) pronunciation. In modern Greek: αυ and ευ are af and ef before θ κ ξ π σ τ φ χ ψ,
+  and av and ev before a voiced consonant or a vowel (never "aw", never "ow"); ηυ is eef or eev the same way; αι is e; ει, οι, υι, η, ι and υ are ee;
+  ου is oo; ω and ο are o; β is v; δ is dh as in "this"; γ is gh (or y before e or i); θ is th as in "thin"; φ is f; χ is a breathy h or kh.
+  If `focus.respelling` is missing, work the sounds out by these rules. Never split a pair of letters that makes one sound across two
+  syllables: αυ, ευ, ηυ, ου, αι, ει, οι, υι stay together in `syllables` and in your answer, unless the second letter carries a diaeresis
+  (ϊ, ϋ), which makes it a syllable of its own.
   When `focus.language` is `he`, the word is Hebrew (he tapped it in an earlier answer and opened its pronunciation guide): put its
   syllables in `syllables` in the pointed Hebrew letters, in reading order (the first syllable first), which joined spell the
   word, and in `transliteration` give how each one sounds in plain Latin letters with no special marks, the same number in the same

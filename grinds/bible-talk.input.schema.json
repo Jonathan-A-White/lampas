@@ -216,6 +216,7 @@
     },
     "pictures": { "description": "Optional. How many pictures he sent with this message (1 to 4): they are attached to the request as image files, in the order he added them, and belong to this message only. Missing when he sent none. The `question` may then be only 'Read the picture and tell me about it.'", "type": "number", "minimum": 1, "maximum": 4 },
     "settings": { "description": "What each of the app's settings holds now, by key.", "type": "object" },
+    "pronunciation": { "description": "Optional. The Greek pronunciation the app speaks and respells in, by its id: modern (how Greek is spoken today). Describe every Greek sound by it.", "type": "string", "minLength": 1, "maxLength": 40 },
     "focus": {
       "description": "Optional. What he asked for help with: a word (from the word sheet's Help with this word row, or its Ask the tutor: the form as it stands, its lemma, its parsing in plain words, and what he wants help with), a grammar term (from a Grammar sheet's Ask the tutor), a paradigm table (from the Paradigms screen's Ask the tutor), or a Quick test question (from the question's Ask the tutor: the word, the question, his answer and his earlier answers of the round).",
       "anyOf": [
@@ -228,7 +229,8 @@
             "lemma": { "type": "string", "minLength": 1, "maxLength": 80 },
             "parse": { "type": "string", "minLength": 1, "maxLength": 200 },
             "kind": { "description": "grammar: the form and what is needed to read it; sound: its syllables and how each sounds; word: just the word, with nothing in particular asked.", "type": "string", "enum": ["grammar", "sound", "word"] },
-            "language": { "description": "Only for a Hebrew word of an answer (the Hebrew guide's Syllables and sounds): he. Absent for a Greek word.", "type": "string", "enum": ["he"] }
+            "language": { "description": "Only for a Hebrew word of an answer (the Hebrew guide's Syllables and sounds): he. Absent for a Greek word.", "type": "string", "enum": ["he"] },
+            "respelling": { "description": "Only for a Greek word's sound question: the word as the app's pronunciation respells it, the stressed syllable in capitals (ταῦτα is TAF-ta). Describe each syllable's sound by it.", "type": "string", "minLength": 1, "maxLength": 80 }
           }
         },
         {
