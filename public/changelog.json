@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.119",
+    "date": "2026-10-12",
+    "story": "mw-5r3p30.226",
+    "kind": "fixed",
+    "text": "Holding a Greek word that is a capital letter or a single letter now says the word instead of 'capital'."
+  },
+  {
     "version": "0.1.118",
     "date": "2026-10-12",
     "story": "mw-86e9r1.1",

@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.119
+_2026-10-12_
+- Fixed: Holding a Greek word that is a capital letter or a single letter now says the word instead of 'capital'.
+
 ## 0.1.118
 _2026-10-12_
 - New: A total beginner can start from the letters, and every goal now teaches the vowel and consonant pairs, syllables, the iota under a letter and punctuation before the grammar.
