@@ -81,6 +81,7 @@ async function openWithGoal(page: Page, goal: string) {
     { id: 'alphabet', level: 'solid', since: now, how: 'marked' },
     { id: 'breathings', level: 'solid', since: now, how: 'marked' },
     { id: 'accents', level: 'solid', since: now, how: 'marked' },
+    ...['diphthongs', 'consonant-pairs', 'syllables', 'iota-subscript', 'punctuation'].map((id) => ({ id, level: 'solid', since: now, how: 'marked' })),
     { id: 'noun', level: 'frontier', since: now, how: 'sheet' },
   ]);
   // the app watches its own writes, not a raw one: load it again so it reads them
@@ -91,7 +92,7 @@ test('the Goal chip under the Reader header is on one row with Due and opens the
   await openWithGoal(page, '1 John 1:1');
   const strip = page.getByTestId('goal-strip');
   await expect(strip).toHaveText(/^Goal \d+\/16$/);
-  await expect(strip).toHaveAccessibleName(/^Goal: 1 John 1:1, \d+ of 16 words, \d+ of 30 ideas$/);
+  await expect(strip).toHaveAccessibleName(/^Goal: 1 John 1:1, \d+ of 16 words, \d+ of 35 ideas$/);
   const box = await strip.boundingBox();
   expect(box?.height).toBeGreaterThanOrEqual(38);
   expect(box?.height).toBeLessThanOrEqual(40);
@@ -126,7 +127,7 @@ test('the Goal screen: two bars that fit, the lists, Learn next, Next words and 
   await expectThumbSized(page.getByTestId('learn-next'));
   await expect(page.getByTestId('learn-next')).toHaveText('Learn next: The article · Your first words');
   await expect(page.getByTestId('words-legend')).toHaveText(/^Solid \d+ · Frontier \d+ · Not yet \d+$/);
-  await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 3 · Frontier 1 · Not yet 26');
+  await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 8 · Frontier 1 · Not yet 26');
   await expect(page.getByText('Solid when both are full.')).toBeVisible();
   for (const bar of ['words-bar', 'ideas-bar']) {
     const box = await page.getByTestId(bar).boundingBox();
@@ -151,7 +152,7 @@ test('the Goal screen: two bars that fit, the lists, Learn next, Next words and 
   await expect(sheet.getByRole('heading', { name: 'The article' })).toBeVisible();
   await sheet.getByRole('button', { name: 'Got it' }).click();
   await sheet.getByRole('button', { name: 'Done' }).click();
-  await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 3 · Frontier 2 · Not yet 25');
+  await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 8 · Frontier 2 · Not yet 25');
 
   // a reload keeps the screen
   await page.reload();
