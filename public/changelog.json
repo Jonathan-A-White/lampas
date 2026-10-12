@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.123",
+    "date": "2026-10-12",
+    "story": "mw-86e9r1.2",
+    "kind": "fixed",
+    "text": "The grammar lessons now come in an order where nothing is taught before the grammar it relies on: singular and plural, and the little words and, but and not, come right after the noun."
+  },
+  {
     "version": "0.1.122",
     "date": "2026-10-12",
     "story": "mw-5r3p30.227",

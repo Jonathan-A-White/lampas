@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.123
+_2026-10-12_
+- Fixed: The grammar lessons now come in an order where nothing is taught before the grammar it relies on: singular and plural, and the little words and, but and not, come right after the noun.
+
 ## 0.1.122
 _2026-10-12_
 - New: Changed: In the Immersive reader the bars no longer come back when you scroll up; tap the text with three fingers (or two) to bring them back or send them away.
