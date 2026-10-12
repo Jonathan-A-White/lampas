@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { TEXT_SIZES } from '../../appearance/textSizes';
 import { THEMES, type Theme } from '../../appearance/themes';
 import { getLayout, getSectionHeadings, getTextSize, type ReadingLayout } from '../../data/repositories';
-import { immersiveSetting, themeSetting } from '../definitions';
+import { immersiveHintSetting, immersiveSetting, themeSetting } from '../definitions';
 import { useSetting } from '../store';
 import { LAYOUTS } from '../../layout/layouts';
 import { writeSetting } from '../registry';
@@ -83,6 +83,11 @@ export const LayoutControl: Control = ({ row }) => {
 export const ImmersiveControl: Control = ({ row }) => {
   const immersive = useSetting(immersiveSetting);
   return <SettingRow row={row}>{immersive ? <OnOff name={row.label} current={immersive} settingKey="immersiveReader" /> : null}</SettingRow>;
+};
+
+export const ImmersiveHintControl: Control = ({ row }) => {
+  const hint = useSetting(immersiveHintSetting);
+  return <SettingRow row={row}>{hint ? <OnOff name={row.label} current={hint} settingKey="immersiveHint" /> : null}</SettingRow>;
 };
 
 export const HeadingsControl: Control = ({ row }) => {
