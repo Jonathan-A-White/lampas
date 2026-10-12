@@ -92,6 +92,11 @@ const twoFingerTap = () => {
   touch('touchend', []);
 };
 /** The fingers of a real tap land one after another, a few milliseconds apart: the browser sends a touchstart for each. */
+const twoFingerTapOneByOne = () => {
+  touch('touchstart', TWO.slice(0, 1));
+  touch('touchstart', TWO);
+  touch('touchend', []);
+};
 const threeFingerTap = () => {
   touch('touchstart', THREE.slice(0, 1));
   touch('touchstart', THREE.slice(0, 2));
@@ -148,41 +153,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('A three-finger tap shows the bars, and a second three-finger tap hides them again', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 with Immersive reader On', () => open({ immersive: 'on' }));
-    When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
-    And('he taps the text with three fingers, and the phone also sends a click on a word', async () => {
-      await outOfView();
-      threeFingerTap();
-      await user.click(firstWord());
-    });
-    Then(`${bars} in view`, inView);
-    And('no word sheet is open', () => {
-      expect(screen.queryByRole('dialog')).toBeNull();
-    });
-    When('he taps the text with three fingers', async () => {
-      // past the guard that drops the click after a tap
-      await sleep(650);
-      threeFingerTap();
-    });
-    Then(`${bars} out of view`, outOfView);
-  });
-
-  Scenario('Three fingers that arrive one after another, or that move, are judged as one tap', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 with Immersive reader On', () => open({ immersive: 'on' }));
-    When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
-    And('he puts three fingers on the text and drags them {int} px', async (_, px: number) => {
-      await outOfView();
-      touch('touchstart', THREE);
-      touch('touchmove', THREE.map((f) => ({ x: f.x, y: f.y - px })));
-      touch('touchend', []);
-    });
-    Then(`${bars} out of view`, outOfView);
-    When('he puts three fingers on the text one after another and lifts them together', threeFingerTap);
-    Then(`${bars} in view`, inView);
-  });
-
-  Scenario('A two-finger tap brings the bars back and opens no word sheet', ({ Given, When, And, Then }) => {
+  Scenario('A two-finger tap shows the bars, and a second two-finger tap puts them away again', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with Immersive reader On', () => open({ immersive: 'on' }));
     When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
     And('he taps the text with two fingers, and the phone also sends a click on a word', async () => {
@@ -193,6 +164,45 @@ describeFeature(feature, ({ Scenario }) => {
     Then(`${bars} in view`, inView);
     And('no word sheet is open', () => {
       expect(screen.queryByRole('dialog')).toBeNull();
+    });
+    When('he taps the text with two fingers again', async () => {
+      // past the guard that drops the click after a tap
+      await sleep(650);
+      twoFingerTap();
+    });
+    Then(`${bars} out of view`, outOfView);
+  });
+
+  Scenario('Two fingers that arrive one after another are judged as one tap', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader On', () => open({ immersive: 'on' }));
+    When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
+    And('he puts two fingers on the text one after another and lifts them together', async () => {
+      await outOfView();
+      twoFingerTapOneByOne();
+    });
+    Then(`${bars} in view`, inView);
+  });
+
+  Scenario('A three-finger tap does nothing', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader On', () => open({ immersive: 'on' }));
+    When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
+    And('he taps the text with three fingers', async () => {
+      await outOfView();
+      threeFingerTap();
+    });
+    Then(`${bars} out of view`, async () => {
+      await sleep(50);
+      await outOfView();
+    });
+    When('he taps the text with two fingers', twoFingerTap);
+    Then(`${bars} in view`, inView);
+    When('he taps the text with three fingers again', async () => {
+      await sleep(650);
+      threeFingerTap();
+    });
+    Then(`${bars} still in view`, async () => {
+      await sleep(50);
+      await inView();
     });
   });
 
@@ -208,7 +218,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then(`${bars} out of view`, outOfView);
   });
 
-  Scenario('A one-finger tap on a word opens its sheet while the bars are away, and closing the sheet brings them back', ({ Given, When, And, Then }) => {
+  Scenario('A one-finger tap on a word opens its sheet while the bars are away, and closing the sheet leaves them away', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with Immersive reader On', () => open({ immersive: 'on' }));
     When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
     And('he taps the first word of verse {int}', async () => {
@@ -220,8 +230,38 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('he closes the word sheet', async () => {
       await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Done' }));
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     });
-    Then(`${bars} in view`, inView);
+    Then(`${bars} out of view`, async () => {
+      await sleep(50);
+      await outOfView();
+    });
+  });
+
+  Scenario('Closing a sheet with the bars shown leaves them shown', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader On', () => open({ immersive: 'on' }));
+    When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
+    And('he taps the text with two fingers', async () => {
+      await outOfView();
+      twoFingerTap();
+      await inView();
+    });
+    And('he taps the first word of verse {int}', async () => {
+      // past the guard that drops the click after a tap
+      await sleep(650);
+      await user.click(firstWord());
+    });
+    Then('the word sheet is open', async () => {
+      await screen.findByRole('dialog');
+    });
+    When('he closes the word sheet', async () => {
+      await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Done' }));
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    });
+    Then(`${bars} in view`, async () => {
+      await sleep(50);
+      await inView();
+    });
   });
 
   Scenario('With the bars away, a two-finger tap and then holding Talk starts listening', ({ Given, When, And, Then }) => {
@@ -243,17 +283,21 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('The bars come back at the end of the chapter', ({ Given, When, And, Then }) => {
+  Scenario('Scrolling to the end of the chapter and past the bottom leaves the bars away', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with Immersive reader On', () => open({ immersive: 'on' }));
     When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
     And('he scrolls the text to its end', async () => {
       await outOfView();
       scrollTo((at = SCROLL_HEIGHT - CLIENT_HEIGHT));
     });
-    Then(`${bars} in view`, inView);
+    And('he scrolls the text further down {int} px past the bottom', (_, px: number) => scrollBy(px));
+    Then(`${bars} out of view`, async () => {
+      await sleep(50);
+      await outOfView();
+    });
   });
 
-  Scenario('The bars come back when reading aloud stops', ({ Given, When, And, Then }) => {
+  Scenario('Reading aloud stopping leaves the bars away', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with Immersive reader On and a phone that speaks English', () => open({ immersive: 'on', speaks: true }));
     When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
     And('verse {int} is being read aloud', async (_, n: number) => {
@@ -262,7 +306,10 @@ describeFeature(feature, ({ Scenario }) => {
       expect(getReading().status).toBe('reading');
     });
     And('the reading is stopped', () => act(() => stopReading()));
-    Then(`${bars} in view`, inView);
+    Then(`${bars} out of view`, async () => {
+      await sleep(50);
+      await outOfView();
+    });
   });
 
   Scenario('Settings switches it On and the choice survives a reload', ({ Given, When, And, Then }) => {

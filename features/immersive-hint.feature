@@ -1,6 +1,6 @@
 Feature: Immersive reader hint card
   With Immersive reader On, a small card sits over the top of the Reader's text and says how it works: "Scroll down and the bars slide away.",
-  "Tap with three fingers to bring them back." and "To leave immersive reading: Settings > Immersive reader." It has two buttons, 'Got it' (closes
+  "Tap with two fingers to bring them back or put them away." and "To leave immersive reading: Settings > Immersive reader." It has two buttons, 'Got it' (closes
   it for now: it shows again the next time the Reader opens) and "Don't show this again" (switches the setting Immersive reader card to Off, so it
   never shows again, also after a reload). With Immersive reader Off it never shows. Settings > Immersive reader card (On | Off, shown while
   Immersive reader is On) brings it back. The card is in the page's flow above the text, so it never covers the round Ask button. How it looks at

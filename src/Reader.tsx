@@ -242,12 +242,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const chapterReading = reading.status !== 'idle' && reading.answer === null;
   const readingVerse = chapterReading ? reading.verse : null;
   const headerButtons = chapterReading && !reading.onBar;
-  // The bars come back whenever a sheet closes (or the Verse view does) and reading aloud stops, and stay away only while the header holds no reading control.
-  const covered = Boolean(lookup || linked || talkAbout !== undefined || teaching || picking || viewUnit !== undefined || chapterReading);
-  const { show: showBars } = bars;
-  useEffect(() => {
-    if (!covered) showBars();
-  }, [covered, showBars]);
+  // The bars change only on a two-finger tap (src/immersive.ts); a sheet closing or reading aloud stopping does not bring them back. They stay out
+  // of view only while the header holds no reading control.
   const away = bars.away && !headerButtons;
   const passages = useMemo(() => (chapter ? passagesOf(chapter.verses) : []), [chapter]);
   const blocks = useMemo(() => (chapter && layout ? blocksOf(chapter.verses, layout) : []), [chapter, layout]);
