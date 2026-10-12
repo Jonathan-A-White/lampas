@@ -16,7 +16,7 @@ Feature: Hear it in modern Greek
     When he switches the reader to Greek
     And he taps the word "Οὐδὲν" in verse 1
     And he taps the speaker on the word sheet
-    Then the phone is told to speak "Οὐδὲν" in "el-GR"
+    Then the phone is told to speak "οὐδὲν" in "el-GR"
 
   Scenario: A verse's play button speaks the verse's Greek when the reader shows Greek
     Given Lampas is opened on a phone with a Greek voice
