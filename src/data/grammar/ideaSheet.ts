@@ -7,7 +7,7 @@ import { goalText, parseGoal } from '../goal';
 import { splitParse } from '../parseCode';
 import type { OpenChapter } from '../readerChapter';
 import { clustersOf, foundationSpans, isFoundation, type Span } from './inference';
-import { ideasOf, type GrammarIdea } from './ladder';
+import { ideasOfWord, type GrammarIdea } from './ladder';
 
 /** A book goal looks in its first chapters only: every chapter would be a request each. */
 export const MAX_CHAPTERS = 5;
@@ -108,7 +108,7 @@ function spellingOf(id: string, form: string): Span[] | undefined {
 }
 
 /**
- * Up to `max` words of the passage in the order of the text. For a grammar idea: the words whose parsing needs it (ideasOf), one for each
+ * Up to `max` words of the passage in the order of the text. For a grammar idea: the words whose parsing needs it (ideasOfWord), one for each
  * lemma. For an idea of spelling (isSpellingIdea): the words spelt with it, one for each form, with the letters it is about marked in
  * `parts`, up to MAX_FOUNDATION_EXAMPLES when `max` is not given.
  */
@@ -116,11 +116,12 @@ export function ideaExamples(id: string, chapters: Chapter[], verse?: number, ma
   const spelling = isSpellingIdea(id);
   const limit = max ?? (spelling ? MAX_FOUNDATION_EXAMPLES : MAX_EXAMPLES);
   const needs = new Map<string, boolean>();
-  const has = (code: string): boolean => {
-    let found = needs.get(code);
+  const has = (word: GreekWord): boolean => {
+    const key = `${word.l} ${word.p}`;
+    let found = needs.get(key);
     if (found === undefined) {
-      found = ideasOf(code).includes(id);
-      needs.set(code, found);
+      found = ideasOfWord(word).includes(id);
+      needs.set(key, found);
     }
     return found;
   };
@@ -136,7 +137,7 @@ export function ideaExamples(id: string, chapters: Chapter[], verse?: number, ma
       if (!spans) continue;
       parts = partsOf(word.t, spans);
     } else {
-      if (!has(word.p)) continue;
+      if (!has(word)) continue;
       parts = [{ text: word.t, marked: false }];
     }
     seen.add(key);
