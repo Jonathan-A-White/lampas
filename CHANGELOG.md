@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.125
+_2026-10-12_
+- New: When you switch on the immersive reader, a small card now tells you how to bring the bars back and how to leave, and you can tell it not to show again.
+
 ## 0.1.124
 _2026-10-12_
 - Fixed: Lampas no longer asks you to update for a build with nothing new to show; such updates install quietly when you are not using it.

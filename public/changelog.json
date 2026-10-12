@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.125",
+    "date": "2026-10-12",
+    "story": "mw-5r3p30.228",
+    "kind": "new",
+    "text": "When you switch on the immersive reader, a small card now tells you how to bring the bars back and how to leave, and you can tell it not to show again."
+  },
+  {
     "version": "0.1.124",
     "date": "2026-10-12",
     "story": "mw-5r3p30.236",
