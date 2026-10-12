@@ -46,7 +46,7 @@ const VOWEL_SOUND: Record<string, string> = { α: 'a', ε: 'e', η: 'ee', ι: 'e
 const DIGRAPH_SOUND: Record<string, string> = { αι: 'e', ει: 'ee', οι: 'ee', υι: 'ee', ου: 'oo' };
 
 /** Clusters that can open a Greek syllable; any single consonant can. */
-const ONSETS = new Set(
+export const ONSETS = new Set(
   [
     ...['π', 'β', 'φ', 'κ', 'γ', 'χ'].flatMap((a) => [`${a}ρ`, `${a}λ`]),
     'τρ', 'δρ', 'θρ',

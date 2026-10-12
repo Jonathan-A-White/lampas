@@ -14,6 +14,7 @@ import { type Chapter, markSupplied } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { clearBus, subscribe, type EventOf } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
+import { respellModern } from '../../src/speech/schemes/modern';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GRAMMAR_HELP_ANSWER, makeFakePostern, POSTERN_ORIGIN, SOUND_HELP_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
@@ -96,7 +97,8 @@ const grists = (count: number) => async (): Promise<void> => {
 };
 const hasFocus = (kind: 'grammar' | 'sound') => async (_: unknown, form: string, lemma: string, parse: string): Promise<void> => {
   await waitFor(() => expect(fake.received.length).toBeGreaterThan(0));
-  expect(focusOf(0)).toEqual({ form, lemma, parse, kind });
+  // a sound question also carries the app's respelling of the word (mw-5r3p30.241), a grammar one does not
+  expect(focusOf(0)).toEqual(kind === 'sound' ? { form, lemma, parse, kind, respelling: respellModern(form) } : { form, lemma, parse, kind });
 };
 const answerShows = async (): Promise<void> => {
   await waitFor(() => expect(turns()).toHaveLength(1));
@@ -144,6 +146,10 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps Sound it out on the word sheet', tapsHelp('Sound it out'));
     Then('the mill received {int} grist for the lampas app, kind bible-talk', (_, count: number) => grists(count)());
     And('the grist carries the focus form {string}, lemma {string}, parse {string} and kind sound', hasFocus('sound'));
+    And('the grist carries the pronunciation {string} and the respelling {string}', (_, pronunciation: string, respelling: string) => {
+      expect(received(0).input.pronunciation).toBe(pronunciation);
+      expect(focusOf(0)).toMatchObject({ respelling });
+    });
     And('the grist question asks to pronounce the word, its syllables and how each sounds', () => {
       const question = String(received(0).input.question);
       for (const part of [FORM, LEMMA, PARSE, 'Romans 8:28', 'Help me pronounce this word: its syllables and how each sounds']) expect(question).toContain(part);
@@ -172,6 +178,21 @@ describeFeature(feature, ({ Scenario }) => {
       }
       expect(engine.spoken).toHaveLength(4);
       expect(engine.speaking).toBe(false);
+    });
+  });
+
+  Scenario('Sound it out reads the app\'s own syllables when the tutor\'s cut a diphthong in two', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with word help behind a fake Postern that holds its answers and a phone that speaks Greek', () => open((f) => void (f.autoReply = undefined), true));
+    And('he taps {string} in verse {int}', (_, text: string, verse: number) => tapsWord(text, verse));
+    When('he taps Sound it out on the word sheet', tapsHelp('Sound it out'));
+    Then('the mill received {int} grist for the lampas app, kind bible-talk', (_, count: number) => grists(count)());
+    When('the tutor answers with the syllables {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
+      fake.answer({ status: 'answered', answer: { ...SOUND_HELP_ANSWER, syllables: [a, b, c, d] } });
+    });
+    Then('the Greek syllables {string}, {string} and {string} are spoken one after another in Greek, slowly', async (_, a: string, b: string, c: string) => {
+      const engine = synth as FakeSynth;
+      await waitFor(() => expect(engine.spoken).toHaveLength(4));
+      expect(engine.spoken.slice(1).map((u) => u.text.normalize('NFC'))).toEqual([a, b, c].map((s) => s.normalize('NFC')));
     });
   });
 

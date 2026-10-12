@@ -15,6 +15,7 @@ import type { TutorResource } from '../resources/tutorLinks';
 import { slugOf, type ScreenContext } from '../tutor/screen';
 import type { FormFieldState, FormValue } from '../formHelper/formHelper';
 import { MAX_SUMMARY } from './feedback';
+import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation } from '../speech/pronunciation';
 import { askGrind, type AskOptions } from './tutor';
 
 /** The kind the mill runs the grind under (grinds/bible-talk.json). */
@@ -53,6 +54,8 @@ export interface WordFocus {
   kind: 'grammar' | 'sound' | 'word';
   /** the language of the word when it is not Greek: 'he' for a Hebrew word of an answer (mw-5r3p30.98), whose sound question the grind answers in Hebrew syllables */
   language?: 'he';
+  /** a Greek sound question only (mw-5r3p30.241): the word as the app's pronunciation respells it ('TAF-ta'), added by buildTalkRequest; the tutor describes the sounds by it */
+  respelling?: string;
 }
 
 /** The question the Hebrew guide's Syllables and sounds sends for a Hebrew word of an answer, and the focus that rides with it. */
@@ -179,6 +182,8 @@ export interface TalkRequest {
   quiz_goal_once?: string;
   /** present only while the tutor helps him fill in a form (mw-5r3p30.117, src/formHelper/): the form's name and its fields with what each holds now */
   form?: { name: string; fields: FormFieldState[] };
+  /** the Greek pronunciation the app speaks and respells in (mw-5r3p30.241, src/speech/pronunciation.ts), such as 'modern': a sound is described by it */
+  pronunciation?: GreekPronunciation;
   /** the study resources he has switched on in Settings (mw-5r3p30.123): the only ones the tutor may link; missing in About, whose request is the credits */
   resources?: TutorResource[];
   /** present only when pictures go with the message (mw-y3qno5.1): how many, 1 to 4. They are the grist's attachments; the tutor reads the text in them */
@@ -322,6 +327,12 @@ export function fitHistory(request: TalkRequest): TalkRequest {
   return fitted();
 }
 
+/** A Greek sound question carries the app's respelling of the word, so the tutor explains the sounds by the pronunciation the app speaks, not by its own habit. */
+function withRespelling(focus: TalkFocus, pronunciation: GreekPronunciation): TalkFocus {
+  if (!('form' in focus) || focus.kind !== 'sound' || focus.language) return focus;
+  return { ...focus, respelling: pronunciationOf(pronunciation).respell(focus.form) };
+}
+
 /** The request for what he just said: the verse's or the passage's whole text, or the chapter's first three verses; the last 10 turns, oldest first; the settings as they stand; the word he asked help with, if he did. */
 export function buildTalkRequest(
   scope: TalkScope,
@@ -339,6 +350,7 @@ export function buildTalkRequest(
   pendingOffer?: PendingOffer,
   requests: TutorRequest[] = [],
   learnerProfile?: LearnerProfile,
+  pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION,
 ): TalkRequest {
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   // About (mw-vtjxh4.2) sends the credits, which take most of the record: the credits are the talk, so his words and his grammar stay home
@@ -351,7 +363,8 @@ export function buildTalkRequest(
     history: turns.slice(-MAX_HISTORY_TURNS).map(({ q, a }) => ({ q, a })),
     solid_words: aboutCredits ? [] : solidWords,
     settings,
-    ...(focus ? { focus } : {}),
+    pronunciation,
+    ...(focus ? { focus: withRespelling(focus, pronunciation) } : {}),
     ...(learner ? { learner } : {}),
     ...(learnerGrammar && !aboutCredits ? { learner_grammar: learnerGrammar } : {}),
     ...(learnerProfile && !aboutCredits ? { learner_profile: learnerProfile } : {}),

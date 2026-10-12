@@ -7,10 +7,11 @@ import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { requestsForTutor } from './data/requestsForTutor';
 import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
-import { addTurn, getQuizGoal, getStudyResources, listSolidHeadwords, listStudyWay, listTurns } from './data/repositories';
+import { addTurn, getGreekPronunciation, getQuizGoal, getStudyResources, listSolidHeadwords, listStudyWay, listTurns } from './data/repositories';
 import { resourcesForTutor } from './resources/tutorLinks';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { TutorError } from './services/tutor';
+import { checkedSyllables } from './speech/greekSyllables';
 import { stopAnswer } from './speech/readAloud';
 import { readGo, type GoPlace } from './talk/go';
 import { applyChanges, currentSettings, offeredChange } from './settings/registry';
@@ -64,6 +65,12 @@ function settingOfferOf(answer: TalkAnswer): { key: string; value: string | numb
 function hebrewGuideOf(focus: TalkFocus | undefined, answer: TalkAnswer): HebrewSounds | undefined {
   if (!focus || !('form' in focus) || focus.kind !== 'sound' || focus.language !== 'he' || !answer.syllables?.length) return undefined;
   return { word: focus.form, syllables: answer.syllables, sounds: answer.transliteration ?? [] };
+}
+
+/** The syllables of a Greek word's sound answer as they are read aloud: the tutor's when they spell the word and cut no diphthong, else the app's own cut of the word (mw-5r3p30.241). Hebrew's and every other answer's are left alone. */
+function readableSyllables(focus: TalkFocus | undefined, syllables: string[] | undefined): string[] | undefined {
+  if (!syllables?.length || !focus || !('form' in focus) || focus.kind !== 'sound' || focus.language) return syllables;
+  return checkedSyllables(focus.form, syllables);
 }
 
 /** How the Reader lets an answer take him to a chapter (mw-5r3p30.172): `allowed(ref)` is true while the sheet of that conversation is open, the only time he is
@@ -124,7 +131,7 @@ export function useTalk(
       set({ phase: 'sending', question: text, startedAt });
       void (async () => {
         try {
-          const [turns, solid, settings, learner, grammar, way, chosen, goal, requests, profile] = await Promise.all([
+          const [turns, solid, settings, learner, grammar, way, chosen, goal, requests, profile, pronunciation] = await Promise.all([
             listTurns(ref),
             listSolidHeadwords(),
             currentSettings(),
@@ -135,12 +142,13 @@ export function useTalk(
             scope.quiz ? getQuizGoal() : Promise.resolve(''),
             requestsForTutor().catch(() => []),
             learnerProfile().catch(() => undefined),
+            getGreekPronunciation(),
           ]);
           // an offer still waiting for his tap rides with this message: the grind decides from his words whether it is a yes, a no or a request to hear it
           const waiting = pendingOfferOf(turns);
           // a goal he chose Just this time for earlier in this quiz is sent for this quiz alone
           const once = turns.findLast((t) => t.quizGoalChoice === 'once')?.quizGoalOffer;
-          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile), {
+          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation), {
             key: getDeviceKeyBytes(),
             files: pictures.length ? filesOf(pictures) : undefined,
             signal,
@@ -166,7 +174,7 @@ export function useTalk(
           set(undefined);
           if (signal.aborted) return;
           if (place) going.current?.open(place);
-          else answered.current(ref, id, answer.answer, { focus, syllables: answer.syllables });
+          else answered.current(ref, id, answer.answer, { focus, syllables: readableSyllables(focus, answer.syllables) });
         } catch (err) {
           if (signal.aborted) return;
           const failure = err instanceof TutorError ? err.failure : 'unreachable';
