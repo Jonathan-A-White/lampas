@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.134
+_2026-10-12_
+- Fixed: Sound it out now explains Greek sounds the modern way (αυ is "af" or "av", not "aw") and never splits a vowel pair.
+
 ## 0.1.133
 _2026-10-12_
 - New: A new lesson, Movable letters, teaches the little letter changes in Greek (the ν that comes and goes, οὐ/οὐκ/οὐχ, ἐκ/ἐξ), and the ending questions now show that ν in brackets.
