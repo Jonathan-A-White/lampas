@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.111
+_2026-10-12_
+- Fixed: Telling the tutor to send a request to the makers, by tapping or by saying yes at the same moment, now sends it only once.
+
 ## 0.1.110
 _2026-10-11_
 - New: Your requests shows what became of each idea you sent (filed, being built, adopted in a version with a link, declined with a reason, or now a setting), and the tutor can tell you too.

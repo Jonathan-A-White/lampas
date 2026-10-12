@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.111",
+    "date": "2026-10-12",
+    "story": "mw-5r3p30.209",
+    "kind": "fixed",
+    "text": "Telling the tutor to send a request to the makers, by tapping or by saying yes at the same moment, now sends it only once."
+  },
+  {
     "version": "0.1.110",
     "date": "2026-10-11",
     "story": "mw-vy3ghg.7",
