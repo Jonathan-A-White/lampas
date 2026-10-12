@@ -50,7 +50,7 @@ npm run grind:build  # writes the settings the bible-talk grind may change (sett
                      #   run it after adding a setting to the registry; tests/unit/bible-talk-grind.test.ts fails when grinds/ is behind it
 npm run check:step   # asks STEPBible what each Strong's link finds (G1722, G3361, G2424 and Romans 8's 20 commonest lemmas; `-- G25 ...` or `-- --all`); network, not in the gate; docs/resources.md
 npm run greek:edition # compares the MSB table's Greek with Robinson-Pierpont 2018 and 2005 (byztxt/byzantine-majority-text on GitHub) and rewrites docs/greek-edition.md (the verdict, counts by kind, examples; network; not in the gate; the Preface's edition line, src/preface.ts PREFACE_EDITION_LINE, is held to its verdict by tests/unit/greek-edition.test.ts)
-npm run ladder       # scripts/ladder-el.ts scores every verse for how hard it is to PRONOUNCE and writes public/data/ladder/el.json, easiest first (docs/reading-ladder.md; the output is committed, a second run changes nothing, data:build leaves ladder/ alone; its weights are a first guess)
+npm run ladder       # scripts/ladder-el.ts scores every verse for how hard it is to PRONOUNCE and writes public/data/ladder/el.json, easiest first; scripts/ladder-en.ts does the same for the English as the Reader shows it (en.json, its own list) (docs/reading-ladder.md; the output is committed, a second run changes nothing, data:build leaves ladder/ alone; its weights are a first guess)
 npm run data:build   # data/raw (git-ignored, downloaded if absent) -> public/data/<book>/<chapter>.json + index.json + lexicon.json + frequency.json;
                      #   the output is committed and a second run changes nothing (docs/data.md)
 ```
