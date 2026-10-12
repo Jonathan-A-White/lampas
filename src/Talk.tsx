@@ -14,7 +14,7 @@ import { Markdown } from './markdown/Markdown';
 import { openedByTutor } from './nav/readerRequest';
 import { TutorLinks } from './TutorLinks';
 import { offeredChange, settingOf, undoChange, type AppliedChange } from './settings/registry';
-import { sendMakersOffer, takeSettingOffer } from './talk/offers';
+import { sendMakersOffer, takeSettingOffer, useOfferSending } from './talk/offers';
 import { hebrewSoundAsk, MAX_TALK_CHARS, scopeTitle, type TalkFocus, type TalkScope } from './services/talk';
 import { HebrewSoundGuide } from './script/HebrewGuide';
 import { HebrewAskContext } from './script/hebrewSpeech';
@@ -268,17 +268,18 @@ function QuizGoalOffer({ turn }: { turn: TalkTurn }) {
 /** The tutor's offer to pass an ask Lampas cannot meet to the makers: its summary and Send this to the makers. The tap sends one feedback grist
  * through the one sender (src/services/feedback.ts): his words, the summary, the screen's name and what it showed; then the turn reads Sent. */
 function FeedbackOffer({ turn, scope }: { turn: TalkTurn; scope: TalkScope }) {
-  const [phase, setPhase] = useState<{ name: 'idle' } | { name: 'sending' } | { name: 'failed'; failure: TutorFailure; detail: string }>({ name: 'idle' });
+  const [failure, setFailure] = useState<{ failure: TutorFailure; detail: string } | undefined>();
+  const sending = useOfferSending(turn.id);
   if (!turn.feedbackOffer) return null;
   const summary = turn.feedbackOffer;
   const send = async (): Promise<void> => {
-    if (phase.name === 'sending' || turn.id === undefined) return;
-    setPhase({ name: 'sending' });
+    if (sending || turn.id === undefined) return;
+    setFailure(undefined);
     try {
       await sendMakersOffer(turn, scope);
     } catch (err) {
       const error = err instanceof TutorError ? err : new TutorError('unreachable', err instanceof Error ? err.message : 'Something went wrong.');
-      setPhase({ name: 'failed', failure: error.failure, detail: error.message });
+      setFailure({ failure: error.failure, detail: error.message });
     }
   };
   return (
@@ -294,24 +295,24 @@ function FeedbackOffer({ turn, scope }: { turn: TalkTurn; scope: TalkScope }) {
         <p className="min-h-11 py-2 text-base font-medium text-muted">Not sent</p>
       ) : (
         <>
-          {phase.name === 'failed' ? (
+          {failure && !sending ? (
             <div role="alert" className="space-y-1 pt-1">
-              <p className="text-base font-semibold text-bad">{FAILURE_TITLES[phase.failure]}</p>
-              <p className="break-words text-sm text-muted">{phase.detail}</p>
+              <p className="text-base font-semibold text-bad">{FAILURE_TITLES[failure.failure]}</p>
+              <p className="break-words text-sm text-muted">{failure.detail}</p>
             </div>
           ) : null}
-          {phase.name === 'sending' ? (
+          {sending ? (
             <p role="status" className="py-1 text-base text-muted">
               Sending…
             </p>
           ) : null}
           <button
             type="button"
-            disabled={phase.name === 'sending'}
+            disabled={sending}
             onClick={() => void send()}
             className="mt-1 min-h-11 rounded-lg border border-accent px-4 text-base font-medium text-accent active:bg-line disabled:opacity-40"
           >
-            {phase.name === 'failed' ? 'Retry' : 'Send this to the makers'}
+            {failure ? 'Retry' : 'Send this to the makers'}
           </button>
         </>
       )}

@@ -41,6 +41,7 @@ const SENT_REPLY = 'Done: I have sent that to the makers.';
 const READ_BACK_REPLY = `Here is exactly what I will send: ${SUMMARY} Shall I send it?`;
 let fake: FakePostern;
 let synth: FakeSynth;
+let releaseFeedback: () => void = () => {};
 
 async function openWith(offer: Record<string, unknown>): Promise<void> {
   cleanup();
@@ -55,6 +56,7 @@ async function openWith(offer: Record<string, unknown>): Promise<void> {
   synth = stubSpeech([ENGLISH_VOICE]);
   fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: offer };
+  releaseFeedback = () => {};
   fake.kindReplies.feedback = { status: 'answered', answer: { status: 'sent' } };
   stubChapterFetch();
   const chapterFetch = globalThis.fetch;
@@ -131,6 +133,82 @@ describeFeature(feature, ({ Scenario }) => {
       await turnsShown(2);
       expect(within(turn(2)).getByText(SENT_REPLY)).toBeInTheDocument();
     });
+  });
+
+  const slowMill = () => {
+    fake.holds.feedback = new Promise<void>((resolve) => {
+      releaseFeedback = resolve;
+    });
+  };
+  const tapsSend = async () => {
+    await user.click(await within(sheet()).findByRole('button', { name: SEND }));
+  };
+  const sendingOff = async () => {
+    await waitFor(() => expect(feedbackGrists()).toHaveLength(1));
+    await waitFor(() => expect(within(turn(1)).getByRole('button', { name: SEND })).toBeDisabled());
+    expect(within(turn(1)).getByText('Sending…')).toBeInTheDocument();
+  };
+  const exactlyOneFeedback = async () => {
+    await allAnswered();
+    expect(feedbackGrists()).toHaveLength(1);
+  };
+  const yesAnswerShown = async () => {
+    await turnsShown(2);
+    expect(within(turn(2)).getByText(SENT_REPLY)).toBeInTheDocument();
+  };
+
+  Scenario('A tap and a spoken yes send once', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', opensFeedback);
+    When('he taps the Ask the tutor control', taps);
+    And('he sends {string}', sends);
+    Then('the answer shows the button {string}', offerShown);
+    When('the mill is slow to take the feedback', slowMill);
+    And('he taps Send this to the makers', tapsSend);
+    Then('the mill has the feedback grist and the button is off while it is sending', sendingOff);
+    When('the tutor will take his next words as a yes', nextIsYes);
+    And('he says {string}', async (_, words: string) => {
+      await send(words);
+      // the yes is answered (its grist reached the mill) while the tap is still sending
+      await waitFor(() => expect(talkGrists()).toHaveLength(2));
+      await new Promise((resolve) => setTimeout(resolve, 150));
+    });
+    And('the mill takes the feedback', () => releaseFeedback());
+    Then('the mill received exactly {int} feedback grist', exactlyOneFeedback);
+    And('the first turn shows {string} and no button {string}', firstTurnSent);
+    And("the tutor's answer to the yes is shown", yesAnswerShown);
+  });
+
+  Scenario('A spoken yes and a tap send once', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', opensFeedback);
+    When('he taps the Ask the tutor control', taps);
+    And('he sends {string}', sends);
+    Then('the answer shows the button {string}', offerShown);
+    When('the mill is slow to take the feedback', slowMill);
+    And('the tutor will take his next words as a yes', nextIsYes);
+    And('he says {string}', sends);
+    Then('the mill has the feedback grist and the button is off while it is sending', sendingOff);
+    When('he taps the disabled Send this to the makers', async () => {
+      await user.click(within(turn(1)).getByRole('button', { name: SEND }));
+    });
+    And('the mill takes the feedback', () => releaseFeedback());
+    Then('the mill received exactly {int} feedback grist', exactlyOneFeedback);
+    And('the first turn shows {string} and no button {string}', firstTurnSent);
+    And("the tutor's answer to the yes is shown", yesAnswerShown);
+  });
+
+  Scenario('Two taps in a row on the button send once', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', opensFeedback);
+    When('he taps the Ask the tutor control', taps);
+    And('he sends {string}', sends);
+    Then('the answer shows the button {string}', offerShown);
+    When('the mill is slow to take the feedback', slowMill);
+    And('he taps Send this to the makers', tapsSend);
+    And('he taps the disabled Send this to the makers', async () => {
+      await user.click(within(turn(1)).getByRole('button', { name: SEND }));
+    });
+    And('the mill takes the feedback', () => releaseFeedback());
+    Then('the mill received exactly {int} feedback grist', exactlyOneFeedback);
+    And('the first turn shows {string} and no button {string}', firstTurnSent);
   });
 
   Scenario('Read it back speaks the exact text, keeps the offer, and a following yes sends it', ({ Given, When, And, Then }) => {

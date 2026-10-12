@@ -83,3 +83,45 @@ Feature: He can answer an offer by voice instead of tapping
     And he taps Change Theme: Dark
     Then the Theme is Dark
     And the mill received 1 bible-talk grist
+
+  Scenario: A tap and a spoken yes send once
+    Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
+    When he taps the Ask the tutor control
+    And he sends "Can this work with Olive Tree?"
+    Then the answer shows the button "Send this to the makers"
+    When the mill is slow to take the feedback
+    And he taps Send this to the makers
+    Then the mill has the feedback grist and the button is off while it is sending
+    When the tutor will take his next words as a yes
+    And he says "yes send it"
+    And the mill takes the feedback
+    Then the mill received exactly 1 feedback grist
+    And the first turn shows "Sent" and no button "Send this to the makers"
+    And the tutor's answer to the yes is shown
+
+  Scenario: A spoken yes and a tap send once
+    Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
+    When he taps the Ask the tutor control
+    And he sends "Can this work with Olive Tree?"
+    Then the answer shows the button "Send this to the makers"
+    When the mill is slow to take the feedback
+    And the tutor will take his next words as a yes
+    And he says "yes send it"
+    Then the mill has the feedback grist and the button is off while it is sending
+    When he taps the disabled Send this to the makers
+    And the mill takes the feedback
+    Then the mill received exactly 1 feedback grist
+    And the first turn shows "Sent" and no button "Send this to the makers"
+    And the tutor's answer to the yes is shown
+
+  Scenario: Two taps in a row on the button send once
+    Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
+    When he taps the Ask the tutor control
+    And he sends "Can this work with Olive Tree?"
+    Then the answer shows the button "Send this to the makers"
+    When the mill is slow to take the feedback
+    And he taps Send this to the makers
+    And he taps the disabled Send this to the makers
+    And the mill takes the feedback
+    Then the mill received exactly 1 feedback grist
+    And the first turn shows "Sent" and no button "Send this to the makers"

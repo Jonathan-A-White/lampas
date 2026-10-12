@@ -1,6 +1,7 @@
 // src/talk/offers.ts — the offers a tutor answer holds for his tap (Send this to the makers, a setting change, the quiz goal) and what his
 // spoken or typed yes, no or 'read it back' does to the newest one (mw-5r3p30.186). The decision is the grind's (`offer_reply` in the answer);
 // the app only carries the offer to it (`pending_offer`) and does exactly what the tap does when the reply is confirm.
+import { useSyncExternalStore } from 'react';
 import { markFeedbackSent, markFeedbackWithdrawn, markQuizGoalChoice, markSettingChoice, setQuizGoal, type TalkTurn } from '../data/repositories';
 import { buildTutorAskRequest, submitFeedback } from '../services/feedback';
 import { scopeTitle, type OfferReply, type PendingOffer, type TalkScope } from '../services/talk';
@@ -26,13 +27,46 @@ export function pendingOfferOf(turns: readonly TalkTurn[]): { turn: TalkTurn; of
   return undefined;
 }
 
-/** Sends the turn's feedback offer through the one sender and marks it Sent. Shared by the button's tap and a spoken yes. Throws a TutorError. */
-export async function sendMakersOffer(turn: TalkTurn, scope: TalkScope): Promise<void> {
-  if (!turn.feedbackOffer || turn.id === undefined) return;
-  await submitFeedback(
-    buildTutorAskRequest({ text: turn.q, summary: turn.feedbackOffer, screen: scope.screen?.name ?? 'Reader', reference: scopeTitle(scope), facts: scope.screen?.facts }),
-  );
-  await markFeedbackSent(turn.id);
+/** The turns whose feedback offer is being sent right now, by either path (the tap or a spoken yes), with the one send each. Module state, not a component's,
+ * because the two paths do not know of each other (mw-5r3p30.209). */
+const sending = new Map<number, Promise<void>>();
+const sendingListeners = new Set<() => void>();
+let sendingTurns: readonly number[] = [];
+function sendingChanged(): void {
+  sendingTurns = Array.from(sending.keys());
+  sendingListeners.forEach((listener) => listener());
+}
+const subscribeSending = (listener: () => void): (() => void) => {
+  sendingListeners.add(listener);
+  return () => sendingListeners.delete(listener);
+};
+
+/** True while the turn's feedback offer is being sent, by his tap or his spoken yes: its button is then off. */
+export function useOfferSending(turnId: number | undefined): boolean {
+  const turns = useSyncExternalStore(subscribeSending, () => sendingTurns);
+  return turnId !== undefined && turns.includes(turnId);
+}
+
+/** Sends the turn's feedback offer through the one sender and marks it Sent. Shared by the button's tap and a spoken yes. Throws a TutorError.
+ * A second call for the same turn while the first is in flight joins it: one grist, and both callers see how it ended. */
+export function sendMakersOffer(turn: TalkTurn, scope: TalkScope): Promise<void> {
+  const id = turn.id;
+  if (!turn.feedbackOffer || id === undefined) return Promise.resolve();
+  const running = sending.get(id);
+  if (running) return running;
+  const summary = turn.feedbackOffer;
+  const send = (async () => {
+    await submitFeedback(
+      buildTutorAskRequest({ text: turn.q, summary, screen: scope.screen?.name ?? 'Reader', reference: scopeTitle(scope), facts: scope.screen?.facts }),
+    );
+    await markFeedbackSent(id);
+  })().finally(() => {
+    sending.delete(id);
+    sendingChanged();
+  });
+  sending.set(id, send);
+  sendingChanged();
+  return send;
 }
 
 /** Makes the offered setting change as a tap on its button would: the registry checks and writes it, and the offer is taken only when it was applied. */

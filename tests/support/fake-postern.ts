@@ -43,6 +43,8 @@ export interface FakePostern {
   greekReply: Reply | undefined;
   /** What a grist of a given kind is answered with instead of `autoReply` (a forwarding grind such as 'feedback' answers {status:'sent'} while the tutor answers a talk). */
   kindReplies: Record<string, Reply>;
+  /** A grist of a given kind is held: the fake takes it in but its POST does not return until this promise settles (a slow mill or phone on slow data). */
+  holds: Record<string, Promise<void>>;
   /** Refuse every signed call as a backend does a key with no licence. */
   licensed: boolean;
   /** Make every call fail as an unreachable backend does (fetch rejects with a TypeError). */
@@ -164,6 +166,7 @@ export function makeFakePostern(): FakePostern {
     autoReply: undefined,
     greekReply: undefined,
     kindReplies: {},
+    holds: {},
     licensed: true,
     down: false,
     sinces: [],
@@ -232,6 +235,8 @@ export function makeFakePostern(): FakePostern {
       const byKind = fake.kindReplies[opened.grist.kind];
       if (byKind) fake.answer(byKind);
       else if (fake.autoReply) fake.answer(greek && fake.greekReply ? fake.greekReply : fake.autoReply);
+      const held = fake.holds[opened.grist.kind];
+      if (held) await held;
       return json(201, { txid, seq: records.length });
     }
     if (url.pathname === '/api/messages' && method === 'GET') {
