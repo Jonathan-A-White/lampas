@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.127
+_2026-10-12_
+- New: Settings now has an "About you" page where you can tell the tutor your age, pace, how you learn best, your background and why you are learning Greek, so its answers meet you where you are.
+
 ## 0.1.126
 _2026-10-12_
 - New: Read it aloud now has a Reading ladder that starts at the easiest verse to pronounce, keeps your place separately for Greek and English, and offers the next verse after a good reading.
