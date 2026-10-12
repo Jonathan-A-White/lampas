@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.136
+_2026-10-12_
+- Fixed: Holding a one-letter Greek word such as Ὃ or ὁ now says its sound instead of the letter's name.
+
 ## 0.1.135
 _2026-10-12_
 - Fixed: The lessons on pairs of vowels, pairs of consonants and breathings now give each sound an English example word (e as in pet) and say they follow Modern Greek.
