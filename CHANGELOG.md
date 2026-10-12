@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.143
+_2026-10-12_
+- New: The grammar lessons now teach each common preposition one by one, with its meaning for each case and a real verse, and a lesson on verbs built from a preposition.
+
 ## 0.1.142
 _2026-10-12_
 - Fixed: Learn next on the Goal screen now names the same gaps as the end card and Review, such as the rough breathing, and shows them even when no goal is set.
