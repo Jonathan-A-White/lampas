@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.138",
+    "date": "2026-10-12",
+    "story": "mw-5r3p30.244",
+    "kind": "new",
+    "text": "Greek words you say out loud to the tutor are now matched to the words of the verse, and the tutor tells you which word it took."
+  },
+  {
     "version": "0.1.136",
     "date": "2026-10-12",
     "story": "mw-5r3p30.256",

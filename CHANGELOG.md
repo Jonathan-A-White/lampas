@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.138
+_2026-10-12_
+- New: Greek words you say out loud to the tutor are now matched to the words of the verse, and the tutor tells you which word it took.
+
 ## 0.1.136
 _2026-10-12_
 - Fixed: Holding a one-letter Greek word such as Ὃ or ὁ now says its sound instead of the letter's name.
