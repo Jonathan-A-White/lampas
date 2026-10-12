@@ -551,18 +551,28 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
     align();
     if (!newest.querySelector('[data-quiz-goal-buttons]') || typeof ResizeObserver === 'undefined') return;
     // The sheet and the answer settle for a moment after they draw: keep the offer in view until they have, or until he scrolls himself.
-    const watch = new ResizeObserver(align);
-    watch.observe(box);
-    watch.observe(newest);
-    const stop = () => watch.disconnect();
-    const timer = window.setTimeout(stop, 1500);
-    box.addEventListener('wheel', stop, { once: true });
-    box.addEventListener('touchstart', stop, { once: true });
+    const settle = new ResizeObserver(align);
+    settle.observe(box);
+    settle.observe(newest);
+    const stopSettling = () => settle.disconnect();
+    const timer = window.setTimeout(stopSettling, 1500);
+    box.addEventListener('wheel', stopSettling, { once: true });
+    box.addEventListener('touchstart', stopSettling, { once: true });
+    // For as long as the offer waits for his choice, a change in the box's height (the phone turned, the keyboard, the microphone line) brings it
+    // back into view (mw-5r3p30.211). Only the box's own height: the answer growing under his reading must not take the scroll from him.
+    let height = box.clientHeight;
+    const follow = new ResizeObserver(() => {
+      if (box.clientHeight === height) return;
+      height = box.clientHeight;
+      if (newest.querySelector('[data-quiz-goal-buttons]')) align();
+    });
+    follow.observe(box);
     return () => {
       window.clearTimeout(timer);
-      box.removeEventListener('wheel', stop);
-      box.removeEventListener('touchstart', stop);
-      stop();
+      box.removeEventListener('wheel', stopSettling);
+      box.removeEventListener('touchstart', stopSettling);
+      stopSettling();
+      follow.disconnect();
     };
   }, [turnCount, state?.phase, waiting]);
   // Closing the sheet takes its answer's speech with it.
