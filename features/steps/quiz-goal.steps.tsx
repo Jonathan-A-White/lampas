@@ -16,6 +16,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, QUIZ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { instructionsOf } from '../../tests/support/learner';
+import { offerSettled } from '../../tests/support/settled-offer';
 
 afterAll(() => {
   cleanup();
@@ -201,10 +202,7 @@ describeFeature(feature, ({ Scenario }) => {
       await offerShown();
       await user.click(within(offer()).getByRole('button', { name, exact: true }));
     });
-    Then('the offer says {string} and has no buttons', async (_, shown: string) => {
-      await waitFor(() => expect(offer()).toHaveTextContent(shown));
-      expect(within(offer()).queryAllByRole('button')).toHaveLength(0);
-    });
+    Then('the offer says {string} and has no buttons', (_, shown: string) => offerSettled(offer, shown));
     And('the phone keeps the quiz goal {string}', keptIs);
     When('he sends {string} in the quiz', send);
     Then('the mill received {int} grists', grists);
@@ -228,10 +226,7 @@ describeFeature(feature, ({ Scenario }) => {
       await offerShown();
       await user.click(within(offer()).getByRole('button', { name, exact: true }));
     });
-    Then('the offer says {string} and has no buttons', async (_, shown: string) => {
-      await waitFor(() => expect(offer()).toHaveTextContent(shown));
-      expect(within(offer()).queryAllByRole('button')).toHaveLength(0);
-    });
+    Then('the offer says {string} and has no buttons', (_, shown: string) => offerSettled(offer, shown));
     And('no quiz goal is kept on the phone', nothingKept);
     When('he sends {string} in the quiz', send);
     Then('the mill received {int} grists', grists);
