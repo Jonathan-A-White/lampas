@@ -127,7 +127,7 @@ test('the Goal screen: two bars that fit, the lists, Learn next, Next words and 
   await expectThumbSized(page.getByTestId('learn-next'));
   await expect(page.getByTestId('learn-next')).toHaveText('Learn next: The singular · Your first words');
   await expect(page.getByTestId('words-legend')).toHaveText(/^Solid \d+ · Frontier \d+ · Not yet \d+$/);
-  await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 8 · Frontier 1 · Not yet 26');
+  await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 8 · Frontier 1 · Not yet 28');
   await expect(page.getByText('Solid when both are full.')).toBeVisible();
   for (const bar of ['words-bar', 'ideas-bar']) {
     const box = await page.getByTestId(bar).boundingBox();
@@ -152,7 +152,7 @@ test('the Goal screen: two bars that fit, the lists, Learn next, Next words and 
   await expect(sheet.getByRole('heading', { name: 'The singular' })).toBeVisible();
   await sheet.getByRole('button', { name: 'Got it' }).click();
   await sheet.getByRole('button', { name: 'Done' }).click();
-  await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 8 · Frontier 2 · Not yet 25');
+  await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 8 · Frontier 2 · Not yet 27');
 
   // a reload keeps the screen
   await page.reload();
