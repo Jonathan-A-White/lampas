@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.128
+_2026-10-12_
+- Fixed: the "Which idea is this?" grammar question no longer gives away its own answer.
+
 ## 0.1.127
 _2026-10-12_
 - New: Settings now has an "About you" page where you can tell the tutor your age, pace, how you learn best, your background and why you are learning Greek, so its answers meet you where you are.

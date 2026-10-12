@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.128",
+    "date": "2026-10-12",
+    "story": "mw-86e9r1.3",
+    "kind": "fixed",
+    "text": "the \"Which idea is this?\" grammar question no longer gives away its own answer."
+  },
+  {
     "version": "0.1.127",
     "date": "2026-10-12",
     "story": "mw-1vuvq6.1",
