@@ -25,3 +25,12 @@ Feature: A new build waits for his tap and then loads once
     Then it has looked for an update twice
     When 30 minutes pass
     Then it has looked for an update 3 times
+
+  Scenario: A build with nothing new to show waits for the app to be hidden, then takes over by itself
+    Given Lampas is open on a phone and a newer build with nothing new to show is found waiting
+    Then there is no update banner
+    And the waiting worker has not been told to take over
+    When the phone puts Lampas in the background
+    Then the waiting worker is sent SKIP_WAITING
+    When the new worker takes control twice over
+    Then the page has reloaded exactly once

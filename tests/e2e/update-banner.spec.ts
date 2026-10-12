@@ -2,14 +2,25 @@
 // behind the one in control, the banner says 'Update ready, tap to reload', and one tap on it makes the
 // new worker take over and the page reload once. The "newer build" is the built sw.js served with one
 // more comment line, so the browser sees changed bytes and installs it.
+import { readFileSync } from 'node:fs';
 import { test, expect, type Request } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
 test.use({ serviceWorkers: 'allow' });
 
+// the waiting build's changelog (the server's, fetched fresh): with a line after the running version it is worth a banner
+const running = (JSON.parse(readFileSync('package.json', 'utf8')) as { version: string }).version;
+const parts = running.split('.');
+parts[parts.length - 1] = String(Number(parts[parts.length - 1]) + 1);
+const waitingVersion = parts.join('.');
+const entry = (version: string) => ({ version, date: '2026-10-12', story: 'fx-1', kind: 'new', text: 'Something to see.' });
+const withLine = [entry(waitingVersion), entry(running)];
+const noLine = [entry(running)];
+
 test('a newer build waits, the banner shows, one tap loads it and the page reloads once', async ({ page, context }) => {
   let build = 1;
+  await page.route('**/changelog.json', (route) => route.fulfill({ json: withLine, headers: { 'cache-control': 'no-store' } }));
   await context.route('**/sw.js', async (route) => {
     const response = await route.fetch();
     await route.fulfill({ response, body: `${await response.text()}\n// build ${build}\n`, headers: { ...response.headers(), 'cache-control': 'no-store' } });
@@ -55,4 +66,42 @@ test('a newer build waits, the banner shows, one tap loads it and the page reloa
   expect(navigations.length).toBe(before + 1);
   const scripts = await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.active?.scriptURL);
   expect(scripts).toContain('/sw.js');
+});
+
+test('a newer build with nothing to show gets no banner, and takes over by itself only when the app is hidden', async ({ page, context }) => {
+  let build = 1;
+  await page.route('**/changelog.json', (route) => route.fulfill({ json: noLine, headers: { 'cache-control': 'no-store' } }));
+  await context.route('**/sw.js', async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, body: `${await response.text()}\n// build ${build}\n`, headers: { ...response.headers(), 'cache-control': 'no-store' } });
+  });
+  const navigations: string[] = [];
+  page.on('framenavigated', (frame) => frame.parentFrame() === null && navigations.push(frame.url()));
+
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.getByTestId('build-version')).toBeAttached();
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
+  await expect.poll(() => page.evaluate(() => navigator.serviceWorker.controller !== null)).toBe(true);
+
+  // A newer build is up and waits; he is using the app, so nothing is offered and nothing is applied.
+  build = 2;
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  await expect
+    .poll(() => page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.waiting !== null), { timeout: 20_000 })
+    .toBe(true);
+  await page.waitForTimeout(1500);
+  await expect(page.getByRole('button', { name: 'Update ready, tap to reload' })).toHaveCount(0);
+  const before = navigations.length;
+  expect(await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.waiting !== null)).toBe(true);
+
+  // The app goes to the background: the build takes over and the page reloads, out of his sight.
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await expect.poll(() => navigations.length, { timeout: 20_000 }).toBeGreaterThan(before);
+  await expect(page.getByRole('button', { name: 'Update ready, tap to reload' })).toHaveCount(0);
 });

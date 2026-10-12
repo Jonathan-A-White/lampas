@@ -5,7 +5,11 @@
 // page, or another tab's update, never reloads this one. The app also asks the browser whether there is
 // a new build on start, on return to the foreground and every 30 minutes, so a phone that keeps
 // Postern open for days still finds out.
+// A waiting build with nothing new to show him (the changelog has no entry after the running version, mw-5r3p30.236)
+// is never offered: no banner, and it takes over by itself, at start-up or when the app is hidden, never while he
+// uses it; the page then reloads (hidden, or at start-up). When the changelog cannot be read the banner shows as usual.
 import { useSyncExternalStore } from 'react';
+import { summarise, type ChangelogEntry } from 'bsv-kit/whats-new';
 
 /** How often a running app asks whether a newer build is up. */
 export const UPDATE_CHECK_EVERY_MS = 30 * 60_000;
@@ -34,6 +38,9 @@ export interface UpdateRegistration {
   addEventListener(type: 'updatefound', listener: () => void): void;
   removeEventListener(type: 'updatefound', listener: () => void): void;
 }
+
+/** Reads the waiting build's changelog (src/whatsNew/useAppChangelog.ts asks the server fresh); rejects when it cannot. */
+export type ReadChangelog = () => Promise<ChangelogEntry[] | null>;
 
 export interface AppUpdates {
   /** Tells the waiting worker to take over; the page reloads once it has. */
@@ -64,23 +71,75 @@ export function useUpdateState(): UpdateState {
   );
 }
 
+/** The state now, for code that is not a component. */
+export function getUpdateState(): UpdateState {
+  return state;
+}
+
 /** The tap on the banner. */
 export function applyUpdate(): void {
   active?.apply();
 }
 
 /** Watches `registration` for a waiting worker and looks for a newer build now, on return to the foreground and every 30 minutes. */
-export function startAppUpdates(deps: { container: UpdateContainer; registration: UpdateRegistration; reload: () => void }): AppUpdates {
-  const { container, registration, reload } = deps;
+export function startAppUpdates(deps: {
+  container: UpdateContainer;
+  registration: UpdateRegistration;
+  reload: () => void;
+  /** Without it a waiting build is always offered. */
+  changelog?: ReadChangelog;
+  /** The running build's plain version: an entry after it is something new to show. */
+  version?: string;
+}): AppUpdates {
+  const { container, registration, reload, changelog, version } = deps;
   active?.stop();
   let asked = false;
   let patience: ReturnType<typeof setTimeout> | undefined;
+  let stopped = false;
+  // A build with nothing to show: the worker that is to take over quietly, and whether the page reloads when it has.
+  let quiet: WorkerLike | undefined;
+  let quietAsked: 'start-up' | 'hidden' | undefined;
+  // The worker whose changelog is being read or was read.
+  let judged: WorkerLike | undefined;
+  const atStart = registration.waiting;
+
+  const hidden = () => document.visibilityState === 'hidden';
+
+  const takeOverQuietly = () => {
+    const worker = quiet;
+    if (!worker || registration.waiting !== worker) return;
+    // At start-up (the worker was already waiting when the app opened) or hidden: never while he uses it.
+    if (worker !== atStart && !hidden()) return;
+    quiet = undefined;
+    quietAsked = worker === atStart ? 'start-up' : 'hidden';
+    worker.postMessage({ type: 'SKIP_WAITING' });
+  };
+
+  const offer = () => {
+    if (state === 'none') setState('ready');
+  };
+
+  const judge = (worker: WorkerLike) => {
+    if (judged === worker) return;
+    judged = worker;
+    if (!changelog || !version) return offer();
+    changelog().then(
+      (entries) => {
+        if (stopped || registration.waiting !== worker) return;
+        if (!entries || summarise(entries, version)) return offer();
+        quiet = worker;
+        takeOverQuietly();
+      },
+      () => {
+        if (!stopped && registration.waiting === worker) offer();
+      },
+    );
+  };
 
   const syncWaiting = () => {
     // The first worker ever has nothing to wait behind: it activates, and claims the page.
-    if (registration.waiting && container.controller) {
-      if (state === 'none') setState('ready');
-    } else if (!asked) setState('none');
+    if (registration.waiting && container.controller) judge(registration.waiting);
+    else if (!asked) setState('none');
   };
 
   const onFound = () => {
@@ -92,6 +151,13 @@ export function startAppUpdates(deps: { container: UpdateContainer; registration
   };
 
   const onControllerChange = () => {
+    if (quietAsked) {
+      // a quiet take-over reloads only out of his sight: he may have come back since the worker was told
+      const mode = quietAsked;
+      quietAsked = undefined;
+      if (mode === 'start-up' || hidden()) reload();
+      return;
+    }
     if (!asked) return;
     asked = false;
     clearTimeout(patience);
@@ -104,6 +170,7 @@ export function startAppUpdates(deps: { container: UpdateContainer; registration
   };
   const onVisible = () => {
     if (document.visibilityState === 'visible') checkNow();
+    else takeOverQuietly();
   };
 
   registration.addEventListener('updatefound', onFound);
@@ -129,6 +196,7 @@ export function startAppUpdates(deps: { container: UpdateContainer; registration
     },
     checkNow,
     stop() {
+      stopped = true;
       registration.removeEventListener('updatefound', onFound);
       container.removeEventListener('controllerchange', onControllerChange);
       document.removeEventListener('visibilitychange', onVisible);

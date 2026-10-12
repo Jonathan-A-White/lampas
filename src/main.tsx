@@ -5,8 +5,10 @@ import 'bsv-kit/whats-new/styles.css';
 import 'bsv-kit/speech/styles.css';
 import 'bsv-kit/composer/styles.css';
 import { registerSW } from 'virtual:pwa-register';
+import { fetchChangelog } from 'bsv-kit/whats-new';
 import { App } from './App';
 import { restoreAppearance } from './appearance/appearanceSync';
+import { APP_SEMVER } from './config';
 import { ErrorBoundary } from './ErrorBoundary';
 import { Gate } from './gate/Gate';
 import { restoreLastRoute } from './nav/lastRoute';
@@ -39,6 +41,14 @@ createRoot(document.getElementById('root')!).render(
 registerSW({
   immediate: true,
   onRegisteredSW(_url, registration) {
-    if (registration) startAppUpdates({ container: navigator.serviceWorker, registration, reload: () => window.location.reload() });
+    if (registration) {
+      startAppUpdates({
+        container: navigator.serviceWorker,
+        registration,
+        reload: () => window.location.reload(),
+        changelog: () => fetchChangelog(import.meta.env.BASE_URL),
+        version: APP_SEMVER,
+      });
+    }
   },
 });
