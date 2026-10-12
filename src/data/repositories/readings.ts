@@ -15,6 +15,22 @@ export const TALLY_READINGS = 5;
 /** The row a reading is kept in: the verse's own key for English, the verse and the language for any other. */
 export const readingKey = (ref: string, lang: string): string => (lang === 'en' ? ref : `${ref}:${lang}`);
 
+/** How far a reading reached: the index of the last word he read, the verse's word count and, for a partial reading, the word he stopped at. */
+export interface Reach {
+  reached: number;
+  total: number;
+  next?: FixWord;
+}
+
+/** The reach a reading of `total` words has: a partial one as the mill said, a whole one the last word, one that heard nothing -1. */
+export const reachOf = (verdict: VerseReading['verdict'], total: number, partial?: { reached: number; next?: FixWord }): Reach =>
+  verdict === 'partial' && partial
+    ? { reached: Math.min(partial.reached, total - 1), total, ...(partial.next ? { next: partial.next } : {}) }
+    : { reached: verdict === 'incomplete' ? -1 : total - 1, total };
+
+/** Where an earlier reading got to; one kept before the reach existed counts as whole unless it heard nothing. */
+const reachedBefore = (before: ReadingRecord): number => before.reached ?? (before.verdict === 'incomplete' ? -1 : Infinity);
+
 export async function keepVerseReading(
   ref: string,
   verdict: VerseReading['verdict'],
@@ -23,12 +39,31 @@ export async function keepVerseReading(
   lang = 'en',
   now = Date.now(),
   clip?: Clip,
+  reach?: Reach,
 ): Promise<void> {
   await db.transaction('rw', db.readings, db.readingHistory, db.missTally, async () => {
-    await db.readings.put({ ref: readingKey(ref, lang), verdict, words, note, when: now, ...(clip ? { clip } : {}) });
-    await db.readingHistory.add({ ref, lang, verdict, words, at: now });
+    // a partial reading that went past the reading of this verse in this language before it says so
+    const before = reach && verdict === 'partial' ? await lastRecord(ref, lang) : undefined;
+    const further = before !== undefined && reach !== undefined && reach.reached > reachedBefore(before);
+    await db.readings.put({
+      ref: readingKey(ref, lang),
+      verdict,
+      words,
+      note,
+      when: now,
+      ...(reach ? { reached: reach.reached, total: reach.total, ...(reach.next ? { next: reach.next } : {}) } : {}),
+      ...(further ? { further: true as const } : {}),
+      ...(clip ? { clip } : {}),
+    });
+    await db.readingHistory.add({ ref, lang, verdict, words, at: now, ...(reach ? { reached: reach.reached, total: reach.total } : {}) });
     await retally(lang);
   });
+}
+
+/** The latest reading of a verse in `lang` in the history, if any. */
+async function lastRecord(ref: string, lang: string): Promise<ReadingRecord | undefined> {
+  const all = await db.readingHistory.where('ref').equals(ref).filter((r) => r.lang === lang).toArray();
+  return all.sort((a, b) => b.at - a.at || (b.id ?? 0) - (a.id ?? 0))[0];
 }
 
 /** Counts the misses in the last TALLY_READINGS readings in `lang` and replaces that language's rows. */

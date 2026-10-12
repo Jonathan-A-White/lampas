@@ -199,11 +199,19 @@ export interface FixWord {
 export interface VerseReading {
   /** the verse it was read from, the key: 'rom.8.28' for an English reading, 'rom.8.28:el' for one in another language */
   ref: string;
-  verdict: 'well-read' | 'some-to-fix' | 'incomplete';
+  verdict: 'well-read' | 'some-to-fix' | 'partial' | 'incomplete';
   words: FixWord[];
   note: string;
   /** when it arrived (ms since the epoch) */
   when: number;
+  /** how far it reached: the index in the verse's words of the last word he read (a whole reading: the last word, an `incomplete` one: -1); a reading kept before it existed has none */
+  reached?: number;
+  /** the verse's word count when it was read */
+  total?: number;
+  /** a `partial` reading: the word he stopped at, offered as his next word */
+  next?: FixWord;
+  /** a `partial` reading that reached past the reading of the same verse and language before it (true; absent otherwise) */
+  further?: true;
   /** the clip he recorded for this reading (not indexed; a reading kept before it existed has none) */
   clip?: { bytes: ArrayBuffer; mime: string };
 }
@@ -220,6 +228,9 @@ export interface ReadingRecord {
   words: FixWord[];
   /** when it arrived (ms since the epoch) */
   at: number;
+  /** how far it reached and the verse's word count, as on VerseReading; a reading kept before they existed has neither */
+  reached?: number;
+  total?: number;
 }
 
 /**
