@@ -31,6 +31,7 @@ describe('the address', () => {
     expect(routeOf('#/settings')).toBe('settings');
     expect(routeOf('#/share?s=1-abc')).toBe('share');
     expect(routeOf('#/share?talk=rom.8.28')).toBe('share');
+    expect(routeOf('#/unlock')).toBe('unlock');
   });
 
   it('carries the book, chapter, view, weave and verse of the reader', () => {
