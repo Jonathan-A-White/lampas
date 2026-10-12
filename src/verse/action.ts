@@ -22,7 +22,8 @@ export function getVerseAction(): VerseAction {
   }
 }
 
-function keepVerseAction(action: VerseAction): void {
+/** Chooses the action the Verse view opens on next (the Reading ladder, opened from another screen, opens it on Read it aloud). */
+export function setVerseAction(action: VerseAction): void {
   try {
     localStorage.setItem(KEY, action);
   } catch {
@@ -34,7 +35,7 @@ function keepVerseAction(action: VerseAction): void {
 export function useVerseAction(): [VerseAction, (action: VerseAction) => void] {
   const [action, set] = useState<VerseAction>(getVerseAction);
   const choose = useCallback((next: VerseAction) => {
-    keepVerseAction(next);
+    setVerseAction(next);
     set(next);
   }, []);
   return [action, choose];
