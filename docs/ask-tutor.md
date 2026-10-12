@@ -235,6 +235,28 @@ a phone that installed Lampas before this version may need it removed and instal
 - Checks: `features/share-target.feature`, `tests/unit/sw-share.test.ts`, `tests/unit/share-talks.test.ts`, `tests/unit/manifest.test.ts`, and
   `tests/e2e/share-target.spec.ts` (390 px, through the built worker, which that spec lets run; shots `share-target-sheet`, `share-target-talk`).
 
+## About you (mw-1vuvq6.1)
+
+The tutor meets the student where he is, so it is told who he is as well as what he knows. Settings > About you (`#/aboutyou`) keeps a small
+profile on the phone only: age (a number or a band, as he writes it), pace (Quick, Steady or Slow; a second tap clears it), ways of learning
+(any of Hearing, Seeing, Reading, Doing), background and why (his words, 200 characters each) and the notes the tutor has learned (each with the
+day it was learned, edited or removed on the page). Every field is optional, each saves as he types, and Clear empties the whole page.
+
+It is kept in the settings store under `learnerProfile` (`src/data/repositories/profile.ts`) and goes out only as the request's `learner_profile`
+(`src/data/learnerProfile.ts`) on the four tutor grinds: bible-talk (not in About, whose request is the credits), verse-ask, verse-read and tips.
+Only filled fields are sent, the notes as the newest six texts; with nothing filled the field is left out. The four input schemas hold the same
+bounds (`additionalProperties: false`), and each grind's instructions say how to use it ('Meeting him where he is'): pitch the pace and the
+way, never repeat it back, and ask for a missing part at most once a talk, pointing him to Settings > About you.
+
+All four grinds are told the whole student (mw-1vuvq6.2): verse-read (`buildReadingRequest`, sent by `useReadChecks`) and tips (`buildTipRequest`,
+sent by `offerTip`) carry `learner` (the words line) and `learner_grammar` (the same object the talk is sent) beside `learner_profile`, built as
+`useAsks` builds them and left out when they cannot be read. Each grind's instructions pitch the answer to the three: age sets the wording and the
+examples, pace how much comes in one answer, ways of learning the activity offered, background the bridges, and a word or grammar idea he has not
+met is never built on without saying so. `grinds/examples/{bible-talk,verse-ask}/profile-*.json` answer one question for a slow, hands-on learner and
+a quick reader; `tests/unit/tutor-meets-student.test.ts` holds all of it.
+
+The tutor does not yet propose a note on its own; the notes list is there for it (`keepProfileNote`) and for him to edit.
+
 ## Tests
 
 `features/ask-tutor.feature` (the control, the request, the questions, what is kept), `tests/unit/ask-tutor.test.ts`, the `screen` blocks of

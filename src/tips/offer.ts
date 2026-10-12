@@ -2,10 +2,13 @@
 // (summary.ts) and the ids already shown go in a 'tips' grist, sent as the tutor sends one (askGrind); an answer with a tip not shown before is kept
 // (repositories/tips.ts) and the card under the Reader's header (TipCard.tsx) shows it. PROVISIONAL: once a day.
 import { getTips, keepTip, openTip, shownTipIds, dayOf } from '../data/repositories';
+import { learnerGrammar } from '../data/grammar/learnerGrammar';
+import { learnerProfile } from '../data/learnerProfile';
+import { learnerSummary } from '../data/learnerSummary';
 import { getDeviceKeyBytes } from '../services/deviceKey';
 import { askGrind, TutorError } from '../services/tutor';
 import { usageSummary } from './summary';
-import { isTipAnswer, type TipRequest } from './tip';
+import { buildTipRequest, isTipAnswer, type TipRequest } from './tip';
 
 /** The kind the mill runs the grind under (grinds/tips.json). */
 export const TIPS_KIND = 'tips';
@@ -50,8 +53,15 @@ async function offer(options: OfferOptions): Promise<Offered> {
   storage.setItem(TIPS_DAY_KEY, today);
   let sent = false;
   try {
-    const shown = await shownTipIds();
-    const request: TipRequest = { summary: await usageSummary(now), shown };
+    // read together: a second sitting that finds this offer still in flight is given its result (inFlight), so it must not be slow
+    const [shown, summary, profile, learner, grammar] = await Promise.all([
+      shownTipIds(),
+      usageSummary(now),
+      learnerProfile(),
+      learnerSummary(now).catch(() => undefined),
+      learnerGrammar().catch(() => undefined),
+    ]);
+    const request: TipRequest = buildTipRequest(summary, shown, profile, learner, grammar);
     const answer = await askGrind(TIPS_KIND, request, isTipAnswer, { key: options.key ?? getDeviceKeyBytes(), onSent: () => (sent = true) });
     // The grind is told never to repeat an id; if it does, the card is not shown.
     return answer.tip && (await keepTip(answer.tip, now)) ? 'shown' : 'none';

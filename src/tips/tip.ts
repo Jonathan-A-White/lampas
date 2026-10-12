@@ -1,12 +1,30 @@
 // src/tips/tip.ts — the shapes of the 'tips' grind (grinds/tips.*): the request the phone sends and the answer it gets back, and the guard
 // the phone runs on an answer (tests/unit/tips-grind.test.ts holds it equal to the answer schema).
+import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
+import type { LearnerProfile } from '../data/learnerProfile';
 import { SCREENS, type UsageSummary } from './summary';
 
 export interface TipRequest {
   summary: UsageSummary;
   /** the ids of the tips he has been shown, never to be offered again */
   shown: string[];
+  /** who he is as a student (src/data/learnerProfile.ts, Settings > About you): missing when he has filled in nothing */
+  learner_profile?: LearnerProfile;
+  /** where he stands in words, in one line (src/data/learnerSummary.ts), as the Bible talk is sent it */
+  learner?: string;
+  /** where his grammar stands (src/data/grammar/learnerGrammar.ts), as the Bible talk is sent it */
+  learner_grammar?: LearnerGrammar;
 }
+
+/** The request the tips grind is sent: the usage summary, the ids already shown and, when the app has them, who he is as a student and
+ * where his words and grammar stand. */
+export const buildTipRequest = (summary: UsageSummary, shown: string[], learnerProfile?: LearnerProfile, learner?: string, learnerGrammar?: LearnerGrammar): TipRequest => ({
+  summary,
+  shown,
+  ...(learnerProfile ? { learner_profile: learnerProfile } : {}),
+  ...(learner ? { learner } : {}),
+  ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
+});
 
 export interface Tip {
   /** a short slug, 'try-talk': what `shown` remembers */

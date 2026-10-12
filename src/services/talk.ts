@@ -8,6 +8,7 @@ import { STUDY_WAY_LINE_MAX } from '../data/repositories/studyWay';
 import { screenRef, talkRef } from '../data/repositories/talks';
 import type { AnswerLink, AnswerWord } from '../data/db';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
+import type { LearnerProfile } from '../data/learnerProfile';
 import type { TutorRequest } from '../data/requestsForTutor';
 import type { SettingValue } from '../settings/registry';
 import type { TutorResource } from '../resources/tutorLinks';
@@ -166,6 +167,8 @@ export interface TalkRequest {
   learner?: string;
   /** where his grammar stands (src/data/grammar/learnerGrammar.ts): the goal, the counts, the idea titles by level, the suggested move; fitHistory never cuts it */
   learner_grammar?: LearnerGrammar;
+  /** who he is as a student (src/data/learnerProfile.ts, Settings > About you): missing when he has filled in nothing; fitHistory never cuts it */
+  learner_profile?: LearnerProfile;
   /** present only in a quiz (the Verse view's Quiz me, mw-5r3p30.74): the grind then runs the read, quiz, map method on `greek` and `english` */
   mode?: 'quiz';
   /** present only in a quiz and only when he has kept any (My study way, mw-5r3p30.76): the lines of how he wants to be quizzed; they override the default method where they conflict */
@@ -335,6 +338,7 @@ export function buildTalkRequest(
   quizGoal: { kept: string; once?: string } = { kept: '' },
   pendingOffer?: PendingOffer,
   requests: TutorRequest[] = [],
+  learnerProfile?: LearnerProfile,
 ): TalkRequest {
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   // About (mw-vtjxh4.2) sends the credits, which take most of the record: the credits are the talk, so his words and his grammar stay home
@@ -350,6 +354,7 @@ export function buildTalkRequest(
     ...(focus ? { focus } : {}),
     ...(learner ? { learner } : {}),
     ...(learnerGrammar && !aboutCredits ? { learner_grammar: learnerGrammar } : {}),
+    ...(learnerProfile && !aboutCredits ? { learner_profile: learnerProfile } : {}),
     ...(scope.quiz ? { mode: 'quiz' as const } : {}),
     ...(scope.quiz && studyWay.length > 0 ? { study_way: studyWay } : {}),
     ...(scope.quiz ? { quiz_goal: quizGoal.kept === '' ? null : quizGoal.kept } : {}),

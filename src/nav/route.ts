@@ -10,7 +10,7 @@ import { bookOf } from '../data/books';
 import { paradigmById } from '../data/paradigms';
 import type { ReaderView, Weave } from '../data/repositories';
 
-export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'paradigms' | 'placement' | 'goal' | 'studyway' | 'requests' | 'about' | 'preface' | 'essay' | 'settings' | 'share';
+export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'paradigms' | 'placement' | 'goal' | 'studyway' | 'aboutyou' | 'requests' | 'about' | 'preface' | 'essay' | 'settings' | 'share';
 
 /** What the address says about the reader; a key is missing when the address does not say. */
 export interface ReaderAddress {
@@ -55,6 +55,7 @@ export function routeOf(hash: string): Route {
   if (path === '#/placement') return 'placement';
   if (path === '#/goal') return 'goal';
   if (path === '#/studyway') return 'studyway';
+  if (path === '#/aboutyou') return 'aboutyou';
   if (path === '#/requests') return 'requests';
   if (path === '#/about') return 'about';
   if (path === '#/preface') return 'preface';

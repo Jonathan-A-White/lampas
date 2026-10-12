@@ -2,6 +2,8 @@
 // the recording attached, scored by the mill and answered by its verse-read grind (grinds/verse-read.json). The wire work is
 // src/services/tutor.ts's askGrind; this file is the request, the answer's shape and the check the phone runs on it.
 import type { Verse } from '../data/chapter';
+import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
+import type { LearnerProfile } from '../data/learnerProfile';
 import type { Recording } from '../audio/recorder';
 import { extensionOf } from '../audio/recorder';
 import { pronunciationOf } from '../speech/pronunciation';
@@ -26,6 +28,12 @@ export interface VerseReadRequest {
   reference: string;
   target_text: string;
   lang: string;
+  /** who he is as a student (src/data/learnerProfile.ts, Settings > About you): missing when he has filled in nothing */
+  learner_profile?: LearnerProfile;
+  /** where he stands in words, in one line (src/data/learnerSummary.ts), as the Bible talk is sent it */
+  learner?: string;
+  /** where his grammar stands (src/data/grammar/learnerGrammar.ts), as the Bible talk is sent it */
+  learner_grammar?: LearnerGrammar;
 }
 
 /** One word he misread, broken into chunks to say. */
@@ -116,8 +124,15 @@ export const readingText = (verse: Verse, view: ReadingView = 'english'): string
 export const readingLang = (view: ReadingView, pronunciation: unknown): string =>
   view === 'greek' ? pronunciationOf(pronunciation).scoringLang : 'en';
 
-export function buildReadingRequest(reference: string, verse: Verse, view: ReadingView = 'english', lang: string = readingLang(view, undefined)): VerseReadRequest {
-  return { reference, target_text: readingText(verse, view), lang };
+export function buildReadingRequest(reference: string, verse: Verse, view: ReadingView = 'english', lang: string = readingLang(view, undefined), learnerProfile?: LearnerProfile, learner?: string, learnerGrammar?: LearnerGrammar): VerseReadRequest {
+  return {
+    reference,
+    target_text: readingText(verse, view),
+    lang,
+    ...(learnerProfile ? { learner_profile: learnerProfile } : {}),
+    ...(learner ? { learner } : {}),
+    ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
+  };
 }
 
 /** Sends the recording of a verse read aloud and waits for the mill's answer (the verse-read grind). Throws a TutorError. */

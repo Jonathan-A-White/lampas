@@ -72,7 +72,7 @@ beyond `loadChapter`.
 | `sound` | Hold to hear says a letter (`speakWord`), four glyphs | a letter, the alphabet |
 | `stress` | the syllables of a word from the chosen pronunciation's respell, the stressed one right | `accents` |
 | `syllables`, `breathing` | how many syllables; rough or smooth | `syllables`, `breathings` |
-| `concept` | which idea this text is, four titles | only an idea the passage has no form of |
+| `concept` | which idea this text is, four titles; the idea's own title, terms and pronunciation hint are blanked (`___`) from the text | only an idea the passage has no form of |
 
 A word idea draws `ending` or `tap-form` by its first random draw and falls back to the other. Review (`src/review/kinds.ts` GRAMMAR, kind `grammar`, item id the idea id) draws the due ideas before the due words (PROVISIONAL), asks each as multiple choice below `FLASHCARD_STEP` and as a flashcard (the prompt and the form, Show reveals the answer, I knew it / Not yet) from it up, and records through `recordGrammarAnswer`. `grammarRandom(random)` is the random a round's grammar questions use: a test finds the seed that gives the question it needs through it.
 
@@ -85,7 +85,14 @@ A word idea draws `ending` or `tap-form` by its first random draw and falls back
   the settings store, any text `parseGoal` reads): its chapter, its one verse, or the first five chapters of a book goal; with no
   goal, or one that names nothing, the open chapter (`getOpenChapter()`).
 - `ideaExamples(id, chapters, verse?)`: up to three words whose parsing needs the idea (`ideasOf`), one for each lemma, in text
-  order, each with its chapter and verse ('1 John 1:1'). An idea no word has (a letter, the alphabet) shows none.
+  order, each with its chapter and verse ('1 John 1:1'). An idea no word has shows none.
+  **Ideas of spelling** (mw-86e9r1.13: the alphabet, a letter, diphthongs and each pair, consonant pairs, the breathings, accents, iota
+  subscript, syllables, punctuation; `isSpellingIdea`) are found by how a form is spelt (`inference.ts` `foundationSpans`), not by its
+  parsing: up to twelve words (`MAX_FOUNDATION_EXAMPLES`), one for each form, in text order, each with `parts` (the Greek cut into
+  stretches, the letters the idea is about `marked`: the letter, the pair, the vowel that carries the breathing or accent, the iota
+  subscript's letter, each vowel sound for syllables (a word of two or more), the apostrophe or diaeresis for punctuation). The sheet
+  draws a marked part bold, accent-coloured and underlined (`[data-marked]`); the alphabet marks nothing. A verse with none says
+  'No word of <passage> is spelt with this.', never 'has this idea in its parsing'.
 - `paradigmOf(idea, chapters, verse?)`: for a case idea, the article's forms in that case (rows singular, plural; columns
   masculine, feminine, neuter); for a tense idea, the persons of the one verb that fills most cells in a finite mood (rows singular,
   plural; columns 1st, 2nd, 3rd person). A cell the passage lacks is blank (–); `null` for any other idea or no form at all. Forms

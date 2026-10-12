@@ -1,5 +1,40 @@
 [
   {
+    "version": "0.1.132",
+    "date": "2026-10-12",
+    "story": "mw-1vuvq6.2",
+    "kind": "new",
+    "text": "The tutor now knows your words and grammar when it checks your reading and when it offers a tip, and every answer is pitched to what you told it in About you."
+  },
+  {
+    "version": "0.1.131",
+    "date": "2026-10-12",
+    "story": "mw-86e9r1.13",
+    "kind": "new",
+    "text": "The sheet for letters, vowel pairs, breathings and accents now shows words from your verse with the letters it teaches marked."
+  },
+  {
+    "version": "0.1.130",
+    "date": "2026-10-12",
+    "story": "mw-5r3p30.248",
+    "kind": "fixed",
+    "text": "Sound it out now says a one-letter syllable by its sound instead of the letter's name."
+  },
+  {
+    "version": "0.1.128",
+    "date": "2026-10-12",
+    "story": "mw-86e9r1.3",
+    "kind": "fixed",
+    "text": "the \"Which idea is this?\" grammar question no longer gives away its own answer."
+  },
+  {
+    "version": "0.1.127",
+    "date": "2026-10-12",
+    "story": "mw-1vuvq6.1",
+    "kind": "new",
+    "text": "Settings now has an \"About you\" page where you can tell the tutor your age, pace, how you learn best, your background and why you are learning Greek, so its answers meet you where you are."
+  },
+  {
     "version": "0.1.126",
     "date": "2026-10-12",
     "story": "mw-neuq78.4",

@@ -6,11 +6,14 @@ import { type BookIndex, type Chapter, type GreekWord } from '../chapter';
 import { goalText, parseGoal } from '../goal';
 import { splitParse } from '../parseCode';
 import type { OpenChapter } from '../readerChapter';
+import { clustersOf, foundationSpans, isFoundation, type Span } from './inference';
 import { ideasOf, type GrammarIdea } from './ladder';
 
 /** A book goal looks in its first chapters only: every chapter would be a request each. */
 export const MAX_CHAPTERS = 5;
 export const MAX_EXAMPLES = 3;
+/** A foundation idea shows more: a sound or a letter is met in many forms, and each form shows it in a different place (mw-86e9r1.13). */
+export const MAX_FOUNDATION_EXAMPLES = 12;
 
 type ChapterLoader = (book: string, n: number) => Promise<Chapter>;
 
@@ -35,6 +38,12 @@ export async function ideaPassage(goalSaved: string | undefined, open: OpenChapt
   return { title: goalText(goal), chapters: await Promise.all(numbers.map((n) => load(goal.book, n))), verse: goal.verse };
 }
 
+/** A stretch of an example's Greek: `marked` is the part an idea is about (the pair of vowels, the breathing's vowel, the letter). */
+export interface ExamplePart {
+  text: string;
+  marked: boolean;
+}
+
 export interface IdeaExample {
   word: GreekWord;
   /** the chapter it stands in: its parsing and gloss are read from it */
@@ -42,6 +51,8 @@ export interface IdeaExample {
   verse: number;
   /** '1 John 1:1' */
   reference: string;
+  /** the word's Greek in order, the letters the idea is about marked; one unmarked part for a grammar idea */
+  parts: ExamplePart[];
 }
 
 /** Words of `chapters` (the one `verse` of the first, when given), in text order. */
@@ -54,8 +65,56 @@ function* wordsOf(chapters: Chapter[], verse?: number): Generator<{ word: GreekW
   }
 }
 
-/** Up to `max` words of the passage whose parsing needs the idea (ideasOf), one for each lemma, in the order of the text. */
-export function ideaExamples(id: string, chapters: Chapter[], verse?: number, max = MAX_EXAMPLES): IdeaExample[] {
+/** True for an idea about how Greek is spelt and said (the alphabet, a letter, a pair, a breathing, an accent, iota subscript, syllables,
+ * punctuation): its examples are forms with the letters marked, found by their spelling, never by their parsing. */
+export const isSpellingIdea = (id: string): boolean => id === 'alphabet' || id === 'syllables' || id === 'punctuation' || isFoundation(id);
+
+/** Spans put in order with any that overlap made one. */
+function joined(spans: Span[]): Span[] {
+  const out: Span[] = [];
+  for (const span of [...spans].sort((a, b) => a.start - b.start)) {
+    const last = out[out.length - 1];
+    if (last && span.start < last.end) last.end = Math.max(last.end, span.end);
+    else out.push({ ...span });
+  }
+  return out;
+}
+
+/** The form cut into parts, the clusters in `spans` marked. */
+function partsOf(form: string, spans: Span[]): ExamplePart[] {
+  const clusters = clustersOf(form).map((c) => (c.text + c.marks).normalize('NFC'));
+  const parts: ExamplePart[] = [];
+  let at = 0;
+  const push = (to: number, marked: boolean): void => {
+    if (to > at) parts.push({ text: clusters.slice(at, to).join(''), marked });
+    at = Math.max(at, to);
+  };
+  for (const span of joined(spans)) {
+    push(span.start, false);
+    push(span.end, true);
+  }
+  push(clusters.length, false);
+  return parts;
+}
+
+/** The spans of a form an idea of spelling is about, or undefined when the form is not spelt with it; 'alphabet' (any form) has none to mark. */
+function spellingOf(id: string, form: string): Span[] | undefined {
+  const spans = foundationSpans(form);
+  if (id === 'alphabet') return clustersOf(form).some((c) => c.letter) ? [] : undefined;
+  const found = spans.get(id);
+  // a word of one syllable has nothing to cut
+  if (id === 'syllables') return found && found.length >= 2 ? found : undefined;
+  return found;
+}
+
+/**
+ * Up to `max` words of the passage in the order of the text. For a grammar idea: the words whose parsing needs it (ideasOf), one for each
+ * lemma. For an idea of spelling (isSpellingIdea): the words spelt with it, one for each form, with the letters it is about marked in
+ * `parts`, up to MAX_FOUNDATION_EXAMPLES when `max` is not given.
+ */
+export function ideaExamples(id: string, chapters: Chapter[], verse?: number, max?: number): IdeaExample[] {
+  const spelling = isSpellingIdea(id);
+  const limit = max ?? (spelling ? MAX_FOUNDATION_EXAMPLES : MAX_EXAMPLES);
   const needs = new Map<string, boolean>();
   const has = (code: string): boolean => {
     let found = needs.get(code);
@@ -66,12 +125,22 @@ export function ideaExamples(id: string, chapters: Chapter[], verse?: number, ma
     return found;
   };
   const chosen: IdeaExample[] = [];
-  const lemmas = new Set<string>();
+  const seen = new Set<string>();
   for (const { word, chapter, verse: n } of wordsOf(chapters, verse)) {
-    if (chosen.length >= max) break;
-    if (lemmas.has(word.l) || !has(word.p)) continue;
-    lemmas.add(word.l);
-    chosen.push({ word, chapter, verse: n, reference: `${chapter.book} ${chapter.chapter}:${n}` });
+    if (chosen.length >= limit) break;
+    const key = spelling ? word.t.normalize('NFC').toLowerCase() : word.l;
+    if (seen.has(key)) continue;
+    let parts: ExamplePart[];
+    if (spelling) {
+      const spans = spellingOf(id, word.t);
+      if (!spans) continue;
+      parts = partsOf(word.t, spans);
+    } else {
+      if (!has(word.p)) continue;
+      parts = [{ text: word.t, marked: false }];
+    }
+    seen.add(key);
+    chosen.push({ word, chapter, verse: n, reference: `${chapter.book} ${chapter.chapter}:${n}`, parts });
   }
   return chosen;
 }

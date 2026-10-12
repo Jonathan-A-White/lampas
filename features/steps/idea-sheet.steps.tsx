@@ -67,6 +67,11 @@ const verseEl = (n: number): HTMLElement => {
 const wordSheet = () => screen.getByRole('dialog', { name: 'Word' });
 const grammarSheet = () => screen.getByRole('dialog', { name: 'Grammar' });
 const ideaSheet = () => screen.getByRole('dialog', { name: 'Idea' });
+const exampleOf = (form: string): HTMLElement => {
+  const found = within(ideaSheet()).getAllByTestId('idea-example').find((e) => e.getAttribute('data-form') === form);
+  if (!found) throw new Error(`no example ${form} on the idea sheet`);
+  return found;
+};
 const talkSheet = () => screen.getByRole('dialog', { name: /^Talk about / });
 const examples = () => within(ideaSheet()).getAllByTestId('idea-example');
 
@@ -234,6 +239,51 @@ describeFeature(feature, ({ Scenario }) => {
     And('the grist carries the focus term {string} and kind grammar-term', async (_, term: string) => {
       await waitFor(() => expect(fake.received).toHaveLength(1));
       expect(fake.received[0].input.focus).toEqual({ term, kind: 'grammar-term' });
+    });
+  });
+
+  Scenario('The sheet for The Greek alphabet shows examples from the verse', ({ Given, When, Then, And }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the Goal screen and taps Learn next', async () => {
+      window.location.hash = '#/goal';
+      await user.click(await screen.findByTestId('learn-next'));
+      await screen.findByRole('dialog', { name: 'Idea' });
+      await waitFor(() => expect(within(ideaSheet()).queryByTestId('idea-loading')).toBeNull());
+    });
+    Then('the idea sheet is titled {string} and shows the plain text of that idea', (_, title: string) => {
+      expect(within(ideaSheet()).getByRole('heading', { name: title })).toBeInTheDocument();
+      expect(within(ideaSheet()).getByTestId('idea-text')).toHaveTextContent(ideaOf('alphabet').text);
+    });
+    And('the idea sheet shows examples from {string}', (_, title: string) => {
+      expect(within(ideaSheet()).getByText(`Examples from ${title}`)).toBeInTheDocument();
+      const found = examples();
+      expect(found.length).toBeGreaterThan(0);
+      for (const example of found) expect(within(example).getByTestId('idea-verse').textContent).toBe(title);
+    });
+    And('the idea sheet has no line {string}', (_, text: string) => {
+      expect(ideaSheet().textContent).not.toContain(text);
+    });
+  });
+
+  Scenario('A pair of vowels is marked in each example', ({ Given, When, Then, And }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the idea sheet of {string} from the Goal screen', async (_, id: string) => {
+      window.location.hash = '#/goal';
+      await user.click(await screen.findByTestId('ideas-bar'));
+      await user.click(within(await screen.findByTestId('ideas-list')).getByRole('button', { name: ideaOf(id).title }));
+      await screen.findByRole('dialog', { name: 'Idea' });
+      await waitFor(() => expect(within(ideaSheet()).queryByTestId('idea-loading')).toBeNull());
+    });
+    Then('the idea sheet shows the example {string} with {string} marked', (_, form: string, pair: string) => {
+      const marked = Array.from(exampleOf(form).querySelectorAll('[data-marked]')).map((m) => m.textContent);
+      expect(marked).toEqual([pair]);
+    });
+    And('the idea sheet shows the example {string} with {string} marked', (_, form: string, pair: string) => {
+      const marked = Array.from(exampleOf(form).querySelectorAll('[data-marked]')).map((m) => m.textContent);
+      expect(marked).toEqual([pair]);
+    });
+    And('the idea sheet has no line {string}', (_, text: string) => {
+      expect(ideaSheet().textContent).not.toContain(text);
     });
   });
 });

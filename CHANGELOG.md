@@ -1,5 +1,25 @@
 # What's new
 
+## 0.1.132
+_2026-10-12_
+- New: The tutor now knows your words and grammar when it checks your reading and when it offers a tip, and every answer is pitched to what you told it in About you.
+
+## 0.1.131
+_2026-10-12_
+- New: The sheet for letters, vowel pairs, breathings and accents now shows words from your verse with the letters it teaches marked.
+
+## 0.1.130
+_2026-10-12_
+- Fixed: Sound it out now says a one-letter syllable by its sound instead of the letter's name.
+
+## 0.1.128
+_2026-10-12_
+- Fixed: the "Which idea is this?" grammar question no longer gives away its own answer.
+
+## 0.1.127
+_2026-10-12_
+- New: Settings now has an "About you" page where you can tell the tutor your age, pace, how you learn best, your background and why you are learning Greek, so its answers meet you where you are.
+
 ## 0.1.126
 _2026-10-12_
 - New: Read it aloud now has a Reading ladder that starts at the easiest verse to pronounce, keeps your place separately for Greek and English, and offers the next verse after a good reading.

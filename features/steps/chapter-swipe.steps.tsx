@@ -13,6 +13,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 
 afterAll(() => {
+  unslow?.();
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
@@ -21,12 +22,28 @@ afterAll(() => {
 
 const user = userEvent.setup({ delay: null });
 
+/** A host under load: every pointer event holds the thread for `ms` of real time (performance.now(), which no step holds here). */
+let unslow: (() => void) | null = null;
+function slowHost(ms: number): void {
+  const burn = () => {
+    const until = performance.now() + ms;
+    while (performance.now() < until);
+  };
+  const events = ['pointerdown', 'pointermove', 'pointerup'] as const;
+  for (const name of events) window.addEventListener(name, burn, true);
+  unslow = () => {
+    for (const name of events) window.removeEventListener(name, burn, true);
+    unslow = null;
+  };
+}
+
 async function openOn(bookName: string, n: number): Promise<void> {
   const code = BOOKS.find((b) => b.name === bookName)?.code;
   cleanup();
   clearBus();
   forgetTrail();
   vi.unstubAllGlobals();
+  unslow?.();
   window.localStorage.clear();
   stubChapterFetch();
   await db.open();
@@ -158,6 +175,13 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on {string} chapter {int}', (_, book: string, n: number) => openOn(book, n));
     When('he drags from {int},{int} to {int},{int} over {int} ms', dragged);
     Then('the reader is headed {string}', stillHeaded);
+  });
+
+  Scenario('A quick swipe is still a swipe on a slow host', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on {string} chapter {int}', (_, book: string, n: number) => openOn(book, n));
+    And('the host is slow, each touch taking {int} ms of real time', (_, ms: number) => slowHost(ms));
+    When('he drags from {int},{int} to {int},{int} over {int} ms', dragged);
+    Then('the reader is headed {string}', headed);
   });
 
   Scenario('A swipe over an open sheet does not change chapter', ({ Given, And, When, Then }) => {
