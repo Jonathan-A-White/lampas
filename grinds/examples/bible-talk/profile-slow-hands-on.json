@@ -1,0 +1,65 @@
+{
+  "description": "A slow learner who learns by hearing and doing, with a little Spanish and no Greek, asks what a word means: the answer explains the word in short steps, says what he has not met yet (participles, the dative) before using it, and ends by inviting him to say or find something.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "question": "What does ἀγαπῶσιν mean here?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "learner": "solid 3 words; learning: ἀγαπάω, πίστις; new today: -; due now: 2",
+    "learner_grammar": {
+      "goal": "Read Romans 8:28",
+      "words": {
+        "solid": 3,
+        "frontier": 2,
+        "not_yet": 9
+      },
+      "ideas": {
+        "solid": [
+          "The alphabet",
+          "The article"
+        ],
+        "frontier": [
+          "The nominative case"
+        ],
+        "not_yet": [
+          "The genitive case",
+          "Participles"
+        ]
+      },
+      "placed": true,
+      "suggested_move": "none",
+      "picker_level": "frontier",
+      "approach": {
+        "name": "BMA Tutor",
+        "credit": "Biblical Mastery Academy",
+        "next_lesson": "The nominative case"
+      }
+    },
+    "learner_profile": {
+      "age": "62",
+      "pace": "slow",
+      "ways": [
+        "hearing",
+        "doing"
+      ],
+      "background": "Two years of Spanish at school, no Greek",
+      "why": "To read John with my grandson"
+    },
+    "settings": {}
+  },
+  "expect": {
+    "answer": {
+      "matches": "[Ll]ove[\\s\\S]*(\\?|[Tt]ry|[Ss]ay|[Aa]loud|[Ff]ind)"
+    },
+    "words.0.lemma": {
+      "equals": "ἀγαπάω"
+    }
+  }
+}

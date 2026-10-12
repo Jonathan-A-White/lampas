@@ -263,7 +263,7 @@ describeFeature(feature, ({ Scenario }) => {
       async (_, reference: string) => {
         await waitFor(() => expect(fake.received).toHaveLength(1));
         expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind: 'verse-read' });
-        expect(fake.received[0].input).toEqual({ reference, target_text: englishOf(1, 11), lang: 'en' });
+        expect(fake.received[0].input).toMatchObject({ reference, target_text: englishOf(1, 11), lang: 'en' });
       },
     );
     And('the reading of the passage is kept under {string} and not under verse 1', async (_, ref: string) => {

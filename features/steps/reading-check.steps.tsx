@@ -183,7 +183,10 @@ describeFeature(feature, ({ Scenario }) => {
     When(holdRead, async () => holdAndLetGo(readButton(), 2000));
     Then(millOne, millOneSteps);
     And('its input carries the reference {string}, the English of verse 28 as target_text, and the language {string}', (_, reference: string, lang: string) => {
-      expect(received().input).toEqual({ reference, target_text: ENGLISH_28, lang });
+      expect(received().input).toMatchObject({ reference, target_text: ENGLISH_28, lang });
+      // mw-1vuvq6.2: the reading is sent where his words and grammar stand, as the talk is
+      expect(received().input).toHaveProperty('learner', expect.any(String));
+      expect(received().input).toHaveProperty('learner_grammar');
     });
     And('the grist carries one audio attachment of type {string}', (_, mime: string) => {
       const { attachments } = received();
@@ -493,7 +496,10 @@ describeFeature(feature, ({ Scenario }) => {
     When(holdRead, async () => holdAndLetGo(readButton(), 2000));
     Then(millOne, millOneSteps);
     And('its input carries the reference {string}, the Greek of verse 28 as target_text, and the language {string}', (_, reference: string, lang: string) => {
-      expect(received().input).toEqual({ reference, target_text: GREEK_28, lang });
+      expect(received().input).toMatchObject({ reference, target_text: GREEK_28, lang });
+      // mw-1vuvq6.2: the reading is sent where his words and grammar stand, as the talk is
+      expect(received().input).toHaveProperty('learner', expect.any(String));
+      expect(received().input).toHaveProperty('learner_grammar');
     });
     And('the grist carries one audio attachment of type {string}', (_, mime: string) => {
       expect(received().attachments).toHaveLength(1);
