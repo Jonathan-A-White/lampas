@@ -72,3 +72,9 @@ Feature: The idea sheet
     Then the idea sheet shows the example "λόγου" with "ου" marked
     And the idea sheet shows the example "καὶ" with "αὶ" marked
     And the idea sheet has no line "has this idea in its parsing"
+
+  Scenario: The Pairs of vowels sheet gives every sound an English key word
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
+    When he opens the idea sheet of "diphthongs" from the Goal screen
+    Then the idea sheet text says "e as in pet", "ee as in see" and "oo as in food"
+    And the idea sheet text says it follows "Modern Greek"
