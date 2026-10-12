@@ -3,7 +3,9 @@ Feature: The idea sheet
   example forms from the goal passage (one for each lemma, each with its verse; a speaker on each; a tap opens the word's
   sheet), a paradigm table for a case or a tense built from the passage's forms, and three buttons: Got it (the idea is on
   the frontier and due tomorrow), I know this (solid, at the 30-day step) and Ask the tutor. It opens from the Learn this idea
-  button of a Grammar sheet. With no goal the examples come from the chapter that is open. Taught ideas are announced on
+  button of a Grammar sheet. With no goal the examples come from the chapter that is open. A foundation idea (a letter, the
+  alphabet, a pair of vowels or of consonants, the breathings, accents, iota subscript, syllables, punctuation) shows words of the
+  passage with the letters it is about marked, and never says that no word has it in its parsing. Taught ideas are announced on
   the bus as idea-taught (docs/events.md).
 
   Scenario: The genitive idea's sheet shows its text and three examples from 1 John 1 with their verses
@@ -56,3 +58,17 @@ Feature: The idea sheet
     When he taps Ask the tutor on the idea sheet
     Then the idea, Grammar and word sheets are gone and the sheet is titled "Talk about Romans 8:2"
     And the grist carries the focus term "genitive" and kind grammar-term
+
+  Scenario: The sheet for The Greek alphabet shows examples from the verse
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
+    When he opens the Goal screen and taps Learn next
+    Then the idea sheet is titled "The Greek alphabet" and shows the plain text of that idea
+    And the idea sheet shows examples from "1 John 1:1"
+    And the idea sheet has no line "has this idea in its parsing"
+
+  Scenario: A pair of vowels is marked in each example
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
+    When he opens the idea sheet of "diphthongs" from the Goal screen
+    Then the idea sheet shows the example "λόγου" with "ου" marked
+    And the idea sheet shows the example "καὶ" with "αὶ" marked
+    And the idea sheet has no line "has this idea in its parsing"
