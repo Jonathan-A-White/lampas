@@ -29,15 +29,7 @@ export function answerRuns(answer: string): Run[] {
   return runs;
 }
 
-/** A voice given one letter on its own spells it ("Alpha"), and the package makes every run a sentence of its own. A syllable that is
- * one letter (ἁ in ἁ-μάρ-τη-τε) goes with its bare letter written again (ἁα), which no voice takes for a letter's name: it says the vowel,
- * a little long. PROVISIONAL: written without a Greek voice to hear it on. */
-function sayable(syllable: string): string {
-  const base = syllable.normalize('NFD').replace(/\p{M}/gu, '');
-  return base.length === 1 ? (syllable + base).normalize('NFC') : syllable;
-}
-
-/** The syllables of a word he asked to have sounded out, as runs to read one after another: Greek, said slowly. */
+/** The syllables of a word he asked to have sounded out, as runs to read one after another: Greek, said slowly. A syllable of one letter stays one letter here: readAloud.ts textOf says it as its sound (mw-5r3p30.256). */
 export function syllableRuns(syllables: string[]): Run[] {
-  return syllables.filter(speakable).map((text) => ({ text: sayable(text), language: 'greek' as const, slow: true }));
+  return syllables.filter(speakable).map((text) => ({ text, language: 'greek' as const, slow: true }));
 }
