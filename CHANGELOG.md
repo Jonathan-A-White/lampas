@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.141
+_2026-10-12_
+- Fixed: In immersive reading the top and bottom bars no longer come back by themselves at the end of a chapter; only a two-finger tap shows them or puts them away.
+
 ## 0.1.139
 _2026-10-12_
 - New: Read it aloud now grades a reading you stop part-way through, as far as you got, and helps you with the next word so each try goes further.
