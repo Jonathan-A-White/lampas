@@ -7,8 +7,9 @@ import { forgetChapters } from '../../src/data/chapter';
 import { clearBus, latest, subscribe } from '../../src/events/bus';
 import type { Chapter, Verse } from '../../src/data/chapter';
 import { weaveVerse } from '../../src/data/weave';
-import { continueReading, getReading, pauseReading, planOf, resumeReading, runsOf, startReading, stopReading } from '../../src/speech/readAloud';
-import { speakWord } from '../../src/speech/greek';
+import { syllableRuns } from '../../src/speech/answerRuns';
+import { continueReading, getReading, pauseReading, planOf, resumeReading, runsOf, startReading, stopReading, type Run } from '../../src/speech/readAloud';
+import { chosenPronunciation, speakWord } from '../../src/speech/greek';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../support/fake-speech';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
@@ -376,5 +377,38 @@ describe('following bsv-kit/speech (mw-m7v5kc.3)', () => {
     const woven = weaveVerse(verse(1), { solid: new Set(['Χριστός']) });
     startReading({ chapter: 8, plan: planOf(chapter.verses, 'english', chapter.verses.map((v) => (v.n === 1 ? woven : null))), from: 1, continuous: false });
     expect(synth.spoken.map((u) => u.lang)).toEqual(['en-US', 'el-GR', 'en-US']);
+  });
+});
+
+// A Greek voice names a lone letter ('omicron'): a run that is one Greek letter (a one-letter syllable in Sound it out, a lone ὁ woven into the
+// English, a lone ὁ in a tutor's answer) is said as its sound by the English voice, in the pronunciation he chose (mw-5r3p30.256).
+describe('a run that is one Greek letter', () => {
+  const isOneGreekLetter = (s: string) => /^\p{Script=Greek}\p{M}*$/u.test(s.normalize('NFC')) && [...s.normalize('NFD').replace(/\p{M}/gu, '')].length === 1;
+  const readRuns = (runs: Run[]): void => {
+    startReading({ chapter: 8, plan: [{ n: 1, runs }], from: 1, continuous: false });
+    synth.finishAll();
+  };
+
+  it('is never handed to a voice alone, as a syllable of Sound it out', () => {
+    readRuns(syllableRuns(['ὦ', 'λό', 'γος']));
+    expect(synth.spoken.length).toBeGreaterThanOrEqual(1);
+    expect(synth.spoken.some((u) => isOneGreekLetter(u.text))).toBe(false);
+    const lone = synth.spoken.find((u) => u.text.toLowerCase() === chosenPronunciation().respell('ὦ').toLowerCase());
+    expect(lone?.lang.split('-')[0]).toBe('en');
+  });
+
+  it('is never handed to a voice alone, as a woven Greek word between English', () => {
+    readRuns([
+      { text: 'in the beginning was', language: 'english' },
+      { text: 'ὁ', language: 'greek' },
+      { text: 'Word', language: 'english' },
+    ]);
+    expect(synth.spoken.some((u) => isOneGreekLetter(u.text))).toBe(false);
+  });
+
+  it('leaves a Greek run of two letters or more as it was', () => {
+    readRuns([{ text: 'ὁ λόγος', language: 'greek' }]);
+    expect(synth.spoken.map((u) => u.text).join(' ')).toBe('ὁ λόγος');
+    expect(synth.spoken.every((u) => u.lang === 'el-GR')).toBe(true);
   });
 });

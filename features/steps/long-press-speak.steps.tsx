@@ -12,6 +12,7 @@ import { type Chapter, type Verse, wordLemma } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { clearBus, latest } from '../../src/events/bus';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { asSpoken } from '../../tests/support/spoken-word';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
@@ -36,6 +37,8 @@ async function openWith(voices: FakeVoice[]): Promise<void> {
   });
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
+  // the chapter and place he last had open are kept in localStorage: a scenario that opens 1 John must not leave the next at it
+  window.localStorage.clear();
   window.location.hash = '';
   render(<App />);
   await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
@@ -102,6 +105,28 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the phone speaks it with its Greek voice', () => expect(lastSpoken()?.voice).toBe(GREEK_VOICE));
     And('no word sheet is open', () => expect(screen.queryByRole('dialog')).toBeNull());
+  });
+
+  Scenario("A long press on a one-letter Greek word says its sound, never a letter's name", ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH_VOICE, GREEK_VOICE]));
+    And('he opens 1 John 1 in Greek', async () => {
+      act(() => {
+        window.location.hash = '#/?b=1jn&c=1&view=greek';
+      });
+      await screen.findByRole('heading', { name: '1 John 1', level: 1 });
+      await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-view')).toBe('greek'));
+      await waitFor(() => expect(within(verseEl(1)).getAllByRole('button').length).toBeGreaterThan(1));
+    });
+    When('he long presses the word {string} in verse {int}', (_, text: string, n: number) => press(wordEl(text, n), HOLD_MS));
+    Then('the phone is handed no single Greek letter', () => {
+      expect(synth.spoken).toHaveLength(1);
+      const letters = [...lastSpoken().text.normalize('NFD').replace(/\p{M}/gu, '')];
+      expect(letters.length > 1 || !/\p{Script=Greek}/u.test(letters[0])).toBe(true);
+    });
+    And('the phone is told to speak the sound of {string} in the pronunciation he chose', (_, text: string) => {
+      expect(lastSpoken().text).toBe(asSpoken(text));
+      expect(lastSpoken().text).not.toBe('');
+    });
   });
 
   Scenario('A long press on an English word speaks it with lang en', ({ Given, When, Then, And }) => {

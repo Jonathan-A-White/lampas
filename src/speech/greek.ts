@@ -262,25 +262,43 @@ export function speak(text: string, key: string, language: SpeechLanguage = 'gre
     stopIfSpeaking(key);
     return 'stopped';
   }
-  return speakText(language === 'greek' ? greekWordToSpeak(text) : text, key, { language }) ? 'speaking' : 'no-voice';
+  const said = wordSpeech(text, language);
+  return speakText(said.text, key, { language: said.language }) ? 'speaking' : 'no-voice';
 }
 
 /** Says one word in `language`, now: what is playing is cancelled first, and it never toggles (pressing the same word
  * again says it again). With no Greek voice it still speaks, to the phone's default voice with lang set, as a reading
  * does; the speaker buttons carry the help line. Returns false when the phone cannot speak at all. */
 export function speakWord(text: string, language: SpeechLanguage, slowly = false): boolean {
-  return speakText(language === 'greek' ? greekWordToSpeak(text) : text, WORD_KEY, { slowly, language });
+  const said = wordSpeech(text, language);
+  return speakText(said.text, WORD_KEY, { slowly, language: said.language });
 }
 
-/** What a Greek voice is handed for a word held alone (mw-5r3p30.226): a capital letter is read by its name ('capital ...'), so the word
- * goes in lower case; a word of ONE letter (ὁ, ἡ, ὦ, Ὃ) is said as its bare vowel, marks and breathing taken off, which the voice says
- * as a sound (modern Greek has no /h/ to give the rough breathing). Every other word is unchanged but for case. */
-export function greekWordToSpeak(text: string): string {
-  const lower = text.toLowerCase();
-  if ([...lower].length !== 1) return lower;
-  const bare = lower.normalize('NFD').replace(/\p{M}/gu, '').normalize('NFC');
-  return bare || lower;
+/** The sound of a text that is ONE Greek letter (ὁ, ἡ, ὦ, Ὃ), or null for any other text. A Greek voice names a lone letter ('omicron'), as it read
+ * a capital by its name before mw-5r3p30.226, so such a letter is never handed to it: it is said as its sound, the respell of the pronunciation he
+ * chose (the same respell the word sheet shows: ὁ is 'o'), in lower case, by the English voice, as a reading already says English. The voice's
+ * wording could only be heard on a phone, so this is PROVISIONAL until the Governor has listened (mw-5r3p30.256). */
+export function loneLetterSound(text: string): string | null {
+  const letters = [...text.trim().normalize('NFD').replace(/\p{M}/gu, '')];
+  if (letters.length !== 1 || !/\p{Script=Greek}/u.test(letters[0])) return null;
+  return chosenPronunciation().respell(text.trim().toLowerCase()).toLowerCase() || null;
 }
+
+/** What is handed to the voice for a Greek word held alone (mw-5r3p30.226, .256): a capital letter is read by its name ('capital ...'), so the
+ * word goes in lower case, to the Greek voice; a word of ONE letter is said as its sound by the English voice (loneLetterSound). */
+export function greekWordSpeech(text: string): { text: string; language: SpeechLanguage } {
+  const sound = loneLetterSound(text);
+  return sound === null ? { text: text.toLowerCase(), language: 'greek' } : { text: sound, language: 'english' };
+}
+
+/** Says a LETTER now, as a Greek voice names it (the letter drills 'Hold to hear a letter', where the letter is the thing asked about, not a word): lower case, to the
+ * Greek voice, never turned into a sound. A word of one letter is not this: it goes through speakWord. */
+export function speakLetter(letter: string): boolean {
+  return speakText(letter.toLowerCase(), WORD_KEY, { language: 'greek' });
+}
+
+const wordSpeech = (text: string, language: SpeechLanguage): { text: string; language: SpeechLanguage } =>
+  language === 'greek' ? greekWordSpeech(text) : { text, language };
 
 /** Whether the speech now is a single word or speaker (not a reading): it has no bar. */
 export const isWordSpeech = (key: string | null): boolean => key !== null && key !== READ_KEY;

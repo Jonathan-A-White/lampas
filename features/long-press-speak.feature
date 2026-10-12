@@ -12,6 +12,13 @@ Feature: A long press on a word speaks it
     And the phone speaks it with its Greek voice
     And no word sheet is open
 
+  Scenario: A long press on a one-letter Greek word says its sound, never a letter's name
+    Given Lampas is opened on a phone with a Greek voice
+    And he opens 1 John 1 in Greek
+    When he long presses the word "Ὃ" in verse 1
+    Then the phone is handed no single Greek letter
+    And the phone is told to speak the sound of "Ὃ" in the pronunciation he chose
+
   Scenario: A long press on an English word speaks it with lang en
     Given Lampas is opened on a phone with a Greek voice
     When he long presses the word "Therefore" in verse 1
