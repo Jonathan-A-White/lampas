@@ -84,15 +84,20 @@ function reviewFacts(round: Round, dueLine: string | undefined): ScreenFact[] {
   if (round.status === 'done') return [{ label: 'Round', value: `Finished: ${round.right} of ${round.total} right` }];
   if (round.status === 'loading') return [];
   const item = round.items[round.index];
-  const kind = item.kind === 'word' ? 'a word' : 'a grammar idea';
-  const question = item.kind === 'word' ? item.question.prompt : [item.question.prompt, item.question.form].filter(Boolean).join(' ');
+  const kind = item.kind === 'word' ? 'a word' : item.kind === 'sound' ? 'a sound or word he drilled' : 'a grammar idea';
+  const question =
+    item.kind === 'word'
+      ? item.question.prompt
+      : item.kind === 'sound' && !item.question
+        ? `Say the word ${item.word ?? ''}`
+        : [item.question?.prompt, item.question?.form].filter(Boolean).join(' ');
   const facts: ScreenFact[] = [
     { label: 'Question', value: `${round.index + 1} of ${round.items.length}, ${kind}` },
     { label: 'In hand', value: question },
   ];
   if (round.picked !== null) {
     facts.push({ label: 'He chose', value: round.picked });
-    facts.push({ label: 'Right answer', value: item.kind === 'word' ? item.question.gloss : item.question.right });
+    facts.push({ label: 'Right answer', value: item.kind === 'word' ? item.question.gloss : (item.question?.right ?? '') });
   }
   return facts;
 }
