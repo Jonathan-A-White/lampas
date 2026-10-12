@@ -160,11 +160,9 @@ test('a two-finger tap opens no word sheet; a one-finger tap on a word still ope
   // a finger on a word opens its sheet as ever
   const word = page.locator('[data-verse="3"] [role="button"][data-chunk]').first();
   await word.scrollIntoViewIfNeeded();
-  // scrolling up may bring the bars back, and they slide: measure the word once the page has stopped moving
+  // the bars slide: let the page stop moving, then tap where the word is (a locator tap waits for it to be still and hits its own pixels)
   await settledHeight(page);
-  const at = await word.boundingBox();
-  if (!at) throw new Error('no word');
-  await page.touchscreen.tap(at.x + at.width / 2, at.y + at.height / 2);
+  await word.tap();
   await expect(page.getByRole('dialog')).toBeVisible();
 });
 
@@ -214,9 +212,9 @@ test('with Immersive reader Off scrolling leaves the bars where they are', async
 test('the setting is kept across a reload', async ({ page }) => {
   await openReader(page, 'off');
   await page.getByRole('button', { name: 'Settings' }).click();
-  const group = page.getByRole('group', { name: 'Immersive reader' });
+  const group = page.getByRole('group', { name: 'Immersive reader', exact: true });
   await expect(group.getByRole('button', { name: 'Off' })).toHaveAttribute('aria-pressed', 'true');
   await group.getByRole('button', { name: 'On' }).click();
   await page.reload();
-  await expect(page.getByRole('group', { name: 'Immersive reader' }).getByRole('button', { name: 'On' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('group', { name: 'Immersive reader', exact: true }).getByRole('button', { name: 'On' })).toHaveAttribute('aria-pressed', 'true');
 });

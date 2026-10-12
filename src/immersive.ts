@@ -13,7 +13,8 @@ const NEAR_END_PX = 320;
 /** Two fingers that stay down for longer than this, or move farther than TAP_SLOP_PX, are not a tap. */
 const TAP_MS = 500;
 const TAP_SLOP_PX = 16;
-/** A click the phone sends after a two-finger tap (it should not) is dropped if it comes within this. */
+/** A click the phone sends after a two-finger tap (it should not) is dropped if it comes within this. The times here are performance.now(), which a
+ * clock adjustment cannot move (Date.now() stepped back on the Laptop and the guard then dropped a later real tap). */
 const CLICK_GUARD_MS = 600;
 
 export interface Immersive {
@@ -66,7 +67,7 @@ export function useImmersive(
         return;
       }
       // one finger is no tap yet; the second starts the clock
-      tap = { at: Date.now(), from: Array.from(e.touches, (t) => ({ x: t.clientX, y: t.clientY })) };
+      tap = { at: performance.now(), from: Array.from(e.touches, (t) => ({ x: t.clientX, y: t.clientY })) };
     };
     const onTouchMove = (e: TouchEvent) => {
       if (!tap) return;
@@ -78,8 +79,8 @@ export function useImmersive(
       if (!tap || e.touches.length > 0) return;
       const { at } = tap;
       tap = null;
-      if (Date.now() - at > TAP_MS) return;
-      guardUntil = Date.now() + CLICK_GUARD_MS;
+      if (performance.now() - at > TAP_MS) return;
+      guardUntil = performance.now() + CLICK_GUARD_MS;
       toggle();
     };
     const onTouchCancel = () => {
@@ -87,7 +88,7 @@ export function useImmersive(
     };
     // a two-finger tap never taps a word
     const onClick = (e: MouseEvent) => {
-      if (Date.now() > guardUntil) return;
+      if (performance.now() > guardUntil) return;
       e.preventDefault();
       e.stopPropagation();
     };
