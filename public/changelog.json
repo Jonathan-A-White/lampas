@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.132",
+    "date": "2026-10-12",
+    "story": "mw-1vuvq6.2",
+    "kind": "new",
+    "text": "The tutor now knows your words and grammar when it checks your reading and when it offers a tip, and every answer is pitched to what you told it in About you."
+  },
+  {
     "version": "0.1.131",
     "date": "2026-10-12",
     "story": "mw-86e9r1.13",
