@@ -23,10 +23,19 @@ Feature: Word help
     When he taps Sound it out on the word sheet
     Then the mill received 1 grist for the lampas app, kind bible-talk
     And the grist carries the focus form "συνεργεῖ", lemma "συνεργέω", parse "verb, present active indicative, 3rd person singular" and kind sound
+    And the grist carries the pronunciation "modern" and the respelling "see-ner-YEE"
     And the grist question asks to pronounce the word, its syllables and how each sounds
     And the word "συνεργεῖ" was spoken in Greek, slowly, before any answer
     When the tutor answers
     Then the Greek syllables "συν", "ερ" and "γεῖ" are spoken one after another in Greek, slowly
+
+  Scenario: Sound it out reads the app's own syllables when the tutor's cut a diphthong in two
+    Given Lampas is opened on Romans 8 with word help behind a fake Postern that holds its answers and a phone that speaks Greek
+    And he taps "work together" in verse 28
+    When he taps Sound it out on the word sheet
+    Then the mill received 1 grist for the lampas app, kind bible-talk
+    When the tutor answers with the syllables "συν", "ερ", "γε" and "ῖ"
+    Then the Greek syllables "συ", "νερ" and "γεῖ" are spoken one after another in Greek, slowly
 
   Scenario: The answer shows in the Talk sheet and the conversation continues by text
     Given Lampas is opened on Romans 8 with word help behind a fake Postern

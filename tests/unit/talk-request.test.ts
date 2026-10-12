@@ -68,8 +68,27 @@ describe('buildTalkRequest', () => {
   it('carries the focus when there is one, and no focus key when there is not', () => {
     const scope = { title: 'Romans 8', chapter, verse: chapter.verses.find((v) => v.n === 28) ?? null };
     const focus = { form: 'συνεργεῖ', lemma: 'συνεργέω', parse: 'verb', kind: 'sound' as const };
-    expect(buildTalkRequest(scope, 'Help', [], [], {}, focus).focus).toEqual(focus);
+    expect(buildTalkRequest(scope, 'Help', [], [], {}, focus).focus).toEqual({ ...focus, respelling: 'see-ner-YEE' });
     expect('focus' in buildTalkRequest(scope, 'Help', [], [], {})).toBe(false);
+  });
+
+  // mw-5r3p30.241: the tutor explains a sound by the app's own pronunciation, so the request says which and gives the word's respelling
+  it('carries the Greek pronunciation in use, modern by default', () => {
+    const scope = { title: 'Romans 8', chapter, verse: null };
+    expect(buildTalkRequest(scope, 'Why?', [], []).pronunciation).toBe('modern');
+    const asked = buildTalkRequest(scope, 'Why?', [], [], {}, undefined, undefined, undefined, [], [], 0, { kept: '' }, undefined, [], undefined, 'modern');
+    expect(asked.pronunciation).toBe('modern');
+  });
+
+  it('gives a sound question the app\'s respelling of the word (αυ before τ is AF), and no other focus one', () => {
+    const scope = { title: 'John 5', chapter, verse: null };
+    const sound = { form: 'ταῦτα', lemma: 'οὗτος', parse: 'demonstrative pronoun', kind: 'sound' as const };
+    const request = buildTalkRequest(scope, 'Help', [], [], {}, sound);
+    expect(request.focus).toEqual({ ...sound, respelling: 'TAF-ta' });
+    const grammar = { ...sound, kind: 'grammar' as const };
+    expect(buildTalkRequest(scope, 'Help', [], [], {}, grammar).focus).toEqual(grammar);
+    const hebrew = { form: 'צֶדֶק', lemma: 'צֶדֶק', parse: 'Hebrew word', kind: 'sound' as const, language: 'he' as const };
+    expect(buildTalkRequest(scope, 'Help', [], [], {}, hebrew).focus).toEqual(hebrew);
   });
 
   it('carries a grammar term focus, and asks about the term by name with the reference', () => {
