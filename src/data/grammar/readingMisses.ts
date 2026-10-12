@@ -14,7 +14,7 @@ const SOUNDS = LADDER.filter((idea) => idea.tier === 'sounds' && idea.pair && id
  * The word as bare letters in lower case with a '·' where two letters that would pair are two sounds: a vowel pair whose
  * first vowel carries a stress mark, or whose second has the two dots (ἀΐ, προΐστημι), is not a diphthong.
  */
-function lettersOf(text: string): string {
+export function lettersOf(text: string): string {
   const out: string[] = [];
   let vowelBefore = false;
   let accentedBefore = false;
