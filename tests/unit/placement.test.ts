@@ -33,7 +33,7 @@ const idx = (state: PlacementState, id: string): number => state.ideas.indexOf(i
 
 describe('where the placement starts', () => {
   it('is the first idea past the letters, marks and sounds in the approach sequence, with nothing known', () => {
-    // 1 John 1:1 needs the noun before the article, in BMA Tutor's sequence and in the ladder's
+    // 1 John 1:1 needs the noun before the singular, in BMA Tutor's sequence and in the ladder's
     const first = (order: string[]) => order.find((id) => needs.ideas.some((n) => n.id === id) && !FOUNDATION.includes(ideaOf(id).tier));
     expect(first(BMA)).toBe('noun');
     expect(currentIdea(start())).toBe('noun');
@@ -43,12 +43,12 @@ describe('where the placement starts', () => {
 
   it('walks the needed ideas in the approach order, with the letters, sounds and marks below them', () => {
     const state = start();
-    expect(state.ideas).toEqual(expect.arrayContaining(['letter-alpha', 'diphthongs', 'syllables', 'accents', 'noun', 'article']));
+    expect(state.ideas).toEqual(expect.arrayContaining(['letter-alpha', 'diphthongs', 'syllables', 'accents', 'noun', 'number-singular']));
     expect(state.ideas).not.toContain('mood-subjunctive');
     expect(state.ideas).not.toContain('case-vocative');
     const order = state.ideas.map((id) => BMA.indexOf(id));
     expect(order).toEqual([...order].sort((a, b) => a - b));
-    expect(state.needed).toEqual(expect.arrayContaining(['noun', 'article', 'pronoun-relative']));
+    expect(state.needed).toEqual(expect.arrayContaining(['noun', 'number-singular', 'pronoun-relative']));
   });
 
   it('with no goal walks the whole ladder', () => {
@@ -59,7 +59,7 @@ describe('where the placement starts', () => {
   });
 
   it('starts after the ideas he already has solid, and skips nothing that is not', () => {
-    const known = new Map<string, Level>([['noun', 'solid'], ['article', 'solid'], ['case-accusative', 'solid']]);
+    const known = new Map<string, Level>([['noun', 'solid'], ['number-singular', 'solid'], ['number-plural', 'solid'], ['conjunction', 'solid'], ['case-accusative', 'solid']]);
     // the accusative is solid but the nominative is not: nothing below the first idea that is not solid is skipped
     expect(currentIdea(start(known))).toBe('case-nominative');
     known.set('case-nominative', 'solid');
@@ -84,7 +84,7 @@ describe('answering', () => {
     state = answer(state, true);
     expect(state.levels.get(first)).toBe('solid');
     expect(currentIdea(state)).toBe(state.ideas[idx(state, first) + 1]);
-    expect(currentIdea(state)).toBe('article');
+    expect(currentIdea(state)).toBe('number-singular');
   });
 
   it('one right marks the idea frontier and moves on', () => {
@@ -92,9 +92,9 @@ describe('answering', () => {
     const first = currentIdea(state)!;
     state = answer(answer(state, true), false);
     expect(state.levels.get(first)).toBe('frontier');
-    expect(currentIdea(state)).toBe('article');
+    expect(currentIdea(state)).toBe('number-singular');
     state = answer(answer(state, false), true);
-    expect(state.levels.get('article')).toBe('frontier');
+    expect(state.levels.get('number-singular')).toBe('frontier');
   });
 
   it('two wrongs mark the idea not yet and move back', () => {
@@ -133,7 +133,7 @@ describe('answering', () => {
     expect(currentIdea(state)).toBe('punctuation');
     state = answer(answer(state, true), false);
     expect(state.levels.get('punctuation')).toBe('frontier');
-    expect(currentIdea(state)).toBe('article');
+    expect(currentIdea(state)).toBe('number-singular');
   });
 
   it('a walk of wrongs reaches a letter idea within the twenty questions', () => {
@@ -161,14 +161,14 @@ describe('answering', () => {
 
 describe('where the placement stops', () => {
   it('a step down onto an idea that is already solid ends it: the ceiling is found', () => {
-    const known = new Map<string, Level>([['noun', 'solid'], ['article', 'solid']]);
+    const known = new Map<string, Level>([['noun', 'solid'], ['number-singular', 'solid'], ['number-plural', 'solid'], ['conjunction', 'solid']]);
     let state = start(known);
     expect(currentIdea(state)).toBe('case-nominative');
     state = times(state, false, 2);
     expect(state.levels.get('case-nominative')).toBe('notYet');
     expect(state.done).toBe('finished');
     expect(currentIdea(state)).toBeNull();
-    expect(state.levels.get('article')).toBe('solid');
+    expect(state.levels.get('number-singular')).toBe('solid');
   });
 
   it('a step down onto an idea that turns out solid ends it too', () => {
@@ -202,7 +202,7 @@ describe('where the placement stops', () => {
   });
 
   it('does not resume a finished state', () => {
-    const finished = times(start(new Map([['noun', 'solid'], ['article', 'solid']])), false, 2);
+    const finished = times(start(new Map([['noun', 'solid'], ['number-singular', 'solid']])), false, 2);
     expect(resumePlacement(finished)).toBe(finished);
   });
 });
@@ -216,7 +216,7 @@ describe('summarize', () => {
     expect(sum.total).toBe(state.needed.length);
     const nouns = sum.tiers.find((t) => t.tier === 'nouns')!;
     expect(nouns.ideas.find((i) => i.id === 'noun')).toMatchObject({ level: 'solid' });
-    expect(nouns.ideas.find((i) => i.id === 'article')).toMatchObject({ level: 'frontier' });
+    expect(nouns.ideas.find((i) => i.id === 'number-singular')).toMatchObject({ level: 'frontier' });
     expect(nouns.ideas.find((i) => i.id === 'case-genitive')).toMatchObject({ level: null });
   });
 });
@@ -235,9 +235,9 @@ describe('every answer goes on the schedule', () => {
       'answer noun true',
       'answer noun false',
       'level noun frontier',
-      'answer article false',
-      'answer article false',
-      'level article notYet',
+      'answer number-singular false',
+      'answer number-singular false',
+      'level number-singular notYet',
     ]);
     expect(state.asked).toHaveLength(4);
   });

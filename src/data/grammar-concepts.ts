@@ -95,7 +95,7 @@ export const GRAMMAR_CONCEPTS: Record<string, GrammarConcept> = Object.fromEntri
   c(
     'personal pronoun',
     'A personal pronoun stands in for a person or thing already named: I, you, he, she, it, we, they. Example: “Mary came, and she sang.” Here she stands for Mary.',
-    'ἐγώ is “I”, σύ “you”, αὐτός “he, it”. A Greek verb already shows who acts, so these words are added mostly for emphasis. αὐτός also means “same” or “himself”.',
+    'ἐγώ is “I”, σύ “you”, αὐτός “he, it”. A Greek ending already shows who acts, so these words are added mostly for emphasis. αὐτός also means “same” or “himself”.',
     ['1st person', '2nd person', '3rd person', 'reflexive pronoun'],
   ),
   c(
@@ -181,7 +181,7 @@ export const GRAMMAR_CONCEPTS: Record<string, GrammarConcept> = Object.fromEntri
   c(
     'interrogative',
     'Interrogative marks a word that asks a question: why, how, whether. Example: “Why did you go?”',
-    'Greek marks a question with a question word, with οὐ or μή when it expects “yes” or “no”, or only by tone of voice. The oldest copies had no question mark.',
+    'Greek marks a question with a question word, with οὐ or μή when it expects “yes” or “no”, or only by the tone of the reader. The oldest copies had no question mark.',
     ['interrogative pronoun', 'negative'],
   ),
   c(
@@ -213,13 +213,13 @@ export const GRAMMAR_CONCEPTS: Record<string, GrammarConcept> = Object.fromEntri
   c(
     'genitive',
     'The genitive case shows belonging or source: of, from. English uses “of” or ’s. Example: “the house of my father” or “my father’s house”.',
-    'Greek puts the noun in the genitive instead of using “of”: ὁ λόγος τοῦ θεοῦ is “the word of God”. Some prepositions and verbs also take the genitive, and then it can mean “from” or “about”.',
+    'Greek puts the noun in the genitive instead of using “of”: ὁ λόγος τοῦ θεοῦ is “the word of God”. Some prepositions also take the genitive, and then it can mean “from” or “about”.',
     ['nominative', 'dative', 'possessive pronoun'],
   ),
   c(
     'dative',
     'The dative case marks the one who receives something or for whom it is done: to, for. Example: in “She gave the child a book”, the child receives it (to the child).',
-    'The Greek dative also covers “with” (the means: “by the sword”) and “in” a place or time. The verb or preposition it goes with decides which meaning fits.',
+    'The Greek dative also covers “with” (the means: “by the sword”) and “in” a place or time. The word it goes with decides which meaning fits.',
     ['genitive', 'accusative', 'preposition'],
   ),
   c(
@@ -239,7 +239,7 @@ export const GRAMMAR_CONCEPTS: Record<string, GrammarConcept> = Object.fromEntri
   c(
     'singular',
     'Singular means one: one dog, one child. Example: “the book is” speaks of a single book.',
-    'A singular noun takes singular endings, and its verb usually does too. A neuter plural subject, however, often takes a singular verb.',
+    'A singular noun takes singular endings, and its verb usually does too.',
     ['plural', 'neuter'],
   ),
   c(
@@ -299,13 +299,13 @@ export const GRAMMAR_CONCEPTS: Record<string, GrammarConcept> = Object.fromEntri
   c(
     'imperfect',
     'The imperfect describes something that was going on, or used to happen, in the past. Example: “She was reading” or “she used to read”.',
-    'It appears only in the indicative, usually with an ε added before the stem: ἔλυον “I was loosing”. It paints the scene, where the aorist reports an event.',
+    'It appears only in the indicative, usually with an ε added at the front: ἔλυον “I was loosing”. It paints the scene, where the aorist reports an event.',
     ['present', 'aorist', 'indicative'],
   ),
   c(
     'future',
     'The future tense says what will happen. Example: “She will read.”',
-    'It usually shows a σ after the stem: λύσω “I will loose”. Its endings otherwise look like the present’s.',
+    'It usually shows a σ before the ending: λύσω “I will loose”. Its endings otherwise look like the present’s.',
     ['present', 'aorist'],
   ),
   c(
@@ -317,7 +317,7 @@ export const GRAMMAR_CONCEPTS: Record<string, GrammarConcept> = Object.fromEntri
   c(
     'perfect',
     'The perfect describes an action finished in the past whose result still stands now. Example: “She has read the letter”, and so she knows what it says.',
-    'It is often marked by a doubled start of the stem: λέλυκα “I have loosed”. It stresses the present result: γέγραπται “it stands written”.',
+    'It is often marked by a doubled start to the word: λέλυκα “I have loosed”. It stresses the present result: γέγραπται “it stands written”.',
     ['aorist', 'pluperfect', 'present'],
   ),
   c(
@@ -349,7 +349,7 @@ export const GRAMMAR_CONCEPTS: Record<string, GrammarConcept> = Object.fromEntri
   c(
     'middle or passive',
     'Some forms look the same for the middle and the passive, and the sentence decides which one it is. Example: “was washed” (passive) or “washed himself” (middle).',
-    'In the present, imperfect and perfect, the middle and the passive share one set of endings: λύομαι is “I am loosed” or “I loose for myself”.',
+    'In most tenses the middle and the passive share one set of endings: λύομαι is “I am loosed” or “I loose for myself”.',
     ['middle', 'passive'],
   ),
   c(
@@ -387,7 +387,7 @@ export const GRAMMAR_CONCEPTS: Record<string, GrammarConcept> = Object.fromEntri
   c(
     'indicative',
     'The indicative states a fact or asks a plain question. Example: “She reads.” “Does she read?”',
-    'It is the ordinary mood for real things. Only here does the tense also show time: past, present or future.',
+    'It is the ordinary mood for real things. Only here does the tense also show time: whether it is past, now or still to come.',
     ['subjunctive', 'imperative', 'present'],
   ),
   c(
@@ -405,7 +405,7 @@ export const GRAMMAR_CONCEPTS: Record<string, GrammarConcept> = Object.fromEntri
   c(
     'optative',
     'The optative expresses a wish or a faint possibility. Example: “May she be well!” or “if she should read”.',
-    'It is rare in the New Testament, but common in older Greek. The best-known case is Paul’s μὴ γένοιτο “may it never be!”.',
+    'It is rare in the New Testament, but common in older Greek. The best-known example is Paul’s μὴ γένοιτο “may it never be!”.',
     ['subjunctive', 'indicative'],
   ),
   c(
@@ -431,7 +431,7 @@ export const GRAMMAR_CONCEPTS: Record<string, GrammarConcept> = Object.fromEntri
   c(
     'second',
     'Second marks an older, second way of building a tense. The meaning is the same as the usual one. Example: English “dived” and “dove”: different shapes, same sense.',
-    'A second aorist uses a different stem and endings from the first: ἔλαβον “I took”. Translate both the same way.',
+    'A second aorist is built differently from the usual one, with its own endings: ἔλαβον “I took”. Translate both the same way.',
     ['aorist', 'perfect'],
   ),
   c(
@@ -443,7 +443,7 @@ export const GRAMMAR_CONCEPTS: Record<string, GrammarConcept> = Object.fromEntri
   c(
     'indeclinable',
     'An indeclinable word has one fixed form and never changes its ending. Example: English “sheep” is the same for one or many.',
-    'Names from Hebrew, like Ἀβραάμ, and some numbers do not change for case. Rely on the article and the verb to tell their job in the sentence.',
+    'Names from Hebrew, like Ἀβραάμ, and some numbers do not change for case. Rely on the article and the rest of the sentence to tell their job.',
     ['noun', 'proper name', 'numeral'],
   ),
   c(
