@@ -450,6 +450,25 @@ describeFeature(feature, ({ Scenario }) => {
     Then(verseMarked, verseMarkedSteps);
   });
 
+  Scenario('A reading that fails does not leave the reading before it on show as its result', ({ Given, And, When, Then }) => {
+    Given(given, () => open());
+    And('he opens the reading check of verse 28', selectVerse28);
+    And(holdRead, async () => holdAndLetGo(readButton(), 2000));
+    And(verseMarked, verseMarkedSteps);
+    When('the backend goes away and he reads verse 28 again', async () => {
+      fake.down = true;
+      await holdAndLetGo(readButton(), 2000);
+    });
+    Then('the reading check says {string} with a Retry button', async (_, title: string) => {
+      await waitFor(() => expect(within(panel()).getByRole('alert')).toHaveTextContent(title));
+      expect(within(panel()).getByRole('button', { name: 'Retry', exact: true })).toBeInTheDocument();
+    });
+    And('the reading check shows no result', () => {
+      expect(panel().querySelector('[data-reading-result]')).toBeNull();
+      expect(panel().querySelector('[data-reading-verse]')).toBeNull();
+    });
+  });
+
   Scenario('The result is still there after reopening', ({ Given, And, When, Then }) => {
     Given(given, () => open());
     And('he opens the reading check of verse 28', selectVerse28);
