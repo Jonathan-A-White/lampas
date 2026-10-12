@@ -1,29 +1,27 @@
 // src/immersive.ts — the Immersive reader (Settings > Immersive reader, mw-5r3p30.120). With it On, the Reader's header, row of chips, Talk bar and
-// round Ask button slide away while he scrolls the text down, as a browser's address bar does. Scrolling up does NOT bring them back (reading up and
-// down, he wants no distraction: mw-5r3p30.227). A three-finger tap on the text toggles them; a two-finger tap still brings them back (PROVISIONAL,
-// the Governor to confirm: some Android phones take three fingers for a screenshot). They also come back when he reaches the chapter's end, or
-// (the caller asks) a sheet closes or reading aloud stops. No gesture from a screen's edge: Android's gesture navigation owns the edges. The hook
-// only decides `away`; src/Away.tsx draws the sliding.
+// round Ask button slide away while he scrolls the text down, as a browser's address bar does. After that the bars change ONLY on a two-finger tap
+// on the text: shown if away, away if shown (mw-5r3p30.255, his words: "2 fingers on, 2 fingers off"). Nothing else brings them back: not
+// scrolling up (mw-5r3p30.227), not the end of the chapter or scrolling past it, not a sheet closing, not reading aloud stopping. A three-finger tap
+// does nothing. No gesture from a screen's edge: Android's gesture navigation owns the edges. The hook only decides `away`; src/Away.tsx draws the
+// sliding.
 import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 
 /** Scrolling down this far hides them. */
 export const HIDE_AFTER_PX = 12;
 /** Nearer the end of the text than this, scrolling down does not hide them: hiding grows the box, and would push the end of the chapter under them. */
 const NEAR_END_PX = 320;
-/** Two or three fingers that stay down for longer than this, or move farther than TAP_SLOP_PX, are not a tap. */
+/** Two fingers that stay down for longer than this, or move farther than TAP_SLOP_PX, are not a tap. */
 const TAP_MS = 500;
 const TAP_SLOP_PX = 16;
-/** A click the phone sends after a two- or three-finger tap (it should not) is dropped if it comes within this. */
+/** A click the phone sends after a two-finger tap (it should not) is dropped if it comes within this. */
 const CLICK_GUARD_MS = 600;
 
 export interface Immersive {
   /** the bars are out of view */
   away: boolean;
-  /** bring them back (a sheet closed, reading aloud stopped) */
-  show: () => void;
 }
 
-/** Decides whether the bars are away, from the scrolling of `box` and two- and three-finger taps on it. With `enabled` false nothing is listened to and they are never away. */
+/** Decides whether the bars are away, from the scrolling of `box` and two-finger taps on it. With `enabled` false nothing is listened to and they are never away. */
 export function useImmersive(
   enabled: boolean,
   box: RefObject<HTMLElement | null>,
@@ -34,9 +32,6 @@ export function useImmersive(
     awayRef.current = value;
     setAway(value);
   }, []);
-  const show = useCallback(() => {
-    if (awayRef.current) set(false);
-  }, [set]);
   const toggle = useCallback(() => set(!awayRef.current), [set]);
 
   useEffect(() => {
@@ -57,22 +52,21 @@ export function useImmersive(
         // scrolling up changes nothing: he reads up and down and wants no bars coming and going
         down = 0;
       }
-      // the end of the text is where he may want them
-      if (toEnd < 2) set(false);
     };
 
-    // a two- or three-finger tap: the fingers land together (a touchstart each), go up again soon, none moved
-    let tap: { at: number; from: Array<{ x: number; y: number }>; most: number } | null = null;
+    // a two-finger tap: the fingers land together (a touchstart each), go up again soon, none moved
+    let tap: { at: number; from: Array<{ x: number; y: number }> } | null = null;
     let guardUntil = 0;
     const onTouchStart = (e: TouchEvent) => {
       const n = e.touches.length;
       if (n < 2) return;
-      if (n > 3) {
+      if (n > 2) {
+        // a third finger makes it a gesture of its own
         tap = null;
         return;
       }
-      // one finger is no tap yet; the second starts the clock, the third joins it
-      tap = { at: tap?.at ?? Date.now(), from: Array.from(e.touches, (t) => ({ x: t.clientX, y: t.clientY })), most: n };
+      // one finger is no tap yet; the second starts the clock
+      tap = { at: Date.now(), from: Array.from(e.touches, (t) => ({ x: t.clientX, y: t.clientY })) };
     };
     const onTouchMove = (e: TouchEvent) => {
       if (!tap) return;
@@ -82,17 +76,16 @@ export function useImmersive(
     };
     const onTouchEnd = (e: TouchEvent) => {
       if (!tap || e.touches.length > 0) return;
-      const { at, most } = tap;
+      const { at } = tap;
       tap = null;
       if (Date.now() - at > TAP_MS) return;
       guardUntil = Date.now() + CLICK_GUARD_MS;
-      if (most === 3) toggle();
-      else show();
+      toggle();
     };
     const onTouchCancel = () => {
       tap = null;
     };
-    // a two- or three-finger tap never taps a word
+    // a two-finger tap never taps a word
     const onClick = (e: MouseEvent) => {
       if (Date.now() > guardUntil) return;
       e.preventDefault();
@@ -115,7 +108,7 @@ export function useImmersive(
       el.removeEventListener('touchcancel', onTouchCancel);
       el.removeEventListener('click', onClick, true);
     };
-  }, [enabled, box, set, show, toggle]);
+  }, [enabled, box, set, toggle]);
 
-  return { away: enabled && away, show };
+  return { away: enabled && away };
 }

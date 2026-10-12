@@ -8,7 +8,7 @@ import { setSetting, useSetting } from './settings/store';
 
 export const IMMERSIVE_HINT_LINES = [
   'Scroll down and the bars slide away.',
-  'Tap with three fingers to bring them back.',
+  'Tap with two fingers to bring them back or put them away.',
   'To leave immersive reading: Settings > Immersive reader.',
 ] as const;
 

@@ -63,7 +63,7 @@ describeFeature(feature, ({ Scenario }) => {
     await waitFor(() => expect(card()).not.toBeNull());
     const text = card()?.textContent ?? '';
     expect(text).toContain('Scroll down and the bars slide away.');
-    expect(text).toContain('Tap with three fingers to bring them back.');
+    expect(text).toContain('Tap with two fingers to bring them back or put them away.');
     expect(text).toContain('To leave immersive reading: Settings > Immersive reader.');
   };
   const gone = async () => {

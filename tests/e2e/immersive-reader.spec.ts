@@ -3,10 +3,10 @@ import { honestMic } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
-// The Immersive reader (mw-5r3p30.120) at 412x915: scrolling the text down slides the header, the chips, the Talk bar and the Ask button away;
-// scrolling up leaves them away; a three-finger tap toggles them and a two-finger tap brings them back (mw-5r3p30.227). A phone-width layout claim:
-// it runs under --project=shots.
-test.use({ viewport: { width: 412, height: 915 }, hasTouch: true });
+// The Immersive reader (mw-5r3p30.120) at 390x844: scrolling the text down slides the header, the chips, the Talk bar and the Ask button away;
+// scrolling up, the chapter's end and scrolling past it leave them away; only a two-finger tap shows them and a second one puts them away
+// (mw-5r3p30.255). A phone-width layout claim: it runs under --project=shots.
+test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
 /** Puts the Immersive reader setting in the app's store through raw IndexedDB, as the app wrote it. */
 async function keepImmersive(page: Page, value: 'on' | 'off') {
@@ -73,7 +73,7 @@ async function expectAll(page: Page, state: 'visible' | 'hidden') {
   for (const el of all(page)) await (state === 'visible' ? expect(el).toBeVisible() : expect(el).toBeHidden());
 }
 
-/** Two or three fingers on the text at once, lifted together: what the browser sends for a two- or three-finger tap. */
+/** Two or three fingers on the text at once, lifted together: what the browser sends for a two- or three-finger tap (three must do nothing). */
 async function fingerTap(page: Page, fingers: 2 | 3, at = { x: 150, y: 450 }, moveBy = 0) {
   const cdp = await page.context().newCDPSession(page);
   const points = [
@@ -115,23 +115,33 @@ test('scrolling down slides the bars away, scrolling up leaves them away', async
   await shot(page, 'immersive-scroll-up');
 });
 
-test('a three-finger tap shows the bars and a second one hides them', async ({ page }) => {
+test('a two-finger tap shows the bars and a second one puts them away', async ({ page }) => {
   await openReader(page, 'on');
   const before = await settledHeight(page);
   await scrollText(page, 200);
   await expectAll(page, 'hidden');
 
-  await threeFingerTap(page);
+  await twoFingerTap(page);
   await expectAll(page, 'visible');
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect.poll(() => textHeight(page)).toBeCloseTo(before, 0);
 
   await page.waitForTimeout(700);
+  await twoFingerTap(page);
+  await expectAll(page, 'hidden');
+  await shot(page, 'immersive-two-finger-away');
+});
+
+test('a three-finger tap does nothing', async ({ page }) => {
+  await openReader(page, 'on');
+  await scrollText(page, 200);
+  await expectAll(page, 'hidden');
   await threeFingerTap(page);
+  await page.waitForTimeout(300);
   await expectAll(page, 'hidden');
 });
 
-test('a two-finger tap brings the bars back and opens no word sheet; a one-finger tap on a word still opens it', async ({ page }) => {
+test('a two-finger tap opens no word sheet; a one-finger tap on a word still opens it', async ({ page }) => {
   await openReader(page, 'on');
   await scrollText(page, 200);
   await expectAll(page, 'hidden');
@@ -175,13 +185,20 @@ test('with the bars away, a two-finger tap and then holding Talk starts listenin
   await page.mouse.up();
 });
 
-test('the bars come back when the chapter ends', async ({ page }) => {
+test('scrolling to the chapter\'s end and past the bottom leaves the bars away', async ({ page }) => {
   await openReader(page, 'on');
   await scrollText(page, 300);
   await expectAll(page, 'hidden');
   await scrollText(page, 100000);
-  await expectAll(page, 'visible');
+  await page.waitForTimeout(400);
   expect(await scrollTop(page)).toBeGreaterThan(300);
+  await expectAll(page, 'hidden');
+  // further down, past the bottom: it cannot go, and nothing changes
+  await scrollText(page, 500);
+  await page.mouse.wheel(0, 500);
+  await page.waitForTimeout(400);
+  await expectAll(page, 'hidden');
+  await shot(page, 'immersive-chapter-end');
 });
 
 test('with Immersive reader Off scrolling leaves the bars where they are', async ({ page }) => {

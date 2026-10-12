@@ -45,7 +45,7 @@ test('the card says how it works, in large type, and does not cover the Ask butt
   await openReader(page, 'on');
   await expect(card(page)).toBeVisible();
   await expect(card(page)).toContainText('Scroll down and the bars slide away.');
-  await expect(card(page)).toContainText('Tap with three fingers to bring them back.');
+  await expect(card(page)).toContainText('Tap with two fingers to bring them back or put them away.');
   await expect(card(page)).toContainText('To leave immersive reading: Settings > Immersive reader.');
 
   const got = card(page).getByRole('button', { name: 'Got it' });
