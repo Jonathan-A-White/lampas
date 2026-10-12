@@ -32,7 +32,7 @@ Feature: What my right answers show
     When he makes the letters ξ and ψ solid
     Then the idea "alphabet" is solid, inferred from his answers
     When he opens the Goal screen
-    Then Learn next says "Learn next: Breathing marks · Marks over the letters"
+    Then Learn next says "Learn next: Pairs of vowels · Saying words aloud"
 
   Scenario: Right answers in Review after the placement move a foundation idea to solid
     Given the goal is "Read 1 John 1:1" and he knows no word and no idea
@@ -42,4 +42,4 @@ Feature: What my right answers show
     And he answers 3 questions right
     Then the idea "accents" is solid, inferred from his answers
     When he opens the Goal screen
-    Then the grammar bar says solid 1, frontier 0 and not yet 29
+    Then the grammar bar says solid 1, frontier 0 and not yet 34

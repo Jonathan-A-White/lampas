@@ -247,4 +247,26 @@ describeFeature(feature, ({ Scenario }) => {
       await screen.findByRole('heading', { name: 'Settings', level: 1 });
     });
   });
+
+  Scenario('A total beginner starts from the letters', ({ Given, When, And, Then }) => {
+    Given('his goal is {string} and he knows nothing yet', given);
+    When('he opens the placement', opened);
+    Then('the screen offers {string}', says);
+    When('he taps {string}', tapped);
+    Then('the end card says {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent(text));
+    });
+    And('no idea has a level', async () => {
+      expect(await db.grammarLevels.toArray()).toEqual([]);
+      expect(await db.reviews.toArray()).toEqual([]);
+    });
+    And('the placement is no longer kept', () => expect(readPlacement()).toBeNull());
+    And('the screen says he starts with {string}', async (_, title: string) => {
+      await waitFor(() => expect(screen.getByTestId('from-letters')).toHaveTextContent(`You start with ${title}`));
+    });
+    When('he goes back to the goal', async () => user.click(await screen.findByRole('button', { name: 'Back to the goal' })));
+    Then('Learn next says {string}', async (_, text: string) => {
+      await waitFor(async () => expect(await screen.findByTestId('learn-next')).toHaveTextContent(`Learn next: ${text}`));
+    });
+  });
 });

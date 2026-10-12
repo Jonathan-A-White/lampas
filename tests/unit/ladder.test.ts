@@ -33,7 +33,7 @@ describe('the ladder', () => {
     expect(LADDER[0].tier).toBe('letters');
     const order = LADDER.map((i) => TIERS.indexOf(i.tier));
     expect(order).toEqual([...order].sort((a, b) => a - b));
-    expect(ALWAYS_NEEDED).toEqual(['alphabet', 'breathings', 'accents']);
+    expect(ALWAYS_NEEDED).toEqual(['alphabet', 'diphthongs', 'consonant-pairs', 'syllables', 'breathings', 'accents', 'iota-subscript', 'punctuation']);
     for (const id of ALWAYS_NEEDED) expect(ideaOf(id)).toBeDefined();
   });
 

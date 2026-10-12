@@ -36,8 +36,11 @@ export interface GrammarIdea {
   pair?: string;
 }
 
-/** Every token needs these, so ideasOf never lists them: 'alphabet' is the parent of the 24 letters. */
-export const ALWAYS_NEEDED: readonly string[] = ['alphabet', 'breathings', 'accents'];
+/**
+ * Every token needs these, so ideasOf never lists them, and every goal needs them (mw-86e9r1.1): the foundation a beginner meets first, in ladder
+ * order. 'alphabet' is the parent of the 24 letters; Learn next and the placement walk them before any noun idea.
+ */
+export const ALWAYS_NEEDED: readonly string[] = ['alphabet', 'diphthongs', 'consonant-pairs', 'syllables', 'breathings', 'accents', 'iota-subscript', 'punctuation'];
 
 const wordCount = (text: string): number => text.trim().split(/\s+/).length;
 

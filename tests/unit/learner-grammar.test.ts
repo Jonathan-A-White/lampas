@@ -89,7 +89,7 @@ describe('learnerGrammar', () => {
     const out = await learnerGrammar();
     expect(out.goal).toBe('Read 1 John 1:1');
     // the goal's own ideas head the not-yet list; the ladder alone would put the letters (Alpha, Beta ...) next
-    expect(out.ideas.not_yet.slice(0, 3)).toEqual(['The Greek alphabet', 'Breathing marks', 'Accents and stress']);
+    expect(out.ideas.not_yet.slice(0, 3)).toEqual(['The Greek alphabet', 'Pairs of vowels', 'Pairs of consonants']);
     expect(out.ideas.not_yet[3]).not.toBe('Alpha');
     expect(out.words.solid + out.words.frontier + out.words.not_yet).toBeGreaterThan(0);
   });

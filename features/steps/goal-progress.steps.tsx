@@ -11,6 +11,7 @@ import { App } from '../../src/App';
 import { BOOK_INDEX } from '../../src/data/bookIndex';
 import type { Chapter } from '../../src/data/chapter';
 import { db, type GrammarLevelName, type WordState } from '../../src/data/db';
+import { ALWAYS_NEEDED } from '../../src/data/grammar/ladder';
 import { passageNeeds, progressToward, type Level } from '../../src/data/grammar/needs';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
@@ -140,8 +141,8 @@ describeFeature(feature, ({ Scenario }) => {
     And('the words {string} and {string} are solid and {string} and {string} are learning and {string} is dropped', async (_, a: string, b: string, c: string, d: string, e: string) => {
       await Promise.all([putWord(a, 'solid'), putWord(b, 'solid'), putWord(c, 'learning'), putWord(d, 'learning'), putWord(e, 'dropped')]);
     });
-    And('the ideas {string}, {string} and {string} are solid and {string} is frontier', async (_, a: string, b: string, c: string, d: string) => {
-      await Promise.all([putLevel(a, 'solid'), putLevel(b, 'solid'), putLevel(c, 'solid'), putLevel(d, 'frontier')]);
+    And('the foundation ideas are solid and {string} is frontier', async (_, d: string) => {
+      await Promise.all([...ALWAYS_NEEDED.map((id) => putLevel(id, 'solid')), putLevel(d, 'frontier')]);
     });
     When('he opens the Goal screen', opensGoal);
     Then('the title says {string}', async (_, title: string) => {
@@ -156,8 +157,8 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario("Learn next names the earliest not-yet idea of BMA Tutor's sequence with its lesson and opens its sheet", ({ Given, And, When, Then }) => {
     Given(GIVEN_GOAL, givenGoal);
-    And('the ideas {string}, {string} and {string} are solid and {string} is not yet', async (_, a: string, b: string, c: string, d: string) => {
-      await Promise.all([putLevel(a, 'solid'), putLevel(b, 'solid'), putLevel(c, 'solid'), putLevel(d, 'notYet')]);
+    And('the foundation ideas are solid and {string} is not yet', async (_, d: string) => {
+      await Promise.all([...ALWAYS_NEEDED.map((id) => putLevel(id, 'solid')), putLevel(d, 'notYet')]);
     });
     When('he opens the Goal screen', opensGoal);
     Then('Learn next says {string}', async (_, text: string) => {
@@ -190,8 +191,8 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Got it on the idea sheet moves the ideas bar', ({ Given, And, When, Then }) => {
     Given(GIVEN_GOAL, givenGoal);
-    And('the ideas {string}, {string} and {string} are solid and {string} is not yet', async (_, a: string, b: string, c: string, d: string) => {
-      await Promise.all([putLevel(a, 'solid'), putLevel(b, 'solid'), putLevel(c, 'solid'), putLevel(d, 'notYet')]);
+    And('the foundation ideas are solid and {string} is not yet', async (_, d: string) => {
+      await Promise.all([...ALWAYS_NEEDED.map((id) => putLevel(id, 'solid')), putLevel(d, 'notYet')]);
     });
     When('he opens the Goal screen', opensGoal);
     And('he taps Learn next', async () => {

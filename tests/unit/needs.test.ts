@@ -5,6 +5,8 @@ import { ALWAYS_NEEDED, ideaOf } from '../../src/data/grammar/ladder';
 import { passageNeeds, progressToward, type Level } from '../../src/data/grammar/needs';
 import type { BookIndex } from '../../src/data/chapter';
 import type { WordState } from '../../src/data/db';
+import { approachOf } from '../../src/approaches';
+import { learnNext } from '../../src/data/grammar/goalProgress';
 
 const fromDisk = async (book: string, n: number): Promise<Chapter> => JSON.parse(readFileSync(`public/data/${book}/${n}.json`, 'utf8')) as Chapter;
 
@@ -39,6 +41,28 @@ describe('passageNeeds for 1 John 1:1', () => {
 });
 
 const rungOf = (id: string): number => ideaOf(id).rung;
+
+describe('the foundation is needed by every goal (mw-86e9r1.1)', () => {
+  const FOUNDATION = ['alphabet', 'diphthongs', 'consonant-pairs', 'syllables', 'iota-subscript', 'punctuation', 'breathings', 'accents'];
+
+  it('lists the letters, the pairs, syllables, marks and punctuation, in ladder order, for any goal', async () => {
+    for (const goal of [{ book: '1jn', chapter: 1, verse: 1 }, { book: 'rom', chapter: 8 }]) {
+      const ids = (await passageNeeds(goal, fromDisk, index)).ideas.map((i) => i.id);
+      for (const id of FOUNDATION) expect(ids).toContain(id);
+      const rungs = ids.slice(0, FOUNDATION.length).map(rungOf);
+      expect(rungs).toEqual([...rungs].sort((a, b) => a - b));
+    }
+  });
+
+  it('has Learn next walk the alphabet, then Pairs of vowels, before any noun idea', async () => {
+    const needs = await passageNeeds({ book: '1jn', chapter: 1, verse: 1 }, fromDisk, index);
+    const bma = approachOf('bma-tutor')!;
+    const levels = new Map<string, Level>();
+    expect(learnNext(needs, bma, levels)!.idea.id).toBe('alphabet');
+    levels.set('alphabet', 'solid');
+    expect(learnNext(needs, bma, levels)!.idea).toMatchObject({ id: 'diphthongs', title: 'Pairs of vowels' });
+  });
+});
 
 describe('passageNeeds for a chapter and a book', () => {
   it('1 John 1 has the verse words and more, commonest first', async () => {
