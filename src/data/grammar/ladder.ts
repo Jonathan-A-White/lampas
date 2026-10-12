@@ -224,6 +224,14 @@ const DEFS: Def[] = [
     ['accents'],
     'The comma and full stop are as in English. The semicolon (;) is a question mark, and a raised dot (·) is a colon or semicolon. An apostrophe shows a dropped vowel (elision): δι᾿ is δια with its last letter gone. Two dots over a vowel (the diaeresis) say it is not part of a pair.',
   ),
+  def(
+    'movable-letters',
+    'marks',
+    'Movable letters',
+    [],
+    ['breathings', 'punctuation'],
+    'Some words change their last letter to suit the next word. A movable ν may end ἐστι(ν) and many other words, and the meaning stays. “Not” is οὐ before a consonant (οὐ κατέλαβεν), οὐκ before a smooth breathing (οὐκ ἦν) and οὐχ before a rough one (οὐχ οὗτός). “Out of” is ἐκ before a consonant (ἐκ θεοῦ) and ἐξ before a vowel (ἐξ ἧς). A dropped vowel gives ἀπ᾿ ἀρχῆς and, before a rough breathing, ἀφ᾿ ἑαυτοῦ.',
+  ),
 
   // nouns: the noun, then number and the two joiners met in every verse (καί, δέ, οὐ), then the cases, the genders, the article and the adjective
   def('noun', 'nouns', 'The noun', ['noun'], ['accents']),

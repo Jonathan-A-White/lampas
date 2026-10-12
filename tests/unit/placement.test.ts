@@ -103,7 +103,7 @@ describe('answering', () => {
     state = times(state, false, 2);
     expect(state.levels.get(first)).toBe('notYet');
     expect(currentIdea(state)).toBe(state.ideas[idx(state, first) - 1]);
-    expect(currentIdea(state)).toBe('punctuation');
+    expect(currentIdea(state)).toBe('movable-letters');
   });
 
   it('records every answer in order', () => {
@@ -116,23 +116,23 @@ describe('answering', () => {
     let state = start();
     state = times(state, false, 4);
     expect(state.levels.get('noun')).toBe('notYet');
-    expect(state.levels.get('punctuation')).toBe('notYet');
+    expect(state.levels.get('movable-letters')).toBe('notYet');
     // only the ideas asked have a level; nothing above the first miss does
     const later = state.ideas.slice(idx(state, 'noun') + 1);
     expect(later.length).toBeGreaterThan(10);
     expect(later.filter((id) => state.levels.has(id))).toEqual([]);
     // and the walk only goes down from here, even when he gets the next ideas right
     state = times(state, true, 2);
-    expect(state.levels.get('iota-subscript')).toBe('solid');
+    expect(state.levels.get('punctuation')).toBe('solid');
     expect(state.done).toBe('finished');
     expect(later.filter((id) => state.levels.has(id))).toEqual([]);
   });
 
   it('after one miss and a frontier idea below it, the walk goes up past the missed idea', () => {
     let state = times(start(), false, 2);
-    expect(currentIdea(state)).toBe('punctuation');
+    expect(currentIdea(state)).toBe('movable-letters');
     state = answer(answer(state, true), false);
-    expect(state.levels.get('punctuation')).toBe('frontier');
+    expect(state.levels.get('movable-letters')).toBe('frontier');
     expect(currentIdea(state)).toBe('number-singular');
   });
 
@@ -174,7 +174,7 @@ describe('where the placement stops', () => {
   it('a step down onto an idea that turns out solid ends it too', () => {
     let state = times(start(), false, 2);
     state = times(state, true, 2);
-    expect(state.levels.get('punctuation')).toBe('solid');
+    expect(state.levels.get('movable-letters')).toBe('solid');
     expect(state.done).toBe('finished');
   });
 
@@ -305,7 +305,7 @@ describe('what his right answers show (mw-hqd5bz.17)', () => {
 
   it('is unchanged when no question is given: it steps down through every idea below', () => {
     const state = times(start(), false, 4);
-    expect(currentIdea(state)).toBe('iota-subscript');
+    expect(currentIdea(state)).toBe('punctuation');
     expect(state.focus).toBeNull();
   });
 

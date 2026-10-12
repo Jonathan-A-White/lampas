@@ -32,7 +32,7 @@ export const bmaTutor: GrammarApproach = {
           lessons: [
             lesson('The Greek letters', ...LETTERS),
             lesson('Saying words aloud', 'diphthongs', ...itemsOfGroup('diphthongs'), 'consonant-pairs', ...itemsOfGroup('consonant-pairs'), 'syllables'),
-            lesson('Marks over the letters', 'breathings', ...itemsOfGroup('breathings'), 'accents', 'iota-subscript', 'punctuation'),
+            lesson('Marks over the letters', 'breathings', ...itemsOfGroup('breathings'), 'accents', 'iota-subscript', 'punctuation', 'movable-letters'),
             lesson('Your first words', 'noun', 'number-singular', 'number-plural'),
             lesson('Joining and refusing', 'conjunction', 'negative'),
             lesson('Who acts and who is acted on', 'case-nominative', 'case-accusative'),
