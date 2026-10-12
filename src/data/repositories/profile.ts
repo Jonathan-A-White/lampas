@@ -102,6 +102,22 @@ export function saveProfile(patch: ProfilePatch): Promise<SaveResult> {
   });
 }
 
+/** Turns a way of learning on or off from what is kept now (read and written in one transaction, so two quick taps both count). */
+export async function toggleWay(way: Way): Promise<void> {
+  await db.transaction('rw', db.settings, async () => {
+    const kept = await read();
+    await write({ ...kept, ways: WAYS.filter((w) => (w === way ? !kept.ways.includes(w) : kept.ways.includes(w))) });
+  });
+}
+
+/** Chooses `pace`, or clears it when it is the one kept, from what is kept now (one transaction). */
+export async function togglePace(pace: Pace): Promise<void> {
+  await db.transaction('rw', db.settings, async () => {
+    const kept = await read();
+    await write({ ...kept, pace: kept.pace === pace ? undefined : pace });
+  });
+}
+
 /** Empties the whole profile, the notes too. */
 export async function clearProfile(): Promise<void> {
   await db.settings.delete(KEY);

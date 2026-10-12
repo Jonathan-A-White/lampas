@@ -16,6 +16,8 @@ import {
   getProfile,
   keepProfileNote,
   saveProfile,
+  toggleWay,
+  togglePace,
 } from '../../src/data/repositories/profile';
 import { learnerProfile, learnerProfileOf } from '../../src/data/learnerProfile';
 import { buildReadingRequest } from '../../src/services/reading';
@@ -59,6 +61,19 @@ describe('the kept profile', () => {
     expect(await getProfile()).toEqual({ ways: ['hearing'], notes: [{ text: 'ok', when: 1 }] });
     await db.settings.put({ key: 'learnerProfile', value: '{not json' });
     expect(await getProfile()).toEqual({ ways: [], notes: [] });
+  });
+
+  it('toggles a way or a pace from what is kept, so two quick taps both count', async () => {
+    await Promise.all([toggleWay('hearing'), toggleWay('doing'), toggleWay('seeing')]);
+    expect((await getProfile()).ways).toEqual(['hearing', 'seeing', 'doing']);
+    await Promise.all([toggleWay('seeing'), toggleWay('seeing'), toggleWay('seeing')]);
+    expect((await getProfile()).ways).toEqual(['hearing', 'doing']);
+    await togglePace('quick');
+    expect((await getProfile()).pace).toBe('quick');
+    await togglePace('slow');
+    expect((await getProfile()).pace).toBe('slow');
+    await togglePace('slow');
+    expect((await getProfile()).pace).toBeUndefined();
   });
 
   it('Clear empties everything, notes too', async () => {

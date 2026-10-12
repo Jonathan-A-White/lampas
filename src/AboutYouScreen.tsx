@@ -15,6 +15,8 @@ import {
   editProfileNote,
   getProfile,
   saveProfile,
+  toggleWay,
+  togglePace,
   type Pace,
   type Profile,
   type ProfileNote,
@@ -93,7 +95,6 @@ function Form({ profile }: { profile: Profile }) {
   const [why, setWhy] = useState(profile.why ?? '');
   const [cleared, setCleared] = useState(0);
   const filled = age.trim() !== '' || background.trim() !== '' || why.trim() !== '' || profile.pace !== undefined || profile.ways.length > 0 || profile.notes.length > 0;
-  const toggle = (way: Way): void => void saveProfile({ ways: profile.ways.includes(way) ? profile.ways.filter((w) => w !== way) : [...profile.ways, way] });
   const clear = async (): Promise<void> => {
     await clearProfile();
     setAge('');
@@ -129,7 +130,7 @@ function Form({ profile }: { profile: Profile }) {
               key={p}
               type="button"
               aria-pressed={profile.pace === p}
-              onClick={() => void saveProfile({ pace: profile.pace === p ? null : p })}
+              onClick={() => void togglePace(p)}
               className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${profile.pace === p ? 'bg-accent text-accent-fg' : 'text-fg'}`}
             >
               {PACE_LABELS[p]}
@@ -146,7 +147,7 @@ function Form({ profile }: { profile: Profile }) {
               key={w}
               type="button"
               aria-pressed={profile.ways.includes(w)}
-              onClick={() => toggle(w)}
+              onClick={() => void toggleWay(w)}
               className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${profile.ways.includes(w) ? 'bg-accent text-accent-fg' : 'text-fg'}`}
             >
               {WAY_LABELS[w]}
