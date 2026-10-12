@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.124
+_2026-10-12_
+- Fixed: Lampas no longer asks you to update for a build with nothing new to show; such updates install quietly when you are not using it.
+
 ## 0.1.123
 _2026-10-12_
 - Fixed: The grammar lessons now come in an order where nothing is taught before the grammar it relies on: singular and plural, and the little words and, but and not, come right after the noun.
