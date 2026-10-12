@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.142
+_2026-10-12_
+- Fixed: Learn next on the Goal screen now names the same gaps as the end card and Review, such as the rough breathing, and shows them even when no goal is set.
+
 ## 0.1.141
 _2026-10-12_
 - Fixed: In immersive reading the top and bottom bars no longer come back by themselves at the end of a chapter; only a two-finger tap shows them or puts them away.
