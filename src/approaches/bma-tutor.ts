@@ -12,6 +12,8 @@ const lesson = (title: string, ...ideas: string[]): ApproachLesson => ({ title, 
 const LETTERS = LADDER.filter((i) => i.tier === 'letters').map((i) => i.id);
 /** The pairs of vowels, the pairs of consonants and the two breathings, which the ladder holds as an item each (mw-hqd5bz.18). */
 const itemsOfGroup = (group: string): string[] => LADDER.filter((i) => i.parent === group).map((i) => i.id);
+/** The twelve prepositions taken one by one (mw-86e9r1.5), each an idea of its own after the general one. */
+const PREPOSITIONS_ONE_BY_ONE = LADDER.filter((i) => i.id.startsWith('preposition-')).map((i) => i.id);
 
 export const bmaTutor: GrammarApproach = {
   id: 'bma-tutor',
@@ -57,7 +59,7 @@ export const bmaTutor: GrammarApproach = {
             lesson('Who, which and that', 'pronoun-relative'),
             lesson('Who? and anyone', 'pronoun-interrogative', 'pronoun-indefinite'),
             lesson('Each other, such as, how great', 'pronoun-reciprocal', 'pronoun-correlative', 'pronoun-correlative-interrogative'),
-            lesson('Small words that take a case', 'preposition'),
+            lesson('Small words that take a case', 'preposition', ...PREPOSITIONS_ONE_BY_ONE, 'compound-verbs'),
             lesson('Describing words', 'adjective'),
           ],
         },

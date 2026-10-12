@@ -4,7 +4,7 @@
 import type { WordState } from '../db';
 import { wordGloss, type BookIndex, type Chapter } from '../chapter';
 import type { Goal } from '../goal';
-import { ALWAYS_NEEDED, ideaOf, ideasOf } from './ladder';
+import { ALWAYS_NEEDED, ideaOf, ideasOfWord } from './ladder';
 
 /** How far he is on one thing. The levels story moves this to its repository; both export the same literal type. */
 export type Level = 'solid' | 'frontier' | 'notYet';
@@ -79,7 +79,7 @@ export async function passageNeeds(goal: Goal, load: ChapterLoader, index: BookI
         const known = words.get(lemma);
         if (known) known.count++;
         else words.set(lemma, { lemma, gloss: wordGloss(chapter, w), count: 1, firstRef: ref });
-        for (const id of [...ALWAYS_NEEDED, ...ideasOf(w.p)]) {
+        for (const id of [...ALWAYS_NEEDED, ...ideasOfWord(w)]) {
           const idea = ideas.get(id);
           if (idea) idea.count++;
           else ideas.set(id, { id, count: 1, example: { form: w.t, code: w.p, ref } });

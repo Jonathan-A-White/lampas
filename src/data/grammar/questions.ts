@@ -2,14 +2,16 @@
 // a verse, a letter, the sound of a letter, the stressed syllable, the breathing, the syllables. Each builder takes the idea, the passage
 // (the chapters of the goal, or the chapter he has open) and a random source, so a seed gives the same question twice; the placement
 // uses the same builders. Nothing here touches the store or the screen. docs/grammar.md.
+import { bookOf } from '../books';
 import type { Chapter, GreekWord, Verse } from '../chapter';
 import { decodeParse, parseSegments, splitParse } from '../parseCode';
 import { shuffle, type Random } from '../quiz';
 import { MODERN } from '../../speech/schemes/modern';
 import { LADDER, ideasOf, keyedSound, type GrammarIdea } from './ladder';
+import { COMPOUND_VERBS, PREPOSITIONS, type VerseRef } from './prepositions';
 import { quickQuestion } from './quickRound';
 
-export type GrammarKind = 'ending' | 'tap-form' | 'letter' | 'sound' | 'stress' | 'breathing' | 'syllables' | 'concept';
+export type GrammarKind = 'ending' | 'tap-form' | 'letter' | 'sound' | 'stress' | 'breathing' | 'syllables' | 'preposition' | 'compound' | 'concept';
 
 export interface GrammarQuestion {
   kind: GrammarKind;
@@ -310,6 +312,58 @@ export function buildMovable(idea: GrammarIdea, random: Random): GrammarQuestion
   return fromTable(idea, prompt, right, others.filter((o) => o !== right), random);
 }
 
+// ---- Prepositions and compound verbs (mw-86e9r1.5) ----
+
+const refText = (r: VerseRef): string => `${bookOf(r.book)?.name ?? r.book} ${r.chapter}:${r.verse}`;
+/** The words of a meaning that carry it ('out of' has none, 'because of' has 'because'), for telling two meanings apart. */
+const meaningWords = (meaning: string): string[] => meaning.toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 3);
+const alike = (a: string, b: string): boolean => meaningWords(a).some((w) => meaningWords(b).includes(w));
+
+/** `right` and three wrong meanings, `near` first (the other cases of the same preposition), then `others`; none shares a word with the right one unless the rest run out. */
+function meaningChoices(right: string, near: readonly string[], others: readonly string[], random: Random): string[] {
+  const pool = [...near, ...shuffle(others, random)].filter((m) => m !== right);
+  const apart = pool.filter((m) => !alike(m, right));
+  const wrong = [...new Set([...apart, ...pool])].slice(0, OPTION_COUNT - 1);
+  return shuffle([right, ...wrong], random);
+}
+
+/**
+ * What a preposition means before the case of a real phrase: 'What does διά mean here?' over διὰ τοὺς λόγους (John 10:19). The meaning of the
+ * preposition's other cases is among the choices, so a reader who ignores the case misses it.
+ */
+export function buildPreposition(idea: GrammarIdea, random: Random): GrammarQuestion {
+  const prep = PREPOSITIONS.find((p) => idea.id === `preposition-${p.key}`);
+  if (!prep) throw new Error(`${idea.id} is not a preposition idea`);
+  const use = pick(prep.uses, random);
+  const near = prep.uses.filter((u) => u !== use).map((u) => u.meaning);
+  const others = PREPOSITIONS.filter((p) => p !== prep).flatMap((p) => p.uses.map((u) => u.meaning));
+  return {
+    kind: 'preposition',
+    ideaId: idea.id,
+    prompt: `What does ${prep.greek} mean here?`,
+    options: meaningChoices(use.meaning, near, others, random),
+    right: use.meaning,
+    ref: refText(use.ref),
+    form: use.phrase,
+    say: use.phrase,
+  };
+}
+
+/** What a verb made of a preposition and a verb means: 'ἐκ + βάλλω (“throw”) makes ἐκβάλλω, as in ἐξεβάλομεν. What does ἐκβάλλω mean?' */
+export function buildCompound(idea: GrammarIdea, random: Random): GrammarQuestion {
+  const verb = pick(COMPOUND_VERBS, random);
+  return {
+    kind: 'compound',
+    ideaId: idea.id,
+    prompt: `${verb.prefix} + ${verb.stem} (“${verb.stemMeaning}”) makes ${verb.lemma}, as in ${verb.form}. What does ${verb.lemma} mean?`,
+    options: meaningChoices(verb.meaning, [], COMPOUND_VERBS.map((c) => c.meaning), random),
+    right: verb.meaning,
+    ref: refText(verb.ref),
+    form: verb.lemma,
+    say: verb.lemma,
+  };
+}
+
 // ---- Words: stress, syllables, breathing ----
 
 /** Words to ask about when the passage has none that will do. */
@@ -454,6 +508,8 @@ export function buildIdeaQuestion(idea: GrammarIdea, passage: readonly Chapter[]
   // one diphthong, consonant pair or breathing (mw-hqd5bz.18): heard or seen, as the quick round asks it
   if (idea.parent) return quickQuestion({ id: idea.id, mode: random() < 0.5 ? 'hear' : 'see' }, random);
   if (idea.glyphs || idea.id === 'alphabet') return random() < 0.5 ? buildLetter(idea, random) : buildSound(idea, random);
+  if (idea.id.startsWith('preposition-')) return buildPreposition(idea, random);
+  if (idea.id === 'compound-verbs') return buildCompound(idea, random);
   switch (idea.id) {
     case 'diphthongs':
       return buildPairs(idea, DIPHTHONGS, 'vowels', random);

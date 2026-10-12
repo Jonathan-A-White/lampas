@@ -101,7 +101,7 @@ async function setGrammar(chip: string): Promise<void> {
 
 /** Every idea of the ladder gets `level`, except the dative case, which gets `dative`. */
 async function setLevels(dative: 'notYet' | 'frontier'): Promise<void> {
-  for (const idea of LADDER) await setLevel(idea.id, idea.id === 'case-dative' ? dative : 'solid', 'placement');
+  await Promise.all(LADDER.map((idea) => setLevel(idea.id, idea.id === 'case-dative' ? dative : 'solid', 'placement')));
 }
 
 const verse18: Verse = chapter.verses[17];

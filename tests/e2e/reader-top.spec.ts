@@ -71,7 +71,7 @@ test('with Due 9, a goal and new words the chips are one slim row and the text s
   const news = page.getByTestId('new-words');
   await expect(due).toHaveText('Due 9');
   await expect(goal).toHaveText(/^Goal \d+\/16$/);
-  await expect(goal).toHaveAccessibleName(/^Goal: 1 John 1:1, \d+ of 16 words, \d+ of 35 ideas$/);
+  await expect(goal).toHaveAccessibleName(/^Goal: 1 John 1:1, \d+ of 16 words, \d+ of 37 ideas$/);
   await expect(news).toHaveText(/^New \d+$/);
   await expect(news).toHaveAccessibleName(/^New words: \d+$/);
 
