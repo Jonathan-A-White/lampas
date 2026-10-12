@@ -13,6 +13,7 @@ import { db } from '../../src/data/db';
 import { mulberry32 } from '../../src/data/quiz';
 import { stopSpeaking } from '../../src/speech/greek';
 import { stubSpeech, GREEK_VOICE, ENGLISH_VOICE, type FakeSynth } from '../../tests/support/fake-speech';
+import { asSpoken } from '../../tests/support/spoken-word';
 
 const user = userEvent.setup();
 const rom8 = readFileSync('public/data/rom/8.json', 'utf8');
@@ -65,7 +66,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the phone is told to speak the word of the question with lang {string}', (_, lang: string) => {
       expect(synth.spoken).toHaveLength(1);
-      expect(synth.spoken[0].text).toBe(promptText());
+      expect(synth.spoken[0].text).toBe(asSpoken(promptText()));
       expect(synth.spoken[0].lang).toBe(lang);
     });
     And('the word is being spoken', () => expect(synth.speaking).toBe(true));

@@ -262,14 +262,24 @@ export function speak(text: string, key: string, language: SpeechLanguage = 'gre
     stopIfSpeaking(key);
     return 'stopped';
   }
-  return speakText(text, key, { language }) ? 'speaking' : 'no-voice';
+  return speakText(language === 'greek' ? greekWordToSpeak(text) : text, key, { language }) ? 'speaking' : 'no-voice';
 }
 
 /** Says one word in `language`, now: what is playing is cancelled first, and it never toggles (pressing the same word
  * again says it again). With no Greek voice it still speaks, to the phone's default voice with lang set, as a reading
  * does; the speaker buttons carry the help line. Returns false when the phone cannot speak at all. */
 export function speakWord(text: string, language: SpeechLanguage, slowly = false): boolean {
-  return speakText(text, WORD_KEY, { slowly, language });
+  return speakText(language === 'greek' ? greekWordToSpeak(text) : text, WORD_KEY, { slowly, language });
+}
+
+/** What a Greek voice is handed for a word held alone (mw-5r3p30.226): a capital letter is read by its name ('capital ...'), so the word
+ * goes in lower case; a word of ONE letter (ὁ, ἡ, ὦ, Ὃ) is said as its bare vowel, marks and breathing taken off, which the voice says
+ * as a sound (modern Greek has no /h/ to give the rough breathing). Every other word is unchanged but for case. */
+export function greekWordToSpeak(text: string): string {
+  const lower = text.toLowerCase();
+  if ([...lower].length !== 1) return lower;
+  const bare = lower.normalize('NFD').replace(/\p{M}/gu, '').normalize('NFC');
+  return bare || lower;
 }
 
 /** Whether the speech now is a single word or speaker (not a reading): it has no bar. */

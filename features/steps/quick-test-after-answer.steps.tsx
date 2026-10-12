@@ -14,6 +14,7 @@ import { mulberry32, type Question } from '../../src/data/quiz';
 import { clearBus } from '../../src/events/bus';
 import { stopSpeaking } from '../../src/speech/greek';
 import { stubSpeech, GREEK_VOICE, ENGLISH_VOICE, type FakeSynth } from '../../tests/support/fake-speech';
+import { asSpoken } from '../../tests/support/spoken-word';
 
 const user = userEvent.setup();
 const rom8 = readFileSync('public/data/rom/8.json', 'utf8');
@@ -85,7 +86,7 @@ async function tapGloss(right: boolean): Promise<void> {
 
 const expectSpokenOnce = () => {
   expect(synth.spoken).toHaveLength(1);
-  expect(synth.spoken[0].text).toBe(promptText());
+  expect(synth.spoken[0].text).toBe(asSpoken(promptText()));
   expect(synth.spoken[0].lang).toBe('el-GR');
 };
 

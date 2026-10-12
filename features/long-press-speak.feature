@@ -8,7 +8,7 @@ Feature: A long press on a word speaks it
     Given Lampas is opened on a phone with a Greek voice
     And he switches the reader to Greek
     When he long presses the word "Οὐδὲν" in verse 1
-    Then the phone is told to speak "Οὐδὲν" with lang "el-GR"
+    Then the phone is told to speak "οὐδὲν" with lang "el-GR"
     And the phone speaks it with its Greek voice
     And no word sheet is open
 
@@ -30,7 +30,7 @@ Feature: A long press on a word speaks it
     And he switches the reader to Greek
     And he opens the Verse view of verse 1
     When he long presses the word "Οὐδὲν" in the Verse view
-    Then the phone is told to speak "Οὐδὲν" with lang "el-GR"
+    Then the phone is told to speak "οὐδὲν" with lang "el-GR"
     And no word sheet is open
     When he taps the word "Οὐδὲν" in the Verse view
     Then the word sheet is open
