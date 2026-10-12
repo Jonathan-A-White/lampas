@@ -1,12 +1,22 @@
 // src/tips/tip.ts — the shapes of the 'tips' grind (grinds/tips.*): the request the phone sends and the answer it gets back, and the guard
 // the phone runs on an answer (tests/unit/tips-grind.test.ts holds it equal to the answer schema).
+import type { LearnerProfile } from '../data/learnerProfile';
 import { SCREENS, type UsageSummary } from './summary';
 
 export interface TipRequest {
   summary: UsageSummary;
   /** the ids of the tips he has been shown, never to be offered again */
   shown: string[];
+  /** who he is as a student (src/data/learnerProfile.ts, Settings > About you): missing when he has filled in nothing */
+  learner_profile?: LearnerProfile;
 }
+
+/** The request the tips grind is sent: the usage summary, the ids already shown and, when he has filled any in, who he is. */
+export const buildTipRequest = (summary: UsageSummary, shown: string[], learnerProfile?: LearnerProfile): TipRequest => ({
+  summary,
+  shown,
+  ...(learnerProfile ? { learner_profile: learnerProfile } : {}),
+});
 
 export interface Tip {
   /** a short slug, 'try-talk': what `shown` remembers */

@@ -12,6 +12,19 @@
     "solid_words": { "description": "The Greek lemmas he already knows well.", "type": "array", "items": { "type": "string" } },
     "learner": { "description": "Optional. Where he stands in one line: 'solid N words; learning: a, b, c; new today: x, y; due now: M'.", "type": "string", "maxLength": 600 },
     "learner_grammar": { "description": "Optional. Where his grammar stands, as in the Bible talk's request (grinds/bible-talk.input.schema.json learner_grammar).", "type": "object" },
+    "learner_profile": {
+      "description": "Optional. Who he is as a student, which he kept himself in Settings > About you; every field is optional and a field he has not filled in is missing (the whole field is missing when he has filled in none). age: a number or a band, as he wrote it. pace: how fast he wants to go. ways: how he learns best (hearing, seeing, reading, doing = hands-on). background: languages he knows, Greek or Bible before, in his words. why: why he is learning Greek, in his words. notes: short things the tutor has learned about him, the newest last. Meet him where he is; never repeat this back to him.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "age": { "type": "string", "minLength": 1, "maxLength": 20 },
+        "pace": { "type": "string", "enum": ["quick", "steady", "slow"] },
+        "ways": { "type": "array", "maxItems": 4, "items": { "type": "string", "enum": ["hearing", "seeing", "reading", "doing"] } },
+        "background": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "why": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "notes": { "type": "array", "maxItems": 6, "items": { "type": "string", "minLength": 1, "maxLength": 100 } }
+      }
+    },
     "requests": {
       "description": "Optional. The requests he has sent to the factory (an ask the tutor offered to pass on, an approach he asked for), at most the 10 newest, newest first, each with where it stands. Missing when he has sent none. status: sent (the factory has it, nothing more yet), filed (the makers have it on their list), building (being built now), landed (built and shipped; `version` is the app version it is in), declined (the makers decided not to; `reason` is why) or adopted-as-setting (it became a setting; `setting` is where Settings has it). Answer 'what happened to my idea' from this, never from a guess.",
       "type": "array",

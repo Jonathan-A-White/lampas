@@ -59,6 +59,19 @@
       "type": "array",
       "maxItems": 200,
       "items": { "type": "string", "minLength": 1, "maxLength": 60 }
+    },
+    "learner_profile": {
+      "description": "Optional. Who he is as a student, which he kept himself in Settings > About you; every field is optional and a field he has not filled in is missing (the whole field is missing when he has filled in none). age: a number or a band, as he wrote it. pace: how fast he wants to go. ways: how he learns best (hearing, seeing, reading, doing = hands-on). background: languages he knows, Greek or Bible before, in his words. why: why he is learning Greek, in his words. notes: short things the tutor has learned about him, the newest last. Meet him where he is; never repeat this back to him.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "age": { "type": "string", "minLength": 1, "maxLength": 20 },
+        "pace": { "type": "string", "enum": ["quick", "steady", "slow"] },
+        "ways": { "type": "array", "maxItems": 4, "items": { "type": "string", "enum": ["hearing", "seeing", "reading", "doing"] } },
+        "background": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "why": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "notes": { "type": "array", "maxItems": 6, "items": { "type": "string", "minLength": 1, "maxLength": 100 } }
+      }
     }
   }
 }

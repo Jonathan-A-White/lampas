@@ -12,6 +12,7 @@ import { keepVerseReading, verseRef } from './data/repositories';
 import { clipOf } from './audio/clip';
 import { MicUnavailable, recorderSeam, type HoldRecorder, type Recording } from './audio/recorder';
 import { getDeviceKeyBytes } from './services/deviceKey';
+import { learnerProfile } from './data/learnerProfile';
 import { askVerseRead, buildReadingRequest, readingLang, type ReadingView } from './services/reading';
 import { TutorError, type TutorFailure } from './services/tutor';
 import { interruptListen, stopReading } from './speech/readAloud';
@@ -108,7 +109,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
       set(unitId(verse), language, { phase: 'sending', startedAt });
       void (async () => {
         try {
-          const answer = await askVerseRead(buildReadingRequest(unitReference(title, verse), verse, readView, language), recording, {
+          const answer = await askVerseRead(buildReadingRequest(unitReference(title, verse), verse, readView, language, await learnerProfile().catch(() => undefined)), recording, {
             key: getDeviceKeyBytes(),
             signal,
             onSent: () => set(unitId(verse), language, { phase: 'waiting', startedAt }),
