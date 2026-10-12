@@ -158,6 +158,8 @@ export interface TalkRequest {
   greek?: string;
   english?: string;
   question: string;
+  /** present (true) only when the question was spoken to the phone's English recogniser (mw-5r3p30.244): a Greek word in it may have come as English sound-alikes */
+  spoken?: true;
   history: TalkHistoryEntry[];
   solid_words: string[];
   /** what each of the app's settings holds now (src/settings/registry.ts currentSettings), by key */
@@ -351,6 +353,7 @@ export function buildTalkRequest(
   requests: TutorRequest[] = [],
   learnerProfile?: LearnerProfile,
   pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION,
+  spoken = false,
 ): TalkRequest {
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   // About (mw-vtjxh4.2) sends the credits, which take most of the record: the credits are the talk, so his words and his grammar stay home
@@ -360,6 +363,7 @@ export function buildTalkRequest(
     // a talk from a screen is not about a text: it carries the screen and no verse text
     ...(scope.screen ? { screen: scope.screen } : { greek: verses.map(greekOf).join(' '), english: verses.map(englishOf).join(' ') }),
     question: question.trim(),
+    ...(spoken ? { spoken: true as const } : {}),
     history: turns.slice(-MAX_HISTORY_TURNS).map(({ q, a }) => ({ q, a })),
     solid_words: aboutCredits ? [] : solidWords,
     settings,

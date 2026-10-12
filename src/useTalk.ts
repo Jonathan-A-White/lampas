@@ -13,6 +13,7 @@ import { getDeviceKeyBytes } from './services/deviceKey';
 import { TutorError } from './services/tutor';
 import { checkedSyllables } from './speech/greekSyllables';
 import { stopAnswer } from './speech/readAloud';
+import { wasSpoken } from './speech/spoken';
 import { readGo, type GoPlace } from './talk/go';
 import { applyChanges, currentSettings, offeredChange } from './settings/registry';
 import { pendingOfferOf, settleOffer } from './talk/offers';
@@ -148,7 +149,7 @@ export function useTalk(
           const waiting = pendingOfferOf(turns);
           // a goal he chose Just this time for earlier in this quiz is sent for this quiz alone
           const once = turns.findLast((t) => t.quizGoalChoice === 'once')?.quizGoalOffer;
-          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation), {
+          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, wasSpoken(text)), {
             key: getDeviceKeyBytes(),
             files: pictures.length ? filesOf(pictures) : undefined,
             signal,

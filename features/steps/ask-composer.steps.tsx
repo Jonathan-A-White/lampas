@@ -145,6 +145,7 @@ describeFeature(feature, ({ Scenario }) => {
       await user.pointer({ keys: '[/MouseLeft]', target: holdBarIn(viewEl()), coords: AT });
     });
     Then('the mill received one grist for the lampas app, kind verse-ask, about {string} with the question {string}', received);
+    And('that grist is marked as spoken', () => expect(fake.received[0].input.spoken).toBe(true));
     And('that grist carries the Greek and the English of verses 1 to 11 and no other', carriesPassage);
     And('the answer shows in the Verse view', answerShows);
   });
@@ -161,6 +162,7 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(within(composerIn(viewEl())).getByRole('button', { name: 'Send' }));
     });
     Then('the mill received one grist for the lampas app, kind verse-ask, about {string} with the question {string}', received);
+    And('that grist is not marked as spoken', () => expect(fake.received[0].input).not.toHaveProperty('spoken'));
     And('that grist carries the Greek and the English of verses 1 to 11 and no other', carriesPassage);
     And('the answer shows in the Verse view', answerShows);
   });

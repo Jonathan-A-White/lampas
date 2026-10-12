@@ -124,6 +124,8 @@ describeFeature(feature, ({ Scenario }) => {
     expect(received(0).input.question).toBe(question);
   };
 
+  const spokenGrist = () => expect(received(0).input.spoken).toBe(true);
+
   Scenario('Holding Talk and saying a question sends it on release about the chapter', ({ Given, When, Then, And }) => {
     Given(withRecogniser, () => open());
     When('he holds the Talk button', () => hold(talkButton()));
@@ -136,6 +138,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he lets go of the Talk button', () => letGo(talkButton()));
     Then(mill, millSteps);
     And('the first grist carries the reference {string} and the question {string}', grist);
+    And('the first grist is marked as spoken', spokenGrist);
     And('the sheet shows the answer under his question', async () => {
       await waitFor(() => expect(turns()).toHaveLength(1));
       expect(turns()[0]).toHaveTextContent(TALK_ANSWER.answer);
@@ -150,6 +153,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he lets go of the number of verse {int}', (_, n: number) => letGo(verseNumber(n)));
     Then(mill, millSteps);
     And('the first grist carries the reference {string} and the question {string}', grist);
+    And('the first grist is marked as spoken', spokenGrist);
     And('verse {int} was not selected by the press', (_, n: number) => {
       expect(verseNumber(n)).toHaveAttribute('aria-pressed', 'false');
     });
@@ -214,6 +218,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he lets go of the hold-to-talk button', () => letGo(holdInSheet()));
     Then(mill, millSteps);
     And('the first grist carries the reference {string} and the question {string}', grist);
+    And('the first grist is marked as spoken', spokenGrist);
   });
 
   Scenario('A phone that denies the microphone is told what to do, and the sheet stays usable', ({ Given, When, Then, And }) => {
