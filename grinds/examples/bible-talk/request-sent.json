@@ -30,7 +30,7 @@
   },
   "expect": {
     "answer": {
-      "matches": "[Nn]ot (yet|answered)|no answer|waiting|hasn.t"
+      "matches": "[Nn]ot (yet|answered|been answered)|[Nn]o answer|[Ww]aiting|ha(s|ve)n.t|ha(s|ve) not|[Yy]et to (answer|reply|respond)"
     },
     "setting_offer": {
       "present": false
