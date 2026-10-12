@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.135",
+    "date": "2026-10-12",
+    "story": "mw-86e9r1.14",
+    "kind": "fixed",
+    "text": "The lessons on pairs of vowels, pairs of consonants and breathings now give each sound an English example word (e as in pet) and say they follow Modern Greek."
+  },
+  {
     "version": "0.1.134",
     "date": "2026-10-12",
     "story": "mw-5r3p30.241",

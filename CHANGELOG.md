@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.135
+_2026-10-12_
+- Fixed: The lessons on pairs of vowels, pairs of consonants and breathings now give each sound an English example word (e as in pet) and say they follow Modern Greek.
+
 ## 0.1.134
 _2026-10-12_
 - Fixed: Sound it out now explains Greek sounds the modern way (αυ is "af" or "av", not "aw") and never splits a vowel pair.
