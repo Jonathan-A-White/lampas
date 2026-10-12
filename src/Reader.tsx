@@ -13,6 +13,7 @@ import { VerseView } from './VerseView';
 import { useVerseAction } from './verse/action';
 import { Away } from './Away';
 import { useImmersive } from './immersive';
+import { ImmersiveHint } from './ImmersiveHint';
 import { ASK_BUTTON_GUTTER, ASK_BUTTON_ROOM, AskTutorButton, TALK_BAR_LIFT } from './AskTutor';
 import { TalkBar, TalkSheet } from './Talk';
 import { ErrorBoundary } from './ErrorBoundary';
@@ -337,6 +338,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       {notice ? <LinkNotice text={notice} onDismiss={() => setNotice(null)} /> : null}
       {swipeEnd ? <SwipeNote end={swipeEnd} lastBook={BOOKS[BOOKS.length - 1].name} onDismiss={dismissSwipeNote} /> : null}
       <ReadingBar reading={reading} />
+      {chapter && !failed ? <ImmersiveHint enabled={immersive} /> : null}
       <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} data-immersive={immersive ? 'on' : 'off'} style={chapter ? { marginBottom: away ? 0 : `calc(${ASK_BUTTON_ROOM})`, marginRight: ASK_BUTTON_GUTTER, transition: immersive ? 'margin-bottom 200ms ease' : undefined } : undefined} className="screen min-h-0 flex-1 touch-pan-y px-1 pt-2">
         <div ref={inner}>
         {failed ? (

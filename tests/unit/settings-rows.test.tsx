@@ -22,7 +22,7 @@ beforeEach(async () => {
 });
 
 const keys = (rows: readonly { key: string }[]) => rows.map((r) => r.key);
-const ALL_ON: Values = { weave: 'solid', newWordsADay: '3', 'resource.logos': 'on', developerMode: 'on' };
+const ALL_ON: Values = { weave: 'solid', immersiveReader: 'on', newWordsADay: '3', 'resource.logos': 'on', developerMode: 'on' };
 /** Values a row may read that are not rows of their own: Developer mode is found on About, it is not a setting of the list. */
 const NOT_ROWS = ['developerMode'];
 
@@ -59,6 +59,7 @@ describe('the rows', () => {
     expect(dependsOn('pickerGrammar')).toBe('newWordsADay');
     expect(dependsOn('grammarMove')).toBe('newWordsADay');
     expect(dependsOn('logosBible')).toBe('resource.logos');
+    expect(dependsOn('immersiveHint')).toBe('immersiveReader');
     expect(dependsOn('theme')).toBeUndefined();
   });
 });
@@ -104,6 +105,7 @@ describe('the Settings screen', () => {
     window.location.hash = '#/settings';
     await db.settings.bulkPut([
       { key: 'weave', value: 'solid' },
+      { key: 'immersiveReader', value: 'on' },
       { key: 'resource.logos', value: 'on' },
       { key: 'developerMode', value: 'on' },
     ]);

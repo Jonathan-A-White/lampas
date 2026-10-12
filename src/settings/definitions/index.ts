@@ -4,10 +4,11 @@
 import type { SettingDef, SettingValue } from '../define';
 import { askBySetting } from './askBy';
 import { immersiveSetting } from './immersive';
+import { immersiveHintSetting } from './immersiveHint';
 import { themeSetting } from './theme';
 import { tipsSetting } from './tips';
 import { weaveSetting } from './weave';
 
-export { askBySetting, immersiveSetting, themeSetting, tipsSetting, weaveSetting };
+export { askBySetting, immersiveHintSetting, immersiveSetting, themeSetting, tipsSetting, weaveSetting };
 
-export const DEFINITIONS: readonly SettingDef<SettingValue>[] = [themeSetting, weaveSetting, tipsSetting, immersiveSetting, askBySetting];
+export const DEFINITIONS: readonly SettingDef<SettingValue>[] = [themeSetting, weaveSetting, tipsSetting, immersiveSetting, immersiveHintSetting, askBySetting];
