@@ -16,10 +16,10 @@ Feature: Lampas says what's new
     When he closes the What's new sheet
     Then there is no What's new sheet
 
-  Scenario: A waiting build with nothing new in its changelog shows the banner alone
+  Scenario: A waiting build with nothing new in its changelog is not offered
     Given a newer build is waiting and its changelog has nothing after the running version
-    Then the update banner still reads "Update ready, tap to reload"
-    And the banner has no What's new button
+    Then there is no update banner
+    And the waiting build takes over by itself
 
   Scenario: After an update the sheet shows once
     Given the phone last saw an older version and the changelog lists lines since

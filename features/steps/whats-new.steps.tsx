@@ -5,13 +5,13 @@ import { act, cleanup, render, screen, waitFor, within } from '@testing-library/
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
-import { versionLink } from 'bsv-kit/whats-new';
+import { fetchChangelog, versionLink } from 'bsv-kit/whats-new';
 import { About } from '../../src/About';
 import { APP_SEMVER, LAST_SEEN_VERSION_STORAGE_KEY, REPO, REPO_PUBLIC } from '../../src/config';
 import { startAppUpdates } from '../../src/services/appUpdate';
 import { UpdateBanner } from '../../src/UpdateBanner';
 import { WhatsNewOnUpdate } from '../../src/whatsNew/WhatsNewOnUpdate';
-import { fakeSetup, fakeWorker } from '../../tests/support/fake-registration';
+import { fakeSetup, fakeWorker, type FakeWorker } from '../../tests/support/fake-registration';
 import {
   OLDER_NEW,
   OLDER_VERSION,
@@ -28,6 +28,7 @@ const user = userEvent.setup();
 
 describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) => {
   let stop: (() => void) | undefined;
+  let waiting: FakeWorker | undefined;
 
   BeforeEachScenario(() => {
     cleanup();
@@ -45,8 +46,15 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
   /** The banner of a phone whose service worker has a newer build waiting, with the changelog the server holds. */
   function openWithWaiting(entries = fixtureChangelog()) {
     stubChangelog(entries);
-    const setup = fakeSetup({ waiting: fakeWorker() });
-    stop = startAppUpdates({ container: setup.container, registration: setup.registration, reload: setup.reload }).stop;
+    waiting = fakeWorker();
+    const setup = fakeSetup({ waiting });
+    stop = startAppUpdates({
+      container: setup.container,
+      registration: setup.registration,
+      reload: setup.reload,
+      changelog: () => fetchChangelog('/'),
+      version: APP_SEMVER,
+    }).stop;
     render(<UpdateBanner />);
   }
 
@@ -55,8 +63,8 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
 
   Scenario("The Update ready banner names the waiting version and what is in it", ({ Given, Then, And }) => {
     Given('a newer build is waiting and its changelog lists 1 new line and 1 fixed line for it', () => openWithWaiting());
-    Then('the update banner still reads "Update ready, tap to reload"', () => {
-      expect(screen.getByRole('button', { name: 'Update ready, tap to reload' })).toBeEnabled();
+    Then('the update banner still reads "Update ready, tap to reload"', async () => {
+      expect(await screen.findByRole('button', { name: 'Update ready, tap to reload' })).toBeEnabled();
     });
     And('the banner also says its version with "1 new, 1 fixed"', async () => {
       expect(await screen.findByText(new RegExp(`${nextVersion().replace(/\./g, '\\.')} · 1 new, 1 fixed`))).toBeVisible();
@@ -85,20 +93,19 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
     });
   });
 
-  Scenario('A waiting build with nothing new in its changelog shows the banner alone', ({ Given, Then, And }) => {
+  Scenario('A waiting build with nothing new in its changelog is not offered', ({ Given, Then, And }) => {
     Given('a newer build is waiting and its changelog has nothing after the running version', () =>
       openWithWaiting(fixtureChangelog().filter((e) => e.version !== nextVersion())),
     );
-    Then('the update banner still reads "Update ready, tap to reload"', () => {
-      expect(screen.getByRole('button', { name: 'Update ready, tap to reload' })).toBeEnabled();
-    });
-    And("the banner has no What's new button", async () => {
-      // the changelog is read after the banner is drawn: give it the turn it needs, then look
+    Then('there is no update banner', async () => {
+      // the changelog is read after the app starts: give it the turns it needs, then look
       await act(async () => {
-        await Promise.resolve();
-        await Promise.resolve();
+        await new Promise((resolve) => setTimeout(resolve, 50));
       });
-      expect(screen.queryByRole('button', { name: "What's new" })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Update ready, tap to reload' })).toBeNull();
+    });
+    And('the waiting build takes over by itself', () => {
+      expect(waiting!.postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' });
     });
   });
 

@@ -3,6 +3,8 @@
 import '@testing-library/react/dont-cleanup-after-each';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterAll, expect, vi } from 'vitest';
+import type { ChangelogEntry } from 'bsv-kit/whats-new';
+import { APP_SEMVER } from '../../src/config';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { startAppUpdates, UPDATE_CHECK_EVERY_MS } from '../../src/services/appUpdate';
 import { UpdateBanner } from '../../src/UpdateBanner';
@@ -15,15 +17,18 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
   let waiting: FakeWorker | undefined;
   let stop: (() => void) | undefined;
 
-  function open(withWaiting: boolean) {
+  function open(withWaiting: boolean, changelog?: () => Promise<ChangelogEntry[] | null>) {
     cleanup();
     waiting = withWaiting ? fakeWorker() : undefined;
     setup = fakeSetup({ waiting });
-    stop = startAppUpdates({ container: setup.container, registration: setup.registration, reload: setup.reload }).stop;
+    stop = startAppUpdates({ container: setup.container, registration: setup.registration, reload: setup.reload, changelog, version: APP_SEMVER }).stop;
     render(<UpdateBanner />);
   }
 
-  BeforeEachScenario(() => void vi.useFakeTimers());
+  BeforeEachScenario(() => {
+    vi.useFakeTimers();
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
+  });
   AfterEachScenario(() => {
     stop?.();
     cleanup();
@@ -83,6 +88,36 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
     When('30 minutes pass', () => void vi.advanceTimersByTime(UPDATE_CHECK_EVERY_MS));
     Then('it has looked for an update 3 times', () => {
       expect(setup.registration.update).toHaveBeenCalledTimes(3);
+    });
+  });
+
+  Scenario('A build with nothing new to show waits for the app to be hidden, then takes over by itself', ({ Given, Then, And, When }) => {
+    Given('Lampas is open on a phone and a newer build with nothing new to show is found waiting', async () => {
+      open(false, async () => [{ version: APP_SEMVER, date: '2026-10-12', story: 'fx-1', kind: 'fixed', text: 'A line.' }]);
+      waiting = setup.newWorkerWaits();
+      await act(async () => void (await vi.advanceTimersByTimeAsync(0)));
+    });
+    Then('there is no update banner', () => {
+      expect(screen.queryByText('Update ready, tap to reload')).toBeNull();
+    });
+    And('the waiting worker has not been told to take over', () => {
+      expect(waiting!.postMessage).not.toHaveBeenCalled();
+    });
+    When('the phone puts Lampas in the background', () => {
+      Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    Then('the waiting worker is sent SKIP_WAITING', () => {
+      expect(waiting!.postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' });
+    });
+    When('the new worker takes control twice over', () => {
+      act(() => {
+        setup.controllerChanges();
+        setup.controllerChanges();
+      });
+    });
+    Then('the page has reloaded exactly once', () => {
+      expect(setup.reload).toHaveBeenCalledTimes(1);
     });
   });
 });
