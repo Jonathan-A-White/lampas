@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.130
+_2026-10-12_
+- Fixed: Sound it out now says a one-letter syllable by its sound instead of the letter's name.
+
 ## 0.1.128
 _2026-10-12_
 - Fixed: the "Which idea is this?" grammar question no longer gives away its own answer.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.130",
+    "date": "2026-10-12",
+    "story": "mw-5r3p30.248",
+    "kind": "fixed",
+    "text": "Sound it out now says a one-letter syllable by its sound instead of the letter's name."
+  },
+  {
     "version": "0.1.128",
     "date": "2026-10-12",
     "story": "mw-86e9r1.3",
