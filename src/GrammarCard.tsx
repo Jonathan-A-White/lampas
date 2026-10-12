@@ -47,7 +47,7 @@ function Heading({ question, mode }: { question: GrammarQuestion; mode: Question
       </div>
       {question.say ? (
         <div className="mt-4">
-          <HoldToHear text={question.say} />
+          <HoldToHear text={question.say} letter={question.kind === 'sound'} />
         </div>
       ) : null}
     </>

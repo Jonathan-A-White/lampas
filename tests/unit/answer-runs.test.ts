@@ -44,10 +44,9 @@ describe('answerRuns', () => {
   });
 });
 
-// A voice given one letter on its own says the letter's name ('Alpha'), not its sound; the package makes every run a sentence of its own.
+// A voice given one letter on its own says the letter's name ('Alpha'): readAloud.ts textOf turns such a run into its sound (tests/unit/readAloud.test.ts).
 describe('syllableRuns', () => {
   const textsOf = (syllables: string[]): string[] => syllableRuns(syllables).map((r) => r.text);
-  const lettersIn = (text: string): number => text.normalize('NFD').replace(/\p{M}/gu, '').length;
 
   it('hands the voice every syllable of a word in Greek, slowly, one run each', () => {
     expect(syllableRuns(['συν', 'ερ', 'γεῖ'])).toEqual([
@@ -57,14 +56,11 @@ describe('syllableRuns', () => {
     ]);
   });
 
-  it.each(['ἁ', 'ὁ', 'ἡ', 'ε', 'ι', 'ω'])('never hands the voice the lone letter %s, which it would spell out by name', (letter) => {
-    const [run] = syllableRuns([letter]);
-    expect(lettersIn(run.text)).toBeGreaterThan(1);
-    expect(run).toMatchObject({ language: 'greek', slow: true });
-    expect(run.text.normalize('NFD').replace(/\p{M}/gu, '')).toBe(letter.normalize('NFD').replace(/\p{M}/gu, '').repeat(2));
+  it.each(['ἁ', 'ὁ', 'ἡ', 'ε', 'ι', 'ω'])('keeps the one-letter syllable %s as it is (readAloud says it as its sound, never by name)', (letter) => {
+    expect(syllableRuns([letter])).toEqual([{ text: letter, language: 'greek', slow: true }]);
   });
 
   it('leaves the other syllables of the word as they are', () => {
-    expect(textsOf(['ἁ', 'μάρ', 'τη', 'τε'])).toEqual([expect.stringMatching(/^ἁ.$/u), 'μάρ', 'τη', 'τε']);
+    expect(textsOf(['ἁ', 'μάρ', 'τη', 'τε'])).toEqual(['ἁ', 'μάρ', 'τη', 'τε']);
   });
 });

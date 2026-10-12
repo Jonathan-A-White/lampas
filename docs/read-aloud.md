@@ -47,6 +47,9 @@ Postern's and SpellForge's; its colours are Lampas's (`--bk-speech-*` in `src/in
   the foot of the shell (0, every screen but the Reader), the Reader above its Talk bar (1), the Verse view above its hold bar (2), the Talk sheet above its foot (3).
   It is in flow, never over text, and the round *Ask the tutor* button rides above it. The header's own Pause / Stop are gone while the bar holds the reading.
 - A word said alone (a long press, a speaker, Hold to hear) is not a reading and has no bar (`isWordSpeech`).
+- A Greek voice names a lone letter ('omicron'), so Greek of ONE letter (ὁ, ἡ, ὦ, Ὃ: a held word, a speaker, a one-letter syllable of Sound it out, a lone woven word)
+  is never handed to it (mw-5r3p30.256): `loneLetterSound` (`src/speech/greek.ts`) gives the chosen pronunciation's respell in lower case ('o' for ὁ), said by the English
+  voice. Words of two letters or more go to the Greek voice in lower case (mw-5r3p30.226). PROVISIONAL until the Governor has heard it on his phone.
 - **Listen is a Listen** (mw-5r3p30.130, `docs/verse-view.md` 'Listen is a player'): a reading started with `listen: <key>` is paused by an in-app interruption and goes on by itself when it ends
   (`readAloud.ts` `interruptListen`; a word beside it, a Hold to ask, a recording, a tutor's answer); the speaking bar's Restart on it goes back to the first verse (`restartListen`); one that ran
   to its end by itself is remembered (`useListenCompleted`) so the Verse view's foot says Play again.

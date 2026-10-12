@@ -2,24 +2,24 @@
 // The shared hold bar (src/ui/HoldBar.tsx), the same as the Talk bar and the same engine as a long press on a word of the reader (speakWord in
 // speech/greek.ts); a tap without a hold says nothing, a slide off the bar drops the word.
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { hasGreekVoice, noVoiceHelp, speakWord, stopSpeaking, warmVoices } from './speech/greek';
+import { hasGreekVoice, noVoiceHelp, speakLetter, speakWord, stopSpeaking, warmVoices } from './speech/greek';
 import { Icon } from './speech/SpeakButton';
 import { HoldBar } from './ui/HoldBar';
 
 const HELP_MS = 7000;
 
-/** `text` is the Greek said while the bar is held. */
-export function HoldToHear({ text }: { text: string }) {
+/** `text` is the Greek said while the bar is held; `letter` says it is a letter asked about (a letter drill), which is named, not turned into a sound. */
+export function HoldToHear({ text, letter = false }: { text: string; letter?: boolean }) {
   const [help, setHelp] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const begin = useCallback(() => {
-    if (!speakWord(text, 'greek') || hasGreekVoice() === false) {
+    if (!(letter ? speakLetter(text) : speakWord(text, 'greek')) || hasGreekVoice() === false) {
       setHelp(noVoiceHelp());
       clearTimeout(timer.current);
       timer.current = setTimeout(() => setHelp(null), HELP_MS);
     }
-  }, [text]);
+  }, [text, letter]);
 
   const hold = { onHold: begin, onRelease: stopSpeaking, onDrop: stopSpeaking };
 

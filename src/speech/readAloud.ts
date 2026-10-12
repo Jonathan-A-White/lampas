@@ -19,7 +19,7 @@ import type { ReaderView } from '../data/repositories';
 import type { Woven } from '../data/weave';
 import { publish } from '../events/bus';
 import { openReader } from '../nav/route';
-import { besideNow, hasGreekVoice, READ_KEY, speakText, subscribeBeside } from './greek';
+import { besideNow, hasGreekVoice, loneLetterSound, READ_KEY, speakText, subscribeBeside } from './greek';
 import type { SpeechLanguage } from './languages';
 import type { ReadSpan } from './readSpan';
 import { keepAwake, letSleep } from './wakeLock';
@@ -228,8 +228,9 @@ function afterVerse(at: number, my: number): void {
   readVerse(next.n, my);
 }
 
-/** The runs of a verse as the one text handed to the package: a run to a line, so the package cuts a sentence at the end of every run too. */
-const textOf = (runs: Run[]): string => runs.map((r) => r.text).join('\n');
+/** The runs of a verse as the one text handed to the package: a run to a line, so the package cuts a sentence at the end of every run too. A Greek run
+ * of one letter (a one-letter syllable, a lone ὁ) would be named by a Greek voice, so it goes as its sound (mw-5r3p30.256). */
+const textOf = (runs: Run[]): string => runs.map((r) => (r.language === 'greek' ? (loneLetterSound(r.text) ?? r.text) : r.text)).join('\n');
 
 function readVerse(verse: number, my: number): void {
   if (my !== epoch) return;
