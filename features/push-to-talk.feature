@@ -15,6 +15,7 @@ Feature: Push-to-talk
     When he lets go of the Talk button
     Then the mill received 1 grists for the lampas app, kind bible-talk
     And the first grist carries the reference "Romans 8" and the question "What is this chapter about"
+    And the first grist is marked as spoken
     And the sheet shows the answer under his question
 
   Scenario: Long-pressing verse 28 and speaking sends a turn about 8:28
@@ -25,6 +26,7 @@ Feature: Push-to-talk
     And he lets go of the number of verse 28
     Then the mill received 1 grists for the lampas app, kind bible-talk
     And the first grist carries the reference "Romans 8:28" and the question "Why does Paul say all things"
+    And the first grist is marked as spoken
     And verse 28 was not selected by the press
 
   Scenario: A tap under 500 ms only opens the sheet
@@ -64,6 +66,7 @@ Feature: Push-to-talk
     And he lets go of the hold-to-talk button
     Then the mill received 1 grists for the lampas app, kind bible-talk
     And the first grist carries the reference "Romans 8" and the question "What does this mean"
+    And the first grist is marked as spoken
 
   Scenario: A phone that denies the microphone is told what to do, and the sheet stays usable
     Given Lampas is opened on Romans 8 with a talk behind a fake Postern and a recogniser

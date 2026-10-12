@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isListenSupported, startListening, type ListenErrorKind, type ListenSession } from './services/listen';
 import { interruptListen, pauseReading } from './speech/readAloud';
+import { noteSpoken } from './speech/spoken';
 
 export interface VoiceNotice {
   kind: ListenErrorKind | 'empty';
@@ -127,6 +128,7 @@ export function useVoice(onSend: (text: string) => void): Voice {
       if (hold.current === null) setNotice({ kind: result.ok ? 'empty' : result.error.kind, message: result.ok ? 'No speech was heard.' : result.error.message });
       return;
     }
+    noteSpoken(text);
     send.current(text);
   }, [giveBackListen]);
 

@@ -16,6 +16,7 @@ Feature: Bible talk
     And he sends "What does συνεργεῖ mean here?"
     Then the mill received 2 grists for the lampas app, kind bible-talk
     And the first grist carries no earlier turns
+    And the first grist is not marked as spoken
     And the second grist carries the reference "Romans 8:28" and the Greek and the English of verse 28
     And the second grist carries the question "What does συνεργεῖ mean here?"
     And the second grist carries his solid words, and not the words he is still learning

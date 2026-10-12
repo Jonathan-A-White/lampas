@@ -19,6 +19,7 @@ Feature: Ask the tutor uses the shared composer
     Then the composer shows the live words "What is the Spirit's work"
     When he lets go of the Hold to ask bar
     Then the mill received one grist for the lampas app, kind verse-ask, about "Romans 8:1-11" with the question "What is the Spirit's work"
+    And that grist is marked as spoken
     And that grist carries the Greek and the English of verses 1 to 11 and no other
     And the answer shows in the Verse view
 
@@ -29,5 +30,6 @@ Feature: Ask the tutor uses the shared composer
     And he taps "Type a question"
     And he types "What is the Spirit's work here?" and taps Send
     Then the mill received one grist for the lampas app, kind verse-ask, about "Romans 8:1-11" with the question "What is the Spirit's work here?"
+    And that grist is not marked as spoken
     And that grist carries the Greek and the English of verses 1 to 11 and no other
     And the answer shows in the Verse view

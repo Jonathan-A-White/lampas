@@ -215,6 +215,9 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       await waitFor(() => expect(fake.received).toHaveLength(count));
       for (const got of fake.received) expect(got.grist).toMatchObject({ app: 'lampas', kind: 'bible-talk', v: '1' });
     });
+    And('the first grist is not marked as spoken', () => {
+      expect(received(0).input).not.toHaveProperty('spoken');
+    });
     And('the first grist carries no earlier turns', () => {
       expect(history(0)).toEqual([]);
     });

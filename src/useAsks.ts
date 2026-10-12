@@ -15,6 +15,7 @@ import { addAnswer, listSolidHeadwords, verseRef } from './data/repositories';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { withoutFillers } from './services/fillers';
 import { stopAnswer } from './speech/readAloud';
+import { wasSpoken } from './speech/spoken';
 import { TutorError, askByChange, askTutor, buildRequest, type TutorFailure } from './services/tutor';
 
 /** What a question is doing right now. */
@@ -58,7 +59,7 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
       void (async () => {
         try {
           const [solid, learner, grammar, depths, askBy, requests, profile] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined), depthSettings(), getSetting(askBySetting), requestsForTutor().catch(() => []), learnerProfile().catch(() => undefined)]);
-          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, { ...depths, [askBySetting.key]: askBy }, requests, profile);
+          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, { ...depths, [askBySetting.key]: askBy }, requests, profile, wasSpoken(text));
           const answer = await askTutor(request, {
             key: getDeviceKeyBytes(),
             signal,

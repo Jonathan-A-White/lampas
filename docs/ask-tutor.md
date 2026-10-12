@@ -110,6 +110,16 @@ answer's turn with its Undo; quiz goal: keeps it), decline withdraws it (**Not s
 answer, which the app reads aloud like any answer, holds the text word for word. No `offer_reply`, or no offer waiting, is an ordinary question: the offer and its
 button stay and ride with the next turn. A step that fails on a yes (the mill is down) is said under the answer and the button is still there.
 
+## Greek words he says aloud (mw-5r3p30.244)
+
+Hold to talk and Hold to ask use the phone's recogniser in en-US, so a Greek word he says arrives as English sound-alikes ('Tech N9ne' for
+τεκνίον). The words the recogniser handed over are remembered (src/speech/spoken.ts, noted by useVoice's release and by the Ask composer's
+transcriber); a question whose text is those words goes to bible-talk and verse-ask with `spoken: true` (buildTalkRequest, buildRequest), and a
+typed one, or one he edited after speaking, has no such field. Retry sends the same text and so stays marked. Both grinds' instructions
+('## Greek words said in English speech') tell the tutor to match the sound-alike to the passage's Greek words and lemmas, answer about the best
+match and say in one line which word it took ('I took "Tech N9ne" as τεκνίον.') rather than ask first (PROVISIONAL). Scenario:
+grinds/examples/{bible-talk,verse-ask}/spoken-greek-word.json.
+
 ## What he said, cleaned up
 
 He often speaks his question, so the words that reach the grist can have no punctuation, an "um", a repeat or a dropped start. Both tutor grinds

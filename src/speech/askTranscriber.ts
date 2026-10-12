@@ -4,6 +4,7 @@
 // aloud while he talks (the same rule as src/useVoice.ts, which the Talk sheet's and the Talk bar's holds follow).
 import { browserSpeech, type Transcriber } from 'bsv-kit/composer';
 import { interruptListen, pauseReading } from './readAloud';
+import { noteSpoken } from './spoken';
 
 export const askTranscriber: Transcriber = {
   supported: browserSpeech.supported,
@@ -30,7 +31,10 @@ export const askTranscriber: Transcriber = {
         },
         async stop() {
           try {
-            return await session.stop();
+            const result = await session.stop();
+            // the words went by voice: the question made of them is sent as spoken (src/speech/spoken.ts)
+            if (result.text.trim()) noteSpoken(result.text);
+            return result;
           } finally {
             giveBack();
           }

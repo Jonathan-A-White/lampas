@@ -91,6 +91,8 @@ export interface VerseAskRequest {
   greek: string;
   english: string;
   question: string;
+  /** present (true) only when the question was spoken to the phone's English recogniser (mw-5r3p30.244): a Greek word in it may have come as English sound-alikes */
+  spoken?: true;
   solid_words: string[];
   /** where he stands (src/data/learnerSummary.ts): solid count, the learning words, today's new words, what is due */
   learner?: string;
@@ -137,12 +139,13 @@ export function isVerseAnswer(value: unknown): value is VerseAnswer {
   return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));
 }
 
-export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = [], learnerProfile?: LearnerProfile): VerseAskRequest {
+export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = [], learnerProfile?: LearnerProfile, spoken = false): VerseAskRequest {
   return {
     reference,
     greek: verse.g.map((w) => w.t).join(' '),
     english: verse.e.map(markSupplied).join(' '),
     question: question.trim(),
+    ...(spoken ? { spoken: true as const } : {}),
     solid_words: solidWords,
     ...(learner ? { learner } : {}),
     ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),

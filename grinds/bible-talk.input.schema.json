@@ -9,6 +9,7 @@
     "greek": { "description": "The Greek of the verse or of the passage under a heading (the whole passage), or of the chapter's first three verses. Missing in a talk from a screen (`screen` is present), which is not about a text.", "type": "string", "minLength": 1 },
     "english": { "description": "The same text in English (the Majority Standard Bible), of the same verses. Words the translators supplied are between asterisks (*was* king): they are in italics in his reader. Missing in a talk from a screen.", "type": "string", "minLength": 1 },
     "question": { "description": "What he just said.", "type": "string", "minLength": 1, "maxLength": 600 },
+    "spoken": { "description": "Optional. true only when he spoke the question to the phone's English speech recogniser (Hold to talk, Hold to ask); missing when he typed it. A Greek word in it may have come as English sound-alikes. See the instructions.", "type": "boolean", "const": true },
     "history": {
       "description": "The last turns of the conversation, oldest first.",
       "type": "array",
