@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.118
+_2026-10-12_
+- New: A total beginner can start from the letters, and every goal now teaches the vowel and consonant pairs, syllables, the iota under a letter and punctuation before the grammar.
+
 ## 0.1.116
 _2026-10-12_
 - Fixed: In Quiz me, the question about your quiz goal and its two buttons no longer slip out of sight when you turn the phone or the microphone message appears.
