@@ -86,8 +86,16 @@ const TWO = [
   { x: 120, y: 400 },
   { x: 220, y: 420 },
 ];
+const THREE = [...TWO, { x: 320, y: 410 }];
 const twoFingerTap = () => {
   touch('touchstart', TWO);
+  touch('touchend', []);
+};
+/** The fingers of a real tap land one after another, a few milliseconds apart: the browser sends a touchstart for each. */
+const threeFingerTap = () => {
+  touch('touchstart', THREE.slice(0, 1));
+  touch('touchstart', THREE.slice(0, 2));
+  touch('touchstart', THREE);
   touch('touchend', []);
 };
 const firstWord = () => document.querySelector<HTMLElement>('[data-verse="1"] [role="button"][data-chunk], [data-verse="1"] [role="button"][data-word]') as HTMLElement;
@@ -123,13 +131,54 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Scrolling down slides the bars away and scrolling up 24 px brings them back', ({ Given, When, Then }) => {
+  Scenario('Scrolling down slides the bars away and scrolling up leaves them away', ({ Given, When, Then }) => {
     Given('Lampas is opened on Romans 8 with Immersive reader On', () => open({ immersive: 'on' }));
     When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
     Then(`${bars} out of view`, outOfView);
     When('he scrolls the text up {int} px', (_, px: number) => scrollBy(-px));
-    Then(`${bars} still out of view`, outOfView);
+    Then(`${bars} still out of view`, async () => {
+      await sleep(50);
+      await outOfView();
+    });
     When('he scrolls the text up another {int} px', (_, px: number) => scrollBy(-px));
+    Then(`${bars} out of view at the top of the text`, async () => {
+      expect(at).toBe(0);
+      await sleep(50);
+      await outOfView();
+    });
+  });
+
+  Scenario('A three-finger tap shows the bars, and a second three-finger tap hides them again', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader On', () => open({ immersive: 'on' }));
+    When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
+    And('he taps the text with three fingers, and the phone also sends a click on a word', async () => {
+      await outOfView();
+      threeFingerTap();
+      await user.click(firstWord());
+    });
+    Then(`${bars} in view`, inView);
+    And('no word sheet is open', () => {
+      expect(screen.queryByRole('dialog')).toBeNull();
+    });
+    When('he taps the text with three fingers', async () => {
+      // past the guard that drops the click after a tap
+      await sleep(650);
+      threeFingerTap();
+    });
+    Then(`${bars} out of view`, outOfView);
+  });
+
+  Scenario('Three fingers that arrive one after another, or that move, are judged as one tap', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader On', () => open({ immersive: 'on' }));
+    When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
+    And('he puts three fingers on the text and drags them {int} px', async (_, px: number) => {
+      await outOfView();
+      touch('touchstart', THREE);
+      touch('touchmove', THREE.map((f) => ({ x: f.x, y: f.y - px })));
+      touch('touchend', []);
+    });
+    Then(`${bars} out of view`, outOfView);
+    When('he puts three fingers on the text one after another and lifts them together', threeFingerTap);
     Then(`${bars} in view`, inView);
   });
 

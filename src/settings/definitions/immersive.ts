@@ -16,5 +16,5 @@ export const immersiveSetting = defineSetting<Immersive>({
   section: 'immersive',
   label: 'Immersive reader',
   hint: 'While you read, the top and the Talk bar slide away.',
-  help: 'On: scrolling the text down slides the header, the row of chips, the Talk bar and the Ask button out of view, so the text has the whole screen. Scrolling back up a little, or tapping the text with two fingers, brings them back; they also come back when a sheet closes, at the end of the chapter and when reading aloud stops. Off by default.',
+  help: 'On: scrolling the text down slides the header, the row of chips, the Talk bar and the Ask button out of view, so the text has the whole screen. Scrolling back up does not bring them back. Tapping the text with three fingers brings them back, and a second three-finger tap sends them away again (two fingers also brings them back); they also come back when a sheet closes, at the end of the chapter and when reading aloud stops. Off by default.',
 });

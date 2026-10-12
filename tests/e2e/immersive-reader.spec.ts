@@ -4,7 +4,8 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
 // The Immersive reader (mw-5r3p30.120) at 412x915: scrolling the text down slides the header, the chips, the Talk bar and the Ask button away;
-// scrolling up 24 px or a two-finger tap brings them back. A phone-width layout claim: it runs under --project=shots.
+// scrolling up leaves them away; a three-finger tap toggles them and a two-finger tap brings them back (mw-5r3p30.227). A phone-width layout claim:
+// it runs under --project=shots.
 test.use({ viewport: { width: 412, height: 915 }, hasTouch: true });
 
 /** Puts the Immersive reader setting in the app's store through raw IndexedDB, as the app wrote it. */
@@ -72,13 +73,14 @@ async function expectAll(page: Page, state: 'visible' | 'hidden') {
   for (const el of all(page)) await (state === 'visible' ? expect(el).toBeVisible() : expect(el).toBeHidden());
 }
 
-/** Two fingers on the text at once, lifted together: what the browser sends for a two-finger tap. */
-async function twoFingerTap(page: Page, at = { x: 150, y: 450 }, moveBy = 0) {
+/** Two or three fingers on the text at once, lifted together: what the browser sends for a two- or three-finger tap. */
+async function fingerTap(page: Page, fingers: 2 | 3, at = { x: 150, y: 450 }, moveBy = 0) {
   const cdp = await page.context().newCDPSession(page);
   const points = [
     { x: at.x, y: at.y, id: 1 },
     { x: at.x + 90, y: at.y + 10, id: 2 },
-  ];
+    { x: at.x + 180, y: at.y, id: 3 },
+  ].slice(0, fingers);
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points });
   if (moveBy) {
     await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: points.map((p) => ({ ...p, y: p.y - moveBy })) });
@@ -86,14 +88,16 @@ async function twoFingerTap(page: Page, at = { x: 150, y: 450 }, moveBy = 0) {
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   await cdp.detach();
 }
+const twoFingerTap = (page: Page, at?: { x: number; y: number }, moveBy?: number) => fingerTap(page, 2, at, moveBy);
+const threeFingerTap = (page: Page) => fingerTap(page, 3);
 
-test('scrolling down slides the bars away, scrolling up 24 px brings them back', async ({ page }) => {
+test('scrolling down slides the bars away, scrolling up leaves them away', async ({ page }) => {
   await openReader(page, 'on');
   await expectAll(page, 'visible');
   const before = await settledHeight(page);
   await shot(page, 'immersive-shown');
 
-  await scrollText(page, 200);
+  await scrollText(page, 400);
   await expectAll(page, 'hidden');
   // out of the tab order too
   await expect(page.getByRole('button', { name: 'Settings' })).toHaveCount(0);
@@ -104,12 +108,27 @@ test('scrolling down slides the bars away, scrolling up 24 px brings them back',
   expect((box?.y ?? 1) + (box?.height ?? 0)).toBeGreaterThan(915 - 100);
   await shot(page, 'immersive-hidden');
 
-  await scrollText(page, -10);
-  await page.waitForTimeout(300);
+  await scrollText(page, -200);
+  await page.waitForTimeout(400);
   await expectAll(page, 'hidden');
-  await scrollText(page, -14);
+  expect(await scrollTop(page)).toBeGreaterThan(0);
+  await shot(page, 'immersive-scroll-up');
+});
+
+test('a three-finger tap shows the bars and a second one hides them', async ({ page }) => {
+  await openReader(page, 'on');
+  const before = await settledHeight(page);
+  await scrollText(page, 200);
+  await expectAll(page, 'hidden');
+
+  await threeFingerTap(page);
   await expectAll(page, 'visible');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect.poll(() => textHeight(page)).toBeCloseTo(before, 0);
+
+  await page.waitForTimeout(700);
+  await threeFingerTap(page);
+  await expectAll(page, 'hidden');
 });
 
 test('a two-finger tap brings the bars back and opens no word sheet; a one-finger tap on a word still opens it', async ({ page }) => {
