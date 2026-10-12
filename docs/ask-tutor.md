@@ -105,7 +105,7 @@ He may say yes, no or 'read it back' instead, in Talk, spoken or typed. `src/tal
 offer nobody has settled; `useTalk.say` sends it with his next turn as `pending_offer` `{kind: 'feedback' | 'setting' | 'quiz-goal', text}` (the exact text it would
 send or do). The bible-talk grind, not a word list in the app, decides from his words and answers `offer_reply`: `confirm`, `decline` or `read_back`
 (`grinds/bible-talk.instructions.md` "Answering an offer by voice"; five examples under `grinds/examples/bible-talk/offer-*.json`). `settleOffer` then does it:
-confirm does exactly what the tap does (feedback: `sendMakersOffer`, the one function the button calls too; setting: `takeSettingOffer`, the change lands on the
+confirm does exactly what the tap does (feedback: `sendMakersOffer`, the one function the button calls too; a tap and a yes for the same turn share the one send in flight, so the makers get one grist, and the button is off while either is sending, `useOfferSending`; setting: `takeSettingOffer`, the change lands on the
 answer's turn with its Undo; quiz goal: keeps it), decline withdraws it (**Not sent**, **Not changed**, **Not kept**; nothing is sent), read_back changes nothing and the
 answer, which the app reads aloud like any answer, holds the text word for word. No `offer_reply`, or no offer waiting, is an ordinary question: the offer and its
 button stay and ride with the next turn. A step that fails on a yes (the mill is down) is said under the answer and the button is still there.
