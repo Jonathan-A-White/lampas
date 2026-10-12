@@ -17,6 +17,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech } from '../../tests/support/fake-speech';
+import { ASYNC_WAIT_MS } from '../../tests/support/timeouts';
 
 const realSeam = { ...imageSeam };
 
@@ -81,10 +82,23 @@ const thumbs = (sheet: HTMLElement): HTMLElement[] => {
   return group ? within(group).queryAllByRole('img') : [];
 };
 
+/** The phone's Back: waits for the open sheet's history entry, presses Back, and waits for the popstate it makes, however late the host delivers it. */
 async function back(): Promise<void> {
+  await waitFor(() => expect((window.history.state as { sheet?: number } | null)?.sheet ?? 0).toBeGreaterThan(0));
   await act(async () => {
+    const popped = new Promise<void>((resolve) => {
+      const timer = setTimeout(resolve, ASYNC_WAIT_MS);
+      window.addEventListener(
+        'popstate',
+        () => {
+          clearTimeout(timer);
+          resolve();
+        },
+        { once: true },
+      );
+    });
     window.history.back();
-    await new Promise((resolve) => setTimeout(resolve, 30));
+    await popped;
   });
 }
 
@@ -106,12 +120,12 @@ describeFeature(feature, ({ Scenario }) => {
     // the mill has had time to be called, and was not
     await new Promise((resolve) => setTimeout(resolve, 50));
     expect(fake.received).toHaveLength(0);
-    expect(await db.shares.count()).toBe(0);
+    await waitFor(async () => expect(await db.shares.count()).toBe(0));
   };
   const readerIsOpen = async (): Promise<void> => {
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
-    expect(await db.shares.count()).toBe(0);
+    await waitFor(async () => expect(await db.shares.count()).toBe(0));
     expect(window.location.hash).not.toContain('share');
   };
 
@@ -174,6 +188,19 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario("The phone's Back drops the share", ({ Given, When, Then }) => {
     Given(TWO_AND_WORDS, openFull);
+    When("he presses the phone's Back", back);
+    Then('no share is waiting and the Reader is open', readerIsOpen);
+  });
+
+  Scenario("The phone's Back drops the share on a slow host", ({ Given, And, When, Then }) => {
+    Given(TWO_AND_WORDS, openFull);
+    And('the host is slow to deliver Back and to forget the share', () => {
+      // a loaded host: the Back lands long after it was pressed, and the write that drops the share after that
+      const realBack = window.history.back.bind(window.history);
+      vi.spyOn(window.history, 'back').mockImplementationOnce(() => void setTimeout(realBack, 300));
+      const clear = db.shares.clear.bind(db.shares);
+      vi.spyOn(db.shares, 'clear').mockImplementationOnce(() => new Promise<void>((resolve) => setTimeout(() => void clear().then(() => resolve()), 300)));
+    });
     When("he presses the phone's Back", back);
     Then('no share is waiting and the Reader is open', readerIsOpen);
   });

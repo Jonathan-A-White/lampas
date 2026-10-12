@@ -40,6 +40,12 @@ Feature: Lampas is a share target
     When he presses the phone's Back
     Then no share is waiting and the Reader is open
 
+  Scenario: The phone's Back drops the share on a slow host
+    Given the Share screen is opened with two past talks and a share of two pictures and some words
+    And the host is slow to deliver Back and to forget the share
+    When he presses the phone's Back
+    Then no share is waiting and the Reader is open
+
   Scenario: A share of words alone works the same
     Given the Share screen is opened with two past talks and a share of words alone
     When he taps "Continue: Romans 8:28 · 2 hours ago"
