@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.126
+_2026-10-12_
+- New: Read it aloud now has a Reading ladder that starts at the easiest verse to pronounce, keeps your place separately for Greek and English, and offers the next verse after a good reading.
+
 ## 0.1.125
 _2026-10-12_
 - New: When you switch on the immersive reader, a small card now tells you how to bring the bars back and how to leave, and you can tell it not to show again.
