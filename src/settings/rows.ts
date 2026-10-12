@@ -36,6 +36,7 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'logos', title: 'Bible in Logos' },
   { id: 'tips', title: 'Tips' },
   { id: 'developer', title: 'Developer' },
+  { id: 'aboutYou', title: 'About you' },
   { id: 'studyWay', title: 'My study way' },
   { id: 'more', title: 'More' },
 ];
@@ -55,6 +56,7 @@ export interface SettingsRow {
 }
 
 const LINKS: readonly SettingsRow[] = [
+  { key: 'link.aboutyou', label: 'About you', hint: 'Your age, pace and how you learn, so the tutor meets you where you are.', section: 'aboutYou' },
   { key: 'link.studyway', label: 'My study way', hint: 'The lines you kept about how the tutor quizzes you.', section: 'studyWay' },
   { key: 'link.words', label: 'Words', hint: 'The words you are learning.', section: 'more' },
   { key: 'link.review', label: 'Review', hint: 'The words and ideas that are due.', section: 'more' },

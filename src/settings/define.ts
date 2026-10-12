@@ -33,6 +33,7 @@ export type SectionId =
   | 'logos'
   | 'tips'
   | 'developer'
+  | 'aboutYou'
   | 'studyWay'
   | 'more';
 
