@@ -1,0 +1,67 @@
+{
+  "description": "The same question from a quick learner who reads best with a written rule, and who reads Hebrew: the answer comes straight to the point, names the form in a line or two and gives the dictionary form, with no steps to walk through.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "question": "What does ἀγαπῶσιν mean here?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "learner": "solid 3 words; learning: ἀγαπάω, πίστις; new today: -; due now: 2",
+    "learner_grammar": {
+      "goal": "Read Romans 8:28",
+      "words": {
+        "solid": 3,
+        "frontier": 2,
+        "not_yet": 9
+      },
+      "ideas": {
+        "solid": [
+          "The alphabet",
+          "The article"
+        ],
+        "frontier": [
+          "The nominative case"
+        ],
+        "not_yet": [
+          "The genitive case",
+          "Participles"
+        ]
+      },
+      "placed": true,
+      "suggested_move": "none",
+      "picker_level": "frontier",
+      "approach": {
+        "name": "BMA Tutor",
+        "credit": "Biblical Mastery Academy",
+        "next_lesson": "The nominative case"
+      }
+    },
+    "learner_profile": {
+      "age": "34",
+      "pace": "quick",
+      "ways": [
+        "reading"
+      ],
+      "background": "Reads Hebrew and some Latin",
+      "why": "To read the letters of Paul in the original"
+    },
+    "settings": {}
+  },
+  "expect": {
+    "answer": {
+      "matches": "[Ll]ove"
+    },
+    "words.0.lemma": {
+      "equals": "ἀγαπάω"
+    },
+    "words.0.note": {
+      "present": true
+    }
+  }
+}
