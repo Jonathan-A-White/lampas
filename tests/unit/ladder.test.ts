@@ -134,7 +134,7 @@ describe('ideasOf: the ideas a token with an RP code needs', () => {
   it('finds a non-empty idea set, of known ideas, for every parse code of all 260 chapters', () => {
     const codes = new Set<string>();
     let files = 0;
-    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory())) {
+    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder')) {
       for (const file of readdirSync(`public/data/${book.name}`)) {
         files += 1;
         const chapter = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Chapter;
