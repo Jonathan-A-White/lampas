@@ -73,6 +73,8 @@ export { listDrillResults, recordDrillStep } from './drills';
 export type { DrillResult } from './drills';
 export { getMissTally, getVerseReading, keepVerseReading, listReadingHistory, TALLY_READINGS } from './readings';
 export type { FixWord, MissCount, ReadingRecord, VerseReading } from './readings';
+export { getLadderRow, listWellRead, setLadderShowing, skipLadderVerse } from './ladder';
+export type { LadderRow } from './ladder';
 export { getLevel, levelFromStep, listLevels, recordGrammarAnswer, scheduleIdea, seedLevelsIfFirstOpen, setLevel, SOLID_STEP, teachIdea } from './grammarLevels';
 export type { GrammarLevel, GrammarLevelHow, GrammarLevelName, IdeaOutcome } from './grammarLevels';
 export { getEvidence, noteAnswer, noteWordRead } from './inference';

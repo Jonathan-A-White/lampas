@@ -15,6 +15,7 @@ import { ideaOf } from './data/grammar/ladder';
 import type { Counts, Level } from './data/grammar/needs';
 import { addWordToLearn, getGrammarApproach } from './data/repositories';
 import { IdeaSheet } from './IdeaSheet';
+import { LadderStart } from './ReadingLadder';
 import { navigate, openPlacement, openReader } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { ReportScreen } from './tutor/ReportScreen';
@@ -42,6 +43,18 @@ const legendText = (c: Counts): string => `Solid ${c.solid} · Frontier ${c.fron
 /** The idea Learn next names, with its lesson when the approach has one: 'The Greek alphabet · The Greek letters'; or, when only some letters, pairs or breathings are weak, those gaps: 'ξ, ψ and ου · The Greek letters'. */
 const learnNextText = (next: NonNullable<ReturnType<typeof learnNext>>): string =>
   `${next.gaps ? lettersText(next.gaps) : next.idea.title}${next.lesson ? ` · ${next.lesson.lesson.title}` : ''}`;
+
+/** The reading ladder (src/ReadingLadder.tsx): one entry per language he reads in, each starting at the easiest verse to say and keeping its own place. */
+function ReadingLadderSection() {
+  return (
+    <section aria-label="Reading ladder" className="mt-5 space-y-2">
+      <h2 className="text-base font-medium">Reading ladder</h2>
+      <p className="text-base text-muted">Read verses aloud, easiest to say first. Each language keeps its own place.</p>
+      <LadderStart lang="el" how="push" label="Reading ladder: Greek" />
+      <LadderStart lang="en" how="push" label="Reading ladder: English" />
+    </section>
+  );
+}
 
 const placedText = (when: number): string => {
   const date = new Date(when);
@@ -109,6 +122,9 @@ export function GoalScreen() {
           <button type="button" onClick={() => navigate('settings')} className={`${BUTTON} mt-6 w-full bg-accent text-accent-fg`}>
             Choose a goal
           </button>
+          <div className="text-left">
+            <ReadingLadderSection />
+          </div>
         </main>
       </>
     );
@@ -278,6 +294,8 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
             </p>
           ) : null}
         </section>
+
+        <ReadingLadderSection />
 
         <section className="mt-5 pb-4">
           <button

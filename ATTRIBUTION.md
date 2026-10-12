@@ -13,7 +13,7 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   to the MSB English, with Strong's numbers and Robinson-Pierpont parsing codes: the text and the English you read.
   Source: the msb_nt_tables.tsv file at majoritybible.com. Its Greek is the Robinson-Pierpont 2005 edition (public domain), found by comparing it word by word
   with the [byztxt Byzantine text on GitHub](https://github.com/byztxt/byzantine-majority-text), also public domain (scripts/greek-edition.ts, docs/greek-edition.md); nothing of that repository is in the app.
-  Changes: cut into one file per chapter, with short keys (scripts/data-build.ts, docs/data.md); each verse is also scored for how hard its Greek is to say aloud, in public/data/ladder/el.json (scripts/ladder-el.ts, docs/reading-ladder.md).
+  Changes: cut into one file per chapter, with short keys (scripts/data-build.ts, docs/data.md); each verse is also scored for how hard its Greek is to say aloud, in public/data/ladder/el.json (scripts/ladder-el.ts, docs/reading-ladder.md); the app's Reading ladder walks the reader up that list, easiest first, and keeps his place.
 - **[Maurice A. Robinson, "The Case for Byzantine Priority"](https://byzantinetext.com/study/editions/robinson-pierpont/).** Public domain. The text read in the app is the appendix
   of the Robinson-Pierpont 2005 edition (pp. 533 to 586), whose copyright notice says: "we hereby release into the public domain the introduction and appendix which have been especially prepared for this edition"
   (the same notice is on the edition's page there). It is that appendix, not the article *TC: A Journal of Biblical Textual Criticism* published in 2001: the two differ (Robinson

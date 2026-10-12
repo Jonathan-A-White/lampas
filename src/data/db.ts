@@ -234,6 +234,19 @@ export interface MissCount {
   count: number;
 }
 
+/**
+ * Where he is on the reading ladder of a language (src/data/repositories/ladder.ts, docs/reading-ladder.md): one row per language ('el', 'en'). The place itself
+ * is worked out from the readings he has read well, so it is never kept twice; the row keeps what they cannot say.
+ */
+export interface LadderRow {
+  /** the language of the list and of the readings: 'el' (public/data/ladder/el.json) or 'en' */
+  lang: string;
+  /** the ref of the verse the ladder last opened for him, whose panel says 'Verse N of M'; null when he is not on the ladder */
+  showing: string | null;
+  /** the verses he chose to skip for now, each with the time of the skip; they come back after he reads others well (src/data/readingLadder.ts SKIP_GAP) */
+  skipped: { ref: string; at: number }[];
+}
+
 /** A grammar term he marked I know this on its Grammar sheet ('conjunction'), kept so the word sheet shows it plain. */
 export interface KnownTerm {
   /** the term, the key: a word of src/data/grammar-concepts.ts */
@@ -333,6 +346,7 @@ class LampasDB extends Dexie {
   requests!: EntityTable<RequestRow, 'txid'>;
   readingHistory!: EntityTable<ReadingRecord, 'id'>;
   missTally!: EntityTable<MissCount, 'lang' | 'unit'>;
+  ladder!: EntityTable<LadderRow, 'lang'>;
 
   constructor() {
     super('lampas');
@@ -531,6 +545,28 @@ class LampasDB extends Dexie {
       requests: 'txid, sentAt, status',
       readingHistory: '++id, ref, [lang+at]',
       missTally: '[lang+unit], lang',
+    });
+    // v18: where he is on the reading ladder of each language {lang key, showing, skipped}.
+    this.version(18).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
+      reviews: '[kind+id], due, kind',
+      grammarLevels: 'id, level',
+      usage: 'key, day, name',
+      tips: 'id, status',
+      talkPictures: '++id, turnId',
+      shares: 'id, createdAt',
+      requests: 'txid, sentAt, status',
+      readingHistory: '++id, ref, [lang+at]',
+      missTally: '[lang+unit], lang',
+      ladder: 'lang',
     });
   }
 }

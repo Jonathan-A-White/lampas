@@ -1,7 +1,7 @@
 # The Greek reading ladder
 
 Every verse of the New Testament, ordered by how hard it is to **pronounce**: to say the letters and their sounds aloud.
-It says nothing about how hard a verse is to understand. A later screen can walk him up it, easiest first.
+It says nothing about how hard a verse is to understand. The Reading ladder (below) walks him up it, easiest first.
 
 ```bash
 npm run ladder     # scripts/ladder-el.ts and scripts/ladder-en.ts: read public/data, write public/data/ladder/el.json and en.json
@@ -73,3 +73,16 @@ Matthew 1:8 and 1:13, lists of begettings (Jehoshaphat, Zerubbabel, Eliakim), sc
 
 **The weights and the syllable count are a first guess** (`WEIGHTS` in the script), to be tuned by hearing him read.
 `tests/unit/ladder-en.test.ts` pins the syllables of fourteen words, a few scores by hand and the two ranks above.
+
+## The Reading ladder on the phone (mw-neuq78.4)
+
+He said: "start with the easiest to pronounce verse and work from there ... keep track of where I'm at and keep offering me the next one", for Greek and for English each on its own.
+
+* **Where it starts.** A `Reading ladder` button in the Verse view's Read it aloud panel (`src/ReadCheck.tsx`, one per language he reads in: the Greek view's is the Greek ladder, the English view's the English one) and two on the Goal screen, `Reading ladder: Greek` and `Reading ladder: English` (`src/GoalScreen.tsx`; they open the Verse view on Read it aloud, in that language). A tap opens the first verse on `public/data/ladder/<lang>.json` he has not read well.
+* **The panel.** On a ladder verse the reading panel says `Reading ladder, Greek: Verse N of M` (N is the verse's place on the list, M the list's length).
+  After a reading that is `Well read` it offers `Next verse`, which opens the next verse he has not read well. After `Words to fix` or `Read the whole verse` it offers `Try again` (sets the result aside; the verse stays) and `Skip for now`. A verse with no result yet offers `Skip for now`.
+* **The place is not stored twice.** It is the first verse of the list with no `well-read` in the reading history of that language (`readingHistory`, `src/data/repositories/readings.ts`), so a reading made any other way counts too, a well-read moves it at once, and reopening the app resumes it. `src/data/readingLadder.ts` `ladderPlace` is the pure rule; the Dexie `ladder` table (v18, `src/data/repositories/ladder.ts`) keeps per language `showing` (the verse the ladder last opened, whose panel is the ladder's) and `skipped` (`{ref, at}`).
+* **Skipped.** A skip is remembered with its time. The verse is passed over and comes back (as the place) after he has read `SKIP_GAP` (5, PROVISIONAL) other verses well since the skip; skipped again, its wait starts afresh; when nothing else is left the oldest skipped verse is the place.
+* **The list loads lazily.** `loadLadder` fetches `/data/ladder/<lang>.json` when the ladder is started or a ladder verse is on screen, never at startup. The files are not in the precache (`pwa-precache.ts` names its data files); the worker's `/data/` route keeps one once fetched. Offline and not yet fetched, the button says `The ladder is not on this phone yet, and you are offline.`
+* Only a verse is on the ladder: a passage (a section heading's view) shows no ladder. A Greek pronunciation other than modern has no list, so no button.
+* Tests: `features/reading-ladder.feature`, `tests/unit/reading-ladder.test.ts`, `tests/e2e/reading-ladder.spec.ts` (`shot(page, 'reading-ladder')`).

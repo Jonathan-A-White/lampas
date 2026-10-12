@@ -21,6 +21,7 @@ The row is one line while each label has room for two lines of its own (a contai
 | Quiz me | one line of help | the button `Start the quiz` (`Continue the quiz` once the quiz has a turn), the size and place of the bar but not a hold | opens the Talk sheet in quiz mode, `Quiz on Romans 8:11` or `Quiz on Romans 8:1-11`, and on the first press sends `Quiz me on Romans 8:1-11.` (see *Quiz me* below) |
 | Copy link | `Link copied` (Share beside it where the phone has it; the link by hand when the clipboard is refused) | none: a button in the row | |
 
+* **The Reading ladder** (mw-neuq78.4, `docs/reading-ladder.md` 'The Reading ladder on the phone'): the Read it aloud panel of a verse has a `Reading ladder` button (the language of the view he reads in); on a ladder verse the panel says `Verse N of M` and, under the result, `Next verse` (after Well read) or `Try again` / `Skip for now`. A passage has no ladder.
 * **PROVISIONAL, the Governor to confirm:** what each action's hold does (above), Listen as the first action and the one a new phone starts on, the
   bar names, and that Share sits beside Copy link.
 * Sideways (a window under 500 px tall, `src/index.css` at the end) the Ask composer is one row: a 56 px `Hold to ask` bar with `Type a question` beside it, and no hint line, so an answer

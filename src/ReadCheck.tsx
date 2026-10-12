@@ -14,6 +14,9 @@ import { getDeveloper, getGreekPronunciation, getVerseReading, verseRef, type Fi
 import { markWords, normalWord, plainQuotes, readingLang, readingText, sayOf, wordsOfText, type ReadingView } from './services/reading';
 import { FAILURE_TITLES } from './services/tutor';
 import { pronunciationOf } from './speech/pronunciation';
+import { isLadderLang } from './data/readingLadder';
+import { LadderActions, LadderPosition, LadderStart } from './ReadingLadder';
+import { useLadder } from './useLadder';
 import { stopSpeaking } from './speech/greek';
 import { stopAnswer, stopReading } from './speech/readAloud';
 import { speakTutor, stopOnTap, verdictRuns, VERDICT_ID } from './speech/tutorVoice';
@@ -355,6 +358,11 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
 
   // The walk stays while its last step is held to record (it would lose the let-go if it went), and ends when the clip is sent.
   const walking = reading !== undefined && walkFor === reading.when && !sent;
+  // The reading ladder (src/ReadingLadder.tsx): on a verse of its own list the panel says 'Verse N of M' and offers what comes next; 'Try again' sets the result aside.
+  const ladderLang = isLadderLang(lang) && verse.to === undefined ? lang : undefined;
+  const ladder = useLadder(ladderLang, ref);
+  const [triedAt, setTriedAt] = useState<number | null>(null);
+  const setAside = reading !== undefined && triedAt === reading.when;
   const wholeVerse = walking && reading !== undefined && walkStep >= reading.words.length;
   const idle = wholeVerse ? `Hold to read the whole ${verse.to === undefined ? 'verse' : 'passage'} again` : `Hold to read ${unitName(verse)}`;
   const recording = state?.phase === 'recording';
@@ -398,7 +406,14 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
           </>
         )}
         <Status state={state} onRetry={onRetry} />
-        {reading && !failed && (walking || !out) ? (
+        {ladderLang && !ladder.onLadder && !walking && !out ? (
+          <div className="space-y-1">
+            <LadderStart lang={ladderLang} how="here" />
+            <p className="text-sm text-muted">Starts at the easiest verse to say in {ladderLang === 'el' ? 'Greek' : 'English'} and keeps your place.</p>
+          </div>
+        ) : null}
+        {ladderLang && ladder.onLadder ? <LadderPosition lang={ladderLang} here={ladder} /> : null}
+        {reading && !failed && !setAside && (walking || !out) ? (
           walking ? (
             <Walk key={reading.when} words={reading.words} text={text} view={view} step={walkStep} onStep={setWalkStep} onDone={() => setWalkFor(null)} />
           ) : (
@@ -414,6 +429,15 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
               }}
             />
           )
+        ) : null}
+        {ladderLang && ladder.onLadder && !walking && !out ? (
+          <LadderActions
+            lang={ladderLang}
+            here={ladder}
+            verseKey={ref}
+            verdict={reading && !failed && !setAside ? reading.verdict : undefined}
+            onTryAgain={() => reading && setTriedAt(reading.when)}
+          />
         ) : null}
       </section>
       {slot ? createPortal(<ReadBar hold={hold} name={idle} label={recording ? 'Release to send' : idle} recording={recording} />, slot) : null}
