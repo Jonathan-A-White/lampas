@@ -39,7 +39,7 @@ Feature: Test me on the grammar, and meet me where I am
     And he answers 2 questions wrong
     Then the question line says "Quick round 1 of"
     When he stops the quick round
-    Then the end card says "Where you are: solid 12, frontier 0, not yet 1; untested 24"
+    Then the end card says "Where you are: solid 12, frontier 0, not yet 1; untested 28"
     And the end card lists "The noun" as "Solid" under Nouns
     And the bus has heard the placement is done
     When he taps "Back to the goal"
@@ -101,3 +101,15 @@ Feature: Test me on the grammar, and meet me where I am
     Then it says "Paused after 20 questions"
     When he taps "Go on another day"
     Then Settings is open
+
+  Scenario: A total beginner starts from the letters
+    Given his goal is "Read 1 John 1:1" and he knows nothing yet
+    When he opens the placement
+    Then the screen offers "Start from the letters"
+    When he taps "Start from the letters"
+    Then the end card says "Where you are: solid 0, frontier 0, not yet 0"
+    And no idea has a level
+    And the placement is no longer kept
+    And the screen says he starts with "The Greek alphabet"
+    When he goes back to the goal
+    Then Learn next says "The Greek alphabet"

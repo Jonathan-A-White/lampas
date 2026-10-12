@@ -48,7 +48,7 @@ async function openWithGoal(page: Page, goal: string) {
 
 // The ideas 1 John 1:1 needs (src/data/grammar/needs.ts)
 const NEEDED = [
-  'alphabet', 'breathings', 'accents', 'noun', 'article', 'case-nominative', 'case-accusative', 'case-genitive', 'case-dative',
+  'alphabet', 'diphthongs', 'consonant-pairs', 'syllables', 'breathings', 'accents', 'iota-subscript', 'punctuation', 'noun', 'article', 'case-nominative', 'case-accusative', 'case-genitive', 'case-dative',
   'gender-masculine', 'gender-feminine', 'gender-neuter', 'person-1st', 'person-3rd', 'number-singular', 'number-plural', 'pronoun',
   'pronoun-personal', 'pronoun-relative', 'preposition', 'verb', 'tense-imperfect', 'tense-aorist', 'tense-perfect', 'second-tenses',
   'voice-active', 'voice-middle-deponent', 'mood-indicative', 'conjunction', 'attic-form',
@@ -69,7 +69,7 @@ test('Place me in Settings > Goal opens the placement; a question fits the phone
 
   await expect(page.getByRole('heading', { name: 'Placement', level: 1 })).toBeVisible();
   await expect(page.getByTestId('placement-goal')).toHaveText('Placement: Read 1 John 1:1');
-  const start = page.getByRole('button', { name: 'Start' });
+  const start = page.getByRole('button', { name: 'Start', exact: true });
   expect((await start.boundingBox())?.height).toBeGreaterThanOrEqual(47.5);
   await expectFitsPhone(page);
 
@@ -102,7 +102,7 @@ test('Place me in Settings > Goal opens the placement; a question fits the phone
 test('a sitting of tapped answers ends on a card that fits: Where you are, or Paused after twenty', async ({ page }) => {
   await openWithGoal(page, '1 John 1:1');
   await page.goto('/#/placement');
-  await page.getByRole('button', { name: 'Start' }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
   const end = page.getByTestId('where');
   // twenty questions of the walk, then up to forty taps of the quick round
   for (let i = 0; i < 65 && !(await end.isVisible()); i += 1) {
@@ -148,7 +148,7 @@ test('the end card: Where you are, by tier, with Back to the goal in reach', asy
   await put(page, 'grammarLevels', [...new Set([...NEEDED, ...ITEMS])].map((id) => ({ id, level: 'solid', since: now, how: 'marked' })));
   await page.goto('/#/placement');
   // everything the goal needs is solid already, and every letter and combination too: nothing is left to ask, so Start ends on the card
-  await page.getByRole('button', { name: 'Start' }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('placement-title')).toHaveText('Where you are');
   await expect(page.getByTestId('where')).toHaveText(`Where you are: solid ${NEEDED.length + 24}, frontier 0, not yet 0; untested 0`);
   const nouns = page.getByRole('region', { name: 'nouns' });
@@ -168,7 +168,7 @@ async function knownExceptThree(page: Page) {
   const rest = [...new Set([...NEEDED, ...ITEMS])].filter((id) => !missed.includes(id) && !['alphabet', 'diphthongs'].includes(id));
   await put(page, 'grammarLevels', rest.map((id) => ({ id, level: 'solid', since: now, how: 'marked' })));
   await page.goto('/#/placement');
-  await page.getByRole('button', { name: 'Start' }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
 }
 
 // the three missed items, as the quick round asks them: the letter or pair, and its sound

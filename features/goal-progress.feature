@@ -19,16 +19,16 @@ Feature: See my goal move
   Scenario: The Goal screen's bars count solid, frontier and not yet for words and ideas
     Given the goal is "1 John 1:1" and he knows no word and no idea
     And the words "λόγος" and "ζωή" are solid and "ἀρχή" and "ἀκούω" are learning and "ὁράω" is dropped
-    And the ideas "alphabet", "breathings" and "accents" are solid and "noun" is frontier
+    And the foundation ideas are solid and "noun" is frontier
     When he opens the Goal screen
     Then the title says "Read 1 John 1:1"
     And the words bar says solid 2, frontier 2 and not yet 12
-    And the ideas bar says solid 3, frontier 1 and not yet 26
+    And the ideas bar says solid 8, frontier 1 and not yet 26
     And the screen says "Solid when both are full"
 
   Scenario: Learn next names the earliest not-yet idea of BMA Tutor's sequence with its lesson and opens its sheet
     Given the goal is "1 John 1:1" and he knows no word and no idea
-    And the ideas "alphabet", "breathings" and "accents" are solid and "noun" is not yet
+    And the foundation ideas are solid and "noun" is not yet
     When he opens the Goal screen
     Then Learn next says "The noun · Your first words"
     When he taps Learn next
@@ -46,11 +46,11 @@ Feature: See my goal move
 
   Scenario: Got it on the idea sheet moves the ideas bar
     Given the goal is "1 John 1:1" and he knows no word and no idea
-    And the ideas "alphabet", "breathings" and "accents" are solid and "noun" is not yet
+    And the foundation ideas are solid and "noun" is not yet
     When he opens the Goal screen
     And he taps Learn next
     And he taps Got it on the idea sheet
-    Then the ideas bar says solid 3, frontier 1 and not yet 26
+    Then the ideas bar says solid 8, frontier 1 and not yet 26
     When he closes the idea sheet
     Then Learn next says "The article · Your first words"
 

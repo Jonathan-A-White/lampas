@@ -48,7 +48,7 @@ type Run =
   | { status: 'starting' }
   | { status: 'asking'; state: PlacementState; item: GrammarItem; picked: string | null; after: PlacementState | null }
   | { status: 'quick'; state: PlacementState; round: QuickRound; item: GrammarItem; picked: string | null; after: QuickRound | null }
-  | { status: 'over'; state: PlacementState; gaps: GrammarIdea[] };
+  | { status: 'over'; state: PlacementState; gaps: GrammarIdea[]; fromLetters?: boolean };
 
 const LEVEL_WORDS: Record<Level, string> = { solid: 'Solid', frontier: 'Frontier', notYet: 'Not yet' };
 
@@ -146,6 +146,18 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
     setRun({ status: 'over', state, gaps });
   };
 
+  /** A total beginner skips the quiz: nothing is asked or written, so Learn next stays at The Greek alphabet (mw-86e9r1.1). */
+  const startFromLetters = async (): Promise<void> => {
+    setRun({ status: 'starting' });
+    clearPlacement();
+    const goal = parseGoal(session.goal, BOOK_INDEX);
+    const needs = goal ? await passageNeeds(goal, loadChapter, BOOK_INDEX) : null;
+    const state = { ...startPlacement(needs, new Map(), orderOf(session.approach), 0), done: 'finished' as const };
+    const { solid, frontier, notYet, untested } = summarize(state);
+    publish({ kind: 'placement-done', goal: session.goal, approach: session.approach.id, solid, frontier, notYet, untested });
+    setRun({ status: 'over', state, gaps: [], fromLetters: true });
+  };
+
   const begin = async (kept: SavedPlacement | null, resume: boolean): Promise<void> => {
     setRun({ status: 'starting' });
     if (resume && kept) {
@@ -214,9 +226,14 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
                 )}
               </>
             ) : (
-              <button type="button" onClick={() => settled() && void begin(null, false)} className={`${BUTTON} bg-accent text-accent-fg`}>
-                Start
-              </button>
+              <>
+                <button type="button" onClick={() => settled() && void begin(null, false)} className={`${BUTTON} bg-accent text-accent-fg`}>
+                  Start
+                </button>
+                <button type="button" onClick={() => settled() && void startFromLetters()} className={`${BUTTON} border border-line`}>
+                  Start from the letters
+                </button>
+              </>
             )}
             <button type="button" onClick={() => settled() && leave()} className={`${BUTTON} border border-line`}>
               {origin === 'goal' ? 'Back to the goal' : 'Back to Settings'}
@@ -292,6 +309,11 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
           <p data-testid="where" className="mt-2 text-center text-lg">
             {paused ? 'So far: ' : 'Where you are: '}solid {sum.solid}, frontier {sum.frontier}, not yet {sum.notYet}; untested {sum.untested}
           </p>
+          {run.fromLetters ? (
+            <p data-testid="from-letters" className="mt-2 text-center text-lg">
+              You start with {ideaOf('alphabet').title}. Learn next on the Goal screen opens it.
+            </p>
+          ) : null}
           {run.gaps.length > 0 ? (
             <p data-testid="gaps" className="mt-2 text-center text-lg">
               Gaps to work on: {lettersText(run.gaps)}

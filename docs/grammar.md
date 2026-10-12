@@ -29,7 +29,7 @@ Code: `src/data/grammar/ladder.ts`. It is pure: no store and no screen.
 - `LADDER`: the ideas, sorted by rung. `TIERS`, `IDEA_KIND`.
 - `ideaOf(id)`: one idea; throws on an unknown id.
 - `ideasBelow(id)`: every idea it rests on, however far down, sorted by rung.
-- `ALWAYS_NEEDED` (`alphabet`, `breathings`, `accents`): every token needs these, so `ideasOf` does not list them.
+- `ALWAYS_NEEDED` (`alphabet`, `diphthongs`, `consonant-pairs`, `syllables`, `breathings`, `accents`, `iota-subscript`, `punctuation`, in ladder order): every goal needs these (a beginner meets them first, so Learn next walks them before any noun idea and the Weave's grammar dial holds a form to them), so `ideasOf` does not list them.
   `alphabet` is the parent of the 24 letter ideas.
 - `ideasOf(code)`: the ids a word with that RP parsing code needs, sorted by rung: its part of speech, plus one idea for
   each case, number, gender, person, tense, voice, mood and suffix its parsing names (a possessive pronoun's possessor is
@@ -99,7 +99,7 @@ A word idea draws `ending` or `tap-form` by its first random draw and falls back
 
 ## Placement
 
-`#/placement` (opened by Place me under Settings > Goal) tests the grammar the goal needs and writes where he stands. The rules are PROVISIONAL (the Mayor's, the Governor to confirm) and live in `src/data/grammar/placement.ts`, pure:
+`#/placement` (opened by Place me under Settings > Goal; its intro also offers 'Start from the letters' for a total beginner: no quiz, nothing written, so Learn next is The Greek alphabet) tests the grammar the goal needs and writes where he stands. The rules are PROVISIONAL (the Mayor's, the Governor to confirm) and live in `src/data/grammar/placement.ts`, pure:
 
 - The walk is the goal's needed ideas in `orderOf(the chosen approach)` (BMA Tutor by default), with the letters, sounds and marks always on it below them (so a walk of misses reaches them; since mw-hqd5bz.17 not the alphabet as a whole, see below). With no goal it is the whole ladder, and the questions' forms come from the open chapter.
 - It starts at the first idea past the letters, sounds and marks that is not already solid, and skips nothing below it. (For 1 John 1:1 that is `noun` in both BMA Tutor and the Lampas ladder, the noun coming before the article in each.)
