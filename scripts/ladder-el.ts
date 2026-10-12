@@ -1,18 +1,12 @@
 // scripts/ladder-el.ts — the Greek reading ladder (mw-neuq78.1, docs/reading-ladder.md): scores every verse of public/data for how hard it
 // is to PRONOUNCE (not to understand) and writes public/data/ladder/el.json, easiest first. Run by `npm run ladder`, never at runtime.
 // Deterministic: the same data gives the same bytes. The weights are a first guess.
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { respellModern } from '../src/speech/schemes/modern';
+import { buildLadderWith, reasons, type LadderEntry } from './ladder-shared';
 
-export interface LadderEntry {
-  /** 'jhn.11.35' */
-  ref: string;
-  score: number;
-  /** up to three short reasons, the heaviest first */
-  why: string[];
-}
+export type { LadderEntry };
 
 /** What each thing costs. PROVISIONAL: a first guess, to be tuned by hearing him read. */
 export const WEIGHTS = {
@@ -97,16 +91,6 @@ function factsOf(word: string): WordFacts | null {
   return facts;
 }
 
-/** The reasons in the order a tie between them is broken: the first listed wins. */
-function reasons(parts: [number, string][]): string[] {
-  return parts
-    .map(([points, text], order) => ({ points, text, order }))
-    .filter((p) => p.points > 0)
-    .sort((a, b) => b.points - a.points || a.order - b.order)
-    .slice(0, 3)
-    .map((p) => p.text);
-}
-
 /** The score of one verse from its Greek words (as written, with their marks), and up to three reasons for it. */
 export function scoreWords(greek: string[]): { score: number; why: string[] } {
   const all = greek.map(factsOf).filter((f): f is WordFacts => f !== null);
@@ -131,30 +115,9 @@ export function scoreWords(greek: string[]): { score: number; why: string[] } {
   return { score: parts.reduce((n, [points]) => n + points, 0), why: reasons(parts) };
 }
 
-interface IndexFile {
-  books: { code: string; chapters: number }[];
-}
-interface ChapterFile {
-  verses: { n: number; g: { t: string }[] }[];
-}
-
 /** Scores every verse under `dataDir` and writes the ladder to `outFile`: easiest first, a tie by canonical order. */
 export function buildLadder(dataDir: string, outFile: string): LadderEntry[] {
-  const index = JSON.parse(readFileSync(join(dataDir, 'index.json'), 'utf8')) as IndexFile;
-  const entries: LadderEntry[] = [];
-  for (const book of index.books) {
-    for (let chapter = 1; chapter <= book.chapters; chapter++) {
-      const file = JSON.parse(readFileSync(join(dataDir, book.code, `${chapter}.json`), 'utf8')) as ChapterFile;
-      for (const verse of file.verses) {
-        entries.push({ ref: `${book.code}.${chapter}.${verse.n}`, ...scoreWords(verse.g.map((w) => w.t)) });
-      }
-    }
-  }
-  // entries are in canonical order, and a sort is stable: equal scores keep it
-  const ladder = entries.map((e, i) => ({ e, i })).sort((a, b) => a.e.score - b.e.score || a.i - b.i).map(({ e }) => e);
-  mkdirSync(dirname(outFile), { recursive: true });
-  writeFileSync(outFile, JSON.stringify(ladder));
-  return ladder;
+  return buildLadderWith(dataDir, outFile, (verse) => scoreWords(verse.g.map((w) => w.t)));
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

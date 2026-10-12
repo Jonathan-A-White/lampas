@@ -4,7 +4,7 @@ Every verse of the New Testament, ordered by how hard it is to **pronounce**: to
 It says nothing about how hard a verse is to understand. A later screen can walk him up it, easiest first.
 
 ```bash
-npm run ladder     # scripts/ladder-el.ts: reads public/data, writes public/data/ladder/el.json
+npm run ladder     # scripts/ladder-el.ts and scripts/ladder-en.ts: read public/data, write public/data/ladder/el.json and en.json
 ```
 
 The script is deterministic (a second run changes no byte) and is never run by the app. The generated file is committed;
@@ -43,3 +43,33 @@ John 11:35, Ἐδάκρυσεν ὁ Ἰησοῦς: the words cost 4 (3 syllable
 
 **The weights are a first guess** (`WEIGHTS` in the script). They are meant to be tuned by hearing him read, not argued from the page.
 `tests/unit/ladder-el.test.ts` pins a few scores by hand; change a weight and those pins say what moved.
+
+## English
+
+A verse easy to say in Greek may be hard in English, so English has a list of its own: `public/data/ladder/en.json`, written by
+`scripts/ladder-en.ts` (the same `npm run ladder` runs both). It has the shape of `el.json` (`ref`, `score`, `why`; easiest first, ties in
+canonical order, every verse once, the same bytes on a second run) and the two files never read each other. What is scored is the English
+**as the Reader shows it**: the verse's chunks (`e[].t`, in English order) joined by a space. The two scripts share `scripts/ladder-shared.ts`
+(the entry, the reasons and the walk over the verses).
+
+```json
+[{"ref":"jhn.11.35","score":3,"why":["2 words","3 syllables"]}]
+```
+
+| What | Points |
+| --- | --- |
+| each word (a hyphenated word is its parts) | 1 |
+| each syllable after a word's first (a vowel-group count with the usual corrections: silent final e, -ed, -es, -le, Uri-ah; `syllablesOf`) | 1 |
+| the longest word, for each syllable past 3 | 2 |
+| a name or loanword: a capitalised word that does not open a sentence or a quotation (Zerubbabel; a possessive 's is ignored) | 3 for three syllables, 2 for two, 2 more for each syllable past three; one syllable costs nothing extra |
+| a spelling that breaks the usual sounds: ph gh ch, a silent first letter (kn wr gn ps pn), a silent final mb | 1 |
+| ough, augh, eigh | 2 |
+
+The common capitals (God, Lord, Jesus, Christ, Spirit, Father, Son, Holy, the divine pronouns, Jews, Gentiles, Sabbath and a few more; `COMMON`)
+are not names. A verse's first word is never charged as a name, because a capital there says nothing.
+
+John 11:35, Jesus wept.: 2 words, 1 syllable past the first (Jesus), no name (it opens the sentence), so 3, the easiest tenth.
+Matthew 1:8 and 1:13, lists of begettings (Jehoshaphat, Zerubbabel, Eliakim), score in the 50s and are in the hardest tenth.
+
+**The weights and the syllable count are a first guess** (`WEIGHTS` in the script), to be tuned by hearing him read.
+`tests/unit/ladder-en.test.ts` pins the syllables of fourteen words, a few scores by hand and the two ranks above.
