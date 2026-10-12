@@ -208,6 +208,32 @@ export interface VerseReading {
   clip?: { bytes: ArrayBuffer; mime: string };
 }
 
+/** One reading check of a verse, kept for good (readings keeps only the last of each verse): the sounds or words he misreads are tallied from these. */
+export interface ReadingRecord {
+  id?: number;
+  /** the verse, plain: 'rom.8.28' (the language is its own field) */
+  ref: string;
+  /** the language it was read and scored in: 'en', or 'el' for Modern Greek */
+  lang: string;
+  verdict: VerseReading['verdict'];
+  /** the words the mill marked to fix, as they came */
+  words: FixWord[];
+  /** when it arrived (ms since the epoch) */
+  at: number;
+}
+
+/**
+ * How often one sound (Greek) or word (English) was among the words he misread in his last readings in that language
+ * (src/data/repositories/readings.ts TALLY_READINGS of them). Rewritten after every reading; one row per language and unit.
+ */
+export interface MissCount {
+  lang: string;
+  /** a Greek sound's ladder id ('diphthong-ou', 'pair-gg'), or an English word in lower case */
+  unit: string;
+  /** the number of misread words in those readings that hold the unit */
+  count: number;
+}
+
 /** A grammar term he marked I know this on its Grammar sheet ('conjunction'), kept so the word sheet shows it plain. */
 export interface KnownTerm {
   /** the term, the key: a word of src/data/grammar-concepts.ts */
@@ -305,6 +331,8 @@ class LampasDB extends Dexie {
   talkPictures!: EntityTable<TalkPicture, 'id'>;
   shares!: EntityTable<ShareRow, 'id'>;
   requests!: EntityTable<RequestRow, 'txid'>;
+  readingHistory!: EntityTable<ReadingRecord, 'id'>;
+  missTally!: EntityTable<MissCount, 'lang' | 'unit'>;
 
   constructor() {
     super('lampas');
@@ -482,6 +510,27 @@ class LampasDB extends Dexie {
       talkPictures: '++id, turnId',
       shares: 'id, createdAt',
       requests: 'txid, sentAt, status',
+    });
+    // v17: every reading check {id, ref, lang, verdict, words, at}, newest found by [lang+at]; and the tally of the sounds or words he misreads {lang, unit, count}, one row per language and unit (key [lang+unit]).
+    this.version(17).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
+      reviews: '[kind+id], due, kind',
+      grammarLevels: 'id, level',
+      usage: 'key, day, name',
+      tips: 'id, status',
+      talkPictures: '++id, turnId',
+      shares: 'id, createdAt',
+      requests: 'txid, sentAt, status',
+      readingHistory: '++id, ref, [lang+at]',
+      missTally: '[lang+unit], lang',
     });
   }
 }
