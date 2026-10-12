@@ -478,7 +478,9 @@ export async function runBuild(options: BuildOptions): Promise<{ chapters: numbe
   // Anything else under outDir is left from an earlier build.
   if (existsSync(outDir)) {
     for (const p of readdirSync(outDir, { recursive: true }).map(String)) {
-      if (p.endsWith('.json') && !files.has(p.split('\\').join('/'))) rmSync(join(outDir, p));
+      const path = p.split('\\').join('/');
+      // ladder/ is scripts/ladder-el.ts's, not this build's
+      if (path.endsWith('.json') && !path.startsWith('ladder/') && !files.has(path)) rmSync(join(outDir, p));
     }
   }
   log(`${built.chapters.length} chapters, ${written} files written, ${(bytes / 1024 / 1024).toFixed(1)} MB`);

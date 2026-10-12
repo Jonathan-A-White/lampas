@@ -240,6 +240,21 @@ describe('writing the files', () => {
     }
   });
 
+  it('leaves ladder/ (scripts/ladder-el.ts\'s file) alone while it removes any other file it no longer makes', async () => {
+    const base = mkdtempSync(join(tmpdir(), 'lampas-data-'));
+    try {
+      const out = join(base, 'out');
+      mkdirSync(join(out, 'ladder'), { recursive: true });
+      writeFileSync(join(out, 'ladder', 'el.json'), '[]');
+      writeFileSync(join(out, 'old.json'), '{}');
+      await run(join(base, 'raw'), out);
+      expect(existsSync(join(out, 'ladder', 'el.json'))).toBe(true);
+      expect(existsSync(join(out, 'old.json'))).toBe(false);
+    } finally {
+      rmSync(base, { recursive: true, force: true });
+    }
+  });
+
   it('downloads each raw file only when it is not already there', async () => {
     const base = mkdtempSync(join(tmpdir(), 'lampas-data-'));
     try {

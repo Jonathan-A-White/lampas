@@ -59,7 +59,7 @@ describe('splitParse: an RP code as a part of speech and the features it names',
 
   it('agrees with decodeParse on every code of the New Testament', () => {
     const decoded = new Set<string>();
-    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory())) {
+    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder')) {
       for (const file of readdirSync(`public/data/${book.name}`)) {
         const chapter = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Chapter;
         for (const code of Object.keys(chapter.parse)) decoded.add(code);

@@ -60,7 +60,7 @@ describe('parseSegments: a decoded parsing cut into links and the text between',
 
   it('is all terms and separators for every parsing code of the New Testament, and every term it finds has an entry', () => {
     const codes = new Set<string>();
-    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory())) {
+    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder')) {
       for (const file of readdirSync(`public/data/${book.name}`)) {
         const c = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Chapter;
         for (const code of Object.keys(c.parse)) codes.add(code);

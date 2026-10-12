@@ -76,7 +76,8 @@ describeFeature(feature, ({ Scenario }) => {
         }
       }
       expect(files).toBe(260);
-      const onDisk = readdirSync('public/data', { recursive: true }).map(String).filter((p) => p.endsWith('.json'));
+      // data:build's output; ladder/el.json is scripts/ladder-el.ts's
+      const onDisk = readdirSync('public/data', { recursive: true }).map(String).filter((p) => p.endsWith('.json') && !p.startsWith('ladder'));
       expect(onDisk).toHaveLength(263);
     });
   });
