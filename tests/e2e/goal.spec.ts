@@ -125,7 +125,7 @@ test('the Goal screen: two bars that fit, the lists, Learn next, Next words and 
   await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
   for (const name of ['Change', 'Place me']) await expectThumbSized(page.getByRole('button', { name }));
   await expectThumbSized(page.getByTestId('learn-next'));
-  await expect(page.getByTestId('learn-next')).toHaveText('Learn next: The article · Your first words');
+  await expect(page.getByTestId('learn-next')).toHaveText('Learn next: The singular · Your first words');
   await expect(page.getByTestId('words-legend')).toHaveText(/^Solid \d+ · Frontier \d+ · Not yet \d+$/);
   await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 8 · Frontier 1 · Not yet 26');
   await expect(page.getByText('Solid when both are full.')).toBeVisible();
@@ -149,7 +149,7 @@ test('the Goal screen: two bars that fit, the lists, Learn next, Next words and 
   // Learn next opens its sheet; Got it moves the ideas bar
   await page.getByTestId('learn-next').click();
   const sheet = page.getByRole('dialog', { name: 'Idea' });
-  await expect(sheet.getByRole('heading', { name: 'The article' })).toBeVisible();
+  await expect(sheet.getByRole('heading', { name: 'The singular' })).toBeVisible();
   await sheet.getByRole('button', { name: 'Got it' }).click();
   await sheet.getByRole('button', { name: 'Done' }).click();
   await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 8 · Frontier 2 · Not yet 25');

@@ -47,7 +47,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('it needs {string}, {string} and {string}', (_, a: string, b: string, c: string) => {
       for (const title of [a, b, c]) expect(ids).toContain(byTitle(title).id);
     });
-    And('it needs nothing from the nouns tier', () => expect(ids.filter((id) => byTitle(LADDER.find((i) => i.id === id)?.title ?? '').tier === 'nouns')).toEqual([]));
+    And('it needs nothing from the nouns tier but number', () => expect(ids.filter((id) => byTitle(LADDER.find((i) => i.id === id)?.title ?? '').tier === 'nouns' && !id.startsWith('number-'))).toEqual([]));
     And('the parsing code {string} needs only {string}', (_, code: string, title: string) => expect(ideasOf(code)).toEqual([byTitle(title).id]));
   });
 });

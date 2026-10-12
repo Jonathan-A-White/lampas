@@ -86,10 +86,10 @@ describe('the ladder', () => {
 });
 
 describe('ideasOf: the ideas a token with an RP code needs', () => {
-  it('gives a first-person plural perfect active indicative its verb ideas and nothing from the nouns tier', () => {
+  it('gives a first-person plural perfect active indicative its verb ideas and nothing from the nouns tier but number', () => {
     const ids = ideasOf('V-2RAI-1P-ATT');
     for (const id of ['verb', 'tense-perfect', 'voice-active', 'mood-indicative', 'person-1st', 'number-plural']) expect(ids).toContain(id);
-    expect(ids.filter((id) => tierOf(id) === 'nouns')).toEqual([]);
+    expect(ids.filter((id) => tierOf(id) === 'nouns' && !id.startsWith('number-'))).toEqual([]);
   });
 
   it('gives a genitive singular feminine noun its noun, case, number and gender', () => {

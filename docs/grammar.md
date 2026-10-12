@@ -138,9 +138,19 @@ A word's state is looked up by its headword and by every lexicon lemma it goes b
 
 ## One choice to know
 
-Person and number (`person-1st` ... `number-plural`) sit at the start of the `pronouns` tier, not the `nouns` tier: I, you,
-he, we, you, they are where a learner first meets them, and the verb needs them too. So a perfect first-person plural verb
-needs nothing from the `nouns` tier, but a plural noun's number idea comes after the cases.
+Number (`number-singular` and `number-plural`) sit in the `nouns` tier, straight after `noun` and before the cases (mw-86e9r1.2):
+every question that names a form says 'genitive singular', so the singular and the plural come before the first case. So do the two
+joining words met in every verse, `conjunction` (καί, δέ) and `negative` (οὐ): they sit in the `nouns` tier too, because a tier
+is a part of the ladder and the ladder's rungs run in one order, and they rest on `noun` alone. Person (`person-1st` ...
+`person-3rd`) stays at the start of the `pronouns` tier: I, you, he, we, you, they are where a learner first meets it.
+
+An idea needs what its text names (mw-86e9r1.2): the article and the adjective rest on the cases, the plural and the genders;
+the imperfect and the aorist on the indicative (the `mood-indicative` idea sits before the imperfect, straight after the
+present and the active). A text that would name something taught after it is worded without it (the vowel pairs do not speak of
+the stress mark, the iota under a letter does not speak of the dative; the marks say when two vowels are not a pair), and
+a word that two ideas explain each other (the noun and its case) is the one place a text may look ahead.
+`tests/unit/ladder-needs.test.ts` walks every idea's text for the grammar words it uses (case, number, gender, the moods and
+tenses, the stress mark, the diaeresis, the parts of speech) and fails on one its needs do not reach.
 
 ## The ladder
 
@@ -195,67 +205,67 @@ needs nothing from the `nouns` tier, but a plural noun's number idea comes after
 | 47 | marks | `iota-subscript` | The iota under a letter | – | `letter-iota`, `letter-alpha`, `letter-eta`, `letter-omega` |
 | 48 | marks | `punctuation` | Punctuation and small marks | – | `accents` |
 | 49 | nouns | `noun` | The noun | noun | `accents` |
-| 50 | nouns | `article` | The article | article | `noun` |
-| 51 | nouns | `case-nominative` | The nominative case | nominative | `noun` |
-| 52 | nouns | `case-accusative` | The accusative case | accusative | `case-nominative` |
-| 53 | nouns | `case-genitive` | The genitive case | genitive | `case-nominative` |
-| 54 | nouns | `case-dative` | The dative case | dative | `case-genitive` |
-| 55 | nouns | `case-vocative` | The vocative case | vocative | `case-nominative` |
-| 56 | nouns | `gender-masculine` | The masculine gender | masculine | `noun` |
-| 57 | nouns | `gender-feminine` | The feminine gender | feminine | `gender-masculine` |
-| 58 | nouns | `gender-neuter` | The neuter gender | neuter | `gender-masculine` |
-| 59 | nouns | `adjective` | The adjective | adjective | `noun`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
-| 60 | nouns | `comparative` | The comparative | comparative | `adjective` |
-| 61 | nouns | `superlative` | The superlative | superlative | `comparative` |
-| 62 | nouns | `numeral` | Number words | numeral | `adjective` |
-| 63 | nouns | `proper-name` | Proper names | proper name | `noun` |
-| 64 | nouns | `indeclinable` | Words that never change | indeclinable, letter | `proper-name`, `case-genitive` |
-| 65 | pronouns | `person-1st` | The first person | 1st person | `noun` |
-| 66 | pronouns | `person-2nd` | The second person | 2nd person | `person-1st` |
-| 67 | pronouns | `person-3rd` | The third person | 3rd person | `person-2nd` |
-| 68 | pronouns | `number-singular` | The singular | singular | `person-1st` |
-| 69 | pronouns | `number-plural` | The plural | plural | `number-singular` |
-| 70 | pronouns | `pronoun` | The pronoun | – | `noun`, `person-3rd`, `number-plural` |
-| 71 | pronouns | `pronoun-personal` | The personal pronoun | personal pronoun | `pronoun`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative` |
-| 72 | pronouns | `pronoun-demonstrative` | The demonstrative pronoun | demonstrative pronoun | `pronoun-personal`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
-| 73 | pronouns | `pronoun-relative` | The relative pronoun | relative pronoun | `pronoun-demonstrative` |
-| 74 | pronouns | `pronoun-interrogative` | The interrogative pronoun | interrogative pronoun | `pronoun-relative` |
-| 75 | pronouns | `pronoun-indefinite` | The indefinite pronoun | indefinite pronoun | `pronoun-interrogative` |
-| 76 | pronouns | `pronoun-reflexive` | The reflexive pronoun | reflexive pronoun | `pronoun-personal` |
-| 77 | pronouns | `pronoun-possessive` | The possessive pronoun | possessive pronoun, possessor | `pronoun-reflexive` |
-| 78 | pronouns | `pronoun-reciprocal` | The reciprocal pronoun | reciprocal pronoun | `pronoun-reflexive` |
-| 79 | pronouns | `pronoun-correlative` | The correlative pronoun | correlative pronoun | `pronoun-relative`, `pronoun-demonstrative` |
-| 80 | pronouns | `pronoun-correlative-interrogative` | The correlative or interrogative pronoun | correlative or interrogative pronoun | `pronoun-correlative`, `pronoun-interrogative` |
-| 81 | prepositions | `preposition` | The preposition | preposition | `case-genitive`, `case-dative`, `case-accusative` |
-| 82 | verbs | `verb` | The verb | verb | `person-1st`, `person-2nd`, `person-3rd`, `number-singular`, `number-plural` |
-| 83 | verbs | `tense-present` | The present tense | present | `verb` |
-| 84 | verbs | `tense-imperfect` | The imperfect tense | imperfect | `tense-present` |
-| 85 | verbs | `tense-future` | The future tense | future | `tense-present` |
-| 86 | verbs | `tense-aorist` | The aorist tense | aorist | `tense-imperfect` |
-| 87 | verbs | `tense-perfect` | The perfect tense | perfect | `tense-aorist` |
-| 88 | verbs | `tense-pluperfect` | The pluperfect tense | pluperfect | `tense-perfect` |
-| 89 | verbs | `second-tenses` | Second aorists and perfects | second | `tense-aorist`, `tense-perfect` |
-| 90 | verbs | `voice-active` | The active voice | active | `verb` |
-| 91 | verbs | `voice-middle` | The middle voice | middle | `voice-active` |
-| 92 | verbs | `voice-passive` | The passive voice | passive | `voice-active` |
-| 93 | verbs | `voice-middle-or-passive` | The middle or passive voice | middle or passive | `voice-middle`, `voice-passive` |
-| 94 | verbs | `voice-middle-deponent` | The middle deponent | middle deponent | `voice-middle-or-passive` |
-| 95 | verbs | `voice-passive-deponent` | The passive deponent | passive deponent | `voice-middle-deponent` |
-| 96 | verbs | `voice-middle-or-passive-deponent` | The middle or passive deponent | middle or passive deponent | `voice-passive-deponent` |
-| 97 | verbs | `voice-middle-significance` | A middle meaning in an active form | middle significance | `voice-middle` |
-| 98 | verbs | `voice-impersonal-active` | The impersonal active | impersonal active | `voice-active` |
-| 99 | verbs | `voice-none` | A verb with no voice | no voice | `voice-active` |
-| 100 | verbs | `mood-indicative` | The indicative mood | indicative | `tense-present`, `voice-active` |
-| 101 | verbs | `mood-imperative` | The imperative mood | imperative | `mood-indicative` |
-| 102 | verbs | `mood-subjunctive` | The subjunctive mood | subjunctive | `mood-indicative` |
-| 103 | verbs | `mood-optative` | The optative mood | optative | `mood-subjunctive` |
-| 104 | verbs | `mood-infinitive` | The infinitive | infinitive | `mood-indicative` |
-| 105 | verbs | `mood-participle` | The participle | participle | `mood-infinitive`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative`, `gender-masculine`, `gender-feminine`, `gender-neuter`, `adjective` |
-| 106 | verbs | `mood-participle-imperative` | The participle with the sense of a command | imperative-sense participle | `mood-participle`, `mood-imperative` |
-| 107 | joiners | `conjunction` | The conjunction | conjunction | `noun`, `verb` |
-| 108 | joiners | `particle` | The particle | particle | `conjunction` |
-| 109 | joiners | `adverb` | The adverb | adverb | `adjective`, `verb` |
-| 110 | joiners | `negative` | The negative | negative | `particle` |
+| 50 | nouns | `number-singular` | The singular | singular | `noun` |
+| 51 | nouns | `number-plural` | The plural | plural | `number-singular` |
+| 52 | nouns | `conjunction` | The conjunction | conjunction | `noun` |
+| 53 | nouns | `negative` | The negative | negative | `conjunction` |
+| 54 | nouns | `case-nominative` | The nominative case | nominative | `noun` |
+| 55 | nouns | `case-accusative` | The accusative case | accusative | `case-nominative` |
+| 56 | nouns | `case-genitive` | The genitive case | genitive | `case-nominative` |
+| 57 | nouns | `case-dative` | The dative case | dative | `case-genitive` |
+| 58 | nouns | `case-vocative` | The vocative case | vocative | `case-nominative` |
+| 59 | nouns | `gender-masculine` | The masculine gender | masculine | `noun` |
+| 60 | nouns | `gender-feminine` | The feminine gender | feminine | `gender-masculine` |
+| 61 | nouns | `gender-neuter` | The neuter gender | neuter | `gender-masculine`, `case-accusative` |
+| 62 | nouns | `article` | The article | article | `noun`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative`, `number-plural`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
+| 63 | nouns | `adjective` | The adjective | adjective | `noun`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative`, `number-plural`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
+| 64 | nouns | `comparative` | The comparative | comparative | `adjective` |
+| 65 | nouns | `superlative` | The superlative | superlative | `comparative` |
+| 66 | nouns | `numeral` | Number words | numeral | `adjective` |
+| 67 | nouns | `proper-name` | Proper names | proper name | `noun`, `article` |
+| 68 | nouns | `indeclinable` | Words that never change | indeclinable, letter | `proper-name`, `case-genitive` |
+| 69 | pronouns | `person-1st` | The first person | 1st person | `noun` |
+| 70 | pronouns | `person-2nd` | The second person | 2nd person | `person-1st` |
+| 71 | pronouns | `person-3rd` | The third person | 3rd person | `person-2nd` |
+| 72 | pronouns | `pronoun` | The pronoun | – | `noun`, `person-3rd`, `number-plural`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
+| 73 | pronouns | `pronoun-personal` | The personal pronoun | personal pronoun | `pronoun`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative` |
+| 74 | pronouns | `pronoun-demonstrative` | The demonstrative pronoun | demonstrative pronoun | `pronoun-personal`, `article`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
+| 75 | pronouns | `pronoun-relative` | The relative pronoun | relative pronoun | `pronoun-demonstrative` |
+| 76 | pronouns | `pronoun-interrogative` | The interrogative pronoun | interrogative pronoun | `pronoun-relative` |
+| 77 | pronouns | `pronoun-indefinite` | The indefinite pronoun | indefinite pronoun | `pronoun-interrogative` |
+| 78 | pronouns | `pronoun-reflexive` | The reflexive pronoun | reflexive pronoun | `pronoun-personal` |
+| 79 | pronouns | `pronoun-possessive` | The possessive pronoun | possessive pronoun, possessor | `pronoun-reflexive`, `adjective` |
+| 80 | pronouns | `pronoun-reciprocal` | The reciprocal pronoun | reciprocal pronoun | `pronoun-reflexive` |
+| 81 | pronouns | `pronoun-correlative` | The correlative pronoun | correlative pronoun | `pronoun-relative`, `pronoun-demonstrative` |
+| 82 | pronouns | `pronoun-correlative-interrogative` | The correlative or interrogative pronoun | correlative or interrogative pronoun | `pronoun-correlative`, `pronoun-interrogative` |
+| 83 | prepositions | `preposition` | The preposition | preposition | `case-genitive`, `case-dative`, `case-accusative` |
+| 84 | verbs | `verb` | The verb | verb | `person-1st`, `person-2nd`, `person-3rd`, `number-singular`, `number-plural` |
+| 85 | verbs | `tense-present` | The present tense | present | `verb` |
+| 86 | verbs | `voice-active` | The active voice | active | `verb` |
+| 87 | verbs | `mood-indicative` | The indicative mood | indicative | `tense-present`, `voice-active` |
+| 88 | verbs | `tense-imperfect` | The imperfect tense | imperfect | `mood-indicative` |
+| 89 | verbs | `tense-future` | The future tense | future | `tense-present` |
+| 90 | verbs | `tense-aorist` | The aorist tense | aorist | `tense-imperfect` |
+| 91 | verbs | `tense-perfect` | The perfect tense | perfect | `tense-aorist` |
+| 92 | verbs | `tense-pluperfect` | The pluperfect tense | pluperfect | `tense-perfect` |
+| 93 | verbs | `second-tenses` | Second aorists and perfects | second | `tense-aorist`, `tense-perfect` |
+| 94 | verbs | `voice-middle` | The middle voice | middle | `voice-active` |
+| 95 | verbs | `voice-passive` | The passive voice | passive | `voice-active`, `tense-present`, `case-genitive` |
+| 96 | verbs | `voice-middle-or-passive` | The middle or passive voice | middle or passive | `voice-middle`, `voice-passive` |
+| 97 | verbs | `voice-middle-deponent` | The middle deponent | middle deponent | `voice-middle-or-passive` |
+| 98 | verbs | `voice-passive-deponent` | The passive deponent | passive deponent | `voice-middle-deponent`, `tense-aorist` |
+| 99 | verbs | `voice-middle-or-passive-deponent` | The middle or passive deponent | middle or passive deponent | `voice-passive-deponent` |
+| 100 | verbs | `voice-middle-significance` | A middle meaning in an active form | middle significance | `voice-middle` |
+| 101 | verbs | `voice-impersonal-active` | The impersonal active | impersonal active | `voice-active` |
+| 102 | verbs | `voice-none` | A verb with no voice | no voice | `voice-active` |
+| 103 | verbs | `mood-imperative` | The imperative mood | imperative | `mood-indicative`, `tense-aorist` |
+| 104 | verbs | `mood-subjunctive` | The subjunctive mood | subjunctive | `mood-indicative` |
+| 105 | verbs | `mood-optative` | The optative mood | optative | `mood-subjunctive` |
+| 106 | verbs | `mood-infinitive` | The infinitive | infinitive | `mood-indicative`, `article` |
+| 107 | verbs | `mood-participle` | The participle | participle | `mood-infinitive`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative`, `gender-masculine`, `gender-feminine`, `gender-neuter`, `adjective` |
+| 108 | verbs | `mood-participle-imperative` | The participle with the sense of a command | imperative-sense participle | `mood-participle`, `mood-imperative` |
+| 109 | joiners | `particle` | The particle | particle | `conjunction` |
+| 110 | joiners | `adverb` | The adverb | adverb | `adjective`, `verb` |
 | 111 | joiners | `interrogative` | Words that ask a question | interrogative | `particle` |
 | 112 | joiners | `conditional` | The conditional | conditional | `conjunction`, `mood-indicative`, `mood-subjunctive` |
 | 113 | joiners | `interjection` | The interjection | interjection | `particle` |
@@ -285,8 +295,10 @@ Choosing one changes no level: levels belong to the ideas, not to the approach.
 - `nextLessonOf(approach, levelOf)`: the lesson holding the earliest idea in `orderOf` that has no level or is not yet; Settings
   marks it 'Next'.
 
-An approach's order is not bound by the ladder's `needs`: BMA Tutor teaches the aorist before the genitive. A story that must
-not meet an idea before what it rests on takes `ideasBelow(id)` as well.
+An approach's order is bound by the ladder's `needs` (mw-86e9r1.2): in `orderOf` of every approach no idea comes before an idea
+it rests on (`tests/unit/ladder-needs.test.ts`). BMA Tutor still teaches the aorist before the genitive, because the aorist does not
+rest on a case; it teaches the article after the cases and the genders, because the article does. The first lessons name number
+and the joining words straight after the noun.
 
 ### BMA Tutor
 

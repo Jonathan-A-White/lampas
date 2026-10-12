@@ -49,7 +49,7 @@ describe('learnNext', () => {
   it('is the earliest needed idea of the approach that is not yet or untested, with its lesson', () => {
     const next = learnNext(needs, bma, new Map<string, Level>([['noun', 'frontier']]));
     expect(next?.idea.id).toBe('article');
-    expect(next?.lesson?.lesson.title).toBe('Your first words');
+    expect(next?.lesson?.lesson.title).toBe('The little word “the”, and names');
   });
 
   it('is undefined when every needed idea is frontier or solid', () => {

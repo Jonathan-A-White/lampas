@@ -19,5 +19,5 @@ Feature: The grammar ladder
   Scenario: A word's parsing names the ideas it needs
     Given the parsing code "V-2RAI-1P-ATT"
     Then it needs "The perfect tense", "The active voice" and "The plural"
-    And it needs nothing from the nouns tier
+    And it needs nothing from the nouns tier but number
     And the parsing code "PREP" needs only "The preposition"

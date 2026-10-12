@@ -10,7 +10,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import type { Chapter } from '../../src/data/chapter';
 import { db, type GrammarLevelName } from '../../src/data/db';
-import { LETTER_IDS, lettersText, weakLetters } from '../../src/data/grammar/inference';
+import { LETTER_IDS, gapsOf, lettersText } from '../../src/data/grammar/inference';
 import { questionFor } from '../../src/data/grammar/placementQuestion';
 import type { GrammarQuestion } from '../../src/data/grammar/questions';
 import { readPlacement } from '../../src/data/placementKeep';
@@ -113,7 +113,8 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('Learn next names the letters that are not solid', async () => {
       const levels = await levelsNow();
-      const weak = lettersText(weakLetters(levels));
+      // the letters first, then the pairs and breathings partly known: Learn next names every gap (which pairs the walk's forms credit follows the order of its questions)
+      const weak = lettersText(gapsOf(levels));
       expect(weak).toMatch(/^β/);
       expect(LETTER_IDS.filter((id) => levels.get(id) === 'solid').length).toBeGreaterThan(3);
       await waitFor(async () => expect(await learnNext()).toHaveTextContent(`Learn next: ${weak} · The Greek letters`));
