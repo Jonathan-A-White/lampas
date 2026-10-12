@@ -135,8 +135,8 @@ const WORD_PARTS = /^([^\p{L}\p{N}\p{M}]*)(.*?)([^\p{L}\p{N}\p{M}]*)$/u;
 /** The verse as he read it, every word of it, with the words the mill marked as buttons: only the exact instance named, so a word
  * he said right the second time is not marked because he missed it the first. A marked word whose place is not in the verse (the
  * mill counted wrongly) is offered after it, so no mark is lost. `open` is the key of the open mark ('3' for the word at place 3,
- * 'l0' for the first lost word). */
-function MarkedVerse({ text, view, marks, open, onOpen, player }: { text: string; view: ReadingView; marks: Marks; open: string | null; onOpen: (key: string | null) => void; player?: ClipPlayer }) {
+ * 'l0' for the first lost word). A partial reading's `reached` is the last word he read: the words after it are set in the muted colour. */
+function MarkedVerse({ text, view, marks, open, onOpen, player, reached }: { text: string; view: ReadingView; marks: Marks; open: string | null; onOpen: (key: string | null) => void; player?: ClipPlayer; reached?: number }) {
   const type = typeOf(view);
   const tokens = useMemo(() => wordsOfText(text), [text]);
   // each flagged word has its speaker right after it (a sibling of the word's button): it says only how the word should sound; with times and a clip,
@@ -164,8 +164,9 @@ function MarkedVerse({ text, view, marks, open, onOpen, player }: { text: string
         {tokens.map((token, i) => {
           const [, before, core, after] = WORD_PARTS.exec(token) ?? ['', '', token, ''];
           const mark = marks.marked.get(i);
+          const unread = reached !== undefined && i > reached;
           return (
-            <span key={i}>
+            <span key={i} data-unread={unread ? '' : undefined} className={unread ? 'text-muted' : undefined}>
               {before}
               {mark ? markButton(mark, core, String(i), after) : core + after}{' '}
             </span>
@@ -190,10 +191,34 @@ function MarkedVerse({ text, view, marks, open, onOpen, player }: { text: string
 const RESULT_HEADINGS: Record<VerseReading['verdict'], string> = {
   'well-read': 'Well read',
   'some-to-fix': 'Words to fix',
+  partial: 'Part of the verse',
   incomplete: 'Read the whole verse',
 };
 
 const ALL = 'all';
+
+/** The words 'Read these again' walks: the ones to fix, and for a partial reading the word he stopped at as the last. */
+const walkWordsOf = (reading: VerseReading): FixWord[] => (reading.next ? [...reading.words, reading.next] : reading.words);
+
+/** 'You read 3 of 8 words': a partial reading's reached index counts from 0. */
+const readLine = (reading: VerseReading, text: string): string => {
+  const total = reading.total ?? wordsOfText(text).length;
+  return `You read ${Math.min((reading.reached ?? -1) + 1, total)} of ${total} words`;
+};
+
+/** The word he stopped at, offered as his next: big, in chunks, with the tip and the speaker (the same as a word to fix). */
+function NextWord({ fix, view }: { fix: FixWord; view: ReadingView }) {
+  const type = typeOf(view);
+  return (
+    <div data-next-word className="space-y-1 rounded-xl border border-line bg-surface p-3">
+      <h4 className="text-sm font-semibold text-muted">Next word</h4>
+      <p lang={type.lang} className={`break-words text-4xl font-semibold ${type.chunks}`}>
+        {fix.word}
+      </p>
+      <Fix fix={fix} view={view} />
+    </div>
+  );
+}
 
 /** One player for the clip of this result; it stops speech before it plays, and lets its URL go when the result goes. */
 function useClipPlayer(clip: Clip | undefined): [ClipPlayer, (audio: HTMLAudioElement | null) => void] {
@@ -259,25 +284,37 @@ function Result({ reading, text, view, fileName, onWalk }: { reading: VerseReadi
   const marks = useMemo(() => markWords(text, reading.words), [text, reading.words]);
   const fix = open === null ? undefined : open.startsWith('l') ? marks.lost[Number(open.slice(1))] : marks.marked.get(Number(open));
   const [player, audioRef] = useClipPlayer(reading.clip);
+  const partial = reading.verdict === 'partial';
+  const walkable = walkWordsOf(reading).length > 0;
   return (
     <div data-reading-result={reading.verdict} onClick={stopOnTap} className="space-y-2">
       <h3 className="text-lg font-semibold">{RESULT_HEADINGS[reading.verdict]}</h3>
+      {partial ? (
+        <p data-reached className="text-base font-semibold text-accent">
+          {readLine(reading, text)}
+          {reading.further ? <span className="block font-medium">Further than last time</span> : null}
+        </p>
+      ) : null}
       <p className="break-words text-base">{plainQuotes(reading.note)}</p>
       <audio ref={audioRef} data-my-reading preload="none" onEnded={player.ended} onError={player.ended} />
       {reading.clip ? <MyReading clip={reading.clip} fileName={fileName} player={player} /> : null}
-      {reading.words.length > 0 ? (
+      {reading.words.length > 0 || partial ? (
         <>
-          <MarkedVerse text={text} view={view} marks={marks} open={open} onOpen={setOpen} player={reading.clip ? player : undefined} />
+          <MarkedVerse text={text} view={view} marks={marks} open={open} onOpen={setOpen} player={reading.clip ? player : undefined} reached={partial ? reading.reached : undefined} />
           {fix ? (
             <div data-fix-detail className="rounded-xl border border-line bg-surface p-3">
               <Fix fix={fix} view={view} player={reading.clip ? player : undefined} />
             </div>
-          ) : (
+          ) : reading.words.length > 0 ? (
             <p className="text-sm text-muted">Tap a marked word to see it in chunks.</p>
-          )}
-          <button type="button" onClick={onWalk} className="min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium">
-            Read these again
-          </button>
+          ) : null}
+          {partial && reading.next ? <NextWord fix={reading.next} view={view} /> : null}
+          {partial ? <p className="text-base">Read it again from the start and go further.</p> : null}
+          {walkable ? (
+            <button type="button" onClick={onWalk} className="min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium">
+              Read these again
+            </button>
+          ) : null}
         </>
       ) : null}
     </div>
@@ -363,7 +400,7 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
   const ladder = useLadder(ladderLang, ref);
   const [triedAt, setTriedAt] = useState<number | null>(null);
   const setAside = reading !== undefined && triedAt === reading.when;
-  const wholeVerse = walking && reading !== undefined && walkStep >= reading.words.length;
+  const wholeVerse = walking && reading !== undefined && walkStep >= walkWordsOf(reading).length;
   const idle = wholeVerse ? `Hold to read the whole ${verse.to === undefined ? 'verse' : 'passage'} again` : `Hold to read ${unitName(verse)}`;
   const recording = state?.phase === 'recording';
 
@@ -389,7 +426,7 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
     heard.current = reading.when;
     if (awaiting.current !== lang) return;
     awaiting.current = null;
-    speakTutor(VERDICT_ID, verdictRuns(RESULT_HEADINGS[reading.verdict], reading.note, reading.words), () => mounted.current);
+    speakTutor(VERDICT_ID, verdictRuns(RESULT_HEADINGS[reading.verdict], reading.note, walkWordsOf(reading)), () => mounted.current);
   }, [reading, sent, lang]);
   return (
     <>
@@ -415,7 +452,7 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
         {ladderLang && ladder.onLadder ? <LadderPosition lang={ladderLang} here={ladder} /> : null}
         {reading && !failed && !setAside && (walking || !out) ? (
           walking ? (
-            <Walk key={reading.when} words={reading.words} text={text} view={view} step={walkStep} onStep={setWalkStep} onDone={() => setWalkFor(null)} />
+            <Walk key={reading.when} words={walkWordsOf(reading)} text={text} view={view} step={walkStep} onStep={setWalkStep} onDone={() => setWalkFor(null)} />
           ) : (
             <Result
               key={reading.when}

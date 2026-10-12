@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { GREEK_READING_ANSWER, INCOMPLETE_ANSWER, makeFakePostern, READING_ANSWER } from '../support/fake-postern';
+import { GREEK_READING_ANSWER, INCOMPLETE_ANSWER, makeFakePostern, PARTIAL_ANSWER, READING_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestMic } from '../support/honest-fakes';
 import { shot } from './shot';
@@ -160,4 +160,31 @@ test('a reading of only the first words is headed Read the whole verse, not Well
   await expectFitsPhone(page);
   await result.scrollIntoViewIfNeeded();
   await shot(page, 'reading-check-incomplete');
+});
+
+test('a reading that stops part-way is graded as far as it went and offers the next word, at phone width', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: PARTIAL_ANSWER };
+  await routePostern(page, fake);
+  await fakeMicrophone(page);
+  await openUnlocked(page);
+  await page.goto('/');
+  await chooseAction(page, 28, 'Read it aloud');
+  const panel = page.getByRole('region', { name: 'Reading check' });
+  await holdFor(page, page.getByRole('button', { name: 'Hold to read verse 28', exact: true }), 1200);
+  const result = panel.locator('[data-reading-result="partial"]');
+  await expect(result.getByRole('heading', { name: 'Part of the verse', exact: true })).toBeVisible();
+  await expect(result.locator('[data-reached]')).toContainText('You read 6 of 23 words');
+  await expect(panel).not.toContainText('Read the whole verse');
+  await expect(result.locator('[data-fix]')).toHaveText(['know']);
+  const next = result.locator('[data-next-word]');
+  await next.scrollIntoViewIfNeeded();
+  await expect(next.getByRole('heading', { name: 'Next word', exact: true })).toBeInViewport();
+  await expect(next.locator('[data-chunks]')).toHaveText('work');
+  await expect(next).toContainText('It rhymes with jerk');
+  await expect(next.getByRole('button', { name: 'Hear it', exact: true })).toBeInViewport();
+  await expect(result).toContainText('go further');
+  await expectFitsPhone(page);
+  await shot(page, 'reading-check-partial');
 });
