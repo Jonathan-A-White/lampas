@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.116",
+    "date": "2026-10-12",
+    "story": "mw-5r3p30.211",
+    "kind": "fixed",
+    "text": "In Quiz me, the question about your quiz goal and its two buttons no longer slip out of sight when you turn the phone or the microphone message appears."
+  },
+  {
     "version": "0.1.111",
     "date": "2026-10-12",
     "story": "mw-5r3p30.209",

@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.116
+_2026-10-12_
+- Fixed: In Quiz me, the question about your quiz goal and its two buttons no longer slip out of sight when you turn the phone or the microphone message appears.
+
 ## 0.1.111
 _2026-10-12_
 - Fixed: Telling the tutor to send a request to the makers, by tapping or by saying yes at the same moment, now sends it only once.
