@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.120
+_2026-10-12_
+- Fixed: Read it aloud no longer says it could not reach the tutor when your connection drops for a moment; it keeps waiting for the answer.
+
 ## 0.1.119
 _2026-10-12_
 - Fixed: Holding a Greek word that is a capital letter or a single letter now says the word instead of 'capital'.

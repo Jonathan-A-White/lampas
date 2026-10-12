@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.120",
+    "date": "2026-10-12",
+    "story": "mw-5r3p30.208",
+    "kind": "fixed",
+    "text": "Read it aloud no longer says it could not reach the tutor when your connection drops for a moment; it keeps waiting for the answer."
+  },
+  {
     "version": "0.1.119",
     "date": "2026-10-12",
     "story": "mw-5r3p30.226",
