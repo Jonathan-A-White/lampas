@@ -65,6 +65,12 @@ Feature: Swipe the Reader to the next or previous chapter
     When he drags from 300,400 to 150,400 over 800 ms
     Then the reader is headed "Romans 8"
 
+  Scenario: A quick swipe is still a swipe on a slow host
+    Given Lampas is opened on "Romans" chapter 8
+    And the host is slow, each touch taking 250 ms of real time
+    When he drags from 300,400 to 150,400 over 150 ms
+    Then the reader is headed "Romans 9"
+
   Scenario: A swipe over an open sheet does not change chapter
     Given Lampas is opened on "Romans" chapter 8
     And a word sheet is open
