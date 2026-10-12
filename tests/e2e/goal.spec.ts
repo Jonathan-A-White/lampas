@@ -92,7 +92,7 @@ test('the Goal chip under the Reader header is on one row with Due and opens the
   await openWithGoal(page, '1 John 1:1');
   const strip = page.getByTestId('goal-strip');
   await expect(strip).toHaveText(/^Goal \d+\/16$/);
-  await expect(strip).toHaveAccessibleName(/^Goal: 1 John 1:1, \d+ of 16 words, \d+ of 35 ideas$/);
+  await expect(strip).toHaveAccessibleName(/^Goal: 1 John 1:1, \d+ of 16 words, \d+ of 37 ideas$/);
   const box = await strip.boundingBox();
   expect(box?.height).toBeGreaterThanOrEqual(38);
   expect(box?.height).toBeLessThanOrEqual(40);

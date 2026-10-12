@@ -23,7 +23,7 @@ Feature: See my goal move
     When he opens the Goal screen
     Then the title says "Read 1 John 1:1"
     And the words bar says solid 2, frontier 2 and not yet 12
-    And the ideas bar says solid 8, frontier 1 and not yet 26
+    And the ideas bar says solid 8, frontier 1 and not yet 28
     And the screen says "Solid when both are full"
 
   Scenario: Learn next names the earliest not-yet idea of BMA Tutor's sequence with its lesson and opens its sheet
@@ -50,7 +50,7 @@ Feature: See my goal move
     When he opens the Goal screen
     And he taps Learn next
     And he taps Got it on the idea sheet
-    Then the ideas bar says solid 8, frontier 1 and not yet 26
+    Then the ideas bar says solid 8, frontier 1 and not yet 28
     When he closes the idea sheet
     Then Learn next says "The singular · Your first words"
 

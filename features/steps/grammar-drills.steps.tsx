@@ -179,6 +179,37 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('A preposition is asked by the case of a real phrase', ({ Given, And, When, Then }) => {
+    Given('his goal is {string}', async (_, goal: string) => {
+      await freshStore();
+      await setGoal(goal);
+    });
+    And('the idea {string} is due', async (_, id: string) => makeIdeaDue(id));
+    And('the draw asks {string} as a preposition\'s meaning', async (_, id: string) => {
+      drawAs(id, [chapter('1jn/1')], 'preposition');
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    Then('the question shows a New Testament phrase with διά and four meanings', () => {
+      expect(screen.getByTestId('grammar-prompt').getAttribute('data-kind')).toBe('preposition');
+      expect(screen.getByTestId('grammar-prompt')).toHaveTextContent('διά');
+      expect(screen.getByTestId('grammar-form')).toHaveTextContent(String(expected?.form));
+      expect(screen.getByTestId('grammar-form').textContent).toMatch(/^δι/);
+      expect(screen.getByTestId('grammar-ref').textContent).toMatch(/^\w+ \d+:\d+$/);
+      expect(optionButtons()).toHaveLength(4);
+    });
+    When("he taps the meaning that goes with the phrase's case", async () => user.click(rightOne()));
+    Then('the right meaning turns green', () => {
+      expect(rightOne().getAttribute('data-result')).toBe('right');
+      expect(screen.getByTestId('feedback')).toHaveTextContent('Right.');
+    });
+    And('{string} has one right review and no lapse', async (_, id: string) => {
+      await waitFor(async () => expect((await review(id)).rights).toBe(1));
+      expect((await review(id)).lapses).toBe(0);
+    });
+  });
+
   Scenario('A strong idea is asked with Show and I knew it', ({ Given, And, When, Then }) => {
     Given('his goal is {string}', async (_, goal: string) => {
       await freshStore();

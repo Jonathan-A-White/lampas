@@ -36,6 +36,18 @@ Feature: Review asks grammar ideas, and asks them before words
     Then the right word turns green
     And "case-dative" has one right review and no lapse
 
+  Scenario: A preposition is asked by the case of a real phrase
+    Given his goal is "1 John 1"
+    And the idea "preposition-dia" is due
+    And the draw asks "preposition-dia" as a preposition's meaning
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    Then the question shows a New Testament phrase with διά and four meanings
+    When he taps the meaning that goes with the phrase's case
+    Then the right meaning turns green
+    And "preposition-dia" has one right review and no lapse
+
   Scenario: A strong idea is asked with Show and I knew it
     Given his goal is "1 John 1"
     And the idea "case-genitive" is due on step 3
