@@ -25,6 +25,65 @@ export const tutorTimings = {
   deadlineMs: 180_000,
 };
 
+/**
+ * How long the wait for an answer goes on with no call to Postern succeeding before it says the tutor could not be reached.
+ * The door gives up on one call after 30 s, so this lets two polls in a row time out (a train through a tunnel, a phone changing
+ * from wifi to data) before the wait is called lost; the 180 s deadline above still ends a wait that has contact but no answer.
+ */
+export const CONTACT_LOST_MS = 90_000;
+
+/** Waits `ms`, or rejects when `signal` aborts. */
+function pause(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal.aborted) return reject(new grist.AwaitAbortedError());
+    const onAbort = (): void => {
+      clearTimeout(timer);
+      reject(new grist.AwaitAbortedError());
+    };
+    const timer = setTimeout(() => {
+      signal.removeEventListener('abort', onAbort);
+      resolve();
+    }, ms);
+    signal.addEventListener('abort', onAbort, { once: true });
+  });
+}
+
+/** The mill's public key as the backend names it (bsv-kit's grist keeps its own copy of this private). */
+async function millOf(d: InstanceType<typeof door.Door>, signal: AbortSignal): Promise<string> {
+  const response = await d.fetch('/me', { signal });
+  if (!response.ok) throw new Error(`The backend answered ${response.status} to /api/me.`);
+  const body = (await response.json()) as { mill?: unknown };
+  const mill = typeof body.mill === 'string' ? body.mill.trim() : '';
+  if (!mill) throw new Error('The backend names no mill key, so there is nowhere to send a grist.');
+  return mill;
+}
+
+/**
+ * Pages Postern for the mill's answer to the grist `txid` until it comes, which `signal` stops (AwaitAbortedError). A page that
+ * fails (the door's timeout, no connection, a 5xx) does not end the wait: the next poll tries again, and only when no call has
+ * succeeded for CONTACT_LOST_MS does it throw that last failure. A licence refusal ends it at once. bsv-kit's awaitAnswer
+ * ends at the first failed page, which a phone that blinks offline for a moment turns into 'could not reach the tutor'.
+ */
+async function waitForAnswer(txid: string, d: InstanceType<typeof door.Door>, key: Uint8Array, signal: AbortSignal): Promise<grist.GristAnswer> {
+  let mill: string | undefined;
+  let since = 0;
+  let lastContact = Date.now();
+  for (;;) {
+    try {
+      mill ??= await millOf(d, signal);
+      const result = await grist.readAnswerPage(txid, { door: d, key, since, mill, signal });
+      lastContact = Date.now();
+      if (result.answer) return result.answer;
+      since = result.next;
+    } catch (err) {
+      if (signal.aborted) throw new grist.AwaitAbortedError();
+      if (err instanceof door.RefusedError || err instanceof grist.AwaitAbortedError) throw err;
+      if (Date.now() - lastContact >= CONTACT_LOST_MS) throw err;
+    }
+    await pause(tutorTimings.pollMs, signal);
+  }
+}
+
 /** What the grind is sent (Verse Ask Request 1): the verse in both languages, his words, his question. */
 export interface VerseAskRequest {
   reference: string;
@@ -151,7 +210,7 @@ export async function askGrind<Answer>(kind: string, request: object, isAnswer: 
   try {
     const txid = await grist.sendGrist({ door: d, key, app: TUTOR_APP, kind, v: TUTOR_VERSION, input: request, photos: [], attachments: options.files });
     options.onSent?.(txid);
-    const reply = await grist.awaitAnswer(txid, { door: d, key, intervalMs: tutorTimings.pollMs, signal: deadline.signal });
+    const reply = await waitForAnswer(txid, d, key, deadline.signal);
     if (reply.status !== 'answered') {
       throw new TutorError('no-answer', reply.reason ? `The tutor could not answer: ${reply.reason}` : 'The tutor could not answer.');
     }
