@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.131
+_2026-10-12_
+- New: The sheet for letters, vowel pairs, breathings and accents now shows words from your verse with the letters it teaches marked.
+
 ## 0.1.130
 _2026-10-12_
 - Fixed: Sound it out now says a one-letter syllable by its sound instead of the letter's name.
