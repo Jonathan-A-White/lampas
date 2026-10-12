@@ -5,7 +5,7 @@ import { openUnlocked } from './unlocked';
 test('Settings > Goal at phone width: three pickers, each 48 px tall, write Read 1 John 1:1 and keep it across a reload', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/settings');
-  const group = page.getByRole('group', { name: 'Goal' });
+  const group = page.getByRole('group', { name: 'Goal', exact: true });
   await expect(group).toBeVisible();
   await expect(group.getByTestId('goal-now')).toHaveText('Goal: none');
 
@@ -31,8 +31,8 @@ test('Settings > Goal at phone width: three pickers, each 48 px tall, write Read
   }
 
   await page.reload();
-  await expect(page.getByRole('group', { name: 'Goal' }).getByTestId('goal-now')).toHaveText('Read 1 John 1:1');
-  await expect(page.getByRole('group', { name: 'Goal' }).getByRole('combobox', { name: 'Verse' })).toHaveValue('1');
+  await expect(page.getByRole('group', { name: 'Goal', exact: true }).getByTestId('goal-now')).toHaveText('Read 1 John 1:1');
+  await expect(page.getByRole('group', { name: 'Goal', exact: true }).getByRole('combobox', { name: 'Verse' })).toHaveValue('1');
   // the screen scrolls in its own box: bring the Goal to the top so the shot shows it
   await page.getByRole('heading', { name: 'Goal', level: 2 }).evaluate((el) => el.scrollIntoView({ block: 'start' }));
   await shot(page, 'goal-setting');
