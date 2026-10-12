@@ -41,7 +41,7 @@ const idOf = (name: string): string => {
 const names = (list: string): string[] => list.split(',').map((n) => n.trim());
 
 /** Everything the ladder has is solid (marked), except these items and the groups that stand for them. */
-async function freshStore(goal: string, except: string[]): Promise<void> {
+async function freshStore(goal: string, except: string[], noLetters = false): Promise<void> {
   settle.ms = 0;
   cleanup();
   clearBus();
@@ -52,8 +52,10 @@ async function freshStore(goal: string, except: string[]): Promise<void> {
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.reviews.clear(), db.grammarLevels.clear()]);
   await db.meta.put({ key: 'grammarLevelsSeeded', value: '1' });
-  await setGoal(goal.replace(/^Read /, ''));
+  if (goal) await setGoal(goal.replace(/^Read /, ''));
   const missing = new Set(except.map(idOf));
+  // a letter nobody has asked: all 24 are unknown, so the alphabet is not solid, though the other groups are
+  if (noLetters) for (const letter of itemsOf('alphabet')) missing.add(letter.id);
   const groups = new Set(ITEM_GROUPS.filter((g) => itemsOf(g).some((i) => missing.has(i.id))));
   await db.grammarLevels.bulkPut(
     LADDER.filter((i) => !missing.has(i.id) && !groups.has(i.id)).map((i) => ({ id: i.id, level: 'solid' as const, since: 1, how: 'marked' as const })),
@@ -103,12 +105,16 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const given = (_: unknown, goal: string, except: string) => freshStore(goal, names(except));
   const opened = () => openAt('#/placement');
+  const goalOpened = () => openAt('#/goal');
   const started = async () => user.click(await screen.findByRole('button', { name: 'Start' }));
   const roundSays = async (_: unknown, text: string) => {
     await waitFor(() => expect(screen.getByTestId('placement-question')).toHaveTextContent(text));
   };
   const taps = async (_: unknown, name: string) => user.click(await screen.findByRole('button', { name }));
   const solidFrom = async (_: unknown, name: string) => waitFor(async () => expect(await rowOf(name)).toMatchObject({ level: 'solid', how: 'placement' }));
+  const learnNextSays = async (_: unknown, text: string) => {
+    await waitFor(async () => expect(await screen.findByTestId('learn-next')).toHaveTextContent(`Learn next: ${text}`));
+  };
   const gaps = async (_: unknown, text: string) => {
     await waitFor(() => expect(screen.getByTestId('gaps')).toHaveTextContent(`Gaps to work on: ${text}`));
   };
@@ -221,6 +227,35 @@ describeFeature(feature, ({ Scenario }) => {
       const round = await drawReviewRound(mulberry32(1));
       expect(round.items.slice(0, 3).map((i) => i.id)).toEqual(names(ids));
     });
+  });
+
+  Scenario('Learn next names a gap that is not a letter, though no letter is known yet', ({ Given, When, Then, And }) => {
+    Given('his goal is {string}, no letter is known, and his grammar is known except {string}', (_, goal: string, except: string) => freshStore(goal, names(except), true));
+    When('he opens the Goal screen', goalOpened);
+    Then('Learn next says {string}', learnNextSays);
+    And("Review's first grammar questions are on {string}", reviewFirst);
+  });
+
+  Scenario('Learn next names the same gaps as the end card, letters first and a mark last', ({ Given, When, And, Then }) => {
+    Given('his goal is {string} and his grammar is known except {string}', given);
+    When('he opens the placement', opened);
+    And('he starts the placement', started);
+    And('he answers the quick round wrong, wrong, wrong and wrong', async () => {
+      for (let n = 0; n < 4; n += 1) await answerQuick(false);
+    });
+    Then('the end card names the gaps {string}', gaps);
+    When('he taps {string}', taps);
+    Then('Learn next says {string}', learnNextSays);
+    And("Review's first grammar questions are on {string}", reviewFirst);
+  });
+
+  Scenario('With no goal set, the Goal screen still names the gaps under Learn next', ({ Given, When, Then, And }) => {
+    Given('no goal is set and his grammar is known except {string}', (_, except: string) => freshStore('', names(except)));
+    When('he opens the Goal screen', goalOpened);
+    Then('the Goal screen says {string}', async (_, text: string) => expect(await screen.findByText(text)).toBeInTheDocument());
+    And('Learn next says {string}', learnNextSays);
+    When('he taps Learn next', async () => user.click(await screen.findByTestId('learn-next')));
+    Then('the idea sheet is open', async () => expect(await screen.findByRole('dialog')).toBeInTheDocument());
   });
 
   Scenario('Review asks the gaps nobody has asked yet before any word', ({ Given, Then, And }) => {

@@ -12,7 +12,8 @@ import { getGoal, listLevels, listWords, type WordState } from './data/repositor
 
 export type GoalProgress =
   | { status: 'loading' }
-  | { status: 'none' }
+  /** no goal set: his levels are still here, for the gaps Learn next names */
+  | { status: 'none'; levels: Map<string, Level> }
   | { status: 'failed'; goal: Goal; retry: () => void }
   | {
       status: 'ready';
@@ -52,7 +53,7 @@ export function useGoalProgress(): GoalProgress {
   }, [text, attempt]);
 
   if (!stored) return { status: 'loading' };
-  if (!goal) return { status: 'none' };
+  if (!goal) return { status: 'none', levels: levelsOf(stored.rows) };
   if (!loaded || loaded.text !== text || loaded.attempt !== attempt) return { status: 'loading' };
   if (loaded.needs === 'failed') return { status: 'failed', goal, retry: () => setAttempt((n) => n + 1) };
   const states = wordStatesOf(stored.words);
