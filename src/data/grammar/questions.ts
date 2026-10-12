@@ -172,6 +172,17 @@ const COMMON_ENDINGS: Record<'noun' | 'verb', string[]> = {
 };
 
 /**
+ * An ending as it is asked (mw-86e9r1.4): a final ν that comes and goes (-σιν, and a verb's -εν) is shown in brackets, ουσιν as ουσι(ν), and
+ * is one ending with or without it. Returns the ending's plain key as well, so two endings that differ only in that ν are the same.
+ */
+function shownEnding(ending: string, pos: string): { text: string; key: string } {
+  const text = nfc(ending);
+  const key = keyOf(text);
+  const movable = key.endsWith('σιν') || (pos === 'verb' && key === 'εν');
+  return movable ? { text: `${text.slice(0, -1)}(ν)`, key: key.slice(0, -1) } : { text, key };
+}
+
+/**
  * The ending of a form from the passage: the form with its ending blanked ('ἀρχ_'), what the form is ('genitive singular feminine of ἀρχή') and
  * four endings. Three wrong endings are the endings of other inflected words of the same part of speech in the passage; a passage that
  * has too few lends the common endings. Null when the idea has no form in the passage that shares a stem with its dictionary form.
@@ -182,19 +193,21 @@ export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], rand
   const candidates = shuffle(places.filter((p) => needsIdea(p.word.p, idea.id) && stems(p)), random);
   const place = candidates[0];
   if (!place) return null;
-  const { stem, ending } = stems(place)!;
+  const { stem, ending: plainEnding } = stems(place)!;
   const pos = splitParse(place.word.p).pos;
+  const { text: ending, key: rightKey } = shownEnding(plainEnding, pos);
   const sameKind = shuffle(
     places.filter((p) => splitParse(p.word.p).pos === pos),
     random,
   ).flatMap((p) => stems(p)?.ending ?? []);
   const wrong: string[] = [];
-  const taken = new Set([keyOf(ending)]);
+  const taken = new Set([rightKey]);
   for (const e of [...sameKind, ...shuffle(COMMON_ENDINGS[pos === 'verb' ? 'verb' : 'noun'], random)]) {
     if (wrong.length === OPTION_COUNT - 1) break;
-    if (taken.has(keyOf(e))) continue;
-    taken.add(keyOf(e));
-    wrong.push(nfc(e));
+    const { text, key } = shownEnding(e, pos);
+    if (taken.has(key)) continue;
+    taken.add(key);
+    wrong.push(text);
   }
   return {
     kind: 'ending',
@@ -273,6 +286,28 @@ function buildSubscript(idea: GrammarIdea, random: Random): GrammarQuestion {
 function buildPunctuation(idea: GrammarIdea, random: Random): GrammarQuestion {
   const [prompt, right] = pick(PUNCTUATION, random);
   return fromTable(idea, prompt, right, [';', '·', '.', ','].filter((m) => m !== right), random);
+}
+
+// ---- Movable letters ----
+
+// [prompt, right, the others it may be told from]. Every word is a real New Testament one, with its place.
+const NOT_FORMS = ['οὐ', 'οὐκ', 'οὐχ'];
+const OUT_FORMS = ['ἐκ', 'ἐξ'];
+const MOVABLE: [string, string, readonly string[]][] = [
+  ['Which fits? ___ κατέλαβεν (John 1:5, “did not overcome it”)', 'οὐ', [...NOT_FORMS, ...OUT_FORMS]],
+  ['Which fits? ___ ἦν ἐκεῖνος τὸ φῶς (John 1:8, “he was not the light”)', 'οὐκ', [...NOT_FORMS, ...OUT_FORMS]],
+  ['Which fits? ___ οὗτός ἐστιν (John 7:25, “Is this not he?”)', 'οὐχ', [...NOT_FORMS, ...OUT_FORMS]],
+  ['Which fits? ___ θεοῦ ἐγεννήθησαν (John 1:13, “out of God they were born”)', 'ἐκ', [...OUT_FORMS, ...NOT_FORMS]],
+  ['Which fits? ___ ἧς ἐγεννήθη Ἰησοῦς (Matthew 1:16, “out of whom Jesus was born”)', 'ἐξ', [...OUT_FORMS, ...NOT_FORMS]],
+  ['Which fits? ___ ἀρχῆς (1 John 2:7, “from the beginning”; the word is ἀπό with its vowel dropped)', 'ἀπ᾿', ['ἀπ᾿', 'ἀφ᾿', 'ἀπό', 'ἐπ᾿']],
+  ['Which fits? ___ ἑαυτοῦ (John 5:19, “of himself”; the next word begins with a rough breathing)', 'ἀφ᾿', ['ἀπ᾿', 'ἀφ᾿', 'ἀπό', 'ἐφ᾿']],
+  ['Which of these may take a movable ν at its end (John 1:34)?', 'ἐστι(ν)', ['λόγος', 'ἀγάπη', 'τοῦτο', 'οὐκ']],
+];
+
+/** A word that changes its last letter: οὐ, οὐκ or οὐχ, ἐκ or ἐξ, ἀπ᾿ or ἀφ᾿, a movable ν; four to choose from, one right. */
+export function buildMovable(idea: GrammarIdea, random: Random): GrammarQuestion {
+  const [prompt, right, others] = pick(MOVABLE, random);
+  return fromTable(idea, prompt, right, others.filter((o) => o !== right), random);
 }
 
 // ---- Words: stress, syllables, breathing ----
@@ -434,6 +469,8 @@ export function buildIdeaQuestion(idea: GrammarIdea, passage: readonly Chapter[]
       return buildSubscript(idea, random);
     case 'punctuation':
       return buildPunctuation(idea, random);
+    case 'movable-letters':
+      return buildMovable(idea, random);
   }
   const endingFirst = random() < 0.5;
   const builders = endingFirst ? [buildEnding, buildTapForm] : [buildTapForm, buildEnding];
