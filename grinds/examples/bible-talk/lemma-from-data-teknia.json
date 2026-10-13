@@ -1,0 +1,153 @@
+{
+  "description": "1 John 2:1, asked what paradigm takes him from the dictionary form to Τεκνία: the answer names τεκνίον, the lemma greek_words gives, and not the look-alike τέκνον.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "1 John 2:1",
+    "greek": "Τεκνία μου ταῦτα γράφω ὑμῖν ἵνα μὴ ἁμάρτητε Καὶ ἐάν τις ἁμάρτῃ παράκλητον ἔχομεν πρὸς τὸν πατέρα Ἰησοῦν χριστὸν δίκαιον",
+    "english": "My little children, I am writing these things to you so that you will not sin. But if anyone does sin, we have an advocate before the Father — Jesus Christ, the Righteous One.",
+    "greek_words": [
+      {
+        "form": "Τεκνία",
+        "lemma": "τεκνίον",
+        "gloss": "children",
+        "parse": "noun, vocative plural neuter"
+      },
+      {
+        "form": "μου",
+        "lemma": "ἐγώ",
+        "gloss": "I/we",
+        "parse": "personal pronoun, 1st person genitive singular"
+      },
+      {
+        "form": "ταῦτα",
+        "lemma": "οὗτος",
+        "gloss": "this/he/she/it",
+        "parse": "demonstrative pronoun, accusative plural neuter"
+      },
+      {
+        "form": "γράφω",
+        "lemma": "γράφω",
+        "gloss": "to write",
+        "parse": "verb, present active indicative, 1st person singular"
+      },
+      {
+        "form": "ὑμῖν",
+        "lemma": "σύ",
+        "gloss": "you",
+        "parse": "personal pronoun, 2nd person dative plural"
+      },
+      {
+        "form": "ἵνα",
+        "lemma": "ἵνα",
+        "gloss": "in order that/to",
+        "parse": "conjunction"
+      },
+      {
+        "form": "μὴ",
+        "lemma": "μή",
+        "gloss": "not",
+        "parse": "particle, negative"
+      },
+      {
+        "form": "ἁμάρτητε",
+        "lemma": "ἁμαρτάνω",
+        "gloss": "to sin",
+        "parse": "verb, second aorist active subjunctive, 2nd person plural"
+      },
+      {
+        "form": "Καὶ",
+        "lemma": "καί",
+        "gloss": "and",
+        "parse": "conjunction"
+      },
+      {
+        "form": "ἐάν",
+        "lemma": "ἐάν",
+        "gloss": "if",
+        "parse": "conditional"
+      },
+      {
+        "form": "τις",
+        "lemma": "τις",
+        "gloss": "one",
+        "parse": "indefinite pronoun, nominative singular masculine"
+      },
+      {
+        "form": "ἁμάρτῃ",
+        "lemma": "ἁμαρτάνω",
+        "gloss": "to sin",
+        "parse": "verb, second aorist active subjunctive, 3rd person singular"
+      },
+      {
+        "form": "παράκλητον",
+        "lemma": "παράκλητος",
+        "gloss": "counsellor",
+        "parse": "noun, accusative singular masculine"
+      },
+      {
+        "form": "ἔχομεν",
+        "lemma": "ἔχω",
+        "gloss": "to have/be",
+        "parse": "verb, present active indicative, 1st person plural"
+      },
+      {
+        "form": "πρὸς",
+        "lemma": "πρός",
+        "gloss": "to/with",
+        "parse": "preposition"
+      },
+      {
+        "form": "τὸν",
+        "lemma": "ὁ",
+        "gloss": "the/this/who",
+        "parse": "article, accusative singular masculine"
+      },
+      {
+        "form": "πατέρα",
+        "lemma": "πατήρ",
+        "gloss": "father",
+        "parse": "noun, accusative singular masculine"
+      },
+      {
+        "form": "Ἰησοῦν",
+        "lemma": "Ἰησοῦς",
+        "gloss": "Jesus",
+        "parse": "noun, accusative singular masculine"
+      },
+      {
+        "form": "χριστὸν",
+        "lemma": "Χριστός",
+        "gloss": "Christ",
+        "parse": "noun, accusative singular masculine"
+      },
+      {
+        "form": "δίκαιον",
+        "lemma": "δίκαιος",
+        "gloss": "just",
+        "parse": "adjective, accusative singular masculine"
+      }
+    ],
+    "question": "What paradigm takes me from the dictionary form to Τεκνία?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {
+      "theme": "phone",
+      "textSize": "normal"
+    }
+  },
+  "expect": {
+    "answer": {
+      "contains": "τεκνίον"
+    },
+    "words.0.lemma": {
+      "equals": "τεκνίον"
+    },
+    "settings_changes": {
+      "present": false
+    }
+  }
+}

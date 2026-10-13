@@ -13,6 +13,10 @@ You receive a Bible Talk Request (a JSON object):
 - `greek`: the Greek of that verse (the Byzantine text), in Greek word order. When `reference` is a passage (`Romans 8:1-11`) it
   holds the whole passage; when `reference` is a chapter it holds only the chapter's first three verses. It is missing when
   `screen` is present.
+- `greek_words`: the words of `greek`, in text order, each `{ "form", "lemma", "gloss", "parse" }`: the word as it stands in the text, its
+  dictionary form, the lexicon's gloss and its parsing in plain words, all from the app's own data (the same as its word card shows). A word the
+  text repeats with the same lemma and parsing is listed once, and for a long passage the list may stop part-way. Missing when `screen` is
+  present. See "Words of the text" below.
 - `english`: the same text in English (the Majority Standard Bible). Missing when `screen` is present. A run of words between asterisks,
   like `*was* king`, is in italics in his reader: the translators supplied those words for the English, and the Greek has no word of its
   own for them. See "Italic words" below.
@@ -90,6 +94,17 @@ English, so a Greek word he said reaches you as English sound-alikes, often as o
   passage sounds like it, say so plainly and answer what you can; do not invent a word.
 - Only a stretch that is not good English and sounds like a Greek word of this passage is a Greek word. Do not turn ordinary English into Greek.
 - The `question` you return (the cleaned-up one) keeps the Greek word in Greek letters, as you took it.
+
+## Words of the text
+
+For any word of `greek`, give its lemma, its gloss and its parsing as `greek_words` has them, and nothing else: look the word up by its `form`
+(the same form can be listed twice with different parsing; use the one that fits the place he means). The lemma is the dictionary form listed
+there even when you know a more common word that looks like it. Never substitute a related word: `Τεκνία` in 1 John 2:1 is the vocative plural of
+`τεκνίον` (a little child, listed with the gloss "children"), not of `τέκνον` (child), though their endings and paradigm are alike. When he asks
+what takes him from the dictionary form to a form of the text, name the lemma from `greek_words` first and then the paradigm it follows.
+When a word he names is not in `greek_words` (a word of another verse, or past the point where a long list stops), say that you are going from
+your own knowledge and do not claim the app's data for it. If `focus` is present its `lemma` and `parse` are the app's too, and agree with
+this list.
 
 ## Cleaning up what he said
 

@@ -1,7 +1,7 @@
 // src/services/talk.ts — the Bible talk: one thing he says, sent as a grist through Postern (bsv-kit/grist) and answered by
 // the mill's bible-talk grind (grinds/bible-talk.json). The wire work is the tutor's (src/services/tutor.ts askGrind); this
 // file is the kind's own: the request with the last turns of the conversation, the answer's shape, and the fit to a grist.
-import { markSupplied, type Chapter, type Verse } from '../data/chapter';
+import { markSupplied, wordGloss, wordLemma, wordParse, type Chapter, type Verse } from '../data/chapter';
 import { unitId } from '../data/passage';
 import { QUIZ_GOAL_MAX } from '../data/repositories/settings';
 import { STUDY_WAY_LINE_MAX } from '../data/repositories/studyWay';
@@ -151,12 +151,22 @@ export function newWordQuestion(lemma: string, gloss: string, reference: string)
   return `Teach me the new word ${lemma}${gloss ? ` (${gloss})` : ''}, as it stands in ${reference}: what it means, how it sounds and one way to remember it.`;
 }
 
+/** One word of the text as the chapter data has it: the form as it stands, its lemma (NFC), the lexicon's gloss and the parsing in plain words. */
+export interface TalkGreekWord {
+  form: string;
+  lemma: string;
+  gloss: string;
+  parse: string;
+}
+
 /** What the grind is sent (Bible Talk Request 1; grinds/bible-talk.input.schema.json). */
 export interface TalkRequest {
   reference: string;
   /** the verse's, the passage's or the chapter's first verses' Greek; missing in a talk from a screen (`screen`), which is not about a text */
   greek?: string;
   english?: string;
+  /** each distinct Greek word of `greek` with its dictionary form, gloss and parsing as the chapter data has them (mw-5r3p30.246): the tutor names a word's lemma from here, never from memory */
+  greek_words?: TalkGreekWord[];
   question: string;
   /** present (true) only when the question was spoken to the phone's English recogniser (mw-5r3p30.244): a Greek word in it may have come as English sound-alikes */
   spoken?: true;
@@ -302,6 +312,31 @@ export const quizMeQuestion = (reference: string): string => `Quiz me on ${refer
 const greekOf = (v: Verse): string => v.g.map((w) => w.t).join(' ');
 const englishOf = (v: Verse): string => v.e.map(markSupplied).join(' ');
 
+/** The most the word list may weigh, as JSON in UTF-8: a verse of 25 words fits; a long passage's list stops part-way (the grind's instructions say so),
+ * and buildTalkRequest makes it smaller still when the rest of the request leaves less room, so the record stays under MAX_REQUEST_BYTES. */
+export const GREEK_WORDS_BYTES = 2600;
+/** What the key `"greek_words":` and its comma take in the JSON. */
+const GREEK_WORDS_KEY_BYTES = 16;
+
+/** The words of `verses` with lemma, gloss and parse from `chapter`, in text order; a word that repeats with the same lemma and parsing is listed once.
+ * The list stops before the word that would take it over `maxBytes`. A word with no lemma is left out: there is nothing to say of it. */
+function greekWordsOf(chapter: Chapter, verses: Verse[], maxBytes: number): TalkGreekWord[] {
+  const data: Chapter = { ...chapter, lex: chapter.lex ?? {}, parse: chapter.parse ?? {} };
+  const seen = new Set<string>();
+  const words: TalkGreekWord[] = [];
+  let bytes = 2;
+  for (const w of verses.flatMap((v) => v.g)) {
+    const word = { form: w.t, lemma: wordLemma(w), gloss: wordGloss(data, w), parse: wordParse(data, w) };
+    const key = `${word.form}|${word.lemma}|${word.parse}`;
+    if (!word.lemma || seen.has(key)) continue;
+    bytes += new TextEncoder().encode(JSON.stringify(word)).length + 1;
+    if (bytes > maxBytes) break;
+    seen.add(key);
+    words.push(word);
+  }
+  return words;
+}
+
 /** The title of the sheet and the reference in the request: 'Romans 8', 'Romans 8:28' or, for a passage, 'Romans 8:1-11'. */
 export const scopeTitle = (scope: Pick<TalkScope, 'title' | 'verse'>): string => (scope.verse ? `${scope.title}:${unitId(scope.verse)}` : scope.title);
 
@@ -312,20 +347,26 @@ export const scopeRef = (book: string, chapter: number, scope: Pick<TalkScope, '
 const sizeOf = (request: TalkRequest): number => new TextEncoder().encode(JSON.stringify(request)).length;
 
 /**
- * Makes the request fit a grist: while it is too big the oldest long answer in the history is cut short, and when none is
- * left to cut the oldest turn is dropped. The newest turn is the last to be touched. With the history gone, the oldest of his
- * requests (the last in the list, newest first) go one at a time.
+ * Makes the request fit a grist: while it is too big the oldest long answer in the history is cut short; when none is left to cut
+ * the words of the text (greek_words) are cut from their end, and when none is left the oldest turn is dropped. The newest turn is
+ * the last to be touched (a quiz is nothing without its earlier turns, so they outlast the tail of a long passage's word list).
+ * With the history gone, the oldest of his requests (the last in the list, newest first) go one at a time.
  */
 export function fitHistory(request: TalkRequest): TalkRequest {
   let history = request.history.map((t) => ({ ...t }));
   let requests = request.requests;
-  const fitted = (): TalkRequest => ({ ...request, history, ...(requests ? { requests } : {}) });
-  while (history.length > 0 && sizeOf(fitted()) > MAX_REQUEST_BYTES) {
+  let greekWords = request.greek_words;
+  const fitted = (): TalkRequest => ({ ...request, history, ...(requests ? { requests } : {}), ...(greekWords ? { greek_words: greekWords } : {}) });
+  const tooBig = (): boolean => sizeOf(fitted()) > MAX_REQUEST_BYTES;
+  for (;;) {
     const long = history.findIndex((t) => t.a.length > CLIPPED_CHARS);
-    if (long >= 0) history[long] = { ...history[long], a: history[long].a.slice(0, CLIPPED_CHARS - CLIP_MARK.length).trimEnd() + CLIP_MARK };
-    else history = history.slice(1);
+    if (!tooBig() || long < 0) break;
+    history[long] = { ...history[long], a: history[long].a.slice(0, CLIPPED_CHARS - CLIP_MARK.length).trimEnd() + CLIP_MARK };
   }
-  while (requests && requests.length > 0 && sizeOf(fitted()) > MAX_REQUEST_BYTES) requests = requests.slice(0, -1);
+  while (greekWords && greekWords.length > 0 && tooBig() && history.length > 0) greekWords = greekWords.slice(0, -1);
+  while (history.length > 0 && tooBig()) history = history.slice(1);
+  while (greekWords && greekWords.length > 0 && tooBig()) greekWords = greekWords.slice(0, -1);
+  while (requests && requests.length > 0 && tooBig()) requests = requests.slice(0, -1);
   return fitted();
 }
 
@@ -358,7 +399,7 @@ export function buildTalkRequest(
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   // About (mw-vtjxh4.2) sends the credits, which take most of the record: the credits are the talk, so his words and his grammar stay home
   const aboutCredits = scope.screen?.credits !== undefined;
-  return {
+  const request: TalkRequest = {
     reference: scopeTitle(scope),
     // a talk from a screen is not about a text: it carries the screen and no verse text
     ...(scope.screen ? { screen: scope.screen } : { greek: verses.map(greekOf).join(' '), english: verses.map(englishOf).join(' ') }),
@@ -381,6 +422,10 @@ export function buildTalkRequest(
     ...(pendingOffer ? { pending_offer: pendingOffer } : {}),
     ...(requests.length > 0 && !aboutCredits ? { requests } : {}),
   };
+  if (scope.screen) return request;
+  // the words of the text weigh what the rest leaves of the record, without the history (which is cut first), up to GREEK_WORDS_BYTES
+  const room = MAX_REQUEST_BYTES - sizeOf({ ...request, history: [] }) - GREEK_WORDS_KEY_BYTES;
+  return { ...request, greek_words: greekWordsOf(scope.chapter, verses, Math.min(GREEK_WORDS_BYTES, room)) };
 }
 
 /** Sends what he said and waits for the companion's answer. Throws a TutorError (src/services/tutor.ts). */

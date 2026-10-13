@@ -1,11 +1,12 @@
 // The request the bible-talk grind is sent: the scope's text, the last 10 turns, and a fit to the grist's size cap.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { type Chapter, markSupplied } from '../../src/data/chapter';
+import { type Chapter, NO_CHAPTER, markSupplied } from '../../src/data/chapter';
 import { learnerGrammarOf, type LearnerGrammar } from '../../src/data/grammar/learnerGrammar';
-import { MAX_HISTORY_TURNS, MAX_REQUEST_BYTES, MAX_TALK_CHARS, buildTalkRequest, fitHistory, scopeRef, termQuestion, type TalkRequest } from '../../src/services/talk';
+import { MAX_HISTORY_TURNS, MAX_REQUEST_BYTES, GREEK_WORDS_BYTES, MAX_TALK_CHARS, buildTalkRequest, fitHistory, scopeRef, termQuestion, type TalkRequest } from '../../src/services/talk';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
+const john = JSON.parse(readFileSync('public/data/1jn/2.json', 'utf8')) as Chapter;
 const turn = (i: number, a = `Answer ${i}`) => ({ q: `Question ${i}`, a });
 const size = (r: TalkRequest) => new TextEncoder().encode(JSON.stringify(r)).length;
 
@@ -50,6 +51,38 @@ describe('buildTalkRequest', () => {
     expect(r.reference).toBe('Romans 8');
     expect(r.greek).toBe(chapter.verses.slice(0, 3).map((v) => v.g.map((w) => w.t).join(' ')).join(' '));
     expect(r.english).toBe(chapter.verses.slice(0, 3).map((v) => v.e.map(markSupplied).join(' ')).join(' '));
+  });
+
+  // mw-5r3p30.246: the tutor named τέκνον as the lemma of Τεκνία on 1 John 2:1 because it had only the verse's plain Greek; it is now handed each word's lemma, gloss and parse
+  it('gives the tutor each Greek word with its lemma, gloss and parse from the chapter data (1 John 2:1: Τεκνία is from τεκνίον, not τέκνον)', () => {
+    const verse = john.verses.find((v) => v.n === 1);
+    if (!verse) throw new Error('no verse 1');
+    const r = buildTalkRequest({ title: '1 John 2', chapter: john, verse }, 'What paradigm takes me from the dictionary form to Τεκνία?', [], []);
+    expect(r.greek_words).toHaveLength(verse.g.length);
+    expect(r.greek_words?.[0]).toEqual({ form: 'Τεκνία', lemma: 'τεκνίον', gloss: 'children', parse: 'noun, vocative plural neuter' });
+    expect(JSON.stringify(r.greek_words)).not.toContain('τέκνον');
+    expect(r.greek_words?.map((w) => w.form)).toEqual(verse.g.map((w) => w.t));
+  });
+
+  it('lists a form once when the passage repeats it with the same lemma and parse', () => {
+    const verse = john.verses.find((v) => v.n === 1);
+    if (!verse) throw new Error('no verse 1');
+    const twice = { ...verse, g: [...verse.g, verse.g[0]] };
+    const r = buildTalkRequest({ title: '1 John 2', chapter: john, verse: twice }, 'Why?', [], []);
+    expect(r.greek_words).toHaveLength(verse.g.length);
+  });
+
+  it('about the chapter: the words of the first three verses, and none in a talk from a screen', () => {
+    const r = buildTalkRequest({ title: '1 John 2', chapter: john, verse: null }, 'Why?', [], []);
+    expect(r.greek_words?.[0].lemma).toBe('τεκνίον');
+    const first3 = john.verses.slice(0, 3).flatMap((v) => v.g.map((w) => w.t));
+    // the list is the text's words in order, and stops where the byte budget does
+    const listed = r.greek_words?.map((w) => w.form) ?? [];
+    expect(listed.length).toBeGreaterThan(15);
+    expect(listed.every((form, i) => first3.includes(form) && (i === 0 || first3.indexOf(form) >= 0))).toBe(true);
+    expect(new TextEncoder().encode(JSON.stringify(r.greek_words)).length).toBeLessThanOrEqual(GREEK_WORDS_BYTES);
+    const screen = buildTalkRequest({ title: 'Goal', chapter: NO_CHAPTER, verse: null, screen: { name: 'Goal', facts: [] } }, 'Why?', [], []);
+    expect('greek_words' in screen).toBe(false);
   });
 
   it('sends only the last 10 turns, oldest first', () => {
@@ -135,6 +168,31 @@ describe('fitHistory', () => {
     expect(size(fitted)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
     expect(fitted.learner_grammar).toEqual(FIELD);
     expect(fitted.history.length).toBeGreaterThan(0);
+  });
+
+  it('cuts the words of a long passage from the end before it drops a turn of the conversation (a quiz needs its earlier turns)', () => {
+    const words = Array.from({ length: 40 }, (_, i) => ({ form: `φ${i}`.repeat(4), lemma: `λ${i}`.repeat(4), gloss: 'g'.repeat(20), parse: 'noun, nominative plural masculine' }));
+    const r = { ...base(Array.from({ length: 10 }, (_, i) => turn(i, 'y'.repeat(1500)))), greek_words: words };
+    expect(size(r)).toBeGreaterThan(MAX_REQUEST_BYTES);
+    const fitted = fitHistory(r);
+    expect(size(fitted)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
+    expect(fitted.history).toHaveLength(10);
+    expect(fitted.greek_words).toEqual(words.slice(0, fitted.greek_words?.length));
+    expect(fitted.greek_words?.length ?? 0).toBeLessThan(40);
+  });
+
+  it('keeps the words of the text when clipping the history is enough, and cuts them from the end only when the history is gone', () => {
+    const words = Array.from({ length: 20 }, (_, i) => ({ form: `φ${i}`.repeat(4), lemma: `λ${i}`.repeat(4), gloss: 'g'.repeat(20), parse: 'noun, nominative plural masculine' }));
+    const r = { ...base(Array.from({ length: 10 }, (_, i) => turn(i, 'y'.repeat(1500)))), greek_words: words };
+    const fitted = fitHistory(r);
+    expect(size(fitted)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
+    expect(fitted.greek_words).toEqual(words);
+    const tooMany = { ...base([]), greek_words: Array.from({ length: 200 }, () => words[0]) };
+    expect(size(tooMany)).toBeGreaterThan(MAX_REQUEST_BYTES);
+    const cut = fitHistory(tooMany);
+    expect(size(cut)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
+    expect(cut.greek_words?.length).toBeGreaterThan(0);
+    expect(cut.greek_words?.length).toBeLessThan(200);
   });
 
   it('drops the whole history when even one clipped turn cannot fit', () => {
