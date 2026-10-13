@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.182
+_2026-10-13_
+- New: The letters, sounds and marks cards now show their letters, vowel pairs, consonant pairs and marks as tiles you can tap to hear, each with its name and sound, instead of only describing them.
+
 ## 0.1.181
 _2026-10-13_
 - New: The lessons now teach when σ sounds like z, when αυ and ευ sound like v or f, where a breathing is written, and a new lesson 'Words that sound alike' with a hear-and-pick question.
