@@ -7,6 +7,7 @@ import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { requestsForTutor } from './data/requestsForTutor';
 import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
+import { learnFromTalk } from './data/repositories/profile';
 import { addTurn, getGreekPronunciation, getQuizGoal, getStudyResources, listSolidHeadwords, listStudyWay, listTurns } from './data/repositories';
 import { resourcesForTutor } from './resources/tutorLinks';
 import { getDeviceKeyBytes } from './services/deviceKey';
@@ -167,6 +168,8 @@ export function useTalk(
           const settled = await settleOffer(waiting ? answer.offer_reply : undefined, waiting, scope);
           applied.push(...settled.applied);
           refused.push(...settled.refused);
+          // What the tutor learned of him as a student is kept beside his profile (checked and never over what he set); it never fails the talk.
+          if (answer.profile_update || answer.profile_question) await learnFromTalk(ref, answer.profile_update ?? [], answer.profile_question).catch(() => undefined);
           const { added, already, unknown } = await addWords(scope, answer.words_to_add ?? []);
           // A chapter he asked to be taken to: opened only while this talk's sheet is open. The chapter he is on stays (said so); one that came after he closed the
           // sheet is kept to open with a tap (said so); any other go is said not to have happened.

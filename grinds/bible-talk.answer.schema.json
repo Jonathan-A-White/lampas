@@ -62,6 +62,27 @@
       "minLength": 1,
       "maxLength": 80
     },
+    "profile_update": {
+      "description": "What you learned about him as a student in his words just now, or judged from how he writes and talks (see 'Learning about him'). Each entry is a field (age, pace, ways, background, why, or note for a short thing worth remembering) and its value in a few plain words of at most 100 characters (pace is quick, steady or slow); `guessed` true marks a judgement of yours that he did not say (only for age, as a band such as 'adult' or '60s', and background); `declined` true, with no value, when he would not say. The app keeps it on his phone, shows it in Settings > About you where he can change or remove it, and never lets it replace what he set himself. At most three. Leave it out when you learned nothing.",
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["field"],
+        "properties": {
+          "field": { "type": "string", "enum": ["age", "pace", "ways", "background", "why", "note"] },
+          "value": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "guessed": { "const": true },
+          "declined": { "const": true }
+        }
+      }
+    },
+    "profile_question": {
+      "description": "Only when the question in your `answer` asks him about himself as a student (see 'Learning about him'): which field it is about. The app notes it so you are not told to ask the same field again within a day. Leave it out for anything else.",
+      "type": "string",
+      "enum": ["age", "pace", "ways", "background", "why"]
+    },
     "feedback_offer": {
       "description": "Only when he asked for something Lampas does not do (to work with another app, a setting it does not have, a change to a screen): the one-line summary of his ask, in plain English and his terms, at most 200 characters. The app shows it as a Send this to the makers button under the answer and sends nothing unless he taps. Never a promise that the change will happen. Leave it out for anything else.",
       "type": "object",

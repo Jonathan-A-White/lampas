@@ -41,3 +41,33 @@ Feature: About you
     When he talks about verse 11 and sends "What is this about?"
     Then the mill received 1 grist
     And grist number 1 carries no learner profile
+
+  Scenario: The tutor learns how he likes to learn
+    Given Lampas is opened on Romans 8 with nothing kept about him, and the tutor will learn from his talk that his ways are "hands-on"
+    When he talks about verse 11 and sends "I only learn by trying it myself"
+    Then the mill received 1 grist
+    When he opens "About you" from the Reader
+    Then About you shows the learned ways "hands-on, from a talk"
+    When Lampas is closed and opened again on Romans 8
+    And he talks about verse 11 again and sends "What does the next word mean?"
+    Then the mill received 2 grists
+    And grist number 2 carries the learned field "ways" with the value "hands-on"
+
+  Scenario: The tutor guesses, he corrects
+    Given Lampas is opened on Romans 8 with nothing kept about him, and the tutor will guess from his talk that his age is "adult"
+    When he talks about verse 11 and sends "Could you say that more simply?"
+    Then the mill received 1 grist
+    When he opens "About you" from the Reader
+    Then About you shows the guess "Lampas guesses: adult (from your talks)"
+    When he changes the guess to "40s"
+    Then About you shows the learned age "40s, from you"
+    And the phone keeps no guess for the age
+
+  Scenario: A guess never overrides what he set
+    Given Lampas is opened on Romans 8 with the age "34" kept about him, and the tutor will guess from his talk that his age is "adult"
+    When he talks about verse 11 and sends "Could you say that more simply?"
+    Then the mill received 1 grist
+    When he opens "About you" from the Reader
+    Then About you shows the suggestion "Lampas suggests: adult (from your talks)"
+    And the page shows the age "34"
+    And the phone keeps the age "34"

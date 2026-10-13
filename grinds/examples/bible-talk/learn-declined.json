@@ -1,0 +1,69 @@
+{
+  "description": "The tutor asked what he is learning Greek for and he would rather not say: it does not ask again and records the decline.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "question": "I'd rather not say. What does ἀγαπῶσιν mean here?",
+    "history": [
+      {
+        "q": "What does ἀγαπῶσιν mean here?",
+        "a": "It means \"to those who love\". Out of curiosity, what are you learning Greek for? You can keep the answer in Settings > About you."
+      }
+    ],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "learner": "solid 3 words; learning: ἀγαπάω, πίστις; new today: -; due now: 2",
+    "learner_grammar": {
+      "goal": "Read Romans 8:28",
+      "words": {
+        "solid": 3,
+        "frontier": 2,
+        "not_yet": 9
+      },
+      "ideas": {
+        "solid": [
+          "The alphabet",
+          "The article"
+        ],
+        "frontier": [
+          "The nominative case"
+        ],
+        "not_yet": [
+          "The genitive case",
+          "Participles"
+        ]
+      },
+      "placed": true,
+      "suggested_move": "none",
+      "picker_level": "frontier",
+      "approach": {
+        "name": "BMA Tutor",
+        "credit": "Biblical Mastery Academy",
+        "next_lesson": "The nominative case"
+      }
+    },
+    "settings": {}
+  },
+  "expect": {
+    "answer": {
+      "present": true
+    },
+    "profile_update.0.field": {
+      "equals": "why"
+    },
+    "profile_update.0.declined": {
+      "equals": true
+    },
+    "profile_update.0.value": {
+      "present": false
+    },
+    "profile_question": {
+      "present": false
+    }
+  }
+}

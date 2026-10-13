@@ -1,0 +1,64 @@
+{
+  "description": "He says, unasked, how he learns best: the tutor answers the question and puts it in profile_update as the field ways, with no guess and no question back.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "question": "I only really learn by doing things myself. What does ἀγαπῶσιν mean here?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "learner": "solid 3 words; learning: ἀγαπάω, πίστις; new today: -; due now: 2",
+    "learner_grammar": {
+      "goal": "Read Romans 8:28",
+      "words": {
+        "solid": 3,
+        "frontier": 2,
+        "not_yet": 9
+      },
+      "ideas": {
+        "solid": [
+          "The alphabet",
+          "The article"
+        ],
+        "frontier": [
+          "The nominative case"
+        ],
+        "not_yet": [
+          "The genitive case",
+          "Participles"
+        ]
+      },
+      "placed": true,
+      "suggested_move": "none",
+      "picker_level": "frontier",
+      "approach": {
+        "name": "BMA Tutor",
+        "credit": "Biblical Mastery Academy",
+        "next_lesson": "The nominative case"
+      }
+    },
+    "settings": {}
+  },
+  "expect": {
+    "answer": {
+      "present": true
+    },
+    "profile_update.0.field": {
+      "equals": "ways"
+    },
+    "profile_update.0.value": {
+      "present": true
+    },
+    "profile_update.0.guessed": {
+      "present": false
+    },
+    "profile_question": {
+      "present": false
+    }
+  }
+}

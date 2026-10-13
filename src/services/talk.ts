@@ -9,6 +9,7 @@ import { screenRef, talkRef } from '../data/repositories/talks';
 import type { AnswerLink, AnswerWord } from '../data/db';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
+import { LEARNABLE, LEARNED_VALUE_MAX, type Learnable, type ProfileUpdate } from '../data/repositories/profile';
 import type { TutorRequest } from '../data/requestsForTutor';
 import type { SettingValue } from '../settings/registry';
 import type { TutorResource } from '../resources/tutorLinks';
@@ -253,6 +254,10 @@ export interface TalkAnswer {
   study_way_line?: string;
   /** in a quiz, the goal the tutor understood from him (mw-5r3p30.185), at most QUIZ_GOAL_MAX characters: shown with Yes, from now on | Just this time, kept only when he taps Yes */
   quiz_goal_offer?: string;
+  /** what the tutor learned about him as a student in this exchange, or judged from how he writes (mw-1vuvq6.3): kept on the phone beside his own profile, never over it */
+  profile_update?: ProfileUpdate[];
+  /** the field of his profile the question in `answer` asks him about: noted so the tutor does not ask it again at once */
+  profile_question?: Learnable;
   /** an ask the app cannot meet (another app, a new setting, a change): the summary the app offers to send to the makers */
   feedback_offer?: FeedbackOffer;
   /** a setting change to offer instead of making it (mw-5r3p30.186): the app shows a button and changes it on his tap or his spoken yes; the registry checks it */
@@ -276,13 +281,23 @@ const isAnswerLink = (value: unknown): value is AnswerLink =>
 const isFormValue = (value: unknown): value is FormValue =>
   isObject(value) && Object.keys(value).length === 2 && isText(value.field, 30) && isText(value.value, 1200);
 
+const isProfileUpdate = (value: unknown): value is ProfileUpdate => {
+  if (!isObject(value) || Object.keys(value).some((k) => k !== 'field' && k !== 'value' && k !== 'guessed' && k !== 'declined')) return false;
+  if (value.field !== 'note' && !LEARNABLE.some((f) => f === value.field)) return false;
+  if ('guessed' in value && value.guessed !== true) return false;
+  if ('declined' in value && value.declined !== true) return false;
+  return 'value' in value ? isText(value.value, LEARNED_VALUE_MAX) : value.declined === true;
+};
+
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'form_values' && k !== 'form_ask' && k !== 'go')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'form_values' && k !== 'form_ask' && k !== 'go')) return false;
   if ('question' in value && !isText(value.question, MAX_TALK_CHARS)) return false;
   if ('study_way_line' in value && !isText(value.study_way_line, STUDY_WAY_LINE_MAX)) return false;
   if ('quiz_goal_offer' in value && !isText(value.quiz_goal_offer, QUIZ_GOAL_MAX)) return false;
+  if ('profile_update' in value && !(Array.isArray(value.profile_update) && value.profile_update.length <= 3 && value.profile_update.every(isProfileUpdate))) return false;
+  if ('profile_question' in value && !LEARNABLE.some((f) => f === value.profile_question)) return false;
   if ('feedback_offer' in value && !(isObject(value.feedback_offer) && Object.keys(value.feedback_offer).length === 1 && isText(value.feedback_offer.summary, FEEDBACK_SUMMARY_MAX))) return false;
   if ('offer_reply' in value && !OFFER_REPLIES.includes(value.offer_reply as OfferReply)) return false;
   if ('setting_offer' in value && !(isObject(value.setting_offer) && Object.keys(value.setting_offer).length === 2 && isText(value.setting_offer.key, 60) && (isText(value.setting_offer.value, 80) || typeof value.setting_offer.value === 'number'))) return false;
