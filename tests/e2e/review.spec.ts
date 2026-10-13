@@ -120,7 +120,7 @@ test('a strong word is a flashcard: the lemma large, Show reveals the meaning, t
   const lemma = await prompt.getAttribute('data-lemma');
   expect(await prompt.textContent()).toBe(lemma);
   expect((await prompt.boundingBox())?.height).toBeGreaterThanOrEqual(48);
-  const bar = page.getByTestId('hold-to-hear');
+  const bar = page.getByTestId('tap-to-hear');
   expect((await bar.boundingBox())?.height).toBeGreaterThanOrEqual(48);
   const show = page.getByRole('button', { name: 'Show' });
   expect((await show.boundingBox())?.height).toBeGreaterThanOrEqual(48);

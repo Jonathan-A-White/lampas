@@ -1,11 +1,11 @@
 // src/Flashcard.tsx — a word asked as a flashcard (Review, once the word is strong enough: data/schedule.ts modeFor): the
-// dictionary form large with the Hold to hear bar, a Show button that reveals the meaning (and the picture), then
+// dictionary form large with the Tap to hear bar, a Show button that reveals the meaning (and the picture), then
 // 'I knew it' / 'Not yet', which grade the answer like a right or a wrong tap on a Quick test question.
 import { useState } from 'react';
 import type { Question } from './data/quiz';
 import { KNEW_IT } from './review/kinds';
 import { SelfGrade } from './ui/SelfGrade';
-import { HoldToHear } from './HoldToHear';
+import { TapToHear } from './TapToHear';
 import { WordPicture } from './WordPicture';
 
 interface Props {
@@ -33,7 +33,7 @@ export function Flashcard({ question, picked, onPick }: Props) {
         </p>
       </div>
       <div className="mt-4">
-        <HoldToHear text={question.lemma} />
+        <TapToHear text={question.lemma} />
       </div>
       <SelfGrade shown={shown} onShow={() => setShown(true)} picked={picked} onPick={onPick} />
       <p data-testid="feedback" role="status" className="mt-4 min-h-12 text-center text-lg">

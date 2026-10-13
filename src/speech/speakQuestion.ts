@@ -1,4 +1,4 @@
-// src/speech/speakQuestion.ts — what 'Hold to hear' / 'Say it again' says for a grammar question: a 'sound' question asks which LETTER he hears, so the letter is
+// src/speech/speakQuestion.ts — what 'Tap to hear' / 'Say it again' says for a grammar question: a 'sound' question asks which LETTER he hears, so the letter is
 // said as a Greek voice names it (speakLetter); any other question says a word, and a word of one letter goes in its pronunciation's form (speakWord, mw-5r3p30.262).
 import type { GrammarQuestion } from '../data/grammar/questions';
 import { speakLetter, speakWord } from './greek';

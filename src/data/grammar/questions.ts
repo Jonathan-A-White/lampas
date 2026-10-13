@@ -30,7 +30,7 @@ export interface GrammarQuestion {
   form?: string;
   /** the RP parsing code of the right word, when there is one */
   code?: string;
-  /** the Greek that Hold to hear says (a letter, or the word) */
+  /** the Greek that Tap to hear says (a letter, or the word) */
   say?: string;
 }
 
@@ -253,14 +253,14 @@ export function buildLetter(idea: GrammarIdea, random: Random): GrammarQuestion 
   };
 }
 
-/** Which letter he hears: Hold to hear says it, and no other letter of its sound is among the four glyphs. */
+/** Which letter he hears: Tap to hear says it, and no other letter of its sound is among the four glyphs. */
 export function buildSound(idea: GrammarIdea, random: Random): GrammarQuestion {
   const letter = letterOf(idea, random);
   const others = LETTER_IDEAS.filter((o) => o.id !== letter.id && o.sound !== letter.sound);
   return {
     kind: 'sound',
     ideaId: idea.id,
-    prompt: 'Hold to hear a letter, then tap it',
+    prompt: 'Tap to hear a letter, then tap it',
     options: glyphs(glyphOf(letter), others.map(glyphOf), random),
     right: glyphOf(letter),
     say: glyphOf(letter),

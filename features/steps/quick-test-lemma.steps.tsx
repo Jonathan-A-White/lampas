@@ -1,6 +1,6 @@
 // features/steps/quick-test-lemma.steps.tsx — runs features/quick-test-lemma.feature: the Quick test's prompt is the word's
 // dictionary form (the NFC lemma) with or without the chapter, the chapter's form shows small only after the answer, and
-// Hold to hear says the lemma. speech synthesis is the honest fake of tests/support/fake-speech.ts.
+// Tap to hear says the lemma. speech synthesis is the honest fake of tests/support/fake-speech.ts.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -17,9 +17,6 @@ import { stubSpeech, GREEK_VOICE, ENGLISH_VOICE, type FakeSynth } from '../../te
 
 const user = userEvent.setup();
 const rom8 = readFileSync('public/data/rom/8.json', 'utf8');
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
-/** past the app's 500 ms hold */
-const HOLD_MS = 650;
 
 let synth: FakeSynth;
 let noted: string[] = [];
@@ -144,12 +141,9 @@ describeFeature(feature, ({ Scenario }) => {
     And('the prompt is still the lemma', () => expect(promptText()).toBe('ἀγαπάω'));
   });
 
-  Scenario('Hold to hear says the lemma', ({ Given, When, Then }) => {
+  Scenario('Tap to hear says the lemma', ({ Given, When, Then }) => {
     Given(withDifferentForm, () => open({ chapter: true, round: AGAPAO }));
-    When('he holds {string} for a moment', async (_, name: string) => {
-      await user.pointer({ keys: '[MouseLeft>]', target: bar(name), coords: { clientX: 100, clientY: 100 } });
-      await sleep(HOLD_MS);
-    });
+    When('he taps {string}', async (_, name: string) => user.click(bar(name)));
     Then('the phone is told to speak the lemma with lang {string}', (_, lang: string) => {
       expect(synth.spoken).toHaveLength(1);
       expect(synth.spoken[0].text).toBe('ἀγαπάω');

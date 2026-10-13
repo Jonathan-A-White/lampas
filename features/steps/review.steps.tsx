@@ -105,9 +105,6 @@ const review = async (lemma: string) => {
 
 const showButton = () => screen.queryByRole('button', { name: 'Show' });
 
-/** past the app's 500 ms hold */
-const HOLD_MS = 650;
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 let synth: FakeSynth;
 
 const feature = await loadFeature('features/review.feature');
@@ -463,7 +460,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('A flashcard shows the dictionary form and hold-to-hear says it', ({ Given, When, And, Then }) => {
+  Scenario('A flashcard shows the dictionary form and tap-to-hear says it', ({ Given, When, And, Then }) => {
     Given('the word {string} is due on step {int}', async (_, lemma: string, step: number) => {
       await freshStore();
       synth = stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
@@ -477,14 +474,12 @@ describeFeature(feature, ({ Scenario }) => {
       expect(screen.getByTestId('prompt').textContent).toBe((promptLemma()).normalize('NFC'));
       expect(screen.queryByTestId('picture')).toBeNull();
     });
-    When('he holds the Hold to hear bar', async () => {
-      await user.pointer({ keys: '[MouseLeft>]', target: screen.getByTestId('hold-to-hear'), coords: { clientX: 100, clientY: 100 } });
-      await sleep(HOLD_MS);
+    When('he taps the Tap to hear bar', async () => {
+      await user.click(screen.getByTestId('tap-to-hear'));
     });
-    Then('the Greek voice says {string}', async (_, lemma: string) => {
+    Then('the Greek voice says {string}', (_, lemma: string) => {
       expect(synth.spoken.map((u) => u.text)).toEqual([lemma.normalize('NFC')]);
       expect(synth.spoken[0].lang).toBe('el-GR');
-      await user.pointer({ keys: '[/MouseLeft]', target: screen.getByTestId('hold-to-hear'), coords: { clientX: 100, clientY: 100 } });
     });
   });
 });

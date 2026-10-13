@@ -1,7 +1,7 @@
-// src/WordQuestion.tsx — one word question: the Greek word (with its picture and the form's verse), the Hold to hear bar,
+// src/WordQuestion.tsx — one word question: the Greek word (with its picture and the form's verse), the Tap to hear bar,
 // four glosses to tap, and the line that says right or wrong. The Quick test and Review both draw their questions with it.
 import type { Question } from './data/quiz';
-import { HoldToHear } from './HoldToHear';
+import { TapToHear } from './TapToHear';
 import { useSettled } from './ui/settle';
 import { WordPicture } from './WordPicture';
 
@@ -55,7 +55,7 @@ export function WordQuestion({ question, index, picked, onPick }: Props) {
         </p>
       </div>
       <div className="mt-4">
-        <HoldToHear text={question.prompt} />
+        <TapToHear text={question.prompt} />
       </div>
       <ul className="mt-4 space-y-3">
         {question.options.map((option) => {

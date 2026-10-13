@@ -1,7 +1,7 @@
 Feature: The Quick test asks the dictionary form
   A word is learned and quizzed in its dictionary form (the lemma). The big Greek word of every Quick test question
   is the lemma, never the inflected form the open chapter happens to use. Once he has answered, the chapter's form
-  shows beneath in small grey ("in Romans 8:28 as ἀγαπῶσιν"); that line is PROVISIONAL. Hold to hear says the lemma.
+  shows beneath in small grey ("in Romans 8:28 as ἀγαπῶσιν"); that line is PROVISIONAL. Tap to hear says the lemma.
 
   Scenario: Every question asks the lemma, even for a word whose chapter form differs
     Given Lampas is opened with Romans 8 and the Quick test is on its first question
@@ -21,7 +21,7 @@ Feature: The Quick test asks the dictionary form
     Then the chapter form is shown small and grey as "in Romans 8" followed by the form
     And the prompt is still the lemma
 
-  Scenario: Hold to hear says the lemma
+  Scenario: Tap to hear says the lemma
     Given Lampas is opened with Romans 8 and a question whose chapter form differs from its lemma
-    When he holds "Hold to hear" for a moment
+    When he taps "Tap to hear"
     Then the phone is told to speak the lemma with lang "el-GR"
