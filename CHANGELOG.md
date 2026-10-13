@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.156
+_2026-10-13_
+- Fixed: When the tutor explains how to say a Greek word it now takes the word's syllables and stressed syllable from the app, so it no longer miscounts them.
+
 ## 0.1.153
 _2026-10-13_
 - New: About now shows how long your last tutor answer took, and how much of that was your phone, the network and the factory.

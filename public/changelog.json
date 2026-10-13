@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.156",
+    "date": "2026-10-13",
+    "story": "mw-5r3p30.274",
+    "kind": "fixed",
+    "text": "When the tutor explains how to say a Greek word it now takes the word's syllables and stressed syllable from the app, so it no longer miscounts them."
+  },
+  {
     "version": "0.1.153",
     "date": "2026-10-13",
     "story": "mw-46z0my.5",
