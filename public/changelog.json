@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.187",
+    "date": "2026-10-13",
+    "story": "mw-5r3p30.316",
+    "kind": "fixed",
+    "text": "In the Immersive reader, Chrome's \"To exit full screen\" notice now shows once when you start reading, not after every two-finger tap."
+  },
+  {
     "version": "0.1.186",
     "date": "2026-10-13",
     "story": "mw-5r3p30.280",

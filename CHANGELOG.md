@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.187
+_2026-10-13_
+- Fixed: In the Immersive reader, Chrome's "To exit full screen" notice now shows once when you start reading, not after every two-finger tap.
+
 ## 0.1.186
 _2026-10-13_
 - Fixed: A short reading hold is no longer sometimes mistaken for a tap when the phone's clock jumps back.
