@@ -453,4 +453,38 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the text with two fingers', twoFingerTap);
     Then(`${bars} in view`, inView);
   });
+
+  Scenario('One quiet place line at the foot while the bars are away', ({ Given, When, Then }) => {
+    const placeLine = () => document.querySelector('[data-place-line]');
+    const reads = async (_: unknown, text: string) => {
+      await waitFor(() => expect(placeLine()).toHaveTextContent(text));
+    };
+    Given('Lampas is opened on Romans 8 with Immersive reader On', () => open({ immersive: 'on' }));
+    Then('there is no place line', async () => {
+      await sleep(50);
+      expect(placeLine()).toBeNull();
+    });
+    When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
+    Then('the place line reads {string}', reads);
+    When('he scrolls the text on down {int} px', (_, px: number) => scrollBy(px));
+    Then('the place line now reads {string}', reads);
+    When('he taps the text with two fingers', twoFingerTap);
+    Then('there is no place line while the bars are shown', async () => {
+      await waitFor(() => expect(placeLine()).toBeNull());
+    });
+    When('he taps the text with two fingers again', async () => {
+      await sleep(650);
+      twoFingerTap();
+    });
+    Then('the place line is back and reads {string}', reads);
+  });
+
+  Scenario('With Immersive reader Off there is no place line', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader Off', () => open({ immersive: 'off' }));
+    When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
+    Then('there is no place line', async () => {
+      await sleep(50);
+      expect(document.querySelector('[data-place-line]')).toBeNull();
+    });
+  });
 });
