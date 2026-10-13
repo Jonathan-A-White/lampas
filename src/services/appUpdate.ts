@@ -7,7 +7,8 @@
 // Postern open for days still finds out.
 // A waiting build with nothing new to show him (the changelog has no entry after the running version, mw-5r3p30.236)
 // is never offered: no banner, and it takes over by itself, at start-up or when the app is hidden, never while he
-// uses it; the page then reloads (hidden, or at start-up). When the changelog cannot be read the banner shows as usual.
+// uses it; the page then reloads (hidden, or at start-up). A take-over that did not happen is asked for again at the next hide.
+// When the changelog cannot be read the banner shows as usual.
 import { useSyncExternalStore } from 'react';
 import { summarise, type ChangelogEntry } from 'bsv-kit/whats-new';
 
@@ -107,11 +108,17 @@ export function startAppUpdates(deps: {
 
   const takeOverQuietly = () => {
     const worker = quiet;
-    if (!worker || registration.waiting !== worker) return;
+    if (!worker) return;
+    // No longer waiting: it took over (or was replaced), so there is nothing left to ask for.
+    if (registration.waiting !== worker) {
+      quiet = undefined;
+      return;
+    }
     // At start-up (the worker was already waiting when the app opened) or hidden: never while he uses it.
-    if (worker !== atStart && !hidden()) return;
-    quiet = undefined;
-    quietAsked = worker === atStart ? 'start-up' : 'hidden';
+    const atStartUp = worker === atStart && !hidden();
+    if (!atStartUp && !hidden()) return;
+    // `quiet` stays until the worker has left the waiting place: a take-over that did not happen is asked for at the next hide.
+    quietAsked = atStartUp ? 'start-up' : 'hidden';
     worker.postMessage({ type: 'SKIP_WAITING' });
   };
 

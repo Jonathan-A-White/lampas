@@ -18,7 +18,11 @@ function hide(): void {
   visibility = 'hidden';
   document.dispatchEvent(new Event('visibilitychange'));
 }
-const settle = () => vi.advanceTimersByTimeAsync(0);
+function show(): void {
+  visibility = 'visible';
+  document.dispatchEvent(new Event('visibilitychange'));
+}
+const settle =() => vi.advanceTimersByTimeAsync(0);
 
 /** What the banner would show right now. */
 function stateOf(): UpdateState {
@@ -77,6 +81,35 @@ describe('a waiting build with nothing new to show', () => {
     visibility = 'visible';
     setup.controllerChanges();
     expect(setup.reload).not.toHaveBeenCalled();
+  });
+
+  it('is asked for again at the next hide when the app was hidden and visible at once and the worker did not take over', async () => {
+    const setup = fakeSetup();
+    start(setup, async () => NO_NEWER);
+    await settle();
+    const worker = setup.newWorkerWaits();
+    await settle();
+    hide();
+    show();
+    expect(worker.postMessage).toHaveBeenCalledTimes(1);
+    expect(stateOf()).toBe('none');
+    hide();
+    expect(worker.postMessage).toHaveBeenCalledTimes(2);
+    setup.controllerChanges();
+    expect(setup.reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('is not asked for again once the worker has taken over', async () => {
+    const setup = fakeSetup();
+    start(setup, async () => NO_NEWER);
+    await settle();
+    const worker = setup.newWorkerWaits();
+    await settle();
+    hide();
+    setup.controllerChanges();
+    show();
+    hide();
+    expect(worker.postMessage).toHaveBeenCalledTimes(1);
   });
 });
 

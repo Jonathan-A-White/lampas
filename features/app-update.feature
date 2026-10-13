@@ -34,3 +34,10 @@ Feature: A new build waits for his tap and then loads once
     Then the waiting worker is sent SKIP_WAITING
     When the new worker takes control twice over
     Then the page has reloaded exactly once
+
+  Scenario: A take-over that did not happen is asked for again the next time the app is hidden
+    Given Lampas is open on a phone and a newer build with nothing new to show is found waiting
+    When the phone puts Lampas in the background
+    And the phone brings Lampas back at once without the worker taking over
+    And the phone puts Lampas in the background again
+    Then the waiting worker has been sent SKIP_WAITING twice

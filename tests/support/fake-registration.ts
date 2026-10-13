@@ -70,6 +70,8 @@ export function fakeSetup(opts: { waiting?: FakeWorker | null; controlled?: bool
       return worker;
     },
     controllerChanges() {
+      // the waiting worker is the one that took control, so nothing waits any more
+      setup.registration.waiting = null;
       for (const listener of [...containerListeners]) listener();
     },
   };
