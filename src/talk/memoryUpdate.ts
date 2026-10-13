@@ -3,7 +3,7 @@
 // replace or a remove is applied ONLY when the entry says `directed: true`, which the grind's instructions allow only when he asked for exactly that in
 // his words of this turn. The app does not see his words as meaning anything, so an undirected replace or remove is refused, logged and changes nothing.
 // `wished_notes` are names of notes the tutor would have used had they existed: they are counted and the last names kept (Settings > About), nothing else.
-import { appendToIndex, appendToNote, keepWishedNotes, memoryName, putNote, removeNote, setIndex } from '../data/repositories/memory';
+import { appendToIndex, clearGreekNo, appendToNote, keepWishedNotes, memoryName, putNote, removeNote, setIndex } from '../data/repositories/memory';
 
 /** One entry of `memory_update`: exactly one of append, replace or remove (the answer guard checks); `directed` only with the last two. */
 export interface MemoryUpdate {
@@ -18,6 +18,8 @@ export interface MemoryUpdate {
 export interface MemoryAnswer {
   memory_update?: MemoryUpdate[];
   wished_notes?: string[];
+  /** he asked for Greek himself (mw-yrmkdf.4): his earlier no to the Greek offer leaves the index */
+  greek_asked?: true;
 }
 
 export interface MemoryResult {
@@ -64,6 +66,7 @@ export async function applyMemoryFromAnswer(answer: MemoryAnswer, when: number =
       refuse(update, error instanceof Error ? error.message : 'could not be written');
     }
   }
+  if (answer.greek_asked) await clearGreekNo(when).catch(() => undefined);
   if (answer.wished_notes?.length) await keepWishedNotes(answer.wished_notes).catch(() => 0);
   return result;
 }

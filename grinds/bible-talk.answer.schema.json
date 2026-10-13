@@ -148,6 +148,50 @@
       "type": "string",
       "enum": ["confirm", "decline", "read_back"]
     },
+    "greek_offer": {
+      "description": "Only for a reader not learning the Greek (see the instructions, 'Offering the Greek'): ONE short line offering to show him the Greek, when his question shows real interest in the original (what a word really means, why translations differ, what the original says). The app draws it as a button. `kind` 'word' opens the Greek word's sheet (give its dictionary form in `lemma`, a word of the passage you were given) and `kind` 'view' switches the Reader to Greek. At most one in a conversation (the history shows it), never when `memory.index` holds 'said no to the Greek offer', never when `reader_view` is 'greek' or he is learning the Greek, never in a quiz or a talk from a screen. Leave it out otherwise.",
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "text"],
+          "properties": {
+            "kind": { "type": "string", "enum": ["view"] },
+            "text": {
+              "description": "The button's line, a plain question or invitation in English, such as 'Want to read this chapter in Greek?'. At most 120 characters.",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "text", "lemma"],
+          "properties": {
+            "kind": { "type": "string", "enum": ["word"] },
+            "text": {
+              "description": "The button's line, a plain question or invitation in English, such as 'Want to see the Greek word?'. At most 120 characters.",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            "lemma": {
+              "description": "The word's dictionary form, with its accents, a word of the passage you were given: ἀγαπάω.",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            }
+          }
+        }
+      ]
+    },
+    "greek_asked": {
+      "description": "Only when he asked for Greek himself in this turn (the Greek word, the Greek view, what the original says) while `memory.index` holds 'said no to the Greek offer': true. The app then takes that line out of the index. Never to record an answer to your own offer: a yes or a no to the offer goes in `offer_reply`.",
+      "type": "boolean",
+      "const": true
+    },
     "bridge": {
       "description": "Only when the request carried `missing_foundations` and his question truly rests on them (see the instructions, 'When he is not ready for the question'): up to three of the ideas listed there that he lacks, the most important first (`direct` ones first), the idea to start with and one plain line why it comes first. The app shows 'Take me there: <title>' and opens that idea's sheet on his tap or his yes; it takes the start from the list, not from here. Never for an idea outside the list, never without `missing_foundations`, one bridge per answer.",
       "type": "object",

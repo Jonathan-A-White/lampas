@@ -1,11 +1,14 @@
 // src/talk/offers.ts — the offers a tutor answer holds for his tap (Send this to the makers, a setting change, the quiz goal) and what his
 // spoken or typed yes, no or 'read it back' does to the newest one (mw-5r3p30.186). The decision is the grind's (`offer_reply` in the answer);
 // the app only carries the offer to it (`pending_offer`) and does exactly what the tap does when the reply is confirm. The bridge (mw-1vuvq6.5) is one more: its
-// button is Take me there, and what it does is open the idea's sheet over the talk.
+// button is Take me there, and what it does is open the idea's sheet over the talk. The Greek offer (mw-yrmkdf.4, greekOffer.ts) is the last: its tap opens the Greek word or
+// the Greek view, and a no is written to the memory index.
 import { useSyncExternalStore } from 'react';
 import { ideaOf } from '../data/grammar/ladder';
-import { getTurn, markBridgeChoice, markFeedbackSent, markFeedbackWithdrawn, markQuizGoalChoice, markSettingChoice, setQuizGoal, type TalkTurn } from '../data/repositories';
+import { getTurn, markBridgeChoice, markFeedbackSent, markGreekChoice, markFeedbackWithdrawn, markQuizGoalChoice, markSettingChoice, setQuizGoal, type TalkTurn } from '../data/repositories';
 import type { Bridge } from '../data/db';
+import { noteGreekNo } from '../data/repositories/memory';
+import { takeGreekOffer } from './greekOffer';
 import { buildTutorAskRequest, submitFeedback } from '../services/feedback';
 import { scopeTitle, type OfferReply, type PendingOffer, type TalkScope } from '../services/talk';
 import { applyChanges, offeredChange, type ChangeResult } from '../settings/registry';
@@ -13,7 +16,7 @@ import { applyChanges, offeredChange, type ChangeResult } from '../settings/regi
 /** What the bridge's button says: 'Take me there: Pairs of vowels', the idea it opens (the device's lowest unmet need, src/data/grammar/bridge.ts resolveBridge). */
 export const bridgeButtonText = (bridge: Bridge): string => `Take me there: ${ideaOf(bridge.next).title}`;
 
-/** The offer a turn holds that no tap or word has settled, or undefined. A turn holds at most one that counts: the makers' first, then the setting, then the quiz goal, then the bridge. */
+/** The offer a turn holds that no tap or word has settled, or undefined. A turn holds at most one that counts: the makers' first, then the setting, then the quiz goal, then the bridge, then the Greek (mw-yrmkdf.4). */
 export function offerOfTurn(turn: TalkTurn): PendingOffer | undefined {
   if (turn.feedbackOffer && !turn.feedbackSent && !turn.feedbackWithdrawn) return { kind: 'feedback', text: turn.feedbackOffer };
   if (turn.settingOffer && !turn.settingChoice) {
@@ -22,6 +25,7 @@ export function offerOfTurn(turn: TalkTurn): PendingOffer | undefined {
   }
   if (turn.quizGoalOffer && !turn.quizGoalChoice) return { kind: 'quiz-goal', text: turn.quizGoalOffer };
   if (turn.bridge && !turn.bridgeChoice) return { kind: 'bridge', text: bridgeButtonText(turn.bridge) };
+  if (turn.greekOffer && !turn.greekChoice) return { kind: 'greek', text: turn.greekOffer.text };
   return undefined;
 }
 
@@ -134,7 +138,7 @@ export interface OfferOutcome {
 
 /** Does what `reply` says to the waiting offer: confirm does what its tap does, decline withdraws it and sends nothing, read_back changes nothing (the tutor's answer
  * speaks the text and the offer stays). A step that cannot be done is said in `refused` and the offer stays, so its button is still there. */
-export async function settleOffer(reply: OfferReply | undefined, waiting: { turn: TalkTurn; offer: PendingOffer } | undefined, scope: TalkScope): Promise<OfferOutcome> {
+export async function settleOffer(reply: OfferReply | undefined, waiting: { turn: TalkTurn; offer: PendingOffer } | undefined, scope: TalkScope, when: number = Date.now()): Promise<OfferOutcome> {
   const outcome: OfferOutcome = { applied: [], refused: [] };
   if (!reply || !waiting || reply === 'read_back') return outcome;
   const { turn, offer } = waiting;
@@ -144,6 +148,11 @@ export async function settleOffer(reply: OfferReply | undefined, waiting: { turn
     if (offer.kind === 'feedback') await markFeedbackWithdrawn(id);
     else if (offer.kind === 'setting') await markSettingChoice(id, 'declined');
     else if (offer.kind === 'bridge') await markBridgeChoice(id, 'declined');
+    else if (offer.kind === 'greek') {
+      // his no is kept in the index so the tutor offers the Greek no more until he asks for it himself
+      await markGreekChoice(id, 'declined');
+      await noteGreekNo(when);
+    }
     else await markQuizGoalChoice(id, 'declined');
     return outcome;
   }
@@ -151,6 +160,7 @@ export async function settleOffer(reply: OfferReply | undefined, waiting: { turn
     if (offer.kind === 'feedback') await sendMakersOffer(turn, scope);
     else if (offer.kind === 'setting') Object.assign(outcome, await takeSettingOffer(turn));
     else if (offer.kind === 'bridge') await takeBridgeOffer(turn);
+    else if (offer.kind === 'greek') await takeGreekOffer(turn);
     else {
       await setQuizGoal(offer.text);
       await markQuizGoalChoice(id, 'kept');
