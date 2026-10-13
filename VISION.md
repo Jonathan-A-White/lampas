@@ -23,5 +23,10 @@ The tutor is told, on every ask, each app setting and each part of his progress 
 
 (src/tutor/knows.ts is the table of what each grind is sent; a test holds it.)
 
+## Pronunciation
+- "Is there a standard modern Greek way of reading the Bible If so we should use that everywhere" (Postern, 2026-10-12 22:08Z, channel mw-5r3p30.264, direct:d14699a68c257adabde9341f850bd1e06ee39c93fe4ed6f2ac43580f8e6e9601)
+
+Lampas reads Koine the way the Greek Church reads the New Testament aloud, in standard Modern Greek pronunciation, and every place that says or spells a sound follows it: the Greek voice, the line under each word (the respelling), lessons, questions, probes and the tutor's grinds.
+
 ## How feedback is weighed
 Feedback that fits this vision is approved and built elegantly; where people differ, a setting; anything crossing a line or changing the vision goes to the Governor.
