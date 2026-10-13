@@ -283,10 +283,14 @@ export function loneLetterForm(text: string): string | null {
   return chosenPronunciation().loneLetter(text.trim()) || null;
 }
 
-/** What is handed to the voice for a Greek word held alone (mw-5r3p30.226, .262), always to the Greek voice: a capital letter is read by its name
- * ('capital ...'), so the word goes in lower case; a word of ONE letter goes in its pronunciation's form (loneLetterForm). */
+/** What the Greek voice is handed for Greek text that is not one letter: the chosen pronunciation's voiceForm, so the voice says what the respelling
+ * writes (mw-5r3p30.264: a Modern Greek voice keeps the nasal the respelling shows). The rule is the scheme's, never written here. */
+export const greekVoiceForm = (text: string): string => chosenPronunciation().voiceForm(text);
+
+/** What is handed to the voice for a Greek word held alone (mw-5r3p30.226, .262, .264), always to the Greek voice: a capital letter is read by its name
+ * ('capital ...'), so the word goes in lower case; a word of ONE letter goes in its pronunciation's form (loneLetterForm), any other in its voiceForm. */
 export function greekWordSpeech(text: string): { text: string; language: SpeechLanguage } {
-  return { text: loneLetterForm(text) ?? text.toLowerCase(), language: 'greek' };
+  return { text: loneLetterForm(text) ?? greekVoiceForm(text.toLowerCase()), language: 'greek' };
 }
 
 /** Says a LETTER now, as a Greek voice names it (the letter drills 'Tap to hear a letter', where the letter is the thing asked about, not a word): lower case, to the

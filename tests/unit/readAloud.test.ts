@@ -22,6 +22,8 @@ const verse = (n: number): Verse => {
 const joined = (parts: string[]) => parts.join(' ').replace(/\s+/g, ' ').trim();
 const englishOf = (v: Verse) => joined(v.e.map((c) => c.t));
 const greekOf = (v: Verse) => joined(v.g.map((w) => w.t));
+/** What the Greek voice is handed for what is shown: the pronunciation's voice form of it (Modern Greek keeps the nasal of ντ, μπ, γκ inside a word: 'πάν-ντα'; mw-5r3p30.264). */
+const saidOf = (v: Verse) => chosenPronunciation().voiceForm(greekOf(v));
 
 let synth: FakeSynth;
 beforeEach(() => {
@@ -54,7 +56,7 @@ describe('what is read is what is shown', () => {
     startReading({ chapter: 8, plan: plan('greek'), from: 1, continuous: false });
     synth.finishAll();
     expect(synth.spoken.every((u) => u.lang === 'el-GR')).toBe(true);
-    expect(joined(synth.spoken.map((u) => u.text))).toBe(greekOf(v));
+    expect(joined(synth.spoken.map((u) => u.text))).toBe(saidOf(v));
     expect(synth.spoken[0].voice).toBe(GREEK_VOICE);
   });
 
@@ -92,7 +94,7 @@ describe('reading a chapter', () => {
     expect(getReading().verse).toBe(1);
     synth.finishAll();
     expect(seen).toEqual(chapter.verses.map((v) => v.n));
-    expect(joined(synth.spoken.map((u) => u.text))).toBe(joined(chapter.verses.map(greekOf)));
+    expect(joined(synth.spoken.map((u) => u.text))).toBe(joined(chapter.verses.map(saidOf)));
     expect(getReading().status).toBe('idle');
     expect(latest('reading-stopped')).toBeDefined();
   });
@@ -100,14 +102,14 @@ describe('reading a chapter', () => {
   it('reads from a chosen verse to the end', () => {
     startReading({ chapter: 8, plan: plan('greek'), from: 30, continuous: true });
     synth.finishAll();
-    expect(synth.spoken[0].text).toBe(greekOf(verse(30)));
+    expect(synth.spoken[0].text).toBe(saidOf(verse(30)));
     expect(synth.spoken).toHaveLength(chapter.verses.filter((v) => v.n >= 30).length);
   });
 
   it('one verse alone stops at its end', () => {
     startReading({ chapter: 8, plan: plan('greek'), from: 3, continuous: false });
     synth.finishAll();
-    expect(synth.spoken.map((u) => u.text)).toEqual([greekOf(verse(3))]);
+    expect(synth.spoken.map((u) => u.text)).toEqual([saidOf(verse(3))]);
     expect(getReading().status).toBe('idle');
   });
 
@@ -144,15 +146,15 @@ describe('reading a chapter', () => {
     resumeReading();
     expect(getReading().status).toBe('reading');
     expect(synth.spoken).toHaveLength(count + 1);
-    expect(synth.spoken[count].text).toBe(greekOf(verse(3)));
+    expect(synth.spoken[count].text).toBe(saidOf(verse(3)));
     synth.finish();
-    expect(synth.spoken[count + 1].text).toBe(greekOf(verse(4)));
+    expect(synth.spoken[count + 1].text).toBe(saidOf(verse(4)));
   });
 
   it('starting a new reading cancels the old one first', () => {
     startReading({ chapter: 8, plan: plan('greek'), from: 1, continuous: true });
     startReading({ chapter: 8, plan: plan('greek'), from: 5, continuous: false });
-    expect(synth.calls.slice(-2)).toEqual(['cancel', `speak ${greekOf(verse(5))}`]);
+    expect(synth.calls.slice(-2)).toEqual(['cancel', `speak ${saidOf(verse(5))}`]);
     expect(getReading().verse).toBe(5);
   });
 
@@ -162,7 +164,7 @@ describe('reading a chapter', () => {
     startReading({ chapter: 8, plan: plan('greek'), from: 1, continuous: false });
     expect(getReading().notice).toBe('This phone has no Greek voice: Greek is read with the default voice');
     expect(synth.spoken[0].lang).toBe('el-GR');
-    expect(synth.spoken[0].text).toBe(greekOf(verse(1)));
+    expect(synth.spoken[0].text).toBe(saidOf(verse(1)));
   });
 
   it('English alone needs no Greek voice and shows no notice', () => {
@@ -410,7 +412,7 @@ describe('a run that is one Greek letter', () => {
   });
 
   it("follows the scheme: a second scheme's form is what is read", () => {
-    const unregister = registerPronunciation({ id: 'stub-erasmian', label: 'Stub', lang: 'el-GR', scoringLang: 'el', note: '', respell: (w) => w, keyWords: {}, loneLetter: (w) => `[${w}]` });
+    const unregister = registerPronunciation({ id: 'stub-erasmian', label: 'Stub', lang: 'el-GR', scoringLang: 'el', note: '', respell: (w) => w, keyWords: {}, loneLetter: (w) => `[${w}]`, voiceForm: (t) => t });
     try {
       setGreekPronunciation('stub-erasmian');
       readRuns([{ text: 'ὁ', language: 'greek' }]);

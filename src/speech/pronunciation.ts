@@ -31,6 +31,10 @@ export interface Pronunciation {
   /** What this scheme's voice is handed for a Greek word of ONE letter (ὁ, ἡ, ὦ, Ὃ), so that it says the word's sound: a voice handed a bare
    * letter names it ('omicron'). Modern Greek gives the stressed vowel ('ό'); mw-5r3p30.262. */
   loneLetter(word: string): string;
+  /** What this scheme's voice is handed for Greek text (a word, or a run of words read aloud), so that it says the sounds the respelling writes. A
+   * voice reads the Greek its own way: a Modern Greek voice drops the n of ντ inside a word ('PA-do-te' for Πάντοτε, respelt 'PAN-do-te'), so Modern
+   * Greek hands it 'πάν-ντοτε' (mw-5r3p30.264). A scheme whose voice already says its respelling gives the text back as it is. */
+  voiceForm(text: string): string;
   /** The sound lessons this scheme teaches, keyed by ladder idea id ('letter-beta', 'diphthong-ou', 'breathings' ...), in its own sounds: the idea sheet and the
    * sound questions read them (mw-5r3p30.229). An idea it gives none for falls back to a text that names no sound, never to another scheme's. */
   lessons?: Readonly<Record<string, SoundLesson>>;

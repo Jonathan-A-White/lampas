@@ -86,6 +86,7 @@ describeFeature(feature, ({ Scenario }) => {
         respell: (word) => word.normalize('NFD').replace(/\p{M}/gu, '').toUpperCase(),
         keyWords: {},
         loneLetter: (word) => word.normalize('NFD').replace(/\p{M}/gu, '').toUpperCase(),
+        voiceForm: (text) => text,
       });
     });
     When("he taps the gear in the reader's header", async () => {

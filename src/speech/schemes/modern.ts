@@ -205,6 +205,35 @@ export function loneLetterModern(word: string): string {
   return bare.length === 1 && VOWELS.includes(bare) ? `${bare}\u0301`.normalize('NFC') : bare;
 }
 
+/** The pairs said with a nasal inside a word (the respelling writes it: πάντοτε is 'PAN-do-te'), each with the nasal letter that says it. */
+const NASAL_PAIRS: Readonly<Record<string, string>> = { ντ: 'ν', μπ: 'μ', γκ: 'ν' };
+
+const bareLetter = (c: string | undefined): string => (c ?? '').normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+
+/** Greek text as the Modern Greek voice is handed it, so it says the sounds respellModern writes (mw-5r3p30.264). A Greek voice reads ντ, μπ and γκ
+ * inside a word as a bare d, b, g (Πάντοτε heard 'PA-do-te'), while the respelling and the lessons keep the nasal ('PAN-do-te'); so the nasal is
+ * written to end the part before and the pair opens the next part, where a voice says it as at a word's start: 'πάν-ντοτε', 'συμ-μπάσχω',
+ * 'ἀν-γκάλη'. A pair at the start of a word (no vowel before it), and γγ, γχ, γξ, which a voice says with their nasal, are left as they are.
+ * PROVISIONAL until the Governor has heard it on his phone: espeak-ng's el says 'pˈadotˌe' for πάντοτε and 'pˈandˈote' for this form. */
+export function voiceFormModern(text: string): string {
+  return text.replace(/[\p{Script=Greek}\p{M}]+/gu, (word) => {
+    const chars = [...word.normalize('NFC')];
+    let out = '';
+    let seenVowel = false;
+    let changed = false;
+    chars.forEach((c, i) => {
+      const nasal = NASAL_PAIRS[bareLetter(c) + bareLetter(chars[i + 1])];
+      if (nasal && seenVowel) {
+        out += `${c === c.toLowerCase() ? nasal : nasal.toUpperCase()}-`;
+        changed = true;
+      }
+      out += c;
+      if (VOWELS.includes(bareLetter(c))) seenVowel = true;
+    });
+    return changed ? out : word;
+  });
+}
+
 export const MODERN: Pronunciation = {
   id: 'modern',
   label: 'Modern Greek',
@@ -214,5 +243,6 @@ export const MODERN: Pronunciation = {
   respell: respellModern,
   keyWords: MODERN_KEY_WORDS,
   loneLetter: loneLetterModern,
+  voiceForm: voiceFormModern,
   lessons: modernLessons(MODERN_KEY_WORDS),
 };

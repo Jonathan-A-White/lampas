@@ -108,6 +108,7 @@ describe('holding a one-letter Greek word', () => {
       respell: (w) => w,
       keyWords: {},
       loneLetter: (w) => `[${w.toLowerCase()}]`,
+      voiceForm: (t) => t,
     });
     try {
       setGreekPronunciation('stub-erasmian');

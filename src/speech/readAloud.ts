@@ -19,7 +19,7 @@ import type { ReaderView } from '../data/repositories';
 import type { Woven } from '../data/weave';
 import { publish } from '../events/bus';
 import { openReader } from '../nav/route';
-import { besideNow, hasGreekVoice, loneLetterForm, READ_KEY, speakText, subscribeBeside } from './greek';
+import { besideNow, greekVoiceForm, hasGreekVoice, loneLetterForm, READ_KEY, speakText, subscribeBeside } from './greek';
 import type { SpeechLanguage } from './languages';
 import type { ReadSpan } from './readSpan';
 import { dropWaiting } from './tutorWaiting';
@@ -230,8 +230,9 @@ function afterVerse(at: number, my: number): void {
 }
 
 /** The runs of a verse as the one text handed to the package: a run to a line, so the package cuts a sentence at the end of every run too. A Greek run
- * of one letter (a one-letter syllable, a lone ὁ) would be named by a Greek voice, so it goes in its pronunciation's form, to the Greek voice (mw-5r3p30.262). */
-const textOf = (runs: Run[]): string => runs.map((r) => (r.language === 'greek' ? (loneLetterForm(r.text) ?? r.text) : r.text)).join('\n');
+ * of one letter (a one-letter syllable, a lone ὁ) would be named by a Greek voice, so it goes in its pronunciation's form, to the Greek voice (mw-5r3p30.262);
+ * any other Greek run goes in its pronunciation's voice form, so the voice says what the respelling writes (mw-5r3p30.264). */
+const textOf = (runs: Run[]): string => runs.map((r) => (r.language === 'greek' ? (loneLetterForm(r.text) ?? greekVoiceForm(r.text)) : r.text)).join('\n');
 
 function readVerse(verse: number, my: number): void {
   if (my !== epoch) return;
