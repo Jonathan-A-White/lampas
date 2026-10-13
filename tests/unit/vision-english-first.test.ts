@@ -17,6 +17,6 @@ describe('VISION.md holds his words on English first', () => {
   it('says the app is a good Bible in plain English with the Greek one tap away', () => {
     expect(vision).toContain('good Bible in plain English')
     expect(vision).toContain('Greek one tap away')
-    expect(vision).toContain('says no to')
+    expect(vision).toContain('said no to')
   })
 })
