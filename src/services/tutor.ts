@@ -1,6 +1,7 @@
 // src/services/tutor.ts — the tutor: one question about a verse, sent as a grist through Postern (bsv-kit/grist)
 // and answered by the mill's verse-ask grind (grinds/verse-ask.json). All the wire work is bsv-kit's: the door signs
-// every call with the device key, sendGrist seals the request to the mill, awaitAnswer pages for the reply.
+// every call with the device key, sendGristRecord seals the request to the mill, waitForAnswer pages for the reply
+// from the grist's own place in the backend's sequence.
 import { door } from 'bsv-kit/bsv';
 import { grist } from 'bsv-kit/grist';
 import { POSTERN_DOOR } from '../config';
@@ -20,69 +21,100 @@ export const MAX_QUESTION_CHARS = 400;
 
 /** The timings, in one object so a test may shorten them. */
 export const tutorTimings = {
-  /** How often the mill is asked whether it has answered. */
+  /** How often the mill is asked whether it has answered: a poll starts this often, whether or not the one before has come back. */
   pollMs: 3000,
+  /**
+   * How long one poll (the sign-in code and the page, its body too) may take before it is given up on. The door's own 30 s ends
+   * at the page's headers, so a body that stalled on mobile data was never given up on (mw-5r3p30.269).
+   */
+  pollTimeoutMs: 30_000,
   /** How long it has to answer before the question is given up on. */
   deadlineMs: 180_000,
 };
 
+/** The most polls out at once: a slow one is not abandoned for being slow, and a stalled one does not hold up the next. */
+const POLLS_IN_FLIGHT = 3;
+
 /**
  * How long the wait for an answer goes on with no call to Postern succeeding before it says the tutor could not be reached.
- * The door gives up on one call after 30 s, so this lets two polls in a row time out (a train through a tunnel, a phone changing
+ * One poll gives up after pollTimeoutMs, so this lets polls fail for a while (a train through a tunnel, a phone changing
  * from wifi to data) before the wait is called lost; the 180 s deadline above still ends a wait that has contact but no answer.
  */
 export const CONTACT_LOST_MS = 90_000;
 
-/** Waits `ms`, or rejects when `signal` aborts. */
-function pause(ms: number, signal: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (signal.aborted) return reject(new grist.AwaitAbortedError());
-    const onAbort = (): void => {
-      clearTimeout(timer);
+/** One page of the wait: rejects with the door's ApiTimeoutError (and aborts it) when it has not come, body and all, in pollTimeoutMs,
+ * and with an AwaitAbortedError at once when `signal` aborts, even from a fetch that does not heed its signal. */
+async function readPage(txid: string, d: InstanceType<typeof door.Door>, key: Uint8Array, since: number, mill: string, signal: AbortSignal): ReturnType<typeof grist.readAnswerPage> {
+  const poll = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let onAbort = (): void => undefined;
+  const cut = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      reject(new door.ApiTimeoutError(false));
+      poll.abort();
+    }, tutorTimings.pollTimeoutMs);
+    onAbort = (): void => {
       reject(new grist.AwaitAbortedError());
+      poll.abort();
     };
-    const timer = setTimeout(() => {
-      signal.removeEventListener('abort', onAbort);
-      resolve();
-    }, ms);
-    signal.addEventListener('abort', onAbort, { once: true });
   });
-}
-
-/** The mill's public key as the backend names it (bsv-kit's grist keeps its own copy of this private). */
-async function millOf(d: InstanceType<typeof door.Door>, signal: AbortSignal): Promise<string> {
-  const response = await d.fetch('/me', { signal });
-  if (!response.ok) throw new Error(`The backend answered ${response.status} to /api/me.`);
-  const body = (await response.json()) as { mill?: unknown };
-  const mill = typeof body.mill === 'string' ? body.mill.trim() : '';
-  if (!mill) throw new Error('The backend names no mill key, so there is nowhere to send a grist.');
-  return mill;
+  if (signal.aborted) onAbort();
+  else signal.addEventListener('abort', onAbort, { once: true });
+  try {
+    return await Promise.race([grist.readAnswerPage(txid, { door: d, key, since, mill, signal: poll.signal }), cut]);
+  } finally {
+    clearTimeout(timer);
+    signal.removeEventListener('abort', onAbort);
+  }
 }
 
 /**
- * Pages Postern for the mill's answer to the grist `txid` until it comes, which `signal` stops (AwaitAbortedError). A page that
- * fails (the door's timeout, no connection, a 5xx) does not end the wait: the next poll tries again, and only when no call has
- * succeeded for CONTACT_LOST_MS does it throw that last failure. A licence refusal ends it at once. bsv-kit's awaitAnswer
- * ends at the first failed page, which a phone that blinks offline for a moment turns into 'could not reach the tutor'.
+ * Pages Postern for the mill's answer to the grist `txid` until it comes, which `signal` stops (AwaitAbortedError). It pages from
+ * `since`, the grist's own place in the backend's sequence (the answer comes after it): from 0, the first page was every record the
+ * phone ever sent or was sent, megabytes for a phone that has asked a lot and a minute on mobile data (mw-5r3p30.269). A poll starts
+ * every pollMs while fewer than POLLS_IN_FLIGHT are out, so one that stalls does not hold up the next. A page that fails (it timed
+ * out, no connection, a 5xx) does not end the wait: only when no call has succeeded for CONTACT_LOST_MS does it throw that failure.
+ * A licence refusal ends it at once. bsv-kit's awaitAnswer ends at the first failed page, which a phone that blinks offline for a
+ * moment turns into 'could not reach the tutor'.
  */
-async function waitForAnswer(txid: string, d: InstanceType<typeof door.Door>, key: Uint8Array, signal: AbortSignal): Promise<grist.GristAnswer> {
-  let mill: string | undefined;
-  let since = 0;
-  let lastContact = Date.now();
-  for (;;) {
-    try {
-      mill ??= await millOf(d, signal);
-      const result = await grist.readAnswerPage(txid, { door: d, key, since, mill, signal });
-      lastContact = Date.now();
-      if (result.answer) return result.answer;
-      since = result.next;
-    } catch (err) {
-      if (signal.aborted) throw new grist.AwaitAbortedError();
-      if (err instanceof door.RefusedError || err instanceof grist.AwaitAbortedError) throw err;
-      if (Date.now() - lastContact >= CONTACT_LOST_MS) throw err;
-    }
-    await pause(tutorTimings.pollMs, signal);
-  }
+function waitForAnswer(txid: string, since: number, mill: string, d: InstanceType<typeof door.Door>, key: Uint8Array, signal: AbortSignal): Promise<grist.GristAnswer> {
+  return new Promise((resolve, reject) => {
+    const polls = new AbortController();
+    let lastContact = Date.now();
+    let out = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let done = false;
+    const finish = (end: () => void): void => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      signal.removeEventListener('abort', onAbort);
+      polls.abort();
+      end();
+    };
+    const onAbort = (): void => finish(() => reject(new grist.AwaitAbortedError()));
+    const failed = (err: unknown): void => {
+      if (err instanceof door.RefusedError || Date.now() - lastContact >= CONTACT_LOST_MS) finish(() => reject(err));
+    };
+    const poll = (): void => {
+      if (done) return;
+      if (out < POLLS_IN_FLIGHT) {
+        out += 1;
+        readPage(txid, d, key, since, mill, polls.signal)
+          .then((result) => {
+            lastContact = Date.now();
+            since = Math.max(since, result.next);
+            const { answer } = result;
+            if (answer) finish(() => resolve(answer));
+          }, failed)
+          .finally(() => (out -= 1));
+      }
+      timer = setTimeout(poll, tutorTimings.pollMs);
+    };
+    if (signal.aborted) return onAbort();
+    signal.addEventListener('abort', onAbort, { once: true });
+    poll();
+  });
 }
 
 /** What the grind is sent (Verse Ask Request 1): the verse in both languages, his words, his question. */
@@ -215,9 +247,9 @@ export async function askGrind<Answer>(kind: string, request: object, isAnswer: 
   options.signal?.addEventListener('abort', stop, { once: true });
   const timer = setTimeout(stop, tutorTimings.deadlineMs);
   try {
-    const txid = await grist.sendGrist({ door: d, key, app: TUTOR_APP, kind, v: TUTOR_VERSION, input: request, photos: [], attachments: options.files });
+    const { txid, seq, mill } = await grist.sendGristRecord({ door: d, key, app: TUTOR_APP, kind, v: TUTOR_VERSION, input: request, photos: [], attachments: options.files });
     options.onSent?.(txid);
-    const reply = await waitForAnswer(txid, d, key, deadline.signal);
+    const reply = await waitForAnswer(txid, seq, mill, d, key, deadline.signal);
     if (reply.status !== 'answered') {
       throw new TutorError('no-answer', reply.reason ? `The tutor could not answer: ${reply.reason}` : 'The tutor could not answer.');
     }
