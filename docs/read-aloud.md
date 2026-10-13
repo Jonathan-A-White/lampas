@@ -97,6 +97,11 @@ English voice and Greek words in the Greek voice):
 A new question or message (`useAsks`, `useTalk`), leaving the panel or the cards, and a tap on the response (not on a button in it, `stopOnTap`) stop the speech
 at once; a tapped word, a speaker or a hold to talk only pause it (above). Off, nothing is spoken by itself; the speaker on an answer ('Hear the answer') still reads it.
 
+A response that comes while the page is hidden (he is in another app, `document.visibilityState` 'hidden') is not spoken (mw-5r3p30.270): `tutorVoice.ts`
+`startAnswerWhenSeen` keeps it in `src/speech/tutorWaiting.ts`, and when he is back a bar at the top of the app (`TutorWaitingBar.tsx`, in the shell under the
+update banner) says **The tutor answered: tap to play**; his tap starts it (a tap is what lets the page speak). A new question, leaving the panel (`stopAnswer`)
+or a newer response drops it; nothing is sent outside the app, no notification. With the page in front the whole time, nothing changes.
+
 ## Hebrew in the tutor's text (mw-5r3p30.97)
 
 A Hebrew word in a response is for his eyes: `answerRuns` (and so `startAnswer`) leaves Hebrew letters out of what the English voice is given
