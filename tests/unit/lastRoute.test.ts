@@ -54,6 +54,7 @@ describe('the trail of places he visited', () => {
     expect(isKeptHash('#/share?talk=rom.8.28')).toBe(true);
     expect(isKeptHash('#/paradigms')).toBe(true);
     expect(isKeptHash('#/studyway')).toBe(true);
+    expect(isKeptHash('#/memory')).toBe(true);
     expect(isKeptHash('#/requests')).toBe(true);
     expect(isKeptHash('#/preface')).toBe(true);
     expect(isKeptHash('#/preface/robinson')).toBe(true);

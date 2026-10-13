@@ -34,6 +34,7 @@ export type SectionId =
   | 'tips'
   | 'developer'
   | 'aboutYou'
+  | 'memory'
   | 'studyWay'
   | 'more';
 
