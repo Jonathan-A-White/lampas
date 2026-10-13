@@ -401,3 +401,14 @@ phrases out of `bma-tutor.ts`). Mapping, where the RP codes cannot tell a lesson
 1. One file in `src/approaches/` exporting a `GrammarApproach` (a credit when the order is someone's, with their name and address).
 2. One line in `src/approaches/index.ts` (`APPROACHES`).
 3. `npm run grind:build`, so the tutor may be asked for it. `tests/unit/approaches.test.ts` checks that `orderOf` lists every idea once.
+
+### Drill it, the runs kept
+
+`src/data/repositories/drillRuns.ts` (mw-i7xe0n.2): a finished run is one row of the Dexie `drillRuns` table (v19: `++id, ideaId, at`; the `DrillResult` fields and `at`).
+`saveDrillRun(result, at)` adds one (every run stays), `latestDrillRunFor(ideaId)` gives the newest (the one saved last on a tie) and `weakFacets()` gives, for each idea whose
+latest run did not prove it and left weak facets, `{at, labels}`. No screen saves a run yet.
+
+The tutor is told them in `learner_grammar.weak` (src/data/grammar/learnerGrammar.ts): the idea's title to the labels of its weak facets (`its ending`, `ν (Nu)`),
+the ideas drilled last first-dropped (at most `GRAMMAR_WEAK_IDEAS_MAX` 5 ideas, `GRAMMAR_WEAK_LABELS_MAX` 3 labels, `GRAMMAR_WEAK_LABEL_CHARS` 32 characters; the key is missing when
+there are none). A later run that proves the idea (or finds no weak facet) takes the idea out. Over the 900-byte cap the oldest ideas of `weak` go first, down to
+`GRAMMAR_WEAK_BYTES` (300), then the idea titles as before, then the rest of `weak`. The grinds' input schemas and instructions name it ("his weak points from Drill it").
