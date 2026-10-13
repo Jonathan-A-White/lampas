@@ -58,6 +58,15 @@ export interface FakePostern {
   /** Puts a request-status record (docs/protocol.md section 19) for the key `to` (a public key in hex) on the backend, sealed by the mill unless
    * `sealedBy` (a private key in hex) says another key sealed it. The plaintext is sent as given. */
   sendStatus(to: string, plaintext: Record<string, unknown>, sealedBy?: string): void;
+  /** Offer the live event stream (docs/protocol.md section 10): GET /api/me names the 'events' feature and GET /api/events stays open, saying `hello` and then
+   * `message` {seq} for every record the backend takes in. Off by default: the phone polls. */
+  events: boolean;
+  /** Refuse GET /api/events (a 503, as a backend does when it is down) while the rest answers. */
+  eventsRefused: boolean;
+  /** how many event streams are open now */
+  openStreams: number;
+  /** Closes every open event stream from the backend's side, as a dropped link does. */
+  dropStreams(): void;
 }
 
 const json = (status: number, body: unknown) =>
@@ -175,7 +184,14 @@ export function makeFakePostern(): FakePostern {
   const issued = new Set<string>();
   const records: { seq: number; firstSeen: string; txid: string; signer?: string; payload: Record<string, unknown> }[] = [];
   const unanswered: { txid: string; from: string; kind: string }[] = [];
+  const streams = new Set<ReadableStreamDefaultController<Uint8Array>>();
+  const encoder = new TextEncoder();
   let counter = 0;
+
+  /** A record taken in: every open event stream is told its seq. */
+  const announce = (seq: number): void => {
+    for (const stream of streams) stream.enqueue(encoder.encode(`event: message\ndata: {"seq":${seq}}\n\n`));
+  };
 
   const fake: FakePostern = {
     fetch: undefined as unknown as typeof fetch,
@@ -191,11 +207,23 @@ export function makeFakePostern(): FakePostern {
     licensed: true,
     down: false,
     sinces: [],
+    events: false,
+    eventsRefused: false,
+    get openStreams() {
+      return streams.size;
+    },
+    dropStreams() {
+      for (const stream of [...streams]) {
+        streams.delete(stream);
+        stream.close();
+      }
+    },
     sendStatus(to, plaintext, sealedBy) {
       const sealer = sealedBy ? Uint8Array.from(Utils.toArray(sealedBy, 'hex')) : millBytes;
       const envelope = grist.sealEnvelope(JSON.stringify(plaintext), sealer, to, 1_790_000_000);
       const signer = sealedBy ? PrivateKey.fromHex(sealedBy).toPublicKey().toString() : MILL_PUBLIC_KEY;
       records.push({ seq: records.length + 1, firstSeen: new Date().toISOString(), txid: `direct:${hex(Hash.sha256(Utils.toArray(`status-${records.length}`, 'utf8')))}`, signer, payload: { ...envelope } });
+      announce(records.length);
     },
     answer(reply) {
       const next = unanswered.shift();
@@ -203,6 +231,7 @@ export function makeFakePostern(): FakePostern {
       const plaintext = { re: next.txid, ...reply, grind: { app: 'lampas', kind: next.kind, v: '1' } };
       const envelope = grist.sealEnvelope(JSON.stringify(plaintext), millBytes, next.from, 1_790_000_000);
       records.push({ seq: records.length + 1, firstSeen: new Date().toISOString(), txid: `direct:${hex(Hash.sha256(Utils.toArray(`answer-${next.txid}`, 'utf8')))}`, signer: MILL_PUBLIC_KEY, payload: { ...envelope } });
+      announce(records.length);
     },
   };
 
@@ -235,7 +264,26 @@ export function makeFakePostern(): FakePostern {
     if (!fake.licensed) return json(401, { error: 'no licence', reason: 'no_licence' });
 
     if (url.pathname === '/api/me' && method === 'GET') {
-      return json(200, { pubkey, mill: MILL_PUBLIC_KEY, network: 'testnet', features: ['grist'], apps: ['lampas'] });
+      return json(200, { pubkey, mill: MILL_PUBLIC_KEY, network: 'testnet', features: fake.events ? ['grist', 'events'] : ['grist'], apps: ['lampas'] });
+    }
+    if (url.pathname === '/api/events' && method === 'GET') {
+      if (!fake.events || fake.eventsRefused) return json(503, { error: 'no event stream' });
+      let controller!: ReadableStreamDefaultController<Uint8Array>;
+      const body = new ReadableStream<Uint8Array>({
+        start(c) {
+          controller = c;
+          streams.add(c);
+          c.enqueue(encoder.encode(`event: hello\ndata: {"head":${records.length},"view":""}\n\n`));
+        },
+        cancel() {
+          streams.delete(controller);
+        },
+      });
+      // a fetch that is aborted ends its body, as a browser's does
+      init?.signal?.addEventListener('abort', () => {
+        if (streams.delete(controller)) controller.error(new DOMException('The operation was aborted.', 'AbortError'));
+      });
+      return new Response(body, { status: 200, headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store' } });
     }
     if (url.pathname === '/api/blobs' && method === 'POST') {
       const blob = { hash: Utils.toHex(Hash.sha256(bytes)), size: bytes.length };
@@ -249,6 +297,7 @@ export function makeFakePostern(): FakePostern {
       const txid = `direct:${hex(Hash.sha256(Utils.toArray(scriptHex, 'hex')))}`;
       const seq = records.length + 1;
       records.push({ seq, firstSeen: new Date().toISOString(), txid, signer: pubkey, payload: { ...envelope } });
+      announce(seq);
       const opened = JSON.parse(grist.openCt(envelope.ct, millBytes)) as ReceivedGrist;
       fake.received.push(opened);
       fake.txids.push(txid);
