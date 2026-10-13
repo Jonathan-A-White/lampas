@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.180
+_2026-10-13_
+- New: With Immersive reader On, the Reader now fills the whole phone screen, hiding the status and navigation bars, as soon as you tap or scroll the text.
+
 ## 0.1.179
 _2026-10-13_
 - New: When you read in English, the tutor now answers in English and, if you show interest in the original, offers the Greek once with a button, and remembers if you say no.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.180",
+    "date": "2026-10-13",
+    "story": "mw-5r3p30.296",
+    "kind": "new",
+    "text": "With Immersive reader On, the Reader now fills the whole phone screen, hiding the status and navigation bars, as soon as you tap or scroll the text."
+  },
+  {
     "version": "0.1.179",
     "date": "2026-10-13",
     "story": "mw-yrmkdf.4",
