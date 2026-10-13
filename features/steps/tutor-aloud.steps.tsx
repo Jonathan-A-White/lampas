@@ -49,6 +49,7 @@ async function open({ aloud, hash = '', reply }: { aloud: boolean; hash?: string
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
   window.location.hash = hash;
+  visibility = 'visible';
   stubRecorder();
   stubRecognizer();
   FakeRecorder.denied = false;
@@ -117,6 +118,20 @@ const speaking = async () => {
   expect(getReading().status).toBe('reading');
 };
 const groupSwitch = async () => within(await screen.findByRole('group', { name: SWITCH }));
+
+
+/** Stands in for the page being in front or in another app (document.visibilityState), and tells the page so. */
+let visibility: DocumentVisibilityState = 'visible';
+Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => visibility });
+Object.defineProperty(document, 'hidden', { configurable: true, get: () => visibility === 'hidden' });
+const setVisibility = (next: DocumentVisibilityState) => {
+  visibility = next;
+  act(() => {
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+};
+const WAITING_BAR = 'The tutor answered: tap to play';
+const waitingBar = () => screen.queryByRole('button', { name: WAITING_BAR, exact: true });
 
 const feature = await loadFeature('features/tutor-aloud.feature');
 
@@ -261,6 +276,61 @@ describeFeature(feature, ({ Scenario }) => {
     And('there is no speaking bar', async () => {
       await waitFor(() => expect(speakingBar()).toBeNull());
     });
+  });
+
+  const sayAnswer = async (_: unknown, greek: string) => {
+    await hearAll();
+    expect(said.filter((s) => s.lang === 'el-GR').map((s) => s.text)).toContain(greek);
+    expect(said.filter((s) => s.lang === 'en-US').map((s) => s.text).join(' ')).toContain('present active indicative');
+  };
+  const answerShownSilent = async () => {
+    await waitFor(() => expect(document.querySelectorAll('[data-answers-for="28"] [data-answer]').length).toBe(1));
+    await sleep(150);
+    expect(synth.spoken).toHaveLength(0);
+  };
+  const barIsGone = async () => {
+    await waitFor(() => expect(waitingBar()).toBeNull());
+  };
+  const barSays = async (_: unknown, text: string) => {
+    expect(text).toBe(WAITING_BAR);
+    expect(await screen.findByRole('button', { name: text, exact: true })).toBeVisible();
+  };
+
+  Scenario('An answer that comes while he is in another app waits for him: a bar says so and a tap plays it', ({ Given, And, When, Then }) => {
+    Given(readOn, () => open({ aloud: true, reply: 'answer' }));
+    And('he is in another app', () => setVisibility('hidden'));
+    And(askFirst, askIt);
+    Then('the answer is shown and nothing is spoken', answerShownSilent);
+    When('he comes back to Lampas', () => setVisibility('visible'));
+    Then('the bar at the top says {string}', barSays);
+    And('nothing is spoken yet', () => expect(synth.spoken).toHaveLength(0));
+    When('he taps the bar at the top', async () => {
+      await user.click(await screen.findByRole('button', { name: WAITING_BAR, exact: true }));
+    });
+    Then("the phone says the answer's English in the English voice and {string} in the Greek voice", sayAnswer);
+    And('the bar at the top is gone', barIsGone);
+  });
+
+  Scenario('A new question while the answer waits drops the bar', ({ Given, And, When, Then }) => {
+    Given(readOn, () => open({ aloud: true, reply: 'answer' }));
+    And('he is in another app', () => setVisibility('hidden'));
+    And(askFirst, askIt);
+    And('the answer is shown and nothing is spoken', answerShownSilent);
+    And('he comes back to Lampas', () => setVisibility('visible'));
+    And('the bar at the top says {string}', barSays);
+    When('he asks the tutor {string} a second question', async (_, question: string) => {
+      fake.autoReply = undefined;
+      await waitFor(() => expect(holdBarIn(viewEl())).toBeEnabled());
+      await ask(question);
+    });
+    Then('the bar at the top is gone', barIsGone);
+  });
+
+  Scenario('With the page in front the whole time there is no bar and the answer is read at once', ({ Given, And, Then }) => {
+    Given(readOn, () => open({ aloud: true, reply: 'answer' }));
+    And(askFirst, askIt);
+    Then("the phone says the answer's English in the English voice and {string} in the Greek voice", sayAnswer);
+    And('the bar at the top is gone', barIsGone);
   });
 
   Scenario('Settings has the switch, On until he turns it Off, and it is kept', ({ Given, When, Then, And }) => {

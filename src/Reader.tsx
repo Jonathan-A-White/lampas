@@ -52,8 +52,8 @@ import { READER_SUGGESTIONS } from './tutor/screen';
 import { useTalk } from './useTalk';
 import { useVoice } from './useVoice';
 import { HeaderButton } from './ScreenHeader';
-import { speakTutor } from './speech/tutorVoice';
-import { continueReading, getReading, isReadingOf, pauseReading, startAnswer, stopReading, updatePlan, useReading } from './speech/readAloud';
+import { speakTutor, startAnswerWhenSeen } from './speech/tutorVoice';
+import { continueReading, getReading, isReadingOf, pauseReading, stopReading, updatePlan, useReading } from './speech/readAloud';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
 import { ReaderChips } from './ReaderChips';
 import { TeachSheet } from './TeachSheet';
@@ -179,7 +179,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     // an answer that comes while he holds waits: page audio can take the microphone from the recogniser
     if (openTalkRef.current !== ref || holding.current) return;
     // Sound it out: the word was said before the answer; now each syllable it lists, slowly, one after another.
-    if (info.focus?.kind === 'sound' && !info.focus.language && info.syllables?.length) startAnswer(id, syllableRuns(info.syllables));
+    if (info.focus?.kind === 'sound' && !info.focus.language && info.syllables?.length) startAnswerWhenSeen(id, syllableRuns(info.syllables));
     else speakTutor(id, answerRuns(answer), () => openTalkRef.current === ref);
   }, {
     // the tutor takes him to a chapter (the answer's `go`) while this talk's sheet is open: the sheet closes, the Reader opens there as a new Back step

@@ -15,7 +15,7 @@ for (const { name, width, height } of SIZES) {
     await page.setViewportSize({ width, height });
     await refuseChain(page);
     await seedDeviceKey(page);
-    await page.goto('/');
+    await page.goto('/#/unlock');
     const heading = page.getByRole('heading', { name: 'Unlock' });
     await expect(heading).toBeVisible();
 
