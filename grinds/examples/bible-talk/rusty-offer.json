@@ -1,0 +1,35 @@
+{
+  "description": "A reader who has come back after a break asks what to work on; two solid items have gone rusty. The tutor says so plainly, once, and offers to move them back to Frontier and practise, naming only items the request listed.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "question": "What should I work on today?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός",
+      "λόγος"
+    ],
+    "settings": {},
+    "reader_view": "greek",
+    "learner": "solid 4 words; learning: ἀγάπη; new today: ; due now: 6",
+    "rusty": [
+      { "kind": "word", "id": "λόγος", "title": "λόγος", "why": "slipped twice this week" },
+      { "kind": "idea", "id": "case-genitive", "title": "The genitive case", "why": "not seen for 3 weeks" }
+    ]
+  },
+  "expect": {
+    "answer": {
+      "matches": "[Rr]usty"
+    },
+    "rusty_offer.items.0.id": {
+      "equals": "λόγος"
+    },
+    "rusty_offer.items.1.id": {
+      "equals": "case-genitive"
+    }
+  }
+}

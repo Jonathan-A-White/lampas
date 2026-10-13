@@ -2,7 +2,7 @@
 // overdue first), then other words up to ten, as Quick test questions; every answer moves the item on the schedule; the
 // end card gives the score and says how many come back tomorrow and how many later.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { countDue, recordRound, reviewsOf } from './data/repositories';
 import { DAY } from './data/schedule';
 import { type Random } from './data/quiz';
@@ -10,6 +10,7 @@ import { navigate } from './nav/route';
 import { ItemCard } from './review/ItemCard';
 import { KINDS, kindOf, type ReviewItem } from './review/kinds';
 import { makeMove, moveQuestion, moveSaid, pendingMove, type PendingMove } from './review/pickerMove';
+import { hasPractise, takePractise } from './review/practise';
 import { drawReviewRound } from './review/round';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { useReportScreen } from './tutor/screenContext';
@@ -103,19 +104,31 @@ function reviewFacts(round: Round, dueLine: string | undefined): ScreenFact[] {
 }
 
 export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
-  const [round, setRound] = useState<Round>({ status: 'start' });
+  // Items chosen to practise (rusty ones moved back to Frontier, Welcome back's) open their round at once; the rest of Review waits for Start
+  const [round, setRound] = useState<Round>(() => (hasPractise() ? { status: 'loading' } : { status: 'start' }));
   // The answers are written one after the other; the end card waits for the last of them.
   const writing = useRef<Promise<unknown>>(Promise.resolve());
   const due = useLiveQuery(() => Promise.all(KINDS.map((k) => countDue(Date.now(), k.kind))), []);
   const stillDue = due?.reduce((a, b) => a + b, 0);
   useReportScreen({ name: 'Review', facts: reviewFacts(round, due ? dueText(due) : undefined) });
 
-  const start = () => {
-    setRound({ status: 'loading' });
-    void drawReviewRound(newRandom()).then(({ items }) =>
+  const draw = () =>
+    void drawReviewRound(newRandom(), Date.now(), undefined, takePractise()).then(({ items }) =>
       setRound(items.length > 0 ? { status: 'running', items, index: 0, picked: null, right: 0 } : { status: 'start' }),
     );
+  const start = () => {
+    setRound({ status: 'loading' });
+    draw();
   };
+
+  // The round of chosen items is drawn once the screen is up (StrictMode runs the effect twice: the ref lets the first one draw)
+  const drawn = useRef(false);
+  useEffect(() => {
+    if (round.status !== 'loading' || drawn.current) return;
+    drawn.current = true;
+    draw();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const header = (subtitle?: string) => (
     <ScreenHeader title="Review" subtitle={subtitle} back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />

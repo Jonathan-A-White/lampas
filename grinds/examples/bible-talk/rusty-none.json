@@ -1,0 +1,25 @@
+{
+  "description": "The same question from a reader with nothing rusty (the request has no `rusty`): the tutor answers it and makes no offer.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "question": "What should I work on today?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός",
+      "λόγος"
+    ],
+    "settings": {},
+    "reader_view": "greek",
+    "learner": "solid 4 words; learning: ἀγάπη; new today: ; due now: 6"
+  },
+  "expect": {
+    "rusty_offer": {
+      "present": false
+    }
+  }
+}
