@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.163
+_2026-10-13_
+- Fixed: The tutor now knows which Greek pronunciation you use when you ask about a verse or read one aloud, so what it says about sounds matches how the app speaks.
+
 ## 0.1.162
 _2026-10-13_
 - New: Settings has a Memory page where you can keep, edit, export and import notes that Lampas will later share with your tutor.

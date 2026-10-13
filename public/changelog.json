@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.163",
+    "date": "2026-10-13",
+    "story": "mw-5r3p30.242",
+    "kind": "fixed",
+    "text": "The tutor now knows which Greek pronunciation you use when you ask about a verse or read one aloud, so what it says about sounds matches how the app speaks."
+  },
+  {
     "version": "0.1.162",
     "date": "2026-10-13",
     "story": "mw-yrmkdf.1",
