@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.158
+_2026-10-13_
+- New: The tutor now learns how you like to learn from your talks and from how you use the app, and About you shows what it learned so you can change or remove it.
+
 ## 0.1.156
 _2026-10-13_
 - Fixed: When the tutor explains how to say a Greek word it now takes the word's syllables and stressed syllable from the app, so it no longer miscounts them.
