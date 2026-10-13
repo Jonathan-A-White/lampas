@@ -207,7 +207,7 @@ describeFeature(feature, ({ Scenario }) => {
   const yesComesAtLast = (extra: Record<string, unknown> = {}) => {
     fake.answer({ status: 'answered', answer: { answer: SENT_REPLY, words: [], offer_reply: 'confirm', ...extra } });
   };
-  const sentOnce = (_: unknown) => firstTurnSent();
+  const sentOnce = () => firstTurnSent();
 
   Scenario('A tap, then a spoken yes whose answer comes after the send finished, send once', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', opensFeedback);
