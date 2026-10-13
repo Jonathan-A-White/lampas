@@ -133,6 +133,8 @@ interface Row {
 export interface Page {
   answer: grist.GristAnswer | null;
   next: number;
+  /** the backend's own head as the page named it (`next` before it is held at the place asked from): below the place asked from, that place is not in this backend's sequence */
+  head: number;
   /** the backend's time for the answer's record (epoch ms), when it named one */
   deliveredAt?: number;
   /** how long this page took, from the call to its body read (ms) */
@@ -175,14 +177,15 @@ export async function readTimedPage(txid: string, o: { door: TimedDoor; key: Uin
     signal.removeEventListener('abort', stop);
   }
   const took = Date.now() - started;
-  let next = Math.max(o.since, body.next ?? 0);
+  const head = body.next ?? 0;
+  let next = Math.max(o.since, head);
   for (const row of body.records ?? []) {
     const answer = answerIn(row, key, mine, o.mill, txid);
     if (answer) {
       const at = typeof row.firstSeen === 'string' ? Date.parse(row.firstSeen) : NaN;
-      return { answer, next, took, ...(Number.isFinite(at) ? { deliveredAt: at } : {}) };
+      return { answer, next, head, took, ...(Number.isFinite(at) ? { deliveredAt: at } : {}) };
     }
     next = Math.max(next, row.seq ?? 0);
   }
-  return { answer: null, next, took };
+  return { answer: null, next, head, took };
 }

@@ -85,7 +85,8 @@ interface Waited {
 /**
  * Pages Postern for the mill's answer to the grist `txid` until it comes, which `signal` stops (AwaitAbortedError). It pages from
  * `since`, the grist's own place in the backend's sequence (the answer comes after it): from 0, the first page was every record the
- * phone ever sent or was sent, megabytes for a phone that has asked a lot and a minute on mobile data (mw-5r3p30.269). With `stream` (the backend
+ * phone ever sent or was sent, megabytes for a phone that has asked a lot and a minute on mobile data (mw-5r3p30.269, and 142 MB over 124 asks in the nginx log, mw-5r3p30.275). A `since` the
+ * backend's head has not reached (it names a `next` below it: a reset backend or a new mill) is read from 0 once, so the answer is still found. With `stream` (the backend
  * serves GET /api/events) the wait also listens on it while it waits, and pages at once when the stream names a record after `since` or says hello
  * (mw-46z0my.6); the stream is closed when the wait ends. A poll starts every pollMs (backstopMs while the stream is up) while fewer than
  * POLLS_IN_FLIGHT are out, so one that stalls does not hold up the next. A page that fails (it timed out, no connection, a 5xx) does not end the wait:
@@ -97,6 +98,8 @@ function waitForAnswer(txid: string, since: number, mill: string, d: TimedDoor, 
     const polls = new AbortController();
     let lastContact = Date.now();
     let out = 0;
+    // a place the backend's sequence has not reached (it was reset, or is a new mill) is read from 0, once
+    let fellBack = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let done = false;
     let listening: ReturnType<typeof listenForAnswers> | undefined;
@@ -118,10 +121,18 @@ function waitForAnswer(txid: string, since: number, mill: string, d: TimedDoor, 
       clearTimeout(timer);
       if (out < POLLS_IN_FLIGHT) {
         out += 1;
-        readPage(txid, d, key, since, mill, polls.signal)
+        const asked = since;
+        readPage(txid, d, key, asked, mill, polls.signal)
           .then((result) => {
             lastContact = Date.now();
-            since = Math.max(since, result.next);
+            if (!result.answer && !fellBack && asked > 0 && result.head < asked) {
+              fellBack = true;
+              since = 0;
+              poll();
+              return;
+            }
+            // a poll still out from before the fallback must not put the cursor back
+            if (asked <= since) since = Math.max(since, result.next);
             const { answer } = result;
             if (answer) finish(() => resolve({ answer, seenAt: lastContact, deliveredAt: result.deliveredAt, pollNetwork: result.took }));
           }, failed)
