@@ -44,7 +44,7 @@ const chapterFile = (book: string, n: number) => JSON.parse(readFileSync(`public
 let fake: FakePostern;
 
 /** Opens the app at `address` with the goal saved and a fake Postern behind it; his seed words and levels are the first open's. */
-async function openAt(address: string, goal: string | undefined = '1 John 1:1', slowWriteMs = 0): Promise<void> {
+async function openAt(address: string, goal: string | undefined = '1 John 1:1', slowWriteMs = 0, slowReadMs = 0): Promise<void> {
   vi.restoreAllMocks();
   cleanup();
   stopReading();
@@ -66,6 +66,7 @@ async function openAt(address: string, goal: string | undefined = '1 John 1:1', 
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.reviews.clear(), db.grammarLevels.clear()]);
   if (goal !== undefined) await setGoal(goal);
   if (slowWriteMs > 0) slowTalkWrites(slowWriteMs);
+  if (slowReadMs > 0) slowTalkReads(slowReadMs);
   render(<App />);
   await waitFor(async () => expect(await db.meta.get('grammarLevelsSeeded')).toBeDefined());
 }
@@ -76,6 +77,23 @@ function slowTalkWrites(ms: number): void {
   const add = db.talks.add.bind(db.talks) as (turn: unknown) => Promise<unknown>;
   vi.spyOn(db.talks, 'add').mockImplementation(((turn: unknown) =>
     add(turn).then((id) => new Dexie.Promise((resolve) => setTimeout(() => resolve(id), ms)))) as unknown as typeof db.talks.add);
+}
+
+/** Every read of a talk's turns is made at once but only answers `ms` late, as a loaded host does: the sheet is open before it knows its kept talk,
+ * so it has not drawn the suggestions yet. */
+function slowTalkReads(ms: number): void {
+  const where = db.talks.where.bind(db.talks) as (index: string) => ReturnType<typeof db.talks.where>;
+  vi.spyOn(db.talks, 'where').mockImplementation(((index: string) => {
+    const clause = where(index);
+    const between = clause.between.bind(clause);
+    clause.between = ((...args: Parameters<typeof clause.between>) => {
+      const found = between(...args);
+      const toArray = found.toArray.bind(found);
+      found.toArray = (() => toArray().then((rows) => new Dexie.Promise((resolve) => setTimeout(() => resolve(rows), ms)))) as typeof found.toArray;
+      return found;
+    }) as typeof clause.between;
+    return clause;
+  }) as unknown as typeof db.talks.where);
 }
 
 const control = () => screen.queryAllByRole('button', { name: CONTROL });
@@ -102,16 +120,23 @@ async function send(question: string): Promise<void> {
 const turns = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn]'));
 const suggestions = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-suggestion]'));
 const ABOUT_SUGGESTIONS = ['Why do you credit all these?', 'What does each of these do for Lampas?', 'What does STEPBible give me?'];
+/** The suggestions draw once the sheet has read its kept talk, which a loaded host does after the sheet itself: wait for the button, then tap it. */
+const suggestionWaiting = async (question: string): Promise<HTMLElement> => {
+  let found: HTMLElement | undefined;
+  await waitFor(() => {
+    found = suggestions().find((s) => s.textContent === question);
+    expect(found, question).toBeDefined();
+  });
+  return found!;
+};
 const tapsSuggestion = async (question: string) => {
-  await user.click(suggestions().find((s) => s.textContent === question)!);
+  await user.click(await suggestionWaiting(question));
 };
 const answerArrived = async (n: number) => {
   await waitFor(() => expect(turns()).toHaveLength(n));
 };
 const canBeTapped = async (question: string) => {
-  const found = suggestions().find((s) => s.textContent === question);
-  expect(found, question).toBeDefined();
-  expect(found).toBeEnabled();
+  expect(await suggestionWaiting(question)).toBeEnabled();
 };
 /** New talk draws once the turn is stored and nothing is in flight, which can be after the turn itself: wait for it, then tap. */
 const tapsNewTalk = async () => {
@@ -255,14 +280,14 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     When('he taps the Ask the tutor control', taps);
     Then('the sheet suggests two or three questions', async () => {
       await screen.findByRole('dialog', { name: 'Ask the tutor: Goal' });
-      expect(suggestions().length).toBeGreaterThanOrEqual(2);
+      await waitFor(() => expect(suggestions().length).toBeGreaterThanOrEqual(2));
       expect(suggestions().length).toBeLessThanOrEqual(3);
     });
-    And('one of them asks for the simplest verse in the New Testament to learn first, given where he is', () => {
-      expect(suggestions().map((s) => s.textContent)).toContain(SIMPLEST);
+    And('one of them asks for the simplest verse in the New Testament to learn first, given where he is', async () => {
+      await suggestionWaiting(SIMPLEST);
     });
     When('he taps that suggested question', async () => {
-      await user.click(suggestions().find((s) => s.textContent === SIMPLEST)!);
+      await tapsSuggestion(SIMPLEST);
     });
     Then('the mill received {int} grists for the lampas app, kind bible-talk', async (_, count: number) => {
       await waitFor(() => expect(fake.received).toHaveLength(count));
@@ -287,10 +312,10 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     When('he taps the Ask the tutor control', taps);
     Then('the sheet suggests a question about Accordance, {string}', async (_, question: string) => {
       await screen.findByRole('dialog', { name: 'Ask the tutor: Settings' });
-      expect(suggestions().map((s) => s.textContent)).toContain(question);
+      await suggestionWaiting(question);
     });
     When('he taps that suggested question', async () => {
-      await user.click(suggestions().find((s) => s.textContent === 'What would Accordance give me?')!);
+      await tapsSuggestion('What would Accordance give me?');
     });
     Then('the mill received {int} grists for the lampas app, kind bible-talk', async (_, count: number) => {
       await waitFor(() => expect(fake.received).toHaveLength(count));
@@ -381,6 +406,18 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     });
   });
 
+  Scenario('A suggested question tapped as the sheet opens is sent even when the phone is slow to read the kept talk', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on #/about with the goal {string} behind a fake Postern and a phone slow to read the kept talk', (_, goal: string) =>
+      openAt('#/about', goal, 0, 1500),
+    );
+    When('he taps the Ask the tutor control', taps);
+    And('he taps the suggested question {string}', (_, question: string) => tapsSuggestion(question));
+    And('the answer number {int} has arrived', (_, n: number) => answerArrived(n));
+    Then('the mill received {int} grists for the lampas app, kind bible-talk', async (_, count: number) => {
+      await waitFor(() => expect(fake.received).toHaveLength(count));
+    });
+  });
+
   Scenario('A first question that fails offline still leaves the other suggestions reachable', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on #/about with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/about', goal));
     When('he taps the Ask the tutor control', taps);
@@ -408,11 +445,11 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     When('he taps the Ask the tutor control', taps);
     Then('the sheet suggests questions about the credits, one of them {string}', async (_, question: string) => {
       await screen.findByRole('dialog', { name: 'Ask the tutor: About' });
-      expect(suggestions().length).toBeGreaterThanOrEqual(2);
+      await waitFor(() => expect(suggestions().length).toBeGreaterThanOrEqual(2));
       expect(suggestions().map((s) => s.textContent)).toContain(question);
     });
     When('he taps the suggested question {string}', async (_, question: string) => {
-      await user.click(suggestions().find((s) => s.textContent === question)!);
+      await tapsSuggestion(question);
     });
     Then('the mill received {int} grists for the lampas app, kind bible-talk', async (_, count: number) => {
       await waitFor(() => expect(fake.received).toHaveLength(count));
@@ -445,7 +482,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     When('he taps the Ask the tutor control', taps);
     Then('the sheet suggests two or three questions', async () => {
       await screen.findByRole('dialog', { name: 'Ask the tutor: Words' });
-      expect(suggestions().length).toBeGreaterThanOrEqual(2);
+      await waitFor(() => expect(suggestions().length).toBeGreaterThanOrEqual(2));
       expect(suggestions().length).toBeLessThanOrEqual(3);
     });
     And('none of them is the simplest verse question', () => {

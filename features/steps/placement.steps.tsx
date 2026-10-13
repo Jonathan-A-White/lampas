@@ -258,7 +258,8 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('no idea has a level', async () => {
       expect(await db.grammarLevels.toArray()).toEqual([]);
-      expect(await db.reviews.toArray()).toEqual([]);
+      // the first-open seeding of the word list schedules its words whenever it finishes: only the grammar reviews are the placement's
+      expect((await db.reviews.toArray()).filter((r) => r.kind === 'grammar')).toEqual([]);
     });
     And('the placement is no longer kept', () => expect(readPlacement()).toBeNull());
     And('the screen says he starts with {string}', async (_, title: string) => {
