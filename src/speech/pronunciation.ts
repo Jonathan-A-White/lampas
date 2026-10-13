@@ -20,6 +20,9 @@ export interface Pronunciation {
   respell(greekWord: string): string;
   /** An English word that has each sound the respelling writes ('e' is the e of 'pet'): the lessons give every sound with its key word, so another scheme changes them */
   keyWords: Readonly<Record<string, string>>;
+  /** What this scheme's voice is handed for a Greek word of ONE letter (ὁ, ἡ, ὦ, Ὃ), so that it says the word's sound: a voice handed a bare
+   * letter names it ('omicron'). Modern Greek gives the stressed vowel ('ό'); mw-5r3p30.262. */
+  loneLetter(word: string): string;
 }
 
 const SCHEMES: Pronunciation[] = [MODERN];

@@ -85,6 +85,7 @@ describeFeature(feature, ({ Scenario }) => {
         note: 'Test scheme.',
         respell: (word) => word.normalize('NFD').replace(/\p{M}/gu, '').toUpperCase(),
         keyWords: {},
+        loneLetter: (word) => word.normalize('NFD').replace(/\p{M}/gu, '').toUpperCase(),
       });
     });
     When("he taps the gear in the reader's header", async () => {

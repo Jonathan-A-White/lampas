@@ -118,14 +118,17 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(within(verseEl(1)).getAllByRole('button').length).toBeGreaterThan(1));
     });
     When('he long presses the word {string} in verse {int}', (_, text: string, n: number) => press(wordEl(text, n), HOLD_MS));
-    Then('the phone is handed no single Greek letter', () => {
+    Then('the phone is handed no bare Greek letter', () => {
       expect(synth.spoken).toHaveLength(1);
-      const letters = [...lastSpoken().text.normalize('NFD').replace(/\p{M}/gu, '')];
-      expect(letters.length > 1 || !/\p{Script=Greek}/u.test(letters[0])).toBe(true);
+      const said = lastSpoken().text;
+      // a voice names a bare letter ('omicron'); a word of one letter goes with a mark the voice reads as a sound (mw-5r3p30.262)
+      expect([...said].length === 1 && said.normalize('NFD') === said.normalize('NFD').replace(/\p{M}/gu, '')).toBe(false);
     });
-    And('the phone is told to speak the sound of {string} in the pronunciation he chose', (_, text: string) => {
+    And('the Greek voice is told to speak {string} in the form the pronunciation he chose gives a word of one letter', (_, text: string) => {
       expect(lastSpoken().text).toBe(asSpoken(text));
       expect(lastSpoken().text).not.toBe('');
+      expect(spokenWordLang()).toBe('el-GR');
+      expect(lastSpoken().voice).toBe(GREEK_VOICE);
     });
   });
 

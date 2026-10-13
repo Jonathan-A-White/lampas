@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from '@testing-library/react';
 import { clearBus } from '../../src/events/bus';
 import { setGreekPronunciation, speak, speakLetter, speakWord, stopSpeaking } from '../../src/speech/greek';
-import { DEFAULT_PRONUNCIATION, PRONUNCIATIONS } from '../../src/speech/pronunciation';
+import { DEFAULT_PRONUNCIATION, PRONUNCIATIONS, pronunciationOf, registerPronunciation } from '../../src/speech/pronunciation';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../support/fake-speech';
 
 let synth: FakeSynth;
@@ -57,39 +57,73 @@ describe('holding a Greek word', () => {
   });
 });
 
-// A Greek voice names a lone letter ('omicron'), so a word of one letter is never handed to it: it is said as its sound, the pronunciation he
-// chose's respell, by the English voice (mw-5r3p30.256, Ὃ in 1 John 1:1 heard as 'omicron' after .226).
+// A voice handed a bare Greek letter names it ('omicron'), so a word of one letter goes to the GREEK voice in the form the pronunciation he chose
+// gives a word of one letter (its loneLetter; Modern Greek's is the stressed vowel, ό): never the bare letter, never the English voice
+// (mw-5r3p30.262: mw-5r3p30.256 had sent the respell 'o' to the English voice, and he heard an English voice in a lesson's example).
 describe('holding a one-letter Greek word', () => {
   const ONE_LETTER = ['Ὃ', 'ὁ', 'ἡ', 'ὦ', 'ὃ'];
   const lastUtterance = () => synth.spoken[synth.spoken.length - 1];
-  const isOneGreekLetter = (s: string) => /^\p{Script=Greek}\p{M}*$/u.test(s.normalize('NFC')) && [...s.normalize('NFD').replace(/\p{M}/gu, '')].length === 1;
+  const isBareLetter = (s: string) => [...s].length === 1 && s.normalize('NFD') === s.normalize('NFD').replace(/\p{M}/gu, '');
 
   describe.each(PRONUNCIATIONS.map((p) => p.id))('in the pronunciation %s', (id) => {
     beforeEach(() => setGreekPronunciation(id));
 
-    it.each(ONE_LETTER)('%s is never handed to a voice as a single Greek letter, but as its respell', (word) => {
+    it.each(ONE_LETTER)("%s is handed to the Greek voice in the scheme's form for a word of one letter, never as a bare letter", (word) => {
       const said = heard(word);
-      expect(isOneGreekLetter(said)).toBe(false);
-      const sound = PRONUNCIATIONS.find((p) => p.id === id)!.respell(word.toLowerCase()).toLowerCase();
-      expect(sound).not.toBe('');
-      expect(said).toBe(sound);
+      expect(said).not.toBe('');
+      expect(said).toBe(pronunciationOf(id).loneLetter(word));
+      expect(isBareLetter(said)).toBe(false);
     });
 
-    it('is said by the English voice, not the Greek one', () => {
+    it('is said by the Greek voice, not the English one', () => {
       act(() => void speakWord('Ὃ', 'greek'));
-      expect(lastUtterance().lang.split('-')[0]).toBe('en');
-      expect(lastUtterance().voice).toBe(ENGLISH_VOICE);
+      expect(lastUtterance().lang).toBe('el-GR');
+      expect(lastUtterance().voice).toBe(GREEK_VOICE);
     });
 
-    it('a speaker button (speak) gives the voice the same sound', () => {
+    it('a speaker button (speak) gives the Greek voice the same form', () => {
       act(() => void speak('ὁ', 'speaker-1', 'greek'));
-      expect(isOneGreekLetter(lastUtterance().text)).toBe(false);
+      expect(lastUtterance().text).toBe(pronunciationOf(id).loneLetter('ὁ'));
+      expect(lastUtterance().voice).toBe(GREEK_VOICE);
     });
   });
 
-  it('is said slowly when it is being sounded out, still as a sound', () => {
+  it.each([
+    ['Ὃ', 'ό'],
+    ['ὃ', 'ό'],
+    ['ὁ', 'ό'],
+    ['ἡ', 'ή'],
+    ['ὦ', 'ώ'],
+  ])('in Modern Greek %s is handed over as the stressed vowel %s, with no breathing', (word, form) => {
+    expect(heard(word)).toBe(form.normalize('NFC'));
+  });
+
+  it('follows the scheme: with a second scheme chosen, its own form is handed to the Greek voice', () => {
+    const unregister = registerPronunciation({
+      id: 'stub-erasmian',
+      label: 'Stub',
+      lang: 'el-GR',
+      scoringLang: 'el',
+      note: '',
+      respell: (w) => w,
+      keyWords: {},
+      loneLetter: (w) => `[${w.toLowerCase()}]`,
+    });
+    try {
+      setGreekPronunciation('stub-erasmian');
+      expect(heard('Ὃ')).toBe('[ὃ]');
+      expect(heard('λόγος')).toBe('λόγος');
+      setGreekPronunciation(DEFAULT_PRONUNCIATION);
+      expect(heard('Ὃ')).toBe('ό');
+    } finally {
+      unregister();
+    }
+  });
+
+  it('is said slowly when it is being sounded out, still in its form', () => {
     act(() => void speakWord('ὦ', 'greek', true));
-    expect(isOneGreekLetter(lastUtterance().text)).toBe(false);
+    expect(isBareLetter(lastUtterance().text)).toBe(false);
+    expect(lastUtterance().voice).toBe(GREEK_VOICE);
   });
 });
 

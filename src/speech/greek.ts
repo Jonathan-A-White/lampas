@@ -274,21 +274,19 @@ export function speakWord(text: string, language: SpeechLanguage, slowly = false
   return speakText(said.text, WORD_KEY, { slowly, language: said.language });
 }
 
-/** The sound of a text that is ONE Greek letter (ὁ, ἡ, ὦ, Ὃ), or null for any other text. A Greek voice names a lone letter ('omicron'), as it read
- * a capital by its name before mw-5r3p30.226, so such a letter is never handed to it: it is said as its sound, the respell of the pronunciation he
- * chose (the same respell the word sheet shows: ὁ is 'o'), in lower case, by the English voice, as a reading already says English. The voice's
- * wording could only be heard on a phone, so this is PROVISIONAL until the Governor has listened (mw-5r3p30.256). */
-export function loneLetterSound(text: string): string | null {
+/** What the Greek voice is handed for a text that is ONE Greek letter (ὁ, ἡ, ὦ, Ὃ), or null for any other text. A voice handed a bare letter names it
+ * ('omicron'), so the word goes as the chosen pronunciation gives it (its loneLetter: Modern Greek's is the stressed vowel, 'ό'), still to the Greek
+ * voice (mw-5r3p30.262; before it, mw-5r3p30.256 sent the respell to the English voice). The form is the scheme's, never written here. */
+export function loneLetterForm(text: string): string | null {
   const letters = [...text.trim().normalize('NFD').replace(/\p{M}/gu, '')];
   if (letters.length !== 1 || !/\p{Script=Greek}/u.test(letters[0])) return null;
-  return chosenPronunciation().respell(text.trim().toLowerCase()).toLowerCase() || null;
+  return chosenPronunciation().loneLetter(text.trim()) || null;
 }
 
-/** What is handed to the voice for a Greek word held alone (mw-5r3p30.226, .256): a capital letter is read by its name ('capital ...'), so the
- * word goes in lower case, to the Greek voice; a word of ONE letter is said as its sound by the English voice (loneLetterSound). */
+/** What is handed to the voice for a Greek word held alone (mw-5r3p30.226, .262), always to the Greek voice: a capital letter is read by its name
+ * ('capital ...'), so the word goes in lower case; a word of ONE letter goes in its pronunciation's form (loneLetterForm). */
 export function greekWordSpeech(text: string): { text: string; language: SpeechLanguage } {
-  const sound = loneLetterSound(text);
-  return sound === null ? { text: text.toLowerCase(), language: 'greek' } : { text: sound, language: 'english' };
+  return { text: loneLetterForm(text) ?? text.toLowerCase(), language: 'greek' };
 }
 
 /** Says a LETTER now, as a Greek voice names it (the letter drills 'Hold to hear a letter', where the letter is the thing asked about, not a word): lower case, to the
