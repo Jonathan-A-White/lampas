@@ -6,6 +6,7 @@
 // to another screen. The tutor may change every row but the last two kinds (tests/unit/settings-registry.test.tsx).
 // A new setting is one entry in the registry (with its section) plus its control in src/settings/controls/ (CONTROLS, index.ts); a test fails until both.
 import { getDeveloper } from '../data/repositories';
+import { SCRIPTS } from '../script/scripts';
 import { SETTINGS, settingOf, type Dependency, type SectionId } from './registry';
 
 export interface SettingsSection {
@@ -54,7 +55,12 @@ export interface SettingsRow {
   section: SectionId;
   /** the row is a detail of another: drawn only while that one is on */
   dependsOn?: Dependency;
+  /** the row sets how the tutor works (the AI: what is sent to the mill): with no licence it is drawn off and greyed, with 'Needs a licence' (mw-8m9dyu.3) */
+  ai?: boolean;
 }
+
+/** The settings that only matter to the tutor. A new setting for the tutor is listed here, so an unlicensed phone sees it off with 'Needs a licence'. */
+const AI_KEYS: ReadonlySet<string> = new Set(['tips', 'readTutor', 'askBy', 'quizGoal', ...SCRIPTS.map((s) => s.settingKey)]);
 
 const LINKS: readonly SettingsRow[] = [
   { key: 'link.aboutyou', label: 'About you', hint: 'Your age, pace and how you learn, so the tutor meets you where you are.', section: 'aboutYou' },
@@ -84,6 +90,7 @@ const rowOfSetting = (s: (typeof SETTINGS)[number]): SettingsRow => ({
   help: s.help,
   section: s.section,
   dependsOn: s.dependsOn,
+  ai: AI_KEYS.has(s.key) || undefined,
 });
 
 const unordered: readonly SettingsRow[] = [...SETTINGS.map(rowOfSetting), DEVELOPER, ...LINKS];

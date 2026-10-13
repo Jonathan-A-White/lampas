@@ -11,19 +11,17 @@ const SIZES = [
 ];
 
 for (const { name, width, height } of SIZES) {
-  test(`Unlock at ${name}: every part is reachable from the top`, async ({ page }) => {
+  test(`Licence page at ${name}: every part is reachable from the top`, async ({ page }) => {
     await page.setViewportSize({ width, height });
     await refuseChain(page);
     await seedDeviceKey(page);
     await page.goto('/#/unlock');
-    const heading = page.getByRole('heading', { name: 'Unlock' });
+    const heading = page.getByRole('heading', { name: 'Licence' });
     await expect(heading).toBeVisible();
 
     await page.locator('main.screen').evaluate((el) => el.scrollTo(0, 0));
-    const icon = await page.locator('main.screen img[width="72"]').boundingBox();
     const title = await heading.boundingBox();
     const status = await page.getByRole('status').boundingBox();
-    expect(icon!.y).toBeGreaterThanOrEqual(0);
     expect(title!.y).toBeGreaterThanOrEqual(0);
     expect(status!.y).toBeGreaterThanOrEqual(0);
 
@@ -43,7 +41,7 @@ for (const { name, width, height } of SIZES) {
       await page.locator('main.screen').evaluate((el) => el.scrollTo(0, 0));
       const copy = await page.getByRole('button', { name: 'Copy', exact: true }).boundingBox();
       const key = await page.getByTestId('device-key').boundingBox();
-      expect(key!.y).toBeGreaterThan(icon!.y);
+      expect(key!.y).toBeGreaterThan(status!.y);
       expect(copy!.y + copy!.height).toBeLessThanOrEqual(height);
     }
   });
