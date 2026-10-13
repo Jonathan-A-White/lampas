@@ -90,6 +90,7 @@ index.html           # viewport (zoom locked), theme colour, iOS meta, PNG touch
 pwa-manifest.ts      # the manifest as one plain object (vite.config.ts and the tests import it)
 pwa-precache.ts      # injectManifest options (precache size limit raised)
 build-version.ts     # '<version> · <UTC time> · <commit>' stamp (the commit is read from git at build time); src/BuildVersion.tsx shows it as 'v…' on Home and Unlock
+                     #   the stamp and the plain version reach the app as globals written into index.html by a vite plugin (vite.config.ts versionGlobals), NOT a `define`, so no chunk changes with the build's time or commit; node_modules libraries sit in the 'vendor' chunk (manualChunks): a build of unchanged app code keeps every chunk's name, and a build that changes only app code keeps vendor's (mw-5r3p30.277, tests/unit/build-chunk-names.test.ts; LAMPAS_BUILD_TIME fakes the time); vitest.config.ts still `define`s them for the tests
 vite.config.ts       # react, tailwind 4, vite-plugin-pwa (injectManifest, registerType 'prompt')
 src/main.tsx         # scroll guard first, then render, then register the worker
 src/App.tsx          # the shell (data-shell); picks the screen by hash route (src/nav/route.ts); seeds words on first open

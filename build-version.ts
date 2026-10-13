@@ -18,3 +18,9 @@ export function shortCommit(cwd: string = process.cwd(), git = 'git'): string {
 export function buildVersion(version: string, when: Date, commit: string): string {
   return `${version} · ${when.toISOString().slice(0, 16).replace('T', ' ')}Z · ${commit}`;
 }
+
+/** When this build was made: now, or LAMPAS_BUILD_TIME (an ISO time) so a test can build the same commit at two different times. */
+export function buildTime(env: Record<string, string | undefined> = process.env): Date {
+  const given = env.LAMPAS_BUILD_TIME;
+  return given ? new Date(given) : new Date();
+}
