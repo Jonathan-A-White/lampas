@@ -237,7 +237,7 @@ const DEFS: Def[] = [
     'Punctuation and small marks',
     [],
     ['accents'],
-    'The comma and full stop are as in English. The semicolon (;) is a question mark, and a raised dot (·) is a colon or semicolon. An apostrophe shows a dropped vowel (elision): δι᾿ is δια with its last letter gone. Two dots over a vowel (the diaeresis) say it is not part of a pair.',
+    'Punctuation is much as in English: the comma and full stop are the same. The semicolon (;) is a question mark, and a raised dot (·) is a colon or semicolon. An apostrophe shows a dropped vowel (elision): δι᾿ is δια with its last letter gone. Two dots over a vowel (the diaeresis) say it is not part of a pair.',
   ),
   def(
     'movable-letters',

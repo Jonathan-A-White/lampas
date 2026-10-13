@@ -2,7 +2,7 @@
 // answer is not in the prompt; a reader who has never met the idea cannot read it off.
 import { describe, expect, it } from 'vitest';
 import { LADDER } from '../../src/data/grammar/ladder';
-import { buildConcept, buildIdeaQuestion } from '../../src/data/grammar/questions';
+import { blankedText, buildConcept, buildIdeaQuestion } from '../../src/data/grammar/questions';
 import { mulberry32 } from '../../src/data/quiz';
 
 /** The pronunciation hints an idea's text carries: '(say AIR-ist)' gives '(say AIR-ist)' and 'AIR-ist'. */
@@ -16,6 +16,35 @@ describe('the concept question', () => {
         expect(prompt, `"${secret}"`).not.toContain(secret.toLowerCase());
       }
     }
+  });
+
+  // mw-86e9r1.25: blanking only the exact title and terms left the texts that name the idea in other words ('the middle and the passive',
+  // 'from Hebrew', 'impersonal') giving their answer away: every content word of the title and terms must go, in any wording.
+  const PLAIN = new Set(['greek', 'word', 'words', 'form', 'forms', 'letter', 'letters', 'under', 'never', 'change', 'small', 'with', 'from', 'that']);
+  const contentWordsOf = (idea: (typeof LADDER)[number]): string[] =>
+    [...new Set([idea.title, ...idea.terms].flatMap((t) => t.toLowerCase().match(/\p{L}+/gu) ?? []))].filter((w) => w.length >= 4 && !PLAIN.has(w));
+
+  it.each(LADDER.map((i) => [i.id, i] as const))('blanks every content word of the title and terms in %s', (_id, idea) => {
+    const text = blankedText(idea).toLowerCase();
+    expect(text, 'a blank').toContain('___');
+    for (const word of contentWordsOf(idea)) {
+      expect(text, `"${word}"`).not.toContain(word.replace(/e?s$/, ''));
+    }
+    // a Greek word in the title (the preposition εἰς) goes too, with or without its marks
+    const bare = (s: string): string => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+    for (const word of idea.title.match(/\p{Script=Greek}+/gu) ?? []) expect(bare(text), `"${word}"`).not.toContain(bare(word));
+  });
+
+  it('blanks the 11 ideas that named themselves in other words', () => {
+    const ids = ['iota-subscript', 'punctuation', 'pronoun-correlative-interrogative', 'voice-middle-or-passive', 'voice-middle-deponent', 'voice-passive-deponent', 'voice-middle-or-passive-deponent', 'voice-impersonal-active', 'mood-participle-imperative', 'aramaic', 'hebrew'];
+    for (const id of ids) {
+      const idea = LADDER.find((i) => i.id === id)!;
+      const text = blankedText(idea);
+      expect(text, id).toContain('___');
+      for (const word of contentWordsOf(idea)) expect(text.toLowerCase(), `${id}: "${word}"`).not.toContain(word.replace(/e?s$/, ''));
+    }
+    expect(blankedText(LADDER.find((i) => i.id === 'hebrew')!)).toContain('took straight from ___');
+    expect(blankedText(LADDER.find((i) => i.id === 'voice-middle-or-passive')!)).toMatch(/look the same for the ___ and the ___,/);
   });
 
   it('shows the blanks and keeps the rest of the idea to read', () => {
