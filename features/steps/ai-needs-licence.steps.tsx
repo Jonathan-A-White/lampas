@@ -13,7 +13,7 @@ import { clearBus } from '../../src/events/bus';
 import { LicenceProvider } from '../../src/gate/LicenceProvider';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { fetchLicenceStatus } from '../../src/services/licenceCheck';
-import { setVerseAction } from '../../src/verse/action';
+import { setVerseAction, type VerseAction } from '../../src/verse/action';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { holdBarIn } from '../../tests/support/composer';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
@@ -64,9 +64,9 @@ async function openReader(licensed: boolean): Promise<void> {
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
 
-async function openVerseView(licensed: boolean): Promise<void> {
+async function openVerseView(licensed: boolean, action: VerseAction): Promise<void> {
   await fresh();
-  setVerseAction('ask');
+  setVerseAction(action);
   await openApp('#/?ref=Rom.8.28', licensed);
   await screen.findByRole('region', { name: 'Verse view' });
 }
@@ -101,12 +101,8 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('With no licence the Verse view offers neither Ask the tutor nor Quiz me, even if Ask the tutor was the action he left it on', ({ Given, Then, And }) => {
-    Given('this phone has no licence and the Verse view of verse 28 is open, last left on Ask the tutor', () => openVerseView(false));
-    Then('the Verse view offers the actions {string} and {string}', (_, first: string, second: string) => {
-      expect(actionNames().slice(0, 2)).toEqual([first, second]);
-      expect(actionNames()).not.toContain('Ask the tutor');
-      expect(actionNames()).not.toContain('Quiz me');
-    });
+    Given('this phone has no licence and the Verse view of verse 28 is open, last left on Ask the tutor', () => openVerseView(false, 'ask'));
+    Then('the Verse view offers only the action {string}, with Copy link', offersOnlyListen);
     And('the Verse view has no Hold to ask', () => {
       expect(within(verseView()).queryByTestId('composer')).toBeNull();
       expect(within(verseView()).queryByRole('button', { name: 'Hold to ask' })).toBeNull();
@@ -114,13 +110,35 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('With no licence the Verse view has no Read it aloud, no Hold to read bar and no Reading ladder, even if Read it aloud was the action he left it on', ({ Given, Then, And }) => {
+    Given('this phone has no licence and the Verse view of verse 28 is open, last left on Read it aloud', () => openVerseView(false, 'read'));
+    Then('the Verse view offers only the action {string}, with Copy link', offersOnlyListen);
+    And('the Verse view has no Read it aloud, no Hold to read bar and no Reading ladder', () => {
+      expect(within(verseView()).queryByRole('button', { name: 'Read it aloud' })).toBeNull();
+      expect(within(verseView()).queryByRole('region', { name: 'Reading check' })).toBeNull();
+      expect(within(verseView()).queryByRole('button', { name: /^Hold to read/ })).toBeNull();
+      expect(document.querySelector('[data-hold-bar]')).toBeNull();
+      expect(document.querySelector('[data-ladder-start]')).toBeNull();
+      expect(within(verseView()).queryByRole('button', { name: 'Reading ladder' })).toBeNull();
+    });
+  });
+
   Scenario('With a licence the Verse view offers Ask the tutor and Quiz me and the Hold to ask bar', ({ Given, Then, And }) => {
-    Given('this phone has a licence and the Verse view of verse 28 is open, last left on Ask the tutor', () => openVerseView(true));
+    Given('this phone has a licence and the Verse view of verse 28 is open, last left on Ask the tutor', () => openVerseView(true, 'ask'));
     Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
       expect(actionNames().slice(0, 4)).toEqual([a, b, c, d]);
     });
     And('the Verse view has a Hold to ask bar', async () => {
       await waitFor(() => expect(holdBarIn(verseView())).toBeInTheDocument());
+    });
+  });
+
+  Scenario('With a licence the Verse view has Read it aloud, its Hold to read bar and the Reading ladder', ({ Given, Then }) => {
+    Given('this phone has a licence and the Verse view of verse 28 is open, last left on Read it aloud', () => openVerseView(true, 'read'));
+    Then('the Verse view has Read it aloud, a Hold to read bar and a Reading ladder', async () => {
+      expect(within(verseView()).getByRole('button', { name: 'Read it aloud', pressed: true })).toBeInTheDocument();
+      await waitFor(() => expect(document.querySelector('[data-hold-bar]')).not.toBeNull());
+      expect(await within(verseView()).findByRole('button', { name: 'Reading ladder' })).toBeInTheDocument();
     });
   });
 
@@ -153,7 +171,31 @@ describeFeature(feature, ({ Scenario }) => {
     Given('this phone has a licence and the Goal screen is open', () => openGoal(true));
     Then('the Goal screen has an Ask the tutor button', () => expect(askButton()).not.toBeNull());
   });
+
+  Scenario('With no licence the Goal screen has no Reading ladder', ({ Given, Then }) => {
+    Given('this phone has no licence and the Goal screen is open', () => openGoal(false));
+    Then('the Goal screen has no Reading ladder', () => {
+      expect(screen.queryByRole('region', { name: 'Reading ladder' })).toBeNull();
+      expect(screen.queryByRole('button', { name: /^Reading ladder/ })).toBeNull();
+    });
+  });
+
+  Scenario('With a licence the Goal screen has the Reading ladder in Greek and English', ({ Given, Then }) => {
+    Given('this phone has a licence and the Goal screen is open', () => openGoal(true));
+    Then('the Goal screen has the Reading ladder in Greek and English', () => {
+      expect(screen.getByRole('button', { name: 'Reading ladder: Greek' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Reading ladder: English' })).toBeInTheDocument();
+    });
+  });
 });
+
+function offersOnlyListen(_: unknown, only: string): void {
+  expect(actionNames().slice(0, 1)).toEqual([only]);
+  expect(actionNames()).not.toContain('Read it aloud');
+  expect(actionNames()).not.toContain('Ask the tutor');
+  expect(actionNames()).not.toContain('Quiz me');
+  expect(within(verseView()).getByRole('button', { name: 'Copy link' })).toBeInTheDocument();
+}
 
 async function tapWord(_: unknown, verse: number): Promise<void> {
   await user.click(within(document.querySelector<HTMLElement>(`[data-verse="${verse}"]`)!).getByRole('button', { name: 'Therefore' }));

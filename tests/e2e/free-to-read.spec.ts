@@ -52,3 +52,34 @@ test('Settings shows the AI off with Needs a licence, which opens the Licence pa
   await expect(page.getByTestId('device-key')).toHaveText(SEED_PUBLIC_KEY);
   await shot(page, 'licence-page');
 });
+
+// Read it aloud sends his reading to the mill, so with no licence it is not drawn (mw-8m9dyu.5): not the action, not its Hold to read bar, not the Reading
+// ladder, even for a phone that left the Verse view on Read it aloud; upright and sideways.
+for (const [name, size] of [['upright', { width: 390, height: 844 }], ['sideways', { width: 844, height: 390 }]] as const) {
+  test(`a phone with no licence has no Read it aloud, Hold to read bar or Reading ladder on the verse sheet, ${name}`, async ({ page }) => {
+    await page.setViewportSize(size);
+    await openUnlicensed(page);
+    await page.addInitScript(() => window.localStorage.setItem('lampas.verseAction', 'read'));
+    await page.goto('/#/?ref=Rom.8.28');
+    const view = page.getByRole('region', { name: 'Verse view' });
+    await expect(view).toBeVisible();
+    const actions = view.getByRole('group', { name: 'Actions' });
+    await expect(actions.getByRole('button', { name: 'Listen', exact: true })).toBeVisible();
+    await expect(actions.getByRole('button', { name: 'Copy link', exact: true })).toBeVisible();
+    await expect(view.getByRole('button', { name: 'Read it aloud' })).toHaveCount(0);
+    await expect(view.getByRole('button', { name: /^Hold to read/ })).toHaveCount(0);
+    await expect(view.getByRole('button', { name: 'Reading ladder' })).toHaveCount(0);
+    await expect(view.getByRole('region', { name: 'Reading check' })).toHaveCount(0);
+    await expect(page.locator('[data-hold-bar]')).toHaveCount(0);
+    await shot(page, `verse-view-no-licence-${name}`);
+  });
+}
+
+test('a phone with no licence has no Reading ladder on the Goal screen', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openUnlicensed(page);
+  await page.goto('/#/goal');
+  await expect(page.getByText('No goal yet')).toBeVisible();
+  await expect(page.locator('[data-ladder-start]')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^Reading ladder/ })).toHaveCount(0);
+});

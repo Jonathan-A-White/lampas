@@ -100,3 +100,53 @@ describe('every send to the mill goes through the gate', () => {
     expect(outsideTheGate([{ path: 'src/x.ts', text: "// sent as a grist through Postern (bsv-kit/grist)\n" }])).toEqual([]);
   });
 });
+
+// Every kind of grist the app can send (mw-8m9dyu.5). The gate above refuses a send, but a phone with no licence must not be OFFERED one either: a button that
+// ends in a red "No licence" is a bug. mw-8m9dyu.2 hid the tutor's entry points and left Read it aloud (the verse-read grist) and the Reading ladder drawn,
+// because this guard watched the wire (who imports the client) and not the kinds: nothing made a new or forgotten kind say where it is hidden.
+// So each kind the app sends is listed here with the entry points a phone with no licence is not shown, and each of those names must stand in a scenario
+// of its feature file; a kind sent but not listed, or listed but not sent, fails.
+const KINDS: Record<string, { hidden: string[]; feature: string }> = {
+  'verse-ask': { hidden: ['Ask the tutor'], feature: 'features/ai-needs-licence.feature' },
+  'bible-talk': { hidden: ['Talk bar', 'Help with this word'], feature: 'features/ai-needs-licence.feature' },
+  'verse-read': { hidden: ['Read it aloud', 'Hold to read bar', 'Reading ladder'], feature: 'features/ai-needs-licence.feature' },
+  tips: { hidden: ['Needs a licence'], feature: 'features/licence-page.feature' },
+  feedback: { hidden: ['Needs a licence'], feature: 'features/licence-page.feature' },
+};
+
+/** The kinds the app's code sends: the first argument of each askGrind call, a literal or a constant (`export const X = '...'`) found in any file. */
+const kindsSent = (files: { path: string; text: string }[]): string[] => {
+  const constants = new Map(files.flatMap((f) => [...f.text.matchAll(/\bconst\s+([A-Z_]+)\s*=\s*'([a-z-]+)'/g)].map((m) => [m[1], m[2]] as const)));
+  const firsts = files.flatMap((f) => [...f.text.matchAll(/\baskGrind(?:<[^>]*>)?\(\s*(?:'([a-z-]+)'|([A-Z_]+))/g)].map((m) => m[1] ?? constants.get(m[2] as string) ?? (m[2] as string)));
+  return [...new Set(firsts)].sort();
+};
+
+describe('every kind of grist the app can send is hidden from a phone with no licence', () => {
+  const files = sources('src').map((path) => ({ path, text: readFileSync(path, 'utf8') }));
+  const listed = Object.keys(KINDS).sort();
+
+  it('lists the kind of every grind the mill is given, and every kind the code sends (verse-read included)', () => {
+    const grinds = readdirSync('grinds').filter((n) => /^[a-z-]+\.json$/.test(n)).map((n) => n.replace(/\.json$/, '')).sort();
+    expect(grinds).toEqual(listed);
+    expect(kindsSent(files)).toEqual(listed);
+    expect(listed).toContain('verse-read');
+  });
+
+  it('finds a kind that is sent and not listed (planted)', () => {
+    expect(kindsSent([{ path: 'src/x.ts', text: "const NEW_KIND = 'new-thing';\nawait askGrind(NEW_KIND, r, is, o);\nawait askGrind('other-thing', r, is, o);\nawait askGrind<Foo>('third', r, is, o);" }])).toEqual(['new-thing', 'other-thing', 'third']);
+  });
+
+  it.each(listed)('%s: a send with no licence is refused and nothing leaves the phone', async (kind) => {
+    setCurrentLicence('not-licensed');
+    const error = await failure(askGrind(kind, { reference: 'Romans 8:28' }, isAnswer, { key }));
+    expect((error as TutorError).failure).toBe('no-licence');
+    expect(postern.calls).toEqual([]);
+  });
+
+  it.each(listed)('%s: the entry points it is hidden from are named in a "no licence" scenario of its feature', (kind) => {
+    const { hidden, feature } = KINDS[kind]!;
+    const text = readFileSync(feature, 'utf8');
+    const scenarios = text.split(/^\s*Scenario:/m).slice(1).filter((s) => /no licence|not licensed|Needs a licence/i.test(s.split('\n')[0] + (s.match(/Given[^\n]*/)?.[0] ?? '')));
+    for (const name of hidden) expect(scenarios.some((s) => s.includes(name)), `${kind}: "${name}" in ${feature}`).toBe(true);
+  });
+});
