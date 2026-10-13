@@ -49,7 +49,7 @@ describe('the version the app is built with', () => {
 
   it('is stamped by vite.config.ts from shortCommit(), with no commit written into the source', () => {
     const config = readFileSync('vite.config.ts', 'utf-8');
-    expect(config).toContain('buildVersion(pkg.version, new Date(), shortCommit())');
+    expect(config).toContain('buildVersion(pkg.version, buildTime(), shortCommit())');
     for (const file of ['src/Reader.tsx', 'src/gate/Unlock.tsx', 'src/BuildVersion.tsx']) {
       expect(readFileSync(file, 'utf-8')).not.toMatch(/· [0-9a-f]{7}\b/);
     }
