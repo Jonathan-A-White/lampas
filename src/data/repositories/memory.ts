@@ -178,6 +178,32 @@ export function appendToIndex(line: string, by: MemoryBy = 'tutor', when: number
   });
 }
 
+/** The line the index keeps when he said no to the tutor's offer of the Greek (mw-yrmkdf.4): the tutor offers no more until he asks for Greek himself. */
+export const GREEK_NO_PREFIX = 'said no to the Greek offer';
+/** The whole line for a no said at `when`: 'said no to the Greek offer 2026-10-13'. */
+export const greekNoLine = (when: number): string => `${GREEK_NO_PREFIX} ${new Date(when).toISOString().slice(0, 10)}`;
+/** True when the index text holds the no, on a line of its own. */
+export const hasGreekNo = (indexText: string): boolean => new RegExp(`^${GREEK_NO_PREFIX}`, 'm').test(indexText);
+
+/** Writes his no to the Greek offer to the end of the index, once: a second no changes nothing. */
+export function noteGreekNo(when: number = Date.now()): Promise<IndexResult> {
+  return db.transaction('rw', db.settings, async (): Promise<IndexResult> => {
+    const kept = await readStoredIndex();
+    if (kept && hasGreekNo(kept.body)) return 'saved';
+    return appendToIndex(greekNoLine(when), 'tutor', when);
+  });
+}
+
+/** Takes his no to the Greek offer out of the index (he asked for Greek himself); the rest of the index stays as it was. */
+export function clearGreekNo(when: number = Date.now()): Promise<void> {
+  return db.transaction('rw', db.settings, async (): Promise<void> => {
+    const kept = await readStoredIndex();
+    if (!kept || !hasGreekNo(kept.body)) return;
+    const body = kept.body.split('\n').filter((line) => !line.startsWith(GREEK_NO_PREFIX)).join('\n').trim();
+    await writeStoredIndex({ body, when, by: kept.by });
+  });
+}
+
 /** Every note, by name. */
 export const listNotes = (): Promise<MemoryNote[]> => readNotes();
 

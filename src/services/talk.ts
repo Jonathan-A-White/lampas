@@ -3,11 +3,11 @@
 // file is the kind's own: the request with the last turns of the conversation, the answer's shape, and the fit to a grist.
 import { markSupplied, wordGloss, wordLemma, wordParse, type Chapter, type Verse } from '../data/chapter';
 import { unitId } from '../data/passage';
-import { QUIZ_GOAL_MAX } from '../data/repositories/settings';
+import { QUIZ_GOAL_MAX, type ReaderView } from '../data/repositories/settings';
 import { STUDY_WAY_LINE_MAX } from '../data/repositories/studyWay';
 import { MEMORY_NAME_MAX, MEMORY_NOTE_MAX } from '../data/repositories/memory';
 import { screenRef, talkRef } from '../data/repositories/talks';
-import type { AnswerLink, AnswerWord } from '../data/db';
+import type { AnswerLink, AnswerWord, GreekOffer } from '../data/db';
 import { isAnswerBridge, type AnswerBridge, type MissingFoundations } from '../data/grammar/bridge';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
@@ -217,6 +217,8 @@ export interface TalkRequest {
   /** present only when the grammar words of his question name a topic that rests on ideas he lacks (mw-1vuvq6.5, src/data/grammar/bridge.ts): the topic, how many he lacks and those
    * ideas, the lowest on the ladder first. The tutor picks its `bridge` from it and never guesses an idea. */
   missing_foundations?: MissingFoundations;
+  /** which language the Reader shows now (mw-yrmkdf.4): the tutor offers the Greek only to a reader whose Reader is in English and who is not learning it; missing in a talk from a screen */
+  reader_view?: ReaderView;
   /** present only when he has sent requests to the factory (mw-vy3ghg.6, src/data/requestsForTutor.ts): up to 10, newest first, each with where it stands; none in About, whose request is the credits */
   requests?: TutorRequest[];
 }
@@ -235,7 +237,7 @@ export interface FeedbackOffer {
 /** The offer waiting for his tap that his next turn carries (mw-5r3p30.186): its kind and the exact text it would send or do, so the tutor can read it back word for word
  * and tell from his words whether he confirms, declines or asks to hear it. */
 export interface PendingOffer {
-  kind: 'feedback' | 'setting' | 'quiz-goal' | 'bridge';
+  kind: 'feedback' | 'setting' | 'quiz-goal' | 'bridge' | 'greek';
   text: string;
 }
 
@@ -275,6 +277,10 @@ export interface TalkAnswer {
   offer_reply?: OfferReply;
   /** only when the request carried `missing_foundations` (mw-1vuvq6.5): up to three of those ideas he lacks, the one to start with and why; the app offers Take me there */
   bridge?: AnswerBridge;
+  /** only for a reader not learning the Greek, on real interest in the original (mw-yrmkdf.4): the ONE line offering the Greek word's sheet or the Greek view, drawn as a button; src/talk/greekOffer.ts decides whether it is kept */
+  greek_offer?: GreekOffer;
+  /** true when he asked for Greek himself (mw-yrmkdf.4): the app takes his earlier no to the Greek offer out of the memory index */
+  greek_asked?: true;
   /** while the tutor helps with a form (`form` in the request): the values to put in its fields, by field name; the form ignores a name it does not have */
   form_values?: FormValue[];
   /** the name of the field the question in `answer` is about; missing when there is nothing more to ask */
@@ -320,10 +326,17 @@ const isMemoryUpdate = (value: unknown): value is MemoryUpdate => {
   return value.remove === true;
 };
 
+/** The longest line of a Greek offer: the answer schema's. */
+export const GREEK_OFFER_TEXT_MAX = 120;
+const isGreekOffer = (value: unknown): value is GreekOffer =>
+  isObject(value) &&
+  isText(value.text, GREEK_OFFER_TEXT_MAX) &&
+  ((value.kind === 'view' && Object.keys(value).length === 2) || (value.kind === 'word' && Object.keys(value).length === 3 && isText(value.lemma, 80)));
+
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'bridge' && k !== 'form_values' && k !== 'form_ask' && k !== 'go' && k !== 'memory_update' && k !== 'wished_notes')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'bridge' && k !== 'form_values' && k !== 'form_ask' && k !== 'go' && k !== 'memory_update' && k !== 'wished_notes' && k !== 'greek_offer' && k !== 'greek_asked')) return false;
   if ('question' in value && !isText(value.question, MAX_TALK_CHARS)) return false;
   if ('memory_update' in value && !(Array.isArray(value.memory_update) && value.memory_update.length <= MAX_MEMORY_UPDATES && value.memory_update.every(isMemoryUpdate))) return false;
   if ('wished_notes' in value && !(Array.isArray(value.wished_notes) && value.wished_notes.length <= MAX_WISHED_NOTES && value.wished_notes.every((n) => isText(n, MEMORY_NAME_MAX)))) return false;
@@ -334,6 +347,8 @@ export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if ('feedback_offer' in value && !(isObject(value.feedback_offer) && Object.keys(value.feedback_offer).length === 1 && isText(value.feedback_offer.summary, FEEDBACK_SUMMARY_MAX))) return false;
   if ('offer_reply' in value && !OFFER_REPLIES.includes(value.offer_reply as OfferReply)) return false;
   if ('bridge' in value && !isAnswerBridge(value.bridge)) return false;
+  if ('greek_offer' in value && !isGreekOffer(value.greek_offer)) return false;
+  if ('greek_asked' in value && value.greek_asked !== true) return false;
   if ('setting_offer' in value && !(isObject(value.setting_offer) && Object.keys(value.setting_offer).length === 2 && isText(value.setting_offer.key, 60) && (isText(value.setting_offer.value, 80) || typeof value.setting_offer.value === 'number'))) return false;
   if ('form_ask' in value && !isText(value.form_ask, 30)) return false;
   if ('form_values' in value && !(Array.isArray(value.form_values) && value.form_values.length <= 8 && value.form_values.every(isFormValue))) return false;
@@ -456,6 +471,7 @@ export function buildTalkRequest(
   spoken = false,
   memory?: MemoryField,
   missingFoundations?: MissingFoundations,
+  readerView?: ReaderView,
 ): TalkRequest {
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   // About (mw-vtjxh4.2) sends the credits, which take most of the record: the credits are the talk, so his words and his grammar stay home
@@ -483,6 +499,7 @@ export function buildTalkRequest(
     ...(pictureCount > 0 ? { pictures: pictureCount } : {}),
     ...(pendingOffer ? { pending_offer: pendingOffer } : {}),
     ...(missingFoundations && !aboutCredits ? { missing_foundations: missingFoundations } : {}),
+    ...(readerView && !scope.screen && !scope.quiz ? { reader_view: readerView } : {}),
     ...(requests.length > 0 && !aboutCredits ? { requests } : {}),
   };
   if (scope.screen) return request;

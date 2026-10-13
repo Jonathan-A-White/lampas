@@ -174,6 +174,16 @@ export interface TalkTurn {
   /** the foundation the answer bridged to (mw-1vuvq6.5): shown as 'Take me there: <title>'; `bridgeChoice` says what he did with the offer, absent while he has not answered it */
   bridge?: Bridge;
   bridgeChoice?: 'taken' | 'declined';
+  /** the tutor's one offer of the Greek (mw-yrmkdf.4): shown as a button; `greekChoice` says what became of it, absent while it waits */
+  greekOffer?: GreekOffer;
+  greekChoice?: 'taken' | 'declined';
+}
+
+/** The tutor's offer to show a reader not learning the Greek the original: a word's sheet in Greek (`lemma`, a word of the text) or the Greek view; `text` is the button's line. */
+export interface GreekOffer {
+  kind: 'word' | 'view';
+  text: string;
+  lemma?: string;
 }
 
 /** How a Hebrew word is said, as the tutor's sound answer gave it: the word, its syllables in Hebrew letters in reading order and how each sounds in Latin letters. */
