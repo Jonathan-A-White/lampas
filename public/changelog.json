@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.165",
+    "date": "2026-10-13",
+    "story": "mw-5r3p30.278",
+    "kind": "fixed",
+    "text": "Changed: Hearing a word on the Quick test, flashcards and grammar questions is now one tap on 'Tap to hear' (tap again to stop), no longer a hold."
+  },
+  {
     "version": "0.1.163",
     "date": "2026-10-13",
     "story": "mw-5r3p30.242",

@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.165
+_2026-10-13_
+- Fixed: Changed: Hearing a word on the Quick test, flashcards and grammar questions is now one tap on 'Tap to hear' (tap again to stop), no longer a hold.
+
 ## 0.1.163
 _2026-10-13_
 - Fixed: The tutor now knows which Greek pronunciation you use when you ask about a verse or read one aloud, so what it says about sounds matches how the app speaks.
