@@ -6,6 +6,7 @@
 import type { Pronunciation } from '../../speech/pronunciation';
 import { itemsOf, type GrammarIdea } from './ladder';
 import { ideaSound } from './lessons';
+import { SOUND_ALIKE } from './soundAlike';
 
 export interface TeachTile {
   /** the ladder id of the item, or the tile's own for a mark that has no idea of its own */
@@ -114,6 +115,10 @@ const MARKS: Record<string, TeachTile[]> = {
     word('mark-en', 'ἐν', '“in”', 'not ἕν “one”'),
     word('mark-en-one', 'ἕν', '“one”', 'not ἐν “in”'),
   ],
+  'words-sound-alike': SOUND_ALIKE.flatMap((pair, n) => [
+    word(`alike-${n}-a`, pair.a.word, `“${pair.a.gloss}”`, `not ${pair.b.word} “${pair.b.gloss}”: ${pair.letters}`),
+    word(`alike-${n}-b`, pair.b.word, `“${pair.b.gloss}”`, `not ${pair.a.word} “${pair.a.gloss}”: ${pair.letters}`),
+  ]),
   enclitics: [
     word('enclitic-estin', 'ἐστιν', '“is”'),
     word('enclitic-eisin', 'εἰσιν', '“are”'),
