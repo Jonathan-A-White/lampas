@@ -12,6 +12,7 @@ import { askBySetting } from './settings/definitions';
 import { applyChanges } from './settings/registry';
 import { getSetting } from './settings/store';
 import { addAnswer, listSolidHeadwords, verseRef } from './data/repositories';
+import { answerDrawn } from './services/clientTiming';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { withoutFillers } from './services/fillers';
 import { stopAnswer } from './speech/readAloud';
@@ -60,15 +61,21 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
         try {
           const [solid, learner, grammar, depths, askBy, requests, profile] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined), depthSettings(), getSetting(askBySetting), requestsForTutor().catch(() => []), learnerProfile().catch(() => undefined)]);
           const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, { ...depths, [askBySetting.key]: askBy }, requests, profile, wasSpoken(text));
+          let sentAs: string | undefined;
           const answer = await askTutor(request, {
             key: getDeviceKeyBytes(),
             signal,
-            onSent: () => set({ phase: 'waiting', question: text, startedAt }),
+            tapAt: startedAt,
+            onSent: (txid) => {
+              sentAs = txid;
+              set({ phase: 'waiting', question: text, startedAt });
+            },
           });
           // The one setting this tutor may switch is Ask by; the registry checks it like any talked change.
           const { applied } = await applyChanges(askByChange(answer), { skipUnchanged: true });
           await addAnswer(verseRef(book, chapter, unitId(verse)), text, answer.answer, answer.words, Date.now(), answer.question && withoutFillers(answer.question), applied);
           set(undefined);
+          void answerDrawn(sentAs);
         } catch (err) {
           if (signal.aborted) return;
           const failure = err instanceof TutorError ? err.failure : 'unreachable';

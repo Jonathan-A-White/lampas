@@ -6,6 +6,7 @@ import { setDeveloper } from './data/repositories';
 import { navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { usePageActions } from './PageActions';
+import { lastAnswerLine } from './services/clientTiming';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { CREDITS } from './tutor/credits';
 import { useReportScreen } from './tutor/screenContext';
@@ -40,6 +41,7 @@ export function About() {
   const { buttons, notice } = usePageActions('#/about', 'About');
   const taps = useRef({ count: 0, last: 0 });
   const [found, setFound] = useState(false);
+  const answerLine = lastAnswerLine();
   const tapVersion = () => {
     const now = Date.now();
     const t = taps.current;
@@ -96,6 +98,11 @@ export function About() {
             </section>
           ))}
           <WhatsNewSection />
+          {answerLine ? (
+            <p data-testid="last-tutor-answer" className="pt-2 text-sm text-muted">
+              {answerLine}
+            </p>
+          ) : null}
           <BuildVersion onTap={tapVersion} />
           <VersionLink />
           <div className="pb-4" />

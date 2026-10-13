@@ -267,6 +267,19 @@ a quick reader; `tests/unit/tutor-meets-student.test.ts` holds all of it.
 
 The tutor does not yet propose a note on its own; the notes list is there for it (`keepProfileNote`) and for him to edit.
 
+## How long an answer takes (mw-46z0my.5)
+
+Every tutor answer is timed on the phone (src/services/tutor.ts askGrind, src/services/clientTiming.ts), in milliseconds:
+`tap_to_sent` (his tap, or the end of the recording, to the request accepted by the backend, upload included), `delivered_to_seen`
+(the backend's `firstSeen` for the answer's record to the poll that saw it; both clocks are read as they are, so a phone's clock that is off
+shifts it, and a negative result is held at 0) and `seen_to_shown` (the poll's sight of it to the answer drawn: the screen that keeps the answer calls
+`answerDrawn(txid)`). `network` is the round trips of the calls that sent the grist plus the one poll that saw the answer, and `poll_network` the poll's alone
+(it lies inside the other two). The finished timing is kept in localStorage `lampas.lastAnswerTiming` and goes to the mill as `client_timing` (with the
+answered grist's txid) beside `input` in the NEXT grist's plaintext (millwright's docs/grist-client-timing.md); the first grist after install, a failed
+or abandoned one, and a feedback grist (not a tutor answer) have none to send or leave none. bsv-kit's sendGrist cannot carry the member, so
+src/services/gristWire.ts sends the grist itself, as bsv-kit does. About shows one line from it: `Last tutor answer: 8.6 s (phone 1.3 s, network 0.7 s, waiting to
+see it 1.5 s, factory 5.8 s)`: the phone's share is its own work, the factory the rest. features/tutor-timing.feature.
+
 ## Tests
 
 `features/ask-tutor.feature` (the control, the request, the questions, what is kept), `tests/unit/ask-tutor.test.ts`, the `screen` blocks of

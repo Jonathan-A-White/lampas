@@ -6,6 +6,7 @@ import { learnerGrammar } from '../data/grammar/learnerGrammar';
 import { learnerProfile } from '../data/learnerProfile';
 import { learnerSummary } from '../data/learnerSummary';
 import { getDeviceKeyBytes } from '../services/deviceKey';
+import { answerDrawn } from '../services/clientTiming';
 import { askGrind, TutorError } from '../services/tutor';
 import { usageSummary } from './summary';
 import { buildTipRequest, isTipAnswer, type TipRequest } from './tip';
@@ -62,9 +63,18 @@ async function offer(options: OfferOptions): Promise<Offered> {
       learnerGrammar().catch(() => undefined),
     ]);
     const request: TipRequest = buildTipRequest(summary, shown, profile, learner, grammar);
-    const answer = await askGrind(TIPS_KIND, request, isTipAnswer, { key: options.key ?? getDeviceKeyBytes(), onSent: () => (sent = true) });
+    let sentAs: string | undefined;
+    const answer = await askGrind(TIPS_KIND, request, isTipAnswer, {
+      key: options.key ?? getDeviceKeyBytes(),
+      onSent: (txid) => {
+        sent = true;
+        sentAs = txid;
+      },
+    });
     // The grind is told never to repeat an id; if it does, the card is not shown.
-    return answer.tip && (await keepTip(answer.tip, now)) ? 'shown' : 'none';
+    const kept = answer.tip && (await keepTip(answer.tip, now));
+    void answerDrawn(sentAs);
+    return kept ? 'shown' : 'none';
   } catch (error) {
     // Nothing went out (no licence, no network, refused): today stays free for a later start. A grist that went out and got no answer spends the day.
     if (!sent || !(error instanceof TutorError)) storage.removeItem(TIPS_DAY_KEY);
