@@ -48,3 +48,14 @@ Feature: The New Testament data
     Given the app is built
     Then the service worker precaches data/index.json, data/lexicon.json, data/frequency.json and data/rom/8.json and no other chapter
     And the service worker serves other chapters cache-first from a runtime cache
+
+  Scenario: Every chapter in the index has a fingerprint of its file
+    Given the committed index
+    Then every chapter has a 12-character fingerprint, the first 12 hex of the SHA-256 of its file
+
+  Scenario: A chapter stays on the phone until its own data changes
+    Given chapter jhn 1 is kept on the phone under its fingerprint
+    When the app asks for jhn 1 again after an update that leaves its fingerprint alone
+    Then the chapter is read from the phone and nothing is fetched
+    When the app asks for jhn 1 after an update that changes its fingerprint
+    Then the chapter is fetched once and the old copy is removed

@@ -29,11 +29,11 @@ The table's Greek is the Robinson-Pierpont 2005 edition, not 2018: `docs/greek-e
 ## `index.json`
 
 ```json
-{"books":[{"code":"rom","name":"Romans","chapters":16,"verses":[32,29,31,25,21,23,25,39,33,21,36,21,14,26,33,24]}]}
+{"books":[{"code":"rom","name":"Romans","chapters":16,"verses":[32,29,31,25,21,23,25,39,33,21,36,21,14,26,33,24],"fingerprints":["0123456789ab","..."]}]}
 ```
 
 The 27 books in canonical order. `code` is lower-case: `mat mrk luk jhn act rom 1co 2co gal eph php col 1th 2th
-1ti 2ti tit phm heb jas 1pe 2pe 1jn 2jn 3jn jud rev`. `verses[i]` is the number of verses in chapter `i + 1`.
+1ti 2ti tit phm heb jas 1pe 2pe 1jn 2jn 3jn jud rev`. `verses[i]` is the number of verses in chapter `i + 1`. `fingerprints[i]` is the first 12 hex characters of the SHA-256 of chapter `i + 1`'s file (`chapterFingerprint` in `scripts/data-build.ts`; the same bytes give the same fingerprint; empty for a chapter a test slice lacks). The app asks for a chapter as `/data/<book>/<n>.json?v=<fingerprint>` (`chapterUrl` in `src/data/chapter.ts`, the index read from the bundle).
 
 ## `lexicon.json`
 
@@ -190,3 +190,4 @@ The store's version 11 adds `grammarLevels`, one row per grammar idea, key `id` 
 Only `data/index.json`, `data/lexicon.json`, `data/frequency.json` and `data/rom/8.json` are in the service worker's precache (`pwa-precache.ts`; the
 globs name those four files, with no wildcard). Every other chapter is fetched when first opened and kept by a
 CacheFirst route for `/data/` in `src/sw.ts` (cache `lampas-data-v<N>`, `src/dataCache.ts`: raise the version in a deploy that changes the data's shape, and the old cache is dropped on activate), so a chapter once read stays offline.
+A chapter is kept under its fingerprinted address (`?v=`), so an update that leaves a chapter's data alone never fetches it again, and one that changes it fetches only that chapter and drops its old copy (`serveChapter`, `src/dataCache.ts`); the version is raised only for a change of the cache's own layout (3 is the `?v=` keys). The ladder lists (`/data/ladder/*.json`) are still plain CacheFirst.

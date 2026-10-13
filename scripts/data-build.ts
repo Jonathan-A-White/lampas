@@ -3,6 +3,7 @@
 // with Strong's and RP parsing codes) and STEPBible's TBESG lexicon (CC BY 4.0) into public/data/index.json
 // and one public/data/<book>/<chapter>.json per chapter, public/data/lexicon.json (every lemma of the text with its gloss) and public/data/frequency.json (every Strong's number with its count). The raw downloads go to data/raw (git-ignored,
 // skipped when present); the JSON is committed. The shape is in docs/data.md and src/data/chapter.ts.
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -318,6 +319,10 @@ const ordered = (w: GreekWord): GreekWord => {
 
 // ---------------------------------------------------------------- the whole build
 
+/** The first 12 hex characters of the SHA-256 of the bytes a chapter file holds: index.json keeps one per chapter so a phone re-fetches only a chapter whose fingerprint changed. */
+export const chapterFingerprint = (chapter: Chapter): string =>
+  createHash('sha256').update(JSON.stringify(chapter)).digest('hex').slice(0, 12);
+
 export interface BuiltChapter {
   path: string;
   chapter: Chapter;
@@ -392,10 +397,12 @@ export function buildData(msbTsv: string, lex: Lexicon): BuiltData {
     if (!book) continue;
     const count = Math.max(...book.keys());
     const counts: number[] = [];
+    const fingerprints: string[] = [];
     for (let n = 1; n <= count; n++) {
       const verses = book.get(n);
       if (!verses) {
         counts.push(0); // only a partial table (a test slice) skips a chapter
+        fingerprints.push('');
         continue;
       }
       const seen = new Set<number>();
@@ -422,9 +429,10 @@ export function buildData(msbTsv: string, lex: Lexicon): BuiltData {
         if (!(w.l in lexicon)) lexicon[w.l] = { g: chapter.lex[w.s].g, s: w.s, c: splitParse(w.p).pos };
       }
       counts.push(built.length);
+      fingerprints.push(chapterFingerprint(chapter));
       chapters.push({ path: `${code}/${n}.json`, chapter });
     }
-    index.books.push({ code, name, chapters: count, verses: counts });
+    index.books.push({ code, name, chapters: count, verses: counts, fingerprints });
   }
   return { index, chapters, lexicon: sortedKeys(lexicon), frequency: countWords(chapters, lex) };
 }

@@ -15,7 +15,7 @@ test('Hebrews 7 in English shows its verses when its chunks carry the old s: 1',
         old += 1;
       }
   expect(old).toBeGreaterThan(0);
-  await page.route('**/data/heb/7.json', (route) => route.fulfill({ json: chapter }));
+  await page.route(/\/data\/heb\/7\.json\?v=/, (route) => route.fulfill({ json: chapter }));
   await openUnlocked(page);
   await page.goto('/#/?b=heb&c=7&view=greek');
   await expect(page.getByRole('heading', { name: 'Hebrews 7', level: 1 })).toBeVisible();

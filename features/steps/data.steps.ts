@@ -1,6 +1,7 @@
 // features/steps/data.steps.ts — runs features/data.feature against the committed public/data, the
 // source slices in tests/fixtures/data/, and a real build of the service worker.
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -9,6 +10,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { runBuild } from '../../scripts/data-build';
 import type { BookIndex, Chapter } from '../../src/data/chapter';
 import type { FrequencyEntry } from '../../src/data/frequency';
+import { serveChapter } from '../../src/dataCache';
 
 // A real vite build takes a few seconds.
 vi.setConfig({ testTimeout: 90_000 });
@@ -238,6 +240,53 @@ describeFeature(feature, ({ Scenario }) => {
     And('the service worker serves other chapters cache-first from a runtime cache', () => {
       expect(readFileSync('src/sw.ts', 'utf8')).toMatch(/CacheFirst/);
       expect(swText).toMatch(/\/data\//);
+    });
+  });
+
+  Scenario('Every chapter in the index has a fingerprint of its file', ({ Given, Then }) => {
+    Given('the committed index', () => {
+      index = readJson<BookIndex>('public/data/index.json');
+    });
+    Then('every chapter has a 12-character fingerprint, the first 12 hex of the SHA-256 of its file', () => {
+      for (const b of index.books) {
+        expect(b.fingerprints).toHaveLength(b.chapters);
+        b.fingerprints.forEach((f, i) => {
+          expect(f).toBe(createHash('sha256').update(readFileSync(chapterPath(b.code, i + 1))).digest('hex').slice(0, 12));
+        });
+      }
+    });
+  });
+
+  Scenario('A chapter stays on the phone until its own data changes', ({ Given, When, Then }) => {
+    const kept = new Map<string, string>();
+    const fetched: string[] = [];
+    let served = '';
+    const cache = {
+      match: async (request: Request) => (kept.has(request.url) ? new Response(kept.get(request.url)) : undefined),
+      put: async (request: Request, response: Response) => void kept.set(request.url, await response.text()),
+      keys: async () => [...kept.keys()].map((url) => new Request(url)),
+      delete: async (request: Request) => kept.delete(request.url),
+    };
+    const caches = { open: async () => cache as unknown as Cache };
+    const network = (async (request: Request) => {
+      fetched.push(request.url);
+      return new Response('the new text');
+    }) as typeof fetch;
+    const ask = async (fingerprint: string) => (served = await (await serveChapter(new Request(`http://localhost/data/jhn/1.json?v=${fingerprint}`), caches, network)).text());
+
+    Given('chapter jhn 1 is kept on the phone under its fingerprint', () => {
+      kept.set('http://localhost/data/jhn/1.json?v=aaaaaaaaaaaa', 'the old text');
+    });
+    When('the app asks for jhn 1 again after an update that leaves its fingerprint alone', () => ask('aaaaaaaaaaaa'));
+    Then('the chapter is read from the phone and nothing is fetched', () => {
+      expect(served).toBe('the old text');
+      expect(fetched).toEqual([]);
+    });
+    When('the app asks for jhn 1 after an update that changes its fingerprint', () => ask('bbbbbbbbbbbb'));
+    Then('the chapter is fetched once and the old copy is removed', () => {
+      expect(served).toBe('the new text');
+      expect(fetched).toEqual(['http://localhost/data/jhn/1.json?v=bbbbbbbbbbbb']);
+      expect([...kept.keys()]).toEqual(['http://localhost/data/jhn/1.json?v=bbbbbbbbbbbb']);
     });
   });
 });

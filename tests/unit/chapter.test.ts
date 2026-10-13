@@ -1,7 +1,7 @@
 // src/data/chapter.ts fed the committed public/data/rom/8.json through a stubbed fetch.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { type EnglishChunk, englishRuns, forgetChapters, loadChapter, markSupplied, wordGloss, wordLemma, wordParse } from '../../src/data/chapter';
+import { type BookIndex, type EnglishChunk, englishRuns, forgetChapters, loadChapter, markSupplied, wordGloss, wordLemma, wordParse } from '../../src/data/chapter';
 
 const rom8 = readFileSync('public/data/rom/8.json', 'utf8');
 
@@ -16,11 +16,30 @@ beforeEach(() => {
   vi.unstubAllGlobals();
 });
 
+const fingerprintOf = (code: string, n: number): string => {
+  const index = JSON.parse(readFileSync('public/data/index.json', 'utf8')) as BookIndex;
+  return index.books.find((b) => b.code === code)!.fingerprints[n - 1];
+};
+
 describe('loadChapter', () => {
+  it('asks for the chapter by its fingerprint from the index, a 12-hex ?v= the worker keeps the copy under (mw-5r3p30.276)', async () => {
+    const fetchMock = stubFetch();
+    await loadChapter('jhn', 1);
+    const asked = String(fetchMock.mock.calls[0][0]);
+    expect(asked).toMatch(/^\/data\/jhn\/1\.json\?v=[0-9a-f]{12}$/);
+    expect(asked).toBe(`/data/jhn/1.json?v=${fingerprintOf('jhn', 1)}`);
+  });
+
+  it('asks the plain address for a chapter the index does not know', async () => {
+    const fetchMock = stubFetch();
+    await loadChapter('zzz', 1).catch(() => undefined);
+    expect(fetchMock).toHaveBeenCalledWith('/data/zzz/1.json');
+  });
+
   it('fetches /data/<book>/<chapter>.json and returns the chapter', async () => {
     const fetchMock = stubFetch();
     const chapter = await loadChapter('rom', 8);
-    expect(fetchMock).toHaveBeenCalledWith('/data/rom/8.json');
+    expect(fetchMock).toHaveBeenCalledWith(`/data/rom/8.json?v=${fingerprintOf('rom', 8)}`);
     expect(chapter.book).toBe('Romans');
     expect(chapter.chapter).toBe(8);
     expect(chapter.verses).toHaveLength(39);
