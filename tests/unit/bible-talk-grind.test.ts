@@ -268,6 +268,44 @@ describe('learner_grammar in the request (mw-hqd5bz.12)', () => {
   });
 });
 
+describe('learner_grammar.weak in the request (mw-i7xe0n.2)', () => {
+  const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
+  const request = { reference: 'Romans 8', greek: 'Οἴδαμεν', english: 'And we know', question: 'Explain', history: [], solid_words: [], settings: {} };
+  const field = learnerGrammarOf({
+    goal: null,
+    words: { solid: 0, frontier: 0, notYet: 0 },
+    ideas: [],
+    placed: false,
+    move: 'none',
+    pickerLevel: 'frontier',
+    approach: { name: 'BMA Tutor', credit: null, nextLesson: null },
+    weak: [{ title: 'The genitive case', at: 1, labels: ['its ending', 'ν (Nu)'] }],
+  });
+
+  it('takes the weak points the app builds, and the field without them', () => {
+    expect(field.weak).toEqual({ 'The genitive case': ['its ending', 'ν (Nu)'] });
+    expect(validate({ ...request, learner_grammar: field }, input)).toEqual([]);
+    const without = { ...field };
+    delete without.weak;
+    expect(validate({ ...request, learner_grammar: without }, input)).toEqual([]);
+    expect((input.properties as Record<string, Schema>).learner_grammar.required).not.toContain('weak');
+  });
+
+  it('refuses a weak entry that is not a short list of short labels', () => {
+    for (const bad of [{ x: 'its ending' }, { x: [] }, { x: ['a', 'b', 'c', 'd'] }, { x: [1] }, { x: ['y'.repeat(33)] }]) {
+      expect(validate({ ...request, learner_grammar: { ...field, weak: bad } }, input), JSON.stringify(bad)).not.toEqual([]);
+    }
+  });
+
+  it('the instructions name the field, as his weak points from Drill it, for every grind sent learner_grammar', () => {
+    for (const kind of ['bible-talk', 'verse-ask', 'verse-read', 'tips']) {
+      const text = readFileSync(`grinds/${kind}.instructions.md`, 'utf8');
+      expect(text, kind).toMatch(/`weak`/);
+      expect(text, kind).toContain('Drill it');
+    }
+  });
+});
+
 describe('the word and quiz focus (mw-5r3p30.80)', () => {
   const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
   const request = { reference: 'Romans 8:2', greek: 'Ὁ γὰρ νόμος', english: 'For the law', question: 'Tell me', history: [], solid_words: [], settings: {} };

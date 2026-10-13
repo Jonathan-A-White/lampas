@@ -113,7 +113,7 @@ describe('the upgrade from version 9', () => {
     old.close();
 
     await db.open();
-    expect(db.verno).toBe(18);
+    expect(db.verno).toBe(19);
     expect(await db.reviews.count()).toBe(0);
     expect(await seedScheduleIfFirstOpen(NOW)).toBe(true);
 

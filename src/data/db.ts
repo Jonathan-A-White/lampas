@@ -283,6 +283,31 @@ export interface LadderRow {
   skipped: { ref: string; at: number }[];
 }
 
+/**
+ * One finished run of Drill it on one grammar idea (src/data/repositories/drillRuns.ts, docs/grammar.md 'Drill it, the engine'): the engine's DrillResult
+ * (src/data/grammar/drillIt.ts) and the time it was kept. Every run is kept; the latest of an idea says where he stands on it now. The shapes are written out
+ * here so db.ts imports no screen or engine (the worker's tsconfig reaches it).
+ */
+export interface DrillRunRow {
+  id?: number;
+  ideaId: string;
+  /** when the run was kept, ms since the epoch */
+  at: number;
+  /** two unhinted rights in a row at the top step */
+  proved: boolean;
+  /** the highest step he holds (0 when he holds none, the top step when proved) */
+  edgeStep: number;
+  topStep: number;
+  /** how the walk ended: 'proved', 'edge' or 'limit' */
+  ended: 'proved' | 'edge' | 'limit';
+  /** facets right at least once and not weak */
+  strong: { id: string; label: string }[];
+  /** facets missed at least once and right fewer than twice */
+  weak: { id: string; label: string }[];
+  /** every question asked, in order */
+  answers: { step: number; facet: { id: string; label: string }; key: string; right: boolean; hinted: boolean }[];
+}
+
 /** A grammar term he marked I know this on its Grammar sheet ('conjunction'), kept so the word sheet shows it plain. */
 export interface KnownTerm {
   /** the term, the key: a word of src/data/grammar-concepts.ts */
@@ -383,6 +408,7 @@ class LampasDB extends Dexie {
   readingHistory!: EntityTable<ReadingRecord, 'id'>;
   missTally!: EntityTable<MissCount, 'lang' | 'unit'>;
   ladder!: EntityTable<LadderRow, 'lang'>;
+  drillRuns!: EntityTable<DrillRunRow, 'id'>;
 
   constructor() {
     super('lampas');
@@ -603,6 +629,29 @@ class LampasDB extends Dexie {
       readingHistory: '++id, ref, [lang+at]',
       missTally: '[lang+unit], lang',
       ladder: 'lang',
+    });
+    // v19: every finished run of Drill it {id, ideaId, at, proved, edgeStep, topStep, ended, strong, weak, answers}, found by idea or by time.
+    this.version(19).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
+      reviews: '[kind+id], due, kind',
+      grammarLevels: 'id, level',
+      usage: 'key, day, name',
+      tips: 'id, status',
+      talkPictures: '++id, turnId',
+      shares: 'id, createdAt',
+      requests: 'txid, sentAt, status',
+      readingHistory: '++id, ref, [lang+at]',
+      missTally: '[lang+unit], lang',
+      ladder: 'lang',
+      drillRuns: '++id, ideaId, at',
     });
   }
 }

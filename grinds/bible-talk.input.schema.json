@@ -191,7 +191,7 @@
     "solid_words": { "description": "The Greek lemmas he already knows well.", "type": "array", "items": { "type": "string" } },
     "learner": { "description": "Optional. Where he stands in one line: 'solid N words; learning: a, b, c; new today: x, y; due now: M'.", "type": "string", "maxLength": 600 },
     "learner_grammar": {
-      "description": "Optional (an older app does not send it). Where his grammar stands: the reading goal, how many of its words and grammar ideas are solid, at the frontier and not yet, the titles of the ideas at each level (the goal's needs first, at most 12 a list), whether he has been placed, the move the app's New words at setting should make, and the grammar approach with its next lesson. At most 900 bytes.",
+      "description": "Optional (an older app does not send it). Where his grammar stands: the reading goal, how many of its words and grammar ideas are solid, at the frontier and not yet, the titles of the ideas at each level (the goal's needs first, at most 12 a list), whether he has been placed, the move the app's New words at setting should make, the grammar approach with its next lesson, and his weak points from Drill it. At most 900 bytes.",
       "type": "object",
       "additionalProperties": false,
       "required": ["goal", "words", "ideas", "placed", "suggested_move", "picker_level", "approach"],
@@ -227,6 +227,11 @@
             "credit": { "description": "Whom the approach is credited to, or null.", "anyOf": [{ "type": "string" }, { "type": "null" }] },
             "next_lesson": { "description": "The title of the lesson he would learn next, or null when he has met every idea.", "anyOf": [{ "type": "string" }, { "type": "null" }] }
           }
+        },
+        "weak": {
+          "description": "Optional (missing when there are none). His weak points from Drill it, the app's practice on one grammar idea at a time: the title of an idea he drilled (the one drilled longest ago first) to the short labels of the things in it he missed and has not yet got, such as 'its ending' or 'ν (Nu)'. The latest drill of an idea decides: once a later drill proves the idea, it is not listed. At most 5 ideas, 3 labels each.",
+          "type": "object",
+          "additionalProperties": { "type": "array", "minItems": 1, "maxItems": 3, "items": { "type": "string", "maxLength": 32 } }
         }
       }
     },

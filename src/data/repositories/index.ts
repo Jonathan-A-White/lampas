@@ -75,6 +75,8 @@ export { getMissTally, getVerseReading, keepVerseReading, listReadingHistory, re
 export type { FixWord, MissCount, Reach, ReadingRecord, VerseReading } from './readings';
 export { getLadderRow, listWellRead, setLadderShowing, skipLadderVerse } from './ladder';
 export type { LadderRow } from './ladder';
+export { latestDrillRunFor, saveDrillRun, weakFacets } from './drillRuns';
+export type { DrillRunRow } from './drillRuns';
 export { getLevel, levelFromStep, listLevels, recordGrammarAnswer, scheduleIdea, seedLevelsIfFirstOpen, setLevel, SOLID_STEP, teachIdea } from './grammarLevels';
 export type { GrammarLevel, GrammarLevelHow, GrammarLevelName, IdeaOutcome } from './grammarLevels';
 export { getEvidence, noteAnswer, noteWordRead } from './inference';

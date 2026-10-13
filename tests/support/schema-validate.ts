@@ -4,7 +4,7 @@ export interface Schema {
   type?: string;
   properties?: Record<string, Schema>;
   required?: string[];
-  additionalProperties?: boolean;
+  additionalProperties?: boolean | Schema;
   items?: Schema;
   maxItems?: number;
   minItems?: number;
@@ -46,6 +46,7 @@ export function validate(value: unknown, s: Schema, path = '$'): string[] {
       const sub = s.properties?.[name];
       if (sub) problems.push(...validate(v, sub, `${path}.${name}`));
       else if (s.additionalProperties === false) problems.push(`${path}.${name}: not allowed`);
+      else if (typeof s.additionalProperties === 'object') problems.push(...validate(v, s.additionalProperties, `${path}.${name}`));
     }
   }
   return problems;
