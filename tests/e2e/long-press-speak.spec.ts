@@ -44,7 +44,7 @@ test('a long press on a Greek word says it in Greek; a short tap opens the sheet
   await page.getByRole('button', { name: 'Greek', exact: true }).click();
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'greek');
   await hold(page, '[data-verse="1"] [data-word="0"]', 650);
-  await expect.poll(() => spoken(page)).toMatchObject([{ text: 'Οὐδὲν', lang: 'el-GR' }]);
+  await expect.poll(() => spoken(page)).toMatchObject([{ text: 'οὐδὲν', lang: 'el-GR' }]);
   await expect(page.getByRole('dialog')).toHaveCount(0);
 
   await hold(page, '[data-verse="1"] [data-word="1"]', 650, 24);
