@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.174
+_2026-10-13_
+- New: Ask the tutor about a piece of grammar you are not ready for and it now names the ideas you are missing and offers to take you to the next one to learn.
+
 ## 0.1.173
 _2026-10-13_
 - Fixed: the Breathing marks lesson now teaches Modern Greek sounds (breathings are silent, ὁ is “o”) instead of the old school pronunciation.
