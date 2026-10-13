@@ -8,10 +8,13 @@
 - "make this app easy to use correctly and hard to use incorrectly" (lampas/CLAUDE.md:20)
 - "Mayor should automatically approve if it is a legitimate approach and he can find how to do it. Screenshots/ pictures of approaches should count as long as there is propper attribution." (plans/0088-lampas-grammar.json:15, 2026-10-08)
 - "actually useful for the vision of the app" (plans/lampas-logos-at-scale-grilling.md:4)
+- "so I'd like to talk about some enhancements to the app particular lampas is what I'm trying to work on ... I think that it should be a good app even if somebody doesn't want learn Greek ... for a licensed user ... if you want to say the chief aim of the app is to help people learn to read the New Testament in Greek that's really like the chief chief aim I feel like it's actually a pretty good Bible and people use it without having to learn Greek ... it's almost like by default should be just English just you know super easy to use just English ... the tutor and he interviews the person should find out what they're trying to do like why are they why are they in the app why are they reading the Bible do they want to learn you know coin a Greek" (Talk 4787b4d6, 2026-10-13, turn 1 excerpt, dictated)
+- "yeah I think that's great that way if somebody's not interested in learning Greek in the beginning they can just have a really nice app experience like a really nice Bible reading experience and if they are so inclined to read Greek over time they can go there and you know it it could be that if the if the tutor senses they're starting to have an interest in the underlying Greek he could remind them or offer them to you know applicable Greek features in the app that might be useful for them" (Talk 4787b4d6, 2026-10-13, turn 2, dictated)
 
 ## Vision (draft, from his words above)
 - "I want the app to help people learn of all languages learn how to read the Bible in Greek and of all languages to learn how to read the Bible in English."
 - It is for readers of any mother tongue, learning Koine Greek by reading the New Testament, with a tutor on the verse.
+- For a reader who never learns the Greek it is a good Bible in plain English, with the Greek one tap away, and a tutor who remembers what the reader wants and has said no to.
 - Learning happens in the reading itself; it meets each reader where they are, and dials up and down.
 - Most of all: easy to use correctly, hard to use incorrectly; large clear type, one hand on a phone.
 - Lines (his to confirm): credit every source it stands on; never put a reader's licensed books (Logos) in the app or the tutor; Lampas is free to read, and a licence unlocks only the AI.
