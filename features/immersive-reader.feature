@@ -94,3 +94,27 @@ Feature: Immersive reader
     When he opens Settings and sets Immersive reader to On
     And the app is closed and opened again on Settings
     Then Immersive reader shows On in Settings
+
+  Scenario: The first tap in the text asks for full screen, and switching Immersive reader Off leaves it
+    Given Lampas is opened on Romans 8 with Immersive reader On and a phone that can go full screen
+    Then the page has not asked for full screen
+    When he taps the text with one finger
+    Then the page has asked for full screen once
+    When he taps the text with one finger again
+    Then the page has still asked for full screen once
+    When Immersive reader is switched Off
+    Then the page has left full screen
+
+  Scenario: With Immersive reader Off the page never asks for full screen
+    Given Lampas is opened on Romans 8 with Immersive reader Off and a phone that can go full screen
+    When he taps the text with one finger
+    And he scrolls the text down 200 px
+    Then the page has not asked for full screen
+
+  Scenario: A phone that refuses full screen reads on as before
+    Given Lampas is opened on Romans 8 with Immersive reader On and a phone that refuses full screen
+    When he taps the text with one finger
+    And he scrolls the text down 200 px
+    Then the header, the chips, the Talk bar and the Ask button are all out of view
+    When he taps the text with two fingers
+    Then the header, the chips, the Talk bar and the Ask button are all in view
