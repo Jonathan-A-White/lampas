@@ -12,6 +12,28 @@
     "pronunciation": { "description": "Optional. The Greek pronunciation the app speaks and respells in, by its id: modern (how Greek is spoken today). A tip on a Greek sound describes it by this pronunciation.", "type": "string", "minLength": 1, "maxLength": 40 },
     "learner": { "description": "Optional. Where he stands in one line: 'solid N words; learning: a, b, c; new today: x, y; due now: M'.", "type": "string", "maxLength": 600 },
     "learner_grammar": { "description": "Optional. Where his grammar stands, as in the Bible talk's request (grinds/bible-talk.input.schema.json learner_grammar).", "type": "object" },
+    "memory": {
+      "description": "Optional. What Lampas remembers about him, which the app keeps on his phone (Settings > Memory) and chose for this ask: `index` is the short index of everything remembered (his own lines, then a list of the notes, one line each: the note's name and its first line), and `notes` are the notes the app picked by name for this place, word or screen (`book:<Book>` for the book of the reference, `word:<lemma>` for the word he asked about, `topic:<screen>` for the screen he is on), each `name` and `text`. At most three; read the index first, then the notes. Use it quietly as `learner_profile` is used: let it shape the answer, never repeat it back to him, and never let it change what is true about the text. Missing when nothing is kept.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["index", "notes"],
+      "properties": {
+        "index": { "description": "The index as it is kept, at most 1500 characters; may be empty when only notes are named.", "type": "string", "maxLength": 1500 },
+        "notes": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "text"],
+            "properties": {
+              "name": { "description": "book:<Book>, word:<lemma> or topic:<slug>.", "type": "string", "minLength": 1, "maxLength": 60 },
+              "text": { "type": "string", "minLength": 1, "maxLength": 2000 }
+            }
+          }
+        }
+      }
+    },
     "learner_profile": {
       "description": "Optional. Who he is as a student, which he kept himself in Settings > About you; every field is optional and a field he has not filled in is missing (the whole field is missing when he has filled in none). age: a number or a band, as he wrote it. pace: how fast he wants to go. ways: how he learns best (hearing, seeing, reading, doing = hands-on). background: languages he knows, Greek or Bible before, in his words. why: why he is learning Greek, in his words. notes: short things the tutor has learned about him, the newest last. Meet him where he is; never repeat this back to him. learned, observed_pace, observed_ways and do_not_ask are what the app itself found out; see them as hints at the same fields, weaker than what he wrote.",
       "type": "object",

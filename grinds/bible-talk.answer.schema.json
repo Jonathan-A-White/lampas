@@ -78,6 +78,46 @@
         }
       }
     },
+    "memory_update": {
+      "description": "What to remember about him for later, in the notes Lampas keeps on his phone (see 'His memory'): at most four entries, each `name` ('index', or a note's name: book:<Book>, word:<lemma>, topic:<slug>) and exactly one of `append` (one short plain line, at most 300 characters, added to the end of that note or of the index; a note that is not there is made), `replace` (the whole new text of that note or of the index) or `remove` (true: drop that note). `replace` and `remove` need `directed` true, and `directed` is true ONLY when he asked for exactly that change in his own words of this turn ('forget what you noted about Romans', 'change that note to ...'); never for your own tidying. The app refuses and logs a `replace` or `remove` without `directed`. Leave it out when there is nothing worth keeping.",
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "append"],
+            "properties": {
+              "name": { "description": "'index', or book:<Book>, word:<lemma>, topic:<slug>.", "type": "string", "minLength": 1, "maxLength": 60 },
+              "append": { "type": "string", "minLength": 1, "maxLength": 300 }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "replace", "directed"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1, "maxLength": 60 },
+              "replace": { "type": "string", "minLength": 1, "maxLength": 2000 },
+              "directed": { "const": true }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "remove", "directed"],
+            "properties": { "name": { "type": "string", "minLength": 1, "maxLength": 60 }, "remove": { "const": true }, "directed": { "const": true } }
+          }
+        ]
+      }
+    },
+    "wished_notes": {
+      "description": "The names of notes you would have used in this answer had they existed (book:<Book>, word:<lemma>, topic:<slug>, in the naming scheme), at most five. The app only counts them and keeps the last names; it sends you nothing more for them. Leave it out when the notes you were sent were enough.",
+      "type": "array",
+      "maxItems": 5,
+      "items": { "type": "string", "minLength": 1, "maxLength": 60 }
+    },
     "profile_question": {
       "description": "Only when the question in your `answer` asks him about himself as a student (see 'Learning about him'): which field it is about. The app notes it so you are not told to ask the same field again within a day. Leave it out for anything else.",
       "type": "string",

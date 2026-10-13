@@ -98,19 +98,20 @@ describe('the builders send what the table says', () => {
     approach: { name: 'BMA Tutor', credit: null, nextLesson: null },
   });
   const profile = { pace: 'steady' as const };
+  const memory = { index: 'Likes a picture first.', notes: [{ name: 'book:Romans', text: 'Reads it slowly.' }] };
   const at = (request: Record<string, unknown>, path: string): unknown => path.split('.').reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], request);
 
   it('verse-ask: every setting and part of progress the table lists is in the request', async () => {
     await setGreekPronunciation('modern');
     const settings = await settingsSentTo('verse-ask');
-    const request = buildRequest('Romans 8:28', verse, 'What is this?', ['θεός'], 'solid 1 words', grammar, settings, [{ summary: 's', status: 'building' }] as never, profile, false, 'modern') as unknown as Record<string, unknown>;
+    const request = buildRequest('Romans 8:28', verse, 'What is this?', ['θεός'], 'solid 1 words', grammar, settings, [{ summary: 's', status: 'building' }] as never, profile, false, 'modern', memory) as unknown as Record<string, unknown>;
     const knows = TUTOR_KNOWS['verse-ask'];
     for (const key of Object.keys(knows.settings)) expect(at(request, knows.settings[key]), `verse-ask request lacks ${key} at ${knows.settings[key]}`).toBeDefined();
     for (const part of Object.keys(knows.progress)) expect(at(request, knows.progress[part]), `verse-ask request lacks ${part} at ${knows.progress[part]}`).toBeDefined();
   });
 
   it('verse-read: every setting and part of progress the table lists is in the request', () => {
-    const request = buildReadingRequest('Romans 8:28', verse, 'greek', 'el', profile, 'solid 1 words', grammar, 'modern') as unknown as Record<string, unknown>;
+    const request = buildReadingRequest('Romans 8:28', verse, 'greek', 'el', profile, 'solid 1 words', grammar, 'modern', memory) as unknown as Record<string, unknown>;
     const knows = TUTOR_KNOWS['verse-read'];
     for (const key of Object.keys(knows.settings)) expect(at(request, knows.settings[key]), `verse-read request lacks ${key}`).toBeDefined();
     for (const part of Object.keys(knows.progress)) expect(at(request, knows.progress[part]), `verse-read request lacks ${part}`).toBeDefined();
@@ -118,7 +119,7 @@ describe('the builders send what the table says', () => {
 
   it('tips: every part of progress the table lists is in the request', () => {
     const summary = { settings_changed: [], settings_never: [] } as never;
-    const request = buildTipRequest(summary, [], profile, 'solid 1 words', grammar) as unknown as Record<string, unknown>;
+    const request = buildTipRequest(summary, [], profile, 'solid 1 words', grammar, memory) as unknown as Record<string, unknown>;
     const knows = TUTOR_KNOWS.tips;
     for (const part of Object.keys(knows.progress)) expect(at(request, knows.progress[part]), `tips request lacks ${part}`).toBeDefined();
     for (const key of Object.keys(knows.settings)) expect(at(request, knows.settings[key]), `tips request lacks ${key}`).toBeDefined();
