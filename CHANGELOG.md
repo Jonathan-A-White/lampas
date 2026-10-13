@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.159
+_2026-10-13_
+- Fixed: a one-letter Greek word such as Ὃ or ὁ is said by the Greek voice as its sound, not by the English voice.
+
 ## 0.1.158
 _2026-10-13_
 - New: The tutor now learns how you like to learn from your talks and from how you use the app, and About you shows what it learned so you can change or remove it.
