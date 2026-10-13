@@ -9,6 +9,6 @@
   "photos": ["read-8-28.webm"],
   "expect": {
     "verdict": { "one_of": ["well-read", "some-to-fix"] },
-    "note": { "present": true }
+    "note": { "present": true, "matches": "^[^yY]*(?:[yY](?:(?:[yY]|[oO](?:[yY]|[uU](?:[yY]| (?:[yY]|[rR](?:[yY]|[eE](?:[yY]|[aA][yY]))))))|(?:[^yYoO][^yY]*[yY]|[oO](?:[^yYuU][^yY]*[yY]|[uU](?:[^yY ][^yY]*[yY]| (?:[^yYrR][^yY]*[yY]|[rR](?:[^yYeE][^yY]*[yY]|[eE](?:[^yYaA][^yY]*[yY]|[aA][^yYdD][^yY]*[yY])))))))*(?:(?:[^yYoO][^yY]*)?|[oO](?:(?:[^yYuU][^yY]*)?|[uU](?:(?:[^yY ][^yY]*)?| (?:(?:[^yYrR][^yY]*)?|[rR](?:(?:[^yYeE][^yY]*)?|[eE](?:(?:[^yYaA][^yY]*)?|[aA](?:[^yYdD][^yY]*)?)))))))?$" }
   }
 }
