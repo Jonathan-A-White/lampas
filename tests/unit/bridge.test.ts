@@ -172,7 +172,7 @@ describe('the request and the turn', () => {
   const hint = missingFoundations(QUESTION, withSolid(6));
 
   it('the Bible talk carries missing_foundations when the device found some, and its input schema allows it', () => {
-    const request = buildTalkRequest(scope, QUESTION, [], [], {}, undefined, undefined, undefined, [], [], 0, { kept: '' }, undefined, [], undefined, undefined, false, hint);
+    const request = buildTalkRequest(scope, QUESTION, [], [], {}, undefined, undefined, undefined, [], [], 0, { kept: '' }, undefined, [], undefined, undefined, false, undefined, hint);
     expect(request.missing_foundations).toEqual(hint);
     expect(validate(request, talkInputSchema)).toEqual([]);
     expect('missing_foundations' in buildTalkRequest(scope, QUESTION, [], [])).toBe(false);
@@ -181,7 +181,7 @@ describe('the request and the turn', () => {
 
   it('a verse question carries it too', () => {
     const verse = chapter.verses[10];
-    const request = buildRequest('Romans 8:11', verse, QUESTION, [], undefined, undefined, undefined, [], undefined, false, undefined, hint);
+    const request = buildRequest('Romans 8:11', verse, QUESTION, [], undefined, undefined, undefined, [], undefined, false, undefined, undefined, hint);
     expect(request.missing_foundations).toEqual(hint);
     expect(validate(request, verseInputSchema)).toEqual([]);
   });
