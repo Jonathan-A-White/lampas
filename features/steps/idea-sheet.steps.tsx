@@ -315,6 +315,28 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario("The Breathing marks sheet lists the verse's words that carry a breathing", ({ Given, When, Then, And }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the idea sheet of {string} from the Goal screen', async (_, id: string) => {
+      window.location.hash = '#/goal';
+      await user.click(await screen.findByTestId('ideas-bar'));
+      await user.click(within(await screen.findByTestId('ideas-list')).getByRole('button', { name: ideaOf(id).title }));
+      await screen.findByRole('dialog', { name: 'Idea' });
+      await waitFor(() => expect(within(ideaSheet()).queryByTestId('idea-loading')).toBeNull());
+    });
+    Then('the idea sheet shows the example {string} with {string} marked', (_, form: string, mark: string) => {
+      const marked = Array.from(exampleOf(form).querySelectorAll('[data-marked]')).map((m) => m.textContent);
+      expect(marked).toEqual([mark]);
+    });
+    And('the idea sheet shows the example {string} with {string} marked', (_, form: string, mark: string) => {
+      const marked = Array.from(exampleOf(form).querySelectorAll('[data-marked]')).map((m) => m.textContent);
+      expect(marked).toEqual([mark]);
+    });
+    And('the idea sheet has no line {string}', (_, text: string) => {
+      expect(ideaSheet().textContent).not.toContain(text);
+    });
+  });
+
   Scenario('The Pairs of vowels sheet gives every sound an English key word', ({ Given, When, Then, And }) => {
     Given(GIVEN_GOAL, opensWithGoal);
     When('he opens the idea sheet of {string} from the Goal screen', async (_, id: string) => {
