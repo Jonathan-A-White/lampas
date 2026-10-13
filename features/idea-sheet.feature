@@ -1,8 +1,9 @@
 Feature: The idea sheet
   A bottom sheet teaches one grammar idea of the ladder (src/data/grammar/ladder.ts): its title, its plain text, up to three
   example forms from the goal passage (one for each lemma, each with its verse; a speaker on each; a tap opens the word's
-  sheet), a paradigm table for a case or a tense built from the passage's forms, and three buttons: Got it (the idea is on
-  the frontier and due tomorrow), I know this (solid, at the 30-day step) and Ask the tutor. It opens from the Learn this idea
+  sheet), a paradigm table for a case or a tense built from the passage's forms, a level slider (Not yet, Learning, I know it;
+  Learning puts the idea on the frontier and due tomorrow, I know it starts Drill it: features/drill-it.feature), a small
+  text button "Mark known without a drill" (solid, at the 30-day step), a Drill it button and Ask the tutor. It opens from the Learn this idea
   button of a Grammar sheet. With no goal the examples come from the chapter that is open. A foundation idea (a letter, the
   alphabet, a pair of vowels or of consonants, the breathings, accents, iota subscript, syllables, punctuation) shows words of the
   passage with the letters it is about marked, and never says that no word has it in its parsing. Taught ideas are announced on
@@ -29,18 +30,19 @@ Feature: The idea sheet
     When he taps the example "ἀρχῆς" on the idea sheet
     Then the word sheet is of "ἀρχῆς" and its Parsing names a genitive
 
-  Scenario: Got it makes the idea frontier and due tomorrow
+  Scenario: Sliding to Learning makes the idea frontier and due tomorrow
     Given Lampas is opened on Romans 8 with the goal "1 John 1", no idea level and a fake Postern
     And he opens the idea sheet from the Grammar sheet of "genitive" on the word "of the" in verse 2
-    When he taps Got it on the idea sheet
+    And the ideas that "case-genitive" builds on are solid
+    When he slides the level to "Learning"
     Then the idea "case-genitive" is frontier, set by the sheet, and its review is due in 1 day at step 0
     And an idea-taught event for "case-genitive" with the outcome "got-it" was published
     And the idea sheet shows the chip "Frontier since today"
 
-  Scenario: I know this makes it solid at the 30-day step
+  Scenario: Mark known without a drill makes it solid at the 30-day step
     Given Lampas is opened on Romans 8 with the goal "1 John 1", no idea level and a fake Postern
     And he opens the idea sheet from the Grammar sheet of "genitive" on the word "of the" in verse 2
-    When he taps I know this on the idea sheet
+    When he taps Mark known without a drill on the idea sheet
     Then the idea "case-genitive" is solid, set by the sheet, and its review is due in 30 days at the 30-day step
     And an idea-taught event for "case-genitive" with the outcome "known" was published
     And the idea sheet shows the chip "Solid since today"

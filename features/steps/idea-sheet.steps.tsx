@@ -1,7 +1,7 @@
 // features/steps/idea-sheet.steps.tsx — runs features/idea-sheet.feature: the idea sheet a Grammar sheet's Learn this idea opens, with
-// its text, its examples from the goal's passage (or the open chapter), the paradigm table, Got it, I know this and Ask the tutor.
+// its text, its examples from the goal's passage (or the open chapter), the paradigm table, the level slider, Mark known without a drill and Ask the tutor.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -195,11 +195,15 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Got it makes the idea frontier and due tomorrow', ({ Given, And, When, Then }) => {
+  Scenario('Sliding to Learning makes the idea frontier and due tomorrow', ({ Given, And, When, Then }) => {
     Given(GIVEN_GOAL, opensWithGoal);
     And(GIVEN_OPEN, opensTheIdea);
-    When('he taps Got it on the idea sheet', async () => {
-      await user.click(within(ideaSheet()).getByRole('button', { name: 'Got it' }));
+    And('the ideas that {string} builds on are solid', async (_, id: string) => {
+      await db.grammarLevels.bulkPut(ideaOf(id).needs.map((need) => ({ id: need, level: 'solid' as const, since: Date.now(), how: 'placement' as const })));
+      await waitFor(() => expect(within(ideaSheet()).queryByTestId('idea-builds-on')).toBeNull());
+    });
+    When('he slides the level to {string}', async (_, label: string) => {
+      fireEvent.change(within(ideaSheet()).getByRole('slider', { name: 'Your level' }), { target: { value: String(['Not yet', 'Learning', 'I know it'].indexOf(label)) } });
     });
     Then('the idea {string} is frontier, set by the sheet, and its review is due in 1 day at step 0', async (_, id: string) => {
       await waitFor(async () => expect(await db.grammarLevels.get(id)).toBeDefined());
@@ -217,11 +221,11 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('I know this makes it solid at the 30-day step', ({ Given, And, When, Then }) => {
+  Scenario('Mark known without a drill makes it solid at the 30-day step', ({ Given, And, When, Then }) => {
     Given(GIVEN_GOAL, opensWithGoal);
     And(GIVEN_OPEN, opensTheIdea);
-    When('he taps I know this on the idea sheet', async () => {
-      await user.click(within(ideaSheet()).getByRole('button', { name: 'I know this' }));
+    When('he taps Mark known without a drill on the idea sheet', async () => {
+      await user.click(within(ideaSheet()).getByRole('button', { name: 'Mark known without a drill' }));
     });
     Then('the idea {string} is solid, set by the sheet, and its review is due in 30 days at the 30-day step', async (_, id: string) => {
       await waitFor(async () => expect(await db.grammarLevels.get(id)).toBeDefined());
