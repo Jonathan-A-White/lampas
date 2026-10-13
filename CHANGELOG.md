@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.183
+_2026-10-13_
+- New: With Immersive reader on, the text is set like a book: tight lines in a serif typeface, even edges with hyphenation, pure black in the dark theme and small dim verse numbers.
+
 ## 0.1.182
 _2026-10-13_
 - New: The letters, sounds and marks cards now show their letters, vowel pairs, consonant pairs and marks as tiles you can tap to hear, each with its name and sound, instead of only describing them.
