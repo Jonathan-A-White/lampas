@@ -78,3 +78,15 @@ Feature: The idea sheet
     When he opens the idea sheet of "diphthongs" from the Goal screen
     Then the idea sheet text says "e as in pet", "ee as in see" and "oo as in food"
     And the idea sheet text says it follows "Modern Greek"
+
+  Scenario: The Breathing marks sheet teaches the Modern Greek sound, where a breathing is silent
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
+    When he opens the idea sheet of "breathings" from the Goal screen
+    Then the idea sheet text says the breathing is silent and gives ὁ as “o”
+    And the idea sheet text does not say a breathing adds an h or that ὁ is “ho”
+
+  Scenario: Another pronunciation teaches its own breathing lesson on the sheet
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level, a fake Postern and the pronunciation "testish" chosen
+    When he opens the idea sheet of "breathings" from the Goal screen
+    Then the idea sheet text says "Testish says the rough breathing as a hum."
+    And the idea sheet text does not say "silent"

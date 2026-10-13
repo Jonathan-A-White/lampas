@@ -3,6 +3,8 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { ALWAYS_NEEDED, LADDER, TIERS, ideaOf, ideasBelow, ideasOf } from '../../src/data/grammar/ladder';
+import { ideaSound } from '../../src/data/grammar/lessons';
+import { pronunciationOf } from '../../src/speech/pronunciation';
 import { GRAMMAR_TERMS } from '../../src/data/parseCode';
 
 const words = (text: string): number => text.trim().split(/\s+/).length;
@@ -46,7 +48,7 @@ describe('the ladder', () => {
       expect(l.glyphs, l.id).toHaveLength(2);
       expect(l.glyphs?.[0], l.id).toBe(l.glyphs?.[0].toLowerCase());
       expect(l.glyphs?.[1], l.id).toBe(l.glyphs?.[1].toUpperCase());
-      expect(l.sound?.trim(), l.id).toBeTruthy();
+      expect(ideaSound(l, pronunciationOf('modern'))?.trim(), l.id).toBeTruthy();
       expect(l.terms).toEqual([]);
       expect(l.needs).toEqual(['alphabet']);
     }

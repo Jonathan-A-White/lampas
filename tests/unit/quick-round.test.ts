@@ -4,6 +4,8 @@ import { approachOf } from '../../src/approaches';
 import { db } from '../../src/data/db';
 import { gapsOf, groupIsSolid, lettersText } from '../../src/data/grammar/inference';
 import { LADDER, ITEM_GROUPS, ideaOf, itemName, itemsOf } from '../../src/data/grammar/ladder';
+import { ideaSound } from '../../src/data/grammar/lessons';
+import { pronunciationOf } from '../../src/speech/pronunciation';
 import { learnNext } from '../../src/data/grammar/goalProgress';
 import type { Level } from '../../src/data/grammar/needs';
 import { QUICK_LIMIT, answerQuick, currentQuick, quickItems, quickOver, quickQuestion, quickSeed, startQuick, stopQuick } from '../../src/data/grammar/quickRound';
@@ -30,7 +32,7 @@ describe('the items of the ladder', () => {
         expect(item.parent).toBe(group);
         expect(item.needs).toEqual([group]);
         expect(item.rung).toBeGreaterThan(ideaOf(group).rung);
-        expect(item.sound?.trim(), item.id).toBeTruthy();
+        expect(ideaSound(item, pronunciationOf('modern'))?.trim(), item.id).toBeTruthy();
         expect(item.glyphs).toBeUndefined();
       }
     }

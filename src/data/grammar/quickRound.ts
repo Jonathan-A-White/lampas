@@ -5,7 +5,10 @@
 //   At most QUICK_LIMIT (40) taps, outside the 20 questions of the walk; Stop here keeps what was answered. Items he claimed whole ('I know this' on the
 //   alphabet) are not asked. Nothing here touches the store or the screen; questions.ts shapes are reused so the card is the Review card.
 import { shuffle, type Random } from '../quiz';
+import { chosenPronunciation } from '../../speech/greek';
+import type { Pronunciation } from '../../speech/pronunciation';
 import { ITEM_GROUPS, ideaOf, itemsOf, type GrammarIdea } from './ladder';
+import { ideaSound } from './lessons';
 import type { Level } from './needs';
 import type { GrammarQuestion } from './questions';
 
@@ -80,7 +83,7 @@ const glyphOf = (idea: GrammarIdea): string => idea.glyphs?.[0] ?? idea.pair ?? 
 const SAMPLES: Record<'Rough' | 'Smooth', string[]> = { Rough: ['ὁ', 'ἡ', 'ὅς', 'ἅγιος', 'ὑπέρ'], Smooth: ['ἐν', 'ἀπό', 'ἐγώ', 'ἄνθρωπος', 'ἀγάπη'] };
 
 /** The question for one item: hear it and pick the letter or pair; see it and pick its sound; see a word and pick its breathing. */
-export function quickQuestion(item: QuickItem, random: Random): GrammarQuestion {
+export function quickQuestion(item: QuickItem, random: Random, scheme: Pronunciation = chosenPronunciation()): GrammarQuestion {
   const idea = ideaOf(item.id);
   if (idea.parent === 'breathings') {
     const breathing = idea.id === 'breathing-rough' ? 'Rough' : 'Smooth';
@@ -89,10 +92,13 @@ export function quickQuestion(item: QuickItem, random: Random): GrammarQuestion 
     return { kind: 'breathing', ideaId: idea.id, prompt: 'Which breathing does this word begin with?', options: ['Rough', 'Smooth'], right: breathing, form: word };
   }
   const same = itemsOf(idea.parent ?? 'alphabet');
-  const sound = shortSound(idea.sound ?? '');
+  // the scheme's sound for it, else (a scheme with no lesson for it) its respelling, so the others that sound alike are left out either way
+  const soundOf = (o: GrammarIdea): string => shortSound(ideaSound(o, scheme) ?? scheme.respell(glyphOf(o)));
+  const sound = soundOf(idea);
   // the others of its group that sound different, so only one answer is right
-  const others = same.filter((o) => o.id !== idea.id && shortSound(o.sound ?? '') !== sound);
-  if (item.mode === 'hear') {
+  const others = same.filter((o) => o.id !== idea.id && soundOf(o) !== sound);
+  // a scheme that does not say what it sounds like is asked by ear only
+  if (item.mode === 'hear' || ideaSound(idea, scheme) === undefined) {
     return {
       kind: 'sound',
       ideaId: idea.id,
@@ -102,7 +108,7 @@ export function quickQuestion(item: QuickItem, random: Random): GrammarQuestion 
       say: glyphOf(idea),
     };
   }
-  const sounds = [...new Set(others.map((o) => shortSound(o.sound ?? '')))];
+  const sounds = [...new Set(others.flatMap((o) => { const named = ideaSound(o, scheme); return named === undefined ? [] : [shortSound(named)]; }))];
   return {
     kind: 'letter',
     ideaId: idea.id,

@@ -8,8 +8,11 @@ import { useEffect, useRef, useState } from 'react';
 import { loadChapter, loadIndex, wordGloss, type Chapter, type GreekWord } from './data/chapter';
 import { ideaExamples, ideaPassage, isSpellingIdea, paradigmOf, type IdeaExample, type IdeaPassage, type Paradigm } from './data/grammar/ideaSheet';
 import type { GrammarIdea } from './data/grammar/ladder';
+import { ideaText } from './data/grammar/lessons';
 import { getOpenChapter } from './data/readerChapter';
-import { getLevel, getSavedGoalText, teachIdea, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
+import { getGreekPronunciation, getLevel, getSavedGoalText, teachIdea, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
+import { chosenPronunciation } from './speech/greek';
+import { pronunciationOf } from './speech/pronunciation';
 import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
 import { useSheetBack } from './ui/sheetBack';
@@ -136,6 +139,9 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
   useSheetBack(onClose);
   const loaded = usePassage();
   const level = useLiveQuery(() => getLevel(idea.id), [idea.id]);
+  // the lesson of a sound is the chosen pronunciation's (mw-5r3p30.229); until the saved choice is read, the one the speaker already holds
+  const chosen = useLiveQuery(getGreekPronunciation, []);
+  const scheme = chosen === undefined ? chosenPronunciation() : pronunciationOf(chosen);
   const busy = useRef(false);
   const passage = loaded && loaded !== 'failed' ? loaded.passage : undefined;
   const examples = passage ? ideaExamples(idea.id, passage.chapters, passage.verse) : [];
@@ -174,7 +180,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
             </p>
           ) : null}
           <p data-testid="idea-text" className="mt-2 text-lg">
-            {idea.text}
+            {ideaText(idea, scheme)}
           </p>
           {loaded === null ? (
             <p data-testid="idea-loading" className="mt-3 text-base text-muted">

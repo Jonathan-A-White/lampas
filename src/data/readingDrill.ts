@@ -4,7 +4,10 @@
 // with the verse-read grist at word size. A drilled unit goes on the schedule as a review of kind `sound` (src/data/repositories/reviews.ts scheduleSounds).
 import type { MissCount } from './db';
 import type { FrequencyEntry } from './frequency';
+import { chosenPronunciation } from '../speech/greek';
+import type { Pronunciation } from '../speech/pronunciation';
 import { ideaOf, type GrammarIdea } from './grammar/ladder';
+import { ideaSound } from './grammar/lessons';
 import { lettersOf } from './grammar/readingMisses';
 import { scoreWords } from './ladderScore';
 
@@ -22,30 +25,30 @@ export type DrillOffer =
   | { kind: 'words'; lang: string; words: string[] };
 
 /** The sound's idea on the sounds tier, or undefined for a unit the ladder does not have (a pair or diphthong has `pair`). */
-function soundIdea(unit: string): GrammarIdea | undefined {
+function soundIdea(unit: string, scheme: Pronunciation = chosenPronunciation()): GrammarIdea | undefined {
   try {
     const idea = ideaOf(unit);
-    return idea.pair && idea.sound ? idea : undefined;
+    return idea.pair && ideaSound(idea, scheme) ? idea : undefined;
   } catch {
     return undefined;
   }
 }
 
-/** The one thing to remember about a sound, from the sounds tier's own words: 'ου says oo, as in “moon”'. */
-export const ruleOf = (idea: GrammarIdea): string => `${idea.pair ?? ''} says ${idea.sound ?? ''}`;
+/** The one thing to remember about a sound, in the chosen pronunciation's own words: 'ου says oo, as in “food”'. */
+export const ruleOf = (idea: GrammarIdea, scheme: Pronunciation = chosenPronunciation()): string => `${idea.pair ?? ''} says ${ideaSound(idea, scheme) ?? ''}`;
 
 /**
  * The drill the tally calls for, or null: in Greek the most missed sound that was missed in DRILL_MISSES readings or more; in English
  * the words he misread, the most missed first (at most DRILL_WORDS), once any was missed in that many readings. `tally` is getMissTally's, most missed first.
  */
-export function drillOffer(lang: string, tally: readonly MissCount[]): DrillOffer | null {
+export function drillOffer(lang: string, tally: readonly MissCount[], scheme: Pronunciation = chosenPronunciation()): DrillOffer | null {
   const rows = tally.filter((row) => row.lang === lang).sort((a, b) => b.count - a.count || a.unit.localeCompare(b.unit));
   if (!rows.length || rows[0].count < DRILL_MISSES) return null;
   if (lang === 'en') return { kind: 'words', lang, words: rows.slice(0, DRILL_WORDS).map((row) => row.unit) };
   for (const row of rows) {
     if (row.count < DRILL_MISSES) break;
-    const idea = soundIdea(row.unit);
-    if (idea) return { kind: 'sound', lang, unit: row.unit, glyphs: idea.pair ?? '', rule: ruleOf(idea) };
+    const idea = soundIdea(row.unit, scheme);
+    if (idea) return { kind: 'sound', lang, unit: row.unit, glyphs: idea.pair ?? '', rule: ruleOf(idea, scheme) };
   }
   return null;
 }

@@ -6,6 +6,14 @@ import { MODERN } from './schemes/modern';
 /** The id of a scheme in the registry. */
 export type GreekPronunciation = string;
 
+/** What a scheme teaches of one sound-bearing ladder idea (a letter, a vowel pair, a consonant pair, a breathing or one of the groups): `sound` is
+ * how the idea sounds in this scheme, asked by the questions ('v, as in “vase”'); `text` is the whole lesson. Either may be left out: with a `sound`
+ * and no `text` the lesson is the idea's spelling facts plus 'In <label> it sounds like <sound>.' (src/data/grammar/lessons.ts). */
+export interface SoundLesson {
+  text?: string;
+  sound?: string;
+}
+
 export interface Pronunciation {
   id: GreekPronunciation;
   /** what Settings shows */
@@ -23,6 +31,9 @@ export interface Pronunciation {
   /** What this scheme's voice is handed for a Greek word of ONE letter (ὁ, ἡ, ὦ, Ὃ), so that it says the word's sound: a voice handed a bare
    * letter names it ('omicron'). Modern Greek gives the stressed vowel ('ό'); mw-5r3p30.262. */
   loneLetter(word: string): string;
+  /** The sound lessons this scheme teaches, keyed by ladder idea id ('letter-beta', 'diphthong-ou', 'breathings' ...), in its own sounds: the idea sheet and the
+   * sound questions read them (mw-5r3p30.229). An idea it gives none for falls back to a text that names no sound, never to another scheme's. */
+  lessons?: Readonly<Record<string, SoundLesson>>;
 }
 
 const SCHEMES: Pronunciation[] = [MODERN];

@@ -2,6 +2,7 @@
 // the stressed syllable in capitals ("hree-STO"). Written from Modern Greek's own rules (docs/pronunciation.md lists
 // them); the other schemes (Erasmian next) are further files beside this one, registered in ../pronunciation.ts.
 import type { Pronunciation } from '../pronunciation';
+import { modernLessons } from './modernLessons';
 
 interface Letter {
   ch: string;
@@ -221,4 +222,5 @@ export const MODERN: Pronunciation = {
   respell: respellModern,
   keyWords: MODERN_KEY_WORDS,
   loneLetter: loneLetterModern,
+  lessons: modernLessons(MODERN_KEY_WORDS),
 };

@@ -11,12 +11,17 @@ import { db } from '../../src/data/db';
 import { ideaOf } from '../../src/data/grammar/ladder';
 import { DAY, STEP_DAYS } from '../../src/data/schedule';
 import { clearBus, subscribe, type EventOf } from '../../src/events/bus';
+import { registerPronunciation, type Pronunciation } from '../../src/speech/pronunciation';
 import { stopReading } from '../../src/speech/readAloud';
+import { MODERN } from '../../src/speech/schemes/modern';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GRAMMAR_TERM_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 
+let unregisterTestish: (() => void) | undefined;
+
 afterAll(() => {
+  unregisterTestish?.();
   cleanup();
   stopReading();
   vi.unstubAllGlobals();
@@ -31,8 +36,18 @@ let startedAt = 0;
 /** The Laptop's wall clock steps back by about a second now and then: a bound on a stored time allows for it. */
 const CLOCK_SLACK = 3000;
 
-/** Opens the app on Romans 8 with every store emptied, `goal` saved as the goal setting when there is one, and a fake Postern. */
-async function open(goal: string | undefined): Promise<void> {
+/** A second pronunciation with a lesson of its own for the breathings only (mw-5r3p30.229). */
+const TESTISH: Pronunciation = {
+  ...MODERN,
+  id: 'testish',
+  label: 'Testish',
+  lessons: { breathings: { text: 'Testish says the rough breathing as a hum.' } },
+};
+
+/** Opens the app on Romans 8 with every store emptied, `goal` saved as the goal setting when there is one, the pronunciation `chosen` saved, and a fake Postern. */
+async function open(goal: string | undefined, chosen?: string): Promise<void> {
+  unregisterTestish?.();
+  unregisterTestish = undefined;
   cleanup();
   stopReading();
   clearBus();
@@ -52,6 +67,10 @@ async function open(goal: string | undefined): Promise<void> {
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.grammarKnown.clear(), db.grammarLevels.clear(), db.reviews.clear()]);
   if (goal !== undefined) await db.settings.put({ key: 'goal', value: goal });
+  if (chosen !== undefined) {
+    if (chosen === TESTISH.id) unregisterTestish = registerPronunciation(TESTISH);
+    await db.settings.put({ key: 'greekPronunciation', value: chosen });
+  }
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
@@ -97,6 +116,15 @@ const review = async (id: string) => {
   if (!row) throw new Error(`no review row for ${id}`);
   return row;
 };
+
+/** From the Goal screen's ideas list: opens the sheet of the idea `id`. */
+async function opensIdeaFromGoal(id: string): Promise<void> {
+  window.location.hash = '#/goal';
+  await user.click(await screen.findByTestId('ideas-bar'));
+  await user.click(within(await screen.findByTestId('ideas-list')).getByRole('button', { name: ideaOf(id).title }));
+  await screen.findByRole('dialog', { name: 'Idea' });
+  await waitFor(() => expect(within(ideaSheet()).queryByTestId('idea-loading')).toBeNull());
+}
 
 const feature = await loadFeature('features/idea-sheet.feature');
 
@@ -302,6 +330,34 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the idea sheet text says it follows {string}', (_, way: string) => {
       expect(within(ideaSheet()).getByTestId('idea-text')).toHaveTextContent(way);
+    });
+  });
+
+  Scenario('The Breathing marks sheet teaches the Modern Greek sound, where a breathing is silent', ({ Given, When, Then, And }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the idea sheet of {string} from the Goal screen', (_, id: string) => opensIdeaFromGoal(id));
+    Then('the idea sheet text says the breathing is silent and gives ὁ as “o”', () => {
+      const text = within(ideaSheet()).getByTestId('idea-text');
+      expect(text).toHaveTextContent(/silent/);
+      expect(text).toHaveTextContent('ὁ is “o”');
+    });
+    And('the idea sheet text does not say a breathing adds an h or that ὁ is “ho”', () => {
+      const text = within(ideaSheet()).getByTestId('idea-text').textContent ?? '';
+      expect(text).not.toMatch(/adds an? h/i);
+      expect(text).not.toContain('“ho”');
+    });
+  });
+
+  Scenario('Another pronunciation teaches its own breathing lesson on the sheet', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 with the goal {string}, no idea level, a fake Postern and the pronunciation {string} chosen', async (_, goal: string, id: string) => {
+      await open(goal, id);
+    });
+    When('he opens the idea sheet of {string} from the Goal screen', (_, id: string) => opensIdeaFromGoal(id));
+    Then('the idea sheet text says {string}', async (_, phrase: string) => {
+      await waitFor(() => expect(within(ideaSheet()).getByTestId('idea-text')).toHaveTextContent(phrase));
+    });
+    And('the idea sheet text does not say {string}', (_, phrase: string) => {
+      expect(within(ideaSheet()).getByTestId('idea-text').textContent).not.toContain(phrase);
     });
   });
 });

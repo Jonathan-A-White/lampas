@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Verse } from './data/chapter';
 import { unitId } from './data/passage';
 import { loadFrequency } from './data/frequency';
+import { ideaSound } from './data/grammar/lessons';
 import { drillWhy, drillWords, ideaOfSound, reviewIdsOf, type DrillOffer } from './data/readingDrill';
 import { scheduleSounds } from './data/repositories';
 import { FAILURE_TITLES } from './services/tutor';
@@ -163,7 +164,7 @@ export function ReadingDrill({ offer, pronunciation, onClose }: { offer: DrillOf
               {offer.kind === 'sound' && idea ? (
                 <>
                   <p data-drill-rule className="text-2xl">
-                    <span lang="grc" className="font-greek text-3xl">{idea.pair}</span> says {idea.sound}
+                    <span lang="grc" className="font-greek text-3xl">{idea.pair}</span> says {ideaSound(idea)}
                   </p>
                   <SpeakButton text={idea.pair ?? ''} id={`drill-rule-${offer.unit}`} label={`Hear ${idea.pair}`} kind="speaker" />
                   <p className="text-base text-muted">{drillWhy(offer)} You will read {words.length} short words with it, easiest first.</p>

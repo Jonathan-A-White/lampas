@@ -1,6 +1,8 @@
 // features/steps/grammar-ladder.steps.ts — runs features/grammar-ladder.feature: the ladder of grammar ideas and ideasOf.
 import { expect } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
+import { ideaSound } from '../../src/data/grammar/lessons';
+import { pronunciationOf } from '../../src/speech/pronunciation';
 import { LADDER, TIERS, ideasOf, type GrammarIdea } from '../../src/data/grammar/ladder';
 
 const byTitle = (title: string): GrammarIdea => {
@@ -24,7 +26,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the letter {string} has the glyphs {string} and {string} and the sound {string}', (_, name: string, lower: string, upper: string, sound: string) => {
       const letter = byTitle(name);
       expect(letter.glyphs).toEqual([lower, upper]);
-      expect(letter.sound?.startsWith(sound)).toBe(true);
+      expect(ideaSound(letter, pronunciationOf('modern'))?.startsWith(sound)).toBe(true);
     });
     And('the sounds, the marks and then the nouns come after the letters', () => {
       const first = (tier: GrammarIdea['tier']) => LADDER.findIndex((i) => i.tier === tier);
