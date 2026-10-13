@@ -571,6 +571,12 @@ describe('Sound it out speaks the app\'s pronunciation (mw-5r3p30.241)', () => {
     expect(text).toMatch(/never "aw"/);
   });
 
+  it('they say never to name a wrong sound, even as a warning, because the app reads the answer aloud (mw-5r3p30.282)', () => {
+    expect(text).toMatch(/never by a wrong sound to avoid/);
+    expect(text).toMatch(/not aw/);
+    expect(text).toMatch(/never name a wrong sound/i);
+  });
+
   it('they say never to cut a diphthong across two syllables', () => {
     expect(text).toMatch(/never split a pair of letters that makes one sound[^.]*αυ, ευ, ηυ, ου, αι, ει, οι, υι/i);
     expect(text).toMatch(/unless the second letter carries a diaeresis/);

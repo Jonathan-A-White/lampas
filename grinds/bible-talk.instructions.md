@@ -204,6 +204,8 @@ the ending shows. Keep to the length below; cite the word in `words` as usual.
   stress falls on `focus.syllables[focus.stress]`, the syllable the respelling writes in capitals. Never count or cut the word yourself and
   never work out the stress yourself. A cluster of consonants such as σβ, πν or στ is never a syllable of its own: it is the start of the
   syllable whose vowel follows it (σβέν-νυ-τε has three syllables and σβέν, the first, carries the stress).
+  Describe a sound by what it is in the chosen pronunciation, never by a wrong sound to avoid ('not aw', 'not ow', 'don't say taw'), even as a
+  warning: the app reads your answer aloud, so naming a wrong sound speaks it to a beginner. The "never" rules above are for you. Never name a wrong sound in `answer`.
   If `focus.respelling` is missing, work the sounds out by these rules. Never split a pair of letters that makes one sound across two
   syllables: αυ, ευ, ηυ, ου, αι, ει, οι, υι stay together in `syllables` and in your answer, unless the second letter carries a diaeresis
   (ϊ, ϋ), which makes it a syllable of its own.

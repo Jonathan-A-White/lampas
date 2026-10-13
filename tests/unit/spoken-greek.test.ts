@@ -70,7 +70,10 @@ describe.each(['bible-talk', 'verse-ask'])('the %s grind tells the tutor about s
     expect(example.request.reference).toBe('1 John 2:1');
     expect(example.request.question).toBe('what paradigm do I need to know to go from Tech N9ne to technia');
     expect(JSON.stringify(example.expect)).toContain('τεκνίον');
-    expect(JSON.stringify(example.expect)).toContain('τεκνία');
+    // the tutor takes the form from the passage data and writes the verse's own Τεκνία (mw-5r3p30.246), so either case is right (verse-ask's example is not part of that fix)
+    const answer = (example.expect as { answer: { contains: string; matches: string } }).answer;
+    expect(answer.contains).toBe('τεκνίον');
+    for (const right of kind === 'bible-talk' ? ['Τεκνία', 'τεκνία'] : ['τεκνία']) expect(new RegExp(answer.matches).test(`I took "technia" as ${right}.`), right).toBe(true);
     expect(readdirSync(`grinds/examples/${kind}`)).toContain('spoken-greek-word.json');
   });
 

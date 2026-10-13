@@ -18,7 +18,7 @@
   "expect": {
     "answer": {
       "contains": "τεκνίον",
-      "matches": "τεκνία"
+      "matches": "[Ττ]εκνία"
     },
     "settings_changes": {
       "present": false
