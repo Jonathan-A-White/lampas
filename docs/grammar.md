@@ -52,6 +52,11 @@ the right word is always among the four choices, so a reader who ignores the mar
 proves every phrase is in its verse. The accents lesson no longer says the three marks need not be told apart: it says to stress the syllable that carries
 one, and that a mark can change the word and a few small words have none. BMA Tutor teaches both in the lesson 'Marks over the letters'.
 
+## The sound rules, and words that sound alike
+
+The respeller's rules that a reader applies are taught in the lessons of the chosen scheme (`schemes/modernLessons.ts`, held to `respellModern` by `tests/unit/sound-rules.test.ts`, which also finds each example word in the text): in `consonant-pairs` σ is `z` before β γ δ ζ λ μ ν ρ (`κόσμος` is `KOZ-mos`, `Ἰσραήλ` is `eez-ra-EEL`); in `diphthongs` the υ of αυ ευ ηυ is `v` before a vowel or β γ δ ζ λ μ ν ρ and `f` before any other letter or at the end (`Παῦλος` `PAV-los`, `αὐτός` `af-TOS`). The breathing rules are spelling, true in every scheme, so they are in the ladder's own `breathings` text: a breathing sits on the second vowel of a pair (`οὗτος`, `αὐτός`) and before a capital it stands in front of the letter (`Ἰησοῦς`).
+`words-sound-alike` ('Words that sound alike', `marks` tier, after `iota-subscript`; `src/data/grammar/soundAlike.ts`) teaches three pairs Modern Greek says alike: `ἡμεῖς`/`ὑμεῖς`, `λύομεν`/`λύωμεν`, `λύει`/`λύῃ`, and says to trust the spelling. That they sound alike is the scheme's claim, so the ladder's text only says a pronunciation may say them alike and the Modern Greek lesson says they do (a scheme with no lesson gets the neutral text). The question (`buildSoundAlike`, kind `letter`) is Tap to hear the word for “we”, then tap how it is spelt: the word, its twin and two words of the other pairs; when the scheme's `respell` gives the pair one sound the prompt says so, so only the spelling can answer it, and a scheme that says them apart is asked by ear. BMA Tutor teaches it in 'Marks over the letters'.
+
 ## The prepositions one by one, and compound verbs
 
 `src/data/grammar/prepositions.ts` (PROVISIONAL) is the data: twelve prepositions (`εἰς`, `ἐν`, `ἐκ`, `ἀπό`, `πρός`, `διά`, `κατά`, `μετά`,
@@ -97,7 +102,7 @@ beyond `loadChapter`.
 |---|---|---|
 | `ending` | the form with its ending blanked (`ἀρχ_`), four endings; the wrong three are the endings of other inflected words of the same part of speech in the passage (the common endings when it has too few). The stem is what the lemma and the form share, a stem vowel goes to the ending; a movable ν (-σιν, a verb's -εν) is shown in brackets and is one ending with or without it, `ουσι(ν)` | any word idea whose forms share a stem with their lemma |
 | `tap-form` | the Greek words of one verse as buttons: 'Tap the dative article'. The prompt names the fewest terms that leave exactly one word of the verse, and the word's text is not repeated in the verse | any word idea the passage has a form of |
-| `letter` | four glyphs: by name or by sound (a letter that sounds like the right one is never offered), vowel pairs, consonant pairs, the iota under a letter, the marks, and for `movable-letters` the form that fits a New Testament phrase (οὐ, οὐκ or οὐχ; ἐκ or ἐξ; ἀπ᾿ or ἀφ᾿; a word that takes a movable ν), and for `marks-change-word` and `enclitics` the word that fits a New Testament phrase, with its twin (the same letters, the other mark) always among the four | a letter, the alphabet, `diphthongs`, `consonant-pairs`, `iota-subscript`, `punctuation`, `movable-letters`, `marks-change-word`, `enclitics` |
+| `letter` | four glyphs: by name or by sound (a letter that sounds like the right one is never offered), vowel pairs, consonant pairs, the iota under a letter, the marks, and for `movable-letters` the form that fits a New Testament phrase (οὐ, οὐκ or οὐχ; ἐκ or ἐξ; ἀπ᾿ or ἀφ᾿; a word that takes a movable ν), and for `marks-change-word` and `enclitics` the word that fits a New Testament phrase, with its twin (the same letters, the other mark) always among the four, and for `words-sound-alike` Tap to hear a word by its meaning, then its spelling, the twin among the four | a letter, the alphabet, `diphthongs`, `consonant-pairs`, `iota-subscript`, `punctuation`, `movable-letters`, `marks-change-word`, `enclitics`, `words-sound-alike` |
 | `sound` | Tap to hear says a letter (`speakWord`), four glyphs | a letter, the alphabet |
 | `stress` | the syllables of a word from the chosen pronunciation's respell, the stressed one right | `accents` |
 | `preposition` | 'What does διά mean here?' over a real phrase (`διὰ τοὺς λόγους`, John 10:19): four meanings, the right one is the meaning of the case the phrase is in; the other cases' meanings of the same preposition are among the wrong ones | each `preposition-<key>` |
@@ -263,93 +268,94 @@ tenses, the stress mark, the diaeresis, the parts of speech) and fails on one it
 | 45 | marks | `breathing-smooth` | The smooth breathing | – | `breathings` |
 | 46 | marks | `accents` | Accents and stress | – | `syllables` |
 | 47 | marks | `iota-subscript` | The iota under a letter | – | `letter-iota`, `letter-alpha`, `letter-eta`, `letter-omega` |
-| 48 | marks | `punctuation` | Punctuation and small marks | – | `accents` |
-| 49 | marks | `movable-letters` | Movable letters | – | `breathings`, `punctuation` |
-| 50 | marks | `marks-change-word` | Marks that change the word | – | `breathings`, `accents` |
-| 51 | marks | `enclitics` | Enclitics | – | `breathings`, `accents`, `marks-change-word` |
-| 52 | nouns | `noun` | The noun | noun | `accents` |
-| 53 | nouns | `number-singular` | The singular | singular | `noun` |
-| 54 | nouns | `number-plural` | The plural | plural | `number-singular` |
-| 55 | nouns | `conjunction` | The conjunction | conjunction | `noun` |
-| 56 | nouns | `negative` | The negative | negative | `conjunction` |
-| 57 | nouns | `case-nominative` | The nominative case | nominative | `noun` |
-| 58 | nouns | `case-accusative` | The accusative case | accusative | `case-nominative` |
-| 59 | nouns | `case-genitive` | The genitive case | genitive | `case-nominative` |
-| 60 | nouns | `case-dative` | The dative case | dative | `case-genitive` |
-| 61 | nouns | `case-vocative` | The vocative case | vocative | `case-nominative` |
-| 62 | nouns | `gender-masculine` | The masculine gender | masculine | `noun` |
-| 63 | nouns | `gender-feminine` | The feminine gender | feminine | `gender-masculine` |
-| 64 | nouns | `gender-neuter` | The neuter gender | neuter | `gender-masculine`, `case-accusative` |
-| 65 | nouns | `article` | The article | article | `noun`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative`, `number-plural`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
-| 66 | nouns | `adjective` | The adjective | adjective | `noun`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative`, `number-plural`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
-| 67 | nouns | `comparative` | The comparative | comparative | `adjective` |
-| 68 | nouns | `superlative` | The superlative | superlative | `comparative` |
-| 69 | nouns | `numeral` | Number words | numeral | `adjective` |
-| 70 | nouns | `proper-name` | Proper names | proper name | `noun`, `article` |
-| 71 | nouns | `indeclinable` | Words that never change | indeclinable, letter | `proper-name`, `case-genitive` |
-| 72 | pronouns | `person-1st` | The first person | 1st person | `noun` |
-| 73 | pronouns | `person-2nd` | The second person | 2nd person | `person-1st` |
-| 74 | pronouns | `person-3rd` | The third person | 3rd person | `person-2nd` |
-| 75 | pronouns | `pronoun` | The pronoun | – | `noun`, `person-3rd`, `number-plural`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
-| 76 | pronouns | `pronoun-personal` | The personal pronoun | personal pronoun | `pronoun`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative` |
-| 77 | pronouns | `pronoun-demonstrative` | The demonstrative pronoun | demonstrative pronoun | `pronoun-personal`, `article`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
-| 78 | pronouns | `pronoun-relative` | The relative pronoun | relative pronoun | `pronoun-demonstrative` |
-| 79 | pronouns | `pronoun-interrogative` | The interrogative pronoun | interrogative pronoun | `pronoun-relative` |
-| 80 | pronouns | `pronoun-indefinite` | The indefinite pronoun | indefinite pronoun | `pronoun-interrogative` |
-| 81 | pronouns | `pronoun-reflexive` | The reflexive pronoun | reflexive pronoun | `pronoun-personal` |
-| 82 | pronouns | `pronoun-possessive` | The possessive pronoun | possessive pronoun, possessor | `pronoun-reflexive`, `adjective` |
-| 83 | pronouns | `pronoun-reciprocal` | The reciprocal pronoun | reciprocal pronoun | `pronoun-reflexive` |
-| 84 | pronouns | `pronoun-correlative` | The correlative pronoun | correlative pronoun | `pronoun-relative`, `pronoun-demonstrative` |
-| 85 | pronouns | `pronoun-correlative-interrogative` | The correlative or interrogative pronoun | correlative or interrogative pronoun | `pronoun-correlative`, `pronoun-interrogative` |
-| 86 | prepositions | `preposition` | The preposition | preposition | `case-genitive`, `case-dative`, `case-accusative` |
-| 87 | prepositions | `preposition-eis` | The preposition εἰς | – | `preposition`, `case-accusative` |
-| 88 | prepositions | `preposition-en` | The preposition ἐν | – | `preposition`, `case-dative` |
-| 89 | prepositions | `preposition-ek` | The preposition ἐκ | – | `preposition`, `movable-letters`, `case-genitive` |
-| 90 | prepositions | `preposition-apo` | The preposition ἀπό | – | `preposition`, `movable-letters`, `case-genitive` |
-| 91 | prepositions | `preposition-pros` | The preposition πρός | – | `preposition`, `case-accusative`, `case-dative` |
-| 92 | prepositions | `preposition-dia` | The preposition διά | – | `preposition`, `movable-letters`, `case-genitive`, `case-accusative` |
-| 93 | prepositions | `preposition-kata` | The preposition κατά | – | `preposition`, `movable-letters`, `case-genitive`, `case-accusative` |
-| 94 | prepositions | `preposition-meta` | The preposition μετά | – | `preposition`, `movable-letters`, `case-genitive`, `case-accusative` |
-| 95 | prepositions | `preposition-peri` | The preposition περί | – | `preposition`, `case-genitive`, `case-accusative` |
-| 96 | prepositions | `preposition-hypo` | The preposition ὑπό | – | `preposition`, `movable-letters`, `case-genitive`, `case-accusative` |
-| 97 | prepositions | `preposition-para` | The preposition παρά | – | `preposition`, `movable-letters`, `case-genitive`, `case-dative`, `case-accusative` |
-| 98 | prepositions | `preposition-epi` | The preposition ἐπί | – | `preposition`, `movable-letters`, `case-genitive`, `case-dative`, `case-accusative` |
-| 99 | verbs | `verb` | The verb | verb | `person-1st`, `person-2nd`, `person-3rd`, `number-singular`, `number-plural` |
-| 100 | verbs | `compound-verbs` | Compound verbs | – | `verb`, `preposition`, `preposition-eis`, `preposition-en`, `preposition-ek`, `preposition-apo`, `preposition-pros`, `preposition-dia`, `preposition-kata`, `preposition-meta`, `preposition-peri`, `preposition-hypo`, `preposition-para`, `preposition-epi` |
-| 101 | verbs | `tense-present` | The present tense | present | `verb` |
-| 102 | verbs | `voice-active` | The active voice | active | `verb` |
-| 103 | verbs | `mood-indicative` | The indicative mood | indicative | `tense-present`, `voice-active` |
-| 104 | verbs | `tense-imperfect` | The imperfect tense | imperfect | `mood-indicative` |
-| 105 | verbs | `tense-future` | The future tense | future | `tense-present` |
-| 106 | verbs | `tense-aorist` | The aorist tense | aorist | `tense-imperfect` |
-| 107 | verbs | `tense-perfect` | The perfect tense | perfect | `tense-aorist` |
-| 108 | verbs | `tense-pluperfect` | The pluperfect tense | pluperfect | `tense-perfect` |
-| 109 | verbs | `second-tenses` | Second aorists and perfects | second | `tense-aorist`, `tense-perfect` |
-| 110 | verbs | `voice-middle` | The middle voice | middle | `voice-active` |
-| 111 | verbs | `voice-passive` | The passive voice | passive | `voice-active`, `tense-present`, `case-genitive` |
-| 112 | verbs | `voice-middle-or-passive` | The middle or passive voice | middle or passive | `voice-middle`, `voice-passive` |
-| 113 | verbs | `voice-middle-deponent` | The middle deponent | middle deponent | `voice-middle-or-passive` |
-| 114 | verbs | `voice-passive-deponent` | The passive deponent | passive deponent | `voice-middle-deponent`, `tense-aorist` |
-| 115 | verbs | `voice-middle-or-passive-deponent` | The middle or passive deponent | middle or passive deponent | `voice-passive-deponent` |
-| 116 | verbs | `voice-middle-significance` | A middle meaning in an active form | middle significance | `voice-middle` |
-| 117 | verbs | `voice-impersonal-active` | The impersonal active | impersonal active | `voice-active` |
-| 118 | verbs | `voice-none` | A verb with no voice | no voice | `voice-active` |
-| 119 | verbs | `mood-imperative` | The imperative mood | imperative | `mood-indicative`, `tense-aorist` |
-| 120 | verbs | `mood-subjunctive` | The subjunctive mood | subjunctive | `mood-indicative` |
-| 121 | verbs | `mood-optative` | The optative mood | optative | `mood-subjunctive` |
-| 122 | verbs | `mood-infinitive` | The infinitive | infinitive | `mood-indicative`, `article` |
-| 123 | verbs | `mood-participle` | The participle | participle | `mood-infinitive`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative`, `gender-masculine`, `gender-feminine`, `gender-neuter`, `adjective` |
-| 124 | verbs | `mood-participle-imperative` | The participle with the sense of a command | imperative-sense participle | `mood-participle`, `mood-imperative` |
-| 125 | joiners | `particle` | The particle | particle | `conjunction` |
-| 126 | joiners | `adverb` | The adverb | adverb | `adjective`, `verb` |
-| 127 | joiners | `interrogative` | Words that ask a question | interrogative | `particle` |
-| 128 | joiners | `conditional` | The conditional | conditional | `conjunction`, `mood-indicative`, `mood-subjunctive` |
-| 129 | joiners | `interjection` | The interjection | interjection | `particle` |
-| 130 | joiners | `attic-form` | Attic spellings | Attic form | `verb` |
-| 131 | joiners | `poetic` | Poetic forms | poetic | `attic-form` |
-| 132 | joiners | `crasis` | Two words run together | crasis | `conjunction`, `punctuation` |
-| 133 | joiners | `aramaic` | Aramaic words | Aramaic word | `indeclinable` |
-| 134 | joiners | `hebrew` | Hebrew words | Hebrew word | `indeclinable` |
+| 48 | marks | `words-sound-alike` | Words that sound alike | – | `diphthongs`, `iota-subscript` |
+| 49 | marks | `punctuation` | Punctuation and small marks | – | `accents` |
+| 50 | marks | `movable-letters` | Movable letters | – | `breathings`, `punctuation` |
+| 51 | marks | `marks-change-word` | Marks that change the word | – | `breathings`, `accents` |
+| 52 | marks | `enclitics` | Enclitics | – | `breathings`, `accents`, `marks-change-word` |
+| 53 | nouns | `noun` | The noun | noun | `accents` |
+| 54 | nouns | `number-singular` | The singular | singular | `noun` |
+| 55 | nouns | `number-plural` | The plural | plural | `number-singular` |
+| 56 | nouns | `conjunction` | The conjunction | conjunction | `noun` |
+| 57 | nouns | `negative` | The negative | negative | `conjunction` |
+| 58 | nouns | `case-nominative` | The nominative case | nominative | `noun` |
+| 59 | nouns | `case-accusative` | The accusative case | accusative | `case-nominative` |
+| 60 | nouns | `case-genitive` | The genitive case | genitive | `case-nominative` |
+| 61 | nouns | `case-dative` | The dative case | dative | `case-genitive` |
+| 62 | nouns | `case-vocative` | The vocative case | vocative | `case-nominative` |
+| 63 | nouns | `gender-masculine` | The masculine gender | masculine | `noun` |
+| 64 | nouns | `gender-feminine` | The feminine gender | feminine | `gender-masculine` |
+| 65 | nouns | `gender-neuter` | The neuter gender | neuter | `gender-masculine`, `case-accusative` |
+| 66 | nouns | `article` | The article | article | `noun`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative`, `number-plural`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
+| 67 | nouns | `adjective` | The adjective | adjective | `noun`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative`, `number-plural`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
+| 68 | nouns | `comparative` | The comparative | comparative | `adjective` |
+| 69 | nouns | `superlative` | The superlative | superlative | `comparative` |
+| 70 | nouns | `numeral` | Number words | numeral | `adjective` |
+| 71 | nouns | `proper-name` | Proper names | proper name | `noun`, `article` |
+| 72 | nouns | `indeclinable` | Words that never change | indeclinable, letter | `proper-name`, `case-genitive` |
+| 73 | pronouns | `person-1st` | The first person | 1st person | `noun` |
+| 74 | pronouns | `person-2nd` | The second person | 2nd person | `person-1st` |
+| 75 | pronouns | `person-3rd` | The third person | 3rd person | `person-2nd` |
+| 76 | pronouns | `pronoun` | The pronoun | – | `noun`, `person-3rd`, `number-plural`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
+| 77 | pronouns | `pronoun-personal` | The personal pronoun | personal pronoun | `pronoun`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative` |
+| 78 | pronouns | `pronoun-demonstrative` | The demonstrative pronoun | demonstrative pronoun | `pronoun-personal`, `article`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
+| 79 | pronouns | `pronoun-relative` | The relative pronoun | relative pronoun | `pronoun-demonstrative` |
+| 80 | pronouns | `pronoun-interrogative` | The interrogative pronoun | interrogative pronoun | `pronoun-relative` |
+| 81 | pronouns | `pronoun-indefinite` | The indefinite pronoun | indefinite pronoun | `pronoun-interrogative` |
+| 82 | pronouns | `pronoun-reflexive` | The reflexive pronoun | reflexive pronoun | `pronoun-personal` |
+| 83 | pronouns | `pronoun-possessive` | The possessive pronoun | possessive pronoun, possessor | `pronoun-reflexive`, `adjective` |
+| 84 | pronouns | `pronoun-reciprocal` | The reciprocal pronoun | reciprocal pronoun | `pronoun-reflexive` |
+| 85 | pronouns | `pronoun-correlative` | The correlative pronoun | correlative pronoun | `pronoun-relative`, `pronoun-demonstrative` |
+| 86 | pronouns | `pronoun-correlative-interrogative` | The correlative or interrogative pronoun | correlative or interrogative pronoun | `pronoun-correlative`, `pronoun-interrogative` |
+| 87 | prepositions | `preposition` | The preposition | preposition | `case-genitive`, `case-dative`, `case-accusative` |
+| 88 | prepositions | `preposition-eis` | The preposition εἰς | – | `preposition`, `case-accusative` |
+| 89 | prepositions | `preposition-en` | The preposition ἐν | – | `preposition`, `case-dative` |
+| 90 | prepositions | `preposition-ek` | The preposition ἐκ | – | `preposition`, `movable-letters`, `case-genitive` |
+| 91 | prepositions | `preposition-apo` | The preposition ἀπό | – | `preposition`, `movable-letters`, `case-genitive` |
+| 92 | prepositions | `preposition-pros` | The preposition πρός | – | `preposition`, `case-accusative`, `case-dative` |
+| 93 | prepositions | `preposition-dia` | The preposition διά | – | `preposition`, `movable-letters`, `case-genitive`, `case-accusative` |
+| 94 | prepositions | `preposition-kata` | The preposition κατά | – | `preposition`, `movable-letters`, `case-genitive`, `case-accusative` |
+| 95 | prepositions | `preposition-meta` | The preposition μετά | – | `preposition`, `movable-letters`, `case-genitive`, `case-accusative` |
+| 96 | prepositions | `preposition-peri` | The preposition περί | – | `preposition`, `case-genitive`, `case-accusative` |
+| 97 | prepositions | `preposition-hypo` | The preposition ὑπό | – | `preposition`, `movable-letters`, `case-genitive`, `case-accusative` |
+| 98 | prepositions | `preposition-para` | The preposition παρά | – | `preposition`, `movable-letters`, `case-genitive`, `case-dative`, `case-accusative` |
+| 99 | prepositions | `preposition-epi` | The preposition ἐπί | – | `preposition`, `movable-letters`, `case-genitive`, `case-dative`, `case-accusative` |
+| 100 | verbs | `verb` | The verb | verb | `person-1st`, `person-2nd`, `person-3rd`, `number-singular`, `number-plural` |
+| 101 | verbs | `compound-verbs` | Compound verbs | – | `verb`, `preposition`, `preposition-eis`, `preposition-en`, `preposition-ek`, `preposition-apo`, `preposition-pros`, `preposition-dia`, `preposition-kata`, `preposition-meta`, `preposition-peri`, `preposition-hypo`, `preposition-para`, `preposition-epi` |
+| 102 | verbs | `tense-present` | The present tense | present | `verb` |
+| 103 | verbs | `voice-active` | The active voice | active | `verb` |
+| 104 | verbs | `mood-indicative` | The indicative mood | indicative | `tense-present`, `voice-active` |
+| 105 | verbs | `tense-imperfect` | The imperfect tense | imperfect | `mood-indicative` |
+| 106 | verbs | `tense-future` | The future tense | future | `tense-present` |
+| 107 | verbs | `tense-aorist` | The aorist tense | aorist | `tense-imperfect` |
+| 108 | verbs | `tense-perfect` | The perfect tense | perfect | `tense-aorist` |
+| 109 | verbs | `tense-pluperfect` | The pluperfect tense | pluperfect | `tense-perfect` |
+| 110 | verbs | `second-tenses` | Second aorists and perfects | second | `tense-aorist`, `tense-perfect` |
+| 111 | verbs | `voice-middle` | The middle voice | middle | `voice-active` |
+| 112 | verbs | `voice-passive` | The passive voice | passive | `voice-active`, `tense-present`, `case-genitive` |
+| 113 | verbs | `voice-middle-or-passive` | The middle or passive voice | middle or passive | `voice-middle`, `voice-passive` |
+| 114 | verbs | `voice-middle-deponent` | The middle deponent | middle deponent | `voice-middle-or-passive` |
+| 115 | verbs | `voice-passive-deponent` | The passive deponent | passive deponent | `voice-middle-deponent`, `tense-aorist` |
+| 116 | verbs | `voice-middle-or-passive-deponent` | The middle or passive deponent | middle or passive deponent | `voice-passive-deponent` |
+| 117 | verbs | `voice-middle-significance` | A middle meaning in an active form | middle significance | `voice-middle` |
+| 118 | verbs | `voice-impersonal-active` | The impersonal active | impersonal active | `voice-active` |
+| 119 | verbs | `voice-none` | A verb with no voice | no voice | `voice-active` |
+| 120 | verbs | `mood-imperative` | The imperative mood | imperative | `mood-indicative`, `tense-aorist` |
+| 121 | verbs | `mood-subjunctive` | The subjunctive mood | subjunctive | `mood-indicative` |
+| 122 | verbs | `mood-optative` | The optative mood | optative | `mood-subjunctive` |
+| 123 | verbs | `mood-infinitive` | The infinitive | infinitive | `mood-indicative`, `article` |
+| 124 | verbs | `mood-participle` | The participle | participle | `mood-infinitive`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative`, `gender-masculine`, `gender-feminine`, `gender-neuter`, `adjective` |
+| 125 | verbs | `mood-participle-imperative` | The participle with the sense of a command | imperative-sense participle | `mood-participle`, `mood-imperative` |
+| 126 | joiners | `particle` | The particle | particle | `conjunction` |
+| 127 | joiners | `adverb` | The adverb | adverb | `adjective`, `verb` |
+| 128 | joiners | `interrogative` | Words that ask a question | interrogative | `particle` |
+| 129 | joiners | `conditional` | The conditional | conditional | `conjunction`, `mood-indicative`, `mood-subjunctive` |
+| 130 | joiners | `interjection` | The interjection | interjection | `particle` |
+| 131 | joiners | `attic-form` | Attic spellings | Attic form | `verb` |
+| 132 | joiners | `poetic` | Poetic forms | poetic | `attic-form` |
+| 133 | joiners | `crasis` | Two words run together | crasis | `conjunction`, `punctuation` |
+| 134 | joiners | `aramaic` | Aramaic words | Aramaic word | `indeclinable` |
+| 135 | joiners | `hebrew` | Hebrew words | Hebrew word | `indeclinable` |
 
 ## Approaches
 

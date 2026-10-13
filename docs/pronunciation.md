@@ -26,7 +26,7 @@ syllable, as it reads the word ή 'or'). A held word, a speaker and a one-letter
 (`IdeaSheet.tsx`), the quick round, the sound questions and the reading drill read them through `src/data/grammar/lessons.ts` (`ideaText`, `ideaSound`)
 for the chosen scheme; the ladder itself holds only the spelling, so no scheme's sounds are written outside its own file. An idea the scheme has no
 lesson for says a neutral text with no sound and is asked by ear or by name, never in another scheme's sounds. Modern Greek's are in
-`schemes/modernLessons.ts` (the breathings are silent: ὁ is 'o'), and `tests/unit/sound-lessons.test.ts` holds each to `respellModern`.
+`schemes/modernLessons.ts` (the breathings are silent: ὁ is 'o'), and `tests/unit/sound-lessons.test.ts` holds each to `respellModern`. The rules a reader applies (σ as z, αυ/ευ as v or f by the next sound) and the pairs a scheme says alike (`words-sound-alike`: ἡμεῖς/ὑμεῖς, λύομεν/λύωμεν, λύει/λύῃ) are lessons too, with an example each held to the respeller by `tests/unit/sound-rules.test.ts`; a scheme teaches them only if its own rules hold them.
 
 ## Modern Greek (`src/speech/schemes/modern.ts`)
 
@@ -40,7 +40,7 @@ lesson for says a neutral text with no sound and is asked by ear or by name, nev
 | χ | kh; h when the next vowel is e or i | χριστῷ is `hree-STO` |
 | μπ ντ γκ γγ | mb nd ng(g) inside a word; b d g at its start | the n or m ends the syllable, the b d g opens the next |
 | γχ γξ | ng+kh (h), nks | `ἐλέγχω` is `e-LENG-kho` |
-| σ | s; z before β γ δ ζ μ ν ρ | the z ends the syllable: `Ἰσραήλ` is `eez-ra-EEL` |
+| σ | s; z before β γ δ ζ λ μ ν ρ | the z ends the syllable: `κόσμος` is `KOZ-mos`, `Ἰσραήλ` is `eez-ra-EEL` |
 | double consonants | said once | |
 
 A hard g after a nasal is written `gh` when it opens the stressed syllable before e or i (`εὐαγγέλιον` is
