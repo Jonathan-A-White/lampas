@@ -28,5 +28,5 @@ Feature: A one-letter Greek word is said by the Greek voice as its sound
 
   Scenario: A letter drill still names the letter
     Given a letter drill asks him to hear the letter omicron and tap it
-    When he holds "Hold to hear"
+    When he taps "Tap to hear"
     Then the phone is told to speak the letter itself, "ο", with lang "el-GR" in its Greek voice

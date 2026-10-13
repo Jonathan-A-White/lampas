@@ -142,15 +142,12 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       expect(question.kind).toBe('sound');
       render(<GrammarCard question={question} mode="choice" picked={null} onPick={() => {}} />);
     });
-    When('he holds {string}', async (_, name: string) => {
-      const bar = screen.getByRole('button', { name });
-      await user.pointer({ keys: '[MouseLeft>]', target: bar, coords: { clientX: 100, clientY: 100 } });
-      await sleep(HOLD_MS);
+    When('he taps {string}', async (_, name: string) => {
+      await user.click(screen.getByRole('button', { name }));
     });
-    Then('the phone is told to speak the letter itself, {string}, with lang {string} in its Greek voice', async (_, letter: string, lang: string) => {
+    Then('the phone is told to speak the letter itself, {string}, with lang {string} in its Greek voice', (_, letter: string, lang: string) => {
       expect(synth.spoken).toHaveLength(1);
       toldGreek(letter, lang);
-      await user.pointer({ keys: '[/MouseLeft]', target: screen.getByRole('button', { name: 'Hold to hear' }), coords: { clientX: 100, clientY: 100 } });
     });
   });
 });
