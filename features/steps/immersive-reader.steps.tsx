@@ -394,6 +394,47 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario("Two-finger taps bring back Lampas's own bars but keep the page full screen", ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader On and a phone that can go full screen', () => open({ immersive: 'on', fullscreen: 'works' }));
+    When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
+    Then('the page has asked for full screen once', async () => {
+      await sleep(50);
+      expect(fs).toEqual({ requests: 1, exits: 0 });
+    });
+    When('he taps the text with two fingers', twoFingerTap);
+    Then(`${bars} in view`, inView);
+    And('the page has still asked for full screen once', async () => {
+      await sleep(400);
+      expect(fs).toEqual({ requests: 1, exits: 0 });
+      expect(document.fullscreenElement).not.toBeNull();
+    });
+    When('he taps the text with two fingers again', twoFingerTap);
+    Then(`${bars} out of view`, outOfView);
+    And('the page has kept the one full screen it asked for', async () => {
+      await sleep(400);
+      expect(fs).toEqual({ requests: 1, exits: 0 });
+      expect(document.fullscreenElement).not.toBeNull();
+    });
+  });
+
+  Scenario('Leaving the Reader leaves full screen', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader On and a phone that can go full screen', () => open({ immersive: 'on', fullscreen: 'works' }));
+    When('he taps the text with one finger', async () => {
+      oneFingerTap();
+      await sleep(50);
+    });
+    Then('the page has asked for full screen once', () => {
+      expect(fs).toEqual({ requests: 1, exits: 0 });
+    });
+    When('he opens Settings from the Reader', async () => {
+      await user.click(screen.getByRole('button', { name: 'Settings' }));
+    });
+    Then('the page has left full screen', async () => {
+      await waitFor(() => expect(fs.exits).toBe(1));
+      expect(document.fullscreenElement).toBeNull();
+    });
+  });
+
   Scenario('With Immersive reader Off the page never asks for full screen', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with Immersive reader Off and a phone that can go full screen', () => open({ immersive: 'off', fullscreen: 'works' }));
     When('he taps the text with one finger', oneFingerTap);
