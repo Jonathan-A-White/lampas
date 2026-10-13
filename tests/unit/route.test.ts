@@ -23,6 +23,7 @@ describe('the address', () => {
     expect(routeOf('#/goal')).toBe('goal');
     expect(routeOf('#/studyway')).toBe('studyway');
     expect(routeOf('#/aboutyou')).toBe('aboutyou');
+    expect(routeOf('#/memory')).toBe('memory');
     expect(routeOf('#/requests')).toBe('requests');
     expect(routeOf('#/about')).toBe('about');
     expect(routeOf('#/preface')).toBe('preface');

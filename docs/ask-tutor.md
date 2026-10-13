@@ -245,6 +245,19 @@ a phone that installed Lampas before this version may need it removed and instal
 - Checks: `features/share-target.feature`, `tests/unit/sw-share.test.ts`, `tests/unit/share-talks.test.ts`, `tests/unit/manifest.test.ts`, and
   `tests/e2e/share-target.spec.ts` (390 px, through the built worker, which that spec lets run; shots `share-target-sheet`, `share-target-talk`).
 
+## Memory (mw-yrmkdf.1)
+
+Lampas keeps notes about the reader on his phone, to be told to the tutor in a later story; today nothing is sent. Settings > Memory (`#/memory`)
+shows an index he writes (up to 1000 characters; the app adds under it one line per note, the note's name and the first line of it, so the tutor
+reads at most 1500) and the named notes: `book:<Book>`, `word:<lemma>` (NFC) or `topic:<slug>`, each up to 2000 characters, at most 40, with when
+each was changed and by whom (you or the tutor). He can edit the index and any note, delete a note (it asks once more) and Export everything as one
+file (`lampas-memory-<date>.json`, no date inside, so an import exports back to the same bytes). Import reads a file, says what it holds ("The
+file holds the index and 2 notes: ...") and replaces what is kept only on "Replace my memory"; a file that is not a Lampas memory changes nothing.
+
+It is kept in the settings store (`src/data/repositories/memory.ts`), outside the registry so the tutor cannot change it by `settings_changes`; the
+tutor's only write is an append (`appendToNote`, `appendToIndex`). `selectNotes(reference, focusLemma, screen)` is what a request will carry: the
+index with the book note of the reference, the word note of the focus word and the topic note named for the screen.
+
 ## About you (mw-1vuvq6.1)
 
 The tutor meets the student where he is, so it is told who he is as well as what he knows. Settings > About you (`#/aboutyou`) keeps a small
