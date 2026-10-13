@@ -24,7 +24,7 @@ export interface Pronunciation {
   scoringLang: string;
   /** a line under the label in Settings */
   note: string;
-  /** the Greek word as syllables an English reader can say, the stressed one in capitals: 'χριστῷ' is 'hree-STO' */
+  /** the Greek word as syllables an English reader can say, the stressed one in capitals: 'χριστῷ' is 'khree-STO' */
   respell(greekWord: string): string;
   /** An English word that has each sound the respelling writes ('e' is the e of 'pet'): the lessons give every sound with its key word, so another scheme changes them */
   keyWords: Readonly<Record<string, string>>;

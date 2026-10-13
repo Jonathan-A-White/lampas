@@ -1,5 +1,5 @@
 // src/speech/schemes/modern.ts — Modern Greek as a respelling: the Greek word in syllables an English reader can say,
-// the stressed syllable in capitals ("hree-STO"). Written from Modern Greek's own rules (docs/pronunciation.md lists
+// the stressed syllable in capitals ("khree-STO"). Written from Modern Greek's own rules (docs/pronunciation.md lists
 // them); the other schemes (Erasmian next) are further files beside this one, registered in ../pronunciation.ts.
 import type { Pronunciation } from '../pronunciation';
 import { modernLessons } from './modernLessons';
@@ -30,7 +30,7 @@ interface Tok {
   /** the Greek letter(s) it stands for: decides which clusters can open a syllable */
   key: string;
   stress?: boolean;
-  /** a vowel said at the front of the mouth (e, i): a g before it is y, a χ is h */
+  /** a vowel said at the front of the mouth (e, i): a g before it is y, a χ is hy */
   front?: boolean;
   /** between two vowels this one ends the syllable before it (the n of ντ, the z of σμ) */
   coda?: boolean;
@@ -82,20 +82,12 @@ function vowelAt(letters: Letter[], i: number): Vowel | null {
   return { text: VOWEL_SOUND[a.ch], front: 'εηιυ'.includes(a.ch), stress: a.stress, length: 1 };
 }
 
-/** The first vowel at or after `i`, skipping consonants. */
-function nextVowel(letters: Letter[], i: number): Vowel | null {
-  for (let j = i; j < letters.length; j++) {
-    const v = vowelAt(letters, j);
-    if (v) return v;
-  }
-  return null;
-}
-
 function tokensOf(letters: Letter[]): Tok[] {
   const toks: Tok[] = [];
   const seenVowel = () => toks.some((t) => t.kind === 'vowel');
   const consonant = (text: string, key: string, extra: Partial<Tok> = {}) => toks.push({ kind: 'consonant', text, key, ...extra });
-  const kh = (i: number) => (nextVowel(letters, i)?.front ? 'h' : 'kh');
+  // χ is the ch of loch (kh) before a, o, ou and a consonant, and the softer hy before e and i (χαίρετε is HYE-re-te; mw-5r3p30.264)
+  const kh = (i: number) => (vowelAt(letters, i)?.front ? 'hy' : 'kh');
 
   for (let i = 0; i < letters.length; ) {
     const ch = letters[i].ch;
@@ -183,7 +175,7 @@ function syllablesOf(toks: Tok[]): Syllable[] {
   return syllables;
 }
 
-/** The Greek word in Modern Greek sounds: 'χριστῷ' is 'hree-STO'. */
+/** The Greek word in Modern Greek sounds: 'χριστῷ' is 'khree-STO'. */
 export function respellModern(word: string): string {
   const toks = tokensOf(lettersOf(word));
   const syllables = syllablesOf(toks);
@@ -201,7 +193,7 @@ export function respellModern(word: string): string {
 /** The sounds respellModern writes, each with an English word that has it; the lessons say 'e as in pet'. */
 export const MODERN_KEY_WORDS: Readonly<Record<string, string>> = {
   a: 'father', e: 'pet', ee: 'see', o: 'lot', oo: 'food',
-  v: 'vase', f: 'fan', b: 'bed', d: 'dog', g: 'go', h: 'hat', s: 'sun', z: 'zoo',
+  v: 'vase', f: 'fan', b: 'bed', d: 'dog', g: 'go', y: 'yes', hy: 'huge', s: 'sun', z: 'zoo',
   mb: 'number', nd: 'under', ng: 'finger', nks: 'thanks', kh: 'loch',
 };
 

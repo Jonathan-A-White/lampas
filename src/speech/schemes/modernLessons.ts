@@ -19,7 +19,7 @@ export function modernLessons(keyWords: KeyWords): Readonly<Record<string, Sound
   const letters: [string, string][] = [
     ['alpha', keyed('a')],
     ['beta', 'v, as in “vase”'],
-    ['gamma', 'gh, a soft throaty g; before e and i it is y, as in “yes”'],
+    ['gamma', `gh, a soft throaty g; before e and i it is ${keyed('y')}`],
     ['delta', 'dh, the th of “this”'],
     ['epsilon', keyed('e')],
     ['zeta', 'z, as in “zoo”'],
@@ -38,7 +38,7 @@ export function modernLessons(keyWords: KeyWords): Readonly<Record<string, Sound
     ['tau', 't, as in “top”'],
     ['upsilon', keyed('ee')],
     ['phi', 'f, as in “fan”'],
-    ['chi', 'kh, like the ch of Scottish “loch”; before e and i it is a breathy h'],
+    ['chi', `${keyed('kh')} (the Scottish ch), before a, o, ou and a consonant; before e and i it is softer, ${asIn('hy')}`],
     ['psi', 'ps, as in “lips”'],
     ['omega', 'o, as in “lot”, the same as omicron'],
   ];
@@ -57,7 +57,7 @@ export function modernLessons(keyWords: KeyWords): Readonly<Record<string, Sound
     ['nt', `${asIn('d')} at the start of a word, ${asIn('nd')} inside it`],
     ['gk', `${asIn('g')} at the start of a word, ${asIn('ng')} inside it`],
     ['gg', asIn('ng')],
-    ['gch', `${asIn('ng')} plus ${asIn('kh')}`],
+    ['gch', `${asIn('ng')} plus ${asIn('kh')}, or ${asIn('hy')} before e and i`],
     ['gks', asIn('nks')],
   ];
 
@@ -70,7 +70,7 @@ export function modernLessons(keyWords: KeyWords): Readonly<Record<string, Sound
     text: `Some vowels pair up and make one sound, said the Modern Greek way: αι is the ${asIn('e')} (like ε), ει, οι and υι are the ${asIn('ee')}, and ου is the ${asIn('oo')}. In αυ, ευ and ηυ the υ is a ${asIn('v')} before a vowel or β, γ, δ, ζ, λ, μ, ν or ρ, and an ${asIn('f')} before any other letter or at the end of the word: Παῦλος is “PAV-los” and εὐαγγέλιον is “ev-an-GHE-lee-on”, but αὐτός is “af-TOS” and εὐθύς is “ef-THEES”. Marks you meet soon will show when two vowels are not a pair.`,
   };
   lessons['consonant-pairs'] = {
-    text: `Some consonants team up, said the Modern Greek way. In the middle of a word μπ is ${asIn('mb')}, ντ is ${asIn('nd')} and γκ is ${asIn('ng')}; at the start they are ${asIn('b')}, ${asIn('d')} and ${asIn('g')}. γγ is ${asIn('ng')}, γχ is ng plus ${asIn('kh')}, and γξ is ${asIn('nks')}. The letter σ is ${asIn('s')} but, before β, γ, δ, ζ, λ, μ, ν or ρ, it is ${asIn('z')}: κόσμος is “KOZ-mos” and Ἰσραήλ is “eez-ra-EEL”. A doubled consonant is said once.`,
+    text: `Some consonants team up, said the Modern Greek way. In the middle of a word μπ is ${asIn('mb')}, ντ is ${asIn('nd')} and γκ is ${asIn('ng')}; at the start they are ${asIn('b')}, ${asIn('d')} and ${asIn('g')}. γγ is ${asIn('ng')}, γχ is ng plus ${asIn('kh')} (${asIn('hy')} before e and i), and γξ is ${asIn('nks')}. The letter σ is ${asIn('s')} but, before β, γ, δ, ζ, λ, μ, ν or ρ, it is ${asIn('z')}: κόσμος is “KOZ-mos” and Ἰσραήλ is “eez-ra-EEL”. A doubled consonant is said once.`,
   };
   lessons.breathings = {
     text: 'A word that begins with a vowel carries a small mark over it. Modern Greek does not say either breathing: the rough breathing (ʽ) and the smooth breathing (᾿) are both silent, so ὁ is “o” and ἐν is “en”. You still need to know them, because they are part of the spelling and can make one word differ from another. Words that begin with ρ always take a rough breathing, and so does υ. It sits on the second vowel of a pair: οὗτος and αὐτός are said “OO-tos” and “af-TOS”, the breathing silent. Before a capital it stands in front of the letter, not over it: Ἰησοῦς is “ee-ee-SOOS”.',

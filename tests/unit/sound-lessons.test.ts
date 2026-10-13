@@ -40,6 +40,19 @@ describe('the sound lessons of the Modern Greek scheme', () => {
     }
   });
 
+  it('says χ has the two sounds the respelling writes, KH and HY, through the scheme\'s key words (mw-5r3p30.264)', () => {
+    expect(respellModern('χάρις')).toBe('KHA-rees');
+    expect(respellModern('χαίρετε')).toBe('HYE-re-te');
+    const chi = ideaSound(ideaOf('letter-chi'), modern) ?? '';
+    expect(chi).toContain(`kh, as in “${modern.keyWords.kh}”`);
+    expect(chi).toContain(`hy as in ${modern.keyWords.hy}`);
+    expect(chi).toMatch(/before e and i/);
+    expect(ideaText(ideaOf('letter-chi'), modern)).toContain(`hy as in ${modern.keyWords.hy}`);
+    expect(chi).not.toMatch(/breathy h/);
+    // γ keeps its two: gh, and y before e and i
+    expect(ideaSound(ideaOf('letter-gamma'), modern)).toContain(`y, as in “${modern.keyWords.y}”`);
+  });
+
   it('walks every idea of the letters, sounds and marks tiers: none says a breathing adds an h or that ὁ is “ho”', () => {
     for (const idea of LADDER.filter((i) => ['letters', 'sounds', 'marks'].includes(i.tier))) {
       const text = ideaText(idea, modern);

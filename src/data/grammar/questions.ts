@@ -40,7 +40,7 @@ export interface GrammarQuestion {
   facet?: Facet;
 }
 
-/** The words of the pronunciation that gives the syllables: the chosen pronunciation's respell, 'hree-STO'. */
+/** The words of the pronunciation that gives the syllables: the chosen pronunciation's respell, 'khree-STO'. */
 export type Respell = (word: string) => string;
 
 const OPTION_COUNT = 4;

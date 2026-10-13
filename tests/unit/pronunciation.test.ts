@@ -13,7 +13,7 @@ describe('the Greek pronunciation registry', () => {
   });
 
   it('gives each entry a respelling', () => {
-    expect(pronunciationOf('modern').respell('χριστῷ')).toBe('hree-STO');
+    expect(pronunciationOf('modern').respell('χριστῷ')).toBe('khree-STO');
   });
 
   it('knows its own ids and nothing else', () => {

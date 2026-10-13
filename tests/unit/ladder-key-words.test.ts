@@ -49,7 +49,7 @@ describe('the foundation lessons give every sound an English key word', () => {
   });
 
   it('reads the key words from the Greek pronunciation, so another scheme changes the lessons', () => {
-    for (const scheme of PRONUNCIATIONS) for (const sound of ['e', 'ee', 'oo', 'v', 'f', 'b', 'd', 'g', 'mb', 'nd', 'ng', 'kh', 'nks', 'h']) expect(scheme.keyWords[sound], `${scheme.id}: ${sound}`).toBeTruthy();
+    for (const scheme of PRONUNCIATIONS) for (const sound of ['e', 'ee', 'oo', 'v', 'f', 'b', 'd', 'g', 'mb', 'nd', 'ng', 'kh', 'nks', 'hy', 'y']) expect(scheme.keyWords[sound], `${scheme.id}: ${sound}`).toBeTruthy();
     expect(pronunciationOf('modern').keyWords.e).toBe('pet');
   });
 });
