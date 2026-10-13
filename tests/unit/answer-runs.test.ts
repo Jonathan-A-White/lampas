@@ -44,7 +44,7 @@ describe('answerRuns', () => {
   });
 });
 
-// A voice given one letter on its own says the letter's name ('Alpha'): readAloud.ts textOf turns such a run into its sound (tests/unit/readAloud.test.ts).
+// A voice given one letter on its own says the letter's name ('Alpha'): readAloud.ts textOf hands such a run to the Greek voice in its pronunciation's form (tests/unit/readAloud.test.ts).
 describe('syllableRuns', () => {
   const textsOf = (syllables: string[]): string[] => syllableRuns(syllables).map((r) => r.text);
 

@@ -204,6 +204,14 @@ export const MODERN_KEY_WORDS: Readonly<Record<string, string>> = {
   mb: 'number', nd: 'under', ng: 'finger', nks: 'thanks', kh: 'loch',
 };
 
+/** A Greek word of ONE letter as the Greek voice is handed it (mw-5r3p30.262): the bare letter in lower case with a stress mark, in NFC (ὁ and Ὃ
+ * are 'ό', ἡ 'ή', ὦ 'ώ'). Modern Greek says no breathing; a Greek voice names a bare letter ('όμικρον') but reads a stressed vowel as a syllable,
+ * as it reads the word ή ('or'). A consonant carries no stress and is left bare. PROVISIONAL until the Governor has heard it on his phone. */
+export function loneLetterModern(word: string): string {
+  const bare = word.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+  return bare.length === 1 && VOWELS.includes(bare) ? `${bare}\u0301`.normalize('NFC') : bare;
+}
+
 export const MODERN: Pronunciation = {
   id: 'modern',
   label: 'Modern Greek',
@@ -212,4 +220,5 @@ export const MODERN: Pronunciation = {
   note: "How Greek is spoken today, by the phone's Greek voice.",
   respell: respellModern,
   keyWords: MODERN_KEY_WORDS,
+  loneLetter: loneLetterModern,
 };

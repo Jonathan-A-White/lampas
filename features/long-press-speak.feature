@@ -16,8 +16,8 @@ Feature: A long press on a word speaks it
     Given Lampas is opened on a phone with a Greek voice
     And he opens 1 John 1 in Greek
     When he long presses the word "Ὃ" in verse 1
-    Then the phone is handed no single Greek letter
-    And the phone is told to speak the sound of "Ὃ" in the pronunciation he chose
+    Then the phone is handed no bare Greek letter
+    And the Greek voice is told to speak "Ὃ" in the form the pronunciation he chose gives a word of one letter
 
   Scenario: A long press on an English word speaks it with lang en
     Given Lampas is opened on a phone with a Greek voice
