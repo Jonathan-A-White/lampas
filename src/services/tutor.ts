@@ -6,6 +6,7 @@ import { door } from 'bsv-kit/bsv';
 import { POSTERN_DOOR } from '../config';
 import { markSupplied, type Verse } from '../data/chapter';
 import type { AnswerWord } from '../data/db';
+import { isAnswerBridge, type AnswerBridge, type MissingFoundations } from '../data/grammar/bridge';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
 import type { MemoryField } from '../data/learnerMemory';
@@ -171,6 +172,8 @@ export interface VerseAskRequest {
   settings?: Record<string, string>;
   /** the requests he sent to the factory and where each stands (src/data/requestsForTutor.ts): up to 10, newest first; missing when he has sent none */
   requests?: TutorRequest[];
+  /** present only when the grammar words of his question name a topic that rests on ideas he lacks (mw-1vuvq6.5, src/data/grammar/bridge.ts), as the Bible talk is sent it */
+  missing_foundations?: MissingFoundations;
 }
 
 /** What the grind answers (grinds/verse-ask.answer.schema.json). */
@@ -182,6 +185,8 @@ export interface VerseAnswer {
   /** the one setting the tutor may switch when he asks, Ask by (grinds/verse-ask.answer.schema.json). The schema holds the tutor to one exact change,
    * but the app reads whatever arrives and takes only what askByChange accepts: a change it refuses never costs him the answer (mw-5r3p30.171). */
   settings_changes?: unknown;
+  /** only when the request carried `missing_foundations` (mw-1vuvq6.5): up to three of those ideas he lacks, the one to start with and why */
+  bridge?: AnswerBridge;
 }
 
 export type AskByChange = { key: 'askBy'; value: 'speaking' | 'typing' };
@@ -200,13 +205,14 @@ export function askByChange(answer: VerseAnswer): AskByChange[] {
 
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isVerseAnswer(value: unknown): value is VerseAnswer {
-  if (!isObject(value) || Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes') || !isText(value.answer, 1200)) return false;
+  if (!isObject(value) || Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'bridge') || !isText(value.answer, 1200)) return false;
   if ('question' in value && !isText(value.question, 400)) return false;
+  if ('bridge' in value && !isAnswerBridge(value.bridge)) return false;
   if (!Array.isArray(value.words) || value.words.length > 12) return false;
   return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));
 }
 
-export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = [], learnerProfile?: LearnerProfile, spoken = false, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION, memory?: MemoryField): VerseAskRequest {
+export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = [], learnerProfile?: LearnerProfile, spoken = false, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION, memory?: MemoryField, missingFoundations?: MissingFoundations): VerseAskRequest {
   return {
     reference,
     greek: verse.g.map((w) => w.t).join(' '),
@@ -221,6 +227,7 @@ export function buildRequest(reference: string, verse: Verse, question: string, 
     ...(memory ? { memory } : {}),
     ...(settings ? { settings } : {}),
     ...(requests.length > 0 ? { requests } : {}),
+    ...(missingFoundations ? { missing_foundations: missingFoundations } : {}),
   };
 }
 

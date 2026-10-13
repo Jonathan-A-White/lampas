@@ -17,6 +17,8 @@ import { answerRuns } from './speech/answerRuns';
 import { askTranscriber } from './speech/askTranscriber';
 import { stopAnswer } from './speech/readAloud';
 import { askAnswerId, speakTutor, stopOnTap } from './speech/tutorVoice';
+import { BridgeIdeaHost, BridgeOffer } from './talk/BridgeOffer';
+import { openBridgeIdea } from './talk/offers';
 import { PendingQuestion } from './ui/PendingQuestion';
 import { revealTop } from './ui/reveal';
 import { useElapsed } from './ui/useElapsed';
@@ -69,11 +71,13 @@ export function AnswerCards({ verse, book, chapter }: { verse: number | string; 
       {answers.map((a) => (
         <AnswerCard key={a.id} answer={a} />
       ))}
+      <BridgeIdeaHost owner="ask" />
     </div>
   );
 }
 
 function AnswerCard({ answer }: { answer: TutorAnswer }) {
+  const { bridge } = answer;
   return (
     <article data-answer onClick={stopOnTap} className="rounded-xl border border-line bg-surface p-3">
       <p data-answer-question className="break-words text-sm text-muted">{answer.cleanQuestion ?? answer.question}</p>
@@ -102,6 +106,7 @@ function AnswerCard({ answer }: { answer: TutorAnswer }) {
           ))}
         </dl>
       ) : null}
+      {bridge ? <BridgeOffer bridge={bridge} onTake={() => openBridgeIdea(bridge.next, 'ask')} /> : null}
       <div className="-mb-1 mt-1 flex justify-end">
         <CopyExchange place={answer.ref} question={answer.cleanQuestion ?? answer.question} answer={answer.answer} />
       </div>

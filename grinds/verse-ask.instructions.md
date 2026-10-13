@@ -23,6 +23,9 @@ You receive a Verse Ask Request (a JSON object):
   (`solid`, `frontier` and `not_yet` counts of the goal's words), `ideas` (the titles of the grammar ideas he has `solid`, at the
   `frontier` and `not_yet`, the goal's needs first), `placed`, `suggested_move`, `picker_level` and `approach` (`name`, `credit`,
   `next_lesson`).
+- `missing_foundations`: present only when the grammar words of his question name a topic that rests on ideas he has not learned: `{ "topic",
+  "total", "ideas" }`, the ideas he lacks under the topic, the lowest on the ladder first, each `{ "id", "title" }` (`direct` when the topic itself
+  needs it). See "When he is not ready for the question" below.
 - `learner_profile`: who he is as a student, which he wrote himself in Settings > About you (it may be missing, and any part of it may
   be missing): `age` (a number or a band, as he wrote it), `pace` (`quick`, `steady` or `slow`), `ways` (how he learns best: any of
   `hearing`, `seeing`, `reading`, `doing`, which means hands-on), `background` (languages he knows, Greek or Bible before, in his
@@ -40,7 +43,7 @@ You receive a Verse Ask Request (a JSON object):
 - `requests`: present only when he has sent requests to the factory (an ask the Talk offered to pass on, an approach he asked for): the 10 newest at
   most, newest first, each `{ "summary", "status", "version"?, "setting"?, "reason"? }`. See "His requests" below.
 
-Answer with a Verse Ask Answer (grinds/verse-ask.answer.schema.json): `answer`, `words` and `question` (what he typed or said, cleaned up: see "Cleaning up what he said"), and, only when he asks for it, `settings_changes` (see "Switching Ask by").
+Answer with a Verse Ask Answer (grinds/verse-ask.answer.schema.json): `answer`, `words` and `question` (what he typed or said, cleaned up: see "Cleaning up what he said"), and, only when he asks for it, `settings_changes` (see "Switching Ask by"), and `bridge` when `missing_foundations` is present and his question really rests on it (see "When he is not ready for the question").
 
 ## Greek words said in English speech
 
@@ -172,6 +175,20 @@ and `solid_words` it says where he is and who he is.
   without saying so in the same sentence: 'a new word', 'a case you have not met yet'. The profile never excuses that.
 - Use it quietly: never repeat the profile back to him, and never let it change what is true about the text.
 - Ask for nothing that is already there. A `learner_profile` that is missing means he has told you nothing: answer as you did before.
+
+## When he is not ready for the question
+
+When the request carries `missing_foundations`, the grammar words of his question name a topic (`topic`) that rests on ideas he has not
+learned: `total` of them, and `ideas` the first eight, the lowest on the ladder first, so `ideas[0]` is the next step in his progression.
+It is the app's own list: never add an idea to it and never name an id that is not in it.
+
+Use it only when the question really is about that grammar and he cannot follow the answer without it. Then answer him first, briefly and
+at his level, building on nothing he lacks; he is never refused. Then put ONE `bridge` in the answer: `missing` is up to three ideas from `ideas`,
+the most important first (an idea marked `direct` is one the topic itself needs: those first), `next` is `ideas[0].id` (the one the app's button
+'Take me there' opens) and `why` is one plain line saying why that one comes first. Name the ideas in your answer by their `title` and say
+where to start. When `total` is more than three, say so plainly ('You are missing quite a bit for this; these are the top three; start with
+Pairs of vowels.') and list exactly three in `missing`. Without `missing_foundations`, or for a question that is not about that grammar, leave
+`bridge` out.
 
 ## How to answer
 

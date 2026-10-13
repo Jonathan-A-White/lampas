@@ -1,0 +1,18 @@
+{
+  "description": "He asks what the verse means and the request carries no missing_foundations: the tutor answers and bridges nothing.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "1 John 1:1",
+    "greek": "Ὃ ἦν ἀπ' ἀρχῆς ὃ ἀκηκόαμεν ὃ ἑωράκαμεν τοῖς ὀφθαλμοῖς ἡμῶν ὃ ἐθεασάμεθα καὶ αἱ χεῖρες ἡμῶν ἐψηλάφησαν περὶ τοῦ λόγου τῆς ζωῆς",
+    "english": "That which was from the beginning, which we have heard, which we have seen with our own eyes, which we have gazed upon and touched with our own hands — this is the Word of life.",
+    "question": "What does this verse mean?",
+    "history": [],
+    "solid_words": [],
+    "settings": {}
+  },
+  "expect": {
+    "bridge": {
+      "present": false
+    }
+  }
+}

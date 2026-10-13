@@ -1,0 +1,38 @@
+{
+  "description": "Only the nominative case stands between him and the genitive: the tutor answers briefly, names that one idea and bridges to it, with next the first idea of missing_foundations.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "1 John 1:1",
+    "greek": "Ὃ ἦν ἀπ' ἀρχῆς ὃ ἀκηκόαμεν ὃ ἑωράκαμεν τοῖς ὀφθαλμοῖς ἡμῶν ὃ ἐθεασάμεθα καὶ αἱ χεῖρες ἡμῶν ἐψηλάφησαν περὶ τοῦ λόγου τῆς ζωῆς",
+    "english": "That which was from the beginning, which we have heard, which we have seen with our own eyes, which we have gazed upon and touched with our own hands — this is the Word of life.",
+    "question": "Why is the genitive used here?",
+    "history": [],
+    "solid_words": [],
+    "settings": {},
+    "missing_foundations": {
+      "topic": "The genitive case",
+      "total": 1,
+      "ideas": [
+        {
+          "id": "case-nominative",
+          "title": "The nominative case",
+          "direct": true
+        }
+      ]
+    }
+  },
+  "expect": {
+    "bridge.missing.0": {
+      "equals": "case-nominative"
+    },
+    "bridge.next": {
+      "equals": "case-nominative"
+    },
+    "answer": {
+      "contains": "nominative"
+    },
+    "bridge.missing.1": {
+      "present": false
+    }
+  }
+}

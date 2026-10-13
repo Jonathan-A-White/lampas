@@ -54,13 +54,38 @@
       "maxLength": 80
     },
     "pending_offer": {
-      "description": "Optional. Present only while an offer of yours waits for his tap: the newest such offer of this conversation. `kind` is 'feedback' (Send this to the makers; `text` is the summary it would send), 'setting' (a setting change from `setting_offer`; `text` is what it would change, such as 'Change Theme: Dark') or 'quiz-goal' (the goal from `quiz_goal_offer`; `text` is the goal). Decide from `question` whether he confirms, declines or asks to hear it, and say so in `offer_reply`.",
+      "description": "Optional. Present only while an offer of yours waits for his tap: the newest such offer of this conversation. `kind` is 'feedback' (Send this to the makers; `text` is the summary it would send), 'setting' (a setting change from `setting_offer`; `text` is what it would change, such as 'Change Theme: Dark') 'quiz-goal' (the goal from `quiz_goal_offer`; `text` is the goal) or 'bridge' (your `bridge`; `text` is 'Take me there: <title of the idea it opens>'; his yes opens that idea's sheet). Decide from `question` whether he confirms, declines or asks to hear it, and say so in `offer_reply`.",
       "type": "object",
       "additionalProperties": false,
       "required": ["kind", "text"],
       "properties": {
-        "kind": { "type": "string", "enum": ["feedback", "setting", "quiz-goal"] },
+        "kind": { "type": "string", "enum": ["feedback", "setting", "quiz-goal", "bridge"] },
         "text": { "type": "string", "minLength": 1, "maxLength": 200 }
+      }
+    },
+    "missing_foundations": {
+      "description": "Optional. Present only when the grammar words of his question name a topic that rests on ideas he has not learned (not yet, or not at all): `topic` is the idea he asked about, `total` how many ideas under it he lacks, and `ideas` the lowest on the ladder first (at most 8), so `ideas[0]` is his next step in the progression. `direct` marks an idea the topic itself names as a need: those are the most important. Offer a `bridge` from this list and never name an idea that is not in it (see the instructions, 'When he is not ready for the question').",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["topic", "total", "ideas"],
+      "properties": {
+        "topic": { "description": "The title of the idea he asked about: 'The genitive case'.", "type": "string", "minLength": 1, "maxLength": 80 },
+        "total": { "description": "How many ideas under the topic he lacks, all of them (the list names at most 8).", "type": "number", "minimum": 1 },
+        "ideas": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "title"],
+            "properties": {
+              "id": { "description": "The idea's id, to put in `bridge`.", "type": "string", "minLength": 1, "maxLength": 60 },
+              "title": { "description": "The idea's title, as he sees it: 'Pairs of vowels'.", "type": "string", "minLength": 1, "maxLength": 80 },
+              "direct": { "description": "true when the topic itself names this idea as a need.", "const": true }
+            }
+          }
+        }
       }
     },
     "resources": {

@@ -1,13 +1,19 @@
 // src/talk/offers.ts — the offers a tutor answer holds for his tap (Send this to the makers, a setting change, the quiz goal) and what his
 // spoken or typed yes, no or 'read it back' does to the newest one (mw-5r3p30.186). The decision is the grind's (`offer_reply` in the answer);
-// the app only carries the offer to it (`pending_offer`) and does exactly what the tap does when the reply is confirm.
+// the app only carries the offer to it (`pending_offer`) and does exactly what the tap does when the reply is confirm. The bridge (mw-1vuvq6.5) is one more: its
+// button is Take me there, and what it does is open the idea's sheet over the talk.
 import { useSyncExternalStore } from 'react';
-import { getTurn, markFeedbackSent, markFeedbackWithdrawn, markQuizGoalChoice, markSettingChoice, setQuizGoal, type TalkTurn } from '../data/repositories';
+import { ideaOf } from '../data/grammar/ladder';
+import { getTurn, markBridgeChoice, markFeedbackSent, markFeedbackWithdrawn, markQuizGoalChoice, markSettingChoice, setQuizGoal, type TalkTurn } from '../data/repositories';
+import type { Bridge } from '../data/db';
 import { buildTutorAskRequest, submitFeedback } from '../services/feedback';
 import { scopeTitle, type OfferReply, type PendingOffer, type TalkScope } from '../services/talk';
 import { applyChanges, offeredChange, type ChangeResult } from '../settings/registry';
 
-/** The offer a turn holds that no tap or word has settled, or undefined. A turn holds at most one that counts: the makers' first, then the setting, then the quiz goal. */
+/** What the bridge's button says: 'Take me there: Pairs of vowels', the idea it opens (the device's lowest unmet need, src/data/grammar/bridge.ts resolveBridge). */
+export const bridgeButtonText = (bridge: Bridge): string => `Take me there: ${ideaOf(bridge.next).title}`;
+
+/** The offer a turn holds that no tap or word has settled, or undefined. A turn holds at most one that counts: the makers' first, then the setting, then the quiz goal, then the bridge. */
 export function offerOfTurn(turn: TalkTurn): PendingOffer | undefined {
   if (turn.feedbackOffer && !turn.feedbackSent && !turn.feedbackWithdrawn) return { kind: 'feedback', text: turn.feedbackOffer };
   if (turn.settingOffer && !turn.settingChoice) {
@@ -15,6 +21,7 @@ export function offerOfTurn(turn: TalkTurn): PendingOffer | undefined {
     if (change) return { kind: 'setting', text: change.text };
   }
   if (turn.quizGoalOffer && !turn.quizGoalChoice) return { kind: 'quiz-goal', text: turn.quizGoalOffer };
+  if (turn.bridge && !turn.bridgeChoice) return { kind: 'bridge', text: bridgeButtonText(turn.bridge) };
   return undefined;
 }
 
@@ -81,6 +88,44 @@ export async function takeSettingOffer(turn: TalkTurn): Promise<ChangeResult> {
   return result;
 }
 
+/** Which screen's host draws the idea sheet a bridge opened: the Talk sheet's, or the Verse view's answer cards. */
+export type BridgeOwner = 'talk' | 'ask';
+/** The idea sheet a bridge has open. Module state, not a component's, for the same reason as `sending`: his tap and his spoken yes do not know of each other, and the
+ * second of them finds the sheet open and opens nothing more (mw-5r3p30.209). */
+let bridgeOpen: { ideaId: string; owner: BridgeOwner } | undefined;
+const bridgeListeners = new Set<() => void>();
+const subscribeBridge = (listener: () => void): (() => void) => {
+  bridgeListeners.add(listener);
+  return () => bridgeListeners.delete(listener);
+};
+
+/** Opens the idea's sheet over the screen of `owner`; the idea already open there stays the one sheet. */
+export function openBridgeIdea(ideaId: string, owner: BridgeOwner): void {
+  if (bridgeOpen?.ideaId === ideaId && bridgeOpen.owner === owner) return;
+  bridgeOpen = { ideaId, owner };
+  bridgeListeners.forEach((listener) => listener());
+}
+
+/** Closes the bridge's idea sheet: Done, Back, or its screen going away (then only the sheet that screen drew: `owner`). */
+export function closeBridgeIdea(owner?: BridgeOwner): void {
+  if (!bridgeOpen || (owner && bridgeOpen.owner !== owner)) return;
+  bridgeOpen = undefined;
+  bridgeListeners.forEach((listener) => listener());
+}
+
+/** The id of the idea whose sheet the bridge has open over `owner`'s screen, or undefined. */
+export function useBridgeIdea(owner: BridgeOwner): string | undefined {
+  const open = useSyncExternalStore(subscribeBridge, () => bridgeOpen);
+  return open?.owner === owner ? open.ideaId : undefined;
+}
+
+/** Takes the turn's bridge as its button's tap does: the sheet of the idea it names opens over the talk, and the offer is taken (it stays on screen to open again). */
+export async function takeBridgeOffer(turn: TalkTurn): Promise<void> {
+  if (!turn.bridge) return;
+  openBridgeIdea(turn.bridge.next, 'talk');
+  if (turn.id !== undefined && !turn.bridgeChoice) await markBridgeChoice(turn.id, 'taken');
+}
+
 /** What the spoken reply did, for the turn that carried it: the setting changes it made and the sentences for what could not be done. */
 export interface OfferOutcome {
   applied: ChangeResult['applied'];
@@ -98,12 +143,14 @@ export async function settleOffer(reply: OfferReply | undefined, waiting: { turn
   if (reply === 'decline') {
     if (offer.kind === 'feedback') await markFeedbackWithdrawn(id);
     else if (offer.kind === 'setting') await markSettingChoice(id, 'declined');
+    else if (offer.kind === 'bridge') await markBridgeChoice(id, 'declined');
     else await markQuizGoalChoice(id, 'declined');
     return outcome;
   }
   try {
     if (offer.kind === 'feedback') await sendMakersOffer(turn, scope);
     else if (offer.kind === 'setting') Object.assign(outcome, await takeSettingOffer(turn));
+    else if (offer.kind === 'bridge') await takeBridgeOffer(turn);
     else {
       await setQuizGoal(offer.text);
       await markQuizGoalChoice(id, 'kept');

@@ -112,13 +112,32 @@ The whole loop is walked at 390x844 by `tests/e2e/feedback-loop-demo.spec.ts` (m
 The tutor leaves three kinds of offer for a tap: **Send this to the makers** (`feedback_offer`), a setting change (`setting_offer` `{key, value}`, checked by
 `offeredChange` in `src/settings/registry.ts`; the button reads 'Change Theme: Dark') and the quiz goal (`quiz_goal_offer`, Yes, from now on | Just this time).
 He may say yes, no or 'read it back' instead, in Talk, spoken or typed. `src/talk/offers.ts` `pendingOfferOf(turns)` finds the newest turn of the talk with an
-offer nobody has settled; `useTalk.say` sends it with his next turn as `pending_offer` `{kind: 'feedback' | 'setting' | 'quiz-goal', text}` (the exact text it would
+offer nobody has settled; `useTalk.say` sends it with his next turn as `pending_offer` `{kind: 'feedback' | 'setting' | 'quiz-goal' | 'bridge', text}` (the exact text it would
 send or do). The bible-talk grind, not a word list in the app, decides from his words and answers `offer_reply`: `confirm`, `decline` or `read_back`
 (`grinds/bible-talk.instructions.md` "Answering an offer by voice"; five examples under `grinds/examples/bible-talk/offer-*.json`). `settleOffer` then does it:
 confirm does exactly what the tap does (feedback: `sendMakersOffer`, the one function the button calls too; a tap and a yes for the same turn share the one send in flight, so the makers get one grist, and the button is off while either is sending, `useOfferSending`; setting: `takeSettingOffer`, the change lands on the
 answer's turn with its Undo; quiz goal: keeps it), decline withdraws it (**Not sent**, **Not changed**, **Not kept**; nothing is sent), read_back changes nothing and the
 answer, which the app reads aloud like any answer, holds the text word for word. No `offer_reply`, or no offer waiting, is an ordinary question: the offer and its
 button stay and ride with the next turn. A step that fails on a yes (the mill is down) is said under the answer and the button is still there.
+
+## The bridge: a question he is not ready for (mw-1vuvq6.5, PROVISIONAL)
+
+His words (12 Oct 2026): when he asks about something he does not have the foundation for, the tutor should say which foundation, offer to take him there, and the app should take him. The tutor still answers
+briefly at his level first, so he is never refused.
+
+- **What the device works out** (`src/data/grammar/bridge.ts`, pure): `askedIdeas(question, term)` finds the ladder ideas his question is about by the grammar words in it (an idea's `terms` plus a few aliases such as
+  'diphthong'; at most three, the highest on the ladder) and `missingFoundations(question, levels, term)` walks `ideasBelow` them (LADDER `needs`, however far down) and keeps the ideas whose level is not yet or not at all (a
+  frontier idea is being learned, so it is met; a letter, a pair or a breathing is named by its group idea, `alphabet`...). The request carries it as `missing_foundations` `{topic, total, ideas}`, the lowest on the ladder
+  first (at most eight; `total` counts all; `direct` marks what the topic itself names as a need). `ideas[0]` is the next step. No topic named, or nothing missing under it: no field, and no bridge.
+- **What the tutor answers**: an optional `bridge` `{missing, next, why}` in the bible-talk and verse-ask answers: one to three ids (an enum generated from `LADDER` by `npm run grind:build`, so the schema refuses an idea the ladder
+  lacks; `isTalkAnswer` and `isVerseAnswer` refuse too), most important first, `next`, and one plain line why. More than three missing: the answer says 'you are missing quite a bit' and lists exactly three. The instructions
+  ('When he is not ready for the question') tell it to pick from `missing_foundations` only.
+- **What the app does with it** (`resolveBridge`): without the device's list the bridge is dropped (the model does not guess); the ideas shown are the tutor's that the device listed (three at most, else the first three of the
+  device's list); the idea 'Take me there' opens is `missing_foundations.ideas[0]` whatever the model said. The turn keeps it (`TalkTurn.bridge`; a verse answer's `TutorAnswer.bridge`) and `src/talk/BridgeOffer.tsx` draws
+  the ideas, the why and **Take me there: <title>**. A tap, or a spoken yes (`pending_offer` of kind `bridge`, `settleOffer` -> `takeBridgeOffer`, the same function the button calls), opens that idea's sheet
+  (`src/IdeaSheet.tsx`) over the talk (`openBridgeIdea`, module state, so a tap and a yes for the same turn leave one sheet open). Done or the phone's Back closes it and the talk is there as it was; the
+  button stays to open it again. The talk is not a quiz (no bridge in Quiz me). The bridged idea becomes his frontier only if he starts it there (Got it).
+- Tests: `features/talk-bridge.feature`, `tests/unit/bridge.test.ts`, examples `grinds/examples/bible-talk/bridge-*.json` and `grinds/examples/verse-ask/bridge-quite-a-bit.json`.
 
 ## Greek words he says aloud (mw-5r3p30.244)
 
@@ -362,4 +381,4 @@ Lampas licence's key 403 on `/api/events` (server/internal/api/handlers.go: `gat
 `features/tutor-live-stream.feature`, `features/ask-tutor.feature` (the control, the request, the questions, what is kept), `tests/unit/ask-tutor.test.ts`, the `screen` blocks of
 `tests/unit/talk-request.test.ts` and `bible-talk-grind.test.ts`, and `tests/e2e/ask-tutor.spec.ts` (place, size and clearance at 390 px; the shots
 `ask-tutor-goal`, `ask-tutor-reader`, `ask-tutor-sheet`); the offer: `features/feedback-offer.feature`, `tests/unit/feedback-shared.test.ts`,
-`tests/e2e/feedback-offer.spec.ts` (shots `feedback-offer`, `feedback-offer-sent`); answering an offer by voice: `features/voice-offers.feature`, `tests/unit/voice-offers.test.ts`.
+`tests/e2e/feedback-offer.spec.ts` (shots `feedback-offer`, `feedback-offer-sent`); answering an offer by voice: `features/voice-offers.feature`, `tests/unit/voice-offers.test.ts`; the bridge: `features/talk-bridge.feature`, `tests/unit/bridge.test.ts`.
