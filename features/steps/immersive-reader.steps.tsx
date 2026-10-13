@@ -33,7 +33,33 @@ const AT = { clientX: 100, clientY: 700 };
 const SCROLL_HEIGHT = 5000;
 const CLIENT_HEIGHT = 700;
 
-async function open(options: { immersive: 'on' | 'off'; recogniser?: boolean; speaks?: boolean }): Promise<void> {
+/** The Fullscreen API, which jsdom lacks, stood in for by hand: it counts the calls and keeps document.fullscreenElement as a browser does. */
+const fs = { requests: 0, exits: 0 };
+function fakeFullscreen(mode: 'works' | 'refuses'): void {
+  fs.requests = 0;
+  fs.exits = 0;
+  let element: Element | null = null;
+  Object.defineProperty(document, 'fullscreenElement', { configurable: true, get: () => element });
+  Object.defineProperty(Element.prototype, 'requestFullscreen', {
+    configurable: true,
+    value: () => {
+      fs.requests += 1;
+      if (mode === 'refuses') return Promise.reject(new TypeError('Permissions check failed'));
+      element = document.documentElement;
+      return Promise.resolve();
+    },
+  });
+  Object.defineProperty(document, 'exitFullscreen', {
+    configurable: true,
+    value: () => {
+      fs.exits += 1;
+      element = null;
+      return Promise.resolve();
+    },
+  });
+}
+
+async function open(options: { immersive: 'on' | 'off'; recogniser?: boolean; speaks?: boolean; fullscreen?: 'works' | 'refuses' }): Promise<void> {
   cleanup();
   stopReading();
   clearBus();
@@ -42,6 +68,7 @@ async function open(options: { immersive: 'on' | 'off'; recogniser?: boolean; sp
   if (options.recogniser) stubRecognizer();
   FakeRecognizer.instances = [];
   if (options.speaks) stubSpeech([ENGLISH_VOICE]);
+  if (options.fullscreen) fakeFullscreen(options.fullscreen);
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
   window.history.replaceState(null, '', '/');
@@ -123,6 +150,11 @@ const inView = async () => waitFor(barsShown);
 const outOfView = async () => waitFor(barsAway);
 
 const feature = await loadFeature('features/immersive-reader.feature');
+
+const oneFingerTap = () => {
+  touch('touchstart', [{ x: 120, y: 400 }]);
+  touch('touchend', []);
+};
 
 describeFeature(feature, ({ Scenario }) => {
   const bars = 'the header, the chips, the Talk bar and the Ask button are all';
@@ -331,5 +363,53 @@ describeFeature(feature, ({ Scenario }) => {
       const group = await screen.findByRole('group', { name: 'Immersive reader' });
       await waitFor(() => expect(within(group).getByRole('button', { name: 'On' })).toHaveAttribute('aria-pressed', 'true'));
     });
+  });
+
+  Scenario('The first tap in the text asks for full screen, and switching Immersive reader Off leaves it', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader On and a phone that can go full screen', () => open({ immersive: 'on', fullscreen: 'works' }));
+    Then('the page has not asked for full screen', async () => {
+      await sleep(50);
+      expect(fs).toEqual({ requests: 0, exits: 0 });
+    });
+    When('he taps the text with one finger', async () => {
+      oneFingerTap();
+      await sleep(50);
+    });
+    Then('the page has asked for full screen once', () => {
+      expect(fs).toEqual({ requests: 1, exits: 0 });
+    });
+    When('he taps the text with one finger again', async () => {
+      oneFingerTap();
+      await sleep(50);
+    });
+    Then('the page has still asked for full screen once', () => {
+      expect(fs).toEqual({ requests: 1, exits: 0 });
+    });
+    When('Immersive reader is switched Off', async () => {
+      await db.settings.put({ key: 'immersiveReader', value: 'off' });
+    });
+    Then('the page has left full screen', async () => {
+      await waitFor(() => expect(fs.exits).toBe(1));
+      expect(document.fullscreenElement).toBeNull();
+    });
+  });
+
+  Scenario('With Immersive reader Off the page never asks for full screen', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader Off and a phone that can go full screen', () => open({ immersive: 'off', fullscreen: 'works' }));
+    When('he taps the text with one finger', oneFingerTap);
+    And('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
+    Then('the page has not asked for full screen', async () => {
+      await sleep(50);
+      expect(fs).toEqual({ requests: 0, exits: 0 });
+    });
+  });
+
+  Scenario('A phone that refuses full screen reads on as before', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader On and a phone that refuses full screen', () => open({ immersive: 'on', fullscreen: 'refuses' }));
+    When('he taps the text with one finger', oneFingerTap);
+    And('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
+    Then(`${bars} out of view`, outOfView);
+    When('he taps the text with two fingers', twoFingerTap);
+    Then(`${bars} in view`, inView);
   });
 });
