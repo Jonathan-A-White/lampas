@@ -5,9 +5,9 @@ import { openUnlocked } from './unlocked';
 
 // The engine is bsv-kit's honest fake (tests/support/honest-fakes.ts; headless Chromium has no Greek voice); how a real
 // phone's voice sounds, and its long-press menu, are only a phone check (docs/pwa-best-practices.md section 12).
-async function openReader(page: Page) {
+async function openReader(page: Page, msPerWord?: number) {
   await openUnlocked(page);
-  await honestSpeech(page);
+  await honestSpeech(page, msPerWord === undefined ? {} : { msPerWord });
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   // The Due and New words strips draw once the words have been read from the store, and each pushes the text down
@@ -54,4 +54,15 @@ test('a long press on a Greek word says it in Greek; a short tap opens the sheet
   await hold(page, '[data-verse="1"] [data-word="1"]', 50);
   await expect(page.getByRole('dialog')).toBeVisible();
   expect(await spoken(page)).toHaveLength(1);
+});
+
+test('a word long-pressed and let go is still being spoken, and ends by itself', async ({ page }) => {
+  // a slow reader (3 s a word): the word is still going when the finger is lifted at 650 ms
+  await openReader(page, 3000);
+  await page.getByRole('button', { name: 'Greek', exact: true }).click();
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'greek');
+  await hold(page, '[data-verse="1"] [data-word="0"]', 650);
+  const outcome = async () => (await spoken(page)).map((e) => ({ text: e.text, outcome: e.outcome }));
+  expect(await outcome()).toEqual([{ text: 'οὐδὲν', outcome: 'speaking' }]);
+  await expect.poll(outcome).toEqual([{ text: 'οὐδὲν', outcome: 'ended' }]);
 });

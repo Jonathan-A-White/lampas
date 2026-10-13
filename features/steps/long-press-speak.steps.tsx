@@ -219,6 +219,23 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('A word long-pressed and let go at once is still spoken to its end', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH_VOICE, GREEK_VOICE]));
+    And('he switches the reader to Greek', switchToGreek);
+    When('he long presses the word {string} in verse {int}', (_, text: string, n: number) => press(wordEl(text, n), HOLD_MS));
+    Then('the word is still being spoken after he let go', () => {
+      expect(synth.spoken).toHaveLength(1);
+      expect(synth.speaking).toBe(true);
+      expect(synth.calls[synth.calls.length - 1]).not.toBe('cancel');
+    });
+    When('the word has been spoken to its end', () => act(() => synth.finish()));
+    Then('the word was spoken once and never cancelled', () => {
+      expect(synth.spoken).toHaveLength(1);
+      expect(synth.speaking).toBe(false);
+      expect(synth.calls[synth.calls.length - 1]).not.toBe('cancel');
+    });
+  });
+
   Scenario('A short tap still opens the word sheet', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH_VOICE, GREEK_VOICE]));
     And('he switches the reader to Greek', switchToGreek);
