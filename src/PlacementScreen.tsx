@@ -8,7 +8,7 @@ import { BOOK_INDEX } from './data/bookIndex';
 import { loadChapter, type Chapter } from './data/chapter';
 import { goalTitle, parseGoal } from './data/goal';
 import { gapsOf, lettersText } from './data/grammar/inference';
-import { levelsOf } from './data/grammar/goalProgress';
+import { learnNext, levelsOf } from './data/grammar/goalProgress';
 import { ideaOf, type GrammarIdea } from './data/grammar/ladder';
 import { passageNeeds, type Level } from './data/grammar/needs';
 import {
@@ -49,7 +49,13 @@ type Run =
   | { status: 'starting' }
   | { status: 'asking'; state: PlacementState; item: GrammarItem; picked: string | null; after: PlacementState | null }
   | { status: 'quick'; state: PlacementState; round: QuickRound; item: GrammarItem; picked: string | null; after: QuickRound | null }
-  | { status: 'over'; state: PlacementState; gaps: GrammarIdea[]; fromLetters?: boolean };
+  | { status: 'over'; state: PlacementState; gaps: GrammarIdea[]; fromLetters?: FromLetters };
+
+/** What the card of 'Start from the letters' says besides the counts: the ideas he already has solid, and the one Learn next opens. */
+interface FromLetters {
+  solid: string[];
+  next: string;
+}
 
 const LEVEL_WORDS: Record<Level, string> = { solid: 'Solid', frontier: 'Frontier', notYet: 'Not yet' };
 
@@ -147,16 +153,19 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
     setRun({ status: 'over', state, gaps });
   };
 
-  /** A total beginner skips the quiz: nothing is asked or written, so Learn next stays at The Greek alphabet (mw-86e9r1.1). */
+  /** Skips the quiz: nothing is asked or written, so Learn next stays where it is (The Greek alphabet for a total beginner, mw-86e9r1.1). The card tells what he already has (mw-86e9r1.19). */
   const startFromLetters = async (): Promise<void> => {
     setRun({ status: 'starting' });
     clearPlacement();
     const goal = parseGoal(session.goal, BOOK_INDEX);
-    const needs = goal ? await passageNeeds(goal, loadChapter, BOOK_INDEX) : null;
-    const state = { ...startPlacement(needs, new Map(), orderOf(session.approach), 0), done: 'finished' as const };
+    const [needs, rows] = await Promise.all([goal ? passageNeeds(goal, loadChapter, BOOK_INDEX) : null, listLevels()]);
+    const known = levelsOf(rows);
+    const state = { ...startPlacement(needs, known, orderOf(session.approach), 0), done: 'finished' as const };
     const { solid, frontier, notYet, untested } = summarize(state);
     publish({ kind: 'placement-done', goal: session.goal, approach: session.approach.id, solid, frontier, notYet, untested });
-    setRun({ status: 'over', state, gaps: [], fromLetters: true });
+    const next = learnNext(needs ?? { ideas: [] }, session.approach, known);
+    const have = state.ideas.filter((id) => state.levels.get(id) === 'solid').map((id) => ideaOf(id).title);
+    setRun({ status: 'over', state, gaps: [], fromLetters: { solid: have, next: next ? (next.gaps ? lettersText(next.gaps) : next.idea.title) : ideaOf('alphabet').title } });
   };
 
   const begin = async (kept: SavedPlacement | null, resume: boolean): Promise<void> => {
@@ -312,7 +321,9 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
           </p>
           {run.fromLetters ? (
             <p data-testid="from-letters" className="mt-2 text-center text-lg">
-              You start with {ideaOf('alphabet').title}. Learn next on the Goal screen opens it.
+              {run.fromLetters.solid.length > 0
+                ? `Already solid: ${run.fromLetters.solid.join(', ')}. Learn next on the Goal screen opens ${run.fromLetters.next}.`
+                : `You start with ${run.fromLetters.next}. Learn next on the Goal screen opens it.`}
             </p>
           ) : null}
           {run.gaps.length > 0 ? (
