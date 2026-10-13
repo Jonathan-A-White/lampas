@@ -7,7 +7,7 @@
 import { shuffle, type Random } from '../quiz';
 import { chosenPronunciation } from '../../speech/greek';
 import type { Pronunciation } from '../../speech/pronunciation';
-import { ITEM_GROUPS, ideaOf, itemsOf, type GrammarIdea } from './ladder';
+import { ITEM_GROUPS, ideaOf, itemFacet, itemsOf, type GrammarIdea } from './ladder';
 import { ideaSound } from './lessons';
 import type { Level } from './needs';
 import type { GrammarQuestion } from './questions';
@@ -89,7 +89,7 @@ export function quickQuestion(item: QuickItem, random: Random, scheme: Pronuncia
     const breathing = idea.id === 'breathing-rough' ? 'Rough' : 'Smooth';
     const samples = SAMPLES[breathing];
     const word = samples[Math.floor(random() * samples.length)];
-    return { kind: 'breathing', ideaId: idea.id, prompt: 'Which breathing does this word begin with?', options: ['Rough', 'Smooth'], right: breathing, form: word };
+    return { kind: 'breathing', ideaId: idea.id, prompt: 'Which breathing does this word begin with?', options: ['Rough', 'Smooth'], right: breathing, form: word, facet: itemFacet(idea) };
   }
   const same = itemsOf(idea.parent ?? 'alphabet');
   // the scheme's sound for it, else (a scheme with no lesson for it) its respelling, so the others that sound alike are left out either way
@@ -106,6 +106,7 @@ export function quickQuestion(item: QuickItem, random: Random, scheme: Pronuncia
       options: shuffle([glyphOf(idea), ...shuffle(others, random).slice(0, OPTION_COUNT - 1).map(glyphOf)], random),
       right: glyphOf(idea),
       say: glyphOf(idea),
+      facet: itemFacet(idea),
     };
   }
   const sounds = [...new Set(others.flatMap((o) => { const named = ideaSound(o, scheme); return named === undefined ? [] : [shortSound(named)]; }))];
@@ -116,6 +117,7 @@ export function quickQuestion(item: QuickItem, random: Random, scheme: Pronuncia
     options: shuffle([sound, ...shuffle(sounds, random).slice(0, OPTION_COUNT - 1)], random),
     right: sound,
     form: glyphOf(idea),
+    facet: itemFacet(idea),
   };
 }
 

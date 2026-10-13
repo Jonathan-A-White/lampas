@@ -9,10 +9,10 @@ import { shuffle, type Random } from '../quiz';
 import { chosenPronunciation } from '../../speech/greek';
 import type { Pronunciation } from '../../speech/pronunciation';
 import { MODERN } from '../../speech/schemes/modern';
-import { LADDER, itemsOf, ideasOf, type GrammarIdea } from './ladder';
+import { LADDER, itemFacet, itemsOf, ideasOf, type Facet, type GrammarIdea } from './ladder';
 import { ideaSound, ideaText } from './lessons';
 import { ENCLITIC_USES, MARK_PAIRS, blankWord } from './marks';
-import { COMPOUND_VERBS, PREPOSITIONS, type VerseRef } from './prepositions';
+import { COMPOUND_VERBS, PREPOSITIONS, type CompoundVerb, type PrepCase, type VerseRef } from './prepositions';
 import { quickQuestion } from './quickRound';
 
 export type GrammarKind = 'ending' | 'tap-form' | 'letter' | 'sound' | 'stress' | 'breathing' | 'syllables' | 'preposition' | 'compound' | 'concept';
@@ -35,6 +35,8 @@ export interface GrammarQuestion {
   code?: string;
   /** the Greek that Tap to hear says (a letter, or the word) */
   say?: string;
+  /** what the question is about, for Drill it (drillIt.ts, mw-i7xe0n.1): the letter, the ending, the case; a miss on it names the gap */
+  facet?: Facet;
 }
 
 /** The words of the pronunciation that gives the syllables: the chosen pronunciation's respell, 'hree-STO'. */
@@ -78,6 +80,11 @@ const needsIdea = (code: string, id: string): boolean => {
 };
 
 const pick = <T>(items: readonly T[], random: Random): T => items[Math.floor(random() * items.length)];
+
+/** The facets of the questions about a passage (mw-i7xe0n.1): what the idea is, finding it in a verse, and its ending. */
+export const MEANING: Facet = { id: 'meaning', label: 'What it is' };
+export const SPOT: Facet = { id: 'spot', label: 'Finding it in a verse' };
+export const ENDING: Facet = { id: 'ending', label: 'Its ending' };
 
 // ---- Tap the form ----
 
@@ -136,6 +143,7 @@ export function buildTapForm(idea: GrammarIdea, passage: readonly Chapter[], ran
       right: place.word.t,
       ref: place.ref,
       code: place.word.p,
+      facet: SPOT,
     };
   }
   return null;
@@ -224,6 +232,7 @@ export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], rand
     ref: place.ref,
     form: `${stem}_`,
     code: place.word.p,
+    facet: ENDING,
   };
 }
 
@@ -257,6 +266,7 @@ export function buildLetter(idea: GrammarIdea, random: Random, scheme: Pronuncia
     prompt: bySound ? `Which letter sounds like ${sound}?` : `Which letter is ${letter.title}?`,
     options: glyphs(glyphOf(letter), others.map(glyphOf), random),
     right: glyphOf(letter),
+    facet: itemFacet(letter),
   };
 }
 
@@ -271,6 +281,7 @@ export function buildSound(idea: GrammarIdea, random: Random, scheme: Pronunciat
     options: glyphs(glyphOf(letter), others.map(glyphOf), random),
     right: glyphOf(letter),
     say: glyphOf(letter),
+    facet: itemFacet(letter),
   };
 }
 
@@ -289,8 +300,8 @@ function pairsOf(group: string, scheme: Pronunciation): [string, string][] {
 const PUNCTUATION: [string, string][] = [['Which mark is a question mark in Greek?', ';'], ['Which mark is a colon or a semicolon in Greek?', '·']];
 
 /** A question over a short table of marks: the right one and the others of the table, then fillers up to four. */
-function fromTable(idea: GrammarIdea, prompt: string, right: string, others: readonly string[], random: Random): GrammarQuestion {
-  return { kind: 'letter', ideaId: idea.id, prompt, options: glyphs(right, others, random), right };
+function fromTable(idea: GrammarIdea, prompt: string, right: string, others: readonly string[], random: Random, facet: Facet): GrammarQuestion {
+  return { kind: 'letter', ideaId: idea.id, prompt, options: glyphs(right, others, random), right, facet };
 }
 
 /** Which pair sounds like a sound the scheme gives; a scheme that gives none is asked by ear (Tap to hear), the pairs it says alike never together. */
@@ -300,41 +311,49 @@ function buildPairs(idea: GrammarIdea, group: string, what: string, random: Rand
     const items = itemsOf(group);
     const pair = pick(items, random);
     const others = items.filter((o) => o.id !== pair.id && soundKey(o, scheme) !== soundKey(pair, scheme)).map((o) => o.pair ?? '');
-    return { kind: 'sound', ideaId: idea.id, prompt: `Tap to hear a pair of ${what}, then tap it`, options: glyphs(pair.pair ?? '', others, random), right: pair.pair ?? '', say: pair.pair };
+    return { kind: 'sound', ideaId: idea.id, prompt: `Tap to hear a pair of ${what}, then tap it`, options: glyphs(pair.pair ?? '', others, random), right: pair.pair ?? '', say: pair.pair, facet: itemFacet(pair) };
   }
   const [pair, sound] = pick(table, random);
-  return fromTable(idea, `Which pair of ${what} sounds like ${sound}?`, pair, table.map(([p]) => p).filter((p) => p !== pair), random);
+  return fromTable(idea, `Which pair of ${what} sounds like ${sound}?`, pair, table.map(([p]) => p).filter((p) => p !== pair), random, itemFacet(itemsOf(group).find((i) => i.pair === pair) ?? idea));
 }
 
-function buildSubscript(idea: GrammarIdea, random: Random): GrammarQuestion {
-  return fromTable(idea, 'Which letter has a tiny iota under it?', pick(['ᾳ', 'ῃ', 'ῳ'], random), ['α', 'η', 'ω', 'ι', 'ο'], random);
+export function buildSubscript(idea: GrammarIdea, random: Random): GrammarQuestion {
+  const right = pick(['ᾳ', 'ῃ', 'ῳ'], random);
+  return fromTable(idea, 'Which letter has a tiny iota under it?', right, ['α', 'η', 'ω', 'ι', 'ο'], random, { id: `subscript-${right}`, label: right });
 }
 
-function buildPunctuation(idea: GrammarIdea, random: Random): GrammarQuestion {
+export function buildPunctuation(idea: GrammarIdea, random: Random): GrammarQuestion {
   const [prompt, right] = pick(PUNCTUATION, random);
-  return fromTable(idea, prompt, right, [';', '·', '.', ','].filter((m) => m !== right), random);
+  const facet = right === ';' ? { id: 'question-mark', label: 'The question mark ;' } : { id: 'raised-dot', label: 'The raised dot ·' };
+  return fromTable(idea, prompt, right, [';', '·', '.', ','].filter((m) => m !== right), random, facet);
 }
 
 // ---- Movable letters ----
 
-// [prompt, right, the others it may be told from]. Every word is a real New Testament one, with its place.
+// [prompt, right, the others it may be told from, its facet]. Every word is a real New Testament one, with its place.
 const NOT_FORMS = ['οὐ', 'οὐκ', 'οὐχ'];
 const OUT_FORMS = ['ἐκ', 'ἐξ'];
-const MOVABLE: [string, string, readonly string[]][] = [
-  ['Which fits? ___ κατέλαβεν (John 1:5, “did not overcome it”)', 'οὐ', [...NOT_FORMS, ...OUT_FORMS]],
-  ['Which fits? ___ ἦν ἐκεῖνος τὸ φῶς (John 1:8, “he was not the light”)', 'οὐκ', [...NOT_FORMS, ...OUT_FORMS]],
-  ['Which fits? ___ οὗτός ἐστιν (John 7:25, “Is this not he?”)', 'οὐχ', [...NOT_FORMS, ...OUT_FORMS]],
-  ['Which fits? ___ θεοῦ ἐγεννήθησαν (John 1:13, “out of God they were born”)', 'ἐκ', [...OUT_FORMS, ...NOT_FORMS]],
-  ['Which fits? ___ ἧς ἐγεννήθη Ἰησοῦς (Matthew 1:16, “out of whom Jesus was born”)', 'ἐξ', [...OUT_FORMS, ...NOT_FORMS]],
-  ['Which fits? ___ ἀρχῆς (1 John 2:7, “from the beginning”; the word is ἀπό with its vowel dropped)', 'ἀπ᾿', ['ἀπ᾿', 'ἀφ᾿', 'ἀπό', 'ἐπ᾿']],
-  ['Which fits? ___ ἑαυτοῦ (John 5:19, “of himself”; the next word begins with a rough breathing)', 'ἀφ᾿', ['ἀπ᾿', 'ἀφ᾿', 'ἀπό', 'ἐφ᾿']],
-  ['Which of these may take a movable ν at its end (John 1:34)?', 'ἐστι(ν)', ['λόγος', 'ἀγάπη', 'τοῦτο', 'οὐκ']],
+export const MOVABLE_FACETS = {
+  not: { id: 'movable-not', label: 'οὐ, οὐκ, οὐχ' },
+  out: { id: 'movable-out', label: 'ἐκ, ἐξ' },
+  elision: { id: 'movable-elision', label: 'A dropped vowel: ἀπ᾿, ἀφ᾿' },
+  nu: { id: 'movable-nu', label: 'A movable ν' },
+} as const;
+const MOVABLE: [string, string, readonly string[], Facet][] = [
+  ['Which fits? ___ κατέλαβεν (John 1:5, “did not overcome it”)', 'οὐ', [...NOT_FORMS, ...OUT_FORMS], MOVABLE_FACETS.not],
+  ['Which fits? ___ ἦν ἐκεῖνος τὸ φῶς (John 1:8, “he was not the light”)', 'οὐκ', [...NOT_FORMS, ...OUT_FORMS], MOVABLE_FACETS.not],
+  ['Which fits? ___ οὗτός ἐστιν (John 7:25, “Is this not he?”)', 'οὐχ', [...NOT_FORMS, ...OUT_FORMS], MOVABLE_FACETS.not],
+  ['Which fits? ___ θεοῦ ἐγεννήθησαν (John 1:13, “out of God they were born”)', 'ἐκ', [...OUT_FORMS, ...NOT_FORMS], MOVABLE_FACETS.out],
+  ['Which fits? ___ ἧς ἐγεννήθη Ἰησοῦς (Matthew 1:16, “out of whom Jesus was born”)', 'ἐξ', [...OUT_FORMS, ...NOT_FORMS], MOVABLE_FACETS.out],
+  ['Which fits? ___ ἀρχῆς (1 John 2:7, “from the beginning”; the word is ἀπό with its vowel dropped)', 'ἀπ᾿', ['ἀπ᾿', 'ἀφ᾿', 'ἀπό', 'ἐπ᾿'], MOVABLE_FACETS.elision],
+  ['Which fits? ___ ἑαυτοῦ (John 5:19, “of himself”; the next word begins with a rough breathing)', 'ἀφ᾿', ['ἀπ᾿', 'ἀφ᾿', 'ἀπό', 'ἐφ᾿'], MOVABLE_FACETS.elision],
+  ['Which of these may take a movable ν at its end (John 1:34)?', 'ἐστι(ν)', ['λόγος', 'ἀγάπη', 'τοῦτο', 'οὐκ'], MOVABLE_FACETS.nu],
 ];
 
 /** A word that changes its last letter: οὐ, οὐκ or οὐχ, ἐκ or ἐξ, ἀπ᾿ or ἀφ᾿, a movable ν; four to choose from, one right. */
 export function buildMovable(idea: GrammarIdea, random: Random): GrammarQuestion {
-  const [prompt, right, others] = pick(MOVABLE, random);
-  return fromTable(idea, prompt, right, others.filter((o) => o !== right), random);
+  const [prompt, right, others, facet] = pick(MOVABLE, random);
+  return fromTable(idea, prompt, right, others.filter((o) => o !== right), random, facet);
 }
 
 // ---- Marks that change the word, and enclitics (mw-86e9r1.6) ----
@@ -352,6 +371,7 @@ export function buildMarksChangeWord(idea: GrammarIdea, random: Random): Grammar
     prompt: `Which fits? ${blankWord(word.phrase, word.inPhrase)} (${refText(word.ref)}, “${word.gloss}”)`,
     options: shuffle([word.inPhrase, twin.inPhrase, ...word.decoys], random),
     right: word.inPhrase,
+    facet: { id: `marks-${[pair.a.word, pair.b.word].join('-')}`, label: `${pair.a.word} / ${pair.b.word}` },
   };
 }
 
@@ -364,6 +384,7 @@ export function buildEnclitic(idea: GrammarIdea, random: Random): GrammarQuestio
     prompt: `Which fits? ${blankWord(use.phrase, use.right)} (${refText(use.ref)}, “${use.gloss}”)`,
     options: shuffle([use.right, ...use.others], random),
     right: use.right,
+    facet: { id: `enclitic-${use.right}`, label: use.right },
   };
 }
 
@@ -386,11 +407,12 @@ function meaningChoices(right: string, near: readonly string[], others: readonly
  * What a preposition means before the case of a real phrase: 'What does διά mean here?' over διὰ τοὺς λόγους (John 10:19). The meaning of the
  * preposition's other cases is among the choices, so a reader who ignores the case misses it.
  */
-export function buildPreposition(idea: GrammarIdea, random: Random): GrammarQuestion {
+export function buildPreposition(idea: GrammarIdea, random: Random, only?: { case: PrepCase; near: boolean }): GrammarQuestion {
   const prep = PREPOSITIONS.find((p) => idea.id === `preposition-${p.key}`);
   if (!prep) throw new Error(`${idea.id} is not a preposition idea`);
-  const use = pick(prep.uses, random);
-  const near = prep.uses.filter((u) => u !== use).map((u) => u.meaning);
+  // Drill it asks one case at a time, first without the meanings of the preposition's other cases among the choices (`near` false)
+  const use = (only && prep.uses.find((u) => u.case === only.case)) || pick(prep.uses, random);
+  const near = only && !only.near ? [] : prep.uses.filter((u) => u !== use).map((u) => u.meaning);
   const others = PREPOSITIONS.filter((p) => p !== prep).flatMap((p) => p.uses.map((u) => u.meaning));
   return {
     kind: 'preposition',
@@ -401,12 +423,13 @@ export function buildPreposition(idea: GrammarIdea, random: Random): GrammarQues
     ref: refText(use.ref),
     form: use.phrase,
     say: use.phrase,
+    facet: { id: `case-${use.case}`, label: `With the ${use.case}` },
   };
 }
 
 /** What a verb made of a preposition and a verb means: 'ἐκ + βάλλω (“throw”) makes ἐκβάλλω, as in ἐξεβάλομεν. What does ἐκβάλλω mean?' */
-export function buildCompound(idea: GrammarIdea, random: Random): GrammarQuestion {
-  const verb = pick(COMPOUND_VERBS, random);
+export function buildCompound(idea: GrammarIdea, random: Random, which?: CompoundVerb): GrammarQuestion {
+  const verb = which ?? pick(COMPOUND_VERBS, random);
   return {
     kind: 'compound',
     ideaId: idea.id,
@@ -416,6 +439,7 @@ export function buildCompound(idea: GrammarIdea, random: Random): GrammarQuestio
     ref: refText(verb.ref),
     form: verb.lemma,
     say: verb.lemma,
+    facet: { id: `prefix-${verb.prefix}`, label: `${verb.prefix} + a verb` },
   };
 }
 
@@ -441,6 +465,15 @@ function wordsOf(passage: readonly Chapter[], random: Random): Spoken[] {
 
 const shown = (s: Spoken): Pick<GrammarQuestion, 'ref' | 'form' | 'code' | 'say'> => ({ ref: s.ref, form: s.word, code: s.code, say: s.word });
 
+/** The facet of a question about a word by its length: 'stress-2' for a word of two syllables, 'stress-4' for four or more. */
+export const lengthFacet = (prefix: 'stress' | 'syllables', syllables: number): Facet => {
+  const n = Math.min(Math.max(syllables, 2), 4);
+  return { id: `${prefix}-${n}`, label: n === 2 ? 'Words of two syllables' : n === 3 ? 'Words of three syllables' : 'Longer words' };
+};
+
+/** The facet of a question whose answer is a breathing. */
+export const breathingFacet = (breathing: 'Rough' | 'Smooth'): Facet => ({ id: `breathing-${breathing.toLowerCase()}`, label: `${breathing.toLowerCase()} breathing` });
+
 /** The syllables of a word as its pronunciation says them, and which one is stressed; null for a word of one syllable or with no stress mark. */
 export function syllablesOf(word: string, respell: Respell = DEFAULT_RESPELL): { syllables: string[]; stressed: number } | null {
   const parts = respell(word).split('-');
@@ -463,6 +496,7 @@ export function buildStress(idea: GrammarIdea, passage: readonly Chapter[], rand
       options: parts.syllables,
       right: parts.syllables[parts.stressed],
       ...shown(s),
+      facet: lengthFacet('stress', parts.syllables.length),
     };
   }
   throw new Error('No word to ask the stress of');
@@ -482,6 +516,7 @@ export function buildSyllables(idea: GrammarIdea, passage: readonly Chapter[], r
       options: Array.from({ length: OPTION_COUNT }, (_, i) => String(first + i)),
       right: String(count),
       ...shown(s),
+      facet: lengthFacet('syllables', count),
     };
   }
   throw new Error('No word to count the syllables of');
@@ -515,6 +550,7 @@ export function buildBreathing(idea: GrammarIdea, passage: readonly Chapter[], r
       options: ['Rough', 'Smooth'],
       right: breathing,
       ...shown(s),
+      facet: breathingFacet(breathing),
     };
   }
   throw new Error('No word to ask the breathing of');
@@ -549,6 +585,7 @@ export function buildConcept(idea: GrammarIdea, random: Random, scheme: Pronunci
     prompt: `Which idea is this? ${blankedText(idea, scheme)}`,
     options: shuffle([idea.title, ...[...near, ...far].slice(0, OPTION_COUNT - 1).map((o) => o.title)], random),
     right: idea.title,
+    facet: MEANING,
   };
 }
 
