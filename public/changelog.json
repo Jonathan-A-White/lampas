@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.177",
+    "date": "2026-10-13",
+    "story": "mw-8m9dyu.3",
+    "kind": "new",
+    "text": "Without a licence, Settings now shows the tutor's options as off, with \"Needs a licence\", which opens a Licence page where you can see your key and check again."
+  },
+  {
     "version": "0.1.174",
     "date": "2026-10-13",
     "story": "mw-1vuvq6.5",

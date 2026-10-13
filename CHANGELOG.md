@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.177
+_2026-10-13_
+- New: Without a licence, Settings now shows the tutor's options as off, with "Needs a licence", which opens a Licence page where you can see your key and check again.
+
 ## 0.1.174
 _2026-10-13_
 - New: Ask the tutor about a piece of grammar you are not ready for and it now names the ideas you are missing and offers to take you to the next one to learn.
