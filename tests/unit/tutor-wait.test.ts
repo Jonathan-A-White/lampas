@@ -239,3 +239,35 @@ describe('a phone with a long history, on mobile data (mw-5r3p30.269)', () => {
     expect(result.error.failure).toBe('unreachable');
   });
 });
+
+// mw-5r3p30.275: his data use: 124 asks cost 142 MB of nginx log because every ask read the mill's pages from the start. The wait
+// pages from the grist's own place (the `seq` the send names), so what the phone was sent before the ask is never read again.
+describe('where the wait starts reading (mw-5r3p30.275)', () => {
+  it('reads from the grist\'s own place, not from 0, with 500 earlier answer records on the backend: one page finds the answer', async () => {
+    history(500, 200);
+    const wait = outcome(ask(() => setTimeout(() => postern.answer(ANSWER), 1_000)));
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(await wait).toEqual({ answer: { verdict: 'well-read' } });
+    expect(postern.sinces.length).toBeLessThanOrEqual(2);
+    expect(postern.sinces.every((since) => since >= 500)).toBe(true);
+  });
+
+  it('falls back to reading from 0 once when the kept place is past the backend\'s head (a reset backend), and finds the answer', async () => {
+    history(5, 200);
+    const inner = fetch;
+    // the backend names a place for the grist that is further on than anything it holds
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      const response = await inner(input, init);
+      const url = new URL(typeof input === 'string' ? input : input.toString());
+      if (url.pathname !== '/api/messages' || (init?.method ?? 'GET').toUpperCase() !== 'POST') return response;
+      const body = (await response.json()) as { txid: string; seq: number };
+      return new Response(JSON.stringify({ ...body, seq: 5_000 }), { status: response.status, headers: response.headers });
+    });
+    const wait = outcome(ask(() => setTimeout(() => postern.answer(ANSWER), 1_000)));
+    await vi.advanceTimersByTimeAsync(20_000);
+    expect(await wait).toEqual({ answer: { verdict: 'well-read' } });
+    expect(postern.sinces.filter((since) => since === 0)).toHaveLength(1);
+    expect(postern.sinces[0]).toBe(5_000);
+    expect(postern.sinces.length).toBeLessThanOrEqual(4);
+  });
+});
