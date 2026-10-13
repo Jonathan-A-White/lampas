@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.186
+_2026-10-13_
+- Fixed: A short reading hold is no longer sometimes mistaken for a tap when the phone's clock jumps back.
+
 ## 0.1.185
 _2026-10-13_
 - Fixed: Without a licence the verse sheet no longer offers Read it aloud, its Hold to read bar or the Reading ladder (which could only end in 'No licence').

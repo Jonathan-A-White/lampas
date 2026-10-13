@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.186",
+    "date": "2026-10-13",
+    "story": "mw-5r3p30.280",
+    "kind": "fixed",
+    "text": "A short reading hold is no longer sometimes mistaken for a tap when the phone's clock jumps back."
+  },
+  {
     "version": "0.1.185",
     "date": "2026-10-13",
     "story": "mw-8m9dyu.5",
