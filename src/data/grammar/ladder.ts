@@ -397,6 +397,15 @@ export const groupOfItem = (idea: GrammarIdea): string | undefined => idea.paren
 /** How an item is written when it is named in a line: 'ξ', 'ου', 'rough breathing'. */
 export const itemName = (idea: GrammarIdea): string => idea.glyphs?.[0] ?? (idea.id.startsWith('breathing-') ? idea.title.replace(/^The /, '') : (idea.pair ?? idea.title));
 
+/** One thing a drill can find he knows or does not (mw-i7xe0n.1, drillIt.ts): a short id and the label that names it to him. */
+export interface Facet {
+  id: string;
+  label: string;
+}
+
+/** An item as a facet: a letter is 'ν (Nu)', a pair 'ου', a breathing 'rough breathing'; its id is the item's. */
+export const itemFacet = (idea: GrammarIdea): Facet => ({ id: idea.id, label: idea.glyphs ? `${idea.glyphs[0]} (${idea.title})` : itemName(idea) });
+
 /** The id of the idea that covers this grammar term ('genitive' is 'case-genitive'), or undefined for a word that is no term. */
 export const ideaOfTerm = (term: string): string | undefined => IDEA_OF_TERM.get(term);
 

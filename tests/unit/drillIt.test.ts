@@ -1,0 +1,336 @@
+// Drill it, the engine (src/data/grammar/drillIt.ts): the graded steps of one grammar idea with their facets, and the adaptive walk.
+import { readFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+import type { Chapter } from '../../src/data/chapter';
+import {
+  MAX_QUESTIONS,
+  answer,
+  currentQuestion,
+  drillSteps,
+  resultOf,
+  start,
+  type DrillQuestion,
+  type DrillWalk,
+} from '../../src/data/grammar/drillIt';
+import { PAIR_WORD_OF, baseLetters, wordsWith } from '../../src/data/grammar/drillItems';
+import { LADDER, itemsOf } from '../../src/data/grammar/ladder';
+import type { Level } from '../../src/data/grammar/needs';
+
+const rom8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
+const jn1 = JSON.parse(readFileSync('public/data/1jn/1.json', 'utf8')) as Chapter;
+const PASSAGE = [rom8, jn1];
+
+/** Everything solid: no prerequisite stands in the way. */
+const ALL_SOLID = new Map<string, Level>(LADDER.map((i) => [i.id, 'solid']));
+
+function begin(ideaId: string, seed = 1, passage = PASSAGE): DrillWalk {
+  const walk = start(ideaId, ALL_SOLID, { passage, seed });
+  if ('needs' in walk) throw new Error(`${ideaId} needs ${walk.needs}`);
+  return walk;
+}
+
+/** Answers every question with `decide` until the walk ends; the questions in the order asked. */
+function run(walk: DrillWalk, decide: (q: DrillQuestion, n: number) => { right: boolean; hinted?: boolean }): { walk: DrillWalk; asked: DrillQuestion[] } {
+  const asked: DrillQuestion[] = [];
+  let state = walk;
+  for (let guard = 0; guard < 40 && !state.result; guard += 1) {
+    const q = currentQuestion(state)!;
+    asked.push(q);
+    const { right, hinted = false } = decide(q, asked.length);
+    state = answer(state, right, hinted);
+  }
+  return { walk: state, asked };
+}
+
+describe('the steps of an idea', () => {
+  it('gives every idea of the ladder at least one step, and every question a facet', () => {
+    for (const idea of LADDER) {
+      const steps = drillSteps(idea.id, { passage: PASSAGE, seed: 3 });
+      expect(steps.length, idea.id).toBeGreaterThanOrEqual(1);
+      steps.forEach((s, i) => {
+        expect(s.step, idea.id).toBe(i + 1);
+        expect(s.questions.length, `${idea.id} step ${s.step}`).toBeGreaterThan(0);
+        for (const q of s.questions) {
+          expect(q.facet.id, `${idea.id}: ${q.prompt}`).toBeTruthy();
+          expect(q.facet.label, `${idea.id}: ${q.prompt}`).toBeTruthy();
+          expect(q.options, `${idea.id}: ${q.prompt}`).toContain(q.right);
+          // a verse can repeat a word, and the verse's words are what tap-form offers
+          if (q.kind !== 'tap-form') expect(new Set(q.options).size, `${idea.id}: ${q.prompt}`).toBe(q.options.length);
+          expect(q.step).toBe(s.step);
+        }
+      });
+    }
+  });
+
+  it('gives every idea a step with no passage at all', () => {
+    for (const idea of LADDER) expect(drillSteps(idea.id).length, idea.id).toBeGreaterThanOrEqual(1);
+  });
+
+  it('is the same twice for the same seed', () => {
+    expect(drillSteps('case-genitive', { passage: PASSAGE, seed: 5 })).toEqual(drillSteps('case-genitive', { passage: PASSAGE, seed: 5 }));
+    expect(drillSteps('alphabet', { seed: 5 })).toEqual(drillSteps('alphabet', { seed: 5 }));
+  });
+
+  it('asks a noun idea by what it is, then by spotting it in a verse, then by its ending', () => {
+    const steps = drillSteps('noun', { passage: PASSAGE, seed: 2 });
+    const first = (s: number) => new Set(steps[s - 1].questions.map((q) => q.facet.id));
+    expect(first(1)).toEqual(new Set(['meaning']));
+    expect(steps.length).toBeGreaterThanOrEqual(3);
+    expect(new Set(steps[steps.length - 1].questions.map((q) => q.facet.id))).toEqual(new Set(['ending']));
+    expect(steps.flatMap((s) => s.questions).some((q) => q.facet.id === 'spot')).toBe(true);
+  });
+
+  it('tests no prerequisite as such: a question is about its own idea', () => {
+    for (const id of ['noun', 'case-genitive', 'article', 'preposition-dia']) {
+      for (const q of drillSteps(id, { passage: PASSAGE, seed: 4 }).flatMap((s) => s.questions)) expect(q.ideaId).toBe(id);
+    }
+  });
+});
+
+describe('the alphabet', () => {
+  const steps = drillSteps('alphabet', { seed: 7 });
+
+  it('has five steps: name of a letter, letter of a name, capital to small, heard, a word', () => {
+    expect(steps).toHaveLength(5);
+    expect(steps[0].questions[0].prompt).toMatch(/called/i);
+    expect(steps[1].questions[0].prompt).toMatch(/^Which letter is/);
+    expect(steps[2].questions[0].prompt).toMatch(/small letter/);
+    expect(steps[3].questions.some((q) => q.kind === 'sound')).toBe(true);
+    expect(steps[4].questions[0].prompt).toMatch(/said/i);
+  });
+
+  it('asks only about letters, never a grammar question', () => {
+    const letterIds = new Set(itemsOf('alphabet').map((i) => i.id));
+    for (const q of steps.flatMap((s) => s.questions)) {
+      expect(['letter', 'sound'], q.prompt).toContain(q.kind);
+      expect(q.ideaId).toBe('alphabet');
+      const ids = q.facet.id.startsWith('pair-') ? q.facet.id.slice(5).split('-').map((k) => `letter-${k}`) : [q.facet.id];
+      for (const id of ids) expect(letterIds.has(id), `${q.prompt} -> ${q.facet.id}`).toBe(true);
+    }
+  });
+
+  it('has a facet for each of the 24 letters and one for a look-alike pair such as ν and υ', () => {
+    const facets = new Set(steps.flatMap((s) => s.questions.map((q) => q.facet.id)));
+    for (const letter of itemsOf('alphabet')) expect(facets.has(letter.id), letter.id).toBe(true);
+    expect(facets.has('pair-nu-upsilon')).toBe(true);
+    const pair = steps[0].questions.find((q) => q.facet.id === 'pair-nu-upsilon')!;
+    expect(pair.facet.label).toBe('ν / υ');
+    expect(pair.options).toEqual(expect.arrayContaining(['Nu', 'Upsilon']));
+  });
+
+  it('proves it at its top step when every answer is right', () => {
+    const { walk, asked } = run(begin('alphabet'), () => ({ right: true }));
+    const result = resultOf(walk)!;
+    expect(result.proved).toBe(true);
+    expect(result.topStep).toBe(5);
+    expect(result.edgeStep).toBe(5);
+    expect(asked.map((q) => q.step)).toEqual([1, 2, 3, 4, 5, 5]);
+    expect(result.weak).toEqual([]);
+  });
+
+  it('puts the ν and υ pair in weak when it is missed twice', () => {
+    const miss = (q: DrillQuestion) => ({ right: q.facet.id !== 'pair-nu-upsilon' });
+    let found: { weak: string[]; asked: DrillQuestion[] } | null = null;
+    for (let seed = 1; seed <= 400 && !found; seed += 1) {
+      const { walk, asked } = run(begin('alphabet', seed, []), miss);
+      if (asked.filter((q) => q.facet.id === 'pair-nu-upsilon').length >= 2) found = { weak: resultOf(walk)!.weak.map((f) => f.id), asked };
+    }
+    expect(found, 'some seed asks the pair twice').not.toBeNull();
+    expect(found!.weak).toContain('pair-nu-upsilon');
+  });
+});
+
+describe('the other letters, sounds and marks', () => {
+  it('asks a pair of vowels by its items, and one letter by itself', () => {
+    const facets = new Set(drillSteps('diphthongs', { seed: 1 }).flatMap((s) => s.questions.map((q) => q.facet.id)));
+    expect(facets).toEqual(new Set(itemsOf('diphthongs').map((i) => i.id)));
+    const one = new Set(drillSteps('letter-nu', { seed: 1 }).flatMap((s) => s.questions.map((q) => q.facet.id)));
+    expect(one).toEqual(new Set(['letter-nu']));
+  });
+
+  it('asks the breathings by the rough and the smooth', () => {
+    const facets = new Set(drillSteps('breathings', { seed: 1 }).flatMap((s) => s.questions.map((q) => q.facet.id)));
+    expect(facets).toEqual(new Set(['breathing-rough', 'breathing-smooth']));
+  });
+
+  it('grades the syllables by the length of the word', () => {
+    const steps = drillSteps('syllables', { passage: PASSAGE, seed: 1 });
+    expect(steps.length).toBeGreaterThanOrEqual(2);
+    const sizes = steps.map((s) => Math.max(...s.questions.map((q) => Number(q.right))));
+    expect(sizes).toEqual([...sizes].sort((a, b) => a - b));
+  });
+});
+
+describe('the walk', () => {
+  it('proves the noun in its top step with two unhinted rights in a row', () => {
+    const { walk, asked } = run(begin('noun'), () => ({ right: true }));
+    const result = resultOf(walk)!;
+    expect(result.ideaId).toBe('noun');
+    expect(result.proved).toBe(true);
+    expect(result.edgeStep).toBe(result.topStep);
+    const top = result.topStep;
+    expect(asked.map((q) => q.step)).toEqual([...Array.from({ length: top }, (_, i) => i + 1), top]);
+    expect(result.answers).toHaveLength(asked.length);
+  });
+
+  it('asks step 2 again after right, right, miss from step 1 (the halfway rule)', () => {
+    let state = begin('noun');
+    expect(currentQuestion(state)!.step).toBe(1);
+    state = answer(state, true, false);
+    expect(currentQuestion(state)!.step).toBe(2);
+    state = answer(state, true, false);
+    expect(currentQuestion(state)!.step).toBe(3);
+    state = answer(state, false, false);
+    expect(currentQuestion(state)!.step).toBe(2);
+  });
+
+  it('finds the edge at once when the step above the one he holds was missed: right at 1, miss at 2, right at 1', () => {
+    let state = begin('alphabet');
+    state = answer(state, true, false);
+    state = answer(state, false, false);
+    expect(currentQuestion(state)!.step).toBe(1); // halfway between 1 and 2, rounded down
+    state = answer(state, true, false);
+    expect(state.result?.ended).toBe('edge');
+    expect(state.result?.edgeStep).toBe(1);
+  });
+
+  it('goes back by halves, rounded down, and keeps going back while he misses', () => {
+    let state = begin('alphabet');
+    state = answer(state, true, false);
+    state = answer(state, true, false);
+    state = answer(state, false, false); // missed 3, held 2: halfway is 2
+    expect(currentQuestion(state)!.step).toBe(2);
+    state = answer(state, false, false); // missed 2 as well, held 1: halfway is 1
+    expect(currentQuestion(state)!.step).toBe(1);
+  });
+
+  it('asks the facet just missed again at the easier step', () => {
+    let state = begin('alphabet');
+    state = answer(state, true, false);
+    state = answer(state, true, false);
+    const missed = currentQuestion(state)!.facet.id;
+    state = answer(state, false, false);
+    expect(currentQuestion(state)!.step).toBe(2);
+    expect(currentQuestion(state)!.facet.id).toBe(missed);
+  });
+
+  it('ends at the edge, with the missed facets in weak, in a seeded run of misses', () => {
+    for (let seed = 1; seed <= 10; seed += 1) {
+      const { walk, asked } = run(begin('alphabet', seed), () => ({ right: false }));
+      const result = resultOf(walk)!;
+      expect(result.ended).toBe('edge');
+      expect(result.proved).toBe(false);
+      expect(result.edgeStep).toBe(0);
+      expect(asked.length).toBeLessThan(MAX_QUESTIONS);
+      expect(result.weak.map((f) => f.id).sort()).toEqual([...new Set(asked.map((q) => q.facet.id))].sort());
+      expect(result.strong).toEqual([]);
+    }
+  });
+
+  it('finds the edge between the last right step and the first miss, and names strong and weak facets', () => {
+    // right up to step 3, miss at 4, then right at 3 again: edge 3
+    const { walk, asked } = run(begin('alphabet', 2), (q) => ({ right: q.step <= 3 }));
+    const result = resultOf(walk)!;
+    expect(result.ended).toBe('edge');
+    expect(result.proved).toBe(false);
+    expect(result.edgeStep).toBe(3);
+    expect(result.topStep).toBe(5);
+    const missed = new Set(asked.filter((q) => q.step > 3).map((q) => q.facet.id));
+    expect(new Set(result.weak.map((f) => f.id))).toEqual(missed);
+    for (const f of result.strong) expect(missed.has(f.id)).toBe(false);
+    expect(result.strong.length).toBeGreaterThan(0);
+  });
+
+  it('never counts a hinted right toward proved', () => {
+    let state = begin('noun');
+    const top = state.steps.length;
+    // climb to the top with plain rights
+    for (let i = 1; i < top; i += 1) state = answer(state, true, false);
+    expect(currentQuestion(state)!.step).toBe(top);
+    state = answer(state, true, false); // one unhinted right at the top
+    state = answer(state, true, true); // a hinted right: the streak is broken
+    expect(state.result).toBeNull();
+    state = answer(state, true, false);
+    expect(state.result).toBeNull();
+    state = answer(state, true, false);
+    expect(resultOf(state)!.proved).toBe(true);
+  });
+
+  it('does not move up on a hinted right, and does not count it as right', () => {
+    let state = begin('noun');
+    state = answer(state, true, true);
+    expect(state.step).toBe(1);
+    expect(state.asked[0]).toMatchObject({ right: true, hinted: true });
+    const result = resultOf(run(state, () => ({ right: true })).walk)!;
+    expect(result.answers[0].hinted).toBe(true);
+    // a hinted right counts as no right: its facet is not strong from that answer alone
+    const first = result.answers[0].facet.id;
+    const unhintedRights = result.answers.filter((a) => a.facet.id === first && a.right && !a.hinted).length;
+    expect(result.strong.some((f) => f.id === first)).toBe(unhintedRights > 0);
+  });
+
+  it('stops at 14 questions', () => {
+    const { walk, asked } = run(begin('noun'), () => ({ right: true, hinted: true }));
+    expect(asked).toHaveLength(MAX_QUESTIONS);
+    expect(MAX_QUESTIONS).toBe(14);
+    const result = resultOf(walk)!;
+    expect(result.ended).toBe('limit');
+    expect(result.proved).toBe(false);
+  });
+
+  it('asks no question twice in a row and keeps to the step it chose', () => {
+    const { asked } = run(begin('alphabet', 9), (_q, n) => ({ right: n % 3 !== 0 }));
+    for (let i = 1; i < asked.length; i += 1) expect(asked[i].key).not.toBe(asked[i - 1].key);
+  });
+
+  it('does not change a walk that is over', () => {
+    const { walk } = run(begin('noun'), () => ({ right: true }));
+    expect(answer(walk, false, false)).toBe(walk);
+    expect(currentQuestion(walk)).toBeNull();
+  });
+});
+
+describe('the foundation', () => {
+  it('returns the lowest prerequisite that is not solid instead of a walk', () => {
+    const levels = new Map<string, Level>(ALL_SOLID);
+    levels.set('number-singular', 'frontier');
+    levels.set('noun', 'notYet');
+    const got = start('number-plural', levels, { passage: PASSAGE });
+    expect(got).toEqual({ needs: 'number-singular' });
+    const several = new Map<string, Level>(ALL_SOLID);
+    several.set('case-genitive', 'frontier');
+    several.set('case-nominative', 'frontier');
+    expect(start('case-dative', several, { passage: PASSAGE })).toEqual({ needs: 'case-genitive' });
+    expect(start('case-dative', ALL_SOLID, { passage: PASSAGE })).not.toHaveProperty('needs');
+  });
+
+  it('counts a prerequisite with no level as not solid, but not the group an item belongs to', () => {
+    expect(start('noun', new Map(), {})).toEqual({ needs: 'accents' });
+    expect(start('letter-nu', new Map(), {})).not.toHaveProperty('needs');
+    expect(start('diphthong-ou', new Map(), {})).not.toHaveProperty('needs');
+    expect(start('alphabet', new Map(), {})).not.toHaveProperty('needs');
+  });
+
+  it('is pure: drillIt.ts imports neither Dexie nor React', () => {
+    for (const file of ['src/data/grammar/drillIt.ts', 'src/data/grammar/drillItems.ts']) {
+      const source = readFileSync(file, 'utf8');
+      expect(source, file).not.toMatch(/from ['"](dexie|react|react-dom|dexie-react-hooks)/);
+      expect(source, file).not.toMatch(/repositories|db['"]/);
+    }
+  });
+});
+
+describe('the words a step reads', () => {
+  it('has a word for every letter, and a word that holds each pair', () => {
+    for (const letter of itemsOf('alphabet')) expect(wordsWith(letter.glyphs![0]).length, letter.id).toBeGreaterThan(0);
+    for (const item of [...itemsOf('diphthongs'), ...itemsOf('consonant-pairs')]) {
+      expect(baseLetters(PAIR_WORD_OF[item.id] ?? ''), item.id).toContain(baseLetters(item.pair!));
+    }
+  });
+
+  it('asks the breathing of a harder word as the word has it', () => {
+    const hard = drillSteps('breathings', { seed: 1 })[1].questions;
+    expect(hard.find((q) => q.form === 'ῥῆμα')?.right).toBe('Rough');
+    expect(hard.find((q) => q.form === 'αὐτός')?.right).toBe('Smooth');
+  });
+});
