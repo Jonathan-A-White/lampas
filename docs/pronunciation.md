@@ -11,7 +11,7 @@ sound-alikes for the letters.
 ## How it is built
 
 `src/speech/pronunciation.ts` is the registry: a list of `Pronunciation` entries
-`{ id, label, lang, scoringLang, note, respell(greekWord), keyWords, loneLetter(word) }`. `keyWords` gives each sound the respelling writes an English word that has it (`e` is the e of pet); the grammar lessons (`src/data/grammar/ladder.ts`) say every sound as 'e as in pet' from it, so a second scheme changes the lessons. Settings lists the entries, the word sheet calls
+`{ id, label, lang, scoringLang, note, respell(greekWord), keyWords, loneLetter(word), lessons? }`. `keyWords` gives each sound the respelling writes an English word that has it (`e` is the e of pet); the sound lessons say every sound as 'e as in pet' from it. Settings lists the entries, the word sheet calls
 `pronunciationOf(chosen).respell(word.t)`, and `lang` is the language tag of the voice that speaks (Settings keeps
 the chosen id under `greekPronunciation`). Each scheme is one file in `src/speech/schemes/`.
 
@@ -20,6 +20,13 @@ letter names it ('omicron'), so the scheme gives a form its voice reads as the w
 the bare vowel in lower case with a stress mark, ό ή ώ (no breathing is said; a Greek voice reads a stressed vowel as a
 syllable, as it reads the word ή 'or'). A held word, a speaker and a one-letter run of a reading all go through it
 (`src/speech/greek.ts` `loneLetterForm`); a letter drill (`speakLetter`) does not, since there the letter is the thing named.
+
+`lessons` (mw-5r3p30.229) is what the scheme TEACHES of each sound-bearing idea of the grammar ladder, keyed by idea id (`letter-beta`,
+`diphthong-ou`, `pair-mp`, `breathing-rough`, and the groups `diphthongs`, `consonant-pairs`, `breathings`): `{ sound?, text? }`. The idea sheet
+(`IdeaSheet.tsx`), the quick round, the sound questions and the reading drill read them through `src/data/grammar/lessons.ts` (`ideaText`, `ideaSound`)
+for the chosen scheme; the ladder itself holds only the spelling, so no scheme's sounds are written outside its own file. An idea the scheme has no
+lesson for says a neutral text with no sound and is asked by ear or by name, never in another scheme's sounds. Modern Greek's are in
+`schemes/modernLessons.ts` (the breathings are silent: ὁ is 'o'), and `tests/unit/sound-lessons.test.ts` holds each to `respellModern`.
 
 ## Modern Greek (`src/speech/schemes/modern.ts`)
 
@@ -52,7 +59,8 @@ moving to the next syllable the longest group of consonants that can open a Gree
 4. Set `scoringLang`: the language the Greek reading check asks the mill to score a reading in (modern Greek is `el`).
    It goes as `lang` on the verse-read grist, so the grind's `scoring.langs` (grinds/verse-read.json) must list it and the
    mill's scorers must be able to score it; a scheme the mill cannot score cannot be given a reading check until they can.
-5. Test it the way `tests/unit/respell-modern.test.ts` does, one row per rule.
+5. Give it `lessons` for every letter, pair and breathing it says (copy `schemes/modernLessons.ts`; Erasmian's rough breathing adds an h, which is where that lesson belongs, not in the ladder).
+6. Test it the way `tests/unit/respell-modern.test.ts` does, one row per rule.
 
 A test adds a scheme for one scenario with `registerPronunciation(scheme)`, which returns the function that takes
 it out again (features/pronunciation.feature).
