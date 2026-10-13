@@ -12,6 +12,7 @@ import { MODERN } from '../../speech/schemes/modern';
 import { LADDER, itemFacet, itemsOf, ideasOf, type Facet, type GrammarIdea } from './ladder';
 import { ideaSound, ideaText } from './lessons';
 import { ENCLITIC_USES, MARK_PAIRS, blankWord } from './marks';
+import { SOUND_ALIKE } from './soundAlike';
 import { COMPOUND_VERBS, PREPOSITIONS, type CompoundVerb, type PrepCase, type VerseRef } from './prepositions';
 import { quickQuestion } from './quickRound';
 
@@ -388,6 +389,32 @@ export function buildEnclitic(idea: GrammarIdea, random: Random): GrammarQuestio
   };
 }
 
+// ---- Words that sound alike (mw-86e9r1.7) ----
+
+/**
+ * Hear a word and pick its spelling: 'Tap to hear the word for “we”', over the word, its twin and two words of the other pairs. When the scheme
+ * says the two words alike (Modern Greek: ἡμεῖς and ὑμεῖς are both 'ee-MEES') the ear cannot decide between them, so the question can only be
+ * answered from the spelling, and says so; a scheme that says them apart is asked the same by ear, with nothing said of sounding alike. The pairs the
+ * scheme says alike are the ones asked, when it says any.
+ */
+export function buildSoundAlike(idea: GrammarIdea, random: Random, scheme: Pronunciation = chosenPronunciation()): GrammarQuestion {
+  const alike = SOUND_ALIKE.filter((p) => scheme.respell(p.a.word) === scheme.respell(p.b.word));
+  const pair = pick(alike.length > 0 ? alike : SOUND_ALIKE, random);
+  const [word, twin] = random() < 0.5 ? [pair.a, pair.b] : [pair.b, pair.a];
+  const sameSound = scheme.respell(word.word) === scheme.respell(twin.word);
+  const others = SOUND_ALIKE.filter((p) => p !== pair).flatMap((p) => [p.a.word, p.b.word]);
+  return {
+    kind: 'letter',
+    ideaId: idea.id,
+    prompt: sameSound
+      ? `This word sounds just like another. Tap to hear the word for “${word.gloss}”, then tap how it is spelt.`
+      : `Tap to hear the word for “${word.gloss}”, then tap how it is spelt.`,
+    options: shuffle([word.word, twin.word, ...shuffle(others, random).slice(0, OPTION_COUNT - 2)], random),
+    right: word.word,
+    say: word.word,
+  };
+}
+
 // ---- Prepositions and compound verbs (mw-86e9r1.5) ----
 
 const refText = (r: VerseRef): string => `${bookOf(r.book)?.name ?? r.book} ${r.chapter}:${r.verse}`;
@@ -623,6 +650,8 @@ export function buildIdeaQuestion(idea: GrammarIdea, passage: readonly Chapter[]
       return buildMarksChangeWord(idea, random);
     case 'enclitics':
       return buildEnclitic(idea, random);
+    case 'words-sound-alike':
+      return buildSoundAlike(idea, random, scheme);
   }
   const endingFirst = random() < 0.5;
   const builders = endingFirst ? [buildEnding, buildTapForm] : [buildTapForm, buildEnding];

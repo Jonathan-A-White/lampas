@@ -27,7 +27,7 @@ const SOUNDS: [string, string, string, string[]?][] = [
 describe('the sound lessons of the Modern Greek scheme', () => {
   it('gives a lesson to every letter, vowel pair, consonant pair and breathing of the sounds, letters and marks tiers', () => {
     const bearing = LADDER.filter((i) => i.glyphs || i.parent).map((i) => i.id);
-    expect(Object.keys(modern.lessons ?? {}).sort()).toEqual([...bearing, 'breathings', 'consonant-pairs', 'diphthongs'].sort());
+    expect(Object.keys(modern.lessons ?? {}).sort()).toEqual([...bearing, 'breathings', 'consonant-pairs', 'diphthongs', 'words-sound-alike'].sort());
   });
 
   it('says for each letter and pair a sound that agrees with respellModern for the idea\'s own example word', () => {

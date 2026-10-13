@@ -201,7 +201,7 @@ export function respellModern(word: string): string {
 /** The sounds respellModern writes, each with an English word that has it; the lessons say 'e as in pet'. */
 export const MODERN_KEY_WORDS: Readonly<Record<string, string>> = {
   a: 'father', e: 'pet', ee: 'see', o: 'lot', oo: 'food',
-  v: 'vase', f: 'fan', b: 'bed', d: 'dog', g: 'go', h: 'hat',
+  v: 'vase', f: 'fan', b: 'bed', d: 'dog', g: 'go', h: 'hat', s: 'sun', z: 'zoo',
   mb: 'number', nd: 'under', ng: 'finger', nks: 'thanks', kh: 'loch',
 };
 

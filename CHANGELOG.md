@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.181
+_2026-10-13_
+- New: The lessons now teach when σ sounds like z, when αυ and ευ sound like v or f, where a breathing is written, and a new lesson 'Words that sound alike' with a hear-and-pick question.
+
 ## 0.1.180
 _2026-10-13_
 - New: With Immersive reader On, the Reader now fills the whole phone screen, hiding the status and navigation bars, as soon as you tap or scroll the text.
