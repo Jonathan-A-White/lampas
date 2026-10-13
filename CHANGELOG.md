@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.173
+_2026-10-13_
+- Fixed: the Breathing marks lesson now teaches Modern Greek sounds (breathings are silent, ὁ is “o”) instead of the old school pronunciation.
+
 ## 0.1.172
 _2026-10-13_
 - Fixed: 'Start from the letters' on Placement now counts the grammar you already have and names the idea Learn next will open, instead of saying you are starting from nothing.

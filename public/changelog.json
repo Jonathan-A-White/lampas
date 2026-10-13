@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.173",
+    "date": "2026-10-13",
+    "story": "mw-5r3p30.229",
+    "kind": "fixed",
+    "text": "the Breathing marks lesson now teaches Modern Greek sounds (breathings are silent, ὁ is “o”) instead of the old school pronunciation."
+  },
+  {
     "version": "0.1.172",
     "date": "2026-10-13",
     "story": "mw-86e9r1.19",
