@@ -80,7 +80,7 @@ export function VerseView(props: VerseViewProps) {
   const { title, book, chapter, verse, view, text, previous, next, onClose, action, onAction, listen, checks, read, onRetryRead, ask, onAsk, prefill, onTalk, quiz } = props;
   // The foot of the view, where the chosen action draws its bar.
   const [slot, setSlot] = useState<HTMLDivElement | null>(null);
-  // Ask the tutor and Quiz me are the AI: not offered, and nothing of theirs drawn, without a licence (mw-8m9dyu.2).
+  // Read it aloud, Ask the tutor and Quiz me are the AI: not offered, and nothing of theirs drawn, without a licence (mw-8m9dyu.2).
   const ai = useAiAllowed();
   const reference = unitReference(title, verse);
   const passage = verse.to !== undefined;
@@ -153,7 +153,7 @@ export function VerseView(props: VerseViewProps) {
               Tap Play to hear {name}.
             </p>
           ) : null}
-          {action === 'read' ? (
+          {action === 'read' && ai ? (
             <ReadCheckPanel key={unitId(verse)} verse={verse} view={view} book={book} chapter={chapter} checks={checks} hold={read} onRetry={onRetryRead} slot={slot} />
           ) : null}
           {action === 'ask' && ai ? (
