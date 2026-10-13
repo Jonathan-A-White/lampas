@@ -1,0 +1,28 @@
+{
+  "description": "He asks how to say ταῦτα in 1 John 2:1. The app speaks modern Greek (the request says so), so the answer says how it sounds in modern Greek (TAF-ta, the αυ as 'af' before τ) and never the Erasmian 'TOW-ta'.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "1 John 2:1",
+    "greek": "Τεκνία μου ταῦτα γράφω ὑμῖν ἵνα μὴ ἁμάρτητε Καὶ ἐάν τις ἁμάρτῃ παράκλητον ἔχομεν πρὸς τὸν πατέρα Ἰησοῦν χριστὸν δίκαιον",
+    "english": "My little children, I am writing these things to you so that you will not sin. But if anyone does sin, we have an advocate before the Father — Jesus Christ, the Righteous One.",
+    "question": "How do I say ταῦτα?",
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "pronunciation": "modern",
+    "settings": {
+      "hebrewDepth": "both",
+      "askBy": "typing",
+      "readTutor": "on",
+      "weave": "off",
+      "weaveGrammar": "any"
+    }
+  },
+  "expect": {
+    "answer": {
+      "matches": "[Tt][Aa][Ff]"
+    }
+  }
+}

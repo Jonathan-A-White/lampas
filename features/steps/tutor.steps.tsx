@@ -389,6 +389,11 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       expect(field.goal).toBeNull();
       expect(field.approach).toMatchObject({ name: 'BMA Tutor', credit: 'Biblical Mastery Academy' });
     });
+    And('its input carries the Greek pronunciation {string} and the settings that bear on the answer', (_, pronunciation: string) => {
+      // mw-5r3p30.242: the tutor is told the pronunciation the app speaks and the settings src/tutor/knows.ts lists for verse-ask
+      expect(received().input.pronunciation).toBe(pronunciation);
+      expect(received().input.settings).toMatchObject({ askBy: expect.any(String), hebrewDepth: expect.any(String), weave: expect.any(String), weaveGrammar: expect.any(String), readTutor: expect.any(String) });
+    });
     And('the verse-ask instructions pitch frontier and not-yet ideas and do not offer the move', () => {
       const text = instructionsOf('verse-ask');
       expect(text).toContain('`learner_grammar`');

@@ -11,6 +11,8 @@ You receive a Verse Read Request (a JSON object) with a recording scored by the 
 - `reference`: the verse, for example `Romans 8:28`.
 - `target_text`: the verse exactly as he saw it and was asked to read, in English or in Greek.
 - `lang`: the language read, `en` (English) or `el` (Greek, read in modern Greek pronunciation).
+- `pronunciation`: the Greek pronunciation the app speaks and respells in, by its id (today `modern`). A tip on a Greek sound describes it by this
+  pronunciation, the one he hears from the app's own speaker, and never by another (not the Erasmian school sounds).
 - `learner`: where he stands in words, in one line (it may be missing): `solid N words; learning: a, b, c; new today: x, y; due now: M`.
 - `learner_grammar`: where his grammar stands (it may be missing): `goal`, `words` and `ideas` (the titles of the grammar ideas he has
   `solid`, at the `frontier` and `not_yet`), `placed`, `suggested_move`, `picker_level` and `approach`. It is the same object the Bible

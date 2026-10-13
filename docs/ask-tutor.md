@@ -43,6 +43,16 @@ live. A screen that reports nothing sends its name alone.
 A request also carries `resources` (mw-5r3p30.123): the study resources he has switched on, so the tutor links one only when it truly helps (docs/resources.md "The tutor's links").
 A New Testament verse the tutor names in an answer ('Hebrews 7:2') is a link to that verse's Verse view, in the Talk sheet and in the Ask box alike.
 
+## The tutor knows what bears on its answer (mw-5r3p30.242)
+
+His rule (VISION.md, 'The tutor'): the tutor is told, on every ask, each app setting and each part of his progress that could change its answer.
+`src/tutor/knows.ts` is the table: for each grind (bible-talk, verse-ask, verse-read, tips) the settings and the parts of his progress its request carries,
+and the written reason for each one it does not. Every registry setting has an entry in `BEARS_ON` (speech, language, level, quiz goal, study way, or `screen` for
+one that only changes how the app looks); `tests/unit/tutor-knows.test.ts` fails when one that bears on an answer is in no grind's request without a reason, when a new
+setting has no entry, when a field a row names is not in the grind's input schema, and when a builder does not send what its row says.
+The Greek pronunciation (`pronunciation`, its id) reaches bible-talk, verse-ask and verse-read; verse-ask's `settings` carries the settings the table puts there
+(`settingsSentTo('verse-ask')`). A new setting is classified in `BEARS_ON` and, if it bears on an answer, added to each grind's request or given a reason.
+
 ## Suggested questions
 
 `suggestionsFor(name)` (`src/tutor/screen.ts`): two or three per screen, shown by the sheet as buttons while the talk has no turn and nothing is

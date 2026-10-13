@@ -4,7 +4,8 @@
   "request": {
     "reference": "1 Thessalonians 5:16",
     "target_text": "Πάντοτε χαίρετε",
-    "lang": "el"
+    "lang": "el",
+    "pronunciation": "modern"
   },
   "photos": ["read-1-thess-5-16-el.webm"],
   "expect": {

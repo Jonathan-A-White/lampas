@@ -71,6 +71,7 @@
         }
       }
     },
-    "settings": { "description": "Optional. How he wants a language besides Greek written, and how Ask the tutor opens (askBy: \"speaking\" or \"typing\"), by key: { \"hebrewDepth\": \"both\", \"askBy\": \"speaking\" }.", "type": "object" }
+    "pronunciation": { "description": "Optional. The Greek pronunciation the app speaks and respells in, by its id: modern (how Greek is spoken today). Describe every Greek sound by it.", "type": "string", "minLength": 1, "maxLength": 40 },
+    "settings": { "description": "Optional. The app settings that bear on an answer, by key: hebrewDepth (how a Hebrew word is written), askBy (\"speaking\" or \"typing\"), readTutor (whether answers are read aloud to him), weave and weaveGrammar (how much Greek is woven into his English): { \"hebrewDepth\": \"both\", \"askBy\": \"speaking\" }.", "type": "object" }
   }
 }
