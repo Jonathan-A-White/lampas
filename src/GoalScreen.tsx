@@ -15,6 +15,7 @@ import { ideaOf } from './data/grammar/ladder';
 import type { Counts, Level } from './data/grammar/needs';
 import { addWordToLearn, getGrammarApproach } from './data/repositories';
 import { IdeaSheet } from './IdeaSheet';
+import { useAiAllowed } from './gate/licenceContext';
 import { LadderStart } from './ReadingLadder';
 import { navigate, openPlacement, openReader } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -100,6 +101,9 @@ function NoGoalBody({ levels }: { levels: ReadonlyMap<string, Level> }) {
 
 /** The reading ladder (src/ReadingLadder.tsx): one entry per language he reads in, each starting at the easiest verse to say and keeping its own place. */
 function ReadingLadderSection() {
+  // Each reading goes to the mill (the verse-read grist): not offered without a licence (mw-8m9dyu.5).
+  const ai = useAiAllowed();
+  if (!ai) return null;
   return (
     <section aria-label="Reading ladder" className="mt-5 space-y-2">
       <h2 className="text-base font-medium">Reading ladder</h2>

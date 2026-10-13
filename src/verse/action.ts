@@ -12,10 +12,11 @@ export const VERSE_ACTIONS = [
 
 export type VerseAction = (typeof VERSE_ACTIONS)[number]['id'];
 
-/** The actions that are the tutor's (mw-8m9dyu.2): they need a licence, so an unlicensed phone is not offered them. */
-const AI_ACTIONS: readonly VerseAction[] = ['ask', 'quiz'];
+/** The actions that are the AI's (mw-8m9dyu.2, mw-8m9dyu.5): they need a licence, so an unlicensed phone is not offered them. Read it aloud is one: his reading is
+ * sent to the mill (the verse-read grist). */
+const AI_ACTIONS: readonly VerseAction[] = ['read', 'ask', 'quiz'];
 
-/** The actions the Verse view offers: all of them with a licence, Listen and Read it aloud without. */
+/** The actions the Verse view offers: all of them with a licence, only Listen without. */
 export const actionsFor = (ai: boolean): typeof VERSE_ACTIONS[number][] => VERSE_ACTIONS.filter((a) => ai || !AI_ACTIONS.includes(a.id));
 
 const KEY = 'lampas.verseAction';
@@ -46,6 +47,6 @@ export function useVerseAction(): [VerseAction, (action: VerseAction) => void] {
     setVerseAction(next);
     set(next);
   }, []);
-  // Left on Ask the tutor or Quiz me by a licensed phone, an unlicensed one opens on Listen (what is kept stays, for when the licence is back).
+  // Left on Read it aloud, Ask the tutor or Quiz me by a licensed phone, an unlicensed one opens on Listen (what is kept stays, for when the licence is back).
   return [!ai && AI_ACTIONS.includes(action) ? 'listen' : action, choose];
 }
