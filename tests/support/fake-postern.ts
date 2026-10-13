@@ -16,6 +16,8 @@ export interface ReceivedGrist {
   grist: { app: string; kind: string; v: string; model?: string; effort?: string };
   input: Record<string, unknown>;
   attachments: { hash: string; size: number; mime: string; name?: string }[];
+  /** the phone's part of its previous answer's round trip (docs/ask-tutor.md 'How long an answer takes'), when the grist carries one */
+  client_timing?: Record<string, unknown>;
 }
 
 /** What the fake answers a grist with. */
@@ -171,7 +173,7 @@ export const SOUND_HELP_ANSWER = {
 
 export function makeFakePostern(): FakePostern {
   const issued = new Set<string>();
-  const records: { seq: number; txid: string; signer?: string; payload: Record<string, unknown> }[] = [];
+  const records: { seq: number; firstSeen: string; txid: string; signer?: string; payload: Record<string, unknown> }[] = [];
   const unanswered: { txid: string; from: string; kind: string }[] = [];
   let counter = 0;
 
@@ -193,14 +195,14 @@ export function makeFakePostern(): FakePostern {
       const sealer = sealedBy ? Uint8Array.from(Utils.toArray(sealedBy, 'hex')) : millBytes;
       const envelope = grist.sealEnvelope(JSON.stringify(plaintext), sealer, to, 1_790_000_000);
       const signer = sealedBy ? PrivateKey.fromHex(sealedBy).toPublicKey().toString() : MILL_PUBLIC_KEY;
-      records.push({ seq: records.length + 1, txid: `direct:${hex(Hash.sha256(Utils.toArray(`status-${records.length}`, 'utf8')))}`, signer, payload: { ...envelope } });
+      records.push({ seq: records.length + 1, firstSeen: new Date().toISOString(), txid: `direct:${hex(Hash.sha256(Utils.toArray(`status-${records.length}`, 'utf8')))}`, signer, payload: { ...envelope } });
     },
     answer(reply) {
       const next = unanswered.shift();
       if (!next) throw new Error('no grist is waiting for an answer');
       const plaintext = { re: next.txid, ...reply, grind: { app: 'lampas', kind: next.kind, v: '1' } };
       const envelope = grist.sealEnvelope(JSON.stringify(plaintext), millBytes, next.from, 1_790_000_000);
-      records.push({ seq: records.length + 1, txid: `direct:${hex(Hash.sha256(Utils.toArray(`answer-${next.txid}`, 'utf8')))}`, signer: MILL_PUBLIC_KEY, payload: { ...envelope } });
+      records.push({ seq: records.length + 1, firstSeen: new Date().toISOString(), txid: `direct:${hex(Hash.sha256(Utils.toArray(`answer-${next.txid}`, 'utf8')))}`, signer: MILL_PUBLIC_KEY, payload: { ...envelope } });
     },
   };
 
@@ -246,7 +248,7 @@ export function makeFakePostern(): FakePostern {
       if (envelope.from !== pubkey || envelope.to !== MILL_PUBLIC_KEY) return json(403, { error: 'not to the mill from you' });
       const txid = `direct:${hex(Hash.sha256(Utils.toArray(scriptHex, 'hex')))}`;
       const seq = records.length + 1;
-      records.push({ seq, txid, signer: pubkey, payload: { ...envelope } });
+      records.push({ seq, firstSeen: new Date().toISOString(), txid, signer: pubkey, payload: { ...envelope } });
       const opened = JSON.parse(grist.openCt(envelope.ct, millBytes)) as ReceivedGrist;
       fake.received.push(opened);
       fake.txids.push(txid);

@@ -1,6 +1,6 @@
 // src/services/tutor.ts — the tutor: one question about a verse, sent as a grist through Postern (bsv-kit/grist)
 // and answered by the mill's verse-ask grind (grinds/verse-ask.json). All the wire work is bsv-kit's: the door signs
-// every call with the device key, sendGristRecord seals the request to the mill, waitForAnswer pages for the reply
+// every call with the device key, gristWire.ts sends (bsv-kit's sendGristRecord, with client_timing) and seals the request to the mill, waitForAnswer pages for the reply
 // from the grist's own place in the backend's sequence.
 import { door } from 'bsv-kit/bsv';
 import { grist } from 'bsv-kit/grist';
@@ -10,6 +10,8 @@ import type { AnswerWord } from '../data/db';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
 import type { TutorRequest } from '../data/requestsForTutor';
+import { claimReport, noteAnswer, releaseReport } from './clientTiming';
+import { millOf, readTimedPage, sendTimedGrist, timedDoor, type Page, type TimedDoor } from './gristWire';
 
 /** The app and kind the mill runs the grind under (grinds/verse-ask.json), and the version of the request below. */
 export const TUTOR_APP = 'lampas';
@@ -44,7 +46,7 @@ export const CONTACT_LOST_MS = 90_000;
 
 /** One page of the wait: rejects with the door's ApiTimeoutError (and aborts it) when it has not come, body and all, in pollTimeoutMs,
  * and with an AwaitAbortedError at once when `signal` aborts, even from a fetch that does not heed its signal. */
-async function readPage(txid: string, d: InstanceType<typeof door.Door>, key: Uint8Array, since: number, mill: string, signal: AbortSignal): ReturnType<typeof grist.readAnswerPage> {
+async function readPage(txid: string, d: TimedDoor, key: Uint8Array, since: number, mill: string, signal: AbortSignal): Promise<Page> {
   const poll = new AbortController();
   let timer: ReturnType<typeof setTimeout> | undefined;
   let onAbort = (): void => undefined;
@@ -61,11 +63,19 @@ async function readPage(txid: string, d: InstanceType<typeof door.Door>, key: Ui
   if (signal.aborted) onAbort();
   else signal.addEventListener('abort', onAbort, { once: true });
   try {
-    return await Promise.race([grist.readAnswerPage(txid, { door: d, key, since, mill, signal: poll.signal }), cut]);
+    return await Promise.race([readTimedPage(txid, { door: d, key, since, mill, signal: poll.signal }), cut]);
   } finally {
     clearTimeout(timer);
     signal.removeEventListener('abort', onAbort);
   }
+}
+
+/** What waiting for an answer found: the answer, when a poll saw it, when the backend first saw its record, and how long the poll that saw it took. */
+interface Waited {
+  answer: grist.GristAnswer;
+  seenAt: number;
+  deliveredAt?: number;
+  pollNetwork: number;
 }
 
 /**
@@ -77,7 +87,7 @@ async function readPage(txid: string, d: InstanceType<typeof door.Door>, key: Ui
  * A licence refusal ends it at once. bsv-kit's awaitAnswer ends at the first failed page, which a phone that blinks offline for a
  * moment turns into 'could not reach the tutor'.
  */
-function waitForAnswer(txid: string, since: number, mill: string, d: InstanceType<typeof door.Door>, key: Uint8Array, signal: AbortSignal): Promise<grist.GristAnswer> {
+function waitForAnswer(txid: string, since: number, mill: string, d: TimedDoor, key: Uint8Array, signal: AbortSignal): Promise<Waited> {
   return new Promise((resolve, reject) => {
     const polls = new AbortController();
     let lastContact = Date.now();
@@ -105,7 +115,7 @@ function waitForAnswer(txid: string, since: number, mill: string, d: InstanceTyp
             lastContact = Date.now();
             since = Math.max(since, result.next);
             const { answer } = result;
-            if (answer) finish(() => resolve(answer));
+            if (answer) finish(() => resolve({ answer, seenAt: lastContact, deliveredAt: result.deliveredAt, pollNetwork: result.took }));
           }, failed)
           .finally(() => (out -= 1));
       }
@@ -226,7 +236,12 @@ export interface AskOptions {
   key: Uint8Array;
   /** Stops the wait (the screen went away); nothing is thrown away that was already kept. */
   signal?: AbortSignal;
-  /** Called once the question has been sent and the wait for the answer begins, with the grist's id. */
+  /** When he tapped (epoch ms; for a reading, when the recording ended): the start of the round trip the phone times. Default: now, as askGrind is called. */
+  tapAt?: number;
+  /** Not a tutor answer to time, so no client_timing is kept or sent for it (the feedback grind, which the mill only forwards). */
+  untimed?: boolean;
+  /** Called once the question has been sent and the wait for the answer begins, with the grist's id. The screen that draws the answer calls
+   * answerDrawn(txid) (src/services/clientTiming.ts) once it has, which completes the answer's timing. */
   onSent?: (txid: string) => void;
   /** Files sent with the grist: a recording of him reading (src/services/reading.ts). */
   files?: grist.GristFile[];
@@ -241,21 +256,32 @@ export interface AskOptions {
  */
 export async function askGrind<Answer>(kind: string, request: object, isAnswer: (value: unknown) => value is Answer, options: AskOptions): Promise<Answer> {
   const { key } = options;
-  const d = new door.Door({ baseUrl: options.baseUrl ?? POSTERN_DOOR, key });
+  const tapAt = options.tapAt ?? Date.now();
+  const d = timedDoor(new door.Door({ baseUrl: options.baseUrl ?? POSTERN_DOOR, key }));
   const deadline = new AbortController();
   const stop = (): void => deadline.abort();
   options.signal?.addEventListener('abort', stop, { once: true });
   const timer = setTimeout(stop, tutorTimings.deadlineMs);
+  // the timing of his previous answer rides with this grist (and is let go again if the grist never reaches the backend)
+  const report = options.untimed ? undefined : claimReport();
+  let sent = false;
   try {
-    const { txid, seq, mill } = await grist.sendGristRecord({ door: d, key, app: TUTOR_APP, kind, v: TUTOR_VERSION, input: request, photos: [], attachments: options.files });
+    const mill = await millOf(d, deadline.signal);
+    const { txid, seq } = await sendTimedGrist({ door: d, key, mill, app: TUTOR_APP, kind, v: TUTOR_VERSION, input: request, files: options.files ?? [], clientTiming: report });
+    sent = true;
+    const sentAt = Date.now();
+    const sendNetwork = d.total;
     options.onSent?.(txid);
-    const reply = await waitForAnswer(txid, seq, mill, d, key, deadline.signal);
+    const waited = await waitForAnswer(txid, seq, mill, d, key, deadline.signal);
+    const reply = waited.answer;
     if (reply.status !== 'answered') {
       throw new TutorError('no-answer', reply.reason ? `The tutor could not answer: ${reply.reason}` : 'The tutor could not answer.');
     }
     if (!isAnswer(reply.answer)) throw new TutorError('no-answer', 'The tutor sent an answer this app could not read.');
+    if (!options.untimed) noteAnswer(txid, { tapAt, sentAt, seenAt: waited.seenAt, deliveredAt: waited.deliveredAt, sendNetwork, pollNetwork: waited.pollNetwork });
     return reply.answer;
   } catch (err) {
+    if (report && !sent) releaseReport(report.txid);
     if (err instanceof grist.AwaitAbortedError && !options.signal?.aborted) throw new TutorError('no-answer', 'The tutor took too long to answer.');
     throw explain(err);
   } finally {

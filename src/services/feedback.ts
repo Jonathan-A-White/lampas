@@ -113,7 +113,7 @@ function kept(request: FeedbackRequest, txid: string, sentAt: number): Parameter
 
 /** Sends the feedback with its pictures (JPEG files, at most MAX_PICTURES) and waits for the mill's receipt. Throws a TutorError. */
 function sendFeedback(request: FeedbackRequest, files: grist.GristFile[], options: AskOptions): Promise<FeedbackAnswer> {
-  return askGrind(FEEDBACK_KIND, request, isFeedbackAnswer, { ...options, files });
+  return askGrind(FEEDBACK_KIND, request, isFeedbackAnswer, { ...options, files, untimed: true });
 }
 
 /** Sends `request` (with its pictures, if any) with the phone's key, keeps it in the requests table with its grist id once it is sent,
