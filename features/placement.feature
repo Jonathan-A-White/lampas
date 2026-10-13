@@ -113,3 +113,12 @@ Feature: Test me on the grammar, and meet me where I am
     And the screen says he starts with "The Greek alphabet"
     When he goes back to the goal
     Then Learn next says "The Greek alphabet"
+
+  Scenario: A total beginner's placement gives no idea a level, with his word list already on the schedule
+    Given his goal is "Read 1 John 1:1" and he knows nothing yet
+    And his word list is already on the schedule
+    When he opens the placement
+    Then the screen offers "Start from the letters"
+    When he taps "Start from the letters"
+    Then the end card says "Where you are: solid 0, frontier 0, not yet 0"
+    And no idea has a level

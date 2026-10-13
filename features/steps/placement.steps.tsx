@@ -14,7 +14,9 @@ import { questionFor } from '../../src/data/grammar/placementQuestion';
 import type { GrammarQuestion } from '../../src/data/grammar/questions';
 import { readPlacement } from '../../src/data/placementKeep';
 import { mulberry32 } from '../../src/data/quiz';
+import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { setGoal } from '../../src/data/repositories/settings';
+import { seedWordsIfFirstOpen } from '../../src/data/repositories/words';
 import { clearBus, latest } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -93,6 +95,11 @@ describeFeature(feature, ({ Scenario }) => {
   const asks = async (_: unknown, text: string) => {
     await waitFor(() => expect(screen.getByTestId('placement-question')).toHaveTextContent(text));
   };
+  // The App's first-open seed puts every word he has on the schedule (reviews of kind 'word') whenever it finishes: only a grammar review is the placement's.
+  const noIdeaHasALevel = async () => {
+    expect(await db.grammarLevels.toArray()).toEqual([]);
+    expect((await db.reviews.toArray()).filter((r) => r.kind === 'grammar')).toEqual([]);
+  };
   const wrong = (_: unknown, n: number) => answerMany(n, false);
   const right = (_: unknown, n: number) => answerMany(n, true);
 
@@ -129,7 +136,7 @@ describeFeature(feature, ({ Scenario }) => {
       const after = order.slice(order.indexOf('noun') + 1);
       const rows = await db.grammarLevels.toArray();
       expect(rows.filter((r) => after.includes(r.id))).toEqual([]);
-      expect((await db.reviews.toArray()).filter((r) => after.includes(r.id))).toEqual([]);
+      expect((await db.reviews.toArray()).filter((r) => r.kind === 'grammar' && after.includes(r.id))).toEqual([]);
     });
     And('the idea {string} is solid', async (_, id: string) => expect(await levelOf(id)).toBe('solid'));
   });
@@ -256,11 +263,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the end card says {string}', async (_, text: string) => {
       await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent(text));
     });
-    And('no idea has a level', async () => {
-      expect(await db.grammarLevels.toArray()).toEqual([]);
-      // the first-open seeding of the word list schedules its words whenever it finishes: only the grammar reviews are the placement's
-      expect((await db.reviews.toArray()).filter((r) => r.kind === 'grammar')).toEqual([]);
-    });
+    And('no idea has a level', noIdeaHasALevel);
     And('the placement is no longer kept', () => expect(readPlacement()).toBeNull());
     And('the screen says he starts with {string}', async (_, title: string) => {
       await waitFor(() => expect(screen.getByTestId('from-letters')).toHaveTextContent(`You start with ${title}`));
@@ -269,5 +272,23 @@ describeFeature(feature, ({ Scenario }) => {
     Then('Learn next says {string}', async (_, text: string) => {
       await waitFor(async () => expect(await screen.findByTestId('learn-next')).toHaveTextContent(`Learn next: ${text}`));
     });
+  });
+
+  // The App seeds the word list and puts its words on the schedule in the background, whenever that finishes, and a loaded host lets it win. Here the seed is
+  // done before the check; 'A total beginner starts from the letters' leaves it to race. Both must pass.
+  Scenario("A total beginner's placement gives no idea a level, with his word list already on the schedule", ({ Given, And, When, Then }) => {
+    Given('his goal is {string} and he knows nothing yet', given);
+    And('his word list is already on the schedule', async () => {
+      await seedWordsIfFirstOpen();
+      await seedScheduleIfFirstOpen();
+      expect((await db.reviews.toArray()).some((r) => r.kind === 'word')).toBe(true);
+    });
+    When('he opens the placement', opened);
+    Then('the screen offers {string}', says);
+    When('he taps {string}', tapped);
+    Then('the end card says {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent(text));
+    });
+    And('no idea has a level', noIdeaHasALevel);
   });
 });
