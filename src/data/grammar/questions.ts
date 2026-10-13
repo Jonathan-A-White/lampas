@@ -8,6 +8,7 @@ import { decodeParse, parseSegments, splitParse } from '../parseCode';
 import { shuffle, type Random } from '../quiz';
 import { MODERN } from '../../speech/schemes/modern';
 import { LADDER, ideasOf, keyedSound, type GrammarIdea } from './ladder';
+import { ENCLITIC_USES, MARK_PAIRS, blankWord } from './marks';
 import { COMPOUND_VERBS, PREPOSITIONS, type VerseRef } from './prepositions';
 import { quickQuestion } from './quickRound';
 
@@ -312,6 +313,36 @@ export function buildMovable(idea: GrammarIdea, random: Random): GrammarQuestion
   return fromTable(idea, prompt, right, others.filter((o) => o !== right), random);
 }
 
+// ---- Marks that change the word, and enclitics (mw-86e9r1.6) ----
+
+/**
+ * Which of two words alike but for a mark fits a real phrase: 'Which fits? ___ ζωὴ ἦν τὸ φῶς (John 1:4, “the life was the light”)'. The twin, the same
+ * letters with the other mark, is always among the four choices, so a reader who ignores the mark cannot tell it from the right word.
+ */
+export function buildMarksChangeWord(idea: GrammarIdea, random: Random): GrammarQuestion {
+  const pair = pick(MARK_PAIRS, random);
+  const [word, twin] = random() < 0.5 ? [pair.a, pair.b] : [pair.b, pair.a];
+  return {
+    kind: 'letter',
+    ideaId: idea.id,
+    prompt: `Which fits? ${blankWord(word.phrase, word.inPhrase)} (${refText(word.ref)}, “${word.gloss}”)`,
+    options: shuffle([word.inPhrase, twin.inPhrase, ...word.decoys], random),
+    right: word.inPhrase,
+  };
+}
+
+/** A small word that leans on the one before it, or the question word τίς it is not: the right one among its twin and other forms, in a real phrase. */
+export function buildEnclitic(idea: GrammarIdea, random: Random): GrammarQuestion {
+  const use = pick(ENCLITIC_USES, random);
+  return {
+    kind: 'letter',
+    ideaId: idea.id,
+    prompt: `Which fits? ${blankWord(use.phrase, use.right)} (${refText(use.ref)}, “${use.gloss}”)`,
+    options: shuffle([use.right, ...use.others], random),
+    right: use.right,
+  };
+}
+
 // ---- Prepositions and compound verbs (mw-86e9r1.5) ----
 
 const refText = (r: VerseRef): string => `${bookOf(r.book)?.name ?? r.book} ${r.chapter}:${r.verse}`;
@@ -527,6 +558,10 @@ export function buildIdeaQuestion(idea: GrammarIdea, passage: readonly Chapter[]
       return buildPunctuation(idea, random);
     case 'movable-letters':
       return buildMovable(idea, random);
+    case 'marks-change-word':
+      return buildMarksChangeWord(idea, random);
+    case 'enclitics':
+      return buildEnclitic(idea, random);
   }
   const endingFirst = random() < 0.5;
   const builders = endingFirst ? [buildEnding, buildTapForm] : [buildTapForm, buildEnding];

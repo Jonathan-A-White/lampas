@@ -247,7 +247,7 @@ const DEFS: Def[] = [
     'Accents and stress',
     [],
     ['syllables'],
-    'Most Greek words carry an accent mark over a vowel: the acute (ά), the grave (ὰ) or the circumflex (ᾶ). It shows which syllable to stress, and in Modern Greek the stressed syllable is simply said louder. You do not need to tell the three marks apart to read aloud: stress the syllable that carries one. A stress mark on the first of two vowels tells you they are two sounds, not a pair.',
+    'Most Greek words carry an accent over a vowel: the acute (ά), the grave (ὰ) or the circumflex (ᾶ). It marks the syllable to stress, said louder in Modern Greek, and the three marks sound alike. They still matter: a mark can change the word (ἡ “the”, ἤ “or”), and a few small words have none because they lean on the word before. An accent on the first of two vowels shows two sounds, not a pair.',
   ),
   def(
     'iota-subscript',
@@ -272,6 +272,22 @@ const DEFS: Def[] = [
     [],
     ['breathings', 'punctuation'],
     'Some words change their last letter to suit the next word. A movable ν may end ἐστι(ν) and many other words, and the meaning stays. “Not” is οὐ before a consonant (οὐ κατέλαβεν), οὐκ before a smooth breathing (οὐκ ἦν) and οὐχ before a rough one (οὐχ οὗτός). “Out of” is ἐκ before a consonant (ἐκ θεοῦ) and ἐξ before a vowel (ἐξ ἧς). A dropped vowel gives ἀπ᾿ ἀρχῆς and, before a rough breathing, ἀφ᾿ ἑαυτοῦ.',
+  ),
+  def(
+    'marks-change-word',
+    'marks',
+    'Marks that change the word',
+    [],
+    ['breathings', 'accents'],
+    'Some words are spelt alike but for a breathing or an accent, and the mark makes them different words. Modern Greek says each pair the same, so you must read the mark: ἡ “the” and ἤ “or”; ὁ “the” and ὅ “which”; εἰ “if” and εἶ “you are”; ἐν “in” and ἕν “one”; οὐ “not” and οὗ “of whom”; ἀλλά “but” and ἄλλα “other things”; αὐτή “herself” and αὕτη “this”; τίς “who?” and τις “someone”.',
+  ),
+  def(
+    'enclitics',
+    'marks',
+    'Enclitics',
+    [],
+    ['breathings', 'accents', 'marks-change-word'],
+    'An enclitic is a small word with no accent of its own: it leans on the word before it and is said with it. The commonest are the present forms of εἰμί “I am” (ἐστιν, ἐσμεν, εἰσιν; but not εἶ), τις “someone” (ἄνθρωπός τις, “a certain man”, where it hands an accent back) and μου, σου, μοι, σοι, με, σε (ὁ πατήρ μου, “my Father”). The question word τίς “who?” is not one: it keeps its accent.',
   ),
 
   // nouns: the noun, then number and the two joiners met in every verse (καί, δέ, οὐ), then the cases, the genders, the article and the adjective
@@ -311,8 +327,8 @@ const DEFS: Def[] = [
   def('pronoun-personal', 'pronouns', 'The personal pronoun', ['personal pronoun'], ['pronoun', ...NOUN_CASES]),
   def('pronoun-demonstrative', 'pronouns', 'The demonstrative pronoun', ['demonstrative pronoun'], ['pronoun-personal', 'article', ...GENDERS]),
   def('pronoun-relative', 'pronouns', 'The relative pronoun', ['relative pronoun'], ['pronoun-demonstrative']),
-  def('pronoun-interrogative', 'pronouns', 'The interrogative pronoun', ['interrogative pronoun'], ['pronoun-relative']),
-  def('pronoun-indefinite', 'pronouns', 'The indefinite pronoun', ['indefinite pronoun'], ['pronoun-interrogative']),
+  def('pronoun-interrogative', 'pronouns', 'The interrogative pronoun', ['interrogative pronoun'], ['pronoun-relative', 'marks-change-word']),
+  def('pronoun-indefinite', 'pronouns', 'The indefinite pronoun', ['indefinite pronoun'], ['pronoun-interrogative', 'enclitics']),
   def('pronoun-reflexive', 'pronouns', 'The reflexive pronoun', ['reflexive pronoun'], ['pronoun-personal']),
   def('pronoun-possessive', 'pronouns', 'The possessive pronoun', ['possessive pronoun', 'possessor'], ['pronoun-reflexive', 'adjective']),
   def('pronoun-reciprocal', 'pronouns', 'The reciprocal pronoun', ['reciprocal pronoun'], ['pronoun-reflexive']),
