@@ -35,6 +35,31 @@
         }
       }
     },
+    "missing_foundations": {
+      "description": "Optional. Present only when the grammar words of his question name a topic that rests on ideas he has not learned (not yet, or not at all): `topic` is the idea he asked about, `total` how many ideas under it he lacks, and `ideas` the lowest on the ladder first (at most 8), so `ideas[0]` is his next step in the progression. `direct` marks an idea the topic itself names as a need: those are the most important. Offer a `bridge` from this list and never name an idea that is not in it (see the instructions, 'When he is not ready for the question').",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["topic", "total", "ideas"],
+      "properties": {
+        "topic": { "description": "The title of the idea he asked about: 'The genitive case'.", "type": "string", "minLength": 1, "maxLength": 80 },
+        "total": { "description": "How many ideas under the topic he lacks, all of them (the list names at most 8).", "type": "number", "minimum": 1 },
+        "ideas": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "title"],
+            "properties": {
+              "id": { "description": "The idea's id, to put in `bridge`.", "type": "string", "minLength": 1, "maxLength": 60 },
+              "title": { "description": "The idea's title, as he sees it: 'Pairs of vowels'.", "type": "string", "minLength": 1, "maxLength": 80 },
+              "direct": { "description": "true when the topic itself names this idea as a need.", "const": true }
+            }
+          }
+        }
+      }
+    },
     "learner_profile": {
       "description": "Optional. Who he is as a student, which he kept himself in Settings > About you; every field is optional and a field he has not filled in is missing (the whole field is missing when he has filled in none). age: a number or a band, as he wrote it. pace: how fast he wants to go. ways: how he learns best (hearing, seeing, reading, doing = hands-on). background: languages he knows, Greek or Bible before, in his words. why: why he is learning Greek, in his words. notes: short things the tutor has learned about him, the newest last. Meet him where he is; never repeat this back to him. learned, observed_pace, observed_ways and do_not_ask are what the app itself found out; see them as hints at the same fields, weaker than what he wrote.",
       "type": "object",

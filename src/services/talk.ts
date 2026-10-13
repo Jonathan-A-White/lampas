@@ -8,6 +8,7 @@ import { STUDY_WAY_LINE_MAX } from '../data/repositories/studyWay';
 import { MEMORY_NAME_MAX, MEMORY_NOTE_MAX } from '../data/repositories/memory';
 import { screenRef, talkRef } from '../data/repositories/talks';
 import type { AnswerLink, AnswerWord } from '../data/db';
+import { isAnswerBridge, type AnswerBridge, type MissingFoundations } from '../data/grammar/bridge';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
 import type { MemoryField } from '../data/learnerMemory';
@@ -213,6 +214,9 @@ export interface TalkRequest {
   pictures?: number;
   /** present only while an offer waits for his tap (mw-5r3p30.186): the newest one in this talk, its kind and the exact text */
   pending_offer?: PendingOffer;
+  /** present only when the grammar words of his question name a topic that rests on ideas he lacks (mw-1vuvq6.5, src/data/grammar/bridge.ts): the topic, how many he lacks and those
+   * ideas, the lowest on the ladder first. The tutor picks its `bridge` from it and never guesses an idea. */
+  missing_foundations?: MissingFoundations;
   /** present only when he has sent requests to the factory (mw-vy3ghg.6, src/data/requestsForTutor.ts): up to 10, newest first, each with where it stands; none in About, whose request is the credits */
   requests?: TutorRequest[];
 }
@@ -231,7 +235,7 @@ export interface FeedbackOffer {
 /** The offer waiting for his tap that his next turn carries (mw-5r3p30.186): its kind and the exact text it would send or do, so the tutor can read it back word for word
  * and tell from his words whether he confirms, declines or asks to hear it. */
 export interface PendingOffer {
-  kind: 'feedback' | 'setting' | 'quiz-goal';
+  kind: 'feedback' | 'setting' | 'quiz-goal' | 'bridge';
   text: string;
 }
 
@@ -269,6 +273,8 @@ export interface TalkAnswer {
   setting_offer?: { key: string; value: string | number };
   /** only when the request carried `pending_offer`: what his words did with it */
   offer_reply?: OfferReply;
+  /** only when the request carried `missing_foundations` (mw-1vuvq6.5): up to three of those ideas he lacks, the one to start with and why; the app offers Take me there */
+  bridge?: AnswerBridge;
   /** while the tutor helps with a form (`form` in the request): the values to put in its fields, by field name; the form ignores a name it does not have */
   form_values?: FormValue[];
   /** the name of the field the question in `answer` is about; missing when there is nothing more to ask */
@@ -317,7 +323,7 @@ const isMemoryUpdate = (value: unknown): value is MemoryUpdate => {
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'form_values' && k !== 'form_ask' && k !== 'go' && k !== 'memory_update' && k !== 'wished_notes')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'bridge' && k !== 'form_values' && k !== 'form_ask' && k !== 'go' && k !== 'memory_update' && k !== 'wished_notes')) return false;
   if ('question' in value && !isText(value.question, MAX_TALK_CHARS)) return false;
   if ('memory_update' in value && !(Array.isArray(value.memory_update) && value.memory_update.length <= MAX_MEMORY_UPDATES && value.memory_update.every(isMemoryUpdate))) return false;
   if ('wished_notes' in value && !(Array.isArray(value.wished_notes) && value.wished_notes.length <= MAX_WISHED_NOTES && value.wished_notes.every((n) => isText(n, MEMORY_NAME_MAX)))) return false;
@@ -327,6 +333,7 @@ export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if ('profile_question' in value && !LEARNABLE.some((f) => f === value.profile_question)) return false;
   if ('feedback_offer' in value && !(isObject(value.feedback_offer) && Object.keys(value.feedback_offer).length === 1 && isText(value.feedback_offer.summary, FEEDBACK_SUMMARY_MAX))) return false;
   if ('offer_reply' in value && !OFFER_REPLIES.includes(value.offer_reply as OfferReply)) return false;
+  if ('bridge' in value && !isAnswerBridge(value.bridge)) return false;
   if ('setting_offer' in value && !(isObject(value.setting_offer) && Object.keys(value.setting_offer).length === 2 && isText(value.setting_offer.key, 60) && (isText(value.setting_offer.value, 80) || typeof value.setting_offer.value === 'number'))) return false;
   if ('form_ask' in value && !isText(value.form_ask, 30)) return false;
   if ('form_values' in value && !(Array.isArray(value.form_values) && value.form_values.length <= 8 && value.form_values.every(isFormValue))) return false;
@@ -448,6 +455,7 @@ export function buildTalkRequest(
   pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION,
   spoken = false,
   memory?: MemoryField,
+  missingFoundations?: MissingFoundations,
 ): TalkRequest {
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   // About (mw-vtjxh4.2) sends the credits, which take most of the record: the credits are the talk, so his words and his grammar stay home
@@ -474,6 +482,7 @@ export function buildTalkRequest(
     ...(aboutCredits ? {} : { resources }),
     ...(pictureCount > 0 ? { pictures: pictureCount } : {}),
     ...(pendingOffer ? { pending_offer: pendingOffer } : {}),
+    ...(missingFoundations && !aboutCredits ? { missing_foundations: missingFoundations } : {}),
     ...(requests.length > 0 && !aboutCredits ? { requests } : {}),
   };
   if (scope.screen) return request;

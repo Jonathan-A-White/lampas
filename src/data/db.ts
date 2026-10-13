@@ -55,6 +55,18 @@ export interface TutorAnswer {
   when: number;
   /** the settings the answer changed (Ask by, when he asked the tutor to switch it): shown under the answer as 'Changed: Ask by: Typing' */
   changes?: AppliedChange[];
+  /** the foundation ideas the answer bridged to (mw-1vuvq6.5): shown under the answer with Take me there */
+  bridge?: Bridge;
+}
+
+/** What a tutor's answer bridges a question he is not ready for to (mw-1vuvq6.5, src/data/grammar/bridge.ts resolveBridge): up to three LADDER ideas he lacks, most
+ * important first, the one that is his next step (the lowest unmet need, the one Take me there opens), one plain line why they come first, and whether more than
+ * three are missing. */
+export interface Bridge {
+  ideas: string[];
+  next: string;
+  why: string;
+  many: boolean;
 }
 
 /** A share waiting to be placed (mw-y3qno5.2): what another app sent to Lampas's share target, until he picks the talk it goes to or cancels. */
@@ -159,6 +171,9 @@ export interface TalkTurn {
   /** a setting change the answer offered (mw-5r3p30.186): shown as a button; `settingChoice` says what became of it, absent while it waits */
   settingOffer?: { key: string; value: string | number };
   settingChoice?: 'taken' | 'declined';
+  /** the foundation the answer bridged to (mw-1vuvq6.5): shown as 'Take me there: <title>'; `bridgeChoice` says what he did with the offer, absent while he has not answered it */
+  bridge?: Bridge;
+  bridgeChoice?: 'taken' | 'declined';
 }
 
 /** How a Hebrew word is said, as the tutor's sound answer gave it: the word, its syllables in Hebrew letters in reading order and how each sounds in Latin letters. */

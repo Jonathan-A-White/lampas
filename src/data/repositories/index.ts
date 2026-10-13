@@ -67,7 +67,7 @@ export { addAnswer, listAnswers, verseRef } from './answers';
 export type { AnswerWord, TutorAnswer } from './answers';
 export { STUDY_WAY_LINE_MAX, STUDY_WAY_MAX, deleteStudyWayLine, editStudyWayLine, keepStudyWayLine, listStudyWay } from './studyWay';
 export type { EditResult, KeepResult } from './studyWay';
-export { addTurn, addTurnChanges, deleteTurns, getTurn, listRecentTalks, listTurnPictures, listTurns, markChangeUndone, markFeedbackSent, markFeedbackWithdrawn, markQuizGoalChoice, markSettingChoice, talkRef } from './talks';
+export { addTurn, addTurnChanges, deleteTurns, getTurn, listRecentTalks, listTurnPictures, listTurns, markChangeUndone, markBridgeChoice, markFeedbackSent, markFeedbackWithdrawn, markQuizGoalChoice, markSettingChoice, talkRef } from './talks';
 export type { KeptPicture, RecentTalk, TalkPicture, TalkTurn, TurnChanges } from './talks';
 export { listDrillResults, recordDrillStep } from './drills';
 export type { DrillResult } from './drills';

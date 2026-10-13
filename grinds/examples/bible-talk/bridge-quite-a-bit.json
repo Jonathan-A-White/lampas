@@ -1,0 +1,58 @@
+{
+  "description": "He has only the letters and asks about the genitive; six ideas are missing: the tutor answers briefly, says plainly he is missing quite a bit, names exactly three and starts him with the first idea of missing_foundations (Pairs of vowels).",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "1 John 1:1",
+    "greek": "Ὃ ἦν ἀπ' ἀρχῆς ὃ ἀκηκόαμεν ὃ ἑωράκαμεν τοῖς ὀφθαλμοῖς ἡμῶν ὃ ἐθεασάμεθα καὶ αἱ χεῖρες ἡμῶν ἐψηλάφησαν περὶ τοῦ λόγου τῆς ζωῆς",
+    "english": "That which was from the beginning, which we have heard, which we have seen with our own eyes, which we have gazed upon and touched with our own hands — this is the Word of life.",
+    "question": "Why is the genitive used here?",
+    "history": [],
+    "solid_words": [],
+    "settings": {},
+    "missing_foundations": {
+      "topic": "The genitive case",
+      "total": 6,
+      "ideas": [
+        {
+          "id": "diphthongs",
+          "title": "Pairs of vowels"
+        },
+        {
+          "id": "consonant-pairs",
+          "title": "Pairs of consonants"
+        },
+        {
+          "id": "syllables",
+          "title": "Syllables"
+        },
+        {
+          "id": "accents",
+          "title": "Accents and stress"
+        },
+        {
+          "id": "noun",
+          "title": "The noun"
+        },
+        {
+          "id": "case-nominative",
+          "title": "The nominative case",
+          "direct": true
+        }
+      ]
+    }
+  },
+  "expect": {
+    "bridge.next": {
+      "equals": "diphthongs"
+    },
+    "bridge.missing.2": {
+      "present": true
+    },
+    "bridge.missing.3": {
+      "present": false
+    },
+    "answer": {
+      "contains": "quite a bit"
+    }
+  }
+}
