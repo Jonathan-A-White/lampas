@@ -14,7 +14,8 @@ import { Markdown } from './markdown/Markdown';
 import { openedByTutor } from './nav/readerRequest';
 import { TutorLinks } from './TutorLinks';
 import { offeredChange, settingOf, undoChange, type AppliedChange } from './settings/registry';
-import { sendMakersOffer, takeSettingOffer, useOfferSending } from './talk/offers';
+import { BridgeIdeaHost, BridgeOffer } from './talk/BridgeOffer';
+import { sendMakersOffer, takeBridgeOffer, takeSettingOffer, useOfferSending } from './talk/offers';
 import { hebrewSoundAsk, MAX_TALK_CHARS, scopeTitle, type TalkFocus, type TalkScope } from './services/talk';
 import { HebrewSoundGuide } from './script/HebrewGuide';
 import { HebrewAskContext } from './script/hebrewSpeech';
@@ -456,6 +457,7 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
         <QuizGoalOffer turn={turn} />
         <SettingOffer turn={turn} />
         <FeedbackOffer turn={turn} scope={scope} />
+        {turn.bridge ? <BridgeOffer bridge={turn.bridge} onTake={() => void takeBridgeOffer(turn)} /> : null}
         <div className="-mb-1 mt-1 flex flex-wrap items-start justify-end gap-1">
           <CopyExchange place={turn.ref} question={turn.cleanQ ?? turn.q} answer={turn.a} />
           <AnswerSpeaker turn={turn} />
@@ -747,6 +749,7 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
         </div>
       </div>
       {lookup ? <WordSheet chapter={scope.chapter} lookup={lookup} onClose={closeWord} onHelp={onHelp} onAskTerm={onAskTerm} /> : null}
+      <BridgeIdeaHost owner="talk" />
     </>
   );
 }
