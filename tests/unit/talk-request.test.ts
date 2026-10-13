@@ -101,7 +101,7 @@ describe('buildTalkRequest', () => {
   it('carries the focus when there is one, and no focus key when there is not', () => {
     const scope = { title: 'Romans 8', chapter, verse: chapter.verses.find((v) => v.n === 28) ?? null };
     const focus = { form: 'συνεργεῖ', lemma: 'συνεργέω', parse: 'verb', kind: 'sound' as const };
-    expect(buildTalkRequest(scope, 'Help', [], [], {}, focus).focus).toEqual({ ...focus, respelling: 'see-ner-YEE' });
+    expect(buildTalkRequest(scope, 'Help', [], [], {}, focus).focus).toEqual({ ...focus, respelling: 'see-ner-YEE', syllables: ['συ', 'νερ', 'γεῖ'], stress: 2 });
     expect('focus' in buildTalkRequest(scope, 'Help', [], [], {})).toBe(false);
   });
 
@@ -113,11 +113,32 @@ describe('buildTalkRequest', () => {
     expect(asked.pronunciation).toBe('modern');
   });
 
+  // mw-5r3p30.274: the tutor called σβ a syllable of σβέννυτε and put the stress on the second; the app counts, the tutor repeats
+  it('gives a Greek sound question the app\'s syllables and the index of the stressed one (σβέννυτε is σβέν, νυ, τε, stressed on the first)', () => {
+    const scope = { title: '1 Thessalonians 5', chapter, verse: null };
+    const sound = { form: 'σβέννυτε', lemma: 'σβέννυμι', parse: 'verb, present active imperative, 2nd person plural', kind: 'sound' as const };
+    const focus = buildTalkRequest(scope, 'Help', [], [], {}, sound).focus;
+    expect(focus).toMatchObject({ respelling: 'ZVE-nee-te', syllables: ['σβέν', 'νυ', 'τε'], stress: 0 });
+    const request = buildTalkRequest(scope, 'Help', [], [], {}, { ...sound, form: 'προσεύχεσθε' });
+    expect(request.focus).toMatchObject({ syllables: ['προ', 'σεύ', 'χε', 'σθε'], stress: 1 });
+  });
+
+  it('gives no syllables to a grammar, word or Hebrew focus, and no stress to an unaccented word', () => {
+    const scope = { title: 'John 5', chapter, verse: null };
+    const sound = { form: 'σβέννυτε', lemma: 'σβέννυμι', parse: 'verb', kind: 'sound' as const };
+    for (const kind of ['grammar', 'word'] as const) expect(buildTalkRequest(scope, 'Help', [], [], {}, { ...sound, kind }).focus).toEqual({ ...sound, kind });
+    const hebrew = { form: 'צֶדֶק', lemma: 'צֶדֶק', parse: 'Hebrew word', kind: 'sound' as const, language: 'he' as const };
+    expect(buildTalkRequest(scope, 'Help', [], [], {}, hebrew).focus).toEqual(hebrew);
+    const plain = buildTalkRequest(scope, 'Help', [], [], {}, { ...sound, form: 'μου' }).focus;
+    expect(plain).toMatchObject({ syllables: ['μου'] });
+    expect(plain).not.toHaveProperty('stress');
+  });
+
   it('gives a sound question the app\'s respelling of the word (αυ before τ is AF), and no other focus one', () => {
     const scope = { title: 'John 5', chapter, verse: null };
     const sound = { form: 'ταῦτα', lemma: 'οὗτος', parse: 'demonstrative pronoun', kind: 'sound' as const };
     const request = buildTalkRequest(scope, 'Help', [], [], {}, sound);
-    expect(request.focus).toEqual({ ...sound, respelling: 'TAF-ta' });
+    expect(request.focus).toEqual({ ...sound, respelling: 'TAF-ta', syllables: ['ταῦ', 'τα'], stress: 0 });
     const grammar = { ...sound, kind: 'grammar' as const };
     expect(buildTalkRequest(scope, 'Help', [], [], {}, grammar).focus).toEqual(grammar);
     const hebrew = { form: 'צֶדֶק', lemma: 'צֶדֶק', parse: 'Hebrew word', kind: 'sound' as const, language: 'he' as const };

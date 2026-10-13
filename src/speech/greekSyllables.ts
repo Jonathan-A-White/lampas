@@ -75,6 +75,15 @@ export function greekSyllables(word: string): string[] {
   return starts.map((start, k) => pieces.slice(start, starts[k + 1] ?? pieces.length).map((p) => p.text).join('').normalize('NFC'));
 }
 
+/**
+ * The index of the stressed syllable of a word already cut into `syllables`: the one that carries an acute, grave or circumflex (the first
+ * if two do, which a word cut here never has), or -1 when none does (an unaccented word). The tutor is handed this, never asked to count
+ * (mw-5r3p30.274: it called σβ a syllable of σβέννυτε and put the stress on the second).
+ */
+export function stressedSyllable(syllables: string[]): number {
+  return syllables.findIndex((syllable) => piecesOf(syllable).some((p) => p.stress));
+}
+
 /** Whether a boundary between two of these syllables falls inside a diphthong (αυ, ευ, ηυ, ου, αι, ει, οι, υι), where the second letter has no diaeresis. */
 export function splitsDiphthong(syllables: string[]): boolean {
   for (let i = 0; i + 1 < syllables.length; i++) {

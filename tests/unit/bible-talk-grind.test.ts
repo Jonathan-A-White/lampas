@@ -576,6 +576,29 @@ describe('Sound it out speaks the app\'s pronunciation (mw-5r3p30.241)', () => {
     expect(text).toMatch(/unless the second letter carries a diaeresis/);
   });
 
+  // mw-5r3p30.274: the tutor called σβ a syllable of σβέννυτε and put the stress on the second; the app counts and the tutor repeats
+  it('the request schema takes a sound focus\'s syllables and stress index, and refuses an empty list or a negative index', () => {
+    expect(validate({ ...base, focus: { ...sound, respelling: 'ZVE-nee-te', syllables: ['σβέν', 'νυ', 'τε'], stress: 0 } }, input)).toEqual([]);
+    expect(validate({ ...base, focus: { ...sound, syllables: [] } }, input)).not.toEqual([]);
+    expect(validate({ ...base, focus: { ...sound, syllables: ['σβέν'], stress: -1 } }, input)).not.toEqual([]);
+  });
+
+  it('the instructions say to use focus.syllables and focus.stress verbatim, never to count, and that a cluster is no syllable', () => {
+    expect(text).toContain('`focus.syllables`');
+    expect(text).toContain('`focus.stress`');
+    expect(text).toMatch(/Use them exactly/);
+    expect(text).toMatch(/Never count or cut the word yourself/);
+    expect(text).toMatch(/cluster of consonants such as σβ, πν or στ is never a syllable of its own/);
+  });
+
+  it('has a scenario for σβέννυτε whose request carries three syllables and stress 0, and whose answer names them with the stress on the first', () => {
+    const example = readJson('grinds/examples/bible-talk/sound-it-out-svennyte.json') as { request: { focus: { syllables: string[]; stress: number } }; expect: Record<string, Record<string, unknown>> };
+    expect(example.request.focus.syllables.map((x) => x.normalize('NFC'))).toEqual(['σβέν', 'νυ', 'τε'].map((x) => x.normalize('NFC')));
+    expect(example.request.focus.stress).toBe(0);
+    expect(example.expect['syllables.3']).toEqual({ present: false });
+    expect(new RegExp(String(example.expect.answer.matches)).test('The stress falls on the first syllable, σβέν.')).toBe(true);
+  });
+
   it('has a scenario that asks how to sound ταῦτα and expects TAF and no aw', () => {
     const example = readJson('grinds/examples/bible-talk/sound-it-out-tauta.json') as { request: { pronunciation: string; focus: { respelling: string; kind: string } }; expect: Record<string, Record<string, string>> };
     expect(example.request.pronunciation).toBe('modern');

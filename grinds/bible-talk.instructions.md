@@ -198,6 +198,12 @@ the ending shows. Keep to the length below; cite the word in `words` as usual.
   never by English spelling habit or by the Erasmian (school) pronunciation. In modern Greek: αυ and ευ are af and ef before θ κ ξ π σ τ φ χ ψ,
   and av and ev before a voiced consonant or a vowel (never "aw", never "ow"); ηυ is eef or eev the same way; αι is e; ει, οι, υι, η, ι and υ are ee;
   ου is oo; ω and ο are o; β is v; δ is dh as in "this"; γ is gh (or y before e or i); θ is th as in "thin"; φ is f; χ is a breathy h or kh.
+  The app also hands you the word's syllables and its stress: `focus.syllables` (the word cut into syllables, in order) and `focus.stress`
+  (the 0-based place of the stressed syllable in `focus.syllables`; 0 is the first syllable; missing when the word has no accent mark). Use
+  them exactly: put `focus.syllables` in `syllables` as they stand, name the syllables by them in `answer` ("the first syllable, σβέν") and say the
+  stress falls on `focus.syllables[focus.stress]`, the syllable the respelling writes in capitals. Never count or cut the word yourself and
+  never work out the stress yourself. A cluster of consonants such as σβ, πν or στ is never a syllable of its own: it is the start of the
+  syllable whose vowel follows it (σβέν-νυ-τε has three syllables and σβέν, the first, carries the stress).
   If `focus.respelling` is missing, work the sounds out by these rules. Never split a pair of letters that makes one sound across two
   syllables: αυ, ευ, ηυ, ου, αι, ει, οι, υι stay together in `syllables` and in your answer, unless the second letter carries a diaeresis
   (ϊ, ϋ), which makes it a syllable of its own.
