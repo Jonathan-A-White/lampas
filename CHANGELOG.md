@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.148
+_2026-10-13_
+- Fixed: The tutor's answer now shows within seconds of being ready, instead of waiting up to a minute or more on mobile data.
+
 ## 0.1.146
 _2026-10-13_
 - New: Two new grammar lessons, 'Marks that change the word' and 'Enclitics', teach the pairs of Greek words that differ only by a breathing or an accent, and the accents lesson now says where the marks matter.

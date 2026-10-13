@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.148",
+    "date": "2026-10-13",
+    "story": "mw-5r3p30.269",
+    "kind": "fixed",
+    "text": "The tutor's answer now shows within seconds of being ready, instead of waiting up to a minute or more on mobile data."
+  },
+  {
     "version": "0.1.146",
     "date": "2026-10-13",
     "story": "mw-86e9r1.6",
