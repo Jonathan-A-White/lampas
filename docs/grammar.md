@@ -107,6 +107,28 @@ beyond `loadChapter`.
 
 A word idea draws `ending` or `tap-form` by its first random draw and falls back to the other. Review (`src/review/kinds.ts` GRAMMAR, kind `grammar`, item id the idea id) draws the due ideas before the due words (PROVISIONAL), asks each as multiple choice below `FLASHCARD_STEP` and as a flashcard (the prompt and the form, Show reveals the answer, I knew it / Not yet) from it up, and records through `recordGrammarAnswer`. `grammarRandom(random)` is the random a round's grammar questions use: a test finds the seed that gives the question it needs through it.
 
+## Drill it, the engine
+
+`src/data/grammar/drillIt.ts` (mw-i7xe0n.1, PROVISIONAL, pure: no store, no screen; the screen is the next story). The Governor's want: start easy in the concept and work up
+step by step, back off by halves when it is too hard, "kind of like a binary search", to find where the person is and what their gaps are.
+
+- `drillSteps(ideaId, {passage, scheme, seed})` gives the idea's questions in **steps** of rising difficulty (1 = easiest), each question tagged with a **facet**
+  (`{id, label}`, `GrammarQuestion.facet`): the thing a miss shows he has not got. A noun-like idea is asked by what it is (`meaning`), by finding it in a short and a
+  long verse of the passage (`spot`) and by its ending (`ending`); a preposition by its meaning against other prepositions, then against its own other cases (facet = the
+  case); a compound verb by its prefix. With no passage only what an idea says of itself can be asked. Every idea of the ladder has at least one step.
+- The ideas of the letters, sounds and marks tiers are built from their **items** (`drillItems.ts`), so a miss names the letter. The alphabet's five steps: see a
+  letter and pick its name; see a name and pick the letter; match a capital to its small letter; hear it (or see it and pick its sound, quickRound.ts) in the
+  chosen pronunciation; read a short New Testament word and pick how it is said. Its facets are the 24 letters and five pairs of look-alikes (ν/υ, ρ/π, η/ν, χ/ξ, ο/ω)
+  asked with both among the choices. Vowel pairs and consonant pairs: see, hear, read a word; the breathings: a plain word, then one with the mark on the second letter.
+  A scheme that gives no sound is asked by ear.
+- `start(ideaId, levels, options)` returns a walk, or `{needs: id}` when a prerequisite (ladder `needs`, not the group an item belongs to) is not solid: the lowest such idea.
+  A drill's facets are its own idea's; no question tests a prerequisite, and every question assumes the prerequisites are solid.
+- `answer(walk, right, hinted)`: up one step on a right answer; on a miss, back to halfway (rounded down) between the highest step he holds below the missed one and the
+  missed one (the facet just missed is asked again at the easier step); a hinted right changes nothing and breaks the run. It ends **proved** (two unhinted rights in a
+  row at the top step), at the **edge** (the step he holds has the one above it failed, or he misses step 1 twice: edge 0) or at the **limit** (`MAX_QUESTIONS`, 14).
+- The result: `{ideaId, proved, edgeStep, topStep, strong, weak, answers, ended}`; a facet is **weak** when missed at least once and right fewer than twice, **strong**
+  when right at least once and not weak (a hinted right counts as neither).
+
 ## The idea sheet
 
 `src/IdeaSheet.tsx`, data in `src/data/grammar/ideaSheet.ts` (mw-hqd5bz.7). A bottom sheet that teaches one idea; it opens from the
