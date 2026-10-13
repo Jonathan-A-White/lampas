@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.144
+_2026-10-13_
+- New: A sound or word you keep missing when you read aloud now gets a short drill with the thing to remember and five practice words, and comes back in Review.
+
 ## 0.1.143
 _2026-10-12_
 - New: The grammar lessons now teach each common preposition one by one, with its meaning for each case and a real verse, and a lesson on verbs built from a preposition.
