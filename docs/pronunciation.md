@@ -4,14 +4,14 @@ The word sheet says how to pronounce the word: under the Greek, a respelling in 
 Settings > Greek pronunciation. The data's beta-code transliteration (`tr`, "cristw") is still in
 `public/data` but no screen shows it.
 
-Modern Greek is the only scheme so far; Erasmian is next. 'χριστῷ' is `hree-STO`, 'ἐντολή' is `en-do-LEE`:
+Modern Greek is the only scheme so far; Erasmian is next. 'χριστῷ' is `khree-STO`, 'ἐντολή' is `en-do-LEE`:
 syllables joined by hyphens, the stressed syllable in capitals (a one-syllable word has no capitals), English
 sound-alikes for the letters.
 
 ## How it is built
 
 `src/speech/pronunciation.ts` is the registry: a list of `Pronunciation` entries
-`{ id, label, lang, scoringLang, note, respell(greekWord), keyWords, loneLetter(word), lessons? }`. `keyWords` gives each sound the respelling writes an English word that has it (`e` is the e of pet); the sound lessons say every sound as 'e as in pet' from it. Settings lists the entries, the word sheet calls
+`{ id, label, lang, scoringLang, note, respell(greekWord), keyWords, loneLetter(word), voiceForm(text), lessons? }`. `keyWords` gives each sound the respelling writes an English word that has it (`e` is the e of pet); the sound lessons say every sound as 'e as in pet' from it. Settings lists the entries, the word sheet calls
 `pronunciationOf(chosen).respell(word.t)`, and `lang` is the language tag of the voice that speaks (Settings keeps
 the chosen id under `greekPronunciation`). Each scheme is one file in `src/speech/schemes/`.
 
@@ -20,6 +20,14 @@ letter names it ('omicron'), so the scheme gives a form its voice reads as the w
 the bare vowel in lower case with a stress mark, ό ή ώ (no breathing is said; a Greek voice reads a stressed vowel as a
 syllable, as it reads the word ή 'or'). A held word, a speaker and a one-letter run of a reading all go through it
 (`src/speech/greek.ts` `loneLetterForm`); a letter drill (`speakLetter`) does not, since there the letter is the thing named.
+
+`voiceForm(text)` (mw-5r3p30.264) is what the scheme's voice is handed for any other Greek text (a held word, a speaker, a verse read
+aloud), so the voice says the sounds the respelling writes. A Greek voice reads ντ, μπ and γκ inside a word as a bare d, b, g (Πάντοτε
+heard 'PA-do-te'; espeak-ng's `el` says `pˈadotˌe` too), while the respelling and the lessons keep the nasal (`PAN-do-te`). So Modern Greek
+hands the voice the nasal at the end of the part before and the pair at the start of the next, where a voice says it as at a word's start:
+`πάν-ντοτε`, `ἐν-ντολή`, `συμ-μπάσχω`, `ἀν-γκάλη` (espeak-ng: `pˈandˈote`). A pair at the start of a word (`ντομάτα`), and γγ, γχ, γξ, which a
+voice says with their nasal, are left as they are. `src/speech/greek.ts` `greekVoiceForm` applies the chosen scheme's; nothing outside the
+scheme writes the rule (`tests/unit/voice-form.test.ts` holds every bundled word to it). PROVISIONAL until heard on the Governor's phone.
 
 `lessons` (mw-5r3p30.229) is what the scheme TEACHES of each sound-bearing idea of the grammar ladder, keyed by idea id (`letter-beta`,
 `diphthong-ou`, `pair-mp`, `breathing-rough`, and the groups `diphthongs`, `consonant-pairs`, `breathings`): `{ sound?, text? }`. The idea sheet
@@ -37,7 +45,7 @@ lesson for says a neutral text with no sound and is asked by ear or by name, nev
 | αυ ευ ηυ | av/af ev/ef eev/eef | v before a vowel or β γ δ ζ λ μ ν ρ, f before anything else or the end |
 | β δ θ ζ | v dh th z | |
 | γ | gh; y before e i (η ι υ αι ει οι υι ευ) | |
-| χ | kh; h when the next vowel is e or i | χριστῷ is `hree-STO` |
+| χ | kh before a, o, ou and a consonant; hy before e, i (η ι υ αι ει οι υι ευ) | χάρις is `KHA-rees`, χριστῷ `khree-STO`, χαίρετε `HYE-re-te` (the Governor's choice B, 2026-10-12) |
 | μπ ντ γκ γγ | mb nd ng(g) inside a word; b d g at its start | the n or m ends the syllable, the b d g opens the next |
 | γχ γξ | ng+kh (h), nks | `ἐλέγχω` is `e-LENG-kho` |
 | σ | s; z before β γ δ ζ λ μ ν ρ | the z ends the syllable: `κόσμος` is `KOZ-mos`, `Ἰσραήλ` is `eez-ra-EEL` |
@@ -52,7 +60,7 @@ moving to the next syllable the longest group of consonants that can open a Gree
 
 1. Write `src/speech/schemes/<id>.ts` exporting a `Pronunciation` (see `modern.ts`): its `respell` takes the Greek
    word and returns the respelling; its `keyWords` name an English word for each sound it writes; its `loneLetter` gives the form
-   its voice is handed for a word of one letter (Erasmian on a Greek voice: find what that voice says as the sound, not the name). Erasmian's table (the story's note): μπ `mp`, ντ `nt`, γκ `nk`, γχ `nk`.
+   its voice is handed for a word of one letter (Erasmian on a Greek voice: find what that voice says as the sound, not the name); its `voiceForm` gives what the voice is handed for any other Greek, so it says the respelling's sounds (the text as it is when it already does; Erasmian's `nt` on a Modern Greek voice would need a form of its own). Erasmian's table (the story's note): μπ `mp`, ντ `nt`, γκ `nk`, γχ `nk`.
 2. Put it in `SCHEMES` in `src/speech/pronunciation.ts`, after Modern Greek. Settings, the saved choice and the word
    sheet pick it up; nothing else names an id.
 3. Add the id's voice language: `lang` is what the utterance uses. If the phone has no voice for it, say so in `note`.
