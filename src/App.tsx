@@ -8,6 +8,7 @@ import { startAppearanceSync } from './appearance/appearanceSync';
 import { DrillScreen } from './DrillScreen';
 import { ImportScreen } from './ImportScreen';
 import type { Random } from './data/quiz';
+import { UnlockPage } from './gate/UnlockPage';
 import { saveLastRoute } from './nav/lastRoute';
 import { startReaderAddressSync } from './nav/readerAddress';
 import { routeOf, useAddress } from './nav/route';
@@ -26,6 +27,7 @@ import { BarSlot, LampasSpeakingBar } from './speech/SpeakingBarSlot';
 import { startSpeechSettingsSync } from './speech/settingsSync';
 import { startUsageLog } from './tips/usageLog';
 import { HearAnyWord } from './ui/HearAnyWord';
+import { TutorWaitingBar } from './speech/TutorWaitingBar';
 import { UpdateBanner } from './UpdateBanner';
 import { WhatsNewOnUpdate } from './whatsNew/WhatsNewOnUpdate';
 import { WordsScreen } from './WordsScreen';
@@ -59,6 +61,7 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
   return (
     <div data-shell className="flex h-full min-w-0 flex-col overflow-clip">
       <UpdateBanner />
+      <TutorWaitingBar />
       {/* what's new, once after an update (bsv-kit/whats-new) */}
       <WhatsNewOnUpdate />
       {/* a long press on any word of prose says it (src/ui/HearAnyWord.tsx) */}
@@ -95,11 +98,13 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <SettingsScreen />
       ) : route === 'share' ? (
         <ShareScreen />
+      ) : route === 'unlock' ? (
+        <UnlockPage />
       ) : (
         <Reader />
       )}
       {/* the round Ask the tutor control of every screen but the Reader and the Share screen (its sheets are talks), which draws its own beside its Talk bar */}
-      {route === 'home' || route === 'share' ? null : <AskTutor route={route} />}
+      {route === 'home' || route === 'share' || route === 'unlock' ? null : <AskTutor route={route} />}
       {/* the one bar for anything read aloud (bsv-kit/speech): drawn into the highest BarSlot on screen, this one at the shell's foot when no screen has its own */}
       <BarSlot level={0} inset />
       <LampasSpeakingBar />

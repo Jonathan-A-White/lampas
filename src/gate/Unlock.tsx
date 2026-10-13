@@ -12,20 +12,26 @@ export type Locked =
   /** `setup` is set when the app itself cannot check (no issuer): words to show instead of the connection ones. */
   | { kind: 'error'; setup?: string };
 
+/** What the Unlock page can say: why the phone has no licence, or (on #/unlock, which any phone can open) that it has one. */
+export type UnlockState = Locked | { kind: 'licensed' };
+
 interface Props {
-  locked: Locked;
+  locked: UnlockState;
   publicKeyHex: string;
   onCheckAgain: () => void;
+  /** False where the App draws its own banner above (#/unlock). */
+  banner?: boolean;
 }
 
-const WORDS: Record<Locked['kind'], { title: string; hint: string }> = {
+const WORDS: Record<UnlockState['kind'], { title: string; hint: string }> = {
   checking: { title: 'Checking…', hint: 'Looking for this phone’s licence on the chain.' },
   none: { title: 'No licence yet', hint: 'Issue a licence to this key from Postern’s Key screen, then tap Check again.' },
   revoked: { title: 'Licence revoked', hint: 'The licence for this key was taken back. Issue a new one to the same key, or to a new key.' },
+  licensed: { title: 'Licensed', hint: 'This phone’s key holds a lampas licence.' },
   error: { title: 'Can’t reach the chain', hint: 'Check the connection, then tap Check again.' },
 };
 
-export function Unlock({ locked, publicKeyHex, onCheckAgain }: Props) {
+export function Unlock({ locked, publicKeyHex, onCheckAgain, banner = true }: Props) {
   const [copied, setCopied] = useState(false);
   const words = locked.kind === 'error' && locked.setup ? { title: locked.setup, hint: '' } : WORDS[locked.kind];
 
@@ -41,7 +47,7 @@ export function Unlock({ locked, publicKeyHex, onCheckAgain }: Props) {
 
   return (
     <div data-gate className="flex h-full min-w-0 flex-col overflow-clip">
-      <UpdateBanner />
+      {banner ? <UpdateBanner /> : null}
       <main className="screen flex min-h-0 flex-1 flex-col px-6 text-center">
         {/* my-auto centres the content when it fits and, unlike justify-center, lets it scroll from its top when it does not */}
         <div className="my-auto flex flex-col items-center gap-4">

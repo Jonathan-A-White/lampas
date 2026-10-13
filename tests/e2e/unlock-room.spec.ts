@@ -7,7 +7,7 @@ test('Unlock at 390x844: room above the icon, fits without scrolling, centred', 
   await page.setViewportSize({ width: 390, height: 844 });
   await refuseChain(page);
   await seedDeviceKey(page);
-  await page.goto('/');
+  await page.goto('/#/unlock');
   await expect(page.getByRole('heading', { name: 'Unlock' })).toBeVisible();
 
   const main = page.locator('main.screen');

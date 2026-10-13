@@ -1,13 +1,14 @@
 // src/speech/tutorVoice.ts — the tutor's responses read aloud by themselves (mw-5r3p30.93, docs/read-aloud.md 'The tutor's responses'). Settings >
 // Read the tutor's responses aloud (the 'readTutor' setting, On by default) decides whether a response is spoken the moment it arrives: the
 // reading check's verdict and the answers of the Verse view's Ask the tutor, the Talk sheet and Ask the tutor from any screen. They go through the
-// one engine of src/speech/readAloud.ts startAnswer, so a new question, leaving the screen or a tap on the response stops them (stopAnswer).
+// one engine of src/speech/readAloud.ts startAnswer (held for his return while the page is hidden: tutorWaiting.ts), so a new question, leaving the screen or a tap on the response stops them (stopAnswer).
 // The speaker on an answer (Talk's 'Hear the answer') is his own tap and ignores the setting.
 import type { MouseEvent } from 'react';
 import { getReadTutor } from '../data/repositories';
 import { plainQuotes } from '../services/reading';
 import { answerRuns } from './answerRuns';
 import { startAnswer, stopAnswer, type Run } from './readAloud';
+import { holdAnswer, pageHidden } from './tutorWaiting';
 
 /** The id the reading check's verdict is spoken under (reading.answer): below zero, so no stored answer's id can be it. */
 export const VERDICT_ID = -1;
@@ -15,11 +16,18 @@ export const VERDICT_ID = -1;
 /** The id the Verse view's stored answer `id` is spoken under: below zero too, and never VERDICT_ID (a Talk turn keeps its own, positive, id). */
 export const askAnswerId = (id: number): number => -id - 1;
 
+/** Starts the answer `id` now, or, when the page is hidden (he is in another app), keeps it for his return: the bar at the top of the app offers it
+ * (TutorWaitingBar). */
+export function startAnswerWhenSeen(id: number, runs: Run[]): void {
+  if (pageHidden()) holdAnswer(id, runs);
+  else startAnswer(id, runs);
+}
+
 /** Speaks `runs` as the answer `id` if the setting is On. `stillWanted` is asked again once the saved choice is read, so a response whose screen
  * has gone away meanwhile is not spoken. */
 export function speakTutor(id: number, runs: Run[], stillWanted: () => boolean = () => true): void {
   void getReadTutor().then((choice) => {
-    if (choice === 'on' && runs.length > 0 && stillWanted()) startAnswer(id, runs);
+    if (choice === 'on' && runs.length > 0 && stillWanted()) startAnswerWhenSeen(id, runs);
   });
 }
 
