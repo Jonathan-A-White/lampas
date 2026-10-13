@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.153
+_2026-10-13_
+- New: About now shows how long your last tutor answer took, and how much of that was your phone, the network and the factory.
+
 ## 0.1.152
 _2026-10-13_
 - Fixed: When Read it aloud marks words to fix, the coach now says what it actually heard instead of repeating the verse back, and the coach's spoken notes no longer say 'read' the wrong way.
