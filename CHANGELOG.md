@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.146
+_2026-10-13_
+- New: Two new grammar lessons, 'Marks that change the word' and 'Enclitics', teach the pairs of Greek words that differ only by a breathing or an accent, and the accents lesson now says where the marks matter.
+
 ## 0.1.145
 _2026-10-13_
 - Fixed: The tutor now names a Greek word's dictionary form and meaning from the app's own word data, so it no longer swaps in a look-alike word such as τέκνον for τεκνίον.
