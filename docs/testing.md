@@ -61,6 +61,9 @@ and `openUnlocked(page)` plants `lampas.settleMs` = `0`; `features/double-tap.fe
   answers 401 `no_licence`, `down = true` makes every call fail as an unreachable backend does. Steps stub `fetch` so
   `https://postern.allmymind.org` goes to the fake and `/data/...` to the committed chapter files, and shorten
   `tutorTimings.pollMs`.
+- `tests/unit/tutor-wait.test.ts` holds the wait to a phone on mobile data: its `overLink` gives a page's headers at once and its
+  body at a set rate, or never (a stall), and `history()` gives the phone old records, so a wait that read from `since=0` or let one
+  stalled page hold it up fails there (mw-5r3p30.269). The fake's POST names the grist's own `seq`, as Postern does.
 - `tests/e2e/tutor.spec.ts` (in `npm run shots`, shots `ask.png` and `answer.png`) routes Postern's origin to the same fake
   from Playwright (`tests/support/playwright-postern.ts`); the app's real signing and sealing run.
 - `tests/e2e/tutor-live.spec.ts` is the true end-to-end test, Playwright project `live`, run by `npm run e2e:live` only. It
