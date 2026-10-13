@@ -1,8 +1,8 @@
 // src/talk/pictures.ts — the pictures of a tutor talk (mw-y3qno5.1): what a message may carry (the bible-talk grind's attachments, grinds/bible-talk.json:
 // up to four JPEG, PNG or WebP files), the cut each picture gets on the phone before it is sent, and what he is told when one is refused.
-import type { grist } from 'bsv-kit/grist';
 import type { ClipboardEvent } from 'react';
 import { shrinkImage } from '../images/shrink';
+import type { MillFile } from '../services/mill';
 
 /** The most pictures one message carries: the grind's `attachments.max`. */
 export const TALK_MAX_PICTURES = 4;
@@ -37,7 +37,7 @@ export async function preparePicture(file: Blob, place: number): Promise<Outgoin
 }
 
 /** The pictures as the grist's files. */
-export const filesOf = (pictures: OutgoingPicture[]): grist.GristFile[] => pictures.map(({ bytes, mime, name }) => ({ bytes, mime, name }));
+export const filesOf = (pictures: OutgoingPicture[]): MillFile[] => pictures.map(({ bytes, mime, name }) => ({ bytes, mime, name }));
 
 /** The pictures on a paste (a copied screenshot, a copied image): the clipboard's files, else its file items. Empty for text. */
 export function pastedPictures(event: ClipboardEvent): File[] {

@@ -4,6 +4,7 @@ import { type EnglishChunk, type GreekWord, type Verse, englishRuns } from '../d
 import type { ReaderView } from '../data/repositories';
 import type { Woven } from '../data/weave';
 import { publish } from '../events/bus';
+import { useAiAllowed } from '../gate/licenceContext';
 import { useHoldPress } from '../ui/holdPress';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
 import { speakWord } from '../speech/greek';
@@ -88,10 +89,12 @@ export function VerseNumber({ n, selected, onSelect, talk, className, children }
   children: ReactNode;
 }) {
   const press = useHoldPress({ onTap: onSelect, onHold: () => talk.onHold(n), onRelease: talk.onRelease, onDrop: talk.onDrop });
+  // Holding the number talks to the tutor: with no licence it is a plain button that selects (mw-8m9dyu.2).
+  const ai = useAiAllowed();
   return (
     <button
       type="button"
-      {...press}
+      {...(ai ? press : { onClick: onSelect })}
       aria-label={`Verse ${n}`}
       aria-pressed={selected}
       className={`select-none [-webkit-touch-callout:none] ${className}`}

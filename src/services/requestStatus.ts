@@ -5,14 +5,14 @@
 // phone holds; anything else is skipped, and the cursor passes it. bsv-kit's answerIn takes an answer by its `re`; a status has none, so this
 // reads the page itself with the same checks.
 import { door, vault } from 'bsv-kit/bsv';
-import { grist } from 'bsv-kit/grist';
 import { POSTERN_DOOR } from '../config';
+import { MILL_POLL_MS, openCt, requireLicence, sealerOf } from './mill';
 import { applyRequestStatus, getRequestsCursor, REQUEST_STATUSES, setRequestsCursor, type RequestStatus, type StatusRecord } from '../data/repositories/requests';
 
 /** The timings, in one object so a test may shorten them. */
 export const requestTimings = {
   /** How often the screen pulls while it is up (protocol section 19, "Waiting": every 20 seconds). */
-  pollMs: grist.POLL_INTERVAL_MS,
+  pollMs: MILL_POLL_MS,
 };
 
 /** The most pages one pull reads, so a backend that never stops giving records cannot hold the screen. */
@@ -52,8 +52,8 @@ function statusIn(row: Row, key: Uint8Array, mine: string, mill: string): Status
   if (!p || p.class !== 'grist' || p.from !== mill || p.to !== mine || typeof p.ct !== 'string') return undefined;
   if (row.signer && row.signer !== mill) return undefined;
   try {
-    if (grist.sealerOf(p.ct) !== mill) return undefined;
-    return readStatus(JSON.parse(grist.openCt(p.ct, key)));
+    if (sealerOf(p.ct) !== mill) return undefined;
+    return readStatus(JSON.parse(openCt(p.ct, key)));
   } catch {
     return undefined;
   }
@@ -80,6 +80,7 @@ async function millOf(d: InstanceType<typeof door.Door>): Promise<string> {
 /** Pulls every page of GET /api/messages after the kept cursor, applies the request-status records and moves the cursor on, page by page.
  * Resolves with the mill key it used. Rejects when the backend cannot be reached (what was applied stays applied). */
 export async function pullStatuses(options: PullOptions): Promise<{ mill: string }> {
+  requireLicence();
   const { key, signal } = options;
   const d = new door.Door({ baseUrl: options.baseUrl ?? POSTERN_DOOR, key });
   const mill = options.mill ?? (await millOf(d));

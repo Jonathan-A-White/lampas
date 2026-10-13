@@ -1,10 +1,33 @@
-// src/services/gristWire.ts — the two wire halves askGrind needs that bsv-kit's grist cannot give it yet: sending a grist whose plaintext also carries
-// `client_timing` (sendGrist builds {grist, input, attachments} and nothing else), and reading one page of answers with the backend's time for the
-// record (readAnswerPage hides the row). Both follow bsv-kit/grist's send.js and answer.js step for step (docs/protocol.md section 19), and
-// both time the calls to the backend so the network's share of a round trip is known. When bsv-kit takes `client_timing` and the row's time, this file goes.
+// src/services/mill.ts — the ONE client of the mill (bsv-kit/grist), gated by the licence (mw-8m9dyu.2). Lampas is free to read; whatever is sent
+// to the mill is the AI, and the mill answers a licence only. Every send and every read of an answer goes through a function here, which
+// refuses with the door's own "Licence required" (services/tutor.ts explains it as 'No licence') unless the phone is licensed, so nothing leaves
+// an unlicensed phone. No other file under src/ imports bsv-kit/grist (tests/unit/mill-gate.test.ts fails on one that does): the tutor, the Bible
+// talk, the reading check, the tips and the feedback all send through askGrind (tutor.ts), which sends through here. The wire half that carries
+// `client_timing` and reads the record's time (it follows bsv-kit/grist's send.js and answer.js step for step, docs/protocol.md section 19; when
+// bsv-kit takes `client_timing` and the row's time, it goes) lives here too, so that it is gated like the rest.
 import { door, vault } from 'bsv-kit/bsv';
 import { grist } from 'bsv-kit/grist';
 import type { ClientTiming } from './clientTiming';
+import { currentLicence } from './licenceNow';
+
+export type MillFile = grist.GristFile;
+export type MillAnswer = grist.GristAnswer;
+/** The most files one send carries: bsv-kit's cap. */
+export const MILL_MAX_FILES = grist.MAX_PHOTOS;
+/** How often a screen that waits on the mill pulls (protocol section 19, "Waiting"). */
+export const MILL_POLL_MS = grist.POLL_INTERVAL_MS;
+/** The errors the mill client throws, for the callers that tell them apart. */
+export const AwaitAbortedError = grist.AwaitAbortedError;
+export const GristInputError = grist.GristInputError;
+
+/** Refuses with the door's licence refusal unless this phone is licensed. 'Checking' is not licensed yet: the AI is off until the check says so. */
+export function requireLicence(): void {
+  if (currentLicence() !== 'licensed') throw new door.RefusedError(door.LICENCE_REQUIRED, 401);
+}
+
+/** Who sealed a record's ciphertext, and its plaintext: the reading half of a mill record, for the request-status pull (requestStatus.ts). */
+export const sealerOf = grist.sealerOf;
+export const openCt = grist.openCt;
 
 type Door = InstanceType<typeof door.Door>;
 
@@ -33,6 +56,7 @@ export function timedDoor(d: Door): TimedDoor {
 
 /** Who the backend says is who (GET /api/me): the mill's public key, and whether it serves the live event stream (the 'events' feature, docs/protocol.md section 15). */
 export async function meOf(d: TimedDoor, signal: AbortSignal): Promise<{ mill: string; events: boolean }> {
+  requireLicence();
   const response = await d.fetch('/me', { signal });
   if (!response.ok) throw new Error(`The backend answered ${response.status} to /api/me.`);
   const body = (await response.json()) as { mill?: unknown; features?: unknown };
@@ -61,13 +85,13 @@ export interface SendParams {
   kind: string;
   v: string;
   input: unknown;
-  files: grist.GristFile[];
+  files: MillFile[];
   /** the phone's part of its previous answer, in the plaintext beside `input` (docs/grist-client-timing.md) */
   clientTiming?: ClientTiming;
 }
 
 /** The shape checks bsv-kit's sendGrist makes before anything goes out. */
-function check(files: grist.GristFile[]): void {
+function check(files: MillFile[]): void {
   if (files.length > grist.MAX_PHOTOS) throw new grist.GristInputError(`${files.length} files is over the ${grist.MAX_PHOTOS} a grist may carry.`);
   let audio = 0;
   for (const file of files) {
@@ -93,6 +117,7 @@ function scriptOf(p: SendParams, attachments: grist.Attachment[]): string {
 /** Sends a grist as bsv-kit's sendGristRecord does and resolves with its txid and its place in the backend's sequence (`seq`, where the wait pages from);
  * throws the same errors (GristInputError when nothing was sent). */
 export async function sendTimedGrist(p: SendParams): Promise<{ txid: string; seq: number }> {
+  requireLicence();
   check(p.files);
   const files = p.files.map((f) => ({ ...f, mime: baseMime(f.mime) }));
   try {
@@ -155,6 +180,7 @@ function answerIn(row: Row, key: Uint8Array, mine: string, mill: string, txid: s
 
 /** Reads ONE page of GET /api/messages after `since` as bsv-kit's readAnswerPage does, and also names the time the backend first saw the answer's record. */
 export async function readTimedPage(txid: string, o: { door: TimedDoor; key: Uint8Array; since: number; mill: string; signal: AbortSignal }): Promise<Page> {
+  requireLicence();
   const { door: d, key, signal } = o;
   if (signal.aborted) throw new grist.AwaitAbortedError();
   const mine = vault.publicKeyHexFromKey(key);

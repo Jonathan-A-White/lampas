@@ -1,6 +1,7 @@
 // src/verse/action.ts — which action the Verse view (src/VerseView.tsx) has chosen, kept on the phone so the next verse opens on it too
 // (mw-5r3p30.79). Listen is the first and the gentlest, so it is where a new phone starts. Quiz me (mw-5r3p30.74) opens the Talk sheet in quiz mode.
 import { useCallback, useState } from 'react';
+import { useAiAllowed } from '../gate/licenceContext';
 
 export const VERSE_ACTIONS = [
   { id: 'listen', label: 'Listen' },
@@ -10,6 +11,12 @@ export const VERSE_ACTIONS = [
 ] as const;
 
 export type VerseAction = (typeof VERSE_ACTIONS)[number]['id'];
+
+/** The actions that are the tutor's (mw-8m9dyu.2): they need a licence, so an unlicensed phone is not offered them. */
+const AI_ACTIONS: readonly VerseAction[] = ['ask', 'quiz'];
+
+/** The actions the Verse view offers: all of them with a licence, Listen and Read it aloud without. */
+export const actionsFor = (ai: boolean): typeof VERSE_ACTIONS[number][] => VERSE_ACTIONS.filter((a) => ai || !AI_ACTIONS.includes(a.id));
 
 const KEY = 'lampas.verseAction';
 
@@ -34,9 +41,11 @@ export function setVerseAction(action: VerseAction): void {
 /** The chosen action and the way to choose another (kept on the phone). */
 export function useVerseAction(): [VerseAction, (action: VerseAction) => void] {
   const [action, set] = useState<VerseAction>(getVerseAction);
+  const ai = useAiAllowed();
   const choose = useCallback((next: VerseAction) => {
     setVerseAction(next);
     set(next);
   }, []);
-  return [action, choose];
+  // Left on Ask the tutor or Quiz me by a licensed phone, an unlicensed one opens on Listen (what is kept stays, for when the licence is back).
+  return [!ai && AI_ACTIONS.includes(action) ? 'listen' : action, choose];
 }

@@ -3,10 +3,10 @@
 // tutor's one-line summary and the screen he asked from. This is the ONE sender: Ask for another approach and the tutor's 'Send this to
 // the makers' both call submitFeedback (tests/unit/feedback-shared.test.ts keeps it so). The wire work is src/services/tutor.ts's askGrind. The grind forwards
 // ("forward": "mayor"): no model reads it, the mill mails it to the Mayor with the pictures and answers {"status":"sent"}.
-import { grist } from 'bsv-kit/grist';
 import { publish } from '../events/bus';
 import { keepRequest } from '../data/repositories/requests';
 import { getDeviceKeyBytes } from './deviceKey';
+import { MILL_MAX_FILES, type MillFile } from './mill';
 import { askGrind, TutorError, type AskOptions } from './tutor';
 
 export const FEEDBACK_KIND = 'feedback';
@@ -17,7 +17,7 @@ export const MAX_CREDIT_NAME = 120;
 export const MAX_CREDIT_URL = 300;
 
 /** The most pictures one request carries: bsv-kit's cap on the files of one grist. */
-export const MAX_PICTURES = grist.MAX_PHOTOS;
+export const MAX_PICTURES = MILL_MAX_FILES;
 
 /** The limits of a tutor-ask request (the input schema's second branch): the tutor's summary, the screen's name, the talk's reference. */
 export const MAX_SUMMARY = 200;
@@ -112,13 +112,13 @@ function kept(request: FeedbackRequest, txid: string, sentAt: number): Parameter
 }
 
 /** Sends the feedback with its pictures (JPEG files, at most MAX_PICTURES) and waits for the mill's receipt. Throws a TutorError. */
-function sendFeedback(request: FeedbackRequest, files: grist.GristFile[], options: AskOptions): Promise<FeedbackAnswer> {
+function sendFeedback(request: FeedbackRequest, files: MillFile[], options: AskOptions): Promise<FeedbackAnswer> {
   return askGrind(FEEDBACK_KIND, request, isFeedbackAnswer, { ...options, files, untimed: true });
 }
 
 /** Sends `request` (with its pictures, if any) with the phone's key, keeps it in the requests table with its grist id once it is sent,
  * waits for the mill's receipt and tells the bus ('feedback-sent'). Throws a TutorError whatever went wrong; nothing is announced then. A `signal` that aborts stops the wait. */
-export async function submitFeedback(request: FeedbackRequest, options: { files?: grist.GristFile[]; signal?: AbortSignal } = {}): Promise<void> {
+export async function submitFeedback(request: FeedbackRequest, options: { files?: MillFile[]; signal?: AbortSignal } = {}): Promise<void> {
   let keeping: Promise<void> = Promise.resolve();
   try {
     await sendFeedback(request, options.files ?? [], {

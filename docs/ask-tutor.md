@@ -322,7 +322,7 @@ shifts it, and a negative result is held at 0) and `seen_to_shown` (the poll's s
 (it lies inside the other two). The finished timing is kept in localStorage `lampas.lastAnswerTiming` and goes to the mill as `client_timing` (with the
 answered grist's txid) beside `input` in the NEXT grist's plaintext (millwright's docs/grist-client-timing.md); the first grist after install, a failed
 or abandoned one, and a feedback grist (not a tutor answer) have none to send or leave none. bsv-kit's sendGrist cannot carry the member, so
-src/services/gristWire.ts sends the grist itself, as bsv-kit does. About shows one line from it: `Last tutor answer: 8.6 s (phone 1.3 s, network 0.7 s, waiting to
+src/services/mill.ts (the gated client) sends the grist itself, as bsv-kit does. About shows one line from it: `Last tutor answer: 8.6 s (phone 1.3 s, network 0.7 s, waiting to
 see it 1.5 s, factory 5.8 s)`: the phone's share is its own work, the factory the rest. features/tutor-timing.feature.
 
 ## How the phone hears an answer (mw-46z0my.6)
