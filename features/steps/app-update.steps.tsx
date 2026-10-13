@@ -120,4 +120,22 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
       expect(setup.reload).toHaveBeenCalledTimes(1);
     });
   });
+
+  Scenario('A take-over that did not happen is asked for again the next time the app is hidden', ({ Given, When, And, Then }) => {
+    const setVisibility = (value: DocumentVisibilityState) => {
+      Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => value });
+      document.dispatchEvent(new Event('visibilitychange'));
+    };
+    Given('Lampas is open on a phone and a newer build with nothing new to show is found waiting', async () => {
+      open(false, async () => [{ version: APP_SEMVER, date: '2026-10-12', story: 'fx-1', kind: 'fixed', text: 'A line.' }]);
+      waiting = setup.newWorkerWaits();
+      await act(async () => void (await vi.advanceTimersByTimeAsync(0)));
+    });
+    When('the phone puts Lampas in the background', () => setVisibility('hidden'));
+    And('the phone brings Lampas back at once without the worker taking over', () => setVisibility('visible'));
+    And('the phone puts Lampas in the background again', () => setVisibility('hidden'));
+    Then('the waiting worker has been sent SKIP_WAITING twice', () => {
+      expect(waiting!.postMessage).toHaveBeenCalledTimes(2);
+    });
+  });
 });
