@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.185
+_2026-10-13_
+- Fixed: Without a licence the verse sheet no longer offers Read it aloud, its Hold to read bar or the Reading ladder (which could only end in 'No licence').
+
 ## 0.1.183
 _2026-10-13_
 - New: With Immersive reader on, the text is set like a book: tight lines in a serif typeface, even edges with hyphenation, pure black in the dark theme and small dim verse numbers.
