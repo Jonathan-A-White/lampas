@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.149
+_2026-10-13_
+- New: Lampas now opens for anyone without a licence, and a shared verse link opens for everybody.
+
 ## 0.1.148
 _2026-10-13_
 - Fixed: The tutor's answer now shows within seconds of being ready, instead of waiting up to a minute or more on mobile data.
