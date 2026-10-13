@@ -53,6 +53,10 @@ describe('the rows', () => {
     );
   });
 
+  it('marks the settings that only matter to the tutor as AI, and no other row', () => {
+    expect(keys(ROWS.filter((r) => r.ai))).toEqual(['readTutor', 'askBy', 'hebrewDepth', 'tips', 'quizGoal']);
+  });
+
   it('takes its details from the setting they depend on', () => {
     const dependsOn = (key: string) => rowOf(key)?.dependsOn?.key;
     expect(dependsOn('weaveGrammar')).toBe('weave');

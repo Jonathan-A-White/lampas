@@ -6,7 +6,7 @@ test('a phone with no licence sees Unlock with its key, a Copy and nothing scrol
   await refuseChain(page);
   await seedDeviceKey(page);
   await page.goto('/#/unlock');
-  await expect(page.getByRole('heading', { name: 'Unlock' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Licence' })).toBeVisible();
   await expect(page.getByTestId('device-key')).toHaveText(SEED_PUBLIC_KEY);
   await expect(page.getByRole('button', { name: 'Copy', exact: true })).toBeVisible();
 

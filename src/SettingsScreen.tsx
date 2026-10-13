@@ -6,9 +6,11 @@
 // and a row that depends on a setting that is off is not drawn.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
+import { useAiAllowed } from './gate/licenceContext';
 import { navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { CONTROLS } from './settings/controls';
+import { NeedsLicenceRow } from './settings/controls/NeedsLicence';
 import { Section } from './settings/controls/SettingRow';
 import { SECTIONS, readValues, visibleRows } from './settings/rows';
 import { settingsForTutor } from './settings/tutorSettings';
@@ -40,6 +42,8 @@ export function SettingsScreen() {
   const [query, setQuery] = useState('');
   const values = useLiveQuery(readValues, []);
   const rows = visibleRows(values ?? {}, query);
+  // with no licence each AI option is drawn off and greyed with 'Needs a licence', a link to the Licence page (mw-8m9dyu.3)
+  const aiAllowed = useAiAllowed();
   // the tutor is told every setting, shown or not (mw-5r3p30.107): he can say what a setting that is off would give
   const forTutor = useLiveQuery(settingsForTutor, []);
   useReportScreen({ name: 'Settings', facts: [], settings: forTutor ?? [] });
@@ -55,6 +59,7 @@ export function SettingsScreen() {
             return (
               <Section key={section.id} title={section.title} hint={section.hint} labelled={section.id === 'resources'}>
                 {mine.map((row) => {
+                  if (row.ai && !aiAllowed) return <NeedsLicenceRow key={row.key} row={row} />;
                   const Row = CONTROLS[row.key];
                   return Row ? <Row key={row.key} row={row} /> : null;
                 })}
