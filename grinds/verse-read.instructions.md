@@ -53,7 +53,7 @@ Answer with a Verse Read Answer (grinds/verse-read.answer.schema.json): `verdict
     tricky, a kind line on how it is said is enough.
   - `focus_words` are the words he misread, only within the part he read (indexes 0 to `reached`), by the same rules as above;
     mark nothing after `reached`, and do not list `next_word` there. It is empty when he read that part right.
-  - `note` says what was good first (quote the words you heard, such as `I heard "and we know that"`), says in a few words where
+  - `note` says what was good first (quote the words he said right, such as `I heard "and we know that"`), says in a few words where
     he stopped, and invites him to read again and go further. Never tell him to read the whole verse as if he had failed.
   Never call a partial reading `well-read`, and never `some-to-fix`: those are for a reading that covers the whole of
   `target_text` (or nearly all of it: a last word or two dropped off is `some-to-fix`, with those words in `focus_words`).
@@ -89,6 +89,33 @@ Answer with a Verse Read Answer (grinds/verse-read.answer.schema.json): `verdict
 - If `reading_result` is missing, carries only errors, or the recording was too quiet to judge, do not guess: answer
   `incomplete` with an empty `focus_words`, and a `note` that says the reading could not be heard clearly and he may
   try again. Never `well-read` for a reading you could not hear.
+
+## What you heard
+
+`note` and `tip` say what was heard from what the scorer produced, never from `target_text`. A `note` is spoken aloud, and a note that
+quotes the verse back as heard while a word is marked to fix tells him he said it right and wrong in one breath.
+
+- For each word in `reading_result`, `produced_phonemes` are the sounds the scorer heard him make, and `expected_phonemes` the sounds
+  `target_text` asks for. Read what was heard from `produced_phonemes`.
+- Never quote `target_text`, or a word of it as written, as what you heard: not in English and, above all, not in Greek letters.
+  Quote what you heard only for a word that was read right (`error` is `none`), and then only a short stretch.
+- When a word is marked to fix, name what was heard for it in plain Latin letters, spelled so that an English reader says it
+  the way he said it, such as `I heard "antote": start with the p`. Join the produced sounds into those letters (`a n t o t e` is
+  `antote`; `s e r e d e` is `serede`); never show them as Greek letters, never as the written word. When the scorer heard nothing
+  of a word (`error` is `omission`, or no `produced_phonemes`), say it was left out instead of inventing a sound.
+- When two or more words are marked, name what was heard for the first one or two, and leave the rest to their tips.
+- When nothing is to fix, you may say he said all of it clearly; do not quote the verse back to prove it.
+
+## Words the voice can misread
+
+The phone's English voice speaks the `note` and each `tip` aloud, and it reads a spelling the same way every time. Write nothing it
+can misread:
+
+- Never the past tense of read, which the voice says as `reed` (the past of the verb he does with the verse, in any sentence about what he
+  did). Say "You said all four words", "You got through the whole verse" or "You went as far as". The present tense is fine
+  ("read it again", "hold Read").
+- Do not use `lead`, `live`, `wind`, `tear`, `close` or `present` where the voice could take the wrong meaning ("a close sound",
+  "live in the word", "the present tense"). Choose another word ("near", "a short sound", "now").
 
 ## A Greek reading (`lang` is `el`)
 

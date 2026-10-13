@@ -1,0 +1,14 @@
+{
+  "description": "1 Thessalonians 5:16 read aloud in Greek (a synthesized voice): whatever the scorer heard, the note never quotes the verse as written, 'Πάντοτε χαίρετε', as what was heard (his screenshot: the note quoted it while both words were marked to fix), names what was heard in plain letters, and never uses the past tense of read, which the English voice speaks as 'reed'.",
+  "schemaVersion": "2",
+  "request": {
+    "reference": "1 Thessalonians 5:16",
+    "target_text": "Πάντοτε χαίρετε",
+    "lang": "el"
+  },
+  "photos": ["read-1-thess-5-16-el.webm"],
+  "expect": {
+    "verdict": { "one_of": ["well-read", "some-to-fix", "partial"] },
+    "note": { "present": true, "matches": "^[^yYͰ-Ͽἀ-῿]*(?:[yY](?:(?:[yY]|[oO](?:[yY]|[uU](?:[yY]| (?:[yY]|[rR](?:[yY]|[eE](?:[yY]|[aA][yY]))))))|(?:[^yYoOͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*[yY]|[oO](?:[^yYuUͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*[yY]|[uU](?:[^yY Ͱ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*[yY]| (?:[^yYrRͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*[yY]|[rR](?:[^yYeEͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*[yY]|[eE](?:[^yYaAͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*[yY]|[aA][^yYdDͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*[yY])))))))*(?:(?:[^yYoOͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*)?|[oO](?:(?:[^yYuUͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*)?|[uU](?:(?:[^yY Ͱ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*)?| (?:(?:[^yYrRͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*)?|[rR](?:(?:[^yYeEͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*)?|[eE](?:(?:[^yYaAͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*)?|[aA](?:[^yYdDͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*)?)))))))?$" }
+  }
+}
