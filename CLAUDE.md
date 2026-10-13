@@ -282,6 +282,10 @@ docs/data.md         # the data's JSON shape, its two sources and licences, and 
 docs/hebrew.md       # Hebrew in the tutor: the depth setting, the font, how a Hebrew word is drawn
 ```
 
+## What the tutor is told
+
+VISION.md 'The tutor': the tutor is told, on every ask, each app setting and each part of his progress that could change its answer. `src/tutor/knows.ts` is the table of what each grind (bible-talk, verse-ask, verse-read, tips) is sent, with a written reason for each thing it is not; a new setting is classified in its `BEARS_ON` and `tests/unit/tutor-knows.test.ts` fails until it is sent or has a reason (docs/ask-tutor.md 'The tutor knows what bears on its answer').
+
 ## Conventions
 
 - TypeScript strict; no explicit `any`. Tailwind 4 utilities with the tokens in `src/index.css`.

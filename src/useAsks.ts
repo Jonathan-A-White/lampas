@@ -7,11 +7,9 @@ import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { requestsForTutor } from './data/requestsForTutor';
 import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
-import { depthSettings } from './script/depthSettings';
-import { askBySetting } from './settings/definitions';
 import { applyChanges } from './settings/registry';
-import { getSetting } from './settings/store';
-import { addAnswer, listSolidHeadwords, verseRef } from './data/repositories';
+import { settingsSentTo } from './tutor/knows';
+import { addAnswer, getGreekPronunciation, listSolidHeadwords, verseRef } from './data/repositories';
 import { answerDrawn } from './services/clientTiming';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { withoutFillers } from './services/fillers';
@@ -59,8 +57,8 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
       set({ phase: 'sending', question: text, startedAt });
       void (async () => {
         try {
-          const [solid, learner, grammar, depths, askBy, requests, profile] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined), depthSettings(), getSetting(askBySetting), requestsForTutor().catch(() => []), learnerProfile().catch(() => undefined)]);
-          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, { ...depths, [askBySetting.key]: askBy }, requests, profile, wasSpoken(text));
+          const [solid, learner, grammar, settings, requests, profile, pronunciation] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined), settingsSentTo('verse-ask'), requestsForTutor().catch(() => []), learnerProfile().catch(() => undefined), getGreekPronunciation()]);
+          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, settings, requests, profile, wasSpoken(text), pronunciation);
           let sentAs: string | undefined;
           const answer = await askTutor(request, {
             key: getDeviceKeyBytes(),

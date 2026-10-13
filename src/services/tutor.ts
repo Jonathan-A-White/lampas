@@ -10,6 +10,7 @@ import type { AnswerWord } from '../data/db';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
 import type { TutorRequest } from '../data/requestsForTutor';
+import { DEFAULT_PRONUNCIATION, type GreekPronunciation } from '../speech/pronunciation';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
 import { listenForAnswers, type StreamTarget } from './answerStream';
 import { meOf, readTimedPage, sendTimedGrist, timedDoor, type Page, type TimedDoor } from './gristWire';
@@ -151,7 +152,9 @@ export interface VerseAskRequest {
   learner_grammar?: LearnerGrammar;
   /** who he is as a student (src/data/learnerProfile.ts, Settings > About you): missing when he has filled in nothing */
   learner_profile?: LearnerProfile;
-  /** how he wants a language besides Greek written (src/script/depthSettings.ts) and how Ask the tutor opens: { hebrewDepth: 'both', askBy: 'speaking' } */
+  /** the Greek pronunciation the app speaks and respells in (src/speech/pronunciation.ts), as the Bible talk is sent it: a sound is described by it */
+  pronunciation: GreekPronunciation;
+  /** the settings that bear on this answer, by key (src/tutor/knows.ts settingsSentTo): { hebrewDepth: 'both', askBy: 'speaking', weave: 'off', ... } */
   settings?: Record<string, string>;
   /** the requests he sent to the factory and where each stands (src/data/requestsForTutor.ts): up to 10, newest first; missing when he has sent none */
   requests?: TutorRequest[];
@@ -190,7 +193,7 @@ export function isVerseAnswer(value: unknown): value is VerseAnswer {
   return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));
 }
 
-export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = [], learnerProfile?: LearnerProfile, spoken = false): VerseAskRequest {
+export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = [], learnerProfile?: LearnerProfile, spoken = false, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION): VerseAskRequest {
   return {
     reference,
     greek: verse.g.map((w) => w.t).join(' '),
@@ -198,6 +201,7 @@ export function buildRequest(reference: string, verse: Verse, question: string, 
     question: question.trim(),
     ...(spoken ? { spoken: true as const } : {}),
     solid_words: solidWords,
+    pronunciation,
     ...(learner ? { learner } : {}),
     ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
     ...(learnerProfile ? { learner_profile: learnerProfile } : {}),

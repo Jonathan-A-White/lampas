@@ -16,5 +16,12 @@
 - Most of all: easy to use correctly, hard to use incorrectly; large clear type, one hand on a phone.
 - Lines (his to confirm): credit every source it stands on; never put a reader's licensed books (Logos) in the app or the tutor.
 
+## The tutor
+- "so the general rule is is that the tutor always needs to be able to know the up-to-date that could have an impact what he's doing in addition to what he needs to know about you know my progress when I'm at all that you know all the other things we've spoken about before" (Postern general, 2026-10-12 ~13:11Z, direct:8d723b2f...929e2891, dictated after the tutor's Sound it out answer ignored the app's modern pronunciation)
+
+The tutor is told, on every ask, each app setting and each part of his progress that could change its answer.
+
+(src/tutor/knows.ts is the table of what each grind is sent; a test holds it.)
+
 ## How feedback is weighed
 Feedback that fits this vision is approved and built elegantly; where people differ, a setting; anything crossing a line or changing the vision goes to the Governor.

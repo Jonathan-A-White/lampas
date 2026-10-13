@@ -6,7 +6,7 @@ import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
 import type { Recording } from '../audio/recorder';
 import { extensionOf } from '../audio/recorder';
-import { pronunciationOf } from '../speech/pronunciation';
+import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation } from '../speech/pronunciation';
 import { askGrind, type AskOptions } from './tutor';
 
 export const READING_KIND = 'verse-read';
@@ -28,6 +28,8 @@ export interface VerseReadRequest {
   reference: string;
   target_text: string;
   lang: string;
+  /** the Greek pronunciation the app speaks and respells in (src/speech/pronunciation.ts), as the Bible talk is sent it: a sound in a tip is described by it */
+  pronunciation: GreekPronunciation;
   /** who he is as a student (src/data/learnerProfile.ts, Settings > About you): missing when he has filled in nothing */
   learner_profile?: LearnerProfile;
   /** where he stands in words, in one line (src/data/learnerSummary.ts), as the Bible talk is sent it */
@@ -148,11 +150,12 @@ export const readingText = (verse: Verse, view: ReadingView = 'english'): string
 export const readingLang = (view: ReadingView, pronunciation: unknown): string =>
   view === 'greek' ? pronunciationOf(pronunciation).scoringLang : 'en';
 
-export function buildReadingRequest(reference: string, verse: Verse, view: ReadingView = 'english', lang: string = readingLang(view, undefined), learnerProfile?: LearnerProfile, learner?: string, learnerGrammar?: LearnerGrammar): VerseReadRequest {
+export function buildReadingRequest(reference: string, verse: Verse, view: ReadingView = 'english', lang: string = readingLang(view, undefined), learnerProfile?: LearnerProfile, learner?: string, learnerGrammar?: LearnerGrammar, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION): VerseReadRequest {
   return {
     reference,
     target_text: readingText(verse, view),
     lang,
+    pronunciation,
     ...(learnerProfile ? { learner_profile: learnerProfile } : {}),
     ...(learner ? { learner } : {}),
     ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),

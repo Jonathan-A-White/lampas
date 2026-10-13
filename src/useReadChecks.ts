@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Verse } from './data/chapter';
 import { unitId, unitReference } from './data/passage';
-import { keepVerseReading, reachOf, verseRef } from './data/repositories';
+import { getGreekPronunciation, keepVerseReading, reachOf, verseRef } from './data/repositories';
 import { clipOf } from './audio/clip';
 import { MicUnavailable, recorderSeam, type HoldRecorder, type Recording } from './audio/recorder';
 import { answerDrawn } from './services/clientTiming';
@@ -120,8 +120,8 @@ export function useReadChecks(book: string, chapter: number, title: string, view
       void (async () => {
         try {
           // the profile, the words and the grammar are the tutor's context: a failure to read one sends the reading without it
-          const [profile, learner, grammar] = await Promise.all([learnerProfile().catch(() => undefined), learnerSummary().catch(() => undefined), learnerGrammar().catch(() => undefined)]);
-          const request = buildReadingRequest(unitReference(title, verse), verse, readView, language, profile, learner, grammar);
+          const [profile, learner, grammar, chosen] = await Promise.all([learnerProfile().catch(() => undefined), learnerSummary().catch(() => undefined), learnerGrammar().catch(() => undefined), getGreekPronunciation()]);
+          const request = buildReadingRequest(unitReference(title, verse), verse, readView, language, profile, learner, grammar, chosen);
           let sentAs: string | undefined;
           const answer = await askVerseRead(request, recording, {
             key: getDeviceKeyBytes(),

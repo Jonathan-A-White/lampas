@@ -187,6 +187,8 @@ describeFeature(feature, ({ Scenario }) => {
       // mw-1vuvq6.2: the reading is sent where his words and grammar stand, as the talk is
       expect(received().input).toHaveProperty('learner', expect.any(String));
       expect(received().input).toHaveProperty('learner_grammar');
+      // mw-5r3p30.242: and the Greek pronunciation the app speaks, so a tip on a sound is in it
+      expect(received().input).toHaveProperty('pronunciation', 'modern');
     });
     And('the grist carries one audio attachment of type {string}', (_, mime: string) => {
       const { attachments } = received();
@@ -539,6 +541,8 @@ describeFeature(feature, ({ Scenario }) => {
       // mw-1vuvq6.2: the reading is sent where his words and grammar stand, as the talk is
       expect(received().input).toHaveProperty('learner', expect.any(String));
       expect(received().input).toHaveProperty('learner_grammar');
+      // mw-5r3p30.242: and the Greek pronunciation the app speaks, so a tip on a sound is in it
+      expect(received().input).toHaveProperty('pronunciation', 'modern');
     });
     And('the grist carries one audio attachment of type {string}', (_, mime: string) => {
       expect(received().attachments).toHaveLength(1);
