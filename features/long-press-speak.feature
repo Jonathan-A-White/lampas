@@ -51,6 +51,14 @@ Feature: A long press on a word speaks it
     When he taps the first word of the list
     Then that word has changed its state
 
+  Scenario: A word long-pressed and let go at once is still spoken to its end
+    Given Lampas is opened on a phone with a Greek voice
+    And he switches the reader to Greek
+    When he long presses the word "Οὐδὲν" in verse 1
+    Then the word is still being spoken after he let go
+    When the word has been spoken to its end
+    Then the word was spoken once and never cancelled
+
   Scenario: A short tap still opens the word sheet
     Given Lampas is opened on a phone with a Greek voice
     And he switches the reader to Greek

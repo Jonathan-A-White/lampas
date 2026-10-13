@@ -128,11 +128,11 @@ Feature: Review brings back the words that are due
     When he starts another round with four letters to ask
     Then the counter reads "1 of 10"
 
-  Scenario: A flashcard shows the dictionary form and hold-to-hear says it
+  Scenario: A flashcard shows the dictionary form and tap-to-hear says it
     Given the word "λέγω" is due on step 3
     When Lampas is opened on the Reader
     And he opens Review from Settings
     And he starts the review
     Then the flashcard shows only the lemma "λέγω"
-    When he holds the Hold to hear bar
+    When he taps the Tap to hear bar
     Then the Greek voice says "λέγω"

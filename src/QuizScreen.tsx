@@ -105,7 +105,7 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
     setMissed(nextMissed);
     saveRound({ questions, index, picked: option, missed: nextMissed, answers });
     void recordAnswer(question.lemma, right);
-    // The word says itself once, by the long press's engine; the Hold to hear bar says it again. No help line here: that bar carries it.
+    // The word says itself once, by the long press's engine; the Tap to hear bar says it again. No help line here: that bar carries it.
     speakWord(question.prompt, 'greek');
   };
 

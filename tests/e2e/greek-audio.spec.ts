@@ -75,7 +75,7 @@ test('each verse has a play button that speaks its Greek in the Greek view, and 
   await expectFitsPhone(page);
   await speaker.click();
   const spokenNow = await spoken(page);
-  expect(spokenNow[spokenNow.length - 1]).toMatchObject({ text: 'Οὐδὲν', lang: 'el-GR' });
+  expect(spokenNow[spokenNow.length - 1]).toMatchObject({ text: 'οὐδὲν', lang: 'el-GR' });
   await shot(page, 'word-card-audio');
 });
 

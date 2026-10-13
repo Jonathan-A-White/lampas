@@ -127,7 +127,7 @@ describe('holding a one-letter Greek word', () => {
   });
 });
 
-describe('a letter drill (Hold to hear a letter)', () => {
+describe('a letter drill (Tap to hear a letter)', () => {
   it('names the letter in lower case with the Greek voice: the letter is the thing asked about, not a word', () => {
     act(() => void speakLetter('Ο'));
     const u = synth.spoken[synth.spoken.length - 1];

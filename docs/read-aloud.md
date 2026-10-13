@@ -46,7 +46,7 @@ Postern's and SpellForge's; its colours are Lampas's (`--bk-speech-*` in `src/in
 - Where the bar is drawn (`src/speech/SpeakingBarSlot.tsx`): a screen with a bottom edge leaves a `<BarSlot level>` and the one bar is drawn into the highest on screen:
   the foot of the shell (0, every screen but the Reader), the Reader above its Talk bar (1), the Verse view above its hold bar (2), the Talk sheet above its foot (3).
   It is in flow, never over text, and the round *Ask the tutor* button rides above it. The header's own Pause / Stop are gone while the bar holds the reading.
-- A word said alone (a long press, a speaker, Hold to hear) is not a reading and has no bar (`isWordSpeech`).
+- A word said alone (a long press, a speaker, Tap to hear) is not a reading and has no bar (`isWordSpeech`).
 - A Greek voice names a bare letter ('omicron'), so Greek of ONE letter (ὁ, ἡ, ὦ, Ὃ: a held word, a speaker, a lesson's example, a one-letter syllable of Sound it out,
   a lone woven word) is handed to the GREEK voice in the form the chosen pronunciation gives it (mw-5r3p30.262): `loneLetterForm` (`src/speech/greek.ts`) asks
   the scheme's `loneLetter`; Modern Greek's is the stressed vowel ('ό' for ὁ and Ὃ, 'ή' for ἡ, 'ώ' for ὦ), which a Greek voice reads as a syllable. (mw-5r3p30.256
@@ -55,7 +55,7 @@ Postern's and SpellForge's; its colours are Lampas's (`--bk-speech-*` in `src/in
 - **Listen is a Listen** (mw-5r3p30.130, `docs/verse-view.md` 'Listen is a player'): a reading started with `listen: <key>` is paused by an in-app interruption and goes on by itself when it ends
   (`readAloud.ts` `interruptListen`; a word beside it, a Hold to ask, a recording, a tutor's answer); the speaking bar's Restart on it goes back to the first verse (`restartListen`); one that ran
   to its end by itself is remembered (`useListenCompleted`) so the Verse view's foot says Play again.
-- **An interruption pauses, it does not end (mw-5r3p30.122).** A word, speaker or Hold to hear that speaks while a reading or a tutor's answer is under way (playing or
+- **An interruption pauses, it does not end (mw-5r3p30.122).** A word, speaker or Tap to hear that speaks while a reading or a tutor's answer is under way (playing or
   paused) pauses it where it is (the package keeps the sentence, `greek.ts` `speakBeside`) and is said BESIDE it, straight to the phone's synthesiser: the bar stays,
   showing Resume, Restart and Stop, and Resume goes on from the sentence the answer was in (not from the start, not from the next). This covers the tapped Greek or Hebrew
   word, the speaker beside a flagged word of the reading check, the word sheet's and the guide's Hear it, and a hold on a Talk bar to talk (`useVoice.press` and the Reader's

@@ -1,10 +1,11 @@
 // src/ui/HoldBar.tsx — the one hold-to-talk control, Postern's bar (postern src/cockpit/TalkLineScreen.tsx, the button under the
 // model switch: h-24 w-full max-w-xl rounded-3xl, a 26 px microphone over a 16 px semibold label, the accent colour, the alert
 // colour while it listens). The Talk sheet, the reader's foot Talk bar and the reading check's Read buttons are all this
-// component (docs/pwa-best-practices.md section 12: every hold-to-talk control is Postern's bar), and so is Hold to hear on the
-// Quick test and Review, which changes only the icon (a speaker); only a Read button beside each verse stays small, because a bar per verse cannot fit in the text. What the press does is the caller's:
+// component (docs/pwa-best-practices.md section 12: every hold-to-talk control is Postern's bar); only a Read button beside each verse stays small, because a bar per verse cannot fit in the text.
+// Hearing a word is a TAP, never a hold (ui/TapBar.tsx, the same look). What the press does is the caller's:
 // `hold` is useHoldPress's handlers, `holdMs` its delay (0 = a hold from the first touch).
 import type { ReactNode } from 'react';
+import { barClass } from './barClass';
 import { type HoldHandlers, useHoldPress } from './holdPress';
 
 /** h-24, Postern's bar height: 6 rem, which the root font scaling does not touch (spacing is divided by --lp-scale). */
@@ -26,7 +27,7 @@ export function HoldBar({ hold, holdMs, name, label, icon = <MicIcon />, testId,
   name: string;
   /** what the bar says now */
   label: string;
-  /** the icon over the label: the microphone unless the hold is not talking (Hold to hear has a speaker) */
+  /** the icon over the label: the microphone unless the hold is not talking */
   icon?: ReactNode;
   testId?: string;
   /** a hold is going on: the alert colour */
@@ -60,7 +61,7 @@ export function HoldBar({ hold, holdMs, name, label, icon = <MicIcon />, testId,
             },
           }
         : {})}
-      className={`${compactWhenShort ? 'short:h-14 short:flex-row short:gap-2 ' : ''}mx-auto flex h-24 w-full max-w-xl touch-none select-none flex-col items-center justify-center gap-1 rounded-3xl text-[16px] font-semibold transition-colors [-webkit-touch-callout:none] disabled:cursor-not-allowed disabled:opacity-45 ${listening ? 'bg-bad text-canvas' : 'bg-accent text-accent-fg'}`}
+      className={barClass(listening, compactWhenShort)}
     >
       {icon}
       <span aria-hidden="true">{label}</span>

@@ -1,6 +1,6 @@
 Feature: After an answer on the Quick test the word says itself, a wrong answer waits for Next, and the tutor is one tap away
   The moment he taps a gloss, right or wrong, the Greek word is spoken by itself, once, with the same
-  voice as the reader's Read and the Hold to hear bar. Nothing moves on by itself: a wrong answer waits
+  voice as the reader's Read and the Tap to hear bar. Nothing moves on by itself: a wrong answer waits
   for Next, as a right one does. Beside Next sits Ask the tutor, which opens the Reader on the verse
   of the word with the Talk sheet open and a first question about the word already sent, holding the word, the question and his answers
   so far (features/word-ask-tutor.feature).

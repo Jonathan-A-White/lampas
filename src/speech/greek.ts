@@ -289,7 +289,7 @@ export function greekWordSpeech(text: string): { text: string; language: SpeechL
   return { text: loneLetterForm(text) ?? text.toLowerCase(), language: 'greek' };
 }
 
-/** Says a LETTER now, as a Greek voice names it (the letter drills 'Hold to hear a letter', where the letter is the thing asked about, not a word): lower case, to the
+/** Says a LETTER now, as a Greek voice names it (the letter drills 'Tap to hear a letter', where the letter is the thing asked about, not a word): lower case, to the
  * Greek voice, never turned into a sound. A word of one letter is not this: it goes through speakWord. */
 export function speakLetter(letter: string): boolean {
   return speakText(letter.toLowerCase(), WORD_KEY, { language: 'greek' });
@@ -297,6 +297,9 @@ export function speakLetter(letter: string): boolean {
 
 const wordSpeech = (text: string, language: SpeechLanguage): { text: string; language: SpeechLanguage } =>
   language === 'greek' ? greekWordSpeech(text) : { text, language };
+
+/** Whether a word said by speakWord / speakLetter is being said now (the page's tap-to-hear bars toggle on it). */
+export const isWordSaid = (): boolean => beside?.key === WORD_KEY || isSpeaking(WORD_KEY);
 
 /** Whether the speech now is a single word or speaker (not a reading): it has no bar. */
 export const isWordSpeech = (key: string | null): boolean => key !== null && key !== READ_KEY;

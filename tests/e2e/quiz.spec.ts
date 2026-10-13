@@ -74,15 +74,15 @@ test('a Quick test question shows the picture beside a word that has one, and fi
 // (2 s a word), so the word is still being spoken while the bar is held.
 const stubSpeech = (page: Page) => honestSpeech(page, { langs: ['el-GR'], msPerWord: 2000 });
 
-test('Hold to hear speaks the word while held, stops on release, shifts nothing and leaves the glosses tappable', async ({ page }) => {
+test('Tap to hear speaks the word on a tap, a second tap stops it, shifts nothing and leaves the glosses tappable', async ({ page }) => {
   await openUnlocked(page);
   await stubSpeech(page);
   await page.goto('/#/test');
-  const bar = page.getByTestId('hold-to-hear');
+  const bar = page.getByTestId('tap-to-hear');
   await expect(bar).toBeVisible();
-  await expect(bar).toContainText('Hold to hear');
+  await expect(bar).toContainText('Tap to hear');
   const box = await bar.boundingBox();
-  await expect(bar).toHaveAttribute('data-hold-bar', '');
+  await expect(bar).toHaveAttribute('data-tap-bar', '');
   expect(box?.height).toBe(96);
   expect(box?.width).toBeGreaterThan(300);
   const first = page.locator('[data-option]').first();
@@ -91,13 +91,12 @@ test('Hold to hear speaks the word while held, stops on release, shifts nothing 
   const lemma = await page.getByTestId('prompt').textContent();
   const calls = async () => (await spoken(page)).map((e) => ({ text: e.text, lang: e.lang, outcome: e.outcome }));
   if (!box) throw new Error('no bar');
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await expect.poll(calls).toEqual([{ text: lemma, lang: 'el-GR', outcome: 'speaking' }]);
+  await bar.click();
+  await expect.poll(calls).toEqual([{ text: lemma?.toLowerCase(), lang: 'el-GR', outcome: 'speaking' }]);
   expect(await first.boundingBox()).toEqual(before);
-  await shot(page, 'test-hold-to-hear');
-  await page.mouse.up();
-  await expect.poll(calls).toEqual([{ text: lemma, lang: 'el-GR', outcome: 'interrupted' }]);
+  await shot(page, 'test-tap-to-hear');
+  await bar.click();
+  await expect.poll(calls).toEqual([{ text: lemma?.toLowerCase(), lang: 'el-GR', outcome: 'interrupted' }]);
 
   await first.click();
   await expect(page.locator('[data-option][data-result="right"]')).toHaveCount(1);
@@ -120,7 +119,7 @@ test('the word speaks by itself once, a wrong answer waits for Next, and Ask the
   // the first gloss may be right or wrong: either way the word speaks, and the test waits for Next
   await first.click();
   await expect(page.locator('[data-option][data-result]')).not.toHaveCount(0);
-  await expect.poll(async () => (await calls()).map((c) => `${c.text} ${c.lang}`)).toEqual([`${word} el-GR`]);
+  await expect.poll(async () => (await calls()).map((c) => `${c.text} ${c.lang}`)).toEqual([`${word?.toLowerCase()} el-GR`]);
   expect(await first.boundingBox()).toEqual(before);
 
   const next = page.getByTestId('next');

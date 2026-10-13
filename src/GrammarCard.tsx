@@ -1,11 +1,11 @@
-// src/GrammarCard.tsx — one grammar question in Review (mw-hqd5bz.6): what is asked, the Greek form large, Hold to hear for a letter or a word,
+// src/GrammarCard.tsx — one grammar question in Review (mw-hqd5bz.6): what is asked, the Greek form large, Tap to hear for a letter or a word,
 // then the choices. Multiple choice while the idea is weak: four endings, glyphs or syllables to tap, or the words of a verse as buttons
 // (tap the form) that wrap; a flashcard once it is strong: the prompt and the form, Show reveals the answer, then I knew it / Not yet.
 import { useState } from 'react';
 import type { GrammarQuestion } from './data/grammar/questions';
 import type { QuestionMode } from './data/schedule';
 import { KNEW_IT } from './review/kinds';
-import { HoldToHear } from './HoldToHear';
+import { TapToHear } from './TapToHear';
 import { useSettled } from './ui/settle';
 import { SelfGrade } from './ui/SelfGrade';
 
@@ -47,7 +47,7 @@ function Heading({ question, mode }: { question: GrammarQuestion; mode: Question
       </div>
       {question.say ? (
         <div className="mt-4">
-          <HoldToHear text={question.say} letter={question.kind === 'sound'} />
+          <TapToHear text={question.say} letter={question.kind === 'sound'} />
         </div>
       ) : null}
     </>
