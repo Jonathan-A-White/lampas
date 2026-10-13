@@ -14,7 +14,13 @@
 - It is for readers of any mother tongue, learning Koine Greek by reading the New Testament, with a tutor on the verse.
 - Learning happens in the reading itself; it meets each reader where they are, and dials up and down.
 - Most of all: easy to use correctly, hard to use incorrectly; large clear type, one hand on a phone.
-- Lines (his to confirm): credit every source it stands on; never put a reader's licensed books (Logos) in the app or the tutor.
+- Lines (his to confirm): credit every source it stands on; never put a reader's licensed books (Logos) in the app or the tutor; Lampas is free to read, and a licence unlocks only the AI.
+
+## Free to read, a licence for the AI
+- "and you can correct me if I'm wrong but I think that the license prevents anybody from using this app and if you share a verse or something like that then people can see it is there a way that you can maybe only put any AI components license so anything that involves risk license isn't there just turn off those options in the settings I have an option for you know getting licensed I actually don't know right now at this point how somebody get license but you can put that as a waypoint for later I suspect that was miles from a website I'm on my mind.org somebody could get license there they could request it or buy it or whatever" (Postern general, 2026-10-12 ~22:14Z, direct:26cedcc27e49effb7adb0ac6b9793548f6733359ea4b8cc0291ecbdcde960f3a, dictated; "miles from a website I'm on my mind.org" is a transcription he will correct)
+- "oh for right now if someone's not licensed they should going to click on the screen in the app to get license like they normally but I can't talk about something coming in the future I'm talking about once once a non- licensed user could use the without AI" (Postern general, 2026-10-12 22:35:22Z, direct:f3a95a1465910e1c78477f18a8db53ea2b4ff565a20e440ce167bca4f6edbf68, dictated)
+
+Lampas is free to read; a licence unlocks the AI. Reading, listening, word sheets, lessons and quizzes need no licence, and a shared verse opens for anyone. Whatever is sent to the mill (the tutor, Ask the tutor, the Talk bar, Hold to ask, tips, feedback, pictures) needs a licence: without one those controls are not drawn on the reading screens, and Settings lists each AI option off and greyed with "Needs a licence", which opens the Licence page (this phone's key, Check again). How a licence is first obtained stays today's way (issue one to the key from Postern's Key screen); a website for it is a later waypoint.
 
 ## The tutor
 - "so the general rule is is that the tutor always needs to be able to know the up-to-date that could have an impact what he's doing in addition to what he needs to know about you know my progress when I'm at all that you know all the other things we've spoken about before" (Postern general, 2026-10-12 ~13:11Z, direct:8d723b2f...929e2891, dictated after the tutor's Sound it out answer ignored the app's modern pronunciation)

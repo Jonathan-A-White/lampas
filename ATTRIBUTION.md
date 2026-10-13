@@ -5,6 +5,7 @@
 
 Lampas stands on other people's work, so it names every text, lexicon, library, font, service and idea it
 builds on, with a link to each, its licence and what we changed. Credit is owed whether or not a licence asks for it.
+Lampas is free to read: the text, the lessons and the quizzes need no licence. A licence unlocks the AI, the tutor and everything sent to it; until a phone has one, Settings shows those options off with “Needs a licence”, which opens the Licence page.
 Tap the round Ask the tutor button to ask what any of it gives you, what its licence lets us do, or why we credit it at all.
 
 ## Texts and data

@@ -16,6 +16,10 @@ export const PREFACE_PARAGRAPHS: string[] = [
   'The English beside the Greek is the Majority Standard Bible, whose New Testament is translated from the same Robinson and Pierpont text. Its footnotes note where the modern critical texts read differently. The Robinson and Pierpont text and the Majority Standard Bible are both public domain.',
 ];
 
+/** What Lampas costs: nothing to read; a licence is for the AI only (mw-8m9dyu.3). Under its own heading on the Preface. */
+export const PREFACE_FREE =
+  'Lampas is free to read: the Greek, the English, the lessons and the quizzes need no licence. A licence unlocks the AI, which is the tutor and everything sent to it. Until a phone has one, Settings shows those options off, with “Needs a licence”, and the Licence page shows how to get one.';
+
 export interface PrefaceLink {
   /** the name the link carries */
   name: string;
