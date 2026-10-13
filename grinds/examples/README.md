@@ -28,6 +28,9 @@ shape without a network.
   sender knows, so `verse-read` keeps its recording here (`.webm`, a synthesized voice, made
   from `tests/fixtures/read-8-28.wav`). Public-safe only: no person, no personal data,
   under 200 KB. Scenarios may share a file.
+  A recording that carries a misread must change what the scorer can hear: the local scorer does not hear a word's first
+  consonant (`tall` scores as `all`, 100 accuracy), so change the vowel or the last sound (`all` said as `up` is scored a
+  mispronunciation), and run `mw grist score --engine local --audio <clip> --target <text>` on the clip before keeping it.
 - `expect`: answer path (a field name; dots for nested fields and a number for a place in a
   list, `settings_changes.0.key`) to checks. Every check given for a path must hold:
   - `equals`: the value is exactly this
