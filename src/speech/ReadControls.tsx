@@ -22,6 +22,7 @@ export function VersePlay({ playing, onPlay, className }: { playing: boolean; on
   return (
     <button
       type="button"
+      data-verse-play
       aria-label="Hear the verse"
       aria-pressed={playing}
       onClick={() => (playing ? stopReading() : onPlay())}

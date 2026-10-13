@@ -95,6 +95,7 @@ export function VerseNumber({ n, selected, onSelect, talk, className, children }
     <button
       type="button"
       {...(ai ? press : { onClick: onSelect })}
+      data-verse-number
       aria-label={`Verse ${n}`}
       aria-pressed={selected}
       className={`select-none [-webkit-touch-callout:none] ${className}`}
