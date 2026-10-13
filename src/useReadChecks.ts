@@ -11,6 +11,7 @@ import { unitId, unitReference } from './data/passage';
 import { keepVerseReading, reachOf, verseRef } from './data/repositories';
 import { clipOf } from './audio/clip';
 import { MicUnavailable, recorderSeam, type HoldRecorder, type Recording } from './audio/recorder';
+import { answerDrawn } from './services/clientTiming';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { learnerProfile } from './data/learnerProfile';
@@ -121,10 +122,16 @@ export function useReadChecks(book: string, chapter: number, title: string, view
           // the profile, the words and the grammar are the tutor's context: a failure to read one sends the reading without it
           const [profile, learner, grammar] = await Promise.all([learnerProfile().catch(() => undefined), learnerSummary().catch(() => undefined), learnerGrammar().catch(() => undefined)]);
           const request = buildReadingRequest(unitReference(title, verse), verse, readView, language, profile, learner, grammar);
+          let sentAs: string | undefined;
           const answer = await askVerseRead(request, recording, {
             key: getDeviceKeyBytes(),
             signal,
-            onSent: () => set(unitId(verse), language, { phase: 'waiting', startedAt }),
+            // the recording ended as he let go: that is his tap
+            tapAt: startedAt,
+            onSent: (txid) => {
+              sentAs = txid;
+              set(unitId(verse), language, { phase: 'waiting', startedAt });
+            },
           });
           if (keepRef.current) await keepRef.current(verse, answer, language);
           else {
@@ -134,6 +141,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
             await keepVerseReading(verseRef(book, chapter, unitId(verse)), answer.verdict, answer.focus_words, answer.note, language, Date.now(), clip, reach);
           }
           set(unitId(verse), language, undefined);
+          void answerDrawn(sentAs);
         } catch (err) {
           if (signal.aborted) return;
           const failure = err instanceof TutorError ? err.failure : 'unreachable';

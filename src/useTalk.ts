@@ -18,6 +18,7 @@ import { readGo, type GoPlace } from './talk/go';
 import { applyChanges, currentSettings, offeredChange } from './settings/registry';
 import { pendingOfferOf, settleOffer } from './talk/offers';
 import { filesOf, type OutgoingPicture } from './talk/pictures';
+import { answerDrawn } from './services/clientTiming';
 import { askTalk, buildTalkRequest, MAX_LINKS, scopeRef, type TalkAnswer, type TalkFocus, type TalkScope } from './services/talk';
 import type { HebrewSounds } from './data/db';
 import type { AskState } from './useAsks';
@@ -149,11 +150,16 @@ export function useTalk(
           const waiting = pendingOfferOf(turns);
           // a goal he chose Just this time for earlier in this quiz is sent for this quiz alone
           const once = turns.findLast((t) => t.quizGoalChoice === 'once')?.quizGoalOffer;
+          let sentAs: string | undefined;
           const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, wasSpoken(text)), {
             key: getDeviceKeyBytes(),
             files: pictures.length ? filesOf(pictures) : undefined,
             signal,
-            onSent: () => set({ phase: 'waiting', question: text, startedAt }),
+            tapAt: startedAt,
+            onSent: (txid) => {
+              sentAs = txid;
+              set({ phase: 'waiting', question: text, startedAt });
+            },
           });
           // The settings he asked for are applied at once (the registry checks each), then kept with the turn for its Undo.
           const { applied, refused } = await applyChanges(answer.settings_changes);
@@ -173,6 +179,7 @@ export function useTalk(
           const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { opened: place?.title, stayed, unopened, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? answer.quiz_goal_offer : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, settingOffer: settingOfferOf(answer), cleanQ: answer.question, pictures });
           pictured.current[ref] = undefined;
           set(undefined);
+          void answerDrawn(sentAs);
           if (signal.aborted) return;
           if (place) going.current?.open(place);
           else answered.current(ref, id, answer.answer, { focus, syllables: readableSyllables(focus, answer.syllables) });
