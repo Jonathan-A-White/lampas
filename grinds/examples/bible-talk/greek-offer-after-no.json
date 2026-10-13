@@ -1,0 +1,33 @@
+{
+  "description": "The same question from a reader whose index says he said no to the Greek offer: the answer is in English and carries no greek_offer.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "question": "What does 'love' really mean in this verse?",
+    "history": [],
+    "solid_words": [],
+    "settings": {},
+    "reader_view": "english",
+    "learner": "solid 0 words; learning: ; new today: ; due now: 0",
+    "memory": {
+      "index": "Likes short answers.\nsaid no to the Greek offer 2026-10-13",
+      "notes": []
+    }
+  },
+  "expect": {
+    "answer": {
+      "matches": "[Ll]ove"
+    },
+    "words.0": {
+      "present": false
+    },
+    "greek_offer": {
+      "present": false
+    },
+    "greek_asked": {
+      "present": false
+    }
+  }
+}
