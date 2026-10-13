@@ -293,14 +293,14 @@ function fromTable(idea: GrammarIdea, prompt: string, right: string, others: rea
   return { kind: 'letter', ideaId: idea.id, prompt, options: glyphs(right, others, random), right };
 }
 
-/** Which pair sounds like a sound the scheme gives; a scheme that gives none is asked by ear (Hold to hear), the pairs it says alike never together. */
+/** Which pair sounds like a sound the scheme gives; a scheme that gives none is asked by ear (Tap to hear), the pairs it says alike never together. */
 function buildPairs(idea: GrammarIdea, group: string, what: string, random: Random, scheme: Pronunciation): GrammarQuestion {
   const table = pairsOf(group, scheme);
   if (table.length === 0) {
     const items = itemsOf(group);
     const pair = pick(items, random);
     const others = items.filter((o) => o.id !== pair.id && soundKey(o, scheme) !== soundKey(pair, scheme)).map((o) => o.pair ?? '');
-    return { kind: 'sound', ideaId: idea.id, prompt: `Hold to hear a pair of ${what}, then tap it`, options: glyphs(pair.pair ?? '', others, random), right: pair.pair ?? '', say: pair.pair };
+    return { kind: 'sound', ideaId: idea.id, prompt: `Tap to hear a pair of ${what}, then tap it`, options: glyphs(pair.pair ?? '', others, random), right: pair.pair ?? '', say: pair.pair };
   }
   const [pair, sound] = pick(table, random);
   return fromTable(idea, `Which pair of ${what} sounds like ${sound}?`, pair, table.map(([p]) => p).filter((p) => p !== pair), random);
