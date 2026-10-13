@@ -10,10 +10,12 @@ import { App } from '../../src/App';
 import { approachOf, orderOf } from '../../src/approaches';
 import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
+import { LADDER } from '../../src/data/grammar/ladder';
 import { questionFor } from '../../src/data/grammar/placementQuestion';
 import type { GrammarQuestion } from '../../src/data/grammar/questions';
 import { readPlacement } from '../../src/data/placementKeep';
 import { mulberry32 } from '../../src/data/quiz';
+import { teachIdea } from '../../src/data/repositories/grammarLevels';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { setGoal } from '../../src/data/repositories/settings';
 import { seedWordsIfFirstOpen } from '../../src/data/repositories/words';
@@ -271,6 +273,40 @@ describeFeature(feature, ({ Scenario }) => {
     When('he goes back to the goal', async () => user.click(await screen.findByRole('button', { name: 'Back to the goal' })));
     Then('Learn next says {string}', async (_, text: string) => {
       await waitFor(async () => expect(await screen.findByTestId('learn-next')).toHaveTextContent(`Learn next: ${text}`));
+    });
+  });
+
+  Scenario('Start from the letters keeps the progress he has and the card says so', ({ Given, And, When, Then }) => {
+    let before: unknown[] = [];
+    let card = '';
+    Given('his goal is {string} and he knows nothing yet', given);
+    And('he has marked {string} as I know this', async (_, title: string) => {
+      const id = LADDER.find((i) => i.title === title)!.id;
+      await teachIdea(id, 'known');
+      before = await db.grammarLevels.toArray();
+      expect(before.length).toBeGreaterThan(0);
+    });
+    When('he opens the placement', opened);
+    Then('the screen offers {string}', says);
+    When('he taps {string}', tapped);
+    Then('the end card says {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent(text));
+      card = screen.getByTestId('where').textContent ?? '';
+    });
+    And('the screen says he has {string} solid and Learn next opens {string}', async (_, solid: string, next: string) => {
+      await waitFor(() => expect(screen.getByTestId('from-letters')).toHaveTextContent(`Already solid: ${solid}. Learn next on the Goal screen opens ${next}.`));
+      expect(screen.getByTestId('from-letters')).not.toHaveTextContent('You start with');
+    });
+    And('no stored level changed', async () => expect(await db.grammarLevels.toArray()).toEqual(before));
+    And('the placement is no longer kept', () => expect(readPlacement()).toBeNull());
+    When('he goes back to the goal', async () => user.click(await screen.findByRole('button', { name: 'Back to the goal' })));
+    Then('Learn next says {string}', async (_, text: string) => {
+      await waitFor(async () => expect(await screen.findByTestId('learn-next')).toHaveTextContent(`Learn next: ${text}`));
+    });
+    And('the Goal screen counts the grammar ideas as the card did', async () => {
+      const [solid, frontier, notYet, untested] = (card.match(/\d+/g) ?? []).map(Number);
+      // the Goal screen counts an idea with no level as not yet
+      await waitFor(() => expect(screen.getByTestId('ideas-legend')).toHaveTextContent(`Solid ${solid} · Frontier ${frontier} · Not yet ${notYet + untested}`));
     });
   });
 

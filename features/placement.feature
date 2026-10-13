@@ -114,6 +114,20 @@ Feature: Test me on the grammar, and meet me where I am
     When he goes back to the goal
     Then Learn next says "The Greek alphabet"
 
+  Scenario: Start from the letters keeps the progress he has and the card says so
+    Given his goal is "Read 1 John 1:1" and he knows nothing yet
+    And he has marked "The Greek alphabet" as I know this
+    When he opens the placement
+    Then the screen offers "Start from the letters"
+    When he taps "Start from the letters"
+    Then the end card says "Where you are: solid 1, frontier 0, not yet 0; untested 36"
+    And the screen says he has "The Greek alphabet" solid and Learn next opens "Pairs of vowels"
+    And no stored level changed
+    And the placement is no longer kept
+    When he goes back to the goal
+    Then Learn next says "Pairs of vowels"
+    And the Goal screen counts the grammar ideas as the card did
+
   Scenario: A total beginner's placement gives no idea a level, with his word list already on the schedule
     Given his goal is "Read 1 John 1:1" and he knows nothing yet
     And his word list is already on the schedule
