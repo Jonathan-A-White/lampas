@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.152
+_2026-10-13_
+- Fixed: When Read it aloud marks words to fix, the coach now says what it actually heard instead of repeating the verse back, and the coach's spoken notes no longer say 'read' the wrong way.
+
 ## 0.1.150
 _2026-10-13_
 - Fixed: the tutor's answer no longer starts speaking while you are in another app; it waits and shows 'The tutor answered: tap to play' at the top when you return.

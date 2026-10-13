@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.152",
+    "date": "2026-10-13",
+    "story": "mw-neuq78.11",
+    "kind": "fixed",
+    "text": "When Read it aloud marks words to fix, the coach now says what it actually heard instead of repeating the verse back, and the coach's spoken notes no longer say 'read' the wrong way."
+  },
+  {
     "version": "0.1.150",
     "date": "2026-10-13",
     "story": "mw-5r3p30.270",
