@@ -21,8 +21,10 @@ export function stubChapterFetch(): ChapterFetch {
     vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
       stub.requests.push(url);
-      if (!/^\/data\/([0-9a-z]+\/\d+|ladder\/(?:el|en)|lexicon|index|frequency)\.json$/.test(url)) return new Response('not found', { status: 404 });
-      return new Response(readFileSync(`public${url}`, 'utf8'), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      // a chapter is asked for with its fingerprint (?v=, src/data/chapter.ts chapterUrl); the file read is the one without it
+      const path = url.replace(/^(\/data\/[0-9a-z]+\/\d+\.json)\?v=[0-9a-f]{12}$/, '$1');
+      if (!/^\/data\/([0-9a-z]+\/\d+|ladder\/(?:el|en)|lexicon|index|frequency)\.json$/.test(path)) return new Response('not found', { status: 404 });
+      return new Response(readFileSync(`public${path}`, 'utf8'), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }),
   );
   return stub;

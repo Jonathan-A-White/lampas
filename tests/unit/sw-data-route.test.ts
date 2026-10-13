@@ -11,7 +11,8 @@ class CacheFirst {
   }
 }
 
-vi.mock('workbox-precaching', () => ({ precacheAndRoute: vi.fn(), createHandlerBoundToURL: vi.fn() }));
+const precacheAndRoute = vi.fn();
+vi.mock('workbox-precaching', () => ({ precacheAndRoute, createHandlerBoundToURL: vi.fn() }));
 vi.mock('workbox-routing', () => ({
   NavigationRoute: class {},
   registerRoute: (match: (ctx: { url: URL; request: Request }) => boolean, handler: unknown) => registered.push({ match, handler }),
@@ -36,6 +37,22 @@ describe('the /data/ runtime route', () => {
     expect(route?.match(ctx('/assets/index-abc.js'))).toBe(false);
     expect(route?.match(ctx('/'))).toBe(false);
     expect(route?.match(ctx('/data/jhn/1.json', 'POST'))).toBe(false);
+  });
+});
+
+describe('the chapter route (mw-5r3p30.276)', () => {
+  it('takes a chapter asked for by its fingerprint, apart from the cache-first route, and not an unversioned address', () => {
+    const route = registered.find((r) => typeof r.match === 'function' && !(r.handler instanceof CacheFirst) && r.match(ctx('/data/jhn/1.json?v=0123456789ab')));
+    expect(route).toBeDefined();
+    expect(route?.match(ctx('/data/1co/13.json?v=0123456789ab'))).toBe(true);
+    expect(route?.match(ctx('/data/jhn/1.json'))).toBe(false);
+    expect(route?.match(ctx('/data/index.json?v=0123456789ab'))).toBe(false);
+    expect(route?.match(ctx('/data/jhn/1.json?v=0123456789ab', 'POST'))).toBe(false);
+  });
+
+  it('lets the precached Romans 8 answer for its fingerprinted address', () => {
+    const options = precacheAndRoute.mock.calls[0][1] as { ignoreURLParametersMatching: RegExp[] };
+    expect(options.ignoreURLParametersMatching.some((re) => re.test('v'))).toBe(true);
   });
 });
 

@@ -1,6 +1,8 @@
 // One chapter of the Greek New Testament as public/data/<book>/<chapter>.json holds it (docs/data.md).
 // Screens read a chapter through loadChapter and the word helpers below, never through the short keys.
 
+import { BOOK_INDEX } from './bookIndex';
+
 export interface GreekWord {
   /** the word as the Byzantine text has it */
   t: string;
@@ -96,6 +98,9 @@ export interface BookInfo {
   chapters: number;
   /** verse count of each chapter, in order */
   verses: number[];
+  /** each chapter's fingerprint, in order: the first 12 hex of the SHA-256 of its file ('' for a chapter a test slice lacks). The app asks for
+   * /data/<book>/<n>.json?v=<fingerprint>, so the phone keeps a chapter until its data changes (mw-5r3p30.276) */
+  fingerprints: string[];
 }
 
 export interface BookIndex {
@@ -108,12 +113,20 @@ export const wordParse = (chapter: Chapter, w: GreekWord): string => chapter.par
 
 const chapters = new Map<string, Promise<Chapter>>();
 
+/** The address of a chapter's file: /data/<book>/<n>.json?v=<fingerprint>, the fingerprint from the index in the bundle (src/data/bookIndex.ts).
+ * The worker keeps a chapter under that address until its fingerprint changes (src/dataCache.ts), so an unchanged chapter is never fetched
+ * again. A chapter the index has no fingerprint for is asked for plain. */
+export function chapterUrl(book: string, n: number): string {
+  const fingerprint = BOOK_INDEX.books.find((b) => b.code === book)?.fingerprints[n - 1];
+  return `/data/${book}/${n}.json${fingerprint ? `?v=${fingerprint}` : ''}`;
+}
+
 /** Fetches /data/<book>/<n>.json once; later and concurrent callers share the one request. */
 export function loadChapter(book: string, n: number): Promise<Chapter> {
   const key = `${book}/${n}`;
   const known = chapters.get(key);
   if (known) return known;
-  const request = fetch(`/data/${key}.json`).then(async (response) => {
+  const request = fetch(chapterUrl(book, n)).then(async (response) => {
     if (!response.ok) throw new Error(`Could not load ${key}: ${response.status}`);
     return (await response.json()) as Chapter;
   });

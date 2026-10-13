@@ -211,6 +211,8 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened with nothing saved', openFresh);
     When('he taps {string} in verse {int}', async (_, text: string, verse: number) => tapWord(text, verse));
     // What's new (src/whatsNew/) asks for the app's own changelog.json once, whatever the reader does: it is not the reader's request.
-    Then('the only request made was {string}', (_, url: string) => expect(network.requests.filter((r) => r !== '/changelog.json')).toEqual([url]));
+    // A chapter is asked for with its fingerprint (?v=, mw-5r3p30.276): the file is the same, so the address is compared without it.
+    Then('the only request made was {string}', (_, url: string) =>
+      expect(network.requests.filter((r) => r !== '/changelog.json').map((r) => r.replace(/\?v=[0-9a-f]{12}$/, ''))).toEqual([url]));
   });
 });

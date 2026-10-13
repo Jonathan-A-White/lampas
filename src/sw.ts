@@ -6,7 +6,7 @@
 import { createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
 import { CacheFirst } from 'workbox-strategies';
-import { DATA_CACHE, dropOldDataCaches } from './dataCache';
+import { DATA_CACHE, dropOldDataCaches, isVersionedChapter, serveChapter } from './dataCache';
 import { healPrecache, isGuardedAsset, serveAsset } from './precacheGuard';
 import { isShareRequest, receiveShare } from './share/target';
 
@@ -33,12 +33,20 @@ self.addEventListener('fetch', (event) => {
   if (isShareRequest(event.request, self.location.origin)) event.respondWith(receiveShare(event.request));
 });
 
-precacheAndRoute(self.__WB_MANIFEST);
+// The precached data/rom/8.json answers for /data/rom/8.json?v=<fingerprint> too: the precache and the index in the bundle come from the same build.
+precacheAndRoute(self.__WB_MANIFEST, { ignoreURLParametersMatching: [/^utm_/, /^fbclid$/, /^v$/] });
 registerRoute(new NavigationRoute(createHandlerBoundToURL('/index.html')));
 
 // A chapter of the New Testament data (/data/<book>/<n>.json) is fetched when he first opens it and then kept:
 // only the index and Romans 8 are in the precache, so a chapter once read stays readable offline. The cache is
 // versioned (src/dataCache.ts): a deploy that changes the data's shape replaces it.
+// A chapter is asked for as /data/<book>/<n>.json?v=<fingerprint> (the fingerprint is in index.json): the copy kept under that address is served
+// with no fetch, and a chapter whose fingerprint changed is fetched once and replaces its old copy (mw-5r3p30.276).
+registerRoute(
+  ({ url, request }) => request.method === 'GET' && isVersionedChapter(url),
+  ({ request }) => serveChapter(request, self.caches),
+);
+// Everything else under /data/ (the ladder lists) is kept as it first came.
 registerRoute(
   ({ url, request }) => request.method === 'GET' && url.pathname.startsWith('/data/'),
   new CacheFirst({ cacheName: DATA_CACHE }),

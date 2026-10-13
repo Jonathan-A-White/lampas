@@ -25,7 +25,7 @@ async function openWith(change: (chapter: Chapter) => void): Promise<void> {
   stubChapterFetch();
   const plain = globalThis.fetch;
   vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
-    if (String(input) !== '/data/rom/8.json') return plain(input);
+    if (String(input).split('?')[0] !== '/data/rom/8.json') return plain(input);
     const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
     change(chapter);
     return new Response(JSON.stringify(chapter), { status: 200, headers: { 'Content-Type': 'application/json' } });
