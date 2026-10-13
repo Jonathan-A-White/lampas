@@ -1,5 +1,6 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { clearBus, latest, subscribe, type EventOf } from '../../src/events/bus';
+import type { DrillResult } from '../../src/data/grammar/drillIt';
 import { db } from '../../src/data/db';
 import { DAY, STEP_DAYS } from '../../src/data/schedule';
 import { LADDER } from '../../src/data/grammar/ladder';
@@ -13,6 +14,7 @@ import {
   scheduleIdea,
   seedLevelsIfFirstOpen,
   setLevel,
+  recordDrill,
   teachIdea,
 } from '../../src/data/repositories/grammarLevels';
 
@@ -21,7 +23,7 @@ const day = (n: number) => NOW + n * DAY;
 
 beforeEach(async () => {
   await db.open();
-  await Promise.all([db.grammarLevels.clear(), db.grammarKnown.clear(), db.reviews.clear(), db.meta.clear()]);
+  await Promise.all([db.grammarLevels.clear(), db.grammarKnown.clear(), db.reviews.clear(), db.meta.clear(), db.drillRuns.clear()]);
 });
 afterEach(clearBus);
 afterAll(() => db.close());
@@ -208,5 +210,61 @@ describe('teachIdea', () => {
     await teachIdea('case-genitive', 'got-it', NOW);
     expect(await review('case-genitive')).toMatchObject({ step: 0, due: day(1), lapses: 2 });
     expect(await getLevel('case-genitive')).toMatchObject({ level: 'frontier' });
+  });
+});
+
+describe('teachIdea, the rest of the slider (mw-i7xe0n.3)', () => {
+  it('Not yet: not yet by the sheet, taken off the schedule, and says so on the bus', async () => {
+    await teachIdea('case-genitive', 'known', NOW);
+    const seen: EventOf<'idea-taught'>[] = [];
+    subscribe('idea-taught', (e) => seen.push(e));
+    await teachIdea('case-genitive', 'not-yet', NOW);
+    expect(await getLevel('case-genitive')).toEqual({ id: 'case-genitive', level: 'notYet', since: NOW, how: 'sheet' });
+    expect(await db.reviews.get(['grammar', 'case-genitive'])).toBeUndefined();
+    expect(seen).toEqual([{ kind: 'idea-taught', id: 'case-genitive', outcome: 'not-yet' }]);
+  });
+
+  it('takes the `how` it is given: a drill sets solid, how drill', async () => {
+    await teachIdea('case-genitive', 'known', NOW, 'drill');
+    expect(await getLevel('case-genitive')).toMatchObject({ level: 'solid', how: 'drill' });
+  });
+});
+
+describe('recordDrill', () => {
+  const result = (over: Partial<DrillResult> = {}): DrillResult => ({
+    ideaId: 'case-genitive', proved: false, edgeStep: 1, topStep: 3, strong: [], weak: [{ id: 'f', label: 'F' }], answers: [], ended: 'edge', ...over,
+  });
+
+  it('keeps every run; a proof makes the idea solid at the 30-day step, how drill', async () => {
+    expect(await recordDrill(result({ proved: true, ended: 'proved', edgeStep: 3 }), 'prove', NOW)).toBe('solid');
+    expect(await db.drillRuns.count()).toBe(1);
+    expect(await getLevel('case-genitive')).toMatchObject({ level: 'solid', how: 'drill' });
+    expect(await review('case-genitive')).toMatchObject({ step: STEP_DAYS.indexOf(30), due: day(30) });
+  });
+
+  it('a run to prove it that fails puts the idea on the frontier, how drill, due tomorrow', async () => {
+    expect(await recordDrill(result(), 'prove', NOW)).toBe('frontier');
+    expect(await getLevel('case-genitive')).toMatchObject({ level: 'frontier', how: 'drill' });
+    expect(await review('case-genitive')).toMatchObject({ step: 0, due: day(1) });
+    expect(await db.drillRuns.count()).toBe(1);
+  });
+
+  it('a failed run on an idea already at the frontier leaves its schedule as it was', async () => {
+    await teachIdea('case-genitive', 'got-it', NOW - 2 * DAY);
+    const before = await review('case-genitive');
+    expect(await recordDrill(result(), 'prove', NOW)).toBe('frontier');
+    expect(await review('case-genitive')).toEqual(before);
+    expect(await getLevel('case-genitive')).toMatchObject({ how: 'sheet' });
+  });
+
+  it('a practice run that is not a proof keeps the run and changes no level', async () => {
+    await teachIdea('case-genitive', 'known', NOW - DAY);
+    expect(await recordDrill(result(), 'practice', NOW)).toBe('solid');
+    expect(await getLevel('case-genitive')).toMatchObject({ level: 'solid', how: 'sheet', since: NOW - DAY });
+    expect(await db.drillRuns.count()).toBe(1);
+    expect(await recordDrill(result(), 'practice', NOW)).toBe('solid');
+    await db.grammarLevels.clear();
+    expect(await recordDrill(result(), 'practice', NOW)).toBe('notYet');
+    expect(await getLevel('case-genitive')).toBeUndefined();
   });
 });
