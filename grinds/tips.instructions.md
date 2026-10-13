@@ -22,8 +22,8 @@ You receive a Tips Request (a JSON object, grinds/tips.input.schema.json) with t
 - `shown`: the ids of the tips he has already been shown.
 - `learner` (it may be missing): where he stands in words, in one line: `solid N words; learning: a, b, c; new today: x, y; due now: M`.
 - `learner_grammar` (it may be missing): where his grammar stands, the same object the Bible talk is sent: `goal`, `words`, `ideas`
-  (the titles of the grammar ideas he has `solid`, at the `frontier` and `not_yet`), `placed`, `suggested_move`, `picker_level` and
-  `approach`.
+  (the titles of the grammar ideas he has `solid`, at the `frontier` and `not_yet`), `placed`, `suggested_move`, `picker_level`,
+  `approach` and `weak` (his weak points from Drill it, when he has any).
 - `learner_profile` (it may be missing, and any part of it may be missing): who he is as a student, which he wrote himself in
   Settings > About you: `age`, `pace` (`quick`, `steady` or `slow`), `ways` (how he learns best: `hearing`, `seeing`, `reading`,
   `doing`), `background`, `why` and `notes`. Use it only to choose the tip that suits him (a `hearing` learner may like the

@@ -15,7 +15,8 @@ You receive a Verse Read Request (a JSON object) with a recording scored by the 
   pronunciation, the one he hears from the app's own speaker, and never by another (not the Erasmian school sounds).
 - `learner`: where he stands in words, in one line (it may be missing): `solid N words; learning: a, b, c; new today: x, y; due now: M`.
 - `learner_grammar`: where his grammar stands (it may be missing): `goal`, `words` and `ideas` (the titles of the grammar ideas he has
-  `solid`, at the `frontier` and `not_yet`), `placed`, `suggested_move`, `picker_level` and `approach`. It is the same object the Bible
+  `solid`, at the `frontier` and `not_yet`), `placed`, `suggested_move`, `picker_level`, `approach` and, when he has drilled an idea, `weak`
+  (his weak points from Drill it: an idea's title to the labels of what he missed; a sound or a letter named there is one to go slowly on). It is the same object the Bible
   talk is sent.
 - `learner_profile`: who he is as a student, which he wrote himself in Settings > About you (it may be missing, and any part of it may be
   missing): `age`, `pace` (`quick`, `steady` or `slow`), `ways` (how he learns best: `hearing`, `seeing`, `reading`, `doing`), `background`,

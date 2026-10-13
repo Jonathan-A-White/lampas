@@ -1,0 +1,32 @@
+{
+  "description": "He asks about a genitive and Drill it found he is shaky on its ending: the answer teaches the genitive slowly around that ending, with a form from the verse, and does not read the list back to him.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "question": "Why does πρόθεσιν look different from the other nouns?",
+    "history": [],
+    "solid_words": ["ὁ", "καί", "θεός"],
+    "learner": "solid 3 words; learning: ἀγαπάω, πίστις; new today: -; due now: 2",
+    "learner_grammar": {
+      "goal": "Read Romans 8:28",
+      "words": { "solid": 3, "frontier": 2, "not_yet": 9 },
+      "ideas": {
+        "solid": ["The alphabet", "The article"],
+        "frontier": ["The accusative case"],
+        "not_yet": ["The dative case"]
+      },
+      "placed": true,
+      "suggested_move": "none",
+      "picker_level": "frontier",
+      "approach": { "name": "BMA Tutor", "credit": "Biblical Mastery Academy", "next_lesson": "The accusative case" },
+      "weak": { "The accusative case": ["its ending", "spotting it in a verse"] }
+    },
+    "settings": {}
+  },
+  "expect": {
+    "answer": { "present": true },
+    "settings_changes": { "present": false }
+  }
+}
