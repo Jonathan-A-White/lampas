@@ -2,7 +2,7 @@
 // spoken or typed yes, no or 'read it back' does to the newest one (mw-5r3p30.186). The decision is the grind's (`offer_reply` in the answer);
 // the app only carries the offer to it (`pending_offer`) and does exactly what the tap does when the reply is confirm.
 import { useSyncExternalStore } from 'react';
-import { markFeedbackSent, markFeedbackWithdrawn, markQuizGoalChoice, markSettingChoice, setQuizGoal, type TalkTurn } from '../data/repositories';
+import { getTurn, markFeedbackSent, markFeedbackWithdrawn, markQuizGoalChoice, markSettingChoice, setQuizGoal, type TalkTurn } from '../data/repositories';
 import { buildTutorAskRequest, submitFeedback } from '../services/feedback';
 import { scopeTitle, type OfferReply, type PendingOffer, type TalkScope } from '../services/talk';
 import { applyChanges, offeredChange, type ChangeResult } from '../settings/registry';
@@ -48,7 +48,8 @@ export function useOfferSending(turnId: number | undefined): boolean {
 }
 
 /** Sends the turn's feedback offer through the one sender and marks it Sent. Shared by the button's tap and a spoken yes. Throws a TutorError.
- * A second call for the same turn while the first is in flight joins it: one grist, and both callers see how it ended. */
+ * A second call for the same turn while the first is in flight joins it: one grist, and both callers see how it ended; one after it
+ * finished, or after he said no, finds the turn Sent or Not sent in the store and sends nothing. */
 export function sendMakersOffer(turn: TalkTurn, scope: TalkScope): Promise<void> {
   const id = turn.id;
   if (!turn.feedbackOffer || id === undefined) return Promise.resolve();
@@ -56,6 +57,10 @@ export function sendMakersOffer(turn: TalkTurn, scope: TalkScope): Promise<void>
   if (running) return running;
   const summary = turn.feedbackOffer;
   const send = (async () => {
+    // The turn as kept now, not as the caller saw it: a spoken yes carries the turn it waited on when it was sent, and its answer may land after the tap's
+    // send finished (mw-5r3p30.286). One offer reaches the makers once.
+    const kept = await getTurn(id);
+    if (kept?.feedbackSent || kept?.feedbackWithdrawn) return;
     await submitFeedback(
       buildTutorAskRequest({ text: turn.q, summary, screen: scope.screen?.name ?? 'Reader', reference: scopeTitle(scope), facts: scope.screen?.facts }),
     );

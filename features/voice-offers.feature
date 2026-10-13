@@ -114,6 +114,54 @@ Feature: He can answer an offer by voice instead of tapping
     And the first turn shows "Sent" and no button "Send this to the makers"
     And the tutor's answer to the yes is shown
 
+  Scenario: A tap, then a spoken yes whose answer comes after the send finished, send once
+    Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
+    When he taps the Ask the tutor control
+    And he sends "Can this work with Olive Tree?"
+    Then the answer shows the button "Send this to the makers"
+    When the mill is slow to take the feedback
+    And he taps Send this to the makers
+    Then the mill has the feedback grist and the button is off while it is sending
+    When the tutor is slow to answer his next words
+    And he says "yes send it"
+    And the second bible-talk grist has reached the tutor
+    And the mill takes the feedback
+    Then the first turn shows "Sent" and no button "Send this to the makers"
+    When the tutor's answer to the yes comes at last
+    Then the mill received exactly 1 feedback grist
+    And the tutor's answer to the yes is shown
+
+  Scenario: A spoken yes whose answer is slow, then a tap, send once
+    Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
+    When he taps the Ask the tutor control
+    And he sends "Can this work with Olive Tree?"
+    Then the answer shows the button "Send this to the makers"
+    When the tutor is slow to answer his next words
+    And he says "yes send it"
+    And the second bible-talk grist has reached the tutor
+    And he taps Send this to the makers
+    Then the first turn shows "Sent" and no button "Send this to the makers"
+    When the tutor's answer to the yes comes at last
+    Then the mill received exactly 1 feedback grist
+    And the tutor's answer to the yes is shown
+
+  Scenario: A second offer after a tapped one and a slow yes reaches the makers once each
+    Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
+    When he taps the Ask the tutor control
+    And he sends "Can this work with Olive Tree?"
+    Then the answer shows the button "Send this to the makers"
+    When the mill is slow to take the feedback
+    And he taps Send this to the makers
+    Then the mill has the feedback grist and the button is off while it is sending
+    When the tutor is slow to answer his next words
+    And he says "yes send it"
+    And the second bible-talk grist has reached the tutor
+    And the mill takes the feedback
+    Then the first turn shows "Sent" and no button "Send this to the makers"
+    When the tutor's answer to the yes comes at last with a second offer
+    And he taps the second offer's Send this to the makers
+    Then each of the two summaries reached the mill exactly once
+
   Scenario: Two taps in a row on the button send once
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
     When he taps the Ask the tutor control

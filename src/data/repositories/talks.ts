@@ -110,6 +110,11 @@ export async function markFeedbackSent(turnId: number): Promise<void> {
   await db.talks.update(turnId, { feedbackSent: true });
 }
 
+/** The turn as kept now, or undefined when it is gone. */
+export function getTurn(turnId: number): Promise<TalkTurn | undefined> {
+  return db.talks.get(turnId);
+}
+
 /** Marks the turn's feedback offer as withdrawn (he said no): nothing is sent and the offer reads Not sent. */
 export async function markFeedbackWithdrawn(turnId: number): Promise<void> {
   await db.talks.update(turnId, { feedbackWithdrawn: true });

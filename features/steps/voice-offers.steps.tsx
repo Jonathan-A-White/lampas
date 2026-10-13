@@ -37,6 +37,7 @@ const FEEDBACK_OFFER = {
   feedback_offer: { summary: SUMMARY },
 };
 const SETTING_OFFER = { answer: 'I can switch the theme to Dark for you.', words: [], setting_offer: { key: 'theme', value: 'dark' } };
+const SUMMARY_B = 'He also wants Lampas to read aloud in Hebrew.';
 const SENT_REPLY = 'Done: I have sent that to the makers.';
 const READ_BACK_REPLY = `Here is exactly what I will send: ${SUMMARY} Shall I send it?`;
 let fake: FakePostern;
@@ -194,6 +195,76 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the mill received exactly {int} feedback grist', exactlyOneFeedback);
     And('the first turn shows {string} and no button {string}', firstTurnSent);
     And("the tutor's answer to the yes is shown", yesAnswerShown);
+  });
+
+  const slowTutor = () => {
+    fake.autoReply = undefined;
+  };
+  const yesReachedTutor = async () => {
+    await waitFor(() => expect(talkGrists()).toHaveLength(2));
+    exactSummaryPending(null, 'second');
+  };
+  const yesComesAtLast = (extra: Record<string, unknown> = {}) => {
+    fake.answer({ status: 'answered', answer: { answer: SENT_REPLY, words: [], offer_reply: 'confirm', ...extra } });
+  };
+  const sentOnce = () => firstTurnSent();
+
+  Scenario('A tap, then a spoken yes whose answer comes after the send finished, send once', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', opensFeedback);
+    When('he taps the Ask the tutor control', taps);
+    And('he sends {string}', sends);
+    Then('the answer shows the button {string}', offerShown);
+    When('the mill is slow to take the feedback', slowMill);
+    And('he taps Send this to the makers', tapsSend);
+    Then('the mill has the feedback grist and the button is off while it is sending', sendingOff);
+    When('the tutor is slow to answer his next words', slowTutor);
+    And('he says {string}', sends);
+    And('the second bible-talk grist has reached the tutor', yesReachedTutor);
+    And('the mill takes the feedback', () => releaseFeedback());
+    Then('the first turn shows {string} and no button {string}', sentOnce);
+    When("the tutor's answer to the yes comes at last", () => yesComesAtLast());
+    Then('the mill received exactly {int} feedback grist', exactlyOneFeedback);
+    And("the tutor's answer to the yes is shown", yesAnswerShown);
+  });
+
+  Scenario('A spoken yes whose answer is slow, then a tap, send once', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', opensFeedback);
+    When('he taps the Ask the tutor control', taps);
+    And('he sends {string}', sends);
+    Then('the answer shows the button {string}', offerShown);
+    When('the tutor is slow to answer his next words', slowTutor);
+    And('he says {string}', sends);
+    And('the second bible-talk grist has reached the tutor', yesReachedTutor);
+    And('he taps Send this to the makers', tapsSend);
+    Then('the first turn shows {string} and no button {string}', sentOnce);
+    When("the tutor's answer to the yes comes at last", () => yesComesAtLast());
+    Then('the mill received exactly {int} feedback grist', exactlyOneFeedback);
+    And("the tutor's answer to the yes is shown", yesAnswerShown);
+  });
+
+  Scenario('A second offer after a tapped one and a slow yes reaches the makers once each', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', opensFeedback);
+    When('he taps the Ask the tutor control', taps);
+    And('he sends {string}', sends);
+    Then('the answer shows the button {string}', offerShown);
+    When('the mill is slow to take the feedback', slowMill);
+    And('he taps Send this to the makers', tapsSend);
+    Then('the mill has the feedback grist and the button is off while it is sending', sendingOff);
+    When('the tutor is slow to answer his next words', slowTutor);
+    And('he says {string}', sends);
+    And('the second bible-talk grist has reached the tutor', yesReachedTutor);
+    And('the mill takes the feedback', () => releaseFeedback());
+    Then('the first turn shows {string} and no button {string}', sentOnce);
+    When("the tutor's answer to the yes comes at last with a second offer", () => yesComesAtLast({ feedback_offer: { summary: SUMMARY_B } }));
+    And("he taps the second offer's Send this to the makers", async () => {
+      await turnsShown(2);
+      await user.click(await within(turn(2)).findByRole('button', { name: SEND }));
+    });
+    Then('each of the two summaries reached the mill exactly once', async () => {
+      await waitFor(() => expect(within(turn(2)).getByText('Sent')).toBeInTheDocument());
+      await allAnswered();
+      expect(feedbackGrists().map((g) => (g.input as { summary: string }).summary)).toEqual([SUMMARY, SUMMARY_B]);
+    });
   });
 
   Scenario('Two taps in a row on the button send once', ({ Given, When, And, Then }) => {
