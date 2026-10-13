@@ -6,9 +6,9 @@ import { chosenPronunciation } from '../../speech/greek';
 import type { Pronunciation } from '../../speech/pronunciation';
 import type { GrammarIdea } from './ladder';
 
-const GROUPS: readonly string[] = ['diphthongs', 'consonant-pairs', 'breathings'];
+const GROUPS: readonly string[] = ['diphthongs', 'consonant-pairs', 'breathings', 'words-sound-alike'];
 
-/** An idea whose text or question is about how something sounds: a letter, a pair or a breathing, or the group of pairs or of breathings. */
+/** An idea whose text or question is about how something sounds: a letter, a pair or a breathing, the group of pairs or of breathings, or the words a scheme says alike. */
 export const bearsSound = (idea: GrammarIdea): boolean => idea.glyphs !== undefined || idea.parent !== undefined || GROUPS.includes(idea.id);
 
 const NO_LESSON = ' How it sounds depends on the Greek pronunciation you chose, and it has no lesson for this sound yet.';

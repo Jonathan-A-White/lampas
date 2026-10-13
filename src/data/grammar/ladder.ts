@@ -204,7 +204,7 @@ const DEFS: Def[] = [
     'Breathing marks',
     [],
     ['syllables'],
-    'A word that begins with a vowel carries a small mark over it: the rough breathing (ʽ) or the smooth breathing (᾿). The mark is part of the spelling, and it can make one word differ from another. Words that begin with ρ always take a rough breathing, and so does υ.',
+    'A word that begins with a vowel carries a small mark over it: the rough breathing (ʽ) or the smooth breathing (᾿). The mark is part of the spelling, and it can make one word differ from another. Words that begin with ρ always take a rough breathing, and so does υ. It sits on the second vowel of a pair (οὗτος, αὐτός). Before a capital it stands in front of the letter, not over it (Ἰησοῦς).',
   ),
   ...breathingItems(),
   def(
@@ -222,6 +222,14 @@ const DEFS: Def[] = [
     [],
     ['letter-iota', 'letter-alpha', 'letter-eta', 'letter-omega'],
     'A tiny iota sometimes sits under α, η or ω: ᾳ, ῃ, ῳ. It is not said aloud, but it is part of the spelling, and it often marks how a word ends. Do not skip it when you copy a word out.',
+  ),
+  def(
+    'words-sound-alike',
+    'marks',
+    'Words that sound alike',
+    [],
+    ['diphthongs', 'iota-subscript'],
+    'Some different words are spelt alike but for one letter, and a pronunciation may say that letter the same: ἡμεῖς “we” and ὑμεῖς “you”; λύομεν “we loose” and λύωμεν “let us loose”; λύει “he looses” and λύῃ “he may loose”. Trust the spelling, not the sound, to tell which word you have.',
   ),
   def(
     'punctuation',
