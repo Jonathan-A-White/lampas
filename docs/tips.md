@@ -39,7 +39,7 @@ Answer `{tip: null}` or `{tip: {id, title, body, action?}}` (`tips.answer.schema
 **The Tips setting** (`tips` in `src/settings/registry.ts`, Settings > Tips, On | Off, On by default; `tips-changed` on the bus). Off sends
 nothing and hides the card.
 
-**When a grist is sent** (`src/tips/offer.ts`, started by `src/tips/TipsSitting.tsx`, rendered in `src/main.tsx` inside the licence gate, so
+**When a grist is sent** (`src/tips/offer.ts`, started by `src/tips/TipsSitting.tsx`, rendered in `src/main.tsx` (as `src/tips/LicensedTips.tsx`) only while `useLicence()` is `'licensed'`, so
 once at the start of each sitting). All of these must hold, checked in this order:
 
 1. Tips is On.

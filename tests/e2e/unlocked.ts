@@ -1,6 +1,7 @@
-// tests/e2e/unlocked.ts — gets a page past the licence gate without the network: the device key is the
+// tests/e2e/unlocked.ts — gives a page its licence state without the network: the device key is the
 // test seam (docs/testing.md), the held memory is the offline grace's own record, and every chain
-// lookup is refused, so the gate falls back to that memory. The gate itself is unchanged.
+// lookup is refused, so the check falls back to that memory. openUnlocked is a licensed phone; openUnlicensed is one with
+// no licence (Lampas opens for it all the same, mw-8m9dyu.1).
 import type { Page } from '@playwright/test';
 
 /** The private key 1 and its public key: the well-known generator point. */
@@ -32,6 +33,14 @@ export async function openUnlocked(page: Page, options: { tips?: boolean } = {})
     [SEED_PUBLIC_KEY, Date.now() - 60_000] as const,
   );
   // a new question card ignores taps for a moment (src/ui/settle.ts, mw-hqd5bz.21); a spec taps the instant a card is drawn
+  await page.addInitScript(() => window.localStorage.setItem('lampas.settleMs', '0'));
+  if (!options.tips) await page.addInitScript((day) => window.localStorage.setItem('lampas.tipsDay', day), today());
+}
+
+/** A phone with no licence: the seeded key, nothing remembered, the chain unreachable (so useLicence says not-licensed). Same quiet as openUnlocked otherwise. */
+export async function openUnlicensed(page: Page, options: { tips?: boolean } = {}): Promise<void> {
+  await refuseChain(page);
+  await seedDeviceKey(page);
   await page.addInitScript(() => window.localStorage.setItem('lampas.settleMs', '0'));
   if (!options.tips) await page.addInitScript((day) => window.localStorage.setItem('lampas.tipsDay', day), today());
 }

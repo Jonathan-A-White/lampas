@@ -86,3 +86,31 @@ Feature: The tutor's responses are read aloud
     When he taps Stop on the speaking bar
     Then the speech has stopped
     And there is no speaking bar
+
+  Scenario: An answer that comes while he is in another app waits for him: a bar says so and a tap plays it
+    Given Lampas is opened on Romans 8 with the tutor's responses read aloud
+    And he is in another app
+    And he asks the tutor "What does συνεργεῖ mean here?" about verse 28
+    Then the answer is shown and nothing is spoken
+    When he comes back to Lampas
+    Then the bar at the top says "The tutor answered: tap to play"
+    And nothing is spoken yet
+    When he taps the bar at the top
+    Then the phone says the answer's English in the English voice and "συνεργεῖ" in the Greek voice
+    And the bar at the top is gone
+
+  Scenario: A new question while the answer waits drops the bar
+    Given Lampas is opened on Romans 8 with the tutor's responses read aloud
+    And he is in another app
+    And he asks the tutor "What does συνεργεῖ mean here?" about verse 28
+    And the answer is shown and nothing is spoken
+    And he comes back to Lampas
+    And the bar at the top says "The tutor answered: tap to play"
+    When he asks the tutor "And what is its lemma?" a second question
+    Then the bar at the top is gone
+
+  Scenario: With the page in front the whole time there is no bar and the answer is read at once
+    Given Lampas is opened on Romans 8 with the tutor's responses read aloud
+    And he asks the tutor "What does συνεργεῖ mean here?" about verse 28
+    Then the phone says the answer's English in the English voice and "συνεργεῖ" in the Greek voice
+    And the bar at the top is gone

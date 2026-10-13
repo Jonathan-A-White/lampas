@@ -245,7 +245,8 @@ export function makeFakePostern(): FakePostern {
       const { envelope } = grist.readRecordScript(scriptHex);
       if (envelope.from !== pubkey || envelope.to !== MILL_PUBLIC_KEY) return json(403, { error: 'not to the mill from you' });
       const txid = `direct:${hex(Hash.sha256(Utils.toArray(scriptHex, 'hex')))}`;
-      records.push({ seq: records.length + 1, txid, signer: pubkey, payload: { ...envelope } });
+      const seq = records.length + 1;
+      records.push({ seq, txid, signer: pubkey, payload: { ...envelope } });
       const opened = JSON.parse(grist.openCt(envelope.ct, millBytes)) as ReceivedGrist;
       fake.received.push(opened);
       fake.txids.push(txid);
@@ -256,7 +257,8 @@ export function makeFakePostern(): FakePostern {
       else if (fake.autoReply) fake.answer(greek && fake.greekReply ? fake.greekReply : fake.autoReply);
       const held = fake.holds[opened.grist.kind];
       if (held) await held;
-      return json(201, { txid, seq: records.length });
+      // the grist's own place, as the backend names it: an answer the fake made at once is after it
+      return json(201, { txid, seq });
     }
     if (url.pathname === '/api/messages' && method === 'GET') {
       const since = Number(url.searchParams.get('since') ?? '0');

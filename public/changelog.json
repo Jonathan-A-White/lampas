@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.150",
+    "date": "2026-10-13",
+    "story": "mw-5r3p30.270",
+    "kind": "fixed",
+    "text": "the tutor's answer no longer starts speaking while you are in another app; it waits and shows 'The tutor answered: tap to play' at the top when you return."
+  },
+  {
+    "version": "0.1.149",
+    "date": "2026-10-13",
+    "story": "mw-8m9dyu.1",
+    "kind": "new",
+    "text": "Lampas now opens for anyone without a licence, and a shared verse link opens for everybody."
+  },
+  {
+    "version": "0.1.148",
+    "date": "2026-10-13",
+    "story": "mw-5r3p30.269",
+    "kind": "fixed",
+    "text": "The tutor's answer now shows within seconds of being ready, instead of waiting up to a minute or more on mobile data."
+  },
+  {
     "version": "0.1.146",
     "date": "2026-10-13",
     "story": "mw-86e9r1.6",

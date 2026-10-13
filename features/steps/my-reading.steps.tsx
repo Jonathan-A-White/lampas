@@ -331,9 +331,9 @@ describeFeature(feature, ({ Scenario }) => {
     expect(meButton(word, 'Me')).toBeNull();
   };
   const tapBeside = async (_: unknown, text: string, word: string) => {
-    const button = meButton(word, text);
-    expect(button, `${text} beside ${word}`).not.toBeNull();
-    await user.click(button as HTMLElement);
+    // the marked word and its button draw after the result does: wait for them, a loaded host reads the panel too early
+    await waitFor(() => expect(meButton(word, text), `${text} beside ${word}`).not.toBeNull());
+    await user.click(meButton(word, text) as HTMLElement);
   };
   /** the audio element is paused, and the word's button reads Me again */
   const stoppedAgain = async (_: unknown, word: string) => {
@@ -372,16 +372,15 @@ describeFeature(feature, ({ Scenario }) => {
     And("the phone moves the clip's clock only at its timeupdate events, {number} seconds apart, the first {number} seconds in", (_, step: number, first: number) => coarseClock(step, first));
     When('he taps {string} beside {string}', tapBeside);
     Then("the clip is paused once the word has ended at {number} seconds, ahead of the phone's clock, and the button beside {string} says {string}", async (_, at: number, word: string, text: string) => {
-      // a plain wait: polling the DOM by role would block the loop, and the player's timer with it, for tenths of a second at a time
-      const began = performance.now();
-      while (paused.length === 0 && performance.now() - began < 3000) await new Promise((resolve) => setTimeout(resolve, 10));
+      // waits on the fake's own record, not the DOM (polling by role would block the loop, and the player's timer with it), for the suite's standard time
+      await waitFor(() => expect(paused.length).toBeGreaterThan(0));
       expect(paused).toContain(audio());
       // the whole word was heard, and the stop did not wait for the phone's clock to reach the end (which would be a quarter second late);
       // how close to the end it stops is tests/unit/clip-player.test.ts's claim, on fake timers
       expect(heardTo).toBeGreaterThanOrEqual(at - 0.01);
       expect(shownAtPause).toBeLessThan(at);
       expect(heardTo).toBeLessThan(at + 0.5);
-      expect(meButton(word, text)).not.toBeNull();
+      await waitFor(() => expect(meButton(word, text)).not.toBeNull());
     });
   });
 

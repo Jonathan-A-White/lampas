@@ -1,5 +1,17 @@
 # What's new
 
+## 0.1.150
+_2026-10-13_
+- Fixed: the tutor's answer no longer starts speaking while you are in another app; it waits and shows 'The tutor answered: tap to play' at the top when you return.
+
+## 0.1.149
+_2026-10-13_
+- New: Lampas now opens for anyone without a licence, and a shared verse link opens for everybody.
+
+## 0.1.148
+_2026-10-13_
+- Fixed: The tutor's answer now shows within seconds of being ready, instead of waiting up to a minute or more on mobile data.
+
 ## 0.1.146
 _2026-10-13_
 - New: Two new grammar lessons, 'Marks that change the word' and 'Enclitics', teach the pairs of Greek words that differ only by a breathing or an accent, and the accents lesson now says where the marks matter.
