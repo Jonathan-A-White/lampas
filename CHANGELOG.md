@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.169
+_2026-10-13_
+- Fixed: Lampas no longer re-downloads the chapters you have already read each time the app updates, only a chapter whose text actually changed.
+
 ## 0.1.166
 _2026-10-13_
 - Fixed: Sending an offer to the makers by tapping the button and saying yes no longer delivers it twice.

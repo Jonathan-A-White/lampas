@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.169",
+    "date": "2026-10-13",
+    "story": "mw-5r3p30.276",
+    "kind": "fixed",
+    "text": "Lampas no longer re-downloads the chapters you have already read each time the app updates, only a chapter whose text actually changed."
+  },
+  {
     "version": "0.1.166",
     "date": "2026-10-13",
     "story": "mw-5r3p30.286",
