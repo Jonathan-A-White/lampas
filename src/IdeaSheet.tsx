@@ -1,19 +1,22 @@
 // src/IdeaSheet.tsx — the sheet that teaches one grammar idea (mw-hqd5bz.7), opened by Learn this idea on a Grammar sheet: the idea's
 // title and plain text, up to three example forms from the goal passage (or, with no goal, the open chapter) with their verses (an idea of
 // spelling, such as the alphabet, a pair of vowels or a breathing, shows more words with the letters it is about marked), a
-// speaker on each, and a tap opens the word; for a case or a tense, a paradigm table built from the passage's own forms. At the foot
+// speaker on each, and a tap opens the word; for a case or a tense, a paradigm table built from the passage's own forms; for an idea of the letters,
+// sounds and marks (the alphabet, a pair of vowels, a breathing ...), the items as tiles above the text, each to hear (TeachTiles). At the foot
 // Got it (frontier, due tomorrow), I know this (solid, the 30-day step) and Ask the tutor; the level shows as a chip.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { loadChapter, loadIndex, wordGloss, type Chapter, type GreekWord } from './data/chapter';
 import { ideaExamples, ideaPassage, isSpellingIdea, paradigmOf, type IdeaExample, type IdeaPassage, type Paradigm } from './data/grammar/ideaSheet';
-import type { GrammarIdea } from './data/grammar/ladder';
+import { ideaOf, type GrammarIdea } from './data/grammar/ladder';
 import { ideaText } from './data/grammar/lessons';
+import { teachTiles } from './data/grammar/teachTiles';
 import { getOpenChapter } from './data/readerChapter';
 import { getGreekPronunciation, getLevel, getSavedGoalText, teachIdea, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
 import { chosenPronunciation } from './speech/greek';
 import { pronunciationOf } from './speech/pronunciation';
 import { SpeakButton } from './speech/SpeakButton';
+import { TeachTiles } from './TeachTiles';
 import { focusOnMount } from './ui/focus';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
@@ -143,6 +146,9 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
   const chosen = useLiveQuery(getGreekPronunciation, []);
   const scheme = chosen === undefined ? chosenPronunciation() : pronunciationOf(chosen);
   const busy = useRef(false);
+  // a tile's own idea sheet opens over this one
+  const [opened, setOpened] = useState<GrammarIdea | null>(null);
+  const tiles = teachTiles(idea, scheme);
   const passage = loaded && loaded !== 'failed' ? loaded.passage : undefined;
   const examples = passage ? ideaExamples(idea.id, passage.chapters, passage.verse) : [];
   const table = passage ? paradigmOf(idea, passage.chapters, passage.verse) : null;
@@ -179,6 +185,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
               {LEVEL_NAMES[level.level]} since {sinceText(level.since)}
             </p>
           ) : null}
+          {tiles.length ? <TeachTiles tiles={tiles} onOpen={(id) => setOpened(ideaOf(id))} /> : null}
           <p data-testid="idea-text" className="mt-2 text-lg">
             {ideaText(idea, scheme)}
           </p>
@@ -234,6 +241,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
           ) : null}
         </div>
       </div>
+      {opened ? <IdeaSheet idea={opened} onClose={() => setOpened(null)} onWord={onWord} onAsk={onAsk} /> : null}
     </div>
   );
 }

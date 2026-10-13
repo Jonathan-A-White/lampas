@@ -8,7 +8,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
-import { ideaOf } from '../../src/data/grammar/ladder';
+import { ideaOf, itemsOf } from '../../src/data/grammar/ladder';
 import { DAY, STEP_DAYS } from '../../src/data/schedule';
 import { clearBus, subscribe, type EventOf } from '../../src/events/bus';
 import { registerPronunciation, type Pronunciation } from '../../src/speech/pronunciation';
@@ -16,6 +16,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { MODERN } from '../../src/speech/schemes/modern';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { GRAMMAR_TERM_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 
 let unregisterTestish: (() => void) | undefined;
@@ -33,6 +34,8 @@ const PHONE_KEY = '00'.repeat(31) + '02';
 let fake: FakePostern;
 let taught: EventOf<'idea-taught'>[] = [];
 let startedAt = 0;
+/** The phone's fake speech engine, put in place only when a scenario says the phone has a Greek voice. */
+let synth: FakeSynth | undefined;
 /** The Laptop's wall clock steps back by about a second now and then: a bound on a stored time allows for it. */
 const CLOCK_SLACK = 3000;
 
@@ -44,14 +47,15 @@ const TESTISH: Pronunciation = {
   lessons: { breathings: { text: 'Testish says the rough breathing as a hum.' } },
 };
 
-/** Opens the app on Romans 8 with every store emptied, `goal` saved as the goal setting when there is one, the pronunciation `chosen` saved, and a fake Postern. */
-async function open(goal: string | undefined, chosen?: string): Promise<void> {
+/** Opens the app on Romans 8 with every store emptied, `goal` saved as the goal setting when there is one, the pronunciation `chosen` saved, a fake Postern and, with `greekVoice`, a phone that has a Greek voice. */
+async function open(goal: string | undefined, chosen?: string, greekVoice = false): Promise<void> {
   unregisterTestish?.();
   unregisterTestish = undefined;
   cleanup();
   stopReading();
   clearBus();
   vi.unstubAllGlobals();
+  synth = greekVoice ? stubSpeech([GREEK_VOICE]) : undefined;
   taught = [];
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
@@ -380,6 +384,103 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the idea sheet text does not say {string}', (_, phrase: string) => {
       expect(within(ideaSheet()).getByTestId('idea-text').textContent).not.toContain(phrase);
+    });
+  });
+  const tiles = (): HTMLElement[] => within(ideaSheet()).getAllByTestId('teach-tile');
+  const tileOf = (name: string): HTMLElement => {
+    const found = tiles().find((t) => t.getAttribute('data-name') === name);
+    if (!found) throw new Error(`no tile ${name} on the idea sheet`);
+    return found;
+  };
+  const GREEK_VOICE_OPEN = 'Lampas is opened on Romans 8 with the goal {string}, no idea level, a fake Postern and a Greek voice';
+  const lastSpoken = (): string | undefined => synth?.spoken[synth.spoken.length - 1]?.text;
+  const opensIdeaOfGoal = (_: unknown, id: string) => opensIdeaFromGoal(id);
+
+  Scenario('The Greek alphabet sheet shows 24 tiles, each with its name and sound, and a tap says the letter', ({ Given, When, Then, And }) => {
+    Given(GREEK_VOICE_OPEN, async (_, goal: string) => open(goal, undefined, true));
+    When('he opens the idea sheet of {string} from the Goal screen', opensIdeaOfGoal);
+    Then('the idea sheet shows 24 tiles in alphabet order, the first reading {string}, {string} and {string}', (_, form: string, name: string, sound: string) => {
+      const found = tiles();
+      expect(found).toHaveLength(24);
+      expect(found.map((t) => t.getAttribute('data-id'))).toEqual(itemsOf('alphabet').map((i) => i.id));
+      expect(found[0]).toHaveTextContent(form);
+      expect(found[0]).toHaveTextContent(name);
+      expect(found[0]).toHaveTextContent(sound);
+    });
+    And('the seven vowels are marked on the tiles', () => {
+      const marked = tiles().filter((t) => t.hasAttribute('data-vowel'));
+      expect(marked.map((t) => t.getAttribute('data-name'))).toEqual(['alpha', 'epsilon', 'eta', 'iota', 'omicron', 'upsilon', 'omega']);
+      for (const tile of marked) expect(tile).toHaveTextContent('vowel');
+      for (const tile of tiles().filter((t) => !t.hasAttribute('data-vowel'))) expect(tile).not.toHaveTextContent('vowel');
+    });
+    And('the tiles come above the plain text of the idea', () => {
+      const grid = within(ideaSheet()).getByTestId('teach-tiles');
+      const text = within(ideaSheet()).getByTestId('idea-text');
+      expect(grid.compareDocumentPosition(text) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+    When('he taps the tile {string}', async (_, name: string) => {
+      await user.click(within(tileOf(name)).getByRole('button', { name: `Hear ${name}` }));
+    });
+    Then('the Greek voice is asked to say {string}', async (_, text: string) => {
+      await waitFor(() => expect(lastSpoken()).toBe(text));
+      expect(synth?.spoken[synth.spoken.length - 1].lang).toBe('el-GR');
+    });
+  });
+
+  Scenario('The Breathing marks sheet shows a tile for each breathing with its sound and an example word to hear', ({ Given, When, Then, And }) => {
+    Given(GREEK_VOICE_OPEN, async (_, goal: string) => open(goal, undefined, true));
+    When('he opens the idea sheet of {string} from the Goal screen', opensIdeaOfGoal);
+    Then('the idea sheet shows 2 tiles, {string} the rough breathing and {string} the smooth breathing, each with the sound {string}', (_, rough: string, smooth: string, sound: string) => {
+      const found = tiles();
+      expect(found).toHaveLength(2);
+      expect(found[0]).toHaveTextContent(rough);
+      expect(found[0]).toHaveTextContent('rough breathing');
+      expect(found[1]).toHaveTextContent(smooth);
+      expect(found[1]).toHaveTextContent('smooth breathing');
+      for (const tile of found) expect(tile).toHaveTextContent(sound);
+    });
+    And('each tile has an example word with a play button, {string} and {string}', (_, first: string, second: string) => {
+      const found = tiles();
+      for (const [tile, word] of [[found[0], first], [found[1], second]] as const) {
+        expect(tile).toHaveTextContent(word);
+        expect(within(tile).getByRole('button', { name: `Hear ${word}` })).toBeInTheDocument();
+      }
+    });
+    When('he taps the play button of {string}', async (_, word: string) => {
+      await user.click(within(ideaSheet()).getByRole('button', { name: `Hear ${word}` }));
+    });
+    Then('the Greek voice is asked to say {string}', async (_, text: string) => {
+      await waitFor(() => expect(lastSpoken()).toBe(text));
+    });
+  });
+
+  Scenario('A tile opens the idea sheet of its own item', ({ Given, And, When, Then }) => {
+    Given(GREEK_VOICE_OPEN, async (_, goal: string) => open(goal, undefined, true));
+    And('he opens the idea sheet of {string} from the Goal screen', opensIdeaOfGoal);
+    When('he taps the name of the tile {string}', async (_, name: string) => {
+      await user.click(within(tileOf(name)).getByRole('button', { name: `About ${name}` }));
+    });
+    Then('a second idea sheet titled {string} opens over the first and shows one tile, {string}', async (_, title: string, form: string) => {
+      await waitFor(() => expect(screen.getAllByRole('dialog', { name: 'Idea' })).toHaveLength(2));
+      const [, second] = screen.getAllByRole('dialog', { name: 'Idea' });
+      expect(within(second).getByRole('heading', { name: title })).toBeInTheDocument();
+      const own = within(second).getAllByTestId('teach-tile');
+      expect(own).toHaveLength(1);
+      expect(own[0]).toHaveTextContent(form);
+      expect(within(own[0]).queryByRole('button', { name: /^About / })).toBeNull();
+    });
+  });
+
+  Scenario("Another pronunciation gives the tiles its own sounds, and never Modern Greek's", ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with the goal {string}, no idea level, a fake Postern and the pronunciation {string} chosen', async (_, goal: string, id: string) => {
+      await open(goal, id);
+    });
+    When('he opens the idea sheet of {string} from the Goal screen', opensIdeaOfGoal);
+    Then('the first tile has no sound line and does not say {string}', async (_, word: string) => {
+      await waitFor(() => expect(tiles()).toHaveLength(24));
+      expect(tiles()[0]).toHaveTextContent('alpha');
+      expect(tiles()[0].textContent).not.toContain(word);
+      expect(tiles()[0].querySelector('[data-sound]')).toBeNull();
     });
   });
 });

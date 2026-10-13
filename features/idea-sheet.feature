@@ -97,3 +97,33 @@ Feature: The idea sheet
     When he opens the idea sheet of "breathings" from the Goal screen
     Then the idea sheet text says "Testish says the rough breathing as a hum."
     And the idea sheet text does not say "silent"
+
+  # Teach tiles (mw-5r3p30.232): a card of the letters, sounds and marks tiers shows its items as tiles above the prose, each to hear, so a
+  # beginner meets the letter, its name and its sound, and does not only read about them.
+  Scenario: The Greek alphabet sheet shows 24 tiles, each with its name and sound, and a tap says the letter
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level, a fake Postern and a Greek voice
+    When he opens the idea sheet of "alphabet" from the Goal screen
+    Then the idea sheet shows 24 tiles in alphabet order, the first reading "Α α", "alpha" and "a, as in “father”"
+    And the seven vowels are marked on the tiles
+    And the tiles come above the plain text of the idea
+    When he taps the tile "alpha"
+    Then the Greek voice is asked to say "α"
+
+  Scenario: The Breathing marks sheet shows a tile for each breathing with its sound and an example word to hear
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level, a fake Postern and a Greek voice
+    When he opens the idea sheet of "breathings" from the Goal screen
+    Then the idea sheet shows 2 tiles, "ʽ" the rough breathing and "᾿" the smooth breathing, each with the sound "nothing"
+    And each tile has an example word with a play button, "ἅγιος" and "ἀγάπη"
+    When he taps the play button of "ἅγιος"
+    Then the Greek voice is asked to say "ἅγιος"
+
+  Scenario: A tile opens the idea sheet of its own item
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level, a fake Postern and a Greek voice
+    And he opens the idea sheet of "alphabet" from the Goal screen
+    When he taps the name of the tile "alpha"
+    Then a second idea sheet titled "Alpha" opens over the first and shows one tile, "Α α"
+
+  Scenario: Another pronunciation gives the tiles its own sounds, and never Modern Greek's
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level, a fake Postern and the pronunciation "testish" chosen
+    When he opens the idea sheet of "alphabet" from the Goal screen
+    Then the first tile has no sound line and does not say "father"
