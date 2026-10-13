@@ -177,6 +177,14 @@ export interface TalkTurn {
   /** the tutor's one offer of the Greek (mw-yrmkdf.4): shown as a button; `greekChoice` says what became of it, absent while it waits */
   greekOffer?: GreekOffer;
   greekChoice?: 'taken' | 'declined';
+  /** the tutor's offer to move the rusty items it named back to Frontier and practise them (mw-1vuvq6.6): only items the request listed as rusty; `rustyChoice` says what became of it, absent while it waits */
+  rustyOffer?: RustyOffer;
+  rustyChoice?: 'taken' | 'declined';
+}
+
+/** The rusty items a tutor's answer offered to move back to Frontier: each with the title the request gave it (src/talk/rustyOffer.ts rustyOfferOf). */
+export interface RustyOffer {
+  items: Array<{ kind: 'word' | 'idea'; id: string; title: string }>;
 }
 
 /** The tutor's offer to show a reader not learning the Greek the original: a word's sheet in Greek (`lemma`, a word of the text) or the Greek view; `text` is the button's line. */
@@ -348,6 +356,8 @@ export interface Review {
   lapses: number;
   /** rights in a row since it last moved up or was wrong; two move it up a step */
   rights: number;
+  /** its last RECENT_ANSWERS answers, oldest first (mw-1vuvq6.6: the tutor notices a solid item he now slips on); not indexed, so a row kept before has none */
+  recent?: Array<{ when: number; right: boolean }>;
 }
 
 /** One-off facts about the store, such as 'wordsSeeded'. */

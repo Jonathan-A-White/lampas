@@ -82,7 +82,7 @@ describe('the reviews repository', () => {
     await db.words.put({ lemma: 'λέγω', lemmas: [], gloss: 'say', lesson: 1, state: 'learning', since: 0 });
     await recordAnswer('λέγω', false, NOW);
     await recordAnswer('ἄγνωστος', true, NOW);
-    expect(await db.reviews.toArray()).toEqual([{ kind: 'word', id: 'λέγω', step: 0, due: NOW + DAY, lastWhen: NOW, lapses: 1, rights: 0 }]);
+    expect(await db.reviews.toArray()).toEqual([{ kind: 'word', id: 'λέγω', step: 0, due: NOW + DAY, lastWhen: NOW, lapses: 1, rights: 0, recent: [{ when: NOW, right: false }] }]);
   });
 });
 

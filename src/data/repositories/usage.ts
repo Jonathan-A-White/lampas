@@ -22,6 +22,11 @@ export async function recordUsage(name: string, now = Date.now()): Promise<void>
   });
 }
 
+/** The latest local day before `day` on which he used the app at all (it has a usage row), 'YYYY-MM-DD', or undefined when there is none (a first open). */
+export async function lastUsageDayBefore(day: string): Promise<string | undefined> {
+  return (await db.usage.where('day').below(day).last())?.day;
+}
+
 export const listUsage = (): Promise<UsageRow[]> => db.usage.toArray();
 
 /** How much he has done, by count of rows. */
