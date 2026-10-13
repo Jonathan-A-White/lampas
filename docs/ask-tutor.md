@@ -304,6 +304,22 @@ scheme) are counted and the last 20 names kept (`keepWishedNotes`, settings stor
 the names under it, and nothing else is sent for them. Examples: `grinds/examples/bible-talk/memory-update-wished.json`, `verse-ask/memory-quiet.json`,
 `verse-read/memory-partial-misread.json`, `tips/memory-index.json`; `features/memory-tutor.feature`, `tests/unit/memory-grist.test.ts`.
 
+### The Greek offer (mw-yrmkdf.4)
+
+Lampas opens in English, so the tutor offers the Greek gently. The bible-talk request carries `reader_view` (`'english' | 'greek'`: the Reader's English | Greek
+choice, `getReaderView`; missing in a talk from a screen). For a reader whose Reader is in English and who is not otherwise learning the Greek (nothing in
+`memory`, `learner_profile`, `learner` or `learner_grammar` says so: the grind's `## Offering the Greek` decides) the tutor answers in English, with no Greek
+words unless he asks, and on real interest in the original (what a word really means, why translations differ, what the original says) leaves ONE
+`greek_offer` `{kind: 'word' | 'view', text, lemma?}` (a word offer names a lemma of the passage). `src/talk/GreekOfferButton.tsx` draws it as a button under
+the answer; a tap, or a spoken yes (`pending_offer` of kind `greek`), is `takeGreekOffer` (`src/talk/greekOffer.ts`): a view offer calls `setReaderView('greek')`,
+a word offer asks the Talk sheet (`requestGreekWord`, watched by `TalkSheet`) to open the Greek word's sheet over the talk. The app keeps to the limits too
+(`greekOfferOf`): the first offer of a talk only (the history shows it), none while the index holds his no, none for a word the text lacks, none in a quiz or
+a talk from a screen. A no (`offer_reply` decline) is `settleOffer`: the turn is marked declined and the app appends `said no to the Greek offer <date>` to the
+memory index (`noteGreekNo`, once); the tutor does not write it. The line is in `memory.index`, so the next requests carry it and the tutor offers nothing
+until he asks for Greek himself: the answer then sets `greek_asked: true` and `applyMemoryFromAnswer` takes the line out (`clearGreekNo`). verse-ask has the
+same English default (`## English for a reader not learning the Greek`) and no offer. Examples: `grinds/examples/bible-talk/greek-offer-*.json`,
+`verse-ask/english-reader-said-no.json`; `features/greek-offer.feature`, `tests/unit/greek-offer.test.ts`.
+
 ## About you (mw-1vuvq6.1)
 
 The tutor meets the student where he is, so it is told who he is as well as what he knows. Settings > About you (`#/aboutyou`) keeps a small
