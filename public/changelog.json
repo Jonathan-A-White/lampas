@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.172",
+    "date": "2026-10-13",
+    "story": "mw-86e9r1.19",
+    "kind": "fixed",
+    "text": "'Start from the letters' on Placement now counts the grammar you already have and names the idea Learn next will open, instead of saying you are starting from nothing."
+  },
+  {
     "version": "0.1.171",
     "date": "2026-10-13",
     "story": "mw-yrmkdf.2",

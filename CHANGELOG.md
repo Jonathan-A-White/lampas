@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.172
+_2026-10-13_
+- Fixed: 'Start from the letters' on Placement now counts the grammar you already have and names the idea Learn next will open, instead of saying you are starting from nothing.
+
 ## 0.1.171
 _2026-10-13_
 - New: The tutor now reads what Lampas remembers about you, may add to those notes, and About counts the notes it wished it had.
