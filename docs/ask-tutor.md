@@ -265,7 +265,29 @@ examples, pace how much comes in one answer, ways of learning the activity offer
 met is never built on without saying so. `grinds/examples/{bible-talk,verse-ask}/profile-*.json` answer one question for a slow, hands-on learner and
 a quick reader; `tests/unit/tutor-meets-student.test.ts` holds all of it.
 
-The tutor does not yet propose a note on its own; the notes list is there for it (`keepProfileNote`) and for him to edit.
+### Detect first, ask last (mw-1vuvq6.3)
+
+The profile is filled mainly by what the phone and the tutor can tell, and a question is the last resort.
+
+- **Pace, from use.** `src/data/observedProfile.ts` `observedPace` works out quick, steady or slow from his saved answers (the Quick test and Review in
+  `results`, the Parsing drill in `drills`) over the last 30 days: answers per minute within his sittings (a gap over 5 minutes ends one) and the share
+  right; slow under 2.5 a minute or under half right, quick from 6 a minute with 70 percent right, else steady; nothing under 20 answers. All
+  PROVISIONAL constants. It rides every grist as `learner_profile.observed_pace` beside the pace he chose.
+- **Ways, from what he uses.** `observedWays` turns counts into whole-percent shares: hearing (`verse-reading`, `word-spoken` in the usage log), reading
+  (`chapter-opened`, `verse-selected`, `word-tapped`), doing (quiz, review and drill answers and readings aloud) and seeing (pictures sent in a talk); nothing under 50
+  uses. It rides as `learner_profile.observed_ways`. Hold to talk is not counted apart yet.
+- **Age and background, guessed in talks.** The bible-talk answer may carry `profile_update` (at most three: `field` age, pace, ways, background, why or
+  note; a short `value`; `guessed: true` for a judgement of the tutor's, allowed only for age and background; `declined: true` for a no) and
+  `profile_question` (the field a question in the answer was about). `useTalk` keeps them with `learnFromTalk` (repositories/profile.ts), in the profile
+  row beside his own fields as `learned` (one item per field: value, when, talk, guessed, mine), `removed` and `asked`. It never writes over a field he
+  set himself: a learned item for such a field is a suggestion (`isSuggestion`), shown but not sent; a guess never replaces something the tutor was
+  told; what he removes is not added again from the same talk; what he changes becomes his words (`mine`).
+- **Asking.** The grind may ask one light question per talk, only for a field nothing else fills and only when it would change the answer. The
+  app keeps it from nagging: a field asked about is in `learner_profile.do_not_ask` for a day, and for good after `declined`.
+- **About you** shows each item ('hands-on, from a talk', 'Lampas guesses: adult (from your talks)', 'Lampas suggests: ...' while the field is his own)
+  with Change and Remove, 'What Lampas sees' (pace and ways, counted on the phone), and each note with when and 'from a talk'. Clear empties it all.
+  Checks: `features/about-you.feature` (the tutor learns, guesses, never overrides), `tests/unit/profile-learned.test.ts`,
+  `tests/unit/observed-profile.test.ts`, `grinds/examples/bible-talk/learn-{volunteered,do-not-ask,declined}.json`.
 
 ## Tests
 

@@ -36,6 +36,7 @@ interface Kept {
   background?: string;
   why?: string;
   notes?: { text: string; when: number }[];
+  learned?: { field: string; value: string; when: number; guessed: boolean; mine?: boolean; talk: string }[];
 }
 
 /** The profile the phone keeps: the settings store's 'learnerProfile' row, a JSON object (absent or {} when nothing is kept). */
@@ -73,7 +74,7 @@ async function open(hash: string): Promise<void> {
     String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init),
   );
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.answers.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.answers.clear(), db.usage.clear(), db.results.clear(), db.drills.clear()]);
   await setReaderView('english');
   await setWeave('off');
 }
@@ -91,6 +92,29 @@ async function openReader(profile: Kept): Promise<void> {
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
 }
+
+/** The next answer of the mill carries this profile_update (what the tutor learned from his words). */
+const tutorLearns = (update: Record<string, unknown>): void => {
+  fake.autoReply = { status: 'answered', answer: { ...TALK_ANSWER, profile_update: [update] } };
+};
+/** From the Reader with the talk sheet open: close it, go to Settings, About you. */
+const openAboutYouFromReader = async (): Promise<void> => {
+  const sheet = screen.queryByRole('dialog', { name: 'Talk about Romans 8:11' });
+  if (sheet) await user.click(within(sheet).getByRole('button', { name: 'Done' }));
+  await user.click(await screen.findByRole('button', { name: 'Settings' }));
+  await openAboutYou();
+};
+const learnedRow = (field: string): HTMLElement => {
+  const row = document.querySelector<HTMLElement>(`[data-learned][data-field="${field}"]`);
+  if (!row) throw new Error(`no learned row for ${field}`);
+  return row;
+};
+const learnedLine = (field: string): string => {
+  const row = learnedRow(field);
+  const text = row.querySelector('[data-learned-text]')?.textContent ?? '';
+  const source = row.querySelector('[data-learned-source]')?.textContent;
+  return source ? `${text}, ${source}` : text;
+};
 
 const openAboutYou = async (): Promise<void> => {
   await user.click(await screen.findByRole('button', { name: 'About you' }));
@@ -216,6 +240,76 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the mill received 1 grist', () => millGot(null, 1));
     And('grist number 1 carries the learner profile with the age {string}, the pace {string} and the ways {string}', (_, age: string, pace: string, ways: string) => {
       expect(received(1).input.learner_profile).toEqual({ age, pace, ways: linesOf(ways) });
+    });
+  });
+
+  Scenario('The tutor learns how he likes to learn', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 with nothing kept about him, and the tutor will learn from his talk that his ways are {string}', async (_, value: string) => {
+      await openReader({});
+      tutorLearns({ field: 'ways', value });
+    });
+    When('he talks about verse 11 and sends {string}', talk);
+    Then('the mill received 1 grist', () => millGot(null, 1));
+    When('he opens {string} from the Reader', openAboutYouFromReader);
+    Then('About you shows the learned ways {string}', async (_, line: string) => {
+      await waitFor(() => expect(learnedLine('ways')).toBe(line));
+    });
+    When('Lampas is closed and opened again on Romans 8', async () => {
+      cleanup();
+      clearBus();
+      window.history.replaceState(null, '', '/');
+      render(<App />);
+      await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
+    });
+    And('he talks about verse 11 again and sends {string}', talk);
+    Then('the mill received 2 grists', () => millGot(null, 2));
+    And('grist number 2 carries the learned field {string} with the value {string}', (_, field: string, value: string) => {
+      expect(received(2).input.learner_profile).toEqual({ learned: [{ field, value }] });
+    });
+  });
+
+  Scenario('The tutor guesses, he corrects', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 with nothing kept about him, and the tutor will guess from his talk that his age is {string}', async (_, value: string) => {
+      await openReader({});
+      tutorLearns({ field: 'age', value, guessed: true });
+    });
+    When('he talks about verse 11 and sends {string}', talk);
+    Then('the mill received 1 grist', () => millGot(null, 1));
+    When('he opens {string} from the Reader', openAboutYouFromReader);
+    Then('About you shows the guess {string}', async (_, line: string) => {
+      await waitFor(() => expect(learnedRow('age').querySelector('[data-learned-text]')?.textContent).toBe(line));
+    });
+    When('he changes the guess to {string}', async (_, value: string) => {
+      await user.click(within(learnedRow('age')).getByRole('button', { name: /^Change/ }));
+      const field = screen.getByRole('textbox', { name: 'Learned value' });
+      await user.clear(field);
+      await user.type(field, value);
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+    });
+    Then('About you shows the learned age {string}', async (_, line: string) => {
+      await waitFor(() => expect(learnedLine('age')).toBe(line));
+    });
+    And('the phone keeps no guess for the age', async () => {
+      await waitFor(async () => expect((await kept()).learned?.find((l) => l.field === 'age')?.guessed).toBe(false));
+    });
+  });
+
+  Scenario('A guess never overrides what he set', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 with the age {string} kept about him, and the tutor will guess from his talk that his age is {string}', async (_, age: string, value: string) => {
+      await openReader({ age });
+      tutorLearns({ field: 'age', value, guessed: true });
+    });
+    When('he talks about verse 11 and sends {string}', talk);
+    Then('the mill received 1 grist', () => millGot(null, 1));
+    When('he opens {string} from the Reader', openAboutYouFromReader);
+    Then('About you shows the suggestion {string}', async (_, line: string) => {
+      await waitFor(() => expect(learnedRow('age').querySelector('[data-learned-text]')?.textContent).toBe(line));
+    });
+    And('the page shows the age {string}', async (_, age: string) => {
+      await waitFor(() => expect(screen.getByRole('textbox', { name: 'Age' })).toHaveValue(age));
+    });
+    And('the phone keeps the age {string}', async (_, age: string) => {
+      expect((await kept()).age).toBe(age);
     });
   });
 

@@ -1,22 +1,31 @@
 // src/AboutYouScreen.tsx — About you (mw-1vuvq6.1, #/aboutyou, Settings > About you): what the tutor may know of the student as a person, so its answers
 // meet him where he is. Age, pace, ways of learning, background and why, each optional, saved as he types; the notes the tutor has learned, each
-// editable and removable; Clear empties the lot. It stays on this phone and goes only to the tutor, in each request (src/data/learnerProfile.ts).
+// editable and removable; what the tutor learned in talks, with when and where from (a guess says so, and a value he set himself always wins over
+// it: mw-1vuvq6.3); what the phone sees of his pace and ways; Clear empties the lot. It stays on this phone and goes only to the tutor, in each request
+// (src/data/learnerProfile.ts).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
+import { observedNow } from './data/observedProfile';
 import {
+  LEARNED_VALUE_MAX,
   PROFILE_AGE_MAX,
   PROFILE_BACKGROUND_MAX,
   PROFILE_NOTE_MAX,
   PROFILE_WHY_MAX,
   PACES,
   WAYS,
+  changeLearned,
   clearProfile,
   deleteProfileNote,
   editProfileNote,
   getProfile,
+  isSuggestion,
+  removeLearned,
   saveProfile,
   toggleWay,
   togglePace,
+  type Learnable,
+  type Learned,
   type Pace,
   type Profile,
   type ProfileNote,
@@ -31,6 +40,9 @@ const CHOICE = 'inline-flex flex-wrap rounded-xl border border-line p-0.5';
 
 const PACE_LABELS: Record<Pace, string> = { quick: 'Quick', steady: 'Steady', slow: 'Slow' };
 const WAY_LABELS: Record<Way, string> = { hearing: 'Hearing', seeing: 'Seeing', reading: 'Reading', doing: 'Doing' };
+
+const FIELD_LABELS: Record<Learnable, string> = { age: 'Age', pace: 'How fast', ways: 'How you learn best', background: 'Background', why: 'Why' };
+const LEARNED_SAYS = { invalid: `Say it in a few words (at most ${LEARNED_VALUE_MAX} characters); for how fast, quick, steady or slow.`, missing: 'That is gone.' } as const;
 
 const SAYS = {
   empty: `A note cannot be empty or longer than ${PROFILE_NOTE_MAX} characters.`,
@@ -75,7 +87,7 @@ function Note({ note }: { note: ProfileNote }) {
       <p data-note-text className="break-words text-lg">
         {note.text}
       </p>
-      <p className="text-base text-muted">Learned {new Date(note.when).toLocaleDateString()}</p>
+      <p className="text-base text-muted">Learned {new Date(note.when).toLocaleDateString()}, from a talk</p>
       <div className="flex justify-end gap-2 pt-1">
         <button type="button" aria-label={`Edit: ${note.text}`} onClick={() => setEditing(true)} className={BUTTON}>
           Edit
@@ -88,13 +100,97 @@ function Note({ note }: { note: ProfileNote }) {
   );
 }
 
+/** One thing the tutor learned in a talk: the value with where it came from ('Lampas guesses: adult (from your talks)' for a guess, 'Lampas suggests:' while
+ * the field is one he filled in himself), with Change and Remove, or, while it is being changed, a field with Save and Cancel. */
+function LearnedRow({ item, suggestion }: { item: Learned; suggestion: boolean }) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(item.value);
+  const [problem, setProblem] = useState<string | null>(null);
+  const label = FIELD_LABELS[item.field];
+  const save = async (): Promise<void> => {
+    const result = await changeLearned(item.field, value);
+    if (result === 'saved') {
+      setEditing(false);
+      setProblem(null);
+    } else setProblem(LEARNED_SAYS[result]);
+  };
+  if (editing) {
+    return (
+      <li data-learned data-field={item.field} className="border-b border-line py-3">
+        <label htmlFor={`learned-${item.field}`} className="block pb-1 text-base text-muted">
+          {label}
+        </label>
+        <input id={`learned-${item.field}`} type="text" aria-label="Learned value" maxLength={LEARNED_VALUE_MAX} value={value} onChange={(e) => setValue(e.target.value)} className={FIELD} />
+        {problem ? (
+          <p role="alert" className="pt-1 text-base text-bad">
+            {problem}
+          </p>
+        ) : null}
+        <div className="flex justify-end gap-2 pt-2">
+          <button type="button" onClick={() => { setEditing(false); setValue(item.value); setProblem(null); }} className={BUTTON}>
+            Cancel
+          </button>
+          <button type="button" onClick={() => void save()} className="min-h-12 min-w-12 rounded-xl bg-accent px-5 text-base font-medium text-accent-fg">
+            Save
+          </button>
+        </div>
+      </li>
+    );
+  }
+  const source = item.mine ? 'from you' : 'from a talk';
+  return (
+    <li data-learned data-field={item.field} className="border-b border-line py-3">
+      <p className="text-base text-muted">{label}</p>
+      {suggestion || item.guessed ? (
+        <p data-learned-text className="break-words text-lg">{`${suggestion ? 'Lampas suggests' : 'Lampas guesses'}: ${item.value} (from your talks)`}</p>
+      ) : (
+        <>
+          <p data-learned-text className="break-words text-lg">
+            {item.value}
+          </p>
+          <p data-learned-source className="text-base text-muted">
+            {source}
+          </p>
+        </>
+      )}
+      <p className="text-base text-muted">Learned {new Date(item.when).toLocaleDateString()}</p>
+      <div className="flex justify-end gap-2 pt-1">
+        <button type="button" aria-label={`Change ${label}: ${item.value}`} onClick={() => setEditing(true)} className={BUTTON}>
+          Change
+        </button>
+        <button type="button" aria-label={`Remove ${label}: ${item.value}`} onClick={() => void removeLearned(item.field)} className={BUTTON}>
+          Remove
+        </button>
+      </div>
+    </li>
+  );
+}
+
+const WAY_NAMES: Record<Way, string> = { hearing: 'hearing', seeing: 'seeing', reading: 'reading', doing: 'doing' };
+
+/** What the phone sees of how he goes and what he uses (counted on this phone; src/data/observedProfile.ts), written as plain lines, or nothing. */
+function Observed() {
+  const seen = useLiveQuery(() => observedNow(Date.now()), []);
+  const shares = seen?.ways ? WAYS.filter((w) => seen.ways?.[w]).map((w) => `${WAY_NAMES[w]} ${seen.ways?.[w]}%`) : [];
+  if (!seen || (!seen.pace && shares.length === 0)) return null;
+  return (
+    <div data-observed className="py-3">
+      <p className="pb-1 text-lg font-medium">What Lampas sees</p>
+      {seen.pace ? <p data-observed-pace className="text-base">{`Seems to go: ${seen.pace} (from how you answer)`}</p> : null}
+      {shares.length > 0 ? <p data-observed-ways className="text-base">{`Seems to learn by: ${shares.join(', ')} (from what you use)`}</p> : null}
+      <p className="pt-1 text-base text-muted">Counted on this phone. Your own choices above always come first.</p>
+    </div>
+  );
+}
+
 /** The fields, drawn once the profile is read: the text fields keep what he types and save it as he goes, the choices follow what is kept. */
 function Form({ profile }: { profile: Profile }) {
   const [age, setAge] = useState(profile.age ?? '');
   const [background, setBackground] = useState(profile.background ?? '');
   const [why, setWhy] = useState(profile.why ?? '');
   const [cleared, setCleared] = useState(0);
-  const filled = age.trim() !== '' || background.trim() !== '' || why.trim() !== '' || profile.pace !== undefined || profile.ways.length > 0 || profile.notes.length > 0;
+  const learned = profile.learned ?? [];
+  const filled = learned.length > 0 || (profile.asked?.length ?? 0) > 0 || (profile.removed?.length ?? 0) > 0 || age.trim() !== '' || background.trim() !== '' || why.trim() !== '' || profile.pace !== undefined || profile.ways.length > 0 || profile.notes.length > 0;
   const clear = async (): Promise<void> => {
     await clearProfile();
     setAge('');
@@ -190,6 +286,17 @@ function Form({ profile }: { profile: Profile }) {
         />
         <p className="pt-1 text-base text-muted">Why you are learning Greek.</p>
       </div>
+      {learned.length > 0 ? (
+        <div className="py-3">
+          <p className="pb-1 text-lg font-medium">What the tutor has learned</p>
+          <ul aria-label="What the tutor has learned">
+            {learned.map((item) => (
+              <LearnedRow key={`${item.field}-${item.value}-${item.guessed}-${item.mine ?? false}`} item={item} suggestion={isSuggestion(profile, item)} />
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      <Observed />
       <div className="py-3">
         <p className="pb-1 text-lg font-medium">Notes the tutor has learned</p>
         {profile.notes.length === 0 ? (
