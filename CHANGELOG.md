@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.145
+_2026-10-13_
+- Fixed: The tutor now names a Greek word's dictionary form and meaning from the app's own word data, so it no longer swaps in a look-alike word such as τέκνον for τεκνίον.
+
 ## 0.1.144
 _2026-10-13_
 - New: A sound or word you keep missing when you read aloud now gets a short drill with the thing to remember and five practice words, and comes back in Review.

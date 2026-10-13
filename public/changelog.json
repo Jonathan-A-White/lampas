@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.145",
+    "date": "2026-10-13",
+    "story": "mw-5r3p30.246",
+    "kind": "fixed",
+    "text": "The tutor now names a Greek word's dictionary form and meaning from the app's own word data, so it no longer swaps in a look-alike word such as τέκνον for τεκνίον."
+  },
+  {
     "version": "0.1.144",
     "date": "2026-10-13",
     "story": "mw-neuq78.5",
