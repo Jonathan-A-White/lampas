@@ -22,6 +22,7 @@ import { openReader } from '../nav/route';
 import { besideNow, hasGreekVoice, loneLetterSound, READ_KEY, speakText, subscribeBeside } from './greek';
 import type { SpeechLanguage } from './languages';
 import type { ReadSpan } from './readSpan';
+import { dropWaiting } from './tutorWaiting';
 import { keepAwake, letSleep } from './wakeLock';
 
 export interface Run {
@@ -444,5 +445,6 @@ export function isReadingOf(book: string, chapter: number): boolean {
 
 /** Stops the Bible talk answer being read, and only that: the chapter's own reading is left alone. */
 export function stopAnswer(): void {
+  dropWaiting();
   if (state.answer !== null) stopReading();
 }
