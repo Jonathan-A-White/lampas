@@ -24,6 +24,10 @@ interface Props {
   /** what he tapped (an option, or KNEW_IT / NOT_YET on a flashcard), or null while he has not answered */
   picked: string | null;
   onPick: (option: string) => void;
+  /** options (by place) a Hint took away: drawn dimmed and not to be tapped (Drill it, src/DrillItScreen.tsx) */
+  taken?: ReadonlySet<number>;
+  /** in a short window (sideways) the question stands at the left and the answers at the right, with tighter buttons (Drill it) */
+  sideBySide?: boolean;
 }
 
 /** What Show reveals: the whole form for an ending, else the right answer. */
@@ -80,7 +84,7 @@ function Flash({ question, picked, onPick }: Omit<Props, 'mode'>) {
   );
 }
 
-function Choice({ question, picked, onPick }: Omit<Props, 'mode'>) {
+function Choice({ question, picked, onPick, taken, sideBySide }: Omit<Props, 'mode'>) {
   // the place he tapped: a verse can hold the same word twice, and only the one he tapped is wrong
   const [at, setAt] = useState<number | null>(null);
   const answered = picked !== null;
@@ -88,7 +92,7 @@ function Choice({ question, picked, onPick }: Omit<Props, 'mode'>) {
   const settled = useSettled();
   const tapForm = question.kind === 'tap-form';
   const lookOf = (option: string, i: number): keyof typeof LOOK => {
-    if (!answered) return 'idle';
+    if (!answered) return taken?.has(i) ? 'other' : 'idle';
     if (option === question.right) return 'right';
     return i === at ? 'wrong' : 'other';
   };
@@ -102,14 +106,16 @@ function Choice({ question, picked, onPick }: Omit<Props, 'mode'>) {
         data-option
         data-result={look === 'right' || look === 'wrong' ? look : undefined}
         lang={greek ? 'grc' : undefined}
-        disabled={answered}
+        disabled={answered || taken?.has(i)}
         onClick={() => {
           if (!settled()) return;
           setAt(i);
           onPick(option);
         }}
         className={`${LOOK[look]} rounded-xl border disabled:opacity-100 ${
-          tapForm ? 'min-h-12 min-w-12 px-3 font-greek text-2xl' : `min-h-14 w-full px-4 py-3 text-lg ${greek ? 'font-greek text-3xl' : 'text-left'}`
+          tapForm
+            ? 'min-h-12 min-w-12 px-3 font-greek text-2xl'
+            : `${sideBySide ? 'min-h-14 short:min-h-12 short:py-1' : 'min-h-14 py-3'} w-full px-4 text-lg ${greek ? `font-greek ${sideBySide ? 'text-3xl short:text-2xl' : 'text-3xl'}` : 'text-left'}`
         }`}
       >
         {option}
@@ -117,23 +123,44 @@ function Choice({ question, picked, onPick }: Omit<Props, 'mode'>) {
     );
   });
   const short = !tapForm && question.options.every((o) => o.length <= 6);
-  return (
+  const gap = sideBySide ? 'gap-3 short:gap-2' : 'gap-3';
+  const stacked = sideBySide ? `flex flex-col ${gap}` : 'space-y-3';
+  const answers = (
     <>
-      <Heading question={question} mode="choice" />
       {tapForm ? (
         <div data-testid="verse-words" className="mt-4 flex flex-wrap justify-center gap-2">
           {buttons}
         </div>
       ) : (
-        <div className={`mt-4 ${short ? 'grid grid-cols-2 gap-3' : 'space-y-3'}`}>{buttons}</div>
+        <div className={`mt-4 ${sideBySide ? 'short:mt-0' : ''} ${short ? `grid grid-cols-2 ${gap}` : stacked}`}>{buttons}</div>
       )}
-      <p data-testid="feedback" role="status" className="mt-4 min-h-12 text-center text-lg">
+      <p data-testid="feedback" role="status" className={`mt-4 text-center text-lg ${sideBySide ? 'min-h-12 short:mt-1 short:min-h-8' : 'min-h-12'}`}>
         {!answered ? '' : picked === question.right ? 'Right.' : `Not quite. ${tapForm ? 'The word is' : 'It is'} ${answerOf(question)}.`}
       </p>
     </>
   );
+  if (!sideBySide) {
+    return (
+      <>
+        <Heading question={question} mode="choice" />
+        {answers}
+      </>
+    );
+  }
+  return (
+    <div className="short:grid short:grid-cols-2 short:items-start short:gap-x-6">
+      <div>
+        <Heading question={question} mode="choice" />
+      </div>
+      <div>{answers}</div>
+    </div>
+  );
 }
 
-export function GrammarCard({ question, mode, picked, onPick }: Props) {
-  return mode === 'flashcard' ? <Flash question={question} picked={picked} onPick={onPick} /> : <Choice question={question} picked={picked} onPick={onPick} />;
+export function GrammarCard({ question, mode, picked, onPick, taken, sideBySide }: Props) {
+  return mode === 'flashcard' ? (
+    <Flash question={question} picked={picked} onPick={onPick} />
+  ) : (
+    <Choice question={question} picked={picked} onPick={onPick} taken={taken} sideBySide={sideBySide} />
+  );
 }
