@@ -66,6 +66,13 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario }) => {
     Then('the Greek tally holds nothing', async () => expect(await tallyOf('el')).toEqual({}));
   });
 
+  Scenario('Two words of one reading that hold the same sound tally the reading once', ({ When, Then }) => {
+    When('he reads Romans 8:28 in Greek and the mill marks {string} and {string} in one reading', async (_, a: string, b: string) => {
+      await keepVerseReading('rom.8.28', 'some-to-fix', [fix(a, ['οὐ', 'ρα', 'νοῦ']), fix(b, ['οὖν'])], 'Two words.', 'el', nextAt());
+    });
+    Then('the Greek tally holds {string} once', async (_, unit: string) => expect((await tallyOf('el'))[unit]).toBe(1));
+  });
+
   Scenario('An English word he misread tallies the word', ({ When, Then, And }) => {
     When('he reads Romans 8:28 in English and the mill marks {string} in the chunks {string}, {string}', async (_, word: string, a: string, b: string) => {
       await keepVerseReading('rom.8.28', 'some-to-fix', [fix(word, [a, b])], 'One word.', 'en', nextAt());

@@ -23,6 +23,10 @@ Feature: Every reading is kept, and the sounds or words he misreads are tallied
     When he reads Romans 8:28 in Greek and the mill marks "προΐστημι" in the chunks "προ", "ΐ", "στη", "μι"
     Then the Greek tally holds nothing
 
+  Scenario: Two words of one reading that hold the same sound tally the reading once
+    When he reads Romans 8:28 in Greek and the mill marks "οὐρανοῦ" and "οὖν" in one reading
+    Then the Greek tally holds "diphthong-ou" once
+
   Scenario: An English word he misread tallies the word
     When he reads Romans 8:28 in English and the mill marks "Blessed" in the chunks "bless", "ed"
     Then the English tally holds "blessed" once

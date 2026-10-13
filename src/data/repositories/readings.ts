@@ -66,7 +66,7 @@ async function lastRecord(ref: string, lang: string): Promise<ReadingRecord | un
   return all.sort((a, b) => b.at - a.at || (b.id ?? 0) - (a.id ?? 0))[0];
 }
 
-/** Counts the misses in the last TALLY_READINGS readings in `lang` and replaces that language's rows. */
+/** Counts the readings among the last TALLY_READINGS in `lang` that missed each unit, and replaces that language's rows. */
 async function retally(lang: string): Promise<void> {
   const latest = await db.readingHistory
     .where('[lang+at]')
@@ -75,7 +75,8 @@ async function retally(lang: string): Promise<void> {
     .limit(TALLY_READINGS)
     .toArray();
   const counts = new Map<string, number>();
-  for (const reading of latest) for (const unit of missUnits(lang, reading.words)) counts.set(unit, (counts.get(unit) ?? 0) + 1);
+  // a unit counts once for each reading it was missed in, however many of that reading's words hold it (the drill offers one missed in two readings)
+  for (const reading of latest) for (const unit of new Set(missUnits(lang, reading.words))) counts.set(unit, (counts.get(unit) ?? 0) + 1);
   await db.missTally.where('lang').equals(lang).delete();
   await db.missTally.bulkPut([...counts].map(([unit, count]) => ({ lang, unit, count })));
 }

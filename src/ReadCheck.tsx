@@ -10,11 +10,13 @@ import { blobOf, clipFileName, downloadSeam, type Clip } from './audio/clip';
 import { ClipPlayer, usePlaying } from './audio/clipPlayer';
 import type { Verse } from './data/chapter';
 import { unitId, unitName } from './data/passage';
-import { getDeveloper, getGreekPronunciation, getVerseReading, verseRef, type FixWord, type VerseReading } from './data/repositories';
-import { markWords, normalWord, plainQuotes, readingLang, readingText, sayOf, wordsOfText, type ReadingView } from './services/reading';
+import { getDeveloper, getGreekPronunciation, getMissTally, getVerseReading, verseRef, type FixWord, type VerseReading } from './data/repositories';
+import { markWords, normalWord, plainQuotes, readingLang, readingText, RESULT_HEADINGS, sayOf, wordsOfText, type ReadingView } from './services/reading';
 import { FAILURE_TITLES } from './services/tutor';
 import { pronunciationOf } from './speech/pronunciation';
+import { drillButtonLabel, drillOffer, drillWhy, type DrillOffer } from './data/readingDrill';
 import { isLadderLang } from './data/readingLadder';
+import { ReadingDrill } from './ReadingDrill';
 import { LadderActions, LadderPosition, LadderStart } from './ReadingLadder';
 import { useLadder } from './useLadder';
 import { stopSpeaking } from './speech/greek';
@@ -186,14 +188,6 @@ function MarkedVerse({ text, view, marks, open, onOpen, player, reached }: { tex
     </>
   );
 }
-
-/** The heading of each verdict: 'Well read' only for a reading that was whole and right. */
-const RESULT_HEADINGS: Record<VerseReading['verdict'], string> = {
-  'well-read': 'Well read',
-  'some-to-fix': 'Words to fix',
-  partial: 'Part of the verse',
-  incomplete: 'Read the whole verse',
-};
 
 const ALL = 'all';
 
@@ -399,6 +393,10 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
   const ladderLang = isLadderLang(lang) && verse.to === undefined ? lang : undefined;
   const ladder = useLadder(ladderLang, ref);
   const [triedAt, setTriedAt] = useState<number | null>(null);
+  // A sound (Greek) or the words (English) he missed in two of his last five readings are offered a drill (src/ReadingDrill.tsx); the sheet keeps the offer it was opened with.
+  const tally = useLiveQuery(() => (isLadderLang(lang) ? getMissTally(lang) : undefined), [lang]);
+  const offer = isLadderLang(lang) && tally ? drillOffer(lang, tally) : null;
+  const [drilling, setDrilling] = useState<DrillOffer | null>(null);
   const setAside = reading !== undefined && triedAt === reading.when;
   const wholeVerse = walking && reading !== undefined && walkStep >= walkWordsOf(reading).length;
   const idle = wholeVerse ? `Hold to read the whole ${verse.to === undefined ? 'verse' : 'passage'} again` : `Hold to read ${unitName(verse)}`;
@@ -476,7 +474,16 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
             onTryAgain={() => reading && setTriedAt(reading.when)}
           />
         ) : null}
+        {offer && !walking && !out ? (
+          <div className="space-y-1">
+            <button type="button" data-drill-start onClick={() => setDrilling(offer)} className="min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium">
+              {drillButtonLabel(offer)}
+            </button>
+            <p className="text-sm text-muted">{drillWhy(offer)}</p>
+          </div>
+        ) : null}
       </section>
+      {drilling ? <ReadingDrill offer={drilling} pronunciation={pronunciation} onClose={() => setDrilling(null)} /> : null}
       {slot ? createPortal(<ReadBar hold={hold} name={idle} label={recording ? 'Release to send' : idle} recording={recording} />, slot) : null}
     </>
   );

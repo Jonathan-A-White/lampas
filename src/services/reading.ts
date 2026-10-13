@@ -61,6 +61,14 @@ export interface VerseReadAnswer {
   next_word?: Omit<FocusWord, 'start' | 'end'>;
 }
 
+/** The heading of each verdict: 'Well read' only for a reading that was whole and right. */
+export const RESULT_HEADINGS: Record<VerseReadAnswer['verdict'], string> = {
+  'well-read': 'Well read',
+  'some-to-fix': 'Words to fix',
+  partial: 'Part of the verse',
+  incomplete: 'Read the whole verse',
+};
+
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 const isText = (value: unknown, max: number): value is string => typeof value === 'string' && value.length > 0 && value.length <= max;
 

@@ -2,6 +2,7 @@
 // the short reasons, walking every verse of public/data in canonical order, and writing the list easiest first.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+import { reasons } from '../src/data/ladderScore';
 
 export interface LadderEntry {
   /** 'jhn.11.35' */
@@ -11,15 +12,7 @@ export interface LadderEntry {
   why: string[];
 }
 
-/** The reasons in the order a tie between them is broken: the first listed wins. */
-export function reasons(parts: [number, string][]): string[] {
-  return parts
-    .map(([points, text], order) => ({ points, text, order }))
-    .filter((p) => p.points > 0)
-    .sort((a, b) => b.points - a.points || a.order - b.order)
-    .slice(0, 3)
-    .map((p) => p.text);
-}
+export { reasons };
 
 interface IndexFile {
   books: { code: string; chapters: number }[];

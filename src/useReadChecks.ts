@@ -15,7 +15,7 @@ import { getDeviceKeyBytes } from './services/deviceKey';
 import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
-import { askVerseRead, buildReadingRequest, readingLang, wordsOfText, type ReadingView } from './services/reading';
+import { askVerseRead, buildReadingRequest, readingLang, wordsOfText, type ReadingView, type VerseReadAnswer } from './services/reading';
 import { TutorError, type TutorFailure } from './services/tutor';
 import { interruptListen, stopReading } from './speech/readAloud';
 import { stopSpeaking, stopWordSaid } from './speech/greek';
@@ -72,8 +72,15 @@ interface Hold {
 
 const buzz = (ms: number) => navigator.vibrate?.(ms);
 
-export function useReadChecks(book: string, chapter: number, title: string, view: ReadingView = 'english', pronunciation?: string): UseReadChecks {
+/** Where an answer goes instead of the reading history: the reading drill (src/ReadingDrill.tsx) reads words that are not verses and keeps nothing of them there. */
+export type KeepAnswer = (unit: Verse, answer: VerseReadAnswer, language: string) => void | Promise<void>;
+
+export function useReadChecks(book: string, chapter: number, title: string, view: ReadingView = 'english', pronunciation?: string, keep?: KeepAnswer): UseReadChecks {
   const [all, setAll] = useState<AllStates>({});
+  const keepRef = useRef(keep);
+  useEffect(() => {
+    keepRef.current = keep;
+  });
   const lang = readingLang(view, pronunciation);
   // what a press made now reads: the view and language shown
   const shown = useRef({ view, lang });
@@ -119,10 +126,13 @@ export function useReadChecks(book: string, chapter: number, title: string, view
             signal,
             onSent: () => set(unitId(verse), language, { phase: 'waiting', startedAt }),
           });
-          // the clip is kept with the result so he can hear himself (src/audio/clip.ts); a result is kept even if the clip cannot be
-          const clip = await clipOf(recording).catch(() => undefined);
-          const reach = reachOf(answer.verdict, wordsOfText(request.target_text).length, answer.reached === undefined ? undefined : { reached: answer.reached, next: answer.next_word });
-          await keepVerseReading(verseRef(book, chapter, unitId(verse)), answer.verdict, answer.focus_words, answer.note, language, Date.now(), clip, reach);
+          if (keepRef.current) await keepRef.current(verse, answer, language);
+          else {
+            // the clip is kept with the result so he can hear himself (src/audio/clip.ts); a result is kept even if the clip cannot be
+            const clip = await clipOf(recording).catch(() => undefined);
+            const reach = reachOf(answer.verdict, wordsOfText(request.target_text).length, answer.reached === undefined ? undefined : { reached: answer.reached, next: answer.next_word });
+            await keepVerseReading(verseRef(book, chapter, unitId(verse)), answer.verdict, answer.focus_words, answer.note, language, Date.now(), clip, reach);
+          }
           set(unitId(verse), language, undefined);
         } catch (err) {
           if (signal.aborted) return;

@@ -12,6 +12,23 @@ const SOLID_START_STEP = STEP_DAYS.indexOf(30);
 /** His solid words come due one by one over this many days after the upgrade, so he is not flooded. */
 const SPREAD_DAYS = 30;
 
+/** The kind of a drilled sound (Greek) or word (English): the reading drill's reviews (src/ReadingDrill.tsx, src/review/kinds.ts SOUND). */
+export const SOUND_KIND = 'sound';
+
+/**
+ * Puts drilled sounds (ids like 'el:diphthong-ou') or words ('en:blessed') on the schedule: at step 0, due after the first gap (STEP_DAYS[0]). A unit that is
+ * on the schedule already starts again from step 0 (he missed it again), keeping its lapses. Publishes the new count of what is due.
+ */
+export async function scheduleSounds(ids: string[], now = Date.now()): Promise<void> {
+  await db.transaction('rw', db.reviews, async () => {
+    for (const id of ids) {
+      const there = await db.reviews.get([SOUND_KIND, id]);
+      await db.reviews.put({ kind: SOUND_KIND, id, step: 0, due: now + STEP_DAYS[0] * DAY, lastWhen: now, lapses: there?.lapses ?? 0, rights: 0 });
+    }
+  });
+  await announceDue(now);
+}
+
 /** Which of the items {kind, id} are on the schedule already, as 'kind\0id'. */
 async function scheduled(items: Array<Pick<Review, 'kind' | 'id'>>): Promise<Set<string>> {
   const keys = await db.reviews.where('[kind+id]').anyOf(items.map((r) => [r.kind, r.id])).primaryKeys();

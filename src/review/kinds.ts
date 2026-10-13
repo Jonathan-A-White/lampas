@@ -7,6 +7,7 @@ import { parseGoal } from '../data/goal';
 import { goalChapterNumbers } from '../data/grammar/needs';
 import { ideaOf, IDEA_KIND, type GrammarIdea } from '../data/grammar/ladder';
 import { buildIdeaQuestion, type GrammarQuestion } from '../data/grammar/questions';
+import { parseReviewId } from '../data/readingDrill';
 import { getOpenChapter } from '../data/readerChapter';
 import { modeFor, type QuestionMode } from '../data/schedule';
 import { buildQuestion, drawWords, mulberry32, seedDistractors, shuffle, type Question, type Random } from '../data/quiz';
@@ -19,7 +20,9 @@ import {
   recordAnswer,
   noteAnswer,
   recordGrammarAnswer,
+  recordReview,
   reviewsOf,
+  SOUND_KIND,
   seedWordsIfFirstOpen,
   type Review,
 } from '../data/repositories';
@@ -48,8 +51,22 @@ export interface GrammarItem {
   mode: QuestionMode;
 }
 
+/**
+ * A sound (Greek) or a word (English) he drilled after missing it in his readings (src/ReadingDrill.tsx): the review id is 'el:diphthong-ou' or 'en:blessed'.
+ * A Greek sound is asked as the quick round asks one (heard and picked, or seen and its sound picked); an English word is said aloud and graded by himself.
+ */
+export interface SoundItem {
+  kind: 'sound';
+  id: string;
+  /** the Greek sound's question (the ladder idea's), null for an English word */
+  question: GrammarQuestion | null;
+  /** the English word to say, null for a Greek sound */
+  word: string | null;
+  mode: QuestionMode;
+}
+
 /** One thing Review asks; a new kind of item is one more member here. */
-export type ReviewItem = GrammarItem | WordItem;
+export type ReviewItem = GrammarItem | SoundItem | WordItem;
 
 export interface ReviewKind {
   kind: ReviewItem['kind'];
@@ -156,8 +173,34 @@ export const GRAMMAR: ReviewKind = {
   },
 };
 
+export const SOUNDS: ReviewKind = {
+  kind: SOUND_KIND,
+  count: (n) => `${n} ${n === 1 ? 'sound' : 'sounds'}`,
+  async draw(due, random) {
+    if (due.length === 0) return [];
+    const own = mulberry32(grammarSeed(random));
+    const { respell } = chosenPronunciation();
+    return due.flatMap((r): SoundItem[] => {
+      const at = parseReviewId(r.id);
+      if (!at) return [];
+      if (at.lang === 'en') return [{ kind: 'sound', id: r.id, question: null, word: at.unit, mode: 'flashcard' }];
+      const idea = ideaIfAny(at.unit);
+      return idea?.parent ? [{ kind: 'sound', id: r.id, question: buildIdeaQuestion(idea, [], own, respell), word: null, mode: modeFor(r.step) }] : [];
+    });
+  },
+  isRight: (item, picked) => item.kind === 'sound' && (item.question === null || item.mode === 'flashcard' ? picked === KNEW_IT : picked === item.question.right),
+  hear: (item) => {
+    if (item.kind !== 'sound') return;
+    if (item.question) speakQuestion(item.question);
+    else if (item.word) speakWord(item.word, 'english');
+  },
+  record: async (item, right) => {
+    if (item.kind === 'sound') await recordReview(SOUND_KIND, item.id, right);
+  },
+};
+
 /** Every kind Review knows, in the order its counts are written and its due items asked. */
-export const KINDS: readonly ReviewKind[] = [GRAMMAR, WORDS];
+export const KINDS: readonly ReviewKind[] = [GRAMMAR, SOUNDS, WORDS];
 
 export const kindOf = (kind: ReviewItem['kind']): ReviewKind => KINDS.find((k) => k.kind === kind) ?? WORDS;
 

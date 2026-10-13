@@ -72,10 +72,12 @@ describe('a Review round', () => {
   });
 
   it('counts grammar ideas as ideas, first in the order the counts are written', () => {
-    expect(KINDS.map((k) => k.kind)).toEqual(['grammar', 'word']);
+    expect(KINDS.map((k) => k.kind)).toEqual(['grammar', 'sound', 'word']);
     expect(KINDS[0].count(1)).toBe('1 idea');
     expect(KINDS[0].count(2)).toBe('2 ideas');
-    expect(KINDS[1].count(2)).toBe('2 words');
+    expect(KINDS[1].count(1)).toBe('1 sound');
+    expect(KINDS[1].count(2)).toBe('2 sounds');
+    expect(KINDS[2].count(2)).toBe('2 words');
   });
 
   it('leaves out a due idea the ladder no longer has', async () => {

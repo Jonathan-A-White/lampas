@@ -2,6 +2,7 @@
 import type { ReactNode } from 'react';
 import { Flashcard } from '../Flashcard';
 import { GrammarCard } from '../GrammarCard';
+import { SoundWordCard } from '../SoundWordCard';
 import { WordQuestion } from '../WordQuestion';
 import type { ReviewItem } from './kinds';
 
@@ -22,6 +23,12 @@ const RENDERERS: { [K in ReviewItem['kind']]: (props: ItemCardProps & { item: Ex
       <WordQuestion question={item.question} index={index} picked={picked} onPick={onPick} />
     ),
   grammar: ({ item, index, picked, onPick }) => <GrammarCard key={index} question={item.question} mode={item.mode} picked={picked} onPick={onPick} />,
+  sound: ({ item, index, picked, onPick }) =>
+    item.question ? (
+      <GrammarCard key={index} question={item.question} mode={item.mode} picked={picked} onPick={onPick} />
+    ) : (
+      <SoundWordCard key={index} word={item.word ?? ''} picked={picked} onPick={onPick} />
+    ),
 };
 
 export function ItemCard(props: ItemCardProps) {

@@ -241,7 +241,7 @@ export interface MissCount {
   lang: string;
   /** a Greek sound's ladder id ('diphthong-ou', 'pair-gg'), or an English word in lower case */
   unit: string;
-  /** the number of misread words in those readings that hold the unit */
+  /** the number of those readings in which a misread word holds the unit (a unit counts once a reading) */
   count: number;
 }
 
