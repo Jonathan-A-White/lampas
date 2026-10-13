@@ -118,6 +118,21 @@ describe('the examples of a foundation idea (letters, pairs, marks, syllables, p
     expect(marks.get('αἱ')).toEqual(['ἱ']);
   });
 
+  it('the rough breathing idea has Ὃ and ἑωράκαμεν, the smooth has ἀρχῆς and ὀφθαλμοῖς (mw-5r3p30.230)', () => {
+    const rough = formsOf('breathing-rough');
+    expect(rough).toContain('Ὃ');
+    expect(rough).toContain('ἑωράκαμεν');
+    const smooth = formsOf('breathing-smooth');
+    expect(smooth).toContain('ἀρχῆς');
+    expect(smooth).toContain('ὀφθαλμοῖς');
+  });
+
+  it('the ου diphthong idea has a word holding ου, the pair marked (mw-5r3p30.230)', () => {
+    const found = ideaExamples('diphthong-ou', [john], 1);
+    expect(found.length).toBeGreaterThan(0);
+    expect(found.every((e) => e.word.t.normalize('NFD').replace(/\p{M}/gu, '').includes('ου'))).toBe(true);
+  });
+
   it('the alphabet returns words from the verse', () => {
     const found = ideaExamples('alphabet', [john], 1);
     expect(found.length).toBeGreaterThan(0);

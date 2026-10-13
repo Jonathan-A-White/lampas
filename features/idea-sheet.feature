@@ -73,6 +73,13 @@ Feature: The idea sheet
     And the idea sheet shows the example "καὶ" with "αὶ" marked
     And the idea sheet has no line "has this idea in its parsing"
 
+  Scenario: The Breathing marks sheet lists the verse's words that carry a breathing
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
+    When he opens the idea sheet of "breathings" from the Goal screen
+    Then the idea sheet shows the example "ἑωράκαμεν" with "ἑ" marked
+    And the idea sheet shows the example "ἀρχῆς" with "ἀ" marked
+    And the idea sheet has no line "No word of 1 John 1:1"
+
   Scenario: The Pairs of vowels sheet gives every sound an English key word
     Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
     When he opens the idea sheet of "diphthongs" from the Goal screen
