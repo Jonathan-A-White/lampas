@@ -1,0 +1,52 @@
+{
+  "description": "He says he keeps mixing up two words and asks about one of them; the memory has a note for the book and none for the word. The answer meets him quietly, appends one line to the word's note in memory_update (no replace or remove: he did not ask for a change) and names the note it lacked in wished_notes.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "question": "I keep mixing up ἀγαπάω and ἀγάπη. What does ἀγαπῶσιν mean here?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "focus": {
+      "form": "ἀγαπῶσιν",
+      "lemma": "ἀγαπάω",
+      "parse": "participle, present active, dative plural masculine",
+      "kind": "word"
+    },
+    "memory": {
+      "index": "Likes a picture before a rule.\n\nNotes:\n- book:Romans — Reads it slowly, a verse a day.",
+      "notes": [
+        {
+          "name": "book:Romans",
+          "text": "Reads it slowly, a verse a day."
+        }
+      ]
+    },
+    "settings": {}
+  },
+  "expect": {
+    "answer": {
+      "present": true
+    },
+    "memory_update.0.name": {
+      "matches": "^(word:ἀγαπάω|word:ἀγάπη|index)$"
+    },
+    "memory_update.0.append": {
+      "present": true
+    },
+    "memory_update.0.replace": {
+      "present": false
+    },
+    "memory_update.0.remove": {
+      "present": false
+    },
+    "wished_notes.0": {
+      "present": true
+    }
+  }
+}

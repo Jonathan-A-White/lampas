@@ -2,6 +2,7 @@
 // the phone runs on an answer (tests/unit/tips-grind.test.ts holds it equal to the answer schema).
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
+import type { MemoryField } from '../data/learnerMemory';
 import { SCREENS, type UsageSummary } from './summary';
 
 export interface TipRequest {
@@ -14,16 +15,19 @@ export interface TipRequest {
   learner?: string;
   /** where his grammar stands (src/data/grammar/learnerGrammar.ts), as the Bible talk is sent it */
   learner_grammar?: LearnerGrammar;
+  /** what Lampas remembers of him (src/data/learnerMemory.ts, Settings > Memory): the index alone, a tip has no place, word or screen; missing when nothing is kept */
+  memory?: MemoryField;
 }
 
 /** The request the tips grind is sent: the usage summary, the ids already shown and, when the app has them, who he is as a student and
  * where his words and grammar stand. */
-export const buildTipRequest = (summary: UsageSummary, shown: string[], learnerProfile?: LearnerProfile, learner?: string, learnerGrammar?: LearnerGrammar): TipRequest => ({
+export const buildTipRequest = (summary: UsageSummary, shown: string[], learnerProfile?: LearnerProfile, learner?: string, learnerGrammar?: LearnerGrammar, memory?: MemoryField): TipRequest => ({
   summary,
   shown,
   ...(learnerProfile ? { learner_profile: learnerProfile } : {}),
   ...(learner ? { learner } : {}),
   ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
+  ...(memory ? { memory } : {}),
 });
 
 export interface Tip {

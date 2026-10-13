@@ -4,6 +4,7 @@
 import type { Verse } from '../data/chapter';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
+import type { MemoryField } from '../data/learnerMemory';
 import type { Recording } from '../audio/recorder';
 import { extensionOf } from '../audio/recorder';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation } from '../speech/pronunciation';
@@ -32,6 +33,8 @@ export interface VerseReadRequest {
   pronunciation: GreekPronunciation;
   /** who he is as a student (src/data/learnerProfile.ts, Settings > About you): missing when he has filled in nothing */
   learner_profile?: LearnerProfile;
+  /** what Lampas remembers of him (src/data/learnerMemory.ts, Settings > Memory), as the Bible talk is sent it: missing when nothing is kept */
+  memory?: MemoryField;
   /** where he stands in words, in one line (src/data/learnerSummary.ts), as the Bible talk is sent it */
   learner?: string;
   /** where his grammar stands (src/data/grammar/learnerGrammar.ts), as the Bible talk is sent it */
@@ -150,13 +153,14 @@ export const readingText = (verse: Verse, view: ReadingView = 'english'): string
 export const readingLang = (view: ReadingView, pronunciation: unknown): string =>
   view === 'greek' ? pronunciationOf(pronunciation).scoringLang : 'en';
 
-export function buildReadingRequest(reference: string, verse: Verse, view: ReadingView = 'english', lang: string = readingLang(view, undefined), learnerProfile?: LearnerProfile, learner?: string, learnerGrammar?: LearnerGrammar, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION): VerseReadRequest {
+export function buildReadingRequest(reference: string, verse: Verse, view: ReadingView = 'english', lang: string = readingLang(view, undefined), learnerProfile?: LearnerProfile, learner?: string, learnerGrammar?: LearnerGrammar, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION, memory?: MemoryField): VerseReadRequest {
   return {
     reference,
     target_text: readingText(verse, view),
     lang,
     pronunciation,
     ...(learnerProfile ? { learner_profile: learnerProfile } : {}),
+    ...(memory ? { memory } : {}),
     ...(learner ? { learner } : {}),
     ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
   };

@@ -257,7 +257,7 @@ a phone that installed Lampas before this version may need it removed and instal
 
 ## Memory (mw-yrmkdf.1)
 
-Lampas keeps notes about the reader on his phone, to be told to the tutor in a later story; today nothing is sent. Settings > Memory (`#/memory`)
+Lampas keeps notes about the reader on his phone and tells them to the tutor (mw-yrmkdf.2, below). Settings > Memory (`#/memory`)
 shows an index he writes (up to 1000 characters; the app adds under it one line per note, the note's name and the first line of it, so the tutor
 reads at most 1500) and the named notes: `book:<Book>`, `word:<lemma>` (NFC) or `topic:<slug>`, each up to 2000 characters, at most 40, with when
 each was changed and by whom (you or the tutor). He can edit the index and any note, delete a note (it asks once more) and Export everything as one
@@ -265,8 +265,25 @@ file (`lampas-memory-<date>.json`, no date inside, so an import exports back to 
 file holds the index and 2 notes: ...") and replaces what is kept only on "Replace my memory"; a file that is not a Lampas memory changes nothing.
 
 It is kept in the settings store (`src/data/repositories/memory.ts`), outside the registry so the tutor cannot change it by `settings_changes`; the
-tutor's only write is an append (`appendToNote`, `appendToIndex`). `selectNotes(reference, focusLemma, screen)` is what a request will carry: the
+tutor's only write is an append (`appendToNote`, `appendToIndex`). `selectNotes(reference, focusLemma, screen)` is what a request carries: the
 index with the book note of the reference, the word note of the focus word and the topic note named for the screen.
+
+### The tutor reads and writes it (mw-yrmkdf.2)
+
+Every tutor grist (bible-talk, verse-ask, verse-read, tips) carries `memory` `{index, notes: [{name, text}]}` (`src/data/learnerMemory.ts`
+`learnerMemory`, over `selectNotes`; the Bible talk passes the talk's reference, the focus word's lemma and the screen's name, verse-ask and
+verse-read the verse's reference, tips only the index; missing when nothing is kept; not in About's credits request). The tutor is never asked which
+notes it wants: the app chooses by name. The grinds' instructions say to read the index first and use it quietly, as `learner_profile` is used, and never
+to repeat it back. When the record is too big `fitHistory` drops the notes from the end of the list, after the history, the word list and his requests;
+the index stays.
+
+The bible-talk answer may carry `memory_update` (at most 4 entries `{name | 'index', append | replace | remove, directed?}`) and `wished_notes` (at most 5
+names). `src/talk/memoryUpdate.ts applyMemoryFromAnswer`, called by `useTalk`, appends by 'tutor' (a note that is not there is made); a `replace` or
+`remove` is applied ONLY with `directed: true`, which the grind's instructions allow only when he asked for exactly that in his words of this turn; the
+app cannot hear his words, so an undirected one is refused and logged (`console.warn`) and the note is unchanged. `wished_notes` (names in the naming
+scheme) are counted and the last 20 names kept (`keepWishedNotes`, settings store key `memoryWished`); About shows 'Notes the tutor wished he had: N' with
+the names under it, and nothing else is sent for them. Examples: `grinds/examples/bible-talk/memory-update-wished.json`, `verse-ask/memory-quiet.json`,
+`verse-read/memory-partial-misread.json`, `tips/memory-index.json`; `features/memory-tutor.feature`, `tests/unit/memory-grist.test.ts`.
 
 ## About you (mw-1vuvq6.1)
 

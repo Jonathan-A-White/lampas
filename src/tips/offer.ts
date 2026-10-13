@@ -3,6 +3,7 @@
 // (repositories/tips.ts) and the card under the Reader's header (TipCard.tsx) shows it. PROVISIONAL: once a day.
 import { getTips, keepTip, openTip, shownTipIds, dayOf } from '../data/repositories';
 import { learnerGrammar } from '../data/grammar/learnerGrammar';
+import { learnerMemory } from '../data/learnerMemory';
 import { learnerProfile } from '../data/learnerProfile';
 import { learnerSummary } from '../data/learnerSummary';
 import { getDeviceKeyBytes } from '../services/deviceKey';
@@ -55,14 +56,15 @@ async function offer(options: OfferOptions): Promise<Offered> {
   let sent = false;
   try {
     // read together: a second sitting that finds this offer still in flight is given its result (inFlight), so it must not be slow
-    const [shown, summary, profile, learner, grammar] = await Promise.all([
+    const [shown, summary, profile, learner, grammar, memory] = await Promise.all([
       shownTipIds(),
       usageSummary(now),
       learnerProfile(),
       learnerSummary(now).catch(() => undefined),
       learnerGrammar().catch(() => undefined),
+      learnerMemory().catch(() => undefined),
     ]);
-    const request: TipRequest = buildTipRequest(summary, shown, profile, learner, grammar);
+    const request: TipRequest = buildTipRequest(summary, shown, profile, learner, grammar, memory);
     let sentAs: string | undefined;
     const answer = await askGrind(TIPS_KIND, request, isTipAnswer, {
       key: options.key ?? getDeviceKeyBytes(),

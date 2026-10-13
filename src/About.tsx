@@ -1,8 +1,10 @@
 // src/About.tsx — Newton's line, why we credit, then every credit (texts, type, libraries, services, ideas, tools), read from ATTRIBUTION.md (src/attribution.ts).
+import { useLiveQuery } from 'dexie-react-hooks';
 import { Fragment, useRef, useState, type ReactNode } from 'react';
 import { attribution } from './attribution';
 import { BuildVersion } from './BuildVersion';
 import { setDeveloper } from './data/repositories';
+import { getWishedNotes } from './data/repositories/memory';
 import { navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { usePageActions } from './PageActions';
@@ -42,6 +44,8 @@ export function About() {
   const taps = useRef({ count: 0, last: 0 });
   const [found, setFound] = useState(false);
   const answerLine = lastAnswerLine();
+  // the notes the tutor said it would have used had they existed (mw-yrmkdf.2): a count and the last names, nothing more is sent for them
+  const wished = useLiveQuery(getWishedNotes, []);
   const tapVersion = () => {
     const now = Date.now();
     const t = taps.current;
@@ -102,6 +106,18 @@ export function About() {
             <p data-testid="last-tutor-answer" className="pt-2 text-sm text-muted">
               {answerLine}
             </p>
+          ) : null}
+          {wished && wished.count > 0 ? (
+            <div data-testid="wished-notes" className="pt-2 text-sm text-muted">
+              <p>Notes the tutor wished he had: {wished.count}</p>
+              <ul className="list-none">
+                {wished.names.map((name) => (
+                  <li key={name} data-wished-name className="break-words">
+                    {name}
+                  </li>
+                ))}
+              </ul>
+            </div>
           ) : null}
           <BuildVersion onTap={tapVersion} />
           <VersionLink />
