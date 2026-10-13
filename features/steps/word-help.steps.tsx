@@ -15,6 +15,7 @@ import { db } from '../../src/data/db';
 import { clearBus, subscribe, type EventOf } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { respellModern } from '../../src/speech/schemes/modern';
+import { greekSyllables, stressedSyllable } from '../../src/speech/greekSyllables';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GRAMMAR_HELP_ANSWER, makeFakePostern, POSTERN_ORIGIN, SOUND_HELP_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
@@ -97,8 +98,9 @@ const grists = (count: number) => async (): Promise<void> => {
 };
 const hasFocus = (kind: 'grammar' | 'sound') => async (_: unknown, form: string, lemma: string, parse: string): Promise<void> => {
   await waitFor(() => expect(fake.received.length).toBeGreaterThan(0));
-  // a sound question also carries the app's respelling of the word (mw-5r3p30.241), a grammar one does not
-  expect(focusOf(0)).toEqual(kind === 'sound' ? { form, lemma, parse, kind, respelling: respellModern(form) } : { form, lemma, parse, kind });
+  // a sound question also carries the app's respelling of the word (mw-5r3p30.241) and its syllables and stress (mw-5r3p30.274), a grammar one does not
+  const syllables = greekSyllables(form);
+  expect(focusOf(0)).toEqual(kind === 'sound' ? { form, lemma, parse, kind, respelling: respellModern(form), syllables, stress: stressedSyllable(syllables) } : { form, lemma, parse, kind });
 };
 const answerShows = async (): Promise<void> => {
   await waitFor(() => expect(turns()).toHaveLength(1));
