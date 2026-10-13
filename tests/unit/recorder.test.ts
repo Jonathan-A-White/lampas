@@ -30,7 +30,10 @@ describe('extensionOf', () => {
 });
 
 describe('ReadingRecorder', () => {
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
 
   it('says so, in words for him, when the browser has no recorder', async () => {
     vi.stubGlobal('MediaRecorder', undefined);
@@ -41,6 +44,36 @@ describe('ReadingRecorder', () => {
     vi.stubGlobal('MediaRecorder', class {});
     Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: () => Promise.reject(new Error('denied')) } });
     await expect(new ReadingRecorder().start()).rejects.toThrow(/turned off/);
+  });
+
+  it('measures a hold on the monotonic clock: a wall clock that steps back 1.4 s mid-hold still reads a hold, not a tap', async () => {
+    // WSL2 steps Date.now() back about 1.4 s every 32 s; performance.now() does not move backwards
+    let wall = 1_000_000;
+    let mono = 5_000;
+    vi.spyOn(Date, 'now').mockImplementation(() => wall);
+    vi.spyOn(performance, 'now').mockImplementation(() => mono);
+    class FakeMediaRecorder {
+      static isTypeSupported = () => true;
+      mimeType = 'audio/webm';
+      state = 'inactive';
+      ondataavailable: ((event: { data: Blob }) => void) | null = null;
+      onstop: (() => void) | null = null;
+      start() {
+        this.state = 'recording';
+      }
+      stop() {
+        this.state = 'inactive';
+        this.onstop?.();
+      }
+    }
+    vi.stubGlobal('MediaRecorder', FakeMediaRecorder);
+    Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: () => Promise.resolve({ getTracks: () => [] }) } });
+    const recorder = new ReadingRecorder();
+    await recorder.start();
+    mono += 1500; // he held for 1.5 s ...
+    wall += 1500 - 1400; // ... and the wall clock stepped back 1.4 s meanwhile
+    const recording = await recorder.stop();
+    expect(recording.durationMs).toBe(1500);
   });
 
   it('cuts a reading at the minute the scorer takes', () => {

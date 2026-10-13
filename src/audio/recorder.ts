@@ -67,7 +67,8 @@ export class ReadingRecorder implements HoldRecorder {
     this.recorder.ondataavailable = (event) => {
       if (event.data.size > 0) this.chunks.push(event.data);
     };
-    this.startedAt = Date.now();
+    // a hold is timed on the monotonic clock: the wall clock steps back on WSL2 and a hold would read as a tap
+    this.startedAt = performance.now();
     this.recorder.start(1000);
     this.cap = setTimeout(() => {
       this.cap = undefined;
@@ -83,7 +84,7 @@ export class ReadingRecorder implements HoldRecorder {
     return new Promise((resolve) => {
       recorder.onstop = () => {
         const mime = (recorder.mimeType || this.chunks[0]?.type || 'audio/webm').split(';')[0];
-        const recording = { blob: new Blob(this.chunks, { type: mime }), mime, durationMs: Date.now() - this.startedAt };
+        const recording = { blob: new Blob(this.chunks, { type: mime }), mime, durationMs: Math.round(performance.now() - this.startedAt) };
         this.release();
         resolve(recording);
       };

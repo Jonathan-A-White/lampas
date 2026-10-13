@@ -259,7 +259,7 @@ export function startListening(options: ListenOptions = {}): ListenStart {
   let transient = null as ListenError | null;
   let idleRestarts = 0;
   // When the recogniser was last started: how long it listened before it ended tells a pause from a failure.
-  let stretchStart = Date.now();
+  let stretchStart = performance.now();
   let error = null as ListenError | null;
   let outcome = null as ListenResult | null;
   let announced = false;
@@ -280,7 +280,7 @@ export function startListening(options: ListenOptions = {}): ListenStart {
     options.onStart?.();
   };
   const begin = (recognizer: Recognizer) => {
-    stretchStart = Date.now();
+    stretchStart = performance.now();
     recognizer.start();
   };
   const finish = () => {
@@ -351,7 +351,7 @@ export function startListening(options: ListenOptions = {}): ListenStart {
       if (!stopping && !error) {
         // He is still holding: the recogniser ended by itself, so start it again and keep what was heard.
         // A stretch that listened for a while only met his silence: it is a pause, not a failure, so it does not count.
-        if (Date.now() - stretchStart >= MIN_LIVE_STRETCH_MS) idleRestarts = 0;
+        if (performance.now() - stretchStart >= MIN_LIVE_STRETCH_MS) idleRestarts = 0;
         carried = heard;
         if (idleRestarts < MAX_IDLE_RESTARTS) {
           try {
