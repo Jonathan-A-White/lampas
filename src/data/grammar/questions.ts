@@ -6,8 +6,11 @@ import { bookOf } from '../books';
 import type { Chapter, GreekWord, Verse } from '../chapter';
 import { decodeParse, parseSegments, splitParse } from '../parseCode';
 import { shuffle, type Random } from '../quiz';
+import { chosenPronunciation } from '../../speech/greek';
+import type { Pronunciation } from '../../speech/pronunciation';
 import { MODERN } from '../../speech/schemes/modern';
-import { LADDER, ideasOf, keyedSound, type GrammarIdea } from './ladder';
+import { LADDER, itemsOf, ideasOf, type GrammarIdea } from './ladder';
+import { ideaSound, ideaText } from './lessons';
 import { ENCLITIC_USES, MARK_PAIRS, blankWord } from './marks';
 import { COMPOUND_VERBS, PREPOSITIONS, type VerseRef } from './prepositions';
 import { quickQuestion } from './quickRound';
@@ -236,27 +239,31 @@ const letterOf = (idea: GrammarIdea, random: Random): GrammarIdea => (idea.glyph
 const glyphs = (right: string, others: readonly string[], random: Random): string[] =>
   shuffle([right, ...shuffle(others, random).slice(0, OPTION_COUNT - 1)], random);
 
+/** What a letter or pair sounds like in `scheme`: its lesson's sound, else the scheme's own respelling of it, so two that sound alike are never told apart by a missing lesson. */
+const soundKey = (idea: GrammarIdea, scheme: Pronunciation): string => ideaSound(idea, scheme) ?? scheme.respell(glyphOf(idea) || (idea.pair ?? ''));
+
 /**
- * A letter: 'Which letter is Beta?' or 'Which letter sounds like v, as in “vase”?', over four glyphs. A letter that sounds like another (η ι υ,
- * ο ω) is never offered beside it when the sound is asked.
+ * A letter: 'Which letter is Beta?' or 'Which letter sounds like v, as in “vase”?' (the sound is the chosen pronunciation's, mw-5r3p30.229; a
+ * scheme that gives none asks by name), over four glyphs. A letter that sounds like another (η ι υ, ο ω) is never offered beside it when the sound is asked.
  */
-export function buildLetter(idea: GrammarIdea, random: Random): GrammarQuestion {
+export function buildLetter(idea: GrammarIdea, random: Random, scheme: Pronunciation = chosenPronunciation()): GrammarQuestion {
   const letter = letterOf(idea, random);
-  const bySound = random() < 0.5;
-  const others = LETTER_IDEAS.filter((o) => o.id !== letter.id && (!bySound || o.sound !== letter.sound));
+  const sound = ideaSound(letter, scheme);
+  const bySound = random() < 0.5 && sound !== undefined;
+  const others = LETTER_IDEAS.filter((o) => o.id !== letter.id && (!bySound || ideaSound(o, scheme) !== sound));
   return {
     kind: 'letter',
     ideaId: idea.id,
-    prompt: bySound ? `Which letter sounds like ${letter.sound}?` : `Which letter is ${letter.title}?`,
+    prompt: bySound ? `Which letter sounds like ${sound}?` : `Which letter is ${letter.title}?`,
     options: glyphs(glyphOf(letter), others.map(glyphOf), random),
     right: glyphOf(letter),
   };
 }
 
 /** Which letter he hears: Tap to hear says it, and no other letter of its sound is among the four glyphs. */
-export function buildSound(idea: GrammarIdea, random: Random): GrammarQuestion {
+export function buildSound(idea: GrammarIdea, random: Random, scheme: Pronunciation = chosenPronunciation()): GrammarQuestion {
   const letter = letterOf(idea, random);
-  const others = LETTER_IDEAS.filter((o) => o.id !== letter.id && o.sound !== letter.sound);
+  const others = LETTER_IDEAS.filter((o) => o.id !== letter.id && soundKey(o, scheme) !== soundKey(letter, scheme));
   return {
     kind: 'sound',
     ideaId: idea.id,
@@ -267,9 +274,18 @@ export function buildSound(idea: GrammarIdea, random: Random): GrammarQuestion {
   };
 }
 
-// [pair, sound] — one pair for each sound, from the sounds ideas' text
-const DIPHTHONGS: [string, string][] = [['αι', keyedSound('e')], ['ει', keyedSound('ee')], ['ου', keyedSound('oo')], ['αυ', 'av or af'], ['ευ', 'ev or ef']];
-const CONSONANT_PAIRS: [string, string][] = [['μπ', 'mb'], ['ντ', 'nd'], ['γκ', 'ng'], ['γχ', 'ng and kh']];
+/** One pair of a group for each sound the scheme gives (ει, οι and υι are one): its pair and the sound the scheme says for it. */
+function pairsOf(group: string, scheme: Pronunciation): [string, string][] {
+  const seen = new Set<string>();
+  const out: [string, string][] = [];
+  for (const item of itemsOf(group)) {
+    const sound = ideaSound(item, scheme);
+    if (sound === undefined || seen.has(sound)) continue;
+    seen.add(sound);
+    out.push([item.pair ?? '', sound]);
+  }
+  return out;
+}
 const PUNCTUATION: [string, string][] = [['Which mark is a question mark in Greek?', ';'], ['Which mark is a colon or a semicolon in Greek?', '·']];
 
 /** A question over a short table of marks: the right one and the others of the table, then fillers up to four. */
@@ -277,7 +293,15 @@ function fromTable(idea: GrammarIdea, prompt: string, right: string, others: rea
   return { kind: 'letter', ideaId: idea.id, prompt, options: glyphs(right, others, random), right };
 }
 
-function buildPairs(idea: GrammarIdea, table: readonly [string, string][], what: string, random: Random): GrammarQuestion {
+/** Which pair sounds like a sound the scheme gives; a scheme that gives none is asked by ear (Hold to hear), the pairs it says alike never together. */
+function buildPairs(idea: GrammarIdea, group: string, what: string, random: Random, scheme: Pronunciation): GrammarQuestion {
+  const table = pairsOf(group, scheme);
+  if (table.length === 0) {
+    const items = itemsOf(group);
+    const pair = pick(items, random);
+    const others = items.filter((o) => o.id !== pair.id && soundKey(o, scheme) !== soundKey(pair, scheme)).map((o) => o.pair ?? '');
+    return { kind: 'sound', ideaId: idea.id, prompt: `Hold to hear a pair of ${what}, then tap it`, options: glyphs(pair.pair ?? '', others, random), right: pair.pair ?? '', say: pair.pair };
+  }
   const [pair, sound] = pick(table, random);
   return fromTable(idea, `Which pair of ${what} sounds like ${sound}?`, pair, table.map(([p]) => p).filter((p) => p !== pair), random);
 }
@@ -507,22 +531,22 @@ const escapeRegExp = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\
  * What the idea says of itself with its own name taken out (mw-86e9r1.3): the pronunciation hint '(say AIR-ist)' goes, and the title, the terms
  * and, for an idea with no terms, every long word of the title become a blank, the whole word with them ('pronoun' for the term 'noun'), so the text no longer hands over its answer.
  */
-export function blankedText(idea: GrammarIdea): string {
+export function blankedText(idea: GrammarIdea, scheme: Pronunciation = chosenPronunciation()): string {
   // an idea with terms is named by them; one with none (the pronoun, syllables, accents) by the long words of its title
   const titleWords = idea.terms.length > 0 ? [] : idea.title.split(/\s+/).filter((w) => w.length >= 5 && !PLAIN_TITLE_WORDS.has(w.toLowerCase()));
   const secrets = [idea.title, idea.title.replace(/^The /, ''), ...idea.terms, ...titleWords].sort((a, b) => b.length - a.length);
   const pattern = new RegExp(`\\w*(?:${secrets.map(escapeRegExp).join('|')})\\w*`, 'giu');
-  return idea.text.replace(/\s*\(say [^)]*\)/gi, '').replace(pattern, BLANK);
+  return ideaText(idea, scheme).replace(/\s*\(say [^)]*\)/gi, '').replace(pattern, BLANK);
 }
 
 /** Which idea this is, from what it says with its own name blanked: used only for an idea the passage gives no form of. */
-export function buildConcept(idea: GrammarIdea, random: Random): GrammarQuestion {
+export function buildConcept(idea: GrammarIdea, random: Random, scheme: Pronunciation = chosenPronunciation()): GrammarQuestion {
   const near = shuffle(LADDER.filter((o) => o.id !== idea.id && o.tier === idea.tier), random);
   const far = shuffle(LADDER.filter((o) => o.id !== idea.id && o.tier !== idea.tier), random);
   return {
     kind: 'concept',
     ideaId: idea.id,
-    prompt: `Which idea is this? ${blankedText(idea)}`,
+    prompt: `Which idea is this? ${blankedText(idea, scheme)}`,
     options: shuffle([idea.title, ...[...near, ...far].slice(0, OPTION_COUNT - 1).map((o) => o.title)], random),
     right: idea.title,
   };
@@ -535,17 +559,17 @@ export function buildConcept(idea: GrammarIdea, random: Random): GrammarQuestion
  * letters and words; every other idea is asked as the ending of a form or the form to tap, whichever the first draw gives, then the
  * other when the passage cannot make the first; and an idea the passage has no form of is asked by what it says. Always gives a question.
  */
-export function buildIdeaQuestion(idea: GrammarIdea, passage: readonly Chapter[], random: Random, respell: Respell = DEFAULT_RESPELL): GrammarQuestion {
+export function buildIdeaQuestion(idea: GrammarIdea, passage: readonly Chapter[], random: Random, respell: Respell = DEFAULT_RESPELL, scheme: Pronunciation = chosenPronunciation()): GrammarQuestion {
   // one diphthong, consonant pair or breathing (mw-hqd5bz.18): heard or seen, as the quick round asks it
-  if (idea.parent) return quickQuestion({ id: idea.id, mode: random() < 0.5 ? 'hear' : 'see' }, random);
-  if (idea.glyphs || idea.id === 'alphabet') return random() < 0.5 ? buildLetter(idea, random) : buildSound(idea, random);
+  if (idea.parent) return quickQuestion({ id: idea.id, mode: random() < 0.5 ? 'hear' : 'see' }, random, scheme);
+  if (idea.glyphs || idea.id === 'alphabet') return random() < 0.5 ? buildLetter(idea, random, scheme) : buildSound(idea, random, scheme);
   if (idea.id.startsWith('preposition-')) return buildPreposition(idea, random);
   if (idea.id === 'compound-verbs') return buildCompound(idea, random);
   switch (idea.id) {
     case 'diphthongs':
-      return buildPairs(idea, DIPHTHONGS, 'vowels', random);
+      return buildPairs(idea, 'diphthongs', 'vowels', random, scheme);
     case 'consonant-pairs':
-      return buildPairs(idea, CONSONANT_PAIRS, 'consonants', random);
+      return buildPairs(idea, 'consonant-pairs', 'consonants', random, scheme);
     case 'syllables':
       return buildSyllables(idea, passage, random, respell);
     case 'breathings':
@@ -569,5 +593,5 @@ export function buildIdeaQuestion(idea: GrammarIdea, passage: readonly Chapter[]
     const question = build(idea, passage, random);
     if (question) return question;
   }
-  return buildConcept(idea, random);
+  return buildConcept(idea, random, scheme);
 }
