@@ -36,8 +36,8 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
   onClose: () => void;
   /** the verse number was tapped: the Reader shows that verse (the sheet closes itself first) */
   onShowVerse: (verse: number) => void;
-  /** Ask the tutor (the sheet closes itself first) */
-  onAsk: (ask: NewWordAsk) => void;
+  /** Ask the tutor (the sheet closes itself first); the button is left out without it (no licence) */
+  onAsk?: (ask: NewWordAsk) => void;
 }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
@@ -169,17 +169,19 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
           <button type="button" disabled={busy} onClick={notNow} className={`${BUTTON} border-line text-accent active:bg-line`}>
             Not now
           </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => {
-              onClose();
-              onAsk({ lemma: current.lemma, gloss: current.gloss, verse: verse.n });
-            }}
-            className={`${BUTTON} border-line text-accent active:bg-line`}
-          >
-            Ask the tutor
-          </button>
+          {onAsk ? (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => {
+                onClose();
+                onAsk({ lemma: current.lemma, gloss: current.gloss, verse: verse.n });
+              }}
+              className={`${BUTTON} border-line text-accent active:bg-line`}
+            >
+              Ask the tutor
+            </button>
+          ) : null}
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@
 // it opens with the questions fitted to the screen. The Reader draws the same button but opens its own chapter talk (src/Reader.tsx).
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { NO_CHAPTER } from './data/chapter';
+import { useAiAllowed } from './gate/licenceContext';
 import { TalkSheet } from './Talk';
 import { stopReading } from './speech/readAloud';
 import { useBarShown } from './speech/barShown';
@@ -31,7 +32,8 @@ const SPEAKING_BAR_LIFT = 'var(--lp-tap) + 1.25rem';
 export function AskTutorButton({ onClick, lift = '0px', away }: { onClick: () => void; lift?: string; away?: boolean }) {
   const hidden = useSheetOpen();
   const speaking = useBarShown();
-  if (hidden) return null;
+  const allowed = useAiAllowed();
+  if (hidden || !allowed) return null;
   return (
     <button
       type="button"
@@ -78,6 +80,7 @@ function contextOf(name: string, reported: ScreenContext | null): ScreenContext 
 export function AskTutor({ route }: { route: Route }) {
   // the route the sheet was opened on: it is closed once the screen changes
   const [openOn, setOpenOn] = useState<Route | null>(null);
+  const ai = useAiAllowed();
   const open = openOn === route;
   const reported = useScreenContext();
   const name = route === 'home' || route === 'share' || route === 'unlock' ? undefined : SCREEN_NAMES[route];
@@ -105,7 +108,7 @@ export function AskTutor({ route }: { route: Route }) {
     voice.clearNotice();
     setOpenOn(null);
   }, [voice]);
-  if (!name || !scope || !ref) return null;
+  if (!name || !scope || !ref || !ai) return null;
   return (
     <>
       <AskTutorButton

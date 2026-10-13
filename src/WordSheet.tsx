@@ -11,6 +11,7 @@ import { type Chapter, type GreekWord, wordGloss, wordLemma, wordParse } from '.
 import { parseSegments } from './data/parseCode';
 import { getStudyResources, setResourceOn, type StudyResources } from './data/repositories';
 import { publish, useLatest } from './events/bus';
+import { useAiAllowed } from './gate/licenceContext';
 import { GrammarSheet } from './GrammarSheet';
 import { IdeaSheet } from './IdeaSheet';
 import { ideaOf, ideaOfTerm, type GrammarIdea } from './data/grammar/ladder';
@@ -325,7 +326,9 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
   const scroll = useRef<HTMLDivElement>(null);
   const moreBelow = useMoreBelow(scroll, `${tiles}:${lookup.words.length}`);
   // A word of another chapter has no verse in the Reader's chapter to help with or ask about.
-  const help = onHelp && !elsewhere
+  // Help with this word and Ask the tutor are the AI: left out without a licence (mw-8m9dyu.2).
+  const ai = useAiAllowed();
+  const help = ai && onHelp && !elsewhere
     ? (asked: WordHelp): void => {
         onClose();
         onHelp(asked);
@@ -337,7 +340,7 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
   };
   const askVerse = grammar?.verse;
   const ask =
-    onAskTerm && askVerse !== undefined && !elsewhere
+    ai && onAskTerm && askVerse !== undefined && !elsewhere
       ? (term: string): void => {
           setIdea(null);
           setGrammar(null);

@@ -24,7 +24,8 @@ import { LinkActions } from './ui/LinkActions';
 import type { UseReadChecks } from './useReadChecks';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import type { AskState } from './useAsks';
-import { VERSE_ACTIONS, type VerseAction } from './verse/action';
+import { actionsFor, type VerseAction } from './verse/action';
+import { useAiAllowed } from './gate/licenceContext';
 
 /** Listen is a player: Play reads the verse or passage on to its end by itself. */
 export interface ListenPlayer {
@@ -79,6 +80,8 @@ export function VerseView(props: VerseViewProps) {
   const { title, book, chapter, verse, view, text, previous, next, onClose, action, onAction, listen, checks, read, onRetryRead, ask, onAsk, prefill, onTalk, quiz } = props;
   // The foot of the view, where the chosen action draws its bar.
   const [slot, setSlot] = useState<HTMLDivElement | null>(null);
+  // Ask the tutor and Quiz me are the AI: not offered, and nothing of theirs drawn, without a licence (mw-8m9dyu.2).
+  const ai = useAiAllowed();
   const reference = unitReference(title, verse);
   const passage = verse.to !== undefined;
   const name = unitName(verse);
@@ -125,7 +128,7 @@ export function VerseView(props: VerseViewProps) {
             aria-label="Actions"
             className={`relative mt-3 grid grid-cols-3 items-stretch gap-1 ${canShare ? '@[25rem]:grid-flow-col @[25rem]:grid-cols-none @[25rem]:auto-cols-fr' : '@[21rem]:grid-flow-col @[21rem]:grid-cols-none @[21rem]:auto-cols-fr'}`}
           >
-            {VERSE_ACTIONS.map((a) => (
+            {actionsFor(ai).map((a) => (
               <button
                 key={a.id}
                 type="button"
@@ -153,7 +156,7 @@ export function VerseView(props: VerseViewProps) {
           {action === 'read' ? (
             <ReadCheckPanel key={unitId(verse)} verse={verse} view={view} book={book} chapter={chapter} checks={checks} hold={read} onRetry={onRetryRead} slot={slot} />
           ) : null}
-          {action === 'ask' ? (
+          {action === 'ask' && ai ? (
             <>
               <AnswerCards verse={unitId(verse)} book={book} chapter={chapter} />
               <AskStatus verse={verse} state={ask} onAsk={onAsk} />
@@ -164,7 +167,7 @@ export function VerseView(props: VerseViewProps) {
               )}
             </>
           ) : null}
-          {action === 'quiz' ? (
+          {action === 'quiz' && ai ? (
             <p data-action-help className="px-1 text-sm text-muted">
               The tutor asks you about {name} one question at a time, in order, then helps you map how it is built.
             </p>
@@ -187,14 +190,14 @@ export function VerseView(props: VerseViewProps) {
             slot,
           )
         ) : null}
-        {slot && action === 'ask' ? (
+        {slot && action === 'ask' && ai ? (
           createPortal(
             // bsv-kit's Composer (mw-jtzpw0.3): the one Hold to ask bar with his words above it, and Type a question beneath
             <AskComposer verse={verse} state={ask} onAsk={onAsk} prefill={prefill} />,
             slot,
           )
         ) : null}
-        {slot && action === 'quiz' ? (
+        {slot && action === 'quiz' && ai ? (
           createPortal(
             // Not a hold: the answers are given in the Talk sheet it opens, which has the hold bar for them. Same size and place as the bar.
             <button

@@ -15,6 +15,7 @@ import { Away } from './Away';
 import { useImmersive } from './immersive';
 import { ImmersiveHint } from './ImmersiveHint';
 import { ASK_BUTTON_GUTTER, ASK_BUTTON_ROOM, AskTutorButton, TALK_BAR_LIFT } from './AskTutor';
+import { useAiAllowed } from './gate/licenceContext';
 import { TalkBar, TalkSheet } from './Talk';
 import { ErrorBoundary } from './ErrorBoundary';
 import type { Verse } from './data/chapter';
@@ -209,6 +210,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const viewUnit = useMemo(() => viewVerse ?? (viewPassage ? passageVerse(viewPassage) : undefined), [viewVerse, viewPassage]);
   const tutor = useReaderTutor(open, chapter, talk, voice, { request, viewUnit, openTalkRef });
   const { talkScope, talkKey, talkAbout, setTalkAbout, holdTalk } = tutor;
+  // The tutor (the Talk bar and sheet, the round Ask button, Teach's Ask the tutor) is the AI: not drawn without a licence (mw-8m9dyu.2).
+  const ai = useAiAllowed();
   // The Talk sheet's own close (Done), which the answer's `go` calls before the Reader opens the other chapter.
   useEffect(() => {
     closeTalk.current = () => {
@@ -335,7 +338,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       {swipeEnd ? <SwipeNote end={swipeEnd} lastBook={BOOKS[BOOKS.length - 1].name} onDismiss={dismissSwipeNote} /> : null}
       <ReadingBar reading={reading} />
       {chapter && !failed ? <ImmersiveHint enabled={immersive} /> : null}
-      <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} data-immersive={immersive ? 'on' : 'off'} style={chapter ? { marginBottom: away ? 0 : `calc(${ASK_BUTTON_ROOM})`, marginRight: ASK_BUTTON_GUTTER, transition: immersive ? 'margin-bottom 200ms ease' : undefined } : undefined} className="screen min-h-0 flex-1 touch-pan-y px-1 pt-2">
+      <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} data-immersive={immersive ? 'on' : 'off'} style={chapter ? { marginBottom: away || !ai ? 0 : `calc(${ASK_BUTTON_ROOM})`, marginRight: ai ? ASK_BUTTON_GUTTER : undefined, transition: immersive ? 'margin-bottom 200ms ease' : undefined } : undefined} className="screen min-h-0 flex-1 touch-pan-y px-1 pt-2">
         <div ref={inner}>
         {failed ? (
           <ChapterFailed title={TITLE} onRetry={retry} onPick={() => setPicking(true)} />
@@ -389,7 +392,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         </div>
       </main>
       <BarSlot level={1} />
-      {chapter && !viewUnit ? (
+      {chapter && !viewUnit && ai ? (
         <Away enabled={immersive} away={away}>
           <TalkBar
             hold={{
@@ -413,7 +416,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           }}
         />
       ) : null}
-      {talkScope && talkAbout !== undefined ? (
+      {ai && talkScope && talkAbout !== undefined ? (
         <TalkSheet
           scope={talkScope}
           suggestions={talkScope.verse === null && !talkScope.quiz ? READER_SUGGESTIONS : undefined}
@@ -434,7 +437,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           solid={solid ?? EMPTY_LEMMAS}
           onClose={closeTeach}
           onShowVerse={showVerse}
-          onAsk={tutor.askAboutNewWord}
+          onAsk={ai ? tutor.askAboutNewWord : undefined}
         />
       ) : null}
       {chapter && viewUnit && view ? (

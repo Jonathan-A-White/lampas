@@ -10,6 +10,7 @@ import { clearDrill, readDrill, saveDrill, type SavedDrill } from './data/drillK
 import type { Random } from './data/quiz';
 import { getOpenChapter } from './data/readerChapter';
 import { listWords, recordDrillStep, seedWordsIfFirstOpen } from './data/repositories';
+import { useAiAllowed } from './gate/licenceContext';
 import { askInReader, talkInReader } from './nav/readerRequest';
 import { navigate } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -102,6 +103,7 @@ function VerseWithWord({ q }: { q: DrillQuestion }) {
 }
 
 export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
+  const ai = useAiAllowed();
   const [s, setS] = useState<Session>(opening);
 
   const another = () => {
@@ -333,14 +335,16 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
             {!lastStep ? 'Next step' : lastWord ? 'Finish' : 'Next word'}
           </button>
         ) : null}
-        <div className="mt-3 grid grid-cols-2 gap-3 pb-4">
-          <button type="button" onClick={ask} className="min-h-12 rounded-xl border border-line text-base font-medium">
-            Ask the tutor
-          </button>
-          <button type="button" onClick={talk} className="min-h-12 rounded-xl border border-line text-base font-medium">
-            Talk about it
-          </button>
-        </div>
+        {ai ? (
+          <div className="mt-3 grid grid-cols-2 gap-3 pb-4">
+            <button type="button" onClick={ask} className="min-h-12 rounded-xl border border-line text-base font-medium">
+              Ask the tutor
+            </button>
+            <button type="button" onClick={talk} className="min-h-12 rounded-xl border border-line text-base font-medium">
+              Talk about it
+            </button>
+          </div>
+        ) : null}
       </main>
     </>
   );

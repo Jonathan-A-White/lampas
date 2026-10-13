@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
 import { AskApproachSheet } from '../../AskApproachSheet';
+import { useAiAllowed } from '../../gate/licenceContext';
 import { APPROACHES, approachOf, nextLessonOf, type GrammarApproach } from '../../approaches';
 import { getGrammarApproach } from '../../data/repositories';
 import { listLevels } from '../../data/repositories/grammarLevels';
@@ -83,9 +84,12 @@ function ApproachPicker({ chosen, levels }: { chosen: string; levels: ReadonlyMa
   );
 }
 
-/** The last control of Settings > Grammar approach: it opens the sheet that asks the factory for another approach. */
+/** The last control of Settings > Grammar approach: it opens the sheet that asks the factory for another approach. A feedback is sent to the mill, so
+ * it is not drawn without a licence (mw-8m9dyu.2). */
 function AskApproach() {
   const [open, setOpen] = useState(false);
+  const ai = useAiAllowed();
+  if (!ai) return null;
   return (
     <>
       <button

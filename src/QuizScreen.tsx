@@ -6,6 +6,7 @@ import { lookupLemma } from './data/lexicon';
 import { listWords, recordAnswer, seedWordsIfFirstOpen } from './data/repositories';
 import { clearRound, readRound, saveRound } from './data/roundKeep';
 import { askAbout, buildQuestion, drawWords, seedDistractors, type Question, type Random } from './data/quiz';
+import { useAiAllowed } from './gate/licenceContext';
 import { navigate } from './nav/route';
 import { askAboutWord } from './nav/readerRequest';
 import { MAX_QUIZ_ANSWERS, quizQuestion, type QuizAnswer, type QuizFocus } from './services/talk';
@@ -53,6 +54,8 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
   // A round left half done (the app was closed, or he went back to the reader) is offered again: Resume | New round.
   const [round, setRound] = useState<Round>(() => (readRound() ? { status: 'offer' } : { status: 'loading' }));
   const [index, setIndex] = useState(0);
+  // Ask the tutor after an answer is the AI: not drawn without a licence (mw-8m9dyu.2).
+  const ai = useAiAllowed();
   const [picked, setPicked] = useState<string | null>(null);
   const [missed, setMissed] = useState<Question[]>([]);
   // his answers to the questions before this one: the tutor is told them with the one he asks about
@@ -236,13 +239,15 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
                 setPicked(null);
                 setIndex(index + 1);
               }}
-              className="min-h-12 rounded-xl bg-accent text-lg font-medium text-accent-fg"
+              className={`min-h-12 rounded-xl bg-accent text-lg font-medium text-accent-fg ${ai ? '' : 'col-span-2'}`}
             >
               {last ? 'Finish' : 'Next'}
             </button>
-            <button type="button" onClick={() => void askTutor()} className="min-h-12 rounded-xl border border-line text-lg font-medium">
-              Ask the tutor
-            </button>
+            {ai ? (
+              <button type="button" onClick={() => void askTutor()} className="min-h-12 rounded-xl border border-line text-lg font-medium">
+                Ask the tutor
+              </button>
+            ) : null}
           </div>
         ) : null}
         <div className="pb-4">

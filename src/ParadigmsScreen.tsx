@@ -22,6 +22,7 @@ import {
 import { hideAll, revealedOf, toggleRevealed } from './data/paradigms/revealed';
 import { getOpenChapter } from './data/readerChapter';
 import { listLevels } from './data/repositories';
+import { useAiAllowed } from './gate/licenceContext';
 import { askAboutParadigm } from './nav/readerRequest';
 import { navigate, openParadigm, paradigmHash, paradigmOf, replaceHash, useAddress } from './nav/route';
 import { MAX_REVEALED } from './services/talk';
@@ -218,6 +219,7 @@ function shownForms(table: Paradigm, levels: Levels, mode: 'study' | 'review', r
 function ParadigmTable({ table, mode, levels }: { table: Paradigm; mode: 'study' | 'review'; levels: Levels | undefined }) {
   const [revealed, setRevealed] = useState<ReadonlySet<string>>(() => revealedOf(table.id));
   const switchTo = mode === 'study' ? 'review' : 'study';
+  const ai = useAiAllowed();
   const ask = () => {
     if (!levels) return;
     const { book, chapter } = getOpenChapter();
@@ -253,9 +255,11 @@ function ParadigmTable({ table, mode, levels }: { table: Paradigm; mode: 'study'
         {levels ? (
           <Table table={table} levels={levels} mode={mode} revealed={revealed} onToggle={(place) => setRevealed(toggleRevealed(table.id, place))} />
         ) : null}
-        <button type="button" onClick={ask} className={`${BUTTON} mt-4 text-accent`}>
-          Ask the tutor
-        </button>
+        {ai ? (
+          <button type="button" onClick={ask} className={`${BUTTON} mt-4 text-accent`}>
+            Ask the tutor
+          </button>
+        ) : null}
       </main>
     </>
   );
