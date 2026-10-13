@@ -1,9 +1,10 @@
 // scripts/data-build.ts on small slices of both source files (tests/fixtures/data/); never the network.
 import { describe, expect, it } from 'vitest';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { buildData, cleanDefinition, lemmaFor, parseLexicon, runBuild, suppliedWords } from '../../scripts/data-build';
+import { buildData, chapterFingerprint, cleanDefinition, lemmaFor, parseLexicon, runBuild, suppliedWords } from '../../scripts/data-build';
 import type { Chapter, Verse } from '../../src/data/chapter';
 
 const msb = readFileSync('tests/fixtures/data/msb-slice.tsv', 'utf8');
@@ -63,8 +64,54 @@ describe('the index', () => {
   it('lists the books present in canonical order, with chapter and verse counts', () => {
     expect(built.index.books.map((b) => b.code)).toEqual(['mat', 'jhn', 'rom', 'rev']);
     const rom = built.index.books.find((b) => b.code === 'rom');
-    expect(rom).toEqual({ code: 'rom', name: 'Romans', chapters: 8, verses: [0, 0, 0, 0, 0, 0, 0, 2] });
+    expect(rom).toMatchObject({ code: 'rom', name: 'Romans', chapters: 8, verses: [0, 0, 0, 0, 0, 0, 0, 2] });
     expect(built.index.books.find((b) => b.code === 'jhn')?.verses).toEqual([3]);
+  });
+});
+
+describe('the chapter fingerprints (mw-5r3p30.276)', () => {
+  it('gives every chapter in the index 12 hex characters, and a chapter the table skips none', () => {
+    for (const book of built.index.books) {
+      expect(book.fingerprints).toHaveLength(book.chapters);
+      book.fingerprints.forEach((f, i) => expect(f).toMatch(book.verses[i] === 0 ? /^$/ : /^[0-9a-f]{12}$/));
+    }
+  });
+
+  it('is the first 12 hex of the SHA-256 of the bytes the chapter file holds, so the same bytes give the same fingerprint', () => {
+    const file = built.chapters.find((c) => c.path === 'rom/8.json')!;
+    const bytes = JSON.stringify(file.chapter);
+    const expected = createHash('sha256').update(bytes).digest('hex').slice(0, 12);
+    expect(chapterFingerprint(file.chapter)).toBe(expected);
+    expect(chapterFingerprint(JSON.parse(bytes))).toBe(expected);
+    expect(built.index.books.find((b) => b.code === 'rom')?.fingerprints[7]).toBe(expected);
+  });
+
+  it('differs between chapters with different text', () => {
+    const a = built.chapters.find((c) => c.path === 'rom/8.json')!.chapter;
+    const b = built.chapters.find((c) => c.path === 'jhn/1.json')!.chapter;
+    expect(chapterFingerprint(a)).not.toBe(chapterFingerprint(b));
+    const changed: Chapter = { ...a, verses: a.verses.map((v, i) => (i === 0 ? { ...v, h: 'Another heading' } : v)) };
+    expect(chapterFingerprint(changed)).not.toBe(chapterFingerprint(a));
+  });
+
+  it('is written into index.json for the file written beside it', async () => {
+    const base = mkdtempSync(join(tmpdir(), 'lampas-data-'));
+    try {
+      mkdirSync(join(base, 'raw'), { recursive: true });
+      writeFileSync(join(base, 'raw', 'msb_nt_tables.tsv'), msb);
+      writeFileSync(join(base, 'raw', 'tbesg.txt'), tbesg);
+      await runBuild({ rawDir: join(base, 'raw'), outDir: join(base, 'out'), download: async () => undefined });
+      const index = JSON.parse(readFileSync(join(base, 'out', 'index.json'), 'utf8')) as typeof built.index;
+      for (const book of index.books) {
+        book.fingerprints.forEach((f, i) => {
+          if (!f) return;
+          const bytes = readFileSync(join(base, 'out', book.code, `${i + 1}.json`));
+          expect(f).toBe(createHash('sha256').update(bytes).digest('hex').slice(0, 12));
+        });
+      }
+    } finally {
+      rmSync(base, { recursive: true, force: true });
+    }
   });
 });
 
