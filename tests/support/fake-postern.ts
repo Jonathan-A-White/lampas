@@ -228,11 +228,14 @@ export function makeFakePostern(): FakePostern {
     answer(reply) {
       const next = unanswered.shift();
       if (!next) throw new Error('no grist is waiting for an answer');
-      const plaintext = { re: next.txid, ...reply, grind: { app: 'lampas', kind: next.kind, v: '1' } };
-      const envelope = grist.sealEnvelope(JSON.stringify(plaintext), millBytes, next.from, 1_790_000_000);
-      records.push({ seq: records.length + 1, firstSeen: new Date().toISOString(), txid: `direct:${hex(Hash.sha256(Utils.toArray(`answer-${next.txid}`, 'utf8')))}`, signer: MILL_PUBLIC_KEY, payload: { ...envelope } });
-      announce(records.length);
+      answerGrist(next, reply);
     },
+  };
+  const answerGrist = (next: { txid: string; from: string; kind: string }, reply: Reply): void => {
+    const plaintext = { re: next.txid, ...reply, grind: { app: 'lampas', kind: next.kind, v: '1' } };
+    const envelope = grist.sealEnvelope(JSON.stringify(plaintext), millBytes, next.from, 1_790_000_000);
+    records.push({ seq: records.length + 1, firstSeen: new Date().toISOString(), txid: `direct:${hex(Hash.sha256(Utils.toArray(`answer-${next.txid}`, 'utf8')))}`, signer: MILL_PUBLIC_KEY, payload: { ...envelope } });
+    announce(records.length);
   };
 
   fake.fetch = (async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
@@ -301,11 +304,17 @@ export function makeFakePostern(): FakePostern {
       const opened = JSON.parse(grist.openCt(envelope.ct, millBytes)) as ReceivedGrist;
       fake.received.push(opened);
       fake.txids.push(txid);
-      unanswered.push({ txid, from: pubkey, kind: opened.grist.kind });
+      const waiting = { txid, from: pubkey, kind: opened.grist.kind };
+      unanswered.push(waiting);
+      // a reply set for this grist answers THIS grist, not the oldest one waiting: an earlier grist may be held on purpose
+      const answerThis = (reply: Reply): void => {
+        unanswered.splice(unanswered.indexOf(waiting), 1);
+        answerGrist(waiting, reply);
+      };
       const greek = fake.greekReply !== undefined && (opened.input as { lang?: unknown } | undefined)?.lang === 'el';
       const byKind = fake.kindReplies[opened.grist.kind];
-      if (byKind) fake.answer(byKind);
-      else if (fake.autoReply) fake.answer(greek && fake.greekReply ? fake.greekReply : fake.autoReply);
+      if (byKind) answerThis(byKind);
+      else if (fake.autoReply) answerThis(greek && fake.greekReply ? fake.greekReply : fake.autoReply);
       const held = fake.holds[opened.grist.kind];
       if (held) await held;
       // the grist's own place, as the backend names it: an answer the fake made at once is after it
