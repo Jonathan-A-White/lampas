@@ -112,7 +112,7 @@ The whole loop is walked at 390x844 by `tests/e2e/feedback-loop-demo.spec.ts` (m
 The tutor leaves three kinds of offer for a tap: **Send this to the makers** (`feedback_offer`), a setting change (`setting_offer` `{key, value}`, checked by
 `offeredChange` in `src/settings/registry.ts`; the button reads 'Change Theme: Dark') and the quiz goal (`quiz_goal_offer`, Yes, from now on | Just this time).
 He may say yes, no or 'read it back' instead, in Talk, spoken or typed. `src/talk/offers.ts` `pendingOfferOf(turns)` finds the newest turn of the talk with an
-offer nobody has settled; `useTalk.say` sends it with his next turn as `pending_offer` `{kind: 'feedback' | 'setting' | 'quiz-goal' | 'bridge', text}` (the exact text it would
+offer nobody has settled; `useTalk.say` sends it with his next turn as `pending_offer` `{kind: 'feedback' | 'setting' | 'quiz-goal' | 'bridge' | 'greek' | 'rusty', text}` (the exact text it would
 send or do). The bible-talk grind, not a word list in the app, decides from his words and answers `offer_reply`: `confirm`, `decline` or `read_back`
 (`grinds/bible-talk.instructions.md` "Answering an offer by voice"; five examples under `grinds/examples/bible-talk/offer-*.json`). `settleOffer` then does it:
 confirm does exactly what the tap does (feedback: `sendMakersOffer`, the one function the button calls too; a tap and a yes for the same turn share the one send in flight, so the makers get one grist, and the button is off while either is sending, `useOfferSending`; setting: `takeSettingOffer`, the change lands on the
@@ -138,6 +138,25 @@ briefly at his level first, so he is never refused.
   (`src/IdeaSheet.tsx`) over the talk (`openBridgeIdea`, module state, so a tap and a yes for the same turn leave one sheet open). Done or the phone's Back closes it and the talk is there as it was; the
   button stays to open it again. The talk is not a quiz (no bridge in Quiz me). The bridged idea becomes his frontier only if he starts it there (Got it).
 - Tests: `features/talk-bridge.feature`, `tests/unit/bridge.test.ts`, examples `grinds/examples/bible-talk/bridge-*.json` and `grinds/examples/verse-ask/bridge-quite-a-bit.json`.
+
+## Rust: he comes back and is rusty (mw-1vuvq6.6, PROVISIONAL)
+
+His words (12 Oct 2026): a person is not always going forward; he takes a break, comes back and is rusty, and the tutor should recognise that, say which words or ideas were solid before, and offer to move them to Frontier and practise.
+
+- **What the device works out** (`src/data/rusty.ts`, pure; `src/data/learnerRusty.ts` reads the store): a SOLID word or idea is **rusty** when a wrong answer is among its last 3 answers (`Review.recent`, kept beside the schedule by
+  `writeReview`; a row from before has none), or when it is 7 or more days past its due date (a 30-day step is meant to be rare, so only an overdue item counts). The request carries up to 8 as `rusty` `[{kind: 'word' | 'idea', id, title, why}]`,
+  worst first (most slips, then the longest unseen); `why` is plain: 'slipped twice this week', 'slipped lately', 'not seen for 3 weeks'. Missing when nothing is rusty, and in a quiz. It goes in the bible-talk and verse-ask requests
+  (`tests/unit/tutor-knows.test.ts`: verse-read and tips have a written reason they are not sent it). The thresholds are constants at the top of `src/data/rusty.ts`; all PROVISIONAL.
+- **What the tutor says** (`grinds/bible-talk.instructions.md` 'When he has gone rusty'): when it fits the talk, once, plainly ('You're rusty on X and Y: they were solid before'), and leaves ONE `rusty_offer` `{items: [{kind, id}]}`.
+  The verse-ask tutor may mention it in its answer; it leaves no button (the Talk is where the app offers).
+- **What the app does with it** (`src/talk/rustyOffer.ts`): `rustyOfferOf` keeps only the items the request itself listed, in its order, with its titles, once a talk, none after his no or in a quiz; the turn keeps it (`TalkTurn.rustyOffer`)
+  and `src/talk/RustyOffer.tsx` draws the titles and **Move back to Frontier and practise**. A tap, or a spoken yes (`pending_offer` of kind `rusty`, `settleOffer` -> `takeRustyOffer`, the function the button calls), moves the items
+  that are still solid to Frontier (`moveToFrontier` in `src/data/repositories/rusty.ts`: a word becomes learning, an idea frontier with how 'tutor', both back at step 0 and due now), closes the sheet and opens Review on a round of just those items
+  (`src/review/practise.ts`, `drawReviewRound`'s `chosen`). Nothing moves without the tap or the yes. The one-frontier rule (mw-i7xe0n.6) has not landed: when it does, only the worst item moves and the next is offered after it; Drill it has
+  no screen yet, so the practice is a Review round.
+- **Welcome back** (`src/WelcomeBack.tsx`): opening the app when the latest day before today with any use (`lastUsageDayBefore`, the usage log) is 7 or more days ago, and some solid item is past its due date, draws a strip with the
+  most overdue (`overdueOf`, at most 5), **Refresh** (a Review round of just those) and **Not now** (put away for the day, localStorage `lampas.welcomeBackDay`; Refresh puts it away too).
+- Tests: `features/tutor-rust.feature`, `features/welcome-back.feature`, `tests/unit/rusty.test.ts`, `tests/unit/rusty-store.test.ts`, examples `grinds/examples/bible-talk/rusty-*.json` and `grinds/examples/verse-ask/rusty-mentioned.json`.
 
 ## Greek words he says aloud (mw-5r3p30.244)
 
