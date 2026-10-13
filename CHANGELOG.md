@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.179
+_2026-10-13_
+- New: When you read in English, the tutor now answers in English and, if you show interest in the original, offers the Greek once with a button, and remembers if you say no.
+
 ## 0.1.177
 _2026-10-13_
 - New: Without a licence, Settings now shows the tutor's options as off, with "Needs a licence", which opens a Licence page where you can see your key and check again.
