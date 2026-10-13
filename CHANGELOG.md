@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.166
+_2026-10-13_
+- Fixed: Sending an offer to the makers by tapping the button and saying yes no longer delivers it twice.
+
 ## 0.1.165
 _2026-10-13_
 - Fixed: Changed: Hearing a word on the Quick test, flashcards and grammar questions is now one tap on 'Tap to hear' (tap again to stop), no longer a hold.

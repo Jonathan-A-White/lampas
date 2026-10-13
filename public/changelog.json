@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.166",
+    "date": "2026-10-13",
+    "story": "mw-5r3p30.286",
+    "kind": "fixed",
+    "text": "Sending an offer to the makers by tapping the button and saying yes no longer delivers it twice."
+  },
+  {
     "version": "0.1.165",
     "date": "2026-10-13",
     "story": "mw-5r3p30.278",
