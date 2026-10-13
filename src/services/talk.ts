@@ -15,6 +15,7 @@ import type { TutorResource } from '../resources/tutorLinks';
 import { slugOf, type ScreenContext } from '../tutor/screen';
 import type { FormFieldState, FormValue } from '../formHelper/formHelper';
 import { MAX_SUMMARY } from './feedback';
+import { greekSyllables, stressedSyllable } from '../speech/greekSyllables';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation } from '../speech/pronunciation';
 import { askGrind, type AskOptions } from './tutor';
 
@@ -56,6 +57,10 @@ export interface WordFocus {
   language?: 'he';
   /** a Greek sound question only (mw-5r3p30.241): the word as the app's pronunciation respells it ('TAF-ta'), added by buildTalkRequest; the tutor describes the sounds by it */
   respelling?: string;
+  /** a Greek sound question only (mw-5r3p30.274): the word cut into syllables by the app (speech/greekSyllables.ts), in order; the tutor repeats these and never counts */
+  syllables?: string[];
+  /** with `syllables`: the index (0 = the first) of the stressed syllable; absent when the word carries no accent */
+  stress?: number;
 }
 
 /** The question the Hebrew guide's Syllables and sounds sends for a Hebrew word of an answer, and the focus that rides with it. */
@@ -370,10 +375,12 @@ export function fitHistory(request: TalkRequest): TalkRequest {
   return fitted();
 }
 
-/** A Greek sound question carries the app's respelling of the word, so the tutor explains the sounds by the pronunciation the app speaks, not by its own habit. */
+/** A Greek sound question carries the app's respelling of the word, and its syllables and stressed syllable (mw-5r3p30.274), so the tutor explains the sounds by the pronunciation the app speaks, not by its own habit. */
 function withRespelling(focus: TalkFocus, pronunciation: GreekPronunciation): TalkFocus {
   if (!('form' in focus) || focus.kind !== 'sound' || focus.language) return focus;
-  return { ...focus, respelling: pronunciationOf(pronunciation).respell(focus.form) };
+  const syllables = greekSyllables(focus.form);
+  const stress = stressedSyllable(syllables);
+  return { ...focus, respelling: pronunciationOf(pronunciation).respell(focus.form), syllables, ...(stress >= 0 ? { stress } : {}) };
 }
 
 /** The request for what he just said: the verse's or the passage's whole text, or the chapter's first three verses; the last 10 turns, oldest first; the settings as they stand; the word he asked help with, if he did. */

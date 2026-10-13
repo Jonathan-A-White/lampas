@@ -1,0 +1,31 @@
+{
+  "description": "Sound it out on σβέννυτε (1 Thessalonians 5:19): the app hands over the syllables σβέν, νυ, τε and the stress index 0, so the answer names three syllables, stresses the first, and never calls the cluster σβ a syllable.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "1 Thessalonians 5:19",
+    "greek": "Τὸ πνεῦμα μὴ σβέννυτε",
+    "english": "Do not extinguish the Spirit.",
+    "question": "The word σβέννυτε (lemma σβέννυμι; verb, present active imperative, 2nd person plural) in 1 Thessalonians 5:19. Help me pronounce this word: its syllables and how each sounds.",
+    "history": [],
+    "solid_words": ["ὁ", "καί", "θεός"],
+    "settings": { "greekPronunciation": "modern" },
+    "pronunciation": "modern",
+    "focus": {
+      "form": "σβέννυτε",
+      "lemma": "σβέννυμι",
+      "parse": "verb, present active imperative, 2nd person plural",
+      "kind": "sound",
+      "respelling": "ZVE-nee-te",
+      "syllables": ["σβέν", "νυ", "τε"],
+      "stress": 0
+    }
+  },
+  "expect": {
+    "answer": { "contains": "σβέν", "matches": "[Ff]irst" },
+    "syllables.0": { "equals": "σβέν" },
+    "syllables.1": { "equals": "νυ" },
+    "syllables.2": { "equals": "τε" },
+    "syllables.3": { "present": false },
+    "settings_changes": { "present": false }
+  }
+}
