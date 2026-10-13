@@ -89,9 +89,17 @@ async function openTalk(): Promise<void> {
     await user.click(within(view).getByRole('button', { name: 'Ask the tutor', exact: true }));
     await user.click(await within(view).findByRole('button', { name: 'Talk about verse 28' }));
   } else {
-    await user.click(await screen.findByRole('button', { name: 'Talk' }));
+    // beside the Talk bar, not through the whole Reader: a role query on `screen` for buttons walks every word of the chapter
+    const bar = await waitFor(() => {
+      const found = document.querySelector<HTMLElement>('[data-talk-bar]');
+      if (!found) throw new Error('the Talk bar is not drawn yet');
+      return found;
+    });
+    await user.click(await within(bar).findByRole('button', { name: 'Talk' }));
   }
-  await screen.findByRole('dialog', { name: /^Talk about / });
+  const dialog = await screen.findByRole('dialog', { name: /^Talk about / });
+  // the sheet's field is drawn a moment after the sheet: wait for it here, so the next step types into it at once
+  await within(dialog).findByRole('textbox', { name: 'Your message' });
 }
 
 const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
