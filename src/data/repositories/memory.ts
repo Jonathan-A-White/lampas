@@ -1,8 +1,9 @@
 // src/data/repositories/memory.ts — Memory (mw-yrmkdf.1): the notes Lampas keeps about the reader, on the phone: one capped index and named notes
 // ('book:Romans', 'word:λόγος', 'topic:aorist'), each with when it was last changed and by whom ('me' or 'tutor'). Beside the profile (profile.ts), in the
 // settings store as two JSON values ('memoryIndex', 'memoryNotes'): no table, no Dexie version, and outside the settings registry, which the tutor may
-// change by itself. The tutor's only write is an append (appendToNote, appendToIndex). Nothing here leaves the phone: selectNotes is what a later story
-// sends with a request; Settings > Memory (src/MemoryScreen.tsx) reads, edits, deletes, exports and imports.
+// change by itself. The tutor's only write is an append (appendToNote, appendToIndex); a replace or a remove from a talk goes through src/talk/memoryUpdate.ts,
+// which allows it only when the reader asked. selectNotes is what every tutor request carries (src/data/learnerMemory.ts); Settings > Memory
+// (src/MemoryScreen.tsx) reads, edits, deletes, exports and imports. The notes the tutor wished it had are only counted here (keepWishedNotes).
 import { db } from '../db';
 import { BOOKS } from '../books';
 import { OT_BOOKS } from '../otBooks';
@@ -10,6 +11,7 @@ import { parseCanonReference } from '../../nav/links';
 
 const INDEX_KEY = 'memoryIndex';
 const NOTES_KEY = 'memoryNotes';
+const WISHED_KEY = 'memoryWished';
 
 /** The most the index is, as the tutor reads it: what he writes and the notes section the app keeps. */
 export const MEMORY_INDEX_MAX = 1500;
@@ -298,4 +300,31 @@ export async function importMemory(text: string): Promise<ImportResult> {
   if (!file) return { status: 'bad-file' };
   await replaceMemory(file);
   return { status: 'imported', notes: file.notes.length, index: file.index !== null };
+}
+
+/** How many names of wished-for notes are kept (the count is of all of them). */
+export const WISHED_NAMES_KEPT = 20;
+
+/** The notes the tutor said (in `wished_notes`) it would have used had they existed: how many times, and the names of the last WISHED_NAMES_KEPT, oldest first. */
+export interface WishedNotes {
+  count: number;
+  names: string[];
+}
+
+export async function getWishedNotes(): Promise<WishedNotes> {
+  const value = json((await db.settings.get(WISHED_KEY))?.value);
+  if (!isObject(value) || typeof value.count !== 'number' || !Number.isInteger(value.count) || value.count < 0 || !Array.isArray(value.names)) return { count: 0, names: [] };
+  return { count: value.count, names: value.names.filter((n): n is string => typeof n === 'string' && memoryName(n) === n).slice(-WISHED_NAMES_KEPT) };
+}
+
+/** Counts the wished-for note names (each in the naming scheme, or it is left out) and keeps the last WISHED_NAMES_KEPT, a name wished again moving to the end. Returns how many it counted. Nothing else is done for them. */
+export async function keepWishedNotes(names: readonly string[]): Promise<number> {
+  const wanted = names.map(memoryName).filter((n): n is string => n !== null);
+  if (wanted.length === 0) return 0;
+  await db.transaction('rw', db.settings, async () => {
+    const kept = await getWishedNotes();
+    const list = wanted.reduce((all, name) => [...all.filter((n) => n !== name), name], kept.names);
+    await db.settings.put({ key: WISHED_KEY, value: JSON.stringify({ count: kept.count + wanted.length, names: list.slice(-WISHED_NAMES_KEPT) }) });
+  });
+  return wanted.length;
 }

@@ -8,6 +8,7 @@ import { markSupplied, type Verse } from '../data/chapter';
 import type { AnswerWord } from '../data/db';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
+import type { MemoryField } from '../data/learnerMemory';
 import type { TutorRequest } from '../data/requestsForTutor';
 import { DEFAULT_PRONUNCIATION, type GreekPronunciation } from '../speech/pronunciation';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
@@ -151,6 +152,8 @@ export interface VerseAskRequest {
   learner_grammar?: LearnerGrammar;
   /** who he is as a student (src/data/learnerProfile.ts, Settings > About you): missing when he has filled in nothing */
   learner_profile?: LearnerProfile;
+  /** what Lampas remembers of him (src/data/learnerMemory.ts, Settings > Memory), as the Bible talk is sent it: missing when nothing is kept */
+  memory?: MemoryField;
   /** the Greek pronunciation the app speaks and respells in (src/speech/pronunciation.ts), as the Bible talk is sent it: a sound is described by it */
   pronunciation: GreekPronunciation;
   /** the settings that bear on this answer, by key (src/tutor/knows.ts settingsSentTo): { hebrewDepth: 'both', askBy: 'speaking', weave: 'off', ... } */
@@ -192,7 +195,7 @@ export function isVerseAnswer(value: unknown): value is VerseAnswer {
   return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));
 }
 
-export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = [], learnerProfile?: LearnerProfile, spoken = false, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION): VerseAskRequest {
+export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = [], learnerProfile?: LearnerProfile, spoken = false, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION, memory?: MemoryField): VerseAskRequest {
   return {
     reference,
     greek: verse.g.map((w) => w.t).join(' '),
@@ -204,6 +207,7 @@ export function buildRequest(reference: string, verse: Verse, question: string, 
     ...(learner ? { learner } : {}),
     ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
     ...(learnerProfile ? { learner_profile: learnerProfile } : {}),
+    ...(memory ? { memory } : {}),
     ...(settings ? { settings } : {}),
     ...(requests.length > 0 ? { requests } : {}),
   };

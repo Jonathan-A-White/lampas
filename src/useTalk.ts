@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { addLemmaToLearn } from './data/answerWord';
 import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { requestsForTutor } from './data/requestsForTutor';
+import { focusLemmaOf, learnerMemory } from './data/learnerMemory';
 import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
 import { learnFromTalk } from './data/repositories/profile';
@@ -17,10 +18,11 @@ import { stopAnswer } from './speech/readAloud';
 import { wasSpoken } from './speech/spoken';
 import { readGo, type GoPlace } from './talk/go';
 import { applyChanges, currentSettings, offeredChange } from './settings/registry';
+import { applyMemoryFromAnswer } from './talk/memoryUpdate';
 import { pendingOfferOf, settleOffer } from './talk/offers';
 import { filesOf, type OutgoingPicture } from './talk/pictures';
 import { answerDrawn } from './services/clientTiming';
-import { askTalk, buildTalkRequest, MAX_LINKS, scopeRef, type TalkAnswer, type TalkFocus, type TalkScope } from './services/talk';
+import { askTalk, buildTalkRequest, MAX_LINKS, scopeRef, scopeTitle, type TalkAnswer, type TalkFocus, type TalkScope } from './services/talk';
 import type { HebrewSounds } from './data/db';
 import type { AskState } from './useAsks';
 
@@ -134,7 +136,7 @@ export function useTalk(
       set({ phase: 'sending', question: text, startedAt });
       void (async () => {
         try {
-          const [turns, solid, settings, learner, grammar, way, chosen, goal, requests, profile, pronunciation] = await Promise.all([
+          const [turns, solid, settings, learner, grammar, way, chosen, goal, requests, profile, pronunciation, memory] = await Promise.all([
             listTurns(ref),
             listSolidHeadwords(),
             currentSettings(),
@@ -146,13 +148,15 @@ export function useTalk(
             requestsForTutor().catch(() => []),
             learnerProfile().catch(() => undefined),
             getGreekPronunciation(),
+            // the notes the app names for this place, word and screen; a talk from a screen is not about a place
+            learnerMemory(scope.screen ? undefined : scopeTitle(scope), focusLemmaOf(focus), scope.screen?.name).catch(() => undefined),
           ]);
           // an offer still waiting for his tap rides with this message: the grind decides from his words whether it is a yes, a no or a request to hear it
           const waiting = pendingOfferOf(turns);
           // a goal he chose Just this time for earlier in this quiz is sent for this quiz alone
           const once = turns.findLast((t) => t.quizGoalChoice === 'once')?.quizGoalOffer;
           let sentAs: string | undefined;
-          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, wasSpoken(text)), {
+          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, wasSpoken(text), memory), {
             key: getDeviceKeyBytes(),
             files: pictures.length ? filesOf(pictures) : undefined,
             signal,
@@ -170,6 +174,8 @@ export function useTalk(
           refused.push(...settled.refused);
           // What the tutor learned of him as a student is kept beside his profile (checked and never over what he set); it never fails the talk.
           if (answer.profile_update || answer.profile_question) await learnFromTalk(ref, answer.profile_update ?? [], answer.profile_question).catch(() => undefined);
+          // What the tutor wants to keep of him: appends at once, a replace or remove only when he asked (src/talk/memoryUpdate.ts); it never fails the talk.
+          await applyMemoryFromAnswer(answer).catch(() => undefined);
           const { added, already, unknown } = await addWords(scope, answer.words_to_add ?? []);
           // A chapter he asked to be taken to: opened only while this talk's sheet is open. The chapter he is on stays (said so); one that came after he closed the
           // sheet is kept to open with a tap (said so); any other go is said not to have happened.

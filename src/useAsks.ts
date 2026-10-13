@@ -5,6 +5,7 @@ import type { Verse } from './data/chapter';
 import { unitId, unitReference } from './data/passage';
 import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { requestsForTutor } from './data/requestsForTutor';
+import { learnerMemory } from './data/learnerMemory';
 import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
 import { applyChanges } from './settings/registry';
@@ -57,8 +58,8 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
       set({ phase: 'sending', question: text, startedAt });
       void (async () => {
         try {
-          const [solid, learner, grammar, settings, requests, profile, pronunciation] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined), settingsSentTo('verse-ask'), requestsForTutor().catch(() => []), learnerProfile().catch(() => undefined), getGreekPronunciation()]);
-          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, settings, requests, profile, wasSpoken(text), pronunciation);
+          const [solid, learner, grammar, settings, requests, profile, pronunciation, memory] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined), settingsSentTo('verse-ask'), requestsForTutor().catch(() => []), learnerProfile().catch(() => undefined), getGreekPronunciation(), learnerMemory(unitReference(title, verse)).catch(() => undefined)]);
+          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, settings, requests, profile, wasSpoken(text), pronunciation, memory);
           let sentAs: string | undefined;
           const answer = await askTutor(request, {
             key: getDeviceKeyBytes(),

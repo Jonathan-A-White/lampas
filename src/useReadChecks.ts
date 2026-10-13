@@ -14,6 +14,7 @@ import { MicUnavailable, recorderSeam, type HoldRecorder, type Recording } from 
 import { answerDrawn } from './services/clientTiming';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { learnerGrammar } from './data/grammar/learnerGrammar';
+import { learnerMemory } from './data/learnerMemory';
 import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
 import { askVerseRead, buildReadingRequest, readingLang, wordsOfText, type ReadingView, type VerseReadAnswer } from './services/reading';
@@ -120,8 +121,8 @@ export function useReadChecks(book: string, chapter: number, title: string, view
       void (async () => {
         try {
           // the profile, the words and the grammar are the tutor's context: a failure to read one sends the reading without it
-          const [profile, learner, grammar, chosen] = await Promise.all([learnerProfile().catch(() => undefined), learnerSummary().catch(() => undefined), learnerGrammar().catch(() => undefined), getGreekPronunciation()]);
-          const request = buildReadingRequest(unitReference(title, verse), verse, readView, language, profile, learner, grammar, chosen);
+          const [profile, learner, grammar, chosen, memory] = await Promise.all([learnerProfile().catch(() => undefined), learnerSummary().catch(() => undefined), learnerGrammar().catch(() => undefined), getGreekPronunciation(), learnerMemory(unitReference(title, verse)).catch(() => undefined)]);
+          const request = buildReadingRequest(unitReference(title, verse), verse, readView, language, profile, learner, grammar, chosen, memory);
           let sentAs: string | undefined;
           const answer = await askVerseRead(request, recording, {
             key: getDeviceKeyBytes(),

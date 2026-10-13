@@ -5,12 +5,15 @@ import { markSupplied, wordGloss, wordLemma, wordParse, type Chapter, type Verse
 import { unitId } from '../data/passage';
 import { QUIZ_GOAL_MAX } from '../data/repositories/settings';
 import { STUDY_WAY_LINE_MAX } from '../data/repositories/studyWay';
+import { MEMORY_NAME_MAX, MEMORY_NOTE_MAX } from '../data/repositories/memory';
 import { screenRef, talkRef } from '../data/repositories/talks';
 import type { AnswerLink, AnswerWord } from '../data/db';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
+import type { MemoryField } from '../data/learnerMemory';
 import { LEARNABLE, LEARNED_VALUE_MAX, type Learnable, type ProfileUpdate } from '../data/repositories/profile';
 import type { TutorRequest } from '../data/requestsForTutor';
+import type { MemoryUpdate } from '../talk/memoryUpdate';
 import type { SettingValue } from '../settings/registry';
 import type { TutorResource } from '../resources/tutorLinks';
 import { slugOf, type ScreenContext } from '../tutor/screen';
@@ -190,6 +193,8 @@ export interface TalkRequest {
   learner_grammar?: LearnerGrammar;
   /** who he is as a student (src/data/learnerProfile.ts, Settings > About you): missing when he has filled in nothing; fitHistory never cuts it */
   learner_profile?: LearnerProfile;
+  /** what Lampas remembers of him (src/data/learnerMemory.ts, Settings > Memory): the index and the notes the app chose by name for this place, word and screen; missing when nothing is kept; fitHistory cuts the notes only after the history, the word list and his requests */
+  memory?: MemoryField;
   /** present only in a quiz (the Verse view's Quiz me, mw-5r3p30.74): the grind then runs the read, quiz, map method on `greek` and `english` */
   mode?: 'quiz';
   /** present only in a quiz and only when he has kept any (My study way, mw-5r3p30.76): the lines of how he wants to be quizzed; they override the default method where they conflict */
@@ -270,7 +275,16 @@ export interface TalkAnswer {
   form_ask?: string;
   /** a chapter he asked to be taken to (mw-5r3p30.172): {book, chapter}. Read by src/talk/go.ts; whatever else arrives is ignored there, not refused here. */
   go?: unknown;
+  /** what to add to the reader's memory (mw-yrmkdf.2): at most MAX_MEMORY_UPDATES entries, applied by src/talk/memoryUpdate.ts (a replace or remove only when `directed`) */
+  memory_update?: MemoryUpdate[];
+  /** names of notes the tutor would have used had they existed (book:<Book>, word:<lemma>, topic:<slug>): counted and the last names kept, nothing more */
+  wished_notes?: string[];
 }
+
+/** The most entries a memory_update has, and the most names a wished_notes has; the longest line an append adds (the answer schema's). */
+export const MAX_MEMORY_UPDATES = 4;
+export const MAX_WISHED_NOTES = 5;
+export const MEMORY_APPEND_MAX = 300;
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 const isText = (value: unknown, max: number): value is string => typeof value === 'string' && value.length > 0 && value.length <= max;
@@ -289,11 +303,24 @@ const isProfileUpdate = (value: unknown): value is ProfileUpdate => {
   return 'value' in value ? isText(value.value, LEARNED_VALUE_MAX) : value.declined === true;
 };
 
+const isMemoryUpdate = (value: unknown): value is MemoryUpdate => {
+  if (!isObject(value) || Object.keys(value).some((k) => k !== 'name' && k !== 'append' && k !== 'replace' && k !== 'remove' && k !== 'directed')) return false;
+  if (!isText(value.name, MEMORY_NAME_MAX)) return false;
+  if ('directed' in value && value.directed !== true) return false;
+  const actions = ['append', 'replace', 'remove'].filter((k) => k in value);
+  if (actions.length !== 1) return false;
+  if ('append' in value) return !('directed' in value) && isText(value.append, MEMORY_APPEND_MAX);
+  if ('replace' in value) return isText(value.replace, MEMORY_NOTE_MAX);
+  return value.remove === true;
+};
+
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'form_values' && k !== 'form_ask' && k !== 'go')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'form_values' && k !== 'form_ask' && k !== 'go' && k !== 'memory_update' && k !== 'wished_notes')) return false;
   if ('question' in value && !isText(value.question, MAX_TALK_CHARS)) return false;
+  if ('memory_update' in value && !(Array.isArray(value.memory_update) && value.memory_update.length <= MAX_MEMORY_UPDATES && value.memory_update.every(isMemoryUpdate))) return false;
+  if ('wished_notes' in value && !(Array.isArray(value.wished_notes) && value.wished_notes.length <= MAX_WISHED_NOTES && value.wished_notes.every((n) => isText(n, MEMORY_NAME_MAX)))) return false;
   if ('study_way_line' in value && !isText(value.study_way_line, STUDY_WAY_LINE_MAX)) return false;
   if ('quiz_goal_offer' in value && !isText(value.quiz_goal_offer, QUIZ_GOAL_MAX)) return false;
   if ('profile_update' in value && !(Array.isArray(value.profile_update) && value.profile_update.length <= 3 && value.profile_update.every(isProfileUpdate))) return false;
@@ -376,7 +403,8 @@ export function fitHistory(request: TalkRequest): TalkRequest {
   let history = request.history.map((t) => ({ ...t }));
   let requests = request.requests;
   let greekWords = request.greek_words;
-  const fitted = (): TalkRequest => ({ ...request, history, ...(requests ? { requests } : {}), ...(greekWords ? { greek_words: greekWords } : {}) });
+  let memoryNotes = request.memory?.notes;
+  const fitted = (): TalkRequest => ({ ...request, history, ...(requests ? { requests } : {}), ...(greekWords ? { greek_words: greekWords } : {}), ...(request.memory && memoryNotes ? { memory: { ...request.memory, notes: memoryNotes } } : {}) });
   const tooBig = (): boolean => sizeOf(fitted()) > MAX_REQUEST_BYTES;
   for (;;) {
     const long = history.findIndex((t) => t.a.length > CLIPPED_CHARS);
@@ -387,6 +415,8 @@ export function fitHistory(request: TalkRequest): TalkRequest {
   while (history.length > 0 && tooBig()) history = history.slice(1);
   while (greekWords && greekWords.length > 0 && tooBig()) greekWords = greekWords.slice(0, -1);
   while (requests && requests.length > 0 && tooBig()) requests = requests.slice(0, -1);
+  // his notes are the last to go, from the end of the list (the notes come in name order: book, topic, word); the index always stays
+  while (memoryNotes && memoryNotes.length > 0 && tooBig()) memoryNotes = memoryNotes.slice(0, -1);
   return fitted();
 }
 
@@ -417,6 +447,7 @@ export function buildTalkRequest(
   learnerProfile?: LearnerProfile,
   pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION,
   spoken = false,
+  memory?: MemoryField,
 ): TalkRequest {
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   // About (mw-vtjxh4.2) sends the credits, which take most of the record: the credits are the talk, so his words and his grammar stay home
@@ -435,6 +466,7 @@ export function buildTalkRequest(
     ...(learner ? { learner } : {}),
     ...(learnerGrammar && !aboutCredits ? { learner_grammar: learnerGrammar } : {}),
     ...(learnerProfile && !aboutCredits ? { learner_profile: learnerProfile } : {}),
+    ...(memory && !aboutCredits ? { memory } : {}),
     ...(scope.quiz ? { mode: 'quiz' as const } : {}),
     ...(scope.quiz && studyWay.length > 0 ? { study_way: studyWay } : {}),
     ...(scope.quiz ? { quiz_goal: quizGoal.kept === '' ? null : quizGoal.kept } : {}),
