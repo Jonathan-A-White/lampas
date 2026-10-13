@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.171
+_2026-10-13_
+- New: The tutor now reads what Lampas remembers about you, may add to those notes, and About counts the notes it wished it had.
+
 ## 0.1.169
 _2026-10-13_
 - Fixed: Lampas no longer re-downloads the chapters you have already read each time the app updates, only a chapter whose text actually changed.
