@@ -36,3 +36,20 @@ describe(`${FILE} reads nothing that arrives later outside a waitFor`, () => {
     expect(racy, `these steps read a value outside a waitFor:\n${racy.join('\n')}`).toEqual([]);
   });
 });
+
+// mw-5r3p30.284: 'add ζζζ to my words' timed out at 20 s on a loaded host. A role query on `screen` for a common role walks every
+// word button of the Reader, which costs seconds on a quiet machine and many times that on a busy one; the steps that open the Talk
+// sheet look for its bar beside it, and wait until the sheet's own field is drawn before the next step types into it.
+describe(`${FILE} opens the Talk sheet without walking the whole Reader`, () => {
+  const source = readFileSync(FILE, 'utf8');
+  const openTalk = source.slice(source.indexOf('async function openTalk()'), source.indexOf('const sheet = '));
+
+  it('finds the Talk bar button inside the bar, never by a role query on the whole screen', () => {
+    expect(openTalk).not.toMatch(/screen\.(?:find|get|query)ByRole\('button', \{ name: 'Talk' \}\)/);
+    expect(openTalk).toMatch(/data-talk-bar/);
+  });
+
+  it('waits for the sheet\'s field before the next step types', () => {
+    expect(openTalk).toMatch(/findByRole\('textbox', \{ name: 'Your message' \}\)/);
+  });
+});
