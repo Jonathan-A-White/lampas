@@ -268,3 +268,24 @@ describe('a partial reading (mw-neuq78.7)', () => {
     expect(text()).toMatch(/Never call a partial reading `well-read`/);
   });
 });
+
+describe('a recording that carries a misread (mw-neuq78.10)', () => {
+  const dir = 'grinds/examples/verse-read';
+  const example = readJson(`${dir}/read-start-one-misread.json`) as { photos: string[]; description: string };
+  const readme = readFileSync('grinds/examples/README.md', 'utf8').replace(/\s+/g, ' ');
+
+  it('is not the clean start of the verse: the misread example keeps a clip of its own', () => {
+    const misread = readFileSync(`${dir}/${example.photos[0]}`);
+    const clean = readFileSync(`${dir}/read-8-28-start-only.webm`);
+    expect(misread.equals(clean)).toBe(false);
+  });
+
+  it('does not rest on a first consonant, which the local scorer does not hear (tall scored as all)', () => {
+    expect(example.description).not.toMatch(/\btall\b/);
+  });
+
+  it('is told, in the examples README, to change a vowel or the last sound, and to score the clip before keeping it', () => {
+    expect(readme).toMatch(/does not hear a word's first consonant/);
+    expect(readme).toMatch(/mw grist score/);
+  });
+});
