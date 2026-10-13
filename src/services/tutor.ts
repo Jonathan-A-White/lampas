@@ -11,7 +11,8 @@ import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
 import type { TutorRequest } from '../data/requestsForTutor';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
-import { millOf, readTimedPage, sendTimedGrist, timedDoor, type Page, type TimedDoor } from './gristWire';
+import { listenForAnswers, type StreamTarget } from './answerStream';
+import { meOf, readTimedPage, sendTimedGrist, timedDoor, type Page, type TimedDoor } from './gristWire';
 
 /** The app and kind the mill runs the grind under (grinds/verse-ask.json), and the version of the request below. */
 export const TUTOR_APP = 'lampas';
@@ -23,8 +24,10 @@ export const MAX_QUESTION_CHARS = 400;
 
 /** The timings, in one object so a test may shorten them. */
 export const tutorTimings = {
-  /** How often the mill is asked whether it has answered: a poll starts this often, whether or not the one before has come back. */
+  /** How often the mill is asked whether it has answered while the event stream is not up: a poll starts this often, whether or not the one before has come back. */
   pollMs: 3000,
+  /** The same while the event stream is up (src/services/answerStream.ts): the stream names the answer the moment the backend has it, and the poll is the backstop for what it missed. */
+  backstopMs: 15_000,
   /**
    * How long one poll (the sign-in code and the page, its body too) may take before it is given up on. The door's own 30 s ends
    * at the page's headers, so a body that stalled on mobile data was never given up on (mw-5r3p30.269).
@@ -81,24 +84,27 @@ interface Waited {
 /**
  * Pages Postern for the mill's answer to the grist `txid` until it comes, which `signal` stops (AwaitAbortedError). It pages from
  * `since`, the grist's own place in the backend's sequence (the answer comes after it): from 0, the first page was every record the
- * phone ever sent or was sent, megabytes for a phone that has asked a lot and a minute on mobile data (mw-5r3p30.269). A poll starts
- * every pollMs while fewer than POLLS_IN_FLIGHT are out, so one that stalls does not hold up the next. A page that fails (it timed
- * out, no connection, a 5xx) does not end the wait: only when no call has succeeded for CONTACT_LOST_MS does it throw that failure.
- * A licence refusal ends it at once. bsv-kit's awaitAnswer ends at the first failed page, which a phone that blinks offline for a
- * moment turns into 'could not reach the tutor'.
+ * phone ever sent or was sent, megabytes for a phone that has asked a lot and a minute on mobile data (mw-5r3p30.269). With `stream` (the backend
+ * serves GET /api/events) the wait also listens on it while it waits, and pages at once when the stream names a record after `since` or says hello
+ * (mw-46z0my.6); the stream is closed when the wait ends. A poll starts every pollMs (backstopMs while the stream is up) while fewer than
+ * POLLS_IN_FLIGHT are out, so one that stalls does not hold up the next. A page that fails (it timed out, no connection, a 5xx) does not end the wait:
+ * only when no call has succeeded for CONTACT_LOST_MS does it throw that failure. A licence refusal ends it at once. bsv-kit's awaitAnswer ends at
+ * the first failed page, which a phone that blinks offline for a moment turns into 'could not reach the tutor'.
  */
-function waitForAnswer(txid: string, since: number, mill: string, d: TimedDoor, key: Uint8Array, signal: AbortSignal): Promise<Waited> {
+function waitForAnswer(txid: string, since: number, mill: string, d: TimedDoor, key: Uint8Array, signal: AbortSignal, stream?: StreamTarget): Promise<Waited> {
   return new Promise((resolve, reject) => {
     const polls = new AbortController();
     let lastContact = Date.now();
     let out = 0;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let done = false;
+    let listening: ReturnType<typeof listenForAnswers> | undefined;
     const finish = (end: () => void): void => {
       if (done) return;
       done = true;
       clearTimeout(timer);
       signal.removeEventListener('abort', onAbort);
+      listening?.close();
       polls.abort();
       end();
     };
@@ -108,6 +114,7 @@ function waitForAnswer(txid: string, since: number, mill: string, d: TimedDoor, 
     };
     const poll = (): void => {
       if (done) return;
+      clearTimeout(timer);
       if (out < POLLS_IN_FLIGHT) {
         out += 1;
         readPage(txid, d, key, since, mill, polls.signal)
@@ -119,11 +126,13 @@ function waitForAnswer(txid: string, since: number, mill: string, d: TimedDoor, 
           }, failed)
           .finally(() => (out -= 1));
       }
-      timer = setTimeout(poll, tutorTimings.pollMs);
+      timer = setTimeout(poll, listening?.live() ? tutorTimings.backstopMs : tutorTimings.pollMs);
     };
     if (signal.aborted) return onAbort();
     signal.addEventListener('abort', onAbort, { once: true });
     poll();
+    // a record that comes after the grist's own place may be the answer; one at or before it cannot be
+    if (stream) listening = listenForAnswers(stream, { wake: (seq) => (seq === undefined || seq > since) && poll(), down: poll });
   });
 }
 
@@ -266,13 +275,13 @@ export async function askGrind<Answer>(kind: string, request: object, isAnswer: 
   const report = options.untimed ? undefined : claimReport();
   let sent = false;
   try {
-    const mill = await millOf(d, deadline.signal);
+    const { mill, events } = await meOf(d, deadline.signal);
     const { txid, seq } = await sendTimedGrist({ door: d, key, mill, app: TUTOR_APP, kind, v: TUTOR_VERSION, input: request, files: options.files ?? [], clientTiming: report });
     sent = true;
     const sentAt = Date.now();
     const sendNetwork = d.total;
     options.onSent?.(txid);
-    const waited = await waitForAnswer(txid, seq, mill, d, key, deadline.signal);
+    const waited = await waitForAnswer(txid, seq, mill, d, key, deadline.signal, events ? { baseUrl: options.baseUrl ?? POSTERN_DOOR, key } : undefined);
     const reply = waited.answer;
     if (reply.status !== 'answered') {
       throw new TutorError('no-answer', reply.reason ? `The tutor could not answer: ${reply.reason}` : 'The tutor could not answer.');

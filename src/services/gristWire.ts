@@ -31,14 +31,14 @@ export function timedDoor(d: Door): TimedDoor {
   return timed;
 }
 
-/** The mill's public key as the backend names it. */
-export async function millOf(d: TimedDoor, signal: AbortSignal): Promise<string> {
+/** Who the backend says is who (GET /api/me): the mill's public key, and whether it serves the live event stream (the 'events' feature, docs/protocol.md section 15). */
+export async function meOf(d: TimedDoor, signal: AbortSignal): Promise<{ mill: string; events: boolean }> {
   const response = await d.fetch('/me', { signal });
   if (!response.ok) throw new Error(`The backend answered ${response.status} to /api/me.`);
-  const body = (await response.json()) as { mill?: unknown };
+  const body = (await response.json()) as { mill?: unknown; features?: unknown };
   const mill = typeof body.mill === 'string' ? body.mill.trim() : '';
   if (!mill) throw new Error('The backend names no mill key, so there is nowhere to send a grist.');
-  return mill;
+  return { mill, events: Array.isArray(body.features) && body.features.includes('events') };
 }
 
 const baseMime = (mime: string): string => mime.split(';')[0].trim().toLowerCase();

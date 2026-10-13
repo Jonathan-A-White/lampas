@@ -280,9 +280,24 @@ or abandoned one, and a feedback grist (not a tutor answer) have none to send or
 src/services/gristWire.ts sends the grist itself, as bsv-kit does. About shows one line from it: `Last tutor answer: 8.6 s (phone 1.3 s, network 0.7 s, waiting to
 see it 1.5 s, factory 5.8 s)`: the phone's share is its own work, the factory the rest. features/tutor-timing.feature.
 
+## How the phone hears an answer (mw-46z0my.6)
+
+While an answer is awaited the phone listens on the backend's live event stream (`GET /api/events`, Postern's docs/protocol.md section 10), read with
+`fetch` because `EventSource` cannot send the signed header (src/services/answerStream.ts, after Postern's src/services/live.ts). The backend names every
+record it takes in (`message` {seq}) and says `hello` on connect; the stream carries no answer, so a `message` after the grist's own place, or a hello,
+makes the wait page `GET /api/messages` at once (the page `since` the grist's seq, as before). The poll stays as the backstop: every 3 s (`tutorTimings.pollMs`)
+while the stream is not up (not yet open, dropped, or a backend without the `events` feature in `GET /api/me`), every 15 s (`backstopMs`) while it is. A drop
+polls at once and reconnects with a backoff of 1 s doubling to 30 s; a stream silent for 60 s (the backend pings every 25 s) is read as dropped; the page coming back
+to the screen pages at once. The stream is open ONLY while an answer is awaited, not while a talk is open: a talk can sit idle for minutes, and an open stream keeps
+the radio awake with a ping every 25 s (Postern's docs/research/battery-and-responsiveness.md), while an answer is waited for for seconds. Waits that are out at once
+share one stream; the last to end closes it. features/tutor-live-stream.feature.
+
+The stream is used only when `GET /api/me` lists the `events` feature for the phone's key. At the time of writing Postern lists it only for cockpit keys and answers a
+Lampas licence's key 403 on `/api/events` (server/internal/api/handlers.go: `gate(cockpitKeys|mayorKey, ...)`), so the live app still polls every 3 s until Postern admits grist keys to the stream.
+
 ## Tests
 
-`features/ask-tutor.feature` (the control, the request, the questions, what is kept), `tests/unit/ask-tutor.test.ts`, the `screen` blocks of
+`features/tutor-live-stream.feature`, `features/ask-tutor.feature` (the control, the request, the questions, what is kept), `tests/unit/ask-tutor.test.ts`, the `screen` blocks of
 `tests/unit/talk-request.test.ts` and `bible-talk-grind.test.ts`, and `tests/e2e/ask-tutor.spec.ts` (place, size and clearance at 390 px; the shots
 `ask-tutor-goal`, `ask-tutor-reader`, `ask-tutor-sheet`); the offer: `features/feedback-offer.feature`, `tests/unit/feedback-shared.test.ts`,
 `tests/e2e/feedback-offer.spec.ts` (shots `feedback-offer`, `feedback-offer-sent`); answering an offer by voice: `features/voice-offers.feature`, `tests/unit/voice-offers.test.ts`.
