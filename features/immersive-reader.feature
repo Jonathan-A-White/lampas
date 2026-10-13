@@ -105,6 +105,24 @@ Feature: Immersive reader
     When Immersive reader is switched Off
     Then the page has left full screen
 
+  Scenario: Two-finger taps bring back Lampas's own bars but keep the page full screen
+    Given Lampas is opened on Romans 8 with Immersive reader On and a phone that can go full screen
+    When he scrolls the text down 200 px
+    Then the page has asked for full screen once
+    When he taps the text with two fingers
+    Then the header, the chips, the Talk bar and the Ask button are all in view
+    And the page has still asked for full screen once
+    When he taps the text with two fingers again
+    Then the header, the chips, the Talk bar and the Ask button are all out of view
+    And the page has kept the one full screen it asked for
+
+  Scenario: Leaving the Reader leaves full screen
+    Given Lampas is opened on Romans 8 with Immersive reader On and a phone that can go full screen
+    When he taps the text with one finger
+    Then the page has asked for full screen once
+    When he opens Settings from the Reader
+    Then the page has left full screen
+
   Scenario: With Immersive reader Off the page never asks for full screen
     Given Lampas is opened on Romans 8 with Immersive reader Off and a phone that can go full screen
     When he taps the text with one finger

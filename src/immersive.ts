@@ -5,10 +5,11 @@
 // does nothing. No gesture from a screen's edge: Android's gesture navigation owns the edges. The hook only decides `away`; src/Away.tsx draws the
 // sliding.
 //
-// Full screen (mw-5r3p30.296): with it On, his first tap or scroll in the text asks the browser for full screen (the Fullscreen API needs a
-// gesture), so the phone's status and navigation bars go away too. It is left when he leaves the Reader, when the setting goes Off and when a
-// two-finger tap brings the bars back; bars put away again (a scroll, or a two-finger tap) ask for it again. Where the API is missing or refuses,
-// nothing else changes.
+// Full screen (mw-5r3p30.296, once per visit mw-5r3p30.316): with it On, his first tap or scroll in the text asks the browser for full screen (the
+// Fullscreen API needs a gesture), so the phone's status and navigation bars go away too, and it STAYS: Chrome shows its own "To exit full screen"
+// notice every time a page enters full screen (no page can hide it or learn it was swiped away), so entering again after every two-finger tap would
+// bring the notice back each time. A two-finger tap changes only Lampas's own bars. Full screen is left when he leaves the Reader and when the
+// setting goes Off. Where the API is missing or refuses, nothing else changes and the next gesture asks again.
 import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 
 /** Scrolling down this far hides them. */
@@ -75,21 +76,18 @@ export function useImmersive(
     let down = 0;
     let stopped = false;
 
-    // Full screen: asked for on a gesture while `armed`; a refusal (no gesture yet, no API) arms it again for the next one
-    let armed = true;
+    // Full screen: asked for on a gesture until the browser says yes, then never again in this visit; a refusal (no gesture yet, no API) lets the
+    // next tap ask again (a scroll is no user gesture, so it tries once only: scrollTried)
+    let entered = false;
     let scrollTried = false;
     let asking = false;
-    const arm = () => {
-      armed = true;
-      scrollTried = false;
-    };
     const enter = (byScroll: boolean) => {
-      if (!armed || asking || (byScroll && scrollTried)) return;
+      if (entered || asking || (byScroll && scrollTried)) return;
       if (byScroll) scrollTried = true;
       asking = true;
       void enterFullScreen().then((ok) => {
         asking = false;
-        armed = !ok;
+        entered = ok;
         // switched Off or left while the browser was deciding
         if (ok && stopped) leaveFullScreen();
       });
@@ -97,15 +95,7 @@ export function useImmersive(
     // two fingers have been down since the last time all were up
     let multi = false;
     const toggle = () => {
-      const next = !awayRef.current;
-      set(next);
-      if (next) {
-        arm();
-        enter(false);
-      } else {
-        armed = false;
-        leaveFullScreen();
-      }
+      set(!awayRef.current);
     };
     const onScroll = () => {
       const top = el.scrollTop;
@@ -117,7 +107,6 @@ export function useImmersive(
         down += delta;
         if (!awayRef.current && down >= HIDE_AFTER_PX && top > 0 && toEnd > NEAR_END_PX) {
           set(true);
-          arm();
         }
       } else {
         // scrolling up changes nothing: he reads up and down and wants no bars coming and going

@@ -3,8 +3,8 @@ import { honestMic } from '../support/honest-fakes';
 import { openUnlocked } from './unlocked';
 
 // The Immersive reader asks the browser for full screen (mw-5r3p30.296): on his first tap or scroll in the text, so the phone's status and
-// navigation bars go away. It leaves full screen when he leaves the Reader, when Immersive reader goes Off and when a two-finger tap brings the
-// bars back. Where the API is absent or refuses, nothing breaks. Chromium headless cannot really go full screen, so the API is stood in for by
+// navigation bars go away, and keeps it (mw-5r3p30.316: Chrome shows "To exit full screen" at every entry, so a two-finger tap that only brings
+// Lampas's own bars back must not leave it). It leaves full screen when he leaves the Reader and when Immersive reader goes Off. Where the API is absent or refuses, nothing breaks. Chromium headless cannot really go full screen, so the API is stood in for by
 // hand (window.__fs counts the calls and keeps document.fullscreenElement as the real one does). Runs under --project=shots (390x844).
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
@@ -140,7 +140,7 @@ test('with Immersive reader On, the first scroll in the text asks for full scree
   expect(await fullScreen(page)).toBe(true);
 });
 
-test('a two-finger tap that brings the bars back leaves full screen; scrolling them away again asks again', async ({ page }) => {
+test('two-finger taps bring the bars back and put them away, and full screen is asked for once and kept', async ({ page }) => {
   await openReader(page, 'on');
   await scrollText(page, 400);
   await expect.poll(() => counts(page)).toEqual({ requests: 1, exits: 0 });
@@ -148,12 +148,15 @@ test('a two-finger tap that brings the bars back leaves full screen; scrolling t
 
   await twoFingerTap(page);
   await expect(page.locator('header').first()).toBeVisible();
-  await expect.poll(() => counts(page)).toEqual({ requests: 1, exits: 1 });
-  expect(await fullScreen(page)).toBe(false);
+  await page.waitForTimeout(500);
+  expect(await counts(page)).toEqual({ requests: 1, exits: 0 });
+  expect(await fullScreen(page)).toBe(true);
 
-  await scrollText(page, 300);
+  await twoFingerTap(page);
   await expect(page.locator('header').first()).toBeHidden();
-  await expect.poll(() => counts(page)).toEqual({ requests: 2, exits: 1 });
+  await scrollText(page, 300);
+  await page.waitForTimeout(500);
+  expect(await counts(page)).toEqual({ requests: 1, exits: 0 });
   expect(await fullScreen(page)).toBe(true);
 });
 
