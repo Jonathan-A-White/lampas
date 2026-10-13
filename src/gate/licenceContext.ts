@@ -26,3 +26,9 @@ export function useLicence(): LicenceState {
 export function useLicenceDetail(): LicenceDetail | null {
   return useContext(LicenceContext);
 }
+
+/** Whether the AI (the tutor and everything sent to the mill) may show: only on a licensed phone (mw-8m9dyu.2). While the check is still out, or when it
+ * found none, the entry points are not drawn; the gated mill client (src/services/mill.ts) refuses a send in the same cases. */
+export function useAiAllowed(): boolean {
+  return useLicence() === 'licensed';
+}

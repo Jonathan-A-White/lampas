@@ -1,9 +1,8 @@
 // src/services/tutor.ts — the tutor: one question about a verse, sent as a grist through Postern (bsv-kit/grist)
 // and answered by the mill's verse-ask grind (grinds/verse-ask.json). All the wire work is bsv-kit's: the door signs
-// every call with the device key, gristWire.ts sends (bsv-kit's sendGristRecord, with client_timing) and seals the request to the mill, waitForAnswer pages for the reply
+// every call with the device key, mill.ts sends (bsv-kit's sendGristRecord, with client_timing) and seals the request to the mill, waitForAnswer pages for the reply
 // from the grist's own place in the backend's sequence.
 import { door } from 'bsv-kit/bsv';
-import { grist } from 'bsv-kit/grist';
 import { POSTERN_DOOR } from '../config';
 import { markSupplied, type Verse } from '../data/chapter';
 import type { AnswerWord } from '../data/db';
@@ -12,7 +11,7 @@ import type { LearnerProfile } from '../data/learnerProfile';
 import type { TutorRequest } from '../data/requestsForTutor';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
 import { listenForAnswers, type StreamTarget } from './answerStream';
-import { meOf, readTimedPage, sendTimedGrist, timedDoor, type Page, type TimedDoor } from './gristWire';
+import { AwaitAbortedError, GristInputError, meOf, readTimedPage, sendTimedGrist, timedDoor, type MillAnswer, type MillFile, type Page, type TimedDoor } from './mill';
 
 /** The app and kind the mill runs the grind under (grinds/verse-ask.json), and the version of the request below. */
 export const TUTOR_APP = 'lampas';
@@ -59,7 +58,7 @@ async function readPage(txid: string, d: TimedDoor, key: Uint8Array, since: numb
       poll.abort();
     }, tutorTimings.pollTimeoutMs);
     onAbort = (): void => {
-      reject(new grist.AwaitAbortedError());
+      reject(new AwaitAbortedError());
       poll.abort();
     };
   });
@@ -75,7 +74,7 @@ async function readPage(txid: string, d: TimedDoor, key: Uint8Array, since: numb
 
 /** What waiting for an answer found: the answer, when a poll saw it, when the backend first saw its record, and how long the poll that saw it took. */
 interface Waited {
-  answer: grist.GristAnswer;
+  answer: MillAnswer;
   seenAt: number;
   deliveredAt?: number;
   pollNetwork: number;
@@ -108,7 +107,7 @@ function waitForAnswer(txid: string, since: number, mill: string, d: TimedDoor, 
       polls.abort();
       end();
     };
-    const onAbort = (): void => finish(() => reject(new grist.AwaitAbortedError()));
+    const onAbort = (): void => finish(() => reject(new AwaitAbortedError()));
     const failed = (err: unknown): void => {
       if (err instanceof door.RefusedError || Date.now() - lastContact >= CONTACT_LOST_MS) finish(() => reject(err));
     };
@@ -232,7 +231,7 @@ function explain(err: unknown): TutorError {
   if (err instanceof door.RefusedError && err.message === door.LICENCE_REQUIRED) {
     return new TutorError('no-licence', 'This phone holds no Lampas licence the tutor accepts.');
   }
-  if (err instanceof grist.GristInputError) return new TutorError('not-sent', err.message);
+  if (err instanceof GristInputError) return new TutorError('not-sent', err.message);
   if (err instanceof door.RefusedError) return new TutorError('unreachable', err.message);
   if (err instanceof door.ApiTimeoutError || err instanceof door.BackendUnreachableError) {
     return new TutorError('unreachable', 'Postern did not answer. Check the connection and try again.');
@@ -253,7 +252,7 @@ export interface AskOptions {
    * answerDrawn(txid) (src/services/clientTiming.ts) once it has, which completes the answer's timing. */
   onSent?: (txid: string) => void;
   /** Files sent with the grist: a recording of him reading (src/services/reading.ts). */
-  files?: grist.GristFile[];
+  files?: MillFile[];
   baseUrl?: string;
 }
 
@@ -291,7 +290,7 @@ export async function askGrind<Answer>(kind: string, request: object, isAnswer: 
     return reply.answer;
   } catch (err) {
     if (report && !sent) releaseReport(report.txid);
-    if (err instanceof grist.AwaitAbortedError && !options.signal?.aborted) throw new TutorError('no-answer', 'The tutor took too long to answer.');
+    if (err instanceof AwaitAbortedError && !options.signal?.aborted) throw new TutorError('no-answer', 'The tutor took too long to answer.');
     throw explain(err);
   } finally {
     clearTimeout(timer);
