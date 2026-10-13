@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.189",
+    "date": "2026-10-13",
+    "story": "mw-5r3p30.303",
+    "kind": "fixed",
+    "text": "A quiet update that did not get applied the first time you left the app is now tried again the next time you leave it."
+  },
+  {
     "version": "0.1.187",
     "date": "2026-10-13",
     "story": "mw-5r3p30.316",

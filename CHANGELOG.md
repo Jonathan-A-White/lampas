@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.189
+_2026-10-13_
+- Fixed: A quiet update that did not get applied the first time you left the app is now tried again the next time you leave it.
+
 ## 0.1.187
 _2026-10-13_
 - Fixed: In the Immersive reader, Chrome's "To exit full screen" notice now shows once when you start reading, not after every two-finger tap.
