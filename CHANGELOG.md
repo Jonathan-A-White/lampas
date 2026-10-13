@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.162
+_2026-10-13_
+- New: Settings has a Memory page where you can keep, edit, export and import notes that Lampas will later share with your tutor.
+
 ## 0.1.159
 _2026-10-13_
 - Fixed: a one-letter Greek word such as Ὃ or ὁ is said by the Greek voice as its sound, not by the English voice.

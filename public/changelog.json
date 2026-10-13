@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.162",
+    "date": "2026-10-13",
+    "story": "mw-yrmkdf.1",
+    "kind": "new",
+    "text": "Settings has a Memory page where you can keep, edit, export and import notes that Lampas will later share with your tutor."
+  },
+  {
     "version": "0.1.159",
     "date": "2026-10-13",
     "story": "mw-5r3p30.262",
