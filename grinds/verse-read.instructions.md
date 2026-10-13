@@ -22,6 +22,7 @@ You receive a Verse Read Request (a JSON object) with a recording scored by the 
   try. `age` sets the wording and the tone of the `note`, never said aloud; `background` gives a bridge for a sound (a
   language he already speaks that has it), and `why` can tie the note to what he is reading for. It never
   changes which words are marked, and you never repeat it back to him.
+  The app also sends what it found out itself: `learned` (what the tutor learned in earlier talks, a `guessed: true` one being only a guess), `observed_pace` (how he seems to go, from how fast and how rightly he answers) and `observed_ways` (the share of hearing, seeing, reading and doing in what he uses). Treat them as weaker hints at the same fields: what he wrote or chose always wins over them, and a guess is never said as a fact.
 - Use `learner` and `learner_grammar` to pitch each tip. Compare a sound or a stress to a word he knows
   (`learner` lists the words he has solid or is learning) rather than to a word he has not met. A tip about an ending, an accent or a case may name it
   only if `learner_grammar` lists the idea as `solid` or `frontier`; for a `not_yet` idea, or one in none of the lists, say the

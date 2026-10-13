@@ -12,7 +12,7 @@
     "learner": { "description": "Optional. Where he stands in one line: 'solid N words; learning: a, b, c; new today: x, y; due now: M'.", "type": "string", "maxLength": 600 },
     "learner_grammar": { "description": "Optional. Where his grammar stands, as in the Bible talk's request (grinds/bible-talk.input.schema.json learner_grammar).", "type": "object" },
     "learner_profile": {
-      "description": "Optional. Who he is as a student, which he kept himself in Settings > About you; every field is optional and a field he has not filled in is missing (the whole field is missing when he has filled in none). age: a number or a band, as he wrote it. pace: how fast he wants to go. ways: how he learns best (hearing, seeing, reading, doing = hands-on). background: languages he knows, Greek or Bible before, in his words. why: why he is learning Greek, in his words. notes: short things the tutor has learned about him, the newest last. Meet him where he is; never repeat this back to him.",
+      "description": "Optional. Who he is as a student, which he kept himself in Settings > About you; every field is optional and a field he has not filled in is missing (the whole field is missing when he has filled in none). age: a number or a band, as he wrote it. pace: how fast he wants to go. ways: how he learns best (hearing, seeing, reading, doing = hands-on). background: languages he knows, Greek or Bible before, in his words. why: why he is learning Greek, in his words. notes: short things the tutor has learned about him, the newest last. Meet him where he is; never repeat this back to him. learned, observed_pace, observed_ways and do_not_ask are what the app itself found out; see them as hints at the same fields, weaker than what he wrote.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -21,7 +21,35 @@
         "ways": { "type": "array", "maxItems": 4, "items": { "type": "string", "enum": ["hearing", "seeing", "reading", "doing"] } },
         "background": { "type": "string", "minLength": 1, "maxLength": 200 },
         "why": { "type": "string", "minLength": 1, "maxLength": 200 },
-        "notes": { "type": "array", "maxItems": 6, "items": { "type": "string", "minLength": 1, "maxLength": 100 } }
+        "notes": { "type": "array", "maxItems": 6, "items": { "type": "string", "minLength": 1, "maxLength": 100 } },
+        "learned": {
+          "description": "What the tutor itself learned about him in earlier talks, for a field he did not fill in himself: field, value, and guessed true when it is only a guess from how he writes and talks (never state a guess as a fact, and let anything he told you or chose win over it).",
+          "type": "array",
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["field", "value"],
+            "properties": {
+              "field": { "type": "string", "enum": ["age", "pace", "ways", "background", "why"] },
+              "value": { "type": "string", "minLength": 1, "maxLength": 100 },
+              "guessed": { "const": true }
+            }
+          }
+        },
+        "observed_pace": { "description": "How he seems to go, which the phone worked out from how fast and how rightly he answers in reviews, quizzes and drills: quick, steady or slow. Missing until he has answered enough. It may differ from the `pace` he chose; his choice wins.", "type": "string", "enum": ["quick", "steady", "slow"] },
+        "observed_ways": {
+          "description": "What he uses, as whole percents the phone counted: hearing (verses and words said aloud), seeing (pictures he sent), reading (chapters and verses read) and doing (quiz, review and drill answers, readings aloud). A way with no use is left out; missing until he has used the app enough. A hint at how he likes to learn, not a fact.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "hearing": { "type": "number", "minimum": 0, "maximum": 100 },
+            "seeing": { "type": "number", "minimum": 0, "maximum": 100 },
+            "reading": { "type": "number", "minimum": 0, "maximum": 100 },
+            "doing": { "type": "number", "minimum": 0, "maximum": 100 }
+          }
+        },
+        "do_not_ask": { "description": "The profile fields you must not ask him about in this talk: asked in the last day, or he declined to say. Missing when none.", "type": "array", "maxItems": 5, "items": { "type": "string", "enum": ["age", "pace", "ways", "background", "why"] } }
       }
     }
   }

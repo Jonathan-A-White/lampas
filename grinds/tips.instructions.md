@@ -30,6 +30,7 @@ You receive a Tips Request (a JSON object, grinds/tips.input.schema.json) with t
   reading check; a `slow` one a tip that asks for one small step; a `seeing` one a tip about a screen that shows a table or a
   picture; a `reading` one a tip that gives a short written rule) and to pitch its words: `age` sets the tone and the examples,
   `background` and `why` can give the tip a reason that is his own. Never repeat it back to him.
+  The app also sends what it found out itself: `learned` (what the tutor learned in earlier talks, a `guessed: true` one being only a guess), `observed_pace` (how he seems to go, from how fast and how rightly he answers) and `observed_ways` (the share of hearing, seeing, reading and doing in what he uses). Treat them as weaker hints at the same fields: what he wrote or chose always wins over them, and a guess is never said as a fact.
 - Use `learner` and `learner_grammar` the same way: offer a tip that fits where he is. Do not offer a tip whose feature needs words
   or grammar he has not met (the Parsing drill before the cases are `frontier` or `solid`, the Quick test with no words learning)
   without a body that says so in plain words ('a case you have not met yet'); a new word or idea is named only with its meaning.

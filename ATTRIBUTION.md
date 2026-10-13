@@ -71,7 +71,7 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
 
 - **[WhatsOnChain](https://whatsonchain.com)**. A public Bitcoin SV block explorer. Lampas asks it whether your phone's key holds a Lampas
   licence. Licence: none needed, it is a service used through its public API and no code or data is copied; its [terms](https://whatsonchain.com/terms) apply. Changes: none.
-- **[Postern](https://github.com/Jonathan-A-White/postern)** and its mill, by Jonathan A. White. Carries your questions to the tutor, with any pictures you attach and what you chose to tell it in Settings > About you, and
+- **[Postern](https://github.com/Jonathan-A-White/postern)** and its mill, by Jonathan A. White. Carries your questions to the tutor, with any pictures you attach and what you chose to tell it in Settings > About you, what it learned about you in your talks (which you can change or remove there) and how you go, as your phone counts it, and
   its answers back. Lampas's place in your phone's share sheet follows the way Postern takes what you share. Licence: [MIT](https://github.com/Jonathan-A-White/postern/blob/main/LICENSE). Changes: none.
 - **[Claude](https://www.anthropic.com/claude)** by Anthropic. The model behind the tutor's answers (including its reading of the pictures you send it), the reading check (which grades a reading you stop part-way through as far as you got, and helps you with the word you stopped at), the reading drill (which grades each practice word you read aloud), the tips and the help with filling in a form.
   Licence: none needed, it is a service used through the mill; its [terms](https://www.anthropic.com/legal/consumer-terms) apply. Changes: none.
