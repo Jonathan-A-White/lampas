@@ -10,11 +10,11 @@ import { App } from './App';
 import { restoreAppearance } from './appearance/appearanceSync';
 import { APP_SEMVER } from './config';
 import { ErrorBoundary } from './ErrorBoundary';
-import { Gate } from './gate/Gate';
+import { LicenceProvider } from './gate/LicenceProvider';
 import { restoreLastRoute } from './nav/lastRoute';
 import { restoreScrolls } from './nav/scrollMemory';
 import { startAppUpdates } from './services/appUpdate';
-import { TipsSitting } from './tips/TipsSitting';
+import { LicensedTips } from './tips/LicensedTips';
 import { installScrollGuard } from './ui/scrollGuard';
 
 installScrollGuard();
@@ -27,10 +27,10 @@ restoreScrolls();
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary where="app">
-      <Gate>
-        <TipsSitting />
+      <LicenceProvider>
+        <LicensedTips />
         <App />
-      </Gate>
+      </LicenceProvider>
     </ErrorBoundary>
   </StrictMode>,
 );

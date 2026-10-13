@@ -1,8 +1,11 @@
 # Testing behind the licence gate
 
-Lampas opens on an Unlock screen until the phone's key holds a `lampas` licence on chain (`src/gate/`).
-The gate is not switched off for tests: a test that needs the reader either answers the licence lookup
-or starts from a key it knows. This page names the one place the key lives and how a test seeds it.
+Lampas opens for anyone (mw-8m9dyu.1): `src/main.tsx` wraps the app in `LicenceProvider` (`src/gate/LicenceProvider.tsx`), which runs the
+licence check on the phone's key (`src/gate/useLicenceCheck.ts`) and gives the app one state, `useLicence()`: `'licensed'`, `'not-licensed'` or
+`'checking'`. Nothing is refused by it yet. The `Gate` component (Unlock until a licence is held) is kept for its own tests; the Unlock screen
+is the page `#/unlock`. A test that needs a licensed phone answers the licence lookup or starts from a key it knows; a test that needs the
+reader with no licence does nothing (`openUnlicensed(page)` in `tests/e2e/unlocked.ts` only quiets the network and the tip). This page names
+the one place the key lives and how a test seeds it.
 
 ## The device key's storage (the test seam)
 
@@ -15,7 +18,7 @@ or starts from a key it knows. This page names the one place the key lives and h
   that is what Postern's Key screen issues a licence to.
 
 The seam is a storage location, not a bypass: the gate still asks the chain whether that key holds a licence
-minted by the issuer. A seeded key with no licence sees Unlock.
+minted by the issuer. A seeded key with no licence is `'not-licensed'` (and `#/unlock` says so).
 
 ### Seeding a known key in Playwright
 
@@ -33,7 +36,7 @@ await expect(page.getByTestId('device-key')).toHaveText(PUBLIC_KEY_HEX);
 A live test (for example the tutor's) that needs the real reader seeds a key whose licence is on testnet and lets
 the real lookup run. A test that must not touch the network uses `openUnlocked(page)`: it seeds the key, plants the
 offline-grace memory (`lampas.licenceHeld` = `{"publicKeyHex": …, "at": <ms>}`, good for 24 h) and refuses every
-WhatsOnChain request, so the gate opens on its remembered "held" answer.
+WhatsOnChain request, so the check opens on its remembered "held" answer (`useLicence()` is `'licensed'`).
 
 ### Seeding a key in a Gherkin step
 
