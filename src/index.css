@@ -72,6 +72,7 @@
 
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-greek: "Gentium Plus", "Noto Serif", "Cardo", "Times New Roman", serif;
+  --font-book: Georgia, "Noto Serif", "Times New Roman", serif;
   --font-hebrew: "Noto Serif Hebrew", "SBL Hebrew", "Ezra SIL", "Times New Roman", serif;
 }
 
@@ -310,6 +311,53 @@ textarea,
   visibility: hidden;
   transition: transform 200ms ease, visibility 0s 200ms;
 }
+/* The Immersive reader sets the text like a book (mw-5r3p30.297): tight lines wherever no line sits under a word (a verse with a [data-hint]
+ * keeps its roomy spacing), a book serif for the English (the Greek face is already one), justified and hyphenated in the text's own language
+ * (the lang on the verse or paragraph), small dim verse numbers, and pure black behind it in the dark theme. Type size is untouched. The verse
+ * number is still a 44 px button: its vertical margin is pulled in so it no longer makes its line 44 px tall. Off draws none of this. */
+[data-reader][data-immersive='on'] {
+  --lp-book-english: calc(1.4 * var(--lp-english-size));
+  --lp-book-greek: calc(1.4 * var(--lp-greek-size));
+  background-color: var(--lp-reader-bg, transparent);
+}
+[data-reader][data-immersive='on'] :is([data-verse], [data-paragraph]) {
+  text-align: justify;
+  hyphens: auto;
+}
+[data-reader][data-immersive='on'] :is([data-verse], [data-paragraph])[lang='en'] {
+  font-family: var(--font-book);
+  --lp-book-line: var(--lp-book-english);
+}
+[data-reader][data-immersive='on'] :is([data-verse], [data-paragraph])[lang='grc'] {
+  --lp-book-line: var(--lp-book-greek);
+}
+[data-reader][data-immersive='on'] :is([data-verse], [data-paragraph]):not(:has([data-hint])) {
+  line-height: 1.4;
+}
+[data-reader][data-immersive='on'] :is([data-verse], [data-paragraph]):not(:has([data-hint])) :is([data-verse-number], [data-verse-play]) {
+  margin-block: calc((var(--lp-book-line) - var(--lp-tap)) / 2);
+}
+[data-reader][data-immersive='on'] :is([data-verse-play], [data-verse-number]) {
+  vertical-align: middle;
+}
+[data-reader][data-immersive='on'] [data-verse-number] {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+[data-reader][data-immersive='on'] [data-verse-number] sup {
+  font-size: 0.65rem;
+}
+:root[data-theme='dark']:has([data-reader][data-immersive='on']) {
+  --lp-canvas: #000;
+  --lp-reader-bg: #000;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):has([data-reader][data-immersive='on']) {
+    --lp-canvas: #000;
+    --lp-reader-bg: #000;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .away-box,
   .away-box[data-away],
