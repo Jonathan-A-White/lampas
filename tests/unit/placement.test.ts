@@ -103,7 +103,7 @@ describe('answering', () => {
     state = times(state, false, 2);
     expect(state.levels.get(first)).toBe('notYet');
     expect(currentIdea(state)).toBe(state.ideas[idx(state, first) - 1]);
-    expect(currentIdea(state)).toBe('movable-letters');
+    expect(currentIdea(state)).toBe('enclitics');
   });
 
   it('records every answer in order', () => {
@@ -116,34 +116,42 @@ describe('answering', () => {
     let state = start();
     state = times(state, false, 4);
     expect(state.levels.get('noun')).toBe('notYet');
-    expect(state.levels.get('movable-letters')).toBe('notYet');
+    expect(state.levels.get('enclitics')).toBe('notYet');
     // only the ideas asked have a level; nothing above the first miss does
     const later = state.ideas.slice(idx(state, 'noun') + 1);
     expect(later.length).toBeGreaterThan(10);
     expect(later.filter((id) => state.levels.has(id))).toEqual([]);
     // and the walk only goes down from here, even when he gets the next ideas right
     state = times(state, true, 2);
-    expect(state.levels.get('punctuation')).toBe('solid');
+    expect(state.levels.get('marks-change-word')).toBe('solid');
     expect(state.done).toBe('finished');
     expect(later.filter((id) => state.levels.has(id))).toEqual([]);
   });
 
   it('after one miss and a frontier idea below it, the walk goes up past the missed idea', () => {
     let state = times(start(), false, 2);
-    expect(currentIdea(state)).toBe('movable-letters');
+    expect(currentIdea(state)).toBe('enclitics');
     state = answer(answer(state, true), false);
-    expect(state.levels.get('movable-letters')).toBe('frontier');
+    expect(state.levels.get('enclitics')).toBe('frontier');
     expect(currentIdea(state)).toBe('number-singular');
   });
 
-  it('a walk of wrongs reaches a letter idea within the twenty questions', () => {
+  it('a walk of wrongs reaches a letter idea, pausing at the twenty questions on the way', () => {
+    // from the noun down, two misses an idea with the marks among them is more than one sitting of twenty
     let state = start();
     let asked = 0;
-    while (currentIdea(state) !== null && ideaOf(currentIdea(state)!).tier !== 'letters') {
+    let paused = 0;
+    while (state.done !== 'finished' && (state.done === 'paused' || ideaOf(currentIdea(state)!).tier !== 'letters')) {
+      if (state.done === 'paused') {
+        paused += 1;
+        state = resumePlacement(state);
+        continue;
+      }
       state = answer(state, false);
       asked += 1;
     }
-    expect(asked).toBeLessThanOrEqual(QUESTION_LIMIT);
+    expect(asked).toBeLessThanOrEqual(QUESTION_LIMIT * 2);
+    expect(paused).toBeLessThanOrEqual(1);
     expect(ideaOf(currentIdea(state)!).tier).toBe('letters');
     expect(currentIdea(state)).toBe('letter-omega');
   });
@@ -174,7 +182,7 @@ describe('where the placement stops', () => {
   it('a step down onto an idea that turns out solid ends it too', () => {
     let state = times(start(), false, 2);
     state = times(state, true, 2);
-    expect(state.levels.get('movable-letters')).toBe('solid');
+    expect(state.levels.get('enclitics')).toBe('solid');
     expect(state.done).toBe('finished');
   });
 
@@ -305,7 +313,7 @@ describe('what his right answers show (mw-hqd5bz.17)', () => {
 
   it('is unchanged when no question is given: it steps down through every idea below', () => {
     const state = times(start(), false, 4);
-    expect(currentIdea(state)).toBe('punctuation');
+    expect(currentIdea(state)).toBe('marks-change-word');
     expect(state.focus).toBeNull();
   });
 

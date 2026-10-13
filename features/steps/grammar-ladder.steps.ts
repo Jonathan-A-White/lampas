@@ -50,4 +50,13 @@ describeFeature(feature, ({ Scenario }) => {
     And('it needs nothing from the nouns tier but number', () => expect(ids.filter((id) => byTitle(LADDER.find((i) => i.id === id)?.title ?? '').tier === 'nouns' && !id.startsWith('number-'))).toEqual([]));
     And('the parsing code {string} needs only {string}', (_, code: string, title: string) => expect(ideasOf(code)).toEqual([byTitle(title).id]));
   });
+
+  Scenario('Marks that change the word and enclitics are taught among the marks', ({ Given, Then, And }) => {
+    const needsOf = (title: string, a: string, b: string) => expect(byTitle(title).needs).toEqual(expect.arrayContaining([byTitle(a).id, byTitle(b).id]));
+    Given('the grammar ladder', () => expect(LADDER.length).toBeGreaterThan(100));
+    Then('{string} sits above {string}', (_, upper: string, lower: string) => expect(byTitle(upper).rung).toBeGreaterThan(byTitle(lower).rung));
+    And('{string} sits above {string}', (_, upper: string, lower: string) => expect(byTitle(upper).rung).toBeGreaterThan(byTitle(lower).rung));
+    And('the idea {string} needs {string} and {string}', (_, title: string, a: string, b: string) => needsOf(title, a, b));
+    And('{string} also needs {string} and {string}', (_, title: string, a: string, b: string) => needsOf(title, a, b));
+  });
 });

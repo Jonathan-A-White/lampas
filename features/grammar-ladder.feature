@@ -21,3 +21,10 @@ Feature: The grammar ladder
     Then it needs "The perfect tense", "The active voice" and "The plural"
     And it needs nothing from the nouns tier but number
     And the parsing code "PREP" needs only "The preposition"
+
+  Scenario: Marks that change the word and enclitics are taught among the marks
+    Given the grammar ladder
+    Then "Marks that change the word" sits above "Accents and stress"
+    And "Enclitics" sits above "Marks that change the word"
+    And the idea "Marks that change the word" needs "Breathing marks" and "Accents and stress"
+    And "Enclitics" also needs "Breathing marks" and "Accents and stress"
