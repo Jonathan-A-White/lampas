@@ -23,14 +23,24 @@ async function expectFitsPhone(page: Page) {
 // and a recogniser that take the time a phone takes; a clip of speech plays in real time while the bar is held.
 const fakeMicrophone = (page: Page) => honestMic(page);
 
-async function holdFor(page: Page, button: ReturnType<Page['getByRole']>, ms: number): Promise<void> {
+// A hold is measured by the page's clock, so the spec drives that clock: it is paused while the bar is down and run for exactly `ms`,
+// and a loaded host that delivers the press or the release late (`lagMs`, real time) cannot make a tap a hold or a short hold a long one.
+// Needs page.clock.install() before the page opens.
+async function holdFor(page: Page, button: ReturnType<Page['getByRole']>, ms: number, lagMs = 0): Promise<void> {
   const box = await button.boundingBox();
   if (!box) throw new Error('the button is not on the page');
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.clock.pauseAt(new Date((await page.evaluate(() => Date.now())) + 50));
   await page.mouse.down();
-  await page.waitForTimeout(ms);
+  await page.clock.runFor(ms);
+  if (lagMs) await page.waitForTimeout(lagMs);
   await page.mouse.up();
+  await page.clock.resume();
 }
+
+test.beforeEach(async ({ page }) => {
+  await page.clock.install();
+});
 
 test('holding the bar of Read it aloud on verse 28 sends the reading and marks the words to fix, at phone width', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
@@ -93,6 +103,26 @@ test('holding the bar of Read it aloud on verse 28 sends the reading and marks t
   await walk.getByRole('button', { name: 'On to the whole verse', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Hold to read the whole verse again', exact: true })).toBeVisible();
   await expectFitsPhone(page);
+});
+
+// A loaded host delivers the release late (mw-5r3p30.339: the nightly suite read a 100 ms press as 'Hold the bar for the whole verse').
+test('a quick press stays a tap and a short hold stays short when the host delivers the release late, at phone width', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: READING_ANSWER };
+  await routePostern(page, fake);
+  await fakeMicrophone(page);
+  await openUnlocked(page);
+  await page.goto('/');
+  await chooseAction(page, 28, 'Read it aloud');
+
+  const panel = page.getByRole('region', { name: 'Reading check' });
+  const read = page.getByRole('button', { name: 'Hold to read verse 28', exact: true });
+  await holdFor(page, read, 100, 900);
+  await expect(panel).toContainText('Hold while you read');
+  await holdFor(page, read, 700, 900);
+  await expect(panel).toContainText('Hold the bar for the whole verse');
+  expect(fake.received).toHaveLength(0);
 });
 
 test('holding the bar of Read it aloud in the Greek view sends the Greek, marks Greek words and shows their syllables, at phone width', async ({ page }) => {
