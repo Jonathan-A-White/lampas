@@ -3,8 +3,10 @@
 import { db } from '../db';
 import { IDEA_KIND, LADDER } from '../grammar/ladder';
 import type { RustyCandidate } from '../rusty';
+import { storedId } from '../grammar/soundScope';
 import { announceDue, writeRestart } from './reviews';
-import { setLevel } from './grammarLevels';
+import { getLevel, listLevels, setLevel } from './grammarLevels';
+import { getGreekPronunciation } from './settings';
 
 /** An item the tutor names: a word (its lemma) or a grammar idea (its ladder id). */
 export interface ItemRef {
@@ -16,13 +18,14 @@ const reviewKind = (kind: ItemRef['kind']): string => (kind === 'word' ? 'word' 
 
 /** Every solid word and idea that is on the schedule, with its row. A solid item with no row has never been asked, so it cannot be rusty. */
 export async function solidCandidates(): Promise<RustyCandidate[]> {
-  const [words, levels] = await Promise.all([db.words.where('state').equals('solid').toArray(), db.grammarLevels.where('level').equals('solid').toArray()]);
+  const [words, allLevels, scheme] = await Promise.all([db.words.where('state').equals('solid').toArray(), listLevels(), getGreekPronunciation()]);
+  const levels = [...allLevels.values()].filter((l) => l.level === 'solid');
   const titles = new Map(LADDER.map((idea) => [idea.id, idea.title]));
   const wanted: Omit<RustyCandidate, 'review'>[] = [
     ...words.map((w) => ({ kind: 'word' as const, id: w.lemma, title: w.lemma })),
     ...levels.flatMap((l) => (titles.has(l.id) ? [{ kind: 'idea' as const, id: l.id, title: titles.get(l.id) as string }] : [])),
   ];
-  const rows = await Promise.all(wanted.map((w) => db.reviews.get([reviewKind(w.kind), w.id])));
+  const rows = await Promise.all(wanted.map((w) => db.reviews.get([reviewKind(w.kind), w.kind === 'idea' ? storedId(w.id, scheme) : w.id])));
   return wanted.flatMap((w, i) => (rows[i] ? [{ ...w, review: rows[i] }] : []));
 }
 
@@ -43,9 +46,10 @@ export async function moveToFrontier(items: readonly ItemRef[], now = Date.now()
       });
       if (done) moved.push(item);
     } else {
-      if ((await db.grammarLevels.get(item.id))?.level !== 'solid') continue;
+      if ((await getLevel(item.id))?.level !== 'solid') continue;
       await setLevel(item.id, 'frontier', 'tutor', now);
-      await db.transaction('rw', db.reviews, () => writeRestart(IDEA_KIND, item.id, now));
+      const key = storedId(item.id, await getGreekPronunciation());
+      await db.transaction('rw', db.reviews, () => writeRestart(IDEA_KIND, key, now));
       moved.push(item);
     }
   }
