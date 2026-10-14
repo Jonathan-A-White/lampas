@@ -200,8 +200,8 @@ export interface TalkRequest {
   learner_profile?: LearnerProfile;
   /** what Lampas remembers of him (src/data/learnerMemory.ts, Settings > Memory): the index and the notes the app chose by name for this place, word and screen; missing when nothing is kept; fitHistory cuts the notes only after the history, the word list and his requests */
   memory?: MemoryField;
-  /** present only in a quiz (the Verse view's Quiz me, mw-5r3p30.74): the grind then runs the read, quiz, map method on `greek` and `english` */
-  mode?: 'quiz';
+  /** quiz (the Verse view's Quiz me, mw-5r3p30.74): the grind runs the read, quiz, map method on `greek` and `english`; welcome (mw-yrmkdf.3): the grind runs the welcome interview, from a screen named Welcome, with no text */
+  mode?: 'quiz' | 'welcome';
   /** present only in a quiz and only when he has kept any (My study way, mw-5r3p30.76): the lines of how he wants to be quizzed; they override the default method where they conflict */
   study_way?: string[];
   /** present only in a quiz (mw-5r3p30.185): why he wants the quiz, in his words, as he kept it (Settings > Quiz goal), or null when he has kept none: the tutor then opens by asking */
@@ -306,6 +306,8 @@ export interface TalkAnswer {
   memory_update?: MemoryUpdate[];
   /** names of notes the tutor would have used had they existed (book:<Book>, word:<lemma>, topic:<slug>): counted and the last names kept, nothing more */
   wished_notes?: string[];
+  /** only in the welcome (mw-yrmkdf.3): the interview is over, this answer is its line of thanks; the app ends the welcome */
+  welcome_done?: true;
 }
 
 /** The most entries a memory_update has, and the most names a wished_notes has; the longest line an append adds (the answer schema's). */
@@ -359,7 +361,7 @@ const isRustyOffer = (value: unknown): value is RustyOfferAnswer =>
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'bridge' && k !== 'form_values' && k !== 'form_ask' && k !== 'go' && k !== 'memory_update' && k !== 'wished_notes' && k !== 'greek_offer' && k !== 'greek_asked' && k !== 'rusty_offer')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'bridge' && k !== 'form_values' && k !== 'form_ask' && k !== 'go' && k !== 'memory_update' && k !== 'wished_notes' && k !== 'greek_offer' && k !== 'greek_asked' && k !== 'rusty_offer' && k !== 'welcome_done')) return false;
   if ('question' in value && !isText(value.question, MAX_TALK_CHARS)) return false;
   if ('memory_update' in value && !(Array.isArray(value.memory_update) && value.memory_update.length <= MAX_MEMORY_UPDATES && value.memory_update.every(isMemoryUpdate))) return false;
   if ('wished_notes' in value && !(Array.isArray(value.wished_notes) && value.wished_notes.length <= MAX_WISHED_NOTES && value.wished_notes.every((n) => isText(n, MEMORY_NAME_MAX)))) return false;
@@ -372,6 +374,7 @@ export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if ('bridge' in value && !isAnswerBridge(value.bridge)) return false;
   if ('greek_offer' in value && !isGreekOffer(value.greek_offer)) return false;
   if ('greek_asked' in value && value.greek_asked !== true) return false;
+  if ('welcome_done' in value && value.welcome_done !== true) return false;
   if ('rusty_offer' in value && !isRustyOffer(value.rusty_offer)) return false;
   if ('setting_offer' in value && !(isObject(value.setting_offer) && Object.keys(value.setting_offer).length === 2 && isText(value.setting_offer.key, 60) && (isText(value.setting_offer.value, 80) || typeof value.setting_offer.value === 'number'))) return false;
   if ('form_ask' in value && !isText(value.form_ask, 30)) return false;
@@ -393,6 +396,8 @@ export interface TalkScope {
   chapter: Chapter;
   verse: Verse | null;
   quiz?: boolean;
+  /** the welcome interview of a new reader (mw-yrmkdf.3): a talk from the screen Welcome, every request in welcome mode */
+  welcome?: boolean;
   /** a talk from a screen (mw-5r3p30.91): what the screen shows. `chapter` is then NO_CHAPTER, `verse` null: the talk is not about a text. */
   screen?: ScreenContext;
   /** a talk of its own (mw-y3qno5.2): the key it is kept under ('talk.<ms>', src/share/talkPlace.ts newTalkRef). It carries a `screen` that names no screen, and the sheet is a plain talk with the tutor. */
@@ -521,7 +526,7 @@ export function buildTalkRequest(
     ...(learnerGrammar && !aboutCredits ? { learner_grammar: learnerGrammar } : {}),
     ...(learnerProfile && !aboutCredits ? { learner_profile: learnerProfile } : {}),
     ...(memory && !aboutCredits ? { memory } : {}),
-    ...(scope.quiz ? { mode: 'quiz' as const } : {}),
+    ...(scope.quiz ? { mode: 'quiz' as const } : scope.welcome ? { mode: 'welcome' as const } : {}),
     ...(scope.quiz && studyWay.length > 0 ? { study_way: studyWay } : {}),
     ...(scope.quiz ? { quiz_goal: quizGoal.kept === '' ? null : quizGoal.kept } : {}),
     ...(scope.quiz && quizGoal.kept === '' && quizGoal.once ? { quiz_goal_once: quizGoal.once } : {}),
@@ -531,7 +536,7 @@ export function buildTalkRequest(
     ...(missingFoundations && !aboutCredits ? { missing_foundations: missingFoundations } : {}),
     ...(readerView && !scope.screen && !scope.quiz ? { reader_view: readerView } : {}),
     ...(requests.length > 0 && !aboutCredits ? { requests } : {}),
-    ...(rusty && rusty.length > 0 && !aboutCredits && !scope.quiz ? { rusty } : {}),
+    ...(rusty && rusty.length > 0 && !aboutCredits && !scope.quiz && !scope.welcome ? { rusty } : {}),
   };
   if (scope.screen) return request;
   // the words of the text weigh what the rest leaves of the record, without the history (which is cut first), up to GREEK_WORDS_BYTES

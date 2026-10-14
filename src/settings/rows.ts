@@ -78,7 +78,7 @@ const DEVELOPER: SettingsRow = {
   key: 'developer',
   label: 'Developer mode',
   hint: "For finding faults: On shows Download my recording under a reading check's result.",
-  help: "For finding faults. On shows Download my recording under a reading check's result, to save the clip as it was recorded.",
+  help: "For finding faults. On shows Download my recording under a reading check's result, to save the clip as it was recorded, and Show the welcome again, which puts the English defaults back and brings the tutor's welcome round again for the demo.",
   section: 'developer',
   dependsOn: { key: 'developerMode', shown: (value) => value === 'on' || value === 'off' },
 };

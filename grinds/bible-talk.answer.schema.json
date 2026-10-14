@@ -149,7 +149,7 @@
       "enum": ["confirm", "decline", "read_back"]
     },
     "greek_offer": {
-      "description": "Only for a reader not learning the Greek (see the instructions, 'Offering the Greek'): ONE short line offering to show him the Greek, when his question shows real interest in the original (what a word really means, why translations differ, what the original says). The app draws it as a button. `kind` 'word' opens the Greek word's sheet (give its dictionary form in `lemma`, a word of the passage you were given) and `kind` 'view' switches the Reader to Greek. At most one in a conversation (the history shows it), never when `memory.index` holds 'said no to the Greek offer', never when `reader_view` is 'greek' or he is learning the Greek, never in a quiz or a talk from a screen. Leave it out otherwise.",
+      "description": "Only for a reader not learning the Greek (see the instructions, 'Offering the Greek'): ONE short line offering to show him the Greek, when his question shows real interest in the original (what a word really means, why translations differ, what the original says). The app draws it as a button. `kind` 'word' opens the Greek word's sheet (give its dictionary form in `lemma`, a word of the passage you were given) and `kind` 'view' switches the Reader to Greek. At most one in a conversation (the history shows it), never when `memory.index` holds 'said no to the Greek offer', never when `reader_view` is 'greek' or he is learning the Greek, never in a quiz or a talk from a screen (the welcome is the one exception: see the instructions, 'The welcome'). Leave it out otherwise.",
       "anyOf": [
         {
           "type": "object",
@@ -208,6 +208,11 @@
     },
     "greek_asked": {
       "description": "Only when he asked for Greek himself in this turn (the Greek word, the Greek view, what the original says) while `memory.index` holds 'said no to the Greek offer': true. The app then takes that line out of the index. Never to record an answer to your own offer: a yes or a no to the offer goes in `offer_reply`.",
+      "type": "boolean",
+      "const": true
+    },
+    "welcome_done": {
+      "description": "Only in the welcome (`mode` 'welcome'): true on the answer that is your line of thanks, which ends the interview (see the instructions, 'The welcome'). The app then ends the welcome. Never earlier, and never outside the welcome.",
       "type": "boolean",
       "const": true
     },

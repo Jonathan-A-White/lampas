@@ -1,0 +1,32 @@
+{
+  "description": "He says he wants to learn the Greek: the tutor writes it to the index, offers the Greek view once and asks the second question.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Welcome",
+    "question": "I want to learn Greek",
+    "history": [
+      {
+        "q": "Hello, I have just started using Lampas.",
+        "a": "Welcome to Lampas. Why are you here: to read, to study, or to learn the Greek?"
+      }
+    ],
+    "solid_words": [],
+    "settings": {},
+    "mode": "welcome",
+    "screen": {
+      "name": "Welcome",
+      "facts": []
+    }
+  },
+  "expect": {
+    "memory_update.0.name": {
+      "equals": "index"
+    },
+    "greek_offer.kind": {
+      "equals": "view"
+    },
+    "welcome_done": {
+      "present": false
+    }
+  }
+}
