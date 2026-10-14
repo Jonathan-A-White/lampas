@@ -109,3 +109,11 @@ or a newer response drops it; nothing is sent outside the app, no notification. 
 
 A Hebrew word in a response is for his eyes: `answerRuns` (and so `startAnswer`) leaves Hebrew letters out of what the English voice is given
 (`withoutScripts`, `src/script/scripts.ts`); the transliteration beside it is read as English. A Hebrew voice (he-IL) and tap-to-speak are a later story.
+
+## A respelling of a Greek sound (mw-5r3p30.272)
+
+The tutor respells a Greek sound ('πνεῦμα sounds like PNEV-ma', 'Say it "pnev"'). An English voice spells such a token letter by letter, so
+`answerRuns` puts the Greek it respells there instead, for the Greek voice: the answer's own Greek words are respelt by the chosen pronunciation
+(`respell`, whole or by runs of syllables) and a capitalised or hyphened-capital token, or a quoted lower-case one, that matches is replaced by that Greek
+('PNEV-ma' by πνεῦμα, "pnev" by πνεῦ). A capitalised respelling that matches no Greek in the answer is said by the English voice as a lower-case word;
+acronyms (NT, BDAG, LSB ...) and a quoted English meaning are left alone. The match is on the text: the grinds' answer shape does not tie a respelling to its Greek.
