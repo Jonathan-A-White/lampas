@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Find References Request 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["language"],
+  "properties": {
+    "language": {
+      "description": "The language of the app he reads in, as a short code ('en'). The one attached picture is a screenshot or photo of a page; the references are read from the text in it.",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 10
+    }
+  }
+}

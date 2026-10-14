@@ -1,0 +1,11 @@
+{
+  "description": "A Kindle screenshot of a page that quotes Genesis 1:28 (ESV): the one reference comes back as Gen.1.28, printed as the page prints it, and nothing else on the page is taken for one.",
+  "schemaVersion": "1",
+  "request": { "language": "en" },
+  "photos": ["kindle-gen-1-28.jpg"],
+  "expect": {
+    "references.0.ref": { "equals": "Gen.1.28" },
+    "references.0.printed": { "matches": "^Gen\\.? ?1:28$" },
+    "references.1": { "present": false }
+  }
+}

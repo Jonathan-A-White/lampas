@@ -13,14 +13,14 @@ Feature: Lampas is a share target
     When he taps "Continue: Romans 8:28 · 2 hours ago"
     Then the talk sheet "Talk about Romans 8:28" is open with his earlier question in it
     And the composer shows two thumbnails and the field holds "ἀγάπη in BDAG"
-    And the mill received nothing and no share is waiting
+    And the mill received no message of the talk and no share is waiting
 
   Scenario: New talk opens an empty talk with the share
     Given the Share screen is opened with two past talks and a share of two pictures and some words
     When he taps "New talk"
     Then the talk sheet "Talk with the tutor" is open with nothing said yet
     And the composer shows two thumbnails and the field holds "ἀγάπη in BDAG"
-    And the mill received nothing and no share is waiting
+    And the mill received no message of the talk and no share is waiting
 
   Scenario: Choose a talk lists the talks newest first and opens the picked one
     Given the Share screen is opened with two past talks and a share of two pictures and some words

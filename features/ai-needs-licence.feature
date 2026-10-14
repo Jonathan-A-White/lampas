@@ -60,3 +60,7 @@ Feature: Lampas AI needs a licence
   Scenario: With a licence the Goal screen has the Reading ladder in Greek and English
     Given this phone has a licence and the Goal screen is open
     Then the Goal screen has the Reading ladder in Greek and English
+
+  Scenario: With no licence a shared picture is not read for Bible references
+    Given this phone has no licence and a picture was shared to Lampas
+    Then the Share sheet does not read the picture: no Bible references from a picture, nothing sent to the mill

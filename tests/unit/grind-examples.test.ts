@@ -27,7 +27,7 @@ const grindFiles = readdirSync('grinds').filter((f) => f.endsWith('.json') && !f
 
 describe('the grinds have scenarios', () => {
   it('finds every grind of the rig', () => {
-    expect(grindFiles.sort()).toEqual(['bible-talk.json', 'feedback.json', 'tips.json', 'verse-ask.json', 'verse-read.json']);
+    expect(grindFiles.sort()).toEqual(['bible-talk.json', 'feedback.json', 'find-refs.json', 'tips.json', 'verse-ask.json', 'verse-read.json']);
   });
 
   describe.each(grindFiles)('grinds/%s', (grindFile) => {
