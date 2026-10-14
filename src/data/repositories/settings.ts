@@ -75,8 +75,39 @@ export async function getGreekPronunciation(): Promise<GreekPronunciation> {
   return isPronunciation(row?.value) ? row.value : DEFAULT_PRONUNCIATION;
 }
 
+const SWITCH_KEY = 'pronunciationSwitch';
+
+/**
+ * Chooses the Greek pronunciation. The sound ideas are learned per pronunciation (src/data/grammar/soundScope.ts, mw-5r3p30.231): a change to another one
+ * leaves a note for the Goal screen, kept until it is shown (takePronunciationSwitch), of the scheme he left and the one he chose.
+ */
 export async function setGreekPronunciation(pronunciation: GreekPronunciation): Promise<void> {
-  await db.settings.put({ key: PRONUNCIATION_KEY, value: pronunciation });
+  await db.transaction('rw', db.settings, async () => {
+    const before = await getGreekPronunciation();
+    await db.settings.put({ key: PRONUNCIATION_KEY, value: pronunciation });
+    if (before !== pronunciation) await db.settings.put({ key: SWITCH_KEY, value: JSON.stringify({ from: before, to: pronunciation }) });
+  });
+}
+
+/** A switch of pronunciation the Goal screen has not told him about: the scheme he left and the one he chose. */
+export interface PronunciationSwitch {
+  from: GreekPronunciation;
+  to: GreekPronunciation;
+}
+
+/** The switch of pronunciation not yet told, and forgets it: the Goal screen says it once. */
+export async function takePronunciationSwitch(): Promise<PronunciationSwitch | undefined> {
+  return db.transaction('rw', db.settings, async () => {
+    const row = await db.settings.get(SWITCH_KEY);
+    if (!row) return undefined;
+    await db.settings.delete(SWITCH_KEY);
+    try {
+      const kept = JSON.parse(String(row.value)) as Partial<PronunciationSwitch>;
+      return isPronunciation(kept.from) && isPronunciation(kept.to) ? { from: kept.from, to: kept.to } : undefined;
+    } catch {
+      return undefined;
+    }
+  });
 }
 
 export type { ReadingLayout };

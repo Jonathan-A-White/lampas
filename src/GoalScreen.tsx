@@ -3,7 +3,7 @@
 // into solid, frontier and not yet with the counts written in them; a tap on a bar opens the list behind it. Place me opens the placement, Read it the Reader
 // on the goal. The numbers are progressToward's (src/data/grammar/needs.ts), worked out in src/useGoalProgress.ts.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { approachOf, DEFAULT_APPROACH } from './approaches';
 import { NO_CHAPTER, type Chapter, type GreekWord } from './data/chapter';
 import { goalTitle } from './data/goal';
@@ -13,10 +13,12 @@ import { lettersText } from './data/grammar/inference';
 import { groupIdeas, groupWords, learnNext, LEVELS, nextWords, placedAt } from './data/grammar/goalProgress';
 import { ideaOf } from './data/grammar/ladder';
 import type { Counts, Level } from './data/grammar/needs';
-import { addWordToLearn, drillPlanCounts, getGrammarApproach } from './data/repositories';
+import { addWordToLearn, drillPlanCounts, getGrammarApproach, takePronunciationSwitch } from './data/repositories';
+import type { PronunciationSwitch } from './data/repositories/settings';
 import { IdeaSheet } from './IdeaSheet';
 import { useAiAllowed } from './gate/licenceContext';
 import { LadderStart } from './ReadingLadder';
+import { pronunciationOf } from './speech/pronunciation';
 import { navigate, openPlacement, openReader } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { useReportScreen } from './tutor/screenContext';
@@ -189,9 +191,35 @@ function ListGroup({ level, count, children }: { level: Level; count: number; ch
   );
 }
 
+/** The one-time note after he switched the pronunciation (mw-5r3p30.231): the sounds are learned per pronunciation, so they start again here and the old ones are kept. Taking it forgets it, so it shows once. */
+function SwitchNote() {
+  const [switched, setSwitched] = useState<PronunciationSwitch | null>(null);
+  useEffect(() => {
+    void takePronunciationSwitch().then((found) => {
+      if (found) setSwitched(found);
+    });
+  }, []);
+  if (!switched) return null;
+  return (
+    <div role="status" data-testid="pronunciation-switch" className="mx-4 mt-3 flex items-center gap-3 rounded-xl border border-line bg-surface px-3 py-2">
+      <p className="min-w-0 flex-1 text-base">
+        You switched to {pronunciationOf(switched.to).label}: the sounds start again here. Your {pronunciationOf(switched.from).label} progress is kept.
+      </p>
+      <button type="button" onClick={() => setSwitched(null)} className="min-h-12 shrink-0 rounded-xl border border-line px-4 text-base font-medium text-accent">
+        Got it
+      </button>
+    </div>
+  );
+}
+
 export function GoalScreen() {
   const progress = useGoalProgress();
-  const header = <ScreenHeader title="Goal" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />;
+  const header = (
+    <>
+      <ScreenHeader title="Goal" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />
+      <SwitchNote />
+    </>
+  );
   if (progress.status === 'loading') return <>{header}<main className="screen min-h-0 flex-1" aria-busy="true" /></>;
   if (progress.status === 'none') return <>{header}<NoGoalBody levels={progress.levels} /></>;
   if (progress.status === 'failed') {

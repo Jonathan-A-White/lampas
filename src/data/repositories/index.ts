@@ -39,6 +39,7 @@ export {
   setPickerGrammar,
   setGrammarApproach,
   setGreekPronunciation,
+  takePronunciationSwitch,
   setLayout,
   setQuizGoal,
   setLogosBible,

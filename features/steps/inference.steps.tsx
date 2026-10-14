@@ -15,7 +15,7 @@ import { questionFor } from '../../src/data/grammar/placementQuestion';
 import type { GrammarQuestion } from '../../src/data/grammar/questions';
 import { readPlacement } from '../../src/data/placementKeep';
 import { mulberry32 } from '../../src/data/quiz';
-import { setLevel } from '../../src/data/repositories/grammarLevels';
+import { listLevels, setLevel } from '../../src/data/repositories/grammarLevels';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { setGoal } from '../../src/data/repositories/settings';
 import { seedWordsIfFirstOpen } from '../../src/data/repositories/words';
@@ -23,6 +23,7 @@ import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { storedId } from '../../src/data/grammar/soundScope';
 
 afterAll(() => {
   cleanup();
@@ -80,8 +81,8 @@ async function answerPlacement(right: boolean): Promise<void> {
   await user.click(await screen.findByTestId('next'));
 }
 
-const row = (id: string) => db.grammarLevels.get(id);
-const levelsNow = async () => new Map((await db.grammarLevels.toArray()).map((r): [string, GrammarLevelName] => [r.id, r.level]));
+const row = (id: string) => db.grammarLevels.get(storedId(id, 'modern'));
+const levelsNow = async () => new Map([...(await listLevels())].map(([id, r]): [string, GrammarLevelName] => [id, r.level]));
 const learnNext = () => screen.findByTestId('learn-next');
 
 const feature = await loadFeature('features/inference.feature');
@@ -104,7 +105,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the letter {string} is solid, inferred from his answers', solidInferred);
     And('the placement did not ask the letter {string}', async (_, id: string) => {
-      expect(await db.reviews.get(['grammar', id])).toMatchObject({ rights: 0, lapses: 0 });
+      expect(await db.reviews.get(['grammar', storedId(id, 'modern')])).toMatchObject({ rights: 0, lapses: 0 });
     });
     And('the letter {string} has no level', async (_, id: string) => expect(await row(id)).toBeUndefined());
     When('he opens the Goal screen', openGoal);

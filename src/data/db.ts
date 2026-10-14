@@ -1,5 +1,6 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type { AppliedChange } from '../settings/applied';
+import { legacyStoredId } from './grammar/soundScope';
 
 export type WordState = 'solid' | 'learning' | 'dropped';
 
@@ -663,6 +664,51 @@ class LampasDB extends Dexie {
       ladder: 'lang',
       drillRuns: '++id, ideaId, at',
     });
+    // v20: same tables. The rows of the letters, sounds and marks ideas (grammarLevels, the schedule rows of kind 'grammar', the 'grammarEvidence' setting) are kept per
+    // pronunciation scheme under '<scheme>:<id>' (src/data/grammar/soundScope.ts); what he has proved so far was proved in Modern Greek, so those rows move there.
+    this.version(20)
+      .stores({
+        words: 'lemma, lesson, state, *lemmas',
+        meta: 'key',
+        settings: 'key',
+        results: '++id, [lemma+when]',
+        answers: '++id, [ref+when]',
+        talks: '++id, [ref+when]',
+        drills: '++id, lemma, [lemma+step]',
+        readings: 'ref',
+        grammarKnown: 'term',
+        reviews: '[kind+id], due, kind',
+        grammarLevels: 'id, level',
+        usage: 'key, day, name',
+        tips: 'id, status',
+        talkPictures: '++id, turnId',
+        shares: 'id, createdAt',
+        requests: 'txid, sentAt, status',
+        readingHistory: '++id, ref, [lang+at]',
+        missTally: '[lang+unit], lang',
+        ladder: 'lang',
+        drillRuns: '++id, ideaId, at',
+      })
+      .upgrade(async (tx) => {
+        const levels = tx.table<GrammarLevel, string>('grammarLevels');
+        const moved = (await levels.toArray()).filter((row) => legacyStoredId(row.id) !== row.id);
+        await levels.bulkDelete(moved.map((row) => row.id));
+        await levels.bulkPut(moved.map((row) => ({ ...row, id: legacyStoredId(row.id) })));
+        const reviews = tx.table<Review, [string, string]>('reviews');
+        const owed = (await reviews.where('kind').equals('grammar').toArray()).filter((row) => legacyStoredId(row.id) !== row.id);
+        await reviews.bulkDelete(owed.map((row) => [row.kind, row.id] as [string, string]));
+        await reviews.bulkPut(owed.map((row) => ({ ...row, id: legacyStoredId(row.id) })));
+        const settings = tx.table<{ key: string; value: unknown }, string>('settings');
+        const evidence = await settings.get('grammarEvidence');
+        if (typeof evidence?.value === 'string') {
+          try {
+            const kept = JSON.parse(evidence.value) as Record<string, unknown>;
+            await settings.put({ key: 'grammarEvidence', value: JSON.stringify(Object.fromEntries(Object.entries(kept).map(([id, e]) => [legacyStoredId(id), e]))) });
+          } catch {
+            // Not evidence: leave it for getEvidence to start again.
+          }
+        }
+      });
   }
 }
 

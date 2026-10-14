@@ -36,6 +36,20 @@ for the chosen scheme; the ladder itself holds only the spelling, so no scheme's
 lesson for says a neutral text with no sound and is asked by ear or by name, never in another scheme's sounds. Modern Greek's are in
 `schemes/modernLessons.ts` (the breathings are silent: ὁ is 'o'), and `tests/unit/sound-lessons.test.ts` holds each to `respellModern`. The rules a reader applies (σ as z, αυ/ευ as v or f by the next sound) and the pairs a scheme says alike (`words-sound-alike`: ἡμεῖς/ὑμεῖς, λύομεν/λύωμεν, λύει/λύῃ) are lessons too, with an example each held to the respeller by `tests/unit/sound-rules.test.ts`; a scheme teaches them only if its own rules hold them.
 
+## Sound progress is kept per pronunciation
+
+He learns the letters, sounds and marks IN a pronunciation, so what he proved in Modern Greek he has not proved in Erasmian (mw-5r3p30.231). The ideas of the
+ladder's letters, sounds and marks tiers (`src/data/grammar/soundScope.ts` `isSoundIdea`: `alphabet`, `letter-*`, `diphthong*`, `pair-*`, `consonant-pairs`, `syllables`,
+`breathing*`, `accents`, `iota-subscript` and the rest of the marks tier) have a level (`grammarLevels`), a schedule row (kind `grammar`) and
+evidence (`grammarEvidence`) in EACH scheme, stored under `<scheme>:<idea id>` (`storedId`). Every other idea keeps its plain id: one level for all schemes.
+
+- Repositories take and give plain idea ids and read and write the SELECTED scheme's rows (`grammarLevels.ts`, `inference.ts`, `reviews.ts` `listDue`/`reviewsOf`, `rusty.ts`); another scheme's rows are
+  kept untouched and are not due, not in `listLevels()`, not in the tutor's `learner_grammar` and not in the placement. A test that writes a sound idea's row directly uses `storedId(id, 'modern')`.
+- Dexie v20 moved the rows there were (all Modern Greek's) under `modern:`; the `LEGACY_SCHEME` is that id.
+- Changing the pronunciation in Settings (`setGreekPronunciation`, which the tutor's settings change goes through too) leaves a note in the settings store (`pronunciationSwitch`) that the Goal screen shows once
+  (`takePronunciationSwitch`): 'You switched to <label>: the sounds start again here. Your <old label> progress is kept.' Switching back restores the old scheme's levels and reviews as they were.
+- Drill it proves a sound idea in the selected scheme only (`teachIdea` writes through the same scope). Drill runs (`drillRuns`) and drill plans are not yet per scheme.
+
 ## Modern Greek (`src/speech/schemes/modern.ts`)
 
 | Greek | Said | Notes |

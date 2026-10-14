@@ -12,7 +12,7 @@ import { LADDER, ITEM_GROUPS, itemName, itemsOf } from '../../src/data/grammar/l
 import { currentQuick, quickQuestion, quickSeed } from '../../src/data/grammar/quickRound';
 import { readPlacement } from '../../src/data/placementKeep';
 import { mulberry32 } from '../../src/data/quiz';
-import { recordGrammarAnswer } from '../../src/data/repositories/grammarLevels';
+import { listLevels, recordGrammarAnswer } from '../../src/data/repositories/grammarLevels';
 import { setGoal } from '../../src/data/repositories/settings';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
@@ -20,6 +20,7 @@ import { drawReviewRound } from '../../src/review/round';
 import { settle, SETTLE_MS } from '../../src/ui/settle';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
+import { storedId } from '../../src/data/grammar/soundScope';
 
 let synth: FakeSynth;
 
@@ -58,7 +59,7 @@ async function freshStore(goal: string, except: string[], noLetters = false): Pr
   if (noLetters) for (const letter of itemsOf('alphabet')) missing.add(letter.id);
   const groups = new Set(ITEM_GROUPS.filter((g) => itemsOf(g).some((i) => missing.has(i.id))));
   await db.grammarLevels.bulkPut(
-    LADDER.filter((i) => !missing.has(i.id) && !groups.has(i.id)).map((i) => ({ id: i.id, level: 'solid' as const, since: 1, how: 'marked' as const })),
+    LADDER.filter((i) => !missing.has(i.id) && !groups.has(i.id)).map((i) => ({ id: storedId(i.id, 'modern'), level: 'solid' as const, since: 1, how: 'marked' as const })),
   );
 }
 
@@ -72,6 +73,8 @@ async function openAt(hash: string): Promise<void> {
 
 /** Answers the item on screen, as the screen asked it: the option that is right (or not), then Next. Returns the question. */
 async function answerQuick(right: boolean) {
+  // the screen keeps the quick round a moment after the walk starts it (it reads the levels first): wait for it
+  await waitFor(() => expect(readPlacement()?.state.quick).toBeTruthy());
   const round = readPlacement()!.state.quick!;
   await waitFor(() => expect(screen.getByTestId('placement-question')).toHaveTextContent(`Quick round ${round.at + 1} of ${round.items.length}`));
   await screen.findByTestId('grammar-prompt');
@@ -87,7 +90,7 @@ async function answerQuick(right: boolean) {
   return { item, question };
 }
 
-const rowOf = (name: string) => db.grammarLevels.get(idOf(name));
+const rowOf = (name: string) => db.grammarLevels.get(storedId(idOf(name), 'modern'));
 
 const feature = await loadFeature('features/quick-round.feature');
 
@@ -152,6 +155,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he opens the placement', opened);
     And('he starts the placement', started);
     And('he answers the quick round right and taps Next and at once {string}', async (_, name: string) => {
+      await waitFor(() => expect(readPlacement()?.state.quick).toBeTruthy());
       const round = readPlacement()!.state.quick!;
       await screen.findByTestId('grammar-prompt');
       const question = quickQuestion(currentQuick(round)!, mulberry32(quickSeed(round)));
@@ -177,6 +181,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he starts the placement', started);
     And('he answers every question of the quick round right', async () => {
       for (let n = 0; n < 3; n += 1) {
+        await waitFor(() => expect(readPlacement()?.state.quick).toBeTruthy());
         const round = readPlacement()!.state.quick!;
         await waitFor(() => expect(screen.getByTestId('placement-question')).toHaveTextContent(`Quick round ${round.at + 1} of`));
         await screen.findByTestId('grammar-prompt');
@@ -221,7 +226,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps {string}', taps);
     Then('Learn next says {string}', async (_, text: string) => {
       await waitFor(async () => expect(await screen.findByTestId('learn-next')).toHaveTextContent(`Learn next: ${text}`));
-      expect(gapsOf(new Map((await db.grammarLevels.toArray()).map((r) => [r.id, r.level])))).toHaveLength(3);
+      expect(gapsOf(new Map([...(await listLevels())].map(([id, r]) => [id, r.level])))).toHaveLength(3);
     });
     And("Review's next grammar questions are on {string}", async (_, ids: string) => {
       const round = await drawReviewRound(mulberry32(1));

@@ -27,7 +27,7 @@ describe('the evidence kept', () => {
     expect((await getEvidence()).get('letter-xi')).toEqual({ run: 2, misses: 0 });
     await read('ξένος', 1);
     expect(await getLevel('letter-xi')).toMatchObject({ level: 'solid', how: 'inferred' });
-    expect(await db.reviews.get(['grammar', 'letter-xi'])).toMatchObject({ step: STEP_DAYS.indexOf(30), due: NOW + 30 * DAY });
+    expect(await db.reviews.get(['grammar', 'modern:letter-xi'])).toMatchObject({ step: STEP_DAYS.indexOf(30), due: NOW + 30 * DAY });
     expect(latest('grammar-level-changed')).toMatchObject({ level: 'solid' });
   });
 

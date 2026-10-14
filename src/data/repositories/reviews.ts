@@ -2,8 +2,11 @@
 // {kind, id}: kind 'word' with the NFC headword as id today; the course epic adds its own kinds.
 import { db, type Review } from '../db';
 import { publish } from '../../events/bus';
+import { IDEA_KIND } from '../grammar/ladder';
+import { ideaOfStored, storedId } from '../grammar/soundScope';
 import { RECENT_ANSWERS } from '../rusty';
 import { DAY, STEP_DAYS, isDue, nextReview } from '../schedule';
+import { getGreekPronunciation } from './settings';
 
 export type { Review };
 
@@ -83,17 +86,32 @@ async function live(rows: Review[]): Promise<Review[]> {
   return rows.filter((r) => r.kind !== 'word' || liveWords.has(r.id));
 }
 
+/**
+ * The rows of grammar ideas are kept under the pronunciation they were learned in when the idea is about sound (src/data/grammar/soundScope.ts, mw-5r3p30.231): this
+ * leaves out the rows of another scheme (kept, but not due here) and gives the rest their plain idea ids. Rows of other kinds are as they were.
+ */
+async function inScheme(rows: Review[]): Promise<Review[]> {
+  if (!rows.some((r) => r.kind === IDEA_KIND)) return rows;
+  const scheme = await getGreekPronunciation();
+  return rows.flatMap((r): Review[] => {
+    if (r.kind !== IDEA_KIND) return [r];
+    const id = ideaOfStored(r.id, scheme);
+    return id === undefined ? [] : [{ ...r, id }];
+  });
+}
+
 /** The items due at `now` (of `kind`, or of every kind), the longest overdue first. A word he dropped is not due. */
 export async function listDue(kind?: string, now = Date.now()): Promise<Review[]> {
   const due = await db.reviews.where('due').belowOrEqual(now).toArray();
   const wanted = due.filter((r) => isDue(r, now) && (kind === undefined || r.kind === kind));
-  return (await live(wanted)).sort((a, b) => a.due - b.due);
+  return (await inScheme(await live(wanted))).sort((a, b) => a.due - b.due);
 }
 
-/** The schedule rows of these items, for the ones that have one. */
+/** The schedule rows of these items, for the ones that have one (a grammar idea's row is the selected pronunciation's, with the idea's plain id). */
 export async function reviewsOf(items: Array<Pick<Review, 'kind' | 'id'>>): Promise<Review[]> {
-  const rows = await Promise.all(items.map((r) => db.reviews.get([r.kind, r.id])));
-  return rows.filter((r): r is Review => r !== undefined);
+  const scheme = items.some((r) => r.kind === IDEA_KIND) ? await getGreekPronunciation() : undefined;
+  const rows = await Promise.all(items.map((r) => db.reviews.get([r.kind, r.kind === IDEA_KIND && scheme !== undefined ? storedId(r.id, scheme) : r.id])));
+  return inScheme(rows.filter((r): r is Review => r !== undefined));
 }
 
 /** How many items are due at `now`, of `kind` or of every kind. */
