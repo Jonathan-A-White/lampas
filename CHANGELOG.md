@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.211
+_2026-10-14_
+- Fixed: In Drill it, the Hint now clearly crosses out and fades the wrong answers it takes away, says how many it took, and the button reads "Hint used".
+
 ## 0.1.210
 _2026-10-14_
 - New: A verse from the Old Testament in the tutor's answer now opens in your Logos, in the Bible you chose, and if Logos is not linked it takes you to where to link it.

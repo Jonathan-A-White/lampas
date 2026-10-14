@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.211",
+    "date": "2026-10-14",
+    "story": "mw-5r3p30.349",
+    "kind": "fixed",
+    "text": "In Drill it, the Hint now clearly crosses out and fades the wrong answers it takes away, says how many it took, and the button reads \"Hint used\"."
+  },
+  {
     "version": "0.1.210",
     "date": "2026-10-14",
     "story": "mw-5r3p30.345",
