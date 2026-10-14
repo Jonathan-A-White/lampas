@@ -2,7 +2,7 @@
 // find-refs grind (grinds/find-refs.json: sonnet, low effort, one picture), cut down on the phone as a talk's pictures are (src/talk/pictures.ts); what comes back
 // is {printed, ref} for each reference the page names. The answer is not believed: each one is read again by links.ts and refsInText.ts and dropped when its book
 // is not one of the Bible's 66 or its chapter or verse cannot be, and what is left is the same FoundReference the shared words give, so ShareReferences draws both.
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { chaptersOf, findReferences, type FoundReference } from '../nav/refsInText';
 import { osisOf, parseCanonReference } from '../nav/links';
 import { getDeviceKeyBytes } from '../services/deviceKey';
@@ -71,27 +71,31 @@ export async function findRefsInPicture(picture: File, place: number, signal?: A
 /** Where the reading of a share's pictures stands. */
 export type PictureRefs = { status: 'reading' } | { status: 'failed'; line: string } | { status: 'done'; found: FoundReference[] };
 
+const READING: PictureRefs = { status: 'reading' };
+
 export const FAILED_LINE = 'Could not find Bible references in the picture.';
 
 /** Reads the pictures of `row` with the grist, one grist each, as soon as `enabled`; `retry` reads them again after a failure. Undefined while there is nothing
  *  to read (no picture, or not enabled): a phone with no licence is not offered the grist. */
 export function usePictureRefs(row: ShareRow, enabled: boolean): { refs: PictureRefs | undefined; retry: () => void } {
-  const [refs, setRefs] = useState<PictureRefs | undefined>(undefined);
   const [attempt, setAttempt] = useState(0);
+  // what a reading ended with, and which row and attempt it was for: any other is still being read
+  const [settled, setSettled] = useState<{ row: ShareRow; attempt: number; refs: PictureRefs } | null>(null);
+  const pictures = useMemo(() => sharedContentOf(row).files.filter(isTalkPicture), [row]);
+  const active = enabled && pictures.length > 0;
   useEffect(() => {
-    const pictures = sharedContentOf(row).files.filter(isTalkPicture);
-    if (!enabled || pictures.length === 0) {
-      setRefs(undefined);
-      return;
-    }
+    if (!active) return;
     const stop = new AbortController();
-    setRefs({ status: 'reading' });
+    const settle = (refs: PictureRefs): void => {
+      if (!stop.signal.aborted) setSettled({ row, attempt, refs });
+    };
     void Promise.all(pictures.map((p, i) => findRefsInPicture(p, i, stop.signal))).then(
-      (all) => !stop.signal.aborted && setRefs({ status: 'done', found: all.flat() }),
-      (err: unknown) => !stop.signal.aborted && setRefs({ status: 'failed', line: err instanceof TutorError && err.failure === 'no-licence' ? 'No licence' : FAILED_LINE }),
+      (all) => settle({ status: 'done', found: all.flat() }),
+      (err: unknown) => settle({ status: 'failed', line: err instanceof TutorError && err.failure === 'no-licence' ? 'No licence' : FAILED_LINE }),
     );
     return () => stop.abort();
-  }, [row, enabled, attempt]);
+  }, [active, pictures, row, attempt]);
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
+  const refs: PictureRefs | undefined = !active ? undefined : settled && settled.row === row && settled.attempt === attempt ? settled.refs : READING;
   return { refs, retry };
 }
