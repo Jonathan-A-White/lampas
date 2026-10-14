@@ -110,3 +110,30 @@ Feature: Your requests
     Given About is open
     When he taps Your requests
     Then the Your requests screen is open
+
+  Scenario: Opened from About, the back button goes back to About
+    Given About is open
+    When he taps Your requests
+    Then the Your requests screen is open
+    And the header button reads "‹ About"
+    When he taps the header button
+    Then About is open again
+
+  Scenario: Opened from Settings, the back button goes back to Settings
+    Given Settings is open
+    When he taps Your requests
+    Then the header button reads "‹ Settings"
+    When he taps the header button
+    Then Settings is open again
+
+  Scenario: A double tap on the Settings row adds one history entry
+    Given Settings is open
+    When he double taps Your requests
+    Then the Your requests screen is open
+    And one history entry was added
+
+  Scenario: A double tap on the back button does not skip past Settings
+    Given Settings is open
+    When he taps Your requests
+    And he double taps the header button
+    Then Settings is open again

@@ -100,3 +100,27 @@ test('Settings has a Your requests row that opens the screen', async ({ page }) 
   await expect(page.getByRole('heading', { name: 'Your requests', level: 1 })).toBeVisible();
   await expect(page.locator('[data-requests-empty]')).toBeVisible();
 });
+
+test('from About the back button reads ‹ About and returns there; a double tap on it stops on the screen before', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const fake = makeFakePostern();
+  await routePostern(page, fake);
+  await openUnlocked(page);
+  await page.goto('/#/about');
+  await page.getByRole('button', { name: /^Your requests/ }).click();
+  await expect(page.getByRole('heading', { name: 'Your requests', level: 1 })).toBeVisible();
+  await expect(page.getByRole('button', { name: '‹ About' })).toBeVisible();
+  await page.getByRole('button', { name: '‹ About' }).click();
+  await expect(page).toHaveURL(/#\/about$/);
+
+  // Settings: a double tap on the row adds one history entry, a double tap on the back button stops on Settings (its own ‹ Reader sits at the same spot)
+  await page.goto('/#/settings');
+  const before = await page.evaluate(() => history.length);
+  await page.getByRole('button', { name: /^Your requests/ }).dblclick();
+  await expect(page.getByRole('heading', { name: 'Your requests', level: 1 })).toBeVisible();
+  expect(await page.evaluate(() => history.length)).toBe(before + 1);
+  await page.getByRole('button', { name: '‹ Settings' }).dblclick();
+  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(page).toHaveURL(/#\/settings$/);
+  await shot(page, 'your-requests-back-from-settings');
+});
