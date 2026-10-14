@@ -143,6 +143,10 @@ step by step, back off by halves when it is too hard, "kind of like a binary sea
 - **Where the examples come from.** `ideaPassage(goalText, openChapter, loadChapter, index)`: the saved goal (the `goal` row of
   the settings store, any text `parseGoal` reads): its chapter, its one verse, or the first five chapters of a book goal; with no
   goal, or one that names nothing, the open chapter (`getOpenChapter()`).
+- **When the goal has none (mw-5r3p30.350).** `ideaExamplesFor(id, passage, load)`: the goal's own examples first; with none, a verse goal's
+  pericope (the heading's verses, labelled '1 John 1:1-4'), then its chapter ('1 John 1'), then its book ('1 John', PROVISIONAL: he named the
+  pericope or the chapter, the Governor is to confirm the book); the sheet says 'Examples from <that place>', and only when nothing is found
+  anywhere does it say 'No word of <goal> ...'.
 - **The teaching (mw-5r3p30.234).** Every card teaches a total beginner who has proved the cards below it, from the card alone; the parts are
   data, one file per tier in `src/data/grammar/teach/` (`teachOf(id)`), never in the component, and `docs/card-audit.md` judges what each card
   lacked before. Under the title (and the tiles): **What it is**, plain English with an English example; **How to spot it**, the Greek form or

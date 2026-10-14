@@ -6,6 +6,7 @@
 import { type BookIndex, type Chapter, type GreekWord, wordGloss } from '../chapter';
 import { goalText, parseGoal } from '../goal';
 import { decodeParse, parseSegments, splitParse } from '../parseCode';
+import { passagesOf } from '../passage';
 import type { OpenChapter } from '../readerChapter';
 import { clustersOf, foundationSpans, isFoundation, type Span } from './inference';
 import { ideaOfTerm, ideasBelow, ideasOfWord, type GrammarIdea } from './ladder';
@@ -28,6 +29,8 @@ export interface IdeaPassage {
   chapters: Chapter[];
   /** a verse goal: only this verse of its chapter */
   verse?: number;
+  /** the number of chapters of the goal's book, when a goal named it: the book is the last place examples are looked for */
+  chapterCount?: number;
 }
 
 /**
@@ -40,7 +43,7 @@ export async function ideaPassage(goalSaved: string | undefined, open: OpenChapt
   if (!goal) return { title: open.title, chapters: [await load(open.book, open.chapter)] };
   const count = index?.books.find((b) => b.code === goal.book)?.chapters ?? 0;
   const numbers = goal.chapter !== undefined ? [goal.chapter] : Array.from({ length: Math.min(count, MAX_CHAPTERS) }, (_, i) => i + 1);
-  return { title: goalText(goal), chapters: await Promise.all(numbers.map((n) => load(goal.book, n))), verse: goal.verse };
+  return { title: goalText(goal), chapters: await Promise.all(numbers.map((n) => load(goal.book, n))), verse: goal.verse, chapterCount: count };
 }
 
 /** A stretch of an example's Greek: `marked` is the part an idea is about (the pair of vowels, the breathing's vowel, the letter). */
@@ -266,4 +269,43 @@ export function exampleNote(idea: GrammarIdea, example: IdeaExample): string | u
     if (partner) parts.push(`goes with ${partner.t} “${exampleGloss(idea, { ...example, word: partner })}”`);
   }
   return parts.length ? parts.join(' · ') : undefined;
+}
+
+/** Where the examples of an idea come from, and what the sheet calls that place: 'Examples from <title>'. */
+export interface IdeaExamples {
+  title: string;
+  examples: IdeaExample[];
+}
+
+/**
+ * The examples of an idea for a passage, looking further out when the goal has none (mw-5r3p30.350, his words: "If there's an example in the goal can you
+ * look outside of it, in the pericope or in the chapter"). The order is the goal itself, then (for a verse goal) its pericope, the heading's verses, then
+ * its chapter, then its book. The book step is PROVISIONAL: he named the pericope or the chapter, the Governor is to confirm the whole book.
+ * `title` names the place the examples came from ('1 John 1:1-4'); with none found it is the passage's own title and `examples` is empty.
+ */
+export async function ideaExamplesFor(id: string, passage: IdeaPassage, load: ChapterLoader): Promise<IdeaExamples> {
+  const found = ideaExamples(id, passage.chapters, passage.verse);
+  if (found.length) return { title: passage.title, examples: found };
+  const first = passage.chapters[0];
+  if (first) {
+    if (passage.verse !== undefined && passage.chapters.length === 1) {
+      const name = `${first.book} ${first.chapter}`;
+      const open = passagesOf(first.verses).filter((p) => p.first <= (passage.verse ?? 0)).pop();
+      // verses before the chapter's first heading belong to no passage: they run from verse 1 to the verse before it
+      const [from, to] = open ? [open.first, open.last] : [1, (first.verses.find((v) => v.h)?.n ?? first.verses.length + 1) - 1];
+      if (to > from) {
+        const verses = first.verses.filter((v) => v.n >= from && v.n <= to);
+        const examples = ideaExamples(id, [{ ...first, verses }]);
+        if (examples.length) return { title: `${name}:${from}-${to}`, examples: examples.map((e) => ({ ...e, chapter: first })) };
+      }
+      const wholeChapter = ideaExamples(id, [first]);
+      if (wholeChapter.length) return { title: name, examples: wholeChapter };
+    }
+    if (passage.chapterCount !== undefined && passage.chapters.length < passage.chapterCount) {
+      const rest = await Promise.all(Array.from({ length: passage.chapterCount }, (_, i) => i + 1).map((n) => load(first.code, n)));
+      const wholeBook = ideaExamples(id, rest);
+      if (wholeBook.length) return { title: first.book, examples: wholeBook };
+    }
+  }
+  return { title: passage.title, examples: [] };
 }

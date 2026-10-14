@@ -99,6 +99,15 @@ const exampleOf = (form: string): HTMLElement => {
 const talkSheet = () => screen.getByRole('dialog', { name: /^Talk about / });
 const examples = () => within(ideaSheet()).getAllByTestId('idea-example');
 
+async function openLetterSheet(_: unknown, name: string): Promise<void> {
+  await opensIdeaFromGoal('alphabet');
+  const tile = within(ideaSheet()).getAllByTestId('teach-tile').find((t) => t.getAttribute('data-name') === name);
+  if (!tile) throw new Error(`no tile ${name} on the alphabet sheet`);
+  await user.click(within(tile).getByRole('button', { name: `About ${name}` }));
+  await waitFor(() => expect(screen.getAllByRole('dialog', { name: 'Idea' })).toHaveLength(2));
+}
+const letterSheet = (): HTMLElement => screen.getAllByRole('dialog', { name: 'Idea' })[1];
+
 async function tapsWordAndTerm(text: string, verse: number, term: string): Promise<void> {
   await user.click(within(verseEl(verse)).getByRole('button', { name: text }));
   await screen.findByRole('dialog', { name: 'Word' });
@@ -527,6 +536,29 @@ describeFeature(feature, ({ Scenario }) => {
       expect(within(worked).getAllByRole('listitem').length).toBeGreaterThanOrEqual(2);
       expect(within(worked).getByTestId('worked-respelling')).toHaveTextContent(pronunciationOf('modern').respell(word));
       expect(within(worked).getByRole('button', { name: `Hear ${word}` })).toBeInTheDocument();
+    });
+  });
+
+  Scenario('Xi has no word in the goal verse, so its examples come from further out and say where', ({ Given, When, Then, And }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the letter sheet of {string} from the alphabet sheet', openLetterSheet);
+    Then('the idea sheet shows examples spelt with ξ from {string}', async (_, title: string) => {
+      await waitFor(() => expect(within(letterSheet()).getByText(`Examples from ${title}`)).toBeInTheDocument());
+      const found = within(letterSheet()).getAllByTestId('idea-example');
+      expect(found.length).toBeGreaterThan(0);
+      for (const example of found) expect(example.textContent).toMatch(/[ξΞ]/u);
+    });
+    And('the idea sheet has no line {string}', (_, text: string) => {
+      expect(letterSheet().textContent).not.toContain(text);
+    });
+  });
+
+  Scenario("An idea the goal verse has keeps the goal verse's examples", ({ Given, When, Then }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the letter sheet of {string} from the alphabet sheet', openLetterSheet);
+    Then('the idea sheet shows examples from {string}', (_, title: string) => {
+      expect(within(letterSheet()).getByText(`Examples from ${title}`)).toBeInTheDocument();
+      for (const example of within(letterSheet()).getAllByTestId('idea-example')) expect(within(example).getByTestId('idea-verse').textContent).toBe(title);
     });
   });
 });

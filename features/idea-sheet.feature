@@ -147,3 +147,14 @@ Feature: The idea sheet
     And what a noun is is said in plain English with an English example
     And How to spot it has a table of the case endings, with "-ος", "-ου" and "-ῳ" in its cells
     And the worked example takes "λόγου" of "1 John 1:1" apart in steps, with the respelling the pronunciation gives it
+
+  Scenario: Xi has no word in the goal verse, so its examples come from further out and say where
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
+    When he opens the letter sheet of "xi" from the alphabet sheet
+    Then the idea sheet shows examples spelt with ξ from "1 John"
+    And the idea sheet has no line "No word of 1 John 1:1"
+
+  Scenario: An idea the goal verse has keeps the goal verse's examples
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
+    When he opens the letter sheet of "omicron" from the alphabet sheet
+    Then the idea sheet shows examples from "1 John 1:1"

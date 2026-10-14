@@ -15,7 +15,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { loadChapter, loadIndex, type Chapter, type GreekWord } from './data/chapter';
 import { unmetNeed } from './data/grammar/drillIt';
-import { exampleGloss, exampleNote, ideaExamples, ideaPassage, isSpellingIdea, passageForms, type IdeaExample, type IdeaPassage } from './data/grammar/ideaSheet';
+import { exampleGloss, exampleNote, ideaExamples, ideaExamplesFor, ideaPassage, isSpellingIdea, passageForms, type IdeaExample, type IdeaExamples, type IdeaPassage } from './data/grammar/ideaSheet';
 import { ideaOf, type GrammarIdea } from './data/grammar/ladder';
 import { soundLesson } from './data/grammar/lessons';
 import { teachOf, workedFor, type Teach, type TeachTable } from './data/grammar/teach';
@@ -52,6 +52,26 @@ function sinceText(since: number, now = Date.now()): string {
   const days = Math.round((Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - Date.UTC(then.getFullYear(), then.getMonth(), then.getDate())) / DAY_MS);
   if (days <= 0) return 'today';
   return days < 7 ? WEEKDAYS[then.getDay()] : `${then.getDate()} ${MONTHS[then.getMonth()]}`;
+}
+
+/** Where an idea with no example in the goal's passage finds them (ideaExamplesFor); undefined while it looks, and when there is no passage to widen. */
+function useWiderExamples(id: string, passage: IdeaPassage | undefined): IdeaExamples | undefined {
+  const [found, setFound] = useState<{ key: string; value: IdeaExamples }>();
+  const key = passage ? `${id}|${passage.title}` : '';
+  useEffect(() => {
+    if (!passage) return;
+    let alive = true;
+    ideaExamplesFor(id, passage, loadChapter).then(
+      (value) => alive && setFound({ key, value }),
+      // offline: the goal's own line, as before
+      () => alive && setFound({ key, value: { title: passage.title, examples: [] } }),
+    );
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+  return found?.key === key ? found.value : undefined;
 }
 
 type Loaded = { passage: IdeaPassage } | 'failed' | null;
@@ -212,7 +232,11 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
   const card = teachOf(idea.id);
   const sounds = soundLesson(idea, scheme);
   const passage = loaded && loaded !== 'failed' ? loaded.passage : undefined;
-  const examples = passage ? ideaExamples(idea.id, passage.chapters, passage.verse) : [];
+  // the goal's own examples at once; with none, the pericope, chapter and book are looked in (mw-5r3p30.350) and the sheet says which gave them
+  const own = passage ? ideaExamples(idea.id, passage.chapters, passage.verse) : [];
+  const wider = useWiderExamples(idea.id, own.length ? undefined : passage);
+  const examples = own.length ? own : wider?.examples ?? [];
+  const exampleTitle = own.length || !wider ? passage?.title : wider.title;
 
   // the idea under this one that is not solid yet, the lowest (the sheet teaches only its own idea)
   const levels = useLiveQuery(listLevels, []);
@@ -318,7 +342,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
             </>
           ) : null}
           <Worked teach={card} passage={passage} scheme={scheme} />
-          {loaded === null ? (
+          {loaded === null || (!own.length && !wider && passage) ? (
             <p data-testid="idea-loading" className="mt-3 text-base text-muted">
               Finding examples…
             </p>
@@ -327,7 +351,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
           ) : (
             <>
               <div className="mt-4">
-                <p className="text-sm text-muted">Examples from {loaded.passage.title}</p>
+                <p className="text-sm text-muted">Examples from {exampleTitle}</p>
                 {examples.length ? (
                   <ul className="space-y-2 pt-1">
                     {examples.map((example) => (
