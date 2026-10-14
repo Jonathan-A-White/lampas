@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.194",
+    "date": "2026-10-14",
+    "story": "mw-5r3p30.307",
+    "kind": "fixed",
+    "text": "A question you spoke but kept unsent (slid off the bar, or switched away from the app) and then sent is now treated as spoken, so the tutor hears through sound-alike words."
+  },
+  {
     "version": "0.1.192",
     "date": "2026-10-14",
     "story": "mw-86e9r1.20",

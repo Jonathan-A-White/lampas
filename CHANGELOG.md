@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.194
+_2026-10-14_
+- Fixed: A question you spoke but kept unsent (slid off the bar, or switched away from the app) and then sent is now treated as spoken, so the tutor hears through sound-alike words.
+
 ## 0.1.192
 _2026-10-14_
 - Fixed: The Placement screen now says plainly that 'Start from the letters' is for someone who cannot yet read Greek, so a beginner does not take the quiz by mistake.
