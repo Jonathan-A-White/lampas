@@ -39,5 +39,15 @@ Lampas reads Koine the way the Greek Church reads the New Testament aloud, in st
 
 Every sound comes from one pronunciation scheme, so another (Erasmian) plugs in without touching the rest.
 
+## Every age and every ability
+- "and I appreciate you thinking of different disabilities you know I don't know like is there a way even of I mean I guess read aloud right is good for somebody who blind I don't know if there are ways of making this more friendly but who's blind that I don't know what you know is there a form of Braille or something that I don't know I mean I know this is a screen so that's and I know TalkBack is a real thing you know and so maybe maybe you could make the app talk back friendly and maybe it already is I'm not sure and I know we have a lot I know it could be that we're good but really think it through like you know how do we make this maybe it already is I'm not sure and I know we have a lot I know it could be that we're good but really think it through like you know how do we make this something that as much as possible wherever you are in your age you know obviously it's not going to help a baby but you understand and wherever you are in disability this can help you overcome and still be able to connect to God's word" (Postern general, 2026-10-13, about 11:40Z, direct:b0f049c1fae80ec4dd0c0b6a8d74f18a9e8cb6497d9e444322a02a7c40e1b94b, dictated)
+- "while we're thinking about this can you also offer a settings different I'm not for Greek or Hebrew but different fonts for the English Maybe and and be very selective you know but if there is a really good font you know I'm trying to meet different people of different ages and if there's a really good font you know maybe that one age group responds well to over another you know please make them available" (Immersive reader thread, 2026-10-13 11:28:24Z, direct:372de4bcad12a641151cc4f58c7263d1576b29a636ef38cab1022b1938ed4941, dictated)
+- "while I'm sure this is somewhat of assault problem in publishing so you know while keeping a a reverent tone if that makes any sense" (2026-10-13 11:28:41Z, direct:f27050a5af99a108f1d96fc0e89e87d24734ec9a2825225e97497da30921cc0d, dictated)
+- "a soft problem yeah I think you have I think you have it right a solved problem" (2026-10-13 11:29:19Z, direct:56414d51e3baa7d337c614e86da62b7bb6317e688f73e0b849a1bf092d5d15f6, dictated; "assault" and "soft" are transcriptions of "solved")
+
+- The app should be as usable as it can be at any age and with any disability.
+- TalkBack, and braille through TalkBack, are first-class ways to use it.
+- Greek, fonts and size serve the reader and never shrink the type; any font offered is chosen with care and keeps a reverent tone.
+
 ## How feedback is weighed
 Feedback that fits this vision is approved and built elegantly; where people differ, a setting; anything crossing a line or changing the vision goes to the Governor.
