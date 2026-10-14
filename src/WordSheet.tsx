@@ -22,7 +22,7 @@ import { topicOf } from './resources/topic';
 import { pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
 import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
-import { useSheetBack } from './ui/sheetBack';
+import { pushSheetStep, sheetsAbove, useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { wordUrl } from './nav/links';
 import { LinkActions } from './ui/LinkActions';
@@ -316,7 +316,26 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
   // The sheet that says an app is not on the phone, over this one, after a Study link's app did not open.
   const [missing, setMissing] = useState<StudyResource | null>(null);
   useEscapeToClose(onClose, grammar === null && missing === null);
-  useSheetBack(onClose);
+  const levelNow = useSheetBack(onClose);
+  // Every move he makes inside this sheet (a Related term, an example word) is one Back step (mw-5r3p30.239): Back puts the
+  // Grammar sheet, the idea sheet and the word back as they were. `closing` moves close the sheets over this one; their entries
+  // stay for that Back. A sheet opened over the idea sheet is not rebuilt by it, so a move made then is not a step.
+  const move = (apply: () => void, closing = false): void => {
+    const before = { shown, grammar, idea };
+    const rebuildable = !closing || sheetsAbove(levelNow()) === (grammar ? 1 : 0) + (idea ? 1 : 0);
+    if (rebuildable) {
+      pushSheetStep(
+        () => {
+          setShown(before.shown);
+          setGrammar(before.grammar);
+          setIdea(before.idea);
+        },
+        levelNow(),
+        closing,
+      );
+    }
+    apply();
+  };
   const pronunciation = useLatest('pronunciation-changed')?.pronunciation;
   const known = useKnownTerms();
   const study = useLiveQuery(getStudyResources, []);
@@ -431,11 +450,13 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
           known={known.has(grammar.term)}
           covered={idea !== null}
           onClose={() => setGrammar(null)}
-          onTerm={(term) => openTerm(term, grammar.word, grammar.verse)}
-          onWord={(word) => {
-            setShown({ base: opened, lookup: { words: [word], fromEnglish: false }, chapter: elsewhere });
-            setGrammar(null);
-          }}
+          onTerm={(term) => move(() => openTerm(term, grammar.word, grammar.verse))}
+          onWord={(word) =>
+            move(() => {
+              setShown({ base: opened, lookup: { words: [word], fromEnglish: false }, chapter: elsewhere });
+              setGrammar(null);
+            }, true)
+          }
           onAsk={ask}
           onLearn={(term) => {
             const id = ideaOfTerm(term);
@@ -447,11 +468,13 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
         <IdeaSheet
           idea={idea}
           onClose={() => setIdea(null)}
-          onWord={(from, word) => {
-            setShown({ base: opened, lookup: { words: [word], fromEnglish: false }, chapter: from === chapter ? undefined : from });
-            setIdea(null);
-            setGrammar(null);
-          }}
+          onWord={(from, word) =>
+            move(() => {
+              setShown({ base: opened, lookup: { words: [word], fromEnglish: false }, chapter: from === chapter ? undefined : from });
+              setIdea(null);
+              setGrammar(null);
+            }, true)
+          }
           onAsk={ask}
         />
       ) : null}
