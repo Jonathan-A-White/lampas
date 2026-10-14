@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.220",
+    "date": "2026-10-14",
+    "story": "mw-5r3p30.344",
+    "kind": "fixed",
+    "text": "A long spoken question to the tutor, or a large word list, no longer fails with \"This grist is too large to send\"."
+  },
+  {
     "version": "0.1.218",
     "date": "2026-10-14",
     "story": "mw-5r3p30.347",
