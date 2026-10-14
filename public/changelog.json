@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.224",
+    "date": "2026-10-14",
+    "story": "mw-i7xe0n.7",
+    "kind": "fixed",
+    "text": "Drill it on a sound that changes with the next letter (like χ, kh or hy) now asks words of both kinds, offers the same word said the other way as a wrong answer, and names the rule when you miss."
+  },
+  {
     "version": "0.1.222",
     "date": "2026-10-14",
     "story": "mw-5r3p30.234",

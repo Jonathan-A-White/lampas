@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.224
+_2026-10-14_
+- Fixed: Drill it on a sound that changes with the next letter (like χ, kh or hy) now asks words of both kinds, offers the same word said the other way as a wrong answer, and names the rule when you miss.
+
 ## 0.1.222
 _2026-10-14_
 - New: every grammar card now teaches from scratch: what the idea is, how to spot it with a table of its endings, and a word from your verse taken apart step by step, and its examples are only words the card can explain.
