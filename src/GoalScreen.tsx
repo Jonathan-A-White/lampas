@@ -10,8 +10,8 @@ import { goalTitle } from './data/goal';
 import { BOOK_INDEX } from './data/bookIndex';
 import { addLemmaToLearn } from './data/answerWord';
 import { lettersText } from './data/grammar/inference';
-import { groupIdeas, groupWords, learnNext, LEVELS, nextWords, placedAt } from './data/grammar/goalProgress';
-import { ideaOf } from './data/grammar/ladder';
+import { groupIdeas, groupWords, learnNext, learningNow, LEVELS, nextWords, placedAt } from './data/grammar/goalProgress';
+import { ideaOf, type GrammarIdea } from './data/grammar/ladder';
 import type { Counts, Level } from './data/grammar/needs';
 import { addWordToLearn, drillPlanCounts, getGrammarApproach, takePronunciationSwitch } from './data/repositories';
 import type { PronunciationSwitch } from './data/repositories/settings';
@@ -59,6 +59,15 @@ function LearnNextButton({ next, onOpen }: { next: NonNullable<ReturnType<typeof
   );
 }
 
+/** The one idea he is learning now (mw-i7xe0n.6): he learns one at a time, so the Goal screen names it; a tap opens its sheet. */
+function LearningNowButton({ idea, onOpen }: { idea: GrammarIdea; onOpen: () => void }) {
+  return (
+    <button type="button" data-testid="learning-now" onClick={onOpen} className="flex min-h-12 w-full flex-col items-start rounded-xl border border-accent px-4 py-2 text-left active:bg-line">
+      <span className="text-lg font-medium">Learning now: {idea.title}</span>
+    </button>
+  );
+}
+
 /** With no goal set there are no needs, so Learn next can name only the exact gaps (mw-hqd5bz.31); with none, nothing is drawn. */
 function NoGoalBody({ levels }: { levels: ReadonlyMap<string, Level> }) {
   const [ideaId, setIdeaId] = useState<string | null>(null);
@@ -67,7 +76,15 @@ function NoGoalBody({ levels }: { levels: ReadonlyMap<string, Level> }) {
   const approachId = useLiveQuery(getGrammarApproach, []);
   const approach = approachOf(approachId ?? DEFAULT_APPROACH) ?? approachOf(DEFAULT_APPROACH)!;
   const next = learnNext({ ideas: [] }, approach, levels);
-  useReportScreen({ name: 'Goal', facts: [{ label: 'Goal', value: 'None set yet' }, ...(next ? [{ label: 'Learn next', value: learnNextText(next) }] : [])] });
+  const learning = learningNow(levels);
+  useReportScreen({
+    name: 'Goal',
+    facts: [
+      { label: 'Goal', value: 'None set yet' },
+      ...(learning ? [{ label: 'Learning now', value: learning.title }] : []),
+      ...(next ? [{ label: 'Learn next', value: learnNextText(next) }] : []),
+    ],
+  });
   return (
     <>
       <main className="screen min-h-0 flex-1 px-6 pt-8 text-center">
@@ -76,9 +93,10 @@ function NoGoalBody({ levels }: { levels: ReadonlyMap<string, Level> }) {
         <button type="button" onClick={() => navigate('settings')} className={`${BUTTON} mt-6 w-full bg-accent text-accent-fg`}>
           Choose a goal
         </button>
-        {next ? (
-          <section className="mt-5 text-left">
-            <LearnNextButton next={next} onOpen={() => setIdeaId(next.idea.id)} />
+        {learning || next ? (
+          <section className="mt-5 space-y-2 text-left">
+            {learning ? <LearningNowButton idea={learning} onOpen={() => setIdeaId(learning.id)} /> : null}
+            {next && (!learning || next.gaps) ? <LearnNextButton next={next} onOpen={() => setIdeaId(next.idea.id)} /> : null}
           </section>
         ) : null}
         <div className="text-left">
@@ -248,6 +266,7 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
   const approachId = useLiveQuery(getGrammarApproach, []);
   const approach = approachOf(approachId ?? DEFAULT_APPROACH) ?? approachOf(DEFAULT_APPROACH)!;
   const next = learnNext(needs, approach, levels);
+  const learning = learningNow(levels);
   const words = nextWords(needs, states);
   const placed = placedAt(rows);
   const title = goalTitle(goal, BOOK_INDEX);
@@ -259,6 +278,7 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
       { label: 'Words', value: legendText(progress.progress.words) },
       { label: 'Grammar ideas', value: legendText(progress.progress.grammar) },
       { label: 'Placed', value: placed !== undefined ? `On ${placedText(placed)}` : 'Not yet' },
+      { label: 'Learning now', value: learning ? learning.title : 'Nothing yet' },
       { label: 'Learn next', value: next ? learnNextText(next) : 'Every idea this goal needs is on the frontier or solid.' },
       { label: 'Next words', value: words.length ? words.map((w) => `${w.lemma} (${w.gloss})`).join(', ') : 'Every word this goal needs is on your list.' },
     ],
@@ -336,14 +356,15 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
           )}
         </section>
 
-        <section className="mt-5">
-          {next ? (
+        <section className="mt-5 space-y-2">
+          {learning ? <LearningNowButton idea={learning} onOpen={() => setIdeaId(learning.id)} /> : null}
+          {next && (!learning || next.gaps) ? (
             <LearnNextButton next={next} onOpen={() => setIdeaId(next.idea.id)} />
-          ) : (
+          ) : !learning ? (
             <p data-testid="learn-next-none" className="text-base text-muted">
               Every idea this goal needs is on the frontier or solid.
             </p>
-          )}
+          ) : null}
         </section>
 
         <section className="mt-5">

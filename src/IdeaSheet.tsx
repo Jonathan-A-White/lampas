@@ -5,7 +5,8 @@
 // sounds and marks (the alphabet, a pair of vowels, a breathing ...), the items as tiles above the text, each to hear (TeachTiles). At the foot
 // the level SLIDER (mw-i7xe0n.3: Not yet · Learning · I know it, resting on the idea's level; Learning is frontier and due tomorrow; I know it opens Drill it
 // to prove it, and only a pass keeps it there), 'Mark known without a drill' (solid, the 30-day step), a Drill it button and Ask the tutor; the level shows as a chip
-// ('Proved by drill' once a run proved it). The sheet teaches only its own idea and takes the ideas under it to be solid: when one is not, it says so above the
+// ('Proved by drill' once a run proved it). He learns one idea at a time (mw-i7xe0n.6): sliding to Learning while another idea is Learning asks 'You are learning <other>.
+// Switch to <this>?' (Switch | Keep <other>). The sheet teaches only its own idea and takes the ideas under it to be solid: when one is not, it says so above the
 // text with a button to go there, and sliding up first asks 'Go to <title> first?'.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
@@ -16,7 +17,7 @@ import { ideaOf, type GrammarIdea } from './data/grammar/ladder';
 import { ideaText } from './data/grammar/lessons';
 import { teachTiles } from './data/grammar/teachTiles';
 import { getOpenChapter } from './data/readerChapter';
-import { getGreekPronunciation, getLevel, getSavedGoalText, listLevels, recordDrill, teachIdea, type DrillMode, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
+import { getGreekPronunciation, getLevel, getSavedGoalText, listLevels, recordDrill, teachIdea, type DrillMode, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
 import { DrillItScreen } from './DrillItScreen';
 import { chosenPronunciation } from './speech/greek';
 import { pronunciationOf } from './speech/pronunciation';
@@ -180,9 +181,16 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
   const shown = dragged ?? (moved && moved.from === rest ? moved.to : rest);
   const [drill, setDrill] = useState<DrillMode | null>(null);
   const [asking, setAsking] = useState<{ to: number; need: GrammarIdea } | null>(null);
+  // the idea he is learning now, when he slid this one to Learning: one idea at a time, so he chooses (mw-i7xe0n.6)
+  const [switching, setSwitching] = useState<GrammarIdea | null>(null);
 
-  const teach = (outcome: IdeaOutcome): void => {
-    writing.current = writing.current.then(() => teachIdea(idea.id, outcome)).catch((error: unknown) => console.error('could not keep the level', error));
+  const teach = (outcome: IdeaOutcome, choice?: FrontierChoice): void => {
+    writing.current = writing.current
+      .then(async () => {
+        const result = await teachIdea(idea.id, outcome, undefined, 'sheet', choice);
+        if (result.status === 'busy') setSwitching(ideaOf(result.other));
+      })
+      .catch((error: unknown) => console.error('could not keep the level', error));
   };
   const goOn = (to: number): void => {
     setAsking(null);
@@ -343,6 +351,39 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
               </button>
               <button type="button" onClick={() => goOn(asking.to)} className={`${BUTTON} border-line text-accent active:bg-line`}>
                 Stay here
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {switching ? (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 px-6">
+          <div role="alertdialog" aria-modal="true" aria-labelledby="idea-switch" className="w-full max-w-sm rounded-2xl border border-line bg-surface p-4">
+            <p id="idea-switch" className="text-lg font-medium">
+              You are learning {switching.title}. Switch to {idea.title}?
+            </p>
+            <p className="mt-1 text-base text-muted">You learn one idea at a time. {switching.title} goes back to Not yet, and what you did on it is kept.</p>
+            <div className="mt-3 flex flex-col gap-2">
+              <button
+                type="button"
+                ref={focusOnMount}
+                onClick={() => {
+                  setSwitching(null);
+                  teach('got-it', 'switch');
+                }}
+                className={`${BUTTON} border-accent bg-accent text-accent-fg`}
+              >
+                Switch
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSwitching(null);
+                  setMoved(null);
+                }}
+                className={`${BUTTON} border-line text-accent active:bg-line`}
+              >
+                Keep {switching.title}
               </button>
             </div>
           </div>

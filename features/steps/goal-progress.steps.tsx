@@ -205,8 +205,9 @@ describeFeature(feature, ({ Scenario }) => {
     When('he closes the idea sheet', async () => {
       await user.click(within(await sheet()).getByRole('button', { name: 'Done' }));
     });
-    Then('Learn next says {string}', async (_, text: string) => {
-      await waitFor(async () => expect(await screen.findByTestId('learn-next')).toHaveTextContent(`Learn next: ${text}`));
+    Then('the Goal screen says {string} and no Learn next', async (_, text: string) => {
+      await waitFor(async () => expect(await screen.findByTestId('learning-now')).toHaveTextContent(text));
+      expect(screen.queryByTestId('learn-next')).toBeNull();
     });
   });
 
