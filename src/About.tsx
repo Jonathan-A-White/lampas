@@ -5,7 +5,7 @@ import { attribution } from './attribution';
 import { BuildVersion } from './BuildVersion';
 import { setDeveloper } from './data/repositories';
 import { getWishedNotes } from './data/repositories/memory';
-import { navigate } from './nav/route';
+import { navigate, openRequests } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { usePageActions } from './PageActions';
 import { lastAnswerLine } from './services/clientTiming';
@@ -83,7 +83,7 @@ export function About() {
             type="button"
             aria-label="Your requests"
             aria-describedby="requests-about"
-            onClick={() => navigate('requests')}
+            onClick={() => openRequests('about')}
             className="mt-3 min-h-12 w-full rounded-xl border border-line bg-surface px-4 text-left text-base font-medium"
           >
             Your requests

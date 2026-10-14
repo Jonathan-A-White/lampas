@@ -136,13 +136,30 @@ export function paradigmHash({ table, mode }: ParadigmAddress): string {
 
 const urlFor = (hash: string) => `${window.location.pathname}${window.location.search}${hash}`;
 
-/** Opens a screen; `replace` swaps the current history entry instead of adding one. */
+/** Opens a screen; `replace` swaps the current history entry instead of adding one. Opening the screen he is already on adds nothing (a double tap). */
 export function navigate(route: Route, options: { replace?: boolean } = {}): void {
   if (options.replace) replaceHash(hashFor(route));
   else {
+    if (window.location.hash === hashFor(route)) return;
     window.history.pushState(null, '', urlFor(hashFor(route)));
     notify();
   }
+}
+
+/** The screen Your requests was opened from, which its back button returns to: About says so in the address ('#/requests?from=about'); Settings is the rest. */
+export type RequestsOrigin = 'about' | 'settings';
+
+export function requestsOf(hash: string): RequestsOrigin {
+  const q = hash.indexOf('?');
+  return q >= 0 && new URLSearchParams(hash.slice(q + 1)).get('from') === 'about' ? 'about' : 'settings';
+}
+
+/** Opens Your requests from `from`, as a new Back step (not a second one when it is already open). */
+export function openRequests(from: RequestsOrigin): void {
+  const hash = from === 'about' ? '#/requests?from=about' : '#/requests';
+  if (window.location.hash === hash) return;
+  window.history.pushState(null, '', urlFor(hash));
+  notify();
 }
 
 /** Opens the reader at a chapter and verse, as a new Back step. */
