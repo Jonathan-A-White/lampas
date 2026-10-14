@@ -81,3 +81,44 @@ test('a reference in the tutor\'s answer opens a card that fits a 360 px phone, 
   expect(page.url()).toContain('c=7');
   expect(page.url()).toContain('v=1');
 });
+
+// A passage Lampas does not hold (mw-5r3p30.345): with no Bible app linked the card links to Settings, and once Logos is linked it opens the verse in his Bible.
+test('an Old Testament reference links to Settings until Logos is linked, then opens in Logos in his Bible', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: { answer: 'The end of the matter is in Ecclesiastes 12:13 and the whole of Psalm 110.', words: [] } };
+  await routePostern(page, fake);
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+
+  await openTalkAbout(page, 28);
+  const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
+  await sheet.getByRole('textbox', { name: 'Your message' }).fill('How does it end?');
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+
+  await sheet.getByRole('link', { name: 'Ecclesiastes 12:13', exact: true }).click();
+  const card = page.getByRole('dialog', { name: 'Ecclesiastes 12:13' });
+  await expect(card.getByText('Not in Lampas yet. Link Logos in Settings to open it there.')).toBeVisible();
+  await expect(card.getByRole('link', { name: 'Open in Logos' })).toHaveCount(0);
+  await shot(page, 'reference-card-link-logos');
+
+  await card.getByRole('link', { name: 'Link Logos in Settings', exact: true }).click();
+  await expect(card).toBeHidden();
+  expect(page.url()).toContain('#/settings?section=resources');
+  const logos = page.getByRole('switch', { name: 'Logos', exact: true });
+  await expect(logos).toBeVisible();
+  await expect(logos).toBeInViewport();
+  await logos.click();
+  await expect(logos).toBeChecked();
+
+  await page.getByRole('button', { name: '‹ Reader' }).click();
+  await openTalkAbout(page, 28);
+  await page.getByRole('dialog', { name: 'Talk about Romans 8:28' }).getByRole('link', { name: 'Ecclesiastes 12:13', exact: true }).click();
+  const open = card.getByRole('link', { name: 'Open in Logos' });
+  await expect(open).toBeVisible();
+  await expect(open).toHaveAttribute('href', 'logosres:lgcystndrdbblsb;ref=Bible.Ec12.13');
+  await expect(card.getByText('Not in Lampas yet', { exact: true })).toBeVisible();
+  await expect(card.getByRole('button', { name: 'Open', exact: true })).toHaveCount(0);
+  await shot(page, 'reference-card-open-in-logos');
+});

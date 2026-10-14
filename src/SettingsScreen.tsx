@@ -3,11 +3,12 @@
 // and told to the bus (src/events/bus.ts); the Study resources (src/resources/) are switched on here; Words and About open from here too.
 // The rows are not written here: src/settings/rows.ts lists every row (name, hint, help, section, what it depends on) and this file draws
 // them, section by section, each with the control CONTROLS (src/settings/controls/, one file per section) names for its key. The search field at the top filters that list (visibleRows),
-// and a row that depends on a setting that is off is not drawn.
+// and a row that depends on a setting that is off is not drawn. An address '#/settings?section=resources' opens Settings scrolled to that section (a link from elsewhere, such as
+// the reference card's 'Link Logos in Settings').
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAiAllowed } from './gate/licenceContext';
-import { navigate } from './nav/route';
+import { navigate, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { CONTROLS } from './settings/controls';
 import { NeedsLicenceRow } from './settings/controls/NeedsLicence';
@@ -37,7 +38,14 @@ function SettingsSearch({ query, onChange }: { query: string; onChange: (query: 
   );
 }
 
+/** The section id an address asks for ('#/settings?section=resources'), or null. */
+function sectionOf(hash: string): string | null {
+  const q = hash.indexOf('?');
+  return new URLSearchParams(q < 0 ? '' : hash.slice(q + 1)).get('section');
+}
+
 export function SettingsScreen() {
+  const wanted = sectionOf(useAddress());
   const scrollRef = useScrollMemory('settings');
   const [query, setQuery] = useState('');
   const values = useLiveQuery(readValues, []);
@@ -47,6 +55,12 @@ export function SettingsScreen() {
   // the tutor is told every setting, shown or not (mw-5r3p30.107): he can say what a setting that is off would give
   const forTutor = useLiveQuery(settingsForTutor, []);
   useReportScreen({ name: 'Settings', facts: [], settings: forTutor ?? [] });
+  const drawn = values !== undefined;
+  useEffect(() => {
+    if (!wanted || !drawn) return;
+    const target = Array.from(document.querySelectorAll<HTMLElement>('[data-section]')).find((el) => el.dataset.section === wanted);
+    target?.scrollIntoView({ block: 'start' });
+  }, [wanted, drawn]);
   return (
     <>
       <ScreenHeader title="Settings" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />
@@ -57,7 +71,7 @@ export function SettingsScreen() {
             const mine = rows.filter((r) => r.section === section.id);
             if (mine.length === 0) return null;
             return (
-              <Section key={section.id} title={section.title} hint={section.hint} labelled={section.id === 'resources'}>
+              <Section key={section.id} id={section.id} title={section.title} hint={section.hint} labelled={section.id === 'resources'}>
                 {mine.map((row) => {
                   if (row.ai && !aiAllowed) return <NeedsLicenceRow key={row.key} row={row} />;
                   const Row = CONTROLS[row.key];

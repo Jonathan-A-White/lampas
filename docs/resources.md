@@ -207,7 +207,7 @@ the reference as its heading (`Hebrews 7:1-3`; a whole chapter shows and is head
 the verse's English from the chapter file (the Majority Standard Bible, named on the card) and **Open**, which closes the Talk sheet if it is the one showing and opens
 the Verse view on the first verse as a new Back step (`nav/route.ts` `openVerseAt`). A tap outside the card, Close, Escape or Back (the card is a `useSheetBack` sheet)
 closes it and nothing moves; it stands below the words tapped, or above them when there is no room, and its text scrolls when it is longer than the room. A book of the
-Old Testament has a card too, headed `Psalm 110`, saying `Not in Lampas yet`, with no Open; its jumping-off chips stay under the answer. The book and numbers are
+Old Testament has a card too, headed `Psalm 110`, saying `Not in Lampas yet`, with no Open for the reader (mw-5r3p30.345): with Logos switched on it has `Open in Logos`, a link (`logosBible.ts` `verseLink`, the verse, a whole chapter at its first verse, in his Bible in Logos) and with Logos off the line `Not in Lampas yet. Link Logos in Settings to open it there.`, whose link opens `#/settings?section=resources` (Settings scrolled to Study resources); its jumping-off chips stay under the answer. The book and numbers are
 read by `nav/links.ts` and `resources/tutorLinks.ts` `placeOf` (no second parser). A name needs a capital letter (`a 7:2 ratio` is not a reference), and one that names no
 book or a chapter or verse the book lacks is plain text. The instructions of both talk grinds say to answer a question about another passage there and then
 and to name its verse this way, never to send him to ask elsewhere.
