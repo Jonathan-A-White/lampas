@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.199
+_2026-10-14_
+- Fixed: Example words on the grammar sheets now show their meaning as it stands in the verse (these things), not the dictionary meaning of the base word.
+
 ## 0.1.198
 _2026-10-14_
 - New: With Immersive reader on, the screen stays awake while you read.

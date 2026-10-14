@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.199",
+    "date": "2026-10-14",
+    "story": "mw-5r3p30.237",
+    "kind": "fixed",
+    "text": "Example words on the grammar sheets now show their meaning as it stands in the verse (these things), not the dictionary meaning of the base word."
+  },
+  {
     "version": "0.1.198",
     "date": "2026-10-14",
     "story": "mw-5r3p30.309",
