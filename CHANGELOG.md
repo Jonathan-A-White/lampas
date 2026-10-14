@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.195
+_2026-10-14_
+- New: When you come back after a break, the tutor now notices the words and ideas you have gone rusty on and offers to move them back to Frontier and practise, and a Welcome back card offers a short refresher.
+
 ## 0.1.194
 _2026-10-14_
 - Fixed: A question you spoke but kept unsent (slid off the bar, or switched away from the app) and then sent is now treated as spoken, so the tutor hears through sound-alike words.
