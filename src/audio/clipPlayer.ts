@@ -1,7 +1,8 @@
 // src/audio/clipPlayer.ts — plays the clip he recorded from one hidden audio element: all of it ('Play my reading') or one stretch of it ('Me' beside a flagged
 // word: from the scorer's start to its end, seconds in the recording). One thing plays at a time; `playing` is the key of what plays now, or null. It is
 // a plain object outside React's rendering (ReadCheck.tsx holds one in state and its buttons listen with usePlaying), because it keeps the audio element, its
-// object URL and the timer that watches for the end of a word, none of which are for rendering.
+// object URL and the timer that watches for the end of a word, none of which are for rendering. It also plays a clip the app ships, by its URL: the sound of a
+// one-letter Greek word (src/speech/greek.ts, mw-5r3p30.347), from an element of its own.
 //
 // The end of a word (mw-5r3p30.139): a word is a fraction of a second, and a phone can move the element's currentTime only as its timeupdate events come,
 // about 0.25 s apart, so a watch that reads currentTime alone stops up to a quarter second late and the next words play ('Levites' came back with 'mortal
@@ -22,9 +23,9 @@ interface Anchor {
 export class ClipPlayer {
   private audio: HTMLAudioElement | null = null;
   private detach: (() => void) | null = null;
-  private clip: Clip | undefined;
+  private clip: Clip | string | undefined;
   private url: string | undefined;
-  private urlOf: Clip | undefined;
+  private urlOf: Clip | string | undefined;
   private timer: ReturnType<typeof setTimeout> | undefined;
   private anchor: Anchor | null = null;
   private now: string | null = null;
@@ -63,8 +64,8 @@ export class ClipPlayer {
       audio.removeEventListener('seeking', standing);
     };
   };
-  /** the clip behind the buttons now (a new reading of the verse is a new clip, and a new source) */
-  setClip(clip: Clip | undefined): void {
+  /** the clip behind the buttons now (a new reading of the verse is a new clip, and a new source); a string is the URL of a clip the app ships */
+  setClip(clip: Clip | string | undefined): void {
     this.clip = clip;
   }
   /** the audio element ended, or failed, on its own */
@@ -108,14 +109,15 @@ export class ClipPlayer {
     }
     this.beforePlay();
     if (!this.url || this.urlOf !== clip) {
-      if (this.url) URL.revokeObjectURL(this.url);
-      this.url = URL.createObjectURL(blobOf(clip));
+      this.revoke();
+      this.url = typeof clip === 'string' ? clip : URL.createObjectURL(blobOf(clip));
       this.urlOf = clip;
       audio.src = this.url;
     }
     audio.currentTime = from ?? 0;
     this.set(key);
-    const started = audio.play();
+    // an older browser's play() gives no promise
+    const started = Promise.resolve(audio.play());
     if (to === undefined) {
       started.catch(() => {
         if (this.now === key) this.set(null);
@@ -140,11 +142,24 @@ export class ClipPlayer {
     this.timer = setTimeout(watch, TICK_MS);
   }
 
+  /** Stops what plays, if anything. */
+  stop(): void {
+    this.unwatch();
+    if (this.now === null) return;
+    this.audio?.pause();
+    this.set(null);
+  }
+
+  /** Lets the object URL of a recorded clip go (a shipped clip's URL is not one). */
+  private revoke(): void {
+    if (this.url && typeof this.urlOf !== 'string') URL.revokeObjectURL(this.url);
+  }
+
   /** The screen is going: stop, and let the clip's URL go. */
   dispose(): void {
     this.unwatch();
     this.audio?.pause();
-    if (this.url) URL.revokeObjectURL(this.url);
+    this.revoke();
     this.url = undefined;
     this.urlOf = undefined;
   }
