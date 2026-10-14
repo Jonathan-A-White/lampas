@@ -153,3 +153,32 @@ Feature: Immersive reader
     Given Lampas is opened on Romans 8 with Immersive reader Off
     When he scrolls the text down 700 px
     Then there is no place line
+
+  Scenario: The screen stays awake while the Reader is open with Immersive reader On, and sleeps again when he leaves
+    Given Lampas is opened on Romans 8 with Immersive reader On and a phone with a screen wake lock
+    Then the page holds the screen awake
+    When he opens Settings from the Reader
+    Then the page has let the screen sleep
+
+  Scenario: Switching Immersive reader Off lets the screen sleep
+    Given Lampas is opened on Romans 8 with Immersive reader On and a phone with a screen wake lock
+    Then the page holds the screen awake
+    When Immersive reader is switched Off
+    Then the page has let the screen sleep
+
+  Scenario: With Immersive reader Off the Reader does not hold the screen awake
+    Given Lampas is opened on Romans 8 with Immersive reader Off and a phone with a screen wake lock
+    Then the page does not hold the screen awake
+
+  Scenario: Reading aloud keeps its own hold when the Immersive reader lets go
+    Given Lampas is opened on Romans 8 with Immersive reader On and a phone with a screen wake lock
+    And he starts the chapter reading aloud
+    And Immersive reader is switched Off
+    Then the screen is still held awake for the reading
+    When the reading is stopped
+    Then the page has let the screen sleep
+
+  Scenario: A phone without a screen wake lock reads on
+    Given Lampas is opened on Romans 8 with Immersive reader On and a phone without a screen wake lock
+    When he scrolls the text down 200 px
+    Then the header, the chips, the Talk bar and the Ask button are all out of view

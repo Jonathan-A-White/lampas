@@ -59,7 +59,28 @@ function fakeFullscreen(mode: 'works' | 'refuses'): void {
   });
 }
 
-async function open(options: { immersive: 'on' | 'off'; recogniser?: boolean; speaks?: boolean; fullscreen?: 'works' | 'refuses' }): Promise<void> {
+/** The Screen Wake Lock API, which jsdom lacks, stood in for by hand: it counts the locks asked for and let go. */
+const wake = { requests: 0, released: 0 };
+function fakeWakeLock(): void {
+  wake.requests = 0;
+  wake.released = 0;
+  Object.defineProperty(navigator, 'wakeLock', {
+    configurable: true,
+    value: {
+      request: async () => {
+        wake.requests += 1;
+        return {
+          addEventListener: () => {},
+          release: async () => {
+            wake.released += 1;
+          },
+        };
+      },
+    },
+  });
+}
+
+async function open(options: { immersive: 'on' | 'off'; recogniser?: boolean; speaks?: boolean; fullscreen?: 'works' | 'refuses'; wakeLock?: boolean }): Promise<void> {
   cleanup();
   stopReading();
   clearBus();
@@ -69,6 +90,8 @@ async function open(options: { immersive: 'on' | 'off'; recogniser?: boolean; sp
   FakeRecognizer.instances = [];
   if (options.speaks) stubSpeech([ENGLISH_VOICE]);
   if (options.fullscreen) fakeFullscreen(options.fullscreen);
+  delete (navigator as unknown as { wakeLock?: unknown }).wakeLock;
+  if (options.wakeLock) fakeWakeLock();
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
   window.history.replaceState(null, '', '/');
@@ -477,6 +500,71 @@ describeFeature(feature, ({ Scenario }) => {
       twoFingerTap();
     });
     Then('the place line is back and reads {string}', reads);
+  });
+
+  const held = () => wake.requests - wake.released;
+
+  Scenario('The screen stays awake while the Reader is open with Immersive reader On, and sleeps again when he leaves', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader On and a phone with a screen wake lock', () => open({ immersive: 'on', wakeLock: true }));
+    Then('the page holds the screen awake', async () => {
+      await waitFor(() => expect(held()).toBe(1));
+    });
+    When('he opens Settings from the Reader', async () => {
+      await user.click(screen.getByRole('button', { name: 'Settings' }));
+    });
+    Then('the page has let the screen sleep', async () => {
+      await waitFor(() => expect(held()).toBe(0));
+      expect(wake.requests).toBe(1);
+    });
+  });
+
+  Scenario('Switching Immersive reader Off lets the screen sleep', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader On and a phone with a screen wake lock', () => open({ immersive: 'on', wakeLock: true }));
+    Then('the page holds the screen awake', async () => {
+      await waitFor(() => expect(held()).toBe(1));
+    });
+    When('Immersive reader is switched Off', async () => {
+      await db.settings.put({ key: 'immersiveReader', value: 'off' });
+    });
+    Then('the page has let the screen sleep', async () => {
+      await waitFor(() => expect(held()).toBe(0));
+    });
+  });
+
+  Scenario('With Immersive reader Off the Reader does not hold the screen awake', ({ Given, Then }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader Off and a phone with a screen wake lock', () => open({ immersive: 'off', wakeLock: true }));
+    Then('the page does not hold the screen awake', async () => {
+      await sleep(100);
+      expect(wake.requests).toBe(0);
+    });
+  });
+
+  Scenario('Reading aloud keeps its own hold when the Immersive reader lets go', ({ Given, And, Then, When }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader On and a phone with a screen wake lock', () => open({ immersive: 'on', wakeLock: true, speaks: true }));
+    And('he starts the chapter reading aloud', async () => {
+      await user.click(screen.getByRole('button', { name: 'Read from the top' }));
+      await waitFor(() => expect(getReading().status).toBe('reading'));
+    });
+    And('Immersive reader is switched Off', async () => {
+      await db.settings.put({ key: 'immersiveReader', value: 'off' });
+      await waitFor(() => expect(reader()).toHaveAttribute('data-immersive', 'off'));
+      await sleep(100);
+    });
+    Then('the screen is still held awake for the reading', () => {
+      expect(held()).toBe(1);
+    });
+    When('the reading is stopped', async () => {
+      act(() => stopReading());
+    });
+    Then('the page has let the screen sleep', async () => {
+      await waitFor(() => expect(held()).toBe(0));
+    });
+  });
+
+  Scenario('A phone without a screen wake lock reads on', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader On and a phone without a screen wake lock', () => open({ immersive: 'on' }));
+    When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
+    Then(`${bars} out of view`, outOfView);
   });
 
   Scenario('With Immersive reader Off there is no place line', ({ Given, When, Then }) => {

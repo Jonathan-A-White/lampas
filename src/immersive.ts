@@ -10,7 +10,12 @@
 // notice every time a page enters full screen (no page can hide it or learn it was swiped away), so entering again after every two-finger tap would
 // bring the notice back each time. A two-finger tap changes only Lampas's own bars. Full screen is left when he leaves the Reader and when the
 // setting goes Off. Where the API is missing or refuses, nothing else changes and the next gesture asks again.
+//
+// Awake (mw-5r3p30.309): with it On the screen stays on while the Reader is open (src/speech/wakeLock.ts, holder 'immersive', beside reading aloud's own
+// hold: the lock is let go with the last holder). Leaving the Reader or switching Off lets it go; the page hiding does so by itself and the lock is asked
+// for again when the page is visible again. A phone without the API reads on.
 import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { holdAwake, releaseAwake } from './speech/wakeLock';
 
 /** Scrolling down this far hides them. */
 export const HIDE_AFTER_PX = 12;
@@ -25,6 +30,7 @@ const CLICK_GUARD_MS = 600;
 
 /** A Reader that goes away and is replaced at once (the next chapter) keeps the screen full: the exit waits this long for a new Reader to say it still wants it. */
 const LEAVE_DELAY_MS = 250;
+const AWAKE_HOLDER = 'immersive';
 let leaving: ReturnType<typeof setTimeout> | undefined;
 
 /** Asks the browser to show the page full screen. False where it cannot or will not (no API, no gesture yet, refused). */
@@ -72,6 +78,7 @@ export function useImmersive(
     if (!enabled || !el) return;
     clearTimeout(leaving);
     leaving = undefined;
+    holdAwake(AWAKE_HOLDER);
     let last = el.scrollTop;
     let down = 0;
     let stopped = false;
@@ -175,6 +182,7 @@ export function useImmersive(
     return () => {
       // switched Off (or the box gone): the bars are shown again if he switches it back On
       set(false);
+      releaseAwake(AWAKE_HOLDER);
       stopped = true;
       leaving = setTimeout(leaveFullScreen, LEAVE_DELAY_MS);
       el.removeEventListener('scroll', onScroll);
