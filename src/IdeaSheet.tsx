@@ -9,9 +9,9 @@
 // text with a button to go there, and sliding up first asks 'Go to <title> first?'.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { loadChapter, loadIndex, wordGloss, type Chapter, type GreekWord } from './data/chapter';
+import { loadChapter, loadIndex, type Chapter, type GreekWord } from './data/chapter';
 import { unmetNeed } from './data/grammar/drillIt';
-import { ideaExamples, ideaPassage, isSpellingIdea, paradigmOf, type IdeaExample, type IdeaPassage, type Paradigm } from './data/grammar/ideaSheet';
+import { exampleMeaning, ideaExamples, ideaPassage, isSpellingIdea, paradigmOf, type IdeaExample, type IdeaPassage, type Paradigm } from './data/grammar/ideaSheet';
 import { ideaOf, type GrammarIdea } from './data/grammar/ladder';
 import { ideaText } from './data/grammar/lessons';
 import { teachTiles } from './data/grammar/teachTiles';
@@ -131,7 +131,7 @@ function Example({ example, onWord }: { example: IdeaExample; onWord: (chapter: 
             ),
           )}
         </span>
-        <span className="min-w-0 flex-1 truncate text-base text-muted">{wordGloss(chapter, word)}</span>
+        <span className="min-w-0 flex-1 truncate text-base text-muted">{exampleMeaning(chapter, example.verse, word)}</span>
         <span data-testid="idea-verse" className="shrink-0 text-sm text-muted">
           {reference}
         </span>

@@ -1,7 +1,8 @@
 // src/GrammarSheet.tsx — the sheet a grammar word of a word's Parsing opens (mw-5r3p30.35), over the word sheet: the term, a plain
 // explanation, how it shows in Koine Greek, related terms, up to three examples from the chapter (each opens its own word
 // sheet), and at the bottom I know this (kept on the phone; the word sheet then shows the term plain) and Ask the tutor.
-import { type Chapter, type GreekWord, wordGloss } from './data/chapter';
+import { type Chapter, type GreekWord } from './data/chapter';
+import { exampleMeaning } from './data/grammar/ideaSheet';
 import { conceptOf } from './data/grammar-concepts';
 import { grammarExamples } from './data/grammarExamples';
 import { focusOnMount } from './ui/focus';
@@ -109,7 +110,7 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onT
                       <span lang="grc" className="font-greek text-2xl">
                         {example.t}
                       </span>
-                      <span className="min-w-0 flex-1 truncate text-base text-muted">{wordGloss(chapter, example)}</span>
+                      <span className="min-w-0 flex-1 truncate text-base text-muted">{exampleMeaning(chapter, verse, example)}</span>
                       <span className="shrink-0 text-sm text-muted">
                         {chapter.chapter}:{verse}
                       </span>

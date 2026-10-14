@@ -24,6 +24,12 @@ Feature: The idea sheet
     Then the idea sheet shows 3 examples that are genitives of "Romans 8"
     And the paradigm table of the genitive has "τοῦ" and "τῆς" in its cells
 
+  Scenario: An example shows its meaning as it stands in its verse, not the dictionary gloss
+    Given Lampas is opened on Romans 8 with the goal "1 John 2", no idea level and a fake Postern
+    When he opens the idea sheet from the Grammar sheet of "plural" on the word "for those who are" in verse 1
+    Then the idea sheet is titled "The plural"
+    And the example "ταῦτα" reads "these things" and not "this/he/she/it" alone
+
   Scenario: An example opens its own word sheet
     Given Lampas is opened on Romans 8 with the goal "1 John 1", no idea level and a fake Postern
     And he opens the idea sheet from the Grammar sheet of "genitive" on the word "of the" in verse 2

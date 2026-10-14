@@ -181,6 +181,19 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('An example shows its meaning as it stands in its verse, not the dictionary gloss', ({ Given, When, Then, And }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When(GIVEN_OPEN, opensTheIdea);
+    Then('the idea sheet is titled {string}', (_, title: string) => {
+      expect(within(ideaSheet()).getByRole('heading', { name: title })).toBeInTheDocument();
+    });
+    And('the example {string} reads {string} and not {string} alone', (_, form: string, meaning: string, gloss: string) => {
+      const text = exampleOf(form).textContent ?? '';
+      expect(text).toContain(meaning);
+      expect(text).not.toContain(gloss);
+    });
+  });
+
   Scenario('An example opens its own word sheet', ({ Given, And, When, Then }) => {
     Given(GIVEN_GOAL, opensWithGoal);
     And(GIVEN_OPEN, opensTheIdea);
