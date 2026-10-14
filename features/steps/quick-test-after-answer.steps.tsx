@@ -14,27 +14,33 @@ import { mulberry32, type Question } from '../../src/data/quiz';
 import { clearBus } from '../../src/events/bus';
 import { stopSpeaking } from '../../src/speech/greek';
 import { stubSpeech, GREEK_VOICE, ENGLISH_VOICE, type FakeSynth } from '../../tests/support/fake-speech';
-import { asSpoken } from '../../tests/support/spoken-word';
+import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
+import { hearing } from '../../tests/support/spoken-word';
 
 const user = userEvent.setup();
 const rom8 = readFileSync('public/data/rom/8.json', 'utf8');
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 let synth: FakeSynth;
+let audio: FakeAudio;
 let promptAtStart = '';
 
 afterAll(() => {
   stopSpeaking();
   cleanup();
   db.close();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
 
 async function open(round?: { question: Question; picked: string | null }): Promise<void> {
   cleanup();
+  stopSpeaking();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
   vi.stubGlobal('fetch', vi.fn<typeof fetch>(async () => new Response(rom8)));
   synth = stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
+  audio = stubAudio();
   clearBus();
   forgetChapters();
   await db.open();
@@ -84,12 +90,8 @@ async function tapGloss(right: boolean): Promise<void> {
   await user.click(target);
 }
 
-const expectSpokenOnce = () => {
-  expect(synth.spoken).toHaveLength(1);
-  expect(synth.spoken[0].text).toBe(asSpoken(promptText()));
-  // a one-letter word (ὁ) goes to the Greek voice too, in its pronunciation's form (mw-5r3p30.262)
-  expect(synth.spoken[0].lang).toBe('el-GR');
-};
+// a one-letter word (ὁ, the round's first word) is never handed to the voice: its clip plays (mw-5r3p30.347)
+const expectSpokenOnce = () => hearing(synth, audio, promptText).once(promptText(), 'el-GR');
 
 const resume = async () => user.click(await screen.findByRole('button', { name: 'Resume' }));
 
@@ -100,7 +102,10 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('The word is spoken by itself, once, after a right answer', ({ Given, When, Then }) => {
     Given(firstQuestion, () => open());
-    Then('nothing is spoken', () => expect(synth.spoken).toHaveLength(0));
+    Then('nothing is spoken', () => {
+      expect(synth.spoken).toHaveLength(0);
+      expect(audio.played).toHaveLength(0);
+    });
     When('he taps the right gloss', () => tapGloss(true));
     Then('the word of the question is spoken once in Greek', expectSpokenOnce);
   });
@@ -168,7 +173,10 @@ describeFeature(feature, ({ Scenario }) => {
       () => open({ question: AMEN, picked: 'and' }),
     );
     When('he resumes the round', resume);
-    Then('nothing is spoken', () => expect(synth.spoken).toHaveLength(0));
+    Then('nothing is spoken', () => {
+      expect(synth.spoken).toHaveLength(0);
+      expect(audio.played).toHaveLength(0);
+    });
     And('there is an Ask the tutor button beside Next', async () => {
       const next = await screen.findByTestId('next');
       expect(screen.getByRole('button', { name: 'Ask the tutor' }).parentElement).toBe(next.parentElement);

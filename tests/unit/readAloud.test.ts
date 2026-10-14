@@ -7,10 +7,8 @@ import { forgetChapters } from '../../src/data/chapter';
 import { clearBus, latest, subscribe } from '../../src/events/bus';
 import type { Chapter, Verse } from '../../src/data/chapter';
 import { weaveVerse } from '../../src/data/weave';
-import { syllableRuns } from '../../src/speech/answerRuns';
-import { continueReading, getReading, pauseReading, planOf, resumeReading, runsOf, startReading, stopReading, type Run } from '../../src/speech/readAloud';
-import { chosenPronunciation, setGreekPronunciation, speakWord } from '../../src/speech/greek';
-import { DEFAULT_PRONUNCIATION, registerPronunciation } from '../../src/speech/pronunciation';
+import { continueReading, getReading, pauseReading, planOf, resumeReading, runsOf, startReading, stopReading } from '../../src/speech/readAloud';
+import { chosenPronunciation, speakWord } from '../../src/speech/greek';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../support/fake-speech';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
@@ -383,49 +381,5 @@ describe('following bsv-kit/speech (mw-m7v5kc.3)', () => {
   });
 });
 
-// A voice handed a bare Greek letter names it ('omicron'): a run that is one Greek letter (a one-letter syllable in Sound it out, a lone ὁ woven into
-// the English, a lone ὁ in a tutor's answer) goes to the Greek voice in the form the pronunciation he chose gives it (mw-5r3p30.262).
-describe('a run that is one Greek letter', () => {
-  const isBareLetter = (s: string) => [...s].length === 1 && s.normalize('NFD') === s.normalize('NFD').replace(/\p{M}/gu, '');
-  const readRuns = (runs: Run[]): void => {
-    startReading({ chapter: 8, plan: [{ n: 1, runs }], from: 1, continuous: false });
-    synth.finishAll();
-  };
-
-  it('is never handed to a voice as a bare letter, as a syllable of Sound it out: it goes to the Greek voice in its form', () => {
-    readRuns(syllableRuns(['ὦ', 'λό', 'γος']));
-    expect(synth.spoken.length).toBeGreaterThanOrEqual(1);
-    expect(synth.spoken.some((u) => isBareLetter(u.text))).toBe(false);
-    const lone = synth.spoken.find((u) => u.text === chosenPronunciation().loneLetter('ὦ'));
-    expect(lone?.lang).toBe('el-GR');
-    expect(synth.spoken.every((u) => u.lang === 'el-GR')).toBe(true);
-  });
-
-  it('is never handed to a voice as a bare letter, as a woven Greek word between English', () => {
-    readRuns([
-      { text: 'in the beginning was', language: 'english' },
-      { text: 'ὁ', language: 'greek' },
-      { text: 'Word', language: 'english' },
-    ]);
-    expect(synth.spoken.some((u) => isBareLetter(u.text))).toBe(false);
-    expect(synth.spoken.find((u) => u.text === chosenPronunciation().loneLetter('ὁ'))?.lang).toBe('el-GR');
-  });
-
-  it("follows the scheme: a second scheme's form is what is read", () => {
-    const unregister = registerPronunciation({ id: 'stub-erasmian', label: 'Stub', lang: 'el-GR', scoringLang: 'el', note: '', respell: (w) => w, keyWords: {}, loneLetter: (w) => `[${w}]`, voiceForm: (t) => t, letterForm: (l) => l, tutorGuide: 'Stub.' });
-    try {
-      setGreekPronunciation('stub-erasmian');
-      readRuns([{ text: 'ὁ', language: 'greek' }]);
-      expect(synth.spoken.map((u) => u.text)).toContain('[ὁ]');
-    } finally {
-      setGreekPronunciation(DEFAULT_PRONUNCIATION);
-      unregister();
-    }
-  });
-
-  it('leaves a Greek run of two letters or more as it was', () => {
-    readRuns([{ text: 'ὁ λόγος', language: 'greek' }]);
-    expect(synth.spoken.map((u) => u.text).join(' ')).toBe('ὁ λόγος');
-    expect(synth.spoken.every((u) => u.lang === 'el-GR')).toBe(true);
-  });
-});
+// A run that is one Greek letter (a one-letter syllable in Sound it out, a lone ὁ woven into the English or in a tutor's answer) is never handed to a voice:
+// its clip plays (mw-5r3p30.347, tests/unit/lone-letter-clip.test.ts).

@@ -11,8 +11,9 @@ import { App } from '../../src/App';
 import { type Chapter, type Verse, wordLemma } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { clearBus, latest } from '../../src/events/bus';
+import { loneLetterClip } from '../../src/speech/greek';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { asSpoken } from '../../tests/support/spoken-word';
+import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
@@ -22,14 +23,17 @@ const GREEK_VOICE: FakeVoice = { lang: 'el-GR', name: 'Greek (Greece)' };
 const ENGLISH_VOICE: FakeVoice = { lang: 'en-US', name: 'English (US)' };
 
 let synth: FakeSynth;
+let audio: FakeAudio;
 let vibrations: unknown[] = [];
 
 async function openWith(voices: FakeVoice[]): Promise<void> {
   cleanup();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
   clearBus();
   stubChapterFetch();
   synth = stubSpeech(voices);
+  audio = stubAudio();
   vibrations = [];
   Object.defineProperty(navigator, 'vibrate', {
     configurable: true,
@@ -48,6 +52,7 @@ async function openWith(voices: FakeVoice[]): Promise<void> {
 
 afterAll(() => {
   cleanup();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
   Reflect.deleteProperty(navigator, 'vibrate');
   db.close();
@@ -107,7 +112,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('no word sheet is open', () => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
-  Scenario("A long press on a one-letter Greek word says its sound, never a letter's name", ({ Given, And, When, Then }) => {
+  Scenario("A long press on a one-letter Greek word plays its sound, never a letter's name", ({ Given, And, When, Then }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH_VOICE, GREEK_VOICE]));
     And('he opens 1 John 1 in Greek', async () => {
       act(() => {
@@ -118,17 +123,11 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(within(verseEl(1)).getAllByRole('button').length).toBeGreaterThan(1));
     });
     When('he long presses the word {string} in verse {int}', (_, text: string, n: number) => press(wordEl(text, n), HOLD_MS));
-    Then('the phone is handed no bare Greek letter', () => {
-      expect(synth.spoken).toHaveLength(1);
-      const said = lastSpoken().text;
-      // a voice names a bare letter ('omicron'); a word of one letter goes with a mark the voice reads as a sound (mw-5r3p30.262)
-      expect([...said].length === 1 && said.normalize('NFD') === said.normalize('NFD').replace(/\p{M}/gu, '')).toBe(false);
-    });
-    And('the Greek voice is told to speak {string} in the form the pronunciation he chose gives a word of one letter', (_, text: string) => {
-      expect(lastSpoken().text).toBe(asSpoken(text));
-      expect(lastSpoken().text).not.toBe('');
-      expect(spokenWordLang()).toBe('el-GR');
-      expect(lastSpoken().voice).toBe(GREEK_VOICE);
+    // a Greek voice handed one letter names it ('omicron'), with or without an accent: the word is a clip (mw-5r3p30.347)
+    Then("the phone's voice is handed nothing", () => expect(synth.spoken).toEqual([]));
+    And('the clip of the sound the pronunciation he chose gives {string} is played', (_, text: string) => {
+      expect(loneLetterClip(text)).toMatch(/^\/sounds\/.+\.mp3$/);
+      expect(audio.played).toEqual([loneLetterClip(text)]);
     });
   });
 
