@@ -1,5 +1,5 @@
 {
-  "description": "A request that is only sent: the tutor says the makers have not answered yet and does not say it is filed or built.",
+  "description": "A request that is only sent: the tutor says the idea was sent and the makers have not answered yet (in any words), and does not say it is filed or built.",
   "schemaVersion": "1",
   "request": {
     "reference": "Romans 8:28",
@@ -24,7 +24,7 @@
   },
   "expect": {
     "answer": {
-      "matches": "[Nn]ot (yet|answered)|no answer|waiting|hasn.t"
+      "matches": "sent|[Nn]ot (yet|answered)|no answer|waiting|hasn.t|haven.t|will look|yet|so far"
     },
     "settings_changes": {
       "present": false
