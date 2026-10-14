@@ -1,7 +1,7 @@
 // src/speech/schemes/modern.ts — Modern Greek as a respelling: the Greek word in syllables an English reader can say,
 // the stressed syllable in capitals ("khree-STO"). Written from Modern Greek's own rules (docs/pronunciation.md lists
 // them); the other schemes (Erasmian next) are further files beside this one, registered in ../pronunciation.ts.
-import type { Pronunciation } from '../pronunciation';
+import type { Pronunciation, SoundRule, SoundRuleSide } from '../pronunciation';
 import { ONSETS } from '../greekSyllables';
 import { modernLessons } from './modernLessons';
 
@@ -52,9 +52,46 @@ interface Vowel {
   front: boolean;
   stress: boolean;
   length: number;
+  /** the rule that decided its sound (αυ, ευ, ηυ: v or f by the next letter) and the side it took */
+  decided?: Decision;
 }
 
-function vowelAt(letters: Letter[], i: number): Vowel | null {
+/** The rules whose sound turns on the letter next to it (mw-i7xe0n.7), each with its two sides; modernSoundRules gives each its ladder idea, lines and words. */
+type RuleId = 'chi' | 'gamma' | 'sigma' | 'au' | 'eu' | 'eeu' | 'mp' | 'nt' | 'gk' | 'gch';
+const RULE_SIDES: Readonly<Record<RuleId, readonly [string, string]>> = {
+  chi: ['hard', 'soft'],
+  gamma: ['hard', 'soft'],
+  sigma: ['voiced', 'voiceless'],
+  au: ['voiced', 'voiceless'],
+  eu: ['voiced', 'voiceless'],
+  eeu: ['voiced', 'voiceless'],
+  mp: ['start', 'inside'],
+  nt: ['start', 'inside'],
+  gk: ['start', 'inside'],
+  gch: ['hard', 'soft'],
+};
+
+/** A place in a word where a rule decided the sound, and the side it took. */
+interface Decision {
+  rule: RuleId;
+  side: string;
+}
+
+/** How the word is read: `flip` reads one rule the other way (the near miss), and every decision is written to `decided`. */
+interface Reading {
+  flip?: RuleId;
+  decided?: Decision[];
+}
+
+/** The side a rule takes at one place, written down, and turned the other way when the reading flips that rule. */
+function decide(rule: RuleId, side: string, reading: Reading): string {
+  reading.decided?.push({ rule, side });
+  if (reading.flip !== rule) return side;
+  const [a, b] = RULE_SIDES[rule];
+  return side === a ? b : a;
+}
+
+function vowelAt(letters: Letter[], i: number, reading: Reading = {}): Vowel | null {
   const a = letters[i];
   if (!a || !VOWELS.includes(a.ch)) return null;
   const b = letters[i + 1];
@@ -64,58 +101,71 @@ function vowelAt(letters: Letter[], i: number): Vowel | null {
     if (DIGRAPH_SOUND[pair]) return { text: DIGRAPH_SOUND[pair], front: pair !== 'ου', stress: b.stress, length: 2 };
     if (b.ch === 'υ' && (a.ch === 'α' || a.ch === 'ε' || a.ch === 'η')) {
       const after = letters[i + 2]?.ch;
-      const voiced = after !== undefined && (VOICED.includes(after) || VOWELS.includes(after));
+      const rule: RuleId = a.ch === 'α' ? 'au' : a.ch === 'ε' ? 'eu' : 'eeu';
+      const side = after !== undefined && (VOICED.includes(after) || VOWELS.includes(after)) ? 'voiced' : 'voiceless';
       const base = a.ch === 'α' ? 'a' : a.ch === 'ε' ? 'e' : 'ee';
-      return { text: base + (voiced ? 'v' : 'f'), front: a.ch !== 'α', stress: b.stress, length: 2 };
+      // the flip is applied here; the decision is written down by the caller that keeps the vowel, so a look ahead (kh) writes nothing
+      const flipped = decide(rule, side, { flip: reading.flip });
+      return { text: base + (flipped === 'voiced' ? 'v' : 'f'), front: a.ch !== 'α', stress: b.stress, length: 2, decided: { rule, side } };
     }
   }
   return { text: VOWEL_SOUND[a.ch], front: 'εηιυ'.includes(a.ch), stress: a.stress, length: 1 };
 }
 
-function tokensOf(letters: Letter[]): Tok[] {
+function tokensOf(letters: Letter[], reading: Reading = {}): Tok[] {
   const toks: Tok[] = [];
   const seenVowel = () => toks.some((t) => t.kind === 'vowel');
   const consonant = (text: string, key: string, extra: Partial<Tok> = {}) => toks.push({ kind: 'consonant', text, key, ...extra });
   // χ is the ch of loch (kh) before a, o, ou and a consonant, and the softer hy before e and i (χαίρετε is HYE-re-te; mw-5r3p30.264)
-  const kh = (i: number) => (vowelAt(letters, i)?.front ? 'hy' : 'kh');
+  const kh = (i: number, rule: RuleId) => (decide(rule, vowelAt(letters, i)?.front ? 'soft' : 'hard', reading) === 'soft' ? 'hy' : 'kh');
+  // μπ, ντ and γκ have their nasal inside a word and none at its start
+  const inside = (rule: RuleId) => decide(rule, seenVowel() ? 'inside' : 'start', reading) === 'inside';
 
   for (let i = 0; i < letters.length; ) {
     const ch = letters[i].ch;
     const next = letters[i + 1]?.ch;
-    const v = vowelAt(letters, i);
+    const v = vowelAt(letters, i, reading);
     if (v) {
+      if (v.decided) reading.decided?.push(v.decided);
       toks.push({ kind: 'vowel', text: v.text, key: '', stress: v.stress, front: v.front });
       i += v.length;
       continue;
     }
     if (ch === 'μ' && next === 'π') {
-      if (seenVowel()) consonant('m', 'μ', { coda: true });
+      if (inside('mp')) consonant('m', 'μ', { coda: true });
       consonant('b', 'β');
       i += 2;
     } else if (ch === 'ν' && next === 'τ') {
-      if (seenVowel()) consonant('n', 'ν', { coda: true });
+      if (inside('nt')) consonant('n', 'ν', { coda: true });
       consonant('d', 'δ');
       i += 2;
-    } else if (ch === 'γ' && (next === 'γ' || next === 'κ')) {
+    } else if (ch === 'γ' && next === 'γ') {
       if (seenVowel()) consonant('n', 'ν', { coda: true });
+      consonant('g', 'γ', { hardG: true });
+      i += 2;
+    } else if (ch === 'γ' && next === 'κ') {
+      if (inside('gk')) consonant('n', 'ν', { coda: true });
       consonant('g', 'γ', { hardG: true });
       i += 2;
     } else if (ch === 'γ' && next === 'χ') {
       consonant('ng', 'ν', { coda: true });
-      consonant(kh(i + 2), 'χ');
+      consonant(kh(i + 2, 'gch'), 'χ');
       i += 2;
     } else if (ch === 'γ' && next === 'ξ') {
       consonant('n', 'ν', { coda: true });
       consonant('ks', 'ξ');
       i += 2;
     } else if (ch === 'γ') {
-      consonant(vowelAt(letters, i + 1)?.front ? 'y' : 'gh', 'γ');
+      consonant(decide('gamma', vowelAt(letters, i + 1)?.front ? 'soft' : 'hard', reading) === 'soft' ? 'y' : 'gh', 'γ');
       i += 1;
     } else if (ch === 'χ') {
-      consonant(kh(i + 1), 'χ');
+      consonant(kh(i + 1, 'chi'), 'χ');
       i += 1;
     } else if (ch === 'σ') {
-      if (next !== undefined && VOICED.includes(next)) consonant('z', 'σ', { coda: true });
+      // before a consonant the rule decides: z before a voiced one, s before any other; before a vowel or at the end it is s
+      const voiced = next !== undefined && VOICED.includes(next);
+      const said = next !== undefined && !VOWELS.includes(next) ? decide('sigma', voiced ? 'voiced' : 'voiceless', reading) === 'voiced' : voiced;
+      if (said) consonant('z', 'σ', { coda: true });
       else consonant('s', 'σ');
       i += 1;
     } else if (SINGLE[ch]) {
@@ -166,8 +216,11 @@ function syllablesOf(toks: Tok[]): Syllable[] {
 }
 
 /** The Greek word in Modern Greek sounds: 'χριστῷ' is 'khree-STO'. */
-export function respellModern(word: string): string {
-  const toks = tokensOf(lettersOf(word));
+export const respellModern = (word: string): string => respellAs(word, {});
+
+/** The word respelled as `reading` reads it: with one rule turned the other way (a near miss, modernSoundRules), its decisions written down. */
+function respellAs(word: string, reading: Reading): string {
+  const toks = tokensOf(lettersOf(word), reading);
   const syllables = syllablesOf(toks);
   // a word with no vowel (the elided δ') is its consonants
   if (syllables.length === 0) return toks.map((t) => t.text).join('');
@@ -229,6 +282,65 @@ export function voiceFormModern(text: string): string {
   });
 }
 
+/** The side each rule took in `word`: one side, or null when the word has no such place or has it on both sides. */
+function sideIn(word: string, rule: RuleId): string | null {
+  const decided: Decision[] = [];
+  respellAs(word, { decided });
+  const sides = new Set(decided.filter((d) => d.rule === rule).map((d) => d.side));
+  return sides.size === 1 ? [...sides][0] : null;
+}
+
+const FRONT = 'ε, ι, η, υ, αι, ει or οι';
+const BACK = 'α, ο, ω, ου or a consonant';
+const VOICED_LIST = 'β, γ, δ, ζ, λ, μ, ν or ρ';
+
+/** The sounds of Modern Greek that change by the next letter (mw-i7xe0n.7), each with its two sides, the line a wrong pick shows, and New Testament words of
+ * each side (tests/unit/sound-rule-sides.test.ts holds every word to its side and to the text). No word of the text begins with μπ, ντ or γκ, so their start side has none. */
+function modernSoundRules(keyWords: Readonly<Record<string, string>>): SoundRule[] {
+  const asIn = (sound: string): string => `${sound}, as in “${keyWords[sound]}”`;
+  const side = (id: string, label: string, line: string, words: readonly string[] = []): SoundRuleSide => ({ id, label, line, words });
+  const rule = (ideaId: string, id: RuleId, sides: [SoundRuleSide, SoundRuleSide]): SoundRule => ({
+    ideaId,
+    sides,
+    sideOf: (word) => sideIn(word, id),
+    misread: (word) => respellAs(word, { flip: id }),
+  });
+  const vowelPair = (ideaId: string, id: RuleId, pair: string, base: string, voiced: readonly string[], voiceless: readonly string[]): SoundRule =>
+    rule(ideaId, id, [
+      side('voiced', `${pair} before a vowel or a voiced consonant: ${base}v`, `${pair} before a vowel or ${VOICED_LIST} is ${base}v, with the ${asIn('v')}`, voiced),
+      side('voiceless', `${pair} before any other letter: ${base}f`, `${pair} before any other letter, or at the end of a word, is ${base}f, with the ${asIn('f')}`, voiceless),
+    ]);
+  const nasal = (ideaId: string, id: RuleId, pair: string, start: string, within: string, words: readonly string[]): SoundRule =>
+    rule(ideaId, id, [
+      side('start', `${pair} at the start of a word: ${start}`, `${pair} at the start of a word is ${asIn(start)}`),
+      side('inside', `${pair} inside a word: ${within}`, `${pair} inside a word is ${asIn(within)}`, words),
+    ]);
+  return [
+    rule('letter-chi', 'chi', [
+      side('hard', `χ before ${BACK}: kh`, `χ before ${BACK} is hard: ${asIn('kh')}`, ['χάρις', 'χαρά', 'ἔχω']),
+      side('soft', `χ before ${FRONT}: hy`, `χ before ${FRONT} is soft: ${asIn('hy')}`, ['χεῖρες', 'ψυχή', 'ἔχει']),
+    ]),
+    rule('letter-gamma', 'gamma', [
+      side('hard', `γ before ${BACK}: gh`, `γ before ${BACK} is gh, a soft throaty g`, ['λόγος', 'γάρ', 'λέγω']),
+      side('soft', `γ before ${FRONT}: y`, `γ before ${FRONT} is ${asIn('y')}`, ['γῆ', 'λέγει', 'ἡγεμών']),
+    ]),
+    rule('letter-sigma', 'sigma', [
+      side('voiced', `σ before a voiced consonant: z`, `σ before ${VOICED_LIST} is ${asIn('z')}`, ['κόσμος', 'Ἰσραήλ']),
+      side('voiceless', `σ before any other consonant: s`, `σ before any other consonant is ${asIn('s')}`, ['ἐστίν', 'ἀπόστολος']),
+    ]),
+    vowelPair('diphthong-au', 'au', 'αυ', 'a', ['Παῦλος', 'αὔριον'], ['αὐτός', 'ταῦτα']),
+    vowelPair('diphthong-eu', 'eu', 'ευ', 'e', ['εὐαγγέλιον', 'εὐλογία'], ['εὐθύς', 'εὐχαριστῶ']),
+    vowelPair('diphthong-eeu', 'eeu', 'ηυ', 'ee', ['ηὐλίζετο'], ['ηὔξανεν', 'προσηύχετο']),
+    nasal('pair-mp', 'mp', 'μπ', 'b', 'mb', ['πέμπω', 'ἐμπορίαν']),
+    nasal('pair-nt', 'nt', 'ντ', 'd', 'nd', ['ἐντολή', 'πάντοτε']),
+    nasal('pair-gk', 'gk', 'γκ', 'g', 'ng', ['ἀνάγκη', 'ἤνεγκεν']),
+    rule('pair-gch', 'gch', [
+      side('hard', `γχ before ${BACK}: ngkh`, `γχ before ${BACK} is ng plus kh, as in “${keyWords.ng}” and “${keyWords.kh}”`, ['ἔλεγχος', 'ἔλεγχον']),
+      side('soft', `γχ before ${FRONT}: nghy`, `γχ before ${FRONT} is ng plus hy, as in “${keyWords.ng}” and “${keyWords.hy}”`, ['ἐλέγχει', 'συγχαίρω']),
+    ]),
+  ];
+}
+
 /** What the tutor is told of Modern Greek (mw-5r3p30.268): the rules respellModern writes, and the ones the lessons teach, so its answers say the sounds
  * the app speaks and respells. tests/unit/one-pronunciation-scheme.test.ts holds its examples to respellModern. */
 export const MODERN_TUTOR_GUIDE =
@@ -255,4 +367,5 @@ export const MODERN: Pronunciation = {
   letterForm: (letter) => letter.toLowerCase(),
   tutorGuide: MODERN_TUTOR_GUIDE,
   lessons: modernLessons(MODERN_KEY_WORDS),
+  soundRules: modernSoundRules(MODERN_KEY_WORDS),
 };

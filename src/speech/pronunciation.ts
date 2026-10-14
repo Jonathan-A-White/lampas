@@ -14,6 +14,29 @@ export interface SoundLesson {
   sound?: string;
 }
 
+/** One side of a sound rule: when it holds, and the words that stand on it. */
+export interface SoundRuleSide {
+  /** 'soft', 'hard', 'voiced' ...: unique in its rule */
+  id: string;
+  /** a short name for the side, a Drill it facet's label: 'χ before ε, ι, η: hy' */
+  label: string;
+  /** the one line a wrong pick on a word of this side shows: 'χ before ε, ι, η, υ, αι, ει or οι is soft: hy, as in “huge”' */
+  line: string;
+  /** New Testament words that stand on this side only (none where the text has none: no word begins with μπ) */
+  words: readonly string[];
+}
+
+/** A sound that changes by the letter next to it (χ is kh before α and hy before ε): what Drill it drills both sides of (mw-i7xe0n.7). */
+export interface SoundRule {
+  /** the ladder idea whose sound it changes: 'letter-chi', 'diphthong-au', 'pair-mp' */
+  ideaId: string;
+  sides: readonly SoundRuleSide[];
+  /** the side `word` stands on, or null when it has no such letter, or has it on both sides */
+  sideOf(word: string): string | null;
+  /** `word` respelled with the rule turned the other way, the near miss of the rule: χάρις 'KHA-rees' is misread 'HYA-rees' */
+  misread(word: string): string;
+}
+
 export interface Pronunciation {
   id: GreekPronunciation;
   /** what Settings shows */
@@ -45,7 +68,13 @@ export interface Pronunciation {
   /** The sound lessons this scheme teaches, keyed by ladder idea id ('letter-beta', 'diphthong-ou', 'breathings' ...), in its own sounds: the idea sheet and the
    * sound questions read them (mw-5r3p30.229). An idea it gives none for falls back to a text that names no sound, never to another scheme's. */
   lessons?: Readonly<Record<string, SoundLesson>>;
+  /** The sounds of this scheme that change by the next letter, one rule per ladder idea (mw-i7xe0n.7): Drill it asks words on both sides of each and offers
+   * the word misread by the rule as a wrong choice. A scheme with none leaves it out. */
+  soundRules?: readonly SoundRule[];
 }
+
+/** The rule of `scheme` that changes the sound of the ladder idea `ideaId`, if any. */
+export const soundRuleOf = (scheme: Pronunciation, ideaId: string): SoundRule | undefined => scheme.soundRules?.find((r) => r.ideaId === ideaId);
 
 const SCHEMES: Pronunciation[] = [MODERN];
 
