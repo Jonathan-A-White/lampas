@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.225
+_2026-10-14_
+- New: A new reader is welcomed by the tutor in plain English, with a few short questions that set up Lampas for them, and can skip them.
+
 ## 0.1.224
 _2026-10-14_
 - Fixed: Drill it on a sound that changes with the next letter (like χ, kh or hy) now asks words of both kinds, offers the same word said the other way as a wrong answer, and names the rule when you miss.
