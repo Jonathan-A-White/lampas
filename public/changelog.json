@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.203",
+    "date": "2026-10-14",
+    "story": "mw-5r3p30.217",
+    "kind": "fixed",
+    "text": "The Quiz goal label in Settings is now bold, and the Save button looks plainly greyed out when there is nothing to save."
+  },
+  {
     "version": "0.1.202",
     "date": "2026-10-14",
     "story": "mw-5r3p30.264",

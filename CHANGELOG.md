@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.203
+_2026-10-14_
+- Fixed: The Quiz goal label in Settings is now bold, and the Save button looks plainly greyed out when there is nothing to save.
+
 ## 0.1.202
 _2026-10-14_
 - Fixed: The Greek voice now says the n in words like Πάντοτε, as the line under the word shows, and χ is spelt KH or HY (χαίρετε is HYE-re-te) to match how it sounds.
