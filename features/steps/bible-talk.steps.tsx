@@ -450,11 +450,8 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       expect(sendButton()).toBeDisabled();
       expect(within(sheet()).getByText(QUESTION)).toBeInTheDocument();
     });
-    When('the tutor answers', async () => {
-      // the question reaches the mill a moment after Send: answer it only once it is there
-      await waitFor(() => expect(fake.received.length).toBeGreaterThan(0));
-      fake.answer({ status: 'answered', answer: TALK_ANSWER });
-    });
+    // the question reaches the mill a moment after Send: the fake's answer waits for it
+    When('the tutor answers', () => fake.answer({ status: 'answered', answer: TALK_ANSWER }));
     Then('the answer shows in the sheet under his question', answerShowsUnderQuestion);
   });
 
@@ -888,11 +885,8 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     Then('the clipboard holds {string}', (_, text: string) => {
       expect(clipboard.copied).toEqual([text]);
     });
-    When('the tutor answers', async () => {
-      // the question shows as pending before the request is built and sent: on a loaded host the grist is not at the mill yet
-      await waitFor(() => expect(fake.received).toHaveLength(1));
-      fake.answer({ status: 'answered', answer: TALK_ANSWER });
-    });
+    // the question shows as pending before the request is built and sent: on a loaded host the grist is not at the mill yet, and the fake's answer waits for it
+    When('the tutor answers', () => fake.answer({ status: 'answered', answer: TALK_ANSWER }));
     Then('the answer shows in the sheet under his question', answerShowsUnderQuestion);
   });
 

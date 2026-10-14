@@ -69,7 +69,7 @@ async function timedAnswer(): Promise<void> {
   const first = ask(at(0));
   await first.txid;
   now(7);
-  fake.answer({ status: 'answered', answer: {} });
+  await fake.answer({ status: 'answered', answer: {} });
   now(8.5);
   await first.done;
   now(8.6);
@@ -88,7 +88,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the mill delivers the answer at {number} s and the poll sees it at {number} s', async (_, delivered: number, seen: number) => {
       now(delivered);
-      fake.answer({ status: 'answered', answer: {} });
+      await fake.answer({ status: 'answered', answer: {} });
       now(seen);
       await asks[0].done;
     });
@@ -113,7 +113,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the mill delivers the answer at {number} s and the poll sees it at {number} s', async (_, delivered: number, seen: number) => {
       now(delivered);
-      fake.answer({ status: 'answered', answer: {} });
+      await fake.answer({ status: 'answered', answer: {} });
       now(seen);
       await asks[0].done;
     });
@@ -191,7 +191,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the mill delivers the answer at {number} s and the poll that sees it at {number} s takes {number} s', async (_, delivered: number, polled: number, takes: number) => {
       now(delivered);
-      fake.answer({ status: 'answered', answer: {} });
+      await fake.answer({ status: 'answered', answer: {} });
       now(polled);
       calls['GET /api/messages'] = takes * 1000;
       await asks[0].done;

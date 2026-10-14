@@ -466,7 +466,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the bar cannot be held while it waits', () => expect(readButton()).toBeDisabled());
     When('the mill answers', async () => {
       await waitFor(() => expect(fake.received).toHaveLength(1));
-      fake.answer({ status: 'answered', answer: READING_ANSWER });
+      await fake.answer({ status: 'answered', answer: READING_ANSWER });
     });
     Then(verseMarked, verseMarkedSteps);
   });

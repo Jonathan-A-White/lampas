@@ -163,9 +163,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(engine.spoken[0].lang).toBe('el-GR');
       expect(engine.spoken[0].rate).toBeLessThan(1);
     });
-    When('the tutor answers', () => {
-      fake.answer({ status: 'answered', answer: SOUND_HELP_ANSWER });
-    });
+    When('the tutor answers', () => fake.answer({ status: 'answered', answer: SOUND_HELP_ANSWER }));
     Then('the Greek syllables {string}, {string} and {string} are spoken one after another in Greek, slowly', async (_, a: string, b: string, c: string) => {
       const engine = synth as FakeSynth;
       // the package queues the syllables at once, one sentence each; the phone says them one after another
@@ -188,9 +186,9 @@ describeFeature(feature, ({ Scenario }) => {
     And('he taps {string} in verse {int}', (_, text: string, verse: number) => tapsWord(text, verse));
     When('he taps Sound it out on the word sheet', tapsHelp('Sound it out'));
     Then('the mill received {int} grist for the lampas app, kind bible-talk', (_, count: number) => grists(count)());
-    When('the tutor answers with the syllables {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
-      fake.answer({ status: 'answered', answer: { ...SOUND_HELP_ANSWER, syllables: [a, b, c, d] } });
-    });
+    When('the tutor answers with the syllables {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) =>
+      fake.answer({ status: 'answered', answer: { ...SOUND_HELP_ANSWER, syllables: [a, b, c, d] } }),
+    );
     Then('the Greek syllables {string}, {string} and {string} are spoken one after another in Greek, slowly', async (_, a: string, b: string, c: string) => {
       const engine = synth as FakeSynth;
       await waitFor(() => expect(engine.spoken).toHaveLength(4));

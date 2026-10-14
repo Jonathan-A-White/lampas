@@ -324,7 +324,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('the tutor answers', async () => {
       await waitFor(() => expect(fake.received).toHaveLength(1));
-      fake.answer({ status: 'answered', answer: SYNERGEI_ANSWER });
+      await fake.answer({ status: 'answered', answer: SYNERGEI_ANSWER });
     });
     Then('the answer shows in the Verse view', answerShows);
     And('the Ask box shows no pending question', () => {

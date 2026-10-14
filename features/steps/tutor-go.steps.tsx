@@ -156,7 +156,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the tutor answers', async () => {
       await waitFor(() => expect(fake.received.length).toBe(1));
-      fake.answer({ status: 'answered', answer: { answer: ANSWER, words: [], go: holding } });
+      await fake.answer({ status: 'answered', answer: { answer: ANSWER, words: [], go: holding } });
       await waitFor(async () => expect(await db.talks.count()).toBe(1));
     });
     And('he opens Talk again', openTalk);

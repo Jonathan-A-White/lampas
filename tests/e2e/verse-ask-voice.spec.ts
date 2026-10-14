@@ -85,7 +85,7 @@ test('Hold to ask: his words show as he speaks, above the bar, then his question
   // it stays until the answer comes; then the answer card shows
   await page.waitForTimeout(1500);
   await expect(pending).toContainText(SAID);
-  fake.answer({ status: 'answered', answer: SYNERGEI_ANSWER });
+  await fake.answer({ status: 'answered', answer: SYNERGEI_ANSWER });
   await expect(view.locator('[data-answer]')).toContainText(SYNERGEI_ANSWER.answer);
   await expect(pending).toHaveCount(0);
   await expect(askBar(page)).toBeEnabled();
