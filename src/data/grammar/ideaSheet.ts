@@ -2,7 +2,7 @@
 // chapter files alone: the passage the examples come from (the goal's, else the open chapter), up to three example forms of the
 // idea in it, and a paradigm table built from the passage's own forms: the article in a case, or the persons of one verb in a
 // tense, with a blank where the passage has no form. Pure data work: no store, no screen; docs/grammar.md.
-import { type BookIndex, type Chapter, type GreekWord } from '../chapter';
+import { type BookIndex, type Chapter, type GreekWord, wordGloss } from '../chapter';
 import { goalText, parseGoal } from '../goal';
 import { splitParse } from '../parseCode';
 import type { OpenChapter } from '../readerChapter';
@@ -53,6 +53,20 @@ export interface IdeaExample {
   reference: string;
   /** the word's Greek in order, the letters the idea is about marked; one unmarked part for a grammar idea */
   parts: ExamplePart[];
+}
+
+/**
+ * What an example row says the word means. The lexicon's gloss is for the lemma ('this/he/she/it' for οὗτος), so beside a plural form it
+ * teaches the wrong number; the word's own English is the chunk of its verse that renders it alone ('these things'). When the chunk renders
+ * other Greek words too, or the word has none, the gloss is labelled as the dictionary form's: 'οὗτος: this/he/she/it'.
+ */
+export function exampleMeaning(chapter: Chapter, verse: number, word: GreekWord): string {
+  const v = chapter.verses.find((x) => x.n === verse);
+  const chunk = word.e === undefined ? undefined : v?.e[word.e];
+  const own = chunk && chunk.g.length === 1 ? chunk.t.trim().replace(/[\s,.;:!?—–-]+$/u, '') : '';
+  if (own) return own;
+  const gloss = wordGloss(chapter, word);
+  return gloss ? `${word.l}: ${gloss}` : word.l;
 }
 
 /** Words of `chapters` (the one `verse` of the first, when given), in text order. */
