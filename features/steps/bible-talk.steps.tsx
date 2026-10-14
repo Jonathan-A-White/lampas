@@ -450,7 +450,9 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       expect(sendButton()).toBeDisabled();
       expect(within(sheet()).getByText(QUESTION)).toBeInTheDocument();
     });
-    When('the tutor answers', () => {
+    When('the tutor answers', async () => {
+      // the question reaches the mill a moment after Send: answer it only once it is there
+      await waitFor(() => expect(fake.received.length).toBeGreaterThan(0));
       fake.answer({ status: 'answered', answer: TALK_ANSWER });
     });
     Then('the answer shows in the sheet under his question', answerShowsUnderQuestion);

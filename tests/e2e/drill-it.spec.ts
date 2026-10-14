@@ -49,7 +49,8 @@ for (const { name, size } of VIEWPORTS) {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
     await put(page, 'settings', [{ key: 'goal', value: '1 John 1' }]);
-    await put(page, 'grammarLevels', [{ id: 'accents', level: 'solid', since: Date.now(), how: 'placement' }]);
+    // what The noun builds on (mw-5r3p30.234: the breathings and the iota under a letter as well as the accents)
+    await put(page, 'grammarLevels', ['breathings', 'accents', 'iota-subscript'].map((id) => ({ id, level: 'solid', since: Date.now(), how: 'placement' })));
     await page.goto('/#/goal');
     // the app reads what was put in its store behind its back only when it starts
     await page.reload();

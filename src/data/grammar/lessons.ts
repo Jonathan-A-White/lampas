@@ -30,3 +30,16 @@ export function ideaText(idea: GrammarIdea, scheme: Pronunciation | null = chose
 export function ideaSound(idea: GrammarIdea, scheme: Pronunciation = chosenPronunciation()): string | undefined {
   return scheme.lessons?.[idea.id]?.sound;
 }
+
+/**
+ * How a sound-bearing idea sounds, for the idea sheet's 'How it sounds' (mw-5r3p30.234): the scheme's whole lesson, else 'In <label> it sounds like
+ * <sound>.', else the line saying the scheme has no lesson for it; undefined for an idea about no sound. The card's own teaching (teach/) says what
+ * the idea is and how to see it, and never how it sounds.
+ */
+export function soundLesson(idea: GrammarIdea, scheme: Pronunciation | null = chosenPronunciation()): string | undefined {
+  if (!bearsSound(idea)) return undefined;
+  const lesson = scheme?.lessons?.[idea.id];
+  if (lesson?.text) return lesson.text;
+  if (lesson?.sound) return `In ${scheme?.label} it sounds like ${lesson.sound}.`;
+  return NO_LESSON.trim();
+}

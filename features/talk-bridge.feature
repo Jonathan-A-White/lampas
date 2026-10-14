@@ -28,7 +28,7 @@ Feature: The tutor bridges a question he is not ready for
     Then the talk is shown again with its first turn and the button "Take me there: Pairs of vowels"
 
   Scenario: Missing quite a bit, he is shown three and taken to the next step
-    Given only the letters are solid and Lampas is opened on 1 John 1 behind a fake Postern whose tutor lists the three most direct of the six
+    Given only the letters are solid and Lampas is opened on 1 John 1 behind a fake Postern whose tutor lists the three most direct of those he lacks
     When he opens the talk and asks "Why is the genitive used in 1 John 1:1?"
     Then the talk lists exactly 3 foundations he is missing and says there is more
     And the talk shows the button "Take me there: Pairs of vowels"

@@ -1,17 +1,22 @@
 // src/data/grammar/ideaSheet.ts — what the idea sheet (src/IdeaSheet.tsx, mw-hqd5bz.7) shows of a grammar idea, worked out from the
-// chapter files alone: the passage the examples come from (the goal's, else the open chapter), up to three example forms of the
-// idea in it, and a paradigm table built from the passage's own forms: the article in a case, or the persons of one verb in a
-// tense, with a blank where the passage has no form. Pure data work: no store, no screen; docs/grammar.md.
+// chapter files alone: the passage the examples come from (the goal's, else the open chapter) and the examples of the idea in it. An example is
+// one the card can explain (mw-5r3p30.234): its parsing carries the idea, it is a part of speech the cards below taught, its form is in the
+// card's table, and it is shown with the ending the table names marked, its one sense here, and its parsing in the card's own terms.
+// Pure data work: no store, no screen; docs/grammar.md.
 import { type BookIndex, type Chapter, type GreekWord, wordGloss } from '../chapter';
 import { goalText, parseGoal } from '../goal';
-import { splitParse } from '../parseCode';
+import { decodeParse, parseSegments, splitParse } from '../parseCode';
 import type { OpenChapter } from '../readerChapter';
 import { clustersOf, foundationSpans, isFoundation, type Span } from './inference';
-import { ideasOfWord, type GrammarIdea } from './ladder';
+import { ideaOfTerm, ideasBelow, ideasOfWord, type GrammarIdea } from './ladder';
+import { bare, cellOptions, tableHas, teachOf, type TeachTable } from './teach';
 
 /** A book goal looks in its first chapters only: every chapter would be a request each. */
 export const MAX_CHAPTERS = 5;
 export const MAX_EXAMPLES = 3;
+/** An idea whose every form is one word (the article) shows one example per form, and as many as a verse is likely to hold. */
+export const MAX_FORM_EXAMPLES = 4;
+const BY_FORM: readonly string[] = ['article'];
 /** A foundation idea shows more: a sound or a letter is met in many forms, and each form shows it in a different place (mw-86e9r1.13). */
 export const MAX_FOUNDATION_EXAMPLES = 12;
 
@@ -79,6 +84,10 @@ function* wordsOf(chapters: Chapter[], verse?: number): Generator<{ word: GreekW
   }
 }
 
+/** Every form of the passage (NFC), for finding the worked example that stands in the verse he reads. */
+export const passageForms = (passage: Pick<IdeaPassage, 'chapters' | 'verse'>): Set<string> =>
+  new Set([...wordsOf(passage.chapters, passage.verse)].map(({ word }) => word.t.normalize('NFC')));
+
 /** True for an idea about how Greek is spelt and said (the alphabet, a letter, a pair, a breathing, an accent, iota subscript, syllables,
  * punctuation): its examples are forms with the letters marked, found by their spelling, never by their parsing. */
 export const isSpellingIdea = (id: string): boolean => id === 'alphabet' || id === 'syllables' || id === 'punctuation' || isFoundation(id);
@@ -121,21 +130,67 @@ function spellingOf(id: string, form: string): Span[] | undefined {
   return found;
 }
 
+/** The ladder idea of a word's part of speech: 'noun', 'verb', 'article', 'pronoun' (any kind), 'preposition'. */
+function partOfSpeech(code: string): string | undefined {
+  const { pos } = splitParse(code);
+  return pos === 'pronoun' ? 'pronoun' : ideaOfTerm(pos);
+}
+
+/** The idea itself and every idea below it: what its card may take as known. */
+const taughtAt = (id: string): Set<string> => new Set([id, ...ideasBelow(id).map((i) => i.id)]);
+
+/** The number of letters of the longest ending of the table that `form` ends in; 0 when it matches none, or matches a whole form. */
+function endingLength(table: TeachTable, form: string): number {
+  const word = bare(form);
+  let longest = 0;
+  for (const row of table.rows) {
+    for (const cell of row.cells) {
+      for (const option of cellOptions(cell)) {
+        if (option.ending && word.endsWith(option.text) && word.length > option.text.length) longest = Math.max(longest, [...option.text].length);
+      }
+    }
+  }
+  return longest;
+}
+
+/** The form with its last `letters` letters marked: ἀρχ + ῆς. */
+function endingParts(form: string, letters: number): ExamplePart[] {
+  const clusters = clustersOf(form);
+  let start = clusters.length;
+  for (let seen = 0; start > 0 && seen < letters; start--) if (clusters[start - 1].letter) seen++;
+  return partsOf(form, [{ start, end: clusters.length }]);
+}
+
 /**
- * Up to `max` words of the passage in the order of the text. For a grammar idea: the words whose parsing needs it (ideasOfWord), one for each
- * lemma. For an idea of spelling (isSpellingIdea): the words spelt with it, one for each form, with the letters it is about marked in
- * `parts`, up to MAX_FOUNDATION_EXAMPLES when `max` is not given.
+ * Whether the card of `id` can explain `word` (mw-5r3p30.234, his words: "make sure in each card that the examples do match the lesson"): its parsing
+ * carries the idea; it is a part of speech the card or a card below it taught (or one the card names in examplesAs); and, when the card has a table,
+ * its form is in it.
+ */
+export function cardExplains(id: string, word: GreekWord): boolean {
+  if (!ideasOfWord(word).includes(id)) return false;
+  const teach = teachOf(id);
+  const pos = partOfSpeech(word.p);
+  if (!pos || !(taughtAt(id).has(pos) || teach.examplesAs?.includes(pos))) return false;
+  return !teach.table || tableHas(teach.table, word.t);
+}
+
+/**
+ * Up to `max` words of the passage in the order of the text. For a grammar idea: the words its card can explain (cardExplains), one for each lemma
+ * (one for each form, for the article), with the ending its table names marked. For an idea of spelling (isSpellingIdea): the words spelt with it,
+ * one for each form, with the letters it is about marked in `parts`, up to MAX_FOUNDATION_EXAMPLES when `max` is not given.
  */
 export function ideaExamples(id: string, chapters: Chapter[], verse?: number, max?: number): IdeaExample[] {
   const spelling = isSpellingIdea(id);
-  const limit = max ?? (spelling ? MAX_FOUNDATION_EXAMPLES : MAX_EXAMPLES);
-  const needs = new Map<string, boolean>();
-  const has = (word: GreekWord): boolean => {
-    const key = `${word.l} ${word.p}`;
-    let found = needs.get(key);
+  const byForm = BY_FORM.includes(id);
+  const limit = max ?? (spelling ? MAX_FOUNDATION_EXAMPLES : byForm ? MAX_FORM_EXAMPLES : MAX_EXAMPLES);
+  const table = spelling ? undefined : teachOf(id).table;
+  const explained = new Map<string, boolean>();
+  const explains = (word: GreekWord): boolean => {
+    const key = `${word.t} ${word.l} ${word.p}`;
+    let found = explained.get(key);
     if (found === undefined) {
-      found = ideasOfWord(word).includes(id);
-      needs.set(key, found);
+      found = cardExplains(id, word);
+      explained.set(key, found);
     }
     return found;
   };
@@ -143,7 +198,7 @@ export function ideaExamples(id: string, chapters: Chapter[], verse?: number, ma
   const seen = new Set<string>();
   for (const { word, chapter, verse: n } of wordsOf(chapters, verse)) {
     if (chosen.length >= limit) break;
-    const key = spelling ? word.t.normalize('NFC').toLowerCase() : word.l;
+    const key = spelling || byForm ? bare(word.t) : word.l;
     if (seen.has(key)) continue;
     let parts: ExamplePart[];
     if (spelling) {
@@ -151,8 +206,9 @@ export function ideaExamples(id: string, chapters: Chapter[], verse?: number, ma
       if (!spans) continue;
       parts = partsOf(word.t, spans);
     } else {
-      if (!has(word)) continue;
-      parts = [{ text: word.t, marked: false }];
+      if (!explains(word)) continue;
+      const ending = table ? endingLength(table, word.t) : 0;
+      parts = ending ? endingParts(word.t, ending) : [{ text: word.t, marked: false }];
     }
     seen.add(key);
     chosen.push({ word, chapter, verse: n, reference: `${chapter.book} ${chapter.chapter}:${n}`, parts });
@@ -160,75 +216,54 @@ export function ideaExamples(id: string, chapters: Chapter[], verse?: number, ma
   return chosen;
 }
 
-export interface Paradigm {
-  /** 'The article in the genitive', 'λέγω in the aorist' */
-  title: string;
-  /** a tense's table is of one verb: its lemma, and how it is parsed ('θεάομαι, aorist middle deponent indicative') */
-  lemma?: string;
-  verb?: string;
-  columns: string[];
-  rows: { label: string; cells: (string | null)[] }[];
+/** The first sense of a gloss: 'the/this/who' is 'the', 'to keep: observe' is 'to keep'. */
+const firstSense = (gloss: string): string => gloss.split(/[/;:,]/)[0].trim();
+
+/**
+ * What an example means here, in one sense (mw-5r3p30.234): the article is always 'the'; any other word its own English in the verse, when a chunk
+ * renders it alone, else the first sense of its dictionary gloss ('the/this/who' would teach three words at once).
+ */
+export function exampleGloss(idea: GrammarIdea, example: IdeaExample): string {
+  const { word, chapter, verse } = example;
+  if (idea.id === 'article' && word.p.startsWith('T-')) return 'the';
+  const v = chapter.verses.find((x) => x.n === verse);
+  const chunk = word.e === undefined ? undefined : v?.e[word.e];
+  const own = chunk && chunk.g.length === 1 ? chunk.t.trim().replace(/[\s,.;:!?—–-]+$/u, '') : '';
+  if (own) return own;
+  return firstSense(wordGloss(chapter, word) ?? '') || word.l;
 }
 
-const NUMBERS = ['singular', 'plural'];
-const GENDERS = ['masculine', 'feminine', 'neuter'];
-const PERSONS = ['1st person', '2nd person', '3rd person'];
-/** The moods that have a person: a tense's persons are shown from these. */
-const FINITE = ['indicative', 'subjunctive', 'optative', 'imperative'];
-
-const isLower = (form: string): boolean => form === form.toLowerCase();
-
-/** A blank grid of `rows` by `columns`. */
-const grid = (rows: string[], columns: string[]): (string | null)[][] => rows.map(() => columns.map(() => null));
-
-/** Puts `form` in a cell; a form that starts a sentence (capital) gives way to one in the middle of it. */
-function place(cells: (string | null)[][], row: number, column: number, form: string): void {
-  const there = cells[row][column];
-  if (there === null || (!isLower(there) && isLower(form))) cells[row][column] = form;
+/** The noun an article goes with: the next word of its verse, within a few, in the same case, number and gender. */
+function partnerOf(example: IdeaExample): GreekWord | undefined {
+  const words = example.chapter.verses.find((v) => v.n === example.verse)?.g ?? [];
+  const at = words.indexOf(example.word);
+  const own = example.word.p.slice(2, 5);
+  return words.slice(at + 1, at + 5).find((w) => !w.p.startsWith('T-') && /^(N|A|V)-/.test(w.p) && w.p.split('-').some((part) => part.endsWith(own)));
 }
 
-function articleIn(grammarCase: string, chapters: Chapter[], verse?: number): Paradigm | null {
-  const cells = grid(NUMBERS, GENDERS);
-  for (const { word } of wordsOf(chapters, verse)) {
-    if (!word.p.startsWith('T-')) continue;
-    const values = Object.fromEntries(splitParse(word.p).features.map((f) => [f.id, f.value]));
-    if (values.case !== grammarCase) continue;
-    const [row, column] = [NUMBERS.indexOf(values.number), GENDERS.indexOf(values.gender)];
-    if (row >= 0 && column >= 0) place(cells, row, column, word.t);
+/**
+ * The example taken apart in the card's own terms (mw-5r3p30.234): the terms of its parsing that the card or a card below it taught, leaving out its
+ * part of speech ('genitive singular'; 'dative plural masculine' for τοῖς), and for the article the noun it goes with ('goes with ὀφθαλμοῖς “eyes”').
+ * Undefined for an idea of spelling, whose marked letters are the explanation, or when the card has taught none of its terms.
+ */
+export function exampleNote(idea: GrammarIdea, example: IdeaExample): string | undefined {
+  if (isSpellingIdea(idea.id)) return undefined;
+  const taught = taughtAt(idea.id);
+  const pos = splitParse(example.word.p).pos;
+  // the parsing's groups ('verb', 'imperfect active indicative', '3rd person singular'), each kept to the terms the card has taught, the part of speech left out
+  const groups = decodeParse(example.word.p)
+    .split(', ')
+    .map((group) =>
+      parseSegments(group)
+        .flatMap((segment) => (segment.term ? [segment.term] : []))
+        .filter((term) => term !== pos && !term.endsWith('pronoun') && taught.has(ideaOfTerm(term) ?? ''))
+        .join(' '),
+    )
+    .filter((group) => group !== '');
+  const parts = groups.length ? [groups.join(', ')] : [];
+  if (idea.id === 'article') {
+    const partner = partnerOf(example);
+    if (partner) parts.push(`goes with ${partner.t} “${exampleGloss(idea, { ...example, word: partner })}”`);
   }
-  if (cells.every((row) => row.every((c) => c === null))) return null;
-  return { title: `The article in the ${grammarCase}`, columns: GENDERS, rows: NUMBERS.map((label, i) => ({ label, cells: cells[i] })) };
-}
-
-function personsOf(tense: string, chapters: Chapter[], verse?: number): Paradigm | null {
-  const verbs = new Map<string, { lemma: string; verb: string; cells: (string | null)[][]; filled: number }>();
-  for (const { word } of wordsOf(chapters, verse)) {
-    if (!word.p.startsWith('V-')) continue;
-    const values = Object.fromEntries(splitParse(word.p).features.map((f) => [f.id, f.value]));
-    if (values.tense !== tense || !FINITE.includes(values.mood)) continue;
-    const [row, column] = [NUMBERS.indexOf(values.number), PERSONS.indexOf(values.person)];
-    if (row < 0 || column < 0) continue;
-    const key = `${word.l}|${values.voice}|${values.mood}`;
-    let verb = verbs.get(key);
-    if (!verb) {
-      verb = { lemma: word.l, verb: `${word.l}, ${tense} ${values.voice} ${values.mood}`, cells: grid(NUMBERS, PERSONS), filled: 0 };
-      verbs.set(key, verb);
-    }
-    if (verb.cells[row][column] === null) verb.filled++;
-    place(verb.cells, row, column, word.t);
-  }
-  // the verb with the most persons; the first of the text when they tie (Map keeps the order of first use)
-  let best: { lemma: string; verb: string; cells: (string | null)[][]; filled: number } | undefined;
-  for (const verb of verbs.values()) if (!best || verb.filled > best.filled) best = verb;
-  if (!best) return null;
-  return { title: `${best.lemma} in the ${tense}`, lemma: best.lemma, verb: best.verb, columns: PERSONS, rows: NUMBERS.map((label, i) => ({ label, cells: best.cells[i] })) };
-}
-
-/** The paradigm table of a case idea (the article's forms in that case across number and gender) or a tense idea (the persons of
- * one verb of the passage), from the passage's own forms; null for any other idea, or when the passage has none to show. */
-export function paradigmOf(idea: GrammarIdea, chapters: Chapter[], verse?: number): Paradigm | null {
-  const term = idea.terms[0];
-  if (idea.id.startsWith('case-')) return articleIn(term, chapters, verse);
-  if (idea.id.startsWith('tense-')) return personsOf(term, chapters, verse);
-  return null;
+  return parts.length ? parts.join(' · ') : undefined;
 }

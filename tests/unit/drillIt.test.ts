@@ -305,7 +305,7 @@ describe('the foundation', () => {
   });
 
   it('counts a prerequisite with no level as not solid, but not the group an item belongs to', () => {
-    expect(start('noun', new Map(), {})).toEqual({ needs: 'accents' });
+    expect(start('noun', new Map(), {})).toEqual({ needs: 'breathings' });
     expect(start('letter-nu', new Map(), {})).not.toHaveProperty('needs');
     expect(start('diphthong-ou', new Map(), {})).not.toHaveProperty('needs');
     expect(start('alphabet', new Map(), {})).not.toHaveProperty('needs');

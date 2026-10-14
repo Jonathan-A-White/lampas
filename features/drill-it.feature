@@ -7,7 +7,8 @@ Feature: Drill it on the idea sheet
   facet. "Mark known without a drill" under the slider keeps the one-tap solid, and a "Drill it" button opens the same walk
   at any time (a run is saved, the idea turns solid only if it was proved). The sheet teaches only its own idea and takes every
   idea under it to be solid: when one is not, the sheet says "This builds on <title>. Prove it first." with a button to go there,
-  and sliding to "Learning" or "I know it" first asks whether to go there.
+  and sliding to "Learning" or "I know it" first asks whether to go there. The noun also builds on "Breathing marks" and "The iota
+  under a letter" (mw-5r3p30.234): every scenario starts with those two solid, so the one it names, "Accents and stress", decides.
 
   A run that does not prove the idea and leaves weak facets makes "Your drill plan" (src/data/grammar/drillPlan.ts, mw-i7xe0n.4): a
   short drill on each weak facet, the easiest first, then "Prove it", a full Drill it. The result shows the plan with "Start the first
