@@ -146,11 +146,15 @@ test('the Goal screen: two bars that fit, the lists, Learn next, Next words and 
   await page.getByTestId('ideas-bar').click();
   await expect(page.getByTestId('ideas-list')).toHaveCount(0);
 
-  // Learn next opens its sheet; Got it moves the ideas bar
+  // Learn next opens its sheet; sliding its level to Learning moves the ideas bar
   await page.getByTestId('learn-next').click();
   const sheet = page.getByRole('dialog', { name: 'Idea' });
   await expect(sheet.getByRole('heading', { name: 'The singular' })).toBeVisible();
-  await sheet.getByRole('button', { name: 'Got it' }).click();
+  await sheet.getByRole('slider', { name: 'Your level' }).focus();
+  await page.keyboard.press('ArrowRight');
+  // The noun, which it builds on, is only at the frontier: sliding up asks whether to go there first
+  await page.getByRole('button', { name: 'Stay here', exact: true }).click();
+  await expect(sheet.getByTestId('idea-level')).toHaveText('Frontier since today');
   await sheet.getByRole('button', { name: 'Done' }).click();
   await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 8 · Frontier 2 · Not yet 27');
 

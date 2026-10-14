@@ -44,12 +44,12 @@ Feature: See my goal move
     And the words bar now says solid 0, frontier 1 and not yet 15
     And Next words now lists "ὁ", "ἐγώ" and "εἰμί"
 
-  Scenario: Got it on the idea sheet moves the ideas bar
+  Scenario: Sliding the idea sheet to Learning moves the ideas bar
     Given the goal is "1 John 1:1" and he knows no word and no idea
     And the foundation ideas are solid and "noun" is not yet
     When he opens the Goal screen
     And he taps Learn next
-    And he taps Got it on the idea sheet
+    And he slides the level on the idea sheet to Learning
     Then the ideas bar says solid 8, frontier 1 and not yet 28
     When he closes the idea sheet
     Then Learn next says "The singular · Your first words"

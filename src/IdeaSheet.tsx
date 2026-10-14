@@ -3,16 +3,21 @@
 // spelling, such as the alphabet, a pair of vowels or a breathing, shows more words with the letters it is about marked), a
 // speaker on each, and a tap opens the word; for a case or a tense, a paradigm table built from the passage's own forms; for an idea of the letters,
 // sounds and marks (the alphabet, a pair of vowels, a breathing ...), the items as tiles above the text, each to hear (TeachTiles). At the foot
-// Got it (frontier, due tomorrow), I know this (solid, the 30-day step) and Ask the tutor; the level shows as a chip.
+// the level SLIDER (mw-i7xe0n.3: Not yet · Learning · I know it, resting on the idea's level; Learning is frontier and due tomorrow; I know it opens Drill it
+// to prove it, and only a pass keeps it there), 'Mark known without a drill' (solid, the 30-day step), a Drill it button and Ask the tutor; the level shows as a chip
+// ('Proved by drill' once a run proved it). The sheet teaches only its own idea and takes the ideas under it to be solid: when one is not, it says so above the
+// text with a button to go there, and sliding up first asks 'Go to <title> first?'.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { loadChapter, loadIndex, wordGloss, type Chapter, type GreekWord } from './data/chapter';
+import { unmetNeed } from './data/grammar/drillIt';
 import { ideaExamples, ideaPassage, isSpellingIdea, paradigmOf, type IdeaExample, type IdeaPassage, type Paradigm } from './data/grammar/ideaSheet';
 import { ideaOf, type GrammarIdea } from './data/grammar/ladder';
 import { ideaText } from './data/grammar/lessons';
 import { teachTiles } from './data/grammar/teachTiles';
 import { getOpenChapter } from './data/readerChapter';
-import { getGreekPronunciation, getLevel, getSavedGoalText, teachIdea, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
+import { getGreekPronunciation, getLevel, getSavedGoalText, listLevels, recordDrill, teachIdea, type DrillMode, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
+import { DrillItScreen } from './DrillItScreen';
 import { chosenPronunciation } from './speech/greek';
 import { pronunciationOf } from './speech/pronunciation';
 import { SpeakButton } from './speech/SpeakButton';
@@ -21,9 +26,16 @@ import { focusOnMount } from './ui/focus';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 
-// Each button is as wide as its label and shares the rest, so none of the three wraps at 390 px.
+// Each button is as wide as its label and shares the rest, so neither wraps at 390 px.
 const BUTTON = 'min-h-12 flex-auto whitespace-nowrap rounded-xl border px-2 text-base font-medium';
 const LEVEL_NAMES: Record<GrammarLevelName, string> = { solid: 'Solid', frontier: 'Frontier', notYet: 'Not yet' };
+/** The slider's three stops, left to right: the level each is and what it is called (PROVISIONAL names). */
+const STOPS: { level: GrammarLevelName; label: string }[] = [
+  { level: 'notYet', label: 'Not yet' },
+  { level: 'frontier', label: 'Learning' },
+  { level: 'solid', label: 'I know it' },
+];
+const OUTCOME_OF_STOP: (IdeaOutcome | null)[] = ['not-yet', 'got-it', null];
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -145,7 +157,8 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
   // the lesson of a sound is the chosen pronunciation's (mw-5r3p30.229); until the saved choice is read, the one the speaker already holds
   const chosen = useLiveQuery(getGreekPronunciation, []);
   const scheme = chosen === undefined ? chosenPronunciation() : pronunciationOf(chosen);
-  const busy = useRef(false);
+  // the writes follow one another: a second move made while the first is being written waits for it, and is not lost
+  const writing = useRef<Promise<unknown>>(Promise.resolve());
   // a tile's own idea sheet opens over this one
   const [opened, setOpened] = useState<GrammarIdea | null>(null);
   const tiles = teachTiles(idea, scheme);
@@ -153,14 +166,52 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
   const examples = passage ? ideaExamples(idea.id, passage.chapters, passage.verse) : [];
   const table = passage ? paradigmOf(idea, passage.chapters, passage.verse) : null;
 
+  // the idea under this one that is not solid yet, the lowest (the sheet teaches only its own idea)
+  const levels = useLiveQuery(listLevels, []);
+  const builtOn = levels ? unmetNeed(idea.id, new Map([...levels].map(([id, row]) => [id, row.level]))) : null;
+  const need = builtOn === null ? null : ideaOf(builtOn);
+
+  const rest = Math.max(0, STOPS.findIndex((stop) => stop.level === level?.level));
+  // where he moved the slider to, until the level it moved from changes (the write has landed) or he is sent back
+  const [moved, setMoved] = useState<{ to: number; from: number } | null>(null);
+  // while the thumb is being dragged the stops it passes are not chosen: only where it is let go is
+  const [dragged, setDragged] = useState<number | null>(null);
+  const dragging = useRef(false);
+  const shown = dragged ?? (moved && moved.from === rest ? moved.to : rest);
+  const [drill, setDrill] = useState<DrillMode | null>(null);
+  const [asking, setAsking] = useState<{ to: number; need: GrammarIdea } | null>(null);
+
   const teach = (outcome: IdeaOutcome): void => {
-    if (busy.current) return;
-    busy.current = true;
-    void teachIdea(idea.id, outcome).finally(() => {
-      busy.current = false;
-    });
+    writing.current = writing.current.then(() => teachIdea(idea.id, outcome)).catch((error: unknown) => console.error('could not keep the level', error));
   };
-  const pressed = (name: GrammarLevelName): boolean => level?.level === name;
+  const goOn = (to: number): void => {
+    setAsking(null);
+    const outcome = OUTCOME_OF_STOP[to];
+    if (outcome) teach(outcome);
+    else setDrill('prove');
+  };
+  const slideTo = (to: number): void => {
+    if (to === rest) return setMoved(null);
+    setMoved({ to, from: rest });
+    if (to > 0 && need) setAsking({ to, need });
+    else goOn(to);
+  };
+  const stepBy = (event: KeyboardEvent<HTMLInputElement>): void => {
+    const to = { ArrowRight: shown + 1, ArrowUp: shown + 1, ArrowLeft: shown - 1, ArrowDown: shown - 1, Home: 0, End: STOPS.length - 1 }[event.key];
+    if (to === undefined) return;
+    event.preventDefault();
+    slideTo(Math.min(STOPS.length - 1, Math.max(0, to)));
+  };
+  const letGo = (): void => {
+    dragging.current = false;
+    if (dragged !== null) slideTo(dragged);
+    setDragged(null);
+  };
+  const closeDrill = (): void => {
+    setDrill(null);
+    setMoved(null);
+  };
+  const markKnown = (): void => teach('known');
 
   return (
     <div className="fixed inset-0 z-30 flex flex-col justify-end">
@@ -182,8 +233,16 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
           <h2 className="pr-14 text-2xl font-bold">{idea.title}</h2>
           {level ? (
             <p data-testid="idea-level" className="mt-1 inline-block rounded-full border border-line px-3 py-1 text-sm text-muted">
-              {LEVEL_NAMES[level.level]} since {sinceText(level.since)}
+              {level.level === 'solid' && level.how === 'drill' ? 'Proved by drill' : `${LEVEL_NAMES[level.level]} since`} {sinceText(level.since)}
             </p>
+          ) : null}
+          {need ? (
+            <div data-testid="idea-builds-on" className="mt-3 rounded-xl border border-line p-3">
+              <p className="text-base">This builds on {need.title}. Prove it first.</p>
+              <button type="button" onClick={() => setOpened(need)} className="mt-2 min-h-11 rounded-xl border border-line px-4 text-base font-medium text-accent active:bg-line">
+                Go to {need.title}
+              </button>
+            </div>
           ) : null}
           {tiles.length ? <TeachTiles tiles={tiles} onOpen={(id) => setOpened(ideaOf(id))} /> : null}
           <p data-testid="idea-text" className="mt-2 text-lg">
@@ -217,30 +276,87 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
             </>
           )}
         </div>
-        <div className="flex shrink-0 gap-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+var(--lp-bar-inset))]">
-          <button
-            type="button"
-            aria-pressed={pressed('frontier')}
-            onClick={() => teach('got-it')}
-            className={`${BUTTON} ${pressed('frontier') ? 'border-accent bg-accent text-accent-fg' : 'border-line text-accent active:bg-line'}`}
-          >
-            Got it
-          </button>
-          <button
-            type="button"
-            aria-pressed={pressed('solid')}
-            onClick={() => teach('known')}
-            className={`${BUTTON} ${pressed('solid') ? 'border-accent bg-accent text-accent-fg' : 'border-line text-accent active:bg-line'}`}
-          >
-            I know this
-          </button>
-          {onAsk ? (
-            <button type="button" onClick={() => onAsk(idea.terms[0] ?? idea.title)} className={`${BUTTON} border-line text-accent active:bg-line`}>
-              Ask the tutor
+        <div className="shrink-0 border-t border-line px-4 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))]">
+          <div data-testid="level-slider">
+            <input
+              type="range"
+              aria-label="Your level"
+              aria-valuetext={STOPS[shown].label}
+              min={0}
+              max={STOPS.length - 1}
+              step={1}
+              value={shown}
+              disabled={loaded === null}
+              onChange={(e) => (dragging.current ? setDragged(Number(e.target.value)) : slideTo(Number(e.target.value)))}
+              onKeyDown={stepBy}
+              onPointerDown={() => {
+                dragging.current = true;
+              }}
+              onPointerUp={letGo}
+              onPointerCancel={letGo}
+              className="level-slider block w-full"
+            />
+            <div data-testid="level-stops" aria-hidden="true" className="flex justify-between text-sm text-muted">
+              {STOPS.map((stop, i) => (
+                <span key={stop.label} className={i === shown ? 'font-medium text-accent' : undefined}>
+                  {stop.label}
+                </span>
+              ))}
+            </div>
+          </div>
+          {level?.level === 'solid' ? null : (
+            <button type="button" onClick={markKnown} className="mx-auto mt-1 block min-h-11 px-3 text-sm text-muted underline underline-offset-4">
+              Mark known without a drill
             </button>
-          ) : null}
+          )}
+          <div className="mt-1 flex gap-2">
+            <button type="button" disabled={loaded === null} onClick={() => setDrill('practice')} className={`${BUTTON} border-line text-accent active:bg-line disabled:text-muted`}>
+              Drill it
+            </button>
+            {onAsk ? (
+              <button type="button" onClick={() => onAsk(idea.terms[0] ?? idea.title)} className={`${BUTTON} border-line text-accent active:bg-line`}>
+                Ask the tutor
+              </button>
+            ) : null}
+          </div>
         </div>
       </div>
+      {asking ? (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 px-6">
+          <div role="alertdialog" aria-modal="true" aria-labelledby="idea-go-first" className="w-full max-w-sm rounded-2xl border border-line bg-surface p-4">
+            <p id="idea-go-first" className="text-lg font-medium">
+              Go to {asking.need.title} first?
+            </p>
+            <p className="mt-1 text-base text-muted">This idea builds on it, and it is not solid yet.</p>
+            <div className="mt-3 flex gap-2">
+              <button
+                type="button"
+                ref={focusOnMount}
+                onClick={() => {
+                  setMoved(null);
+                  setAsking(null);
+                  setOpened(asking.need);
+                }}
+                className={`${BUTTON} border-accent bg-accent text-accent-fg`}
+              >
+                Go there
+              </button>
+              <button type="button" onClick={() => goOn(asking.to)} className={`${BUTTON} border-line text-accent active:bg-line`}>
+                Stay here
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {drill ? (
+        <DrillItScreen
+          ideaId={idea.id}
+          mode={drill}
+          passage={passage?.chapters}
+          onResult={(result) => void recordDrill(result, drill)}
+          onClose={closeDrill}
+        />
+      ) : null}
       {opened ? <IdeaSheet idea={opened} onClose={() => setOpened(null)} onWord={onWord} onAsk={onAsk} /> : null}
     </div>
   );

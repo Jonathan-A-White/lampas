@@ -156,11 +156,18 @@ step by step, back off by halves when it is too hard, "kind of like a binary sea
   masculine, feminine, neuter); for a tense idea, the persons of the one verb that fills most cells in a finite mood (rows singular,
   plural; columns 1st, 2nd, 3rd person). A cell the passage lacks is blank (–); `null` for any other idea or no form at all. Forms
   are the passage's own; a capitalised sentence-start form gives way to one in mid-sentence.
-- **Buttons.** `teachIdea(id, outcome)`: *Got it* makes the idea frontier (how `sheet`) and puts it on the schedule at step 0, due
-  tomorrow; *I know this* makes it solid and puts it at the 30-day step, due in 30 days. The row is put in place even if the idea
-  was scheduled, keeping its lapses and rights. Both publish `grammar-level-changed` and `idea-taught` (docs/events.md).
-  *Ask the tutor* is the Talk sheet with focus `{term, kind: 'grammar-term'}`, the idea's first term (its title for an idea with no
-  term). The level shows as a chip ('Frontier since Tuesday').
+- **The level slider** (mw-i7xe0n.3, PROVISIONAL names). A native range named 'Your level' with three stops under it, *Not yet* · *Learning* · *I know it*,
+  resting on the idea's level (an idea with none rests on Not yet), a 44 px thumb (src/index.css `.level-slider`), and arrow keys, Home and End to move it. A drag
+  chooses only where the thumb is let go. `teachIdea(id, outcome, now, how)`: *Learning* (`got-it`) makes the idea frontier and puts it on the schedule at step 0, due
+  tomorrow; *Not yet* (`not-yet`) makes it not yet and takes it off the schedule; *I know it* does NOT write solid: it opens **Drill it** in prove mode
+  (src/DrillItScreen.tsx, below), and `known` (solid, the 30-day step, due in 30 days) is written only by a pass (how `drill`, the pill 'Proved by drill 3 Oct') or
+  by the small text button **Mark known without a drill** under the slider (how `sheet`; not shown once the idea is solid). The row is put in place even if the
+  idea was scheduled, keeping its lapses and rights. All publish `grammar-level-changed` and `idea-taught` (docs/events.md). A **Drill it** button sits beside
+  *Ask the tutor* (the same walk in practice mode). *Ask the tutor* is the Talk sheet with focus `{term, kind: 'grammar-term'}`, the idea's first term (its
+  title for an idea with no term). The level shows as a chip ('Frontier since Tuesday').
+- **Built on what is solid.** The sheet teaches only its own idea and takes every idea it needs (ladder `needs`) to be solid. When one is not (`unmetNeed`, the lowest
+  rung), the sheet says above the text 'This builds on <title>. Prove it first.' with a button 'Go to <title>' that opens that idea's sheet over this one, and sliding
+  to Learning or I know it first asks 'Go to <title> first?' (Go there opens it and leaves the level alone; Stay here goes on, so the foundation is never a lock).
 - Tapping an example opens its word sheet, over its own chapter when that is not the Reader's.
 
 ## Placement
@@ -406,9 +413,23 @@ phrases out of `bma-tutor.ts`). Mapping, where the RP codes cannot tell a lesson
 
 `src/data/repositories/drillRuns.ts` (mw-i7xe0n.2): a finished run is one row of the Dexie `drillRuns` table (v19: `++id, ideaId, at`; the `DrillResult` fields and `at`).
 `saveDrillRun(result, at)` adds one (every run stays), `latestDrillRunFor(ideaId)` gives the newest (the one saved last on a tie) and `weakFacets()` gives, for each idea whose
-latest run did not prove it and left weak facets, `{at, labels}`. No screen saves a run yet.
+latest run did not prove it and left weak facets, `{at, labels}`. The idea sheet's Drill it saves every run it ends (`recordDrill`, below).
 
 The tutor is told them in `learner_grammar.weak` (src/data/grammar/learnerGrammar.ts): the idea's title to the labels of its weak facets (`its ending`, `ν (Nu)`),
 the ideas drilled last first-dropped (at most `GRAMMAR_WEAK_IDEAS_MAX` 5 ideas, `GRAMMAR_WEAK_LABELS_MAX` 3 labels, `GRAMMAR_WEAK_LABEL_CHARS` 32 characters; the key is missing when
 there are none). A later run that proves the idea (or finds no weak facet) takes the idea out. Over the 900-byte cap the oldest ideas of `weak` go first, down to
 `GRAMMAR_WEAK_BYTES` (300), then the idea titles as before, then the rest of `weak`. The grinds' input schemas and instructions name it ("his weak points from Drill it").
+
+### Drill it on the idea sheet
+
+`src/DrillItScreen.tsx` (mw-i7xe0n.3, PROVISIONAL): a full screen over the idea sheet (dialog 'Drill it', `useSheetBack`: Back is Stop). The idea's title, 'Step N of M', one question
+at a time drawn as Review draws it (`GrammarCard`, multiple choice; sideways the question stands at the left and the answers at the right), a **Hint** (takes the first
+half, rounded up, of the wrong answers away, once a question, and marks the answer hinted: a hinted right does not count, drillIt.ts), **Stop** (nothing is kept, the level
+stays) and, after an answer, **Next** / **Finish**. The walk is `start(...)` with the idea's needs taken as solid (the sheet asked him about them), the seed from
+`drillSeed.next()` (src/data/grammar/drillSeed.ts, a seam a feature step fixes). The end shows 'Proved' or 'You reached step N of M' (step 0: 'You have not reached step 1 of M
+yet'), then 'Strong:' and 'Weak:' by facet label and Done.
+
+The sheet hands the finished result to `recordDrill(result, mode)` (repositories/grammarLevels.ts): the run is kept (`saveDrillRun`); a **proof** makes the idea solid, how `drill`
+('Proved by drill', the 30-day step); a run in **prove** mode (from the slider) that did not prove it puts the idea on the frontier, how `drill` (its schedule is left alone when
+it was there already), so the slider goes back to Learning; a run in **practice** mode (the Drill it button) that did not prove it changes no level. The tutor's `weak` list follows
+the latest run as before.

@@ -4,9 +4,11 @@
 // level follows its step; the row exists as well so a level can be set by hand.
 import { db, type GrammarLevel, type GrammarLevelHow, type GrammarLevelName } from '../db';
 import { publish } from '../../events/bus';
+import type { DrillResult } from '../grammar/drillIt';
 import { groupIsSolid } from '../grammar/inference';
 import { IDEA_KIND, ITEM_GROUPS, LADDER, itemsOf } from '../grammar/ladder';
 import { DAY, STEP_DAYS } from '../schedule';
+import { saveDrillRun } from './drillRuns';
 import { announceDue, writeReview, writeScheduled } from './reviews';
 
 export type { GrammarLevel, GrammarLevelHow, GrammarLevelName };
@@ -115,28 +117,55 @@ export async function scheduleIdea(id: string, level: GrammarLevelName, now = Da
   return added;
 }
 
-/** What he told the idea sheet: Got it (the idea is on the frontier) or I know this (it is solid). */
-export type IdeaOutcome = 'got-it' | 'known';
+/** What he told the idea sheet: Learning (the idea is on the frontier), I know it (it is solid) or Not yet. */
+export type IdeaOutcome = 'got-it' | 'known' | 'not-yet';
 
 /**
- * The idea sheet's two buttons (mw-hqd5bz.7), in one transaction. Got it makes the idea frontier, how 'sheet', and puts it on the
- * schedule at step 0, due tomorrow (the first gap); I know this makes it solid and puts it at the 30-day step, due in 30 days.
- * The row is put in place even when the idea is on the schedule already (he has just said where it stands), keeping its
+ * The idea sheet's level slider and its Mark known without a drill (mw-hqd5bz.7, mw-i7xe0n.3), in one transaction. Got it (Learning) makes the idea
+ * frontier and puts it on the schedule at step 0, due tomorrow (the first gap); known makes it solid and puts it at the 30-day step, due in 30 days;
+ * not-yet makes it not yet and takes it off the schedule (a not-yet idea is not drilled). `how` says what set it: 'sheet' for his own say, 'drill'
+ * for a run of Drill it. The row is put in place even when the idea is on the schedule already (he has just said where it stands), keeping its
  * lapses and rights. Publishes grammar-level-changed and idea-taught.
  */
-export async function teachIdea(id: string, outcome: IdeaOutcome, now = Date.now()): Promise<void> {
-  const level: GrammarLevelName = outcome === 'known' ? 'solid' : 'frontier';
-  const start = outcome === 'known' ? knownStart(now) : { step: 0, due: now + STEP_DAYS[0] * DAY };
+export async function teachIdea(id: string, outcome: IdeaOutcome, now = Date.now(), how: GrammarLevelHow = 'sheet'): Promise<void> {
+  const level: GrammarLevelName = outcome === 'known' ? 'solid' : outcome === 'got-it' ? 'frontier' : 'notYet';
   const alphabet = await db.transaction('rw', db.reviews, db.grammarLevels, async () => {
-    const there = await db.reviews.get([IDEA_KIND, id]);
-    await db.reviews.put({ kind: IDEA_KIND, id, ...start, lastWhen: now, lapses: there?.lapses ?? 0, rights: there?.rights ?? 0 });
-    await db.grammarLevels.put({ id, level, since: now, how: 'sheet' });
+    if (outcome === 'not-yet') {
+      await db.reviews.where('[kind+id]').equals([IDEA_KIND, id]).delete();
+    } else {
+      const start = outcome === 'known' ? knownStart(now) : { step: 0, due: now + STEP_DAYS[0] * DAY };
+      const there = await db.reviews.get([IDEA_KIND, id]);
+      await db.reviews.put({ kind: IDEA_KIND, id, ...start, lastWhen: now, lapses: there?.lapses ?? 0, rights: there?.rights ?? 0 });
+    }
+    await db.grammarLevels.put({ id, level, since: now, how });
     return syncAlphabet(now);
   });
   publish({ kind: 'grammar-level-changed', id, level });
   await announceAlphabet(alphabet, now);
   publish({ kind: 'idea-taught', id, outcome });
   await announceDue(now);
+}
+
+/** Why Drill it was run: 'prove' (he slid to I know it: a pass makes the idea solid, a failure puts it on the frontier) or 'practice' (the Drill it button: a pass makes it solid, a failure changes nothing). */
+export type DrillMode = 'prove' | 'practice';
+
+/**
+ * What a finished run of Drill it does (mw-i7xe0n.3): the run is kept; a proof makes the idea solid, how 'drill' (the 30-day step); a run in 'prove' mode that
+ * did not prove it puts the idea on the frontier, how 'drill', unless it is there already (its schedule is left alone); a run in 'practice' mode that did not
+ * prove it changes no level. Returns the idea's level after.
+ */
+export async function recordDrill(result: DrillResult, mode: DrillMode, now = Date.now()): Promise<GrammarLevelName> {
+  await saveDrillRun(result, now);
+  const before = (await getLevel(result.ideaId))?.level;
+  if (result.proved) {
+    await teachIdea(result.ideaId, 'known', now, 'drill');
+    return 'solid';
+  }
+  if (mode === 'prove' && before !== 'frontier') {
+    await teachIdea(result.ideaId, 'got-it', now, 'drill');
+    return 'frontier';
+  }
+  return before ?? 'notYet';
 }
 
 /**

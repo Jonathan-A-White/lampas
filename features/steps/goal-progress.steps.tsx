@@ -2,7 +2,7 @@
 // with its two bars, Place me, Learn next, Next words, the lists behind the bars and Read it. The counts the screens show are checked against
 // progressToward worked out in the step from the stores, never from the screen's own code path.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { afterAll, expect, vi } from 'vitest';
@@ -189,7 +189,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Got it on the idea sheet moves the ideas bar', ({ Given, And, When, Then }) => {
+  Scenario('Sliding the idea sheet to Learning moves the ideas bar', ({ Given, And, When, Then }) => {
     Given(GIVEN_GOAL, givenGoal);
     And('the foundation ideas are solid and {string} is not yet', async (_, d: string) => {
       await Promise.all([...ALWAYS_NEEDED.map((id) => putLevel(id, 'solid')), putLevel(d, 'notYet')]);
@@ -198,8 +198,8 @@ describeFeature(feature, ({ Scenario }) => {
     And('he taps Learn next', async () => {
       await user.click(await screen.findByTestId('learn-next'));
     });
-    And('he taps Got it on the idea sheet', async () => {
-      await user.click(await within(await sheet()).findByRole('button', { name: 'Got it' }));
+    And('he slides the level on the idea sheet to Learning', async () => {
+      fireEvent.change(await within(await sheet()).findByRole('slider', { name: 'Your level' }), { target: { value: '1' } });
     });
     Then('the ideas bar says solid {int}, frontier {int} and not yet {int}', (_, a: number, b: number, c: number) => barSays('ideas', a, b, c));
     When('he closes the idea sheet', async () => {

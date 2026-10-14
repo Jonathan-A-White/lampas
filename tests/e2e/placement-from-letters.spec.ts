@@ -60,11 +60,11 @@ const countsOf = (text: string): number[] => (text.match(/\d+/g) ?? []).map(Numb
 
 test('Start from the letters keeps what he has: the card says it, and Back to the goal agrees', async ({ page }) => {
   await openGoal(page);
-  // mark The Greek alphabet 'I know this' on Learn next
+  // mark The Greek alphabet known without a drill on Learn next
   await page.getByTestId('learn-next').click();
   const sheet = page.getByRole('dialog', { name: 'Idea' });
   await expect(sheet.getByRole('heading', { name: 'The Greek alphabet' })).toBeVisible();
-  await sheet.getByRole('button', { name: 'I know this' }).click();
+  await sheet.getByRole('button', { name: 'Mark known without a drill' }).click();
   await sheet.getByRole('button', { name: 'Done' }).click();
   const legend = page.getByTestId('ideas-legend');
   await expect(legend).toHaveText(/^Solid 1 · Frontier 0 · Not yet \d+$/);
