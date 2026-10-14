@@ -886,7 +886,9 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     Then('the clipboard holds {string}', (_, text: string) => {
       expect(clipboard.copied).toEqual([text]);
     });
-    When('the tutor answers', () => {
+    When('the tutor answers', async () => {
+      // the question shows as pending before the request is built and sent: on a loaded host the grist is not at the mill yet
+      await waitFor(() => expect(fake.received).toHaveLength(1));
       fake.answer({ status: 'answered', answer: TALK_ANSWER });
     });
     Then('the answer shows in the sheet under his question', answerShowsUnderQuestion);
