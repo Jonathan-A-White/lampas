@@ -2,7 +2,7 @@
 // screens that have no chapter of their own. The button is the same everywhere: bottom right, above the phone's bar, 56 px, hidden while a
 // sheet is open. The sheet is the Talk sheet over a TalkScope with a `screen` (name and facts, src/tutor/screen.ts), kept under 'screen.<name>';
 // it opens with the questions fitted to the screen. The Reader draws the same button but opens its own chapter talk (src/Reader.tsx).
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { NO_CHAPTER } from './data/chapter';
 import { useAiAllowed } from './gate/licenceContext';
 import { TalkSheet } from './Talk';
@@ -71,6 +71,28 @@ export const ASK_BUTTON_ROOM = 'var(--lp-ask-room)';
  * button sits beside the text, not in a row of its own under it, so the box gets the 42 px back and no line is ever behind the button. 0 upright. */
 export const ASK_BUTTON_GUTTER = 'var(--lp-ask-gutter)';
 
+/** The room every screen but the Reader keeps beside or under its scroll box while it shows the round button, so no line, answer or control is ever behind it, at
+ * any scroll (mw-5r3p30.279: the Reader's rule of mw-5r3p30.115 for the rest). Upright the box ends above the button: its 56 px, 12 px gap and 4 px of air, and the
+ * phone's bar under it, unless a pinned bar or the speaking bar sits there already (the button is lifted above it and the bar carries the inset). In a short window
+ * (sideways) the box gives the button a gutter at its right instead, as the Reader does. The button's owner writes them on the root and src/index.css `.screen`
+ * reads them: --lp-ask-clear (upright, the bottom margin) with --lp-ask-end (the end padding that margin makes unneeded), --lp-ask-side (sideways, the right margin) with --lp-ask-end-short (the end padding there: the phone's bar only). */
+const ROOM = 'calc(var(--spacing) * 18)';
+
+/** Reserves the room for the round button for as long as the owner shows it (sheet open or not, so the screen does not jump). */
+function useAskRoom(reserve: boolean, over: boolean) {
+  useLayoutEffect(() => {
+    if (!reserve) return undefined;
+    const root = document.documentElement.style;
+    root.setProperty('--lp-ask-clear', over ? ROOM : `calc(var(--lp-bar-inset) + ${ROOM})`);
+    root.setProperty('--lp-ask-end', '0px');
+    root.setProperty('--lp-ask-side', ROOM);
+    root.setProperty('--lp-ask-end-short', 'var(--lp-end-inset)');
+    return () => {
+      for (const name of ['--lp-ask-clear', '--lp-ask-end', '--lp-ask-side', '--lp-ask-end-short']) root.removeProperty(name);
+    };
+  }, [reserve, over]);
+}
+
 /** The context the sheet sends: the facts the screen reported, if they are the screen's own, else its name alone. */
 function contextOf(name: string, reported: ScreenContext | null): ScreenContext {
   return fitScreen(reported?.name === name ? reported : { name, facts: [] });
@@ -81,6 +103,8 @@ export function AskTutor({ route }: { route: Route }) {
   // the route the sheet was opened on: it is closed once the screen changes
   const [openOn, setOpenOn] = useState<Route | null>(null);
   const ai = useAiAllowed();
+  const speaking = useBarShown();
+  useAskRoom(ai && route !== 'home' && route !== 'share' && route !== 'unlock', speaking || LIFT[route] !== undefined);
   const open = openOn === route;
   const reported = useScreenContext();
   const name = route === 'home' || route === 'share' || route === 'unlock' ? undefined : SCREEN_NAMES[route];

@@ -26,6 +26,15 @@ Feature: Ask the tutor from any screen
     When he closes the Talk sheet
     Then every other full screen has the control: Goal, Words, Review, Quick test, Parsing drill, Paradigms, Placement, Settings, My study way, Import and About
 
+  Scenario: A screen with the control keeps room for it, so nothing is ever behind it
+    Given Lampas is opened on #/settings with the goal "1 John 1:1" behind a fake Postern
+    Then the screen has one control named "Ask the tutor about this screen"
+    And the screen's scroll box keeps room beneath it for the control, and the same while the Talk sheet is open
+    When he opens the Goal screen
+    Then the room is kept there too
+    When he opens the Reader
+    Then no room is kept for the control, the Reader keeps its own
+
   Scenario: From Goal the request carries the goal, the counts, Learn next and the Next words
     Given Lampas is opened on #/goal with the goal "1 John 1:1" behind a fake Postern
     And the Goal screen shows its counts, Learn next and Next words

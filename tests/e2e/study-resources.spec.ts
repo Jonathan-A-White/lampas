@@ -71,8 +71,8 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
   await shot(page, 'word-sheet-study');
 });
 
-test('The Logos lexicons are a compact list at 360 px: bounded height, its own scroll, a search, and Accordance below it in reach', async ({ page }) => {
-  await page.setViewportSize({ width: 360, height: 740 });
+test('The Logos lexicons are a compact list at 360 px (860 high, the box ends above the round Ask button, mw-5r3p30.279): bounded height, its own scroll, a search, and Accordance below it in reach', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 860 });
   await openUnlocked(page);
   await holdAppLinks(page);
   await page.goto('/');

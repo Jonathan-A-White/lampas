@@ -217,6 +217,45 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     });
   });
 
+  Scenario('A screen with the control keeps room for it, so nothing is ever behind it', ({ Given, And, Then, When }) => {
+    // the room (src/AskTutor.tsx useAskRoom) is written on the root as custom properties that src/index.css `.screen` reads; the placing is proved by tests/e2e/ask-button-room.spec.ts
+    const room = () => document.documentElement.style.getPropertyValue('--lp-ask-clear');
+    const goTo = async (address: string) => {
+      cleanup();
+      forgetTrail();
+      window.history.replaceState(null, '', `/${address}`);
+      render(<App />);
+    };
+    Given('Lampas is opened on #/settings with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/settings', goal));
+    Then('the screen has one control named {string}', async (_, name: string) => {
+      expect(name).toBe(CONTROL);
+      await waitFor(() => expect(control()).toHaveLength(1));
+    });
+    And("the screen's scroll box keeps room beneath it for the control, and the same while the Talk sheet is open", async () => {
+      expect(room()).toContain('var(--spacing) * 18');
+      expect(document.documentElement.style.getPropertyValue('--lp-ask-end')).toBe('0px');
+      await taps();
+      await screen.findByRole('dialog', { name: /^Ask the tutor: Settings/ });
+      expect(control()).toHaveLength(0);
+      expect(room()).not.toBe('');
+    });
+    When('he opens the Goal screen', async () => {
+      await goTo('#/goal');
+      await waitFor(() => expect(control()).toHaveLength(1));
+    });
+    Then('the room is kept there too', () => {
+      expect(room()).not.toBe('');
+    });
+    When('he opens the Reader', async () => {
+      await goTo('#/');
+      await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
+    });
+    Then('no room is kept for the control, the Reader keeps its own', () => {
+      expect(room()).toBe('');
+      expect(document.documentElement.style.getPropertyValue('--lp-ask-side')).toBe('');
+    });
+  });
+
   Scenario('From Goal the request carries the goal, the counts, Learn next and the Next words', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on #/goal with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/goal', goal));
     And('the Goal screen shows its counts, Learn next and Next words', async () => {

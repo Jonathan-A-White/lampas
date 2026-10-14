@@ -243,8 +243,20 @@ html {
 .screen {
   overflow-y: auto;
   overscroll-behavior: contain;
-  /* the last row clears the round Ask the tutor button (src/AskTutor.tsx, 56 px and its gap) as well as the phone's bar */
-  padding-bottom: calc(1rem + var(--lp-end-inset) + var(--spacing) * 16);
+  /* A screen that shows the round Ask the tutor button ends its box above the button, or leaves it a gutter in a short window (below), so nothing is ever
+   * behind it (src/AskTutor.tsx useAskRoom sets --lp-ask-clear, --lp-ask-end and --lp-ask-side; mw-5r3p30.279). Without them (the Reader keeps its own room)
+   * the last row clears the button (56 px and its gap) as well as the phone's bar. */
+  margin-bottom: var(--lp-ask-clear, 0px);
+  padding-bottom: calc(1rem + var(--lp-ask-end, calc(var(--lp-end-inset) + var(--spacing) * 16)));
+}
+
+/* Sideways the round button sits in a gutter beside the text, not in a row under it (as on the Reader, mw-5r3p30.195). */
+@media (max-height: 500px) {
+  .screen {
+    margin-bottom: 0;
+    margin-right: var(--lp-ask-side, 0px);
+    padding-bottom: calc(1rem + var(--lp-ask-end-short, calc(var(--lp-end-inset) + var(--spacing) * 16)));
+  }
 }
 
 button,
