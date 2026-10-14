@@ -18,6 +18,14 @@ export const OSIS: Readonly<Record<string, string>> = {
   '1pe': '1Pet', '2pe': '2Pet', '1jn': '1John', '2jn': '2John', '3jn': '3John', jud: 'Jude', rev: 'Rev',
 };
 
+/** The Old Testament books' OSIS codes, for the links to a reference outside the New Testament ('Gen.1.28'; data/otBooks.ts has the names). */
+export const OT_OSIS: Readonly<Record<string, string>> = {
+  gen: 'Gen', exo: 'Exod', lev: 'Lev', num: 'Num', deu: 'Deut', jos: 'Josh', jdg: 'Judg', rut: 'Ruth', '1sa': '1Sam', '2sa': '2Sam', '1ki': '1Kgs',
+  '2ki': '2Kgs', '1ch': '1Chr', '2ch': '2Chr', ezr: 'Ezra', neh: 'Neh', est: 'Esth', job: 'Job', psa: 'Ps', pro: 'Prov', ecc: 'Eccl', sng: 'Song',
+  isa: 'Isa', jer: 'Jer', lam: 'Lam', ezk: 'Ezek', dan: 'Dan', hos: 'Hos', jol: 'Joel', amo: 'Amos', oba: 'Obad', jon: 'Jonah', mic: 'Mic',
+  nam: 'Nah', hab: 'Hab', zep: 'Zeph', hag: 'Hag', zec: 'Zech', mal: 'Mal',
+};
+
 /** Other common short forms, beside the code, the OSIS code and the full name (all of those are added below). */
 const EXTRA_NAMES: Readonly<Record<string, readonly string[]>> = {
   mat: ['mt'], mrk: ['mk', 'mr'], luk: ['lk'], jhn: ['jn'], act: ['ac'], rom: ['ro', 'rm'], gal: ['ga'], php: ['pp', 'philip'],
@@ -179,9 +187,12 @@ export function linkOf(hash: string): Link | null {
   return word ? { kind: 'word', text: word } : null;
 }
 
+/** A book's OSIS code, from our own code ('1jn' -> '1John', 'psa' -> 'Ps'). */
+export const osisOf = (book: string): string => OSIS[book] ?? OT_OSIS[book] ?? book;
+
 /** The https link of a verse, a chapter (no verse) or a book's chapter, as Copy link gives it. */
 export function referenceUrl(book: string, chapter: number, verse?: number): string {
-  return `${LINK_ORIGIN}/#/?ref=${OSIS[book] ?? book}.${chapter}${verse === undefined ? '' : `.${verse}`}`;
+  return `${LINK_ORIGIN}/#/?ref=${osisOf(book)}.${chapter}${verse === undefined ? '' : `.${verse}`}`;
 }
 
 /** The https link of a passage, a verse range as Logos writes it: '#/?ref=Rom.8.1-11' (parseReference keeps the first verse, so it opens the reader there). */
