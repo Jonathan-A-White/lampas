@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Flashcard } from '../Flashcard';
 import { GrammarCard } from '../GrammarCard';
 import { SoundWordCard } from '../SoundWordCard';
+import { DrillPlanCard } from './DrillPlanCard';
 import { WordQuestion } from '../WordQuestion';
 import type { ReviewItem } from './kinds';
 
@@ -23,6 +24,7 @@ const RENDERERS: { [K in ReviewItem['kind']]: (props: ItemCardProps & { item: Ex
       <WordQuestion question={item.question} index={index} picked={picked} onPick={onPick} />
     ),
   grammar: ({ item, index, picked, onPick }) => <GrammarCard key={index} question={item.question} mode={item.mode} picked={picked} onPick={onPick} />,
+  'drill-plan': ({ item, index, picked, onPick }) => <DrillPlanCard key={index} item={item} picked={picked} onPick={onPick} />,
   sound: ({ item, index, picked, onPick }) =>
     item.question ? (
       <GrammarCard key={index} question={item.question} mode={item.mode} picked={picked} onPick={onPick} />

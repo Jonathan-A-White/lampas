@@ -4,6 +4,8 @@
 import { BOOK_INDEX } from '../data/bookIndex';
 import { loadChapter, type Chapter } from '../data/chapter';
 import { parseGoal } from '../data/goal';
+import { drillSteps, type DrillQuestion } from '../data/grammar/drillIt';
+import { facetQuestions, PLAN_KIND, parseRowId, type PlanItem } from '../data/grammar/drillPlan';
 import { goalChapterNumbers } from '../data/grammar/needs';
 import { ideaOf, IDEA_KIND, type GrammarIdea } from '../data/grammar/ladder';
 import { buildIdeaQuestion, type GrammarQuestion } from '../data/grammar/questions';
@@ -14,6 +16,8 @@ import { buildQuestion, drawWords, mulberry32, seedDistractors, shuffle, type Qu
 import { chosenPronunciation, speakWord } from '../speech/greek';
 import { speakQuestion } from '../speech/speakQuestion';
 import {
+  getDrillPlan,
+  answerPlanItem,
   getGoal,
   listWords,
   pushGrammarAnswer,
@@ -65,8 +69,25 @@ export interface SoundItem {
   mode: QuestionMode;
 }
 
+/**
+ * A step of Your drill plan (src/data/grammar/drillPlan.ts, mw-i7xe0n.4): a short drill on one weak facet of an idea (4 to 6 questions of the facet) or, last, Prove it, a full Drill it
+ * of the idea. The review id is '<idea id>|<item id>'. It is asked by its own card (src/review/DrillPlanCard.tsx), which runs the drill and grades the item KNEW_IT when it is passed.
+ */
+export interface PlanDrillItem {
+  kind: 'drill-plan';
+  id: string;
+  ideaId: string;
+  /** the plan's time: an answer to a plan made since is not put on it */
+  planAt: number;
+  item: PlanItem;
+  /** the questions of a facet's short drill; none for Prove it */
+  questions: DrillQuestion[];
+  /** the chapters Prove it draws its questions from */
+  passage: Chapter[];
+}
+
 /** One thing Review asks; a new kind of item is one more member here. */
-export type ReviewItem = GrammarItem | SoundItem | WordItem;
+export type ReviewItem = GrammarItem | PlanDrillItem | SoundItem | WordItem;
 
 export interface ReviewKind {
   kind: ReviewItem['kind'];
@@ -173,6 +194,35 @@ export const GRAMMAR: ReviewKind = {
   },
 };
 
+/** The steps of drill plans that are due (mw-i7xe0n.4): a step of a plan that was replaced or closed, or that has no questions left to ask, is left out. Prove it is asked only when every short drill is done. */
+export const DRILL_PLAN: ReviewKind = {
+  kind: PLAN_KIND,
+  count: (n) => `${n} ${n === 1 ? 'drill' : 'drills'}`,
+  async draw(due, random) {
+    if (due.length === 0) return [];
+    const seed = grammarSeed(random);
+    const passage = await loadPassage(mulberry32(seed ^ 0x5bd1e995));
+    const steps = new Map<string, ReturnType<typeof drillSteps>>();
+    const items: PlanDrillItem[] = [];
+    for (const r of due) {
+      const at = parseRowId(r.id);
+      const plan = at ? await getDrillPlan(at.ideaId) : undefined;
+      const item = plan?.items.find((i) => i.id === at?.itemId);
+      if (!at || !plan || !item || item.done || ideaIfAny(at.ideaId) === undefined) continue;
+      if (item.kind === 'prove' && plan.items.some((i) => i.kind === 'facet' && !i.done)) continue;
+      if (!steps.has(at.ideaId)) steps.set(at.ideaId, drillSteps(at.ideaId, { passage, seed }));
+      const questions = item.kind === 'facet' ? facetQuestions(steps.get(at.ideaId) ?? [], item) : [];
+      if (item.kind === 'facet' && questions.length === 0) continue;
+      items.push({ kind: 'drill-plan', id: r.id, ideaId: at.ideaId, planAt: plan.at, item, questions, passage });
+    }
+    return items;
+  },
+  isRight: (item, picked) => item.kind === 'drill-plan' && picked === KNEW_IT,
+  record: async (item, right) => {
+    if (item.kind === 'drill-plan') await answerPlanItem(item.ideaId, item.planAt, item.item.id, right);
+  },
+};
+
 export const SOUNDS: ReviewKind = {
   kind: SOUND_KIND,
   count: (n) => `${n} ${n === 1 ? 'sound' : 'sounds'}`,
@@ -200,11 +250,11 @@ export const SOUNDS: ReviewKind = {
 };
 
 /** Every kind Review knows, in the order its counts are written and its due items asked. */
-export const KINDS: readonly ReviewKind[] = [GRAMMAR, SOUNDS, WORDS];
+export const KINDS: readonly ReviewKind[] = [DRILL_PLAN, GRAMMAR, SOUNDS, WORDS];
 
 export const kindOf = (kind: ReviewItem['kind']): ReviewKind => KINDS.find((k) => k.kind === kind) ?? WORDS;
 
-/** Where a kind stands in the order due items are asked: grammar ideas before words (PROVISIONAL). */
+/** Where a kind stands in the order due items are asked: the steps of a drill plan, then grammar ideas, then words (PROVISIONAL). */
 export const kindRank = (kind: string): number => KINDS.findIndex((k) => k.kind === kind);
 
 /** Words that are not due, to fill a round up, drawn as the Quick test draws (the learning ones favoured). */
