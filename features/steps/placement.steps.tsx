@@ -85,6 +85,8 @@ async function answerMany(n: number, right: boolean): Promise<void> {
 }
 
 const levelOf = async (id: string) => (await db.grammarLevels.get(storedId(id, 'modern')))?.level;
+/** The screen writes an idea's level a moment after the Next that settles it: wait for it (mw-5r3p30.370). */
+const levelBecomes = (id: string, level: string) => waitFor(async () => expect(await levelOf(id)).toBe(level));
 
 const feature = await loadFeature('features/placement.feature');
 
@@ -131,8 +133,8 @@ describeFeature(feature, ({ Scenario }) => {
     And('he starts the placement', started);
     And('he answers {int} questions wrong', wrong);
     Then('the question line says {string}', asks);
-    And('the idea {string} is not yet', async (_, id: string) => expect(await levelOf(id)).toBe('notYet'));
-    And('the idea {string} is also not yet', async (_, id: string) => expect(await levelOf(id)).toBe('notYet'));
+    And('the idea {string} is not yet', (_, id: string) => levelBecomes(id, 'notYet'));
+    And('the idea {string} is also not yet', (_, id: string) => levelBecomes(id, 'notYet'));
     And('the alphabet as a whole was not asked', async () => {
       expect(await levelOf('alphabet')).toBeUndefined();
       expect(await db.reviews.get(['grammar', storedId('alphabet', 'modern')])).toBeUndefined();
@@ -152,7 +154,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(rows.filter((r) => after.includes(r.id))).toEqual([]);
       expect((await db.reviews.toArray()).filter((r) => r.kind === 'grammar' && after.includes(r.id))).toEqual([]);
     });
-    And('the idea {string} is solid', async (_, id: string) => expect(await levelOf(id)).toBe('solid'));
+    And('the idea {string} is solid', (_, id: string) => levelBecomes(id, 'solid'));
   });
 
   Scenario('The end card says where I am', ({ Given, When, And, Then }) => {
