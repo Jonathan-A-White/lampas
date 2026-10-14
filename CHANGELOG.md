@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.226
+_2026-10-14_
+- New: When the verse you are reading has no word showing a letter or idea, its card now takes examples from the nearby section, the chapter or the book, and says where they come from.
+
 ## 0.1.225
 _2026-10-14_
 - New: A new reader is welcomed by the tutor in plain English, with a few short questions that set up Lampas for them, and can skip them.
