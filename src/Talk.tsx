@@ -40,6 +40,7 @@ import { HoldBar } from './ui/HoldBar';
 import { PendingQuestion } from './ui/PendingQuestion';
 import type { HoldHandlers } from './ui/holdPress';
 import { CopyExchange } from './share/CopyExchange';
+import { CopyText } from './share/CopyText';
 import type { SharedContent } from './share/shared';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
@@ -383,6 +384,8 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
       <p data-talk-q className="ml-auto w-fit max-w-[88%] break-words rounded-2xl bg-accent/15 px-3 py-2 text-lg">
         {turn.cleanQ ?? turn.q}
       </p>
+      {/* what he said, word for word (not the tidied line above), so a question can be handed on whole */}
+      <CopyText text={turn.q} label="Copy my question" />
       <div data-talk-a onClick={stopOnTap} className="rounded-2xl border border-line px-3 py-2">
         <div data-answer-text className="break-words text-lg leading-snug">
           <Markdown text={turn.a} onOpen={onLeave} />
@@ -738,18 +741,25 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
                   <div role="alert" className="space-y-2">
                     <p className="text-base font-semibold text-bad">{FAILURE_TITLES[state.failure]}</p>
                     <p className="break-words text-sm text-muted">{state.detail}</p>
-                    {state.failure === 'not-sent' ? null : (
-                      <button
-                        type="button"
-                        onClick={() => onSay(state.question)}
-                        className="min-h-12 rounded-xl border border-line px-5 text-base font-medium"
-                      >
-                        Retry
-                      </button>
-                    )}
+                    {/* beside Retry, at the foot, not under a question too long to scroll past */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {state.failure === 'not-sent' ? null : (
+                        <button
+                          type="button"
+                          onClick={() => onSay(state.question)}
+                          className="min-h-12 rounded-xl border border-line px-5 text-base font-medium"
+                        >
+                          Retry
+                        </button>
+                      )}
+                      <CopyText text={state.question} label="Copy my question" />
+                    </div>
                   </div>
                 ) : (
-                  <Waiting state={state} />
+                  <>
+                    <CopyText text={state.question} label="Copy my question" />
+                    <Waiting state={state} />
+                  </>
                 )}
               </div>
             ) : null}
