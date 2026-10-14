@@ -34,7 +34,7 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   characters (scripts/data-build.ts, docs/data.md).
 - **[Biblical Mastery Academy](https://biblicalmastery.academy/).** The order in which the BMA Tutor grammar approach teaches Greek
   follows the sequence of the Greek Success Path of Biblical Mastery Academy. Only the sequence is followed: the lesson titles,
-  the method, the drills and Drill it (the walk that proves an idea) in Lampas are its own, and no course text, image or exercise is copied. Changes: a few lessons are moved earlier or later, so that no idea is taught before an idea it rests on.
+  the method, the drills, Drill it (the walk that proves an idea) and the drill plan that follows a Drill it that does not prove an idea (a short drill on each weak point, easiest first, then Drill it again) in Lampas are its own, and no course text, image or exercise is copied. Changes: a few lessons are moved earlier or later, so that no idea is taught before an idea it rests on.
 
 ## Type
 

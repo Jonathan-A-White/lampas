@@ -433,3 +433,25 @@ The sheet hands the finished result to `recordDrill(result, mode)` (repositories
 ('Proved by drill', the 30-day step); a run in **prove** mode (from the slider) that did not prove it puts the idea on the frontier, how `drill` (its schedule is left alone when
 it was there already), so the slider goes back to Learning; a run in **practice** mode (the Drill it button) that did not prove it changes no level. The tutor's `weak` list follows
 the latest run as before.
+
+### Your drill plan
+
+`src/data/grammar/drillPlan.ts` (mw-i7xe0n.4, PROVISIONAL, pure; the Governor's want: 'come back with a plan for drilling tailored to that person so that they can get to yes I really know
+this and can move on knowing that they really know it'). A Drill it run that did not prove its idea and left weak facets makes a **plan**: `planFrom(result, at)` gives one short drill for each
+weak facet, **the easiest facet first** (the lowest step the run asked it at; the run's own order on a tie), then **Prove it**, a full Drill it of the idea. A run with no weak facet makes none. A
+short drill (`facetQuestions` / `shortDrill`) is 4 to 6 questions of its facet at the run's edge step and the one below it (the nearest steps fill it when the facet has fewer), and is **done**
+with one miss allowed (`facetPassed`, 0.75). No tutor is asked anything.
+
+`src/data/repositories/drillPlans.ts` keeps a plan as one JSON value in the settings store under `drillPlan.<idea id>` (no table; outside the settings registry) and schedules it: each short
+drill still to do is a review row of kind `drill-plan` (id `<idea id>|<item id>`), the first due now and each next one a day after the one before; **Prove it gets its row only when the last
+short drill is done**, due a day later. `answerPlanItem(ideaId, planAt, itemId, right)`: right = done (the row leaves the schedule; the next is due no sooner than tomorrow); wrong = the item
+stays and comes back tomorrow (`writeReview`, a lapse); an answer to a plan made since (`planAt`) or closed changes nothing. `recordDrill` (grammarLevels.ts) makes the plan after a run that
+did not prove the idea (replacing the idea's old one) and closes it when a run proves it, so a proof from the slider, the Drill it button, the result's plan or Review's Prove it all end it
+(the idea is solid, how `drill`, 'Proved by drill').
+
+On screen: the Drill it result shows **Your drill plan** (`[data-testid=drill-plan]`: the steps in order, 'Prove it' last) and **Start the first drill** (src/PlanDrillScreen.tsx, dialog 'Short
+drill': one question at a time as Drill it asks, then 'N of M right' and Done); the Goal screen lists each idea with a plan open as **Drill plan: N to go** (N = steps not done, Prove it
+counts; a tap opens the idea's sheet); Review's kind `DRILL_PLAN` (src/review/kinds.ts, first in KINDS so after the exact gaps its steps come before grammar ideas and words; 'Due today: 2
+drills, 3 words') draws a due step as a card (src/review/DrillPlanCard.tsx: 'Your drill plan', the idea, the facet or 'Prove it', **Start the drill** / **Start Prove it**), which answers
+itself KNEW_IT when the step is passed. A step of a plan that was replaced or closed is left out of the round; Prove it is not asked while a short drill is not done.
+Tests: tests/unit/drill-plan.test.ts, features/drill-it.feature (the plan scenarios).
