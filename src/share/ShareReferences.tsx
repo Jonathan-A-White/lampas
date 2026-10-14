@@ -1,10 +1,12 @@
 // src/share/ShareReferences.tsx — the Bible references in the words that were shared to Lampas (mw-s1dc0n.1): 'Bible references (N)', each one a link that opens
 // the Reader on the verse (a range at its first verse). In the order of the page by default, so he can go through them as he reads; the switch above the list
-// puts them in Bible order, grouped under each book, and the choice is kept on the phone for the next share.
+// puts them in Bible order, grouped under each book, and the choice is kept on the phone for the next share. The references of a shared picture (the find-refs grist,
+// src/share/findRefs.ts, mw-s1dc0n.2) join the same list: while the grist reads, 'Finding Bible references...'; a failure is one line with 'Try again'.
 import { useMemo, useState } from 'react';
 import { referenceUrl } from '../nav/links';
 import { openHash } from '../nav/route';
-import { findReferences, groupedByBook, listReferences, type ListedReference, type RefsOrder } from '../nav/refsInText';
+import { findReferences, groupedByBook, listReferences, type FoundReference, type ListedReference, type RefsOrder } from '../nav/refsInText';
+import type { PictureRefs } from './findRefs';
 
 const KEY = 'lampas.shareRefsOrder';
 const ORDERS: readonly { id: RefsOrder; label: string }[] = [
@@ -54,11 +56,32 @@ function RefLink({ r }: { r: ListedReference }) {
   );
 }
 
-/** The section for the shared words `text`. */
-export function ShareReferences({ text }: { text: string }) {
+/** The section for what was shared: the references in its words `text` and, for a picture, what the grist found in it (`picture`, with `retry` for a failure). */
+export function ShareReferences({ text, picture, retry }: { text?: string; picture?: PictureRefs; retry?: () => void }) {
   const [order, setOrder] = useState<RefsOrder>(savedOrder);
-  const found = useMemo(() => findReferences(text), [text]);
+  const found = useMemo<FoundReference[]>(() => [...findReferences(text ?? ''), ...(picture?.status === 'done' ? picture.found : [])], [text, picture]);
   const listed = useMemo(() => listReferences(found, order), [found, order]);
+  if (picture?.status === 'reading') {
+    return (
+      <section data-share-refs aria-label="Bible references">
+        <p role="status" className="text-base text-muted">
+          Finding Bible references...
+        </p>
+      </section>
+    );
+  }
+  if (picture?.status === 'failed') {
+    return (
+      <section data-share-refs aria-label="Bible references" className="space-y-2">
+        <p role="alert" className="text-base">
+          {picture.line}
+        </p>
+        <button type="button" onClick={retry} className="min-h-12 w-full rounded-xl border border-line px-4 text-lg font-medium text-accent">
+          Try again
+        </button>
+      </section>
+    );
+  }
   if (listed.length === 0) {
     return (
       <section data-share-refs aria-label="Bible references">

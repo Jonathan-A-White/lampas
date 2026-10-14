@@ -8,6 +8,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
+import { parkShare } from '../../src/data/repositories';
 import { setGoal } from '../../src/data/repositories/settings';
 import { clearBus } from '../../src/events/bus';
 import { LicenceProvider } from '../../src/gate/LicenceProvider';
@@ -16,6 +17,7 @@ import { fetchLicenceStatus } from '../../src/services/licenceCheck';
 import { setVerseAction, type VerseAction } from '../../src/verse/action';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { holdBarIn } from '../../tests/support/composer';
+import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { LicenceProbe } from '../../tests/support/licence-probe';
 import { addMint, HOLDER, ISSUER_PUB, newChain } from '../../tests/support/licence-chain';
@@ -77,6 +79,20 @@ async function openGoal(licensed: boolean): Promise<void> {
   await setGoal('1 John 1:1');
   await openApp('#/goal', licensed);
   await screen.findByRole('button', { name: /^Learn next/ });
+}
+
+let fake: FakePostern;
+
+/** A phone with a picture shared to Lampas waiting on the Share sheet, and a mill that sees every call. */
+async function openShare(licensed: boolean): Promise<void> {
+  await fresh();
+  fake = makeFakePostern();
+  const chapterFetch = globalThis.fetch;
+  vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init)));
+  await db.shares.clear();
+  await parkShare({ id: 'share-1', createdAt: NOW, files: [{ name: 'shared-1.png', type: 'image/png', bytes: new Uint8Array([1, 2, 3]).buffer }] });
+  await openApp('#/share?s=share-1', licensed);
+  await screen.findByRole('dialog', { name: 'Share to Lampas' });
 }
 
 const askButton = () => document.querySelector('[data-ask-tutor]');
@@ -185,6 +201,17 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Goal screen has the Reading ladder in Greek and English', () => {
       expect(screen.getByRole('button', { name: 'Reading ladder: Greek' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Reading ladder: English' })).toBeInTheDocument();
+    });
+  });
+
+  Scenario('With no licence a shared picture is not read for Bible references', ({ Given, Then }) => {
+    Given('this phone has no licence and a picture was shared to Lampas', () => openShare(false));
+    Then('the Share sheet does not read the picture: no Bible references from a picture, nothing sent to the mill', async () => {
+      const sheet = screen.getByRole('dialog', { name: 'Share to Lampas' });
+      expect(within(sheet).getByText(/1 picture/)).toBeInTheDocument();
+      expect(within(sheet).queryByText('Finding Bible references...')).toBeNull();
+      expect(sheet.querySelector('[data-share-refs]')).toBeNull();
+      expect(fake.calls).toEqual([]);
     });
   });
 });
