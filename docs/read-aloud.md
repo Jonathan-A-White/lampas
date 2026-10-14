@@ -47,11 +47,12 @@ Postern's and SpellForge's; its colours are Lampas's (`--bk-speech-*` in `src/in
   the foot of the shell (0, every screen but the Reader), the Reader above its Talk bar (1), the Verse view above its hold bar (2), the Talk sheet above its foot (3).
   It is in flow, never over text, and the round *Ask the tutor* button rides above it. The header's own Pause / Stop are gone while the bar holds the reading.
 - A word said alone (a long press, a speaker, Tap to hear) is not a reading and has no bar (`isWordSpeech`).
-- A Greek voice names a bare letter ('omicron'), so Greek of ONE letter (ὁ, ἡ, ὦ, Ὃ: a held word, a speaker, a lesson's example, a one-letter syllable of Sound it out,
-  a lone woven word) is handed to the GREEK voice in the form the chosen pronunciation gives it (mw-5r3p30.262): `loneLetterForm` (`src/speech/greek.ts`) asks
-  the scheme's `loneLetter`; Modern Greek's is the stressed vowel ('ό' for ὁ and Ὃ, 'ή' for ἡ, 'ώ' for ὦ), which a Greek voice reads as a syllable. (mw-5r3p30.256
-  had sent the respell to the English voice; he heard the English voice.) A letter drill names its letter (`speakLetter`). Words of two letters or more go to the
-  Greek voice in lower case (mw-5r3p30.226). PROVISIONAL until the Governor has heard it on his phone.
+- A Greek voice names a letter it is handed alone ('omicron'), accent or none, so Greek of ONE letter (ὁ, ἡ, ὦ, Ὃ: a held word, a speaker, a lesson's example,
+  Tap to hear, a one-letter syllable of Sound it out, a lone woven word, a lone ὁ in a tutor's answer) is never handed to a voice: the chosen pronunciation's clip
+  of its sound plays (mw-5r3p30.347, `docs/pronunciation.md`; mw-5r3p30.256 and .262 had handed a voice a respelling and a stressed vowel, and he heard
+  'Omicron'). Said alone it is a word beside the reading (`greek.ts` `playLoneLetter`: a reading is paused, a Listen goes on after it); in a reading the verse is
+  played in pieces (`readAloud.ts` `piecesOf`): the voice up to it, the clip, the voice after it; Pause during the clip waits, and Resume reads the verse from
+  its start. A letter drill names its letter (`speakLetter`). Words of two letters or more go to the Greek voice in lower case (mw-5r3p30.226).
 - **Listen is a Listen** (mw-5r3p30.130, `docs/verse-view.md` 'Listen is a player'): a reading started with `listen: <key>` is paused by an in-app interruption and goes on by itself when it ends
   (`readAloud.ts` `interruptListen`; a word beside it, a Hold to ask, a recording, a tutor's answer); the speaking bar's Restart on it goes back to the first verse (`restartListen`); one that ran
   to its end by itself is remembered (`useListenCompleted`) so the Verse view's foot says Play again.
