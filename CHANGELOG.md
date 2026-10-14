@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.198
+_2026-10-14_
+- New: With Immersive reader on, the screen stays awake while you read.
+
 ## 0.1.197
 _2026-10-14_
 - Fixed: the round Ask button no longer covers answers in Quick test or help text in Settings; every screen keeps room for it.
