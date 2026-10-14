@@ -2,18 +2,21 @@
 // (data/grammar/drillIt.ts): the idea's title and 'Step N of M', one question at a time drawn as Review draws it (GrammarCard, multiple choice), a Hint that takes half the
 // wrong answers away and marks the answer hinted (a hinted right does not count), and Stop. At the end, the result: 'Proved' or 'You reached step N of M', then 'Strong:' and
 // 'Weak:' by facet, and Done. The screen writes nothing: it hands the finished result to onResult (the sheet keeps the run and moves the level, grammarLevels.ts recordDrill).
+import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import type { Chapter } from './data/chapter';
 import { answer as answerWalk, start, type DrillResult, type DrillWalk } from './data/grammar/drillIt';
+import { planFrom, shortDrill, type PlanItem } from './data/grammar/drillPlan';
 import { drillSeed } from './data/grammar/drillSeed';
 import { ideaOf, type Facet } from './data/grammar/ladder';
 import type { Level } from './data/grammar/needs';
-import type { DrillMode } from './data/repositories';
+import { answerPlanItem, getDrillPlan, type DrillMode } from './data/repositories';
+import { FacetLabel } from './FacetLabel';
 import { GrammarCard } from './GrammarCard';
+import { PlanDrillScreen } from './PlanDrillScreen';
 import { useSheetBack } from './ui/sheetBack';
 import { focusOnMount } from './ui/focus';
 
-const GREEK = /[Ͱ-Ͽἀ-῿]/;
 const BUTTON = 'min-h-12 w-full rounded-xl border text-lg font-medium';
 
 /** The walk of an idea. The ideas it builds on are taken to be solid (the sheet asked him about them before): a drill tests one idea, never what is under it. */
@@ -37,23 +40,63 @@ function Facets({ title, testId, facets }: { title: string; testId: string; face
         <p className="text-base text-muted">none</p>
       ) : (
         <ul className="mt-1 space-y-1 text-lg">
-          {facets.map((facet) => {
-            const greek = GREEK.test(facet.label);
-            return (
-              <li key={facet.id}>
-                <span lang={greek ? 'grc' : undefined} className={greek ? 'font-greek text-[length:var(--lp-greek-size)]' : undefined}>
-                  {facet.label}
-                </span>
-              </li>
-            );
-          })}
+          {facets.map((facet) => (
+            <li key={facet.id}>
+              <FacetLabel label={facet.label} />
+            </li>
+          ))}
         </ul>
       )}
     </section>
   );
 }
 
-function Result({ result, mode }: { result: DrillResult; mode: DrillMode }) {
+/**
+ * Your drill plan (mw-i7xe0n.4, docs/grammar.md 'Your drill plan'): after a run that did not prove the idea, the plan its weak facets make, as the sheet kept it: a short drill for each,
+ * easiest first, then Prove it; 'Start the first drill' opens the first one here and now, and the rest come up in Review. Shown once the kept plan is the one this run made.
+ */
+function DrillPlan({ result, passage }: { result: DrillResult; passage: readonly Chapter[] | undefined }) {
+  const mine = planFrom(result, 0);
+  const kept = useLiveQuery(() => getDrillPlan(result.ideaId), [result.ideaId]);
+  const [running, setRunning] = useState<PlanItem | null>(null);
+  const [questions] = useState(() => (mine?.items[0]?.kind === 'facet' ? shortDrill(result.ideaId, mine.items[0], { passage, seed: drillSeed.next() }) : []));
+  if (!mine || !kept || kept.items.map((i) => i.id).join() !== mine.items.map((i) => i.id).join()) return null;
+  const first = kept.items[0];
+  const untouched = kept.items.every((i) => !i.done);
+  return (
+    <section data-testid="drill-plan" className="mt-6 rounded-xl border border-line p-4">
+      <h3 className="text-lg font-bold">Your drill plan</h3>
+      <p className="mt-1 text-base text-muted">A short drill on each weak point, easiest first, then Drill it again to prove it. The rest come up in Review.</p>
+      <ol className="mt-3 list-decimal space-y-1 pl-6 text-lg">
+        {kept.items.map((item) => (
+          <li key={item.id} data-item={item.id} data-done={item.done || undefined}>
+            {item.kind === 'prove' ? 'Prove it' : <FacetLabel label={item.facet?.label ?? ''} />}
+            {item.done ? ' (done)' : ''}
+          </li>
+        ))}
+      </ol>
+      {untouched && questions.length > 0 ? (
+        <button type="button" onClick={() => setRunning(first)} className={`${BUTTON} mt-3 border-accent bg-accent text-accent-fg`}>
+          Start the first drill
+        </button>
+      ) : null}
+      {running ? (
+        <PlanDrillScreen
+          ideaId={result.ideaId}
+          facetLabel={running.facet?.label ?? ''}
+          questions={questions}
+          onFinish={(passed) => {
+            void answerPlanItem(result.ideaId, kept.at, running.id, passed);
+            setRunning(null);
+          }}
+          onClose={() => setRunning(null)}
+        />
+      ) : null}
+    </section>
+  );
+}
+
+function Result({ result, mode, passage }: { result: DrillResult; mode: DrillMode; passage: readonly Chapter[] | undefined }) {
   const headline = result.proved
     ? 'Proved'
     : result.edgeStep === 0
@@ -70,6 +113,7 @@ function Result({ result, mode }: { result: DrillResult; mode: DrillMode }) {
       <p className="mt-1 text-base text-muted">{note}</p>
       <Facets title="Strong:" testId="drill-strong" facets={result.strong} />
       <Facets title="Weak:" testId="drill-weak" facets={result.weak} />
+      <DrillPlan result={result} passage={passage} />
     </div>
   );
 }
@@ -132,7 +176,7 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
         {walk === null ? (
           <p className="text-lg">Drill it could not start on this idea.</p>
         ) : result ? (
-          <Result result={result} mode={mode} />
+          <Result result={result} mode={mode} passage={passage} />
         ) : question ? (
           <GrammarCard
             key={walk.asked.length}
