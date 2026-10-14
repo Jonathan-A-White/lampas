@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.208",
+    "date": "2026-10-14",
+    "story": "mw-5r3p30.239",
+    "kind": "fixed",
+    "text": "Back on the word, grammar and idea cards now goes back one step at a time, to the last place you were, instead of skipping some."
+  },
+  {
     "version": "0.1.207",
     "date": "2026-10-14",
     "story": "mw-5r3p30.219",
