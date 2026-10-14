@@ -134,7 +134,7 @@ for (const phone of PHONES) {
         await page.goto('/');
         await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
         await put(page, 'settings', [{ key: 'goal', value: '1 John 1' }]);
-        await put(page, 'grammarLevels', [{ id: 'accents', level: 'solid', since: Date.now(), how: 'placement' }]);
+        await put(page, 'grammarLevels', ['breathings', 'accents', 'iota-subscript'].map((id) => ({ id, level: 'solid', since: Date.now(), how: 'placement' })));
         await openWithTextSize(page, '#/goal', percent);
         await page.getByTestId('ideas-bar').click();
         await page.getByTestId('ideas-list').getByRole('button', { name: 'The noun', exact: true }).click();
