@@ -1,9 +1,12 @@
 // tests/unit/idea-sheet-data.test.ts — what the idea sheet shows (src/data/grammar/ideaSheet.ts): the examples of an idea in a passage
 // and the paradigm table built from the passage's own forms, over the committed 1 John 1 and Romans 8.
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadChapter, loadIndex, type BookIndex, type Chapter } from '../../src/data/chapter';
 import { exampleMeaning, ideaExamples, ideaPassage, paradigmOf } from '../../src/data/grammar/ideaSheet';
-import { ideaOf, ideaOfTerm } from '../../src/data/grammar/ladder';
+import { ideaOf, ideaOfTerm, ideasOf } from '../../src/data/grammar/ladder';
+import { decodeParse, parseSegments } from '../../src/data/parseCode';
 import { DEFAULT_CHAPTER } from '../../src/data/readerChapter';
 import { stubChapterFetch } from '../support/chapter-fetch';
 
@@ -275,5 +278,38 @@ describe('the meaning an example shows (mw-5r3p30.237)', () => {
     const word = wordAt(johnTwo, 1, 'ταῦτα');
     const old: Chapter = { ...johnTwo, verses: johnTwo.verses.map((v) => ({ ...v, e: v.e.map((c) => ({ ...c, s: 1 as unknown as number[] })) })) };
     expect(exampleMeaning(old, 1, word)).toBe('these things');
+  });
+});
+
+describe('the examples of an idea in 1 John 2 (mw-5r3p30.240)', () => {
+  it("'plural' begins with Τεκνία (2:1), the vocative plural the word sheet links it from", async () => {
+    const chapter = await loadChapter('1jn', 2);
+    const examples = ideaExamples('number-plural', [chapter]);
+    expect(examples[0].word.t).toBe('Τεκνία');
+    expect(examples[0].reference).toBe('1 John 2:1');
+  });
+});
+
+describe('the idea sheet agrees with the word sheet over every parse code of the New Testament', () => {
+  it('lists every idea the word sheet links for a code (number, case, gender, person, tense, voice, mood) in ideasOf(code)', () => {
+    const dir = join(process.cwd(), 'public', 'data');
+    const codes = new Set<string>();
+    for (const book of readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory())) {
+      for (const file of readdirSync(join(dir, book.name))) {
+        const chapter = JSON.parse(readFileSync(join(dir, book.name, file), 'utf8')) as { parse?: Record<string, string> };
+        // ladder/ and the like hold other files than chapters
+        for (const code of Object.keys(chapter.parse ?? {})) codes.add(code);
+      }
+    }
+    expect(codes.size).toBeGreaterThan(100);
+    const disagreements: string[] = [];
+    for (const code of codes) {
+      const listed = new Set(ideasOf(code));
+      for (const segment of parseSegments(decodeParse(code))) {
+        const idea = segment.term ? ideaOfTerm(segment.term) : undefined;
+        if (segment.term && (!idea || !listed.has(idea))) disagreements.push(`${code}: ${segment.term} -> ${idea}`);
+      }
+    }
+    expect(disagreements).toEqual([]);
   });
 });
