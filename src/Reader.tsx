@@ -12,7 +12,8 @@ import type { ReadHold } from './ReadCheck';
 import { VerseView } from './VerseView';
 import { useVerseAction } from './verse/action';
 import { Away } from './Away';
-import { useImmersive } from './immersive';
+import { useImmersive, useScrolledPercent } from './immersive';
+import { PlaceLine } from './PlaceLine';
 import { ImmersiveHint } from './ImmersiveHint';
 import { ASK_BUTTON_GUTTER, ASK_BUTTON_ROOM, AskTutorButton, TALK_BAR_LIFT } from './AskTutor';
 import { useAiAllowed } from './gate/licenceContext';
@@ -126,6 +127,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   );
   // The Immersive reader (src/immersive.ts): the bars slide away while he scrolls the text down.
   const bars = useImmersive(immersive, main);
+  const percent = useScrolledPercent(immersive, main);
   const reading = useReading();
   const address = useAddress();
   const current = useRef({ view });
@@ -405,6 +407,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           />
         </Away>
       ) : null}
+      {immersive && away && chapter && !failed && !viewUnit ? <PlaceLine title={TITLE} percent={percent} /> : null}
       {chapter && !viewUnit ? (
         <AskTutorButton
           away={immersive ? away : undefined}

@@ -136,3 +136,20 @@ Feature: Immersive reader
     Then the header, the chips, the Talk bar and the Ask button are all out of view
     When he taps the text with two fingers
     Then the header, the chips, the Talk bar and the Ask button are all in view
+
+  Scenario: One quiet place line at the foot while the bars are away
+    Given Lampas is opened on Romans 8 with Immersive reader On
+    Then there is no place line
+    When he scrolls the text down 700 px
+    Then the place line reads "Romans 8 · 16%"
+    When he scrolls the text on down 1450 px
+    Then the place line now reads "Romans 8 · 50%"
+    When he taps the text with two fingers
+    Then there is no place line while the bars are shown
+    When he taps the text with two fingers again
+    Then the place line is back and reads "Romans 8 · 50%"
+
+  Scenario: With Immersive reader Off there is no place line
+    Given Lampas is opened on Romans 8 with Immersive reader Off
+    When he scrolls the text down 700 px
+    Then there is no place line
