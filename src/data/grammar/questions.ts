@@ -8,7 +8,6 @@ import { decodeParse, parseSegments, splitParse } from '../parseCode';
 import { shuffle, type Random } from '../quiz';
 import { chosenPronunciation } from '../../speech/greek';
 import type { Pronunciation } from '../../speech/pronunciation';
-import { MODERN } from '../../speech/schemes/modern';
 import { LADDER, itemFacet, itemsOf, ideasOf, type Facet, type GrammarIdea } from './ladder';
 import { ideaSound, ideaText } from './lessons';
 import { ENCLITIC_USES, MARK_PAIRS, blankWord } from './marks';
@@ -475,7 +474,8 @@ export function buildCompound(idea: GrammarIdea, random: Random, which?: Compoun
 /** Words to ask about when the passage has none that will do. */
 const SAMPLE_WORDS = ['λόγος', 'ἀγάπη', 'θεός', 'ἄνθρωπος', 'ζωή', 'ἅγιος', 'ὕδωρ', 'ἐν', 'ὁ', 'εὑρίσκω'];
 
-const DEFAULT_RESPELL: Respell = MODERN.respell;
+/** The chosen pronunciation's respelling, read at each use (mw-5r3p30.268: never a scheme named here). */
+const DEFAULT_RESPELL: Respell = (word) => chosenPronunciation().respell(word);
 
 interface Spoken {
   word: string;
@@ -639,7 +639,8 @@ export function buildConcept(idea: GrammarIdea, random: Random, scheme: Pronunci
  * letters and words; every other idea is asked as the ending of a form or the form to tap, whichever the first draw gives, then the
  * other when the passage cannot make the first; and an idea the passage has no form of is asked by what it says. Always gives a question.
  */
-export function buildIdeaQuestion(idea: GrammarIdea, passage: readonly Chapter[], random: Random, respell: Respell = DEFAULT_RESPELL, scheme: Pronunciation = chosenPronunciation()): GrammarQuestion {
+export function buildIdeaQuestion(idea: GrammarIdea, passage: readonly Chapter[], random: Random, respell?: Respell, scheme: Pronunciation = chosenPronunciation()): GrammarQuestion {
+  const said = respell ?? scheme.respell;
   // one diphthong, consonant pair or breathing (mw-hqd5bz.18): heard or seen, as the quick round asks it
   if (idea.parent) return quickQuestion({ id: idea.id, mode: random() < 0.5 ? 'hear' : 'see' }, random, scheme);
   if (idea.glyphs || idea.id === 'alphabet') return random() < 0.5 ? buildLetter(idea, random, scheme) : buildSound(idea, random, scheme);
@@ -651,11 +652,11 @@ export function buildIdeaQuestion(idea: GrammarIdea, passage: readonly Chapter[]
     case 'consonant-pairs':
       return buildPairs(idea, 'consonant-pairs', 'consonants', random, scheme);
     case 'syllables':
-      return buildSyllables(idea, passage, random, respell);
+      return buildSyllables(idea, passage, random, said);
     case 'breathings':
       return buildBreathing(idea, passage, random);
     case 'accents':
-      return buildStress(idea, passage, random, respell);
+      return buildStress(idea, passage, random, said);
     case 'iota-subscript':
       return buildSubscript(idea, random);
     case 'punctuation':

@@ -131,6 +131,8 @@ describe('the voice form and the respelling are the scheme\'s', () => {
     keyWords: {},
     loneLetter: (w) => w,
     voiceForm: (text) => text.replace(/τ/gu, 'θ'),
+    letterForm: (letter) => letter,
+    tutorGuide: 'Stub.',
   };
 
   it('a second scheme registered and chosen gives its own voice form and respelling; the Modern rule is not applied', () => {

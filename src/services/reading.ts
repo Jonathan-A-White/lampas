@@ -23,14 +23,16 @@ export const MAX_SECONDS = 600;
 export const MAX_SAY = 60;
 
 /** What the grind is sent (Verse Read Request 1): the verse, the text he was to read and its language. The mill scores the
- * recording against `target_text` in `lang`, one of the grind's scoring.langs: 'en', or 'el' for the Greek read in modern
- * pronunciation (the registry's scoringLang, src/speech/pronunciation.ts). */
+ * recording against `target_text` in `lang`, one of the grind's scoring.langs: 'en', or the chosen pronunciation's scoringLang for the Greek
+ * ('el' for Modern Greek, src/speech/pronunciation.ts). */
 export interface VerseReadRequest {
   reference: string;
   target_text: string;
   lang: string;
   /** the Greek pronunciation the app speaks and respells in (src/speech/pronunciation.ts), as the Bible talk is sent it: a sound in a tip is described by it */
   pronunciation: GreekPronunciation;
+  /** that pronunciation's name and sound rules, from its scheme (mw-5r3p30.268, Pronunciation.tutorGuide): a tip on a Greek sound follows them */
+  pronunciation_guide: string;
   /** who he is as a student (src/data/learnerProfile.ts, Settings > About you): missing when he has filled in nothing */
   learner_profile?: LearnerProfile;
   /** what Lampas remembers of him (src/data/learnerMemory.ts, Settings > Memory), as the Bible talk is sent it: missing when nothing is kept */
@@ -159,6 +161,7 @@ export function buildReadingRequest(reference: string, verse: Verse, view: Readi
     target_text: readingText(verse, view),
     lang,
     pronunciation,
+    pronunciation_guide: pronunciationOf(pronunciation).tutorGuide,
     ...(learnerProfile ? { learner_profile: learnerProfile } : {}),
     ...(memory ? { memory } : {}),
     ...(learner ? { learner } : {}),
