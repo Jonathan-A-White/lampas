@@ -1,0 +1,40 @@
+{
+  "description": "His answer to the third question is the last: the tutor thanks him, says it can all be changed later, writes it to the index and ends the welcome with welcome_done.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Welcome",
+    "question": "I get up early and read before anyone else is awake",
+    "history": [
+      {
+        "q": "Hello, I have just started using Lampas.",
+        "a": "Welcome to Lampas. Why are you here: to read, to study, or to learn the Greek?"
+      },
+      {
+        "q": "just to read",
+        "a": "Lovely. What would you like Lampas to do for you?"
+      },
+      {
+        "q": "a calm chapter a day",
+        "a": "Good. Is there one thing about yourself you would like me to know, so I can help you better?"
+      }
+    ],
+    "solid_words": [],
+    "settings": {},
+    "mode": "welcome",
+    "screen": {
+      "name": "Welcome",
+      "facts": []
+    }
+  },
+  "expect": {
+    "welcome_done": {
+      "equals": true
+    },
+    "memory_update.0.name": {
+      "equals": "index"
+    },
+    "greek_offer": {
+      "present": false
+    }
+  }
+}

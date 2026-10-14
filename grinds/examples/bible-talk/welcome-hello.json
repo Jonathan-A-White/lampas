@@ -1,0 +1,33 @@
+{
+  "description": "The app's hello opens the welcome: one sentence of welcome and the first question, in plain English with no Greek, and nothing is written down or offered yet.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Welcome",
+    "question": "Hello, I have just started using Lampas.",
+    "history": [],
+    "solid_words": [],
+    "settings": {},
+    "mode": "welcome",
+    "screen": {
+      "name": "Welcome",
+      "facts": []
+    }
+  },
+  "expect": {
+    "answer": {
+      "matches": "read"
+    },
+    "welcome_done": {
+      "present": false
+    },
+    "greek_offer": {
+      "present": false
+    },
+    "memory_update": {
+      "present": false
+    },
+    "words.0": {
+      "present": false
+    }
+  }
+}
