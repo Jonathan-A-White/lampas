@@ -11,7 +11,7 @@ sound-alikes for the letters.
 ## How it is built
 
 `src/speech/pronunciation.ts` is the registry: a list of `Pronunciation` entries
-`{ id, label, lang, scoringLang, note, respell(greekWord), keyWords, loneLetter(word), voiceForm(text), lessons? }`. `keyWords` gives each sound the respelling writes an English word that has it (`e` is the e of pet); the sound lessons say every sound as 'e as in pet' from it. Settings lists the entries, the word sheet calls
+`{ id, label, lang, scoringLang, note, respell(greekWord), keyWords, loneLetter(word), voiceForm(text), letterForm(letter), tutorGuide, lessons? }`. `keyWords` gives each sound the respelling writes an English word that has it (`e` is the e of pet); the sound lessons say every sound as 'e as in pet' from it. Settings lists the entries, the word sheet calls
 `pronunciationOf(chosen).respell(word.t)`, and `lang` is the language tag of the voice that speaks (Settings keeps
 the chosen id under `greekPronunciation`). Each scheme is one file in `src/speech/schemes/`.
 
@@ -28,6 +28,25 @@ hands the voice the nasal at the end of the part before and the pair at the star
 `πάν-ντοτε`, `ἐν-ντολή`, `συμ-μπάσχω`, `ἀν-γκάλη` (espeak-ng: `pˈandˈote`). A pair at the start of a word (`ντομάτα`), and γγ, γχ, γξ, which a
 voice says with their nasal, are left as they are. `src/speech/greek.ts` `greekVoiceForm` applies the chosen scheme's; nothing outside the
 scheme writes the rule (`tests/unit/voice-form.test.ts` holds every bundled word to it). PROVISIONAL until heard on the Governor's phone.
+
+`letterForm(letter)` (mw-5r3p30.268) is what the scheme's voice is handed to NAME a letter, in a letter drill's Tap to hear (`speakLetter`):
+Modern Greek's is the bare letter in lower case, which a Greek voice names the modern way ('vita' for β).
+
+`tutorGuide` (mw-5r3p30.268) is what the tutor is told of the scheme: its name and the sound rules it respells and speaks by. Every tutor ask
+that may speak of a sound sends it as `pronunciation_guide` beside `pronunciation` (the id): bible-talk (`buildTalkRequest`; a full record
+drops it before the history, except on a sound question), verse-ask (`buildRequest`) and verse-read (`buildReadingRequest`). The grinds'
+instructions name no sound and no scheme of their own: they say to describe every sound by `pronunciation_guide`. The grind examples carry
+Modern Greek's guide word for word.
+
+## One scheme for every sound (mw-5r3p30.268)
+
+No file of `src/` or `grinds/` outside `src/speech/pronunciation.ts` and `src/speech/schemes/` says, spells or describes a Greek sound,
+names a scheme by hand or imports a scheme file: callers ask the chosen scheme (`chosenPronunciation()` in `src/speech/greek.ts`, or
+`pronunciationOf(id)`). `tests/unit/one-pronunciation-scheme.test.ts` scans for it ('e as in pet', 'the th of “this”', 'β is v', a respelling such
+as `TAF-ta`, 'modern Greek' or 'Erasmian', an import of `schemes/`; `tests/support/sound-rules-scan.ts`), with a short allow-list of lines that are
+not Greek sounds; `tests/unit/pronunciation-swap.test.ts` registers a second scheme and shows the lessons, a respelling, a letter drill, the voice and
+the tutor's guide all follow it. The spelling's own rules (which pairs are one vowel, which clusters open a syllable: `src/speech/greekSyllables.ts`
+`ONSETS`) are the same in every scheme and live outside the schemes.
 
 `lessons` (mw-5r3p30.229) is what the scheme TEACHES of each sound-bearing idea of the grammar ladder, keyed by idea id (`letter-beta`,
 `diphthong-ou`, `pair-mp`, `breathing-rough`, and the groups `diphthongs`, `consonant-pairs`, `breathings`): `{ sound?, text? }`. The idea sheet
@@ -68,6 +87,7 @@ moving to the next syllable the longest group of consonants that can open a Gree
    It goes as `lang` on the verse-read grist, so the grind's `scoring.langs` (grinds/verse-read.json) must list it and the
    mill's scorers must be able to score it; a scheme the mill cannot score cannot be given a reading check until they can.
 5. Give it `lessons` for every letter, pair and breathing it says (copy `schemes/modernLessons.ts`; Erasmian's rough breathing adds an h, which is where that lesson belongs, not in the ladder).
+   Give it a `letterForm` (how its voice names a letter) and a `tutorGuide` (its name and sound rules, for the tutor; copy `MODERN_TUTOR_GUIDE`).
 6. Test it the way `tests/unit/respell-modern.test.ts` does, one row per rule.
 
 A test adds a scheme for one scenario with `registerPronunciation(scheme)`, which returns the function that takes
