@@ -5,9 +5,11 @@
 import { db, type GrammarLevel, type GrammarLevelHow, type GrammarLevelName } from '../db';
 import { publish } from '../../events/bus';
 import type { DrillResult } from '../grammar/drillIt';
+import { planFrom } from '../grammar/drillPlan';
 import { groupIsSolid } from '../grammar/inference';
 import { IDEA_KIND, ITEM_GROUPS, LADDER, itemsOf } from '../grammar/ladder';
 import { DAY, STEP_DAYS } from '../schedule';
+import { closeDrillPlan, saveDrillPlan } from './drillPlans';
 import { saveDrillRun } from './drillRuns';
 import { announceDue, writeReview, writeScheduled } from './reviews';
 
@@ -157,6 +159,16 @@ export type DrillMode = 'prove' | 'practice';
 export async function recordDrill(result: DrillResult, mode: DrillMode, now = Date.now()): Promise<GrammarLevelName> {
   await saveDrillRun(result, now);
   const before = (await getLevel(result.ideaId))?.level;
+  const level = await moveLevel(result, mode, before, now);
+  // a proof closes the plan the idea had; a run that did not prove it makes its weak facets a plan (src/data/grammar/drillPlan.ts)
+  const plan = planFrom(result, now);
+  if (result.proved) await closeDrillPlan(result.ideaId, now);
+  else if (plan) await saveDrillPlan(plan, now);
+  return level;
+}
+
+/** The level change of recordDrill, apart from the plan. */
+async function moveLevel(result: DrillResult, mode: DrillMode, before: GrammarLevelName | undefined, now: number): Promise<GrammarLevelName> {
   if (result.proved) {
     await teachIdea(result.ideaId, 'known', now, 'drill');
     return 'solid';
