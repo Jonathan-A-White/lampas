@@ -4,7 +4,8 @@
 //   only seen: Modern Greek does not say it). One tap an item, right = solid, wrong = not yet, each its own level (how 'placement').
 //   At most QUICK_LIMIT (40) taps, outside the 20 questions of the walk; Stop here keeps what was answered. Items he claimed whole ('I know this' on the
 //   alphabet) are not asked. Nothing here touches the store or the screen; questions.ts shapes are reused so the card is the Review card.
-import { shuffle, type Random } from '../quiz';
+import { choicesOf, lookAlikesOf, pairMates } from '../choices';
+import type { Random } from '../quiz';
 import { chosenPronunciation } from '../../speech/greek';
 import type { Pronunciation } from '../../speech/pronunciation';
 import { ITEM_GROUPS, ideaOf, itemFacet, itemsOf, type GrammarIdea } from './ladder';
@@ -38,8 +39,6 @@ export interface QuickRound {
   /** the questions' seed */
   seed: number;
 }
-
-const OPTION_COUNT = 4;
 
 /**
  * The letters and combinations to ask: every one that is not solid, in the ladder's order, at most QUICK_LIMIT. A group in `claimed` (he said he knows it
@@ -89,7 +88,8 @@ export function quickQuestion(item: QuickItem, random: Random, scheme: Pronuncia
     const breathing = idea.id === 'breathing-rough' ? 'Rough' : 'Smooth';
     const samples = SAMPLES[breathing];
     const word = samples[Math.floor(random() * samples.length)];
-    return { kind: 'breathing', ideaId: idea.id, prompt: 'Which breathing does this word begin with?', options: ['Rough', 'Smooth'], right: breathing, form: word, facet: itemFacet(idea) };
+    // the other breathing is the near miss: the two are the only answers
+    return { kind: 'breathing', ideaId: idea.id, prompt: 'Which breathing does this word begin with?', options: ['Rough', 'Smooth'], right: breathing, near: [breathing === 'Rough' ? 'Smooth' : 'Rough'], form: word, facet: itemFacet(idea) };
   }
   const same = itemsOf(idea.parent ?? 'alphabet');
   // the scheme's sound for it, else (a scheme with no lesson for it) its respelling, so the others that sound alike are left out either way
@@ -97,24 +97,32 @@ export function quickQuestion(item: QuickItem, random: Random, scheme: Pronuncia
   const sound = soundOf(idea);
   // the others of its group that sound different, so only one answer is right
   const others = same.filter((o) => o.id !== idea.id && soundOf(o) !== sound);
+  // the near misses (choices.ts): a letter's look-alike, a pair's mates that share a letter with it (αυ: ευ, ηυ, αι), among those that sound different
+  const mateIds = idea.glyphs ? lookAlikesOf(idea.id) : pairMates(glyphOf(idea), same.map(glyphOf)).map((g) => same.find((o) => glyphOf(o) === g)!.id);
+  const mates = mateIds.flatMap((id) => others.filter((o) => o.id === id));
   // a scheme that does not say what it sounds like is asked by ear only
   if (item.mode === 'hear' || ideaSound(idea, scheme) === undefined) {
+    const { options, near } = choicesOf({ right: glyphOf(idea), near: mates.map(glyphOf), fillers: others.map(glyphOf) }, random);
     return {
       kind: 'sound',
       ideaId: idea.id,
       prompt: 'Hear it, then tap it',
-      options: shuffle([glyphOf(idea), ...shuffle(others, random).slice(0, OPTION_COUNT - 1).map(glyphOf)], random),
+      options,
+      near,
       right: glyphOf(idea),
       say: glyphOf(idea),
       facet: itemFacet(idea),
     };
   }
-  const sounds = [...new Set(others.flatMap((o) => { const named = ideaSound(o, scheme); return named === undefined ? [] : [shortSound(named)]; }))];
+  const named = (list: readonly GrammarIdea[]): string[] => list.flatMap((o) => { const said = ideaSound(o, scheme); return said === undefined ? [] : [shortSound(said)]; });
+  // the near miss is the sound of the letter it looks like: ν read as υ is 'ee'
+  const { options, near } = choicesOf({ right: sound, near: named(mates), fillers: named(others) }, random);
   return {
     kind: 'letter',
     ideaId: idea.id,
     prompt: 'What sound does it make?',
-    options: shuffle([sound, ...shuffle(sounds, random).slice(0, OPTION_COUNT - 1)], random),
+    options,
+    near,
     right: sound,
     form: glyphOf(idea),
     facet: itemFacet(idea),

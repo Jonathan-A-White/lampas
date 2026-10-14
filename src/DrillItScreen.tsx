@@ -197,7 +197,7 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
           <button
             type="button"
             disabled={taken !== null || question === null}
-            onClick={() => question && setTaken(hintTakes(question.options, question.right))}
+            onClick={() => question && setTaken(hintTakes(question.options, question.right, question.near))}
             className={`${BUTTON} border-line text-accent active:bg-line disabled:text-muted`}
           >
             {taken !== null ? 'Hint used' : 'Hint'}

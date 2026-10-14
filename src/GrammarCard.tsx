@@ -5,6 +5,7 @@ import { useState } from 'react';
 import type { GrammarQuestion } from './data/grammar/questions';
 import type { QuestionMode } from './data/schedule';
 import { hintLine } from './data/grammar/hint';
+import { GreekRuns } from './FacetLabel';
 import { KNEW_IT } from './review/kinds';
 import { TapToHear } from './TapToHear';
 import { useSettled } from './ui/settle';
@@ -148,6 +149,11 @@ function Choice({ question, picked, onPick, taken, sideBySide }: Omit<Props, 'mo
       <p data-testid="feedback" role="status" className={`mt-4 text-center text-lg ${sideBySide ? 'min-h-12 short:mt-1 short:min-h-8' : 'min-h-12'}`}>
         {!answered ? '' : picked === question.right ? 'Right.' : `Not quite. ${tapForm ? 'The word is' : 'It is'} ${answerOf(question)}.`}
       </p>
+      {answered && picked !== question.right && question.rule ? (
+        <p data-testid="rule-line" className="mt-1 text-center text-base">
+          <GreekRuns text={question.rule} />
+        </p>
+      ) : null}
     </>
   );
   if (!sideBySide) {
