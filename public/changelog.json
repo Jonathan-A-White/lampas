@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.197",
+    "date": "2026-10-14",
+    "story": "mw-5r3p30.279",
+    "kind": "fixed",
+    "text": "the round Ask button no longer covers answers in Quick test or help text in Settings; every screen keeps room for it."
+  },
+  {
     "version": "0.1.196",
     "date": "2026-10-14",
     "story": "mw-86e9r1.25",

@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.197
+_2026-10-14_
+- Fixed: the round Ask button no longer covers answers in Quick test or help text in Settings; every screen keeps room for it.
+
 ## 0.1.196
 _2026-10-14_
 - Fixed: The "Which idea is this?" question no longer gives away its answer by naming the idea in other words.
