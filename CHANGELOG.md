@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.218
+_2026-10-14_
+- Fixed: a Greek word of one letter, such as Ὃ or ὁ, now sounds as its vowel, not as the letter's name "omicron".
+
 ## 0.1.215
 _2026-10-14_
 - New: In a Talk, each of your own questions now has a Copy button, so a question that is too long to send can be copied whole and trimmed elsewhere.
