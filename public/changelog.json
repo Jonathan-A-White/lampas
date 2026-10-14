@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.192",
+    "date": "2026-10-14",
+    "story": "mw-86e9r1.20",
+    "kind": "fixed",
+    "text": "The Placement screen now says plainly that 'Start from the letters' is for someone who cannot yet read Greek, so a beginner does not take the quiz by mistake."
+  },
+  {
     "version": "0.1.191",
     "date": "2026-10-14",
     "story": "mw-i7xe0n.3",

@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.192
+_2026-10-14_
+- Fixed: The Placement screen now says plainly that 'Start from the letters' is for someone who cannot yet read Greek, so a beginner does not take the quiz by mistake.
+
 ## 0.1.191
 _2026-10-14_
 - New: An idea's sheet now has a level slider (Not yet, Learning, I know it); sliding to I know it starts Drill it, which has to prove you know the idea, and the result shows where you are strong and weak.
