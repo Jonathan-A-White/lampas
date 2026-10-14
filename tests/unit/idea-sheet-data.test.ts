@@ -2,7 +2,7 @@
 // and the paradigm table built from the passage's own forms, over the committed 1 John 1 and Romans 8.
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadChapter, loadIndex, type BookIndex, type Chapter } from '../../src/data/chapter';
-import { ideaExamples, ideaPassage, paradigmOf } from '../../src/data/grammar/ideaSheet';
+import { exampleMeaning, ideaExamples, ideaPassage, paradigmOf } from '../../src/data/grammar/ideaSheet';
 import { ideaOf, ideaOfTerm } from '../../src/data/grammar/ladder';
 import { DEFAULT_CHAPTER } from '../../src/data/readerChapter';
 import { stubChapterFetch } from '../support/chapter-fetch';
@@ -235,5 +235,45 @@ describe('the idea of a term', () => {
   });
   it('is undefined for a word that is no grammar term', () => {
     expect(ideaOfTerm('zeugma')).toBeUndefined();
+  });
+});
+
+describe('the meaning an example shows (mw-5r3p30.237)', () => {
+  let johnTwo: Chapter;
+  beforeAll(async () => {
+    johnTwo = await loadChapter('1jn', 2);
+  });
+  const wordAt = (chapter: Chapter, verse: number, form: string) => {
+    const word = chapter.verses.find((v) => v.n === verse)?.g.find((w) => w.t === form);
+    if (!word) throw new Error(`no ${form} in verse ${verse}`);
+    return word;
+  };
+
+  it('is the English the verse gives the word when the chunk renders that word alone: ταῦτα in 1 John 2:1 is "these things", not "this/he/she/it"', () => {
+    const tauta = wordAt(johnTwo, 1, 'ταῦτα');
+    expect(exampleMeaning(johnTwo, 1, tauta)).toBe('these things');
+  });
+
+  it('keeps the word\'s own English without the verse punctuation that trails it', () => {
+    expect(exampleMeaning(johnTwo, 1, wordAt(johnTwo, 1, 'ἁμάρτῃ'))).toBe('does sin');
+  });
+
+  it('is the lemma beside its dictionary gloss when the chunk renders more than one Greek word', () => {
+    const word = wordAt(johnTwo, 1, 'ταῦτα');
+    const verse = johnTwo.verses.find((v) => v.n === 1);
+    const shared: Chapter = { ...johnTwo, verses: johnTwo.verses.map((v) => (v === verse ? { ...v, e: v.e.map((c) => (c.g.includes(2) ? { ...c, g: [2, 3] } : c)) } : v)) };
+    expect(exampleMeaning(shared, 1, word)).toBe('οὗτος: this/he/she/it');
+  });
+
+  it('is the lemma beside its gloss for a word with no English of its own', () => {
+    const mh = wordAt(johnTwo, 1, 'μὴ');
+    expect(mh.e).toBeUndefined();
+    expect(exampleMeaning(johnTwo, 1, mh)).toBe('μή: not');
+  });
+
+  it('reads a chapter kept before the supplied-word list (`s: 1`) without throwing', () => {
+    const word = wordAt(johnTwo, 1, 'ταῦτα');
+    const old: Chapter = { ...johnTwo, verses: johnTwo.verses.map((v) => ({ ...v, e: v.e.map((c) => ({ ...c, s: 1 as unknown as number[] })) })) };
+    expect(exampleMeaning(old, 1, word)).toBe('these things');
   });
 });
