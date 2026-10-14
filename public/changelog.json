@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.207",
+    "date": "2026-10-14",
+    "story": "mw-5r3p30.219",
+    "kind": "fixed",
+    "text": "Your requests now has a back button that returns to About when you came from About, and a double tap on a back button no longer jumps you two screens."
+  },
+  {
     "version": "0.1.206",
     "date": "2026-10-14",
     "story": "mw-s1dc0n.2",

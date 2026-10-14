@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.207
+_2026-10-14_
+- Fixed: Your requests now has a back button that returns to About when you came from About, and a double tap on a back button no longer jumps you two screens.
+
 ## 0.1.206
 _2026-10-14_
 - New: Share a screenshot of a book page to Lampas and it lists the Bible references on it as links.
