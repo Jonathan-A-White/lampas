@@ -67,6 +67,7 @@ function creditFor(path: string): string | null | undefined {
   }
   if (path === 'public/data/lexicon.json') return 'TBESG';
   if (path.startsWith('public/data/')) return 'Majority Standard Bible';
+  if (path.startsWith('public/sounds/')) return 'eSpeak NG'; // the clips of a one-letter Greek word's sound, made by eSpeak NG (scripts/sounds-build.sh)
   if (path.startsWith('public/pictures/')) return 'Claude Code'; // the memory pictures: drawn by Claude Code, credited as a tool
   // the app's own: the lamp icon (also Claude Code's drawing) and the changelog mw next writes
   if (/^public\/(icon\.svg|icon-\d+\.png|changelog\.json)$/.test(path)) return null;
