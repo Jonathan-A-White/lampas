@@ -4,8 +4,8 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadChapter, loadIndex, type BookIndex, type Chapter } from '../../src/data/chapter';
-import { exampleMeaning, ideaExamples, ideaPassage } from '../../src/data/grammar/ideaSheet';
-import { ideaOfTerm, ideasOf } from '../../src/data/grammar/ladder';
+import { exampleMeaning, ideaExamples, ideaExamplesFor, ideaPassage } from '../../src/data/grammar/ideaSheet';
+import { ideaOfTerm, ideasOf, LADDER } from '../../src/data/grammar/ladder';
 import { decodeParse, parseSegments } from '../../src/data/parseCode';
 import { DEFAULT_CHAPTER } from '../../src/data/readerChapter';
 import { stubChapterFetch } from '../support/chapter-fetch';
@@ -265,5 +265,49 @@ describe('the idea sheet agrees with the word sheet over every parse code of the
       }
     }
     expect(disagreements).toEqual([]);
+  });
+});
+
+describe('the examples of an idea when the goal verse has none (mw-5r3p30.350)', () => {
+  const goalOne = async () => ideaPassage('1 John 1:1', DEFAULT_CHAPTER, loadChapter, index);
+
+  it('stay in the goal verse, labelled as it, when the verse has one', async () => {
+    const found = await ideaExamplesFor('letter-omicron', await goalOne(), loadChapter);
+    expect(found.title).toBe('1 John 1:1');
+    expect(found.examples.length).toBeGreaterThan(0);
+    expect(found.examples.every((e) => e.verse === 1)).toBe(true);
+  });
+
+  it('come from the pericope, labelled with its verses, when the verse has none but the heading section does', async () => {
+    // 1:1 has no ξ nor ψ, so find an idea the pericope 1:1-4 holds that 1:1 does not
+    const idea = ['letter-theta', 'letter-zeta', 'letter-phi', 'letter-beta', 'letter-psi', 'letter-lambda', 'letter-rho', 'letter-delta']
+      .find((id) => ideaExamples(id, [john], 1).length === 0 && ideaExamples(id, [{ ...john, verses: john.verses.filter((v) => v.n <= 4) }]).length > 0);
+    expect(idea).toBeDefined();
+    const found = await ideaExamplesFor(idea as string, await goalOne(), loadChapter);
+    expect(found.title).toBe('1 John 1:1-4');
+    expect(found.examples.every((e) => e.verse >= 2 && e.verse <= 4)).toBe(true);
+  });
+
+  it('come from the chapter after the pericope, labelled with the chapter', async () => {
+    const pericope = { ...john, verses: john.verses.filter((v) => v.n <= 4) };
+    const idea = LADDER.find((i) => ideaExamples(i.id, [pericope]).length === 0 && ideaExamples(i.id, [john]).length > 0);
+    expect(idea).toBeDefined();
+    const found = await ideaExamplesFor((idea as { id: string }).id, await goalOne(), loadChapter);
+    expect(found.title).toBe('1 John 1');
+    expect(found.examples.every((e) => e.verse > 4)).toBe(true);
+  });
+
+  it('come from the book last: Xi is nowhere in 1 John 1, and is spelt in the later chapters', async () => {
+    const found = await ideaExamplesFor('letter-xi', await goalOne(), loadChapter);
+    expect(found.title).toBe('1 John');
+    expect(found.examples.length).toBeGreaterThan(0);
+    expect(found.examples.every((e) => /[ξΞ]/u.test(e.word.t))).toBe(true);
+    expect(found.examples.every((e) => e.chapter.chapter > 1)).toBe(true);
+  });
+
+  it('are none, under the goal\'s own name, when nothing in the book has the idea', async () => {
+    const found = await ideaExamplesFor('case-vocative', await ideaPassage('Jude', DEFAULT_CHAPTER, loadChapter, index), loadChapter);
+    expect(found.examples).toEqual([]);
+    expect(found.title).toBe('Jude');
   });
 });
