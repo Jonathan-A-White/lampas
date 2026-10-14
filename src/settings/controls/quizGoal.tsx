@@ -14,7 +14,7 @@ function QuizGoalField({ saved }: { saved: string }) {
   const fieldId = useId();
   return (
     <div role="group" aria-label="Quiz goal">
-      <label htmlFor={fieldId} className="block text-base font-medium">
+      <label htmlFor={fieldId} className="block text-base font-semibold">
         Quiz goal
       </label>
       <p className="text-base text-muted">{saved === '' ? 'No goal kept' : `Quiz goal: ${saved}`}</p>
@@ -32,7 +32,7 @@ function QuizGoalField({ saved }: { saved: string }) {
           type="button"
           disabled={!changed}
           onClick={() => void writeSetting('quizGoal', text).then(() => setDraft(undefined))}
-          className="min-h-12 min-w-16 rounded-lg bg-accent px-4 text-base font-medium text-accent-fg disabled:opacity-50"
+          className="min-h-12 min-w-16 rounded-lg bg-accent px-4 text-base font-medium text-accent-fg disabled:border disabled:border-line disabled:bg-surface disabled:text-muted"
         >
           Save
         </button>
@@ -40,7 +40,7 @@ function QuizGoalField({ saved }: { saved: string }) {
           type="button"
           disabled={saved === '' && text === ''}
           onClick={() => void writeSetting('quizGoal', '').then(() => setDraft(undefined))}
-          className="min-h-12 min-w-16 rounded-lg border border-line px-4 text-base font-medium text-fg disabled:opacity-50"
+          className="min-h-12 min-w-16 rounded-lg border border-line px-4 text-base font-medium text-fg disabled:text-muted"
         >
           Clear
         </button>

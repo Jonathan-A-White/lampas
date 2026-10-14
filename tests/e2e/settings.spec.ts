@@ -94,3 +94,39 @@ test('Settings at phone width: Read aloud span has its four choices in one row i
   await group.scrollIntoViewIfNeeded();
   await shot(page, 'settings-read-span');
 });
+
+test('Settings > Quiz goal at phone width: the label is bold and a disabled Save is plainly grey, still 48 px', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/settings');
+  const group = page.getByRole('group', { name: 'Quiz goal', exact: true });
+  await group.scrollIntoViewIfNeeded();
+  await expect(group).toBeVisible();
+
+  const label = group.locator('label', { hasText: 'Quiz goal' });
+  expect(await label.evaluate((el) => parseInt(getComputedStyle(el).fontWeight, 10))).toBeGreaterThanOrEqual(600);
+
+  const save = group.getByRole('button', { name: 'Save', exact: true });
+  const look = (): Promise<{ opacity: string; color: string; background: string; height: number }> =>
+    save.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { opacity: s.opacity, color: s.color, background: s.backgroundColor, height: el.getBoundingClientRect().height };
+    });
+
+  // nothing kept and nothing typed: Save is off
+  await expect(save).toBeDisabled();
+  const off = await look();
+  expect(off.height).toBeGreaterThanOrEqual(47.5);
+  expect(off.opacity).toBe('1'); // greyed by colour, not a faded amber
+
+  await group.getByRole('textbox').fill('learning to read the Greek');
+  await expect(save).toBeEnabled();
+  const on = await look();
+  expect(on.height).toBeGreaterThanOrEqual(47.5);
+  expect(on.background).not.toBe(off.background);
+  expect(on.color).not.toBe(off.color);
+
+  await group.getByRole('textbox').fill('');
+  await expect(save).toBeDisabled();
+  await group.scrollIntoViewIfNeeded();
+  await shot(page, 'settings-quiz-goal-save-off');
+});
