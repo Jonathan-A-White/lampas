@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.205",
+    "date": "2026-10-14",
+    "story": "mw-5r3p30.231",
+    "kind": "new",
+    "text": "Switching the Greek pronunciation now starts the letters, sounds and marks again in the new one and keeps your old progress, ready for when you switch back."
+  },
+  {
     "version": "0.1.204",
     "date": "2026-10-14",
     "story": "mw-5r3p30.210",

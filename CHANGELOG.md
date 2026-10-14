@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.205
+_2026-10-14_
+- New: Switching the Greek pronunciation now starts the letters, sounds and marks again in the new one and keeps your old progress, ready for when you switch back.
+
 ## 0.1.204
 _2026-10-14_
 - Fixed: after you say yes or no to sending an idea to the makers, the 'Sent' or 'Not sent' mark stays in view next to the tutor's reply.
