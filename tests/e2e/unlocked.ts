@@ -24,8 +24,8 @@ function today(): string {
 }
 
 /** Past the gate: the seeded key, remembered as holding a licence a minute ago, the chain unreachable. Today's tip is marked as asked, so the
- * sitting sends no tips grist (src/tips/offer.ts), and a new question card takes a tap at once (`lampas.settleMs` 0); `tips: true` leaves the day free for a spec that wants the grist. */
-export async function openUnlocked(page: Page, options: { tips?: boolean } = {}): Promise<void> {
+ * sitting sends no tips grist (src/tips/offer.ts), the welcome is already done (`welcome: true` leaves it due), and a new question card takes a tap at once (`lampas.settleMs` 0); `tips: true` leaves the day free for a spec that wants the grist. */
+export async function openUnlocked(page: Page, options: { tips?: boolean; welcome?: boolean } = {}): Promise<void> {
   await refuseChain(page);
   await seedDeviceKey(page);
   await page.addInitScript(
@@ -35,6 +35,8 @@ export async function openUnlocked(page: Page, options: { tips?: boolean } = {})
   // a new question card ignores taps for a moment (src/ui/settle.ts, mw-hqd5bz.21); a spec taps the instant a card is drawn
   await page.addInitScript(() => window.localStorage.setItem('lampas.settleMs', '0'));
   if (!options.tips) await page.addInitScript((day) => window.localStorage.setItem('lampas.tipsDay', day), today());
+  // a new licensed reader is welcomed by the tutor (src/Welcome.tsx, mw-yrmkdf.3): a spec that is not about the welcome marks it done, `welcome: true` leaves it due
+  if (!options.welcome) await page.addInitScript(() => window.localStorage.setItem('lampas.welcome', 'done'));
 }
 
 /** A phone with no licence: the seeded key, nothing remembered, the chain unreachable (so useLicence says not-licensed). Same quiet as openUnlocked otherwise. */

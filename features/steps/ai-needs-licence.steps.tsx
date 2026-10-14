@@ -37,6 +37,8 @@ async function fresh(): Promise<void> {
   clearBus();
   forgetTrail();
   window.localStorage.clear();
+  // these scenarios are not about the welcome of a new licensed reader (src/Welcome.tsx): it is already done
+  window.localStorage.setItem('lampas.welcome', 'done');
   stubChapterFetch();
   stubRecognizer();
   await db.open();

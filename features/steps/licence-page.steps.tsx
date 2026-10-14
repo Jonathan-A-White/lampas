@@ -35,6 +35,8 @@ async function fresh(): Promise<void> {
   clearBus();
   forgetTrail();
   window.localStorage.clear();
+  // these scenarios are not about the welcome of a new licensed reader (src/Welcome.tsx): it is already done
+  window.localStorage.setItem('lampas.welcome', 'done');
   stubChapterFetch();
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.reviews.clear(), db.grammarLevels.clear()]);
