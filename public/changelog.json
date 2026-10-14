@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.204",
+    "date": "2026-10-14",
+    "story": "mw-5r3p30.210",
+    "kind": "fixed",
+    "text": "after you say yes or no to sending an idea to the makers, the 'Sent' or 'Not sent' mark stays in view next to the tutor's reply."
+  },
+  {
     "version": "0.1.203",
     "date": "2026-10-14",
     "story": "mw-5r3p30.217",

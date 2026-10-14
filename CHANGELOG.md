@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.204
+_2026-10-14_
+- Fixed: after you say yes or no to sending an idea to the makers, the 'Sent' or 'Not sent' mark stays in view next to the tutor's reply.
+
 ## 0.1.203
 _2026-10-14_
 - Fixed: The Quiz goal label in Settings is now bold, and the Save button looks plainly greyed out when there is nothing to save.
