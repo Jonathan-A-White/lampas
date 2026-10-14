@@ -600,13 +600,13 @@ describe('Sound it out speaks the app\'s pronunciation (mw-5r3p30.241)', () => {
     expect(text).toContain('`focus.respelling`');
   });
 
-  it('they say to describe each syllable by the respelling and the modern rules, never by English or Erasmian habit', () => {
-    expect(text).toMatch(/describe each syllable's sound by `focus\.respelling`/i);
-    for (const rule of ['αυ and ευ are af and ef', 'av and ev', 'αι is e', 'ει, οι, υι, η, ι and υ are ee', 'ου is oo', 'β is v', 'δ is dh', 'γ is gh', 'or y before e or i']) {
-      expect(text, rule).toContain(rule);
-    }
-    expect(text).toMatch(/never by English spelling habit or by the Erasmian/);
-    expect(text).toMatch(/never "aw"/);
+  // mw-5r3p30.268: the rules (αυ is af or av, never "aw"; β is v ...) moved into the scheme's tutorGuide, sent as pronunciation_guide; tests/unit/one-pronunciation-scheme.test.ts holds them there
+  it('they say to describe each syllable by the respelling and the rules of pronunciation_guide, never by English habit or another pronunciation', () => {
+    expect(text).toMatch(/describe each syllable's sound by `focus\.respelling` and the rules of `pronunciation_guide`/i);
+    expect(text).toContain('- `pronunciation_guide`:');
+    expect(text).toMatch(/never by English spelling habit or by any other pronunciation/);
+    expect(validate({ ...base, pronunciation: 'modern', pronunciation_guide: 'Modern Greek: β is v.' }, input)).toEqual([]);
+    expect(validate({ ...base, pronunciation_guide: '' }, input)).not.toEqual([]);
   });
 
   it('they say never to name a wrong sound, even as a warning, because the app reads the answer aloud (mw-5r3p30.282)', () => {
