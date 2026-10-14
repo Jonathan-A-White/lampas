@@ -201,7 +201,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
               and two filled buttons with opposite meanings (Go on, Keep my answers) would sit together. Go on is back when he keeps his answers. */}
           {!confirming && (
             <p className="mt-2 text-muted">
-              Questions on the grammar it needs, in the order of {session.approach.name}. Miss the easy things and it goes easier, down to the letters. Twenty questions at a time.
+              Questions on the grammar it needs, in the order of {session.approach.name}. Miss the easy things and it goes easier. Twenty questions at a time.
             </p>
           )}
           <div className="mt-6 grid grid-cols-1 gap-3">
@@ -243,6 +243,10 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
                 <button type="button" onClick={() => settled() && void startFromLetters()} className={`${BUTTON} border border-line`}>
                   Start from the letters
                 </button>
+                {/* A total beginner must not take the quiz of Greek he cannot read: say what each of the two does (mw-86e9r1.20) */}
+                <p data-testid="letters-note" className="text-muted">
+                  Start from the letters is for someone who cannot yet read Greek: no quiz, and Learn next begins with The Greek alphabet. Start is a quiz of the grammar your goal needs.
+                </p>
               </>
             )}
             <button type="button" onClick={() => settled() && leave()} className={`${BUTTON} border border-line`}>

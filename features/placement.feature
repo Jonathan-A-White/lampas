@@ -102,6 +102,22 @@ Feature: Test me on the grammar, and meet me where I am
     When he taps "Go on another day"
     Then Settings is open
 
+  Scenario: The intro says plainly what Start from the letters is
+    Given his goal is "Read 1 John 1:1" and he knows nothing yet
+    When he opens the placement
+    Then the screen offers "Start from the letters"
+    And the intro line says "Start from the letters is for someone who cannot yet read Greek: no quiz, and Learn next begins with The Greek alphabet"
+    And the intro line also says "Start is a quiz of the grammar your goal needs"
+
+  Scenario: The intro with kept answers has no line about Start from the letters
+    Given his goal is "Read 1 John 1:1" and he knows nothing yet
+    When he opens the placement
+    And he starts the placement
+    And he answers 3 questions right
+    And Lampas is closed and opened again
+    Then the screen offers "Go on"
+    And the intro has no line about Start from the letters
+
   Scenario: A total beginner starts from the letters
     Given his goal is "Read 1 John 1:1" and he knows nothing yet
     When he opens the placement

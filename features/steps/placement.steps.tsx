@@ -94,6 +94,17 @@ describeFeature(feature, ({ Scenario }) => {
   const says = async (_: unknown, text: string) => {
     await waitFor(() => expect(document.body).toHaveTextContent(text));
   };
+  const reopened = async () => {
+    cleanup();
+    clearBus();
+    forgetTrail();
+    window.history.replaceState(null, '', '/');
+    restoreLastRoute();
+    render(<App newRandom={() => mulberry32(7)} />);
+  };
+  const lineSays = async (_: unknown, text: string) => {
+    await waitFor(() => expect(screen.getByTestId('letters-note')).toHaveTextContent(text));
+  };
   const asks = async (_: unknown, text: string) => {
     await waitFor(() => expect(screen.getByTestId('placement-question')).toHaveTextContent(text));
   };
@@ -194,19 +205,33 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the question line says {string}', asks);
   });
 
+  Scenario('The intro says plainly what Start from the letters is', ({ Given, When, Then, And }) => {
+    Given('his goal is {string} and he knows nothing yet', given);
+    When('he opens the placement', opened);
+    Then('the screen offers {string}', says);
+    And('the intro line says {string}', lineSays);
+    And('the intro line also says {string}', lineSays);
+  });
+
+  Scenario('The intro with kept answers has no line about Start from the letters', ({ Given, When, And, Then }) => {
+    Given('his goal is {string} and he knows nothing yet', given);
+    When('he opens the placement', opened);
+    And('he starts the placement', started);
+    And('he answers {int} questions right', right);
+    And('Lampas is closed and opened again', reopened);
+    Then('the screen offers {string}', says);
+    And('the intro has no line about Start from the letters', async () => {
+      await screen.findByRole('button', { name: 'Go on' });
+      expect(screen.queryByTestId('letters-note')).toBeNull();
+    });
+  });
+
   Scenario('Placement is remembered across a reopen', ({ Given, When, And, Then }) => {
     Given('his goal is {string} and he knows nothing yet', given);
     When('he opens the placement', opened);
     And('he starts the placement', started);
     And('he answers {int} questions right', right);
-    And('Lampas is closed and opened again', async () => {
-      cleanup();
-      clearBus();
-      forgetTrail();
-      window.history.replaceState(null, '', '/');
-      restoreLastRoute();
-      render(<App newRandom={() => mulberry32(7)} />);
-    });
+    And('Lampas is closed and opened again', reopened);
     Then('it says {string}', says);
     And('the screen offers {string}', says);
   });
