@@ -3,7 +3,7 @@
 // long' at the tutor's deadline (mw-5r3p30.208). The mill is the fake Postern behind a fetch whose answers the test delays or fails, on fake time.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PrivateKey, Utils } from '@bsv/sdk';
-import { CONTACT_LOST_MS, TutorError, askGrind, tutorTimings } from '../../src/services/tutor';
+import { CONTACT_LOST_MS, TUTOR_OFFLINE_MESSAGE, TutorError, askGrind, tutorTimings } from '../../src/services/tutor';
 import { makeFakePostern, type FakePostern } from '../support/fake-postern';
 
 const key = Uint8Array.from(Utils.toArray('00'.repeat(31) + '09', 'hex'));
@@ -98,7 +98,7 @@ describe('a backend that cannot be reached', () => {
     const result = (await wait) as { error: TutorError };
     expect(result.error).toBeInstanceOf(TutorError);
     expect(result.error.failure).toBe('unreachable');
-    expect(result.error.message).toBe('Postern did not answer. Check the connection and try again.');
+    expect(result.error.message).toBe(TUTOR_OFFLINE_MESSAGE);
     expect(failedAt).toBeLessThan(CONTACT_LOST_MS + 2 * 30_000 + 2 * tutorTimings.pollMs);
   });
 
@@ -117,7 +117,7 @@ describe('a backend that cannot be reached', () => {
 });
 
 describe('an answer that never comes', () => {
-  it('ends as The tutor took too long to answer. at the 180 s deadline, with the backend answering all the while', async () => {
+  it('ends as The tutor is offline right now at the 180 s deadline, with the backend answering all the while', async () => {
     const wait = outcome(ask());
     await vi.advanceTimersByTimeAsync(tutorTimings.deadlineMs - 1_000);
     let ended = false;
@@ -128,7 +128,7 @@ describe('an answer that never comes', () => {
     const result = (await wait) as { error: TutorError };
     expect(result.error).toBeInstanceOf(TutorError);
     expect(result.error.failure).toBe('no-answer');
-    expect(result.error.message).toBe('The tutor took too long to answer.');
+    expect(result.error.message).toBe(TUTOR_OFFLINE_MESSAGE);
   });
 });
 

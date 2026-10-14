@@ -20,6 +20,16 @@ export const MILL_POLL_MS = grist.POLL_INTERVAL_MS;
 export const AwaitAbortedError = grist.AwaitAbortedError;
 export const GristInputError = grist.GristInputError;
 
+/** The backend answered a call with an HTTP status that is not success: it was reached, so the phone's connection is not the trouble (a 5xx is the backend or its proxy, with the factory's home off). */
+export class BackendStatusError extends Error {
+  readonly status: number;
+  constructor(status: number, path: string) {
+    super(`The backend answered ${status} to ${path}.`);
+    this.name = 'BackendStatusError';
+    this.status = status;
+  }
+}
+
 /** Refuses with the door's licence refusal unless this phone is licensed. 'Checking' is not licensed yet: the AI is off until the check says so. */
 export function requireLicence(): void {
   if (currentLicence() !== 'licensed') throw new door.RefusedError(door.LICENCE_REQUIRED, 401);
@@ -58,7 +68,7 @@ export function timedDoor(d: Door): TimedDoor {
 export async function meOf(d: TimedDoor, signal: AbortSignal): Promise<{ mill: string; events: boolean }> {
   requireLicence();
   const response = await d.fetch('/me', { signal });
-  if (!response.ok) throw new Error(`The backend answered ${response.status} to /api/me.`);
+  if (!response.ok) throw new BackendStatusError(response.status, '/api/me');
   const body = (await response.json()) as { mill?: unknown; features?: unknown };
   const mill = typeof body.mill === 'string' ? body.mill.trim() : '';
   if (!mill) throw new Error('The backend names no mill key, so there is nowhere to send a grist.');
@@ -194,7 +204,7 @@ export async function readTimedPage(txid: string, o: { door: TimedDoor; key: Uin
   const started = Date.now();
   try {
     const response = await d.fetch(`/messages?since=${o.since}`, { signal: own.signal });
-    if (!response.ok) throw new Error(`The backend answered ${response.status} to /api/messages.`);
+    if (!response.ok) throw new BackendStatusError(response.status, '/api/messages');
     body = (await response.json()) as typeof body;
   } catch (err) {
     if (signal.aborted) throw new grist.AwaitAbortedError();

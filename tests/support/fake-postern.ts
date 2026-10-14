@@ -51,6 +51,8 @@ export interface FakePostern {
   licensed: boolean;
   /** Make every call fail as an unreachable backend does (fetch rejects with a TypeError). */
   down: boolean;
+  /** Every call is answered with this HTTP status and no work done, as the VPS's proxy does while the factory's home is off (502, 503 or 504); undefined = a working backend. */
+  gateway: number | undefined;
   /** Answer the oldest grist not yet answered. */
   answer(reply: Reply): void;
   /** the `since` of every GET /api/messages, in order */
@@ -206,6 +208,7 @@ export function makeFakePostern(): FakePostern {
     holds: {},
     licensed: true,
     down: false,
+    gateway: undefined,
     sinces: [],
     events: false,
     eventsRefused: false,
@@ -240,6 +243,7 @@ export function makeFakePostern(): FakePostern {
 
   fake.fetch = (async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     if (fake.down) throw new TypeError('Failed to fetch');
+    if (fake.gateway !== undefined) return json(fake.gateway, { error: 'upstream is down' });
     const url = new URL(typeof input === 'string' ? input : input.toString());
     const method = (init?.method ?? 'GET').toUpperCase();
     if (url.origin !== POSTERN_ORIGIN) return json(404, { error: 'not the backend' });

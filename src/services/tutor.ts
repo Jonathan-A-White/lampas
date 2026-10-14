@@ -15,7 +15,7 @@ import type { RustyItem } from '../data/rusty';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation } from '../speech/pronunciation';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
 import { listenForAnswers, type StreamTarget } from './answerStream';
-import { AwaitAbortedError, GristInputError, meOf, readTimedPage, sendTimedGrist, timedDoor, type MillAnswer, type MillFile, type Page, type TimedDoor } from './mill';
+import { AwaitAbortedError, BackendStatusError, GristInputError, meOf, readTimedPage, sendTimedGrist, timedDoor, type MillAnswer, type MillFile, type Page, type TimedDoor } from './mill';
 
 /** The app and kind the mill runs the grind under (grinds/verse-ask.json), and the version of the request below. */
 export const TUTOR_APP = 'lampas';
@@ -249,6 +249,13 @@ export const FAILURE_TITLES: Record<TutorFailure, string> = {
   'no-answer': 'Could not reach the tutor',
 };
 
+/** What the box says when his phone has no connection, and when the backend answers but the tutor (the factory's home) does not: the
+ * two are different and the second is never his phone's fault (mw-5r3p30.340). Every surface shows TutorError.message, so these are the only copies. */
+export const OFFLINE_MESSAGE = 'You are offline. Check your connection and try again.';
+export const TUTOR_OFFLINE_MESSAGE = 'The tutor is offline right now. This is not your connection; try again later.';
+
+const phoneIsOffline = (): boolean => typeof navigator !== 'undefined' && navigator.onLine === false;
+
 export class TutorError extends Error {
   readonly failure: TutorFailure;
   constructor(failure: TutorFailure, message: string) {
@@ -266,8 +273,12 @@ function explain(err: unknown): TutorError {
   }
   if (err instanceof GristInputError) return new TutorError('not-sent', err.message);
   if (err instanceof door.RefusedError) return new TutorError('unreachable', err.message);
-  if (err instanceof door.ApiTimeoutError || err instanceof door.BackendUnreachableError) {
-    return new TutorError('unreachable', 'Postern did not answer. Check the connection and try again.');
+  // the phone has no network: the browser says so, or the call failed before any response (the door keeps the fetch's TypeError as the cause)
+  const noResponse = err instanceof door.BackendUnreachableError && err.cause instanceof TypeError;
+  if (noResponse || phoneIsOffline()) return new TutorError('unreachable', OFFLINE_MESSAGE);
+  // the backend answered with a gateway error, or did not answer in time: it is the tutor's side that is down
+  if (err instanceof door.ApiTimeoutError || err instanceof door.BackendUnreachableError || (err instanceof BackendStatusError && err.status >= 500)) {
+    return new TutorError('unreachable', TUTOR_OFFLINE_MESSAGE);
   }
   return new TutorError('unreachable', err instanceof Error ? err.message : 'Something went wrong.');
 }
@@ -323,7 +334,7 @@ export async function askGrind<Answer>(kind: string, request: object, isAnswer: 
     return reply.answer;
   } catch (err) {
     if (report && !sent) releaseReport(report.txid);
-    if (err instanceof AwaitAbortedError && !options.signal?.aborted) throw new TutorError('no-answer', 'The tutor took too long to answer.');
+    if (err instanceof AwaitAbortedError && !options.signal?.aborted) throw new TutorError('no-answer', phoneIsOffline() ? OFFLINE_MESSAGE : TUTOR_OFFLINE_MESSAGE);
     throw explain(err);
   } finally {
     clearTimeout(timer);
