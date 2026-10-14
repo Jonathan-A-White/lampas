@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.190
+_2026-10-14_
+- New: In the Immersive reader a small quiet line at the bottom now shows the book, the chapter and how far through it you are, like a Kindle.
+
 ## 0.1.189
 _2026-10-13_
 - Fixed: A quiet update that did not get applied the first time you left the app is now tried again the next time you leave it.
