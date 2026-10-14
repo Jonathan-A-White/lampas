@@ -1,11 +1,13 @@
 // A question he speaks reaches the tutor marked `spoken` (mw-5r3p30.244): the phone's en-US recogniser writes a Greek word as English
 // sound-alikes ('Tech N9ne' for τεκνίον), so both tutor grinds are told to match them to the passage's Greek and say which word they took.
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import type { Chapter, Verse } from '../../src/data/chapter';
 import { buildTalkRequest } from '../../src/services/talk';
 import { buildRequest } from '../../src/services/tutor';
+import { askTranscriber } from '../../src/speech/askTranscriber';
 import { forgetSpoken, noteSpoken, wasSpoken } from '../../src/speech/spoken';
+import { FakeRecognizer, result, stubRecognizer } from '../support/fake-recognizer';
 import { validate, type Schema } from '../support/schema-validate';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
@@ -40,6 +42,57 @@ describe('which words were spoken (src/speech/spoken.ts)', () => {
     expect(wasSpoken('what paradigm from Tech N9ne')).toBe(true);
     expect(wasSpoken('what paradigm from Tech N9ne to technia')).toBe(false);
     forgetSpoken();
+  });
+});
+
+describe('words kept unsent in the Ask field are marked spoken (mw-5r3p30.307)', () => {
+  const SAID = 'what paradigm do I need to know to go from Tech N9ne to its dictionary form';
+
+  /** a hold on the Ask bar: he speaks SAID, as the recogniser hears it so far, and the hold is still on */
+  function holding() {
+    const interim: string[] = [];
+    const started = askTranscriber.start({ lang: 'en-US', onInterim: (text) => interim.push(text) });
+    if (!started.ok) throw new Error('expected the hold to start');
+    const rec = FakeRecognizer.last();
+    rec.open();
+    rec.say([result(SAID, false)]);
+    return { session: started.session, interim };
+  }
+
+  beforeEach(() => {
+    stubRecognizer();
+    forgetSpoken();
+  });
+  afterEach(() => {
+    forgetSpoken();
+    vi.unstubAllGlobals();
+  });
+
+  it('a slide off the bar (or the app hidden) keeps the words, and they are spoken until he changes one', () => {
+    const { session, interim } = holding();
+    expect(interim.at(-1)).toBe(SAID);
+    session.abort();
+    // the composer puts those words in its field; Send of them unedited goes marked
+    expect(wasSpoken(SAID)).toBe(true);
+    expect(wasSpoken(`  ${SAID}  `)).toBe(true);
+    expect(wasSpoken(SAID.replace('Tech N9ne', 'technia'))).toBe(false);
+    expect(wasSpoken(`${SAID} please`)).toBe(false);
+  });
+
+  it('a release that settles with no final words keeps the words shown, and they are spoken', async () => {
+    const { session } = holding();
+    const stopped = session.stop();
+    FakeRecognizer.last().onend?.();
+    await stopped;
+    expect(wasSpoken(SAID)).toBe(true);
+  });
+
+  it('a hold that heard nothing marks nothing', () => {
+    const started = askTranscriber.start({ lang: 'en-US' });
+    if (!started.ok) throw new Error('expected the hold to start');
+    started.session.abort();
+    expect(wasSpoken('')).toBe(false);
+    expect(wasSpoken(SAID)).toBe(false);
   });
 });
 
