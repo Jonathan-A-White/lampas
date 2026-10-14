@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.200
+_2026-10-14_
+- New: Share text to Lampas and it lists every Bible reference in it as a tappable link that opens the verse, in the order of the page or in Bible order.
+
 ## 0.1.199
 _2026-10-14_
 - Fixed: Example words on the grammar sheets now show their meaning as it stands in the verse (these things), not the dictionary meaning of the base word.

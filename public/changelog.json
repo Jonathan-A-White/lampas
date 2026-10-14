@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.200",
+    "date": "2026-10-14",
+    "story": "mw-s1dc0n.1",
+    "kind": "new",
+    "text": "Share text to Lampas and it lists every Bible reference in it as a tappable link that opens the verse, in the order of the page or in Bible order."
+  },
+  {
     "version": "0.1.199",
     "date": "2026-10-14",
     "story": "mw-5r3p30.237",
