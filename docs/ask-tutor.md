@@ -268,6 +268,14 @@ a phone that installed Lampas before this version may need it removed and instal
   screen (`screen.<name>`) is the Ask the tutor sheet's scope; **New talk** is a talk of its own (`talk.<ms>`, `TalkScope.free`, titled **Talk with the
   tutor**, a `screen` {name 'A talk with the tutor'} so the tutor knows it is about no text and no screen). `src/share/talkPlace.ts` reads a key (`placeOf`) and
   names it (`talkLabel`, `timeAgo`).
+- **Bible references** (mw-s1dc0n.1, `features/share-references.feature`): shared words are searched for references (`src/nav/refsInText.ts` `findReferences`, over
+  `links.ts` `parseCanonReference`: no second table of names; a full name or an abbreviation with or without a dot, `1 John`, `Ps 23`, `Rom 8:28-30`, `Rom 8:28, 31` as one
+  reference each; a translation tag such as ESV is left out; a word that is also English, such as `Mark my words`, needs a chapter and verse or a capital) and the sheet shows
+  **Bible references (N)** above the choice (`src/share/ShareReferences.tsx`): each reference as printed, a link whose href is `links.ts` `referenceUrl` (a range at its
+  first verse, an Old Testament book by its OSIS code `OT_OSIS`; Lampas holds no Old Testament text, so that link opens the nearest place with its usual notice). A tap opens the
+  link as a new Back step (`route.ts` `openHash`), so Back returns to the list. **Page order** (the default) keeps the order of the text, a reference named twice at its first place
+  with **×2**; **Bible order** groups them under each book. The choice is kept on the phone (localStorage `lampas.shareRefsOrder`). With words and no reference it says **No Bible
+  references found**.
 - **Cancel**, the phone's Back, Escape and a swipe down drop the share (`dropShares`) and open Home; Done or Back on the talk opens Home.
 - Pictures only JPEG, PNG or WebP join the composer (`image/*` from the share sheet may bring a GIF or HEIC: the composer says "Only JPEG, PNG or WebP pictures can
   be sent." as it does for an attach); at most four.

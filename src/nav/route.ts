@@ -151,6 +151,13 @@ export function openReader(address: Pick<ReaderAddress, 'book' | 'chapter' | 've
   notify();
 }
 
+/** Opens an address of the app that is not a screen's own (a link, '#/?ref=Rom.8.28', src/nav/links.ts), as a new Back step. A change of `location.hash` would fire a
+ * popstate, which an open sheet takes for Back. */
+export function openHash(hash: string): void {
+  window.history.pushState(null, '', urlFor(hash));
+  notify();
+}
+
 /** What the history entry of a Verse view carries, so closing it can step Back to the Reader it was opened from. */
 type VerseEntry = { verseView?: boolean } | null;
 
