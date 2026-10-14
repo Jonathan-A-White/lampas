@@ -1,8 +1,8 @@
 // src/speech/greekSyllables.ts — a Greek word cut into syllables in Greek letters, the marks left where they were. The tutor lists syllables
 // for a Sound it out question and the app reads them aloud one after another; this is the app's check that those syllables are good
 // (mw-5r3p30.241): they spell the word and no boundary falls inside a diphthong. When they do not, the word is cut here instead.
-// The rules are the ones modern.ts respells by: a pair is one vowel sound unless the first letter is stressed or the second has a diaeresis.
-import { ONSETS } from './schemes/modern';
+// The rules are the spelling's, the same in every pronunciation: a pair is one vowel unless the first letter is stressed or the second has a diaeresis,
+// and a syllable opens with any consonant cluster that can open one (ONSETS, which the schemes' respellers share: schemes/modern.ts).
 
 interface Piece {
   /** the letter with its marks, as written */
@@ -14,6 +14,17 @@ interface Piece {
   /** a diaeresis sits on it: it does not join the letter before it */
   split: boolean;
 }
+
+/** Clusters that can open a Greek syllable; any single consonant can. */
+export const ONSETS = new Set(
+  [
+    ...['π', 'β', 'φ', 'κ', 'γ', 'χ'].flatMap((a) => [`${a}ρ`, `${a}λ`]),
+    'τρ', 'δρ', 'θρ',
+    'στ', 'σκ', 'σπ', 'σθ', 'σχ', 'σφ',
+    'πν', 'πτ', 'κτ', 'φθ', 'χθ', 'γν', 'κν', 'μν', 'θν', 'κμ',
+    'στρ', 'σπρ', 'σπλ', 'σκρ', 'σκλ',
+  ],
+);
 
 const VOWELS = 'αεηιουω';
 /** The pairs of vowel letters that say one sound. */

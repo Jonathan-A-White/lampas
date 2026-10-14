@@ -2,6 +2,7 @@
 // the stressed syllable in capitals ("khree-STO"). Written from Modern Greek's own rules (docs/pronunciation.md lists
 // them); the other schemes (Erasmian next) are further files beside this one, registered in ../pronunciation.ts.
 import type { Pronunciation } from '../pronunciation';
+import { ONSETS } from '../greekSyllables';
 import { modernLessons } from './modernLessons';
 
 interface Letter {
@@ -45,17 +46,6 @@ const SINGLE: Record<string, string> = {
 };
 const VOWEL_SOUND: Record<string, string> = { α: 'a', ε: 'e', η: 'ee', ι: 'ee', υ: 'ee', ο: 'o', ω: 'o' };
 const DIGRAPH_SOUND: Record<string, string> = { αι: 'e', ει: 'ee', οι: 'ee', υι: 'ee', ου: 'oo' };
-
-/** Clusters that can open a Greek syllable; any single consonant can. */
-export const ONSETS = new Set(
-  [
-    ...['π', 'β', 'φ', 'κ', 'γ', 'χ'].flatMap((a) => [`${a}ρ`, `${a}λ`]),
-    'τρ', 'δρ', 'θρ',
-    'στ', 'σκ', 'σπ', 'σθ', 'σχ', 'σφ',
-    'πν', 'πτ', 'κτ', 'φθ', 'χθ', 'γν', 'κν', 'μν', 'θν', 'κμ',
-    'στρ', 'σπρ', 'σπλ', 'σκρ', 'σκλ',
-  ],
-);
 
 interface Vowel {
   text: string;
@@ -234,6 +224,18 @@ export function voiceFormModern(text: string): string {
   });
 }
 
+/** What the tutor is told of Modern Greek (mw-5r3p30.268): the rules respellModern writes, and the ones the lessons teach, so its answers say the sounds
+ * the app speaks and respells. tests/unit/one-pronunciation-scheme.test.ts holds its examples to respellModern. */
+export const MODERN_TUTOR_GUIDE =
+  'Modern Greek, as Greek is spoken in Greece today: never by English spelling habit and never by the Erasmian (school) pronunciation. ' +
+  'The app respells a word in syllables, the stressed one in capitals: ταῦτα is TAF-ta, Πάντοτε is PAN-do-te, χαίρετε is HYE-re-te. ' +
+  'αυ and ευ are af and ef before θ κ ξ π σ τ φ χ ψ, and av and ev before a voiced consonant or a vowel (never "aw", never "ow"); ηυ is eef or eev the same way. ' +
+  'αι is e; ει, οι, υι, η, ι and υ are ee; ου is oo; ω and ο are o. ' +
+  'β is v; δ is dh as in "this"; γ is gh (or y before e or i); θ is th as in "thin"; φ is f; ' +
+  'χ is kh, the ch of "loch", before a, o, ou and a consonant, and the softer hy before e or i. ' +
+  'μπ, ντ and γκ are b, d and g at the start of a word and mb, nd and ng inside it; γγ is ng; γχ is ng plus kh (or hy before e or i); γξ is nks. ' +
+  'σ is z before β γ δ ζ λ μ ν ρ. A doubled consonant is said once. Both breathings are silent, and the iota under a letter is not said.';
+
 export const MODERN: Pronunciation = {
   id: 'modern',
   label: 'Modern Greek',
@@ -244,5 +246,8 @@ export const MODERN: Pronunciation = {
   keyWords: MODERN_KEY_WORDS,
   loneLetter: loneLetterModern,
   voiceForm: voiceFormModern,
+  // a Greek voice names a bare lower-case letter the modern way ('vita' for β); a capital would be read 'capital ...'
+  letterForm: (letter) => letter.toLowerCase(),
+  tutorGuide: MODERN_TUTOR_GUIDE,
   lessons: modernLessons(MODERN_KEY_WORDS),
 };

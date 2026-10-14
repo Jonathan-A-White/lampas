@@ -12,7 +12,7 @@ import type { LearnerProfile } from '../data/learnerProfile';
 import type { MemoryField } from '../data/learnerMemory';
 import type { TutorRequest } from '../data/requestsForTutor';
 import type { RustyItem } from '../data/rusty';
-import { DEFAULT_PRONUNCIATION, type GreekPronunciation } from '../speech/pronunciation';
+import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation } from '../speech/pronunciation';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
 import { listenForAnswers, type StreamTarget } from './answerStream';
 import { AwaitAbortedError, GristInputError, meOf, readTimedPage, sendTimedGrist, timedDoor, type MillAnswer, type MillFile, type Page, type TimedDoor } from './mill';
@@ -169,6 +169,8 @@ export interface VerseAskRequest {
   memory?: MemoryField;
   /** the Greek pronunciation the app speaks and respells in (src/speech/pronunciation.ts), as the Bible talk is sent it: a sound is described by it */
   pronunciation: GreekPronunciation;
+  /** that pronunciation's name and sound rules, from its scheme (mw-5r3p30.268, Pronunciation.tutorGuide): a sound is described by them */
+  pronunciation_guide: string;
   /** the settings that bear on this answer, by key (src/tutor/knows.ts settingsSentTo): { hebrewDepth: 'both', askBy: 'speaking', weave: 'off', ... } */
   settings?: Record<string, string>;
   /** the requests he sent to the factory and where each stands (src/data/requestsForTutor.ts): up to 10, newest first; missing when he has sent none */
@@ -224,6 +226,7 @@ export function buildRequest(reference: string, verse: Verse, question: string, 
     ...(spoken ? { spoken: true as const } : {}),
     solid_words: solidWords,
     pronunciation,
+    pronunciation_guide: pronunciationOf(pronunciation).tutorGuide,
     ...(learner ? { learner } : {}),
     ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
     ...(learnerProfile ? { learner_profile: learnerProfile } : {}),

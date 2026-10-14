@@ -35,6 +35,12 @@ export interface Pronunciation {
    * voice reads the Greek its own way: a Modern Greek voice drops the n of ντ inside a word ('PA-do-te' for Πάντοτε, respelt 'PAN-do-te'), so Modern
    * Greek hands it 'πάν-ντοτε' (mw-5r3p30.264). A scheme whose voice already says its respelling gives the text back as it is. */
   voiceForm(text: string): string;
+  /** What this scheme's voice is handed to name a LETTER (a letter drill's 'Tap to hear', where the letter itself is asked about, not a word): Modern
+   * Greek gives the bare letter in lower case, which a Greek voice names the modern way ('vita' for β; mw-5r3p30.268). */
+  letterForm(letter: string): string;
+  /** What the tutor is told of this scheme: its name and the sound rules it respells and speaks by, sent with every ask that may speak of a sound
+   * (the grinds' `pronunciation_guide`), so the grinds' instructions name no sound of their own (mw-5r3p30.268). */
+  tutorGuide: string;
   /** The sound lessons this scheme teaches, keyed by ladder idea id ('letter-beta', 'diphthong-ou', 'breathings' ...), in its own sounds: the idea sheet and the
    * sound questions read them (mw-5r3p30.229). An idea it gives none for falls back to a text that names no sound, never to another scheme's. */
   lessons?: Readonly<Record<string, SoundLesson>>;

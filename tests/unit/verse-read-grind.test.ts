@@ -27,7 +27,8 @@ describe('grinds/verse-read.json', () => {
     expect((grind.scoring as { langs: string[] }).langs).toEqual(['en', 'el']);
     const text = readFileSync(grind.instructions as string, 'utf8');
     expect(text).toContain('`el`');
-    expect(text).toContain('modern Greek pronunciation');
+    // mw-5r3p30.268: the pronunciation is named by the request's pronunciation_guide, from the scheme, not by these instructions
+    expect(text).toContain('`pronunciation_guide`');
     expect(text).toContain('Greek syllables');
   });
 

@@ -113,6 +113,21 @@ describe('buildTalkRequest', () => {
     expect(asked.pronunciation).toBe('modern');
   });
 
+  // mw-5r3p30.268: the sound rules are the scheme's, not the grind's; they go with the request, and give way first when the record is full
+  it("carries the pronunciation's guide from its scheme, and a full record drops it before any turn unless the question is about a sound", () => {
+    const scope = { title: 'Romans 8', chapter, verse: null };
+    const guide = buildTalkRequest(scope, 'Why?', [], []).pronunciation_guide;
+    expect(guide).toMatch(/^Modern Greek/);
+    const long = Array.from({ length: MAX_HISTORY_TURNS }, (_, i) => turn(i, 'x'.repeat(300)));
+    const full = fitHistory(buildTalkRequest(scope, 'Why?', long, []));
+    expect(full.pronunciation_guide).toBeUndefined();
+    expect(full.history.length).toBe(MAX_HISTORY_TURNS);
+    expect(size(full)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
+    const sound = { form: 'ταῦτα', lemma: 'οὗτος', parse: 'pronoun', kind: 'sound' as const };
+    expect(fitHistory(buildTalkRequest(scope, 'Help', long, [], {}, sound)).pronunciation_guide).toBe(guide);
+    expect(fitHistory(buildTalkRequest(scope, 'Why?', [], [])).pronunciation_guide).toBe(guide);
+  });
+
   // mw-5r3p30.274: the tutor called σβ a syllable of σβέννυτε and put the stress on the second; the app counts, the tutor repeats
   it('gives a Greek sound question the app\'s syllables and the index of the stressed one (σβέννυτε is σβέν, νυ, τε, stressed on the first)', () => {
     const scope = { title: '1 Thessalonians 5', chapter, verse: null };

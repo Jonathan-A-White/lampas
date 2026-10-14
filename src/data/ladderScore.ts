@@ -1,6 +1,6 @@
 // src/data/ladderScore.ts — how hard a Greek verse or word is to PRONOUNCE (mw-neuq78.1, docs/reading-ladder.md): the score scripts/ladder-el.ts writes
 // public/data/ladder/el.json from, and that the reading drill (src/data/readingDrill.ts) orders its words by. Pure. The weights are a first guess.
-import { respellModern } from '../speech/schemes/modern';
+import { greekSyllables } from '../speech/greekSyllables';
 
 /** The reasons in the order a tie between them is broken: the first listed wins. */
 export function reasons(parts: [number, string][]): string[] {
@@ -69,7 +69,8 @@ function factsOf(word: string): WordFacts | null {
   const letters = lettersOf(word);
   if (letters.length === 0) return null;
   const facts: WordFacts = { syllables: 0, clusters: 0, diphthongs: 0, diaereses: 0, rareLetters: [], rarePairs: 0 };
-  facts.syllables = Math.max(1, respellModern(word).split('-').length);
+  // the spelling's syllables, the same in every pronunciation (mw-5r3p30.268: the count the Modern respelling gave, for every word of the text)
+  facts.syllables = Math.max(1, greekSyllables(word).length);
   let run = 0;
   const endRun = () => {
     if (run >= 2) facts.clusters += WEIGHTS.cluster + (run >= 3 ? WEIGHTS.cluster : 0);
