@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.221",
+    "date": "2026-10-14",
+    "story": "mw-5r3p30.272",
+    "kind": "fixed",
+    "text": "When the tutor shows how a Greek word sounds, reading it aloud now says the Greek sound instead of spelling out the letters."
+  },
+  {
     "version": "0.1.220",
     "date": "2026-10-14",
     "story": "mw-5r3p30.344",

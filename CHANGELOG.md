@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.221
+_2026-10-14_
+- Fixed: When the tutor shows how a Greek word sounds, reading it aloud now says the Greek sound instead of spelling out the letters.
+
 ## 0.1.220
 _2026-10-14_
 - Fixed: A long spoken question to the tutor, or a large word list, no longer fails with "This grist is too large to send".
