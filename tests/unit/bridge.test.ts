@@ -28,9 +28,9 @@ const verseInputSchema = JSON.parse(readFileSync('grinds/verse-ask.input.schema.
 const solid = (ids: readonly string[]): Map<string, Level> => new Map(ids.map((id) => [id, 'solid' as const]));
 /** only the alphabet and its 24 letters are solid */
 const LETTERS = ['alphabet', ...itemsOf('alphabet').map((i) => i.id)];
-/** what genitive rests on that is not the letters, easy first */
-const SIX = ['diphthongs', 'consonant-pairs', 'syllables', 'accents', 'noun', 'case-nominative'];
-const withSolid = (count: number): Map<string, Level> => solid([...LETTERS, ...SIX.slice(0, SIX.length - count)]);
+/** what genitive rests on that is not the letters, easy first (the noun rests on the breathings and the iota under a letter, the nominative on number: mw-5r3p30.234) */
+const PATH = ['diphthongs', 'consonant-pairs', 'syllables', 'breathings', 'accents', 'iota-subscript', 'noun', 'number-singular', 'number-plural', 'case-nominative'];
+const withSolid = (count: number): Map<string, Level> => solid([...LETTERS, ...PATH.slice(0, PATH.length - count)]);
 
 const QUESTION = 'Why is this word in the genitive?';
 const bridgeOf = (ids: string[], next: string) => ({ answer: 'Briefly: it shows belonging.', words: [], bridge: { missing: ids, next, why: 'Cases come first.' } });
@@ -89,20 +89,21 @@ describe('what the asked topic is', () => {
 });
 
 describe('missing_foundations: the device works out what the topic rests on that he lacks', () => {
-  it('with only the letters solid, the genitive lacks six ideas, the lowest first and the next step the first', () => {
-    const hint = missingFoundations(QUESTION, withSolid(6));
+  it('with only the letters solid, the genitive lacks ten ideas, the lowest first and the next step the first', () => {
+    const hint = missingFoundations(QUESTION, withSolid(PATH.length));
     expect(hint?.topic).toBe('The genitive case');
-    expect(hint?.total).toBe(6);
-    expect(hint?.ideas.map((i) => i.id)).toEqual(SIX);
+    expect(hint?.total).toBe(PATH.length);
+    expect(hint?.ideas.map((i) => i.id)).toEqual(PATH.slice(0, MISSING_FOUNDATIONS_MAX));
     expect(hint?.ideas[0]).toMatchObject({ id: 'diphthongs', title: 'Pairs of vowels' });
-    // only the ideas the genitive itself names are marked direct
-    expect(hint?.ideas.filter((i) => i.direct).map((i) => i.id)).toEqual(['case-nominative']);
+    // only the ideas the genitive itself names are marked direct: the nominative, the last of the path, once few enough are missing to name it
+    expect(hint?.ideas.filter((i) => i.direct)).toEqual([]);
+    expect(missingFoundations(QUESTION, withSolid(6))?.ideas.filter((i) => i.direct).map((i) => i.id)).toEqual(['case-nominative']);
   });
 
   it.each([
     [1, ['case-nominative']],
-    [3, ['accents', 'noun', 'case-nominative']],
-    [6, SIX],
+    [3, ['number-singular', 'number-plural', 'case-nominative']],
+    [6, PATH.slice(-6)],
   ])('with %i missing, the next foundation is the lowest unmet need of the path', (count, expected) => {
     const hint = missingFoundations(QUESTION, withSolid(count));
     expect(hint?.total).toBe(count);
@@ -152,13 +153,13 @@ describe('what Take me there opens', () => {
   it('takes the lowest unmet need from the device, not from the model, and drops ideas the device did not list', () => {
     const hint = hintOf(6);
     const bridge = resolveBridge({ missing: ['case-nominative', 'verb', 'noun'], next: 'noun', why: 'x' }, hint);
-    expect(bridge?.next).toBe('diphthongs');
+    expect(bridge?.next).toBe('accents');
     expect(bridge?.ideas).toEqual(['case-nominative', 'noun']);
   });
 
   it('falls back to the first three of the device\'s list when the model named none the device listed', () => {
     const bridge = resolveBridge({ missing: ['verb'], next: 'verb', why: 'x' }, hintOf(6));
-    expect(bridge?.ideas).toEqual(['diphthongs', 'consonant-pairs', 'syllables']);
+    expect(bridge?.ideas).toEqual(['accents', 'iota-subscript', 'noun']);
   });
 
   it('is nothing without the device\'s list: the model does not guess', () => {
