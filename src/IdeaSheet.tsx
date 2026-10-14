@@ -394,7 +394,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
           ideaId={idea.id}
           mode={drill}
           passage={passage?.chapters}
-          onResult={(result) => void recordDrill(result, drill)}
+          onResult={(result) => void recordDrill(result, drill).catch((error: unknown) => console.error('could not keep the drill', error))}
           onClose={closeDrill}
         />
       ) : null}
