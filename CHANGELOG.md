@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.196
+_2026-10-14_
+- Fixed: The "Which idea is this?" question no longer gives away its answer by naming the idea in other words.
+
 ## 0.1.195
 _2026-10-14_
 - New: When you come back after a break, the tutor now notices the words and ideas you have gone rusty on and offers to move them back to Frontier and practise, and a Welcome back card offers a short refresher.

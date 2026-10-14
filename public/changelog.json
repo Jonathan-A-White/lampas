@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.196",
+    "date": "2026-10-14",
+    "story": "mw-86e9r1.25",
+    "kind": "fixed",
+    "text": "The \"Which idea is this?\" question no longer gives away its answer by naming the idea in other words."
+  },
+  {
     "version": "0.1.195",
     "date": "2026-10-14",
     "story": "mw-1vuvq6.6",
