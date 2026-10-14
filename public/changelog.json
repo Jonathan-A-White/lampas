@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.206",
+    "date": "2026-10-14",
+    "story": "mw-s1dc0n.2",
+    "kind": "new",
+    "text": "Share a screenshot of a book page to Lampas and it lists the Bible references on it as links."
+  },
+  {
     "version": "0.1.205",
     "date": "2026-10-14",
     "story": "mw-5r3p30.231",

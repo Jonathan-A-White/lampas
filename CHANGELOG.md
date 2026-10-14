@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.206
+_2026-10-14_
+- New: Share a screenshot of a book page to Lampas and it lists the Bible references on it as links.
+
 ## 0.1.205
 _2026-10-14_
 - New: Switching the Greek pronunciation now starts the letters, sounds and marks again in the new one and keeps your old progress, ready for when you switch back.
