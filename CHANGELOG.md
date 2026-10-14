@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.202
+_2026-10-14_
+- Fixed: The Greek voice now says the n in words like Πάντοτε, as the line under the word shows, and χ is spelt KH or HY (χαίρετε is HYE-re-te) to match how it sounds.
+
 ## 0.1.201
 _2026-10-14_
 - New: After a drill that shows what you are weak at, Lampas makes you a short plan of drills on those points, easiest first, brings them up in Review, and ends with a drill that proves the idea.
