@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.191
+_2026-10-14_
+- New: An idea's sheet now has a level slider (Not yet, Learning, I know it); sliding to I know it starts Drill it, which has to prove you know the idea, and the result shows where you are strong and weak.
+
 ## 0.1.190
 _2026-10-14_
 - New: In the Immersive reader a small quiet line at the bottom now shows the book, the chapter and how far through it you are, like a Kindle.
