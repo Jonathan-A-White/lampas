@@ -9,9 +9,10 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { ideaOf, itemsOf } from '../../src/data/grammar/ladder';
+import { teachOf } from '../../src/data/grammar/teach';
 import { DAY, STEP_DAYS } from '../../src/data/schedule';
 import { clearBus, subscribe, type EventOf } from '../../src/events/bus';
-import { registerPronunciation, type Pronunciation } from '../../src/speech/pronunciation';
+import { pronunciationOf, registerPronunciation, type Pronunciation } from '../../src/speech/pronunciation';
 import { stopReading } from '../../src/speech/readAloud';
 import { MODERN } from '../../src/speech/schemes/modern';
 import { tutorTimings } from '../../src/services/tutor';
@@ -110,9 +111,9 @@ async function opensIdeaSheet(text: string, verse: number, term: string): Promis
   await screen.findByRole('dialog', { name: 'Idea' });
   await waitFor(() => expect(within(ideaSheet()).queryByTestId('idea-loading')).toBeNull());
 }
-/** The filled cells of the paradigm table, in reading order. */
+/** The filled cells of the card's table, in reading order. */
 const cells = (): string[] =>
-  Array.from(within(ideaSheet()).getByTestId('idea-paradigm').querySelectorAll<HTMLElement>('[data-cell]'))
+  Array.from(within(ideaSheet()).getByTestId('idea-table').querySelectorAll<HTMLElement>('[data-cell]'))
     .map((c) => c.textContent ?? '')
     .filter((t) => t !== '' && t !== '–');
 const review = async (id: string) => {
@@ -142,9 +143,9 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario("The genitive idea's sheet shows its text and three examples from 1 John 1 with their verses", ({ Given, When, Then, And }) => {
     Given(GIVEN_GOAL, opensWithGoal);
     When(GIVEN_OPEN, opensTheIdea);
-    Then('the idea sheet is titled {string} and shows the plain text of that idea', (_, title: string) => {
+    Then('the idea sheet is titled {string} and says what that idea is', (_, title: string) => {
       expect(within(ideaSheet()).getByRole('heading', { name: title })).toBeInTheDocument();
-      expect(within(ideaSheet()).getByTestId('idea-text')).toHaveTextContent(ideaOf('case-genitive').text);
+      expect(within(ideaSheet()).getByTestId('idea-what')).toHaveTextContent(teachOf('case-genitive').whatItIs);
     });
     And('the idea sheet shows 3 examples {string}, {string} and {string} with the verses {string}, {string} and {string}', (_, a: string, b: string, c: string, x: string, y: string, z: string) => {
       const found = examples();
@@ -159,7 +160,7 @@ describeFeature(feature, ({ Scenario }) => {
         expect(within(row).getByRole('button', { name: `Hear ${form}` })).toBeInTheDocument();
       }
     });
-    And('the paradigm table of the genitive has {string} and {string} in its cells', (_, a: string, b: string) => {
+    And('the table of the genitive has the endings {string} and {string} in its cells', (_, a: string, b: string) => {
       expect(cells()).toEqual(expect.arrayContaining([a, b]));
     });
     And('the idea sheet shows no level', () => {
@@ -176,14 +177,14 @@ describeFeature(feature, ({ Scenario }) => {
       expect(found).toHaveLength(3);
       for (const example of found) expect(within(example).getByTestId('idea-verse').textContent).toMatch(/^Romans 8:\d+$/);
     });
-    And('the paradigm table of the genitive has {string} and {string} in its cells', (_, a: string, b: string) => {
+    And('the table of the genitive has the endings {string} and {string} in its cells', (_, a: string, b: string) => {
       expect(cells()).toEqual(expect.arrayContaining([a, b]));
     });
   });
 
   Scenario('An example shows its meaning as it stands in its verse, not the dictionary gloss', ({ Given, When, Then, And }) => {
     Given(GIVEN_GOAL, opensWithGoal);
-    When(GIVEN_OPEN, opensTheIdea);
+    When('he opens the idea sheet of {string} from the Goal screen', (_, id: string) => opensIdeaFromGoal(id));
     Then('the idea sheet is titled {string}', (_, title: string) => {
       expect(within(ideaSheet()).getByRole('heading', { name: title })).toBeInTheDocument();
     });
@@ -299,9 +300,9 @@ describeFeature(feature, ({ Scenario }) => {
       await screen.findByRole('dialog', { name: 'Idea' });
       await waitFor(() => expect(within(ideaSheet()).queryByTestId('idea-loading')).toBeNull());
     });
-    Then('the idea sheet is titled {string} and shows the plain text of that idea', (_, title: string) => {
+    Then('the idea sheet is titled {string} and says what that idea is', (_, title: string) => {
       expect(within(ideaSheet()).getByRole('heading', { name: title })).toBeInTheDocument();
-      expect(within(ideaSheet()).getByTestId('idea-text')).toHaveTextContent(ideaOf('alphabet').text);
+      expect(within(ideaSheet()).getByTestId('idea-what')).toHaveTextContent(teachOf('alphabet').whatItIs);
     });
     And('the idea sheet shows examples from {string}', (_, title: string) => {
       expect(within(ideaSheet()).getByText(`Examples from ${title}`)).toBeInTheDocument();
@@ -430,9 +431,9 @@ describeFeature(feature, ({ Scenario }) => {
       for (const tile of marked) expect(tile).toHaveTextContent('vowel');
       for (const tile of tiles().filter((t) => !t.hasAttribute('data-vowel'))) expect(tile).not.toHaveTextContent('vowel');
     });
-    And('the tiles come above the plain text of the idea', () => {
+    And('the tiles come above what the idea is', () => {
       const grid = within(ideaSheet()).getByTestId('teach-tiles');
-      const text = within(ideaSheet()).getByTestId('idea-text');
+      const text = within(ideaSheet()).getByTestId('idea-what');
       expect(grid.compareDocumentPosition(text) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
     When('he taps the tile {string}', async (_, name: string) => {
@@ -498,6 +499,34 @@ describeFeature(feature, ({ Scenario }) => {
       expect(tiles()[0]).toHaveTextContent('alpha');
       expect(tiles()[0].textContent).not.toContain(word);
       expect(tiles()[0].querySelector('[data-sound]')).toBeNull();
+    });
+  });
+
+  Scenario('The noun sheet says what a noun is, shows its endings in a table, and takes a word of 1 John 1:1 apart', ({ Given, When, Then, And }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the idea sheet of {string} from the Goal screen', opensIdeaOfGoal);
+    Then('the idea sheet has the parts {string}, {string} and {string}, in that order', (_, a: string, b: string, c: string) => {
+      const headings = within(ideaSheet()).getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
+      const at = [a, b, c].map((part) => headings.indexOf(part));
+      expect(at.every((i) => i >= 0), headings.join(', ')).toBe(true);
+      expect([...at].sort((x, y) => x - y)).toEqual(at);
+    });
+    And('what a noun is is said in plain English with an English example', () => {
+      const what = within(ideaSheet()).getByTestId('idea-what');
+      expect(what).toHaveTextContent(teachOf('noun').whatItIs);
+      expect(what.textContent).toMatch(/Example:|for example|“[A-Za-z ]+”/);
+    });
+    And('How to spot it has a table of the case endings, with {string}, {string} and {string} in its cells', (_, a: string, b: string, c: string) => {
+      expect(within(ideaSheet()).getByTestId('idea-spot')).toHaveTextContent(teachOf('noun').howToSpot);
+      expect(cells()).toEqual(expect.arrayContaining([a, b, c]));
+    });
+    And('the worked example takes {string} of {string} apart in steps, with the respelling the pronunciation gives it', (_, word: string, reference: string) => {
+      const worked = within(ideaSheet()).getByTestId('idea-worked');
+      expect(within(worked).getByTestId('worked-word')).toHaveTextContent(word);
+      expect(worked).toHaveTextContent(reference);
+      expect(within(worked).getAllByRole('listitem').length).toBeGreaterThanOrEqual(2);
+      expect(within(worked).getByTestId('worked-respelling')).toHaveTextContent(pronunciationOf('modern').respell(word));
+      expect(within(worked).getByRole('button', { name: `Hear ${word}` })).toBeInTheDocument();
     });
   });
 });
