@@ -84,20 +84,22 @@ describe('recordGrammarAnswer', () => {
     await recordGrammarAnswer('x', true, day(11));
     expect((await review('x')).step).toBe(SOLID_STEP);
     expect(await getLevel('x')).toEqual({ id: 'x', level: 'solid', since: day(11), how: 'review' });
-    expect(heard).toEqual([{ kind: 'grammar-level-changed', id: 'x', level: 'solid' }]);
+    // proving the frontier also moves it on to the next idea (mw-i7xe0n.6): that is another event, about another idea
+    expect(heard.filter((e) => e.id === 'x')).toEqual([{ kind: 'grammar-level-changed', id: 'x', level: 'solid' }]);
   });
 
   it('drops a solid idea back to frontier on a wrong at step 3, with a lapse', async () => {
     for (let i = 0; i < 6; i += 1) await recordGrammarAnswer('x', true, day(i));
     expect((await review('x')).step).toBe(SOLID_STEP);
     expect((await getLevel('x'))?.level).toBe('solid');
+    await db.grammarLevels.where('level').equals('frontier').delete(); // the idea proving x moved the frontier on to is not what this is about
     await recordGrammarAnswer('x', false, day(20));
     expect(await review('x')).toMatchObject({ step: 1, lapses: 1, due: day(21) });
     expect(await getLevel('x')).toEqual({ id: 'x', level: 'frontier', since: day(20), how: 'review' });
   });
 
   it('makes a not-yet idea frontier when it is answered', async () => {
-    await setLevel('x', 'notYet', 'placement', NOW);
+    await setLevel('x', 'notYet', 'sheet', NOW);
     await recordGrammarAnswer('x', false, day(1));
     expect(await getLevel('x')).toEqual({ id: 'x', level: 'frontier', since: day(1), how: 'review' });
   });

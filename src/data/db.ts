@@ -1,6 +1,6 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type { AppliedChange } from '../settings/applied';
-import { legacyStoredId } from './grammar/soundScope';
+import { isItemId, legacyStoredId, plainIdOf } from './grammar/soundScope';
 
 export type WordState = 'solid' | 'learning' | 'dropped';
 
@@ -327,8 +327,8 @@ export interface KnownTerm {
 
 export type GrammarLevelName = 'solid' | 'frontier' | 'notYet';
 
-/** What set a grammar level: the placement, a review answer, the idea sheet, the tutor, a term he marked I know this, the right answers he gave on forms that use it (mw-hqd5bz.17), or a run of Drill it (mw-i7xe0n.3: 'Proved by drill'). */
-export type GrammarLevelHow = 'placement' | 'review' | 'sheet' | 'tutor' | 'marked' | 'inferred' | 'drill';
+/** What set a grammar level: the placement, a review answer, the idea sheet, the tutor, a term he marked I know this, the right answers he gave on forms that use it (mw-hqd5bz.17), or a run of Drill it (mw-i7xe0n.3: 'Proved by drill'), or the idea that follows the one just proved (mw-i7xe0n.6: 'next'). */
+export type GrammarLevelHow = 'placement' | 'review' | 'sheet' | 'tutor' | 'marked' | 'inferred' | 'drill' | 'next';
 
 /** Where one grammar idea (src/data/grammar/ladder.ts) stands for him: solid, at the frontier, or not yet. One row per idea. */
 export interface GrammarLevel {
@@ -708,6 +708,38 @@ class LampasDB extends Dexie {
             // Not evidence: leave it for getEvidence to start again.
           }
         }
+      });
+    // v21: same tables. One idea at the frontier at a time (mw-i7xe0n.6): where more than one idea (not a letter, pair or breathing, which are items of a group) was
+    // frontier, the one changed most recently stays and the others go back to not yet; their rows, schedule rows and drill runs are kept.
+    this.version(21)
+      .stores({
+        words: 'lemma, lesson, state, *lemmas',
+        meta: 'key',
+        settings: 'key',
+        results: '++id, [lemma+when]',
+        answers: '++id, [ref+when]',
+        talks: '++id, [ref+when]',
+        drills: '++id, lemma, [lemma+step]',
+        readings: 'ref',
+        grammarKnown: 'term',
+        reviews: '[kind+id], due, kind',
+        grammarLevels: 'id, level',
+        usage: 'key, day, name',
+        tips: 'id, status',
+        talkPictures: '++id, turnId',
+        shares: 'id, createdAt',
+        requests: 'txid, sentAt, status',
+        readingHistory: '++id, ref, [lang+at]',
+        missTally: '[lang+unit], lang',
+        ladder: 'lang',
+        drillRuns: '++id, ideaId, at',
+      })
+      .upgrade(async (tx) => {
+        const levels = tx.table<GrammarLevel, string>('grammarLevels');
+        const learning = (await levels.where('level').equals('frontier').toArray()).filter((row) => !isItemId(plainIdOf(row.id)));
+        if (learning.length < 2) return;
+        const keep = learning.reduce((latest, row) => (row.since > latest.since ? row : latest));
+        await levels.bulkPut(learning.filter((row) => row !== keep).map((row) => ({ ...row, level: 'notYet' as const })));
       });
   }
 }
