@@ -293,12 +293,12 @@ function FeedbackOffer({ turn, scope }: { turn: TalkTurn; scope: TalkScope }) {
       <p className="text-sm text-muted">For the makers</p>
       <p className="break-words text-lg">{summary}</p>
       {turn.feedbackSent ? (
-        <div role="status">
+        <div role="status" data-offer-settled>
           <p className="min-h-11 py-2 text-base font-medium">Sent</p>
           <p className="text-base text-muted">The answer will come back.</p>
         </div>
       ) : turn.feedbackWithdrawn ? (
-        <p className="min-h-11 py-2 text-base font-medium text-muted">Not sent</p>
+        <p data-offer-settled className="min-h-11 py-2 text-base font-medium text-muted">Not sent</p>
       ) : (
         <>
           {failure && !sending ? (
@@ -378,7 +378,7 @@ function lookupFor(scope: TalkScope, found: GreekWord): Lookup {
 function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkScope; onLook: (lookup: Lookup) => void; onLeave: () => void }) {
   const { unopened } = turn;
   return (
-    <article data-turn className="space-y-2">
+    <article data-turn data-turn-id={turn.id} className="space-y-2">
       <TurnPictures turnId={turn.id} />
       <p data-talk-q className="ml-auto w-fit max-w-[88%] break-words rounded-2xl bg-accent/15 px-3 py-2 text-lg">
         {turn.cleanQ ?? turn.q}
@@ -555,6 +555,16 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
   // top (question first), so in a short window the suggestions left under it do not push its first lines out of the box (mw-vtjxh4.44).
   const turnCount = turns?.length ?? 0;
   const waiting = state !== undefined;
+  // The makers' offers that waited for his word when the last message left, so the turn that carries his
+  // yes or no can tell which offer it settled: that offer's Sent / Not sent is the proof, and it is kept in view beside the reply (mw-5r3p30.210).
+  const keptTurns = useRef(turns);
+  useEffect(() => {
+    keptTurns.current = turns;
+  });
+  const offersOpen = useRef<Set<number>>(new Set());
+  useEffect(() => {
+    if (waiting) offersOpen.current = new Set((keptTurns.current ?? []).filter((t) => t.id !== undefined && t.feedbackOffer && !t.feedbackSent && !t.feedbackWithdrawn).map((t) => t.id as number));
+  }, [waiting]);
   useEffect(() => {
     const box = list.current;
     if (!box) return;
@@ -563,6 +573,19 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
       box.scrollTop = box.scrollHeight;
       return;
     }
+    const settledIds = (keptTurns.current ?? []).filter((t) => t.id !== undefined && offersOpen.current.has(t.id) && (t.feedbackSent || t.feedbackWithdrawn)).map((t) => t.id);
+    // His question stays in view too: the mark is shown only when it and the start of the newest turn fit the box together.
+    const showSettled = () => {
+      const room = box.getBoundingClientRect();
+      for (const id of settledIds.reverse()) {
+        const mark = box.querySelector<HTMLElement>(`[data-turn-id="${id}"] [data-offer-settled]`);
+        if (!mark) continue;
+        const gap = newest.getBoundingClientRect().top - mark.getBoundingClientRect().top;
+        if (gap > room.height / 2) continue;
+        box.scrollTop += mark.getBoundingClientRect().top - room.top - 8;
+        return;
+      }
+    };
     // An answer with the goal offer waiting shows the question and both buttons: the box moves on until the offer's foot is in view, and no
     // further than the question's top (mw-5r3p30.196). The quiz question after it may sit below.
     const align = () => {
@@ -574,6 +597,7 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
       box.scrollTop += Math.max(0, Math.min(offer.getBoundingClientRect().bottom - room.bottom + 8, question - room.top - 8));
     };
     align();
+    showSettled();
     if (!newest.querySelector('[data-quiz-goal-buttons]') || typeof ResizeObserver === 'undefined') return;
     // The sheet and the answer settle for a moment after they draw: keep the offer in view until they have, or until he scrolls himself.
     const settle = new ResizeObserver(align);
