@@ -424,7 +424,7 @@ there are none). A later run that proves the idea (or finds no weak facet) takes
 
 `src/DrillItScreen.tsx` (mw-i7xe0n.3, PROVISIONAL): a full screen over the idea sheet (dialog 'Drill it', `useSheetBack`: Back is Stop). The idea's title, 'Step N of M', one question
 at a time drawn as Review draws it (`GrammarCard`, multiple choice; sideways the question stands at the left and the answers at the right), a **Hint** (takes the first
-half, rounded up, of the wrong answers away, once a question, and marks the answer hinted: a hinted right does not count, drillIt.ts), **Stop** (nothing is kept, the level
+half, rounded up, of the wrong answers away, once a question, and marks the answer hinted: a hinted right does not count, drillIt.ts; `data/grammar/hint.ts` hintTakes / hintLine: the taken options are drawn struck through and faded (`data-taken`) and the line 'Hint: 2 wrong answers taken away' stands under the question, both by `GrammarCard`, so any card given `taken` draws them the same; the button then reads 'Hint used', disabled; mw-5r3p30.349), **Stop** (nothing is kept, the level
 stays) and, after an answer, **Next** / **Finish**. The walk is `start(...)` with the idea's needs taken as solid (the sheet asked him about them), the seed from
 `drillSeed.next()` (src/data/grammar/drillSeed.ts, a seam a feature step fixes). The end shows 'Proved' or 'You reached step N of M' (step 0: 'You have not reached step 1 of M
 yet'), then 'Strong:' and 'Weak:' by facet label and Done.

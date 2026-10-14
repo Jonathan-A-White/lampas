@@ -91,11 +91,11 @@ Feature: Drill it on the idea sheet
     And the slider rests on "Learning"
     And no drill run is kept
 
-  Scenario: A Hint marks the answer hinted
+  Scenario: A Hint marks the answer hinted, strikes the wrong answers it takes away and says so
     Given Lampas is opened on Romans 8 with the goal "1 John 1", "Accents and stress" solid, "The noun" at the frontier and a fake Postern
     And he opens the idea sheet of "noun" from the Goal screen
     And he taps Drill it on the idea sheet
-    When he taps Hint and answers the question right
+    When he taps Hint, sees the answers struck through and the line, and answers the question right
     And he answers every question right until Drill it ends
     Then the kept run's first answer is marked hinted
 

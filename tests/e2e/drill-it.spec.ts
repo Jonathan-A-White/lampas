@@ -84,7 +84,14 @@ for (const { name, size } of VIEWPORTS) {
 
     // a Hint takes answers away; an answer shows Next, which also stands inside the screen
     await drill.getByRole('button', { name: 'Hint', exact: true }).click();
-    expect(await drill.locator('[data-option]:disabled').count()).toBeGreaterThan(0);
+    const taken = drill.locator('[data-option][data-taken]');
+    expect(await taken.count()).toBeGreaterThan(0);
+    for (const option of await taken.all()) {
+      await expect(option).toHaveCSS('text-decoration-line', 'line-through');
+      await expect(option).toHaveCSS('opacity', '0.4');
+    }
+    await expect(drill.getByTestId('hint-line')).toHaveText(`Hint: ${await taken.count()} wrong ${(await taken.count()) === 1 ? 'answer' : 'answers'} taken away`);
+    await expect(drill.getByRole('button', { name: 'Hint used', exact: true })).toBeDisabled();
     await drill.locator('[data-option]:not(:disabled)').first().click();
     const nextButton = drill.getByTestId('drill-next');
     await expectInside(size, [nextButton, drill.getByTestId('feedback')]);
