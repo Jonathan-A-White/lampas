@@ -114,7 +114,7 @@ export const SOUNDS: Record<string, Teach> = {
         gloss: 'angel',
         steps: [
           `Letter by letter: ${spelledOut('ΑΓΓΕΛΟΣ')}.`,
-          'Two Γ stand side by side: γ before γ is the pair γγ. Read them together.',
+          'Two Γ stand side by side: γ before γ makes the pair γγ. Read them together.',
           'The rest are single letters: Α, then Ε, Λ, Ο, Σ.',
           'The text writes it ἄγγελος: “angel”, “messenger”, the word English “angel” comes from.',
         ],

@@ -128,7 +128,7 @@ export const NOUNS: Record<string, Teach> = {
         word: 'καὶ',
         ref: '1 John 1:1',
         gloss: 'and',
-        steps: ['καί is “and”; with another word after it the text writes καὶ, its accent turned.', 'Its ending never changes.', 'καὶ αἱ χεῖρες ἡμῶν: “and our hands”.'],
+        steps: ['καί means “and”; with another word after it the text writes καὶ, its accent turned.', 'Its ending never changes.', 'καὶ αἱ χεῖρες ἡμῶν: “and our hands”.'],
       },
     ],
   },
@@ -277,7 +277,7 @@ export const NOUNS: Record<string, Teach> = {
   'gender-feminine': {
     whatItIs: 'Feminine is the second gender, the group of “she”: women, and many things and ideas. Example: ἀγάπη “love”, ζωή “life” and ἀρχή “beginning” are feminine.',
     howToSpot:
-      'Most nouns whose dictionary form ends in -η or -α are feminine: ζωή, ἀρχή, ἡμέρα “day”, δόξα “glory”. Some in -ος are too (ὁδός “way”), and many like χείρ (χείρ itself, σάρξ “flesh”). The dictionary tells you for sure.',
+      'Most nouns whose dictionary form ends in -η or -α are feminine: ζωή, ἀρχή, ἡμέρα “day”, δόξα “glory”. Some ending in -ος are feminine too (ὁδός “way”), and many like χείρ (χείρ itself, σάρξ “flesh”). The dictionary tells you for sure.',
     worked: [
       {
         word: 'ζωῆς',

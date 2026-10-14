@@ -7,7 +7,7 @@ export const JOINERS: Record<string, Teach> = {
     whatItIs:
       'A particle is a small word that adds a shade of meaning: weight, a contrast, doubt, a “would”. Many are hard to put into English, and a translation may show one only by its tone. Example: English “indeed”, “surely”, “then”.',
     howToSpot:
-      'Learn the common ones by sight; they never change. ἄν adds “-ever” or “would” (ὃς ἄν “whoever”); μέν … δέ is “on the one hand … on the other”; ἄρα is “so then”; γε is “at least”; ναί is “yes”. μή, the “not” of wishes and commands, is one too.',
+      'Learn the common ones by sight; they never change. ἄν adds “-ever” or “would” (ὃς ἄν “whoever”); μέν … δέ is “on the one hand … on the other”; ἄρα is “so then”; γε is “at least”; ναί, “yes”. μή, the “not” of wishes and commands, is one too.',
     worked: [
       {
         word: 'ἂν',
@@ -129,7 +129,7 @@ export const JOINERS: Record<string, Teach> = {
         word: 'Κἀγὼ',
         ref: 'John 1:31',
         gloss: 'and I',
-        steps: ['Κἀγὼ has a small mark inside it, after the κ: two words ran together.', 'They are καί, “and”, and ἐγώ, “I”: the ι of καί and the ε of ἐγώ are lost.', 'Κἀγὼ οὐκ ᾔδειν αὐτόν: “And I did not know him”.'],
+        steps: ['Κἀγὼ has a small mark inside it, after the κ: two words ran together.', 'They are καί, “and”, and ἐγώ, “I”, which lose the ι of καί and the ε of ἐγώ.', 'Κἀγὼ οὐκ ᾔδειν αὐτόν: “And I did not know him”.'],
       },
     ],
   },

@@ -73,7 +73,7 @@ export const MARKS: Record<string, Teach> = {
   },
   accents: {
     whatItIs:
-      'An accent is a small mark over a vowel that shows which syllable of a word to stress, as English stresses the second syllable of “be-GIN-ning” but writes no mark. Most Greek words carry one accent, and only one.',
+      'An accent is a small mark over a vowel that shows which syllable of a word to stress, as English stresses the second syllable of “beginning” but writes no mark. Most Greek words carry one accent, and only one.',
     howToSpot:
       'There are three marks, and all three mark the syllable to stress. The acute ά rises to the right; the grave ὰ falls to the right, and stands only on a last syllable when another word follows; the circumflex ᾶ is a small wave, over a long vowel or a pair of vowels. A few small words have none.',
     table: {
@@ -147,7 +147,7 @@ export const MARKS: Record<string, Teach> = {
   punctuation: {
     whatItIs: 'Punctuation is the set of small signs that show how a sentence runs: in English the comma, the full stop and the question mark.',
     howToSpot:
-      'The comma and the full stop are as in English. A question ends with ; (it looks like an English semicolon). A raised dot · does the work of a colon or a semicolon. An apostrophe after a word shows its last vowel was dropped before a word that begins with a vowel (ἀπ᾿ for ἀπό). Two dots over a vowel (ϊ, ϋ) show it is not part of a pair of vowels.',
+      'The comma and the full stop are the same as in English. A question ends with ; (it looks like an English semicolon). A raised dot · does the work of a colon or a semicolon. An apostrophe after a word shows its last vowel was dropped before a word that begins with a vowel (ἀπ᾿ for ἀπό). Two dots over a vowel (ϊ, ϋ) show it is not part of a pair of vowels.',
     table: {
       caption: 'The signs',
       columns: ['the sign', 'what it does'],

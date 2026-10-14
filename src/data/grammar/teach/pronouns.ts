@@ -24,7 +24,7 @@ export const PRONOUNS: Record<string, Teach> = {
         word: 'ἀκηκόαμεν',
         ref: '1 John 1:1',
         gloss: 'we have heard',
-        steps: ['ἀκηκόαμεν ends in -μεν.', '-μεν is “we”: John speaks for himself and the others who were with Jesus.', 'ὃ ἀκηκόαμεν: “that which we have heard”.'],
+        steps: ['ἀκηκόαμεν ends in -μεν.', '-μεν means “we”: John speaks for himself and the others who were with Jesus.', 'ὃ ἀκηκόαμεν: “that which we have heard”.'],
       },
     ],
   },
@@ -68,7 +68,7 @@ export const PRONOUNS: Record<string, Teach> = {
         word: 'ἐψηλάφησαν',
         ref: '1 John 1:1',
         gloss: 'touched',
-        steps: ['ἐψηλάφησαν ends in -σαν.', '-σαν is “they”: the ones spoken about, here the hands.', 'αἱ χεῖρες ἡμῶν ἐψηλάφησαν: “our hands touched”.'],
+        steps: ['ἐψηλάφησαν ends in -σαν.', '-σαν means “they”: the ones spoken about, here the hands.', 'αἱ χεῖρες ἡμῶν ἐψηλάφησαν: “our hands touched”.'],
       },
       {
         word: 'ἦν',
