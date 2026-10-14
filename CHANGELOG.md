@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.201
+_2026-10-14_
+- New: After a drill that shows what you are weak at, Lampas makes you a short plan of drills on those points, easiest first, brings them up in Review, and ends with a drill that proves the idea.
+
 ## 0.1.200
 _2026-10-14_
 - New: Share text to Lampas and it lists every Bible reference in it as a tappable link that opens the verse, in the order of the page or in Bible order.
