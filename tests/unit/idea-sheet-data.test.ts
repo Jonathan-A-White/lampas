@@ -1,11 +1,11 @@
-// tests/unit/idea-sheet-data.test.ts — what the idea sheet shows (src/data/grammar/ideaSheet.ts): the examples of an idea in a passage
-// and the paradigm table built from the passage's own forms, over the committed 1 John 1 and Romans 8.
+// tests/unit/idea-sheet-data.test.ts — what the idea sheet shows (src/data/grammar/ideaSheet.ts): the examples of an idea in a passage, over the
+// committed 1 John 1 and Romans 8. (The passage's paradigm table gave way to the card's own table, mw-5r3p30.234: tests/unit/teach-cards.test.ts.)
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadChapter, loadIndex, type BookIndex, type Chapter } from '../../src/data/chapter';
-import { exampleMeaning, ideaExamples, ideaPassage, paradigmOf } from '../../src/data/grammar/ideaSheet';
-import { ideaOf, ideaOfTerm, ideasOf } from '../../src/data/grammar/ladder';
+import { exampleMeaning, ideaExamples, ideaPassage } from '../../src/data/grammar/ideaSheet';
+import { ideaOfTerm, ideasOf } from '../../src/data/grammar/ladder';
 import { decodeParse, parseSegments } from '../../src/data/parseCode';
 import { DEFAULT_CHAPTER } from '../../src/data/readerChapter';
 import { stubChapterFetch } from '../support/chapter-fetch';
@@ -21,73 +21,22 @@ beforeAll(async () => {
   romans = await loadChapter('rom', 8);
 });
 
-describe('the paradigm table of a case', () => {
-  it('has τοῦ and τῆς in their cells for the genitive over 1 John 1, and blanks where the passage lacks a form', () => {
-    const table = paradigmOf(ideaOf('case-genitive'), [john]);
-    expect(table).not.toBeNull();
-    expect(table?.columns).toEqual(['masculine', 'feminine', 'neuter']);
-    expect(table?.rows.map((r) => r.label)).toEqual(['singular', 'plural']);
-    const [singular, plural] = table?.rows ?? [];
-    expect(singular.cells).toEqual(['τοῦ', 'τῆς', null]);
-    expect(plural.cells).toEqual([null, null, null]);
-  });
-
-  it('takes the forms of the article in that case only', () => {
-    const table = paradigmOf(ideaOf('case-dative'), [john]);
-    expect(table?.rows[0].cells).toEqual([null, null, 'τῷ']);
-    expect(table?.rows[1].cells).toEqual(['τοῖς', null, null]);
-  });
-
-  it('is null for a case the passage has no article in', () => {
-    expect(paradigmOf(ideaOf('case-vocative'), [john])).toBeNull();
-  });
-
-  it('is null for an idea that is neither a case nor a tense', () => {
-    expect(paradigmOf(ideaOf('preposition'), [john])).toBeNull();
-    expect(paradigmOf(ideaOf('alphabet'), [john])).toBeNull();
-  });
-});
-
-describe('the paradigm table of a tense', () => {
-  it('shows the persons of one verb of the passage, where the passage has them', () => {
-    const table = paradigmOf(ideaOf('tense-aorist'), [john]);
-    expect(table).not.toBeNull();
-    expect(table?.columns).toEqual(['1st person', '2nd person', '3rd person']);
-    expect(table?.rows.map((r) => r.label)).toEqual(['singular', 'plural']);
-    expect(table?.verb).toMatch(/aorist/);
-    const cells = (table?.rows ?? []).flatMap((r) => r.cells).filter((c) => c !== null);
-    expect(cells.length).toBeGreaterThanOrEqual(1);
-    // every filled cell is a form of the one lemma the table names
-    const lemma = table?.lemma ?? '';
-    const forms = john.verses.flatMap((v) => v.g).filter((w) => w.l === lemma).map((w) => w.t);
-    for (const cell of cells) expect(forms).toContain(cell);
-  });
-
-  it('picks the verb that fills the most cells', () => {
-    // Romans 8 has λέγω-style verbs in several persons; whichever is chosen fills at least as many cells as any other lemma's
-    const table = paradigmOf(ideaOf('tense-present'), [romans]);
-    const filled = (table?.rows ?? []).flatMap((r) => r.cells).filter((c) => c !== null).length;
-    expect(filled).toBeGreaterThanOrEqual(2);
-  });
-
-  it('is null when the passage has no finite verb of the tense', () => {
-    expect(paradigmOf(ideaOf('tense-pluperfect'), [john])).toBeNull();
-  });
-});
-
 describe('the examples of an idea', () => {
-  it('are the first three lemmas of the passage whose code needs the idea, with their verses', () => {
+  it('are the first three lemmas of the passage whose code needs the idea and that the card can explain, with their verses', () => {
+    // ἡμῶν (a pronoun) and τοῦ (the article) are genitives too, but the genitive's card comes before the pronoun and the article (mw-5r3p30.234)
     const found = ideaExamples('case-genitive', [john]);
-    expect(found.map((e) => e.word.t)).toEqual(['ἀρχῆς', 'ἡμῶν', 'τοῦ']);
+    expect(found.map((e) => e.word.t)).toEqual(['ἀρχῆς', 'λόγου', 'ζωῆς']);
     expect(found.map((e) => e.verse)).toEqual([1, 1, 1]);
     expect(found.every((e) => e.chapter === john)).toBe(true);
     expect(new Set(found.map((e) => e.word.l)).size).toBe(3);
   });
 
   it('stay within the verse of a verse goal', () => {
-    const found = ideaExamples('tense-aorist', [john], 2);
+    const found = ideaExamples('tense-aorist', [john], 1);
     expect(found.length).toBeGreaterThan(0);
-    expect(found.every((e) => e.verse === 2)).toBe(true);
+    expect(found.every((e) => e.verse === 1)).toBe(true);
+    // 1:2's aorist is ἐφανερώθη, a passive, which the aorist's card cannot explain yet (mw-5r3p30.234)
+    expect(ideaExamples('tense-aorist', [john], 2)).toEqual([]);
   });
 
   it('come from the later chapters when the first has too few', () => {
@@ -194,9 +143,14 @@ describe('the examples of a foundation idea (letters, pairs, marks, syllables, p
     expect(new Set(forms.map((f) => f.toLowerCase())).size).toBe(forms.length);
   });
 
-  it('a word that no foundation rule marks is shown whole, unmarked, for a grammar idea', () => {
-    const found = ideaExamples('case-genitive', [john], 1);
-    expect(found[0].parts).toEqual([{ text: found[0].word.t, marked: false }]);
+  it('a grammar idea with a table of endings marks the ending it names (mw-5r3p30.234), and one with none shows the word whole', () => {
+    const [first] = ideaExamples('case-genitive', [john], 1);
+    expect(first.parts).toEqual([
+      { text: 'ἀρχ', marked: false },
+      { text: 'ῆς', marked: true },
+    ]);
+    const [verb] = ideaExamples('verb', [john], 1);
+    expect(verb.parts).toEqual([{ text: verb.word.t, marked: false }]);
   });
 });
 
