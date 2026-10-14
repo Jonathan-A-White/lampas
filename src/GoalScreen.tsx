@@ -13,7 +13,7 @@ import { lettersText } from './data/grammar/inference';
 import { groupIdeas, groupWords, learnNext, LEVELS, nextWords, placedAt } from './data/grammar/goalProgress';
 import { ideaOf } from './data/grammar/ladder';
 import type { Counts, Level } from './data/grammar/needs';
-import { addWordToLearn, getGrammarApproach } from './data/repositories';
+import { addWordToLearn, drillPlanCounts, getGrammarApproach } from './data/repositories';
 import { IdeaSheet } from './IdeaSheet';
 import { useAiAllowed } from './gate/licenceContext';
 import { LadderStart } from './ReadingLadder';
@@ -80,6 +80,7 @@ function NoGoalBody({ levels }: { levels: ReadonlyMap<string, Level> }) {
           </section>
         ) : null}
         <div className="text-left">
+          <DrillPlans onOpen={setIdeaId} />
           <ReadingLadderSection />
         </div>
       </main>
@@ -96,6 +97,29 @@ function NoGoalBody({ levels }: { levels: ReadonlyMap<string, Level> }) {
       ) : null}
       {word && wordChapter ? <WordSheet chapter={wordChapter} lookup={word} onClose={() => setWord(null)} /> : null}
     </>
+  );
+}
+
+/** Your drill plan (mw-i7xe0n.4): each idea with a plan still open, and how many of its steps are to go; a tap opens the idea's sheet. Nothing is drawn when no plan is open. */
+function DrillPlans({ onOpen }: { onOpen: (ideaId: string) => void }) {
+  const counts = useLiveQuery(drillPlanCounts, []);
+  if (!counts || counts.size === 0) return null;
+  return (
+    <section aria-label="Drill plans" className="mt-5">
+      <h2 className="text-base font-medium">Your drill plans</h2>
+      <ul className="mt-1 divide-y divide-line rounded-xl border border-line">
+        {[...counts].map(([ideaId, toGo]) => (
+          <li key={ideaId} data-idea={ideaId}>
+            <button type="button" onClick={() => onOpen(ideaId)} className="flex min-h-12 w-full items-center justify-between gap-3 px-3 py-2 text-left text-base active:bg-line">
+              <span className="min-w-0 flex-1 truncate">{ideaOf(ideaId).title}</span>
+              <span data-testid="drill-plan-line" className="shrink-0 font-medium text-accent">
+                Drill plan: {toGo} to go
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -328,6 +352,8 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
             </p>
           ) : null}
         </section>
+
+        <DrillPlans onOpen={setIdeaId} />
 
         <ReadingLadderSection />
 

@@ -79,6 +79,8 @@ export { getLadderRow, listWellRead, setLadderShowing, skipLadderVerse } from '.
 export type { LadderRow } from './ladder';
 export { latestDrillRunFor, saveDrillRun, weakFacets } from './drillRuns';
 export type { DrillRunRow } from './drillRuns';
+export { answerPlanItem, closeDrillPlan, drillPlanCounts, getDrillPlan, listDrillPlans, saveDrillPlan } from './drillPlans';
+export type { PlanAnswer } from './drillPlans';
 export { getLevel, levelFromStep, listLevels, recordDrill, recordGrammarAnswer, scheduleIdea, seedLevelsIfFirstOpen, setLevel, SOLID_STEP, teachIdea } from './grammarLevels';
 export type { DrillMode, GrammarLevel, GrammarLevelHow, GrammarLevelName, IdeaOutcome } from './grammarLevels';
 export { getEvidence, noteAnswer, noteWordRead } from './inference';

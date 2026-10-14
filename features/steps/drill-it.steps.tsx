@@ -10,10 +10,13 @@ import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { loadChapter, type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { drillSteps, type DrillQuestion } from '../../src/data/grammar/drillIt';
+import { PLAN_KIND, PROVE_ID, rowId } from '../../src/data/grammar/drillPlan';
+import { getDrillPlan } from '../../src/data/repositories';
 import { LADDER, ideaOf } from '../../src/data/grammar/ladder';
 import { DAY, STEP_DAYS } from '../../src/data/schedule';
 import { drillSeed } from '../../src/data/grammar/drillSeed';
 import { clearBus, subscribe, type EventOf } from '../../src/events/bus';
+import { mulberry32 } from '../../src/data/quiz';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -57,6 +60,8 @@ async function open(goal: string, levels: Record<string, Start>): Promise<void> 
   vi.unstubAllGlobals();
   taught = [];
   firstMissed = undefined;
+  randomSpy?.mockRestore();
+  randomSpy = undefined;
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
   window.location.hash = '';
@@ -104,15 +109,21 @@ const slideTo = (label: string) => {
   fireEvent.change(slider(), { target: { value: String(STOPS.indexOf(label)) } });
 };
 
-/** The question on screen, found among the steps the same seed gives. */
-function questionOnScreen(ideaId: string): DrillQuestion {
-  const dialog = drillDialog();
+/** The question on screen in `dialog`, found among the steps the seed gives. */
+function questionOnScreen(ideaId: string, dialog: HTMLElement = drillDialog(), seeds: number | number[] = SEED): DrillQuestion {
   const prompt = within(dialog).getByTestId('grammar-prompt').textContent ?? '';
   const form = within(dialog).queryByTestId('grammar-form')?.textContent ?? '';
   const options = Array.from(dialog.querySelectorAll('[data-option]')).map((o) => o.textContent ?? '');
-  const found = drillSteps(ideaId, { passage, seed: SEED })
-    .flatMap((s) => s.questions)
-    .find((q) => q.prompt === prompt && (q.form ?? '') === form && q.options.join('|') === options.join('|'));
+  let found: DrillQuestion | undefined;
+  for (const seed of [seeds].flat()) {
+    found = drillSteps(ideaId, { passage, seed })
+      .flatMap((s) => s.questions)
+      .find((q) => q.prompt === prompt && (q.form ?? '') === form && q.options.join('|') === options.join('|'));
+    if (found) {
+      matchedSeed = seed;
+      break;
+    }
+  }
   if (!found) throw new Error(`question not among the steps: ${prompt} / ${form} / ${options.join(', ')}`);
   return found;
 }
@@ -134,14 +145,57 @@ async function answer(ideaId: string, right: boolean): Promise<void> {
 }
 const next = async () => user.click(await within(drillDialog()).findByTestId('drill-next'));
 
-async function answerUntilEnd(ideaId: string, right: boolean): Promise<void> {
+/** Answers until Drill it ends; `right` says whether the question at that place (from 0) is answered right. */
+async function answerUntilEnd(ideaId: string, right: boolean | ((index: number) => boolean)): Promise<void> {
   for (let guard = 0; guard < 40; guard += 1) {
     if (within(drillDialog()).queryByTestId('drill-result')) return;
-    await answer(ideaId, right);
+    await answer(ideaId, typeof right === 'function' ? right(guard) : right);
     await next();
   }
   throw new Error('Drill it did not end');
 }
+
+// ---- Your drill plan ----
+/** While a Review round is drawn Math.random is a seeded one that records what it gave: a plan step's questions are drawn from a seed taken from it, so they are found among the steps of those. */
+let randomSpy: { mockRestore: () => void } | undefined;
+let randomSeen: number[] = [];
+const reviewSeeds = (): number[] => randomSeen.slice(0, 6).map((v) => Math.floor(v * 0x100000000));
+let matchedSeed = SEED;
+const shortDialog = () => screen.getByRole('dialog', { name: 'Short drill' });
+
+/** Answers the short drill on screen until its result shows: every question right or every one wrong. `seeds` are the ones its questions may have been drawn from. */
+async function answerShortDrill(right: boolean, seeds: number | number[]): Promise<void> {
+  for (let guard = 0; guard < 10; guard += 1) {
+    const dialog = shortDialog();
+    if (within(dialog).queryByTestId('plan-drill-result')) return;
+    const q = questionOnScreen('noun', dialog, guard === 0 ? seeds : matchedSeed);
+    const pick = right ? q.right : (q.options.find((o) => o !== q.right) as string);
+    const button = Array.from(dialog.querySelectorAll<HTMLButtonElement>('[data-option]')).find((b) => b.textContent === pick && !b.disabled);
+    if (!button) throw new Error(`no answer ${pick} to tap`);
+    await user.click(button);
+    await user.click(await within(dialog).findByTestId('plan-drill-next'));
+  }
+  throw new Error('the short drill did not end');
+}
+const tapsShortDone = async () => {
+  await user.click(within(shortDialog()).getByTestId('plan-drill-done'));
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Short drill' })).toBeNull());
+};
+
+/** The Goal screen's lines about drill plans (it is opened if another screen is up). */
+async function goalPlanLine(): Promise<string> {
+  if (!document.querySelector('[data-testid=goal-title]')) window.location.hash = '#/goal';
+  await screen.findByTestId('goal-title');
+  return document.querySelector('[data-testid=drill-plan-line]')?.textContent ?? '';
+}
+
+/** Moves every drill plan step on the schedule to now: a day has passed. */
+async function aDayPasses(): Promise<void> {
+  const rows = await db.reviews.where('kind').equals(PLAN_KIND).toArray();
+  await db.reviews.bulkPut(rows.map((r) => ({ ...r, due: Date.now() - 1000 })));
+}
+
+const toGoNow = (plan: { items: { done: boolean }[] } | undefined): number => plan?.items.filter((i) => !i.done).length ?? -1;
 
 const review = async (id: string) => {
   const row = await db.reviews.get(['grammar', id]);
@@ -460,6 +514,159 @@ describeFeature(feature, ({ Scenario }) => {
     And(GONE, gone);
     And('the idea {string} has no level', async (_, id: string) => {
       expect(await db.grammarLevels.get(id)).toBeUndefined();
+    });
+  });
+  // ---- Your drill plan ----
+  const FIRST_RIGHT_REST_WRONG = 'he answers the first question right and every other one wrong until Drill it ends';
+  const firstRightRestWrong = () => answerUntilEnd('noun', (index) => index === 0);
+  const GOAL_SAYS = 'the Goal screen says {string}';
+  const goalSays = async (_: unknown, text: string) => {
+    await waitFor(async () => expect(await goalPlanLine()).toBe(text));
+  };
+  const planRow = async (facet: string) => {
+    const plan = await getDrillPlan('noun');
+    const item = plan?.items.find((i) => i.facet?.label === facet || (facet === 'Prove it' && i.id === PROVE_ID));
+    if (!item) throw new Error(`no plan step ${facet}`);
+    return db.reviews.get([PLAN_KIND, rowId('noun', item.id)]);
+  };
+  const START_REVIEW = 'a day passes and he starts a Review round';
+  const startsReview = async () => {
+    await aDayPasses();
+    randomSpy?.mockRestore();
+    randomSeen = [];
+    const random = mulberry32(12345);
+    randomSpy = vi.spyOn(Math, 'random').mockImplementation(() => {
+      const value = random();
+      randomSeen.push(value);
+      return value;
+    });
+    window.location.hash = '#/review';
+    await user.click(await screen.findByRole('button', { name: 'Start', exact: true }));
+  };
+  const FIRST_CARD = "Review's first card is the plan step {string} of {string}";
+  const firstCard = async (_: unknown, step: string, title: string) => {
+    const card = await screen.findByTestId('drill-plan-card');
+    randomSpy?.mockRestore();
+    randomSpy = undefined;
+    expect(within(card).getByTestId('drill-plan-step')).toHaveTextContent(step);
+    expect(card).toHaveTextContent(title);
+    expect(card.closest('main')?.querySelector('[data-testid=drill-plan-card]')).toBe(card);
+  };
+
+  Scenario('A failed run makes a drill plan, shown on the result and on the Goal screen', ({ Given, And, When, Then }) => {
+    Given(...givens.solidNone);
+    And(OPENS, opensIdea);
+    When(SLIDES, slides);
+    And(FIRST_RIGHT_REST_WRONG, firstRightRestWrong);
+    Then('Drill it shows {string} with the steps {string}, {string} and {string}', async (_, heading: string, a: string, b: string, c: string) => {
+      const plan = await within(drillDialog()).findByTestId('drill-plan');
+      expect(within(plan).getByRole('heading', { name: heading })).toBeInTheDocument();
+      expect(Array.from(plan.querySelectorAll('li')).map((li) => li.textContent)).toEqual([a, b, c]);
+    });
+    And('Drill it has a button {string}', async (_, name: string) => {
+      expect(await within(drillDialog()).findByRole('button', { name, exact: true })).toBeInTheDocument();
+    });
+    And(GOAL_SAYS, goalSays);
+    And('no request went to the tutor', () => {
+      expect(fake.received).toHaveLength(0);
+    });
+  });
+
+  Scenario('A short drill of the plan is done on the result, and the next one is due tomorrow', ({ Given, And, When, Then }) => {
+    Given(...givens.solidNone);
+    And(OPENS, opensIdea);
+    And(SLIDES, slides);
+    And(FIRST_RIGHT_REST_WRONG, firstRightRestWrong);
+    When(TAPS, async (_: unknown, name: string) => {
+      await user.click(await within(drillDialog()).findByRole('button', { name, exact: true }));
+    });
+    Then('a short drill opens on {string} about {string}', async (_, title: string, facet: string) => {
+      const dialog = await screen.findByRole('dialog', { name: 'Short drill' });
+      expect(within(dialog).getByRole('heading', { name: title })).toBeInTheDocument();
+      expect(within(dialog).getByTestId('plan-drill-step')).toHaveTextContent(facet);
+    });
+    When('he answers every question of the short drill right and taps Done', async () => {
+      await answerShortDrill(true, SEED);
+      await tapsShortDone();
+    });
+    Then(GOAL_SAYS, goalSays);
+    And('the plan\'s step {string} is due in 1 day', async (_, facet: string) => {
+      const row = await planRow(facet);
+      expect(row?.due).toBeGreaterThanOrEqual(startedAt + DAY - CLOCK_SLACK);
+      expect(row?.due).toBeLessThanOrEqual(Date.now() + DAY + CLOCK_SLACK);
+    });
+    And('Drill it no longer has a button {string}', (_, name: string) => {
+      expect(within(drillDialog()).queryByRole('button', { name, exact: true })).toBeNull();
+    });
+  });
+
+  Scenario('A short drill answered with misses stays on the plan and comes back tomorrow', ({ Given, And, When, Then }) => {
+    Given(...givens.solidNone);
+    And(OPENS, opensIdea);
+    And(SLIDES, slides);
+    And(FIRST_RIGHT_REST_WRONG, firstRightRestWrong);
+    When(TAPS, async (_: unknown, name: string) => {
+      await user.click(await within(drillDialog()).findByRole('button', { name, exact: true }));
+    });
+    And('he answers every question of the short drill wrong and taps Done', async () => {
+      await answerShortDrill(false, SEED);
+      await tapsShortDone();
+    });
+    Then(GOAL_SAYS, goalSays);
+    And('the plan\'s step {string} is due in 1 day', async (_, facet: string) => {
+      await waitFor(async () => expect((await planRow(facet))?.lapses).toBe(1));
+      const row = await planRow(facet);
+      expect(row?.due).toBeGreaterThanOrEqual(startedAt + DAY - CLOCK_SLACK);
+      expect(row?.due).toBeLessThanOrEqual(Date.now() + DAY + CLOCK_SLACK);
+    });
+  });
+
+  Scenario("The plan's steps come up in Review, and a passed Prove it makes the noun solid and ends the plan", ({ Given, And, When, Then }) => {
+    Given(...givens.solidNone);
+    And(OPENS, opensIdea);
+    And(SLIDES, slides);
+    And(FIRST_RIGHT_REST_WRONG, firstRightRestWrong);
+    And(TAPS, async (_: unknown, name: string) => {
+      await user.click(await within(drillDialog()).findByRole('button', { name, exact: true }));
+    });
+    And('he answers every question of the short drill right and taps Done', async () => {
+      await answerShortDrill(true, SEED);
+      await tapsShortDone();
+      await waitFor(async () => expect(toGoNow(await getDrillPlan('noun'))).toBe(2));
+    });
+    When(START_REVIEW, startsReview);
+    Then(FIRST_CARD, firstCard);
+    When('he starts the drill on the card and answers every question of the short drill right and taps Done', async () => {
+      await user.click(screen.getByRole('button', { name: 'Start the drill', exact: true }));
+      await screen.findByRole('dialog', { name: 'Short drill' });
+      await answerShortDrill(true, reviewSeeds());
+      await tapsShortDone();
+      await waitFor(async () => expect(toGoNow(await getDrillPlan('noun'))).toBe(1));
+    });
+    Then(GOAL_SAYS, goalSays);
+    When('another day passes and he starts a Review round', startsReview);
+    Then("Review's first card is now the plan step {string} of {string}", firstCard);
+    When('he starts the drill on the card and answers every question right until Drill it ends', async () => {
+      await user.click(screen.getByRole('button', { name: 'Start Prove it', exact: true }));
+      await screen.findByRole('dialog', { name: 'Drill it' });
+      await answerUntilEnd('noun', true);
+    });
+    And(DONE, done);
+    Then('the card says {string}', async (_, text: string) => {
+      await waitFor(() => expect(within(screen.getByTestId('drill-plan-card')).getByTestId('feedback')).toHaveTextContent(text));
+    });
+    And('the idea {string} is solid, proved by drill, and its run is kept as proved', async (_, id: string) => {
+      await waitFor(async () => expect(await db.grammarLevels.get(id)).toMatchObject({ level: 'solid', how: 'drill' }));
+      expect((await lastRun()).proved).toBe(true);
+    });
+    And('no drill plan is kept for {string}', async (_, id: string) => {
+      await waitFor(async () => expect(await getDrillPlan(id)).toBeUndefined());
+      expect(await db.reviews.where('kind').equals(PLAN_KIND).count()).toBe(0);
+    });
+    And('the Goal screen has no line {string}', async (_, text: string) => {
+      window.location.hash = '#/goal';
+      await screen.findByTestId('goal-title');
+      await waitFor(() => expect(document.body.textContent).not.toContain(text));
     });
   });
 });

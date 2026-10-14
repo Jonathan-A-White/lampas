@@ -5,7 +5,9 @@ import { setGoal } from '../../src/data/repositories/settings';
 import { seedWordsIfFirstOpen } from '../../src/data/repositories/words';
 import { DAY } from '../../src/data/schedule';
 import { mulberry32 } from '../../src/data/quiz';
+import { planFrom } from '../../src/data/grammar/drillPlan';
 import { ITEM_GROUPS, itemsOf } from '../../src/data/grammar/ladder';
+import { closeDrillPlan, saveDrillPlan } from '../../src/data/repositories/drillPlans';
 import { KINDS } from '../../src/review/kinds';
 import { drawReviewRound } from '../../src/review/round';
 import { stubChapterFetch } from '../support/chapter-fetch';
@@ -71,13 +73,40 @@ describe('a Review round', () => {
     expect(items.map((i) => (i.kind === 'grammar' ? [i.id, i.mode] : []))).toEqual([['case-genitive', 'choice'], ['case-dative', 'flashcard']]);
   });
 
-  it('counts grammar ideas as ideas, first in the order the counts are written', () => {
-    expect(KINDS.map((k) => k.kind)).toEqual(['grammar', 'sound', 'word']);
-    expect(KINDS[0].count(1)).toBe('1 idea');
-    expect(KINDS[0].count(2)).toBe('2 ideas');
-    expect(KINDS[1].count(1)).toBe('1 sound');
-    expect(KINDS[1].count(2)).toBe('2 sounds');
-    expect(KINDS[2].count(2)).toBe('2 words');
+  it('counts the steps of a drill plan as drills, then grammar ideas as ideas, in the order the counts are written', () => {
+    expect(KINDS.map((k) => k.kind)).toEqual(['drill-plan', 'grammar', 'sound', 'word']);
+    expect(KINDS[0].count(1)).toBe('1 drill');
+    expect(KINDS[0].count(2)).toBe('2 drills');
+    expect(KINDS[1].count(1)).toBe('1 idea');
+    expect(KINDS[1].count(2)).toBe('2 ideas');
+    expect(KINDS[2].count(1)).toBe('1 sound');
+    expect(KINDS[2].count(2)).toBe('2 sounds');
+    expect(KINDS[3].count(2)).toBe('2 words');
+  });
+
+  it('asks a due step of a drill plan after the exact gaps and before a due grammar idea or word (mw-i7xe0n.4)', async () => {
+    await setGoal('1 John 1');
+    const facet = (id: string, label: string) => ({ id, label });
+    const run = { ideaId: 'noun', proved: false, edgeStep: 1, topStep: 3, strong: [], weak: [facet('meaning', 'What it is')], answers: [{ step: 1, facet: facet('meaning', 'What it is'), key: 'k', right: false, hinted: false }], ended: 'edge' as const };
+    await saveDrillPlan(planFrom(run, NOW)!, NOW - 1000);
+    await db.reviews.bulkPut([due('word', 'λέγω', 5 * DAY), due('grammar', 'case-genitive', 60_000)]);
+    const round = await drawReviewRound(mulberry32(7), NOW);
+    expect(round.items.slice(0, 3).map((i) => `${i.kind}:${i.id}`)).toEqual(['drill-plan:noun|facet:meaning', 'grammar:case-genitive', 'word:λέγω']);
+    const step = round.items[0];
+    expect(step.kind === 'drill-plan' && step.questions.length).toBeGreaterThan(0);
+    expect(step.kind === 'drill-plan' && step.questions.every((q) => q.facet.id === 'meaning')).toBe(true);
+  });
+
+  it('leaves out a step of a plan that was closed since, and Prove it while a short drill is not done', async () => {
+    await setGoal('1 John 1');
+    const meaning = { id: 'meaning', label: 'What it is' };
+    const run = { ideaId: 'noun', proved: false, edgeStep: 1, topStep: 3, strong: [], weak: [meaning], answers: [{ step: 1, facet: meaning, key: 'k', right: false, hinted: false }], ended: 'edge' as const };
+    await saveDrillPlan(planFrom(run, NOW)!, NOW - 1000);
+    await db.reviews.put(due('drill-plan', 'noun|prove', 1000));
+    expect((await drawReviewRound(mulberry32(7), NOW)).items.map((i) => i.id)).not.toContain('noun|prove');
+    await closeDrillPlan('noun', NOW);
+    await db.reviews.put(due('drill-plan', 'noun|facet:meaning', 1000));
+    expect((await drawReviewRound(mulberry32(7), NOW)).items.filter((i) => i.kind === 'drill-plan')).toEqual([]);
   });
 
   it('leaves out a due idea the ladder no longer has', async () => {

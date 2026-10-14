@@ -9,6 +9,12 @@ Feature: Drill it on the idea sheet
   idea under it to be solid: when one is not, the sheet says "This builds on <title>. Prove it first." with a button to go there,
   and sliding to "Learning" or "I know it" first asks whether to go there.
 
+  A run that does not prove the idea and leaves weak facets makes "Your drill plan" (src/data/grammar/drillPlan.ts, mw-i7xe0n.4): a
+  short drill on each weak facet, the easiest first, then "Prove it", a full Drill it. The result shows the plan with "Start the first
+  drill"; the Goal screen says "Drill plan: N to go" for each idea with a plan open; the steps come up in Review, due now and a day
+  apart; a short drill answered with a miss comes back tomorrow; a passed Prove it makes the idea solid, "Proved by drill", and closes
+  the plan. No tutor is asked anything.
+
   Scenario: The sheet for The noun has a slider with three stops, resting on its level, and no Got it or I know this button
     Given Lampas is opened on Romans 8 with the goal "1 John 1", "Accents and stress" solid, "The noun" at the frontier and a fake Postern
     When he opens the idea sheet of "noun" from the Goal screen
@@ -146,3 +152,55 @@ Feature: Drill it on the idea sheet
     Then a second idea sheet titled "Accents and stress" opens over the first
     And Drill it is gone
     And the idea "noun" has no level
+
+  Scenario: A failed run makes a drill plan, shown on the result and on the Goal screen
+    Given Lampas is opened on Romans 8 with the goal "1 John 1", "Accents and stress" solid, no level for "The noun" and a fake Postern
+    And he opens the idea sheet of "noun" from the Goal screen
+    When he slides to "I know it"
+    And he answers the first question right and every other one wrong until Drill it ends
+    Then Drill it shows "Your drill plan" with the steps "What it is", "Finding it in a verse" and "Prove it"
+    And Drill it has a button "Start the first drill"
+    And the Goal screen says "Drill plan: 3 to go"
+    And no request went to the tutor
+
+  Scenario: A short drill of the plan is done on the result, and the next one is due tomorrow
+    Given Lampas is opened on Romans 8 with the goal "1 John 1", "Accents and stress" solid, no level for "The noun" and a fake Postern
+    And he opens the idea sheet of "noun" from the Goal screen
+    And he slides to "I know it"
+    And he answers the first question right and every other one wrong until Drill it ends
+    When he taps "Start the first drill"
+    Then a short drill opens on "The noun" about "What it is"
+    When he answers every question of the short drill right and taps Done
+    Then the Goal screen says "Drill plan: 2 to go"
+    And the plan's step "Finding it in a verse" is due in 1 day
+    And Drill it no longer has a button "Start the first drill"
+
+  Scenario: A short drill answered with misses stays on the plan and comes back tomorrow
+    Given Lampas is opened on Romans 8 with the goal "1 John 1", "Accents and stress" solid, no level for "The noun" and a fake Postern
+    And he opens the idea sheet of "noun" from the Goal screen
+    And he slides to "I know it"
+    And he answers the first question right and every other one wrong until Drill it ends
+    When he taps "Start the first drill"
+    And he answers every question of the short drill wrong and taps Done
+    Then the Goal screen says "Drill plan: 3 to go"
+    And the plan's step "What it is" is due in 1 day
+
+  Scenario: The plan's steps come up in Review, and a passed Prove it makes the noun solid and ends the plan
+    Given Lampas is opened on Romans 8 with the goal "1 John 1", "Accents and stress" solid, no level for "The noun" and a fake Postern
+    And he opens the idea sheet of "noun" from the Goal screen
+    And he slides to "I know it"
+    And he answers the first question right and every other one wrong until Drill it ends
+    And he taps "Start the first drill"
+    And he answers every question of the short drill right and taps Done
+    When a day passes and he starts a Review round
+    Then Review's first card is the plan step "Finding it in a verse" of "The noun"
+    When he starts the drill on the card and answers every question of the short drill right and taps Done
+    Then the Goal screen says "Drill plan: 1 to go"
+    When another day passes and he starts a Review round
+    Then Review's first card is now the plan step "Prove it" of "The noun"
+    When he starts the drill on the card and answers every question right until Drill it ends
+    And he taps Done on Drill it
+    Then the card says "Proved by drill."
+    And the idea "noun" is solid, proved by drill, and its run is kept as proved
+    And no drill plan is kept for "noun"
+    And the Goal screen has no line "Drill plan"
