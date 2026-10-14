@@ -7,32 +7,49 @@ import { db } from '../db';
 import { publish } from '../../events/bus';
 import { inferFromAnswer, inferFromWord, isInferredSolid, type Evidence, type EvidenceMap, type Inferred } from '../grammar/inference';
 import { IDEA_KIND } from '../grammar/ladder';
+import { ideaOfStored, storedId } from '../grammar/soundScope';
 import type { GrammarQuestion } from '../grammar/questions';
 import { DAY, STEP_DAYS } from '../schedule';
+import { getGreekPronunciation } from './settings';
 import { announceAlphabet, syncAlphabet, type GroupMoved } from './grammarLevels';
 import { announceDue, writeScheduled } from './reviews';
 
 const KEY = 'grammarEvidence';
 const KNOWN_START_STEP = STEP_DAYS.indexOf(30);
 
-/** The evidence kept, by idea id. */
-export async function getEvidence(): Promise<Map<string, Evidence>> {
+/** Everything kept, by stored key: a letter, sound or mark idea's evidence under '<scheme>:<id>' (src/data/grammar/soundScope.ts), any other idea's under its id. */
+async function keptEvidence(): Promise<Record<string, unknown>> {
   const row = await db.settings.get(KEY);
-  const found = new Map<string, Evidence>();
-  if (typeof row?.value !== 'string') return found;
+  if (typeof row?.value !== 'string') return {};
   try {
-    const kept = JSON.parse(row.value) as Record<string, unknown>;
-    for (const [id, e] of Object.entries(kept)) {
-      if (Array.isArray(e) && Number.isInteger(e[0]) && Number.isInteger(e[1])) found.set(id, { run: e[0] as number, misses: e[1] as number });
-    }
+    const kept = JSON.parse(row.value) as unknown;
+    return typeof kept === 'object' && kept !== null && !Array.isArray(kept) ? (kept as Record<string, unknown>) : {};
   } catch {
-    // Not evidence: start again.
+    return {}; // Not evidence: start again.
+  }
+}
+
+/** The evidence in `kept` that is the selected scheme's or a grammar idea's, by idea id. */
+function evidenceIn(kept: Record<string, unknown>, scheme: string): Map<string, Evidence> {
+  const found = new Map<string, Evidence>();
+  for (const [stored, e] of Object.entries(kept)) {
+    const id = ideaOfStored(stored, scheme);
+    if (id !== undefined && Array.isArray(e) && Number.isInteger(e[0]) && Number.isInteger(e[1])) found.set(id, { run: e[0] as number, misses: e[1] as number });
   }
   return found;
 }
 
-const keep = (evidence: EvidenceMap): Promise<unknown> =>
-  db.settings.put({ key: KEY, value: JSON.stringify(Object.fromEntries([...evidence].map(([id, e]) => [id, [e.run, e.misses]]))) });
+/** The evidence kept, by idea id: the grammar ideas' and the sound ideas' in the selected scheme. */
+export async function getEvidence(): Promise<Map<string, Evidence>> {
+  return evidenceIn(await keptEvidence(), await getGreekPronunciation());
+}
+
+/** Writes the evidence of the selected scheme (and the grammar ideas') over `kept`, leaving the other schemes' as they were. Not async: inside a transaction every hop counts. */
+function keep(kept: Record<string, unknown>, evidence: EvidenceMap, scheme: string): Promise<unknown> {
+  const others = Object.fromEntries(Object.entries(kept).filter(([stored]) => ideaOfStored(stored, scheme) === undefined));
+  const mine = Object.fromEntries([...evidence].map(([id, e]) => [storedId(id, scheme), [e.run, e.misses]]));
+  return db.settings.put({ key: KEY, value: JSON.stringify({ ...others, ...mine }) });
+}
 
 /** What settling an answer changed: the ideas whose level moved, and the alphabet's new level when it moved. */
 export interface Credited {
@@ -47,21 +64,23 @@ export interface Credited {
  */
 async function apply(infer: (evidence: EvidenceMap) => Inferred, now: number): Promise<Credited> {
   const changed: Credited['changed'] = [];
-  const result = infer(await getEvidence());
-  await keep(result.evidence);
+  const scheme = await getGreekPronunciation();
+  const kept = await keptEvidence();
+  const result = infer(evidenceIn(kept, scheme));
+  await keep(kept, result.evidence, scheme);
   for (const id of result.credited) {
-    if (!isInferredSolid(result.evidence.get(id)) || (await db.grammarLevels.get(id))?.level === 'solid') continue;
-    await db.grammarLevels.put({ id, level: 'solid', since: now, how: 'inferred' });
-    await writeScheduled(IDEA_KIND, [id], now, () => ({ step: KNOWN_START_STEP, due: now + 30 * DAY }));
+    if (!isInferredSolid(result.evidence.get(id)) || (await db.grammarLevels.get(storedId(id, scheme)))?.level === 'solid') continue;
+    await db.grammarLevels.put({ id: storedId(id, scheme), level: 'solid', since: now, how: 'inferred' });
+    await writeScheduled(IDEA_KIND, [storedId(id, scheme)], now, () => ({ step: KNOWN_START_STEP, due: now + 30 * DAY }));
     changed.push({ id, level: 'solid' });
   }
   for (const id of result.missed) {
-    const row = await db.grammarLevels.get(id);
+    const row = await db.grammarLevels.get(storedId(id, scheme));
     if (row?.how !== 'inferred' || row.level !== 'solid') continue;
-    await db.grammarLevels.put({ id, level: 'frontier', since: now, how: 'inferred' });
+    await db.grammarLevels.put({ id: storedId(id, scheme), level: 'frontier', since: now, how: 'inferred' });
     changed.push({ id, level: 'frontier' });
   }
-  return { changed, alphabet: changed.length > 0 ? await syncAlphabet(now) : [] };
+  return { changed, alphabet: changed.length > 0 ? await syncAlphabet(now, scheme) : [] };
 }
 
 /** Tells the bus and the schedule what a committed `apply` changed. */

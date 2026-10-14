@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Find References Answer 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["references"],
+  "properties": {
+    "references": {
+      "description": "The Bible references the text in the picture names, in the order the page has them, each once per place it is printed. Empty when the picture names none.",
+      "type": "array",
+      "maxItems": 60,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["printed", "ref"],
+        "properties": {
+          "printed": {
+            "description": "The reference as the page prints it, without the translation tag or the brackets: 'Gen. 1:28', 'Rom 8:28-30', '1 John 1:1'.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "ref": {
+            "description": "The reference in OSIS form: the book's OSIS code, a dot, the chapter, and a dot and the verse when the page gives one ('Gen.1.28', 'Rom.8.28', '1John.1.1', 'Ps.23'). A range or a list keeps its first verse here and is whole in `printed`.",
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 30
+          }
+        }
+      }
+    }
+  }
+}

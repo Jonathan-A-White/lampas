@@ -1,5 +1,25 @@
 # What's new
 
+## 0.1.210
+_2026-10-14_
+- New: A verse from the Old Testament in the tutor's answer now opens in your Logos, in the Bible you chose, and if Logos is not linked it takes you to where to link it.
+
+## 0.1.208
+_2026-10-14_
+- Fixed: Back on the word, grammar and idea cards now goes back one step at a time, to the last place you were, instead of skipping some.
+
+## 0.1.207
+_2026-10-14_
+- Fixed: Your requests now has a back button that returns to About when you came from About, and a double tap on a back button no longer jumps you two screens.
+
+## 0.1.206
+_2026-10-14_
+- New: Share a screenshot of a book page to Lampas and it lists the Bible references on it as links.
+
+## 0.1.205
+_2026-10-14_
+- New: Switching the Greek pronunciation now starts the letters, sounds and marks again in the new one and keeps your old progress, ready for when you switch back.
+
 ## 0.1.204
 _2026-10-14_
 - Fixed: after you say yes or no to sending an idea to the makers, the 'Sent' or 'Not sent' mark stays in view next to the tutor's reply.

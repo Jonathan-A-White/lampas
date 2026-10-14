@@ -209,6 +209,8 @@ export interface TalkRequest {
   form?: { name: string; fields: FormFieldState[] };
   /** the Greek pronunciation the app speaks and respells in (mw-5r3p30.241, src/speech/pronunciation.ts), such as 'modern': a sound is described by it */
   pronunciation?: GreekPronunciation;
+  /** that pronunciation's name and sound rules, from its scheme (mw-5r3p30.268, Pronunciation.tutorGuide): the grind describes every sound by them */
+  pronunciation_guide?: string;
   /** the study resources he has switched on in Settings (mw-5r3p30.123): the only ones the tutor may link; missing in About, whose request is the credits */
   resources?: TutorResource[];
   /** present only when pictures go with the message (mw-y3qno5.1): how many, 1 to 4. They are the grist's attachments; the tutor reads the text in them */
@@ -438,20 +440,23 @@ const sizeOf = (request: TalkRequest): number => new TextEncoder().encode(JSON.s
  * Makes the request fit a grist: while it is too big the oldest long answer in the history is cut short; when none is left to cut
  * the words of the text (greek_words) are cut from their end, and when none is left the oldest turn is dropped. The newest turn is
  * the last to be touched (a quiz is nothing without its earlier turns, so they outlast the tail of a long passage's word list).
- * With the history gone, the oldest of his requests (the last in the list, newest first) go one at a time.
+ * With the history gone, the oldest of his requests (the last in the list, newest first) go one at a time. The pronunciation's guide
+ * goes before the words and the turns (mw-5r3p30.268: a quiz on a long passage needs them more than the sound rules), except on a sound question.
  */
 export function fitHistory(request: TalkRequest): TalkRequest {
   let history = request.history.map((t) => ({ ...t }));
   let requests = request.requests;
   let greekWords = request.greek_words;
   let memoryNotes = request.memory?.notes;
-  const fitted = (): TalkRequest => ({ ...request, history, ...(requests ? { requests } : {}), ...(greekWords ? { greek_words: greekWords } : {}), ...(request.memory && memoryNotes ? { memory: { ...request.memory, notes: memoryNotes } } : {}) });
+  let guide = request.pronunciation_guide;
+  const fitted = (): TalkRequest => ({ ...request, pronunciation_guide: guide, history, ...(requests ? { requests } : {}), ...(greekWords ? { greek_words: greekWords } : {}), ...(request.memory && memoryNotes ? { memory: { ...request.memory, notes: memoryNotes } } : {}) });
   const tooBig = (): boolean => sizeOf(fitted()) > MAX_REQUEST_BYTES;
   for (;;) {
     const long = history.findIndex((t) => t.a.length > CLIPPED_CHARS);
     if (!tooBig() || long < 0) break;
     history[long] = { ...history[long], a: history[long].a.slice(0, CLIPPED_CHARS - CLIP_MARK.length).trimEnd() + CLIP_MARK };
   }
+  if (tooBig() && request.focus?.kind !== 'sound') guide = undefined;
   while (greekWords && greekWords.length > 0 && tooBig() && history.length > 0) greekWords = greekWords.slice(0, -1);
   while (history.length > 0 && tooBig()) history = history.slice(1);
   while (greekWords && greekWords.length > 0 && tooBig()) greekWords = greekWords.slice(0, -1);
@@ -506,6 +511,7 @@ export function buildTalkRequest(
     solid_words: aboutCredits ? [] : solidWords,
     settings,
     pronunciation,
+    pronunciation_guide: pronunciationOf(pronunciation).tutorGuide,
     ...(focus ? { focus: withRespelling(focus, pronunciation) } : {}),
     ...(learner ? { learner } : {}),
     ...(learnerGrammar && !aboutCredits ? { learner_grammar: learnerGrammar } : {}),

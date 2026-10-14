@@ -73,6 +73,8 @@ async function tapsWord(text: string, verse: number): Promise<void> {
   await screen.findByRole('dialog', { name: 'Word' });
 }
 
+let wordBeforeExample = '';
+
 const feature = await loadFeature('features/sheet-back.feature');
 
 describeFeature(feature, ({ Scenario }) => {
@@ -145,6 +147,137 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Grammar sheet is closed and the word sheet is still open', async () => {
       await waitFor(() => expect(grammarSheet()).toBeNull());
       expect(wordSheet()).not.toBeNull();
+    });
+  });
+
+  Scenario("Back walks the Grammar sheet's trail one term at a time (word card, plural, singular)", ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on 1 John 2 in Greek', () => open('#/?b=1jn&c=2&view=greek', false, false));
+    And('he taps "Τεκνία" in verse 1', () => tapsWord('Τεκνία', 1));
+    And('he taps the term "plural" on the word sheet', async () => {
+      await user.click(screen.getByRole('button', { name: 'plural', exact: true }));
+      await screen.findByRole('dialog', { name: 'Grammar' });
+    });
+    And('he taps the related term "singular" on the Grammar sheet', async () => {
+      await user.click(within(grammarSheet() as HTMLElement).getByRole('button', { name: 'singular', exact: true }));
+      await within(grammarSheet() as HTMLElement).findByRole('heading', { name: 'singular' });
+    });
+    When('he goes back', back);
+    Then('the Grammar sheet shows "plural"', async () => {
+      await within(grammarSheet() as HTMLElement).findByRole('heading', { name: 'plural' });
+      expect(wordSheet()).not.toBeNull();
+    });
+    When('he goes back once more', back);
+    Then('the Grammar sheet is closed and the word sheet is still open', async () => {
+      await waitFor(() => expect(grammarSheet()).toBeNull());
+      expect(wordSheet()).not.toBeNull();
+    });
+    When('he goes back a third time', back);
+    Then('the word sheet is closed', async () => {
+      await waitFor(() => expect(wordSheet()).toBeNull());
+    });
+    And('the Reader shows 1 John 2', () => {
+      expect(screen.getByRole('heading', { level: 1, name: /1 John 2/ })).toBeTruthy();
+    });
+  });
+
+  Scenario('Back from an example word returns to the idea sheet, then the Grammar sheet, then the first word', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with verse 2 selected', () => open('', false));
+    And('he taps "of the" in verse 2', () => tapsWord('of the', 2));
+    And('he taps the term "genitive" on the word sheet', async () => {
+      await user.click(screen.getByRole('button', { name: 'genitive', exact: true }));
+      await screen.findByRole('dialog', { name: 'Grammar' });
+    });
+    And('he taps Learn this idea on the Grammar sheet', async () => {
+      await user.click(screen.getByRole('button', { name: 'Learn this idea' }));
+      await screen.findByRole('dialog', { name: 'Idea' });
+    });
+    And('he taps the first example on the idea sheet', async () => {
+      wordBeforeExample = (wordSheet() as HTMLElement).textContent ?? '';
+      const [first] = await within(ideaSheet() as HTMLElement).findAllByTestId('idea-example');
+      await user.click(first as HTMLElement);
+    });
+    Then('the idea sheet and the Grammar sheet are gone and the word sheet shows the example', async () => {
+      await waitFor(() => expect(ideaSheet()).toBeNull());
+      expect(grammarSheet()).toBeNull();
+      expect(wordSheet()).not.toBeNull();
+      expect((wordSheet() as HTMLElement).textContent).not.toBe(wordBeforeExample);
+    });
+    When('he goes back', back);
+    Then('the idea sheet is open again over the Grammar sheet, and the word sheet shows what it did before the example', async () => {
+      await screen.findByRole('dialog', { name: 'Idea' });
+      expect(grammarSheet()).not.toBeNull();
+      expect((wordSheet() as HTMLElement).textContent).toBe(wordBeforeExample);
+    });
+    When('he goes back once more', back);
+    Then('the idea sheet is closed and the Grammar sheet is still open', async () => {
+      await waitFor(() => expect(ideaSheet()).toBeNull());
+      expect(grammarSheet()).not.toBeNull();
+      expect(wordSheet()).not.toBeNull();
+    });
+    When('he goes back a third time', back);
+    Then('the Grammar sheet is closed and the word sheet is still open', async () => {
+      await waitFor(() => expect(grammarSheet()).toBeNull());
+      expect(wordSheet()).not.toBeNull();
+    });
+    When('he goes back a fourth time', back);
+    Then('the word sheet is closed', async () => {
+      await waitFor(() => expect(wordSheet()).toBeNull());
+    });
+  });
+
+  Scenario('Done after moves inside a sheet leaves no entry behind', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Settings and then on Romans 8', () => open('#/settings', true, false));
+    And('he taps "For" in verse 2', () => tapsWord('For', 2));
+    And('he taps the term "conjunction" on the word sheet', async () => {
+      await user.click(screen.getByRole('button', { name: 'conjunction', exact: true }));
+      await screen.findByRole('dialog', { name: 'Grammar' });
+    });
+    And('he taps the related term "particle" on the Grammar sheet', async () => {
+      await user.click(within(grammarSheet() as HTMLElement).getByRole('button', { name: 'particle', exact: true }));
+      await within(grammarSheet() as HTMLElement).findByRole('heading', { name: 'particle' });
+    });
+    And('he taps Done on the Grammar sheet', async () => {
+      await user.click(within(grammarSheet() as HTMLElement).getByRole('button', { name: 'Done' }));
+      await waitFor(() => expect(grammarSheet()).toBeNull());
+      await act(() => new Promise((resolve) => setTimeout(resolve, 30)));
+    });
+    And('he taps Done on the word sheet', async () => {
+      await user.click(within(wordSheet() as HTMLElement).getByRole('button', { name: 'Done' }));
+      await waitFor(() => expect(wordSheet()).toBeNull());
+      await act(() => new Promise((resolve) => setTimeout(resolve, 30)));
+    });
+    When('he goes back', back);
+    Then('the Settings screen is open', async () => {
+      await screen.findByRole('heading', { name: 'Settings' });
+      expect(window.location.hash).toBe('#/settings');
+    });
+  });
+
+  Scenario('Done on the word sheet after an example word leaves no entry behind', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Settings and then on Romans 8', () => open('#/settings', true, false));
+    And('he taps "of the" in verse 2', () => tapsWord('of the', 2));
+    And('he taps the term "genitive" on the word sheet', async () => {
+      await user.click(screen.getByRole('button', { name: 'genitive', exact: true }));
+      await screen.findByRole('dialog', { name: 'Grammar' });
+    });
+    And('he taps Learn this idea on the Grammar sheet', async () => {
+      await user.click(screen.getByRole('button', { name: 'Learn this idea' }));
+      await screen.findByRole('dialog', { name: 'Idea' });
+    });
+    And('he taps the first example on the idea sheet', async () => {
+      const [first] = await within(ideaSheet() as HTMLElement).findAllByTestId('idea-example');
+      await user.click(first as HTMLElement);
+      await waitFor(() => expect(ideaSheet()).toBeNull());
+    });
+    And('he taps Done on the word sheet', async () => {
+      await user.click(within(wordSheet() as HTMLElement).getByRole('button', { name: 'Done' }));
+      await waitFor(() => expect(wordSheet()).toBeNull());
+      await act(() => new Promise((resolve) => setTimeout(resolve, 30)));
+    });
+    When('he goes back', back);
+    Then('the Settings screen is open', async () => {
+      await screen.findByRole('heading', { name: 'Settings' });
+      expect(window.location.hash).toBe('#/settings');
     });
   });
 

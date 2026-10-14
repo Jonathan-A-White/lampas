@@ -412,7 +412,7 @@ describe('a run that is one Greek letter', () => {
   });
 
   it("follows the scheme: a second scheme's form is what is read", () => {
-    const unregister = registerPronunciation({ id: 'stub-erasmian', label: 'Stub', lang: 'el-GR', scoringLang: 'el', note: '', respell: (w) => w, keyWords: {}, loneLetter: (w) => `[${w}]`, voiceForm: (t) => t });
+    const unregister = registerPronunciation({ id: 'stub-erasmian', label: 'Stub', lang: 'el-GR', scoringLang: 'el', note: '', respell: (w) => w, keyWords: {}, loneLetter: (w) => `[${w}]`, voiceForm: (t) => t, letterForm: (l) => l, tutorGuide: 'Stub.' });
     try {
       setGreekPronunciation('stub-erasmian');
       readRuns([{ text: 'ὁ', language: 'greek' }]);

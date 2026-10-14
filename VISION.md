@@ -37,5 +37,7 @@ The tutor is told, on every ask, each app setting and each part of his progress 
 
 Lampas reads Koine the way the Greek Church reads the New Testament aloud, in standard Modern Greek pronunciation, and every place that says or spells a sound follows it: the Greek voice, the line under each word (the respelling), lessons, questions, probes and the tutor's grinds.
 
+Every sound comes from one pronunciation scheme, so another (Erasmian) plugs in without touching the rest.
+
 ## How feedback is weighed
 Feedback that fits this vision is approved and built elegantly; where people differ, a setting; anything crossing a line or changing the vision goes to the Governor.

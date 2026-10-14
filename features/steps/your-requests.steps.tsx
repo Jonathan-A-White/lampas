@@ -2,7 +2,7 @@
 // request-status records the mill seals to this phone (docs/protocol.md section 19 in Postern) and shows where each request stands,
 // proven against the fake Postern (tests/support/fake-postern.ts). Real timers: the screen's poll is shortened to 20 ms.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PrivateKey } from '@bsv/sdk';
 import { afterAll, expect, vi } from 'vitest';
@@ -13,6 +13,7 @@ import { db } from '../../src/data/db';
 import { getRequestsCursor, keepRequest, listRequests } from '../../src/data/repositories/requests';
 import { clearBus } from '../../src/events/bus';
 import { RequestsScreen } from '../../src/RequestsScreen';
+import { useRoute } from '../../src/nav/route';
 import { requestTimings } from '../../src/services/requestStatus';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
@@ -314,8 +315,106 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(await screen.findByRole('button', { name: /^Your requests/ }));
     });
     Then('the Your requests screen is open', () => {
+      expect(window.location.hash).toBe('#/requests?from=about');
+    });
+  });
+
+  // The screens behind the hash, as App picks them, so a back button really goes somewhere.
+  function Screens() {
+    const route = useRoute();
+    return route === 'requests' ? <RequestsScreen /> : route === 'about' ? <About /> : <SettingsScreen />;
+  }
+
+  async function openFrom(hash: '#/about' | '#/settings'): Promise<void> {
+    cleanup();
+    vi.stubGlobal('fetch', () => Promise.resolve(new Response('{}', { status: 404 })));
+    window.localStorage.clear();
+    window.history.replaceState(null, '', `/${hash}`);
+    await db.open();
+    await db.settings.clear();
+    render(<Screens />);
+    await screen.findByRole('heading', { name: hash === '#/about' ? 'About' : 'Settings', level: 1 });
+  }
+
+  const headerButton = async (): Promise<HTMLElement> => {
+    const header = (await screen.findByRole('heading', { name: 'Your requests', level: 1 })).closest('header') as HTMLElement;
+    return header.querySelector('button') as HTMLElement;
+  };
+
+  Scenario('Opened from About, the back button goes back to About', ({ Given, When, Then, And }) => {
+    Given('About is open', () => openFrom('#/about'));
+    When('he taps Your requests', async () => {
+      await user.click(await screen.findByRole('button', { name: /^Your requests/ }));
+    });
+    Then('the Your requests screen is open', () => {
+      expect(window.location.hash).toBe('#/requests?from=about');
+    });
+    And('the header button reads {string}', async (_ctx, label: string) => {
+      expect((await headerButton()).textContent).toBe(label);
+    });
+    When('he taps the header button', async () => {
+      await user.click(await headerButton());
+    });
+    Then('About is open again', async () => {
+      await screen.findByRole('heading', { name: 'About', level: 1 });
+      expect(window.location.hash).toBe('#/about');
+    });
+  });
+
+  Scenario('Opened from Settings, the back button goes back to Settings', ({ Given, When, Then }) => {
+    Given('Settings is open', () => openFrom('#/settings'));
+    When('he taps Your requests', async () => {
+      await user.click(await screen.findByRole('button', { name: /^Your requests/ }));
+    });
+    Then('the header button reads {string}', async (_ctx, label: string) => {
+      expect((await headerButton()).textContent).toBe(label);
+    });
+    When('he taps the header button', async () => {
+      await user.click(await headerButton());
+    });
+    Then('Settings is open again', async () => {
+      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      expect(window.location.hash).toBe('#/settings');
+    });
+  });
+
+  Scenario('A double tap on the Settings row adds one history entry', ({ Given, When, Then, And }) => {
+    let before = 0;
+    Given('Settings is open', async () => {
+      // Settings alone, so the row is still under his finger for the second tap (the screen has not been drawn over it yet)
+      await openFrom('#/settings');
+      cleanup();
+      render(<SettingsScreen />);
+      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+    });
+    When('he double taps Your requests', async () => {
+      before = window.history.length;
+      const rowButton = await screen.findByRole('button', { name: /^Your requests/ });
+      fireEvent.click(rowButton, { detail: 1 });
+      fireEvent.click(rowButton, { detail: 2 });
+    });
+    Then('the Your requests screen is open', () => {
       expect(window.location.hash).toBe('#/requests');
+    });
+    And('one history entry was added', () => {
+      expect(window.history.length).toBe(before + 1);
+    });
+  });
+
+  Scenario('A double tap on the back button does not skip past Settings', ({ Given, When, Then, And }) => {
+    Given('Settings is open', () => openFrom('#/settings'));
+    When('he taps Your requests', async () => {
+      await user.click(await screen.findByRole('button', { name: /^Your requests/ }));
+    });
+    And('he double taps the header button', async () => {
+      // the first tap leaves for Settings; the second lands on whatever Settings draws at the same spot (its own back button)
+      fireEvent.click(await headerButton(), { detail: 1 });
+      const settingsBack = (await screen.findByRole('heading', { name: 'Settings', level: 1 })).closest('header')!.querySelector('button') as HTMLElement;
+      fireEvent.click(settingsBack, { detail: 2 });
+    });
+    Then('Settings is open again', async () => {
+      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      expect(window.location.hash).toBe('#/settings');
     });
   });
 });
-

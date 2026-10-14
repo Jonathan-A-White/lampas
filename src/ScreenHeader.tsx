@@ -24,10 +24,11 @@ export function ScreenHeader({ title, subtitle, back, action }: Props) {
   );
 }
 
-/** A text button in the header with a thumb-sized target. */
+/** A text button in the header with a thumb-sized target. The second click of a double tap (detail 2) is dropped: it would land on the next screen's own
+ * header button, which sits at the same spot, and take him a screen further than he meant. */
 export function HeaderButton({ onClick, children }: { onClick: () => void; children: ReactNode }) {
   return (
-    <button type="button" onClick={onClick} className="min-h-12 min-w-12 rounded-lg px-3 chrome-text font-medium text-accent">
+    <button type="button" onClick={(event) => event.detail < 2 && onClick()} className="min-h-12 min-w-12 rounded-lg px-3 chrome-text font-medium text-accent">
       {children}
     </button>
   );

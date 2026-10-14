@@ -1,5 +1,7 @@
 // features/steps/share-references.steps.tsx — runs features/share-references.feature: the Bible references listed on the 'Share to Lampas' sheet
-// (src/share/ShareReferences.tsx, mw-s1dc0n.1). The share is a row in Dexie as the worker parks it; the app is the whole App, so a tapped link opens the Reader.
+// (src/share/ShareReferences.tsx, mw-s1dc0n.1) and, for a shared picture, those the find-refs grist reads from it (src/share/findRefs.ts, mw-s1dc0n.2). The share is
+// a row in Dexie as the worker parks it; the app is the whole App, so a tapped link opens the Reader. The mill is the fake Postern of tests/support/fake-postern.ts,
+// the canvas the image seam of src/images/shrink.ts.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -10,13 +12,19 @@ import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { parkShare } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
+import { imageSeam } from '../../src/images/shrink';
+import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech } from '../../tests/support/fake-speech';
+
+const realSeam = { ...imageSeam };
 
 afterAll(() => {
   cleanup();
   stopReading();
+  Object.assign(imageSeam, realSeam);
   vi.unstubAllGlobals();
   db.close();
 });
@@ -24,22 +32,38 @@ afterAll(() => {
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 
-/** Opens the app at the Share screen with `text` parked as the waiting share. `fresh` starts from an empty phone; a second share keeps what the phone kept. */
-async function open(text: string, fresh: boolean): Promise<void> {
+let fake: FakePostern;
+
+/** Opens the app at the Share screen with `text` (or one picture) parked as the waiting share. `fresh` starts from an empty phone; a second share keeps what the phone kept. */
+async function open(text: string, fresh: boolean, picture: false | 'held' | 'failing' = false): Promise<void> {
   cleanup();
   stopReading();
   clearBus();
   vi.unstubAllGlobals();
+  Object.assign(imageSeam, realSeam);
+  tutorTimings.pollMs = 20;
   stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
   const kept = fresh ? null : window.localStorage.getItem('lampas.shareRefsOrder');
   window.localStorage.clear();
   if (kept) window.localStorage.setItem('lampas.shareRefsOrder', kept);
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
   window.history.replaceState(null, '', '/#/share?s=share-1');
+  fake = makeFakePostern();
+  // a picture's grist waits for the step that answers it, or fails at once
+  if (picture === 'failing') fake.kindReplies['find-refs'] = { status: 'failed', reason: 'could not read it' };
   stubChapterFetch();
+  const chapterFetch = globalThis.fetch;
+  vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init)));
+  imageSeam.decode = async () => ({ width: 1200, height: 800, source: null });
+  imageSeam.encode = async () => new Blob([new Uint8Array(50_000).fill(7)], { type: 'image/jpeg' });
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.talkPictures.clear(), db.shares.clear()]);
-  await parkShare({ id: 'share-1', createdAt: Date.now(), text, files: [] });
+  await parkShare({
+    id: 'share-1',
+    createdAt: Date.now(),
+    text: text || undefined,
+    files: picture ? [{ name: 'shared-1.png', type: 'image/png', bytes: new Uint8Array([1, 2, 3]).buffer }] : [],
+  });
   render(<App />);
   await screen.findByRole('dialog', { name: 'Share to Lampas' });
 }
@@ -50,6 +74,15 @@ const linkNamed = (name: string): HTMLAnchorElement => {
   const found = links().find((a) => a.textContent === name);
   if (!found) throw new Error(`no link ${name}`);
   return found;
+};
+
+/** What the mill answers the find-refs grist with. */
+const answered = (...pairs: [string, string][]) => ({ status: 'answered' as const, answer: { references: pairs.map(([printed, ref]) => ({ printed, ref })) } });
+/** 'a' at 'b' and 'c' at 'd' from the step's four strings. */
+const pairsOf = (strings: string[]): [string, string][] => Array.from({ length: strings.length / 2 }, (_, i) => [strings[2 * i]!, strings[2 * i + 1]!]);
+const sheetShows = async (_: unknown, heading: string, name: string) => {
+  expect(await within(sheet()).findByRole('heading', { name: heading })).toBeInTheDocument();
+  expect(links().map((l) => l.textContent)).toEqual([name]);
 };
 
 const feature = await loadFeature('features/share-references.feature');
@@ -110,5 +143,45 @@ describeFeature(feature, ({ Scenario }) => {
       expect(within(sheet()).getByText(text)).toBeInTheDocument();
       expect(links()).toHaveLength(0);
     });
+  });
+
+  Scenario('A shared picture is read for its references, and a book that is not a book is dropped', ({ Given, Then, When, And }) => {
+    Given('the Share screen is opened with a shared picture', async () => {
+      await open('', true, 'held');
+    });
+    Then('the sheet says {string}', async (_, text: string) => {
+      expect(await within(sheet()).findByText(text)).toBeInTheDocument();
+    });
+    When('the mill answers with the references {string} at {string} and {string} at {string}', async (_, ...strings: string[]) => {
+      await waitFor(() => expect(fake.received).toHaveLength(1));
+      fake.answer(answered(...pairsOf(strings)));
+    });
+    Then('the sheet shows {string} with the link {string}', sheetShows);
+    And('the link {string} goes to {string}', (_, name: string, href: string) => {
+      expect(linkNamed(name).getAttribute('href')).toBe(href);
+    });
+    And('the picture went to the find-refs grind alone, with its language', () => {
+      expect(fake.received).toHaveLength(1);
+      expect(fake.received[0]!.grist.kind).toBe('find-refs');
+      expect(fake.received[0]!.input).toEqual({ language: 'en' });
+      expect(fake.received[0]!.attachments).toHaveLength(1);
+      expect(fake.received[0]!.attachments[0]!.mime).toBe('image/jpeg');
+    });
+  });
+
+  Scenario('A grist that fails says so, and Try again reads the picture again', ({ Given, Then, When, And }) => {
+    Given('the Share screen is opened with a shared picture, and the mill fails the grist', async () => {
+      await open('', true, 'failing');
+    });
+    Then('the sheet says {string}', async (_, text: string) => {
+      expect(await within(sheet()).findByRole('alert')).toHaveTextContent(text);
+    });
+    When('the mill will answer with the references {string} at {string}', (_, printed: string, ref: string) => {
+      fake.kindReplies['find-refs'] = answered([printed, ref]);
+    });
+    And('he taps {string}', async (_, label: string) => {
+      await user.click(within(sheet()).getByRole('button', { name: label }));
+    });
+    Then('the sheet shows {string} with the link {string}', sheetShows);
   });
 });

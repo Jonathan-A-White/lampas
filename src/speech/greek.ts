@@ -293,10 +293,11 @@ export function greekWordSpeech(text: string): { text: string; language: SpeechL
   return { text: loneLetterForm(text) ?? greekVoiceForm(text.toLowerCase()), language: 'greek' };
 }
 
-/** Says a LETTER now, as a Greek voice names it (the letter drills 'Tap to hear a letter', where the letter is the thing asked about, not a word): lower case, to the
- * Greek voice, never turned into a sound. A word of one letter is not this: it goes through speakWord. */
+/** Says a LETTER now, as the chosen pronunciation names one (the letter drills 'Tap to hear a letter', where the letter is the thing asked about, not a word):
+ * its letterForm (Modern Greek's is the letter in lower case, which a Greek voice names), to the Greek voice, never turned into a sound. A word of one letter
+ * is not this: it goes through speakWord. */
 export function speakLetter(letter: string): boolean {
-  return speakText(letter.toLowerCase(), WORD_KEY, { language: 'greek' });
+  return speakText(chosenPronunciation().letterForm(letter), WORD_KEY, { language: 'greek' });
 }
 
 const wordSpeech = (text: string, language: SpeechLanguage): { text: string; language: SpeechLanguage } =>

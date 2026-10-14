@@ -4,6 +4,9 @@ Feature: Share to Lampas lists the Bible references in the shared words
   verse). They are in the order of the page by default, a reference named twice at its first place with '×2'; a switch 'Page order' | 'Bible order' puts them
   in Bible order under each book, and his choice is kept for the next share. Words with none say 'No Bible references found'. The finder is
   tests/unit/refs-in-text.test.ts.
+  A shared picture (a screenshot of a book's page) is read by the mill's find-refs grind (mw-s1dc0n.2): the sheet says 'Finding Bible references...' while
+  the grist runs, then lists what it found in the same section. Each reference the grist answers is checked on the phone and one that is no book of the Bible
+  is dropped (tests/unit/find-refs.test.ts). A grist that fails says so in one line, with 'Try again'.
 
   Scenario: Shared words with two references list two links
     Given the Share screen is opened with a share of the words "Love (Rom 8:28 NIV) and see 1 John 1:1."
@@ -31,3 +34,18 @@ Feature: Share to Lampas lists the Bible references in the shared words
   Scenario: Words with no reference say so
     Given the Share screen is opened with a share of the words "Mark my words, 3:16 was late"
     Then the sheet says "No Bible references found"
+
+  Scenario: A shared picture is read for its references, and a book that is not a book is dropped
+    Given the Share screen is opened with a shared picture
+    Then the sheet says "Finding Bible references..."
+    When the mill answers with the references "Gen. 1:28" at "Gen.1.28" and "Hezekiah 3:1" at "Hez.3.1"
+    Then the sheet shows "Bible references (1)" with the link "Gen. 1:28"
+    And the link "Gen. 1:28" goes to "https://lampas.allmymind.org/#/?ref=Gen.1.28"
+    And the picture went to the find-refs grind alone, with its language
+
+  Scenario: A grist that fails says so, and Try again reads the picture again
+    Given the Share screen is opened with a shared picture, and the mill fails the grist
+    Then the sheet says "Could not find Bible references in the picture."
+    When the mill will answer with the references "Rom 8:28-30" at "Rom.8.28"
+    And he taps "Try again"
+    Then the sheet shows "Bible references (1)" with the link "Rom 8:28-30"

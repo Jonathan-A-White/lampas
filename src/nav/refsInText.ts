@@ -41,7 +41,7 @@ const NOT_ENGLISH = (name: string, chapterOnly: boolean): boolean => {
   return word.length > 2 || /^\d/.test(word) || capital;
 };
 
-const chaptersOf = (book: string, testament: 'nt' | 'ot'): number | undefined => (testament === 'nt' ? bookOf(book)?.chapters : otBookOf(book)?.chapters);
+export const chaptersOf = (book: string, testament: 'nt' | 'ot'): number | undefined => (testament === 'nt' ? bookOf(book)?.chapters : otBookOf(book)?.chapters);
 
 /** Every reference in `text`, in the order the text has them (a reference named twice is found twice). */
 export function findReferences(text: string): FoundReference[] {

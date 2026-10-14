@@ -117,9 +117,9 @@ describeFeature(feature, ({ Scenario }) => {
     expect(field(sheet)).toHaveValue(words);
   };
   const nothingSent = async (): Promise<void> => {
-    // the mill has had time to be called, and was not
+    // the mill has had time to be called, and was sent nothing of the talk (the pictures are read for Bible references by the find-refs grind, mw-s1dc0n.2: that is no message)
     await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(fake.received).toHaveLength(0);
+    expect(fake.received.filter((r) => r.grist.kind !== 'find-refs')).toHaveLength(0);
     await waitFor(async () => expect(await db.shares.count()).toBe(0));
   };
   const readerIsOpen = async (): Promise<void> => {
@@ -144,7 +144,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps {string}', async (_, label: string) => user.click(within(chooser()).getByRole('button', { name: label })));
     Then('the talk sheet {string} is open with his earlier question in it', talkOpen);
     And('the composer shows {word} thumbnails and the field holds {string}', composer);
-    And('the mill received nothing and no share is waiting', nothingSent);
+    And('the mill received no message of the talk and no share is waiting', nothingSent);
   });
 
   Scenario('New talk opens an empty talk with the share', ({ Given, When, Then, And }) => {
@@ -155,7 +155,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(within(sheet).getByText(/^Nothing said yet/)).toBeInTheDocument();
     });
     And('the composer shows {word} thumbnails and the field holds {string}', composer);
-    And('the mill received nothing and no share is waiting', nothingSent);
+    And('the mill received no message of the talk and no share is waiting', nothingSent);
   });
 
   Scenario('Choose a talk lists the talks newest first and opens the picked one', ({ Given, When, Then, And }) => {

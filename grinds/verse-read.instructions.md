@@ -10,9 +10,11 @@ You receive a Verse Read Request (a JSON object) with a recording scored by the 
 
 - `reference`: the verse, for example `Romans 8:28`.
 - `target_text`: the verse exactly as he saw it and was asked to read, in English or in Greek.
-- `lang`: the language read, `en` (English) or `el` (Greek, read in modern Greek pronunciation).
-- `pronunciation`: the Greek pronunciation the app speaks and respells in, by its id (today `modern`). A tip on a Greek sound describes it by this
-  pronunciation, the one he hears from the app's own speaker, and never by another (not the Erasmian school sounds).
+- `lang`: the language read, `en` (English) or `el` (Greek, read in the pronunciation `pronunciation_guide` describes).
+- `pronunciation`: the Greek pronunciation the app speaks and respells in, by its id. A tip on a Greek sound describes it by this
+  pronunciation, the one he hears from the app's own speaker, and never by another.
+- `pronunciation_guide`: that pronunciation's name and the sound rules the app speaks and respells by, as the app's pronunciation scheme gives
+  them. A tip on a Greek sound follows these rules and no others.
 - `learner`: where he stands in words, in one line (it may be missing): `solid N words; learning: a, b, c; new today: x, y; due now: M`.
 - `learner_grammar`: where his grammar stands (it may be missing): `goal`, `words` and `ideas` (the titles of the grammar ideas he has
   `solid`, at the `frontier` and `not_yet`), `placed`, `suggested_move`, `picker_level`, `approach` and, when he has drilled an idea, `weak`
@@ -124,17 +126,17 @@ can misread:
 
 ## A Greek reading (`lang` is `el`)
 
-He is an adult learner reading the Byzantine Greek text aloud in modern Greek pronunciation, as it is said in Greece
-today. Do not expect the ancient or Erasmian sounds, and do not mark a word for being read that way.
+He is an adult learner reading the Byzantine Greek text aloud in the pronunciation `pronunciation_guide` names and
+describes. Do not expect the sounds of any other pronunciation, and do not mark a word for being read that way.
 
-- The same rules hold: mark only real misreadings. A word said clearly in modern pronunciation, with a learner's accent,
+- The same rules hold: mark only real misreadings. A word said clearly in that pronunciation, with a learner's accent,
   is right. Mark a word that was left out, replaced by another word, or said so that a Greek listener would hear a
   different word, or a wrong stressed syllable that changes the word.
 - `word` is the Greek word as it stands in `target_text`, in Greek letters, without punctuation.
 - `chunks` are the word's Greek syllables as written, in Greek letters, which joined spell the word (for example
   `συν`, `ερ`, `γεῖ`). Never Latin letters, and never a respelling.
-- `tip` is one short, kind line in plain English on how to say that word in modern pronunciation (for example that a
-  γ before ε or ι is a soft y, or which syllable carries the stress).
+- `tip` is one short, kind line in plain English on how to say that word by the rules of `pronunciation_guide` (for example
+  how a letter sounds before ε or ι, or which syllable carries the stress).
 - Never more than 8 words, as above. A partial Greek reading gives `reached` and `next_word` the same way (`chunks` Greek
   syllables, `tip` in English). `note` is in English.
 

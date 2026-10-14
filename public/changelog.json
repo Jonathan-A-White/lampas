@@ -1,5 +1,40 @@
 [
   {
+    "version": "0.1.210",
+    "date": "2026-10-14",
+    "story": "mw-5r3p30.345",
+    "kind": "new",
+    "text": "A verse from the Old Testament in the tutor's answer now opens in your Logos, in the Bible you chose, and if Logos is not linked it takes you to where to link it."
+  },
+  {
+    "version": "0.1.208",
+    "date": "2026-10-14",
+    "story": "mw-5r3p30.239",
+    "kind": "fixed",
+    "text": "Back on the word, grammar and idea cards now goes back one step at a time, to the last place you were, instead of skipping some."
+  },
+  {
+    "version": "0.1.207",
+    "date": "2026-10-14",
+    "story": "mw-5r3p30.219",
+    "kind": "fixed",
+    "text": "Your requests now has a back button that returns to About when you came from About, and a double tap on a back button no longer jumps you two screens."
+  },
+  {
+    "version": "0.1.206",
+    "date": "2026-10-14",
+    "story": "mw-s1dc0n.2",
+    "kind": "new",
+    "text": "Share a screenshot of a book page to Lampas and it lists the Bible references on it as links."
+  },
+  {
+    "version": "0.1.205",
+    "date": "2026-10-14",
+    "story": "mw-5r3p30.231",
+    "kind": "new",
+    "text": "Switching the Greek pronunciation now starts the letters, sounds and marks again in the new one and keeps your old progress, ready for when you switch back."
+  },
+  {
     "version": "0.1.204",
     "date": "2026-10-14",
     "story": "mw-5r3p30.210",

@@ -1,4 +1,4 @@
-import { navigate } from '../../nav/route';
+import { navigate, openRequests } from '../../nav/route';
 import type { SettingsRow } from '../rows';
 import { SettingRow } from './SettingRow';
 
@@ -10,7 +10,7 @@ export function LinkControl({ row }: { row: SettingsRow }) {
     <SettingRow row={row} className="border-b border-line pb-2">
       <button
         type="button"
-        onClick={() => navigate(to)}
+        onClick={() => (to === 'requests' ? openRequests('settings') : navigate(to))}
         className="flex min-h-12 w-full items-center justify-between text-left text-base font-medium"
       >
         {row.label}

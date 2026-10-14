@@ -22,6 +22,7 @@ import { seedWordsIfFirstOpen } from '../../src/data/repositories/words';
 import { clearBus, latest } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { storedId } from '../../src/data/grammar/soundScope';
 
 afterAll(() => {
   cleanup();
@@ -83,7 +84,7 @@ async function answerMany(n: number, right: boolean): Promise<void> {
   for (let i = 0; i < n; i += 1) await answerOne(right);
 }
 
-const levelOf = async (id: string) => (await db.grammarLevels.get(id))?.level;
+const levelOf = async (id: string) => (await db.grammarLevels.get(storedId(id, 'modern')))?.level;
 
 const feature = await loadFeature('features/placement.feature');
 
@@ -134,7 +135,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the idea {string} is also not yet', async (_, id: string) => expect(await levelOf(id)).toBe('notYet'));
     And('the alphabet as a whole was not asked', async () => {
       expect(await levelOf('alphabet')).toBeUndefined();
-      expect(await db.reviews.get(['grammar', 'alphabet'])).toBeUndefined();
+      expect(await db.reviews.get(['grammar', storedId('alphabet', 'modern')])).toBeUndefined();
     });
   });
 
