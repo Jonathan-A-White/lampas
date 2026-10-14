@@ -17,7 +17,15 @@ export const askTranscriber: Transcriber = {
       given = true;
       resume?.();
     };
-    const started = browserSpeech.start(options);
+    // the words so far: a hold that ends without sending (a slide off the bar, the app hidden) leaves exactly these in the field
+    let heard = '';
+    const started = browserSpeech.start({
+      ...options,
+      onInterim: (text) => {
+        if (text.trim()) heard = text;
+        options.onInterim?.(text);
+      },
+    });
     if (!started.ok) {
       giveBack();
       return started;
@@ -33,7 +41,8 @@ export const askTranscriber: Transcriber = {
           try {
             const result = await session.stop();
             // the words went by voice: the question made of them is sent as spoken (src/speech/spoken.ts)
-            if (result.text.trim()) noteSpoken(result.text);
+            const words = result.text.trim() ? result.text : heard;
+            if (words.trim()) noteSpoken(words);
             return result;
           } finally {
             giveBack();
@@ -41,6 +50,8 @@ export const askTranscriber: Transcriber = {
         },
         abort() {
           session.abort();
+          // the composer keeps these words in its field unsent: they are still words he spoke, so Send of them unedited goes marked spoken
+          if (heard.trim()) noteSpoken(heard);
           giveBack();
         },
       },
