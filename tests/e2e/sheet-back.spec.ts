@@ -34,3 +34,58 @@ test('the phone\'s Back on the word sheet closes it and leaves the Reader on Rom
   await page.goBack();
   await expect(page).toHaveURL(/#\/words$/);
 });
+
+test('each move inside the sheets is one Back step: τεκνία, plural, singular, then Back shows plural, then τεκνία, then the Reader (mw-5r3p30.239)', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  await openUnlocked(page);
+  await page.goto('/#/?b=1jn&c=2&view=greek');
+  await page.locator('[data-verse="1"]').getByRole('button', { name: 'Τεκνία', exact: true }).click();
+  const word = page.getByRole('dialog', { name: 'Word' });
+  const grammar = page.getByRole('dialog', { name: 'Grammar' });
+  await word.getByTestId('sheet-parse').getByRole('button', { name: 'plural', exact: true }).click();
+  await expect(grammar.getByRole('heading', { name: 'plural' })).toBeVisible();
+  await grammar.getByRole('group', { name: 'Related terms' }).getByRole('button', { name: 'singular', exact: true }).click();
+  await expect(grammar.getByRole('heading', { name: 'singular' })).toBeVisible();
+
+  await page.goBack();
+  await expect(grammar.getByRole('heading', { name: 'plural' })).toBeVisible();
+  await page.goBack();
+  await expect(grammar).toBeHidden();
+  await expect(word).toBeVisible();
+  await page.goBack();
+  await expect(word).toBeHidden();
+  await expect(page.getByRole('heading', { name: '1 John 2' })).toBeVisible();
+  await shot(page, 'sheet-back-trail');
+});
+
+test('an example word tapped on the idea sheet is one Back step: Back brings the idea sheet back, then the Grammar sheet, then the first word (mw-5r3p30.239)', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  await openUnlocked(page);
+  await page.goto('/');
+  await page.locator('[data-verse="2"]').getByRole('button', { name: 'of the', exact: true }).click();
+  const word = page.getByRole('dialog', { name: 'Word' });
+  const grammar = page.getByRole('dialog', { name: 'Grammar' });
+  const idea = page.getByRole('dialog', { name: 'Idea' });
+  const first = await word.innerText();
+  await word.getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true }).click();
+  await grammar.getByRole('button', { name: 'Learn this idea' }).click();
+  await idea.getByTestId('idea-example').first().click();
+  await expect(idea).toBeHidden();
+  await expect(grammar).toBeHidden();
+  expect(await word.innerText()).not.toBe(first);
+
+  await page.goBack();
+  await expect(idea).toBeVisible();
+  await expect(grammar).toBeVisible();
+  expect(await word.innerText()).toBe(first);
+  await page.goBack();
+  await expect(idea).toBeHidden();
+  await expect(grammar).toBeVisible();
+  await page.goBack();
+  await expect(grammar).toBeHidden();
+  await expect(word).toBeVisible();
+
+  // Done closes it all and leaves no entry: the next Back is not swallowed
+  await word.getByRole('button', { name: 'Done' }).click();
+  await expect(word).toBeHidden();
+});

@@ -38,6 +38,55 @@ Feature: Back closes an open sheet
     When he goes back once more
     Then the Grammar sheet is closed and the word sheet is still open
 
+  Scenario: Back walks the Grammar sheet's trail one term at a time (word card, plural, singular)
+    Given Lampas is opened on 1 John 2 in Greek
+    And he taps "Τεκνία" in verse 1
+    And he taps the term "plural" on the word sheet
+    And he taps the related term "singular" on the Grammar sheet
+    When he goes back
+    Then the Grammar sheet shows "plural"
+    When he goes back once more
+    Then the Grammar sheet is closed and the word sheet is still open
+    When he goes back a third time
+    Then the word sheet is closed
+    And the Reader shows 1 John 2
+
+  Scenario: Back from an example word returns to the idea sheet, then the Grammar sheet, then the first word
+    Given Lampas is opened on Romans 8 with verse 2 selected
+    And he taps "of the" in verse 2
+    And he taps the term "genitive" on the word sheet
+    And he taps Learn this idea on the Grammar sheet
+    And he taps the first example on the idea sheet
+    Then the idea sheet and the Grammar sheet are gone and the word sheet shows the example
+    When he goes back
+    Then the idea sheet is open again over the Grammar sheet, and the word sheet shows what it did before the example
+    When he goes back once more
+    Then the idea sheet is closed and the Grammar sheet is still open
+    When he goes back a third time
+    Then the Grammar sheet is closed and the word sheet is still open
+    When he goes back a fourth time
+    Then the word sheet is closed
+
+  Scenario: Done after moves inside a sheet leaves no entry behind
+    Given Lampas is opened on Settings and then on Romans 8
+    And he taps "For" in verse 2
+    And he taps the term "conjunction" on the word sheet
+    And he taps the related term "particle" on the Grammar sheet
+    And he taps Done on the Grammar sheet
+    And he taps Done on the word sheet
+    When he goes back
+    Then the Settings screen is open
+
+  Scenario: Done on the word sheet after an example word leaves no entry behind
+    Given Lampas is opened on Settings and then on Romans 8
+    And he taps "of the" in verse 2
+    And he taps the term "genitive" on the word sheet
+    And he taps Learn this idea on the Grammar sheet
+    And he taps the first example on the idea sheet
+    And he taps Done on the word sheet
+    When he goes back
+    Then the Settings screen is open
+
   Scenario: Back on the Talk sheet closes it
     Given Lampas is opened on Romans 8
     And he opens the Talk sheet
