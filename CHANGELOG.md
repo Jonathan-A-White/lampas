@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.214
+_2026-10-14_
+- Fixed: When the tutor is down, the app now says the tutor is offline instead of blaming your connection.
+
 ## 0.1.213
 _2026-10-14_
 - New: You now learn one grammar idea at a time: Goal says what you are learning now, and a new idea starts only when you finish the one before or you choose to switch.

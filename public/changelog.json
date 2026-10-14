@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.214",
+    "date": "2026-10-14",
+    "story": "mw-5r3p30.340",
+    "kind": "fixed",
+    "text": "When the tutor is down, the app now says the tutor is offline instead of blaming your connection."
+  },
+  {
     "version": "0.1.213",
     "date": "2026-10-14",
     "story": "mw-i7xe0n.6",
