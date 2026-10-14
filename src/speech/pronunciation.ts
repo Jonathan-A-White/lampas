@@ -28,9 +28,10 @@ export interface Pronunciation {
   respell(greekWord: string): string;
   /** An English word that has each sound the respelling writes ('e' is the e of 'pet'): the lessons give every sound with its key word, so another scheme changes them */
   keyWords: Readonly<Record<string, string>>;
-  /** What this scheme's voice is handed for a Greek word of ONE letter (ὁ, ἡ, ὦ, Ὃ), so that it says the word's sound: a voice handed a bare
-   * letter names it ('omicron'). Modern Greek gives the stressed vowel ('ό'); mw-5r3p30.262. */
-  loneLetter(word: string): string;
+  /** The bundled clip (a root-absolute path under public/sounds/<scheme>/) of the sound of a Greek word of ONE letter (ὁ, ἡ, ὦ, Ὃ), played instead of
+   * any voice: a Greek voice handed one letter names it ('omicron'), with or without an accent (mw-5r3p30.347). Null for a letter the scheme has no
+   * clip for. Modern Greek's are its vowels' sounds, '/sounds/modern/o.mp3' for ὁ. */
+  loneLetterClip(word: string): string | null;
   /** What this scheme's voice is handed for Greek text (a word, or a run of words read aloud), so that it says the sounds the respelling writes. A
    * voice reads the Greek its own way: a Modern Greek voice drops the n of ντ inside a word ('PA-do-te' for Πάντοτε, respelt 'PAN-do-te'), so Modern
    * Greek hands it 'πάν-ντοτε' (mw-5r3p30.264). A scheme whose voice already says its respelling gives the text back as it is. */

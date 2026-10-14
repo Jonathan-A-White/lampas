@@ -16,6 +16,7 @@ import { buildRequest } from '../../src/services/tutor';
 import { setGreekPronunciation, speakWord, stopSpeaking } from '../../src/speech/greek';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, registerPronunciation, type Pronunciation } from '../../src/speech/pronunciation';
 import { speakQuestion } from '../../src/speech/speakQuestion';
+import { stubAudio, type FakeAudio } from '../support/fake-audio';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../support/fake-speech';
 
 /** A scheme unlike Modern Greek in every part, so each place that follows it shows. */
@@ -27,7 +28,7 @@ const STUBBISH: Pronunciation = {
   note: 'A test scheme.',
   respell: (word) => `STUB-${[...word].length}`,
   keyWords: { b: 'bat', ow: 'out' },
-  loneLetter: (word) => `[${word}]`,
+  loneLetterClip: (word) => `/sounds/stubbish/${[...word].length}.mp3`,
   voiceForm: (text) => `‹${text}›`,
   letterForm: (letter) => `letter ${letter.toLowerCase()}`,
   tutorGuide: 'Stubbish: β is b, as in “bat”; ου is ow, as in “out”.',
@@ -44,10 +45,12 @@ const scope = { book: 'rom', chapter, verse } as unknown as TalkScope;
 const soundFocus = { form: 'ταῦτα', lemma: 'οὗτος', parse: 'demonstrative pronoun', kind: 'sound' as const };
 
 let synth: FakeSynth;
+let audio: FakeAudio;
 let unregister: () => void;
 beforeEach(() => {
   clearBus();
   synth = stubSpeech([ENGLISH_VOICE, GREEK_VOICE]);
+  audio = stubAudio();
   unregister = registerPronunciation(STUBBISH);
   setGreekPronunciation(STUBBISH.id);
 });
@@ -55,6 +58,7 @@ afterEach(() => {
   act(() => stopSpeaking());
   setGreekPronunciation(DEFAULT_PRONUNCIATION);
   unregister();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
 
@@ -92,11 +96,11 @@ describe('a second pronunciation, chosen, is followed everywhere', () => {
     expect(lastSaid()).toEqual({ text: 'letter β', lang: 'el-GR' });
   });
 
-  it('hands the voice its forms: a word of one letter, and any other Greek', () => {
+  it('plays its clip for a word of one letter, and hands the voice its form of any other Greek', () => {
     act(() => void speakWord('ὁ', 'greek'));
-    expect(lastSaid().text).toBe('[ὁ]');
+    expect(audio.played).toEqual(['/sounds/stubbish/1.mp3']);
     act(() => void speakWord('πάντοτε', 'greek'));
-    expect(lastSaid().text).toBe('‹πάντοτε›');
+    expect(synth.spoken.map((u) => u.text)).toEqual(['‹πάντοτε›']);
   });
 
   it('gives every place back to Modern Greek when it is chosen again', () => {
