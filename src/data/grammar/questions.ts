@@ -586,20 +586,36 @@ export function buildBreathing(idea: GrammarIdea, passage: readonly Chapter[], r
 // ---- When the passage has no form of the idea ----
 
 const BLANK = '___';
-/** Title words that say nothing of the idea, so they stay in the text. */
-const PLAIN_TITLE_WORDS = new Set(['words', 'never', 'change', 'under']);
+/** Words of a title or term that say nothing of the idea, so they stay in the text. */
+const PLAIN_NAME_WORDS = new Set(['greek', 'word', 'words', 'form', 'forms', 'letter', 'letters', 'under', 'never', 'change', 'small', 'with', 'from', 'that']);
 const escapeRegExp = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+/** The stem of a content word of an idea's name: 'participles' and 'spellings' give 'participle' and 'spell', so every wording of the word is found. */
+const contentStem = (word: string): string => {
+  const stem = word.replace(/(?:ing|ed|es|s)$/, '');
+  return stem.length >= 5 ? stem : word.replace(/s$/, '');
+};
+
+/** Each content word (four letters or more, not a plain one) of the idea's title and terms, as a stem. */
+function nameStems(idea: GrammarIdea): string[] {
+  const words = [idea.title, ...idea.terms].flatMap((name) => name.toLowerCase().match(/\p{L}+/gu) ?? []);
+  return [...new Set(words.filter((w) => w.length >= 4 && !PLAIN_NAME_WORDS.has(w)).map(contentStem))];
+}
+
 /**
- * What the idea says of itself with its own name taken out (mw-86e9r1.3): the pronunciation hint '(say AIR-ist)' goes, and the title, the terms
- * and, for an idea with no terms, every long word of the title become a blank, the whole word with them ('pronoun' for the term 'noun'), so the text no longer hands over its answer.
+ * What the idea says of itself with its own name taken out (mw-86e9r1.3, .25): the pronunciation hint '(say AIR-ist)' goes, and the title, the terms
+ * and every content word of both become a blank, the whole word with them ('pronoun' for the term 'noun', 'Hebrew' for 'Hebrew words'), so the text no longer
+ * hands over its answer however it words the idea ('the middle and the passive', 'from Hebrew').
  */
 export function blankedText(idea: GrammarIdea, scheme: Pronunciation = chosenPronunciation()): string {
-  // an idea with terms is named by them; one with none (the pronoun, syllables, accents) by the long words of its title
-  const titleWords = idea.terms.length > 0 ? [] : idea.title.split(/\s+/).filter((w) => w.length >= 5 && !PLAIN_TITLE_WORDS.has(w.toLowerCase()));
-  const secrets = [idea.title, idea.title.replace(/^The /, ''), ...idea.terms, ...titleWords].sort((a, b) => b.length - a.length);
+  const secrets = [idea.title, idea.title.replace(/^The /, ''), ...idea.terms, ...nameStems(idea)].sort((a, b) => b.length - a.length);
   const pattern = new RegExp(`\\w*(?:${secrets.map(escapeRegExp).join('|')})\\w*`, 'giu');
-  return ideaText(idea, scheme).replace(/\s*\(say [^)]*\)/gi, '').replace(pattern, BLANK);
+  const blanked = ideaText(idea, scheme).replace(/\s*\(say [^)]*\)/gi, '').replace(pattern, BLANK);
+  // an idea named by a Greek word (the preposition εἰς) loses it too, whatever its accent or breathing ('ὑπό' and 'ὑπὸ')
+  const greek = [...new Set((idea.title.match(/\p{Script=Greek}+/gu) ?? []).map((w) => w.normalize('NFD').replace(/\p{M}/gu, '')))];
+  if (greek.length === 0) return blanked;
+  const greekPattern = new RegExp(`(?:${greek.map((w) => [...w].join('\\p{M}*')).join('|')})\\p{M}*`, 'giu');
+  return blanked.normalize('NFD').replace(greekPattern, BLANK).normalize('NFC');
 }
 
 /** Which idea this is, from what it says with its own name blanked: used only for an idea the passage gives no form of. */
