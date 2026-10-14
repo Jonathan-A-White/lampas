@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.213
+_2026-10-14_
+- New: You now learn one grammar idea at a time: Goal says what you are learning now, and a new idea starts only when you finish the one before or you choose to switch.
+
 ## 0.1.211
 _2026-10-14_
 - Fixed: In Drill it, the Hint now clearly crosses out and fades the wrong answers it takes away, says how many it took, and the button reads "Hint used".
