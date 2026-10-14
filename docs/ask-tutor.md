@@ -298,7 +298,7 @@ a phone that installed Lampas before this version may need it removed and instal
 - **Bible references in a picture** (mw-s1dc0n.2, `features/share-references.feature`): a shared picture (a screenshot of a book's page) is read by the mill's `find-refs`
   grind (`grinds/find-refs.json`: sonnet, low effort, PROVISIONAL; one picture, `{language}` in, `{references: [{printed, ref}]}` out, `ref` in the OSIS form `links.ts` writes) while
   the sheet says **Finding Bible references...**, and what it finds joins the same **Bible references (N)** list as the words' (one rendering: `ShareReferences`; with words and a picture
-  both are listed, once the picture is read). `src/share/findRefs.ts` cuts each picture as a talk's is (`talk/pictures.ts` `preparePicture`, `filesOf`), sends it with `askGrind` and
+  both are listed, once the picture is read; the section is drawn under Cancel, because it appears when the grist answers and nothing he may be about to tap may move). `src/share/findRefs.ts` cuts each picture as a talk's is (`talk/pictures.ts` `preparePicture`, `filesOf`), sends it with `askGrind` and
   does not believe the answer: `checkedReferences` reads each `ref` again with `parseCanonReference` and the book's chapter count and drops a book that is not one of the Bible's 66, a chapter
   past the book's end or a verse 0; a range in `printed` keeps its last verse. A failed grist says **Could not find Bible references in the picture.** with **Try again**. A phone with no
   licence is not offered the grist (`useAiAllowed`; `features/ai-needs-licence.feature`). The smoke scenario is `grinds/examples/find-refs/kindle-gen-1-28.json` (a Kindle page quoting Gen. 1:28).

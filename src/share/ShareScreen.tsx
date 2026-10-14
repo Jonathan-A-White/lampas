@@ -58,7 +58,7 @@ function ShareChooser({ row, talks, onPick, onCancel }: { row: ShareRow; talks: 
           <p data-share-what className="text-base text-muted">
             {describeShare(row)} from another app. Where should they go?
           </p>
-          {row.text || picture ? <ShareReferences text={row.text} picture={picture} retry={retry} /> : null}
+          {row.text && !picture ? <ShareReferences text={row.text} /> : null}
           {newest ? (
             <button type="button" ref={focusOnMount} data-share-continue onClick={() => onPick(newest.ref)} className={`${ACTION} border-accent bg-accent text-accent-fg`}>
               <span className="text-lg font-semibold">{`Continue: ${talkLabel(newest.ref)} · ${timeAgo(newest.lastWhen, now)}`}</span>
@@ -90,6 +90,8 @@ function ShareChooser({ row, talks, onPick, onCancel }: { row: ShareRow; talks: 
           <button type="button" onClick={onCancel} className="min-h-12 w-full rounded-xl px-4 text-lg font-medium text-accent">
             Cancel
           </button>
+          {/* a picture's references come when the grist answers, so they are drawn under the buttons: nothing he may be about to tap moves */}
+          {picture ? <ShareReferences text={row.text} picture={picture} retry={retry} /> : null}
         </div>
       </div>
     </div>
