@@ -52,7 +52,7 @@ Feature: See my goal move
     And he slides the level on the idea sheet to Learning
     Then the ideas bar says solid 8, frontier 1 and not yet 28
     When he closes the idea sheet
-    Then Learn next says "The singular · Your first words"
+    Then the Goal screen says "Learning now: The noun" and no Learn next
 
   Scenario: The lists behind the bars show the items by level, and an idea opens its sheet
     Given the goal is "1 John 1:1" and he knows no word and no idea

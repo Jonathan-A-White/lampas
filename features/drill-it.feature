@@ -142,6 +142,8 @@ Feature: Drill it on the idea sheet
     When he slides to "Learning"
     Then he is asked "Go to Accents and stress first?"
     When he taps "Stay here"
+    Then he is then asked "You are learning Accents and stress. Switch to The noun?"
+    And he taps the button "Switch"
     Then the idea "noun" is frontier, set by the sheet, and its review is due in 1 day at step 0
 
   Scenario: Go there opens the foundation and leaves the level as it was

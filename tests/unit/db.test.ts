@@ -4,10 +4,10 @@ import { db } from '../../src/data/db';
 afterAll(() => db.close());
 
 describe('the Dexie database', () => {
-  it('opens at version 20 with the words, meta, settings, results, answers, talks, drills, readings, grammarKnown, grammarLevels, reviews, usage, tips and talkPictures, shares, requests, readingHistory, missTally, ladder and drillRuns stores', async () => {
+  it('opens at version 21 with the words, meta, settings, results, answers, talks, drills, readings, grammarKnown, grammarLevels, reviews, usage, tips and talkPictures, shares, requests, readingHistory, missTally, ladder and drillRuns stores', async () => {
     await db.open();
     expect(db.name).toBe('lampas');
-    expect(db.verno).toBe(20);
+    expect(db.verno).toBe(21);
     expect(db.tables.map((t) => t.name).sort()).toEqual(['answers', 'drillRuns', 'drills', 'grammarKnown', 'grammarLevels', 'ladder', 'meta', 'missTally', 'readingHistory', 'readings', 'requests', 'results', 'reviews', 'settings', 'shares', 'talkPictures', 'talks', 'tips', 'usage', 'words']);
     expect(db.words.schema.primKey.name).toBe('lemma');
     expect(db.words.schema.idxByName['lemmas']?.multi).toBe(true);

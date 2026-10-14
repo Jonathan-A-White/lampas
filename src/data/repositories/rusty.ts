@@ -47,7 +47,8 @@ export async function moveToFrontier(items: readonly ItemRef[], now = Date.now()
       if (done) moved.push(item);
     } else {
       if ((await getLevel(item.id))?.level !== 'solid') continue;
-      await setLevel(item.id, 'frontier', 'tutor', now);
+      // he is learning one idea at a time: a rusty one waits while another is the frontier
+      if (!(await setLevel(item.id, 'frontier', 'tutor', now))) continue;
       const key = storedId(item.id, await getGreekPronunciation());
       await db.transaction('rw', db.reviews, () => writeRestart(IDEA_KIND, key, now));
       moved.push(item);

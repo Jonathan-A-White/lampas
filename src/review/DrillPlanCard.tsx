@@ -55,7 +55,7 @@ export function DrillPlanCard({ item, picked, onPick }: { item: PlanDrillItem; p
           passage={item.passage}
           onResult={(result) => {
             proveRun.current = result;
-            void recordDrill(result, 'prove');
+            void recordDrill(result, 'prove').catch((error: unknown) => console.error('could not keep the drill', error));
           }}
           onClose={() => {
             setRunning(false);

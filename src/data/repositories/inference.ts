@@ -7,11 +7,11 @@ import { db } from '../db';
 import { publish } from '../../events/bus';
 import { inferFromAnswer, inferFromWord, isInferredSolid, type Evidence, type EvidenceMap, type Inferred } from '../grammar/inference';
 import { IDEA_KIND } from '../grammar/ladder';
-import { ideaOfStored, storedId } from '../grammar/soundScope';
+import { ideaOfStored, isItemId, storedId } from '../grammar/soundScope';
 import type { GrammarQuestion } from '../grammar/questions';
 import { DAY, STEP_DAYS } from '../schedule';
 import { getGreekPronunciation } from './settings';
-import { announceAlphabet, syncAlphabet, type GroupMoved } from './grammarLevels';
+import { advanceFrontier, announceAlphabet, frontierIdeas, lowestFrontier, syncAlphabet, type GrammarLevelName, type GroupMoved } from './grammarLevels';
 import { announceDue, writeScheduled } from './reviews';
 
 const KEY = 'grammarEvidence';
@@ -53,20 +53,23 @@ function keep(kept: Record<string, unknown>, evidence: EvidenceMap, scheme: stri
 
 /** What settling an answer changed: the ideas whose level moved, and the alphabet's new level when it moved. */
 export interface Credited {
-  changed: { id: string; level: 'solid' | 'frontier' }[];
+  changed: { id: string; level: GrammarLevelName }[];
   alphabet: GroupMoved[];
 }
 
 /**
  * Settles what an answer showed, inside the caller's transaction (which must be 'rw' over db.settings, db.grammarLevels and db.reviews): the evidence
  * is kept, an idea with enough right uses is written solid (whatever it was, if it was not solid already), and one he holds only by inference that
- * was counted against falls back to the frontier. The caller passes the result to announceCredited once the transaction has committed.
+ * was counted against falls back to the frontier. One idea at the frontier at a time (mw-i7xe0n.6): a letter, pair or breathing falls back on its own, any other
+ * idea only as the lowest unproved (the idea he was learning, if a higher one, goes back to not yet), and an idea that becomes solid while it was the frontier moves
+ * the frontier on. The caller passes the result to announceCredited once the transaction has committed.
  */
 async function apply(infer: (evidence: EvidenceMap) => Inferred, now: number): Promise<Credited> {
   const changed: Credited['changed'] = [];
   const scheme = await getGreekPronunciation();
   const kept = await keptEvidence();
   const result = infer(evidenceIn(kept, scheme));
+  const learning = await frontierIdeas(scheme);
   await keep(kept, result.evidence, scheme);
   for (const id of result.credited) {
     if (!isInferredSolid(result.evidence.get(id)) || (await db.grammarLevels.get(storedId(id, scheme)))?.level === 'solid') continue;
@@ -74,13 +77,20 @@ async function apply(infer: (evidence: EvidenceMap) => Inferred, now: number): P
     await writeScheduled(IDEA_KIND, [storedId(id, scheme)], now, () => ({ step: KNOWN_START_STEP, due: now + 30 * DAY }));
     changed.push({ id, level: 'solid' });
   }
+  const fellBack: string[] = [];
   for (const id of result.missed) {
     const row = await db.grammarLevels.get(storedId(id, scheme));
     if (row?.how !== 'inferred' || row.level !== 'solid') continue;
+    if (!isItemId(id)) {
+      fellBack.push(id);
+      continue;
+    }
     await db.grammarLevels.put({ id: storedId(id, scheme), level: 'frontier', since: now, how: 'inferred' });
     changed.push({ id, level: 'frontier' });
   }
-  return { changed, alphabet: changed.length > 0 ? await syncAlphabet(now, scheme) : [] };
+  changed.push(...(await lowestFrontier(fellBack, 'inferred', now, scheme)));
+  const alphabet = changed.length > 0 ? await syncAlphabet(now, scheme) : [];
+  return { changed, alphabet: learning.length > 0 ? [...alphabet, ...(await advanceFrontier(learning, now, scheme))] : alphabet };
 }
 
 /** Tells the bus and the schedule what a committed `apply` changed. */
@@ -91,7 +101,8 @@ export async function announceCredited({ changed, alphabet }: Credited, now: num
 }
 
 const settle = async (infer: (evidence: EvidenceMap) => Inferred, now: number): Promise<void> => {
-  const credited = await db.transaction('rw', db.settings, db.grammarLevels, db.reviews, () => apply(infer, now));
+  // awaited inside the callback: the transaction is held open until apply's last request has been answered
+  const credited = await db.transaction('rw', db.settings, db.grammarLevels, db.reviews, async () => await apply(infer, now));
   await announceCredited(credited, now);
 };
 

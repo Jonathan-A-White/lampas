@@ -505,6 +505,10 @@ describeFeature(feature, ({ Scenario }) => {
       expect(await screen.findByText(question)).toBeInTheDocument();
     });
     When(TAPS, taps);
+    Then('he is then asked {string}', async (_, question: string) => {
+      expect(await screen.findByText(question)).toBeInTheDocument();
+    });
+    And('he taps the button {string}', taps);
     Then(FROZEN, frontierDueTomorrow);
   });
 

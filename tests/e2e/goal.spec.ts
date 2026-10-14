@@ -82,7 +82,7 @@ async function openWithGoal(page: Page, goal: string) {
     { id: 'breathings', level: 'solid', since: now, how: 'marked' },
     { id: 'accents', level: 'solid', since: now, how: 'marked' },
     ...['diphthongs', 'consonant-pairs', 'syllables', 'iota-subscript', 'punctuation'].map((id) => ({ id, level: 'solid', since: now, how: 'marked' })),
-    { id: 'noun', level: 'frontier', since: now, how: 'sheet' },
+    { id: 'noun', level: 'solid', since: now, how: 'sheet' },
   ]);
   // the app watches its own writes, not a raw one: load it again so it reads them
   await page.reload();
@@ -127,7 +127,7 @@ test('the Goal screen: two bars that fit, the lists, Learn next, Next words and 
   await expectThumbSized(page.getByTestId('learn-next'));
   await expect(page.getByTestId('learn-next')).toHaveText('Learn next: The singular · Your first words');
   await expect(page.getByTestId('words-legend')).toHaveText(/^Solid \d+ · Frontier \d+ · Not yet \d+$/);
-  await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 8 · Frontier 1 · Not yet 28');
+  await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 9 · Frontier 0 · Not yet 28');
   await expect(page.getByText('Solid when both are full.')).toBeVisible();
   for (const bar of ['words-bar', 'ideas-bar']) {
     const box = await page.getByTestId(bar).boundingBox();
@@ -152,11 +152,12 @@ test('the Goal screen: two bars that fit, the lists, Learn next, Next words and 
   await expect(sheet.getByRole('heading', { name: 'The singular' })).toBeVisible();
   await sheet.getByRole('slider', { name: 'Your level' }).focus();
   await page.keyboard.press('ArrowRight');
-  // The noun, which it builds on, is only at the frontier: sliding up asks whether to go there first
-  await page.getByRole('button', { name: 'Stay here', exact: true }).click();
   await expect(sheet.getByTestId('idea-level')).toHaveText('Frontier since today');
   await sheet.getByRole('button', { name: 'Done' }).click();
-  await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 8 · Frontier 2 · Not yet 27');
+  await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 9 · Frontier 1 · Not yet 27');
+  // he learns one idea at a time: the Goal screen names it, and Learn next gives way to it
+  await expect(page.getByTestId('learning-now')).toHaveText('Learning now: The singular');
+  await expect(page.getByTestId('learn-next')).toHaveCount(0);
 
   // a reload keeps the screen
   await page.reload();

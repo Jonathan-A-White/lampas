@@ -10,7 +10,6 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db, type GrammarLevelName } from '../../src/data/db';
 import { forgetRevealed } from '../../src/data/paradigms/revealed';
-import { setLevel } from '../../src/data/repositories';
 import { clearBus, latest } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { tutorTimings } from '../../src/services/tutor';
@@ -156,7 +155,8 @@ describeFeature(feature, ({ Background, Scenario }) => {
     Then('the cell {string} is locked and shows no form', (_, place: string) => showsNothing(place, 'locked'));
     And('the cell {string} shows {string}', (_, place: string, form: string) => shows(place, form));
     When('the idea {string} moves to frontier', async (_, id: string) => {
-      await setLevel(id, 'frontier', 'marked');
+      // written straight to the store, as the fixture is: this scenario is about what a level opens in the table, not about one idea at a time
+      await db.grammarLevels.put({ id, level: 'frontier', since: Date.now(), how: 'marked' });
     });
     Then('the cell {string} now shows {string}', (_, place: string, form: string) => shows(place, form));
     And('the table still has {int} cells', (_, count: number) => {

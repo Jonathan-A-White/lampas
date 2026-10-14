@@ -4,7 +4,7 @@ import type { GrammarApproach, LessonPlace } from '../../approaches';
 import { lessonOf, orderOf } from '../../approaches';
 import type { GrammarLevel, WordState } from '../db';
 import { gapsOf, groupIsSolid } from './inference';
-import { ideaOf, ITEM_GROUPS, type GrammarIdea } from './ladder';
+import { groupOfItem, ideaOf, ITEM_GROUPS, LADDER, type GrammarIdea } from './ladder';
 import type { Level, NeededIdea, NeededWord, PassageNeeds } from './needs';
 
 /** How many words Next words offers. */
@@ -57,6 +57,9 @@ export function learnNext(needs: Pick<PassageNeeds, 'ideas'>, approach: GrammarA
   const id = orderOf(approach).find((i) => needed.has(i) && (levels.get(i) ?? 'notYet') === 'notYet' && !(grouped.has(i) && groupIsSolid(levels, i)));
   return id === undefined ? undefined : { idea: ideaOf(id), lesson: lessonOf(approach, id) };
 }
+
+/** The one idea he is learning now (mw-i7xe0n.6): the lowest idea at the frontier, the letters, pairs and breathings (items of a group) left out; undefined when none. */
+export const learningNow = (levels: ReadonlyMap<string, Level>): GrammarIdea | undefined => LADDER.find((idea) => !groupOfItem(idea) && levels.get(idea.id) === 'frontier');
 
 /** The most frequent needed words he has no state for (not on his list and not dropped), in dictionary form. */
 export function nextWords(needs: Pick<PassageNeeds, 'words'>, states: ReadonlyMap<string, WordState>, count = NEXT_WORDS): NeededWord[] {

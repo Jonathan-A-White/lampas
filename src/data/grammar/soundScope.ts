@@ -18,6 +18,9 @@ export function isSoundIdea(id: string): boolean {
   return SOUND_IDS.has(id) || SOUND_PREFIXES.some((p) => id.startsWith(p));
 }
 
+/** Whether this idea id is an item of a group (a letter, a diphthong, a consonant pair, a breathing), not an idea he learns on its own (tests/unit/one-frontier.test.ts holds this equal to ladder.ts groupOfItem). */
+export const isItemId = (id: string): boolean => SOUND_PREFIXES.some((p) => id.startsWith(p));
+
 /** The key a row of this idea is stored under when the pronunciation is `scheme`: '<scheme>:<id>' for a sound idea, the id for any other. */
 export function storedId(id: string, scheme: string): string {
   return isSoundIdea(id) ? `${scheme}:${id}` : id;
@@ -29,6 +32,9 @@ export function ideaOfStored(stored: string, scheme: string): string | undefined
   if (at < 0) return stored;
   return stored.slice(0, at) === scheme ? stored.slice(at + 1) : undefined;
 }
+
+/** The idea id inside a stored key of any scheme ('modern:accents' is 'accents'). */
+export const plainIdOf = (stored: string): string => stored.slice(stored.lastIndexOf(':') + 1);
 
 /** A plain stored key that should be scoped (a sound idea kept before the rows were per scheme), scoped to the legacy scheme; any other key as it is. */
 export const legacyStoredId = (stored: string): string => (stored.includes(':') ? stored : storedId(stored, LEGACY_SCHEME));
