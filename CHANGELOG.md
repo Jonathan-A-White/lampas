@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.210
+_2026-10-14_
+- New: A verse from the Old Testament in the tutor's answer now opens in your Logos, in the Bible you chose, and if Logos is not linked it takes you to where to link it.
+
 ## 0.1.208
 _2026-10-14_
 - Fixed: Back on the word, grammar and idea cards now goes back one step at a time, to the last place you were, instead of skipping some.
