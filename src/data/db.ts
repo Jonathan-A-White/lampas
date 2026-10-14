@@ -193,6 +193,8 @@ export interface GreekOffer {
   kind: 'word' | 'view';
   text: string;
   lemma?: string;
+  /** set by the welcome (mw-yrmkdf.3) on a view offer: taking it also turns the Weave on (+ Learning) */
+  weave?: true;
 }
 
 /** How a Hebrew word is said, as the tutor's sound answer gave it: the word, its syllables in Hebrew letters in reading order and how each sounds in Latin letters. */

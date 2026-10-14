@@ -24,6 +24,7 @@ import { greekOfferOf } from './talk/greekOffer';
 import { rustyOfferOf } from './talk/rustyOffer';
 import { rustyNow } from './data/learnerRusty';
 import { applyMemoryFromAnswer } from './talk/memoryUpdate';
+import { finishWelcome } from './data/repositories/welcome';
 import { pendingOfferOf, settleOffer } from './talk/offers';
 import { filesOf, type OutgoingPicture } from './talk/pictures';
 import { answerDrawn } from './services/clientTiming';
@@ -158,7 +159,7 @@ export function useTalk(
             listLevels().catch(() => undefined),
             getReaderView().catch(() => undefined),
             // the solid words and ideas he now slips on or has been away from: the tutor says so once and may offer to move them back (src/data/rusty.ts); not in a quiz
-            scope.quiz ? Promise.resolve(undefined) : rustyNow().catch(() => undefined),
+            scope.quiz || scope.welcome ? Promise.resolve(undefined) : rustyNow().catch(() => undefined),
           ]);
           // What he lacks under the topic his words name, worked out here so the tutor picks from it and never guesses (mw-1vuvq6.5); a quiz is not a place to bridge
           const missing = levels && !scope.quiz && !scope.screen?.credits ? missingFoundations(text, levelsOf(levels), focus && 'term' in focus ? focus.term : undefined) : undefined;
@@ -187,6 +188,8 @@ export function useTalk(
           if (answer.profile_update || answer.profile_question) await learnFromTalk(ref, answer.profile_update ?? [], answer.profile_question).catch(() => undefined);
           // What the tutor wants to keep of him: appends at once, a replace or remove only when he asked (src/talk/memoryUpdate.ts); it never fails the talk.
           await applyMemoryFromAnswer(answer).catch(() => undefined);
+          // The welcome interview is over once the tutor says so with its line of thanks; the sheet stays open to be read (src/Welcome.tsx)
+          if (scope.welcome && answer.welcome_done) await finishWelcome().catch(() => undefined);
           // The one offer of the Greek, kept only while this talk has made none and his no is not in the index the request carried or in this very answer (src/talk/greekOffer.ts)
           const greekOffer = greekOfferOf(answer, scope, turns, memory?.index, waiting?.offer.kind === 'greek' && answer.offer_reply === 'decline');
           // The one offer to move the rust back to Frontier: only the items this request listed, once a talk, none after his no in this very answer (src/talk/rustyOffer.ts)
