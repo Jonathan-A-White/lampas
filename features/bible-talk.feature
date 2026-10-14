@@ -293,6 +293,32 @@ Feature: Bible talk
     When he taps Copy on the first turn again
     Then the clipboard then holds the Markdown of "Romans 8:28" asking "What does συνεργεῖ mean here?" answered by the talk
 
+  Scenario: Under his own turn a Copy puts exactly what he said on the clipboard
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern whose answers clean up his question
+    And he opens Talk
+    When he sends "um why are there uh italic words what does it mean for the words to be italic"
+    And he taps Copy under the first question
+    Then the clipboard holds "um why are there uh italic words what does it mean for the words to be italic"
+    And the first question says "Copied"
+
+  Scenario: A question that could not be sent has a Copy beside the failure
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that cannot be reached
+    And he opens Talk
+    When he sends "A long question he cannot get through"
+    Then the sheet says "Could not reach the tutor" with a Retry button
+    When he taps Copy under the unsent question
+    Then the clipboard holds "A long question he cannot get through"
+    And the unsent question says "Copied"
+
+  Scenario: A question the tutor has not answered yet can be copied
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern that holds its answers
+    And he opens Talk
+    When he sends "What does συνεργεῖ mean here?"
+    And he taps Copy under the unsent question
+    Then the clipboard holds "What does συνεργεῖ mean here?"
+    When the tutor answers
+    Then the answer shows in the sheet under his question
+
   Scenario: A question in the talk sends the learner summary
     Given Lampas is opened on Romans 8 with a talk behind a fake Postern
     And he is learning the word "σάρξ" which he added today

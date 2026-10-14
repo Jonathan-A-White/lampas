@@ -116,6 +116,14 @@ const ORDINALS = ['first', 'second'];
 const turn = (ordinal: string): HTMLElement => turns()[ORDINALS.indexOf(ordinal)];
 const copyButton = (ordinal: string) => within(turn(ordinal)).getByRole('button', { name: 'Copy this exchange' });
 
+const copyQuestion = (within_: HTMLElement) => within(within_).getByRole('button', { name: 'Copy my question' });
+const pending = (): HTMLElement => sheet().querySelector<HTMLElement>('[data-talk-pending]') as HTMLElement;
+/** The question still on its way (or failed), drawn a moment after the send. */
+const unsentQuestion = async (): Promise<HTMLElement> => {
+  await waitFor(() => expect(sheet().querySelector('[data-talk-pending]')).not.toBeNull());
+  return pending();
+};
+
 /** Sends and waits for the answer: one more turn, and the field free again. */
 async function sendAndWait(question: string): Promise<void> {
   const before = turns().length;
@@ -830,6 +838,55 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     Then('the clipboard then holds the Markdown of {string} asking {string} answered by the talk', (_, reference: string, question: string) => {
       expect(clipboard.copied.slice(-1)).toEqual([exchangeMarkdown(reference, question, TALK_ANSWER.answer)]);
     });
+  });
+
+  Scenario('Under his own turn a Copy puts exactly what he said on the clipboard', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern whose answers clean up his question', () => open(cleaning));
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => sendAndWait(question));
+    And('he taps Copy under the {word} question', (_, ordinal: string) => user.click(copyQuestion(turn(ordinal))));
+    Then('the clipboard holds {string}', (_, text: string) => {
+      expect(clipboard.copied).toEqual([text]);
+    });
+    And('the {word} question says {string}', async (_, ordinal: string, text: string) => {
+      await waitFor(() => expect(within(turn(ordinal)).getByRole('status')).toHaveTextContent(text));
+    });
+  });
+
+  Scenario('A question that could not be sent has a Copy beside the failure', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern that cannot be reached', () =>
+      open((f) => {
+        f.autoReply = { status: 'answered', answer: TALK_ANSWER };
+        f.down = true;
+      }),
+    );
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('the sheet says {string} with a Retry button', async (_, words: string) => {
+      expect(await within(sheet()).findByRole('alert')).toHaveTextContent(words);
+      expect(within(sheet()).getByRole('button', { name: 'Retry' })).toBeEnabled();
+    });
+    When('he taps Copy under the unsent question', async () => user.click(copyQuestion(await unsentQuestion())));
+    Then('the clipboard holds {string}', (_, text: string) => {
+      expect(clipboard.copied).toEqual([text]);
+    });
+    And('the unsent question says {string}', async (_, text: string) => {
+      await waitFor(() => expect(within(pending()).getByRole('status')).toHaveTextContent(text));
+    });
+  });
+
+  Scenario('A question the tutor has not answered yet can be copied', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern that holds its answers', () => open((f) => void (f.autoReply = undefined)));
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    And('he taps Copy under the unsent question', async () => user.click(copyQuestion(await unsentQuestion())));
+    Then('the clipboard holds {string}', (_, text: string) => {
+      expect(clipboard.copied).toEqual([text]);
+    });
+    When('the tutor answers', () => {
+      fake.answer({ status: 'answered', answer: TALK_ANSWER });
+    });
+    Then('the answer shows in the sheet under his question', answerShowsUnderQuestion);
   });
 
   Scenario('A question in the talk sends the learner summary', ({ Given, And, When, Then }) => {
