@@ -3,7 +3,7 @@ import { ROUND_SIZE, type Random } from '../data/quiz';
 import { gapsOf } from '../data/grammar/inference';
 import { IDEA_KIND } from '../data/grammar/ladder';
 import { levelsOf } from '../data/grammar/goalProgress';
-import { listDue, listLevels, reviewsOf, type Review } from '../data/repositories';
+import { listDue, listLevels, reviewsOf, type ItemRef, type Review } from '../data/repositories';
 import { KINDS, fillWords, kindRank, type ReviewItem } from './kinds';
 
 export interface ReviewRound {
@@ -25,7 +25,21 @@ async function gapRows(now: number): Promise<Review[]> {
   return gaps.map((i) => rows.get(i.id) ?? { kind: IDEA_KIND, id: i.id, step: 0, due: now, lastWhen: 0, lapses: 0, rights: 0 });
 }
 
-export async function drawReviewRound(random: Random, now = Date.now(), size = ROUND_SIZE): Promise<ReviewRound> {
+/** A round of just these items, in the order given (the rusty ones he moved back to Frontier, or the ones Welcome back names, mw-1vuvq6.6), due or not; none of the rest of a round. Empty when none of them can be asked. */
+async function chosenRound(chosen: readonly ItemRef[], random: Random, size: number): Promise<ReviewRound> {
+  const rows = (await reviewsOf(chosen.map((c) => ({ kind: c.kind === 'word' ? 'word' : IDEA_KIND, id: c.id })))).filter((r) => kindRank(r.kind) >= 0).slice(0, size);
+  const order = new Map(chosen.map((c, i) => [`${c.kind === 'word' ? 'word' : IDEA_KIND}\0${c.id}`, i]));
+  rows.sort((a, b) => (order.get(`${a.kind}\0${a.id}`) ?? 0) - (order.get(`${b.kind}\0${b.id}`) ?? 0));
+  const drawn = (await Promise.all(KINDS.map((k) => k.draw(rows.filter((r) => r.kind === k.kind), random)))).flat();
+  drawn.sort((a, b) => (order.get(`${a.kind}\0${a.id}`) ?? 0) - (order.get(`${b.kind}\0${b.id}`) ?? 0));
+  return { items: drawn, due: drawn.length };
+}
+
+export async function drawReviewRound(random: Random, now = Date.now(), size = ROUND_SIZE, chosen?: readonly ItemRef[]): Promise<ReviewRound> {
+  if (chosen && chosen.length > 0) {
+    const round = await chosenRound(chosen, random, size);
+    if (round.items.length > 0) return round;
+  }
   // listDue has them longest overdue first and the sort is stable, so ranking by kind keeps that order within a kind
   const owed = (await listDue(undefined, now)).filter((r) => kindRank(r.kind) >= 0).sort((a, b) => kindRank(a.kind) - kindRank(b.kind));
   // the exact gaps of the letters, sounds and marks come first, due or not

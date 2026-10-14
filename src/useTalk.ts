@@ -21,6 +21,8 @@ import { wasSpoken } from './speech/spoken';
 import { readGo, type GoPlace } from './talk/go';
 import { applyChanges, currentSettings, offeredChange } from './settings/registry';
 import { greekOfferOf } from './talk/greekOffer';
+import { rustyOfferOf } from './talk/rustyOffer';
+import { rustyNow } from './data/learnerRusty';
 import { applyMemoryFromAnswer } from './talk/memoryUpdate';
 import { pendingOfferOf, settleOffer } from './talk/offers';
 import { filesOf, type OutgoingPicture } from './talk/pictures';
@@ -139,7 +141,7 @@ export function useTalk(
       set({ phase: 'sending', question: text, startedAt });
       void (async () => {
         try {
-          const [turns, solid, settings, learner, grammar, way, chosen, goal, requests, profile, pronunciation, memory, levels, readerView] = await Promise.all([
+          const [turns, solid, settings, learner, grammar, way, chosen, goal, requests, profile, pronunciation, memory, levels, readerView, rusty] = await Promise.all([
             listTurns(ref),
             listSolidHeadwords(),
             currentSettings(),
@@ -155,6 +157,8 @@ export function useTalk(
             learnerMemory(scope.screen ? undefined : scopeTitle(scope), focusLemmaOf(focus), scope.screen?.name).catch(() => undefined),
             listLevels().catch(() => undefined),
             getReaderView().catch(() => undefined),
+            // the solid words and ideas he now slips on or has been away from: the tutor says so once and may offer to move them back (src/data/rusty.ts); not in a quiz
+            scope.quiz ? Promise.resolve(undefined) : rustyNow().catch(() => undefined),
           ]);
           // What he lacks under the topic his words name, worked out here so the tutor picks from it and never guesses (mw-1vuvq6.5); a quiz is not a place to bridge
           const missing = levels && !scope.quiz && !scope.screen?.credits ? missingFoundations(text, levelsOf(levels), focus && 'term' in focus ? focus.term : undefined) : undefined;
@@ -163,7 +167,7 @@ export function useTalk(
           // a goal he chose Just this time for earlier in this quiz is sent for this quiz alone
           const once = turns.findLast((t) => t.quizGoalChoice === 'once')?.quizGoalOffer;
           let sentAs: string | undefined;
-          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, wasSpoken(text), memory, missing, readerView), {
+          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, wasSpoken(text), memory, missing, readerView, rusty), {
             key: getDeviceKeyBytes(),
             files: pictures.length ? filesOf(pictures) : undefined,
             signal,
@@ -185,6 +189,8 @@ export function useTalk(
           await applyMemoryFromAnswer(answer).catch(() => undefined);
           // The one offer of the Greek, kept only while this talk has made none and his no is not in the index the request carried or in this very answer (src/talk/greekOffer.ts)
           const greekOffer = greekOfferOf(answer, scope, turns, memory?.index, waiting?.offer.kind === 'greek' && answer.offer_reply === 'decline');
+          // The one offer to move the rust back to Frontier: only the items this request listed, once a talk, none after his no in this very answer (src/talk/rustyOffer.ts)
+          const rustyOffer = rustyOfferOf(answer, scope, turns, rusty, waiting?.offer.kind === 'rusty' && answer.offer_reply === 'decline');
           const { added, already, unknown } = await addWords(scope, answer.words_to_add ?? []);
           // A chapter he asked to be taken to: opened only while this talk's sheet is open. The chapter he is on stays (said so); one that came after he closed the
           // sheet is kept to open with a tap (said so); any other go is said not to have happened.
@@ -194,7 +200,7 @@ export function useTalk(
           const stayed = go?.ok && door?.here?.(go.place) ? go.place.title : undefined;
           const unopened = go?.ok && door && !door.allowed(ref) && !stayed ? go.place : undefined;
           if (go && !place && !stayed && !unopened) refused.push(`Could not open ${go.ok ? go.place.title : go.title}`);
-          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { opened: place?.title, stayed, unopened, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? answer.quiz_goal_offer : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, settingOffer: settingOfferOf(answer), bridge: answer.bridge ? resolveBridge(answer.bridge, missing) : undefined, greekOffer, cleanQ: answer.question, pictures });
+          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { opened: place?.title, stayed, unopened, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? answer.quiz_goal_offer : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, settingOffer: settingOfferOf(answer), bridge: answer.bridge ? resolveBridge(answer.bridge, missing) : undefined, greekOffer, rustyOffer, cleanQ: answer.question, pictures });
           pictured.current[ref] = undefined;
           set(undefined);
           void answerDrawn(sentAs);

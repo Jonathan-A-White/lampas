@@ -5,10 +5,12 @@
 // the Greek view, and a no is written to the memory index.
 import { useSyncExternalStore } from 'react';
 import { ideaOf } from '../data/grammar/ladder';
-import { getTurn, markBridgeChoice, markFeedbackSent, markGreekChoice, markFeedbackWithdrawn, markQuizGoalChoice, markSettingChoice, setQuizGoal, type TalkTurn } from '../data/repositories';
+import { getTurn, markBridgeChoice, markFeedbackSent, markGreekChoice, markFeedbackWithdrawn, markQuizGoalChoice, markRustyChoice, markSettingChoice, setQuizGoal, type TalkTurn } from '../data/repositories';
 import type { Bridge } from '../data/db';
 import { noteGreekNo } from '../data/repositories/memory';
+import { RUSTY_BUTTON } from '../data/rusty';
 import { takeGreekOffer } from './greekOffer';
+import { takeRustyOffer } from './rustyOffer';
 import { buildTutorAskRequest, submitFeedback } from '../services/feedback';
 import { scopeTitle, type OfferReply, type PendingOffer, type TalkScope } from '../services/talk';
 import { applyChanges, offeredChange, type ChangeResult } from '../settings/registry';
@@ -16,7 +18,7 @@ import { applyChanges, offeredChange, type ChangeResult } from '../settings/regi
 /** What the bridge's button says: 'Take me there: Pairs of vowels', the idea it opens (the device's lowest unmet need, src/data/grammar/bridge.ts resolveBridge). */
 export const bridgeButtonText = (bridge: Bridge): string => `Take me there: ${ideaOf(bridge.next).title}`;
 
-/** The offer a turn holds that no tap or word has settled, or undefined. A turn holds at most one that counts: the makers' first, then the setting, then the quiz goal, then the bridge, then the Greek (mw-yrmkdf.4). */
+/** The offer a turn holds that no tap or word has settled, or undefined. A turn holds at most one that counts: the makers' first, then the setting, then the quiz goal, then the bridge, then the Greek (mw-yrmkdf.4), then the rust (mw-1vuvq6.6). */
 export function offerOfTurn(turn: TalkTurn): PendingOffer | undefined {
   if (turn.feedbackOffer && !turn.feedbackSent && !turn.feedbackWithdrawn) return { kind: 'feedback', text: turn.feedbackOffer };
   if (turn.settingOffer && !turn.settingChoice) {
@@ -26,6 +28,7 @@ export function offerOfTurn(turn: TalkTurn): PendingOffer | undefined {
   if (turn.quizGoalOffer && !turn.quizGoalChoice) return { kind: 'quiz-goal', text: turn.quizGoalOffer };
   if (turn.bridge && !turn.bridgeChoice) return { kind: 'bridge', text: bridgeButtonText(turn.bridge) };
   if (turn.greekOffer && !turn.greekChoice) return { kind: 'greek', text: turn.greekOffer.text };
+  if (turn.rustyOffer && !turn.rustyChoice) return { kind: 'rusty', text: RUSTY_BUTTON };
   return undefined;
 }
 
@@ -148,6 +151,7 @@ export async function settleOffer(reply: OfferReply | undefined, waiting: { turn
     if (offer.kind === 'feedback') await markFeedbackWithdrawn(id);
     else if (offer.kind === 'setting') await markSettingChoice(id, 'declined');
     else if (offer.kind === 'bridge') await markBridgeChoice(id, 'declined');
+    else if (offer.kind === 'rusty') await markRustyChoice(id, 'declined');
     else if (offer.kind === 'greek') {
       // his no is kept in the index so the tutor offers the Greek no more until he asks for it himself
       await markGreekChoice(id, 'declined');
@@ -161,6 +165,7 @@ export async function settleOffer(reply: OfferReply | undefined, waiting: { turn
     else if (offer.kind === 'setting') Object.assign(outcome, await takeSettingOffer(turn));
     else if (offer.kind === 'bridge') await takeBridgeOffer(turn);
     else if (offer.kind === 'greek') await takeGreekOffer(turn);
+    else if (offer.kind === 'rusty') await takeRustyOffer(turn);
     else {
       await setQuizGoal(offer.text);
       await markQuizGoalChoice(id, 'kept');

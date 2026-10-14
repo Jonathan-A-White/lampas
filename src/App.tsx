@@ -30,6 +30,7 @@ import { startUsageLog } from './tips/usageLog';
 import { HearAnyWord } from './ui/HearAnyWord';
 import { TutorWaitingBar } from './speech/TutorWaitingBar';
 import { UpdateBanner } from './UpdateBanner';
+import { WelcomeBack } from './WelcomeBack';
 import { WhatsNewOnUpdate } from './whatsNew/WhatsNewOnUpdate';
 import { WordsScreen } from './WordsScreen';
 
@@ -63,6 +64,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
     <div data-shell className="flex h-full min-w-0 flex-col overflow-clip">
       <UpdateBanner />
       <TutorWaitingBar />
+      {/* after a break of a week or more: a short refresher of the solid items most overdue (mw-1vuvq6.6) */}
+      <WelcomeBack hidden={route === 'review' || route === 'unlock'} />
       {/* what's new, once after an update (bsv-kit/whats-new) */}
       <WhatsNewOnUpdate />
       {/* a long press on any word of prose says it (src/ui/HearAnyWord.tsx) */}

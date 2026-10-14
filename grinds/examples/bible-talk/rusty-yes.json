@@ -1,0 +1,38 @@
+{
+  "description": "He answers the waiting rusty offer with a yes: the tutor confirms it, says the practice opens, and makes no new offer.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "question": "yes, let's practise them",
+    "history": [
+      {
+        "q": "What should I work on today?",
+        "a": "You're rusty on λόγος and the genitive case: they were solid before. Tap Move back to Frontier and practise."
+      }
+    ],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός",
+      "λόγος"
+    ],
+    "settings": {},
+    "reader_view": "greek",
+    "learner": "solid 4 words; learning: ἀγάπη; new today: ; due now: 6",
+    "rusty": [
+      { "kind": "word", "id": "λόγος", "title": "λόγος", "why": "slipped twice this week" },
+      { "kind": "idea", "id": "case-genitive", "title": "The genitive case", "why": "not seen for 3 weeks" }
+    ],
+    "pending_offer": { "kind": "rusty", "text": "Move back to Frontier and practise" }
+  },
+  "expect": {
+    "offer_reply": {
+      "equals": "confirm"
+    },
+    "rusty_offer": {
+      "present": false
+    }
+  }
+}

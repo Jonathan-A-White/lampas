@@ -2,6 +2,7 @@
 // {kind, id}: kind 'word' with the NFC headword as id today; the course epic adds its own kinds.
 import { db, type Review } from '../db';
 import { publish } from '../../events/bus';
+import { RECENT_ANSWERS } from '../rusty';
 import { DAY, STEP_DAYS, isDue, nextReview } from '../schedule';
 
 export type { Review };
@@ -46,9 +47,21 @@ export async function announceDue(now = Date.now()): Promise<void> {
 
 /** Writes one answer for an item inside the caller's transaction (which must include db.reviews); recordReview is the whole of it. */
 export async function writeReview(kind: string, id: string, right: boolean, now: number): Promise<Review> {
-  const next: Review = { kind, id, ...nextReview(await db.reviews.get([kind, id]), right, now) };
+  const before = await db.reviews.get([kind, id]);
+  // the last few answers are kept beside the schedule, so the tutor can tell a solid item he now slips on from one he never missed (src/data/rusty.ts)
+  const recent = [...(before?.recent ?? []), { when: now, right }].slice(-RECENT_ANSWERS);
+  const next: Review = { kind, id, ...nextReview(before, right, now), recent };
   await db.reviews.put(next);
   return next;
+}
+
+/**
+ * Puts an item back at the start of the schedule (step 0, due now, no rights in a row) because it has gone rusty and he is moving it back to Frontier (mw-1vuvq6.6): its
+ * lapses, last answer and recent answers stay as they were. An item that is not on the schedule yet is put there. Inside the caller's transaction (which must include db.reviews).
+ */
+export async function writeRestart(kind: string, id: string, now: number): Promise<void> {
+  const before = await db.reviews.get([kind, id]);
+  await db.reviews.put({ kind, id, step: 0, due: now, lastWhen: before?.lastWhen ?? now, lapses: before?.lapses ?? 0, rights: 0, ...(before?.recent ? { recent: before.recent } : {}) });
 }
 
 /** Records one answer for an item: a new item starts at step 0, then the rule of schedule.ts moves it. */

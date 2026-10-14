@@ -104,7 +104,7 @@ describe('the builders send what the table says', () => {
   it('verse-ask: every setting and part of progress the table lists is in the request', async () => {
     await setGreekPronunciation('modern');
     const settings = await settingsSentTo('verse-ask');
-    const request = buildRequest('Romans 8:28', verse, 'What is this?', ['θεός'], 'solid 1 words', grammar, settings, [{ summary: 's', status: 'building' }] as never, profile, false, 'modern', memory) as unknown as Record<string, unknown>;
+    const request = buildRequest('Romans 8:28', verse, 'What is this?', ['θεός'], 'solid 1 words', grammar, settings, [{ summary: 's', status: 'building' }] as never, profile, false, 'modern', memory, undefined, [{ kind: 'word', id: 'λόγος', title: 'λόγος', why: 'slipped this week' }]) as unknown as Record<string, unknown>;
     const knows = TUTOR_KNOWS['verse-ask'];
     for (const key of Object.keys(knows.settings)) expect(at(request, knows.settings[key]), `verse-ask request lacks ${key} at ${knows.settings[key]}`).toBeDefined();
     for (const part of Object.keys(knows.progress)) expect(at(request, knows.progress[part]), `verse-ask request lacks ${part} at ${knows.progress[part]}`).toBeDefined();

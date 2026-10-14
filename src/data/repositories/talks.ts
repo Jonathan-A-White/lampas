@@ -1,6 +1,6 @@
 // src/data/repositories/talks.ts — the turns of the Bible talk, kept on the phone per conversation. A repository owns its transactions.
 import type { AppliedChange } from '../../settings/registry';
-import { db, type AnswerLink, type AnswerWord, type Bridge, type GreekOffer, type HebrewSounds, type TalkPicture, type TalkTurn } from '../db';
+import { db, type AnswerLink, type AnswerWord, type Bridge, type GreekOffer, type HebrewSounds, type RustyOffer, type TalkPicture, type TalkTurn } from '../db';
 
 export type { TalkPicture, TalkTurn };
 
@@ -42,6 +42,8 @@ export interface TurnChanges {
   bridge?: Bridge;
   /** the one offer of the Greek the answer made (mw-yrmkdf.4) */
   greekOffer?: GreekOffer;
+  /** the rusty items the answer offered to move back to Frontier (mw-1vuvq6.6) */
+  rustyOffer?: RustyOffer;
   /** what he said, cleaned up by the tutor; shown in place of the raw words, which stay as `q` */
   cleanQ?: string;
   /** the pictures he sent with it (mw-y3qno5.1), kept in their own table */
@@ -74,6 +76,7 @@ export async function addTurn(ref: string, q: string, a: string, words: AnswerWo
   if (done?.settingOffer) turn.settingOffer = done.settingOffer;
   if (done?.bridge) turn.bridge = done.bridge;
   if (done?.greekOffer) turn.greekOffer = done.greekOffer;
+  if (done?.rustyOffer) turn.rustyOffer = done.rustyOffer;
   if (done?.cleanQ) turn.cleanQ = done.cleanQ;
   return db.transaction('rw', db.talks, db.talkPictures, async () => {
     const id = (await db.talks.add(turn)) as number;
@@ -139,6 +142,11 @@ export async function markBridgeChoice(turnId: number, choice: 'taken' | 'declin
 /** Records what became of a turn's offer of the Greek (mw-yrmkdf.4): 'taken' (the word's sheet or the Greek view was opened) or 'declined' (his no). */
 export async function markGreekChoice(turnId: number, choice: 'taken' | 'declined'): Promise<void> {
   await db.talks.update(turnId, { greekChoice: choice });
+}
+
+/** Records what became of a turn's offer to move rusty items back to Frontier (mw-1vuvq6.6): 'taken' (they were moved and their practice opened) or 'declined'. */
+export async function markRustyChoice(turnId: number, choice: 'taken' | 'declined'): Promise<void> {
+  await db.talks.update(turnId, { rustyChoice: choice });
 }
 
 /** Records what he did with a turn's quiz goal offer: 'kept' (Yes, from now on; the caller keeps the goal), 'once' (Just this time) or 'declined' (no: nothing kept). */

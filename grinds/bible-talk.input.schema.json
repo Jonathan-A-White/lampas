@@ -54,12 +54,12 @@
       "maxLength": 80
     },
     "pending_offer": {
-      "description": "Optional. Present only while an offer of yours waits for his tap: the newest such offer of this conversation. `kind` is 'feedback' (Send this to the makers; `text` is the summary it would send), 'setting' (a setting change from `setting_offer`; `text` is what it would change, such as 'Change Theme: Dark') 'quiz-goal' (the goal from `quiz_goal_offer`; `text` is the goal), 'bridge' (your `bridge`; `text` is 'Take me there: <title of the idea it opens>'; his yes opens that idea's sheet) or 'greek' (your `greek_offer`; `text` is its line; his yes opens the Greek word or switches the Reader to Greek, and his no is kept by the app in the memory index). Decide from `question` whether he confirms, declines or asks to hear it, and say so in `offer_reply`.",
+      "description": "Optional. Present only while an offer of yours waits for his tap: the newest such offer of this conversation. `kind` is 'feedback' (Send this to the makers; `text` is the summary it would send), 'setting' (a setting change from `setting_offer`; `text` is what it would change, such as 'Change Theme: Dark') 'quiz-goal' (the goal from `quiz_goal_offer`; `text` is the goal), 'bridge' (your `bridge`; `text` is 'Take me there: <title of the idea it opens>'; his yes opens that idea's sheet) 'greek' (your `greek_offer`; `text` is its line; his yes opens the Greek word or switches the Reader to Greek, and his no is kept by the app in the memory index) or 'rusty' (your `rusty_offer`; `text` is 'Move back to Frontier and practise'; his yes moves the rusty items you named back to Frontier and opens their practice). Decide from `question` whether he confirms, declines or asks to hear it, and say so in `offer_reply`.",
       "type": "object",
       "additionalProperties": false,
       "required": ["kind", "text"],
       "properties": {
-        "kind": { "type": "string", "enum": ["feedback", "setting", "quiz-goal", "bridge", "greek"] },
+        "kind": { "type": "string", "enum": ["feedback", "setting", "quiz-goal", "bridge", "greek", "rusty"] },
         "text": { "type": "string", "minLength": 1, "maxLength": 200 }
       }
     },
@@ -296,6 +296,22 @@
           }
         },
         "do_not_ask": { "description": "The profile fields you must not ask him about in this talk: asked in the last day, or he declined to say. Missing when none.", "type": "array", "maxItems": 5, "items": { "type": "string", "enum": ["age", "pace", "ways", "background", "why"] } }
+      }
+    },
+    "rusty": {
+      "description": "Optional. The solid words and grammar ideas he now slips on (a wrong answer among his last three) or has not met for a long while (a week or more past due), worst first, at most 8. Each: `kind` 'word' or 'idea', `id` (the word's dictionary form, or the idea's id), `title` (what to call it) and `why` (the plain reason, such as 'slipped twice this week' or 'not seen for 3 weeks'). Missing when nothing is rusty, and in a quiz. It is the app's own list, worked out from his answers: never add an item to it or name one that is not in it (see the instructions, 'When he has gone rusty').",
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "id", "title", "why"],
+        "properties": {
+          "kind": { "type": "string", "enum": ["word", "idea"] },
+          "id": { "type": "string", "minLength": 1, "maxLength": 80 },
+          "title": { "type": "string", "minLength": 1, "maxLength": 80 },
+          "why": { "type": "string", "minLength": 1, "maxLength": 60 }
+        }
       }
     },
     "requests": {

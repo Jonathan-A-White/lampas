@@ -11,6 +11,7 @@ import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
 import type { MemoryField } from '../data/learnerMemory';
 import type { TutorRequest } from '../data/requestsForTutor';
+import type { RustyItem } from '../data/rusty';
 import { DEFAULT_PRONUNCIATION, type GreekPronunciation } from '../speech/pronunciation';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
 import { listenForAnswers, type StreamTarget } from './answerStream';
@@ -174,6 +175,8 @@ export interface VerseAskRequest {
   requests?: TutorRequest[];
   /** present only when the grammar words of his question name a topic that rests on ideas he lacks (mw-1vuvq6.5, src/data/grammar/bridge.ts), as the Bible talk is sent it */
   missing_foundations?: MissingFoundations;
+  /** the solid words and ideas he now slips on or has not met for a long while (mw-1vuvq6.6, src/data/rusty.ts), as the Bible talk is sent it; missing when none. The tutor may say so in its answer; the offer to move them is the Bible talk's. */
+  rusty?: RustyItem[];
 }
 
 /** What the grind answers (grinds/verse-ask.answer.schema.json). */
@@ -212,7 +215,7 @@ export function isVerseAnswer(value: unknown): value is VerseAnswer {
   return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));
 }
 
-export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = [], learnerProfile?: LearnerProfile, spoken = false, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION, memory?: MemoryField, missingFoundations?: MissingFoundations): VerseAskRequest {
+export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = [], learnerProfile?: LearnerProfile, spoken = false, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION, memory?: MemoryField, missingFoundations?: MissingFoundations, rusty?: RustyItem[]): VerseAskRequest {
   return {
     reference,
     greek: verse.g.map((w) => w.t).join(' '),
@@ -228,6 +231,7 @@ export function buildRequest(reference: string, verse: Verse, question: string, 
     ...(settings ? { settings } : {}),
     ...(requests.length > 0 ? { requests } : {}),
     ...(missingFoundations ? { missing_foundations: missingFoundations } : {}),
+    ...(rusty && rusty.length > 0 ? { rusty } : {}),
   };
 }
 

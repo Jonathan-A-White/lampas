@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Verse } from './data/chapter';
 import { unitId, unitReference } from './data/passage';
 import { missingFoundations, resolveBridge } from './data/grammar/bridge';
+import { rustyNow } from './data/learnerRusty';
 import { levelsOf } from './data/grammar/goalProgress';
 import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { requestsForTutor } from './data/requestsForTutor';
@@ -60,10 +61,10 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
       set({ phase: 'sending', question: text, startedAt });
       void (async () => {
         try {
-          const [solid, learner, grammar, settings, requests, profile, pronunciation, memory, levels] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined), settingsSentTo('verse-ask'), requestsForTutor().catch(() => []), learnerProfile().catch(() => undefined), getGreekPronunciation(), learnerMemory(unitReference(title, verse)).catch(() => undefined), listLevels().catch(() => undefined)]);
+          const [solid, learner, grammar, settings, requests, profile, pronunciation, memory, levels, rusty] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined), settingsSentTo('verse-ask'), requestsForTutor().catch(() => []), learnerProfile().catch(() => undefined), getGreekPronunciation(), learnerMemory(unitReference(title, verse)).catch(() => undefined), listLevels().catch(() => undefined), rustyNow().catch(() => undefined)]);
           // What he lacks under the topic his words name (mw-1vuvq6.5), worked out here so the tutor picks from it and never guesses
           const missing = levels ? missingFoundations(text, levelsOf(levels)) : undefined;
-          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, settings, requests, profile, wasSpoken(text), pronunciation, memory, missing);
+          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, settings, requests, profile, wasSpoken(text), pronunciation, memory, missing, rusty);
           let sentAs: string | undefined;
           const answer = await askTutor(request, {
             key: getDeviceKeyBytes(),

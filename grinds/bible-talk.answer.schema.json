@@ -187,6 +187,25 @@
         }
       ]
     },
+    "rusty_offer": {
+      "description": "Only when the request carried `rusty` and it fits the talk (see the instructions, 'When he has gone rusty'): the rusty items you named, which the app offers to move back to Frontier and practise. The app draws one button, 'Move back to Frontier and practise', and moves them only on his tap or his yes. `items` are entries of the request's `rusty`, by `kind` and `id`, worst first; the app keeps only the ones it listed. At most once in a conversation (the history shows it), never in a quiz, never after his no. Leave it out otherwise.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "id"],
+            "properties": { "kind": { "type": "string", "enum": ["word", "idea"] }, "id": { "type": "string", "minLength": 1, "maxLength": 80 } }
+          }
+        }
+      }
+    },
     "greek_asked": {
       "description": "Only when he asked for Greek himself in this turn (the Greek word, the Greek view, what the original says) while `memory.index` holds 'said no to the Greek offer': true. The app then takes that line out of the index. Never to record an answer to your own offer: a yes or a no to the offer goes in `offer_reply`.",
       "type": "boolean",
