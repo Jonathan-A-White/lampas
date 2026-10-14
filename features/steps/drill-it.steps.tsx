@@ -411,18 +411,21 @@ describeFeature(feature, ({ Scenario }) => {
     And(NO_RUN, noRun);
   });
 
-  Scenario('A Hint marks the answer hinted', ({ Given, And, When, Then }) => {
+  Scenario('A Hint marks the answer hinted, strikes the wrong answers it takes away and says so', ({ Given, And, When, Then }) => {
     Given(...givens.solidFrontier);
     And(OPENS, opensIdea);
     And('he taps Drill it on the idea sheet', async () => {
       await user.click(within(ideaSheet()).getByRole('button', { name: 'Drill it', exact: true }));
       await screen.findByRole('dialog', { name: 'Drill it' });
     });
-    When('he taps Hint and answers the question right', async () => {
+    When('he taps Hint, sees the answers struck through and the line, and answers the question right', async () => {
       await user.click(within(drillDialog()).getByRole('button', { name: 'Hint', exact: true }));
       const q = questionOnScreen('noun');
-      expect(drillDialog().querySelectorAll('[data-option]:disabled').length).toBeGreaterThan(0);
-      expect(within(drillDialog()).getByRole('button', { name: 'Hint', exact: true })).toBeDisabled();
+      const taken = drillDialog().querySelectorAll('[data-option][data-taken]');
+      expect(taken.length).toBeGreaterThan(0);
+      for (const option of Array.from(taken)) expect(option.className).toContain('line-through');
+      expect(within(drillDialog()).getByTestId('hint-line')).toHaveTextContent(`Hint: ${taken.length} wrong ${taken.length === 1 ? 'answer' : 'answers'} taken away`);
+      expect(within(drillDialog()).getByRole('button', { name: 'Hint used', exact: true })).toBeDisabled();
       await answer('noun', true);
       expect(q.right).toBeTruthy();
       await next();

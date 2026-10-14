@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import type { GrammarQuestion } from './data/grammar/questions';
 import type { QuestionMode } from './data/schedule';
+import { hintLine } from './data/grammar/hint';
 import { KNEW_IT } from './review/kinds';
 import { TapToHear } from './TapToHear';
 import { useSettled } from './ui/settle';
@@ -14,6 +15,8 @@ const LOOK = {
   right: 'border-good bg-good/20 font-medium',
   wrong: 'border-bad bg-bad/20 font-medium',
   other: 'border-line bg-surface text-muted',
+  // a Hint took it away: struck through and faded, so it plainly is not in play (on the dark theme muted text alone looked unchanged)
+  taken: 'border-line bg-surface text-muted line-through opacity-40',
 };
 
 const GREEK = /[Ͱ-Ͽἀ-῿]/;
@@ -24,7 +27,7 @@ interface Props {
   /** what he tapped (an option, or KNEW_IT / NOT_YET on a flashcard), or null while he has not answered */
   picked: string | null;
   onPick: (option: string) => void;
-  /** options (by place) a Hint took away: drawn dimmed and not to be tapped (Drill it, src/DrillItScreen.tsx) */
+  /** options (by place) a Hint took away: drawn struck through and faded, not to be tapped, with a line under the question saying how many (Drill it, src/DrillItScreen.tsx) */
   taken?: ReadonlySet<number>;
   /** in a short window (sideways) the question stands at the left and the answers at the right, with tighter buttons (Drill it) */
   sideBySide?: boolean;
@@ -33,7 +36,7 @@ interface Props {
 /** What Show reveals: the whole form for an ending, else the right answer. */
 const answerOf = (q: GrammarQuestion): string => (q.kind === 'ending' && q.form ? q.form.replace('_', q.right) : q.right);
 
-function Heading({ question, mode }: { question: GrammarQuestion; mode: QuestionMode }) {
+function Heading({ question, mode, hint }: { question: GrammarQuestion; mode: QuestionMode; hint?: string }) {
   return (
     <>
       <div className="text-center">
@@ -48,6 +51,11 @@ function Heading({ question, mode }: { question: GrammarQuestion; mode: Question
         <p data-testid="grammar-ref" className="mt-1 min-h-6 text-base text-muted">
           {question.ref ?? ''}
         </p>
+        {hint ? (
+          <p data-testid="hint-line" className="mt-1 text-base font-medium text-accent">
+            {hint}
+          </p>
+        ) : null}
       </div>
       {question.say ? (
         <div className="mt-4">
@@ -92,10 +100,12 @@ function Choice({ question, picked, onPick, taken, sideBySide }: Omit<Props, 'mo
   const settled = useSettled();
   const tapForm = question.kind === 'tap-form';
   const lookOf = (option: string, i: number): keyof typeof LOOK => {
-    if (!answered) return taken?.has(i) ? 'other' : 'idle';
+    if (taken?.has(i)) return 'taken';
+    if (!answered) return 'idle';
     if (option === question.right) return 'right';
     return i === at ? 'wrong' : 'other';
   };
+  const hint = taken && taken.size > 0 ? hintLine(taken.size) : undefined;
   const buttons = question.options.map((option, i) => {
     const look = lookOf(option, i);
     const greek = GREEK.test(option);
@@ -104,6 +114,7 @@ function Choice({ question, picked, onPick, taken, sideBySide }: Omit<Props, 'mo
         key={i}
         type="button"
         data-option
+        data-taken={look === 'taken' ? '' : undefined}
         data-result={look === 'right' || look === 'wrong' ? look : undefined}
         lang={greek ? 'grc' : undefined}
         disabled={answered || taken?.has(i)}
@@ -112,7 +123,7 @@ function Choice({ question, picked, onPick, taken, sideBySide }: Omit<Props, 'mo
           setAt(i);
           onPick(option);
         }}
-        className={`${LOOK[look]} rounded-xl border disabled:opacity-100 ${
+        className={`${LOOK[look]} rounded-xl border ${look === 'taken' ? 'disabled:opacity-40' : 'disabled:opacity-100'} ${
           tapForm
             ? 'min-h-12 min-w-12 px-3 font-greek text-2xl'
             : `${sideBySide ? 'min-h-14 short:min-h-12 short:py-1' : 'min-h-14 py-3'} w-full px-4 text-lg ${greek ? `font-greek ${sideBySide ? 'text-3xl short:text-2xl' : 'text-3xl'}` : 'text-left'}`
@@ -142,7 +153,7 @@ function Choice({ question, picked, onPick, taken, sideBySide }: Omit<Props, 'mo
   if (!sideBySide) {
     return (
       <>
-        <Heading question={question} mode="choice" />
+        <Heading question={question} mode="choice" hint={hint} />
         {answers}
       </>
     );
@@ -150,7 +161,7 @@ function Choice({ question, picked, onPick, taken, sideBySide }: Omit<Props, 'mo
   return (
     <div className="short:grid short:grid-cols-2 short:items-start short:gap-x-6">
       <div>
-        <Heading question={question} mode="choice" />
+        <Heading question={question} mode="choice" hint={hint} />
       </div>
       <div>{answers}</div>
     </div>

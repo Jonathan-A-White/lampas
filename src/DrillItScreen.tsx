@@ -8,6 +8,7 @@ import type { Chapter } from './data/chapter';
 import { answer as answerWalk, start, type DrillResult, type DrillWalk } from './data/grammar/drillIt';
 import { planFrom, shortDrill, type PlanItem } from './data/grammar/drillPlan';
 import { drillSeed } from './data/grammar/drillSeed';
+import { hintTakes } from './data/grammar/hint';
 import { ideaOf, type Facet } from './data/grammar/ladder';
 import type { Level } from './data/grammar/needs';
 import { answerPlanItem, getDrillPlan, type DrillMode } from './data/repositories';
@@ -24,12 +25,6 @@ function begin(ideaId: string, passage: readonly Chapter[] | undefined): DrillWa
   const assumed = new Map<string, Level>(ideaOf(ideaId).needs.map((id) => [id, 'solid']));
   const walk = start(ideaId, assumed, { passage, seed: drillSeed.next() });
   return 'needs' in walk ? null : walk;
-}
-
-/** The wrong answers a Hint takes away: the first half of them, rounded up. An option spelt like the right one is not wrong. */
-function hintTakes(options: readonly string[], right: string): Set<number> {
-  const wrong = options.flatMap((o, i) => (o === right ? [] : [i]));
-  return new Set(wrong.slice(0, Math.ceil(wrong.length / 2)));
 }
 
 function Facets({ title, testId, facets }: { title: string; testId: string; facets: readonly Facet[] }) {
@@ -205,7 +200,7 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
             onClick={() => question && setTaken(hintTakes(question.options, question.right))}
             className={`${BUTTON} border-line text-accent active:bg-line disabled:text-muted`}
           >
-            Hint
+            {taken !== null ? 'Hint used' : 'Hint'}
           </button>
         )}
       </div>
