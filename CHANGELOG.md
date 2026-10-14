@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.222
+_2026-10-14_
+- New: every grammar card now teaches from scratch: what the idea is, how to spot it with a table of its endings, and a word from your verse taken apart step by step, and its examples are only words the card can explain.
+
 ## 0.1.221
 _2026-10-14_
 - Fixed: When the tutor shows how a Greek word sounds, reading it aloud now says the Greek sound instead of spelling out the letters.
