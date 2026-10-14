@@ -1,0 +1,199 @@
+import { expect, test, type Page } from '@playwright/test';
+import { honestMic, honestSpeech } from '../support/honest-fakes';
+import { makeFakePostern, WELL_READ_ANSWER } from '../support/fake-postern';
+import { routePostern } from '../support/playwright-postern';
+import { chooseAction } from './verse-view';
+import { expectInView, openWithTextSize, PHONES } from './next-in-view';
+import { shot } from './shot';
+import { openUnlocked } from './unlocked';
+
+// After he answers, the button that moves on is in view with no scroll (mw-5r3p30.377). He read Review on his phone and the Next button sat below the fold:
+// 'Right.' and the help button were the last thing on the screen and 'what next' was not obvious. Each screen that asks and then moves on is walked at the
+// phone sizes and, as a reader with a larger text size, at 130 %.
+
+// An ου word to fix, so each reading adds a miss of the sound to the tally (tests/e2e/reading-drill.spec.ts).
+const OU_WORD_ANSWER = {
+  verdict: 'some-to-fix',
+  focus_words: [{ word: 'οὐρανοῦ', index: 0, chunks: ['οὐ', 'ρα', 'νοῦ'], tip: 'The ου is one sound, oo.' }],
+  note: 'Nearly there: one word to say again.',
+};
+
+// This host's wall clock can step back about 1.4 s while a hold goes on, and the recorder times a hold with Date.now(): hold longer than about 2.5 s.
+async function holdFor(page: Page, button: ReturnType<Page['getByRole']>, ms: number): Promise<void> {
+  const box = await button.boundingBox();
+  if (!box) throw new Error('the button is not on the page');
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.waitForTimeout(ms);
+  await page.mouse.up();
+}
+
+// Puts rows in the app's own store through raw IndexedDB, as the app wrote them.
+async function put(page: Page, store: 'settings' | 'grammarLevels', rows: object[]) {
+  await page.evaluate(
+    ([name, list]) =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const idb = open.result;
+          const tx = idb.transaction(name as string, 'readwrite');
+          for (const row of list as object[]) tx.objectStore(name as string).put(row);
+          tx.oncomplete = () => {
+            idb.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+    [store, rows] as const,
+  );
+}
+
+for (const phone of PHONES) {
+  for (const percent of [100, 130]) {
+    const at = `${phone.name} at ${percent} % text`;
+
+    test.describe(at, () => {
+      test.beforeEach(async ({ page }) => {
+        await page.setViewportSize(phone.size);
+        await openUnlocked(page);
+      });
+
+      test('Review: after every answer of a round Next (Finish at the end) is in view', async ({ page }) => {
+        await openWithTextSize(page, '#/review', percent);
+        await page.getByRole('button', { name: 'Start' }).click();
+        await expect(page.getByTestId('prompt')).toBeVisible();
+        for (let i = 0; i < 10; i += 1) {
+          const show = page.getByRole('button', { name: 'Show' });
+          if (await show.isVisible()) {
+            await show.click();
+            await page.getByRole('button', { name: 'Not yet' }).click();
+          } else {
+            await page.locator('[data-option]').last().click();
+          }
+          const next = page.getByTestId('next');
+          await expectInView(page, next, `Review ${i + 1} of 10`);
+          if (i === 0) await shot(page, `next-in-view-review-${phone.name}-${percent}`);
+          await next.click();
+        }
+        await expect(page.getByTestId('score')).toBeVisible();
+      });
+
+      test('Quick test: after every answer Next (Finish at the end) is in view', async ({ page }) => {
+        await openWithTextSize(page, '#/test', percent);
+        for (let i = 0; i < 10; i += 1) {
+          await page.locator('[data-option]').last().click();
+          const next = page.getByTestId('next');
+          await expectInView(page, next, `Quick test ${i + 1} of 10`);
+          if (i === 0) await shot(page, `next-in-view-quiz-${phone.name}-${percent}`);
+          await next.click();
+        }
+        await expect(page.getByTestId('score')).toBeVisible();
+      });
+
+      test('Parsing drill: after every answer Next step, Next word or Finish is in view', async ({ page }) => {
+        await openWithTextSize(page, '#/drill', percent);
+        // the reload that applies the text size finds the round the first look kept
+        const fresh = page.getByRole('button', { name: 'New round' });
+        if (await fresh.isVisible()) await fresh.click();
+        for (let words = 0; words < 2; words += 1) {
+          for (let step = 0; step < 8; step += 1) {
+            await page.locator('[data-option]').last().click();
+            const next = page.getByTestId('next');
+            await expectInView(page, next, `Parsing drill word ${words + 1} step ${step + 1}`);
+            if (words === 0 && step === 0) await shot(page, `next-in-view-drill-${phone.name}-${percent}`);
+            const label = await next.textContent();
+            await next.click();
+            if (label !== 'Next step') break;
+          }
+        }
+      });
+
+      test('Placement: after every answer of the walk and of the quick round Next is in view', async ({ page }) => {
+        await honestSpeech(page, { langs: ['el-GR'] });
+        await page.goto('/');
+        await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+        await put(page, 'settings', [{ key: 'goal', value: '1 John 1:1' }]);
+        await openWithTextSize(page, '#/placement', percent);
+        await page.getByRole('button', { name: 'Start', exact: true }).click();
+        const end = page.getByTestId('where');
+        for (let i = 0; i < 30 && !(await end.isVisible()); i += 1) {
+          await expect(page.getByTestId('placement-question')).toBeVisible();
+          // a sound heard and picked: the card is drawn at once, the options are the buttons
+          await page.locator('[data-option]').last().click();
+          const next = page.getByTestId('next');
+          await expectInView(page, next, `Placement answer ${i + 1}`);
+          if (i === 0) await shot(page, `next-in-view-placement-${phone.name}-${percent}`);
+          await next.click();
+          await expect(page.getByTestId('placement-question').or(end)).toBeVisible();
+        }
+      });
+
+      test('Drill it (a dialog with a footer of its own): Next is in view after an answer', async ({ page }) => {
+        await page.goto('/');
+        await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+        await put(page, 'settings', [{ key: 'goal', value: '1 John 1' }]);
+        await put(page, 'grammarLevels', [{ id: 'accents', level: 'solid', since: Date.now(), how: 'placement' }]);
+        await openWithTextSize(page, '#/goal', percent);
+        await page.getByTestId('ideas-bar').click();
+        await page.getByTestId('ideas-list').getByRole('button', { name: 'The noun', exact: true }).click();
+        const idea = page.getByRole('dialog', { name: 'Idea' });
+        await idea.getByRole('slider', { name: 'Your level' }).focus();
+        await page.keyboard.press('End');
+        const drill = page.getByRole('dialog', { name: 'Drill it' });
+        await expect(drill.getByTestId('grammar-prompt')).toBeVisible();
+        await drill.locator('[data-option]').last().click();
+        await expectInView(page, drill.getByTestId('drill-next'), 'Drill it');
+      });
+
+      test('Reading ladder: after a good reading Next verse is in view', async ({ page }) => {
+        const fake = makeFakePostern();
+        fake.autoReply = { status: 'answered', answer: WELL_READ_ANSWER };
+        await routePostern(page, fake);
+        await honestMic(page);
+        await openWithTextSize(page, '', percent);
+        await page.getByRole('button', { name: 'Greek', exact: true }).click();
+        const view = await chooseAction(page, 28, 'Read it aloud');
+        const panel = page.getByRole('region', { name: 'Reading check' });
+        await panel.getByRole('button', { name: 'Reading ladder', exact: true }).click();
+        await expect(view.getByRole('heading', { level: 2 })).toHaveText('1 Thessalonians 5:16');
+        const hold = page.getByRole('button', { name: 'Hold to read verse 16', exact: true });
+        const box = await hold.boundingBox();
+        if (!box) throw new Error('no hold bar');
+        await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+        await page.mouse.down();
+        await page.waitForTimeout(2800);
+        await page.mouse.up();
+        await expect(panel).toContainText('Well read');
+        const next = panel.getByRole('button', { name: 'Next verse', exact: true });
+        await expectInView(page, next, 'Next verse');
+        await shot(page, `next-in-view-ladder-${phone.name}-${percent}`);
+      });
+
+      test('Reading drill (a sheet): after a word is read Next word is in view', async ({ page }) => {
+        const fake = makeFakePostern();
+        fake.autoReply = { status: 'answered', answer: OU_WORD_ANSWER };
+        await routePostern(page, fake);
+        await honestMic(page);
+        await openWithTextSize(page, '', percent);
+        await page.getByRole('button', { name: 'Greek', exact: true }).click();
+        await chooseAction(page, 28, 'Read it aloud');
+        const panel = page.getByRole('region', { name: 'Reading check' });
+        const bar = page.getByRole('button', { name: 'Hold to read verse 28', exact: true });
+        await holdFor(page, bar, 2800);
+        await expect(panel).toContainText('Words to fix');
+        await holdFor(page, bar, 2800);
+        await panel.getByRole('button', { name: 'Drill this sound', exact: true }).click();
+        const drill = page.getByRole('dialog', { name: 'Reading drill' });
+        await drill.getByRole('button', { name: 'Start the drill', exact: true }).click();
+        // the answer with a word to fix is the tallest card the drill draws
+        await expect(drill).toContainText('Word 1 of 5');
+        await holdFor(page, drill.getByRole('button', { name: /^Hold to read / }), 2800);
+        await expect(drill).toContainText('Words to fix');
+        await expectInView(page, drill.getByRole('button', { name: 'Next word', exact: true }), 'Reading drill: Next word');
+        await shot(page, `next-in-view-reading-drill-${phone.name}-${percent}`);
+      });
+    });
+  }
+}
