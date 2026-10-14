@@ -40,6 +40,7 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
     stop = undefined;
     cleanup();
     vi.unstubAllGlobals();
+    Reflect.deleteProperty(navigator, 'serviceWorker');
   });
   afterAll(() => cleanup());
 
@@ -160,7 +161,11 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
   });
 
   Scenario('About lists every version and can check for updates', ({ Given, When, Then, And }) => {
-    Given('the changelog lists three versions', () => stubChangelog(fixtureChangelog()));
+    Given('the changelog lists three versions', () => {
+      stubChangelog(fixtureChangelog());
+      // bsv-kit says 'Up to date' only after a service worker registration has checked and the server answered: this phone has one with nothing waiting
+      Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: { getRegistration: async () => ({ update: async () => undefined, waiting: null, installing: null, active: {} }) } });
+    });
     When('he opens About', () => {
       render(<About />);
     });

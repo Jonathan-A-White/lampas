@@ -18,6 +18,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, QUIZ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { SOLID_WORDS_SENT } from '../../src/services/solidWords';
 
 afterAll(() => {
   cleanup();
@@ -43,7 +44,7 @@ const greekOf = (from: number, to: number): string =>
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 
 /** The fields a bible-talk request may hold: the app's text and the reader's own data, nothing fetched from anywhere. */
-const REQUEST_FIELDS = ['reference', 'greek', 'english', 'greek_words', 'question', 'history', 'solid_words', 'settings', 'mode', 'learner', 'learner_grammar', 'focus', 'study_way', 'quiz_goal', 'quiz_goal_once', 'screen', 'resources', 'pronunciation', 'pronunciation_guide'];
+const REQUEST_FIELDS = ['reference', 'greek', 'english', 'greek_words', 'question', 'history', 'solid_count', 'solid_words', 'settings', 'mode', 'learner', 'learner_grammar', 'focus', 'study_way', 'quiz_goal', 'quiz_goal_once', 'screen', 'resources', 'pronunciation', 'pronunciation_guide'];
 
 async function open(): Promise<void> {
   cleanup();
@@ -133,7 +134,10 @@ describeFeature(feature, ({ Scenario }) => {
     And('that grist carries his solid words and what Lampas knows of him', async () => {
       const solid = (await db.words.where('state').equals('solid').toArray()).map((w) => w.lemma);
       expect(solid.length).toBeGreaterThan(0);
-      expect([...(received(0).input.solid_words as string[])].sort()).toEqual([...solid].sort());
+      const sent = received(0).input.solid_words as string[];
+      expect(sent).toHaveLength(Math.min(solid.length, SOLID_WORDS_SENT));
+      for (const lemma of sent) expect(solid).toContain(lemma);
+      expect(received(0).input.solid_count).toBe(solid.length);
       expect(typeof received(0).input.learner).toBe('string');
     });
     And("that grist carries nothing but the app's own text and the reader's own data", () => {

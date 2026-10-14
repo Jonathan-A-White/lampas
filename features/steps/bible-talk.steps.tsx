@@ -22,6 +22,7 @@ import { expectKeepsItShort, expectLearnerField, expectLearnerSummary, expectTea
 import { exchangeMarkdown, stubClipboard } from '../../tests/support/exchange';
 import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
+import { SOLID_WORDS_SENT } from '../../src/services/solidWords';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verseData = (n: number) => {
@@ -252,7 +253,9 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       expect(solid.length).toBeGreaterThan(0);
       expect(learning.length).toBeGreaterThan(0);
       const sent = received(1).input.solid_words as string[];
-      expect([...sent].sort()).toEqual([...solid].sort());
+      expect(sent).toHaveLength(Math.min(solid.length, SOLID_WORDS_SENT));
+      for (const lemma of sent) expect(solid).toContain(lemma);
+      expect(received(1).input.solid_count).toBe(solid.length);
       for (const word of learning) expect(sent).not.toContain(word);
     });
     And('the second grist carries the first question and its answer as the earlier turn', () => {
@@ -883,7 +886,9 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     Then('the clipboard holds {string}', (_, text: string) => {
       expect(clipboard.copied).toEqual([text]);
     });
-    When('the tutor answers', () => {
+    When('the tutor answers', async () => {
+      // the question shows as pending before the request is built and sent: on a loaded host the grist is not at the mill yet
+      await waitFor(() => expect(fake.received).toHaveLength(1));
       fake.answer({ status: 'answered', answer: TALK_ANSWER });
     });
     Then('the answer shows in the sheet under his question', answerShowsUnderQuestion);

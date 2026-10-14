@@ -1,0 +1,19 @@
+{
+  "description": "A learner who knows 1,200 words is sent the count and only his newest few: the answer still explains the word he asked about, with no setting changed.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "question": "What does ἀγαπῶσιν mean here?",
+    "history": [],
+    "solid_count": 1200,
+    "solid_words": ["κλητός", "πρόθεσις", "συνεργέω"],
+    "settings": { "theme": "phone", "textSize": "normal" }
+  },
+  "expect": {
+    "answer": { "matches": "[Ll]ove" },
+    "words.0.lemma": { "equals": "ἀγαπάω" },
+    "settings_changes": { "present": false }
+  }
+}
