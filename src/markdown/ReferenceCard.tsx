@@ -1,14 +1,19 @@
 // src/markdown/ReferenceCard.tsx — a Bible reference in the tutor's answer (mw-5r3p30.133), the pop-up Logos gives a verse: a tap on the link opens a small card
 // under it with the reference as its heading, the passage's English (the Majority Standard Bible, the only English in the reader) and Open, which opens the reader
-// on the verse. A whole chapter shows its first verse. Lampas holds no Old Testament text, so that card says 'Not in Lampas yet' and has no Open. A tap outside the
+// on the verse. A whole chapter shows its first verse. Lampas holds no Old Testament text, so that card says 'Not in Lampas yet' and has no Open: with Logos linked in Settings it has 'Open in Logos' instead, at that
+// verse (a whole chapter at its first) in the Bible he chose there (src/resources/logosBible.ts), and with no Bible app linked a link to Settings where he links Logos. A tap outside the
 // card, Close, Escape or Back closes it and nothing moves (it is a sheet for Back, src/ui/sheetBack.ts). The card sits below the reference, or above it when
 // there is no room below, so it never covers what was tapped.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { loadChapter, type Chapter } from '../data/chapter';
-import { openVerseAt } from '../nav/route';
+import { getLogosBible, getStudyResources } from '../data/repositories';
+import { openHash, openVerseAt } from '../nav/route';
+import { verseLink } from '../resources/logosBible';
+import { armFallback } from '../resources/openApp';
 import { useSheetBack } from '../ui/sheetBack';
-import { cardOf, referenceHash, type HeldPlace, type ReferenceCard as Card } from './verseLinks';
+import { cardOf, elsewhereOf, referenceHash, type HeldPlace, type ReferenceCard as Card } from './verseLinks';
 
 /** The translation the reader's English is. */
 const TRANSLATION = 'Majority Standard Bible';
@@ -31,6 +36,38 @@ const passageOf = (chapter: Chapter, held: HeldPlace): PassageVerse[] =>
     .filter((v) => v.n >= held.first && v.n <= held.last)
     .map((v) => ({ n: v.n, text: v.e.map((c) => c.t.trim()).join(' ') }));
 
+/** Settings, scrolled to the Study resources, where Logos is linked. */
+const LINK_LOGOS_HASH = '#/settings?section=resources';
+
+/** What an Old Testament card says under its heading: that Lampas lacks it and where to read it instead. `onSettings` opens Settings. */
+function ElsewhereLine({ written, onSettings }: { written: string; onSettings: () => void }) {
+  const resources = useLiveQuery(getStudyResources, []);
+  const bible = useLiveQuery(getLogosBible, []);
+  const place = useMemo(() => elsewhereOf(written), [written]);
+  if (!resources || bible === undefined) return <p className="py-1 text-lg text-muted">Not in Lampas yet</p>;
+  const link = resources.on.includes('logos') && place ? verseLink(place.book, place.chapter, place.verse ?? 1, bible) : undefined;
+  if (!link) {
+    return (
+      <p className="py-1 text-lg text-muted">
+        Not in Lampas yet. <a href={LINK_LOGOS_HASH} onClick={(e) => { e.preventDefault(); onSettings(); }} className="text-accent underline">Link Logos in Settings</a> to open it there.
+      </p>
+    );
+  }
+  return (
+    <>
+      <p className="py-1 text-lg text-muted">Not in Lampas yet</p>
+      <a
+        href={link.url}
+        data-fallback={link.fallback}
+        onClick={() => armFallback(link.fallback)}
+        className="mb-1 inline-flex min-h-11 items-center rounded-lg bg-accent px-5 text-base font-medium text-accent-fg"
+      >
+        Open in Logos<span aria-hidden="true"> ↗</span>
+      </a>
+    </>
+  );
+}
+
 interface Spot {
   top: number;
   left: number;
@@ -51,7 +88,7 @@ function spotFor(anchor: DOMRect, natural: number): Spot {
   return { top: anchor.top - GAP - height, left, width, maxHeight: Math.max(above, 0) };
 }
 
-function ReferenceCardView({ card, anchor, onClose, onOpen }: { card: Card; anchor: RefObject<HTMLElement | null>; onClose: () => void; onOpen: () => void }) {
+function ReferenceCardView({ card, written, anchor, onClose, onOpen, onSettings }: { card: Card; written: string; anchor: RefObject<HTMLElement | null>; onClose: () => void; onOpen: () => void; onSettings: () => void }) {
   useSheetBack(onClose);
   const { held } = card;
   const [passage, setPassage] = useState<Passage>(null);
@@ -107,7 +144,7 @@ function ReferenceCardView({ card, anchor, onClose, onOpen }: { card: Card; anch
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-2">
           {!held ? (
-            <p className="py-1 text-lg text-muted">Not in Lampas yet</p>
+            <ElsewhereLine written={written} onSettings={onSettings} />
           ) : passage === null ? (
             <p role="status" className="py-1 text-base text-muted">Loading…</p>
           ) : passage === 'failed' ? (
@@ -161,6 +198,7 @@ export function ReferenceLink({ written, onLeave, children }: { written: string;
       {open ? (
         <ReferenceCardView
           card={card}
+          written={written}
           anchor={anchor}
           onClose={() => setOpen(false)}
           onOpen={() => {
@@ -168,6 +206,11 @@ export function ReferenceLink({ written, onLeave, children }: { written: string;
             onLeave?.();
             setOpen(false);
             openVerseAt({ book: held.book, chapter: held.chapter, verse: held.first });
+          }}
+          onSettings={() => {
+            onLeave?.();
+            setOpen(false);
+            openHash(LINK_LOGOS_HASH);
           }}
         />
       ) : null}

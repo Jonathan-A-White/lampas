@@ -5,6 +5,8 @@ import { render, screen, cleanup, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
+import { setLogosBible, setResourceOn } from '../../src/data/repositories';
+import { DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
 import { Markdown } from '../../src/markdown/Markdown';
 import { readerOf } from '../../src/nav/route';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -28,6 +30,11 @@ async function answerSays(text: string): Promise<void> {
   hashBefore = window.location.hash;
   const { container } = render(<Markdown text={text} />);
   answer = container;
+}
+
+async function linkLogos(): Promise<void> {
+  await setResourceOn('logos', true);
+  await setLogosBible(DEFAULT_LOGOS_BIBLE);
 }
 
 const feature = await loadFeature('features/reference-card.feature');
@@ -125,17 +132,80 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('A book Lampas has no text for says so and cannot be opened', ({ Given, When, Then, And }) => {
+  Scenario('A book Lampas has no text for says so and cannot be opened in the reader', ({ Given, When, Then, And }) => {
     Given('a tutor answer says {string}', async (_, text: string) => answerSays(text));
+    And('no Bible app is linked', () => setResourceOn('logos', false));
     When('he taps the link {string}', async (_, name: string) => {
       await user.click(screen.getByRole('link', { name }));
     });
     Then('a card headed {string} says {string}', async (_, heading: string, text: string) => {
       const dialog = await screen.findByRole('dialog', { name: heading });
-      expect(within(dialog).getByText(text)).toBeInTheDocument();
+      await within(dialog).findByText((_, el) => el?.tagName === 'P' && el.textContent === text);
     });
     And('the card has no Open button', () => {
       expect(within(card() as HTMLElement).queryByRole('button', { name: 'Open' })).toBeNull();
+    });
+  });
+
+  Scenario('With Logos linked an Old Testament verse opens in his Bible in Logos', ({ Given, When, Then, And }) => {
+    Given('a tutor answer says {string}', async (_, text: string) => answerSays(text));
+    And('Logos is linked and his Bible is the LSB', linkLogos);
+    When('he taps the link {string}', async (_, name: string) => {
+      await user.click(screen.getByRole('link', { name }));
+    });
+    Then('a card headed {string} says {string}', async (_, heading: string, text: string) => {
+      const dialog = await screen.findByRole('dialog', { name: heading });
+      await within(dialog).findByText((_, el) => el?.tagName === 'P' && el.textContent === text);
+    });
+    And('the card has an Open in Logos link to {string}', async (_, url: string) => {
+      const link = await within(card() as HTMLElement).findByRole('link', { name: 'Open in Logos' });
+      expect(link.getAttribute('href')).toBe(url);
+    });
+    And('the card has no Open button', () => {
+      expect(within(card() as HTMLElement).queryByRole('button', { name: 'Open' })).toBeNull();
+    });
+  });
+
+  Scenario('A whole Old Testament chapter opens in Logos at its first verse', ({ Given, When, Then, And }) => {
+    Given('a tutor answer says {string}', async (_, text: string) => answerSays(text));
+    And('Logos is linked and his Bible is the LSB', linkLogos);
+    When('he taps the link {string}', async (_, name: string) => {
+      await user.click(screen.getByRole('link', { name }));
+    });
+    Then('the card has an Open in Logos link to {string}', async (_, url: string) => {
+      const link = await within(await screen.findByRole('dialog')).findByRole('link', { name: 'Open in Logos' });
+      expect(link.getAttribute('href')).toBe(url);
+    });
+  });
+
+  Scenario('With no Bible app linked the card links to Settings', ({ Given, When, Then, And }) => {
+    Given('a tutor answer says {string}', async (_, text: string) => answerSays(text));
+    And('no Bible app is linked', () => setResourceOn('logos', false));
+    When('he taps the link {string}', async (_, name: string) => {
+      await user.click(screen.getByRole('link', { name }));
+    });
+    And('he taps {string} on the card', async (_, name: string) => {
+      await user.click(await within(await screen.findByRole('dialog')).findByRole('link', { name }));
+    });
+    Then('the address is the Settings study resources', () => {
+      expect(window.location.hash).toBe('#/settings?section=resources');
+    });
+    And('no card is showing', async () => {
+      await waitFor(() => expect(card()).toBeNull());
+    });
+  });
+
+  Scenario('A New Testament passage still has no Open in Logos', ({ Given, When, Then, And }) => {
+    Given('a tutor answer says {string}', async (_, text: string) => answerSays(text));
+    And('Logos is linked and his Bible is the LSB', linkLogos);
+    When('he taps the link {string}', async (_, name: string) => {
+      await user.click(screen.getByRole('link', { name }));
+    });
+    Then('the card has an Open button', async () => {
+      await within(await screen.findByRole('dialog')).findByRole('button', { name: 'Open' });
+    });
+    And('the card has no Open in Logos link', () => {
+      expect(within(card() as HTMLElement).queryByRole('link', { name: 'Open in Logos' })).toBeNull();
     });
   });
 });

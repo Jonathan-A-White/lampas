@@ -53,6 +53,16 @@ export function cardOf(written: string): ReferenceCard | null {
   return m && cardFrom(m);
 }
 
+/** Where an Old Testament reference as written ('Ecclesiastes 12:13', 'Isaiah 53:5-7') points, for a link to a Bible app: the book's code, the chapter and the first verse
+ *  (none for a whole chapter). Null for a place Lampas holds, which opens in the Reader, and for a text that names no place. */
+export function elsewhereOf(written: string): { book: string; chapter: number; verse?: number } | null {
+  const m = WHOLE.exec(written.trim());
+  if (!m) return null;
+  const place = placeOf(m[3] === undefined ? `${m[1]} ${m[2]}` : `${m[1]} ${m[2]}:${m[3]}`);
+  if (!place || place.reader) return null;
+  return { book: place.book, chapter: place.chapter, ...(place.verse === undefined ? {} : { verse: place.verse }) };
+}
+
 /** The references `text` names, in order, in any book of the Bible. A book Lampas does not know, a chapter or verse the book lacks, or no book is not one. */
 export function referencesIn(text: string): FoundReference[] {
   const found: FoundReference[] = [];
