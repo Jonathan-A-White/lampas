@@ -15,6 +15,7 @@ import {
 import { PAIR_WORD_OF, baseLetters, wordsWith } from '../../src/data/grammar/drillItems';
 import { LADDER, itemsOf } from '../../src/data/grammar/ladder';
 import type { Level } from '../../src/data/grammar/needs';
+import { pronunciationOf } from '../../src/speech/pronunciation';
 
 const rom8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const jn1 = JSON.parse(readFileSync('public/data/1jn/1.json', 'utf8')) as Chapter;
@@ -305,7 +306,7 @@ describe('the foundation', () => {
   });
 
   it('counts a prerequisite with no level as not solid, but not the group an item belongs to', () => {
-    expect(start('noun', new Map(), {})).toEqual({ needs: 'accents' });
+    expect(start('noun', new Map(), {})).toEqual({ needs: 'breathings' });
     expect(start('letter-nu', new Map(), {})).not.toHaveProperty('needs');
     expect(start('diphthong-ou', new Map(), {})).not.toHaveProperty('needs');
     expect(start('alphabet', new Map(), {})).not.toHaveProperty('needs');
@@ -332,5 +333,63 @@ describe('the words a step reads', () => {
     const hard = drillSteps('breathings', { seed: 1 })[1].questions;
     expect(hard.find((q) => q.form === 'ῥῆμα')?.right).toBe('Rough');
     expect(hard.find((q) => q.form === 'αὐτός')?.right).toBe('Smooth');
+  });
+});
+
+// His Chi drill (mw-i7xe0n.7, 2026-10-14): 'How is this word said?' offered χάρις against other words (VEE-vlos, KOZ-mos, ee-OS), so the first letter alone
+// answered it and the hard kh against the soft hy was never drilled. A sound the scheme changes by the next letter is drilled on both sides of its rule, the
+// word misread by the rule is a wrong choice, a wrong pick names the rule, and the idea is proved only when both sides were answered right.
+describe('a sound that changes by the next letter', () => {
+  const modern = pronunciationOf('modern');
+  const reads = (ideaId: string, seed = 1): DrillQuestion[] =>
+    drillSteps(ideaId, { seed, scheme: modern }).flatMap((s) => s.questions).filter((q) => q.prompt === 'How is this word said?');
+  const wrong = (q: DrillQuestion): string[] => q.options.filter((o) => o !== q.right);
+
+  it('reads χάρις against HYA-rees and χεῖρες against KHEE-res in the Chi drill', () => {
+    const qs = reads('letter-chi');
+    const hard = qs.find((q) => q.form === 'χάρις');
+    const soft = qs.find((q) => q.form === 'χεῖρες');
+    expect(hard, 'χάρις is read').toBeDefined();
+    expect(hard!.right).toBe('KHA-rees');
+    expect(wrong(hard!)).toContain('HYA-rees');
+    expect(soft, 'χεῖρες is read').toBeDefined();
+    expect(soft!.right).toBe('HYEE-res');
+    expect(wrong(soft!)).toContain('KHEE-res');
+  });
+
+  it('names the rule for a wrong pick: χ before ε, ι, η is soft, hy', () => {
+    const soft = reads('letter-chi').find((q) => q.form === 'χεῖρες')!;
+    expect(soft.rule).toMatch(/^χ before ε, ι, η, .* is soft: hy/);
+    expect(reads('letter-chi').find((q) => q.form === 'χάρις')!.rule).toMatch(/^χ before α, ο, .* is hard: kh/);
+  });
+
+  it('is not proved until a word on each side was answered right', () => {
+    // right on everything but the soft side: never proved
+    const { walk } = run(begin('letter-chi', 3, []), (q) => ({ right: !(q.facet.id === 'letter-chi:soft') }));
+    expect(resultOf(walk)!.proved).toBe(false);
+    // right on everything: proved, with both sides among the answers right
+    const all = run(begin('letter-chi', 3, []), () => ({ right: true }));
+    const result = resultOf(all.walk)!;
+    expect(result.proved).toBe(true);
+    const sides = new Set(result.answers.filter((a) => a.right && !a.hinted).map((a) => a.facet.id));
+    expect(sides).toContain('letter-chi:hard');
+    expect(sides).toContain('letter-chi:soft');
+  });
+
+  it.each((modern.soundRules ?? []).map((r) => [r.ideaId, r] as const))('%s: both sides drilled, the word misread by the rule offered', (ideaId, rule) => {
+    const qs = drillSteps(ideaId, { seed: 1, scheme: modern }).flatMap((s) => s.questions);
+    for (const side of rule.sides) {
+      const own = qs.filter((q) => q.facet.id === `${ideaId}:${side.id}`);
+      if (side.words.length === 0) {
+        expect(own, `${ideaId} ${side.id} has no word`).toEqual([]);
+        continue;
+      }
+      expect(own.length, `${ideaId} ${side.id} is drilled`).toBeGreaterThan(0);
+      for (const q of own) {
+        expect(rule.sideOf(q.form!), q.form).toBe(side.id);
+        expect(wrong(q), q.form).toContain(rule.misread(q.form!));
+        expect(q.rule, q.form).toBe(side.line);
+      }
+    }
   });
 });

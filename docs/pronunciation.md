@@ -58,6 +58,15 @@ for the chosen scheme; the ladder itself holds only the spelling, so no scheme's
 lesson for says a neutral text with no sound and is asked by ear or by name, never in another scheme's sounds. Modern Greek's are in
 `schemes/modernLessons.ts` (the breathings are silent: ὁ is 'o'), and `tests/unit/sound-lessons.test.ts` holds each to `respellModern`. The rules a reader applies (σ as z, αυ/ευ as v or f by the next sound) and the pairs a scheme says alike (`words-sound-alike`: ἡμεῖς/ὑμεῖς, λύομεν/λύωμεν, λύει/λύῃ) are lessons too, with an example each held to the respeller by `tests/unit/sound-rules.test.ts`; a scheme teaches them only if its own rules hold them.
 
+## Sounds that change by the next letter (mw-i7xe0n.7)
+
+A scheme may name its **sound rules** (`Pronunciation.soundRules`): a sound that changes by the letter after it, one rule per ladder idea, each with two **sides** (`id`,
+a short `label`, the `line` a wrong pick in Drill it shows, and New Testament `words` of that side), `sideOf(word)` (the side a word stands on, or null) and `misread(word)`
+(the word respelled with the rule turned the other way: the near miss Drill it offers). Modern Greek's are in `modern.ts` (`modernSoundRules`): the respeller writes
+down each place a rule decided (χ hard or soft, γ, σ before a consonant, αυ ευ ηυ voiced or not, μπ ντ γκ at the start or inside, γχ) and can read one rule the other way,
+so a rule's sides and its misreading never disagree with the respelling. tests/unit/sound-rule-sides.test.ts holds every side word to the text and to its side; a scheme with none leaves it out
+and Drill it reads words as before.
+
 ## Sound progress is kept per pronunciation
 
 He learns the letters, sounds and marks IN a pronunciation, so what he proved in Modern Greek he has not proved in Erasmian (mw-5r3p30.231). The ideas of the

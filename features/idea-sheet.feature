@@ -1,7 +1,10 @@
 Feature: The idea sheet
-  A bottom sheet teaches one grammar idea of the ladder (src/data/grammar/ladder.ts): its title, its plain text, up to three
-  example forms from the goal passage (one for each lemma, each with its verse; a speaker on each; a tap opens the word's
-  sheet), a paradigm table for a case or a tense built from the passage's forms, a level slider (Not yet, Learning, I know it;
+  A bottom sheet teaches one grammar idea of the ladder (src/data/grammar/ladder.ts) to a total beginner (mw-5r3p30.234,
+  src/data/grammar/teach/): its title, What it is (plain English with an English example), How to spot it (the Greek form, and a
+  table where the idea is a set of endings or forms), a Worked example (one New Testament word taken apart step by step, from the
+  verse he reads when it has one, with its respelling in his pronunciation), then up to three example forms from the goal passage
+  that the lesson can explain (one for each lemma, each with its verse, its meaning here and its parsing in the lesson's own
+  terms; a speaker on each; a tap opens the word's sheet), a level slider (Not yet, Learning, I know it;
   Learning puts the idea on the frontier and due tomorrow, I know it starts Drill it: features/drill-it.feature), a small
   text button "Mark known without a drill" (solid, at the 30-day step), a Drill it button and Ask the tutor. It opens from the Learn this idea
   button of a Grammar sheet. With no goal the examples come from the chapter that is open. A foundation idea (a letter, the
@@ -12,23 +15,23 @@ Feature: The idea sheet
   Scenario: The genitive idea's sheet shows its text and three examples from 1 John 1 with their verses
     Given Lampas is opened on Romans 8 with the goal "1 John 1", no idea level and a fake Postern
     When he opens the idea sheet from the Grammar sheet of "genitive" on the word "of the" in verse 2
-    Then the idea sheet is titled "The genitive case" and shows the plain text of that idea
-    And the idea sheet shows 3 examples "ἀρχῆς", "ἡμῶν" and "τοῦ" with the verses "1 John 1:1", "1 John 1:1" and "1 John 1:1"
+    Then the idea sheet is titled "The genitive case" and says what that idea is
+    And the idea sheet shows 3 examples "ἀρχῆς", "λόγου" and "ζωῆς" with the verses "1 John 1:1", "1 John 1:1" and "1 John 1:1"
     And each example has a speaker
-    And the paradigm table of the genitive has "τοῦ" and "τῆς" in its cells
+    And the table of the genitive has the endings "-ου" and "-ων" in its cells
     And the idea sheet shows no level
 
   Scenario: With no goal the examples come from the open chapter
     Given Lampas is opened on Romans 8 with no goal, no idea level and a fake Postern
     When he opens the idea sheet from the Grammar sheet of "genitive" on the word "of the" in verse 2
     Then the idea sheet shows 3 examples that are genitives of "Romans 8"
-    And the paradigm table of the genitive has "τοῦ" and "τῆς" in its cells
+    And the table of the genitive has the endings "-ου" and "-ων" in its cells
 
   Scenario: An example shows its meaning as it stands in its verse, not the dictionary gloss
-    Given Lampas is opened on Romans 8 with the goal "1 John 2", no idea level and a fake Postern
-    When he opens the idea sheet from the Grammar sheet of "plural" on the word "for those who are" in verse 1
-    Then the idea sheet is titled "The plural"
-    And the example "ταῦτα" reads "these things" and not "this/he/she/it" alone
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
+    When he opens the idea sheet of "person-1st" from the Goal screen
+    Then the idea sheet is titled "The first person"
+    And the example "ἑωράκαμεν" reads "we have seen" and not "to see" alone
 
   Scenario: An example opens its own word sheet
     Given Lampas is opened on Romans 8 with the goal "1 John 1", no idea level and a fake Postern
@@ -70,7 +73,7 @@ Feature: The idea sheet
   Scenario: The sheet for The Greek alphabet shows examples from the verse
     Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
     When he opens the Goal screen and taps Learn next
-    Then the idea sheet is titled "The Greek alphabet" and shows the plain text of that idea
+    Then the idea sheet is titled "The Greek alphabet" and says what that idea is
     And the idea sheet shows examples from "1 John 1:1"
     And the idea sheet has no line "has this idea in its parsing"
 
@@ -113,7 +116,7 @@ Feature: The idea sheet
     When he opens the idea sheet of "alphabet" from the Goal screen
     Then the idea sheet shows 24 tiles in alphabet order, the first reading "Α α", "alpha" and "a, as in “father”"
     And the seven vowels are marked on the tiles
-    And the tiles come above the plain text of the idea
+    And the tiles come above what the idea is
     When he taps the tile "alpha"
     Then the Greek voice is asked to say "α"
 
@@ -135,3 +138,12 @@ Feature: The idea sheet
     Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level, a fake Postern and the pronunciation "testish" chosen
     When he opens the idea sheet of "alphabet" from the Goal screen
     Then the first tile has no sound line and does not say "father"
+
+  # Every card teaches a total beginner (mw-5r3p30.234): what it is, how to spot it (a table of the endings), and a word of his verse taken apart.
+  Scenario: The noun sheet says what a noun is, shows its endings in a table, and takes a word of 1 John 1:1 apart
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
+    When he opens the idea sheet of "noun" from the Goal screen
+    Then the idea sheet has the parts "What it is", "How to spot it" and "Worked example", in that order
+    And what a noun is is said in plain English with an English example
+    And How to spot it has a table of the case endings, with "-ος", "-ου" and "-ῳ" in its cells
+    And the worked example takes "λόγου" of "1 John 1:1" apart in steps, with the respelling the pronunciation gives it

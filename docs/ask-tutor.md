@@ -354,6 +354,26 @@ until he asks for Greek himself: the answer then sets `greek_asked: true` and `a
 same English default (`## English for a reader not learning the Greek`) and no offer. Examples: `grinds/examples/bible-talk/greek-offer-*.json`,
 `verse-ask/english-reader-said-no.json`; `features/greek-offer.feature`, `tests/unit/greek-offer.test.ts`.
 
+### The welcome (mw-yrmkdf.3)
+
+A new reader is met by the tutor. `src/Welcome.tsx` (mounted in `App.tsx`, drawn only inside a `LicenceProvider`, so a screen drawn alone in a test is never welcomed) calls
+`startWelcomeIfFirst` (`src/data/repositories/welcome.ts`) when `useLicence()` first says `licensed`. The phone's own flag is localStorage `lampas.welcome`
+(`pending` | `done` | `skipped`; null until the phone is looked at). A phone that holds a profile, any setting or any talk is a reader from before: its flag becomes `done` and
+nothing else changes (`welcomeStartFor`, `isExistingReader`). A phone with none is put on the English defaults (the English view, Weave Off, New words a day Off, so the
+Reader has no Greek and no New words chip) and the flag becomes `pending`: the welcome Talk opens at once, and again on each later open until the tutor ends it or he taps Skip.
+Closing the sheet only puts it off.
+
+The talk is a talk from a screen named Welcome (`TalkScope.welcome`, kept under `screen.welcome`, WELCOME_REF). `buildTalkRequest` sends `mode: 'welcome'` with the
+screen and no `greek`, `english` or `greek_words` (and no `rusty`); the app says the hello for him (WELCOME_OPENING) so the tutor's first question is the first thing he
+reads. The grind's `## The welcome` asks at most three questions, one at a time, in plain English with no Greek (why he is here: read, study or learn the Greek; what he
+wants; one thing about himself), writes each answer to the index with `memory_update` (and to the profile with `profile_update` where a field fits) and ends with a line of
+thanks that carries `welcome_done: true`, which `useTalk` turns into `finishWelcome` (`done`); the sheet stays up to be read. A reader who says he is here to learn the Greek
+is offered the Greek view once: a `greek_offer` of kind `view` (`greekOfferOf` allows it in the welcome and marks it `weave`), and its tap, or a spoken yes, calls
+`setReaderView('greek')` and `setWeave('solid+learning')`. Skip (a button in the sheet's header while the welcome is `pending`) appends `skipped the welcome` to the index and
+sets `skipped`. Settings > Developer (Developer mode On) has Show the welcome again: it forgets the talk, puts the English defaults back and sets `pending` (for the demo).
+Examples: `grinds/examples/bible-talk/welcome-*.json`; `features/welcome.feature`, `tests/unit/welcome.test.ts`; an e2e spec past the gate marks the welcome done
+(`openUnlocked`, `welcome: true` leaves it due).
+
 ## About you (mw-1vuvq6.1)
 
 The tutor meets the student where he is, so it is told who he is as well as what he knows. Settings > About you (`#/aboutyou`) keeps a small

@@ -52,6 +52,9 @@ const idOfTitle = (title: string): string => {
   return found.id;
 };
 
+/** What The noun builds on beside Accents and stress (mw-5r3p30.234). */
+const OTHER_FOUNDATIONS = ['Breathing marks', 'The iota under a letter'];
+
 /** Opens the app on Romans 8 with every store emptied, `goal` saved, and the levels `levels` (title -> where it stands) put in place. */
 async function open(goal: string, levels: Record<string, Start>): Promise<void> {
   cleanup();
@@ -81,6 +84,8 @@ async function open(goal: string, levels: Record<string, Start>): Promise<void> 
   ]);
   await db.settings.put({ key: 'goal', value: goal });
   const now = Date.now();
+  // the noun's other foundations, solid in every scenario: the one a scenario names, Accents and stress, decides (features/drill-it.feature)
+  for (const title of OTHER_FOUNDATIONS) await db.grammarLevels.put({ id: idOfTitle(title), level: 'solid', since: now, how: 'placement' });
   for (const [title, start] of Object.entries(levels)) {
     if (start !== 'none') await db.grammarLevels.put({ id: idOfTitle(title), level: start, since: now, how: 'placement' });
   }

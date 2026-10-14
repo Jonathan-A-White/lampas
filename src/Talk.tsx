@@ -506,7 +506,7 @@ function Suggestions({ questions, onAsk, label }: { questions: string[]; onAsk: 
 }
 
 /** The sheet: the conversation `scope` names, the field, Send, and what the last message is doing. */
-export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, suggestions, shared, onSay, onHelp, onAskTerm, onClose }: {
+export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, suggestions, shared, onSay, onHelp, onAskTerm, onSkip, onClose }: {
   scope: TalkScope;
   /** the key the conversation is kept under (src/data/repositories/talks.ts talkRef) */
   talkRef: string;
@@ -523,9 +523,11 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
   onHelp: (help: WordHelp) => void;
   /** a word of an answer was opened, a grammar word of its Parsing too, and he asked the tutor about it */
   onAskTerm: (ask: TermAsk) => void;
+  /** the welcome only (mw-yrmkdf.3): Skip in the header ends the interview; missing once it is over */
+  onSkip?: () => void;
   onClose: () => void;
 }) {
-  const title = scope.free ? 'Talk with the tutor' : scope.screen ? `Ask the tutor: ${scope.screen.name}` : scope.quiz ? `Quiz on ${scopeTitle(scope)}` : `Talk about ${scopeTitle(scope)}`;
+  const title = scope.welcome ? 'Welcome' : scope.free ? 'Talk with the tutor' : scope.screen ? `Ask the tutor: ${scope.screen.name}` : scope.quiz ? `Quiz on ${scopeTitle(scope)}` : `Talk about ${scopeTitle(scope)}`;
   const titleId = useId();
   const turns = useLiveQuery(() => listTurns(ref), [ref]);
   const [text, setText] = useState(shared?.text ?? '');
@@ -698,7 +700,12 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
               <h2 id={titleId} className="min-w-0 flex-1 truncate text-xl font-semibold">
                 {title}
               </h2>
-              {turnCount > 0 && !busy ? (
+              {onSkip ? (
+                <button type="button" onClick={onSkip} className="min-h-11 shrink-0 rounded-lg px-3 text-base font-medium text-accent">
+                  Skip
+                </button>
+              ) : null}
+              {turnCount > 0 && !busy && !scope.welcome ? (
                 <button
                   type="button"
                   onClick={() => {
@@ -724,7 +731,7 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
           <div ref={list} data-talk-list className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain border-t border-line px-4 py-3 short:space-y-2 short:py-2">
             {turns?.length === 0 && !state ? (
               <p data-talk-empty className="text-base text-muted">
-                {scope.quiz ? 'Nothing said yet. Say “Quiz me” to begin.' : scope.screen && !scope.free ? 'Nothing said yet. Ask about this screen or about where you are.' : 'Nothing said yet. Ask about a word, a verse or what is on your mind.'}
+                {scope.welcome ? 'The tutor is about to say hello.' : scope.quiz ? 'Nothing said yet. Say “Quiz me” to begin.' : scope.screen && !scope.free ? 'Nothing said yet. Ask about this screen or about where you are.' : 'Nothing said yet. Ask about a word, a verse or what is on your mind.'}
               </p>
             ) : null}
             {turns?.length === 0 && !state && suggestions?.length ? <Suggestions questions={suggestions} onAsk={send} /> : null}

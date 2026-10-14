@@ -39,8 +39,8 @@ describe('the quiz request', () => {
     expect(scopeTitle({ title: 'Romans 8', verse: chapter.verses[10] })).toBe('Romans 8:11');
   });
 
-  it('is described by the input schema, which takes mode quiz and nothing else', () => {
-    expect(inputSchema.properties.mode.enum).toEqual(['quiz']);
+  it('is described by the input schema, which takes mode quiz (and welcome, mw-yrmkdf.3) and nothing else', () => {
+    expect(inputSchema.properties.mode.enum).toEqual(['quiz', 'welcome']);
     expect(inputSchema.properties.greek.description).toMatch(/passage/);
     const r = buildTalkRequest({ title: 'Romans 8', chapter, verse: passage, quiz: true }, 'Quiz me on Romans 8:1-11.', [], [], {});
     expect(validate(r, inputSchema)).toEqual([]);

@@ -1,0 +1,152 @@
+# The card audit
+
+mw-5r3p30.234, 2026-10-14. His ask (Postern general, 2026-10-12 ~11:49Z): “look at each card and say okay if the person truly doesn't know Greek and this is totally new to them will this teach them … or is it only useful if you already know it”; and (~11:46Z) “make sure in each card that the examples do match the lesson”.
+
+Every idea of the ladder (`src/data/grammar/ladder.ts`), in ladder order, judged as the card stood before this story: its text, its tiles (letters, sounds and marks), its examples and its table. **teaches a beginner** means a person who knows no Greek, but has proved every card below, could learn the idea from that card alone; **only reminds someone who knows** means they could not. The last column says what a total beginner lacked on it. `tests/unit/card-audit.test.ts` holds this table to `LADDER`.
+
+Of the 135 cards, 93 taught a beginner something and 42 only reminded someone who knows; every one of them is rewritten.
+
+What every card lacked, whatever its verdict, and what this story gave each one (data in `src/data/grammar/teach/`, one file per tier; the sheet is `src/IdeaSheet.tsx`):
+
+- **What it is**, in plain English with an English example; **How to spot it**, in Greek; and a **table** where the idea is a set of endings or forms (the article, each case, each tense, each kind of pronoun, the pairs, the prepositions).
+- **A worked example**: one word taken apart step by step, from the verse he reads when the card has one there (1 John 1:1 and John 1:1 first), else a common word; with its respelling in his pronunciation. Before the marks are taught it is written in capitals with no marks, as the oldest copies wrote it, so it uses only what the cards below taught (`tests/unit/teach-cards.test.ts`).
+- **No term before it is taught**: every grammar term and title key word a card uses is taught by that card or one below it (the same test). The ladder's `needs` grew where a card truly rests on another: the noun on the breathings and the iota under a letter, the iota under a letter on the breathings and accents, punctuation on the breathings, the nominative on the plural, the neuter on the feminine, the passive on the future and the aorist.
+- **Examples that match the lesson**: the old examples were any word whose parsing named the idea, glossed with the dictionary's list (τοῖς “the/this/who” on The article), and the case cards showed a table of the article. Now an example is only one the card can explain: its parsing carries the idea, it is a part of speech taught at or below the card, and its form is in the card's table; it shows its one sense here, its ending marked, and its parsing in the card's own terms (τοῖς: “the”, dative plural masculine, goes with ὀφθαλμοῖς “eyes”) (`tests/unit/examples-match-lesson.test.ts`).
+
+| id | title | verdict | what a beginner lacked |
+| --- | --- | --- | --- |
+| `alphabet` | The Greek alphabet | teaches a beginner | Its 24 tiles taught each letter, name and sound; it lacked a word read letter by letter and a warning about the look-alikes (η, ν, ρ, χ, ω read as n, v, p, x, w). |
+| `letter-alpha` | Alpha | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-beta` | Beta | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-gamma` | Gamma | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-delta` | Delta | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-epsilon` | Epsilon | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-zeta` | Zeta | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-eta` | Eta | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-theta` | Theta | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-iota` | Iota | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-kappa` | Kappa | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-lambda` | Lambda | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-mu` | Mu | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-nu` | Nu | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-xi` | Xi | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-omicron` | Omicron | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-pi` | Pi | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-rho` | Rho | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-sigma` | Sigma | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-tau` | Tau | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-upsilon` | Upsilon | only reminds someone who knows | Said “after a, e or η it makes a diphthong”: Latin letters, ο (ου) and υι left out, and “diphthong” before the card that teaches it. |
+| `letter-phi` | Phi | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-chi` | Chi | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-psi` | Psi | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `letter-omega` | Omega | teaches a beginner | Its tile showed the letter, its name and sound; it lacked what the letter must not be taken for and a word to read it in. |
+| `diphthongs` | Pairs of vowels | teaches a beginner | The sound lesson and tiles taught each pair; it lacked the rule for spotting one (second vowel ι or υ), a table of the eight, and a word taken apart. |
+| `diphthong-ai` | The vowel pair αι | teaches a beginner | Gave the pair and its sound with a word on its tile; it lacked that the two letters are read as one, and a word taken apart. |
+| `diphthong-ei` | The vowel pair ει | teaches a beginner | Gave the pair and its sound with a word on its tile; it lacked that the two letters are read as one, and a word taken apart. |
+| `diphthong-oi` | The vowel pair οι | teaches a beginner | Gave the pair and its sound with a word on its tile; it lacked that the two letters are read as one, and a word taken apart. |
+| `diphthong-ui` | The vowel pair υι | teaches a beginner | Gave the pair and its sound with a word on its tile; it lacked that the two letters are read as one, and a word taken apart. |
+| `diphthong-ou` | The vowel pair ου | teaches a beginner | Gave the pair and its sound with a word on its tile; it lacked that the two letters are read as one, and a word taken apart. |
+| `diphthong-au` | The vowel pair αυ | teaches a beginner | Gave the pair and its sound with a word on its tile; it lacked that the two letters are read as one, and a word taken apart. |
+| `diphthong-eu` | The vowel pair ευ | teaches a beginner | Gave the pair and its sound with a word on its tile; it lacked that the two letters are read as one, and a word taken apart. |
+| `diphthong-eeu` | The vowel pair ηυ | teaches a beginner | Gave the pair and its sound with a word on its tile; it lacked that the two letters are read as one, and a word taken apart. |
+| `consonant-pairs` | Pairs of consonants | teaches a beginner | The sound lesson and tiles taught each pair; it lacked how to spot one (μ before π, ν before τ, γ before γ κ χ ξ), a table, and a word taken apart. |
+| `pair-mp` | The consonant pair μπ | teaches a beginner | Gave the pair and its sound with a word on its tile; it lacked that the two letters are read as one, and a word taken apart. |
+| `pair-nt` | The consonant pair ντ | teaches a beginner | Gave the pair and its sound with a word on its tile; it lacked that the two letters are read as one, and a word taken apart. |
+| `pair-gk` | The consonant pair γκ | teaches a beginner | Gave the pair and its sound with a word on its tile; it lacked that the two letters are read as one, and a word taken apart. |
+| `pair-gg` | The consonant pair γγ | teaches a beginner | Gave the pair and its sound with a word on its tile; it lacked that the two letters are read as one, and a word taken apart. |
+| `pair-gch` | The consonant pair γχ | teaches a beginner | Gave the pair and its sound with a word on its tile; it lacked that the two letters are read as one, and a word taken apart. |
+| `pair-gks` | The consonant pair γξ | teaches a beginner | Gave the pair and its sound with a word on its tile; it lacked that the two letters are read as one, and a word taken apart. |
+| `syllables` | Syllables | only reminds someone who knows | “As long as a Greek word could begin with them” is a rule only someone who knows Greek can apply; no word was cut into syllables. |
+| `breathings` | Breathing marks | teaches a beginner | The lesson and tiles taught the two marks and where they sit; it lacked which way each one curls, so a beginner could not tell them apart, and a word worked through. |
+| `breathing-rough` | The rough breathing | teaches a beginner | Said where it sits; lacked its shape against the smooth one and a word worked through. |
+| `breathing-smooth` | The smooth breathing | teaches a beginner | Said where it sits; lacked its shape against the rough one and a word worked through. |
+| `accents` | Accents and stress | only reminds someone who knows | Named the three marks but not how to tell them apart by shape; used “lean on the word before” and “not a pair” before the cards that teach them; no word worked. |
+| `iota-subscript` | The iota under a letter | teaches a beginner | Said where the tiny ι sits; lacked a word worked through and the point that it makes another form of the word. |
+| `words-sound-alike` | Words that sound alike | teaches a beginner | The sound lesson gave three pairs; it taught with archaic λύω “loose” forms and had no table and no word of the verse. |
+| `punctuation` | Punctuation and small marks | teaches a beginner | Named each sign; lacked a table of the signs and a worked word (ἀπ᾿ in 1 John 1:1). |
+| `movable-letters` | Movable letters | teaches a beginner | Gave οὐ/οὐκ/οὐχ and ἐκ/ἐξ in a paragraph; lacked them side by side in a table and an English parallel (a/an). |
+| `marks-change-word` | Marks that change the word | teaches a beginner | Gave the pairs in one long sentence; lacked a table and the Ὃ of his own verse taken apart; its sound remark belongs to the pronunciation. |
+| `enclitics` | Enclitics | only reminds someone who knows | Used “present forms of εἰμί” and “hands an accent back” before the verb and its tenses are taught; no table, no worked word. |
+| `noun` | The noun | only reminds someone who knows | Said a noun changes its ending for its job, but showed no ending: a beginner could not spot one, and “case” was used without saying what it is; no stem, no dictionary form, no table. |
+| `number-singular` | The singular | only reminds someone who knows | “A singular noun takes singular endings” names no ending; it used “verb” before the verb card. |
+| `number-plural` | The plural | only reminds someone who knows | Gave no plural ending of a noun and taught with archaic λύουσιν “they loose”; no table. |
+| `conjunction` | The conjunction | teaches a beginner | Gave καί, γάρ, δέ and where they stand; lacked a table of the common ones and a word of the verse. |
+| `negative` | The negative | teaches a beginner | Gave οὐ and μή and when each is used; lacked οὐκ/οὐχ, the compounds (οὐδείς), a table and a word worked. |
+| `case-nominative` | The nominative case | only reminds someone who knows | Said it is the dictionary form but gave no ending to spot it; its examples could be pronouns and articles the card cannot explain. |
+| `case-accusative` | The accusative case | only reminds someone who knows | Gave no ending; spoke of prepositions before the preposition card; examples unexplained. |
+| `case-genitive` | The genitive case | only reminds someone who knows | Gave no ending to spot it; its table was the article, which comes later; its examples (ἡμῶν, τοῦ) were a pronoun and an article it cannot explain. |
+| `case-dative` | The dative case | only reminds someone who knows | Gave no ending and no iota under the letter; its table was the article; examples unexplained. |
+| `case-vocative` | The vocative case | teaches a beginner | Gave κύριε from κύριος; lacked the endings in a table and a word of the text (Τεκνία). |
+| `gender-masculine` | The masculine gender | only reminds someone who knows | Used “the article ὁ” before the article card and gave no way to tell a masculine noun by its dictionary form. |
+| `gender-feminine` | The feminine gender | only reminds someone who knows | Leaned on the article ἡ, which comes later; gave no ending pattern (-η, -α). |
+| `gender-neuter` | The neuter gender | only reminds someone who knows | Leaned on the article τό; named “nominative and accusative” without the endings (-ον, -μα, plural -α). |
+| `article` | The article | only reminds someone who knows | Taught ὁ, ἡ, τό but showed no table of its 24 forms; the example was τοῖς glossed “the/this/who”, a form the card never named, with a three-sense gloss. |
+| `adjective` | The adjective | only reminds someone who knows | Said it matches its noun but showed no endings; no table; no word taken apart. |
+| `comparative` | The comparative | teaches a beginner | Gave -τερος and -ων with μείζων; lacked a table and a verse (1 John 3:20). |
+| `superlative` | The superlative | teaches a beginner | Gave -τατος and -ιστος; lacked a table and a verse. |
+| `numeral` | Number words | teaches a beginner | Gave which numbers change; lacked their forms in a table. |
+| `proper-name` | Proper names | teaches a beginner | Gave Παῦλος, Παύλου; lacked the capital as the sign and a name of the text worked. |
+| `indeclinable` | Words that never change | teaches a beginner | Gave Ἀβραάμ and the article as the clue; lacked a word worked. |
+| `person-1st` | The first person | only reminds someone who knows | Taught with archaic λύω “I loose”, and spoke of “the verb’s ending” before the verb card; no table of I/we forms and endings. |
+| `person-2nd` | The second person | only reminds someone who knows | λύεις and λύετε only, archaic English; no table; no word of the text. |
+| `person-3rd` | The third person | only reminds someone who knows | λύει “he looses” only; “subject” used before the nominative is below it; no table. |
+| `pronoun` | The pronoun | teaches a beginner | Explained standing in for a noun; lacked the kinds named with a form of each and a word of the verse. |
+| `pronoun-personal` | The personal pronoun | only reminds someone who knows | Gave ἐγώ, σύ, αὐτός but none of their other forms (μου, ἡμῶν …) that fill the text; no table. |
+| `pronoun-demonstrative` | The demonstrative pronoun | only reminds someone who knows | Gave οὗτος and ἐκεῖνος but not their many forms (ταῦτα, τούτῳ, αὕτη); no table. |
+| `pronoun-relative` | The relative pronoun | only reminds someone who knows | Gave ὅς, ἥ, ὅ and spoke of a “clause” it never explains; no table; nothing on telling ὅ from ὁ. |
+| `pronoun-interrogative` | The interrogative pronoun | teaches a beginner | Gave τίς, τί and the acute accent; lacked its forms and a verse. |
+| `pronoun-indefinite` | The indefinite pronoun | teaches a beginner | Gave τις, τι and the missing accent; lacked its forms and a verse. |
+| `pronoun-reflexive` | The reflexive pronoun | only reminds someone who knows | Gave ἑαυτόν only and “the subject” before the nominative card; no forms. |
+| `pronoun-possessive` | The possessive pronoun | teaches a beginner | Gave ἐμός, σός and the genitive after a noun; lacked a table and a verse (ἡμετέρα, 1 John 1:3). |
+| `pronoun-reciprocal` | The reciprocal pronoun | teaches a beginner | Gave ἀλλήλων; lacked its three forms and a verse. |
+| `pronoun-correlative` | The correlative pronoun | teaches a beginner | Gave τοιοῦτος and τοσοῦτος; lacked ὅσος, the commonest, and a verse. |
+| `pronoun-correlative-interrogative` | The correlative or interrogative pronoun | teaches a beginner | Gave ποῖος and πόσος; lacked a verse. |
+| `preposition` | The preposition | teaches a beginner | Explained the case after it with διά; lacked a table of the twelve with their cases and meanings. |
+| `preposition-eis` | The preposition εἰς | teaches a beginner | Gave each case with its meaning and a real phrase; it lacked the phrase taken apart and a table of the cases. |
+| `preposition-en` | The preposition ἐν | teaches a beginner | Gave each case with its meaning and a real phrase; it lacked the phrase taken apart and a table of the cases. |
+| `preposition-ek` | The preposition ἐκ | teaches a beginner | Gave each case with its meaning and a real phrase; it lacked the phrase taken apart and a table of the cases. |
+| `preposition-apo` | The preposition ἀπό | teaches a beginner | Gave each case with its meaning and a real phrase; it lacked the phrase taken apart and a table of the cases. |
+| `preposition-pros` | The preposition πρός | teaches a beginner | Gave each case with its meaning and a real phrase; it lacked the phrase taken apart and a table of the cases. |
+| `preposition-dia` | The preposition διά | teaches a beginner | Gave each case with its meaning and a real phrase; it lacked the phrase taken apart and a table of the cases. |
+| `preposition-kata` | The preposition κατά | teaches a beginner | Gave each case with its meaning and a real phrase; it lacked the phrase taken apart and a table of the cases. |
+| `preposition-meta` | The preposition μετά | teaches a beginner | Gave each case with its meaning and a real phrase; it lacked the phrase taken apart and a table of the cases. |
+| `preposition-peri` | The preposition περί | teaches a beginner | Gave each case with its meaning and a real phrase; it lacked the phrase taken apart and a table of the cases. |
+| `preposition-hypo` | The preposition ὑπό | teaches a beginner | Gave each case with its meaning and a real phrase; it lacked the phrase taken apart and a table of the cases. |
+| `preposition-para` | The preposition παρά | teaches a beginner | Gave each case with its meaning and a real phrase; it lacked the phrase taken apart and a table of the cases. |
+| `preposition-epi` | The preposition ἐπί | teaches a beginner | Gave each case with its meaning and a real phrase; it lacked the phrase taken apart and a table of the cases. |
+| `verb` | The verb | only reminds someone who knows | Taught with archaic λύομεν “we are loosing”; no stem and ending shown on a real word; no dictionary form. |
+| `compound-verbs` | Compound verbs | teaches a beginner | Gave three compounds and how the preposition changes; lacked a table and a word of the text. |
+| `tense-present` | The present tense | only reminds someone who knows | Said what it means but gave no endings to spot it. |
+| `voice-active` | The active voice | only reminds someone who knows | “λύω, I loose” and the word “subject” before the nominative is below it; nothing on how to tell an active ending. |
+| `mood-indicative` | The indicative mood | only reminds someone who knows | Used “tense” and “mood” without saying what a mood is or how the indicative looks. |
+| `tense-imperfect` | The imperfect tense | only reminds someone who knows | Used “indicative” and “stem” without teaching the augment by name; archaic ἔλυον “I was loosing”; no endings. |
+| `tense-future` | The future tense | only reminds someone who knows | σ before the ending, but with λύσω “I will loose” only and no endings; nothing on ψ and ξ. |
+| `tense-aorist` | The aorist tense | only reminds someone who knows | Said (and spelt out “AIR-ist”) what it means but gave no σα, no endings, and spoke of “other moods” not yet taught. |
+| `tense-perfect` | The perfect tense | only reminds someone who knows | “A doubled start to the word” with λέλυκα only; no κα, no endings. |
+| `tense-pluperfect` | The pluperfect tense | only reminds someone who knows | Built “like the perfect with an added ε” with ἐλελύκειν only; no endings. |
+| `second-tenses` | Second aorists and perfects | only reminds someone who knows | Gave ἔλαβον only; no list of the common second aorists and no second perfect. |
+| `voice-middle` | The middle voice | only reminds someone who knows | Gave λούομαι and αἰτοῦμαι but no endings to spot a middle form. |
+| `voice-passive` | The passive voice | only reminds someone who knows | ἐλύθη only; nothing on θη as the mark; it spoke of the aorist without resting on it. |
+| `voice-middle-or-passive` | The middle or passive voice | only reminds someone who knows | λύομαι only; no shared endings listed. |
+| `voice-middle-deponent` | The middle deponent | teaches a beginner | Gave ἔρχομαι, δέχομαι, πορεύομαι and the rule; lacked a word of the verse (ἐθεασάμεθα, 1 John 1:1). |
+| `voice-passive-deponent` | The passive deponent | teaches a beginner | Gave ἀπεκρίθη and the rule; lacked θη as the sign to look for. |
+| `voice-middle-or-passive-deponent` | The middle or passive deponent | teaches a beginner | Gave ἔρχομαι; lacked a verse. |
+| `voice-middle-significance` | A middle meaning in an active form | only reminds someone who knows | Explained the idea only by an English contrast; no Greek form at all. |
+| `voice-impersonal-active` | The impersonal active | teaches a beginner | Gave δεῖ and ἔξεστιν; lacked a verse. |
+| `voice-none` | A verb with no voice | only reminds someone who knows | Said the parsing names no voice, with no Greek word to show. |
+| `mood-imperative` | The imperative mood | only reminds someone who knows | λῦε “loose!” only; no endings to spot a command; nothing on μή with it. |
+| `mood-subjunctive` | The subjunctive mood | only reminds someone who knows | ἵνα λύῃ only; did not give the long vowel (ω, η) as its mark. |
+| `mood-optative` | The optative mood | teaches a beginner | Gave μὴ γένοιτο; lacked οι/αι as the mark. |
+| `mood-infinitive` | The infinitive | teaches a beginner | Gave -ειν and -αι; lacked -σθαι, -ναι, -θηναι and a word of the text. |
+| `mood-participle` | The participle | only reminds someone who knows | ὁ λύων only; nothing on ντ or -μενος, the marks to spot one. |
+| `mood-participle-imperative` | The participle with the sense of a command | teaches a beginner | Explained with Romans 12; lacked a word of that chapter worked. |
+| `particle` | The particle | only reminds someone who knows | Gave μή and ἄρα but not ἄν, μέν, γε, the commonest; no word of the text. |
+| `adverb` | The adverb | teaches a beginner | Gave -ως with καλῶς; lacked a verse. |
+| `interrogative` | Words that ask a question | teaches a beginner | Gave οὐ and μή in questions; lacked πῶς, ποῦ, πότε by name and the question mark ;. |
+| `conditional` | The conditional | teaches a beginner | Gave εἰ and ἐάν; lacked a verse (1 John 1:9). |
+| `interjection` | The interjection | teaches a beginner | Gave οὐαί and ἰδού; lacked a verse. |
+| `attic-form` | Attic spellings | teaches a beginner | Explained by colour/color; lacked a word of the verse (ἑωράκαμεν is one). |
+| `poetic` | Poetic forms | teaches a beginner | Explained by o’er/over; lacked the one real case (Acts 17:28). |
+| `crasis` | Two words run together | teaches a beginner | Gave κἀγώ; lacked the others in a table. |
+| `aramaic` | Aramaic words | teaches a beginner | Gave ἀββά; lacked a word the text marks as Aramaic (Ῥαββουνί). |
+| `hebrew` | Hebrew words | teaches a beginner | Gave ἀμήν and σαβαώθ; lacked a verse. |

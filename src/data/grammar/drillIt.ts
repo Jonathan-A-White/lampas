@@ -8,15 +8,17 @@
 //       'edge'    when the step he holds has the step above it failed (the highest step right, with a miss above it), or he misses step 1 twice (the edge is 0),
 //       'limit'   after MAX_QUESTIONS (14) questions.
 //   The result: {ideaId, proved, edgeStep, topStep, strong, weak, answers}; a facet is weak when missed at least once and right fewer than twice.
+//   An idea whose sound the scheme changes by the next letter (mw-i7xe0n.7: χ is kh before α, hy before ε) is proved only when a word of each side of its
+//   rule was answered right, unhinted: the walk keeps asking the side still missing at the top step (DrillWalk.sides).
 // A drill's facets are its own idea's. Its prerequisites (ladder.ts `needs`) are assumed SOLID, never tested and never scaffolded: start() takes the learner's
 // levels and, when a prerequisite is not solid, returns {needs: <the lowest>} instead of a walk (the Governor: one solid at a time, then one frontier).
 // The ideas of the letters, sounds and marks tiers are built from their items (drillItems.ts); a noun-like idea is asked by what it is, by spotting it in a verse
 // of `passage`, and by its ending (questions.ts), a preposition by its meaning case by case; with no passage only what the idea says of itself can be asked.
 import type { Chapter } from '../chapter';
 import { chosenPronunciation } from '../../speech/greek';
-import type { Pronunciation } from '../../speech/pronunciation';
+import { soundRuleOf, type Pronunciation } from '../../speech/pronunciation';
 import { mulberry32, shuffle } from '../quiz';
-import { collect, itemSteps, perFacet, questionKey, rng, type DrillContext, type RawStep } from './drillItems';
+import { collect, itemSteps, perFacet, questionKey, rng, sideFacet, type DrillContext, type RawStep } from './drillItems';
 import { groupOfItem, ideaOf, type Facet } from './ladder';
 import type { Level } from './needs';
 import { COMPOUND_VERBS, PREPOSITIONS } from './prepositions';
@@ -155,6 +157,8 @@ export interface DrillWalk {
   /** unhinted rights in a row at the top step */
   streak: number;
   result: DrillResult | null;
+  /** the facets of the sides of the idea's sound rule that its steps ask (mw-i7xe0n.7): each must be answered right before the idea is proved */
+  sides?: string[];
 }
 
 /** The question being asked, or null once the walk is over. */
@@ -215,8 +219,15 @@ export function start(ideaId: string, levels: ReadonlyMap<string, Level>, option
   const needs = unmetNeed(ideaId, levels);
   if (needs !== null) return { needs };
   const steps = drillSteps(ideaId, options);
-  return { ideaId, steps, step: 1, asked: [], current: nextAt(steps, 1, [], null), streak: 0, result: null };
+  const rule = soundRuleOf(options.scheme ?? chosenPronunciation(), ideaId);
+  const asked = new Set(steps.flatMap((s) => s.questions.map((q) => q.facet.id)));
+  const sides = rule ? rule.sides.map((side) => sideFacet(rule, side).id).filter((id) => asked.has(id)) : [];
+  return { ideaId, steps, step: 1, asked: [], current: nextAt(steps, 1, [], null), streak: 0, result: null, sides };
 }
+
+/** The sides of the idea's sound rule not yet answered right, unhinted. */
+const sidesMissing = (walk: DrillWalk, asked: readonly DrillAnswer[]): string[] =>
+  (walk.sides ?? []).filter((id) => !asked.some((a) => a.facet.id === id && a.right && !a.hinted));
 
 function finish(walk: DrillWalk, asked: DrillAnswer[], ended: DrillEnd, streak: number): DrillWalk {
   const topStep = walk.steps.length;
@@ -238,7 +249,8 @@ export function answer(walk: DrillWalk, right: boolean, hinted: boolean): DrillW
   const top = walk.steps.length;
   const sure = right && !hinted;
   const streak = sure && q.step === top ? walk.streak + 1 : 0;
-  if (streak >= PROVED_STREAK) return finish(walk, asked, 'proved', streak);
+  const missing = sidesMissing(walk, asked);
+  if (streak >= PROVED_STREAK && missing.length === 0) return finish(walk, asked, 'proved', streak);
   if (asked.length >= MAX_QUESTIONS) return finish(walk, asked, 'limit', streak);
 
   const stood = standing(asked);
@@ -255,5 +267,7 @@ export function answer(walk: DrillWalk, right: boolean, hinted: boolean): DrillW
     // an easier step asks the facet just missed again; step 1 asks another
     retry = step < q.step ? q.facet.id : null;
   }
+  // at the top, a side of the sound rule not yet answered right is asked first
+  if (retry === null && step === top) retry = missing[0] ?? null;
   return { ...walk, step, asked, current: nextAt(walk.steps, step, asked, retry), streak };
 }

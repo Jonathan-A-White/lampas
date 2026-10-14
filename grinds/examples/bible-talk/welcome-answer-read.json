@@ -1,0 +1,35 @@
+{
+  "description": "He says he is here to read: the tutor writes it to the index in his own terms, asks the second question (what he wants) and offers nothing of the Greek.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Welcome",
+    "question": "just to read",
+    "history": [
+      {
+        "q": "Hello, I have just started using Lampas.",
+        "a": "Welcome to Lampas. Why are you here: to read, to study, or to learn the Greek?"
+      }
+    ],
+    "solid_words": [],
+    "settings": {},
+    "mode": "welcome",
+    "screen": {
+      "name": "Welcome",
+      "facts": []
+    }
+  },
+  "expect": {
+    "memory_update.0.name": {
+      "equals": "index"
+    },
+    "memory_update.0.append": {
+      "matches": "[Rr]ead"
+    },
+    "greek_offer": {
+      "present": false
+    },
+    "welcome_done": {
+      "present": false
+    }
+  }
+}

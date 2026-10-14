@@ -109,13 +109,20 @@ for (const phone of PHONES) for (const mode of MODES) {
       const sendBox = await send.boundingBox();
       if (!sendBox) throw new Error('Send has no box');
       expect(sendBox.y + sendBox.height).toBeLessThanOrEqual(innerHeight - NAV_BAR + 0.5);
+      // The answer's turn draws a moment before the waiting block goes and the box re-aligns to the new turn (useTalk sets the state after its
+      // write), so wait for the pending block to go, then scroll to the end until the last row clears the composer: one scroll too early is undone.
+      await expect(sheet.locator('[data-talk-pending]')).toHaveCount(0);
       // the last turn scrolls clear of the composer
       const list = sheet.locator('div.overflow-y-auto').first();
-      await list.evaluate((el) => (el.scrollTop = el.scrollHeight));
-      const listBox = await list.boundingBox();
-      const lastBox = await list.locator(':scope > *').last().boundingBox();
-      if (!listBox || !lastBox) throw new Error('no talk list');
-      expect(lastBox.y + lastBox.height).toBeLessThanOrEqual(listBox.y + listBox.height + 0.5);
+      await expect
+        .poll(async () => {
+          await list.evaluate((el) => (el.scrollTop = el.scrollHeight));
+          const listBox = await list.boundingBox();
+          const lastBox = await list.locator(':scope > *').last().boundingBox();
+          if (!listBox || !lastBox) throw new Error('no talk list');
+          return lastBox.y + lastBox.height - (listBox.y + listBox.height);
+        })
+        .toBeLessThanOrEqual(0.5);
       await shot(page, `bottom-talk-${phone.name}-${mode.name}`);
     });
   });

@@ -100,7 +100,7 @@ beyond `loadChapter`.
 
 | kind | what it asks | ideas |
 |---|---|---|
-| `ending` | the form with its ending blanked (`ἀρχ_`), four endings; the wrong three are the endings of other inflected words of the same part of speech in the passage (the common endings when it has too few). The stem is what the lemma and the form share, a stem vowel goes to the ending; a movable ν (-σιν, a verb's -εν) is shown in brackets and is one ending with or without it, `ουσι(ν)` | any word idea whose forms share a stem with their lemma |
+| `ending` | the form with its ending blanked (`ἀρχ_`), four endings; the wrong three are the same word's other endings in the passage first (its other cases or tenses: the near misses, mw-i7xe0n.7), then the endings of other inflected words of the same part of speech in the passage (the common endings when it has too few). The stem is what the lemma and the form share, a stem vowel goes to the ending; a movable ν (-σιν, a verb's -εν) is shown in brackets and is one ending with or without it, `ουσι(ν)` | any word idea whose forms share a stem with their lemma |
 | `tap-form` | the Greek words of one verse as buttons: 'Tap the dative article'. The prompt names the fewest terms that leave exactly one word of the verse, and the word's text is not repeated in the verse | any word idea the passage has a form of |
 | `letter` | four glyphs: by name or by sound (a letter that sounds like the right one is never offered), vowel pairs, consonant pairs, the iota under a letter, the marks, and for `movable-letters` the form that fits a New Testament phrase (οὐ, οὐκ or οὐχ; ἐκ or ἐξ; ἀπ᾿ or ἀφ᾿; a word that takes a movable ν), and for `marks-change-word` and `enclitics` the word that fits a New Testament phrase, with its twin (the same letters, the other mark) always among the four, and for `words-sound-alike` Tap to hear a word by its meaning, then its spelling, the twin among the four | a letter, the alphabet, `diphthongs`, `consonant-pairs`, `iota-subscript`, `punctuation`, `movable-letters`, `marks-change-word`, `enclitics`, `words-sound-alike` |
 | `sound` | Tap to hear says a letter (`speakWord`), four glyphs | a letter, the alphabet |
@@ -126,6 +126,22 @@ step by step, back off by halves when it is too hard, "kind of like a binary sea
   chosen pronunciation; read a short New Testament word and pick how it is said. Its facets are the 24 letters and five pairs of look-alikes (ν/υ, ρ/π, η/ν, χ/ξ, ο/ω)
   asked with both among the choices. Vowel pairs and consonant pairs: see, hear, read a word; the breathings: a plain word, then one with the mark on the second letter.
   A scheme that gives no sound is asked by ear.
+- **A sound that changes by the next letter** (mw-i7xe0n.7, his Chi drill: 'How is this word said?' set χάρις against other words, so the first letter answered it). The
+  scheme names its rules (`Pronunciation.soundRules`, docs/pronunciation.md): χ, γ, σ before a consonant, αυ, ευ, ηυ, μπ, ντ, γκ and γχ in Modern Greek, each with
+  two sides, the line that names each, and New Testament words of each. Drilled for its own idea, the read-a-word step reads words of **both** sides, each side its own
+  facet (`letter-chi:soft`, labelled by the scheme), and offers the word **misread by the rule** as a wrong answer (χάρις: KHA-rees right, HYA-rees wrong; χεῖρες:
+  HYEE-res right, KHEE-res wrong); a wrong pick shows the side's line under the answer (`GrammarQuestion.rule`, `GrammarCard` [data-testid=rule-line]); and the idea is
+  **proved** only when a word of each side with words was answered right, unhinted (`DrillWalk.sides`; at the top step the side still missing is asked first). Any word
+  read, in any drill, offers its misreading by each rule it stands on (κόσμος beside KOS-mos in the alphabet). No New Testament word begins with μπ, ντ or γκ, so their
+  'start' side has no word: only their 'inside' side is drilled and needed.
+- **Wrong choices** (mw-i7xe0n.7, `src/data/choices.ts`, the Governor's "fix it at the level it's at"): every quiz builds its choices with `choicesOf`, near misses of
+  the point the item tests first, then fillers of the same kind, and a question keeps its near misses (`GrammarQuestion.near`) so a **Hint** takes the far ones away
+  first (`hint.ts`). The near misses by kind: a letter's look-alike (ν/υ, ρ/π, η/ν, χ/ξ, ο/ω) and its sound; a pair's mates that share a letter (αυ: ευ, ηυ, αι) or
+  its rule (μπ, ντ, γκ); a word misread by its sound rule; the same word's other ending; a verse's word with all the prompt names but one; the letter without its iota;
+  the other Greek mark; the same word's other forms (οὐ, οὐκ, οὐχ); the twin with the other mark or accent, or the other word that sounds alike; the preposition's other
+  cases (Drill it's second step only); the verb without its preposition; the syllables beside the loud one; one syllable more or fewer; the other breathing; an idea of
+  the same tier; in the Parsing drill the value a reader takes for the right one (aorist and imperfect, middle and passive, noun and adjective ...) or the answer with one
+  feature changed; in the Quick test a gloss of the same part of speech. With none: the movable ν (the others never take one). tests/unit/choices.test.ts holds each.
 - `start(ideaId, levels, options)` returns a walk, or `{needs: id}` when a prerequisite (ladder `needs`, not the group an item belongs to) is not solid: the lowest such idea.
   A drill's facets are its own idea's; no question tests a prerequisite, and every question assumes the prerequisites are solid.
 - `answer(walk, right, hinted)`: up one step on a right answer; on a miss, back to halfway (rounded down) between the highest step he holds below the missed one and the
@@ -143,8 +159,31 @@ step by step, back off by halves when it is too hard, "kind of like a binary sea
 - **Where the examples come from.** `ideaPassage(goalText, openChapter, loadChapter, index)`: the saved goal (the `goal` row of
   the settings store, any text `parseGoal` reads): its chapter, its one verse, or the first five chapters of a book goal; with no
   goal, or one that names nothing, the open chapter (`getOpenChapter()`).
-- `ideaExamples(id, chapters, verse?)`: up to three words whose parsing needs the idea (`ideasOf`), one for each lemma, in text
-  order, each with its chapter and verse ('1 John 1:1'). An idea no word has shows none.
+- **The teaching (mw-5r3p30.234).** Every card teaches a total beginner who has proved the cards below it, from the card alone; the parts are
+  data, one file per tier in `src/data/grammar/teach/` (`teachOf(id)`), never in the component, and `docs/card-audit.md` judges what each card
+  lacked before. Under the title (and the tiles): **What it is**, plain English with an English example; **How to spot it**, the Greek form or
+  ending to look for, with a **table** where the idea is a set of endings or forms (the article's 24 forms; a case's endings in four model nouns,
+  λόγος, ἀρχή, τέκνον and χείρ, singular and plural, labelled by the noun since gender comes after the cases; a tense's endings by person; each
+  kind of pronoun; the pairs; the prepositions with their cases); **How it sounds**, for an idea of a sound only, the chosen pronunciation's lesson
+  (`lessons.ts soundLesson`; the teaching names no sound); and a **Worked example**: one New Testament word taken apart in steps, the first of the
+  card's worked words that stands in the passage he reads (`workedFor`; 1 John 1:1 and John 1:1 first), else its first, with its meaning, its
+  verse, a speaker and its respelling in the chosen scheme. Before the marks are taught a worked word is written in capitals with no marks, as
+  the oldest copies wrote it (ΛΟΓΟΣ), and the voice and respelling take the word as the text has it (`say`). `tests/unit/teach-cards.test.ts`
+  holds every card to it: the three parts, a table on each set of forms, a worked word spelt only with letters, sounds and marks taught at or
+  below the card, a worked word that names its verse is in it, and **no term before it is taught** (each GRAMMAR_TERM and title key word maps
+  to the idea that teaches it; a card may use only its own and those below it). The noun teaches the words stem, ending, case and dictionary
+  form; the imperfect, the augment; the perfect, reduplication. The ladder's `needs` say what a card rests on: the noun on the breathings, the
+  accents and the iota under a letter; the iota under a letter on the breathings and accents; punctuation on the breathings; the nominative on
+  the plural; the neuter on the feminine; the passive on the aorist.
+- `ideaExamples(id, chapters, verse?)`: up to three words the card can explain, one for each lemma (the article: one per form, up to
+  `MAX_FORM_EXAMPLES` 4), in text order, each with its chapter and verse ('1 John 1:1'). A word is explained (`cardExplains`) when its parsing
+  needs the idea (`ideasOfWord`), its part of speech is taught at or below the card (or named in the card's `examplesAs`: the persons read a
+  verb's ending before the verb has a card), and, when the card has a table, its form is in it (`tableHas`: a cell's whole form, or an ending it
+  ends in, with the marks taken off). So the genitive on 1 John 1:1 is ἀρχῆς, λόγου, ζωῆς, not the pronoun ἡμῶν or the article τοῦ, and the
+  article is τοῖς, αἱ, τοῦ, τῆς, never the relative ὃ. Each row shows the ending its table names marked, its one sense here (`exampleGloss`: the
+  article is 'the'; else its verse's own English, else the first sense of the dictionary gloss, never 'the/this/who'), and its parsing in the
+  card's own terms (`exampleNote`: 'genitive singular'; for the article also the noun it goes with, 'goes with ὀφθαλμοῖς “eyes”').
+  `tests/unit/examples-match-lesson.test.ts` holds every idea to it over 1 John 1:1 and John 1:1. An idea no word has shows none.
   **Ideas of spelling** (mw-86e9r1.13: the alphabet, a letter, diphthongs and each pair, consonant pairs, the breathings, accents, iota
   subscript, syllables, punctuation; `isSpellingIdea`) are found by how a form is spelt (`inference.ts` `foundationSpans`), not by its
   parsing: up to twelve words (`MAX_FOUNDATION_EXAMPLES`), one for each form, in text order, each with `parts` (the Greek cut into
@@ -152,10 +191,8 @@ step by step, back off by halves when it is too hard, "kind of like a binary sea
   subscript's letter, each vowel sound for syllables (a word of two or more), the apostrophe or diaeresis for punctuation). The sheet
   draws a marked part bold, accent-coloured and underlined (`[data-marked]`); the alphabet marks nothing. A verse with none says
   'No word of <passage> is spelt with this.', never 'has this idea in its parsing'.
-- `paradigmOf(idea, chapters, verse?)`: for a case idea, the article's forms in that case (rows singular, plural; columns
-  masculine, feminine, neuter); for a tense idea, the persons of the one verb that fills most cells in a finite mood (rows singular,
-  plural; columns 1st, 2nd, 3rd person). A cell the passage lacks is blank (–); `null` for any other idea or no form at all. Forms
-  are the passage's own; a capitalised sentence-start form gives way to one in mid-sentence.
+- The passage's own paradigm (the article in a case, the persons of one verb; `paradigmOf`) gave way to the card's table (mw-5r3p30.234): on a
+  case card it showed the article before the article is taught. Paradigms (#/paradigms) still has the full tables.
 - **The level slider** (mw-i7xe0n.3, PROVISIONAL names). A native range named 'Your level' with three stops under it, *Not yet* · *Learning* · *I know it*,
   resting on the idea's level (an idea with none rests on Not yet), a 44 px thumb (src/index.css `.level-slider`), and arrow keys, Home and End to move it. A drag
   chooses only where the thumb is let go. `teachIdea(id, outcome, now, how)`: *Learning* (`got-it`) makes the idea frontier and puts it on the schedule at step 0, due
@@ -286,25 +323,25 @@ tenses, the stress mark, the diaeresis, the parts of speech) and fails on one it
 | 44 | marks | `breathing-rough` | The rough breathing | – | `breathings` |
 | 45 | marks | `breathing-smooth` | The smooth breathing | – | `breathings` |
 | 46 | marks | `accents` | Accents and stress | – | `syllables` |
-| 47 | marks | `iota-subscript` | The iota under a letter | – | `letter-iota`, `letter-alpha`, `letter-eta`, `letter-omega` |
+| 47 | marks | `iota-subscript` | The iota under a letter | – | `letter-iota`, `letter-alpha`, `letter-eta`, `letter-omega`, `breathings`, `accents` |
 | 48 | marks | `words-sound-alike` | Words that sound alike | – | `diphthongs`, `iota-subscript` |
-| 49 | marks | `punctuation` | Punctuation and small marks | – | `accents` |
+| 49 | marks | `punctuation` | Punctuation and small marks | – | `breathings`, `accents` |
 | 50 | marks | `movable-letters` | Movable letters | – | `breathings`, `punctuation` |
 | 51 | marks | `marks-change-word` | Marks that change the word | – | `breathings`, `accents` |
 | 52 | marks | `enclitics` | Enclitics | – | `breathings`, `accents`, `marks-change-word` |
-| 53 | nouns | `noun` | The noun | noun | `accents` |
+| 53 | nouns | `noun` | The noun | noun | `breathings`, `accents`, `iota-subscript` |
 | 54 | nouns | `number-singular` | The singular | singular | `noun` |
 | 55 | nouns | `number-plural` | The plural | plural | `number-singular` |
 | 56 | nouns | `conjunction` | The conjunction | conjunction | `noun` |
 | 57 | nouns | `negative` | The negative | negative | `conjunction` |
-| 58 | nouns | `case-nominative` | The nominative case | nominative | `noun` |
+| 58 | nouns | `case-nominative` | The nominative case | nominative | `noun`, `number-plural` |
 | 59 | nouns | `case-accusative` | The accusative case | accusative | `case-nominative` |
 | 60 | nouns | `case-genitive` | The genitive case | genitive | `case-nominative` |
 | 61 | nouns | `case-dative` | The dative case | dative | `case-genitive` |
 | 62 | nouns | `case-vocative` | The vocative case | vocative | `case-nominative` |
 | 63 | nouns | `gender-masculine` | The masculine gender | masculine | `noun` |
 | 64 | nouns | `gender-feminine` | The feminine gender | feminine | `gender-masculine` |
-| 65 | nouns | `gender-neuter` | The neuter gender | neuter | `gender-masculine`, `case-accusative` |
+| 65 | nouns | `gender-neuter` | The neuter gender | neuter | `gender-masculine`, `gender-feminine`, `case-accusative` |
 | 66 | nouns | `article` | The article | article | `noun`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative`, `number-plural`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
 | 67 | nouns | `adjective` | The adjective | adjective | `noun`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative`, `number-plural`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
 | 68 | nouns | `comparative` | The comparative | comparative | `adjective` |
@@ -351,7 +388,7 @@ tenses, the stress mark, the diaeresis, the parts of speech) and fails on one it
 | 109 | verbs | `tense-pluperfect` | The pluperfect tense | pluperfect | `tense-perfect` |
 | 110 | verbs | `second-tenses` | Second aorists and perfects | second | `tense-aorist`, `tense-perfect` |
 | 111 | verbs | `voice-middle` | The middle voice | middle | `voice-active` |
-| 112 | verbs | `voice-passive` | The passive voice | passive | `voice-active`, `tense-present`, `case-genitive` |
+| 112 | verbs | `voice-passive` | The passive voice | passive | `voice-active`, `tense-present`, `tense-aorist`, `case-genitive` |
 | 113 | verbs | `voice-middle-or-passive` | The middle or passive voice | middle or passive | `voice-middle`, `voice-passive` |
 | 114 | verbs | `voice-middle-deponent` | The middle deponent | middle deponent | `voice-middle-or-passive` |
 | 115 | verbs | `voice-passive-deponent` | The passive deponent | passive deponent | `voice-middle-deponent`, `tense-aorist` |

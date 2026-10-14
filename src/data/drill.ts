@@ -1,7 +1,9 @@
 // src/data/drill.ts — the pure parts of the Parsing drill: an RP code split into steps of four choices, and a round of up
 // to ten words drawn from a chapter and the words he knows. Nothing here touches the store or the screen; the random
-// source is passed in (mulberry32 in tests), as in quiz.ts.
+// source is passed in (mulberry32 in tests), as in quiz.ts. A step's wrong choices are near misses first (choices.ts, mw-i7xe0n.7): the value a reader
+// mistakes the right one for (aorist for imperfect, middle for passive), or the same answer with one of its features changed ('plural masculine' for 'singular masculine').
 import { wordParse, type Chapter } from './chapter';
+import { OPTION_COUNT, choicesOf } from './choices';
 import type { Word } from './db';
 import { PARTS_OF_SPEECH, splitParse, type ParseFeature, type ParseFeatureId } from './parseCode';
 import { isFormOf, lemmasOf, shuffle, type Random } from './quiz';
@@ -9,7 +11,6 @@ import { isFormOf, lemmasOf, shuffle, type Random } from './quiz';
 export const DRILL_SIZE = 10;
 /** A round asks about this many learning words first, or all it has when it has fewer. */
 const LEARNING_SHARE = 5;
-const OPTION_COUNT = 4;
 
 /** One question about a word: 'pos', 'tense', 'case', 'number+gender' ... (the ids of its features, joined by '+'). */
 export interface DrillStep {
@@ -19,6 +20,8 @@ export interface DrillStep {
   right: string;
   /** four different choices, the right one among them */
   options: string[];
+  /** the wrong choices that are near misses of the right one (choices.ts) */
+  near?: string[];
 }
 
 /** One word of the chapter to parse, with its verse so the screen can show it, and the steps to ask. */
@@ -81,28 +84,47 @@ function groupFeatures(features: readonly ParseFeature[]): ParseFeature[][] {
   return groups;
 }
 
-/** Every combination of the features' choices, as the words a code would give: 'singular masculine'. */
-function valuesOf(group: readonly ParseFeature[]): string[] {
-  return group.reduce<string[]>((all, f) => all.flatMap((prefix) => f.choices.map((c) => (prefix ? `${prefix} ${c}` : c))), ['']);
+/** Every combination of the features' choices, each as its parts: ['singular', 'masculine']. */
+function valuesOf(group: readonly ParseFeature[]): string[][] {
+  return group.reduce<string[][]>((all, f) => all.flatMap((prefix) => f.choices.map((c) => [...prefix, c])), [[]]);
 }
 
-function step(id: string, label: string, right: string, space: readonly string[], random: Random): DrillStep {
-  const wrong = shuffle(space.filter((v) => v !== right), random).slice(0, OPTION_COUNT - 1);
-  if (wrong.length < OPTION_COUNT - 1) throw new Error(`Not enough choices for ${id}`);
-  return { id, label, right, options: shuffle([right, ...wrong], random) };
+/** Values a reader takes for each other: forms alike (the augment of the imperfect and the aorist, the σ of the future), names alike, or one form that is both. */
+const MISTAKEN: readonly [string, string][] = [
+  ['aorist', 'imperfect'], ['present', 'future'], ['perfect', 'pluperfect'],
+  ['middle', 'passive'], ['indicative', 'subjunctive'], ['indicative', 'imperative'], ['infinitive', 'participle'],
+  ['nominative', 'vocative'], ['nominative', 'accusative'], ['genitive', 'dative'],
+  ['noun', 'adjective'], ['article', 'pronoun'], ['conjunction', 'particle'], ['adverb', 'particle'],
+];
+const mistakenFor = (value: string): string[] => MISTAKEN.flatMap(([a, b]) => (a === value ? [b] : b === value ? [a] : []));
+
+/** The values of a step a reader takes for the right one: one feature's value mistaken (MISTAKEN), then one feature changed to any other value. */
+function nearOf(right: readonly string[], space: readonly string[][], random: Random): string[][] {
+  const differ = (v: readonly string[]) => v.filter((part, i) => part !== right[i]).length;
+  const one = space.filter((v) => differ(v) === 1);
+  const mistaken = one.filter((v) => v.some((part, i) => part !== right[i] && mistakenFor(right[i]).includes(part)));
+  // a feature alone (the tense) has only the mistaken values as near misses; a group's one-feature changes are near too
+  return right.length === 1 ? mistaken : [...shuffle(mistaken, random), ...shuffle(one.filter((v) => !mistaken.includes(v)), random)];
+}
+
+function step(id: string, label: string, right: readonly string[], space: readonly string[][], random: Random): DrillStep {
+  const text = (v: readonly string[]) => v.join(' ');
+  const { options, near } = choicesOf({ right: text(right), near: nearOf(right, space, random).map(text), fillers: space.map(text) }, random);
+  if (options.length < OPTION_COUNT) throw new Error(`Not enough choices for ${id}`);
+  return { id, label, right: text(right), options, near };
 }
 
 /** The questions about one word, from its RP code: the part of speech first, then what the code goes on to say. */
 export function buildSteps(code: string, random: Random): DrillStep[] {
   const { pos, features } = splitParse(code);
   const parts = PARTS_OF_SPEECH.includes(pos) ? PARTS_OF_SPEECH : [...PARTS_OF_SPEECH, pos];
-  const steps = [step('pos', 'Part of speech', pos, parts, random)];
+  const steps = [step('pos', 'Part of speech', [pos], parts.map((p) => [p]), random)];
   for (const group of groupFeatures(features)) {
     steps.push(
       step(
         group.map((f) => f.id).join('+'),
         capitalised(listed(group.map((f) => NAMES[f.id]))),
-        group.map((f) => f.value).join(' '),
+        group.map((f) => f.value),
         valuesOf(group),
         random,
       ),

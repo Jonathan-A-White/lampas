@@ -1,8 +1,11 @@
-// src/IdeaSheet.tsx — the sheet that teaches one grammar idea (mw-hqd5bz.7), opened by Learn this idea on a Grammar sheet: the idea's
-// title and plain text, up to three example forms from the goal passage (or, with no goal, the open chapter) with their verses (an idea of
-// spelling, such as the alphabet, a pair of vowels or a breathing, shows more words with the letters it is about marked), a
-// speaker on each, and a tap opens the word; for a case or a tense, a paradigm table built from the passage's own forms; for an idea of the letters,
-// sounds and marks (the alphabet, a pair of vowels, a breathing ...), the items as tiles above the text, each to hear (TeachTiles). At the foot
+// src/IdeaSheet.tsx — the sheet that teaches one grammar idea (mw-hqd5bz.7), opened by Learn this idea on a Grammar sheet. It teaches a total
+// beginner from the card alone (mw-5r3p30.234, data in src/data/grammar/teach/): What it is, in plain English; How to spot it, in Greek, with a
+// table where the idea is a set of endings or forms; How it sounds, for an idea of a sound, in the chosen pronunciation; a Worked example, one
+// New Testament word taken apart step by step, from the verse he reads when it has one, with its respelling; then up to three examples from the
+// goal passage (or, with no goal, the open chapter) that the card can explain, each with its verse, its one sense here and its parsing in the
+// card's own terms (an idea of spelling, such as the alphabet, a pair of vowels or a breathing, shows more words with the letters it is about
+// marked), a speaker on each, and a tap opens the word; for an idea of the letters, sounds and marks (the alphabet, a pair of vowels, a breathing
+// ...), the items as tiles above the text, each to hear (TeachTiles). At the foot
 // the level SLIDER (mw-i7xe0n.3: Not yet · Learning · I know it, resting on the idea's level; Learning is frontier and due tomorrow; I know it opens Drill it
 // to prove it, and only a pass keeps it there), 'Mark known without a drill' (solid, the 30-day step), a Drill it button and Ask the tutor; the level shows as a chip
 // ('Proved by drill' once a run proved it). He learns one idea at a time (mw-i7xe0n.6): sliding to Learning while another idea is Learning asks 'You are learning <other>.
@@ -12,18 +15,20 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { loadChapter, loadIndex, type Chapter, type GreekWord } from './data/chapter';
 import { unmetNeed } from './data/grammar/drillIt';
-import { exampleMeaning, ideaExamples, ideaPassage, isSpellingIdea, paradigmOf, type IdeaExample, type IdeaPassage, type Paradigm } from './data/grammar/ideaSheet';
+import { exampleGloss, exampleNote, ideaExamples, ideaPassage, isSpellingIdea, passageForms, type IdeaExample, type IdeaPassage } from './data/grammar/ideaSheet';
 import { ideaOf, type GrammarIdea } from './data/grammar/ladder';
-import { ideaText } from './data/grammar/lessons';
+import { soundLesson } from './data/grammar/lessons';
+import { teachOf, workedFor, type Teach, type TeachTable } from './data/grammar/teach';
 import { teachTiles } from './data/grammar/teachTiles';
 import { getOpenChapter } from './data/readerChapter';
 import { getGreekPronunciation, getLevel, getSavedGoalText, listLevels, recordDrill, teachIdea, type DrillMode, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
 import { DrillItScreen } from './DrillItScreen';
 import { chosenPronunciation } from './speech/greek';
-import { pronunciationOf } from './speech/pronunciation';
+import { pronunciationOf, type Pronunciation } from './speech/pronunciation';
 import { SpeakButton } from './speech/SpeakButton';
 import { TeachTiles } from './TeachTiles';
 import { focusOnMount } from './ui/focus';
+import { greekMarked } from './ui/GreekMarked';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 
@@ -73,18 +78,23 @@ function usePassage(): Loaded {
   return loaded;
 }
 
-function ParadigmTable({ table }: { table: Paradigm }) {
+/** Greek inside a table: the Greek face at the size of the cell, so four columns fit a phone held upright. */
+const inTable = (text: string) => greekMarked(text, 'font-greek');
+
+function TableView({ table }: { table: TeachTable }) {
   return (
-    <div data-testid="idea-paradigm" className="mt-4">
-      <p className="text-sm text-muted">{table.title}</p>
-      <table className="mt-1 w-full table-fixed border-collapse text-center">
-        <caption className="sr-only">{table.title}</caption>
+    <div data-testid="idea-table" className="mt-3">
+      <table className="w-full table-fixed border-collapse text-center">
+        <caption className="pb-1 text-left text-sm text-muted">{inTable(table.caption)}</caption>
+        <colgroup>
+          <col className="w-[24%]" />
+        </colgroup>
         <thead>
           <tr>
             <td />
             {table.columns.map((column) => (
-              <th key={column} scope="col" className="px-1 pb-1 text-sm font-normal text-muted">
-                {column}
+              <th key={column} scope="col" className="break-words px-1 pb-1 align-bottom text-base font-normal text-muted">
+                {inTable(column)}
               </th>
             ))}
           </tr>
@@ -92,25 +102,56 @@ function ParadigmTable({ table }: { table: Paradigm }) {
         <tbody>
           {table.rows.map((row) => (
             <tr key={row.label} className="border-t border-line">
-              <th scope="row" className="py-2 pr-1 text-left text-sm font-normal text-muted">
-                {row.label}
+              <th scope="row" className="break-words py-2 pr-1 text-left text-sm font-normal text-muted">
+                {inTable(row.label)}
               </th>
               {row.cells.map((cell, i) => (
-                <td key={table.columns[i]} data-cell={table.columns[i]} lang="grc" className="py-2 font-greek text-xl">
-                  {cell ?? <span aria-label="not in this passage" className="text-muted">–</span>}
+                <td key={table.columns[i]} data-cell={table.columns[i]} className="break-words px-1 py-2 text-lg">
+                  {cell ? inTable(cell) : <span aria-label="none" className="text-muted">–</span>}
                 </td>
               ))}
             </tr>
           ))}
         </tbody>
       </table>
-      <p className="pt-1 text-sm text-muted">Forms from the passage; – is a form it does not have.</p>
+      {table.note ? <p className="pt-1 text-sm text-muted">{greekMarked(table.note)}</p> : null}
     </div>
   );
 }
 
-function Example({ example, onWord }: { example: IdeaExample; onWord: (chapter: Chapter, word: GreekWord) => void }) {
+/** A heading of the card's teaching: What it is, How to spot it, How it sounds, Worked example. */
+const Part = ({ children }: { children: string }) => <h3 className="mt-4 text-lg font-semibold">{children}</h3>;
+
+function Worked({ teach, passage, scheme }: { teach: Teach; passage: IdeaPassage | undefined; scheme: Pronunciation }) {
+  const { worked, inPassage } = workedFor(teach, passage ? passageForms(passage) : new Set());
+  const said = worked.say ?? worked.word;
+  return (
+    <section data-testid="idea-worked">
+      <Part>Worked example</Part>
+      <div className="mt-1 flex items-center gap-2">
+        <span data-testid="worked-word" lang="grc" className="font-greek text-3xl">
+          {worked.word}
+        </span>
+        <SpeakButton text={said} id={`worked:${said}`} label={`Hear ${worked.word}`} kind="speaker" className="shrink-0" />
+      </div>
+      <p className="text-base">
+        “{worked.gloss}”{worked.ref ? <span className="text-muted"> · {worked.ref}{inPassage ? ', the verse you are reading' : ''}</span> : null}
+      </p>
+      <p data-testid="worked-respelling" className="text-base text-muted">
+        Say it: {scheme.respell(said)}
+      </p>
+      <ol className="mt-2 list-decimal space-y-1 pl-6 text-lg">
+        {worked.steps.map((step) => (
+          <li key={step}>{greekMarked(step)}</li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function Example({ idea, example, onWord }: { idea: GrammarIdea; example: IdeaExample; onWord: (chapter: Chapter, word: GreekWord) => void }) {
   const { word, chapter, reference } = example;
+  const note = exampleNote(idea, example);
   return (
     <li className="flex items-center gap-1">
       <button
@@ -119,7 +160,7 @@ function Example({ example, onWord }: { example: IdeaExample; onWord: (chapter: 
         data-form={word.t}
         data-lemma={word.l}
         onClick={() => onWord(chapter, word)}
-        className="flex min-h-12 min-w-0 flex-1 items-center justify-between gap-3 rounded-xl border border-line px-3 py-1 text-left active:bg-line"
+        className="flex min-h-12 min-w-0 flex-1 flex-wrap items-center justify-between gap-x-3 rounded-xl border border-line px-3 py-1 text-left active:bg-line"
       >
         <span lang="grc" className="font-greek text-2xl">
           {example.parts.map((part, i) =>
@@ -132,10 +173,15 @@ function Example({ example, onWord }: { example: IdeaExample; onWord: (chapter: 
             ),
           )}
         </span>
-        <span className="min-w-0 flex-1 truncate text-base text-muted">{exampleMeaning(chapter, example.verse, word)}</span>
+        <span className="min-w-0 flex-1 truncate text-base text-muted">{exampleGloss(idea, example)}</span>
         <span data-testid="idea-verse" className="shrink-0 text-sm text-muted">
           {reference}
         </span>
+        {note ? (
+          <span data-testid="idea-example-note" className="basis-full pb-1 text-sm text-muted">
+            {greekMarked(note, 'font-greek text-lg')}
+          </span>
+        ) : null}
       </button>
       <SpeakButton text={word.t} id={`idea:${word.t}`} label={`Hear ${word.t}`} kind="speaker" className="shrink-0" />
     </li>
@@ -163,9 +209,10 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
   // a tile's own idea sheet opens over this one
   const [opened, setOpened] = useState<GrammarIdea | null>(null);
   const tiles = teachTiles(idea, scheme);
+  const card = teachOf(idea.id);
+  const sounds = soundLesson(idea, scheme);
   const passage = loaded && loaded !== 'failed' ? loaded.passage : undefined;
   const examples = passage ? ideaExamples(idea.id, passage.chapters, passage.verse) : [];
-  const table = passage ? paradigmOf(idea, passage.chapters, passage.verse) : null;
 
   // the idea under this one that is not solid yet, the lowest (the sheet teaches only its own idea)
   const levels = useLiveQuery(listLevels, []);
@@ -253,9 +300,24 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
             </div>
           ) : null}
           {tiles.length ? <TeachTiles tiles={tiles} onOpen={(id) => setOpened(ideaOf(id))} /> : null}
-          <p data-testid="idea-text" className="mt-2 text-lg">
-            {ideaText(idea, scheme)}
+          <Part>What it is</Part>
+          <p data-testid="idea-what" className="mt-1 text-lg">
+            {greekMarked(card.whatItIs)}
           </p>
+          <Part>How to spot it</Part>
+          <p data-testid="idea-spot" className="mt-1 text-lg">
+            {greekMarked(card.howToSpot)}
+          </p>
+          {card.table ? <TableView table={card.table} /> : null}
+          {sounds ? (
+            <>
+              <Part>How it sounds</Part>
+              <p data-testid="idea-text" className="mt-1 text-lg">
+                {greekMarked(sounds)}
+              </p>
+            </>
+          ) : null}
+          <Worked teach={card} passage={passage} scheme={scheme} />
           {loaded === null ? (
             <p data-testid="idea-loading" className="mt-3 text-base text-muted">
               Finding examples…
@@ -264,12 +326,12 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
             <p className="mt-3 text-base text-muted">Could not load the passage, and you may be offline.</p>
           ) : (
             <>
-              <div className="mt-3">
+              <div className="mt-4">
                 <p className="text-sm text-muted">Examples from {loaded.passage.title}</p>
                 {examples.length ? (
                   <ul className="space-y-2 pt-1">
                     {examples.map((example) => (
-                      <Example key={`${example.reference}:${example.word.t}`} example={example} onWord={onWord} />
+                      <Example key={`${example.reference}:${example.word.t}`} idea={idea} example={example} onWord={onWord} />
                     ))}
                   </ul>
                 ) : (
@@ -280,7 +342,6 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
                   </p>
                 )}
               </div>
-              {table ? <ParadigmTable table={table} /> : null}
             </>
           )}
         </div>

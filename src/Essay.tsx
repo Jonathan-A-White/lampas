@@ -3,6 +3,7 @@
 // opens so the main bundle does not carry it; the worker precaches that chunk, so the page reads offline. A footnote's number opens its note under
 // the paragraph and a second tap closes it. The 2001 article stays linked at the foot, marked as the old-format page it is, as the older text.
 import { Fragment, useEffect, useState, type ReactNode } from 'react';
+import { greekMarked } from './ui/GreekMarked';
 import type { Block, Essay as EssayData, Run } from './essay/types';
 import { navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
@@ -10,21 +11,6 @@ import { usePageActions } from './PageActions';
 import { ESSAY_CREDIT, ESSAY_ORIGINAL, ESSAY_ORIGINAL_NOTE, ESSAY_RELEASE, ESSAY_SOURCE, ESSAY_TITLE } from './preface';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { useReportScreen } from './tutor/screenContext';
-
-const GREEK = /([Ͱ-Ͽἀ-῿][Ͱ-Ͽἀ-῿ ,-]*[Ͱ-Ͽἀ-῿]|[Ͱ-Ͽἀ-῿])/;
-
-/** A stretch of text with its Greek marked, so the Greek font and the Greek voice find it; drawn in the app's Greek type (Gentium Plus at --lp-greek-size) as everywhere else. */
-function greekMarked(text: string): ReactNode {
-  return text.split(GREEK).map((part, i) =>
-    i % 2 === 1 ? (
-      <span key={i} lang="grc" className="font-greek text-[length:var(--lp-greek-size)]">
-        {part}
-      </span>
-    ) : (
-      part
-    ),
-  );
-}
 
 const NOTE_BUTTON =
   'relative px-1 align-super text-xs font-semibold text-accent underline after:absolute after:-inset-x-2 after:-inset-y-3 after:content-[""]';

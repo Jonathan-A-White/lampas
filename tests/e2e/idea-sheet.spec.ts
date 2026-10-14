@@ -18,7 +18,13 @@ test('the idea sheet of the genitive fits the phone, its slider and buttons clea
   await expect(idea).toBeVisible();
   await expect(idea.getByRole('heading', { name: 'The genitive case' })).toBeVisible();
   await expect(idea.getByTestId('idea-example')).toHaveCount(3);
-  await expect(idea.getByTestId('idea-paradigm')).toBeVisible();
+  // the card teaches a beginner (mw-5r3p30.234): what it is, how to spot it with its table of endings, and a worked example, all inside the phone's width
+  for (const part of ['What it is', 'How to spot it', 'Worked example']) await expect(idea.getByRole('heading', { name: part, exact: true })).toBeVisible();
+  const table = idea.getByTestId('idea-table');
+  await expect(table).toBeVisible();
+  const tableFits = await table.evaluate((el) => el.scrollWidth <= el.clientWidth + 1);
+  expect(tableFits).toBe(true);
+  await expect(idea.getByTestId('worked-respelling')).toBeVisible();
   const sheet = await idea.boundingBox();
   expect((sheet?.x ?? 0) + (sheet?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
   expect((sheet?.y ?? 0) + (sheet?.height ?? 0)).toBeLessThanOrEqual(VIEWPORT.height);

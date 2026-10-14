@@ -121,7 +121,7 @@ const letterIdeas = (): Def[] =>
 function letterText(name: string, lower: string, upper: string, key: string): string {
   const base = `${name} is written ${lower} in small letters and ${upper} as a capital.`;
   if (key === 'sigma') return `${base} At the end of a word it is written ς.`;
-  if (key === 'upsilon') return `${base} On its own it is a vowel; after a, e or η it makes a diphthong.`;
+  if (key === 'upsilon') return `${base} It is a vowel; after α, ε, η or ο it makes a pair of vowels (αυ, ευ, ηυ, ου), and before ι it makes υι.`;
   return base;
 }
 
@@ -194,7 +194,7 @@ const DEFS: Def[] = [
     'Syllables',
     [],
     ['diphthongs', 'consonant-pairs'],
-    'A Greek word is said in syllables, each built round one vowel sound. A word has as many syllables as it has vowel sounds, counting a pair of vowels once. Cut the word after each vowel and let the following consonants go with the next syllable, as long as a Greek word could begin with them.',
+    'A Greek word is said in syllables, each built round one vowel sound. A word has as many syllables as it has vowel sounds, counting a pair of vowels once. Cut the word after each vowel sound: one consonant starts the next syllable (λό-γος); of two or more, the last does (ἀρ-χῆς), unless together they can begin a word, as στ, πρ and a consonant before λ or ρ can (ἐ-στιν).',
   ),
 
   // marks
@@ -220,7 +220,7 @@ const DEFS: Def[] = [
     'marks',
     'The iota under a letter',
     [],
-    ['letter-iota', 'letter-alpha', 'letter-eta', 'letter-omega'],
+    ['letter-iota', 'letter-alpha', 'letter-eta', 'letter-omega', 'breathings', 'accents'],
     'A tiny iota sometimes sits under α, η or ω: ᾳ, ῃ, ῳ. It is not said aloud, but it is part of the spelling, and it often marks how a word ends. Do not skip it when you copy a word out.',
   ),
   def(
@@ -236,7 +236,7 @@ const DEFS: Def[] = [
     'marks',
     'Punctuation and small marks',
     [],
-    ['accents'],
+    ['breathings', 'accents'],
     'Punctuation is much as in English: the comma and full stop are the same. The semicolon (;) is a question mark, and a raised dot (·) is a colon or semicolon. An apostrophe shows a dropped vowel (elision): δι᾿ is δια with its last letter gone. Two dots over a vowel (the diaeresis) say it is not part of a pair.',
   ),
   def(
@@ -265,19 +265,19 @@ const DEFS: Def[] = [
   ),
 
   // nouns: the noun, then number and the two joiners met in every verse (καί, δέ, οὐ), then the cases, the genders, the article and the adjective
-  def('noun', 'nouns', 'The noun', ['noun'], ['accents']),
+  def('noun', 'nouns', 'The noun', ['noun'], ['breathings', 'accents', 'iota-subscript']),
   def('number-singular', 'nouns', 'The singular', ['singular'], ['noun']),
   def('number-plural', 'nouns', 'The plural', ['plural'], ['number-singular']),
   def('conjunction', 'nouns', 'The conjunction', ['conjunction'], ['noun']),
   def('negative', 'nouns', 'The negative', ['negative'], ['conjunction']),
-  def('case-nominative', 'nouns', 'The nominative case', ['nominative'], ['noun']),
+  def('case-nominative', 'nouns', 'The nominative case', ['nominative'], ['noun', 'number-plural']),
   def('case-accusative', 'nouns', 'The accusative case', ['accusative'], ['case-nominative']),
   def('case-genitive', 'nouns', 'The genitive case', ['genitive'], ['case-nominative']),
   def('case-dative', 'nouns', 'The dative case', ['dative'], ['case-genitive']),
   def('case-vocative', 'nouns', 'The vocative case', ['vocative'], ['case-nominative']),
   def('gender-masculine', 'nouns', 'The masculine gender', ['masculine'], ['noun']),
   def('gender-feminine', 'nouns', 'The feminine gender', ['feminine'], ['gender-masculine']),
-  def('gender-neuter', 'nouns', 'The neuter gender', ['neuter'], ['gender-masculine', 'case-accusative']),
+  def('gender-neuter', 'nouns', 'The neuter gender', ['neuter'], ['gender-masculine', 'gender-feminine', 'case-accusative']),
   def('article', 'nouns', 'The article', ['article'], ['noun', ...NOUN_CASES, 'number-plural', ...GENDERS]),
   def('adjective', 'nouns', 'The adjective', ['adjective'], ['noun', ...NOUN_CASES, 'number-plural', ...GENDERS]),
   def('comparative', 'nouns', 'The comparative', ['comparative'], ['adjective']),
@@ -339,7 +339,7 @@ const DEFS: Def[] = [
   def('tense-pluperfect', 'verbs', 'The pluperfect tense', ['pluperfect'], ['tense-perfect']),
   def('second-tenses', 'verbs', 'Second aorists and perfects', ['second'], ['tense-aorist', 'tense-perfect']),
   def('voice-middle', 'verbs', 'The middle voice', ['middle'], ['voice-active']),
-  def('voice-passive', 'verbs', 'The passive voice', ['passive'], ['voice-active', 'tense-present', 'case-genitive']),
+  def('voice-passive', 'verbs', 'The passive voice', ['passive'], ['voice-active', 'tense-present', 'tense-aorist', 'case-genitive']),
   def('voice-middle-or-passive', 'verbs', 'The middle or passive voice', ['middle or passive'], ['voice-middle', 'voice-passive']),
   def('voice-middle-deponent', 'verbs', 'The middle deponent', ['middle deponent'], ['voice-middle-or-passive']),
   def('voice-passive-deponent', 'verbs', 'The passive deponent', ['passive deponent'], ['voice-middle-deponent', 'tense-aorist']),

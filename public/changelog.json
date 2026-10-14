@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.225",
+    "date": "2026-10-14",
+    "story": "mw-yrmkdf.3",
+    "kind": "new",
+    "text": "A new reader is welcomed by the tutor in plain English, with a few short questions that set up Lampas for them, and can skip them."
+  },
+  {
+    "version": "0.1.224",
+    "date": "2026-10-14",
+    "story": "mw-i7xe0n.7",
+    "kind": "fixed",
+    "text": "Drill it on a sound that changes with the next letter (like χ, kh or hy) now asks words of both kinds, offers the same word said the other way as a wrong answer, and names the rule when you miss."
+  },
+  {
+    "version": "0.1.222",
+    "date": "2026-10-14",
+    "story": "mw-5r3p30.234",
+    "kind": "new",
+    "text": "every grammar card now teaches from scratch: what the idea is, how to spot it with a table of its endings, and a word from your verse taken apart step by step, and its examples are only words the card can explain."
+  },
+  {
     "version": "0.1.221",
     "date": "2026-10-14",
     "story": "mw-5r3p30.272",

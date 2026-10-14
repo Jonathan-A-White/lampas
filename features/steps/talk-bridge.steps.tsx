@@ -32,8 +32,8 @@ const bridgeAnswer = (missing: string[]) => ({
   bridge: { missing, next: missing[0], why: 'The genitive rests on spelling you have not met.' },
 });
 const LACKS = bridgeAnswer(['diphthongs', 'consonant-pairs', 'syllables']);
-/** he lacks six: the model lists the three the genitive most directly rests on and names the nearest of them to start with; the app opens the lowest unmet need of the six */
-const LACKS_MOST_DIRECT = bridgeAnswer(['case-nominative', 'noun', 'accents']);
+/** he lacks ten, and the device names the eight lowest: the model lists the three of those the genitive most directly rests on and names the nearest of them to start with; the app opens the lowest unmet need of them all */
+const LACKS_MOST_DIRECT = bridgeAnswer(['number-singular', 'noun', 'iota-subscript']);
 let fake: FakePostern;
 
 async function openWith(answer: Record<string, unknown>): Promise<void> {
@@ -119,7 +119,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the request carried the foundations he lacks, the lowest first, {string}', (_, first: string) => {
       const sent = talkGrists()[0].input as { missing_foundations?: { ideas: { id: string }[]; total: number } };
       expect(sent.missing_foundations?.ideas[0].id).toBe(first);
-      expect(sent.missing_foundations?.total).toBe(6);
+      expect(sent.missing_foundations?.total).toBe(10);
     });
     And('the talk shows the button {string}', shows);
     When('he taps {string}', taps);
@@ -155,7 +155,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('Missing quite a bit, he is shown three and taken to the next step', ({ Given, When, And, Then }) => {
-    Given('only the letters are solid and Lampas is opened on 1 John 1 behind a fake Postern whose tutor lists the three most direct of the six', opens(LACKS_MOST_DIRECT));
+    Given('only the letters are solid and Lampas is opened on 1 John 1 behind a fake Postern whose tutor lists the three most direct of those he lacks', opens(LACKS_MOST_DIRECT));
     When(WHEN_ASKS, asks);
     Then('the talk lists exactly {int} foundations he is missing and says there is more', async (_, count: number) => {
       const list = await waitFor(() => {
