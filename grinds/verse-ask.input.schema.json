@@ -10,7 +10,8 @@
     "english": { "description": "The same verse in English (the Majority Standard Bible); words the translators supplied are between asterisks.", "type": "string" },
     "question": { "description": "What he asked, at most 400 characters.", "type": "string", "minLength": 1, "maxLength": 400 },
     "spoken": { "description": "Optional. true only when he spoke the question to the phone's English speech recogniser (Hold to talk, Hold to ask); missing when he typed it. A Greek word in it may have come as English sound-alikes. See the instructions.", "type": "boolean", "const": true },
-    "solid_words": { "description": "The Greek lemmas he already knows well.", "type": "array", "items": { "type": "string" } },
+    "solid_count": { "description": "Optional. How many Greek words he knows well in all. `solid_words` names only the most recent of them.", "type": "number", "minimum": 0 },
+    "solid_words": { "description": "The Greek lemmas he most recently came to know well: at most 50, the newest last. `solid_count` says how many he knows in all.", "type": "array", "maxItems": 50, "items": { "type": "string" } },
     "learner": { "description": "Optional. Where he stands in one line: 'solid N words; learning: a, b, c; new today: x, y; due now: M'.", "type": "string", "maxLength": 600 },
     "learner_grammar": { "description": "Optional. Where his grammar stands, as in the Bible talk's request (grinds/bible-talk.input.schema.json learner_grammar).", "type": "object" },
     "memory": {

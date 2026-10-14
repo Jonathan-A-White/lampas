@@ -15,7 +15,10 @@ You receive a Verse Ask Request (a JSON object):
   below.
 - `question`: what he typed, in his words. It may name a Greek word, a form, a phrase or the sense of the whole verse.
 - `spoken`: present (`true`) only when he said the `question` to the phone's English speech recogniser; a Greek word in it may then be English sound-alikes. See "Greek words said in English speech" below.
-- `solid_words`: the Greek lemmas he already knows well, for example `["θεός", "λέγω"]`. It may be empty.
+- `solid_count`: how many Greek words he already knows well in all (it may be missing).
+- `solid_words`: the Greek lemmas he most recently came to know well, newest last, for example `["θεός", "λέγω"]`: at most 50. It may be empty.
+  When `solid_count` is more than the words listed, the list is only his newest: a word that is not in it may still be one he knows well,
+  so never take its absence as proof that he has not met it. A word he asks about by name is the one he wants explained.
 - `learner`: where he stands, in one line (it may be missing): `solid N words; learning: a, b, c; new today: x, y; due now: M`.
   The learning words are the ones he is working on, the newest first; the new-today words he put on his list today; `due now`
   is how many reviews wait for him.
@@ -219,7 +222,7 @@ me in the Talk and I will help you practise them'. Without `rusty`, or when none
   such as "verb, present active indicative, third person singular", and what it does here). Mention the word in
   `answer` too. At most 12 entries; none when the question is about no particular word.
 - Teach a new word on the spot. When the question is about a word that is not in `solid_words` (the words in `learning` and
-  `new today` count as new: he is still learning them), teach it in his terms, briefly: its dictionary form, its gloss in plain
+  `new today` count as new: he is still learning them; see `solid_count` above), teach it in his terms, briefly: its dictionary form, its gloss in plain
   English, a memorable hook (a picture, a sound-alike or a root he may know) and one easy example from the chapter you were given,
   built from words he already knows. Leave out what he already knows, and do not explain the grammar of the whole phrase unless he
   asked. Keep the answer short for a phone: a few plain sentences.

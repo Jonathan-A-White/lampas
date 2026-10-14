@@ -26,7 +26,7 @@ screen gets `<AskTutor route>` from `App.tsx`, which opens the Talk sheet over a
 `{ label, value }` (at most 12; label 40 and value 200 characters, `fitScreen`). `buildTalkRequest` sends it as the request's `screen`;
 `reference` is the screen's name and `greek` and `english` are left out (the talk is not about a text). The input schema
 (`grinds/bible-talk.input.schema.json`) has `screen` and no longer requires `greek` and `english`; the instructions' "Talk from a screen" says how to
-use it. `learner`, `learner_grammar` and `solid_words` ride as in every talk.
+use it. `learner`, `learner_grammar` and `solid_words` ride as in every talk (`solid_words` is his 50 newest solid words and `solid_count` how many he has in all, src/services/solidWords.ts: the request does not grow with the learner; verse-ask is fitted to `MAX_REQUEST_BYTES` by `fitAsk` as the talk is by `fitHistory`).
 
 A screen leaves its facts with `useReportScreen({ name, facts })` (or `<ReportScreen>`), kept in `src/tutor/screenContext.ts`; the control reads them
 live. A screen that reports nothing sends its name alone.

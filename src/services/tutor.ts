@@ -13,6 +13,8 @@ import type { MemoryField } from '../data/learnerMemory';
 import type { TutorRequest } from '../data/requestsForTutor';
 import type { RustyItem } from '../data/rusty';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation } from '../speech/pronunciation';
+import { MAX_REQUEST_BYTES } from './requestBudget';
+import { solidWordsField } from './solidWords';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
 import { listenForAnswers, type StreamTarget } from './answerStream';
 import { AwaitAbortedError, BackendStatusError, GristInputError, meOf, readTimedPage, sendTimedGrist, timedDoor, type MillAnswer, type MillFile, type Page, type TimedDoor } from './mill';
@@ -158,6 +160,8 @@ export interface VerseAskRequest {
   question: string;
   /** present (true) only when the question was spoken to the phone's English recogniser (mw-5r3p30.244): a Greek word in it may have come as English sound-alikes */
   spoken?: true;
+  /** how many solid words he has (src/services/solidWords.ts) and the most recent few of them, newest last */
+  solid_count?: number;
   solid_words: string[];
   /** where he stands (src/data/learnerSummary.ts): solid count, the learning words, today's new words, what is due */
   learner?: string;
@@ -170,7 +174,7 @@ export interface VerseAskRequest {
   /** the Greek pronunciation the app speaks and respells in (src/speech/pronunciation.ts), as the Bible talk is sent it: a sound is described by it */
   pronunciation: GreekPronunciation;
   /** that pronunciation's name and sound rules, from its scheme (mw-5r3p30.268, Pronunciation.tutorGuide): a sound is described by them */
-  pronunciation_guide: string;
+  pronunciation_guide?: string;
   /** the settings that bear on this answer, by key (src/tutor/knows.ts settingsSentTo): { hebrewDepth: 'both', askBy: 'speaking', weave: 'off', ... } */
   settings?: Record<string, string>;
   /** the requests he sent to the factory and where each stands (src/data/requestsForTutor.ts): up to 10, newest first; missing when he has sent none */
@@ -224,7 +228,7 @@ export function buildRequest(reference: string, verse: Verse, question: string, 
     english: verse.e.map(markSupplied).join(' '),
     question: question.trim(),
     ...(spoken ? { spoken: true as const } : {}),
-    solid_words: solidWords,
+    ...solidWordsField(solidWords),
     pronunciation,
     pronunciation_guide: pronunciationOf(pronunciation).tutorGuide,
     ...(learner ? { learner } : {}),
@@ -342,7 +346,32 @@ export async function askGrind<Answer>(kind: string, request: object, isAnswer: 
   }
 }
 
+/**
+ * Makes the request fit a grist, as the Bible talk's fitHistory does (src/services/talk.ts): while it is over MAX_REQUEST_BYTES the pronunciation's guide goes first,
+ * then the oldest of his solid words, his requests (the last in the list, newest first) and his notes (from the end of the list; the index always stays). The verse and his question are never cut.
+ */
+export function fitAsk(request: VerseAskRequest): VerseAskRequest {
+  let guide = request.pronunciation_guide;
+  let solid = request.solid_words;
+  let requests = request.requests;
+  let notes = request.memory?.notes;
+  const fitted = (): VerseAskRequest => ({
+    ...request,
+    pronunciation_guide: guide,
+    solid_words: solid,
+    ...(requests ? { requests } : {}),
+    ...(request.memory && notes ? { memory: { ...request.memory, notes } } : {}),
+  });
+  const tooBig = (): boolean => new TextEncoder().encode(JSON.stringify(fitted())).length > MAX_REQUEST_BYTES;
+  if (!tooBig()) return request;
+  guide = undefined;
+  while (solid.length > 0 && tooBig()) solid = solid.slice(1);
+  while (requests && requests.length > 0 && tooBig()) requests = requests.slice(0, -1);
+  while (notes && notes.length > 0 && tooBig()) notes = notes.slice(0, -1);
+  return fitted();
+}
+
 /** Sends the question about a verse and waits for the answer (the verse-ask grind). */
 export function askTutor(request: VerseAskRequest, options: AskOptions): Promise<VerseAnswer> {
-  return askGrind(TUTOR_KIND, request, isVerseAnswer, options);
+  return askGrind(TUTOR_KIND, fitAsk(request), isVerseAnswer, options);
 }

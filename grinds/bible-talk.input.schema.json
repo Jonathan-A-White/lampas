@@ -188,7 +188,8 @@
         }
       }
     },
-    "solid_words": { "description": "The Greek lemmas he already knows well.", "type": "array", "items": { "type": "string" } },
+    "solid_count": { "description": "Optional. How many Greek words he knows well in all. `solid_words` names only the most recent of them.", "type": "number", "minimum": 0 },
+    "solid_words": { "description": "The Greek lemmas he most recently came to know well: at most 50, the newest last. `solid_count` says how many he knows in all.", "type": "array", "maxItems": 50, "items": { "type": "string" } },
     "learner": { "description": "Optional. Where he stands in one line: 'solid N words; learning: a, b, c; new today: x, y; due now: M'.", "type": "string", "maxLength": 600 },
     "learner_grammar": {
       "description": "Optional (an older app does not send it). Where his grammar stands: the reading goal, how many of its words and grammar ideas are solid, at the frontier and not yet, the titles of the ideas at each level (the goal's needs first, at most 12 a list), whether he has been placed, the move the app's New words at setting should make, the grammar approach with its next lesson, and his weak points from Drill it. At most 900 bytes.",

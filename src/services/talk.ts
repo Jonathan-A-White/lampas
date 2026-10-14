@@ -24,6 +24,8 @@ import { MAX_SUMMARY } from './feedback';
 import { greekSyllables, stressedSyllable } from '../speech/greekSyllables';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation } from '../speech/pronunciation';
 import { askGrind, type AskOptions } from './tutor';
+import { MAX_REQUEST_BYTES } from './requestBudget';
+import { solidWordsField } from './solidWords';
 
 /** The kind the mill runs the grind under (grinds/bible-talk.json). */
 export const TALK_KIND = 'bible-talk';
@@ -32,8 +34,7 @@ export const TALK_KIND = 'bible-talk';
 export const MAX_TALK_CHARS = 600;
 /** How many earlier turns the grind is sent. */
 export const MAX_HISTORY_TURNS = 10;
-/** The most a request may weigh, as JSON in UTF-8: a record is capped at 10 KiB and the sealed grist is base64 of this. */
-export const MAX_REQUEST_BYTES = 6500;
+export { MAX_REQUEST_BYTES };
 /** A long answer in the history is cut to this many characters when the request is too big. */
 const CLIPPED_CHARS = 240;
 const CLIP_MARK = '…';
@@ -182,6 +183,8 @@ export interface TalkRequest {
   /** present (true) only when the question was spoken to the phone's English recogniser (mw-5r3p30.244): a Greek word in it may have come as English sound-alikes */
   spoken?: true;
   history: TalkHistoryEntry[];
+  /** how many solid words he has (src/services/solidWords.ts) and the most recent few of them, newest last */
+  solid_count?: number;
   solid_words: string[];
   /** what each of the app's settings holds now (src/settings/registry.ts currentSettings), by key */
   settings: Record<string, SettingValue>;
@@ -508,7 +511,8 @@ export function buildTalkRequest(
     question: question.trim(),
     ...(spoken ? { spoken: true as const } : {}),
     history: turns.slice(-MAX_HISTORY_TURNS).map(({ q, a }) => ({ q, a })),
-    solid_words: aboutCredits ? [] : solidWords,
+    // a talk with credits sends no words and no count: a count of 0 would tell the tutor he knows nothing
+    ...(aboutCredits ? { solid_words: [] } : solidWordsField(solidWords)),
     settings,
     pronunciation,
     pronunciation_guide: pronunciationOf(pronunciation).tutorGuide,

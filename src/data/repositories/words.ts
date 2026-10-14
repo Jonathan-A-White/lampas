@@ -94,10 +94,11 @@ export async function listLearningLemmas(): Promise<Set<string>> {
   return new Set(learning.flatMap((w) => [w.lemma, ...w.lemmas]).map((l) => l.normalize('NFC')));
 }
 
-/** The headwords of his solid words, in the order of the list (lesson, then spelling): what the tutor is told he knows. */
+/** The headwords of his solid words, the one that turned solid longest ago first and the newest last (then by spelling): what the tutor is told he knows
+ * (src/services/solidWords.ts sends the count and the last few). */
 export async function listSolidHeadwords(): Promise<string[]> {
   const solid = await db.words.where('state').equals('solid').toArray();
-  return solid.sort((a, b) => a.lesson - b.lesson || a.lemma.localeCompare(b.lemma)).map((w) => w.lemma);
+  return solid.sort((a, b) => a.since - b.since || a.lesson - b.lesson || a.lemma.localeCompare(b.lemma)).map((w) => w.lemma);
 }
 
 /** Every lemma a dropped word goes by (NFC), like listSolidLemmas: the new words the teach sheet must never offer. */
