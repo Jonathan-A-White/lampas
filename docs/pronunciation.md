@@ -11,15 +11,18 @@ sound-alikes for the letters.
 ## How it is built
 
 `src/speech/pronunciation.ts` is the registry: a list of `Pronunciation` entries
-`{ id, label, lang, scoringLang, note, respell(greekWord), keyWords, loneLetter(word), voiceForm(text), letterForm(letter), tutorGuide, lessons? }`. `keyWords` gives each sound the respelling writes an English word that has it (`e` is the e of pet); the sound lessons say every sound as 'e as in pet' from it. Settings lists the entries, the word sheet calls
+`{ id, label, lang, scoringLang, note, respell(greekWord), keyWords, loneLetterClip(word), voiceForm(text), letterForm(letter), tutorGuide, lessons? }`. `keyWords` gives each sound the respelling writes an English word that has it (`e` is the e of pet); the sound lessons say every sound as 'e as in pet' from it. Settings lists the entries, the word sheet calls
 `pronunciationOf(chosen).respell(word.t)`, and `lang` is the language tag of the voice that speaks (Settings keeps
 the chosen id under `greekPronunciation`). Each scheme is one file in `src/speech/schemes/`.
 
-`loneLetter(word)` is what the scheme's voice is handed for a Greek word of ONE letter (ὁ, ἡ, ὦ, Ὃ): a voice handed a bare
-letter names it ('omicron'), so the scheme gives a form its voice reads as the word's sound (mw-5r3p30.262). Modern Greek's is
-the bare vowel in lower case with a stress mark, ό ή ώ (no breathing is said; a Greek voice reads a stressed vowel as a
-syllable, as it reads the word ή 'or'). A held word, a speaker and a one-letter run of a reading all go through it
-(`src/speech/greek.ts` `loneLetterForm`); a letter drill (`speakLetter`) does not, since there the letter is the thing named.
+`loneLetterClip(word)` is the bundled clip of the sound of a Greek word of ONE letter (ὁ, ἡ, ὦ, Ὃ), played instead of any voice (mw-5r3p30.347).
+A Greek voice handed one letter names it ('omicron'), with or without an accent: mw-5r3p30.262 handed it the stressed vowel 'ό', which
+passed its tests, and his phone (and espeak-ng's `el`: 'omikron tonos') still said the name. So no voice is handed such a word at all.
+Modern Greek's clips are `public/sounds/modern/<sound>.mp3`, one per vowel sound its respelling writes (`a`, `e`, `ee`, `o`: ὁ and ὦ play
+`o`, ἡ plays `ee`), made by `scripts/sounds-build.sh` with eSpeak NG's phoneme input (`[[o]]`), which says a sound and cannot spell a letter;
+they are precached. A held word, a speaker, Tap to hear and a one-letter run of a reading all play it (`src/speech/greek.ts` `loneLetterClip`,
+`playLetterClip`; `readAloud.ts` `piecesOf`); a letter drill (`speakLetter`) does not, since there the letter is the thing named. A new scheme
+(Erasmian) gives its own clips, from its own vowel sounds, in `public/sounds/<id>/`, and the build script a line for them.
 
 `voiceForm(text)` (mw-5r3p30.264) is what the scheme's voice is handed for any other Greek text (a held word, a speaker, a verse read
 aloud), so the voice says the sounds the respelling writes. A Greek voice reads ντ, μπ and γκ inside a word as a bare d, b, g (Πάντοτε

@@ -187,13 +187,18 @@ export const MODERN_KEY_WORDS: Readonly<Record<string, string>> = {
   mb: 'number', nd: 'under', ng: 'finger', nks: 'thanks', kh: 'loch',
 };
 
-/** A Greek word of ONE letter as the Greek voice is handed it (mw-5r3p30.262): the bare letter in lower case with a stress mark, in NFC (ὁ and Ὃ
- * are 'ό', ἡ 'ή', ὦ 'ώ'). Modern Greek says no breathing; a Greek voice names a bare letter ('όμικρον') but reads a stressed vowel as a syllable,
- * as it reads the word ή ('or'). A consonant carries no stress and is left bare. PROVISIONAL until the Governor has heard it on his phone. */
-export function loneLetterModern(word: string): string {
+/** The bundled clip of the sound of a Greek word of ONE letter (mw-5r3p30.347): ὁ, Ὃ and ὦ play the o, ἡ and ἤ the ee, ἃ the a. A Greek voice handed one
+ * letter names it, whatever accent it carries (mw-5r3p30.262 handed it 'ό', and his phone said 'Omicron'), so the word is never handed to a voice: the
+ * clip, public/sounds/modern/<sound>.mp3, is named by the sound respellModern writes for the vowel and was made with eSpeak NG's phoneme input
+ * (scripts/sounds-build.sh), which says a sound and cannot spell a letter. A consonant alone (no Greek word is one) has no clip: null. */
+export function loneLetterClipModern(word: string): string | null {
   const bare = word.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
-  return bare.length === 1 && VOWELS.includes(bare) ? `${bare}\u0301`.normalize('NFC') : bare;
+  const sound = [...bare].length === 1 ? VOWEL_SOUND[bare] : undefined;
+  return sound ? `/sounds/modern/${sound}.mp3` : null;
 }
+
+/** Every clip the Modern Greek scheme plays for a one-letter word (the sounds of its single vowels), for the tests that hold them to the files. */
+export const MODERN_LONE_CLIPS: readonly string[] = [...new Set(Object.values(VOWEL_SOUND))].map((sound) => `/sounds/modern/${sound}.mp3`);
 
 /** The pairs said with a nasal inside a word (the respelling writes it: πάντοτε is 'PAN-do-te'), each with the nasal letter that says it. */
 const NASAL_PAIRS: Readonly<Record<string, string>> = { ντ: 'ν', μπ: 'μ', γκ: 'ν' };
@@ -244,7 +249,7 @@ export const MODERN: Pronunciation = {
   note: "How Greek is spoken today, by the phone's Greek voice.",
   respell: respellModern,
   keyWords: MODERN_KEY_WORDS,
-  loneLetter: loneLetterModern,
+  loneLetterClip: loneLetterClipModern,
   voiceForm: voiceFormModern,
   // a Greek voice names a bare lower-case letter the modern way ('vita' for β); a capital would be read 'capital ...'
   letterForm: (letter) => letter.toLowerCase(),

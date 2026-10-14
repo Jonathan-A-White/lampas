@@ -32,6 +32,10 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   Changes: per Strong's number only the first entry is used, with its lemma and gloss as given; the
   Abbott-Smith definition has its markup, scripture references and daggers removed and is cut near 300
   characters (scripts/data-build.ts, docs/data.md).
+- **[eSpeak NG](https://github.com/espeak-ng/espeak-ng)** speech synthesizer. The short clips of a vowel's sound that play when you hear a Greek word of one
+  letter (ὁ, ἡ, ὦ, Ὃ), in public/sounds/: the phone's own Greek voice says such a word as the letter's name ('omicron'), so the app plays these instead.
+  Each is eSpeak NG's Greek voice saying one vowel from its phoneme input, not a letter. Licence: eSpeak NG is [GPL-3.0](https://github.com/espeak-ng/espeak-ng/blob/master/COPYING);
+  the clips are sound it made, and no eSpeak NG code is in the app. Changes: silence trimmed, cut to MP3 with [FFmpeg](https://ffmpeg.org) (scripts/sounds-build.sh).
 - **[Biblical Mastery Academy](https://biblicalmastery.academy/).** The order in which the BMA Tutor grammar approach teaches Greek
   follows the sequence of the Greek Success Path of Biblical Mastery Academy. Only the sequence is followed: the lesson titles,
   the method, the drills, Drill it (the walk that proves an idea) and the drill plan that follows a Drill it that does not prove an idea (a short drill on each weak point, easiest first, then Drill it again) in Lampas are its own, and no course text, image or exercise is copied. Changes: a few lessons are moved earlier or later, so that no idea is taught before an idea it rests on.

@@ -19,7 +19,7 @@ import type { ReaderView } from '../data/repositories';
 import type { Woven } from '../data/weave';
 import { publish } from '../events/bus';
 import { openReader } from '../nav/route';
-import { besideNow, greekVoiceForm, hasGreekVoice, loneLetterForm, READ_KEY, speakText, subscribeBeside } from './greek';
+import { besideNow, greekVoiceForm, hasGreekVoice, loneLetterClip, playLetterClip, READ_KEY, speakText, stopLetterClip, subscribeBeside } from './greek';
 import type { SpeechLanguage } from './languages';
 import type { ReadSpan } from './readSpan';
 import { dropWaiting } from './tutorWaiting';
@@ -111,6 +111,8 @@ let queued: PlanVerse[] | null = null;
 let epoch = 0;
 /** the chapter after this one is being fetched: the voice is silent meanwhile, and the reading is not over */
 let loading = false;
+/** a one-letter word's clip is playing in the verse: the voice is silent meanwhile, and the reading is not over */
+let clipping = false;
 /** the package held our speech at its last change */
 let engineHad = false;
 /** how the running reading was started, to start it again where it was (a Listen that a tutor's answer interrupted) */
@@ -172,7 +174,7 @@ function syncWithEngine(): void {
   if (!had) return;
   const my = epoch;
   queueMicrotask(() => {
-    if (my !== epoch || state.status === 'idle' || state.crossing || loading) return;
+    if (my !== epoch || state.status === 'idle' || state.crossing || loading || clipping) return;
     const now = getSpeech();
     if (now.status === 'idle') return finish(my);
     if (now.key === READ_KEY) return;
@@ -230,9 +232,57 @@ function afterVerse(at: number, my: number): void {
 }
 
 /** The runs of a verse as the one text handed to the package: a run to a line, so the package cuts a sentence at the end of every run too. A Greek run
- * of one letter (a one-letter syllable, a lone ὁ) would be named by a Greek voice, so it goes in its pronunciation's form, to the Greek voice (mw-5r3p30.262);
- * any other Greek run goes in its pronunciation's voice form, so the voice says what the respelling writes (mw-5r3p30.264). */
-const textOf = (runs: Run[]): string => runs.map((r) => (r.language === 'greek' ? (loneLetterForm(r.text) ?? greekVoiceForm(r.text)) : r.text)).join('\n');
+ * goes in its pronunciation's voice form, so the voice says what the respelling writes (mw-5r3p30.264). */
+const textOf = (runs: Run[]): string => runs.map((r) => (r.language === 'greek' ? greekVoiceForm(r.text) : r.text)).join('\n');
+
+/** A stretch of a verse: text for the voice, or the clip of a one-letter word. */
+type Piece = { text: string } | { clip: string };
+
+/** A verse's runs as what is played in turn. A Greek run of one letter (a lone ὁ, a one-letter syllable) is never handed to the voice, which would name the
+ * letter ('omicron'): its pronunciation's clip plays there (mw-5r3p30.347), and the runs on each side of it are a speech each. */
+function piecesOf(runs: Run[]): Piece[] {
+  const pieces: Piece[] = [];
+  let lines: Run[] = [];
+  const flush = () => {
+    if (lines.length > 0) pieces.push({ text: textOf(lines) });
+    lines = [];
+  };
+  for (const run of runs) {
+    const clip = run.language === 'greek' ? loneLetterClip(run.text) : null;
+    if (clip) {
+      flush();
+      pieces.push({ clip });
+    } else lines.push(run);
+  }
+  flush();
+  return pieces;
+}
+
+/** Plays a verse's pieces in turn, then `done`. A clip cut off by another speech (a word he holds) leaves the reading waiting at its verse, as a word
+ * that takes the voice does; one paused meanwhile waits for Resume, which reads the verse from its start. */
+function playPieces(pieces: Piece[], my: number, done: () => void, slowly: boolean): void {
+  if (my !== epoch) return;
+  const [piece, ...rest] = pieces;
+  if (!piece) return done();
+  const next = () => playPieces(rest, my, done, slowly);
+  if ('text' in piece) {
+    if (!speakText(piece.text, READ_KEY, { onEnd: next, slowly })) finish(my);
+    return;
+  }
+  clipping = true;
+  const played = playLetterClip(piece.clip, (cut) => {
+    clipping = false;
+    if (my !== epoch || state.status !== 'reading') return;
+    if (!cut) return next();
+    if (state.answer !== null) return finish(my);
+    letSleep();
+    set({ ...state, status: 'paused', onBar: false });
+  });
+  if (!played) {
+    clipping = false;
+    next();
+  }
+}
 
 function readVerse(verse: number, my: number): void {
   if (my !== epoch) return;
@@ -249,8 +299,7 @@ function readVerse(verse: number, my: number): void {
   const ahead = at === plan.length - 1 ? chapterAhead() : null;
   if (ahead) loadChapter(ahead.book, ahead.chapter).catch(() => {});
   if (entry.runs.length === 0) return afterVerse(at, my);
-  const spoke = speakText(textOf(entry.runs), READ_KEY, { onEnd: () => afterVerse(at, my), slowly: entry.runs.every((r) => r.slow) });
-  if (!spoke) finish(my);
+  playPieces(piecesOf(entry.runs), my, () => afterVerse(at, my), entry.runs.every((r) => r.slow));
 }
 
 function greekAhead(from: number, all: boolean): boolean {
@@ -425,6 +474,7 @@ export function stopReading(): void {
   set(IDLE);
   publish({ kind: 'reading-stopped' });
   if (isSpeaking(READ_KEY)) engineStop();
+  else if (clipping) stopLetterClip();
 }
 
 /** The chapter is shown differently now (the view or the weave changed): the verses still to be read follow it, from the

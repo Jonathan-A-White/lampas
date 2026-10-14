@@ -29,7 +29,7 @@ export function answerRuns(answer: string): Run[] {
   return runs;
 }
 
-/** The syllables of a word he asked to have sounded out, as runs to read one after another: Greek, said slowly. A syllable of one letter stays one letter here: readAloud.ts textOf hands it to the Greek voice in its pronunciation's form (mw-5r3p30.262). */
+/** The syllables of a word he asked to have sounded out, as runs to read one after another: Greek, said slowly. A syllable of one letter stays one letter here: readAloud.ts piecesOf plays its pronunciation's clip there, never handing it to a voice (mw-5r3p30.347). */
 export function syllableRuns(syllables: string[]): Run[] {
   return syllables.filter(speakable).map((text) => ({ text, language: 'greek' as const, slow: true }));
 }

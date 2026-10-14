@@ -3,7 +3,7 @@
 // Everything is spoken by bsv-kit/speech (mw-m7v5kc.3): the sentence queue, Pause / Resume / Restart / Stop, the language and voice
 // of each sentence from its letters, a page that hides pausing it. This file is what the app adds: his speed for a language and the
 // voice he picked in Settings (the package has neither), the help line for a language the phone has no voice for, and the words
-// said alone. speak() is called straight from the tap handler (docs/pwa-best-practices.md section 12: a speak() that leaves the
+// said alone, and the clip of a one-letter word's sound, which no voice is handed (mw-5r3p30.347). speak() is called straight from the tap handler (docs/pwa-best-practices.md section 12: a speak() that leaves the
 // tap loses user activation on Android Chrome), so it never waits: the voice list is loaded ahead by warmVoices(), and a phone that
 // has not listed its voices yet is still asked to speak with the language alone and picks its own voice.
 import { useRef, useSyncExternalStore } from 'react';
@@ -20,6 +20,7 @@ import {
   subscribe as subscribeEngine,
 } from 'bsv-kit/speech';
 import { useSpeech } from 'bsv-kit/speech/react';
+import { ClipPlayer } from '../audio/clipPlayer';
 import { DEFAULT_RATE, DEFAULT_RATES, HEBREW_LANG, LANGUAGES, normaliseRate, type SettableLanguage, type SpeechLanguage, type SpeechRates } from './languages';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation, type Pronunciation } from './pronunciation';
 
@@ -148,7 +149,8 @@ function chooseVoices(synth: SpeechSynthesis): void {
 
 // A word, a speaker or a hold that speaks while a reading or a tutor's answer is under way INTERRUPTS it (docs/read-aloud.md 'The speaking bar'): the
 // package's speech is paused where it is, so its bar offers Resume and the sentence reached is kept, and the word is said BESIDE it, straight to the
-// phone's synthesiser. `beside` is that word (or speaker's text); it is over when its last sentence ends, is stopped, or is cut off.
+// phone's synthesiser. `beside` is that word (or speaker's text); it is over when its last sentence ends, is stopped, or is cut off. The clip of a one-letter
+// word (playLoneLetter) is held here too, beside a reading or alone, so its speaker shows Stop, a second tap stops it and Tap to hear sees it end.
 interface Beside {
   key: string;
   /** a reading was playing and this word paused it (it was not already paused): a Listen goes on by itself when the word is over */
@@ -176,6 +178,7 @@ function stopBeside(): void {
   if (!beside) return;
   besideEpoch++;
   setBeside(null);
+  stopLetterClip();
   const synth = synthesis();
   // a reading that was resumed meanwhile has its sentences queued behind the word: pausing keeps its place, a cancel alone would lose it
   if (getSpeech().key === READ_KEY && getSpeech().status === 'playing') pauseEngine();
@@ -212,6 +215,8 @@ export function speakText(text: string, key: string, options: { onEnd?: () => vo
   const synth = synthesis();
   if (!synth) return false;
   chooseVoices(synth);
+  // a one-letter word's clip gives way to whatever is said next
+  stopLetterClip();
   slow = options.slowly ?? false;
   forced = options.language ? langOf(options.language) : null;
   // anything that is not a reading, said while a reading is under way (playing or paused), interrupts it instead of replacing it
@@ -257,11 +262,14 @@ function speakBeside(synth: SpeechSynthesis, text: string, key: string): boolean
  * them, and the phone's default voice would read either one as English. */
 export function speak(text: string, key: string, language: SpeechLanguage = 'greek'): SpeakOutcome {
   const synth = synthesis();
-  if (!synth || ((language === 'greek' || language === 'hebrew') && hasVoice(language) === false)) return 'no-voice';
+  // a one-letter word is a clip and needs no voice
+  const clip = language === 'greek' ? loneLetterClip(text) : null;
+  if (!clip && (!synth || ((language === 'greek' || language === 'hebrew') && hasVoice(language) === false))) return 'no-voice';
   if (beside?.key === key || isSpeaking(key)) {
     stopIfSpeaking(key);
     return 'stopped';
   }
+  if (clip) return playLoneLetter(clip, key) ? 'speaking' : 'no-voice';
   const said = wordSpeech(text, language);
   return speakText(said.text, key, { language: said.language }) ? 'speaking' : 'no-voice';
 }
@@ -270,32 +278,96 @@ export function speak(text: string, key: string, language: SpeechLanguage = 'gre
  * again says it again). With no Greek voice it still speaks, to the phone's default voice with lang set, as a reading
  * does; the speaker buttons carry the help line. Returns false when the phone cannot speak at all. */
 export function speakWord(text: string, language: SpeechLanguage, slowly = false): boolean {
+  const clip = language === 'greek' ? loneLetterClip(text) : null;
+  if (clip) return playLoneLetter(clip, WORD_KEY);
   const said = wordSpeech(text, language);
   return speakText(said.text, WORD_KEY, { slowly, language: said.language });
 }
 
-/** What the Greek voice is handed for a text that is ONE Greek letter (ὁ, ἡ, ὦ, Ὃ), or null for any other text. A voice handed a bare letter names it
- * ('omicron'), so the word goes as the chosen pronunciation gives it (its loneLetter: Modern Greek's is the stressed vowel, 'ό'), still to the Greek
- * voice (mw-5r3p30.262; before it, mw-5r3p30.256 sent the respell to the English voice). The form is the scheme's, never written here. */
-export function loneLetterForm(text: string): string | null {
+/** The bundled clip of the sound of `text` when it is ONE Greek letter (ὁ, ἡ, ὦ, Ὃ), or null for any other text. A Greek voice handed one letter says its
+ * name ('omicron'), whatever accent it carries: mw-5r3p30.226, .256 and .262 each handed a voice another form of it, and his phone still said 'Omicron'. So
+ * such a word is never handed to a voice: the chosen pronunciation's clip of its sound is played instead (mw-5r3p30.347). The clip is the scheme's. */
+export function loneLetterClip(text: string): string | null {
   const letters = [...text.trim().normalize('NFD').replace(/\p{M}/gu, '')];
   if (letters.length !== 1 || !/\p{Script=Greek}/u.test(letters[0])) return null;
-  return chosenPronunciation().loneLetter(text.trim()) || null;
+  return chosenPronunciation().loneLetterClip(text.trim());
+}
+
+// The one player of those clips, with an audio element of its own (made at the first, from a tap: a phone lets a page play sound once he has touched it).
+let letterClips: ClipPlayer | null = null;
+/** counts the clips played, each one's key in letterClips */
+let clipCount = 0;
+/** true while stopLetterClip stops one: it was cut off, not over by itself */
+let clipCut = false;
+
+function clipPlayer(): ClipPlayer | null {
+  if (letterClips) return letterClips;
+  if (typeof Audio === 'undefined') return null;
+  const audio = new Audio();
+  audio.preload = 'auto';
+  const player = new ClipPlayer(() => undefined);
+  player.attach(audio);
+  audio.addEventListener('ended', player.ended);
+  audio.addEventListener('error', player.ended);
+  letterClips = player;
+  return player;
+}
+
+/** Stops a one-letter word's clip, if one plays: it was cut off (a reading that played it waits at its verse). */
+export function stopLetterClip(): void {
+  if (!letterClips?.playing()) return;
+  clipCut = true;
+  letterClips.stop();
+  clipCut = false;
+}
+
+/** Plays the clip at `url`, cutting off one that plays; `over` is called once when it is over: `cut` when something else stopped it, else it ended (or could not
+ * play, which a reading passes over). False when the page cannot play sound at all. */
+export function playLetterClip(url: string, over: (cut: boolean) => void): boolean {
+  const player = clipPlayer();
+  if (!player) return false;
+  stopLetterClip();
+  const key = `clip-${++clipCount}`;
+  player.setClip(url);
+  player.toggle(key);
+  const off = player.subscribe(() => {
+    if (player.playing() === key) return;
+    off();
+    over(clipCut);
+  });
+  return true;
+}
+
+/** Plays a one-letter word's clip under `key`, as a word said alone: a reading under way is paused (keeping its sentence) and a Listen goes on after it, as
+ * after a word said beside it (speakBeside); whatever else speaks is stopped. */
+function playLoneLetter(url: string, key: string): boolean {
+  if (!clipPlayer()) return false;
+  const mine = ++besideEpoch;
+  const reading = getSpeech().key === READ_KEY;
+  const interrupted = reading && getSpeech().status === 'playing';
+  if (interrupted) pauseEngine();
+  else if (reading) synthesis()?.cancel();
+  else if (getSpeech().status !== 'idle') stopEngine();
+  else synthesis()?.cancel();
+  setBeside({ key, interrupted: interrupted || (beside?.interrupted ?? false) });
+  return playLetterClip(url, () => {
+    if (mine === besideEpoch) setBeside(null);
+  });
 }
 
 /** What the Greek voice is handed for Greek text that is not one letter: the chosen pronunciation's voiceForm, so the voice says what the respelling
  * writes (mw-5r3p30.264: a Modern Greek voice keeps the nasal the respelling shows). The rule is the scheme's, never written here. */
 export const greekVoiceForm = (text: string): string => chosenPronunciation().voiceForm(text);
 
-/** What is handed to the voice for a Greek word held alone (mw-5r3p30.226, .262, .264), always to the Greek voice: a capital letter is read by its name
- * ('capital ...'), so the word goes in lower case; a word of ONE letter goes in its pronunciation's form (loneLetterForm), any other in its voiceForm. */
+/** What is handed to the voice for a Greek word held alone (mw-5r3p30.226, .264), always to the Greek voice: a capital letter is read by its name
+ * ('capital ...'), so the word goes in lower case, in its voiceForm. A word of ONE letter never comes here: it is a clip (loneLetterClip). */
 export function greekWordSpeech(text: string): { text: string; language: SpeechLanguage } {
-  return { text: loneLetterForm(text) ?? greekVoiceForm(text.toLowerCase()), language: 'greek' };
+  return { text: greekVoiceForm(text.toLowerCase()), language: 'greek' };
 }
 
 /** Says a LETTER now, as the chosen pronunciation names one (the letter drills 'Tap to hear a letter', where the letter is the thing asked about, not a word):
  * its letterForm (Modern Greek's is the letter in lower case, which a Greek voice names), to the Greek voice, never turned into a sound. A word of one letter
- * is not this: it goes through speakWord. */
+ * is not this: it goes through speakWord, which plays its clip. */
 export function speakLetter(letter: string): boolean {
   return speakText(chosenPronunciation().letterForm(letter), WORD_KEY, { language: 'greek' });
 }

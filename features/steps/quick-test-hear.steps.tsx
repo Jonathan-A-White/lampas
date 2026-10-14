@@ -13,25 +13,34 @@ import { db } from '../../src/data/db';
 import { mulberry32 } from '../../src/data/quiz';
 import { stopSpeaking } from '../../src/speech/greek';
 import { stubSpeech, GREEK_VOICE, ENGLISH_VOICE, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
-import { asSpoken } from '../../tests/support/spoken-word';
+import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
+import { hearing, isOneLetter, type Hearing } from '../../tests/support/spoken-word';
 
 const user = userEvent.setup();
 const rom8 = readFileSync('public/data/rom/8.json', 'utf8');
 
 let synth: FakeSynth;
+let audio: FakeAudio;
+/** the word of the question as he hears it: its first word is ὁ, whose clip plays (mw-5r3p30.347) */
+let heard: Hearing;
 
 afterAll(() => {
   stopSpeaking();
   cleanup();
   db.close();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
 
 async function openWith(voices: FakeVoice[]): Promise<void> {
   cleanup();
+  stopSpeaking();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
   vi.stubGlobal('fetch', vi.fn<typeof fetch>(async () => new Response(rom8)));
   synth = stubSpeech(voices);
+  audio = stubAudio();
+  heard = hearing(synth, audio, () => promptText());
   forgetChapters();
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.results.clear()]);
@@ -50,31 +59,27 @@ const promptText = (): string => screen.getByTestId('prompt').textContent ?? '';
 const feature = await loadFeature('features/quick-test-hear.feature');
 
 const tapBar = async (_: unknown, name: string): Promise<void> => user.click(bar(name));
-const isSpoken = (): void => {
-  expect(synth.spoken).toHaveLength(1);
-  expect(synth.spoken[0].text).toBe(asSpoken(promptText()));
-};
+const isSpoken = (): void => heard.once(promptText(), 'el-GR');
 
 describeFeature(feature, ({ Scenario }) => {
   Scenario('Tapping the bar says the word once', ({ Given, When, Then, And }) => {
     Given('Lampas is opened with a Greek voice and the Quick test is on its first question', openQuickTest);
     When('he taps {string}', tapBar);
     Then('the phone is told to speak the word of the question with lang {string}', (_, lang: string) => {
-      isSpoken();
-      // a one-letter word (ὁ) goes to the Greek voice too, in its pronunciation's form (mw-5r3p30.262)
-      expect(synth.spoken[0].lang).toBe(lang);
+      // a one-letter word (ὁ) is never handed to the voice: its clip plays (mw-5r3p30.347)
+      heard.once(promptText(), lang);
     });
-    And('the word is being spoken', () => expect(synth.speaking).toBe(true));
+    And('the word is being spoken', () => expect(heard.sounding()).toBe(true));
   });
 
   Scenario('The word plays on with no finger down', ({ Given, When, Then, And }) => {
     Given('Lampas is opened with a Greek voice and the Quick test is on its first question', openQuickTest);
     When('he taps {string}', tapBar);
-    And('the word has been spoken to its end', () => act(() => synth.finish()));
+    And('the word has been spoken to its end', () => act(() => heard.end()));
     Then('the word was spoken once and never cancelled', () => {
       isSpoken();
-      expect(synth.speaking).toBe(false);
-      expect(synth.calls[synth.calls.length - 1]).not.toBe('cancel');
+      expect(heard.sounding()).toBe(false);
+      if (!isOneLetter(promptText())) expect(synth.calls[synth.calls.length - 1]).not.toBe('cancel');
     });
   });
 
@@ -82,11 +87,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened with a Greek voice and the Quick test is on its first question', openQuickTest);
     When('he taps {string}', tapBar);
     And('he taps {string}', tapBar);
-    Then('the speech is stopped', () => {
-      expect(synth.speaking).toBe(false);
-      expect(synth.calls[synth.calls.length - 1]).toBe('cancel');
-      expect(synth.spoken).toHaveLength(1);
-    });
+    Then('the speech is stopped', () => heard.stopped());
   });
 
   Scenario('No screen of the Quick test says Hold to hear', ({ Given, Then }) => {
@@ -116,7 +117,10 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('With no Greek voice a tap shows the help instead of speaking', ({ Given, When, Then, And }) => {
     Given('Lampas is opened with only an English voice and the Quick test is on its first question', () => openWith([ENGLISH_VOICE]));
     When('he taps {string}', tapBar);
-    Then('nothing is spoken', () => expect(synth.spoken).toHaveLength(0));
+    Then('nothing is spoken', () => {
+      expect(synth.spoken).toHaveLength(0);
+      expect(audio.played).toHaveLength(0);
+    });
     And('the notice {string} is shown', async (_, text: string) => {
       expect(await screen.findByText(new RegExp(text), { selector: '[role="status"]' })).toBeInTheDocument();
     });
