@@ -25,6 +25,12 @@ const LEVITES_READING_ANSWER = {
   note: 'Nearly there: one word to say again.',
 };
 
+/** TIMED_READING_ANSWER with 'together' lasting from 0.2 s to 2.1 s of the clip. */
+const LONG_WORD_ANSWER = {
+  ...TIMED_READING_ANSWER,
+  focus_words: [{ ...TIMED_READING_ANSWER.focus_words[0], start: 0.2, end: 2.1 }, TIMED_READING_ANSWER.focus_words[1]],
+};
+
 /** Reads verse `verse` of the chapter at `hash` through the fake mill, which answers with `answer`, and waits for the result with the `marked` words.
  * The clip is as long as he holds the bar, 2.2 s here: the timed word (1.2 to 1.7 s) lies inside it. */
 async function readVerse(page: Page, answer: unknown, { hash, verse, marked }: { hash: string; verse: number; marked: string[] }) {
@@ -110,8 +116,11 @@ test("A flagged word's comma stays with the word, before its speaker and Me, on 
 
 test('Stop ends a word before its end, and Play my reading still plays all of the clip', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
-  const panel = await readVerse28(page, TIMED_READING_ANSWER);
+  // a long word (1.9 s of the 2.2 s clip): Stop must land while it still plays, though a loaded host takes most of a second to deliver the second tap
+  // (mw-5r3p30.338: with the 0.5 s word of TIMED_READING_ANSWER the word could end first, and the tap on the button that had turned back to Me played it again)
+  const panel = await readVerse28(page, LONG_WORD_ANSWER);
   await panel.getByRole('button', { name: 'Hear me say together', exact: true }).click();
+  await page.waitForTimeout(700);
   await panel.getByRole('button', { name: 'Stop hearing me say together', exact: true }).click();
   await expect(panel.getByRole('button', { name: 'Hear me say together', exact: true })).toHaveText('Me');
   expect(await paused(page)).toHaveLength(1);
