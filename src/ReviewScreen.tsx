@@ -17,6 +17,7 @@ import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { useReportScreen } from './tutor/screenContext';
 import type { ScreenFact } from './tutor/screen';
 import { focusOnMount } from './ui/focus';
+import { NextBar } from './ui/NextBar';
 
 /** What the end card says of New words at (mw-hqd5bz.11): nothing, an offer to move it, or that it was moved. */
 type MoveCard = { status: 'none' } | { status: 'offer'; move: PendingMove } | { status: 'said'; move: PendingMove };
@@ -224,7 +225,7 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
       <main className="screen min-h-0 flex-1 px-4 pt-6 short:pr-20">
         <ItemCard item={item} index={index} picked={picked} onPick={pick} />
         {picked !== null ? (
-          <div className="mt-2">
+          <NextBar>
             <button
               type="button"
               data-testid="next"
@@ -234,7 +235,7 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
             >
               {last ? 'Finish' : 'Next'}
             </button>
-          </div>
+          </NextBar>
         ) : null}
         <div className="pb-4" />
       </main>

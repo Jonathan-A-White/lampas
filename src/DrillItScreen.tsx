@@ -17,6 +17,7 @@ import { GrammarCard } from './GrammarCard';
 import { PlanDrillScreen } from './PlanDrillScreen';
 import { useSheetBack } from './ui/sheetBack';
 import { focusOnMount } from './ui/focus';
+import { FootBar } from './ui/NextBar';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border text-lg font-medium';
 
@@ -184,7 +185,7 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
           />
         ) : null}
       </div>
-      <div className="shrink-0 border-t border-line px-4 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))]">
+      <FootBar>
         {result || walk === null ? (
           <button type="button" ref={focusOnMount} onClick={onClose} className={`${BUTTON} border-accent bg-accent text-accent-fg`}>
             Done
@@ -203,7 +204,7 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
             {taken !== null ? 'Hint used' : 'Hint'}
           </button>
         )}
-      </div>
+      </FootBar>
     </div>
   );
 }

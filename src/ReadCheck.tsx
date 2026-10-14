@@ -18,6 +18,7 @@ import { drillButtonLabel, drillOffer, drillWhy, type DrillOffer } from './data/
 import { isLadderLang } from './data/readingLadder';
 import { ReadingDrill } from './ReadingDrill';
 import { LadderActions, LadderPosition, LadderStart } from './ReadingLadder';
+import { NextBar } from './ui/NextBar';
 import { useLadder } from './useLadder';
 import { stopSpeaking } from './speech/greek';
 import { stopAnswer, stopReading } from './speech/readAloud';
@@ -340,9 +341,11 @@ function Walk({ words, text, view, step, onStep, onDone }: { words: FixWord[]; t
           </p>
           <Fix fix={word} view={view} large />
           <p className="text-sm text-muted">Say it out loud, then go on.</p>
-          <button type="button" onClick={() => onStep(step + 1)} className={button}>
-            {step + 1 < words.length ? 'Next word' : 'On to the whole verse'}
-          </button>
+          <NextBar where="view">
+            <button type="button" onClick={() => onStep(step + 1)} className={button}>
+              {step + 1 < words.length ? 'Next word' : 'On to the whole verse'}
+            </button>
+          </NextBar>
         </>
       )}
       <button type="button" onClick={onDone} className="min-h-11 rounded-lg px-3 text-base text-muted underline">

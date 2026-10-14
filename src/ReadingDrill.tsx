@@ -14,6 +14,7 @@ import { plainQuotes, RESULT_HEADINGS, type ReadingView, type VerseReadAnswer } 
 import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
 import { HoldBar } from './ui/HoldBar';
+import { NextBar } from './ui/NextBar';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { useElapsed } from './ui/useElapsed';
@@ -197,9 +198,11 @@ export function ReadingDrill({ offer, pronunciation, onClose }: { offer: DrillOf
               <p className="text-sm text-muted">Hold the bar below and say the word. Let go to send.</p>
               <WordStatus state={state} onRetry={() => checks.retry(verse)} />
               {answer && !sent && state?.phase !== 'failed' ? <WordResult answer={answer} view={view} /> : null}
-              <button type="button" onClick={() => setAt(at + 1)} className={answer ? PRIMARY : BUTTON}>
-                {answer ? (last ? 'Finish' : 'Next word') : 'Skip this word'}
-              </button>
+              <NextBar where="sheet">
+                <button type="button" onClick={() => setAt(at + 1)} className={answer ? PRIMARY : BUTTON}>
+                  {answer ? (last ? 'Finish' : 'Next word') : 'Skip this word'}
+                </button>
+              </NextBar>
             </div>
           ) : null}
 
