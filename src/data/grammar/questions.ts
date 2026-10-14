@@ -1,8 +1,10 @@
 // src/data/grammar/questions.ts — the questions that drill a grammar idea (mw-hqd5bz.6), pure: the ending of a form, the form to tap in
 // a verse, a letter, the sound of a letter, the stressed syllable, the breathing, the syllables. Each builder takes the idea, the passage
 // (the chapters of the goal, or the chapter he has open) and a random source, so a seed gives the same question twice; the placement
-// uses the same builders. Nothing here touches the store or the screen. docs/grammar.md.
+// uses the same builders. Nothing here touches the store or the screen. docs/grammar.md. Every wrong choice comes from ../choices.ts, a near miss of the point
+// the question tests first (mw-i7xe0n.7): a look-alike letter, the same word's other ending, the twin with the other mark, the preposition's other case.
 import { bookOf } from '../books';
+import { OPTION_COUNT, choicesOf, lookAlikesOf, pairMates } from '../choices';
 import type { Chapter, GreekWord, Verse } from '../chapter';
 import { decodeParse, parseSegments, splitParse } from '../parseCode';
 import { shuffle, type Random } from '../quiz';
@@ -37,12 +39,15 @@ export interface GrammarQuestion {
   say?: string;
   /** what the question is about, for Drill it (drillIt.ts, mw-i7xe0n.1): the letter, the ending, the case; a miss on it names the gap */
   facet?: Facet;
+  /** the wrong options that are near misses of the point it tests (src/data/choices.ts, mw-i7xe0n.7): a Hint takes the others away first */
+  near?: string[];
+  /** the one line a wrong pick shows under the answer: the sound rule of the word's side, the scheme's ('χ before ε, ι, η ... is soft: hy ...') */
+  rule?: string;
 }
 
 /** The words of the pronunciation that gives the syllables: the chosen pronunciation's respell, 'khree-STO'. */
 export type Respell = (word: string) => string;
 
-const OPTION_COUNT = 4;
 const nfc = (s: string): string => s.normalize('NFC');
 
 // ---- The passage ----
@@ -135,11 +140,14 @@ export function buildTapForm(idea: GrammarIdea, passage: readonly Chapter[], ran
   for (const place of candidates) {
     const terms = describe(idea, place);
     if (!terms) continue;
+    // the near misses are the verse's words that have all the prompt names but one (the genitive plural beside the genitive singular asked)
+    const near = place.verse.g.filter((g) => g.t !== place.word.t && terms.filter((t) => !termsOf(g.p).includes(t)).length === 1).map((g) => g.t);
     return {
       kind: 'tap-form',
       ideaId: idea.id,
       prompt: tapPrompt(terms, termsOf(place.word.p)[0]),
       options: place.verse.g.map((g) => g.t),
+      near: [...new Set(near)],
       right: place.word.t,
       ref: place.ref,
       code: place.word.p,
@@ -209,26 +217,22 @@ export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], rand
   if (!place) return null;
   const { stem, ending: plainEnding } = stems(place)!;
   const pos = splitParse(place.word.p).pos;
-  const { text: ending, key: rightKey } = shownEnding(plainEnding, pos);
-  const sameKind = shuffle(
-    places.filter((p) => splitParse(p.word.p).pos === pos),
+  const right = shownEnding(plainEnding, pos);
+  const shownOf = (endings: readonly string[]) => endings.map((e) => shownEnding(e, pos));
+  // the near misses are the same word's other endings in the passage (another case or tense of it), then other words' of its kind, then the common ones
+  const sameWord = shuffle(places.filter((p) => p.word.l === place.word.l && p.word.p !== place.word.p), random).flatMap((p) => stems(p)?.ending ?? []);
+  const sameKind = places.filter((p) => splitParse(p.word.p).pos === pos).flatMap((p) => stems(p)?.ending ?? []);
+  const { options, near } = choicesOf(
+    { right, near: shownOf(sameWord), fillers: shownOf(sameKind), lastResort: shownOf(shuffle(COMMON_ENDINGS[pos === 'verb' ? 'verb' : 'noun'], random)), keyOf: (e) => e.key },
     random,
-  ).flatMap((p) => stems(p)?.ending ?? []);
-  const wrong: string[] = [];
-  const taken = new Set([rightKey]);
-  for (const e of [...sameKind, ...shuffle(COMMON_ENDINGS[pos === 'verb' ? 'verb' : 'noun'], random)]) {
-    if (wrong.length === OPTION_COUNT - 1) break;
-    const { text, key } = shownEnding(e, pos);
-    if (taken.has(key)) continue;
-    taken.add(key);
-    wrong.push(text);
-  }
+  );
   return {
     kind: 'ending',
     ideaId: idea.id,
     prompt: `Fill in the ending: ${featuresOf(place.word.p)} of ${place.word.l}`,
-    options: shuffle([ending, ...wrong], random),
-    right: ending,
+    options: options.map((e) => e.text),
+    near: near.map((e) => e.text),
+    right: right.text,
     ref: place.ref,
     form: `${stem}_`,
     code: place.word.p,
@@ -244,9 +248,12 @@ const glyphOf = (idea: GrammarIdea): string => idea.glyphs?.[0] ?? '';
 /** The letter an idea is about; the alphabet is about any of them. */
 const letterOf = (idea: GrammarIdea, random: Random): GrammarIdea => (idea.glyphs ? idea : pick(LETTER_IDEAS, random));
 
-/** Four glyphs: `right` and three others from `others`, shuffled. */
-const glyphs = (right: string, others: readonly string[], random: Random): string[] =>
-  shuffle([right, ...shuffle(others, random).slice(0, OPTION_COUNT - 1)], random);
+/** Four glyphs: `right`, its near misses among `others` first (choices.ts), then others at random. */
+const glyphs = (right: string, near: readonly string[], others: readonly string[], random: Random): Pick<GrammarQuestion, 'options' | 'near'> =>
+  choicesOf({ right, near: near.filter((g) => others.includes(g)), fillers: others }, random);
+
+/** The glyphs of the letters a reader mistakes `letter` for. */
+const lookAlikeGlyphs = (letter: GrammarIdea): string[] => lookAlikesOf(letter.id).map((id) => glyphOf(LETTER_IDEAS.find((l) => l.id === id)!));
 
 /** What a letter or pair sounds like in `scheme`: its lesson's sound, else the scheme's own respelling of it, so two that sound alike are never told apart by a missing lesson. */
 const soundKey = (idea: GrammarIdea, scheme: Pronunciation): string => ideaSound(idea, scheme) ?? scheme.respell(glyphOf(idea) || (idea.pair ?? ''));
@@ -264,7 +271,7 @@ export function buildLetter(idea: GrammarIdea, random: Random, scheme: Pronuncia
     kind: 'letter',
     ideaId: idea.id,
     prompt: bySound ? `Which letter sounds like ${sound}?` : `Which letter is ${letter.title}?`,
-    options: glyphs(glyphOf(letter), others.map(glyphOf), random),
+    ...glyphs(glyphOf(letter), lookAlikeGlyphs(letter), others.map(glyphOf), random),
     right: glyphOf(letter),
     facet: itemFacet(letter),
   };
@@ -278,7 +285,7 @@ export function buildSound(idea: GrammarIdea, random: Random, scheme: Pronunciat
     kind: 'sound',
     ideaId: idea.id,
     prompt: 'Tap to hear a letter, then tap it',
-    options: glyphs(glyphOf(letter), others.map(glyphOf), random),
+    ...glyphs(glyphOf(letter), lookAlikeGlyphs(letter), others.map(glyphOf), random),
     right: glyphOf(letter),
     say: glyphOf(letter),
     facet: itemFacet(letter),
@@ -299,9 +306,9 @@ function pairsOf(group: string, scheme: Pronunciation): [string, string][] {
 }
 const PUNCTUATION: [string, string][] = [['Which mark is a question mark in Greek?', ';'], ['Which mark is a colon or a semicolon in Greek?', '·']];
 
-/** A question over a short table of marks: the right one and the others of the table, then fillers up to four. */
-function fromTable(idea: GrammarIdea, prompt: string, right: string, others: readonly string[], random: Random, facet: Facet): GrammarQuestion {
-  return { kind: 'letter', ideaId: idea.id, prompt, options: glyphs(right, others, random), right, facet };
+/** A question over a short table of marks: the right one, its near misses, then the others of the table. */
+function fromTable(idea: GrammarIdea, prompt: string, right: string, near: readonly string[], others: readonly string[], random: Random, facet: Facet): GrammarQuestion {
+  return { kind: 'letter', ideaId: idea.id, prompt, ...glyphs(right, near, [...near, ...others], random), right, facet };
 }
 
 /** Which pair sounds like a sound the scheme gives; a scheme that gives none is asked by ear (Tap to hear), the pairs it says alike never together. */
@@ -311,26 +318,31 @@ function buildPairs(idea: GrammarIdea, group: string, what: string, random: Rand
     const items = itemsOf(group);
     const pair = pick(items, random);
     const others = items.filter((o) => o.id !== pair.id && soundKey(o, scheme) !== soundKey(pair, scheme)).map((o) => o.pair ?? '');
-    return { kind: 'sound', ideaId: idea.id, prompt: `Tap to hear a pair of ${what}, then tap it`, options: glyphs(pair.pair ?? '', others, random), right: pair.pair ?? '', say: pair.pair, facet: itemFacet(pair) };
+    const near = pairMates(pair.pair ?? '', items.map((o) => o.pair ?? ''));
+    return { kind: 'sound', ideaId: idea.id, prompt: `Tap to hear a pair of ${what}, then tap it`, ...glyphs(pair.pair ?? '', near, others, random), right: pair.pair ?? '', say: pair.pair, facet: itemFacet(pair) };
   }
   const [pair, sound] = pick(table, random);
-  return fromTable(idea, `Which pair of ${what} sounds like ${sound}?`, pair, table.map(([p]) => p).filter((p) => p !== pair), random, itemFacet(itemsOf(group).find((i) => i.pair === pair) ?? idea));
+  const others = table.map(([p]) => p).filter((p) => p !== pair);
+  return fromTable(idea, `Which pair of ${what} sounds like ${sound}?`, pair, pairMates(pair, others), others, random, itemFacet(itemsOf(group).find((i) => i.pair === pair) ?? idea));
 }
 
 export function buildSubscript(idea: GrammarIdea, random: Random): GrammarQuestion {
   const right = pick(['ᾳ', 'ῃ', 'ῳ'], random);
-  return fromTable(idea, 'Which letter has a tiny iota under it?', right, ['α', 'η', 'ω', 'ι', 'ο'], random, { id: `subscript-${right}`, label: right });
+  // the near miss is the same letter without its iota
+  const bare = right.normalize('NFD')[0];
+  return fromTable(idea, 'Which letter has a tiny iota under it?', right, [bare], ['α', 'η', 'ω', 'ι', 'ο'], random, { id: `subscript-${right}`, label: right });
 }
 
 export function buildPunctuation(idea: GrammarIdea, random: Random): GrammarQuestion {
   const [prompt, right] = pick(PUNCTUATION, random);
   const facet = right === ';' ? { id: 'question-mark', label: 'The question mark ;' } : { id: 'raised-dot', label: 'The raised dot ·' };
-  return fromTable(idea, prompt, right, [';', '·', '.', ','].filter((m) => m !== right), random, facet);
+  // the near miss is the other Greek mark
+  return fromTable(idea, prompt, right, [';', '·'].filter((m) => m !== right), ['.', ','], random, facet);
 }
 
 // ---- Movable letters ----
 
-// [prompt, right, the others it may be told from, its facet]. Every word is a real New Testament one, with its place.
+// [prompt, right, its near misses (the same word's other forms), the others it may be told from, its facet]. Every word is a real New Testament one, with its place.
 const NOT_FORMS = ['οὐ', 'οὐκ', 'οὐχ'];
 const OUT_FORMS = ['ἐκ', 'ἐξ'];
 export const MOVABLE_FACETS = {
@@ -339,21 +351,22 @@ export const MOVABLE_FACETS = {
   elision: { id: 'movable-elision', label: 'A dropped vowel: ἀπ᾿, ἀφ᾿' },
   nu: { id: 'movable-nu', label: 'A movable ν' },
 } as const;
-const MOVABLE: [string, string, readonly string[], Facet][] = [
-  ['Which fits? ___ κατέλαβεν (John 1:5, “did not overcome it”)', 'οὐ', [...NOT_FORMS, ...OUT_FORMS], MOVABLE_FACETS.not],
-  ['Which fits? ___ ἦν ἐκεῖνος τὸ φῶς (John 1:8, “he was not the light”)', 'οὐκ', [...NOT_FORMS, ...OUT_FORMS], MOVABLE_FACETS.not],
-  ['Which fits? ___ οὗτός ἐστιν (John 7:25, “Is this not he?”)', 'οὐχ', [...NOT_FORMS, ...OUT_FORMS], MOVABLE_FACETS.not],
-  ['Which fits? ___ θεοῦ ἐγεννήθησαν (John 1:13, “out of God they were born”)', 'ἐκ', [...OUT_FORMS, ...NOT_FORMS], MOVABLE_FACETS.out],
-  ['Which fits? ___ ἧς ἐγεννήθη Ἰησοῦς (Matthew 1:16, “out of whom Jesus was born”)', 'ἐξ', [...OUT_FORMS, ...NOT_FORMS], MOVABLE_FACETS.out],
-  ['Which fits? ___ ἀρχῆς (1 John 2:7, “from the beginning”; the word is ἀπό with its vowel dropped)', 'ἀπ᾿', ['ἀπ᾿', 'ἀφ᾿', 'ἀπό', 'ἐπ᾿'], MOVABLE_FACETS.elision],
-  ['Which fits? ___ ἑαυτοῦ (John 5:19, “of himself”; the next word begins with a rough breathing)', 'ἀφ᾿', ['ἀπ᾿', 'ἀφ᾿', 'ἀπό', 'ἐφ᾿'], MOVABLE_FACETS.elision],
-  ['Which of these may take a movable ν at its end (John 1:34)?', 'ἐστι(ν)', ['λόγος', 'ἀγάπη', 'τοῦτο', 'οὐκ'], MOVABLE_FACETS.nu],
+const MOVABLE: [string, string, readonly string[], readonly string[], Facet][] = [
+  ['Which fits? ___ κατέλαβεν (John 1:5, “did not overcome it”)', 'οὐ', NOT_FORMS, OUT_FORMS, MOVABLE_FACETS.not],
+  ['Which fits? ___ ἦν ἐκεῖνος τὸ φῶς (John 1:8, “he was not the light”)', 'οὐκ', NOT_FORMS, OUT_FORMS, MOVABLE_FACETS.not],
+  ['Which fits? ___ οὗτός ἐστιν (John 7:25, “Is this not he?”)', 'οὐχ', NOT_FORMS, OUT_FORMS, MOVABLE_FACETS.not],
+  ['Which fits? ___ θεοῦ ἐγεννήθησαν (John 1:13, “out of God they were born”)', 'ἐκ', OUT_FORMS, NOT_FORMS, MOVABLE_FACETS.out],
+  ['Which fits? ___ ἧς ἐγεννήθη Ἰησοῦς (Matthew 1:16, “out of whom Jesus was born”)', 'ἐξ', OUT_FORMS, NOT_FORMS, MOVABLE_FACETS.out],
+  ['Which fits? ___ ἀρχῆς (1 John 2:7, “from the beginning”; the word is ἀπό with its vowel dropped)', 'ἀπ᾿', ['ἀφ᾿', 'ἀπό'], ['ἐπ᾿'], MOVABLE_FACETS.elision],
+  ['Which fits? ___ ἑαυτοῦ (John 5:19, “of himself”; the next word begins with a rough breathing)', 'ἀφ᾿', ['ἀπ᾿', 'ἀπό'], ['ἐφ᾿'], MOVABLE_FACETS.elision],
+  // no near miss: the others are words that never take the ν
+  ['Which of these may take a movable ν at its end (John 1:34)?', 'ἐστι(ν)', [], ['λόγος', 'ἀγάπη', 'τοῦτο', 'οὐκ'], MOVABLE_FACETS.nu],
 ];
 
-/** A word that changes its last letter: οὐ, οὐκ or οὐχ, ἐκ or ἐξ, ἀπ᾿ or ἀφ᾿, a movable ν; four to choose from, one right. */
+/** A word that changes its last letter: οὐ, οὐκ or οὐχ, ἐκ or ἐξ, ἀπ᾿ or ἀφ᾿, a movable ν; four to choose from, one right, the same word's other forms first. */
 export function buildMovable(idea: GrammarIdea, random: Random): GrammarQuestion {
-  const [prompt, right, others, facet] = pick(MOVABLE, random);
-  return fromTable(idea, prompt, right, others.filter((o) => o !== right), random, facet);
+  const [prompt, right, near, others, facet] = pick(MOVABLE, random);
+  return fromTable(idea, prompt, right, near.filter((o) => o !== right), others, random, facet);
 }
 
 // ---- Marks that change the word, and enclitics (mw-86e9r1.6) ----
@@ -369,20 +382,24 @@ export function buildMarksChangeWord(idea: GrammarIdea, random: Random): Grammar
     kind: 'letter',
     ideaId: idea.id,
     prompt: `Which fits? ${blankWord(word.phrase, word.inPhrase)} (${refText(word.ref)}, “${word.gloss}”)`,
-    options: shuffle([word.inPhrase, twin.inPhrase, ...word.decoys], random),
+    ...choicesOf({ right: word.inPhrase, near: [twin.inPhrase], fillers: word.decoys }, random),
     right: word.inPhrase,
     facet: { id: `marks-${[pair.a.word, pair.b.word].join('-')}`, label: `${pair.a.word} / ${pair.b.word}` },
   };
 }
 
+const bareLetters = (word: string): string => word.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+
 /** A small word that leans on the one before it, or the question word τίς it is not: the right one among its twin and other forms, in a real phrase. */
 export function buildEnclitic(idea: GrammarIdea, random: Random): GrammarQuestion {
   const use = pick(ENCLITIC_USES, random);
+  // the near miss is its twin, the same letters with another accent (τις, τίς; μου, ἐμοῦ), else the first of the others, which marks.ts puts first
+  const twins = use.others.filter((o) => bareLetters(o).includes(bareLetters(use.right)) || bareLetters(use.right).includes(bareLetters(o)));
   return {
     kind: 'letter',
     ideaId: idea.id,
     prompt: `Which fits? ${blankWord(use.phrase, use.right)} (${refText(use.ref)}, “${use.gloss}”)`,
-    options: shuffle([use.right, ...use.others], random),
+    ...choicesOf({ right: use.right, near: twins.length > 0 ? twins : use.others.slice(0, 1), fillers: use.others }, random),
     right: use.right,
     facet: { id: `enclitic-${use.right}`, label: use.right },
   };
@@ -408,7 +425,7 @@ export function buildSoundAlike(idea: GrammarIdea, random: Random, scheme: Pronu
     prompt: sameSound
       ? `This word sounds just like another. Tap to hear the word for “${word.gloss}”, then tap how it is spelt.`
       : `Tap to hear the word for “${word.gloss}”, then tap how it is spelt.`,
-    options: shuffle([word.word, twin.word, ...shuffle(others, random).slice(0, OPTION_COUNT - 2)], random),
+    ...choicesOf({ right: word.word, near: [twin.word], fillers: others }, random),
     right: word.word,
     say: word.word,
   };
@@ -421,12 +438,13 @@ const refText = (r: VerseRef): string => `${bookOf(r.book)?.name ?? r.book} ${r.
 const meaningWords = (meaning: string): string[] => meaning.toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 3);
 const alike = (a: string, b: string): boolean => meaningWords(a).some((w) => meaningWords(b).includes(w));
 
-/** `right` and three wrong meanings, `near` first (the other cases of the same preposition), then `others`; none shares a word with the right one unless the rest run out. */
-function meaningChoices(right: string, near: readonly string[], others: readonly string[], random: Random): string[] {
-  const pool = [...near, ...shuffle(others, random)].filter((m) => m !== right);
-  const apart = pool.filter((m) => !alike(m, right));
-  const wrong = [...new Set([...apart, ...pool])].slice(0, OPTION_COUNT - 1);
-  return shuffle([right, ...wrong], random);
+/**
+ * `right` and three wrong meanings, `near` first (the other cases of the same preposition), then `others`; none shares a word with the right one unless the rest
+ * run out, but `closest` (a near miss that does on purpose: 'throw' for 'throw out') comes first whatever it shares.
+ */
+function meaningChoices(right: string, near: readonly string[], others: readonly string[], random: Random, closest: readonly string[] = []): Pick<GrammarQuestion, 'options' | 'near'> {
+  const apart = (list: readonly string[]) => list.filter((m) => !alike(m, right));
+  return choicesOf({ right, near: [...closest, ...apart(near)], fillers: apart(others), lastResort: [...near, ...shuffle(others, random)] }, random);
 }
 
 /**
@@ -444,7 +462,7 @@ export function buildPreposition(idea: GrammarIdea, random: Random, only?: { cas
     kind: 'preposition',
     ideaId: idea.id,
     prompt: `What does ${prep.greek} mean here?`,
-    options: meaningChoices(use.meaning, near, others, random),
+    ...meaningChoices(use.meaning, near, others, random),
     right: use.meaning,
     ref: refText(use.ref),
     form: use.phrase,
@@ -460,7 +478,8 @@ export function buildCompound(idea: GrammarIdea, random: Random, which?: Compoun
     kind: 'compound',
     ideaId: idea.id,
     prompt: `${verb.prefix} + ${verb.stem} (“${verb.stemMeaning}”) makes ${verb.lemma}, as in ${verb.form}. What does ${verb.lemma} mean?`,
-    options: meaningChoices(verb.meaning, [], COMPOUND_VERBS.map((c) => c.meaning), random),
+    // the near miss is the verb without its preposition (ἐκβάλλω read as βάλλω, 'throw'): the point is what the preposition adds
+    ...meaningChoices(verb.meaning, [], COMPOUND_VERBS.map((c) => c.meaning), random, [verb.stemMeaning]),
     right: verb.meaning,
     ref: refText(verb.ref),
     form: verb.lemma,
@@ -521,6 +540,8 @@ export function buildStress(idea: GrammarIdea, passage: readonly Chapter[], rand
       ideaId: idea.id,
       prompt: `Which part of ${s.word} is said loudest?`,
       options: parts.syllables,
+      // the options are the word's own syllables in order; the near misses are the ones beside the stressed one
+      near: [parts.syllables[parts.stressed - 1], parts.syllables[parts.stressed + 1]].filter((p): p is string => p !== undefined),
       right: parts.syllables[parts.stressed],
       ...shown(s),
       facet: lengthFacet('stress', parts.syllables.length),
@@ -541,6 +562,8 @@ export function buildSyllables(idea: GrammarIdea, passage: readonly Chapter[], r
       ideaId: idea.id,
       prompt: `How many syllables has ${s.word}?`,
       options: Array.from({ length: OPTION_COUNT }, (_, i) => String(first + i)),
+      // the counts run in order; the near misses are one more and one fewer
+      near: [String(count - 1), String(count + 1)].filter((n) => Number(n) >= first && Number(n) < first + OPTION_COUNT),
       right: String(count),
       ...shown(s),
       facet: lengthFacet('syllables', count),
@@ -575,6 +598,7 @@ export function buildBreathing(idea: GrammarIdea, passage: readonly Chapter[], r
       ideaId: idea.id,
       prompt: `Which breathing does ${s.word} begin with?`,
       options: ['Rough', 'Smooth'],
+      near: [breathing === 'Rough' ? 'Smooth' : 'Rough'],
       right: breathing,
       ...shown(s),
       facet: breathingFacet(breathing),
@@ -620,13 +644,14 @@ export function blankedText(idea: GrammarIdea, scheme: Pronunciation = chosenPro
 
 /** Which idea this is, from what it says with its own name blanked: used only for an idea the passage gives no form of. */
 export function buildConcept(idea: GrammarIdea, random: Random, scheme: Pronunciation = chosenPronunciation()): GrammarQuestion {
-  const near = shuffle(LADDER.filter((o) => o.id !== idea.id && o.tier === idea.tier), random);
-  const far = shuffle(LADDER.filter((o) => o.id !== idea.id && o.tier !== idea.tier), random);
+  // the near misses are ideas of its own tier (another case for a case), the fillers any other
+  const near = shuffle(LADDER.filter((o) => o.id !== idea.id && o.tier === idea.tier), random).map((o) => o.title);
+  const far = LADDER.filter((o) => o.id !== idea.id && o.tier !== idea.tier).map((o) => o.title);
   return {
     kind: 'concept',
     ideaId: idea.id,
     prompt: `Which idea is this? ${blankedText(idea, scheme)}`,
-    options: shuffle([idea.title, ...[...near, ...far].slice(0, OPTION_COUNT - 1).map((o) => o.title)], random),
+    ...choicesOf({ right: idea.title, near, fillers: far }, random),
     right: idea.title,
     facet: MEANING,
   };

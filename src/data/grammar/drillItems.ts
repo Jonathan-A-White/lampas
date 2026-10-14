@@ -4,9 +4,13 @@
 // to its small letter; hear a letter (or see it and pick its sound) in the chosen pronunciation; read a short New Testament word and pick how it is said.
 // A facet is a letter, or a pair of look-alikes (ν and υ, ρ and π) asked with both among the choices, so the pair he cannot tell apart is named.
 // Sounds read the scheme (mw-5r3p30.229): quickRound.ts asks them, and a scheme that gives no sound is asked by ear. The prerequisites are assumed solid.
+// A letter or pair whose sound the scheme changes by the next letter (mw-i7xe0n.7: χ is kh before α, hy before ε) reads words of BOTH sides of the rule, each
+// offered beside itself misread by the rule, with the rule's line for a wrong pick; drilled for its own idea, each side is a facet (drillIt.ts proves it only
+// when both were answered right). Every choice is built by ../choices.ts, near misses first.
 import type { Chapter } from '../chapter';
-import { mulberry32, shuffle, type Random } from '../quiz';
-import type { Pronunciation } from '../../speech/pronunciation';
+import { LOOK_ALIKE_LETTERS, OPTION_COUNT, choicesOf, lookAlikesOf } from '../choices';
+import { mulberry32, type Random } from '../quiz';
+import { soundRuleOf, type Pronunciation, type SoundRule, type SoundRuleSide } from '../../speech/pronunciation';
 import { itemFacet, itemsOf, ideaOf, type Facet, type GrammarIdea } from './ladder';
 import { ideaSound } from './lessons';
 import { quickQuestion } from './quickRound';
@@ -38,7 +42,6 @@ export interface RawStep {
   questions: GrammarQuestion[];
 }
 
-const OPTION_COUNT = 4;
 /** Questions made for one facet in one step, with different wrong choices. */
 const VARIANTS = 2;
 
@@ -79,11 +82,8 @@ const lower = (letter: GrammarIdea): string => letter.glyphs?.[0] ?? '';
 const upper = (letter: GrammarIdea): string => letter.glyphs?.[1] ?? '';
 const key = (letter: GrammarIdea): string => letter.id.replace(/^letter-/, '');
 
-/** Letters a reader mistakes for each other: by look (ν for υ, ρ for p, η for n, χ for x) or by the sound of the look-alike (ρ and π). */
-const LOOKALIKES: readonly [string, string][] = [['nu', 'upsilon'], ['rho', 'pi'], ['eta', 'nu'], ['chi', 'xi'], ['omicron', 'omega']];
-
-const matesOf = (letter: GrammarIdea): GrammarIdea[] =>
-  LOOKALIKES.flatMap(([a, b]) => (key(letter) === a ? [ideaOf(`letter-${b}`)] : key(letter) === b ? [ideaOf(`letter-${a}`)] : []));
+/** The letters a reader mistakes this one for (../choices.ts LOOK_ALIKE_LETTERS). */
+const matesOf = (letter: GrammarIdea): GrammarIdea[] => lookAlikesOf(letter.id).map(ideaOf);
 
 /** A letter, or two look-alikes asked together: `right` is the one asked, `mate` the one it must be told from. */
 interface Subject {
@@ -99,19 +99,19 @@ function subjectsOf(letters: readonly GrammarIdea[], pairs: boolean): Subject[][
     return Array.from({ length: VARIANTS }, (_, v): Subject => ({ facet: itemFacet(letter), right: letter, mate: mates.length > 0 ? mates[v % mates.length] : undefined }));
   });
   const both = pairs
-    ? LOOKALIKES.map(([a, b]): Subject[] => {
-        const [x, y] = [ideaOf(`letter-${a}`), ideaOf(`letter-${b}`)];
-        const facet: Facet = { id: `pair-${a}-${b}`, label: `${lower(x)} / ${lower(y)}` };
+    ? LOOK_ALIKE_LETTERS.map(([a, b]): Subject[] => {
+        const [x, y] = [ideaOf(a), ideaOf(b)];
+        const facet: Facet = { id: `pair-${key(x)}-${key(y)}`, label: `${lower(x)} / ${lower(y)}` };
         return [{ facet, right: x, mate: y }, { facet, right: y, mate: x }];
       })
     : [];
   return [...single, ...both];
 }
 
-/** `count` letters to stand beside `right`: its look-alike first, then others at random, none repeated and none the answer. */
-function beside(right: GrammarIdea, mate: GrammarIdea | undefined, random: Random, count = OPTION_COUNT - 1, skip: (o: GrammarIdea) => boolean = () => false): GrammarIdea[] {
-  const others = shuffle(LETTER_IDEAS.filter((o) => o.id !== right.id && o.id !== mate?.id && !skip(o)), random);
-  return [...(mate ? [mate] : []), ...others].slice(0, count);
+/** The choices of a letter question, each letter as `show` gives it: the letter asked, its look-alike (the near miss), then others at random (choices.ts). */
+function letterChoices(s: Subject, show: (l: GrammarIdea) => string, random: Random, skip: (o: GrammarIdea) => boolean = () => false): Pick<GrammarQuestion, 'options' | 'near'> {
+  const { options, near } = choicesOf({ right: s.right, near: s.mate ? [s.mate] : [], fillers: LETTER_IDEAS.filter((o) => !skip(o)), keyOf: show }, random);
+  return { options: options.map(show), near: near.map(show) };
 }
 
 const soundOf = (letter: GrammarIdea, scheme: Pronunciation): string => ideaSound(letter, scheme) ?? scheme.respell(lower(letter));
@@ -120,7 +120,7 @@ const seeName = (ctx: DrillContext, s: Subject, random: Random): GrammarQuestion
   kind: 'letter',
   ideaId: ctx.idea.id,
   prompt: 'What is this letter called?',
-  options: shuffle([s.right, ...beside(s.right, s.mate, random)].map((l) => l.title), random),
+  ...letterChoices(s, (l) => l.title, random),
   right: s.right.title,
   form: lower(s.right),
   say: lower(s.right),
@@ -131,7 +131,7 @@ const seeLetter = (ctx: DrillContext, s: Subject, random: Random): GrammarQuesti
   kind: 'letter',
   ideaId: ctx.idea.id,
   prompt: `Which letter is ${s.right.title}?`,
-  options: shuffle([s.right, ...beside(s.right, s.mate, random)].map(lower), random),
+  ...letterChoices(s, lower, random),
   right: lower(s.right),
   facet: s.facet,
 });
@@ -140,7 +140,7 @@ const seeCapital = (ctx: DrillContext, s: Subject, random: Random): GrammarQuest
   kind: 'letter',
   ideaId: ctx.idea.id,
   prompt: `Which small letter matches ${upper(s.right)}?`,
-  options: shuffle([s.right, ...beside(s.right, s.mate, random)].map(lower), random),
+  ...letterChoices(s, lower, random),
   right: lower(s.right),
   form: upper(s.right),
   facet: s.facet,
@@ -153,12 +153,11 @@ const seeCapital = (ctx: DrillContext, s: Subject, random: Random): GrammarQuest
 function hearLetter(ctx: DrillContext, s: Subject, variant: number, random: Random): GrammarQuestion | null {
   if (s.facet.id.startsWith('pair-')) {
     if (!s.mate || soundOf(s.right, ctx.scheme) === soundOf(s.mate, ctx.scheme)) return null;
-    const apart = beside(s.right, s.mate, random, OPTION_COUNT - 1, (o) => soundOf(o, ctx.scheme) === soundOf(s.right, ctx.scheme));
     return {
       kind: 'sound',
       ideaId: ctx.idea.id,
       prompt: 'Hear it, then tap it',
-      options: shuffle([s.right, ...apart].map(lower), random),
+      ...letterChoices(s, lower, random, (o) => o.id !== s.right.id && soundOf(o, ctx.scheme) === soundOf(s.right, ctx.scheme)),
       right: lower(s.right),
       say: lower(s.right),
       facet: s.facet,
@@ -179,21 +178,40 @@ export const baseLetters = (text: string): string => [...text.normalize('NFD')].
 export const wordsWith = (text: string, words: readonly string[] = WORDS): string[] =>
   words.filter((w) => baseLetters(w).includes(baseLetters(text))).sort((a, b) => baseLetters(a).length - baseLetters(b).length);
 
-/** How a word is said, picked from four respellings of the chosen pronunciation; the others are other words of the list. */
-function readWord(ctx: DrillContext, word: string, facet: Facet, random: Random): GrammarQuestion | null {
+/** The facet of one side of a sound rule, when the drill is of the rule's own idea: 'letter-chi:soft', named by the scheme ('χ before ε, ι, η ...: hy'). */
+export const sideFacet = (rule: SoundRule, side: SoundRuleSide): Facet => ({ id: `${rule.ideaId}:${side.id}`, label: side.label });
+
+/**
+ * How a word is said, picked from four respellings of the chosen pronunciation (mw-i7xe0n.7): the near misses are the word misread by each sound rule it
+ * stands on (χάρις 'KHA-rees' beside 'HYA-rees'), the rule of `subject` (the letter or pair asked) first; the fillers are other words of the list. A wrong
+ * pick names the rule of the word's side; drilled for the rule's own idea, that side is the question's facet.
+ */
+function readWord(ctx: DrillContext, word: string, facet: Facet, random: Random, subject?: string): GrammarQuestion | null {
   const say = ctx.scheme.respell(word);
-  const others = shuffle(WORDS.filter((w) => w !== word), random).map((w) => ctx.scheme.respell(w)).filter((r, i, all) => r !== say && all.indexOf(r) === i);
-  if (others.length < OPTION_COUNT - 1) return null;
+  const own = subject === undefined ? undefined : soundRuleOf(ctx.scheme, subject);
+  const rules = [...(own ? [own] : []), ...(ctx.scheme.soundRules ?? []).filter((r) => r !== own)].filter((r) => r.sideOf(word) !== null);
+  const { options, near } = choicesOf({ right: say, near: rules.map((r) => r.misread(word)), fillers: WORDS.filter((w) => w !== word).map((w) => ctx.scheme.respell(w)) }, random);
+  if (options.length < OPTION_COUNT) return null;
+  const rule = rules[0];
+  const side = rule?.sides.find((s) => s.id === rule.sideOf(word));
   return {
     kind: 'letter',
     ideaId: ctx.idea.id,
     prompt: 'How is this word said?',
-    options: shuffle([say, ...others.slice(0, OPTION_COUNT - 1)], random),
+    options,
     right: say,
     form: word,
     say: word,
-    facet,
+    facet: side && rule.ideaId === ctx.idea.id ? sideFacet(rule, side) : facet,
+    near,
+    ...(side ? { rule: side.line } : {}),
   };
+}
+
+/** The words read for a letter or pair: words of each side of its sound rule when the scheme has one, else `plain`, VARIANTS at most a side. */
+function wordsToRead(ctx: DrillContext, item: GrammarIdea, plain: readonly string[]): string[] {
+  const rule = soundRuleOf(ctx.scheme, item.id);
+  return rule ? rule.sides.flatMap((side) => side.words.slice(0, VARIANTS)) : plain.slice(0, VARIANTS);
 }
 
 // ---- The steps ----
@@ -204,9 +222,7 @@ function letterSteps(ctx: DrillContext, letters: readonly GrammarIdea[], pairs: 
   const each = (make: (s: Subject, v: number, random: Random) => GrammarQuestion | null): GrammarQuestion[] =>
     distinct(ctx, subjects.map((s, i) => make(s, i % VARIANTS, rng(ctx, (n += 1)))));
   const words = letters.flatMap((letter) =>
-    wordsWith(lower(letter))
-      .slice(0, VARIANTS)
-      .map((word) => readWord(ctx, word, itemFacet(letter), rng(ctx, (n += 1)))),
+    wordsToRead(ctx, letter, wordsWith(lower(letter))).map((word) => readWord(ctx, word, itemFacet(letter), rng(ctx, (n += 1)), letter.id)),
   );
   return [
     { title: 'See a letter, pick its name', questions: each((s, _v, random) => seeName(ctx, s, random)) },
@@ -242,7 +258,9 @@ function pairSteps(ctx: DrillContext, items: readonly GrammarIdea[]): RawStep[] 
     distinct(ctx, items.flatMap((item) => Array.from({ length: VARIANTS }, () => ({ ...quickQuestion({ id: item.id, mode }, rng(ctx, (n += 1)), ctx.scheme), facet: itemFacet(item) }))));
   const words = items.flatMap((item) => {
     const word = PAIR_WORDS[item.id];
-    return word ? Array.from({ length: VARIANTS }, () => readWord(ctx, word, itemFacet(item), rng(ctx, (n += 1)))) : [];
+    // a pair with a sound rule reads words of both its sides; any other reads its one word, VARIANTS times with other wrong choices
+    const read = soundRuleOf(ctx.scheme, item.id) ? wordsToRead(ctx, item, []) : word ? Array.from({ length: VARIANTS }, () => word) : [];
+    return read.map((w) => readWord(ctx, w, itemFacet(item), rng(ctx, (n += 1)), item.id));
   });
   return [
     { title: 'See it and pick its sound', questions: ask('see') },
@@ -261,7 +279,7 @@ function breathingSteps(ctx: DrillContext, items: readonly GrammarIdea[]): RawSt
     const breathing = breathingOf(word);
     if (!breathing || !wanted.has(breathing)) return [];
     const item = ideaOf(breathing === 'Rough' ? 'breathing-rough' : 'breathing-smooth');
-    return [{ kind: 'breathing', ideaId: ctx.idea.id, prompt: `Which breathing does ${word} begin with?`, options: ['Rough', 'Smooth'], right: breathing, form: word, say: word, facet: itemFacet(item) }];
+    return [{ kind: 'breathing', ideaId: ctx.idea.id, prompt: `Which breathing does ${word} begin with?`, options: ['Rough', 'Smooth'], right: breathing, near: [breathing === 'Rough' ? 'Smooth' : 'Rough'], form: word, say: word, facet: itemFacet(item) }];
   });
   return [
     { title: 'Find the breathing on a plain word', questions: distinct(ctx, easy) },

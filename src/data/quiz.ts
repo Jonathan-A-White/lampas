@@ -4,36 +4,14 @@ import { wordLemma, type Chapter, type GreekWord } from './chapter';
 import type { Word, WordState } from './db';
 import { normaliseLemma } from './lemma';
 import { SEED_WORDS } from './seed-words';
+import { choicesOf } from './choices';
+import { shuffle, type Random } from './random';
 
-/** A source of numbers in [0, 1), like Math.random; tests pass a seeded one. */
-export type Random = () => number;
+export { mulberry32, shuffle, type Random } from './random';
 
 export const ROUND_SIZE = 10;
 /** A round asks this many learning words, or all it has when it has fewer: the bias towards what he is learning. */
 const LEARNING_SHARE = 5;
-const OPTION_COUNT = 4;
-
-/** A small seeded generator (mulberry32) for tests. */
-export function mulberry32(seed: number): Random {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-/** A shuffled copy (Fisher-Yates). */
-export function shuffle<T>(items: readonly T[], random: Random): T[] {
-  const out = [...items];
-  for (let i = out.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(random() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
-  return out;
-}
 
 /**
  * The state rule. `answers` are the word's answers since it last got its state, oldest first, the one just
@@ -73,7 +51,7 @@ export function seedDistractors(): Distractor[] {
   return seedPool;
 }
 
-/** The right gloss and three others, shuffled: from seed words of the same part of speech where possible. */
+/** The right gloss and three others, shuffled (choices.ts): the glosses of seed words of the same part of speech first, its near misses, then any. */
 export function buildOptions(
   gloss: string,
   pos: string | undefined,
@@ -82,12 +60,8 @@ export function buildOptions(
   random: Random,
 ): string[] {
   const others = candidates.filter((c) => c.lemma !== lemma && c.gloss !== gloss);
-  const wrong: string[] = [];
-  for (const c of [...shuffle(others.filter((o) => o.pos === pos), random), ...shuffle(others.filter((o) => o.pos !== pos), random)]) {
-    if (wrong.length === OPTION_COUNT - 1) break;
-    if (!wrong.includes(c.gloss)) wrong.push(c.gloss);
-  }
-  return shuffle([gloss, ...wrong], random);
+  const near = shuffle(others.filter((o) => o.pos === pos), random).map((o) => o.gloss);
+  return choicesOf({ right: gloss, near, fillers: others.filter((o) => o.pos !== pos).map((o) => o.gloss) }, random).options;
 }
 
 /** One occurrence of a word in a chapter. */

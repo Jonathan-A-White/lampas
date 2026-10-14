@@ -100,7 +100,7 @@ beyond `loadChapter`.
 
 | kind | what it asks | ideas |
 |---|---|---|
-| `ending` | the form with its ending blanked (`ἀρχ_`), four endings; the wrong three are the endings of other inflected words of the same part of speech in the passage (the common endings when it has too few). The stem is what the lemma and the form share, a stem vowel goes to the ending; a movable ν (-σιν, a verb's -εν) is shown in brackets and is one ending with or without it, `ουσι(ν)` | any word idea whose forms share a stem with their lemma |
+| `ending` | the form with its ending blanked (`ἀρχ_`), four endings; the wrong three are the same word's other endings in the passage first (its other cases or tenses: the near misses, mw-i7xe0n.7), then the endings of other inflected words of the same part of speech in the passage (the common endings when it has too few). The stem is what the lemma and the form share, a stem vowel goes to the ending; a movable ν (-σιν, a verb's -εν) is shown in brackets and is one ending with or without it, `ουσι(ν)` | any word idea whose forms share a stem with their lemma |
 | `tap-form` | the Greek words of one verse as buttons: 'Tap the dative article'. The prompt names the fewest terms that leave exactly one word of the verse, and the word's text is not repeated in the verse | any word idea the passage has a form of |
 | `letter` | four glyphs: by name or by sound (a letter that sounds like the right one is never offered), vowel pairs, consonant pairs, the iota under a letter, the marks, and for `movable-letters` the form that fits a New Testament phrase (οὐ, οὐκ or οὐχ; ἐκ or ἐξ; ἀπ᾿ or ἀφ᾿; a word that takes a movable ν), and for `marks-change-word` and `enclitics` the word that fits a New Testament phrase, with its twin (the same letters, the other mark) always among the four, and for `words-sound-alike` Tap to hear a word by its meaning, then its spelling, the twin among the four | a letter, the alphabet, `diphthongs`, `consonant-pairs`, `iota-subscript`, `punctuation`, `movable-letters`, `marks-change-word`, `enclitics`, `words-sound-alike` |
 | `sound` | Tap to hear says a letter (`speakWord`), four glyphs | a letter, the alphabet |
@@ -126,6 +126,22 @@ step by step, back off by halves when it is too hard, "kind of like a binary sea
   chosen pronunciation; read a short New Testament word and pick how it is said. Its facets are the 24 letters and five pairs of look-alikes (ν/υ, ρ/π, η/ν, χ/ξ, ο/ω)
   asked with both among the choices. Vowel pairs and consonant pairs: see, hear, read a word; the breathings: a plain word, then one with the mark on the second letter.
   A scheme that gives no sound is asked by ear.
+- **A sound that changes by the next letter** (mw-i7xe0n.7, his Chi drill: 'How is this word said?' set χάρις against other words, so the first letter answered it). The
+  scheme names its rules (`Pronunciation.soundRules`, docs/pronunciation.md): χ, γ, σ before a consonant, αυ, ευ, ηυ, μπ, ντ, γκ and γχ in Modern Greek, each with
+  two sides, the line that names each, and New Testament words of each. Drilled for its own idea, the read-a-word step reads words of **both** sides, each side its own
+  facet (`letter-chi:soft`, labelled by the scheme), and offers the word **misread by the rule** as a wrong answer (χάρις: KHA-rees right, HYA-rees wrong; χεῖρες:
+  HYEE-res right, KHEE-res wrong); a wrong pick shows the side's line under the answer (`GrammarQuestion.rule`, `GrammarCard` [data-testid=rule-line]); and the idea is
+  **proved** only when a word of each side with words was answered right, unhinted (`DrillWalk.sides`; at the top step the side still missing is asked first). Any word
+  read, in any drill, offers its misreading by each rule it stands on (κόσμος beside KOS-mos in the alphabet). No New Testament word begins with μπ, ντ or γκ, so their
+  'start' side has no word: only their 'inside' side is drilled and needed.
+- **Wrong choices** (mw-i7xe0n.7, `src/data/choices.ts`, the Governor's "fix it at the level it's at"): every quiz builds its choices with `choicesOf`, near misses of
+  the point the item tests first, then fillers of the same kind, and a question keeps its near misses (`GrammarQuestion.near`) so a **Hint** takes the far ones away
+  first (`hint.ts`). The near misses by kind: a letter's look-alike (ν/υ, ρ/π, η/ν, χ/ξ, ο/ω) and its sound; a pair's mates that share a letter (αυ: ευ, ηυ, αι) or
+  its rule (μπ, ντ, γκ); a word misread by its sound rule; the same word's other ending; a verse's word with all the prompt names but one; the letter without its iota;
+  the other Greek mark; the same word's other forms (οὐ, οὐκ, οὐχ); the twin with the other mark or accent, or the other word that sounds alike; the preposition's other
+  cases (Drill it's second step only); the verb without its preposition; the syllables beside the loud one; one syllable more or fewer; the other breathing; an idea of
+  the same tier; in the Parsing drill the value a reader takes for the right one (aorist and imperfect, middle and passive, noun and adjective ...) or the answer with one
+  feature changed; in the Quick test a gloss of the same part of speech. With none: the movable ν (the others never take one). tests/unit/choices.test.ts holds each.
 - `start(ideaId, levels, options)` returns a walk, or `{needs: id}` when a prerequisite (ladder `needs`, not the group an item belongs to) is not solid: the lowest such idea.
   A drill's facets are its own idea's; no question tests a prerequisite, and every question assumes the prerequisites are solid.
 - `answer(walk, right, hinted)`: up one step on a right answer; on a miss, back to halfway (rounded down) between the highest step he holds below the missed one and the
