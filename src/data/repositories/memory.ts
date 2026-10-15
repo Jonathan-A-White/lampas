@@ -8,6 +8,7 @@ import { db } from '../db';
 import { BOOKS } from '../books';
 import { OT_BOOKS } from '../otBooks';
 import { parseCanonReference } from '../../nav/links';
+import { dayOf } from './usage';
 
 const INDEX_KEY = 'memoryIndex';
 const NOTES_KEY = 'memoryNotes';
@@ -180,8 +181,8 @@ export function appendToIndex(line: string, by: MemoryBy = 'tutor', when: number
 
 /** The line the index keeps when he said no to the tutor's offer of the Greek (mw-yrmkdf.4): the tutor offers no more until he asks for Greek himself. */
 export const GREEK_NO_PREFIX = 'said no to the Greek offer';
-/** The whole line for a no said at `when`: 'said no to the Greek offer 2026-10-13'. */
-export const greekNoLine = (when: number): string => `${GREEK_NO_PREFIX} ${new Date(when).toISOString().slice(0, 10)}`;
+/** The whole line for a no said at `when`: 'said no to the Greek offer 2026-10-13', the phone's own day (as the page's 'Changed' line shows it), never the UTC one (mw-yrmkdf.9). */
+export const greekNoLine = (when: number): string => `${GREEK_NO_PREFIX} ${dayOf(when)}`;
 /** True when the index text holds the no, on a line of its own. */
 export const hasGreekNo = (indexText: string): boolean => new RegExp(`^${GREEK_NO_PREFIX}`, 'm').test(indexText);
 
