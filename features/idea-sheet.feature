@@ -158,3 +158,18 @@ Feature: The idea sheet
     Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
     When he opens the letter sheet of "omicron" from the alphabet sheet
     Then the idea sheet shows examples from "1 John 1:1"
+
+  # Sound hints fit his English (mw-5r3p30.352): 'o, as in “lot”' says 'ah' to an American ear, so American English, the default, keys the o
+  # to “or”, said short (PROVISIONAL wording, the Governor to confirm); British English keeps “lot”. Each accent is one table of hints.
+  Scenario: The Omicron sheet says its o the way an American says it
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
+    When he opens the letter sheet of "omicron" from the alphabet sheet
+    Then the letter sheet's tile reads "o, as in “or”, short"
+    And the letter sheet's How it sounds reads "In Modern Greek it sounds like o, as in “or”, short."
+    And the letter sheet does not say "lot"
+
+  Scenario: With British English the Omicron sheet keys its o to "lot"
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level, a fake Postern and the English accent "british"
+    When he opens the letter sheet of "omicron" from the alphabet sheet
+    Then the letter sheet's tile reads "o, as in “lot”"
+    And the letter sheet's How it sounds reads "In Modern Greek it sounds like o, as in “lot”."

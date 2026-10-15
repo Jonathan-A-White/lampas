@@ -1,46 +1,41 @@
 // src/speech/schemes/modernLessons.ts — what Modern Greek teaches of each sound-bearing idea of the grammar ladder (mw-5r3p30.229): the sound of
 // each letter, vowel pair and consonant pair, and the breathings, which Modern Greek does not say. The sounds are the ones modern.ts respells by
-// (docs/pronunciation.md lists the rules; tests/unit/sound-lessons.test.ts holds each to respellModern), said with the scheme's own key words.
+// (docs/pronunciation.md lists the rules; tests/unit/sound-lessons.test.ts holds each to respellModern), each said through `say`, which gives the
+// symbol the respelling writes and the reader's English accent's hint for it (mw-5r3p30.352: no English word is written here).
+import type { SoundWords } from '../accents';
 import type { SoundLesson } from '../pronunciation';
 
-type KeyWords = Readonly<Record<string, string>>;
-
-export function modernLessons(keyWords: KeyWords): Readonly<Record<string, SoundLesson>> {
-  const key = (sound: string): string => {
-    const word = keyWords[sound];
-    if (!word) throw new Error(`Modern Greek has no key word for ${JSON.stringify(sound)}`);
-    return word;
-  };
+export function modernLessons(say: SoundWords): Readonly<Record<string, SoundLesson>> {
   /** In a lesson's prose: 'e as in pet'. */
-  const asIn = (sound: string): string => `${sound} as in ${key(sound)}`;
+  const asIn = say.asIn;
   /** As an idea's sound: 'e, as in “pet”'. */
-  const keyed = (sound: string): string => `${sound}, as in “${key(sound)}”`;
+  const keyed = say.keyed;
 
   const letters: [string, string][] = [
     ['alpha', keyed('a')],
-    ['beta', 'v, as in “vase”'],
-    ['gamma', `gh, a soft throaty g; before e and i it is ${keyed('y')}`],
-    ['delta', 'dh, the th of “this”'],
+    ['beta', keyed('v')],
+    ['gamma', `${keyed('gh')}; before e and i it is ${keyed('y')}`],
+    ['delta', keyed('dh')],
     ['epsilon', keyed('e')],
-    ['zeta', 'z, as in “zoo”'],
+    ['zeta', keyed('z')],
     ['eta', keyed('ee')],
-    ['theta', 'th, as in “thin”'],
+    ['theta', keyed('th')],
     ['iota', keyed('ee')],
-    ['kappa', 'k, as in “kite”'],
-    ['lambda', 'l, as in “lamp”'],
-    ['mu', 'm, as in “mother”'],
-    ['nu', 'n, as in “now”'],
-    ['xi', 'ks, as in “box”'],
+    ['kappa', keyed('k')],
+    ['lambda', keyed('l')],
+    ['mu', keyed('m')],
+    ['nu', keyed('n')],
+    ['xi', keyed('ks')],
     ['omicron', keyed('o')],
-    ['pi', 'p, as in “pen”'],
-    ['rho', 'r, lightly rolled'],
-    ['sigma', 's, as in “sun”'],
-    ['tau', 't, as in “top”'],
+    ['pi', keyed('p')],
+    ['rho', keyed('r')],
+    ['sigma', keyed('s')],
+    ['tau', keyed('t')],
     ['upsilon', keyed('ee')],
-    ['phi', 'f, as in “fan”'],
-    ['chi', `${keyed('kh')} (the Scottish ch), before a, o, ou and a consonant; before e and i it is softer, ${asIn('hy')}`],
-    ['psi', 'ps, as in “lips”'],
-    ['omega', 'o, as in “lot”, the same as omicron'],
+    ['phi', keyed('f')],
+    ['chi', `${keyed('kh')}, before a, o, ou and a consonant; before e and i it is softer, ${asIn('hy')}`],
+    ['psi', keyed('ps')],
+    ['omega', `${keyed('o')}, the same as omicron`],
   ];
   const vowelPairs: [string, string][] = [
     ['ai', keyed('e')],

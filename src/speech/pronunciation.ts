@@ -1,7 +1,9 @@
 // src/speech/pronunciation.ts — how the Greek is spoken and respelled, as a registry so another way (such as Erasmian)
 // is one more file in ./schemes/ plus one line in SCHEMES below; nothing else names 'modern'. Modern Greek is the only
 // scheme for now. docs/pronunciation.md says how to add one.
+import { chosenAccent, soundWords, type EnglishAccent, type SoundWords } from './accents';
 import { MODERN } from './schemes/modern';
+import type { SoundId } from './sounds';
 
 /** The id of a scheme in the registry. */
 export type GreekPronunciation = string;
@@ -49,8 +51,10 @@ export interface Pronunciation {
   note: string;
   /** the Greek word as syllables an English reader can say, the stressed one in capitals: 'χριστῷ' is 'khree-STO' */
   respell(greekWord: string): string;
-  /** An English word that has each sound the respelling writes ('e' is the e of 'pet'): the lessons give every sound with its key word, so another scheme changes them */
-  keyWords: Readonly<Record<string, string>>;
+  /** Each sound the respelling writes, as the standard sound it is (./sounds.ts): 'o' is '/o/', 'kh' is '/x/' (mw-5r3p30.352). The scheme names no
+   * English word: its lessons say a sound through the SoundWords they are handed ('o, as in “or”, short'), which ask the reader's English accent
+   * (./accents/), so every accent table must hint every id here (tests/unit/english-accents.test.ts). */
+  sounds: Readonly<Record<string, SoundId>>;
   /** The bundled clip (a root-absolute path under public/sounds/<scheme>/) of the sound of a Greek word of ONE letter (ὁ, ἡ, ὦ, Ὃ), played instead of
    * any voice: a Greek voice handed one letter names it ('omicron'), with or without an accent (mw-5r3p30.347). Null for a letter the scheme has no
    * clip for. Modern Greek's are its vowels' sounds, '/sounds/modern/o.mp3' for ὁ. */
@@ -64,17 +68,48 @@ export interface Pronunciation {
   letterForm(letter: string): string;
   /** What the tutor is told of this scheme: its name and the sound rules it respells and speaks by, sent with every ask that may speak of a sound
    * (the grinds' `pronunciation_guide`), so the grinds' instructions name no sound of their own (mw-5r3p30.268). */
-  tutorGuide: string;
+  tutorGuide(say: SoundWords): string;
   /** The sound lessons this scheme teaches, keyed by ladder idea id ('letter-beta', 'diphthong-ou', 'breathings' ...), in its own sounds: the idea sheet and the
-   * sound questions read them (mw-5r3p30.229). An idea it gives none for falls back to a text that names no sound, never to another scheme's. */
-  lessons?: Readonly<Record<string, SoundLesson>>;
+   * sound questions read them (mw-5r3p30.229), through lessonsOf. An idea it gives none for falls back to a text that names no sound, never to another
+   * scheme's. Each sound is said with `say`, in the reader's English accent. */
+  lessons?(say: SoundWords): Readonly<Record<string, SoundLesson>>;
   /** The sounds of this scheme that change by the next letter, one rule per ladder idea (mw-i7xe0n.7): Drill it asks words on both sides of each and offers
-   * the word misread by the rule as a wrong choice. A scheme with none leaves it out. */
-  soundRules?: readonly SoundRule[];
+   * the word misread by the rule as a wrong choice, through soundRulesOf. A scheme with none leaves it out. */
+  soundRules?(say: SoundWords): readonly SoundRule[];
 }
 
+/** What a scheme says in one accent, made once: the same rule objects come back each time, so a caller may compare them. */
+interface Said {
+  lessons: Readonly<Record<string, SoundLesson>>;
+  rules: readonly SoundRule[];
+  guide: string;
+}
+const said = new WeakMap<Pronunciation, WeakMap<EnglishAccent, Said>>();
+
+function saidIn(scheme: Pronunciation, accent: EnglishAccent): Said {
+  const byAccent = said.get(scheme) ?? new WeakMap<EnglishAccent, Said>();
+  said.set(scheme, byAccent);
+  let found = byAccent.get(accent);
+  if (!found) {
+    const say = soundWords(scheme, accent);
+    found = { lessons: scheme.lessons?.(say) ?? {}, rules: scheme.soundRules?.(say) ?? [], guide: scheme.tutorGuide(say) };
+    byAccent.set(accent, found);
+  }
+  return found;
+}
+
+/** The sound lessons of `scheme`, said in `accent` (the chosen English accent when none is named), by ladder idea id. */
+export const lessonsOf = (scheme: Pronunciation, accent: EnglishAccent = chosenAccent()): Readonly<Record<string, SoundLesson>> => saidIn(scheme, accent).lessons;
+
+/** The sound rules of `scheme`, their lines said in `accent` (the chosen English accent when none is named). */
+export const soundRulesOf = (scheme: Pronunciation, accent: EnglishAccent = chosenAccent()): readonly SoundRule[] => saidIn(scheme, accent).rules;
+
+/** What the tutor is told of `scheme` (the grinds' `pronunciation_guide`), its sounds said in `accent` (the chosen English accent when none is named). */
+export const tutorGuideOf = (scheme: Pronunciation, accent: EnglishAccent = chosenAccent()): string => saidIn(scheme, accent).guide;
+
 /** The rule of `scheme` that changes the sound of the ladder idea `ideaId`, if any. */
-export const soundRuleOf = (scheme: Pronunciation, ideaId: string): SoundRule | undefined => scheme.soundRules?.find((r) => r.ideaId === ideaId);
+export const soundRuleOf = (scheme: Pronunciation, ideaId: string, accent: EnglishAccent = chosenAccent()): SoundRule | undefined =>
+  soundRulesOf(scheme, accent).find((r) => r.ideaId === ideaId);
 
 const SCHEMES: Pronunciation[] = [MODERN];
 

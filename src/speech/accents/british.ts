@@ -1,0 +1,41 @@
+// src/speech/accents/british.ts — the sound hints for a British (Southern English) ear (mw-5r3p30.352): the words the lessons gave before there was a
+// choice, the o of 'lot' and a lightly rolled r among them.
+import type { EnglishAccent } from './types';
+
+export const BRITISH: EnglishAccent = {
+  id: 'british',
+  label: 'British',
+  hints: {
+    '/a/': { word: 'father' },
+    '/e/': { word: 'pet' },
+    '/i/': { word: 'see' },
+    '/o/': { word: 'lot' },
+    '/u/': { word: 'food' },
+    '/v/': { word: 'vase' },
+    '/f/': { word: 'fan' },
+    '/ð/': { note: 'the th of “this”' },
+    '/θ/': { word: 'thin' },
+    '/ɣ/': { note: 'a soft throaty g' },
+    '/ʝ/': { word: 'yes' },
+    '/x/': { word: 'loch', note: 'the Scottish ch' },
+    '/ç/': { word: 'huge' },
+    '/z/': { word: 'zoo' },
+    '/s/': { word: 'sun' },
+    '/b/': { word: 'bed' },
+    '/p/': { word: 'pen' },
+    '/d/': { word: 'dog' },
+    '/t/': { word: 'top' },
+    '/ɡ/': { word: 'go' },
+    '/k/': { word: 'kite' },
+    '/m/': { word: 'mother' },
+    '/n/': { word: 'now' },
+    '/l/': { word: 'lamp' },
+    '/ɾ/': { note: 'lightly rolled' },
+    '/ks/': { word: 'box' },
+    '/ps/': { word: 'lips' },
+    '/mb/': { word: 'number' },
+    '/nd/': { word: 'under' },
+    '/ŋɡ/': { word: 'finger' },
+    '/ŋks/': { word: 'thanks' },
+  },
+};

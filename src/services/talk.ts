@@ -22,7 +22,7 @@ import { slugOf, type ScreenContext } from '../tutor/screen';
 import type { FormFieldState, FormValue } from '../formHelper/formHelper';
 import { MAX_SUMMARY } from './feedback';
 import { greekSyllables, stressedSyllable } from '../speech/greekSyllables';
-import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation } from '../speech/pronunciation';
+import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
 import { askGrind, type AskOptions } from './tutor';
 import { MAX_REQUEST_BYTES } from './requestBudget';
 import { solidWordsField } from './solidWords';
@@ -520,7 +520,7 @@ export function buildTalkRequest(
     ...(aboutCredits ? { solid_words: [] } : solidWordsField(solidWords)),
     settings,
     pronunciation,
-    pronunciation_guide: pronunciationOf(pronunciation).tutorGuide,
+    pronunciation_guide: tutorGuideOf(pronunciationOf(pronunciation)),
     ...(focus ? { focus: withRespelling(focus, pronunciation) } : {}),
     ...(learner ? { learner } : {}),
     ...(learnerGrammar && !aboutCredits ? { learner_grammar: learnerGrammar } : {}),

@@ -12,6 +12,7 @@ import { ideaOf, itemsOf } from '../../src/data/grammar/ladder';
 import { teachOf } from '../../src/data/grammar/teach';
 import { DAY, STEP_DAYS } from '../../src/data/schedule';
 import { clearBus, subscribe, type EventOf } from '../../src/events/bus';
+import { chooseAccent, DEFAULT_ACCENT } from '../../src/speech/accents';
 import { pronunciationOf, registerPronunciation, type Pronunciation } from '../../src/speech/pronunciation';
 import { stopReading } from '../../src/speech/readAloud';
 import { MODERN } from '../../src/speech/schemes/modern';
@@ -24,6 +25,7 @@ let unregisterTestish: (() => void) | undefined;
 
 afterAll(() => {
   unregisterTestish?.();
+  chooseAccent(DEFAULT_ACCENT);
   cleanup();
   stopReading();
   vi.unstubAllGlobals();
@@ -45,13 +47,14 @@ const TESTISH: Pronunciation = {
   ...MODERN,
   id: 'testish',
   label: 'Testish',
-  lessons: { breathings: { text: 'Testish says the rough breathing as a hum.' } },
+  lessons: () => ({ breathings: { text: 'Testish says the rough breathing as a hum.' } }),
 };
 
 /** Opens the app on Romans 8 with every store emptied, `goal` saved as the goal setting when there is one, the pronunciation `chosen` saved, a fake Postern and, with `greekVoice`, a phone that has a Greek voice. */
 async function open(goal: string | undefined, chosen?: string, greekVoice = false): Promise<void> {
   unregisterTestish?.();
   unregisterTestish = undefined;
+  chooseAccent(DEFAULT_ACCENT);
   cleanup();
   stopReading();
   clearBus();
@@ -559,6 +562,36 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the idea sheet shows examples from {string}', (_, title: string) => {
       expect(within(letterSheet()).getByText(`Examples from ${title}`)).toBeInTheDocument();
       for (const example of within(letterSheet()).getAllByTestId('idea-example')) expect(within(example).getByTestId('idea-verse').textContent).toBe(title);
+    });
+  });
+  const ownTile = (): HTMLElement => within(letterSheet()).getAllByTestId('teach-tile')[0];
+  const howItSounds = (): HTMLElement => within(letterSheet()).getByTestId('idea-text');
+
+  Scenario('The Omicron sheet says its o the way an American says it', ({ Given, When, Then, And }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the letter sheet of {string} from the alphabet sheet', openLetterSheet);
+    Then("the letter sheet's tile reads {string}", (_, sound: string) => {
+      expect(ownTile().querySelector('[data-sound]')?.textContent).toBe(sound);
+    });
+    And("the letter sheet's How it sounds reads {string}", (_, text: string) => {
+      expect(howItSounds().textContent).toBe(text);
+    });
+    And('the letter sheet does not say {string}', (_, word: string) => {
+      expect(letterSheet().textContent).not.toMatch(new RegExp(`\\b${word}\\b`));
+    });
+  });
+
+  Scenario('With British English the Omicron sheet keys its o to "lot"', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 with the goal {string}, no idea level, a fake Postern and the English accent {string}', async (_, goal: string, accent: string) => {
+      await open(goal);
+      chooseAccent(accent);
+    });
+    When('he opens the letter sheet of {string} from the alphabet sheet', openLetterSheet);
+    Then("the letter sheet's tile reads {string}", (_, sound: string) => {
+      expect(ownTile().querySelector('[data-sound]')?.textContent).toBe(sound);
+    });
+    And("the letter sheet's How it sounds reads {string}", (_, text: string) => {
+      expect(howItSounds().textContent).toBe(text);
     });
   });
 });

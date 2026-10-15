@@ -84,11 +84,11 @@ describeFeature(feature, ({ Scenario }) => {
         scoringLang: 'el',
         note: 'Test scheme.',
         respell: (word) => word.normalize('NFD').replace(/\p{M}/gu, '').toUpperCase(),
-        keyWords: {},
+        sounds: {},
         loneLetter: (word) => word.normalize('NFD').replace(/\p{M}/gu, '').toUpperCase(),
         voiceForm: (text) => text,
         letterForm: (letter) => letter,
-        tutorGuide: `${label}: every word as its capitals.`,
+        tutorGuide: () => `${label}: every word as its capitals.`,
       });
     });
     When("he taps the gear in the reader's header", async () => {

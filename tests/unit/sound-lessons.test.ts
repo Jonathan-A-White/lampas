@@ -7,10 +7,12 @@ import { ideaSound, ideaText } from '../../src/data/grammar/lessons';
 import { buildIdeaQuestion, buildLetter } from '../../src/data/grammar/questions';
 import { quickQuestion } from '../../src/data/grammar/quickRound';
 import { mulberry32 } from '../../src/data/quiz';
-import { registerPronunciation, pronunciationOf, type Pronunciation } from '../../src/speech/pronunciation';
+import { soundWords } from '../../src/speech/accents';
+import { lessonsOf, registerPronunciation, pronunciationOf, type Pronunciation } from '../../src/speech/pronunciation';
 import { MODERN, respellModern } from '../../src/speech/schemes/modern';
 
 const modern = pronunciationOf('modern');
+const say = soundWords(modern);
 
 /** [idea id, a Greek word that shows the letter or pair, the sound respellModern writes for it in that word, the parts the lesson must name (default: that sound)]. */
 const SOUNDS: [string, string, string, string[]?][] = [
@@ -27,7 +29,7 @@ const SOUNDS: [string, string, string, string[]?][] = [
 describe('the sound lessons of the Modern Greek scheme', () => {
   it('gives a lesson to every letter, vowel pair, consonant pair and breathing of the sounds, letters and marks tiers', () => {
     const bearing = LADDER.filter((i) => i.glyphs || i.parent).map((i) => i.id);
-    expect(Object.keys(modern.lessons ?? {}).sort()).toEqual([...bearing, 'breathings', 'consonant-pairs', 'diphthongs', 'words-sound-alike'].sort());
+    expect(Object.keys(lessonsOf(modern)).sort()).toEqual([...bearing, 'breathings', 'consonant-pairs', 'diphthongs', 'words-sound-alike'].sort());
   });
 
   it('says for each letter and pair a sound that agrees with respellModern for the idea\'s own example word', () => {
@@ -44,13 +46,13 @@ describe('the sound lessons of the Modern Greek scheme', () => {
     expect(respellModern('χάρις')).toBe('KHA-rees');
     expect(respellModern('χαίρετε')).toBe('HYE-re-te');
     const chi = ideaSound(ideaOf('letter-chi'), modern) ?? '';
-    expect(chi).toContain(`kh, as in “${modern.keyWords.kh}”`);
-    expect(chi).toContain(`hy as in ${modern.keyWords.hy}`);
+    expect(chi).toContain(say.keyed('kh'));
+    expect(chi).toContain(say.asIn('hy'));
     expect(chi).toMatch(/before e and i/);
-    expect(ideaText(ideaOf('letter-chi'), modern)).toContain(`hy as in ${modern.keyWords.hy}`);
+    expect(ideaText(ideaOf('letter-chi'), modern)).toContain(say.asIn('hy'));
     expect(chi).not.toMatch(/breathy h/);
     // γ keeps its two: gh, and y before e and i
-    expect(ideaSound(ideaOf('letter-gamma'), modern)).toContain(`y, as in “${modern.keyWords.y}”`);
+    expect(ideaSound(ideaOf('letter-gamma'), modern)).toContain(say.keyed('y'));
   });
 
   it('walks every idea of the letters, sounds and marks tiers: none says a breathing adds an h or that ὁ is “ho”', () => {
@@ -79,7 +81,7 @@ describe('a scheme with its own lessons, and one with none', () => {
     ...MODERN,
     id: 'testish',
     label: 'Testish',
-    lessons: { breathings: { text: 'Testish says the rough breathing as a hum.' }, 'breathing-rough': { text: 'The rough breathing hums.', sound: 'a hum' } },
+    lessons: () => ({ breathings: { text: 'Testish says the rough breathing as a hum.' }, 'breathing-rough': { text: 'The rough breathing hums.', sound: 'a hum' } }),
   };
 
   it('shows the selected scheme\'s text for an idea it has a lesson for', () => {
@@ -113,7 +115,7 @@ describe('the questions that state or ask a sound read it from the scheme', () =
     ...MODERN,
     id: 'testish',
     label: 'Testish',
-    lessons: { 'breathing-rough': { text: 'The rough breathing hums.', sound: 'a hum' } },
+    lessons: () => ({ 'breathing-rough': { text: 'The rough breathing hums.', sound: 'a hum' } }),
   };
 
   it('asks the rough breathing by its mark, and no question names an h', () => {
@@ -138,7 +140,7 @@ describe('the questions that state or ask a sound read it from the scheme', () =
   });
 
   it('puts the scheme\'s sound on the quick round\'s "what sound does it make" card', () => {
-    const unregister = registerPronunciation({ ...TESTISH, lessons: { 'diphthong-ou': { text: 'ου hums.', sound: 'a hum' }, 'diphthong-ai': { text: 'αι buzzes.', sound: 'a buzz' }, 'diphthong-ei': { text: 'ει whirs.', sound: 'a whir' } } });
+    const unregister = registerPronunciation({ ...TESTISH, lessons: () => ({ 'diphthong-ou': { text: 'ου hums.', sound: 'a hum' }, 'diphthong-ai': { text: 'αι buzzes.', sound: 'a buzz' }, 'diphthong-ei': { text: 'ει whirs.', sound: 'a whir' } }) });
     try {
       const scheme = pronunciationOf('testish');
       let seen = false;

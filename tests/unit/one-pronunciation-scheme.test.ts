@@ -4,7 +4,7 @@
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { pronunciationOf } from '../../src/speech/pronunciation';
+import { pronunciationOf, tutorGuideOf } from '../../src/speech/pronunciation';
 import { respellModern } from '../../src/speech/schemes/modern';
 import { soundRulesIn } from '../support/sound-rules-scan';
 
@@ -74,7 +74,7 @@ describe('the scan', () => {
 
 describe('what the tutor is told of the sounds is the scheme\'s', () => {
   it("gives Modern Greek's guide examples the respeller agrees with, and the rules the grinds no longer write", () => {
-    const guide = pronunciationOf('modern').tutorGuide;
+    const guide = tutorGuideOf(pronunciationOf('modern'));
     const examples = [...guide.matchAll(/(\p{Script=Greek}+) is ([A-Za-z-]*[A-Z]{2,}[A-Za-z-]*)(?=[,.])/gu)].map((m) => [m[1], m[2]]);
     expect(examples.map(([word]) => word)).toEqual(['ταῦτα', 'Πάντοτε', 'χαίρετε']);
     for (const [word, said] of examples) expect(respellModern(word), word).toBe(said);
@@ -88,6 +88,6 @@ describe('what the tutor is told of the sounds is the scheme\'s', () => {
     const examples = execSync('git ls-files grinds/examples', { encoding: 'utf8' }).split('\n').filter((f) => f.endsWith('.json'));
     const named = examples.map((f) => ({ f, request: (JSON.parse(readFileSync(f, 'utf8')) as { request?: Record<string, unknown> }).request ?? {} })).filter((e) => 'pronunciation' in e.request);
     expect(named.length).toBeGreaterThan(3);
-    for (const { f, request } of named) expect(request.pronunciation_guide, f).toBe(pronunciationOf(request.pronunciation).tutorGuide);
+    for (const { f, request } of named) expect(request.pronunciation_guide, f).toBe(tutorGuideOf(pronunciationOf(request.pronunciation)));
   });
 });

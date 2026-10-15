@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { itemsOf, ideaOf, LADDER } from '../../src/data/grammar/ladder';
 import { ideaSound } from '../../src/data/grammar/lessons';
 import { teachTiles } from '../../src/data/grammar/teachTiles';
-import type { Pronunciation } from '../../src/speech/pronunciation';
+import { lessonsOf, type Pronunciation } from '../../src/speech/pronunciation';
 import { MODERN } from '../../src/speech/schemes/modern';
 
 const bare = (text: string): string => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
@@ -15,7 +15,7 @@ const OTHER: Pronunciation = {
   ...MODERN,
   id: 'other',
   label: 'Other',
-  lessons: Object.fromEntries(Object.keys(MODERN.lessons ?? {}).map((id) => [id, { sound: `other-${id}` }])),
+  lessons: () => Object.fromEntries(Object.keys(lessonsOf(MODERN)).map((id) => [id, { sound: `other-${id}` }])),
 };
 
 describe('teachTiles', () => {
@@ -80,7 +80,7 @@ describe('teachTiles', () => {
   });
 
   it('gives no sound for a scheme that teaches none, never another scheme\'s', () => {
-    const silent: Pronunciation = { ...MODERN, id: 'silent', lessons: {} };
+    const silent: Pronunciation = { ...MODERN, id: 'silent', lessons: () => ({}) };
     for (const idea of TEACHING) for (const tile of teachTiles(idea, silent)) expect(tile.sound, `${idea.id}/${tile.id}`).toBeUndefined();
   });
 

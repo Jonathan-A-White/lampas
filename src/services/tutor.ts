@@ -12,7 +12,7 @@ import type { LearnerProfile } from '../data/learnerProfile';
 import type { MemoryField } from '../data/learnerMemory';
 import type { TutorRequest } from '../data/requestsForTutor';
 import type { RustyItem } from '../data/rusty';
-import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation } from '../speech/pronunciation';
+import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
 import { MAX_REQUEST_BYTES } from './requestBudget';
 import { solidWordsField } from './solidWords';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
@@ -230,7 +230,7 @@ export function buildRequest(reference: string, verse: Verse, question: string, 
     ...(spoken ? { spoken: true as const } : {}),
     ...solidWordsField(solidWords),
     pronunciation,
-    pronunciation_guide: pronunciationOf(pronunciation).tutorGuide,
+    pronunciation_guide: tutorGuideOf(pronunciationOf(pronunciation)),
     ...(learner ? { learner } : {}),
     ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
     ...(learnerProfile ? { learner_profile: learnerProfile } : {}),

@@ -15,7 +15,7 @@ import {
 import { PAIR_WORD_OF, baseLetters, wordsWith } from '../../src/data/grammar/drillItems';
 import { LADDER, ideaOf, itemsOf } from '../../src/data/grammar/ladder';
 import type { Level } from '../../src/data/grammar/needs';
-import { pronunciationOf } from '../../src/speech/pronunciation';
+import { pronunciationOf, soundRulesOf } from '../../src/speech/pronunciation';
 
 const rom8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const jn1 = JSON.parse(readFileSync('public/data/1jn/1.json', 'utf8')) as Chapter;
@@ -376,7 +376,7 @@ describe('a sound that changes by the next letter', () => {
     expect(sides).toContain('letter-chi:soft');
   });
 
-  it.each((modern.soundRules ?? []).map((r) => [r.ideaId, r] as const))('%s: both sides drilled, the word misread by the rule offered', (ideaId, rule) => {
+  it.each(soundRulesOf(modern).map((r) => [r.ideaId, r] as const))('%s: both sides drilled, the word misread by the rule offered', (ideaId, rule) => {
     const qs = drillSteps(ideaId, { seed: 1, scheme: modern }).flatMap((s) => s.questions);
     for (const side of rule.sides) {
       const own = qs.filter((q) => q.facet.id === `${ideaId}:${side.id}`);
