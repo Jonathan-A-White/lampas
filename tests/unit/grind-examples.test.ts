@@ -159,6 +159,28 @@ describe('bible-talk/other-passage-in-place (mw-5r3p30.153)', () => {
     expect(checkExpect(example.expect, given)).toEqual([]);
   });
 
+  // mw-5r3p30.414: smoke failed on an answer that cited Genesis 14:18; the example checks that a verse about Melchizedek is named, never which one
+  it.each([
+    'Melchizedek was the king of Salem and a priest of God Most High (Genesis 14:18).',
+    'Gen. 14:19-20 says he blessed Abram.',
+    'He is named in Psalm 110:4 as a priest forever.',
+    'Hebrews 5:6 and Hebrews 5:10 call Jesus a priest in his order.',
+    'See Hebrews 6:20.',
+    'Hebrews 7:17 quotes the Psalm.',
+    'Heb 7:1-3 describes him.',
+  ])('passes when the answer cites any verse about him: %s', (text) => {
+    expect(checkExpect(example.expect, { ...answer, answer: text })).toEqual([]);
+  });
+
+  it.each([
+    'Melchizedek was a priest and king, and I will not say where.',
+    'Look at Romans 8:28 for that.',
+    'Genesis 14:17 has the battle; Hebrews 7:18 is about the law.',
+    'Psalm 110:40 is not it, nor Hebrews 5:60.',
+  ])('fails when the answer cites no verse about him: %s', (text) => {
+    expect(checkExpect(example.expect, { ...answer, answer: text })).not.toEqual([]);
+  });
+
   it('still fails when the answer names no passage, or changes a setting', () => {
     expect(checkExpect(example.expect, { ...answer, answer: 'A priest.' })).not.toEqual([]);
     expect(checkExpect(example.expect, { ...answer, settings_changes: [{ key: 'theme', value: 'dark' }] })).not.toEqual([]);
