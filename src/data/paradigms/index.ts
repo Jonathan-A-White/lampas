@@ -1,16 +1,31 @@
 // src/data/paradigms/index.ts — the paradigm tables, in the order the Paradigms list shows them (docs/paradigms.md), and what his
 // grammar levels make of them. Pure: the levels come in as a lookup (listLevels' rows, or a fixture).
 import type { Level } from '../grammar/needs';
+import { ADJECTIVE_ENDINGS } from './adjectiveEndings';
 import { ARTICLE } from './article';
 import { EIMI } from './eimi';
 import { NOUN_ENDINGS } from './nounEndings';
+import { PRONOUNS_DEMONSTRATIVE_RELATIVE } from './pronounsDemonstrativeRelative';
+import { PRONOUNS_INTERROGATIVE_INDEFINITE } from './pronounsInterrogativeIndefinite';
+import { PRONOUNS_PERSONAL } from './pronounsPersonal';
+import { THIRD_DECLENSION } from './thirdDeclension';
 import type { Paradigm, ParadigmCell, ParadigmColumn, ParadigmRow } from './types';
 import { VERB_ENDINGS } from './verbEndings';
 
 export type { Paradigm, ParadigmCell, ParadigmColumn, ParadigmRow };
 
 /** One line per table: a new table is one file here plus one line in this list. */
-export const PARADIGMS: readonly Paradigm[] = [ARTICLE, NOUN_ENDINGS, EIMI, VERB_ENDINGS];
+export const PARADIGMS: readonly Paradigm[] = [
+  ARTICLE,
+  NOUN_ENDINGS,
+  EIMI,
+  VERB_ENDINGS,
+  THIRD_DECLENSION,
+  ADJECTIVE_ENDINGS,
+  PRONOUNS_PERSONAL,
+  PRONOUNS_DEMONSTRATIVE_RELATIVE,
+  PRONOUNS_INTERROGATIVE_INDEFINITE,
+];
 
 export const paradigmById = (id: string | undefined): Paradigm | undefined => PARADIGMS.find((p) => p.id === id);
 
