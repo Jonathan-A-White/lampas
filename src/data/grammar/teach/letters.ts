@@ -60,7 +60,7 @@ const WORDS: Record<string, [capitals: string, say: string, gloss: string, ref?:
   omicron: ['ΛΟΓΟΣ', 'λόγος', 'word', 'John 1:1'],
   pi: ['ΠΑΤΗΡ', 'πατήρ', 'father'],
   rho: ['ΑΡΧΗΣ', 'ἀρχῆς', 'beginning', '1 John 1:1'],
-  sigma: ['ΚΟΣΜΟΣ', 'κόσμος', 'world', 'John 1:10'],
+  sigma: ['ΧΡΙΣΤΟΣ', 'Χριστός', 'Christ'],
   tau: ['ΠΑΤΗΡ', 'πατήρ', 'father'],
   upsilon: ['ΥΔΩΡ', 'ὕδωρ', 'water'],
   phi: ['ΦΩΣ', 'φῶς', 'light', 'John 1:5'],
