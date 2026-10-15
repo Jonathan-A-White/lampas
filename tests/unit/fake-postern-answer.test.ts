@@ -57,9 +57,12 @@ describe("the fake Postern's answer", () => {
   it('fails only after the wait, naming it, when no grist arrives', async () => {
     expect(postern.answerWaitMs).toBe(ASYNC_WAIT_MS);
     postern.answerWaitMs = 30;
-    const started = Date.now();
+    // performance.now, not Date.now: tests/setup.ts bends Date.now so it never runs backwards, and the Desktop's wall clock steps back by
+    // most of a second every half minute (WSL2's time sync), after which Date.now moves 1 ms a reading until real time catches up. The
+    // wait is real time (realSetTimeout), so a monotonic clock is what measures it; the same as tests/unit/async-wait.test.ts.
+    const started = performance.now();
     await expect(postern.answer(ANSWER)).rejects.toThrow('no grist arrived within 30 ms');
-    expect(Date.now() - started).toBeGreaterThanOrEqual(25);
+    expect(performance.now() - started).toBeGreaterThanOrEqual(25);
   });
 });
 
