@@ -20,7 +20,7 @@ export function MicIcon({ size = 26 }: { size?: number }) {
   );
 }
 
-export function HoldBar({ hold, holdMs, name, label, icon = <MicIcon />, testId, listening = false, disabled = false, keys = false, compactWhenShort = false }: {
+export function HoldBar({ hold, holdMs, name, label, icon = <MicIcon />, testId, listening = false, disabled = false, keys = false, compactWhenShort = false, roundWhenShort = false }: {
   hold: HoldHandlers;
   holdMs?: number;
   /** the accessible name, which stays the same while the label changes */
@@ -37,12 +37,15 @@ export function HoldBar({ hold, holdMs, name, label, icon = <MicIcon />, testId,
   keys?: boolean;
   /** in a short window (a phone held sideways) the bar is a row 56 px high, the icon beside the label (a sheet that needs the height for its text) */
   compactWhenShort?: boolean;
+  /** in a short window the bar is a round mic button with no label (the field beside it needs the room); the accessible name stays */
+  roundWhenShort?: boolean;
 }) {
   const press = useHoldPress(hold, holdMs);
   return (
     <button
       type="button"
       data-hold-bar=""
+      data-round={roundWhenShort ? '' : undefined}
       data-testid={testId}
       aria-label={name}
       aria-pressed={listening}
@@ -61,10 +64,12 @@ export function HoldBar({ hold, holdMs, name, label, icon = <MicIcon />, testId,
             },
           }
         : {})}
-      className={barClass(listening, compactWhenShort)}
+      className={barClass(listening, compactWhenShort, roundWhenShort)}
     >
       {icon}
-      <span aria-hidden="true">{label}</span>
+      <span aria-hidden="true" className={roundWhenShort ? 'short:hidden' : undefined}>
+        {label}
+      </span>
     </button>
   );
 }
