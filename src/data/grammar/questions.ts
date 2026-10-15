@@ -217,6 +217,7 @@ function featuresOf(code: string, idea: GrammarIdea): string[] | null {
   const settled = features.every((f) => termIsTaught(f.value, idea) || (pos === 'noun' && f.id === 'gender'));
   return settled && named.length > 0 ? named.map((f) => f.value) : null;
 }
+
 const COMMON_ENDINGS: Record<'noun' | 'verb', string[]> = {
   noun: ['ος', 'ου', 'ῳ', 'ον', 'οι', 'ων', 'οις', 'ους', 'α', 'ης', 'ῃ', 'ην', 'ας', 'αις', 'ις', 'ι', 'ες', 'εως'],
   verb: ['ω', 'εις', 'ει', 'ομεν', 'ετε', 'ουσιν', 'ον', 'ες', 'ε', 'ομαι', 'εται', 'ονται', 'ῃ', 'α', 'ασιν'],
