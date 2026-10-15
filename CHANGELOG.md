@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.255
+_2026-10-15_
+- New: After a few visits, Lampas shows a free reader one quiet line, once, about what a licence adds, and it is easy to find out how to get one.
+
 ## 0.1.254
 _2026-10-15_
 - Fixed: Ask the tutor, with the phone held sideways, shows the question and its Copy button on one line, so more of the answer is in view.
