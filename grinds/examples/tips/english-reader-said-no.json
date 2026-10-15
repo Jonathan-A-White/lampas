@@ -1,0 +1,69 @@
+{
+  "description": "A reader whose index says he said no to the Greek offer, a few days in, with no words learning: a tip is offered, and it is about reading, hearing or the settings, with no Greek letters in it.",
+  "schemaVersion": "1",
+  "request": {
+    "summary": {
+      "days_used": 3,
+      "days_used_last_7": 3,
+      "first_used_days_ago": 4,
+      "screens_visited": [
+        "words",
+        "settings"
+      ],
+      "screens_never": [
+        "import",
+        "review",
+        "about"
+      ],
+      "features_used": [
+        "read-aloud",
+        "other-chapters"
+      ],
+      "features_never": [
+        "ask",
+        "talk",
+        "review",
+        "reading-check",
+        "long-press-speak",
+        "study-links"
+      ],
+      "settings_changed": [
+        "theme"
+      ],
+      "settings_never": [
+        "textSize",
+        "layout",
+        "weave",
+        "readSpan"
+      ],
+      "turned_off": [],
+      "counts": {
+        "wordsLearning": 0,
+        "wordsSolid": 0,
+        "talks": 0,
+        "asks": 0,
+        "quizAnswers": 0,
+        "drillAnswers": 0,
+        "readings": 0,
+        "grammarKnown": 0
+      }
+    },
+    "shown": [],
+    "memory": {
+      "index": "Likes short answers.\nsaid no to the Greek offer 2026-10-13",
+      "notes": []
+    }
+  },
+  "expect": {
+    "tip": {
+      "is_null": false
+    },
+    "tip.id": {
+      "matches": "^[a-z0-9-]+$"
+    },
+    "tip.body": {
+      "present": true,
+      "matches": "^[^Ͱ-Ͽἀ-῿]*$"
+    }
+  }
+}
