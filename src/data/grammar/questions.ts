@@ -7,6 +7,7 @@ import { bookOf } from '../books';
 import { OPTION_COUNT, choicesOf, lookAlikesOf, pairMates } from '../choices';
 import type { Chapter, GreekWord, Verse } from '../chapter';
 import { decodeParse, parseSegments, splitParse } from '../parseCode';
+import { PARADIGMS, tableFor } from '../paradigms';
 import { shuffle, type Random } from '../quiz';
 import { chosenPronunciation } from '../../speech/greek';
 import type { Pronunciation } from '../../speech/pronunciation';
@@ -43,6 +44,8 @@ export interface GrammarQuestion {
   facet?: Facet;
   /** the wrong options that are near misses of the point it tests (src/data/choices.ts, mw-i7xe0n.7): a Hint takes the others away first */
   near?: string[];
+  /** an ending's table (mw-svw421.5, data/paradigms tableFor): the id of the paradigm that holds the ending, which the card offers to open after the answer */
+  table?: string;
   /** the one line a wrong pick shows under the answer: the sound rule of the word's side, the scheme's ('χ before ε, ι, η ... is soft: hy ...') */
   rule?: string;
 }
@@ -190,6 +193,9 @@ const isVowel = (c: string): boolean => 'αεηιουω'.includes(baseOf(c));
 
 const MAX_ENDING = 5;
 
+/** Every paradigm table: the tables open for a question that asks an ending whatever he has opened (the placement, Drill it; PROVISIONAL, mw-svw421.5). */
+export const EVERY_TABLE: ReadonlySet<string> = new Set(PARADIGMS.map((p) => p.id));
+
 /**
  * The stem the lemma and the form share and the ending after it: ἀρχή and ἀρχῆς share ἀρχ, ending ῆς. The stem keeps at least one
  * letter and the ending at least one, a stem vowel goes to the ending (λόγος, λόγου: λόγ + ου), and a form that is mostly ending has none.
@@ -238,12 +244,18 @@ function shownEnding(ending: string, pos: string): { text: string; key: string }
  * The ending of a form from the passage: the form with its ending blanked ('ἀρχ_'), what the form is ('genitive singular feminine of ἀρχή') and
  * four endings. Three wrong endings are the endings of other inflected words of the same part of speech in the passage; a passage that
  * has too few lends the common endings. Null when the idea has no form in the passage that shares a stem with its dictionary form.
+ * A form is asked only once its table is open (mw-svw421.5): `tablesOpen` holds the ids of the tables he has opened (tableFor names a form's), and a form whose table
+ * is not among them is left out; the question's `table` is the table to show after the answer. The placement asks with every table open (PROVISIONAL).
  */
-export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], random: Random): GrammarQuestion | null {
+export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], random: Random, tablesOpen: ReadonlySet<string> = EVERY_TABLE): GrammarQuestion | null {
   const places = placesOf(passage).filter((p) => splitParse(p.word.p).features.length > 0);
   const stems = (p: Place) => stemOf(p.word.l, p.word.t);
-  // only in the terms taught so far, and still one right ending (featuresOf)
-  const candidates = shuffle(places.filter((p) => needsIdea(p.word.p, idea.id) && stems(p) && featuresOf(p.word.p, idea)), random);
+  const open = (p: Place) => {
+    const table = tableFor(p.word.p);
+    return table !== undefined && tablesOpen.has(table.id);
+  };
+  // only in the terms taught so far, and still one right ending (featuresOf), and only from a table he has opened
+  const candidates = shuffle(places.filter((p) => needsIdea(p.word.p, idea.id) && stems(p) && featuresOf(p.word.p, idea) && open(p)), random);
   const place = candidates[0];
   if (!place) return null;
   const { stem, ending: plainEnding } = stems(place)!;
@@ -267,6 +279,7 @@ export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], rand
     ref: place.ref,
     form: `${stem}_`,
     code: place.word.p,
+    table: tableFor(place.word.p)?.id,
     facet: ENDING,
   };
 }
@@ -719,9 +732,17 @@ export function buildConcept(idea: GrammarIdea, random: Random, scheme: Pronunci
 /**
  * A question that drills `idea` over `passage`. A letter is asked by name or sound, and so is one diphthong, consonant pair or breathing (quickRound.ts); the sounds, the marks and the accents are asked of
  * letters and words; every other idea is asked as the ending of a form or the form to tap, whichever the first draw gives, then the
- * other when the passage cannot make the first; and an idea the passage has no form of is asked by what it says. Always gives a question.
+ * other when the passage cannot make the first; and an idea the passage has no form of is asked by what it says. Always gives a question. An ending is asked only
+ * from a table in `tablesOpen` (buildEnding), so Review, which passes the tables he has opened, asks tap the form until he has opened the table.
  */
-export function buildIdeaQuestion(idea: GrammarIdea, passage: readonly Chapter[], random: Random, respell?: Respell, scheme: Pronunciation = chosenPronunciation()): GrammarQuestion {
+export function buildIdeaQuestion(
+  idea: GrammarIdea,
+  passage: readonly Chapter[],
+  random: Random,
+  respell?: Respell,
+  scheme: Pronunciation = chosenPronunciation(),
+  tablesOpen: ReadonlySet<string> = EVERY_TABLE,
+): GrammarQuestion {
   const said = respell ?? scheme.respell;
   // one diphthong, consonant pair or breathing (mw-hqd5bz.18): heard or seen, as the quick round asks it
   if (idea.parent) return quickQuestion({ id: idea.id, mode: random() < 0.5 ? 'hear' : 'see' }, random, scheme);
@@ -755,7 +776,7 @@ export function buildIdeaQuestion(idea: GrammarIdea, passage: readonly Chapter[]
   const endingFirst = random() < 0.5;
   const builders = endingFirst ? [buildEnding, buildTapForm] : [buildTapForm, buildEnding];
   for (const build of builders) {
-    const question = build(idea, passage, random);
+    const question = build === buildEnding ? buildEnding(idea, passage, random, tablesOpen) : build(idea, passage, random);
     if (question) return question;
   }
   return buildConcept(idea, random, scheme);
