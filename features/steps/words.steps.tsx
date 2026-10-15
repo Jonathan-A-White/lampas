@@ -1,4 +1,4 @@
-// features/steps/words.steps.tsx — runs features/words.feature: the seeded word list, the Words screen,
+// features/steps/words.steps.tsx — runs features/words.feature: the Governor's word list on a phone, the Words screen,
 // the tap-to-change states with the drop confirm, the Import screen, and the headword normaliser.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
@@ -9,6 +9,7 @@ import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { normaliseLemma, type NormalisedLemma } from '../../src/data/lemma';
 import { SEED_WORDS } from '../../src/data/seed-words';
+import { seedHisWords } from '../../tests/support/his-words';
 
 afterAll(() => {
   cleanup();
@@ -22,6 +23,7 @@ async function openLampasFresh(): Promise<void> {
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear()]);
   window.location.hash = '';
+  await seedHisWords();
   render(<App />);
 }
 
@@ -69,8 +71,8 @@ async function paste(lines: string): Promise<void> {
 const feature = await loadFeature('features/words.feature');
 
 describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
-  Scenario('First open seeds 63 words, 54 solid and 9 learning', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened for the first time', openLampasFresh);
+  Scenario('His list is 63 words, 54 solid and 9 learning', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on a phone that holds his word list', openLampasFresh);
     When('he opens Words', openWords);
     Then('the count line reads {string}', async (_, text: string) => expectCountLine(text));
     And('{int} words are listed', (_, n: number) => {
@@ -79,7 +81,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   });
 
   Scenario('The Words screen lists them by lesson', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened for the first time', openLampasFresh);
+    Given('Lampas is opened on a phone that holds his word list', openLampasFresh);
     When('he opens Words', openWords);
     Then('the lessons are headed from Lesson 1 to Lesson 10 in order', () => {
       const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
@@ -98,7 +100,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   });
 
   Scenario('Tapping a solid word makes it learning, tapping again drops it after a confirm', ({ Given, And, When, Then }) => {
-    Given('Lampas is opened for the first time', openLampasFresh);
+    Given('Lampas is opened on a phone that holds his word list', openLampasFresh);
     And('he opens Words', openWords);
     When('he taps the word {string}', async (_, w: string) => tapWord(w));
     Then('{string} is learning', async (_, w: string) => expectState(w, 'learning'));
@@ -116,7 +118,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   });
 
   Scenario('Keeping a word at the drop confirm leaves it learning', ({ Given, And, When, Then }) => {
-    Given('Lampas is opened for the first time', openLampasFresh);
+    Given('Lampas is opened on a phone that holds his word list', openLampasFresh);
     And('he opens Words', openWords);
     When('he taps the word {string}', async (_, w: string) => tapWord(w));
     And('he taps {string} again', async (_, w: string) => tapWord(w));
@@ -135,7 +137,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   };
 
   Scenario('Importing two pasted lines adds two words as learning and shows them', ({ Given, And, When, Then }) => {
-    Given('Lampas is opened for the first time', openLampasFresh);
+    Given('Lampas is opened on a phone that holds his word list', openLampasFresh);
     And('he opens Import', openImport);
     When('he pastes these lines', async (_, lines: string) => paste(lines));
     Then('the preview shows {int} words to add', async (_, n: number) => {
@@ -151,7 +153,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   });
 
   Scenario('A pasted line that is not a Greek word is flagged and not added', ({ Given, And, When, Then }) => {
-    Given('Lampas is opened for the first time', openLampasFresh);
+    Given('Lampas is opened on a phone that holds his word list', openLampasFresh);
     And('he opens Import', openImport);
     When('he pastes these lines', async (_, lines: string) => paste(lines));
     Then('the preview shows {int} word to add', async (_, n: number) => {
@@ -164,7 +166,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   });
 
   Scenario('Import accepts a pasted row of the example table', ({ Given, And, When, Then }) => {
-    Given('Lampas is opened for the first time', openLampasFresh);
+    Given('Lampas is opened on a phone that holds his word list', openLampasFresh);
     And('he opens Import', openImport);
     When('he pastes these lines', async (_, lines: string) => paste(lines));
     Then('the preview shows {int} word to add', async (_, n: number) => {

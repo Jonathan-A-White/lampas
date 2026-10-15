@@ -14,7 +14,7 @@ import { buildIdeaQuestion, type GrammarKind, type GrammarQuestion } from '../..
 import { mulberry32 } from '../../src/data/quiz';
 import { setGoal } from '../../src/data/repositories/settings';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
-import { seedWordsIfFirstOpen } from '../../src/data/repositories/words';
+import { seedHisWords } from '../../tests/support/his-words';
 import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
@@ -45,7 +45,7 @@ async function freshStore(): Promise<void> {
   expected = undefined;
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.results.clear(), db.reviews.clear(), db.settings.clear(), db.grammarLevels.clear()]);
-  await seedWordsIfFirstOpen();
+  await seedHisWords();
   await seedScheduleIfFirstOpen();
   await db.reviews.clear();
 }

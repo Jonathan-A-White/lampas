@@ -10,6 +10,7 @@ import { App } from '../../src/App';
 import { forgetChapters } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { mulberry32 } from '../../src/data/quiz';
+import { seedHisWords } from '../../tests/support/his-words';
 
 afterAll(() => {
   cleanup();
@@ -32,6 +33,7 @@ async function resetStores(): Promise<void> {
 
 async function openLampasFresh(): Promise<void> {
   await resetStores();
+  await seedHisWords();
   render(<App />);
 }
 
@@ -40,6 +42,7 @@ async function openLampasHolding(lemma: string): Promise<void> {
   await resetStores();
   await db.words.put({ lemma, lemmas: [lemma], gloss: 'a test gloss', lesson: 1, state: 'learning', since: Date.now() });
   await db.meta.put({ key: 'wordsSeeded', value: '1' });
+  await seedHisWords();
   render(<App newRandom={() => mulberry32(7)} />);
 }
 

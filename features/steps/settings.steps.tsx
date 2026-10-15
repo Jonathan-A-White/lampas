@@ -12,6 +12,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 import { expectLatest } from '../../tests/support/published';
+import { seedHisWords } from '../../tests/support/his-words';
 
 const voice = (lang: string, name: string): FakeVoice => ({ lang, name, voiceURI: name });
 const GREEK = voice('el-GR', 'Greek (Greece)');
@@ -39,6 +40,7 @@ async function openWith(voices: FakeVoice[]): Promise<void> {
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
   window.history.replaceState(null, '', '/');
+  await seedHisWords();
   render(<App />);
   await waitForReader();
   // the seed lands a moment after the first paint
@@ -167,6 +169,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('Lampas is reopened at the Settings address', async () => {
       cleanup();
       clearBus();
+      await seedHisWords();
       render(<App />);
       await settingsHeading();
     });

@@ -10,6 +10,7 @@ import { App } from '../../src/App';
 import { forgetChapters } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { mulberry32 } from '../../src/data/quiz';
+import { seedHisWords } from '../../tests/support/his-words';
 
 afterAll(() => {
   cleanup();
@@ -42,6 +43,7 @@ async function openLampasFresh(): Promise<void> {
   asked = [];
   round = [];
   // Every round starts from the same random source, so a second round asks the same words.
+  await seedHisWords();
   render(<App newRandom={() => mulberry32(7)} />);
 }
 
@@ -148,6 +150,7 @@ async function answerSome(n: number): Promise<void> {
 /** The app is closed and opened from its icon: a new render over the same stored data, landing where he was. */
 async function closeAndReopen(): Promise<void> {
   cleanup();
+  await seedHisWords();
   render(<App newRandom={() => mulberry32(7)} />);
 }
 

@@ -4,29 +4,9 @@ import { db, type Word, type WordState } from '../db';
 import type { ImportWord } from '../importWords';
 import { normaliseLemma } from '../lemma';
 import { DAY, STEP_DAYS } from '../schedule';
-import { SEED_WORDS } from '../seed-words';
 import { announceDue, writeScheduled } from './reviews';
 
 export type { Word, WordState };
-
-const SEEDED_KEY = 'wordsSeeded';
-/** Lessons up to this one are solid when seeded; the next lesson is the one he is learning. */
-const LAST_SOLID_LESSON = 9;
-
-/** Seeds the example list on the first open only; returns whether it did. Words he deletes never come back. */
-export async function seedWordsIfFirstOpen(now = Date.now()): Promise<boolean> {
-  return db.transaction('rw', db.words, db.meta, async () => {
-    if (await db.meta.get(SEEDED_KEY)) return false;
-    await db.words.bulkPut(
-      SEED_WORDS.map((s): Word => {
-        const { headword, lemmas } = normaliseLemma(s.lemma);
-        return { lemma: headword, lemmas, gloss: s.gloss, lesson: s.lesson, state: s.lesson <= LAST_SOLID_LESSON ? 'solid' : 'learning', since: now };
-      }),
-    );
-    await db.meta.put({ key: SEEDED_KEY, value: String(now) });
-    return true;
-  });
-}
 
 export function listWords(): Promise<Word[]> {
   return db.words.toArray();

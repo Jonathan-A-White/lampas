@@ -12,6 +12,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { seedHisWords } from '../../tests/support/his-words';
 
 const user = userEvent.setup();
 
@@ -42,6 +43,7 @@ async function mount(): Promise<void> {
   stubChapterFetch();
   window.history.replaceState(null, '', '/');
   await db.open();
+  await seedHisWords();
   render(<App />);
   await waitForReader();
 }

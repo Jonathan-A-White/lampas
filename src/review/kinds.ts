@@ -27,7 +27,6 @@ import {
   recordReview,
   reviewsOf,
   SOUND_KIND,
-  seedWordsIfFirstOpen,
   type Review,
 } from '../data/repositories';
 
@@ -114,7 +113,6 @@ export const WORDS: ReviewKind = {
   count: (n) => `${n} ${n === 1 ? 'word' : 'words'}`,
   async draw(due, random) {
     if (due.length === 0) return [];
-    await seedWordsIfFirstOpen();
     const [words, chapter] = await Promise.all([listWords(), loadForms()]);
     const byLemma = new Map(words.filter((w) => w.state !== 'dropped').map((w) => [w.lemma, w]));
     const pool = seedDistractors();
@@ -260,7 +258,6 @@ export const kindRank = (kind: string): number => KINDS.findIndex((k) => k.kind 
 /** Words that are not due, to fill a round up, drawn as the Quick test draws (the learning ones favoured). */
 export async function fillWords(exclude: ReadonlySet<string>, size: number, random: Random): Promise<WordItem[]> {
   if (size <= 0) return [];
-  await seedWordsIfFirstOpen();
   const [words, chapter] = await Promise.all([listWords(), loadForms()]);
   const pool = seedDistractors();
   const drawn = drawWords(words.filter((w) => !exclude.has(w.lemma)), random, size);

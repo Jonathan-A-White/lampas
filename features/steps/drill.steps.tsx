@@ -16,6 +16,7 @@ import { listDrillResults } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { seedHisWords } from '../../tests/support/his-words';
 
 const rom8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 
@@ -49,6 +50,7 @@ async function openLampasFresh(): Promise<void> {
   window.location.hash = '';
   asked = [];
   answeredSteps = 0;
+  await seedHisWords();
   render(<App newRandom={() => mulberry32(7)} />);
 }
 
@@ -264,6 +266,7 @@ describeFeature(feature, ({ Scenario }) => {
       stopReading();
       clearBus();
       window.location.hash = '';
+      await seedHisWords();
       render(<App newRandom={() => mulberry32(7)} />);
       await screen.findByRole('button', { name: 'Settings' });
     });

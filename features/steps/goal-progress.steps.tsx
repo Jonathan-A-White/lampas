@@ -18,6 +18,7 @@ import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { readerOf } from '../../src/nav/route';
 import { setGoal } from '../../src/data/repositories/settings';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { seedHisWords } from '../../tests/support/his-words';
 
 afterAll(() => {
   cleanup();
@@ -48,6 +49,7 @@ async function openAt(hash: string): Promise<void> {
   clearBus();
   forgetTrail();
   window.history.replaceState(null, '', `/${hash}`);
+  await seedHisWords();
   render(<App />);
 }
 
@@ -326,6 +328,7 @@ describeFeature(feature, ({ Scenario }) => {
       clearBus();
       window.history.replaceState(null, '', '/');
       restoreLastRoute();
+      await seedHisWords();
       render(<App />);
     });
     Then('the Goal screen is open', async () => {

@@ -3,7 +3,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
 import { listWords, setWordState, type Word, type WordState } from './data/repositories';
-import { navigate } from './nav/route';
+import { navigate, openPlacement } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { speakWord } from './speech/greek';
@@ -99,6 +99,22 @@ export function WordsScreen() {
       />
       <main ref={scrollRef} className="screen min-h-0 flex-1 px-3">
         <div>
+        {words?.length === 0 ? (
+          <section data-testid="words-empty" aria-label="No words yet" className="px-3 pt-8 text-center">
+            <p className="text-lg font-medium">No words yet.</p>
+            <p className="mt-1 text-muted">
+              Take the Placement to find where you are, or Import a list of Greek words you want to learn. Words you add show here.
+            </p>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button type="button" onClick={() => openPlacement('settings')} className="min-h-12 rounded-xl bg-accent text-lg font-medium text-accent-fg">
+                Placement
+              </button>
+              <button type="button" onClick={() => navigate('import')} className="min-h-12 rounded-xl border border-line text-lg font-medium">
+                Import
+              </button>
+            </div>
+          </section>
+        ) : null}
         {groups.map((g) => (
           <section key={g.lesson} aria-labelledby={`lesson-${g.lesson}`} className="pt-4">
             <h2 id={`lesson-${g.lesson}`} className="px-1 pb-1 text-sm font-semibold uppercase tracking-wide text-muted">

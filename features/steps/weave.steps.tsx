@@ -14,6 +14,7 @@ import { LADDER } from '../../src/data/grammar/ladder';
 import { getWeave, getWeaveGrammar, recordAnswer, setLevel } from '../../src/data/repositories';
 import { SETTINGS } from '../../src/settings/registry';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { seedHisWords } from '../../tests/support/his-words';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse1: Verse = chapter.verses[0];
@@ -38,6 +39,7 @@ async function openFresh(): Promise<void> {
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.grammarLevels.clear()]);
   window.location.hash = '';
+  await seedHisWords();
   render(<App />);
   await waitForReader();
   // the seed lands a moment after the first paint
@@ -246,6 +248,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he sets Weave to Solid words', async () => setWeave('Solid words'));
     When('he reopens Lampas', async () => {
       cleanup();
+      await seedHisWords();
       render(<App />);
       await waitForReader();
     });

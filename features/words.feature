@@ -1,22 +1,23 @@
 Feature: Words he knows
-  Lampas keeps the Greek words he has learned, starts from his own Biblical Mastery Academy list,
-  shows them by lesson, lets him change what he knows with a tap, and takes more from a pasted list.
+  Lampas keeps the Greek words he has learned, shows them by lesson, lets him change what he knows with a tap, and
+  takes more from a pasted list. A new install has none of them (features/fresh-install.feature); these scenarios
+  start from a phone that holds the Governor's own Biblical Mastery Academy list (tests/support/his-words.ts).
 
-  Scenario: First open seeds 63 words, 54 solid and 9 learning
-    Given Lampas is opened for the first time
+  Scenario: His list is 63 words, 54 solid and 9 learning
+    Given Lampas is opened on a phone that holds his word list
     When he opens Words
     Then the count line reads "54 solid, 9 learning"
     And 63 words are listed
 
   Scenario: The Words screen lists them by lesson
-    Given Lampas is opened for the first time
+    Given Lampas is opened on a phone that holds his word list
     When he opens Words
     Then the lessons are headed from Lesson 1 to Lesson 10 in order
     And Lesson 1 lists δέ, εἰ, ἐν and καί
     And Lesson 10 lists 9 words, all learning
 
   Scenario: Tapping a solid word makes it learning, tapping again drops it after a confirm
-    Given Lampas is opened for the first time
+    Given Lampas is opened on a phone that holds his word list
     And he opens Words
     When he taps the word "ἀγαθός"
     Then "ἀγαθός" is learning
@@ -28,7 +29,7 @@ Feature: Words he knows
     And the count line reads "53 solid, 9 learning, 1 dropped"
 
   Scenario: Keeping a word at the drop confirm leaves it learning
-    Given Lampas is opened for the first time
+    Given Lampas is opened on a phone that holds his word list
     And he opens Words
     When he taps the word "ἀγαθός"
     And he taps "ἀγαθός" again
@@ -36,7 +37,7 @@ Feature: Words he knows
     Then "ἀγαθός" is still learning
 
   Scenario: Importing two pasted lines adds two words as learning and shows them
-    Given Lampas is opened for the first time
+    Given Lampas is opened on a phone that holds his word list
     And he opens Import
     When he pastes these lines
       """
@@ -50,7 +51,7 @@ Feature: Words he knows
     And the count line reads "54 solid, 11 learning"
 
   Scenario: A pasted line that is not a Greek word is flagged and not added
-    Given Lampas is opened for the first time
+    Given Lampas is opened on a phone that holds his word list
     And he opens Import
     When he pastes these lines
       """
@@ -61,7 +62,7 @@ Feature: Words he knows
     And the preview flags "spirit" with "Not a Greek word"
 
   Scenario: Import accepts a pasted row of the example table
-    Given Lampas is opened for the first time
+    Given Lampas is opened on a phone that holds his word list
     And he opens Import
     When he pastes these lines
       """

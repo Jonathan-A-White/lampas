@@ -17,6 +17,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, QUIZ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { instructionsOf } from '../../tests/support/learner';
 import { offerSettled } from '../../tests/support/settled-offer';
+import { seedHisWords } from '../../tests/support/his-words';
 
 afterAll(() => {
   cleanup();
@@ -61,6 +62,7 @@ async function open(goal: string, answer: string = QUIZ_ANSWER.answer): Promise<
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.answers.clear()]);
   await setReaderView('english');
   await setWeave('off');
+  await seedHisWords();
   render(<App />);
   await waitForReader();
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));

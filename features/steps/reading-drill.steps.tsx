@@ -20,6 +20,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech } from '../../tests/support/fake-speech';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { makeFakePostern, POSTERN_ORIGIN, WELL_READ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { seedHisWords } from '../../tests/support/his-words';
 
 afterAll(() => {
   cleanup();
@@ -62,6 +63,7 @@ async function open(startView: 'english' | 'greek', hash = ''): Promise<void> {
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.readings.clear(), db.readingHistory.clear(), db.missTally.clear(), db.ladder.clear(), db.reviews.clear(), db.grammarLevels.clear()]);
   await setReaderView(startView);
+  await seedHisWords();
   render(<App newRandom={() => mulberry32(7)} />);
   if (hash === '') {
     await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
@@ -243,6 +245,7 @@ describeFeature(feature, ({ Scenario }) => {
       await db.reviews.put({ kind: 'sound', id, step: 0, due: now - 60_000, lastWhen: now - DAY, lapses: 0, rights: 0 });
       // Review counts what is due when it opens: open it again now that the sound is on the schedule
       cleanup();
+      await seedHisWords();
       render(<App newRandom={() => mulberry32(7)} />);
     });
     Then('Review says {string}', async (_, text: string) => {

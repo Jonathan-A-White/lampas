@@ -11,7 +11,7 @@ import { readPlacement } from '../../src/data/placementKeep';
 import { mulberry32 } from '../../src/data/quiz';
 import { setGoal } from '../../src/data/repositories/settings';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
-import { seedWordsIfFirstOpen } from '../../src/data/repositories/words';
+import { seedHisWords } from '../../tests/support/his-words';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { settle, SETTLE_MS } from '../../src/ui/settle';
@@ -54,7 +54,7 @@ async function freshStore(): Promise<void> {
   stubChapterFetch();
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.results.clear(), db.reviews.clear(), db.settings.clear(), db.grammarLevels.clear()]);
-  await seedWordsIfFirstOpen();
+  await seedHisWords();
   await seedScheduleIfFirstOpen();
   await db.reviews.clear();
   await db.meta.put({ key: 'grammarLevelsSeeded', value: '1' });

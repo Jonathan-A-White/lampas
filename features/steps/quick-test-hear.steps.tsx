@@ -15,6 +15,7 @@ import { stopSpeaking } from '../../src/speech/greek';
 import { stubSpeech, GREEK_VOICE, ENGLISH_VOICE, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
 import { hearing, isOneLetter, type Hearing } from '../../tests/support/spoken-word';
+import { seedHisWords } from '../../tests/support/his-words';
 
 const user = userEvent.setup();
 const rom8 = readFileSync('public/data/rom/8.json', 'utf8');
@@ -46,6 +47,7 @@ async function openWith(voices: FakeVoice[]): Promise<void> {
   await Promise.all([db.words.clear(), db.meta.clear(), db.results.clear()]);
   window.location.hash = '#/test';
   localStorage.removeItem('lampas.round');
+  await seedHisWords();
   render(<App newRandom={() => mulberry32(7)} />);
   await screen.findByRole('heading', { name: 'Quick test' });
   await screen.findByTestId('prompt');

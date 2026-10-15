@@ -13,6 +13,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { readerOf } from '../../src/nav/route';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { seedHisWords } from '../../tests/support/his-words';
 
 afterAll(() => {
   cleanup();
@@ -57,6 +58,7 @@ async function openLink(hash: string): Promise<void> {
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear()]);
   window.history.replaceState(null, '', `/${hash}`);
   restoreLastRoute();
+  await seedHisWords();
   render(<App />);
 }
 

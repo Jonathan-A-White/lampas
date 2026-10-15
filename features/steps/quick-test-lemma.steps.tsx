@@ -14,6 +14,7 @@ import { clearBus } from '../../src/events/bus';
 import { mulberry32, type Question } from '../../src/data/quiz';
 import { stopSpeaking } from '../../src/speech/greek';
 import { stubSpeech, GREEK_VOICE, ENGLISH_VOICE, type FakeSynth } from '../../tests/support/fake-speech';
+import { seedHisWords } from '../../tests/support/his-words';
 
 const user = userEvent.setup();
 const rom8 = readFileSync('public/data/rom/8.json', 'utf8');
@@ -60,6 +61,7 @@ async function open(opts: { chapter: boolean; round?: Question }): Promise<void>
     );
   }
   window.location.hash = '#/test';
+  await seedHisWords();
   render(<App newRandom={() => mulberry32(7)} />);
   await screen.findByRole('heading', { name: 'Quick test' });
   if (opts.round) await user.click(await screen.findByRole('button', { name: 'Resume' }));

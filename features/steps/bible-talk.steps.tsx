@@ -24,6 +24,7 @@ import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
 import { SOLID_WORDS_SENT } from '../../src/services/solidWords';
 import { expectLatest } from '../../tests/support/published';
+import { seedHisWords } from '../../tests/support/his-words';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verseData = (n: number) => {
@@ -75,6 +76,7 @@ async function open(configure: (f: FakePostern) => void = (f) => void (f.autoRep
   );
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear()]);
+  await seedHisWords();
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
@@ -402,6 +404,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       cleanup();
       stopReading();
       fake.calls.length = 0;
+      await seedHisWords();
       render(<App />);
       await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
       await selectVerse28();

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { loadChapter, wordLemma, wordParse, type Chapter } from './data/chapter';
 import { lookupLemma } from './data/lexicon';
-import { listWords, recordAnswer, seedWordsIfFirstOpen } from './data/repositories';
+import { listWords, recordAnswer } from './data/repositories';
 import { clearRound, readRound, saveRound } from './data/roundKeep';
 import { askAbout, buildQuestion, drawWords, seedDistractors, type Question, type Random } from './data/quiz';
 import { useAiAllowed } from './gate/licenceContext';
@@ -27,8 +27,6 @@ const loadForms = (): Promise<Chapter | null> => {
 };
 
 async function drawRound(random: Random): Promise<Question[]> {
-  // A first open seeds the words; wait for it so a round opened straight away has words to ask.
-  await seedWordsIfFirstOpen();
   const [words, chapter] = await Promise.all([listWords(), loadForms()]);
   const pool = seedDistractors();
   return drawWords(words, random).map((w) => buildQuestion(w, pool, chapter, random));

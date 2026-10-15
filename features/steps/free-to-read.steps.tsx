@@ -17,6 +17,7 @@ import { rememberHeld } from '../../src/services/licenceCache';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { LicenceProbe } from '../../tests/support/licence-probe';
 import { addMint, addRevoke, HOLDER, HOLDER_PUB, ISSUER_PUB, newChain } from '../../tests/support/licence-chain';
+import { seedHisWords } from '../../tests/support/his-words';
 
 afterAll(() => {
   cleanup();
@@ -50,6 +51,7 @@ async function fresh(): Promise<void> {
 async function openApp(hash: string): Promise<void> {
   window.history.replaceState(null, '', `/${hash}`);
   restoreLastRoute();
+  await seedHisWords();
   render(
     <LicenceProvider issuer={ISSUER_PUB} now={() => NOW} check={(key) => check(key)}>
       <App />

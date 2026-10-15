@@ -14,6 +14,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { seedHisWords } from '../../tests/support/his-words';
 
 afterAll(() => {
   cleanup();
@@ -82,12 +83,14 @@ async function open(hash: string): Promise<void> {
 async function openSettings(profile: Kept): Promise<void> {
   await open('/#/settings');
   await keep(profile);
+  await seedHisWords();
   render(<App />);
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
 }
 async function openReader(profile: Kept): Promise<void> {
   await open('/');
   await keep(profile);
+  await seedHisWords();
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
@@ -176,6 +179,7 @@ describeFeature(feature, ({ Scenario }) => {
       cleanup();
       clearBus();
       window.history.replaceState(null, '', '/#/settings');
+      await seedHisWords();
       render(<App />);
       await openAboutYou();
     });
@@ -258,6 +262,7 @@ describeFeature(feature, ({ Scenario }) => {
       cleanup();
       clearBus();
       window.history.replaceState(null, '', '/');
+      await seedHisWords();
       render(<App />);
       await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
     });

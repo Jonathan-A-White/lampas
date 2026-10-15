@@ -13,6 +13,7 @@ import { clearBus } from '../../src/events/bus';
 import { navigate } from '../../src/nav/route';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { seedHisWords } from '../../tests/support/his-words';
 
 afterAll(() => {
   cleanup();
@@ -36,6 +37,7 @@ async function open(start: string, thenReader: boolean, select = true): Promise<
   stubChapterFetch();
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.grammarKnown.clear()]);
+  await seedHisWords();
   render(<App />);
   if (thenReader) {
     await screen.findByRole('heading', { name: 'Settings' });
@@ -325,6 +327,7 @@ describeFeature(feature, ({ Scenario }) => {
       stubChapterFetch();
       await db.open();
       await db.settings.clear();
+      await seedHisWords();
       render(<App />);
       await user.click(await screen.findByRole('button', { name: 'Ask for another approach' }));
       await screen.findByRole('dialog', { name: 'Ask for another approach' });

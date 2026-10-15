@@ -16,6 +16,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { seedHisWords } from '../../tests/support/his-words';
 
 afterAll(() => {
   cleanup();
@@ -53,6 +54,7 @@ async function openReader(index: string, notes: string[], answer: Record<string,
   await setWeave('off');
   if (index !== '') await setIndex(index, 'me', Date.UTC(2026, 9, 12, 9));
   for (const [i, name] of notes.entries()) await putNote(name, `About ${name}.`, 'me', Date.UTC(2026, 9, 12, 9, i));
+  await seedHisWords();
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));

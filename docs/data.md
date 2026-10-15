@@ -156,8 +156,10 @@ rule (pure) and `src/data/repositories/reviews.ts` the rows (`recordReview`, `li
 * A new item starts at step 0. Right twice in a row (`rights`) moves it up one step; a single right keeps the step and
   it comes back after that step's gap. One wrong drops it two steps (not below 0), adds a lapse, and it is due tomorrow.
 * A Quick test answer (`recordAnswer`) calls `recordReview('word', lemma, right)`.
-* `seedScheduleIfFirstOpen` runs once after the words are seeded, on a first open and on the first open after the
-  upgrade (meta `reviewsSeeded`): every solid word starts at the 30-day step, due on one of the next 30 days in turn
+* A new install starts empty (mw-5r3p30.385): nothing is put in the word list, on the schedule or on the grammar ladder at the first
+  open. The 63 BMA words of `seed-words.ts` are content (the Quick test's wrong choices, `seedDistractors`), never his progress.
+* `seedScheduleIfFirstOpen` is the upgrade path of a store from before the schedule existed: it runs once, only when the store holds the
+  old `wordsSeeded` flag (a phone that was seeded the old way), and does nothing on a new install (meta `reviewsSeeded`): every solid word starts at the 30-day step, due on one of the next 30 days in turn
   (so about two a day, not a flood); every learning word at step 0, due now; a dropped word is left off.
 * How Review asks a word follows its step (`modeFor`, `FLASHCARD_STEP` in `schedule.ts`, provisional): multiple choice below
   step 3, a flashcard (see the lemma, Show, grade yourself) from step 3 up; a lapse that drops it below step 3 makes it multiple
