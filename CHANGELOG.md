@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.236
+_2026-10-15_
+- Fixed: A grammar lesson question now uses only the words you have already been taught, such as 'Tap the singular noun' instead of 'Tap the accusative singular personal pronoun'.
+
 ## 0.1.235
 _2026-10-15_
 - Fixed: The sound of o (omicron and omega) is now explained with the o of "or", said short, which fits an American ear, instead of "lot".
