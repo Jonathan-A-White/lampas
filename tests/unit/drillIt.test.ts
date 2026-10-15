@@ -72,13 +72,21 @@ describe('the steps of an idea', () => {
     expect(drillSteps('alphabet', { seed: 5 })).toEqual(drillSteps('alphabet', { seed: 5 }));
   });
 
-  it('asks a noun idea by what it is, then by spotting it in a verse, then by its ending', () => {
-    const steps = drillSteps('noun', { passage: PASSAGE, seed: 2 });
+  it('asks a case idea by what it is, then by spotting it in a verse, then by its ending', () => {
+    const steps = drillSteps('case-genitive', { passage: PASSAGE, seed: 2 });
     const first = (s: number) => new Set(steps[s - 1].questions.map((q) => q.facet.id));
     expect(first(1)).toEqual(new Set(['meaning']));
     expect(steps.length).toBeGreaterThanOrEqual(3);
     expect(new Set(steps[steps.length - 1].questions.map((q) => q.facet.id))).toEqual(new Set(['ending']));
     expect(steps.flatMap((s) => s.questions).some((q) => q.facet.id === 'spot')).toBe(true);
+  });
+
+  // mw-5r3p30.379: an ending is asked of 'a genitive singular form', in terms the learner has; the noun is taught before case, number and gender, so it has no ending to ask
+  it('asks the noun by what it is and by spotting it, never by an ending it has no taught words for', () => {
+    const steps = drillSteps('noun', { passage: PASSAGE, seed: 2 });
+    expect(new Set(steps[0].questions.map((q) => q.facet.id))).toEqual(new Set(['meaning']));
+    expect(steps.flatMap((s) => s.questions).some((q) => q.facet.id === 'spot')).toBe(true);
+    expect(steps.flatMap((s) => s.questions).some((q) => q.kind === 'ending')).toBe(false);
   });
 
   it('tests no prerequisite as such: a question is about its own idea', () => {

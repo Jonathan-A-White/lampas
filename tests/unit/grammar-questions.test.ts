@@ -29,7 +29,12 @@ function seedWhere(make: (seed: number) => GrammarQuestion | null, wanted: (q: G
   throw new Error('no seed gives that question');
 }
 
-const termsOf = (code: string) => new Set(parseSegments(decodeParse(code)).flatMap((s) => (s.term ? [s.term] : [])));
+// 'pronoun' names any kind of pronoun: the pronoun is taught before its kinds (mw-5r3p30.379)
+const termsOf = (code: string) => {
+  const terms = new Set(parseSegments(decodeParse(code)).flatMap((s) => (s.term ? [s.term] : [])));
+  if ([...terms].some((t) => t.endsWith(' pronoun'))) terms.add('pronoun');
+  return terms;
+};
 
 describe('an ending question', () => {
   const genitive = ideaOf('case-genitive');
@@ -79,16 +84,17 @@ describe('a tap-the-form question', () => {
     }
   });
 
-  it('does not leave τοῖς and ὀφθαλμοῖς both to tap in 1 John 1:1: it names the article or the noun as well', () => {
+  // mw-5r3p30.379: the article is taught after the dative, so the dative is asked by the noun only; τοῖς is never the answer to a dative question
+  it('does not leave τοῖς and ὀφθαλμοῖς both to tap in 1 John 1:1: it names the noun, and never the article, which the dative comes before', () => {
     const dative = ideaOf('case-dative');
     const asked = new Map<string, string>();
     for (let seed = 1; seed <= 400; seed += 1) {
       const q = buildTapForm(dative, [jn1], mulberry32(seed));
       if (q?.ref === '1 John 1:1') asked.set(q.prompt, q.right);
     }
-    expect(asked.get('Tap the dative article')).toBe('τοῖς');
     expect(asked.get('Tap the dative noun')).toBe('ὀφθαλμοῖς');
-    expect([...asked.keys()].filter((p) => !/article|noun/.test(p))).toEqual([]);
+    expect([...asked.keys()].filter((p) => !/noun/.test(p))).toEqual([]);
+    expect([...asked.values()]).not.toContain('τοῖς');
   });
 
   it('is the same question twice for the same seed', () => {
