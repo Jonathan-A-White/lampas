@@ -19,6 +19,19 @@ One file each in `src/data/paradigms/`, listed in `index.ts` (`PARADIGMS`); a ne
 | `pronouns-personal` | Personal pronouns | 40: ἐγώ and σύ (4 cases x singular and plural, 8 each, the stressed forms ἐμοῦ ἐμοί ἐμέ and σοῦ σοί σέ) and αὐτός (4 cases x 3 genders x singular and plural, 24) |
 | `pronouns-demonstrative-relative` | Demonstrative and relative pronouns | 48: οὗτος and ὅς, 4 cases x 3 genders x singular and plural, 24 each |
 | `pronouns-interrogative-indefinite` | Interrogative and indefinite pronouns | 32: τίς and τις, 4 cases x singular and plural x masculine-or-feminine and neuter, 16 each; the accents tell them apart |
+| `future-and-aorist` | Future and aorist | 24: λύω, future and first aorist, active and middle, 6 persons each; the tense sign σ is shown (λύσ-ω, ἔλυσ-α); every cell names `tense-signs`, every aorist cell `augment` |
+| `aorist-and-future-passive` | Aorist and future passive | 12: ἐλύθη-ν … and λυθήσ-ομαι …, 6 persons each; the sign θη; aorist cells name `augment` |
+| `perfect-and-pluperfect` | Perfect and pluperfect | 18: λέλυκ-α …, λέλυ-μαι … and ἐλελύκ-ειν …, 6 persons each; every cell names `reduplication`, the κ forms `tense-signs`, the pluperfect `augment` |
+| `second-aorist` | Second aorist | 12: βάλλω, ἔβαλ-ον … and ἐβαλ-όμην …, 6 persons each; cells name `second-tenses` and `augment` |
+| `contract-verbs` | Contract verbs | 18: ἀγαπάω, ποιέω, πληρόω, present active, 6 persons each; the merged vowel is written out (ἀγαπᾷ, ποιοῦμεν) |
+| `mi-verbs` | Verbs in -μι | 36: δίδωμι, τίθημι, ἵστημι, present active and aorist active, 6 persons each; the aorist of ἵστημι (ἔστην) names `second-tenses`, those of δίδωμι and τίθημι (ἔδωκα, ἔθηκα) `tense-signs` |
+| `oida` | οἶδα | 12: οἶδα and ᾔδειν, 6 persons each; the forms are written whole |
+
+The seven verb tables after `pronouns-interrogative-indefinite` (mw-svw421.3, the Master Verb Chart's indicative; names PROVISIONAL, the
+Governor to confirm) share `persons.ts` (the six persons, and `verbIdeas`: the verb, the mood, the voice, the person and the number, then the
+ideas of the tense). Where a stem and a tense sign are added to an ending the hyphen stands at the joint, and an accent that moves onto the
+ending is written there (λυσ-όμεθα); where the whole form changes (contract verbs, -μι verbs, οἶδα) the form is written whole. A cell
+names the tense idea it shows plus the ideas of what it is built from, so a form opens only when he has the tense, the voice and the sign.
 
 A cell is `{form, lang, ideas}`. The form is Greek in NFC with its accents (an ending is written with its hyphen and no accent, because
 the accent falls on the stem) or, for εἰμί, English. `ideas` are ids of `src/data/grammar/ladder.ts`; `tests/unit/paradigms.test.ts`
@@ -59,4 +72,4 @@ with the bible-talk grind's focus `{table, revealed, kind: 'paradigm'}`: `table`
 
 ## Out of scope
 
-Drills tied to the chapter he reads, the reflexive, possessive and other pronouns, the vocative, further tenses, the Master Verb Chart (parked on mw-fnvjof.3).
+Drills tied to the chapter he reads, the reflexive, possessive and other pronouns, the vocative, the subjunctive, imperative, infinitive and participle (the moods other than the indicative), the future perfect, the aorist and future of the contract and -μι verbs, the liquid and other irregular stems.

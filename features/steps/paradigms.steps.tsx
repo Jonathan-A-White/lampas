@@ -116,6 +116,11 @@ const tapsCell = (place: string) => async (): Promise<void> => {
   await user.click(cellAt(place));
 };
 
+/** Puts a comma-separated list of ideas at the frontier, over the Background's levels. */
+const putAtFrontier = async (_: unknown, ids: string): Promise<void> => {
+  await db.grammarLevels.bulkPut(ids.split(', ').map((id) => ({ id, level: 'frontier' as const, since: Date.now(), how: 'marked' as const })));
+};
+
 const feature = await loadFeature('features/paradigms.feature');
 
 describeFeature(feature, ({ Background, Scenario }) => {
@@ -152,6 +157,31 @@ describeFeature(feature, ({ Background, Scenario }) => {
     });
     When('he opens the Paradigms screen', () => openAt('#/paradigms'));
     Then('the list also reads {string}, {string}, {string}, {string} and {string}', listReads);
+  });
+
+  Scenario('The list shows the seven tables of the verb, with the tenses he has not met still locked', ({ Given, When, Then }) => {
+    Given('the ideas {string} are at the frontier', putAtFrontier);
+    When('he opens the Paradigms screen', () => openAt('#/paradigms'));
+    Then('the verb tables read {string}', async (_, rows: string) => {
+      for (const row of rows.split(', ')) {
+        const [name, count] = [row.slice(0, row.indexOf(': ')), row.slice(row.indexOf(': ') + 2)];
+        await waitFor(() => expect(within(listRow(name)).getByTestId('paradigm-available')).toHaveTextContent(count));
+      }
+    });
+  });
+
+  Scenario('The future cells of Future and aorist stay locked, naming the future tense, while the aorist cells open', ({ Given, And, Then }) => {
+    Given('the ideas {string} are at the frontier', putAtFrontier);
+    And('the table {string} is open in Review mode', (_, id: string) => openAt(`#/paradigms?t=${id}&mode=review`));
+    Then('the table says {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('table-available')).toHaveTextContent(text));
+    });
+    And('the cell {string} shows {string}', (_, place: string, form: string) => shows(place, form));
+    And('the {int} future cells are locked and their accessible names name {string}', async (_, count: number, idea: string) => {
+      await waitFor(() => expect(document.querySelectorAll('[data-cell*="Future"][data-state="locked"]')).toHaveLength(count));
+      for (const cell of document.querySelectorAll('[data-cell*="Future"]')) expect(cell.getAttribute('aria-label')?.toLowerCase()).toContain(idea.toLowerCase());
+    });
+    And('the cell {string} is locked and shows no form', (_, place: string) => showsNothing(place, 'locked'));
   });
 
   Scenario('Opening The third declension shows its 48 cells, every one locked while its idea is not yet', ({ When, And, Then }) => {

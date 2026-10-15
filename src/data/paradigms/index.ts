@@ -2,12 +2,19 @@
 // grammar levels make of them. Pure: the levels come in as a lookup (listLevels' rows, or a fixture).
 import type { Level } from '../grammar/needs';
 import { ADJECTIVE_ENDINGS } from './adjectiveEndings';
+import { AORIST_AND_FUTURE_PASSIVE } from './aoristAndFuturePassive';
 import { ARTICLE } from './article';
+import { CONTRACT_VERBS } from './contractVerbs';
 import { EIMI } from './eimi';
+import { FUTURE_AND_AORIST } from './futureAndAorist';
+import { MI_VERBS } from './miVerbs';
 import { NOUN_ENDINGS } from './nounEndings';
+import { OIDA } from './oida';
+import { PERFECT_AND_PLUPERFECT } from './perfectAndPluperfect';
 import { PRONOUNS_DEMONSTRATIVE_RELATIVE } from './pronounsDemonstrativeRelative';
 import { PRONOUNS_INTERROGATIVE_INDEFINITE } from './pronounsInterrogativeIndefinite';
 import { PRONOUNS_PERSONAL } from './pronounsPersonal';
+import { SECOND_AORIST } from './secondAorist';
 import { THIRD_DECLENSION } from './thirdDeclension';
 import type { Paradigm, ParadigmCell, ParadigmColumn, ParadigmRow } from './types';
 import { VERB_ENDINGS } from './verbEndings';
@@ -25,6 +32,13 @@ export const PARADIGMS: readonly Paradigm[] = [
   PRONOUNS_PERSONAL,
   PRONOUNS_DEMONSTRATIVE_RELATIVE,
   PRONOUNS_INTERROGATIVE_INDEFINITE,
+  FUTURE_AND_AORIST,
+  AORIST_AND_FUTURE_PASSIVE,
+  PERFECT_AND_PLUPERFECT,
+  SECOND_AORIST,
+  CONTRACT_VERBS,
+  MI_VERBS,
+  OIDA,
 ];
 
 export const paradigmById = (id: string | undefined): Paradigm | undefined => PARADIGMS.find((p) => p.id === id);
