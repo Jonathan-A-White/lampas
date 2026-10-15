@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.249",
+    "date": "2026-10-15",
+    "story": "mw-5r3p30.385",
+    "kind": "fixed",
+    "text": "A new install of Lampas now starts empty instead of with the app owner's own words and progress, and Words points a new reader to Placement and Import."
+  },
+  {
     "version": "0.1.248",
     "date": "2026-10-15",
     "story": "mw-svw421.4",

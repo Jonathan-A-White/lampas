@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.249
+_2026-10-15_
+- Fixed: A new install of Lampas now starts empty instead of with the app owner's own words and progress, and Words points a new reader to Placement and Import.
+
 ## 0.1.248
 _2026-10-15_
 - New: The Paradigms screen now has tables for the subjunctive, imperative, infinitive and participle, and εἰμί's moods, each unlocking as you learn the grammar behind it.
