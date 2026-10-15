@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.231
+_2026-10-15_
+- Fixed: Drill it now takes its words from the chapter you are reading toward, and does not show the same word twice in one drill.
+
 ## 0.1.229
 _2026-10-15_
 - Fixed: after you answer a question in Review, the Quick test, the Parsing drill or Placement, the Next button stays in view at the bottom of the screen, with no scrolling.
