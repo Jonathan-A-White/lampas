@@ -496,4 +496,179 @@ export const VERBS: Record<string, Teach> = {
       },
     ],
   },
+
+  eimi: {
+    whatItIs: 'The verb “to be” says that someone or something is or was: “I am”, “he was”, “they are”. It is the most used verb of all, and in every language it is the odd one out.',
+    howToSpot:
+      'εἰμί does not follow the pattern of other verbs, so learn its forms as they are: εἰμί “I am”, εἶ “you are”, ἐστίν “he is”, ἐσμέν “we are”, ἐστέ “you are”, εἰσίν “they are”; and ἦν “he was”, ἦσαν “they were”. A dictionary lists it as εἰμί, “I am”. Most of its forms have no accent of their own beyond the one they have in the table.',
+    table: {
+      caption: 'The forms of εἰμί, now and then',
+      columns: ['now: “am”', 'then: “was”'],
+      rows: [
+        { label: 'I', cells: ['εἰμί', 'ἤμην'] },
+        { label: 'you (one)', cells: ['εἶ', 'ἦσθα'] },
+        { label: 'he, she, it', cells: ['ἐστί(ν)', 'ἦν'] },
+        { label: 'we', cells: ['ἐσμέν', 'ἦμεν'] },
+        { label: 'you (many)', cells: ['ἐστέ', 'ἦτε'] },
+        { label: 'they', cells: ['εἰσί(ν)', 'ἦσαν'] },
+      ],
+    },
+    worked: [
+      {
+        word: 'ἐστίν',
+        ref: '1 John 1:5',
+        gloss: 'is',
+        steps: ['ἐστίν is a form of εἰμί, “I am”, so it is not built like other verbs.', 'In the table it is the “he, she, it” form of the first column, now: “is”.', 'ὁ θεὸς φῶς ἐστίν: “God is light”.'],
+      },
+      {
+        word: 'ἦν',
+        ref: '1 John 1:1',
+        gloss: 'was',
+        steps: ['ἦν belongs to εἰμί, “I am”.', 'In the table it is the “he, she, it” form of the second column, then: “was”.', 'ὃ ἦν ἀπ᾿ ἀρχῆς: “what was from the beginning”.'],
+      },
+    ],
+  },
+  'contract-verbs': {
+    whatItIs: 'A contract verb is a verb whose stem ends in a vowel (α, ε or ο) and whose stem vowel runs together with the vowel of the ending. English does something like it: “do not” becomes “don’t”.',
+    howToSpot:
+      'The entry ends in -άω, -έω or -όω: ἀγαπάω “I love”, ποιέω “I do”, πληρόω “I fill”. In the present the two vowels merge: α with the ending’s vowel gives α or ᾳ (ἀγαπᾷ), ε gives ει or ε (ποιεῖ, ποιεῖτε), ο gives ου or οι (πληροῦσιν). So you will not see the stem’s vowel and the ending’s vowel side by side. To find the entry, turn the merged vowel back.',
+    worked: [
+      {
+        word: 'ποιοῦμεν',
+        ref: '1 John 1:6',
+        gloss: 'we do',
+        steps: ['Its entry is ποιέω: the stem ποιε- ends in a vowel.', 'ε and the ο of the ending -ομεν run together and make ου: ποιέ-ομεν becomes ποιοῦμεν.', 'So “we do”: οὐ ποιοῦμεν τὴν ἀλήθειαν, “we do not do the truth”.'],
+      },
+    ],
+  },
+  augment: {
+    whatItIs: 'The augment is a small marker in front of a Greek verb that says the action is past, as English puts “-ed” at the end of “walked”. It is a short ἐ- before the stem.',
+    howToSpot:
+      'Look at the start of the verb. A stem that begins with a consonant gets ἐ- in front: λύω gives ἔλυσα “I loosed”. A stem that begins with a vowel lengthens it: α becomes η (ἀγαπάω, ἠγάπησα), ε becomes η, ο becomes ω. The imperfect and the aorist have it, and only in the indicative: an aorist that is not a plain statement has none. A few other past forms have it too.',
+    worked: [
+      {
+        word: 'ἐθεασάμεθα',
+        ref: '1 John 1:1',
+        gloss: 'we beheld',
+        steps: ['ἐ- in front of the stem θεα-: the augment, so the action is past.', 'θεα- is the stem of θεάομαι, “look at”; then σα, then -μεθα, which means “we”.', 'So “we beheld”: ἐθεασάμεθα τὴν δόξαν αὐτοῦ.'],
+      },
+      {
+        word: 'ἠγάπησεν',
+        ref: 'John 3:16',
+        gloss: 'loved',
+        steps: ['The stem of ἀγαπάω begins with α, so the augment lengthens it to η.', 'ἠγάπ- is the stem, then σε, which marks the aorist, and -ν.', 'So “he loved”: οὕτως γὰρ ἠγάπησεν ὁ θεὸς τὸν κόσμον.'],
+      },
+    ],
+  },
+  'tense-signs': {
+    whatItIs: 'A tense sign is a letter or two between the stem and the ending that marks the tense. English has a sign too: the -ed of “walked” marks the past.',
+    howToSpot:
+      'Look between the stem and the ending. σ marks the future and the first aorist: λύσω “I shall loose”, ἔλυσα “I loosed”. θη marks the aorist passive: ἐλύθην “I was loosed”. κ marks the first perfect: λέλυκα “I have loosed”. Some verbs change the stem instead and have no sign.',
+    table: {
+      caption: 'The tense signs with the endings that follow them',
+      columns: ['I', 'you (one)', 'he, she, it', 'we', 'you (many)', 'they'],
+      rows: [
+        { label: 'σ: the future', cells: ['-σω', '-σεις', '-σει', '-σομεν', '-σετε', '-σουσι(ν)'] },
+        { label: 'σα: the first aorist', cells: ['-σα', '-σας', '-σε(ν)', '-σαμεν', '-σατε', '-σαν'] },
+        { label: 'σα: the first aorist of a verb like θεάομαι', cells: ['-σαμην', '-σω', '-σατο', '-σαμεθα', '-σασθε', '-σαντο'] },
+        { label: 'θη: the aorist passive', cells: ['-θην', '-θης', '-θη', '-θημεν', '-θητε', '-θησαν'] },
+        { label: 'κα: the first perfect', cells: ['-κα', '-κας', '-κε(ν)', '-καμεν', '-κατε', '-κασι(ν)'] },
+      ],
+    },
+    worked: [
+      {
+        word: 'ἐθεασάμεθα',
+        ref: '1 John 1:1',
+        gloss: 'we beheld',
+        steps: ['θεα- is the stem and -μεθα is the ending.', 'Between them stands σα: the sign of the first aorist.', 'So σα says it is aorist: “we beheld”.'],
+      },
+      {
+        word: 'ἐφανερώθη',
+        ref: '1 John 1:2',
+        gloss: 'was shown',
+        steps: ['ἐ- in front is the augment; φανερω- is the stem.', 'θη after the stem is the sign of the aorist passive.', 'So “was shown”: ἡ ζωὴ ἐφανερώθη, “the life was shown”.'],
+      },
+    ],
+  },
+  reduplication: {
+    whatItIs: 'Reduplication is a repeat at the start of a word. The Greek perfect marks itself by repeating the first consonant of the stem, with an ε between, as if one said “go-go”.',
+    howToSpot:
+      'Look at the start of a verb in the perfect: the first consonant, then ε, then the stem again. λύω gives λέ-λυκα “I have loosed”, γράφω gives γέ-γραπται “it is written”. A stem that begins with a vowel lengthens it instead: ὁράω gives ἑώρακα “I have seen”. So the perfect begins with a doubled sound or a lengthened vowel.',
+    worked: [
+      {
+        word: 'γέγραπται',
+        ref: 'Romans 1:17',
+        gloss: 'it is written',
+        steps: ['The stem is γραφ-, from γράφω, “I write”.', 'γέ- in front repeats the first consonant γ and adds ε: the reduplication.', 'So γέγραπται is the perfect: “it is written”, and it stands written.'],
+      },
+      {
+        word: 'ἑωράκαμεν',
+        ref: '1 John 1:1',
+        gloss: 'we have seen',
+        steps: ['The stem of ὁράω begins with a vowel, so it is lengthened to ἑω- instead of repeating a consonant.', 'Then -κα marks the perfect, and -μεν means “we”.', 'So “we have seen”.'],
+      },
+    ],
+  },
+  oida: {
+    whatItIs: 'οἶδα is a Greek verb that looks like a perfect and means “I know”. English has the same oddity: “I have got” can mean “I own”.',
+    howToSpot:
+      'Its forms have the endings of a perfect and are used as a present: οἶδα “I know”, οἶδας “you know”, οἶδε(ν) “he knows”, οἴδαμεν “we know”, οἴδατε “you know”, οἴδασι(ν) “they know”. Its past is ᾔδειν “I knew”. Some dictionaries list it under εἴδω. It does not repeat its first consonant as the perfect does.',
+    table: {
+      caption: 'The forms of οἶδα, now and then',
+      columns: ['now: “know”', 'then: “knew”'],
+      rows: [
+        { label: 'I', cells: ['οἶδα', 'ᾔδειν'] },
+        { label: 'you (one)', cells: ['οἶδας', 'ᾔδεις'] },
+        { label: 'he, she, it', cells: ['οἶδε(ν)', 'ᾔδει'] },
+        { label: 'we', cells: ['οἴδαμεν', 'ᾔδειμεν'] },
+        { label: 'you (many)', cells: ['οἴδατε', 'ᾔδειτε'] },
+        { label: 'they', cells: ['οἴδασι(ν)', 'ᾔδεισαν'] },
+      ],
+    },
+    worked: [
+      {
+        word: 'οἴδαμεν',
+        ref: '1 John 3:2',
+        gloss: 'we know',
+        steps: ['οἴδαμεν has the ending -αμεν of a perfect and the meaning of a present.', 'The ending -μεν means “we”.', 'So “we know”: οἴδαμεν ὅτι ἐὰν φανερωθῇ, “we know that if he is shown”.'],
+      },
+    ],
+  },
+  'mi-verbs': {
+    whatItIs: 'The -μι verbs are a small family of very common verbs whose dictionary entry ends in -μι, not -ω. They add their endings straight to the stem, with no joining vowel between.',
+    howToSpot:
+      'The entry ends in -μι: δίδωμι “I give”, τίθημι “I put”, ἵστημι “I set up”, ἀφίημι “I let go”. A verb like λύω joins its stem and ending with a vowel (λύ-ο-μεν); a -μι verb does not (δίδο-μεν). In the present the stem often has a long vowel with the endings -μι, -ς, -σι(ν). Many have a second aorist, such as ἔστην “I stood”.',
+    worked: [
+      {
+        word: 'δίδωσιν',
+        ref: 'John 3:34',
+        gloss: 'he gives',
+        steps: ['Its entry is δίδωμι, “I give”: a -μι verb.', 'The stem δίδω- takes -σιν straight on, with no joining vowel.', 'So “he gives”: οὐ γὰρ ἐκ μέτρου δίδωσιν τὸ πνεῦμα, “for he does not give the Spirit by measure”.'],
+      },
+    ],
+  },
+  'principal-parts': {
+    whatItIs: 'The principal parts of a verb are the few forms every other form is built from. English has them: “go, went, gone”. Learn these and you can make the rest.',
+    howToSpot:
+      'A Greek verb has six: the present, the future, the aorist and the perfect, all active, and the perfect and the aorist passive. A dictionary lists the first and, for a verb that bends the pattern, the others too. λύω, λύσω, ἔλυσα, λέλυκα, λέλυμαι, ἐλύθην are the six of λύω. A verb like ἀκούω bends the pattern, with ἤκουσα and ἀκήκοα: learn it by its parts.',
+    table: {
+      caption: 'The six principal parts of λύω “I loose”',
+      columns: ['the part', 'it means'],
+      rows: [
+        { label: 'the present active', cells: ['λύω', 'I loose'] },
+        { label: 'the future active', cells: ['λύσω', 'I shall loose'] },
+        { label: 'the aorist active', cells: ['ἔλυσα', 'I loosed'] },
+        { label: 'the perfect active', cells: ['λέλυκα', 'I have loosed'] },
+        { label: 'the perfect passive', cells: ['λέλυμαι', 'I have been loosed'] },
+        { label: 'the aorist passive', cells: ['ἐλύθην', 'I was loosed'] },
+      ],
+    },
+    worked: [
+      {
+        word: 'ἔλυσα',
+        gloss: 'I loosed',
+        steps: ['ἔλυσα is the third part of λύω: ἐ- is the augment and σα the sign.', 'The other aorist forms come from it: ἐλύσαμεν, “we loosed”.', 'The future comes from the second part, λύσω, and the perfect from the fourth, λέλυκα: each part opens a family of forms.'],
+      },
+    ],
+  },
 };

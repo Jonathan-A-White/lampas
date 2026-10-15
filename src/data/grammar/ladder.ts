@@ -6,6 +6,7 @@
 import { GRAMMAR_CONCEPTS } from '../grammar-concepts';
 import { bookOf } from '../books';
 import { GRAMMAR_TERMS, decodeParse, parseSegments, splitParse } from '../parseCode';
+import { patternsOf } from './patterns';
 import { PREPOSITIONS, type Preposition } from './prepositions';
 
 /** The kind string of a schedule row whose item is a grammar idea (src/data/repositories/reviews.ts). */
@@ -271,6 +272,15 @@ const DEFS: Def[] = [
   def('conjunction', 'nouns', 'The conjunction', ['conjunction'], ['noun']),
   def('negative', 'nouns', 'The negative', ['negative'], ['conjunction']),
   def('case-nominative', 'nouns', 'The nominative case', ['nominative'], ['noun', 'number-plural']),
+  // the patterns of how a form is built (mw-svw421.1, PROVISIONAL): a word as a stem and an ending, the declensions, a dictionary entry
+  def(
+    'stem-and-ending',
+    'nouns',
+    'A word is a stem and an ending',
+    [],
+    ['noun', 'case-nominative'],
+    'A Greek word is built from a stem and an ending. The stem carries the meaning and stays the same; the ending changes with the job the word does. In λόγος, “word”, the stem is λογ- and the ending is -ος; in λόγου, “of a word”, the stem is the same and the ending is -ου. Words that say what is done work alike: λύ-ω is “I loose” and λύ-ομεν is “we loose”.',
+  ),
   def('case-accusative', 'nouns', 'The accusative case', ['accusative'], ['case-nominative']),
   def('case-genitive', 'nouns', 'The genitive case', ['genitive'], ['case-nominative']),
   def('case-dative', 'nouns', 'The dative case', ['dative'], ['case-genitive']),
@@ -278,8 +288,40 @@ const DEFS: Def[] = [
   def('gender-masculine', 'nouns', 'The masculine gender', ['masculine'], ['noun']),
   def('gender-feminine', 'nouns', 'The feminine gender', ['feminine'], ['gender-masculine']),
   def('gender-neuter', 'nouns', 'The neuter gender', ['neuter'], ['gender-masculine', 'gender-feminine', 'case-accusative']),
+  def(
+    'declension-1',
+    'nouns',
+    'The first declension',
+    [],
+    ['stem-and-ending', ...NOUN_CASES, ...GENDERS],
+    'Nouns whose stem ends in α or η make up the first declension: ἡμέρα “day”, δόξα “glory”, φωνή “sound” and ἀρχή “beginning” (1 John 1:1) are feminine, and προφήτης “prophet” is masculine. The nominative ends in -α or -η (-ης for a masculine) and the genitive in -ας or -ης: ἀρχή, ἀρχῆς.',
+  ),
+  def(
+    'declension-2',
+    'nouns',
+    'The second declension',
+    [],
+    ['stem-and-ending', ...NOUN_CASES, ...GENDERS],
+    'Nouns whose stem ends in ο make up the second declension: λόγος “word” (1 John 1:1) and ἄνθρωπος “man” are masculine, and τέκνον “child” is neuter. The nominative ends in -ος or -ον and the genitive in -ου: λόγος, λόγου; τέκνον, τέκνου.',
+  ),
   def('article', 'nouns', 'The article', ['article'], ['noun', ...NOUN_CASES, 'number-plural', ...GENDERS]),
   def('adjective', 'nouns', 'The adjective', ['adjective'], ['noun', ...NOUN_CASES, 'number-plural', ...GENDERS]),
+  def(
+    'dictionary-entry',
+    'nouns',
+    'A dictionary entry',
+    [],
+    ['stem-and-ending', 'case-genitive', ...GENDERS, 'article', 'adjective'],
+    'A dictionary lists a noun with three pieces: ἄγγελος, -ου, ὁ is the nominative, the ending of the genitive and the article, which shows the gender (ὁ masculine, ἡ feminine, τό neuter). An adjective is listed as ἀγαθός, -ή, -όν, one ending for each gender. A word for what is done is listed as λύω, “I loose”. Look a word up under its entry, not under the form you met.',
+  ),
+  def(
+    'declension-3',
+    'nouns',
+    'The third declension',
+    [],
+    ['dictionary-entry', 'declension-1', 'declension-2'],
+    'Every other noun is of the third declension: σάρξ “flesh”, πνεῦμα “spirit”, πίστις “faith”, πατήρ “father”, βασιλεύς “king”. Its nominative gives no clue to the stem; the genitive does: σάρξ, σαρκός shows the stem σαρκ-. So read the entry and take the stem from the genitive. χεῖρες “hands” (1 John 1:1) is the plural of χείρ, χειρός.',
+  ),
   def('comparative', 'nouns', 'The comparative', ['comparative'], ['adjective']),
   def('superlative', 'nouns', 'The superlative', ['superlative'], ['comparative']),
   def('numeral', 'nouns', 'Number words', ['numeral'], ['adjective']),
@@ -322,6 +364,14 @@ const DEFS: Def[] = [
   // verbs: person and number (above) first, then the present, the active and the indicative, the other tenses, the voices, the moods
   def('verb', 'verbs', 'The verb', ['verb'], PERSONS_AND_NUMBERS),
   def(
+    'eimi',
+    'verbs',
+    'The verb εἰμί',
+    [],
+    ['verb'],
+    'εἰμί, “I am”, is the commonest verb of all, and it has forms of its own that follow no other pattern: εἰμί “I am”, εἶ “you are”, ἐστίν “he is”, ἐσμέν “we are”, ἐστέ “you are”, εἰσίν “they are”, and ἦν “he was” (1 John 1:1). You will know them by sight long before you know why they look so.',
+  ),
+  def(
     'compound-verbs',
     'verbs',
     'Compound verbs',
@@ -332,14 +382,70 @@ const DEFS: Def[] = [
   def('tense-present', 'verbs', 'The present tense', ['present'], ['verb']),
   def('voice-active', 'verbs', 'The active voice', ['active'], ['verb']),
   def('mood-indicative', 'verbs', 'The indicative mood', ['indicative'], ['tense-present', 'voice-active']),
+  def(
+    'contract-verbs',
+    'verbs',
+    'Contract verbs',
+    [],
+    ['stem-and-ending', 'mood-indicative'],
+    'Some verbs have a stem ending in α, ε or ο: ἀγαπάω “I love”, ποιέω “I do”, πληρόω “I fill”. In the present the stem’s vowel runs together with the vowel of the ending, so the joining vowel is lost: ποιέ-ομεν becomes ποιοῦμεν “we do” (1 John 1:6), ποιέ-ει becomes ποιεῖ and ἀγαπά-ει becomes ἀγαπᾷ. The dictionary lists such a verb in -άω, -έω or -όω.',
+  ),
   def('tense-imperfect', 'verbs', 'The imperfect tense', ['imperfect'], ['mood-indicative']),
   def('tense-future', 'verbs', 'The future tense', ['future'], ['tense-present']),
   def('tense-aorist', 'verbs', 'The aorist tense', ['aorist'], ['tense-imperfect']),
+  def(
+    'augment',
+    'verbs',
+    'The augment',
+    [],
+    ['tense-aorist', 'stem-and-ending'],
+    'In the indicative the imperfect and the aorist put a short ἐ- in front of the stem. It is called the augment, and it says the action is past: ἐθεασάμεθα “we beheld” (1 John 1:1) is ἐ- before the stem θεα-. A stem that begins with a vowel lengthens it instead: α becomes η, so ἀγαπάω gives ἠγάπησα “I loved”.',
+  ),
   def('tense-perfect', 'verbs', 'The perfect tense', ['perfect'], ['tense-aorist']),
+  def(
+    'reduplication',
+    'verbs',
+    'Reduplication',
+    [],
+    ['tense-perfect', 'stem-and-ending'],
+    'The perfect is marked by reduplication: it repeats the first consonant of the stem and puts ε between: λύω gives λέ-λυκα “I have loosed”, and γράφω gives γέ-γραπται “it is written”. A stem that begins with a vowel lengthens it instead: ὁράω gives ἑώρακα “I have seen”. Look for the doubled start.',
+  ),
+  def(
+    'oida',
+    'verbs',
+    'The verb οἶδα',
+    [],
+    ['tense-perfect'],
+    'οἶδα is a perfect in form and “I know” in sense: οἶδα “I know”, οἶδας “you know”, οἶδεν “he knows”, οἴδαμεν “we know” (1 John 3:2). Its past is ᾔδειν “I knew”. Some lists give it under εἴδω. The word has the endings of a perfect without the usual first-consonant repeat, and it is used as a present.',
+  ),
   def('tense-pluperfect', 'verbs', 'The pluperfect tense', ['pluperfect'], ['tense-perfect']),
   def('second-tenses', 'verbs', 'Second aorists and perfects', ['second'], ['tense-aorist', 'tense-perfect']),
+  def(
+    'mi-verbs',
+    'verbs',
+    'Verbs in -μι',
+    [],
+    ['stem-and-ending', 'contract-verbs', 'second-tenses'],
+    'A few common verbs end their dictionary entry in -μι: δίδωμι “I give”, τίθημι “I put”, ἵστημι “I set up”, ἀφίημι “I let go”. In the present the endings join the stem with no joining vowel: δίδωμι, δίδως, δίδωσιν (John 3:34). Many have a second aorist, such as ἔστην “I stood”.',
+  ),
   def('voice-middle', 'verbs', 'The middle voice', ['middle'], ['voice-active']),
   def('voice-passive', 'verbs', 'The passive voice', ['passive'], ['voice-active', 'tense-present', 'tense-aorist', 'case-genitive']),
+  def(
+    'tense-signs',
+    'verbs',
+    'Tense signs',
+    [],
+    ['tense-future', 'tense-aorist', 'tense-perfect', 'voice-passive', 'stem-and-ending'],
+    'A letter or two between the stem and the ending marks the tense. σ marks the future and the first aorist: λύσω “I shall loose”, ἔλυσα “I loosed”. θη marks the aorist passive: ἐλύθην “I was loosed”. κ marks the first perfect: ἑωράκαμεν “we have seen” (1 John 1:1).',
+  ),
+  def(
+    'principal-parts',
+    'verbs',
+    'Principal parts',
+    [],
+    ['augment', 'tense-signs', 'reduplication'],
+    'Every other form of a verb is built from its principal parts, six forms that a good dictionary lists together: λύω, λύσω, ἔλυσα, λέλυκα, λέλυμαι, ἐλύθην (present, future, aorist and perfect active, perfect and aorist passive). A verb that bends the pattern must be learnt by its parts: ἀκούω has ἤκουσα and ἀκήκοα.',
+  ),
   def('voice-middle-or-passive', 'verbs', 'The middle or passive voice', ['middle or passive'], ['voice-middle', 'voice-passive']),
   def('voice-middle-deponent', 'verbs', 'The middle deponent', ['middle deponent'], ['voice-middle-or-passive']),
   def('voice-passive-deponent', 'verbs', 'The passive deponent', ['passive deponent'], ['voice-middle-deponent', 'tense-aorist']),
@@ -451,11 +557,12 @@ export function ideasOf(code: string): string[] {
 
 const PREPOSITION_IDEA_OF_LEMMA = new Map(PREPOSITIONS.map((p) => [p.greek.normalize('NFC'), prepId(p)]));
 
-/** ideasOf for a word of the text (mw-86e9r1.5): a preposition of the twelve also needs its own idea, which its parsing code cannot name. */
-export function ideasOfWord(word: { l: string; p: string }): string[] {
-  const ids = ideasOf(word.p);
+/** ideasOf for a word of the text (mw-86e9r1.5): a preposition of the twelve also needs its own idea, which its parsing code cannot name, and (mw-svw421.1)
+ * a word also needs the pattern ideas its dictionary form and code show (patterns.ts patternsOf): its declension, the augment, its tense signs and the rest. */
+export function ideasOfWord(word: { l: string; p: string; t?: string }): string[] {
   const own = word.p === 'PREP' ? PREPOSITION_IDEA_OF_LEMMA.get(word.l.normalize('NFC')) : undefined;
-  return own ? [...ids, own].sort((a, b) => ideaOf(a).rung - ideaOf(b).rung) : ids;
+  const ids = [...new Set([...ideasOf(word.p), ...patternsOf(word), ...(own ? [own] : [])])];
+  return ids.sort((a, b) => ideaOf(a).rung - ideaOf(b).rung);
 }
 
 function termIdea(term: string): string {

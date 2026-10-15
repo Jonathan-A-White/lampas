@@ -4,7 +4,7 @@ mw-5r3p30.234, 2026-10-14. His ask (Postern general, 2026-10-12 ~11:49Z): “loo
 
 Every idea of the ladder (`src/data/grammar/ladder.ts`), in ladder order, judged as the card stood before this story: its text, its tiles (letters, sounds and marks), its examples and its table. **teaches a beginner** means a person who knows no Greek, but has proved every card below, could learn the idea from that card alone; **only reminds someone who knows** means they could not. The last column says what a total beginner lacked on it. `tests/unit/card-audit.test.ts` holds this table to `LADDER`.
 
-Of the 135 cards, 93 taught a beginner something and 42 only reminded someone who knows; every one of them is rewritten.
+Of the 135 cards, 93 taught a beginner something and 42 only reminded someone who knows; every one of them is rewritten. The thirteen pattern ideas added later (mw-svw421.1, `docs/grammar.md` 'Patterns') had no card before: their rows say so, and the verdict on them is the one for the card they now have; they are in neither count.
 
 What every card lacked, whatever its verdict, and what this story gave each one (data in `src/data/grammar/teach/`, one file per tier; the sheet is `src/IdeaSheet.tsx`):
 
@@ -73,6 +73,7 @@ What every card lacked, whatever its verdict, and what this story gave each one 
 | `conjunction` | The conjunction | teaches a beginner | Gave καί, γάρ, δέ and where they stand; lacked a table of the common ones and a word of the verse. |
 | `negative` | The negative | teaches a beginner | Gave οὐ and μή and when each is used; lacked οὐκ/οὐχ, the compounds (οὐδείς), a table and a word worked. |
 | `case-nominative` | The nominative case | only reminds someone who knows | Said it is the dictionary form but gave no ending to spot it; its examples could be pronouns and articles the card cannot explain. |
+| `stem-and-ending` | A word is a stem and an ending | teaches a beginner | New with mw-svw421.1, so no card before it. The noun card showed a stem and an ending in one noun; nothing taught the cut as an idea for every word, nouns and verbs alike. |
 | `case-accusative` | The accusative case | only reminds someone who knows | Gave no ending; spoke of prepositions before the preposition card; examples unexplained. |
 | `case-genitive` | The genitive case | only reminds someone who knows | Gave no ending to spot it; its table was the article, which comes later; its examples (ἡμῶν, τοῦ) were a pronoun and an article it cannot explain. |
 | `case-dative` | The dative case | only reminds someone who knows | Gave no ending and no iota under the letter; its table was the article; examples unexplained. |
@@ -80,8 +81,12 @@ What every card lacked, whatever its verdict, and what this story gave each one 
 | `gender-masculine` | The masculine gender | only reminds someone who knows | Used “the article ὁ” before the article card and gave no way to tell a masculine noun by its dictionary form. |
 | `gender-feminine` | The feminine gender | only reminds someone who knows | Leaned on the article ἡ, which comes later; gave no ending pattern (-η, -α). |
 | `gender-neuter` | The neuter gender | only reminds someone who knows | Leaned on the article τό; named “nominative and accusative” without the endings (-ον, -μα, plural -α). |
+| `declension-1` | The first declension | teaches a beginner | New with mw-svw421.1, so no card before it. Nothing named the families of nouns that change alike, or showed the first one’s endings beside its dictionary form. |
+| `declension-2` | The second declension | teaches a beginner | New with mw-svw421.1, so no card before it. Nothing named the second family of nouns or told a beginner that -ος and -ον share a genitive in -ου. |
 | `article` | The article | only reminds someone who knows | Taught ὁ, ἡ, τό but showed no table of its 24 forms; the example was τοῖς glossed “the/this/who”, a form the card never named, with a three-sense gloss. |
 | `adjective` | The adjective | only reminds someone who knows | Said it matches its noun but showed no endings; no table; no word taken apart. |
+| `dictionary-entry` | A dictionary entry | teaches a beginner | New with mw-svw421.1, so no card before it. Nothing taught how to read ἄγγελος, -ου, ὁ: the genitive ending and the article that shows the gender. |
+| `declension-3` | The third declension | teaches a beginner | New with mw-svw421.1, so no card before it. The BMA lesson for it only revisited the noun; nothing said that the stem of a third-declension noun shows in its genitive (σάρξ, σαρκός). |
 | `comparative` | The comparative | teaches a beginner | Gave -τερος and -ων with μείζων; lacked a table and a verse (1 John 3:20). |
 | `superlative` | The superlative | teaches a beginner | Gave -τατος and -ιστος; lacked a table and a verse. |
 | `numeral` | Number words | teaches a beginner | Gave which numbers change; lacked their forms in a table. |
@@ -115,18 +120,26 @@ What every card lacked, whatever its verdict, and what this story gave each one 
 | `preposition-para` | The preposition παρά | teaches a beginner | Gave each case with its meaning and a real phrase; it lacked the phrase taken apart and a table of the cases. |
 | `preposition-epi` | The preposition ἐπί | teaches a beginner | Gave each case with its meaning and a real phrase; it lacked the phrase taken apart and a table of the cases. |
 | `verb` | The verb | only reminds someone who knows | Taught with archaic λύομεν “we are loosing”; no stem and ending shown on a real word; no dictionary form. |
+| `eimi` | The verb εἰμί | teaches a beginner | New with mw-svw421.1, so no card before it. εἰμί was a lesson name (Being: I am) with no idea behind it, and its forms (ἐστίν, εἰσίν, ἦν) were never laid side by side. |
 | `compound-verbs` | Compound verbs | teaches a beginner | Gave three compounds and how the preposition changes; lacked a table and a word of the text. |
 | `tense-present` | The present tense | only reminds someone who knows | Said what it means but gave no endings to spot it. |
 | `voice-active` | The active voice | only reminds someone who knows | “λύω, I loose” and the word “subject” before the nominative is below it; nothing on how to tell an active ending. |
 | `mood-indicative` | The indicative mood | only reminds someone who knows | Used “tense” and “mood” without saying what a mood is or how the indicative looks. |
+| `contract-verbs` | Contract verbs | teaches a beginner | New with mw-svw421.1, so no card before it. Nothing said why ποιέω gives ποιοῦμεν and ἀγαπάω gives ἀγαπᾷ: the stem vowel merges with the ending. |
 | `tense-imperfect` | The imperfect tense | only reminds someone who knows | Used “indicative” and “stem” without teaching the augment by name; archaic ἔλυον “I was loosing”; no endings. |
 | `tense-future` | The future tense | only reminds someone who knows | σ before the ending, but with λύσω “I will loose” only and no endings; nothing on ψ and ξ. |
 | `tense-aorist` | The aorist tense | only reminds someone who knows | Said (and spelt out “AIR-ist”) what it means but gave no σα, no endings, and spoke of “other moods” not yet taught. |
+| `augment` | The augment | teaches a beginner | New with mw-svw421.1, so no card before it. The imperfect and aorist cards mention the ἐ- in passing; nothing taught it as one idea, or that a first vowel lengthens (ἀγαπάω, ἠγάπησα). |
 | `tense-perfect` | The perfect tense | only reminds someone who knows | “A doubled start to the word” with λέλυκα only; no κα, no endings. |
+| `reduplication` | Reduplication | teaches a beginner | New with mw-svw421.1, so no card before it. The perfect card mentions the doubled start; nothing taught it as one idea with its vowel-lengthening form (ὁράω, ἑώρακα). |
+| `oida` | The verb οἶδα | teaches a beginner | New with mw-svw421.1, so no card before it. οἶδα looks like a perfect and means “I know”; no card said so or showed its forms. |
 | `tense-pluperfect` | The pluperfect tense | only reminds someone who knows | Built “like the perfect with an added ε” with ἐλελύκειν only; no endings. |
 | `second-tenses` | Second aorists and perfects | only reminds someone who knows | Gave ἔλαβον only; no list of the common second aorists and no second perfect. |
+| `mi-verbs` | Verbs in -μι | teaches a beginner | New with mw-svw421.1, so no card before it. The BMA lesson for them only revisited the present and the second aorist; nothing showed endings with no joining vowel (δίδωσιν). |
 | `voice-middle` | The middle voice | only reminds someone who knows | Gave λούομαι and αἰτοῦμαι but no endings to spot a middle form. |
 | `voice-passive` | The passive voice | only reminds someone who knows | ἐλύθη only; nothing on θη as the mark; it spoke of the aorist without resting on it. |
+| `tense-signs` | Tense signs | teaches a beginner | New with mw-svw421.1, so no card before it. Nothing gathered the σ of the future and first aorist, the θη of the aorist passive and the κ of the first perfect in one place. |
+| `principal-parts` | Principal parts | teaches a beginner | New with mw-svw421.1, so no card before it. Nothing said that every form of a verb is built from six, or listed the six of λύω. |
 | `voice-middle-or-passive` | The middle or passive voice | only reminds someone who knows | λύομαι only; no shared endings listed. |
 | `voice-middle-deponent` | The middle deponent | teaches a beginner | Gave ἔρχομαι, δέχομαι, πορεύομαι and the rule; lacked a word of the verse (ἐθεασάμεθα, 1 John 1:1). |
 | `voice-passive-deponent` | The passive deponent | teaches a beginner | Gave ἀπεκρίθη and the rule; lacked θη as the sign to look for. |

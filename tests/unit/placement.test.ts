@@ -63,6 +63,9 @@ describe('where the placement starts', () => {
     // the accusative is solid but the nominative is not: nothing below the first idea that is not solid is skipped
     expect(currentIdea(start(known))).toBe('case-nominative');
     known.set('case-nominative', 'solid');
+    // a word as a stem and an ending (mw-svw421.1) is the next idea of BMA Tutor's lesson 'Who acts and who is acted on'
+    expect(currentIdea(start(known))).toBe('stem-and-ending');
+    known.set('stem-and-ending', 'solid');
     expect(currentIdea(start(known))).toBe('person-1st');
   });
 
