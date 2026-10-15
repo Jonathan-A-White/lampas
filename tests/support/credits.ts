@@ -68,9 +68,14 @@ function creditFor(path: string): string | null | undefined {
   if (path === 'public/data/lexicon.json') return 'TBESG';
   if (path.startsWith('public/data/')) return 'Majority Standard Bible';
   if (path.startsWith('public/sounds/')) return 'eSpeak NG'; // the clips of a one-letter Greek word's sound, made by eSpeak NG (scripts/sounds-build.sh)
+  if (path.startsWith('public/sounds-trial/')) {
+    // the listening page's clips (docs/research/letter-sounds.md): one folder per voice that made them
+    const voice = path.split('/')[2];
+    return { espeak: 'eSpeak NG', piper: 'Piper', coqui: 'Coqui', chatterbox: 'Chatterbox' }[voice];
+  }
   if (path.startsWith('public/pictures/')) return 'Claude Code'; // the memory pictures: drawn by Claude Code, credited as a tool
-  // the app's own: the lamp icon (also Claude Code's drawing) and the changelog mw next writes
-  if (/^public\/(icon\.svg|icon-\d+\.png|changelog\.json)$/.test(path)) return null;
+  // the app's own: the lamp icon (also Claude Code's drawing), the changelog mw next writes, and the letter-sounds listening page (its clips are credited above)
+  if (/^public\/(icon\.svg|icon-\d+\.png|changelog\.json|sounds-trial\.html)$/.test(path)) return null;
   return undefined;
 }
 
