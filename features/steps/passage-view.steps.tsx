@@ -194,6 +194,29 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario("The passage is set with the Reader's own type, and a word in it still opens the word sheet", ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 in the Greek view with the weave {string}', () => open({ hash: '#/?c=8&view=greek&weave=off' }));
+    When('he taps the heading {string}', tapHeading);
+    Then("the passage text carries the Reader's own face, size and line spacing and is not the big single-verse text", () => {
+      const text = viewEl().querySelector<HTMLElement>('[data-sheet-verse]') as HTMLElement;
+      const readerVerse = document.querySelector<HTMLElement>('[data-reader] [data-verse="1"]') as HTMLElement;
+      // the Reader's own classes (src/reader/textClass.ts, the verse's leading) and the attribute src/index.css shares its book look by
+      expect(text).toHaveAttribute('data-passage-text');
+      expect(text).not.toHaveAttribute('data-size');
+      for (const name of ['font-greek', 'text-[length:var(--lp-greek-size)]', 'leading-(--lp-leading)']) {
+        expect(readerVerse.classList.contains(name)).toBe(true);
+        expect(text.classList.contains(name)).toBe(true);
+      }
+      expect(text.classList.contains('[--lp-greek-size:2.25rem]')).toBe(false);
+    });
+    When('he taps the first Greek word of the passage', async () => {
+      await user.click(viewEl().querySelector<HTMLElement>('[data-passage-verse="1"] [data-word]') as HTMLElement);
+    });
+    Then('the word sheet opens', async () => {
+      expect(await screen.findByRole('dialog', { name: 'Word' })).toBeInTheDocument();
+    });
+  });
+
   Scenario('The passage has the same one row of actions and exactly one control at the foot', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
     When('he taps the heading {string}', tapHeading);

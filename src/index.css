@@ -352,24 +352,29 @@ textarea,
 /* The Immersive reader sets the text like a book (mw-5r3p30.297): tight lines wherever no line sits under a word (a verse with a [data-hint]
  * keeps its roomy spacing), a book serif for the English (the Greek face is already one), justified and hyphenated in the text's own language
  * (the lang on the verse or paragraph), small dim verse numbers, and pure black behind it in the dark theme. Type size is untouched. The verse
- * number is still a 44 px button: its vertical margin is pulled in so it no longer makes its line 44 px tall. Off draws none of this. */
-[data-reader][data-immersive='on'] {
+ * number is still a 44 px button: its vertical margin is pulled in so it no longer makes its line 44 px tall. Off draws none of this.
+ * The passage view (src/VerseView.tsx, mw-5r3p30.319) shares every rule but the background: its text is [data-passage-text] inside
+ * [data-verse-view][data-immersive='on'], the scope `:is()` names, so the Reader and the passage are set by one set of rules. */
+[data-reader][data-immersive='on'],
+[data-verse-view][data-immersive='on'] {
   --lp-book-english: calc(1.4 * var(--lp-english-size));
   --lp-book-greek: calc(1.4 * var(--lp-greek-size));
+}
+[data-reader][data-immersive='on'] {
   background-color: var(--lp-reader-bg, transparent);
 }
-[data-reader][data-immersive='on'] :is([data-verse], [data-paragraph]) {
+:is([data-reader], [data-verse-view])[data-immersive='on'] :is([data-verse], [data-paragraph], [data-passage-text]) {
   text-align: justify;
   hyphens: auto;
 }
-[data-reader][data-immersive='on'] :is([data-verse], [data-paragraph])[lang='en'] {
+:is([data-reader], [data-verse-view])[data-immersive='on'] :is([data-verse], [data-paragraph], [data-passage-text])[lang='en'] {
   font-family: var(--font-book);
   --lp-book-line: var(--lp-book-english);
 }
-[data-reader][data-immersive='on'] :is([data-verse], [data-paragraph])[lang='grc'] {
+:is([data-reader], [data-verse-view])[data-immersive='on'] :is([data-verse], [data-paragraph], [data-passage-text])[lang='grc'] {
   --lp-book-line: var(--lp-book-greek);
 }
-[data-reader][data-immersive='on'] :is([data-verse], [data-paragraph]):not(:has([data-hint])) {
+:is([data-reader], [data-verse-view])[data-immersive='on'] :is([data-verse], [data-paragraph], [data-passage-text]):not(:has([data-hint])) {
   line-height: 1.4;
 }
 [data-reader][data-immersive='on'] :is([data-verse], [data-paragraph]):not(:has([data-hint])) :is([data-verse-number], [data-verse-play]) {
@@ -382,8 +387,12 @@ textarea,
   font-size: 0.75rem;
   opacity: 0.7;
 }
-[data-reader][data-immersive='on'] [data-verse-number] sup {
+[data-reader][data-immersive='on'] [data-verse-number] sup,
+[data-verse-view][data-immersive='on'] [data-passage-number] {
   font-size: 0.65rem;
+}
+[data-verse-view][data-immersive='on'] [data-passage-number] {
+  opacity: 0.7;
 }
 :root[data-theme='dark']:has([data-reader][data-immersive='on']) {
   --lp-canvas: #000;
