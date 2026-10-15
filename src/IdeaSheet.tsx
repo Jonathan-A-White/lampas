@@ -10,7 +10,7 @@
 // to prove it, and only a pass keeps it there), 'Mark known without a drill' (solid, the 30-day step), a Drill it button and Ask the tutor; the level shows as a chip
 // ('Proved by drill' once a run proved it). He learns one idea at a time (mw-i7xe0n.6): sliding to Learning while another idea is Learning asks 'You are learning <other>.
 // Switch to <this>?' (Switch | Keep <other>). The sheet teaches only its own idea and takes the ideas under it to be solid: when one is not, it says so above the
-// text with a button to go there, and sliding up first asks 'Go to <title> first?'.
+// text with a button to go there, and sliding up first asks 'Go to <title> first?'. Learning on The Greek alphabet opens the letter drill at once (src/LetterDrillScreen.tsx).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { loadChapter, loadIndex, type Chapter, type GreekWord } from './data/chapter';
@@ -26,6 +26,7 @@ import { getOpenChapter } from './data/readerChapter';
 import { getGreekPronunciation, getLevel, getSavedGoalText, listLevels, recordDrill, teachIdea, type DrillMode, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
 import { DrillItScreen } from './DrillItScreen';
 import { holdIdea } from './ideaReturn';
+import { LetterDrillScreen } from './LetterDrillScreen';
 import { openParadigm } from './nav/route';
 import { chosenPronunciation } from './speech/greek';
 import { pronunciationOf, type Pronunciation } from './speech/pronunciation';
@@ -308,6 +309,8 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false }: {
   const dragging = useRef(false);
   const shown = dragged ?? (moved && moved.from === rest ? moved.to : rest);
   const [drill, setDrill] = useState<DrillMode | null>(null);
+  // Got it on The Greek alphabet starts the letter drill at once (mw-86e9r1.11)
+  const [letterDrill, setLetterDrill] = useState(false);
   const [asking, setAsking] = useState<{ to: number; need: GrammarIdea } | null>(null);
   // the idea he is learning now, when he slid this one to Learning: one idea at a time, so he chooses (mw-i7xe0n.6)
   const [switching, setSwitching] = useState<GrammarIdea | null>(null);
@@ -317,6 +320,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false }: {
       .then(async () => {
         const result = await teachIdea(idea.id, outcome, undefined, 'sheet', choice);
         if (result.status === 'busy') setSwitching(ideaOf(result.other));
+        else if (result.status === 'taught' && outcome === 'got-it' && idea.id === 'alphabet') setLetterDrill(true);
       })
       .catch((error: unknown) => console.error('could not keep the level', error));
   };
@@ -567,6 +571,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false }: {
           onClose={closeDrill}
         />
       ) : null}
+      {letterDrill ? <LetterDrillScreen onClose={() => setLetterDrill(false)} /> : null}
       {opened ? <IdeaSheet idea={opened} onClose={() => setOpened(null)} onWord={onWord} onAsk={onAsk} covered={covered} /> : null}
     </div>
   );

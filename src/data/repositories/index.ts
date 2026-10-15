@@ -85,7 +85,7 @@ export { answerPlanItem, closeDrillPlan, drillPlanCounts, getDrillPlan, listDril
 export type { PlanAnswer } from './drillPlans';
 export { getLevel, levelFromStep, listLevels, otherFrontier, recordDrill, recordGrammarAnswer, scheduleIdea, seedLevelsIfFirstOpen, setLevel, SOLID_STEP, teachIdea } from './grammarLevels';
 export type { DrillMode, FrontierChoice, GrammarLevel, GrammarLevelHow, GrammarLevelName, IdeaOutcome, TeachResult } from './grammarLevels';
-export { getEvidence, noteAnswer, noteWordRead } from './inference';
+export { getEvidence, noteAnswer, noteDrillAnswer, noteWordRead } from './inference';
 export { getSavedGoalText } from './goalSaved';
 export { isTermKnown, listKnownTerms, setTermKnown } from './grammar';
 export { getStudyResources, setResourceOn, setResourceOption } from './resources';
