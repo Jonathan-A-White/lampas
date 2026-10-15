@@ -6,10 +6,11 @@ import { askBySetting } from './askBy';
 import { audioBibleSetting } from './audioBible';
 import { immersiveSetting } from './immersive';
 import { immersiveHintSetting } from './immersiveHint';
+import { readLessonsSetting } from './readLessons';
 import { themeSetting } from './theme';
 import { tipsSetting } from './tips';
 import { weaveSetting } from './weave';
 
-export { askBySetting, audioBibleSetting, immersiveHintSetting, immersiveSetting, themeSetting, tipsSetting, weaveSetting };
+export { askBySetting, audioBibleSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, themeSetting, tipsSetting, weaveSetting };
 
-export const DEFINITIONS: readonly SettingDef<SettingValue>[] = [themeSetting, weaveSetting, tipsSetting, immersiveSetting, immersiveHintSetting, askBySetting, audioBibleSetting];
+export const DEFINITIONS: readonly SettingDef<SettingValue>[] = [themeSetting, weaveSetting, tipsSetting, immersiveSetting, immersiveHintSetting, askBySetting, audioBibleSetting, readLessonsSetting];
