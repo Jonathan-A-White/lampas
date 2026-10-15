@@ -1,6 +1,7 @@
 Feature: Paradigms
-  The Paradigms screen (#/paradigms, reached from Settings > More, beside Review) lists four tables: The article, Noun endings, εἰμί
-  and Verb endings (src/data/paradigms/, docs/paradigms.md), each with 'Available forms: N of M' and a progress bar. A form is
+  The Paradigms screen (#/paradigms, reached from Settings > More, beside Review) lists nine tables: The article, Noun endings, εἰμί,
+  Verb endings, The third declension, Adjective endings, Personal pronouns, Demonstrative and relative pronouns and Interrogative
+  and indefinite pronouns (src/data/paradigms/, docs/paradigms.md), each with 'Available forms: N of M' and a progress bar. A form is
   available once every grammar idea it needs is at the frontier or solid (grammarLevels); a locked form shows as locked, not hidden,
   so the table keeps its shape. A table opens in Study mode (an available cell says reveal and a tap shows its form) or Review mode
   (every available cell shows its form); one button switches. Ask the tutor sends the table's name and the forms he has revealed
@@ -13,6 +14,32 @@ Feature: Paradigms
     When he opens the Paradigms screen
     Then the list reads "The article: Available forms: 4 of 24", "Noun endings: Available forms: 8 of 40", "εἰμί: Available forms: 0 of 36" and "Verb endings: Available forms: 0 of 24"
     And the progress bar of "The article" is at 4 of 24
+
+  Scenario: The list shows the five tables of the nouns and pronouns, each with how many of its forms are available
+    When he opens the Paradigms screen
+    Then the list also reads "The third declension: Available forms: 0 of 48", "Adjective endings: Available forms: 0 of 48", "Personal pronouns: Available forms: 0 of 40", "Demonstrative and relative pronouns: Available forms: 0 of 48" and "Interrogative and indefinite pronouns: Available forms: 0 of 32"
+
+  Scenario: The count follows the ideas he has, and the interrogative table stays shut while its idea is not yet
+    Given the ideas "declension-3" and "pronoun-interrogative" are at the frontier
+    When he opens the Paradigms screen
+    Then the list also reads "The third declension: Available forms: 8 of 48", "Adjective endings: Available forms: 0 of 48", "Personal pronouns: Available forms: 0 of 40", "Demonstrative and relative pronouns: Available forms: 0 of 48" and "Interrogative and indefinite pronouns: Available forms: 2 of 32"
+
+  Scenario: Opening The third declension shows its 48 cells, every one locked while its idea is not yet
+    When he opens the Paradigms screen
+    And he taps "The third declension" in the list
+    Then the table "The third declension" is on screen with 48 cells
+    And the address is for the table "third-declension"
+    And all 48 cells of the table are locked
+
+  Scenario: A third declension form opens with its ideas and stays locked without them
+    Given the table "third-declension" is open in Review mode
+    Then the cell "σάρξ, feminine Genitive Singular" is locked and shows no form
+    When the idea "declension-3" moves to frontier
+    Then the cell "σάρξ, feminine Genitive Singular" now shows "σαρκός"
+    And the cell "πατήρ, masculine Genitive Singular" also shows "πατρός"
+    And the cell "σάρξ, feminine Dative Singular" is locked and shows no form
+    And the cell "γένος, neuter Nominative Singular" is also locked and shows no form
+    And the table still has 48 cells
 
   Scenario: Settings reaches the Paradigms screen and a table opens from the list
     Given Lampas is open on Settings

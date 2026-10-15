@@ -23,6 +23,8 @@ export const EIMI: Paradigm = {
   id: 'eimi',
   name: 'εἰμί',
   about: 'The verb “to be”: present, imperfect and future',
+  ideas: ['eimi'],
+  tier: 'verbs',
   columns: [{ label: 'Greek' }, { label: 'English' }],
   rows: TENSES.flatMap(([group, tenseIdea, greek, english]) =>
     PERSONS.map(([label, personIdea, numberIdea], i) => {
