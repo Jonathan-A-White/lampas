@@ -94,7 +94,7 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
 - **[Blue Letter Bible](https://www.blueletterbible.org)** and **[STEPBible](https://www.stepbible.org)**. Links from a word to its Strong's
   entry, if you switch Strong's on. Links only: nothing is copied. Their own terms apply.
 - **[Web Speech API](https://developer.mozilla.org/docs/Web/API/Web_Speech_API)**. Your phone's own voices speak the Greek and English and its
-  recogniser hears you; Lampas ships no voice. The API is a web standard; the voices are your phone's and its maker's.
+  recogniser hears you; Lampas ships no voice. With Read lessons to me on in Settings, a lesson is read aloud by it as soon as it opens. The API is a web standard; the voices are your phone's and its maker's.
 
 ## Ideas and tools we borrowed
 

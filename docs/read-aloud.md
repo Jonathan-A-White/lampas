@@ -130,3 +130,13 @@ Resume and Stop; the words stay on screen. The read starts from the tap itself (
 shows above its foot (Grammar 5, new word 5, idea 6). `proseOf(parts)` (src/speech/proseOf.ts) joins a block's parts with a stop between them. A phone with no Greek voice reads the English,
 leaves the Greek out and shows the same one-line help as the word speakers (`noVoiceHelp`); a phone that cannot speak at all says so in a line, never a silent button.
 Tests: features/read-aloud-anywhere.feature.
+
+## Read lessons to me (mw-5r3p30.366)
+
+For a reader who reads English slowly (the Governor's son, eight): Settings > Read aloud > **Read lessons to me** (registry key `readLessons`, On | Off, **Off** by default,
+`src/settings/definitions/readLessons.ts`). With it On the Grammar sheet, the idea sheet and a new word's sheet start the shared Read aloud by themselves when they open
+(`LessonReadAloud` in `src/speech/ReadAloud.tsx`: `ReadAloud` with `auto`; the idea sheet waits until its passage is loaded, so the Worked example it reads is the one on screen;
+a new word's sheet reads each word as it comes up). The words are never hidden; the speaker still stops the voice; closing the sheet ends its own reading. Chrome and Safari
+may refuse speech that no tap asked for: the utterance then ends in the error 'not-allowed' (`onSpeechRefused` in `src/speech/greek.ts`), and the speaker becomes a gently
+pulsing 'Tap to listen' (still a button; `motion-safe:animate-pulse`) instead of silence. A refusal that never fires an error (a browser that just stays quiet) is not detected.
+Tests: features/read-lessons.feature.

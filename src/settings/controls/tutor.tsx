@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { getReadTutor, getScriptDepth } from '../../data/repositories';
 import { ScriptText } from '../../script/ScriptText';
 import { DEPTHS, SCRIPTS, type Depth, type TutorScript } from '../../script/scripts';
-import { askBySetting, tipsSetting } from '../definitions';
+import { askBySetting, readLessonsSetting, tipsSetting } from '../definitions';
 import { writeSetting } from '../registry';
 import { useSetting } from '../store';
 import { ChipRow, ON_COLOUR, OnOff, SettingRow } from './SettingRow';
@@ -62,4 +62,9 @@ export const AskByControl: Control = ({ row }) => {
       ) : null}
     </SettingRow>
   );
+};
+
+export const ReadLessonsControl: Control = ({ row }) => {
+  const readLessons = useSetting(readLessonsSetting);
+  return <SettingRow row={row}>{readLessons ? <OnOff name={row.label} current={readLessons} settingKey="readLessons" /> : null}</SettingRow>;
 };

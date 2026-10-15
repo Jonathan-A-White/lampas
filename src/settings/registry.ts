@@ -67,7 +67,7 @@ import { READ_SPANS, type ReadSpan } from '../speech/readSpan';
 import { PRONUNCIATIONS } from '../speech/pronunciation';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS, type Depth } from '../script/scripts';
 import type { Allowed, Dependency, SectionId, SettingDef, SettingValue } from './define';
-import { askBySetting, audioBibleSetting, immersiveHintSetting, immersiveSetting, themeSetting, tipsSetting, weaveSetting } from './definitions';
+import { askBySetting, audioBibleSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, themeSetting, tipsSetting, weaveSetting } from './definitions';
 import type { Immersive } from './definitions/immersive';
 import type { Tips } from './definitions/tips';
 import type { Weave } from './definitions/weave';
@@ -349,6 +349,7 @@ export const SETTINGS: readonly SettingEntry[] = [
       help: `How far the app reads aloud before it stops, from the verse it starts at (the play button on one verse always reads just that verse): ${READ_SPANS.map((s) => `${s.label} stops ${s.stops}`).join('; ')}.`,
     },
   ),
+  fromDefinition(readLessonsSetting),
   choice(
     'readTutor',
     "Read the tutor's responses aloud",

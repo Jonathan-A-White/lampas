@@ -28,6 +28,7 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   audioBible: 'screen',
   readSpan: 'speech',
   readTutor: 'speech',
+  readLessons: 'speech',
   askBy: 'speech',
   englishVoice: 'speech',
   greekVoice: 'speech',
@@ -73,6 +74,7 @@ const everySetting = Object.fromEntries(SETTINGS.map((s) => [s.key, `settings.${
 /** the tips grind is told by key which settings he has changed and which never, not their values */
 const byName = Object.fromEntries(bearingKeys.map((key) => [key, 'summary.settings_changed']));
 
+const READ_LESSONS = 'Whether a lesson reads itself aloud when it opens is a reading control; it changes nothing the answer says.';
 const SPOKEN_LATER = 'It changes how loud or fast the answer is heard, never what it says.';
 const NO_QUIZ = 'The quiz is the Bible talk\'s Quiz me mode alone; this grind never quizzes him.';
 
@@ -100,6 +102,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
       newWordsADay: 'How many new words are offered a day is the picker\'s pace; the answer is about this verse, and learner says what is new today.',
       grammarMove: 'Whether the app moves the grammar level for him is the Bible talk\'s offer to make; learner_grammar.picker_level is the level it left.',
       readSpan: 'How far Play reads aloud is a reading control; it changes nothing the answer says.',
+      readLessons: READ_LESSONS,
       englishVoice: SPOKEN_LATER,
       greekVoice: SPOKEN_LATER,
       englishRate: SPOKEN_LATER,
@@ -118,6 +121,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
     progress: { words: 'learner', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory' },
     notSent: {
       readSpan: 'How far Play reads aloud has no part in the verdict on one verse he read.',
+      readLessons: READ_LESSONS,
       readTutor: 'The verdict is written to be safe to speak whether or not it is read aloud to him (no words the voice mispronounces).',
       askBy: 'How he asks the tutor has no part in the verdict on a reading.',
       englishVoice: SPOKEN_LATER,
