@@ -19,7 +19,6 @@ import {
   getGrammarMove,
   getPickerGrammar,
   listLevels,
-  seedWordsIfFirstOpen,
   setLevel,
   setPickerGrammar,
   setGrammarMove,
@@ -30,6 +29,7 @@ import { clearBus, subscribe } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { FIXTURE_CHAPTER, FIXTURE_FREQUENCY } from '../../tests/fixtures/frontier';
+import { seedHisWords } from '../../tests/support/his-words';
 
 afterAll(() => {
   cleanup();
@@ -73,7 +73,7 @@ const offered = () => picked.map((c) => c.lemma);
 let moves: unknown[] = [];
 
 async function dueGrammar(rightBefore: boolean): Promise<void> {
-  await seedWordsIfFirstOpen();
+  await seedHisWords();
   await seedScheduleIfFirstOpen();
   await db.reviews.clear();
   // a strong idea: asked as a flashcard (Show, then I knew it / Not yet)

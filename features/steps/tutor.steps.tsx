@@ -20,6 +20,7 @@ import { expectKeepsItShort, expectLearnerField, expectLearnerSummary, expectTea
 import { exchangeMarkdown, stubClipboard } from '../../tests/support/exchange';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { SOLID_WORDS_SENT } from '../../src/services/solidWords';
+import { seedHisWords } from '../../tests/support/his-words';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse28 = chapter.verses.find((v) => v.n === 28);
@@ -55,6 +56,7 @@ async function open(configure: (f: FakePostern) => void = (f) => void (f.autoRep
   );
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.answers.clear()]);
+  await seedHisWords();
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
@@ -303,6 +305,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     When('he reopens Lampas and selects verse 28', async () => {
       cleanup();
       fake.calls.length = 0;
+      await seedHisWords();
       render(<App />);
       await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
       await selectVerse28();

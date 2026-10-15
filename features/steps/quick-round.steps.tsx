@@ -21,6 +21,7 @@ import { settle, SETTLE_MS } from '../../src/ui/settle';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { storedId } from '../../src/data/grammar/soundScope';
+import { seedHisWords } from '../../tests/support/his-words';
 
 let synth: FakeSynth;
 
@@ -52,6 +53,7 @@ async function freshStore(goal: string, except: string[], noLetters = false): Pr
   synth = stubSpeech([{ lang: 'el-GR', name: 'Greek (Greece)' }]);
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.reviews.clear(), db.grammarLevels.clear()]);
+  await seedHisWords();
   await db.meta.put({ key: 'grammarLevelsSeeded', value: '1' });
   if (goal) await setGoal(goal.replace(/^Read /, ''));
   const missing = new Set(except.map(idOf));
@@ -68,6 +70,7 @@ async function openAt(hash: string): Promise<void> {
   clearBus();
   forgetTrail();
   window.history.replaceState(null, '', `/${hash}`);
+  await seedHisWords();
   render(<App newRandom={() => mulberry32(7)} />);
 }
 

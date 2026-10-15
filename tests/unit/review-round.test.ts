@@ -2,7 +2,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { setGoal } from '../../src/data/repositories/settings';
-import { seedWordsIfFirstOpen } from '../../src/data/repositories/words';
+import { seedHisWords } from '../support/his-words';
 import { DAY } from '../../src/data/schedule';
 import { mulberry32 } from '../../src/data/quiz';
 import { planFrom } from '../../src/data/grammar/drillPlan';
@@ -19,7 +19,7 @@ beforeEach(async () => {
   localStorage.clear();
   await db.open();
   await Promise.all([db.reviews.clear(), db.words.clear(), db.meta.clear(), db.settings.clear(), db.grammarLevels.clear()]);
-  await seedWordsIfFirstOpen();
+  await seedHisWords();
   await db.reviews.clear();
 });
 afterAll(() => db.close());

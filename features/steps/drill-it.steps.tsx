@@ -22,6 +22,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GRAMMAR_TERM_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
+import { seedHisWords } from '../../tests/support/his-words';
 
 afterAll(() => {
   cleanup();
@@ -91,6 +92,7 @@ async function open(goal: string, levels: Record<string, Start>): Promise<void> 
     if (start !== 'none') await db.grammarLevels.put({ id: idOfTitle(title), level: start, since: now, how: 'placement' });
   }
   passage = [await loadChapter('1jn', 1)];
+  await seedHisWords();
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));

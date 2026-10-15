@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect } from 'react';
-import { seedLevelsIfFirstOpen, seedScheduleIfFirstOpen, seedWordsIfFirstOpen } from './data/repositories';
+import { seedLevelsIfFirstOpen, seedScheduleIfFirstOpen } from './data/repositories';
 import { About } from './About';
 import { Essay } from './Essay';
 import { Preface } from './Preface';
@@ -52,14 +52,14 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
     const stop = startUsageLog();
     return () => void stop();
   }, []);
-  // The first open fills the word list from the example list; every later open finds the flag and does nothing.
-  // Then, once, every solid or learning word goes on the back-off schedule (also the first open after the v10 upgrade),
-  // and, once, the grammar terms he marked I know this make their ideas solid (the first open after the v11 upgrade).
+  // A new install starts empty (mw-5r3p30.385): nothing is put in the word list, on the schedule or on the grammar ladder at the first open.
+  // These two are the upgrade paths of a phone that already has data: a store from before v10 that has words but no schedule gets them scheduled, and
+  // a store from before v11 has the terms he marked I know this make their ideas solid. Each does nothing without his own rows to work from, and
+  // neither deletes or rewrites a row.
   useEffect(() => {
-    void seedWordsIfFirstOpen()
-      .then(() => seedScheduleIfFirstOpen())
+    void seedScheduleIfFirstOpen()
       .then(() => seedLevelsIfFirstOpen())
-      .catch((error: unknown) => console.error('seeding the words and their schedule failed', error));
+      .catch((error: unknown) => console.error('scheduling the words and the grammar terms he kept failed', error));
   }, []);
   return (
     <div data-shell className="flex h-full min-w-0 flex-col overflow-clip">

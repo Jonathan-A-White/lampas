@@ -11,6 +11,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { seedHisWords } from '../../tests/support/his-words';
 
 const user = userEvent.setup();
 
@@ -71,6 +72,7 @@ async function openWith(agent: string, ons: string[], ticked: string[] = []): Pr
   for (const id of ons) await db.settings.put({ key: `resource.${id}`, value: 'on' });
   if (ticked.length > 0) await db.settings.put({ key: 'resourceOption.logos', value: JSON.stringify(['bdag', ...ticked]) });
   stubPhone(agent);
+  await seedHisWords();
   render(<App />);
   await waitForReader();
   await waitFor(async () => expect(await db.words.count()).toBe(63));

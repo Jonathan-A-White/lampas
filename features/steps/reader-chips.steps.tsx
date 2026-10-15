@@ -19,6 +19,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech } from '../../tests/support/fake-speech';
 import { forgetGoalNeeds } from '../../src/useGoalProgress';
+import { seedHisWords } from '../../tests/support/his-words';
 
 const chapter8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const nfc = (s: string): string => s.normalize('NFC');
@@ -51,6 +52,7 @@ async function freshStore(): Promise<void> {
 }
 
 async function openReader(): Promise<void> {
+  await seedHisWords();
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }

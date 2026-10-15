@@ -17,6 +17,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { expectLatest } from '../../tests/support/published';
+import { seedHisWords } from '../../tests/support/his-words';
 
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
@@ -64,6 +65,7 @@ async function openTalkApp(changes: { key: string; value: unknown }[]): Promise<
   );
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear()]);
+  await seedHisWords();
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));

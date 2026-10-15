@@ -10,7 +10,8 @@ import { db } from '../../src/data/db';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { mulberry32 } from '../../src/data/quiz';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
-import { seedWordsIfFirstOpen, setWordState } from '../../src/data/repositories/words';
+import { setWordState } from '../../src/data/repositories/words';
+import { seedHisWords } from '../../tests/support/his-words';
 import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
@@ -43,7 +44,7 @@ async function freshStore(): Promise<void> {
   stubChapterFetch();
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.results.clear(), db.reviews.clear(), db.settings.clear(), db.grammarLevels.clear()]);
-  await seedWordsIfFirstOpen();
+  await seedHisWords();
   await seedScheduleIfFirstOpen();
   await db.reviews.clear();
 }

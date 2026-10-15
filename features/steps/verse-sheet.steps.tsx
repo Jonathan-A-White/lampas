@@ -14,6 +14,7 @@ import { keepVerseReading, setReaderView, setWeave } from '../../src/data/reposi
 import { clearBus } from '../../src/events/bus';
 import { readingText } from '../../src/services/reading';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { seedHisWords } from '../../tests/support/his-words';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse22 = chapter.verses.find((v) => v.n === 22);
@@ -40,6 +41,7 @@ async function open(view: 'english' | 'greek', weave: WeaveValue = 'off'): Promi
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.readings.clear()]);
   await setReaderView(view);
   await setWeave(weave);
+  await seedHisWords();
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));

@@ -16,6 +16,7 @@ import { stopSpeaking } from '../../src/speech/greek';
 import { stubSpeech, GREEK_VOICE, ENGLISH_VOICE, type FakeSynth } from '../../tests/support/fake-speech';
 import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
 import { hearing } from '../../tests/support/spoken-word';
+import { seedHisWords } from '../../tests/support/his-words';
 
 const user = userEvent.setup();
 const rom8 = readFileSync('public/data/rom/8.json', 'utf8');
@@ -53,6 +54,7 @@ async function open(round?: { question: Question; picked: string | null }): Prom
     );
   }
   window.location.hash = '#/test';
+  await seedHisWords();
   render(<App newRandom={() => mulberry32(7)} />);
   await screen.findByRole('heading', { name: 'Quick test' });
   if (!round) await screen.findByTestId('prompt');

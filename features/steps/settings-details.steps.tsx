@@ -9,6 +9,7 @@ import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { seedHisWords } from '../../tests/support/his-words';
 
 const user = userEvent.setup();
 
@@ -33,6 +34,7 @@ async function openSettings(seed: Record<string, string> = {}): Promise<void> {
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
   for (const [key, value] of Object.entries(seed)) await db.settings.put({ key, value });
   Object.defineProperty(window.navigator, 'userAgent', { value: ANDROID, configurable: true });
+  await seedHisWords();
   render(<App />);
   await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));

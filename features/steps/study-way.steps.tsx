@@ -15,6 +15,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, QUIZ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { seedHisWords } from '../../tests/support/his-words';
 
 afterAll(() => {
   cleanup();
@@ -62,6 +63,7 @@ async function open(line: string): Promise<void> {
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.answers.clear()]);
   await setReaderView('english');
   await setWeave('off');
+  await seedHisWords();
   render(<App />);
   await waitForReader();
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
@@ -133,6 +135,7 @@ describeFeature(feature, ({ Scenario }) => {
       cleanup();
       clearBus();
       window.history.replaceState(null, '', '/');
+      await seedHisWords();
       render(<App />);
       await waitForReader();
     });

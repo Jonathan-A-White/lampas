@@ -9,7 +9,7 @@ import { drawDrill, type DrillQuestion } from './data/drill';
 import { clearDrill, readDrill, saveDrill, type SavedDrill } from './data/drillKeep';
 import type { Random } from './data/quiz';
 import { getOpenChapter } from './data/readerChapter';
-import { listWords, recordDrillStep, seedWordsIfFirstOpen } from './data/repositories';
+import { listWords, recordDrillStep } from './data/repositories';
 import { useAiAllowed } from './gate/licenceContext';
 import { askInReader, talkInReader } from './nav/readerRequest';
 import { navigate } from './nav/route';
@@ -57,8 +57,6 @@ const keep = (s: Session, away: number | null = null): void =>
   saveDrill({ questions: s.questions, question: s.question, step: s.step, picked: s.picked, missed: s.missed, asked: s.asked, right: s.right, away });
 
 async function drawRound(random: Random): Promise<DrillQuestion[]> {
-  // A first open seeds the words; wait for it so a drill opened straight away has words to ask.
-  await seedWordsIfFirstOpen();
   const open = getOpenChapter();
   const [words, chapter] = await Promise.all([listWords(), loadChapter(open.book, open.chapter)]);
   return drawDrill(chapter, words, random);

@@ -22,6 +22,7 @@ import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { expectLatest } from '../../tests/support/published';
+import { seedHisWords } from '../../tests/support/his-words';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse28 = chapter.verses.find((v) => v.n === 28);
@@ -67,6 +68,7 @@ async function open({ aloud, hash = '', reply }: { aloud: boolean; hash?: string
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.readings.clear(), db.answers.clear()]);
   if (!aloud) await setReadTutor('off');
+  await seedHisWords();
   render(<App />);
   if (hash === '') {
     await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
@@ -351,6 +353,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he reopens Lampas on its Settings screen', async () => {
       cleanup();
       clearBus();
+      await seedHisWords();
       render(<App />);
     });
     Then('{string} is still Off', async () => {

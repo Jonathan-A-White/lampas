@@ -15,6 +15,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { seedHisWords } from '../../tests/support/his-words';
 
 afterAll(() => {
   cleanup();
@@ -42,6 +43,7 @@ async function freshStore(): Promise<void> {
 
 async function openReader(): Promise<void> {
   await freshStore();
+  await seedHisWords();
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBe(63));
@@ -60,6 +62,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Settings offers New words a day with Off, 3, 5, 10', ({ Given, Then, When }) => {
     Given('Lampas is opened on Settings with nothing chosen for pace', async () => {
       await freshStore();
+      await seedHisWords();
       render(<App />);
       await openSettings();
     });

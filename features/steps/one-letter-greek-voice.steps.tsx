@@ -22,6 +22,7 @@ import { getReading, startReading, stopReading } from '../../src/speech/readAlou
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
+import { seedHisWords } from '../../tests/support/his-words';
 
 const user = userEvent.setup();
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -88,6 +89,7 @@ async function open(goal?: string): Promise<void> {
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.grammarLevels.clear(), db.reviews.clear()]);
   if (goal !== undefined) await db.settings.put({ key: 'goal', value: goal });
+  await seedHisWords();
   render(<App />);
   await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));

@@ -18,7 +18,7 @@ import { mulberry32 } from '../../src/data/quiz';
 import { teachIdea } from '../../src/data/repositories/grammarLevels';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { setGoal } from '../../src/data/repositories/settings';
-import { seedWordsIfFirstOpen } from '../../src/data/repositories/words';
+import { seedHisWords } from '../../tests/support/his-words';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -346,7 +346,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario("A total beginner's placement gives no idea a level, with his word list already on the schedule", ({ Given, And, When, Then }) => {
     Given('his goal is {string} and he knows nothing yet', given);
     And('his word list is already on the schedule', async () => {
-      await seedWordsIfFirstOpen();
+      await seedHisWords();
       await seedScheduleIfFirstOpen();
       expect((await db.reviews.toArray()).some((r) => r.kind === 'word')).toBe(true);
     });

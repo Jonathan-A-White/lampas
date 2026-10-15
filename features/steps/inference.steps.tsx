@@ -18,7 +18,7 @@ import { mulberry32 } from '../../src/data/quiz';
 import { listLevels, setLevel } from '../../src/data/repositories/grammarLevels';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { setGoal } from '../../src/data/repositories/settings';
-import { seedWordsIfFirstOpen } from '../../src/data/repositories/words';
+import { seedHisWords } from '../../tests/support/his-words';
 import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
@@ -155,7 +155,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the placement left {string} not yet', async (_, id: string) => setLevel(id, 'notYet', 'placement'));
     And('{int} of his words are due', async (_, n: number) => {
       await db.meta.bulkDelete(['wordsSeeded', 'reviewsSeeded']);
-      await seedWordsIfFirstOpen();
+      await seedHisWords();
       await seedScheduleIfFirstOpen();
       await db.reviews.clear();
       const lemmas = ['λέγω', 'εἰμί', 'ἀγαπάω'].slice(0, n);

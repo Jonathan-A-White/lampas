@@ -16,6 +16,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 import { expectLatest } from '../../tests/support/published';
+import { seedHisWords } from '../../tests/support/his-words';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse1: Verse = chapter.verses[0];
@@ -45,6 +46,7 @@ async function openWith(voices: FakeVoice[]): Promise<void> {
   // the chapter and place he last had open are kept in localStorage: a scenario that opens 1 John must not leave the next at it
   window.localStorage.clear();
   window.location.hash = '';
+  await seedHisWords();
   render(<App />);
   await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));

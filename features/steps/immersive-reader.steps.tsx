@@ -18,6 +18,7 @@ import { getReading, stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { FakeRecognizer, stubRecognizer } from '../../tests/support/fake-recognizer';
 import { ENGLISH_VOICE, stubSpeech } from '../../tests/support/fake-speech';
+import { seedHisWords } from '../../tests/support/his-words';
 
 afterAll(() => {
   cleanup();
@@ -110,6 +111,7 @@ async function open(options: { immersive: 'on' | 'off'; recogniser?: boolean; sp
     db.settings.get = ((key: string) =>
       realGet.call(db.settings, key).then((row) => new Dexie.Promise((resolve) => setTimeout(() => resolve(row), 300)))) as unknown as typeof db.settings.get;
   }
+  await seedHisWords();
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
@@ -393,6 +395,7 @@ describeFeature(feature, ({ Scenario }) => {
       cleanup();
       clearBus();
       expect(window.location.hash).toBe('#/settings');
+      await seedHisWords();
       render(<App />);
     });
     Then('Immersive reader shows On in Settings', async () => {

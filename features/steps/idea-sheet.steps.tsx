@@ -21,6 +21,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { GRAMMAR_TERM_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
+import { seedHisWords } from '../../tests/support/his-words';
 
 let unregisterTestish: (() => void) | undefined;
 
@@ -80,6 +81,7 @@ async function open(goal: string | undefined, chosen?: string, greekVoice = fals
     if (chosen === TESTISH.id) unregisterTestish = registerPronunciation(TESTISH);
     await db.settings.put({ key: 'greekPronunciation', value: chosen });
   }
+  await seedHisWords();
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));

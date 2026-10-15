@@ -8,7 +8,7 @@ import { afterAll, expect, it, vi } from 'vitest';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
-import { seedWordsIfFirstOpen } from '../../src/data/repositories/words';
+import { seedHisWords } from '../support/his-words';
 import { clearBus } from '../../src/events/bus';
 import { usageWritesSettled } from '../../src/tips/usageLog';
 import { stubChapterFetch } from '../support/chapter-fetch';
@@ -26,7 +26,7 @@ afterAll(async () => {
 it('finds the Due chip on the Reader without reading the style of the whole page', async () => {
   stubChapterFetch();
   await db.open();
-  await seedWordsIfFirstOpen();
+  await seedHisWords();
   await seedScheduleIfFirstOpen();
   await db.reviews.clear();
   const now = Date.now();

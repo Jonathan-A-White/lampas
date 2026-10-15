@@ -18,6 +18,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { GREEK_READING_ANSWER, INCOMPLETE_ANSWER, makeFakePostern, PARTIAL_ANSWER, PARTIAL_FURTHER_ANSWER, POSTERN_ORIGIN, READING_ANSWER, WELL_READ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { seedHisWords } from '../../tests/support/his-words';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse28 = chapter.verses.find((v) => v.n === 28);
@@ -100,6 +101,7 @@ async function open({ reply = 'reading', view = 'english', denied = false, down 
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.readings.clear()]);
   await setReaderView(view);
+  await seedHisWords();
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
@@ -523,6 +525,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he reopens Lampas and opens the reading check of verse 28', async () => {
       cleanup();
       clearBus();
+      await seedHisWords();
       render(<App />);
       await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
       await selectVerse28();

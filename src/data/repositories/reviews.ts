@@ -150,8 +150,8 @@ export async function writeScheduled(
 }
 
 /**
- * Once, after the words are seeded (a first open) or the store is upgraded to v10: puts every solid or learning
- * word on the schedule. A solid word starts at the 30-day step, due on one of the next 30 days in turn (he is not
+ * Once, for a store that was seeded the old way (it holds the 'wordsSeeded' flag) and has no schedule yet (the upgrade to v10): puts every solid or
+ * learning word on the schedule. A new install is never seeded (mw-5r3p30.385), has no flag, and gets nothing. A solid word starts at the 30-day step, due on one of the next 30 days in turn (he is not
  * flooded); a learning word starts at step 0, due now. Returns whether it ran. A dropped word is left off.
  */
 export async function seedScheduleIfFirstOpen(now = Date.now()): Promise<boolean> {
