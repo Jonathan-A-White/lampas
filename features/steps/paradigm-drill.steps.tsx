@@ -175,6 +175,8 @@ describeFeature(feature, ({ Background, Scenario }) => {
         if (last) break;
         await waitFor(() => expect(screen.getByTestId('grammar-prompt').textContent).not.toBe(asked[asked.length - 1].prompt));
       }
+      // the end card is the round's last write: the file must not close the store under it
+      await screen.findByTestId('score');
     });
     Then('the round asked at most {int} cells', (_, most: number) => {
       expect(asked.length).toBeGreaterThan(0);
