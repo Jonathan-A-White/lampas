@@ -38,6 +38,47 @@ describe('verse-ask for a reader who said no to the Greek', () => {
   });
 });
 
+// mw-5r3p30.376: after mw-5r3p30.344 added 'A word he asks about by name is the one he wants explained' the smoke failed again,
+// because 'Teach a new word on the spot' read the English word 'love' as a word to teach. The said-no rule is stated once in each
+// grind that teaches words, and every rule that teaches a word points to it and says it is about a GREEK word.
+describe('teaching a word yields to the reader who said no to the Greek', () => {
+  const verseAsk = read('grinds/verse-ask.instructions.md');
+  const talk = read('grinds/bible-talk.instructions.md');
+  const bullet = (text: string): string => {
+    const at = text.indexOf('- Teach a new word on the spot. ');
+    return text.slice(at, text.indexOf('\n- ', at + 1));
+  };
+  const byName = (text: string): string => {
+    const at = text.indexOf('word he asks about by name');
+    return text.slice(at, text.indexOf('\n', at));
+  };
+
+  it('verse-ask says once that an English word he names gets an English answer with no `words`', () => {
+    const section = verseAsk.slice(verseAsk.indexOf('## English for a reader not learning the Greek'), verseAsk.indexOf('## When he is not ready for the question'));
+    expect(section).toMatch(/an English word he names[^.]*English[^.]*no `words`/i);
+  });
+
+  it('verse-ask: Teach a new word and the by-name line are about a Greek word and point to it', () => {
+    expect(bullet(verseAsk)).toMatch(/Greek word/);
+    expect(bullet(verseAsk)).toContain('English for a reader not learning the Greek');
+    expect(byName(verseAsk)).toMatch(/Greek word/);
+    expect(byName(verseAsk)).toContain('English for a reader not learning the Greek');
+  });
+
+  it('bible-talk says an English word he names gets an English answer with no `words`', () => {
+    const section = talk.slice(talk.indexOf('## Offering the Greek'), talk.indexOf('## Teaching at his level'));
+    expect(section).toMatch(/an English word he names[^.]*English[^.]*no `words`/i);
+    expect(section).toContain(NO);
+  });
+
+  it('bible-talk: Teach a new word and the by-name line are about a Greek word and point to it', () => {
+    expect(bullet(talk)).toMatch(/Greek word/);
+    expect(bullet(talk)).toContain('Offering the Greek');
+    expect(byName(talk)).toMatch(/Greek word/);
+    expect(byName(talk)).toContain('Offering the Greek');
+  });
+});
+
 describe('every grind sent `memory` has a scenario of the reader who said no', () => {
   it('bible-talk: no Greek offer, no words', () => {
     const e = example('bible-talk', 'greek-offer-after-no');
