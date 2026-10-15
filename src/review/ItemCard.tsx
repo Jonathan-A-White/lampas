@@ -1,4 +1,4 @@
-// src/review/ItemCard.tsx — draws one Review item: a renderer per kind, so the course epic adds its own kinds here.
+// src/review/ItemCard.tsx — draws one Review item: a renderer per kind, so a new kind adds its own here.
 import type { ReactNode } from 'react';
 import { Flashcard } from '../Flashcard';
 import { GrammarCard } from '../GrammarCard';
@@ -28,6 +28,7 @@ const RENDERERS: { [K in ReviewItem['kind']]: (props: ItemCardProps & { item: Ex
   grammar: ({ item, index, picked, onPick, onSeeTable }) => (
     <GrammarCard key={index} question={item.question} mode={item.mode} picked={picked} onPick={onPick} onSeeTable={onSeeTable} />
   ),
+  paradigm: ({ item, index, picked, onPick }) => <GrammarCard key={index} question={item.question} mode={item.mode} picked={picked} onPick={onPick} />,
   'drill-plan': ({ item, index, picked, onPick }) => <DrillPlanCard key={index} item={item} picked={picked} onPick={onPick} />,
   sound: ({ item, index, picked, onPick }) =>
     item.question ? (

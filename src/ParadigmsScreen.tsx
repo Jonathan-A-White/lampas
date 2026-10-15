@@ -22,7 +22,8 @@ import {
 } from './data/paradigms';
 import { hideAll, revealedOf, toggleRevealed } from './data/paradigms/revealed';
 import { getOpenChapter } from './data/readerChapter';
-import { listLevels, markParadigmOpened } from './data/repositories';
+import { PARADIGM_KIND } from './data/paradigms/cells';
+import { ensureScheduled, listLevels, markParadigmOpened, reviewsOf } from './data/repositories';
 import { useAiAllowed } from './gate/licenceContext';
 import { askAboutParadigm } from './nav/readerRequest';
 import { navigate, openParadigm, paradigmHash, paradigmOf, replaceHash, useAddress } from './nav/route';
@@ -234,6 +235,8 @@ function ParadigmTable({ table, mode, levels }: { table: Paradigm; mode: 'study'
   const [revealed, setRevealed] = useState<ReadonlySet<string>>(() => revealedOf(table.id));
   const switchTo = mode === 'study' ? 'review' : 'study';
   const ai = useAiAllowed();
+  // whether the table is on the back-off schedule: 'Drill this table' puts it there (mw-svw421.6), and it reads 'In Review' once it is
+  const inReview = useLiveQuery(async () => (await reviewsOf([{ kind: PARADIGM_KIND, id: table.id }])).length > 0, [table.id]);
   // opening a table is what lets Review ask the endings in it (mw-svw421.5)
   useEffect(() => {
     void markParadigmOpened(table.id).catch((error: unknown) => console.error('could not keep that the table was opened', error));
@@ -273,11 +276,21 @@ function ParadigmTable({ table, mode, levels }: { table: Paradigm; mode: 'study'
         {levels ? (
           <Table table={table} levels={levels} mode={mode} revealed={revealed} onToggle={(place) => setRevealed(toggleRevealed(table.id, place))} />
         ) : null}
-        {ai ? (
-          <button type="button" onClick={ask} className={`${BUTTON} mt-4 text-accent`}>
-            Ask the tutor
+        <div className="mt-4 flex gap-2">
+          <button
+            type="button"
+            disabled={inReview !== false}
+            onClick={() => void ensureScheduled(PARADIGM_KIND, [table.id])}
+            className={`${BUTTON} text-accent disabled:text-muted`}
+          >
+            {inReview ? 'In Review' : 'Drill this table'}
           </button>
-        ) : null}
+          {ai ? (
+            <button type="button" onClick={ask} className={`${BUTTON} text-accent`}>
+              Ask the tutor
+            </button>
+          ) : null}
+        </div>
       </main>
     </>
   );

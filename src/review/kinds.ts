@@ -1,6 +1,6 @@
 // src/review/kinds.ts — what Review asks, as items of a kind. A kind knows how to turn its due reviews into questions,
 // how to count itself in words ('3 words'), and where an answer goes. Grammar ideas (mw-hqd5bz.6) and words are the kinds today, in the
-// order Review counts and asks them; the course epic adds paradigms as one more entry of KINDS, each with a renderer in src/review/ItemCard.tsx.
+// order Review counts and asks them; paradigm tables (mw-svw421.6) are the third; the course epic adds the rest as more entries of KINDS, each with a renderer in src/review/ItemCard.tsx.
 import { BOOK_INDEX } from '../data/bookIndex';
 import { loadChapter, type Chapter } from '../data/chapter';
 import { parseGoal } from '../data/goal';
@@ -9,6 +9,8 @@ import { facetQuestions, PLAN_KIND, parseRowId, type PlanItem } from '../data/gr
 import { goalChapterNumbers } from '../data/grammar/needs';
 import { ideaOf, IDEA_KIND, type GrammarIdea } from '../data/grammar/ladder';
 import { buildIdeaQuestion, type GrammarQuestion } from '../data/grammar/questions';
+import { paradigmById } from '../data/paradigms';
+import { PARADIGM_KIND, drawCellQuestions, spokenForm } from '../data/paradigms/cells';
 import { parseReviewId } from '../data/readingDrill';
 import { getOpenChapter } from '../data/readerChapter';
 import { modeFor, type QuestionMode } from '../data/schedule';
@@ -19,6 +21,7 @@ import {
   getDrillPlan,
   answerPlanItem,
   getGoal,
+  listLevels,
   listOpenedParadigms,
   listWords,
   pushGrammarAnswer,
@@ -86,8 +89,21 @@ export interface PlanDrillItem {
   passage: Chapter[];
 }
 
+/**
+ * One cell of a paradigm table he is drilling (mw-svw421.6, src/data/paradigms/cells.ts): the cell's name as the prompt among four forms of the table. The review id is the
+ * table's id, so a table asked three cells in a round appears as three items with the same id; each is recorded on its own.
+ */
+export interface ParadigmItem {
+  kind: 'paradigm';
+  /** the table's id, the same as the review's id */
+  id: string;
+  question: GrammarQuestion;
+  /** multiple choice while the table is weak, a flashcard once it is strong (data/schedule.ts modeFor, from the table's step) */
+  mode: QuestionMode;
+}
+
 /** One thing Review asks; a new kind of item is one more member here. */
-export type ReviewItem = GrammarItem | PlanDrillItem | SoundItem | WordItem;
+export type ReviewItem = GrammarItem | ParadigmItem | PlanDrillItem | SoundItem | WordItem;
 
 export interface ReviewKind {
   kind: ReviewItem['kind'];
@@ -195,6 +211,33 @@ export const GRAMMAR: ReviewKind = {
   },
 };
 
+/** The tables he drills that are due (mw-svw421.6): up to CELLS_A_ROUND available cells of each, a table with none available asks nothing and stays due. */
+export const PARADIGM: ReviewKind = {
+  kind: PARADIGM_KIND,
+  count: (n) => `${n} ${n === 1 ? 'table' : 'tables'}`,
+  async draw(due, random) {
+    if (due.length === 0) return [];
+    const own = grammarRandom(random);
+    const levels = await listLevels();
+    return due.flatMap((r): ParadigmItem[] => {
+      const table = paradigmById(r.id);
+      return table ? drawCellQuestions(table, levels, own).map((question): ParadigmItem => ({ kind: 'paradigm', id: table.id, question, mode: modeFor(r.step) })) : [];
+    });
+  },
+  isRight: (item, picked) => item.kind === 'paradigm' && (item.mode === 'flashcard' ? picked === KNEW_IT : picked === item.question.right),
+  hear: (item) => {
+    // said once answered: before, it would give the answer away
+    const form = item.kind === 'paradigm' ? spokenForm(item.question.right) : undefined;
+    if (form) speakWord(form, 'greek');
+  },
+  record: async (item, right) => {
+    if (item.kind !== 'paradigm') return;
+    await recordReview(PARADIGM_KIND, item.id, right);
+    // a cell read right shows its form's letters, sounds and marks (mw-hqd5bz.17)
+    await noteAnswer(item.question, right);
+  },
+};
+
 /** The steps of drill plans that are due (mw-i7xe0n.4): a step of a plan that was replaced or closed, or that has no questions left to ask, is left out. Prove it is asked only when every short drill is done. */
 export const DRILL_PLAN: ReviewKind = {
   kind: PLAN_KIND,
@@ -251,7 +294,7 @@ export const SOUNDS: ReviewKind = {
 };
 
 /** Every kind Review knows, in the order its counts are written and its due items asked. */
-export const KINDS: readonly ReviewKind[] = [DRILL_PLAN, GRAMMAR, SOUNDS, WORDS];
+export const KINDS: readonly ReviewKind[] = [DRILL_PLAN, GRAMMAR, PARADIGM, SOUNDS, WORDS];
 
 export const kindOf = (kind: ReviewItem['kind']): ReviewKind => KINDS.find((k) => k.kind === kind) ?? WORDS;
 

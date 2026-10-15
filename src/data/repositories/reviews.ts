@@ -1,5 +1,5 @@
 // src/data/repositories/reviews.ts — the back-off schedule's rows (src/data/schedule.ts holds the rule). An item is
-// {kind, id}: kind 'word' with the NFC headword as id today; the course epic adds its own kinds.
+// {kind, id}: kind 'word' with the NFC headword as id, 'grammar' with a ladder idea's id, 'paradigm' with a table's id (mw-svw421.6), 'sound' and 'drill-plan'.
 import { db, type Review } from '../db';
 import { publish } from '../../events/bus';
 import { IDEA_KIND } from '../grammar/ladder';

@@ -87,6 +87,19 @@ The address says the table and the mode: `#/paradigms` (the list), `#/paradigms?
 
 One button switches (it names the mode it goes to).
 
+## Drill this table (mw-svw421.6)
+
+At the foot of a table, beside Ask the tutor: `Drill this table` puts the table on the back-off schedule as the review kind `paradigm`
+(row id the table's id, step 0, due now; `ensureScheduled`), and the button then reads `In Review` (it does nothing more). Review counts
+it ('Due today: 1 idea, 1 table, 2 words') and asks it as `review/kinds.ts` PARADIGM: for each due table up to `CELLS_A_ROUND` (3,
+PROVISIONAL) of its available cells (`data/paradigms/cells.ts` `drawCellQuestions`, seeded, so one seed gives the same cells), each a
+question of kind `cell` drawn by `GrammarCard`: the cell's name and the table ('Genitive singular masculine of the article') as the
+prompt, four forms of the same table as the options (the right one and three whose text differs: other available forms first, locked
+ones borrowed only when fewer than four are available; a locked cell is never asked itself). The form is said once it is answered, not
+before. From `FLASHCARD_STEP` up it is a flashcard: the name, Show reveals the form, I knew it / Not yet. A table with no available
+cell asks nothing and stays due. Each cell is one `recordReview('paradigm', id, right)` (a wrong cell is a wrong review) and a right
+cell credits its form's letters, sounds and marks as a form read right (`noteAnswer`, docs/grammar.md).
+
 ## Ask the tutor
 
 At the foot of a table. It opens the Reader on the open chapter with the Talk sheet on the whole chapter and sends the first question
