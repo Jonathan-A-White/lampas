@@ -14,6 +14,7 @@ import type { AskState } from './useAsks';
 import { Markdown } from './markdown/Markdown';
 import { CopyExchange } from './share/CopyExchange';
 import { answerRuns } from './speech/answerRuns';
+import { ReadAloud } from './speech/ReadAloud';
 import { askTranscriber } from './speech/askTranscriber';
 import { stopAnswer } from './speech/readAloud';
 import { askAnswerId, speakTutor, stopOnTap } from './speech/tutorVoice';
@@ -107,8 +108,9 @@ function AnswerCard({ answer }: { answer: TutorAnswer }) {
         </dl>
       ) : null}
       {bridge ? <BridgeOffer bridge={bridge} onTake={() => openBridgeIdea(bridge.next, 'ask')} /> : null}
-      <div className="-mb-1 mt-1 flex justify-end">
+      <div className="-mb-1 mt-1 flex flex-wrap items-start justify-end gap-1">
         <CopyExchange place={answer.ref} question={answer.cleanQuestion ?? answer.question} answer={answer.answer} />
+        {answer.id === undefined ? null : <ReadAloud id={askAnswerId(answer.id)} runs={answerRuns(answer.answer)} />}
       </div>
     </article>
   );

@@ -2,7 +2,7 @@
 // Read the tutor's responses aloud (the 'readTutor' setting, On by default) decides whether a response is spoken the moment it arrives: the
 // reading check's verdict and the answers of the Verse view's Ask the tutor, the Talk sheet and Ask the tutor from any screen. They go through the
 // one engine of src/speech/readAloud.ts startAnswer (held for his return while the page is hidden: tutorWaiting.ts), so a new question, leaving the screen or a tap on the response stops them (stopAnswer).
-// The speaker on an answer (Talk's 'Hear the answer') is his own tap and ignores the setting.
+// The speaker on an answer (ReadAloud, 'Read aloud') is his own tap and ignores the setting.
 import type { MouseEvent } from 'react';
 import { getReadTutor } from '../data/repositories';
 import { plainQuotes } from '../services/reading';

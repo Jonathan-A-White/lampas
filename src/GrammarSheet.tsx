@@ -5,6 +5,9 @@ import { type Chapter, type GreekWord } from './data/chapter';
 import { exampleMeaning } from './data/grammar/ideaSheet';
 import { conceptOf } from './data/grammar-concepts';
 import { grammarExamples } from './data/grammarExamples';
+import { proseOf } from './speech/proseOf';
+import { ReadAloud } from './speech/ReadAloud';
+import { BarSlot } from './speech/SpeakingBarSlot';
 import { focusOnMount } from './ui/focus';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
@@ -55,7 +58,10 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onT
           </button>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-1">
-          <h2 className="pr-14 text-2xl font-bold">{term}</h2>
+          <div className="flex items-start justify-between gap-2">
+            <h2 className="min-w-0 break-words text-2xl font-bold">{term}</h2>
+            <ReadAloud id={`grammar:${term}`} text={proseOf([term, concept?.explanation, concept ? 'In Greek' : null, concept?.greek])} />
+          </div>
           {concept ? (
             <>
               <p data-testid="grammar-explanation" className="mt-2 text-lg">
@@ -123,6 +129,8 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onT
             )}
           </div>
         </div>
+        {/* what is read aloud keeps its Pause and Stop in view: the sheet is over the screen's own bar */}
+        <BarSlot level={5} />
         <div className="flex shrink-0 gap-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+var(--lp-bar-inset))]">
           <button
             type="button"

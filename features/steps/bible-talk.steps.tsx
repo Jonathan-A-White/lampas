@@ -309,12 +309,12 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       expect(third.text).toContain('means "works together"');
     });
     // the answer's own speaker (the speaking bar below the answers has a Stop of its own)
-    When('he taps Stop on the answer', () => user.click(within(turns()[0]).getByRole('button', { name: 'Stop' })));
+    When('he taps Stop on the answer', () => user.click(within(turns()[0]).getByRole('button', { name: 'Stop reading' })));
     Then('the reading stops and the answer can be heard again', async () => {
       const engine = synth as FakeSynth;
       expect(engine.calls[engine.calls.length - 1]).toBe('cancel');
       expect(engine.speaking).toBe(false);
-      await waitFor(() => expect(within(turns()[0]).getByRole('button', { name: 'Hear the answer' })).toBeInTheDocument());
+      await waitFor(() => expect(within(turns()[0]).getByRole('button', { name: 'Read aloud' })).toBeInTheDocument());
     });
   });
 
