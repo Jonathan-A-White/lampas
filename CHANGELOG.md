@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.233
+_2026-10-15_
+- New: A small speaker button on the grammar and idea lessons, new-word cards, the tutor's answers and What's new reads the text aloud with your phone's voice, Greek in Greek, and a second tap stops it.
+
 ## 0.1.232
 _2026-10-15_
 - New: The grammar ladder now teaches how Greek words are built (stems and endings, the three declensions, the augment, tense signs, contract and -μι verbs, εἰμί and οἶδα), and a passage you are reading tells you which of these its words use.
