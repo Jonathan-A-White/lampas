@@ -205,7 +205,8 @@ the ending shows. Keep to the length below; cite the word in `words` as usual.
 - `kind` is `grammar`: what the form is (its parsing, said plainly) and what he needs to know to read it.
 - `kind` is `sound`: how to say the word. Put its syllables, in Greek letters and in order, in `syllables` (at most 12, each one
   a piece he can say alone, and which joined spell the word), and in `answer` say how each one sounds, which one carries the stress and what the accent or
-  breathing tells him. The app reads the word aloud and then each syllable, so do not spell the sounds out at length.
+  breathing tells him, by `pronunciation_guide` and `focus.respelling` alone. A breathing mark is not a letter: say what it does only as the guide says,
+  and never add a sound `focus.respelling` does not write, such as one carried over from another pronunciation. The app reads the word aloud and then each syllable, so do not spell the sounds out at length.
   Leave `syllables` out when `kind` is `grammar` or there is no `focus`.
   The app speaks, and respells, the Greek by `pronunciation`, whose name and rules are `pronunciation_guide`, and `focus.respelling` is the word
   as the app respells it (the stressed syllable in capitals). Describe each syllable's sound by `focus.respelling` and the rules of

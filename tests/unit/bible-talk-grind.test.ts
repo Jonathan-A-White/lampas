@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { learnerGrammarOf } from '../../src/data/grammar/learnerGrammar';
+import { pronunciationOf } from '../../src/speech/pronunciation';
 import { FEEDBACK_SUMMARY_MAX, NO_SETTING, REFUSAL, isTalkAnswer } from '../../src/services/talk';
 import { formatJson, settingsBlock, withSettingsBlock, withSettingsChanges } from '../../src/settings/grindText';
 import { SETTINGS } from '../../src/settings/registry';
@@ -641,6 +642,24 @@ describe('Sound it out speaks the app\'s pronunciation (mw-5r3p30.241)', () => {
     expect(example.request.focus.stress).toBe(0);
     expect(example.expect['syllables.3']).toEqual({ present: false });
     expect(new RegExp(String(example.expect.answer.matches)).test('The stress falls on the first syllable, σβέν.')).toBe(true);
+  });
+
+  // mw-5r3p30.249: for ἁμάρτητε the tutor said the rough breathing makes an "h" ("ha-MAR-tee-teh"), which is Erasmian; the chosen pronunciation's breathing is silent
+  it('says a breathing is told by the pronunciation guide and the respelling, never by a sound added from another pronunciation', () => {
+    expect(text).toMatch(/what the accent or breathing tells him, by `pronunciation_guide` and `focus\.respelling` alone/);
+    expect(text).toMatch(/never add a sound `focus\.respelling` does not write/);
+    expect(text).toMatch(/a breathing mark is not a letter/i);
+  });
+
+  it('has a scenario that asks how to sound ἁμάρτητε and expects the app\'s respelling and no ha', () => {
+    const example = readJson('grinds/examples/bible-talk/sound-it-out-hamartete.json') as { request: { pronunciation: string; focus: { form: string; respelling: string; kind: string } }; expect: Record<string, Record<string, string>> };
+    expect(example.request.pronunciation).toBe('modern');
+    expect(example.request.focus.kind).toBe('sound');
+    expect(example.request.focus.respelling).toBe(pronunciationOf('modern').respell(example.request.focus.form.normalize('NFC')));
+    expect(example.request.focus.respelling).toContain(example.expect.answer.contains);
+    const noHa = new RegExp(example.expect.answer.matches);
+    expect(noHa.test('ἁμάρτητε is said a-MAR-tee-te: the first syllable is just a, and the stress falls on MAR.')).toBe(true);
+    for (const wrong of ['The rough breathing gives an h: ha-MAR-tee-te.', 'Say ha-MAR-tee-teh.', 'It starts with ha-']) expect(noHa.test(wrong), wrong).toBe(false);
   });
 
   it('has a scenario that asks how to sound ταῦτα and expects TAF and no aw', () => {
