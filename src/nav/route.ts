@@ -162,6 +162,35 @@ export function openRequests(from: RequestsOrigin): void {
   notify();
 }
 
+/** Where the Licence page was opened from, which its back button returns to: the tip at the foot of the Reader says so in the address ('#/unlock?from=reader');
+ * Settings (a 'Needs a licence' row) is the rest. */
+export type LicenceOrigin = 'reader' | 'settings';
+
+export function licenceOriginOf(hash: string): LicenceOrigin {
+  const q = hash.indexOf('?');
+  return q >= 0 && new URLSearchParams(hash.slice(q + 1)).get('from') === 'reader' ? 'reader' : 'settings';
+}
+
+/** What the history entry of the Licence page carries, so closing it can step Back to the screen it was opened from (as the Verse view's). */
+type LicenceEntry = { licencePage?: boolean } | null;
+
+/** Opens the Licence page from `from`, as a new Back step: Back returns to that screen, which has not moved. */
+export function openLicence(from: LicenceOrigin): void {
+  const hash = from === 'reader' ? '#/unlock?from=reader' : '#/unlock';
+  if (window.location.hash === hash) return;
+  window.history.pushState({ licencePage: true } satisfies LicenceEntry, '', urlFor(hash));
+  notify();
+}
+
+/** Leaves the Licence page for the screen it was opened from: a step Back when openLicence opened it (the screen is as he left it, scroll and all), else (a reopen or a link) that screen opened afresh. */
+export function closeLicence(origin: LicenceOrigin): void {
+  if ((window.history.state as LicenceEntry)?.licencePage) {
+    window.history.back();
+    return;
+  }
+  navigate(origin === 'reader' ? 'home' : 'settings');
+}
+
 /** Opens the reader at a chapter and verse, as a new Back step. */
 export function openReader(address: Pick<ReaderAddress, 'book' | 'chapter' | 'verse'>): void {
   window.history.pushState(null, '', urlFor(readerHash(address)));

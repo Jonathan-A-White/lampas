@@ -17,6 +17,7 @@ import { PlaceLine } from './PlaceLine';
 import { ImmersiveHint } from './ImmersiveHint';
 import { ASK_BUTTON_GUTTER, ASK_BUTTON_ROOM, AskTutorButton, TALK_BAR_LIFT } from './AskTutor';
 import { useAiAllowed } from './gate/licenceContext';
+import { LicenceTip } from './gate/LicenceTip';
 import { TalkBar, TalkSheet } from './Talk';
 import { ErrorBoundary } from './ErrorBoundary';
 import type { Verse } from './data/chapter';
@@ -394,6 +395,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         </div>
       </main>
       <BarSlot level={1} />
+      {chapter && !failed && !viewUnit ? <LicenceTip /> : null}
       {chapter && !viewUnit && ai ? (
         <Away enabled={immersive} away={away}>
           <TalkBar
