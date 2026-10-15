@@ -105,6 +105,11 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
 - **[Logos Bible Software](https://www.logos.com)**'s verse pop-up. The idea of the card a Bible reference in the tutor's answer opens before it takes you
   there: the reference, the verse and an Open button. Only the idea is borrowed: the card is our own, and nothing is
   taken from Logos. Licence: none needed, it is an idea. Changes: none.
+- **[$P recognizer](https://depts.washington.edu/acelab/proj/dollar/pdollar.html)** by Radu-Daniel Vatavu, Lisa Anthony and Jacob O. Wobbrock
+  (University of Washington, 2012). The way Lampas checks a letter you write with a pen: your strokes become a cloud of points, which is compared
+  with the shapes of the letters, so the order and direction you draw them in do not matter. Only the idea is borrowed: the code and the letter
+  shapes are our own. Licence: none needed, it is a published method. Changes: the comparison is the nearest-point distance taken both ways,
+  and the writing is also tried turned a little each way.
 - **[Claude Code](https://www.anthropic.com/claude-code)** by Anthropic. Writes most of Lampas's code and the files of its lamp icon and
   memory pictures, under Jonathan's direction. Licence: none needed, it is a tool; Anthropic's [terms](https://www.anthropic.com/legal/commercial-terms) apply.
   Changes: none.
