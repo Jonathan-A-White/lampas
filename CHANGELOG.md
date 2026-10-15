@@ -1,5 +1,17 @@
 # What's new
 
+## 0.1.264
+_2026-10-15_
+- Fixed: The passage view of a heading now shows its verses in the same type and spacing as the Reader.
+
+## 0.1.263
+_2026-10-15_
+- New: Lessons can now read themselves aloud when they open, if you turn on 'Read lessons to me' in Settings; the words stay on screen.
+
+## 0.1.261
+_2026-10-15_
+- New: A table of forms can be put in Review, which asks you for its forms one by one by their grammatical names.
+
 ## 0.1.259
 _2026-10-15_
 - Fixed: Talk and Ask now keep and send a long pasted prayer or passage, up to 4000 characters, instead of cutting it off.

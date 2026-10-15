@@ -18,6 +18,7 @@ import { ReadCheckPanel, type ReadHold } from './ReadCheck';
 import type { Verse } from './data/chapter';
 import { unitId, unitName, unitReference } from './data/passage';
 import { passageUrl, referenceUrl } from './nav/links';
+import { textClass } from './reader/textClass';
 import { focusOnMount } from './ui/focus';
 import { Icon as PlayIcon } from './speech/ReadControls';
 import { LinkActions } from './ui/LinkActions';
@@ -50,6 +51,8 @@ export interface VerseViewProps {
   view: 'english' | 'greek';
   /** the verse as the Reader draws it (the Reader's VerseText: the view, the weave and the tappable words follow the Reader) */
   text: ReactNode;
+  /** the Immersive reader is On: a passage is set with the Reader's book look */
+  immersive: boolean;
   /** the arrows: go to the verse (or, for a passage, the passage) before and after; null when there is none */
   previous: (() => void) | null;
   next: (() => void) | null;
@@ -81,7 +84,7 @@ function Arrow({ move, name, glyph }: { move: (() => void) | null; name: string;
 }
 
 export function VerseView(props: VerseViewProps) {
-  const { title, book, chapter, verse, view, text, previous, next, onClose, action, onAction, listen, checks, read, onRetryRead, ask, onAsk, prefill, onTalk, quiz } = props;
+  const { title, book, chapter, verse, view, immersive, text, previous, next, onClose, action, onAction, listen, checks, read, onRetryRead, ask, onAsk, prefill, onTalk, quiz } = props;
   // The foot of the view, where the chosen action draws its bar.
   const [slot, setSlot] = useState<HTMLDivElement | null>(null);
   // Read it aloud, Ask the tutor and Quiz me are the AI: not offered, and nothing of theirs drawn, without a licence (mw-8m9dyu.2).
@@ -93,10 +96,13 @@ export function VerseView(props: VerseViewProps) {
   const name = unitName(verse);
   const noun = passage ? 'passage' : 'verse';
   const canShare = typeof navigator.share === 'function';
+  // A verse is shown big; a passage is set as the Reader sets its text (the face and size of textClass, the Reader's leading, and with Immersive
+  // on the book look of src/index.css, which [data-passage-text] shares with the Reader's verses), under his own size settings.
   const big = view === 'greek' ? 'font-greek [--lp-greek-size:2.25rem]' : 'font-sans [--lp-english-size:1.75rem] [--lp-greek-size:2.25rem]';
   const size = view === 'greek' ? 'text-[length:var(--lp-greek-size)]' : 'text-[length:var(--lp-english-size)]';
+  const typeClass = passage ? `leading-(--lp-leading) ${textClass(view)}` : `leading-(--lp-leading) ${big} ${size}`;
   return (
-    <section aria-label="Verse view" data-verse-view={unitId(verse)} className="fixed inset-0 z-5 flex flex-col bg-canvas pt-[env(safe-area-inset-top)]">
+    <section aria-label="Verse view" data-verse-view={unitId(verse)} data-immersive={immersive ? 'on' : 'off'} className="fixed inset-0 z-5 flex flex-col bg-canvas pt-[env(safe-area-inset-top)]">
       <header className="flex shrink-0 items-center gap-1 border-b border-line px-2 py-2">
         {/* The Reader beneath is inert, so focus starts here and a keyboard or screen reader finds the view first. */}
         <button type="button" ref={focusOnMount} onClick={onClose} className="min-h-12 shrink-0 rounded-lg px-2 chrome-text font-medium text-accent active:bg-line">
@@ -119,9 +125,9 @@ export function VerseView(props: VerseViewProps) {
         <div {...(passage ? { 'data-passage-box': '' } : {})} className={passage ? 'max-h-[40dvh] overflow-y-auto overscroll-contain rounded-xl border border-line px-2' : undefined}>
           <p
             data-sheet-verse
-            data-size="big"
+            {...(passage ? { 'data-passage-text': '' } : { 'data-size': 'big' })}
             lang={view === 'greek' ? 'grc' : 'en'}
-            className={`break-words leading-(--lp-leading) ${big} ${size}`}
+            className={`break-words ${typeClass}`}
           >
             {text}
           </p>

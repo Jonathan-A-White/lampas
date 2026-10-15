@@ -103,6 +103,9 @@ const typeOf = (view: ReadingView) =>
     ? { lang: 'grc', face: 'font-greek text-[length:var(--lp-greek-size)]', chunks: 'font-greek' }
     : { lang: 'en', face: 'font-sans text-[length:var(--lp-english-size)]', chunks: '' };
 
+/** A passage's text in the reading check is set as the passage view sets it, which is the Reader's (src/index.css shares the rules by this attribute). */
+const passageText = (passage?: boolean) => (passage ? { 'data-passage-text': '' } : {});
+
 /** The speaker for a flagged word: it says the word as it should sound (the answer's `say`, else the word) in the voice of the language read, and
  * nothing else; a response being read aloud is paused by the tap (speech/greek.ts speakBeside), so he hears only the word and can Resume it. */
 function SayWord({ fix, view, id, label, className }: { fix: FixWord; view: ReadingView; id: string; label: string; className?: string }) {
@@ -139,7 +142,7 @@ const WORD_PARTS = /^([^\p{L}\p{N}\p{M}]*)(.*?)([^\p{L}\p{N}\p{M}]*)$/u;
  * he said right the second time is not marked because he missed it the first. A marked word whose place is not in the verse (the
  * mill counted wrongly) is offered after it, so no mark is lost. `open` is the key of the open mark ('3' for the word at place 3,
  * 'l0' for the first lost word). A partial reading's `reached` is the last word he read: the words after it are set in the muted colour. */
-function MarkedVerse({ text, view, marks, open, onOpen, player, reached }: { text: string; view: ReadingView; marks: Marks; open: string | null; onOpen: (key: string | null) => void; player?: ClipPlayer; reached?: number }) {
+function MarkedVerse({ text, view, passage, marks, open, onOpen, player, reached }: { text: string; view: ReadingView; passage?: boolean; marks: Marks; open: string | null; onOpen: (key: string | null) => void; player?: ClipPlayer; reached?: number }) {
   const type = typeOf(view);
   const tokens = useMemo(() => wordsOfText(text), [text]);
   // each flagged word has its speaker right after it (a sibling of the word's button): it says only how the word should sound; with times and a clip,
@@ -163,7 +166,7 @@ function MarkedVerse({ text, view, marks, open, onOpen, player, reached }: { tex
   );
   return (
     <>
-      <p data-reading-verse lang={type.lang} className={`break-words ${type.face} leading-(--lp-leading)`}>
+      <p data-reading-verse {...passageText(passage)} lang={type.lang} className={`break-words ${type.face} leading-(--lp-leading)`}>
         {tokens.map((token, i) => {
           const [, before, core, after] = WORD_PARTS.exec(token) ?? ['', '', token, ''];
           const mark = marks.marked.get(i);
@@ -274,7 +277,7 @@ function MeButton({ fix, word, id, player, className }: { fix: FixWord; word: st
 }
 
 /** The result of a reading: how it went, the verse with its marked words, a tap shows their chunks, and the walk starts here. */
-function Result({ reading, text, view, fileName, onWalk }: { reading: VerseReading; text: string; view: ReadingView; fileName: string; onWalk: () => void }) {
+function Result({ reading, text, view, passage, fileName, onWalk }: { reading: VerseReading; text: string; view: ReadingView; passage?: boolean; fileName: string; onWalk: () => void }) {
   const [open, setOpen] = useState<string | null>(null);
   const marks = useMemo(() => markWords(text, reading.words), [text, reading.words]);
   const fix = open === null ? undefined : open.startsWith('l') ? marks.lost[Number(open.slice(1))] : marks.marked.get(Number(open));
@@ -295,7 +298,7 @@ function Result({ reading, text, view, fileName, onWalk }: { reading: VerseReadi
       {reading.clip ? <MyReading clip={reading.clip} fileName={fileName} player={player} /> : null}
       {reading.words.length > 0 || partial ? (
         <>
-          <MarkedVerse text={text} view={view} marks={marks} open={open} onOpen={setOpen} player={reading.clip ? player : undefined} reached={partial ? reading.reached : undefined} />
+          <MarkedVerse text={text} view={view} passage={passage} marks={marks} open={open} onOpen={setOpen} player={reading.clip ? player : undefined} reached={partial ? reading.reached : undefined} />
           {fix ? (
             <div data-fix-detail className="rounded-xl border border-line bg-surface p-3">
               <Fix fix={fix} view={view} player={reading.clip ? player : undefined} />
@@ -317,7 +320,7 @@ function Result({ reading, text, view, fileName, onWalk }: { reading: VerseReadi
 }
 
 /** 'Read these again': the marked words one at a time, in chunks, then the whole verse (its hold is the Verse view's bar). */
-function Walk({ words, text, view, step, onStep, onDone }: { words: FixWord[]; text: string; view: ReadingView; step: number; onStep: (step: number) => void; onDone: () => void }) {
+function Walk({ words, text, view, passage, step, onStep, onDone }: { words: FixWord[]; text: string; view: ReadingView; passage?: boolean; step: number; onStep: (step: number) => void; onDone: () => void }) {
   const type = typeOf(view);
   const last = step >= words.length;
   const word = words[step];
@@ -326,7 +329,7 @@ function Walk({ words, text, view, step, onStep, onDone }: { words: FixWord[]; t
     <div role="group" aria-label="Read these again" data-walk className="space-y-3">
       {last || !word ? (
         <>
-          <p data-walk-verse lang={type.lang} className={`break-words ${type.face} leading-(--lp-leading)`}>
+          <p data-walk-verse {...passageText(passage)} lang={type.lang} className={`break-words ${type.face} leading-(--lp-leading)`}>
             {text}
           </p>
           <p className="text-sm text-muted">Hold the bar below while you read the whole verse. Let go to send.</p>
@@ -453,13 +456,14 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
         {ladderLang && ladder.onLadder ? <LadderPosition lang={ladderLang} here={ladder} /> : null}
         {reading && !failed && !setAside && (walking || !out) ? (
           walking ? (
-            <Walk key={reading.when} words={walkWordsOf(reading)} text={text} view={view} step={walkStep} onStep={setWalkStep} onDone={() => setWalkFor(null)} />
+            <Walk key={reading.when} words={walkWordsOf(reading)} text={text} view={view} passage={verse.to !== undefined} step={walkStep} onStep={setWalkStep} onDone={() => setWalkFor(null)} />
           ) : (
             <Result
               key={reading.when}
               reading={reading}
               text={text}
               view={view}
+              passage={verse.to !== undefined}
               fileName={clipFileName(ref, lang, reading.when, reading.clip?.mime ?? 'audio/webm')}
               onWalk={() => {
                 setWalkStep(0);

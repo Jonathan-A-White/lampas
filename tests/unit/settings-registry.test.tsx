@@ -66,7 +66,7 @@ describe('the registry lists every Settings row', () => {
   it('gives every entry a distinct key, a label, a hint, and the values it allows', () => {
     expect(new Set(SETTINGS.map((s) => s.key)).size).toBe(SETTINGS.length);
     expect(SETTINGS.map((s) => s.key).sort()).toEqual(
-      ['askBy', 'audioBible', 'englishRate', 'englishVoice', 'goal', 'grammarApproach', 'grammarMove', 'greekPronunciation', 'greekRate', 'greekVoice', 'hebrewDepth', 'immersiveHint', 'immersiveReader', 'layout', 'logosBible', 'newWordsADay', 'pickerGrammar', 'quizGoal', 'readSpan', 'readTutor', 'resource.accordance', 'resource.logos', 'resource.strongs', 'sectionHeadings', 'textSize', 'theme', 'tips', 'weave', 'weaveGrammar'],
+      ['askBy', 'audioBible', 'englishRate', 'englishVoice', 'goal', 'grammarApproach', 'grammarMove', 'greekPronunciation', 'greekRate', 'greekVoice', 'hebrewDepth', 'immersiveHint', 'immersiveReader', 'layout', 'logosBible', 'newWordsADay', 'pickerGrammar', 'quizGoal', 'readLessons', 'readSpan', 'readTutor', 'resource.accordance', 'resource.logos', 'resource.strongs', 'sectionHeadings', 'textSize', 'theme', 'tips', 'weave', 'weaveGrammar'],
     );
     for (const s of SETTINGS) {
       expect(s.label).not.toBe('');
@@ -275,6 +275,7 @@ describe('currentSettings', () => {
       immersiveReader: 'off',
       immersiveHint: 'on',
       readSpan: 'chapter',
+      readLessons: 'off',
       readTutor: 'on',
       askBy: 'speaking',
       hebrewDepth: 'both',

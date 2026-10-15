@@ -31,7 +31,8 @@ type Round =
 
 /** 'N come back tomorrow, M later', from the schedule rows the round's items now have. */
 async function whatComesBack(items: ReviewItem[]): Promise<{ tomorrow: number; later: number }> {
-  const rows = await reviewsOf(items);
+  // a table asked several cells in the round is one row
+  const rows = await reviewsOf([...new Map(items.map((i) => [`${i.kind}\0${i.id}`, i])).values()]);
   const cutoff = Date.now() + DAY;
   const tomorrow = rows.filter((r) => r.due <= cutoff).length;
   return { tomorrow, later: rows.length - tomorrow };
@@ -88,7 +89,7 @@ function reviewFacts(round: Round, dueLine: string | undefined): ScreenFact[] {
   if (round.status === 'done') return [{ label: 'Round', value: `Finished: ${round.right} of ${round.total} right` }];
   if (round.status === 'loading') return [];
   const item = round.items[round.index];
-  const kind = item.kind === 'word' ? 'a word' : item.kind === 'sound' ? 'a sound or word he drilled' : item.kind === 'drill-plan' ? 'a step of his drill plan' : 'a grammar idea';
+  const kind = item.kind === 'word' ? 'a word' : item.kind === 'sound' ? 'a sound or word he drilled' : item.kind === 'drill-plan' ? 'a step of his drill plan' : item.kind === 'paradigm' ? 'a cell of a table' : 'a grammar idea';
   const question =
     item.kind === 'word'
       ? item.question.prompt

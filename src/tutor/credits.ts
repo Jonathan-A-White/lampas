@@ -6,13 +6,14 @@
 import type { ScreenCredit } from './screen';
 
 /** The most the credits weigh as JSON in UTF-8, so the screen, his words and a little history still fit MAX_REQUEST_BYTES (src/services/talk.ts). */
-export const MAX_CREDITS_BYTES = 4500;
+export const MAX_CREDITS_BYTES = 4800;
 
 export const CREDITS: ScreenCredit[] = [
   { name: 'Majority Standard Bible', use: 'The Greek you read, aligned to its English, with Strong\'s and parsing', licence: 'Public domain', link: 'https://majoritybible.com' },
   { name: 'Byzantine Priority', use: 'Robinson\'s essay, read on the Preface', licence: 'Public domain', link: 'https://byzantinetext.com/study/editions/robinson-pierpont/' },
   { name: 'TBESG', use: 'STEPBible (Tyndale House): each word\'s lemma, gloss and definition', licence: 'CC BY 4.0', link: 'https://www.stepbible.org' },
   { name: 'eSpeak NG', use: 'The sound of ὁ', licence: 'GPL-3.0', link: 'https://github.com/espeak-ng/espeak-ng' },
+  { name: 'Piper', use: 'Trial clips of Greek sounds on a listening page, not in the app\'s screens', licence: 'MIT', link: 'https://github.com/rhasspy/piper' },
   { name: 'Biblical Mastery Academy', use: 'Only the order BMA Tutor teaches grammar in; the lessons are ours', licence: 'none taken; nothing copied', link: 'https://biblicalmastery.academy/' },
   { name: 'Gentium Plus', use: 'The Greek type of the reader', licence: 'SIL OFL 1.1', link: 'https://software.sil.org/gentium/' },
   { name: 'Noto Serif Hebrew', use: 'The Hebrew type of answers', licence: 'SIL OFL 1.1', link: 'https://github.com/notofonts/hebrew' },
@@ -33,6 +34,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'Blue Letter Bible', use: 'Links a word to its Strong\'s entry', licence: 'its terms; links only', link: 'https://www.blueletterbible.org' },
   { name: 'STEPBible', use: 'Links a word to its Strong\'s entry', licence: 'its terms; links only', link: 'https://www.stepbible.org' },
   { name: 'Web Speech API', use: 'Your phone\'s voices speak and hear', licence: 'a web standard', link: 'https://developer.mozilla.org/docs/Web/API/Web_Speech_API' },
+  { name: '$P recognizer', use: 'Checks a letter you write by its shape', licence: 'none needed; a method', link: 'https://depts.washington.edu/acelab/proj/dollar/pdollar.html' },
   { name: 'Beads', use: 'How the factory keeps its work: small tracked tasks', licence: 'MIT', link: 'https://github.com/steveyegge/beads' },
   { name: 'Gas Town', use: 'Agents that take them one at a time', licence: 'MIT', link: 'https://github.com/steveyegge/gastown' },
   { name: 'Claude Code', use: 'Writes most of the code, as Jonathan directs', licence: 'none needed; its terms', link: 'https://www.anthropic.com/claude-code' },

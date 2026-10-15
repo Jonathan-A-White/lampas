@@ -36,6 +36,13 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   letter (ὁ, ἡ, ὦ, Ὃ), in public/sounds/: the phone's own Greek voice says such a word as the letter's name ('omicron'), so the app plays these instead.
   Each is eSpeak NG's Greek voice saying one vowel from its phoneme input, not a letter. Licence: eSpeak NG is [GPL-3.0](https://github.com/espeak-ng/espeak-ng/blob/master/COPYING);
   the clips are sound it made, and no eSpeak NG code is in the app. Changes: silence trimmed, cut to MP3 with [FFmpeg](https://ffmpeg.org) (scripts/sounds-build.sh).
+- **Trial clips of a neural Greek voice** (public/sounds-trial/, heard only on the listening page sounds-trial.html, which no screen of the app links to; docs/research/letter-sounds.md).
+  The same vowels, one-letter words and letter sounds as above, cut out of sentences said by three free, local voices, so that they can be heard beside the phone's own voice before one is chosen:
+  [Piper](https://github.com/rhasspy/piper) (engine [MIT](https://github.com/rhasspy/piper/blob/master/LICENSE.md); its voice el_GR-rapunzelina-low was trained on a
+  [Greek single-speaker set](https://www.kaggle.com/datasets/bryanpark/greek-single-speaker-speech-dataset) released CC0), [Coqui TTS](https://github.com/idiap/coqui-ai-TTS) (the maintained fork; engine
+  [MPL-2.0](https://github.com/idiap/coqui-ai-TTS/blob/dev/LICENSE.txt); its voice tts_models/el/cv/vits, trained on Common Voice Greek, is released BSD-3-Clause in its model list) and
+  [Chatterbox](https://github.com/resemble-ai/chatterbox) by Resemble AI ([MIT](https://github.com/resemble-ai/chatterbox/blob/master/LICENSE)). Licence: the clips are sound these made; no code or model of theirs is in the app.
+  Changes: each sound is cut out of a carrier sentence by the voice's own alignment, silence trimmed, cut to MP3 with [FFmpeg](https://ffmpeg.org) (scripts/sounds-trial/make-clips.py).
 - **[Biblical Mastery Academy](https://biblicalmastery.academy/).** The order in which the BMA Tutor grammar approach teaches Greek
   follows the sequence of the Greek Success Path of Biblical Mastery Academy. Only the sequence is followed: the lesson titles,
   the method, the drills, Drill it (the walk that proves an idea, its wrong answers near misses of the point first, a sound that changes by the next letter drilled on both sides) and the drill plan that follows a Drill it that does not prove an idea (a short drill on each weak point, easiest first, then Drill it again) in Lampas are its own, and no course text, image or exercise is copied. Changes: a few lessons are moved earlier or later, so that no idea is taught before an idea it rests on.
@@ -87,7 +94,7 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
 - **[Blue Letter Bible](https://www.blueletterbible.org)** and **[STEPBible](https://www.stepbible.org)**. Links from a word to its Strong's
   entry, if you switch Strong's on. Links only: nothing is copied. Their own terms apply.
 - **[Web Speech API](https://developer.mozilla.org/docs/Web/API/Web_Speech_API)**. Your phone's own voices speak the Greek and English and its
-  recogniser hears you; Lampas ships no voice. The API is a web standard; the voices are your phone's and its maker's.
+  recogniser hears you; Lampas ships no voice. With Read lessons to me on in Settings, a lesson is read aloud by it as soon as it opens. The API is a web standard; the voices are your phone's and its maker's.
 
 ## Ideas and tools we borrowed
 
@@ -98,6 +105,11 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
 - **[Logos Bible Software](https://www.logos.com)**'s verse pop-up. The idea of the card a Bible reference in the tutor's answer opens before it takes you
   there: the reference, the verse and an Open button. Only the idea is borrowed: the card is our own, and nothing is
   taken from Logos. Licence: none needed, it is an idea. Changes: none.
+- **[$P recognizer](https://depts.washington.edu/acelab/proj/dollar/pdollar.html)** by Radu-Daniel Vatavu, Lisa Anthony and Jacob O. Wobbrock
+  (University of Washington, 2012). The way Lampas checks a letter you write with a pen: your strokes become a cloud of points, which is compared
+  with the shapes of the letters, so the order and direction you draw them in do not matter. Only the idea is borrowed: the code and the letter
+  shapes are our own. Licence: none needed, it is a published method. Changes: the comparison is the nearest-point distance taken both ways,
+  and the writing is also tried turned a little each way.
 - **[Claude Code](https://www.anthropic.com/claude-code)** by Anthropic. Writes most of Lampas's code and the files of its lamp icon and
   memory pictures, under Jonathan's direction. Licence: none needed, it is a tool; Anthropic's [terms](https://www.anthropic.com/legal/commercial-terms) apply.
   Changes: none.

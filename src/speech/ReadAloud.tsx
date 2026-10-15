@@ -4,8 +4,13 @@
 // so each stretch of Greek goes to the Greek voice and the rest to the English one, at his speed and in his voices, the package's bar has Pause, Resume and
 // Stop, and a one-letter Greek word is a clip. The words stay on screen: nothing here hides or replaces them. With no Greek voice on the phone the English is
 // read and the Greek is left out, with the one line of help (noVoiceHelp) that SpeakButton shows.
+// LessonReadAloud (mw-5r3p30.366) is the same button on a lesson: with Settings > Read aloud > Read lessons to me On it starts the reading by itself when the
+// sheet opens (`auto`), the words still on screen. A browser that refuses speech without a tap (the error 'not-allowed', greek.ts onSpeechRefused) turns the
+// button into a gently pulsing 'Tap to listen' instead of leaving silence; the tap is then an ordinary one.
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { hasGreekVoice, hasVoice, noVoiceHelp, warmVoices } from './greek';
+import { readLessonsSetting } from '../settings/definitions';
+import { useSetting } from '../settings/store';
+import { hasGreekVoice, hasVoice, noVoiceHelp, onSpeechRefused, warmVoices } from './greek';
 import { pageRuns } from './pageRuns';
 import { getReading, startReading, stopAnswer, useReading, type Run } from './readAloud';
 import { Icon } from './SpeakButton';
@@ -25,7 +30,7 @@ const readingIdOf = (id: string | number): number => {
   return n;
 };
 
-export function ReadAloud({ id, text, runs, className }: {
+export function ReadAloud({ id, text, runs, className, auto = false }: {
   /** names what is read: two buttons with the same id agree on whether it is playing (a number is the id of a tutor answer read by useTalk or useAsks) */
   id: string | number;
   /** the prose to read, its Greek found by its letters */
@@ -33,12 +38,19 @@ export function ReadAloud({ id, text, runs, className }: {
   /** or the runs already cut (a tutor's answer, whose Markdown answerRuns strips) */
   runs?: Run[];
   className?: string;
+  /** start reading when this appears (or when `id` changes while it is true), without a tap: a lesson, with Read lessons to me On */
+  auto?: boolean;
 }) {
   const mine = readingIdOf(id);
   const reading = useReading();
   const playing = reading.status !== 'idle' && reading.answer === mine;
   const [help, setHelp] = useState<string | null>(null);
+  /** the browser refused to read this by itself: the button asks for a tap */
+  const [refusedFor, setRefusedFor] = useState<number | null>(null);
+  const refused = refusedFor === mine;
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  /** the reading that began by itself and has not yet been heard to start or refused */
+  const byItself = useRef(false);
 
   const showHelp = useCallback((line: string) => {
     setHelp(line);
@@ -55,9 +67,18 @@ export function ReadAloud({ id, text, runs, className }: {
     };
   }, [mine]);
 
-  const onTap = () => {
-    setHelp(null);
-    if (playing) return stopAnswer();
+  useEffect(
+    () =>
+      onSpeechRefused(() => {
+        // the refusal of the reading this button started by itself (the one that holds the voice now), not of another sheet's
+        if (!byItself.current || getReading().answer !== mine) return;
+        byItself.current = false;
+        setRefusedFor(mine);
+      }),
+    [mine],
+  );
+
+  const begin = () => {
     let say = runs ?? pageRuns(text ?? '');
     if (hasVoice('english') === false) return showHelp('No voice on this phone to read aloud');
     if (hasGreekVoice() === false && say.some((run) => run.language === 'greek')) {
@@ -67,18 +88,40 @@ export function ReadAloud({ id, text, runs, className }: {
     if (say.length === 0) return;
     startReading({ chapter: 0, plan: [{ n: mine, runs: say }], from: mine, continuous: false, answer: mine });
   };
+  const beginRef = useRef(begin);
+  useEffect(() => {
+    beginRef.current = begin;
+  });
+
+  useEffect(() => {
+    if (!auto) return;
+    byItself.current = true;
+    beginRef.current();
+    return () => {
+      byItself.current = false;
+    };
+  }, [auto, mine]);
+
+  const onTap = () => {
+    setHelp(null);
+    setRefusedFor(null);
+    byItself.current = false;
+    if (playing) return stopAnswer();
+    begin();
+  };
 
   return (
     <>
       <button
         type="button"
         data-read-aloud
-        aria-label={playing ? 'Stop reading' : 'Read aloud'}
+        aria-label={refused ? 'Tap to listen' : playing ? 'Stop reading' : 'Read aloud'}
         aria-pressed={playing}
         onClick={onTap}
-        className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-muted active:bg-line ${playing ? 'text-accent' : ''} ${className ?? ''}`}
+        className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1 rounded-lg text-muted active:bg-line ${playing || refused ? 'text-accent' : ''} ${refused ? 'px-3 motion-safe:animate-pulse' : ''} ${className ?? ''}`}
       >
         <Icon kind={playing ? 'stop' : 'speaker'} />
+        {refused ? <span className="text-base font-medium">Tap to listen</span> : null}
       </button>
       {help ? (
         <p
@@ -90,4 +133,11 @@ export function ReadAloud({ id, text, runs, className }: {
       ) : null}
     </>
   );
+}
+
+/** The Read aloud button of a lesson (an idea sheet, a Grammar sheet, a new word's sheet): with Read lessons to me On it reads by itself once `ready` (the text is
+ * final) and when it appears; with it Off it is the plain button. */
+export function LessonReadAloud({ ready = true, ...props }: Omit<Parameters<typeof ReadAloud>[0], 'auto'> & { ready?: boolean }) {
+  const on = useSetting(readLessonsSetting) === 'on';
+  return <ReadAloud {...props} auto={on && ready} />;
 }

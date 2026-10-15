@@ -56,7 +56,7 @@ test('Listen: the heading and range at the top, the passage big, the row of acti
   expect(await range.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
 
   const text = view.locator('[data-sheet-verse]');
-  expect(await text.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThan(20);
+  expect(await text.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(20);
   await expect(view.locator('[data-passage-verse]')).toHaveCount(11);
 
   const row = view.getByRole('group', { name: 'Actions' });

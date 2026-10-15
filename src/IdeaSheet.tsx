@@ -30,7 +30,7 @@ import { openParadigm } from './nav/route';
 import { chosenPronunciation } from './speech/greek';
 import { pronunciationOf, type Pronunciation } from './speech/pronunciation';
 import { proseOf } from './speech/proseOf';
-import { ReadAloud } from './speech/ReadAloud';
+import { LessonReadAloud } from './speech/ReadAloud';
 import { SpeakButton } from './speech/SpeakButton';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { TeachTiles } from './TeachTiles';
@@ -374,7 +374,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false }: {
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-1">
           <div className="flex items-start justify-between gap-2">
             <h2 className="min-w-0 break-words text-2xl font-bold">{idea.title}</h2>
-            <ReadAloud id={`idea:${idea.id}`} text={lesson} />
+            <LessonReadAloud id={`idea:${idea.id}`} text={lesson} ready={loaded !== null} />
           </div>
           {level ? (
             <p data-testid="idea-level" className="mt-1 inline-block rounded-full border border-line px-3 py-1 text-sm text-muted">
