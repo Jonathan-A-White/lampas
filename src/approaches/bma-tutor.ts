@@ -1,8 +1,9 @@
 // src/approaches/bma-tutor.ts — 'BMA Tutor': the sequence of Biblical Mastery Academy's Greek course, followed with credit. Only the
 // ORDER is theirs; every title, the method and the mapping to our ideas are Lampas's own words, and no course text, picture or exercise
 // is copied (mw-hqd5bz.5). PROVISIONAL, the Governor to confirm. Where the course names a lesson the RP parsing codes cannot tell apart
-// (the third declension, athematic verbs, root variations, assimilation), the lesson maps to the nearest ideas the ladder has, or revisits
-// ideas taught earlier (docs/grammar.md, 'Approaches').
+// (root variations, assimilation), the lesson maps to the nearest ideas the ladder has, or revisits ideas taught earlier (docs/grammar.md,
+// 'Approaches'). The third declension and the -μι verbs have ideas of their own (the pattern ideas, mw-svw421.1), each in the earliest lesson after
+// everything it needs.
 import { LADDER } from '../data/grammar/ladder';
 import type { ApproachLesson, GrammarApproach } from './types';
 
@@ -37,11 +38,11 @@ export const bmaTutor: GrammarApproach = {
             lesson('Marks over the letters', 'breathings', ...itemsOfGroup('breathings'), 'accents', 'iota-subscript', 'words-sound-alike', 'punctuation', 'movable-letters', 'marks-change-word', 'enclitics'),
             lesson('Your first words', 'noun', 'number-singular', 'number-plural'),
             lesson('Joining and refusing', 'conjunction', 'negative'),
-            lesson('Who acts and who is acted on', 'case-nominative', 'case-accusative'),
-            lesson('Being: I am, you are, he is', 'person-1st', 'person-2nd', 'person-3rd', 'verb'),
-            lesson('The present active statement', 'tense-present', 'voice-active', 'mood-indicative'),
+            lesson('Who acts and who is acted on', 'case-nominative', 'case-accusative', 'stem-and-ending'),
+            lesson('Being: I am, you are, he is', 'person-1st', 'person-2nd', 'person-3rd', 'verb', 'eimi'),
+            lesson('The present active statement', 'tense-present', 'voice-active', 'mood-indicative', 'contract-verbs'),
             lesson('A past action in progress', 'tense-imperfect'),
-            lesson('The completed action', 'tense-aorist'),
+            lesson('The completed action', 'tense-aorist', 'augment'),
             lesson('Of and belonging to', 'case-genitive'),
             lesson('To, for, and calling out', 'case-dative', 'case-vocative'),
           ],
@@ -49,7 +50,7 @@ export const bmaTutor: GrammarApproach = {
         {
           title: 'Articles, pronouns and describing words',
           lessons: [
-            lesson('A sentence takes shape', 'gender-masculine', 'gender-feminine', 'gender-neuter'),
+            lesson('A sentence takes shape', 'gender-masculine', 'gender-feminine', 'gender-neuter', 'declension-1', 'declension-2'),
             lesson('The little word “the”, and names', 'article', 'proper-name'),
             lesson('Letters that change at a joint', 'crasis'),
             lesson('Stems that shift', 'attic-form'),
@@ -60,13 +61,13 @@ export const bmaTutor: GrammarApproach = {
             lesson('Who? and anyone', 'pronoun-interrogative', 'pronoun-indefinite'),
             lesson('Each other, such as, how great', 'pronoun-reciprocal', 'pronoun-correlative', 'pronoun-correlative-interrogative'),
             lesson('Small words that take a case', 'preposition', ...PREPOSITIONS_ONE_BY_ONE, 'compound-verbs'),
-            lesson('Describing words', 'adjective'),
+            lesson('Describing words', 'adjective', 'dictionary-entry'),
           ],
         },
         {
           title: 'More nouns, and the passive and middle',
           lessons: [
-            lesson('The nouns with other patterns', 'noun', 'case-genitive', 'case-dative'),
+            lesson('The nouns with other patterns', 'noun', 'case-genitive', 'case-dative', 'declension-3'),
             lesson('Acting for oneself', 'voice-middle'),
             lesson('Being acted upon', 'voice-passive'),
             lesson('One form for two voices', 'voice-middle-or-passive'),
@@ -84,9 +85,9 @@ export const bmaTutor: GrammarApproach = {
           title: 'More tenses and moods',
           lessons: [
             lesson('What will happen', 'tense-future'),
-            lesson('A finished action with a lasting result', 'tense-perfect'),
+            lesson('A finished action with a lasting result', 'tense-perfect', 'reduplication', 'tense-signs', 'principal-parts', 'oida'),
             lesson('That result, in the past', 'tense-pluperfect'),
-            lesson('Verbs with their own endings', 'tense-present', 'second-tenses'),
+            lesson('Verbs with their own endings', 'tense-present', 'second-tenses', 'mi-verbs'),
             lesson('What may happen', 'mood-subjunctive'),
             lesson('If and unless', 'conditional'),
             lesson('A wish', 'mood-optative'),

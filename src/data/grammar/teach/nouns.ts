@@ -472,4 +472,139 @@ export const NOUNS: Record<string, Teach> = {
       },
     ],
   },
+
+  'stem-and-ending': {
+    whatItIs: 'Most words are a stem with an ending. The stem carries the meaning and stays; the ending adds a detail. Example: in English “walked”, walk- is the stem and -ed is the ending, which says it is past.',
+    howToSpot:
+      'Cut a Greek word where the part that changes begins. λόγος and λόγου share λογ-, the stem; -ος and -ου are the endings. λύω “I loose” and λύομεν “we loose” share λυ-, and the ending says who. A dictionary entry shows a word with its ending (λόγος, λύω): take the ending off and what is left is the stem.',
+    table: {
+      caption: 'Words cut into a stem and an ending',
+      columns: ['the word', 'the stem', 'the ending'],
+      rows: [
+        { label: '“word”', cells: ['λόγος', 'λογ-', '-ος'] },
+        { label: '“of a word”', cells: ['λόγου', 'λογ-', '-ου'] },
+        { label: '“I loose”', cells: ['λύω', 'λυ-', '-ω'] },
+        { label: '“we loose”', cells: ['λύομεν', 'λυ-', '-ομεν'] },
+        { label: '“you loose”', cells: ['λύετε', 'λυ-', '-ετε'] },
+      ],
+      note: 'The stem stays; only the ending moves.',
+    },
+    worked: [
+      {
+        word: 'λόγου',
+        ref: '1 John 1:1',
+        gloss: 'of the word',
+        steps: ['Take off the ending -ου: what is left, λογ-, is the stem, which means “word”.', 'The ending -ου tells the job the word does here; -ος would tell another.', 'Put the entry’s ending back on the stem and you have the form a dictionary lists: λόγος, “word”.'],
+      },
+      {
+        word: 'ἀρχῆς',
+        ref: '1 John 1:1',
+        gloss: 'of the beginning',
+        steps: ['Take off the ending -ῆς: what is left, ἀρχ-, is the stem, which means “beginning”.', 'The entry reads ἀρχή: the same stem with the ending -ή.', 'The ending changes with the job in the sentence: ἀρχή, ἀρχῆς, ἀρχήν.'],
+      },
+    ],
+  },
+  'declension-1': {
+    whatItIs: 'A declension is a family of nouns that change their endings in the same way, as the English nouns that add -s for more than one. Greek has three. The first is the nouns whose stem ends in α or η.',
+    howToSpot:
+      'Look for -α or -η in the nominative singular: ἡμέρα “day”, φωνή “sound”, ἀρχή “beginning”. Nearly all are feminine. A few masculine nouns have -ης (προφήτης “prophet”, whose genitive is -ου). The genitive singular of a feminine noun is -ας or -ης: ἀρχή, ἀρχῆς. The plural is the same for all of them: -αι, -ων, -αις, -ας.',
+    table: {
+      caption: 'The first declension endings of ἡμέρα “day”, φωνή “sound” and προφήτης “prophet”',
+      columns: ['ἡμέρα', 'φωνή', 'προφήτης'],
+      rows: [
+        { label: 'one: nominative', cells: ['-α', '-η', '-ης'] },
+        { label: 'one: genitive', cells: ['-ας', '-ης', '-ου'] },
+        { label: 'one: dative', cells: ['-ᾳ', '-ῃ', '-ῃ'] },
+        { label: 'one: accusative', cells: ['-αν', '-ην', '-ην'] },
+        { label: 'more: nominative', cells: ['-αι', '-αι', '-αι'] },
+        { label: 'more: genitive', cells: ['-ων', '-ων', '-ων'] },
+        { label: 'more: dative', cells: ['-αις', '-αις', '-αις'] },
+        { label: 'more: accusative', cells: ['-ας', '-ας', '-ας'] },
+      ],
+    },
+    worked: [
+      {
+        word: 'ἀρχῆς',
+        ref: '1 John 1:1',
+        gloss: 'of the beginning',
+        steps: ['Its entry is ἀρχή: a noun in -η, so the first declension.', 'ἀρχ- is the stem; -ῆς is the genitive ending of the table.', 'So ἀρχῆς is “of the beginning”.'],
+      },
+    ],
+  },
+  'declension-2': {
+    whatItIs: 'The second declension is the family of nouns whose stem ends in ο. Most are masculine and a good many are neuter.',
+    howToSpot:
+      'Look for -ος or -ον in the nominative singular: λόγος “word”, ἄνθρωπος “man”, τέκνον “child”. The ones in -ος are masculine, those in -ον neuter. The genitive singular is -ου for both: λόγου, τέκνου. A neuter has the same ending for its nominative and its accusative.',
+    table: {
+      caption: 'The second declension endings of λόγος “word” and τέκνον “child”',
+      columns: ['λόγος', 'τέκνον'],
+      rows: [
+        { label: 'one: nominative', cells: ['-ος', '-ον'] },
+        { label: 'one: genitive', cells: ['-ου', '-ου'] },
+        { label: 'one: dative', cells: ['-ῳ', '-ῳ'] },
+        { label: 'one: accusative', cells: ['-ον', '-ον'] },
+        { label: 'more: nominative', cells: ['-οι', '-α'] },
+        { label: 'more: genitive', cells: ['-ων', '-ων'] },
+        { label: 'more: dative', cells: ['-οις', '-οις'] },
+        { label: 'more: accusative', cells: ['-ους', '-α'] },
+      ],
+    },
+    worked: [
+      {
+        word: 'λόγου',
+        ref: '1 John 1:1',
+        gloss: 'of the word',
+        steps: ['Its entry is λόγος: a noun in -ος, so the second declension.', 'λογ- is the stem; -ου is the genitive ending of the table.', 'So λόγου is “of the word”.'],
+      },
+    ],
+  },
+  'dictionary-entry': {
+    whatItIs: 'A dictionary entry tells you what you need to know to use a word. For an English noun it gives the word, how to make the plural when that is odd, and what it is: “child, children”. A Greek entry works the same way.',
+    howToSpot:
+      'A noun is listed with three pieces: the nominative, the ending of the genitive, and the article, which shows the gender. ἄγγελος, -ου, ὁ reads “ἄγγελος, whose genitive is ἀγγέλου, masculine”. An adjective is listed as ἀγαθός, -ή, -όν: the endings for the masculine, the feminine and the neuter. A word for what is done is listed as λύω, “I loose”. Look a word up under its entry, not under the form you met.',
+    table: {
+      caption: 'How a dictionary lists three words',
+      columns: ['the entry', 'the nominative', 'the genitive ending', 'the article shows'],
+      rows: [
+        { label: 'a noun', cells: ['ἄγγελος, -ου, ὁ', 'ἄγγελος', '-ου', 'masculine'] },
+        { label: 'a noun', cells: ['ἡμέρα, -ας, ἡ', 'ἡμέρα', '-ας', 'feminine'] },
+        { label: 'a noun', cells: ['τέκνον, -ου, τό', 'τέκνον', '-ου', 'neuter'] },
+      ],
+    },
+    worked: [
+      {
+        word: 'ἄγγελος',
+        gloss: 'messenger',
+        steps: ['The entry ἄγγελος, -ου, ὁ begins with the nominative: ἄγγελος, “messenger”.', 'The ending -ου is the genitive: ἀγγέλου, “of a messenger”.', 'The article ὁ is masculine, so ἄγγελος is a masculine noun.'],
+      },
+    ],
+  },
+  'declension-3': {
+    whatItIs: 'The third declension is every noun that is not of the first or the second. Its stems end in all sorts of letters, so its nominative does not tell you the stem; the genitive does.',
+    howToSpot:
+      'A noun that does not end in -α, -η, -ης, -ος or -ον is likely of the third declension: σάρξ “flesh”, πατήρ “father”, πνεῦμα “spirit”, πίστις “faith”, βασιλεύς “king”. Find the stem by taking -ος off the genitive of its entry: σάρξ, σαρκός gives σαρκ-. The plural is -ες in the nominative, -ων in the genitive, -σι(ν) in the dative and -ας in the accusative.',
+    table: {
+      caption: 'The third declension endings of σάρξ “flesh”, πατήρ “father” and πνεῦμα “spirit”',
+      columns: ['σάρξ', 'πατήρ', 'πνεῦμα'],
+      rows: [
+        { label: 'one: nominative', cells: ['σάρξ', 'πατήρ', 'πνεῦμα'] },
+        { label: 'one: genitive', cells: ['-ος', '-ος', '-ος'] },
+        { label: 'one: dative', cells: ['-ι', '-ι', '-ι'] },
+        { label: 'one: accusative', cells: ['-α', '-α', 'πνεῦμα'] },
+        { label: 'more: nominative', cells: ['-ες', '-ες', '-ατα'] },
+        { label: 'more: genitive', cells: ['-ων', '-ων', '-ων'] },
+        { label: 'more: dative', cells: ['-σι(ν)', '-σι(ν)', '-σι(ν)'] },
+        { label: 'more: accusative', cells: ['-ας', '-ας', '-ατα'] },
+      ],
+      note: 'The stem is not what you see in the nominative: σαρκ-, πατρ-, πνευματ-.',
+    },
+    worked: [
+      {
+        word: 'σαρκός',
+        ref: 'John 1:13',
+        gloss: 'of flesh',
+        steps: ['Its entry is σάρξ, σαρκός, ἡ: the genitive shows the stem σαρκ-.', 'Take the stem and add -ός, the genitive ending of the table.', 'So σαρκός is “of flesh”, and the third declension has made σάρξ out of σαρκ- and ς.'],
+      },
+    ],
+  },
 };

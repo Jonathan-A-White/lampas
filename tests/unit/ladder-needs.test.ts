@@ -30,7 +30,7 @@ const VOCABULARY: [word: RegExp, teachers: string[]][] = [
   [/\btenses?\b/i, ids('tense-')],
   [/\bvoices?\b/i, ids('voice-')],
   [/\b(1st|2nd|3rd|first|second|third) person\b|\bperson and number\b/i, ['person-1st', 'person-2nd', 'person-3rd']],
-  [/\bstems?\b/i, []],
+  [/\bstems?\b/i, ['stem-and-ending']],
   [/\bstress mark\b|\baccents?\b/i, ['accents']],
   [/\bdiaeresis\b|\btwo dots\b/i, ['punctuation']],
   [/\bbreathings?\b/i, ['breathings']],
