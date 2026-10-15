@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.234
+_2026-10-15_
+- Fixed: A reader who has said no to the Greek no longer gets Greek words in the tutor's answer when he asks what an English word means.
+
 ## 0.1.233
 _2026-10-15_
 - New: A small speaker button on the grammar and idea lessons, new-word cards, the tutor's answers and What's new reads the text aloud with your phone's voice, Greek in Greek, and a second tap stops it.
