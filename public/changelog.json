@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.250",
+    "date": "2026-10-15",
+    "story": "mw-5r3p30.258",
+    "kind": "fixed",
+    "text": "the Talk message box no longer squeezes to one letter wide with the keyboard up, grows upward as you type, and \"Hold to talk\" no longer has a notch cut out of it."
+  },
+  {
     "version": "0.1.249",
     "date": "2026-10-15",
     "story": "mw-5r3p30.385",

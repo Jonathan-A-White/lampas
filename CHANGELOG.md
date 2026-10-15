@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.250
+_2026-10-15_
+- Fixed: the Talk message box no longer squeezes to one letter wide with the keyboard up, grows upward as you type, and "Hold to talk" no longer has a notch cut out of it.
+
 ## 0.1.249
 _2026-10-15_
 - Fixed: A new install of Lampas now starts empty instead of with the app owner's own words and progress, and Words points a new reader to Placement and Import.
