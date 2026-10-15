@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.248",
+    "date": "2026-10-15",
+    "story": "mw-svw421.4",
+    "kind": "new",
+    "text": "The Paradigms screen now has tables for the subjunctive, imperative, infinitive and participle, and εἰμί's moods, each unlocking as you learn the grammar behind it."
+  },
+  {
     "version": "0.1.247",
     "date": "2026-10-15",
     "story": "mw-5r3p30.146",

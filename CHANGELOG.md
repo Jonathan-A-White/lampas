@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.248
+_2026-10-15_
+- New: The Paradigms screen now has tables for the subjunctive, imperative, infinitive and participle, and εἰμί's moods, each unlocking as you learn the grammar behind it.
+
 ## 0.1.247
 _2026-10-15_
 - Fixed: Scrolling Settings with your thumb over a speed slider no longer changes your Greek or English speed.
