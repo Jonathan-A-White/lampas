@@ -174,7 +174,17 @@ function hearLetter(ctx: DrillContext, s: Subject, variant: number, random: Rand
 const WORDS = ['ἀγάπη', 'λόγος', 'θεός', 'ζωή', 'ξένος', 'ψυχή', 'φῶς', 'βίβλος', 'δόξα', 'κόσμος', 'πατήρ', 'ῥῆμα', 'υἱός', 'ὕδωρ', 'ὄνομα', 'χάρις', 'ἄνθρωπος'];
 
 /** The base letters of a word, a final sigma as a sigma: 'ἄνθρωπος' is ανθρωποσ. */
-export const baseLetters = (text: string): string => [...text.normalize('NFD')].filter((c) => !/\p{M}/u.test(c)).map((c) => (c === 'ς' ? 'σ' : c.toLowerCase())).join('');
+export function baseLetters(text: string): string {
+  // kept per text (mw-5r3p30.422): a drill sorts the passage's words by it once for every letter it asks
+  let base = baseCache.get(text);
+  if (base === undefined) {
+    base = [...text.normalize('NFD')].filter((c) => !/\p{M}/u.test(c)).map((c) => (c === 'ς' ? 'σ' : c.toLowerCase())).join('');
+    baseCache.set(text, base);
+  }
+  return base;
+}
+
+const baseCache = new Map<string, string>();
 
 /** The words that hold `text` (a letter or a pair), the shortest first. */
 export const wordsWith = (text: string, words: readonly string[] = WORDS): string[] =>

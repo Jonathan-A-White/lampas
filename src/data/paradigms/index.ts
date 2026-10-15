@@ -91,6 +91,16 @@ export const paradigmsOf = (ideaId: string): Paradigm[] => PARADIGMS.filter((p) 
  * not know has none.
  */
 export function tableFor(code: string): Paradigm | undefined {
+  // kept per code (mw-5r3p30.422): a drill asks it of every word of the passage on each of its tries, and the answer depends on the code alone
+  if (tableCache.has(code)) return tableCache.get(code);
+  const table = findTable(code);
+  tableCache.set(code, table);
+  return table;
+}
+
+const tableCache = new Map<string, Paradigm | undefined>();
+
+function findTable(code: string): Paradigm | undefined {
   let wanted: string[];
   try {
     wanted = ideasOf(code);

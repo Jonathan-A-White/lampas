@@ -6,7 +6,7 @@
 import { bookOf } from '../books';
 import { OPTION_COUNT, choicesOf, lookAlikesOf, pairMates } from '../choices';
 import type { Chapter, GreekWord, Verse } from '../chapter';
-import { decodeParse, parseSegments, splitParse } from '../parseCode';
+import { decodeParse, parseSegments, splitParse, type SplitParse } from '../parseCode';
 import { PARADIGMS, tableFor } from '../paradigms';
 import { shuffle, type Random } from '../quiz';
 import { chosenPronunciation } from '../../speech/greek';
@@ -89,6 +89,18 @@ const needsIdea = (code: string, id: string): boolean => {
   return ids.includes(id);
 };
 
+// A drill builds a question from the whole passage on each of its tries (mw-5r3p30.422): what a code or a word is depends on it alone, so it is worked out once.
+const parseCache = new Map<string, SplitParse>();
+/** splitParse, kept per code: read it, never change it. */
+function parsedOf(code: string): SplitParse {
+  let parsed = parseCache.get(code);
+  if (!parsed) {
+    parsed = splitParse(code);
+    parseCache.set(code, parsed);
+  }
+  return parsed;
+}
+
 const pick = <T>(items: readonly T[], random: Random): T => items[Math.floor(random() * items.length)];
 
 /** The facets of the questions about a passage (mw-i7xe0n.1): what the idea is, finding it in a verse, and its ending. */
@@ -107,7 +119,7 @@ function combinations<T>(items: readonly T[], size: number): T[][] {
 /** The parts of speech a word can be named by: its parsing's own, and 'pronoun' for any kind of pronoun (the pronoun is taught before its kinds). */
 function partsOf(code: string): string[] {
   const [pos] = termsOf(code);
-  return splitParse(code).pos === 'pronoun' && pos !== 'pronoun' ? [pos, 'pronoun'] : [pos];
+  return parsedOf(code).pos === 'pronoun' && pos !== 'pronoun' ? [pos, 'pronoun'] : [pos];
 }
 
 /** Every term that can describe a word: its parsing's terms, and 'pronoun' beside the part of speech of a pronoun. */
@@ -200,7 +212,17 @@ export const EVERY_TABLE: ReadonlySet<string> = new Set(PARADIGMS.map((p) => p.i
  * The stem the lemma and the form share and the ending after it: ἀρχή and ἀρχῆς share ἀρχ, ending ῆς. The stem keeps at least one
  * letter and the ending at least one, a stem vowel goes to the ending (λόγος, λόγου: λόγ + ου), and a form that is mostly ending has none.
  */
-export function stemOf(lemma: string, form: string): { stem: string; ending: string } | null {
+export function stemOf(lemma: string, form: string): Readonly<{ stem: string; ending: string }> | null {
+  const key = `${lemma}|${form}`;
+  if (stemCache.has(key)) return stemCache.get(key)!;
+  const stem = findStem(lemma, form);
+  stemCache.set(key, stem);
+  return stem;
+}
+
+const stemCache = new Map<string, Readonly<{ stem: string; ending: string }> | null>();
+
+function findStem(lemma: string, form: string): { stem: string; ending: string } | null {
   const [l, f] = [[...nfc(lemma)], [...nfc(form)]];
   if (/[^\p{L}\p{M}]/u.test(nfc(form))) return null;
   let k = 0;
@@ -218,7 +240,7 @@ export function stemOf(lemma: string, form: string): { stem: string; ending: str
  * (its lemma has one gender), and at least one must be.
  */
 function featuresOf(code: string, idea: GrammarIdea): string[] | null {
-  const { pos, features } = splitParse(code);
+  const { pos, features } = parsedOf(code);
   const named = features.filter((f) => termIsTaught(f.value, idea));
   const settled = features.every((f) => termIsTaught(f.value, idea) || (pos === 'noun' && f.id === 'gender'));
   return settled && named.length > 0 ? named.map((f) => f.value) : null;
@@ -248,7 +270,7 @@ function shownEnding(ending: string, pos: string): { text: string; key: string }
  * is not among them is left out; the question's `table` is the table to show after the answer. The placement asks with every table open (PROVISIONAL).
  */
 export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], random: Random, tablesOpen: ReadonlySet<string> = EVERY_TABLE): GrammarQuestion | null {
-  const places = placesOf(passage).filter((p) => splitParse(p.word.p).features.length > 0);
+  const places = placesOf(passage).filter((p) => parsedOf(p.word.p).features.length > 0);
   const stems = (p: Place) => stemOf(p.word.l, p.word.t);
   const open = (p: Place) => {
     const table = tableFor(p.word.p);
@@ -259,12 +281,12 @@ export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], rand
   const place = candidates[0];
   if (!place) return null;
   const { stem, ending: plainEnding } = stems(place)!;
-  const pos = splitParse(place.word.p).pos;
+  const pos = parsedOf(place.word.p).pos;
   const right = shownEnding(plainEnding, pos);
   const shownOf = (endings: readonly string[]) => endings.map((e) => shownEnding(e, pos));
   // the near misses are the same word's other endings in the passage (another case or tense of it), then other words' of its kind, then the common ones
   const sameWord = shuffle(places.filter((p) => p.word.l === place.word.l && p.word.p !== place.word.p), random).flatMap((p) => stems(p)?.ending ?? []);
-  const sameKind = places.filter((p) => splitParse(p.word.p).pos === pos).flatMap((p) => stems(p)?.ending ?? []);
+  const sameKind = places.filter((p) => parsedOf(p.word.p).pos === pos).flatMap((p) => stems(p)?.ending ?? []);
   const { options, near } = choicesOf(
     { right, near: shownOf(sameWord), fillers: shownOf(sameKind), lastResort: shownOf(shuffle(COMMON_ENDINGS[pos === 'verb' ? 'verb' : 'noun'], random)), keyOf: (e) => e.key },
     random,
