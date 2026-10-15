@@ -1,5 +1,5 @@
 {
-  "description": "A question about another passage (Melchizedek, while on Romans 8:28): the answer says what that passage says, names its verse by book, chapter and verse, and does not send him away to ask elsewhere; with no study resource on the app draws no link whatever `links` holds (tests/unit/links-grind.test.ts and features/tutor-links.feature), so this example does not demand that `links` is empty.",
+  "description": "A question about another passage (Melchizedek, while on Romans 8:28): the answer says what that passage says, names a verse about him by book, chapter and verse (Genesis 14:18-20, Psalm 110:4, Hebrews 5:6, 5:10, 6:20 or 7:1-17: any one of them, the example does not pick which), and does not send him away to ask elsewhere; with no study resource on the app draws no link whatever `links` holds (tests/unit/links-grind.test.ts and features/tutor-links.feature), so this example does not demand that `links` is empty.",
   "schemaVersion": "1",
   "request": {
     "reference": "Romans 8:28",
@@ -12,7 +12,7 @@
     "resources": []
   },
   "expect": {
-    "answer": { "matches": "Hebrews 7:[12]" },
+    "answer": { "matches": "(Gen(esis|\\.)? 14:(18|19|20)|Ps(alms?|\\.)? 110:4|Heb(rews|\\.)? (5:(6|10)|6:20|7:(1[0-7]|[1-9])))\\b" },
     "settings_changes": { "present": false }
   }
 }
