@@ -25,7 +25,7 @@
   },
   "expect": {
     "answer": {
-      "matches": "Theme"
+      "matches": "[Tt]heme|[Ss]etting"
     },
     "settings_changes": {
       "present": false

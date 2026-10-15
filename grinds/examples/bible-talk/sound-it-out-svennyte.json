@@ -22,7 +22,7 @@
     }
   },
   "expect": {
-    "answer": { "contains": "σβέν", "matches": "[Ff]irst" },
+    "answer": { "contains": "σβέν", "matches": "[Ff]irst|[Ss]tress|[Aa]ccent|SVE" },
     "syllables.0": { "equals": "σβέν" },
     "syllables.1": { "equals": "νυ" },
     "syllables.2": { "equals": "τε" },

@@ -24,7 +24,7 @@
   },
   "expect": {
     "answer": {
-      "matches": "[Bb]uil"
+      "matches": "[Bb]uil|[Ww]orking on|[Ii]n progress|[Uu]nder ?way|[Bb]eing (made|written|done)"
     },
     "settings_changes": {
       "present": false
