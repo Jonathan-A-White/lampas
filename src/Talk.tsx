@@ -5,7 +5,7 @@
 // show live while he holds and go on release. Each answer can be heard (read aloud through
 // src/speech/readAloud.ts, a Stop while it plays) and its Greek words open the word sheet.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Waiting } from './Ask';
 import { addLemmaToLearn, findGreekWord, glossOf } from './data/answerWord';
 import type { GreekWord } from './data/chapter';
@@ -63,7 +63,7 @@ export function TalkBar({ hold }: { hold: HoldHandlers }) {
 const barLabel = (voice: Voice): string => (voice.listening ? (voice.ready ? 'Release to send' : 'Starting the mic…') : 'Hold to talk');
 
 /** Postern's bar at the foot of the sheet: listens from the first touch (or Space / Enter held) and sends on release. */
-function HoldToTalk({ voice, disabled }: { voice: Voice; disabled: boolean }) {
+function HoldToTalk({ voice, disabled, round }: { voice: Voice; disabled: boolean; round: boolean }) {
   return (
     <HoldBar
       hold={{ onHold: voice.press, onRelease: () => void voice.release(), onDrop: voice.abort }}
@@ -74,6 +74,7 @@ function HoldToTalk({ voice, disabled }: { voice: Voice; disabled: boolean }) {
       disabled={disabled}
       keys
       compactWhenShort
+      roundWhenShort={round}
     />
   );
 }
@@ -623,6 +624,19 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
   useEffect(() => {
     if (voice.typing > 0) focusQuietly(field.current);
   }, [voice.typing]);
+  // The box grows upward with his words, line by line (its CSS holds it between one or two lines and five, then it scrolls); it is measured again
+  // when the window changes shape, since the same words take other lines in another width.
+  useLayoutEffect(() => {
+    const grow = (): void => {
+      const el = field.current;
+      if (!el) return;
+      el.style.height = 'auto';
+      if (el.scrollHeight > 0) el.style.height = `${el.scrollHeight + el.offsetHeight - el.clientHeight}px`;
+    };
+    grow();
+    window.addEventListener('resize', grow);
+    return () => window.removeEventListener('resize', grow);
+  }, [text]);
 
   // The pictures waiting to go (attached, taken or pasted) and, from Send until the answer, the ones in flight, shown under his question.
   const box = usePictureBox();
@@ -645,6 +659,8 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
     addToBox(sharedFiles);
   }, [sharedFiles, addToBox]);
   const hasPictures = box.pictures.length > 0;
+  // words or pictures waiting to go: Send is on screen and, in a short window, the hold bar gives way to a round mic button
+  const composing = text.length > 0 || hasPictures;
   const send = (message: string): void => {
     if ((!message.trim() && !hasPictures) || busy || box.working) return;
     // a message of pictures alone asks what the pictures say
@@ -760,7 +776,7 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
             {turns && !busy && (turns.length > 0 || state) && more.length > 0 ? <Suggestions questions={more} onAsk={send} label="Ask something else" /> : null}
           </div>
           <BarSlot level={3} />
-          <div className="shrink-0 space-y-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+var(--lp-bar-inset))] short:flex short:flex-wrap short:items-end short:gap-x-2 short:space-y-0 short:gap-y-2">
+          <div data-composer className="shrink-0 space-y-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+var(--lp-bar-inset))] short:flex short:flex-wrap short:items-end short:gap-x-2 short:space-y-0 short:gap-y-2">
             {voice.listening ? (
               <div data-talk-live role="status" className="rounded-2xl border border-bad px-3 py-2 short:basis-full">
                 <p className="text-sm font-medium text-bad">{voice.ready ? 'Listening… let go to send, slide away to cancel' : 'Starting the microphone…'}</p>
@@ -773,28 +789,30 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
               </p>
             ) : null}
             <PictureControls box={box} disabled={busy} />
-            <div className="flex items-end gap-2 short:min-w-0 short:flex-1">
+            {/* One row for the words: the box, Send and the mic. In a short window (the keyboard up, a phone sideways) the mic is the bar beside the box, a round
+                button once there are words, and the row is at least 20 rem so the pictures and the two buttons go on a line above it, never beside a squeezed box. */}
+            <div data-composer-row className="flex flex-wrap items-end gap-2 short:min-w-[20rem] short:flex-1 short:flex-nowrap">
               <textarea
                 ref={field}
                 aria-label="Your message"
-                rows={2}
+                rows={1}
                 maxLength={MAX_TALK_CHARS}
                 value={text}
                 disabled={busy}
                 onChange={(e) => setText(e.target.value)}
-                className="block min-w-0 flex-1 resize-none rounded-lg border border-line bg-canvas px-3 py-2 text-lg short:h-14"
+                className="block min-h-[calc(2*1.75rem+1rem+2px)] max-h-[calc(5*1.75rem+1rem+2px)] min-w-0 flex-1 resize-none overflow-y-auto rounded-lg border border-line bg-canvas px-3 py-2 text-lg short:min-h-14"
               />
               <button
                 type="button"
                 disabled={busy || box.working || (!text.trim() && !hasPictures)}
                 onClick={() => send(text)}
-                className="min-h-12 shrink-0 rounded-xl bg-accent px-5 text-lg font-medium text-accent-fg disabled:opacity-40"
+                className={`min-h-12 shrink-0 rounded-xl bg-accent px-5 text-lg font-medium text-accent-fg disabled:opacity-40 short:order-3 short:min-h-14 short:min-w-14 short:px-3 ${composing ? '' : 'short:hidden'}`}
               >
                 Send
               </button>
-            </div>
-            <div className="short:w-48 short:shrink-0">
-              <HoldToTalk voice={voice} disabled={busy} />
+              <div className={`w-full short:order-2 short:shrink-0 ${composing ? 'short:w-14' : 'short:w-36'}`}>
+                <HoldToTalk voice={voice} disabled={busy} round={composing} />
+              </div>
             </div>
           </div>
         </div>

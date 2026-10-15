@@ -51,6 +51,7 @@ async function open(): Promise<void> {
   vi.unstubAllGlobals();
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
+  window.localStorage.setItem('lampas.welcome', 'done');
   window.history.replaceState(null, '', '/');
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
@@ -165,5 +166,25 @@ describeFeature(feature, ({ Scenario }) => {
     And('that grist is not marked as spoken', () => expect(fake.received[0].input).not.toHaveProperty('spoken'));
     And('that grist carries the Greek and the English of verses 1 to 11 and no other', carriesPassage);
     And('the answer shows in the Verse view', answerShows);
+  });
+
+  Scenario('In the Talk sheet Hold to talk becomes a round mic button while there are words and comes back when the box is empty', ({ Given, When, Then }) => {
+    const talkSheet = () => screen.getByRole('dialog', { name: /^Talk about / });
+    const messageBox = () => within(talkSheet()).getByRole('textbox', { name: 'Your message' });
+    const talkBar = () => within(talkSheet()).getByRole('button', { name: 'Hold to talk', exact: true });
+    Given(opened, openIt);
+    When('he opens the Talk sheet', async () => {
+      await user.click(await screen.findByRole('button', { name: 'Talk' }));
+      await screen.findByRole('dialog', { name: /^Talk about / });
+    });
+    Then("the Talk sheet's Hold to talk bar is the wide bar", () => expect(talkBar()).not.toHaveAttribute('data-round'));
+    When("he types {string} in the Talk sheet's message box", async (_, words: string) => {
+      await user.type(messageBox(), words);
+    });
+    Then("the Talk sheet's Hold to talk bar is a round mic button", () => expect(talkBar()).toHaveAttribute('data-round'));
+    When("he clears the Talk sheet's message box", async () => {
+      await user.clear(messageBox());
+    });
+    Then("the Talk sheet's Hold to talk bar is the wide bar again", () => expect(talkBar()).not.toHaveAttribute('data-round'));
   });
 });
