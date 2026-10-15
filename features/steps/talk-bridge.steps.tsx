@@ -128,6 +128,32 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the talk is shown again with its first turn and the button {string}', talkAgain);
   });
 
+  Scenario("Back from an example word on the bridge's idea sheet shows the idea sheet, then the talk", ({ Given, When, And, Then }) => {
+    Given(FOUNDATIONS, opens(LACKS));
+    When(WHEN_ASKS, asks);
+    And('he taps {string}', taps);
+    And('he taps the first example on the idea sheet', async () => {
+      const sheetNow = await waitFor(() => {
+        const found = ideaSheets('Pairs of vowels')[0];
+        if (!found) throw new Error('the idea sheet is not open yet');
+        return found;
+      });
+      await user.click((await within(sheetNow).findAllByTestId('idea-example'))[0]);
+    });
+    Then('the word sheet is open over the idea sheet {string} and the talk', async (_, name: string) => {
+      await screen.findByRole('dialog', { name: 'Word' });
+      expect(ideaSheets(name)).toHaveLength(1);
+      expect(screen.getByRole('dialog', { name: /^Talk about / })).toBeInTheDocument();
+    });
+    When('he goes Back', async () => {
+      window.history.back();
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Word' })).toBeNull());
+    });
+    Then('the word sheet is closed and the idea sheet {string} is open over the talk', sheetOpen);
+    When('he goes Back once more', back);
+    Then('the talk is shown again with its first turn and the button {string}', talkAgain);
+  });
+
   Scenario('A spoken yes takes him there as the tap does, once', ({ Given, When, And, Then }) => {
     Given(FOUNDATIONS, opens(LACKS));
     When(WHEN_ASKS, asks);

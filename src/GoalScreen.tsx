@@ -108,8 +108,9 @@ function NoGoalBody({ levels }: { levels: ReadonlyMap<string, Level> }) {
         <IdeaSheet
           idea={ideaOf(ideaId)}
           onClose={() => setIdeaId(null)}
+          covered={word !== null}
           onWord={(chapter: Chapter, tapped: GreekWord) => {
-            setIdeaId(null);
+            // the word sheet opens over the idea sheet, which stays: Back closes one sheet at a time (mw-5r3p30.378)
             setWordChapter(chapter);
             setWord({ words: [tapped], fromEnglish: false });
           }}
@@ -421,8 +422,9 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
         <IdeaSheet
           idea={ideaOf(ideaId)}
           onClose={() => setIdeaId(null)}
+          covered={word !== null}
           onWord={(chapter: Chapter, tapped: GreekWord) => {
-            setIdeaId(null);
+            // the word sheet opens over the idea sheet, which stays: Back closes one sheet at a time (mw-5r3p30.378)
             setWordChapter(chapter);
             setWord({ words: [tapped], fromEnglish: false });
           }}

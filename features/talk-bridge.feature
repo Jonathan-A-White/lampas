@@ -16,6 +16,17 @@ Feature: The tutor bridges a question he is not ready for
     When he goes Back
     Then the talk is shown again with its first turn and the button "Take me there: Pairs of vowels"
 
+  Scenario: Back from an example word on the bridge's idea sheet shows the idea sheet, then the talk
+    Given only the letters are solid and Lampas is opened on 1 John 1 behind a fake Postern whose tutor names the foundations he lacks
+    When he opens the talk and asks "Why is the genitive used in 1 John 1:1?"
+    And he taps "Take me there: Pairs of vowels"
+    And he taps the first example on the idea sheet
+    Then the word sheet is open over the idea sheet "Pairs of vowels" and the talk
+    When he goes Back
+    Then the word sheet is closed and the idea sheet "Pairs of vowels" is open over the talk
+    When he goes Back once more
+    Then the talk is shown again with its first turn and the button "Take me there: Pairs of vowels"
+
   Scenario: A spoken yes takes him there as the tap does, once
     Given only the letters are solid and Lampas is opened on 1 John 1 behind a fake Postern whose tutor names the foundations he lacks
     When he opens the talk and asks "Why is the genitive used in 1 John 1:1?"
