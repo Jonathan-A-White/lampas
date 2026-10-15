@@ -12,6 +12,7 @@ import { ASK_TUTOR_LABEL } from '../../src/AskTutor';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
+import { resetImmersive } from '../../src/immersive';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { forgetScrolls } from '../../src/nav/scrollMemory';
 import { getReading, stopReading } from '../../src/speech/readAloud';
@@ -22,6 +23,8 @@ import { seedHisWords } from '../../tests/support/his-words';
 
 afterAll(() => {
   cleanup();
+  // the Reader's unmount set a leave-full-screen timer: it must not fire after jsdom is torn down
+  resetImmersive();
   stopReading();
   vi.unstubAllGlobals();
   db.close();
@@ -85,6 +88,7 @@ function fakeWakeLock(): void {
 
 async function open(options: { immersive: 'on' | 'off'; recogniser?: boolean; speaks?: boolean; fullscreen?: 'works' | 'refuses'; wakeLock?: boolean; slowSetting?: boolean; address?: string }): Promise<void> {
   cleanup();
+  resetImmersive();
   stopReading();
   clearBus();
   forgetTrail();
