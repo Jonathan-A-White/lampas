@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.257
+_2026-10-15_
+- New: A grammar idea now links to its table, and Review asks you for an ending only after you have opened the table that shows it.
+
 ## 0.1.255
 _2026-10-15_
 - New: After a few visits, Lampas shows a free reader one quiet line, once, about what a licence adds, and it is easy to find out how to get one.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.257",
+    "date": "2026-10-15",
+    "story": "mw-svw421.5",
+    "kind": "new",
+    "text": "A grammar idea now links to its table, and Review asks you for an ending only after you have opened the table that shows it."
+  },
+  {
     "version": "0.1.255",
     "date": "2026-10-15",
     "story": "mw-8m9dyu.6",
