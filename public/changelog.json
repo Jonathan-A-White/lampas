@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.239",
+    "date": "2026-10-15",
+    "story": "mw-svw421.2",
+    "kind": "new",
+    "text": "The Paradigms screen now has tables for the third declension, adjective endings, the personal pronouns, this and who, and the question and \"someone\" pronouns."
+  },
+  {
     "version": "0.1.238",
     "date": "2026-10-15",
     "story": "mw-5r3p30.360",

@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.239
+_2026-10-15_
+- New: The Paradigms screen now has tables for the third declension, adjective endings, the personal pronouns, this and who, and the question and "someone" pronouns.
+
 ## 0.1.238
 _2026-10-15_
 - Fixed: The example words on the grammar sheets no longer show a neighbouring word's English, so περί reads 'about' and ἐψηλάφησαν reads 'touched'.
