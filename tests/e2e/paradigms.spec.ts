@@ -1,17 +1,18 @@
 import { expect, test, type Page } from '@playwright/test';
+import { LADDER } from '../../src/data/grammar/ladder';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
 const IDEAS: Record<string, 'solid' | 'frontier'> = {
   article: 'solid', noun: 'solid', verb: 'solid', 'mood-indicative': 'solid', 'tense-present': 'solid', 'tense-imperfect': 'solid',
   'voice-active': 'solid', 'person-1st': 'solid', 'person-2nd': 'solid', 'person-3rd': 'solid', 'number-singular': 'solid',
-  'number-plural': 'solid', 'case-nominative': 'solid', 'case-genitive': 'solid', 'case-dative': 'frontier',
+  'number-plural': 'solid', eimi: 'solid', 'case-nominative': 'solid', 'case-genitive': 'solid', 'case-dative': 'frontier',
   'gender-masculine': 'solid', 'gender-feminine': 'solid',
 };
 
 // Puts his grammar levels in the app's own store through raw IndexedDB, as the app wrote them.
-async function putLevels(page: Page) {
-  const rows = Object.entries(IDEAS).map(([id, level]) => ({ id, level, since: Date.now(), how: 'marked' }));
+async function putLevels(page: Page, ideas: Record<string, 'solid' | 'frontier'> = IDEAS) {
+  const rows = Object.entries(ideas).map(([id, level]) => ({ id, level, since: Date.now(), how: 'marked' }));
   await page.evaluate(
     (list) =>
       new Promise<void>((resolve, reject) => {
@@ -62,9 +63,9 @@ test('Paradigms: the list, a table in Study and Review mode, locked cells, at ph
   await page.getByRole('button', { name: /^Paradigms/ }).click();
   await expect(page.getByRole('heading', { name: 'Paradigms', level: 1 })).toBeVisible();
   const rows = page.locator('[data-paradigm]');
-  await expect(rows).toHaveCount(16);
+  await expect(rows).toHaveCount(20);
   await expect(page.locator('[data-paradigm="article"]').getByTestId('paradigm-available')).toHaveText('Available forms: 12 of 24');
-  await expect(page.locator('[data-paradigm="eimi"]').getByTestId('paradigm-available')).toHaveText('Available forms: 24 of 36');
+  await expect(page.locator('[data-paradigm="eimi"]').getByTestId('paradigm-available')).toHaveText('Available forms: 24 of 70');
   for (const row of await rows.all()) expect((await row.boundingBox())?.height).toBeGreaterThanOrEqual(63.5);
   await expectFitsPhone(page);
   await shot(page, 'paradigms-list');
@@ -101,13 +102,17 @@ test('Paradigms: the list, a table in Study and Review mode, locked cells, at ph
   // the other tables fit the phone, and Ask the tutor is a 48 px button inside the screen
   for (const [id, name, count] of [
     ['noun-endings', 'Noun endings', 40],
-    ['eimi', 'εἰμί', 36],
+    ['eimi', 'εἰμί', 70],
     ['verb-endings', 'Verb endings', 24],
     ['third-declension', 'The third declension', 48],
     ['adjective-endings', 'Adjective endings', 48],
     ['pronouns-personal', 'Personal pronouns', 40],
     ['pronouns-demonstrative-relative', 'Demonstrative and relative pronouns', 48],
     ['pronouns-interrogative-indefinite', 'Interrogative and indefinite pronouns', 32],
+    ['subjunctive', 'The subjunctive', 30],
+    ['imperative', 'The imperative', 20],
+    ['infinitive', 'The infinitive', 9],
+    ['participle', 'The participle', 30],
   ] as const) {
     await page.goto(`/#/paradigms?t=${id}&mode=review`);
     await expect(page.getByRole('heading', { name, level: 1 })).toBeVisible();
@@ -117,5 +122,25 @@ test('Paradigms: the list, a table in Study and Review mode, locked cells, at ph
     await ask.scrollIntoViewIfNeeded();
     expect((await ask.boundingBox())?.height).toBeGreaterThanOrEqual(47.5);
     await shot(page, `paradigms-${id}`);
+  }
+});
+
+test('Paradigms: every form of the mood tables fits its cell at phone width, with every idea solid', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await putLevels(page, Object.fromEntries(LADDER.map((idea) => [idea.id, 'solid' as const])));
+  await page.reload();
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  for (const [id, count] of [['subjunctive', 30], ['imperative', 20], ['infinitive', 9], ['participle', 30]] as const) {
+    await page.goto(`/#/paradigms?t=${id}&mode=review`);
+    await expect(page.locator('[data-cell][data-state="shown"]')).toHaveCount(count);
+    await expectFitsPhone(page);
+    // no Greek form is cut off or broken inside its cell
+    const cut = await page.locator('[data-cell][data-state="shown"]').evaluateAll((cells) =>
+      cells.filter((el) => el.scrollWidth > el.clientWidth || el.getClientRects().length === 0 || el.getBoundingClientRect().height > 80).map((el) => el.textContent),
+    );
+    expect(cut, id).toEqual([]);
+    await shot(page, `paradigms-${id}-open`);
   }
 });

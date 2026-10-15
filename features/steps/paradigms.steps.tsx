@@ -9,6 +9,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db, type GrammarLevelName } from '../../src/data/db';
+import { cellsOf, paradigmById } from '../../src/data/paradigms';
 import { forgetRevealed } from '../../src/data/paradigms/revealed';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
@@ -182,6 +183,37 @@ describeFeature(feature, ({ Background, Scenario }) => {
       for (const cell of document.querySelectorAll('[data-cell*="Future"]')) expect(cell.getAttribute('aria-label')?.toLowerCase()).toContain(idea.toLowerCase());
     });
     And('the cell {string} is locked and shows no form', (_, place: string) => showsNothing(place, 'locked'));
+  });
+
+  Scenario('The participle table stays shut while the participle idea is not yet, and opens with it', ({ Given, And, Then, When }) => {
+    Given('every idea of the table {string} except {string} is at the frontier', async (_, id: string, except: string) => {
+      const table = paradigmById(id);
+      if (!table) throw new Error(`no table ${id}`);
+      const ids = new Set(cellsOf(table).flatMap((cell) => cell.ideas));
+      ids.delete(except);
+      await db.grammarLevels.bulkPut([...ids].map((idea) => ({ id: idea, level: 'frontier' as const, since: Date.now(), how: 'marked' as const })));
+    });
+    And('the table {string} is open in Review mode', (_, id: string) => openAt(`#/paradigms?t=${id}&mode=review`));
+    Then('the table says {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('table-available')).toHaveTextContent(text));
+    });
+    And('all {int} cells of the table are locked', async (_, count: number) => {
+      await waitFor(() => expect(document.querySelectorAll('[data-cell][data-state="locked"]')).toHaveLength(count));
+    });
+    And('every lock names {string}', (_, idea: string) => {
+      const locks = document.querySelectorAll('[data-cell][data-state="locked"]');
+      expect(locks.length).toBeGreaterThan(0);
+      for (const cell of locks) expect(cell.getAttribute('aria-label')?.toLowerCase()).toContain(idea.toLowerCase());
+    });
+    When('the idea {string} moves to frontier', async (_, id: string) => {
+      await db.grammarLevels.put({ id, level: 'frontier', since: Date.now(), how: 'marked' });
+    });
+    Then('the table now says {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('table-available')).toHaveTextContent(text));
+    });
+    And('the cell {string} now shows {string}', (_, place: string, form: string) => shows(place, form));
+    And('the cell {string} also shows {string}', (_, place: string, form: string) => shows(place, form));
+    And('the cell {string} likewise shows {string}', (_, place: string, form: string) => shows(place, form));
   });
 
   Scenario('Opening The third declension shows its 48 cells, every one locked while its idea is not yet', ({ When, And, Then }) => {

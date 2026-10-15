@@ -12,7 +12,7 @@ One file each in `src/data/paradigms/`, listed in `index.ts` (`PARADIGMS`); a ne
 | --- | --- | --- |
 | `article` | The article | 24: 4 cases x 3 genders x singular and plural |
 | `noun-endings` | Noun endings | 40: five kinds of first and second declension noun (λόγος, τέκνον, ἡμέρα, φωνή, προφήτης) x 4 cases x singular and plural |
-| `eimi` | εἰμί | 36: present, imperfect and future indicative, 6 persons each, each with its English |
+| `eimi` | εἰμί | 70: present, imperfect and future indicative, 6 persons each, then the present subjunctive (6), imperative (4), infinitive (1) and participle (nominative and genitive singular of each gender, 6); 35 rows, each form with its English; every cell names `eimi` beside its mood |
 | `verb-endings` | Verb endings | 24: present and imperfect indicative, active and middle or passive, 6 persons each |
 | `third-declension` | The third declension | 48: σάρξ, πνεῦμα, πίστις, πατήρ, βασιλεύς, γένος x 4 cases x singular and plural; full forms, because the stem changes (σάρξ, σαρκός) |
 | `adjective-endings` | Adjective endings | 48: ἀγαθός -ή -όν (declensions 2, 1, 2) and πᾶς πᾶσα πᾶν (3, 1, 3) x 4 cases x 3 genders x singular and plural |
@@ -26,7 +26,14 @@ One file each in `src/data/paradigms/`, listed in `index.ts` (`PARADIGMS`); a ne
 | `contract-verbs` | Contract verbs | 18: ἀγαπάω, ποιέω, πληρόω, present active, 6 persons each; the merged vowel is written out (ἀγαπᾷ, ποιοῦμεν) |
 | `mi-verbs` | Verbs in -μι | 36: δίδωμι, τίθημι, ἵστημι, present active and aorist active, 6 persons each; the aorist of ἵστημι (ἔστην) names `second-tenses`, those of δίδωμι and τίθημι (ἔδωκα, ἔθηκα) `tense-signs` |
 | `oida` | οἶδα | 12: οἶδα and ᾔδειν, 6 persons each; the forms are written whole |
+| `subjunctive` | The subjunctive | 30: λύω, present active, present middle or passive, aorist active, middle and passive, 6 persons each (a block of rows for each, the persons down and singular and plural across); no augment, the aorist cells name `tense-signs` |
+| `imperative` | The imperative | 20: the same five blocks, 2nd and 3rd person singular and plural (no 1st person) |
+| `infinitive` | The infinitive | 9: present, aorist and perfect x active, middle, passive; the middle and passive share the present form λύεσθαι and the perfect form λελύσθαι |
+| `participle` | The participle | 30: present active, present middle or passive, aorist active, aorist passive, perfect active (a block of rows for each) x nominative and genitive singular x masculine, feminine, neuter across; each cell names its declension (`declension-1`, `-2` or `-3`) |
 
+The four mood tables after `oida` (mw-svw421.4: the subjunctive, imperative, infinitive and participle of λύω, and the moods of εἰμί; names PROVISIONAL, the
+Governor to confirm) write every form whole, with no hyphen, so the form he learns is the form he reads (`λῦσον`, `λυθεῖσα`); each cell names `verb`, its mood, its
+voice and its tense (with `tense-signs` or `reduplication` where it shows one), and a person and number where the mood has them (`persons.ts` `moodIdeas`). Their rows are blocks, one for each tense and voice, so a table never has more than three columns and each Greek form has room on a 390 px phone; a three-column table draws its Greek at `text-lg` (ParadigmsScreen `formSize`), tests/e2e/paradigms.spec.ts proves every form fits its cell.
 The seven verb tables after `pronouns-interrogative-indefinite` (mw-svw421.3, the Master Verb Chart's indicative; names PROVISIONAL, the
 Governor to confirm) share `persons.ts` (the six persons, and `verbIdeas`: the verb, the mood, the voice, the person and the number, then the
 ideas of the tense). Where a stem and a tense sign are added to an ending the hyphen stands at the joint, and an accent that moves onto the
@@ -72,4 +79,4 @@ with the bible-talk grind's focus `{table, revealed, kind: 'paradigm'}`: `table`
 
 ## Out of scope
 
-Drills tied to the chapter he reads, the reflexive, possessive and other pronouns, the vocative, the subjunctive, imperative, infinitive and participle (the moods other than the indicative), the future perfect, the aorist and future of the contract and -μι verbs, the liquid and other irregular stems.
+Drills tied to the chapter he reads, the reflexive, possessive and other pronouns, the vocative, and whatever else the Master Verb Chart holds that no table has yet: the optative, the participles beyond the five of the table (future, perfect middle or passive, aorist middle) and the participle's other cases and its plural, the future perfect, the aorist and future of the contract and -μι verbs, the liquid and other irregular stems.

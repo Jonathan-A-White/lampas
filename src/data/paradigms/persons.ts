@@ -11,12 +11,16 @@ export const PERSONS = [
   ['3rd person plural', 'person-3rd', 'number-plural'],
 ] as const;
 
-/** The ideas of one cell of a verb in the indicative: the verb, its mood, its voice, its person and number, then the ideas of the tense and of its signs. */
-export const verbIdeas = (voiceIdea: string, person: readonly [string, string, string], ...more: string[]): string[] => [
+/** The ideas of one cell of a verb in a finite mood: the verb, the mood, its voice, its person and number, then the ideas of the tense and of its signs. */
+export const moodIdeas = (mood: string, voiceIdea: string, person: readonly [string, string, string], ...more: string[]): string[] => [
   'verb',
-  'mood-indicative',
+  mood,
   voiceIdea,
   person[1],
   person[2],
   ...more,
 ];
+
+/** The ideas of one cell of a verb in the indicative: the same, with the indicative as the mood. */
+export const verbIdeas = (voiceIdea: string, person: readonly [string, string, string], ...more: string[]): string[] =>
+  moodIdeas('mood-indicative', voiceIdea, person, ...more);

@@ -7,14 +7,18 @@ import { ARTICLE } from './article';
 import { CONTRACT_VERBS } from './contractVerbs';
 import { EIMI } from './eimi';
 import { FUTURE_AND_AORIST } from './futureAndAorist';
+import { IMPERATIVE } from './imperative';
+import { INFINITIVE } from './infinitive';
 import { MI_VERBS } from './miVerbs';
 import { NOUN_ENDINGS } from './nounEndings';
 import { OIDA } from './oida';
+import { PARTICIPLE } from './participle';
 import { PERFECT_AND_PLUPERFECT } from './perfectAndPluperfect';
 import { PRONOUNS_DEMONSTRATIVE_RELATIVE } from './pronounsDemonstrativeRelative';
 import { PRONOUNS_INTERROGATIVE_INDEFINITE } from './pronounsInterrogativeIndefinite';
 import { PRONOUNS_PERSONAL } from './pronounsPersonal';
 import { SECOND_AORIST } from './secondAorist';
+import { SUBJUNCTIVE } from './subjunctive';
 import { THIRD_DECLENSION } from './thirdDeclension';
 import type { Paradigm, ParadigmCell, ParadigmColumn, ParadigmRow } from './types';
 import { VERB_ENDINGS } from './verbEndings';
@@ -39,6 +43,10 @@ export const PARADIGMS: readonly Paradigm[] = [
   CONTRACT_VERBS,
   MI_VERBS,
   OIDA,
+  SUBJUNCTIVE,
+  IMPERATIVE,
+  INFINITIVE,
+  PARTICIPLE,
 ];
 
 export const paradigmById = (id: string | undefined): Paradigm | undefined => PARADIGMS.find((p) => p.id === id);
