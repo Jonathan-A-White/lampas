@@ -11,8 +11,8 @@ const readJson = (rel: string): Schema & { required: string[]; properties: Recor
   JSON.parse(readFileSync(rel, 'utf8')) as never;
 
 const KINDS = [
-  { kind: 'bible-talk', max: 600, guard: isTalkAnswer },
-  { kind: 'verse-ask', max: 400, guard: isVerseAnswer },
+  { kind: 'bible-talk', max: 4000, guard: isTalkAnswer },
+  { kind: 'verse-ask', max: 4000, guard: isVerseAnswer },
 ] as const;
 
 const SPOKEN = 'um why are there uh italic words what does it mean for the words to be italic';

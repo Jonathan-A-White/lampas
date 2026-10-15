@@ -159,7 +159,7 @@ export function AskComposer({ verse, state, onAsk, prefill = null }: {
   const send = ({ text }: ComposerMessage): boolean => {
     const question = text.trim();
     if (!question || busy) return false;
-    if (question.length > MAX_QUESTION_CHARS) throw new Error(`A question can be at most ${MAX_QUESTION_CHARS} characters; yours is ${question.length}.`);
+    if (question.length > MAX_QUESTION_CHARS) throw new Error(`${question.length} of ${MAX_QUESTION_CHARS}: the question is too long to send. Shorten it; nothing has been cut.`);
     onAsk(verse, question);
     return true;
   };

@@ -21,6 +21,8 @@ import { RustyOffer } from './talk/RustyOffer';
 import { registerTalkLeave } from './talk/rustyOffer';
 import { registerGreekWordOpener } from './talk/greekOffer';
 import { sendMakersOffer, takeBridgeOffer, takeSettingOffer, useOfferSending } from './talk/offers';
+import { isTooLong } from './ui/lengthLimit';
+import { LengthNote } from './ui/LengthNote';
 import { hebrewSoundAsk, MAX_TALK_CHARS, scopeTitle, type TalkFocus, type TalkScope } from './services/talk';
 import { HebrewSoundGuide } from './script/HebrewGuide';
 import { HebrewAskContext } from './script/hebrewSpeech';
@@ -522,6 +524,7 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
 }) {
   const title = scope.welcome ? 'Welcome' : scope.free ? 'Talk with the tutor' : scope.screen ? `Ask the tutor: ${scope.screen.name}` : scope.quiz ? `Quiz on ${scopeTitle(scope)}` : `Talk about ${scopeTitle(scope)}`;
   const titleId = useId();
+  const countId = useId();
   const turns = useLiveQuery(() => listTurns(ref), [ref]);
   const [text, setText] = useState(shared?.text ?? '');
   // A failure he cleared with New talk is not shown again (the state itself belongs to useTalk).
@@ -666,8 +669,10 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
   const hasPictures = box.pictures.length > 0;
   // words or pictures waiting to go: Send is on screen and, in a short window, the hold bar gives way to a round mic button
   const composing = text.length > 0 || hasPictures;
+  // a question past the cap stays in the box, never cut; Send is off and the count says why (src/services/requestBudget.ts MAX_QUESTION_CHARS)
+  const tooLong = isTooLong(text, MAX_TALK_CHARS);
   const send = (message: string): void => {
-    if ((!message.trim() && !hasPictures) || busy || box.working) return;
+    if ((!message.trim() && !hasPictures) || message.trim().length > MAX_TALK_CHARS || busy || box.working) return;
     // a message of pictures alone asks what the pictures say
     onSay(message.trim() || PICTURE_ONLY_QUESTION, undefined, takeWaiting());
     setText('');
@@ -794,6 +799,7 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
               </p>
             ) : null}
             <PictureControls box={box} disabled={busy} />
+            <LengthNote id={countId} text={text} max={MAX_TALK_CHARS} what="question" className="short:basis-full" />
             {/* One row for the words: the box, Send and the mic. In a short window (the keyboard up, a phone sideways) the mic is the bar beside the box, a round
                 button once there are words, and the row is at least 20 rem so the pictures and the two buttons go on a line above it, never beside a squeezed box. */}
             <div data-composer-row className="flex flex-wrap items-end gap-2 short:min-w-[20rem] short:flex-1 short:flex-nowrap">
@@ -801,7 +807,7 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
                 ref={field}
                 aria-label="Your message"
                 rows={1}
-                maxLength={MAX_TALK_CHARS}
+                aria-invalid={tooLong || undefined}
                 value={text}
                 disabled={busy}
                 onChange={(e) => setText(e.target.value)}
@@ -809,7 +815,8 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
               />
               <button
                 type="button"
-                disabled={busy || box.working || (!text.trim() && !hasPictures)}
+                disabled={busy || box.working || tooLong || (!text.trim() && !hasPictures)}
+                aria-describedby={tooLong ? countId : undefined}
                 onClick={() => send(text)}
                 className={`min-h-12 shrink-0 rounded-xl bg-accent px-5 text-lg font-medium text-accent-fg disabled:opacity-40 short:order-3 short:min-h-14 short:min-w-14 short:px-3 ${composing ? '' : 'short:hidden'}`}
               >

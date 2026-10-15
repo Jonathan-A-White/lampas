@@ -2,3 +2,7 @@
 
 /** The most a request may weigh, as JSON in UTF-8: the record's payload is capped (bsv-kit's grist MAX_PAYLOAD_BYTES, 20 KiB) and the sealed grist is base64 of this, with the envelope. */
 export const MAX_REQUEST_BYTES = 6500;
+
+/** The longest question he may ask, in the Bible talk and in Ask the tutor alike: room for a prayer or a passage of several paragraphs pasted in. The box
+ * keeps whatever he pastes and warns past this (never cuts it); the grinds' input schemas (question) and answer schemas (the cleaned question) say the same. */
+export const MAX_QUESTION_CHARS = 4000;
