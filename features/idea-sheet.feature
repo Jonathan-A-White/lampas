@@ -154,10 +154,32 @@ Feature: The idea sheet
     Then the idea sheet shows examples spelt with ξ from "1 John"
     And the idea sheet has no line "No word of 1 John 1:1"
 
-  Scenario: An idea the goal verse has keeps the goal verse's examples
+  # mw-5r3p30.351, his words: "examples that match what your teaching ... and if you're going to talk about different sounds then need to do so on purpose".
+  # An example of a letter is a word where the scheme reads that letter alone; a letter inside a pair is shown only under its own labelled line (PROVISIONAL wording).
+  Scenario: The Omicron sheet shows only words where ο is said alone, and says on purpose what a pair does
     Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
     When he opens the letter sheet of "omicron" from the alphabet sheet
-    Then the idea sheet shows examples from "1 John 1:1"
+    Then the idea sheet shows examples from "1 John 1:1-4"
+    And the idea sheet shows the example "Ὃ" first
+    And the idea sheet shows no example "τοῖς"
+    And the idea sheet does not list "ὀφθαλμοῖς"
+    And the idea sheet says "In a pair it sounds different: τοῖς, οι = ee"
+    When he taps the word "τοῖς" of that line
+    Then a third idea sheet titled "The vowel pair οι" opens over the letter sheet
+
+  Scenario: The Upsilon sheet shows no word where υ is half of ου
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
+    When he opens the letter sheet of "upsilon" from the alphabet sheet
+    Then the idea sheet shows no example "τοῦ"
+    And the idea sheet does not list "λόγου"
+    And the letter sheet's How it sounds says "v or f"
+
+  Scenario: The Phi sheet puts a short easy word before a hard cluster, even from further away
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
+    When he opens the letter sheet of "phi" from the alphabet sheet
+    Then the idea sheet shows examples from "1 John 1"
+    And the idea sheet shows no example "ὀφθαλμοῖς"
+    And the idea sheet does not list "ἐψηλάφησαν"
 
   # Sound hints fit his English (mw-5r3p30.352): 'o, as in “lot”' says 'ah' to an American ear, so American English, the default, keys the o
   # to “or”, said short (PROVISIONAL wording, the Governor to confirm); British English keeps “lot”. Each accent is one table of hints.

@@ -17,6 +17,9 @@ export const bearsSound = (idea: GrammarIdea): boolean => idea.glyphs !== undefi
 const lessonOf = (idea: GrammarIdea, scheme: Pronunciation | null, accent: EnglishAccent): SoundLesson | undefined =>
   scheme ? lessonsOf(scheme, accent)[idea.id] : undefined;
 
+/** The lesson's added sentence (SoundLesson.also), with the space that joins it. */
+const also = (lesson: SoundLesson): string => (lesson.also ? ` ${lesson.also}` : '');
+
 const NO_LESSON = ' How it sounds depends on the Greek pronunciation you chose, and it has no lesson for this sound yet.';
 
 /**
@@ -28,7 +31,7 @@ export function ideaText(idea: GrammarIdea, scheme: Pronunciation | null = chose
   if (!bearsSound(idea)) return idea.text;
   const lesson = lessonOf(idea, scheme, accent);
   if (lesson?.text) return lesson.text;
-  if (lesson?.sound) return `${idea.text} In ${scheme?.label} it sounds like ${lesson.sound}.`;
+  if (lesson?.sound) return `${idea.text} In ${scheme?.label} it sounds like ${lesson.sound}.${also(lesson)}`;
   return `${idea.text}${NO_LESSON}`;
 }
 
@@ -54,6 +57,6 @@ export function soundLesson(idea: GrammarIdea, scheme: Pronunciation | null = ch
   if (!bearsSound(idea)) return undefined;
   const lesson = lessonOf(idea, scheme, accent);
   if (lesson?.text) return lesson.text;
-  if (lesson?.sound) return `In ${scheme?.label} it sounds like ${lesson.sound}.`;
+  if (lesson?.sound) return `In ${scheme?.label} it sounds like ${lesson.sound}.${also(lesson)}`;
   return NO_LESSON.trim();
 }

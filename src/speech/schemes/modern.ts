@@ -2,7 +2,7 @@
 // the stressed syllable in capitals ("khree-STO"). Written from Modern Greek's own rules (docs/pronunciation.md lists
 // them); the other schemes (Erasmian next) are further files beside this one, registered in ../pronunciation.ts.
 import type { SoundWords } from '../accents';
-import type { Pronunciation, SoundRule, SoundRuleSide } from '../pronunciation';
+import type { Pronunciation, SoundRule, SoundRuleSide, Spelling } from '../pronunciation';
 import type { SoundId } from '../sounds';
 import { ONSETS } from '../greekSyllables';
 import { modernLessons } from './modernLessons';
@@ -79,10 +79,12 @@ interface Decision {
   side: string;
 }
 
-/** How the word is read: `flip` reads one rule the other way (the near miss), and every decision is written to `decided`. */
+/** How the word is read: `flip` reads one rule the other way (the near miss), every decision is written to `decided` and every unit to `units`. */
 interface Reading {
   flip?: RuleId;
   decided?: Decision[];
+  /** every spelling the reading takes as a unit, in order (spellingsModern) */
+  units?: Spelling[];
 }
 
 /** The side a rule takes at one place, written down, and turned the other way when the reading flips that rule. */
@@ -122,6 +124,7 @@ function tokensOf(letters: Letter[], reading: Reading = {}): Tok[] {
   const kh = (i: number, rule: RuleId) => (decide(rule, vowelAt(letters, i)?.front ? 'soft' : 'hard', reading) === 'soft' ? 'hy' : 'kh');
   // μπ, ντ and γκ have their nasal inside a word and none at its start
   const inside = (rule: RuleId) => decide(rule, seenVowel() ? 'inside' : 'start', reading) === 'inside';
+  const unit = (from: number, length: number, sound: string) => reading.units?.push({ from, to: from + length, sound });
 
   for (let i = 0; i < letters.length; ) {
     const ch = letters[i].ch;
@@ -130,38 +133,54 @@ function tokensOf(letters: Letter[], reading: Reading = {}): Tok[] {
     if (v) {
       if (v.decided) reading.decided?.push(v.decided);
       toks.push({ kind: 'vowel', text: v.text, key: '', stress: v.stress, front: v.front });
+      unit(i, v.length, v.text);
       i += v.length;
       continue;
     }
     if (ch === 'μ' && next === 'π') {
-      if (inside('mp')) consonant('m', 'μ', { coda: true });
+      const nasal = inside('mp');
+      if (nasal) consonant('m', 'μ', { coda: true });
       consonant('b', 'β');
+      unit(i, 2, nasal ? 'mb' : 'b');
       i += 2;
     } else if (ch === 'ν' && next === 'τ') {
-      if (inside('nt')) consonant('n', 'ν', { coda: true });
+      const nasal = inside('nt');
+      if (nasal) consonant('n', 'ν', { coda: true });
       consonant('d', 'δ');
+      unit(i, 2, nasal ? 'nd' : 'd');
       i += 2;
     } else if (ch === 'γ' && next === 'γ') {
-      if (seenVowel()) consonant('n', 'ν', { coda: true });
+      const nasal = seenVowel();
+      if (nasal) consonant('n', 'ν', { coda: true });
       consonant('g', 'γ', { hardG: true });
+      unit(i, 2, nasal ? 'ng' : 'g');
       i += 2;
     } else if (ch === 'γ' && next === 'κ') {
-      if (inside('gk')) consonant('n', 'ν', { coda: true });
+      const nasal = inside('gk');
+      if (nasal) consonant('n', 'ν', { coda: true });
       consonant('g', 'γ', { hardG: true });
+      unit(i, 2, nasal ? 'ng' : 'g');
       i += 2;
     } else if (ch === 'γ' && next === 'χ') {
+      const after = kh(i + 2, 'gch');
       consonant('ng', 'ν', { coda: true });
-      consonant(kh(i + 2, 'gch'), 'χ');
+      consonant(after, 'χ');
+      unit(i, 2, `ng${after}`);
       i += 2;
     } else if (ch === 'γ' && next === 'ξ') {
       consonant('n', 'ν', { coda: true });
       consonant('ks', 'ξ');
+      unit(i, 2, 'nks');
       i += 2;
     } else if (ch === 'γ') {
-      consonant(decide('gamma', vowelAt(letters, i + 1)?.front ? 'soft' : 'hard', reading) === 'soft' ? 'y' : 'gh', 'γ');
+      const sound = decide('gamma', vowelAt(letters, i + 1)?.front ? 'soft' : 'hard', reading) === 'soft' ? 'y' : 'gh';
+      consonant(sound, 'γ');
+      unit(i, 1, sound);
       i += 1;
     } else if (ch === 'χ') {
-      consonant(kh(i + 1, 'chi'), 'χ');
+      const sound = kh(i + 1, 'chi');
+      consonant(sound, 'χ');
+      unit(i, 1, sound);
       i += 1;
     } else if (ch === 'σ') {
       // before a consonant the rule decides: z before a voiced one, s before any other; before a vowel or at the end it is s
@@ -169,11 +188,13 @@ function tokensOf(letters: Letter[], reading: Reading = {}): Tok[] {
       const said = next !== undefined && !VOWELS.includes(next) ? decide('sigma', voiced ? 'voiced' : 'voiceless', reading) === 'voiced' : voiced;
       if (said) consonant('z', 'σ', { coda: true });
       else consonant('s', 'σ');
+      unit(i, 1, said ? 'z' : 's');
       i += 1;
     } else if (SINGLE[ch]) {
       const last = toks[toks.length - 1];
       // a doubled consonant is said once
       if (!(last && last.kind === 'consonant' && last.key === ch && last.text === SINGLE[ch])) consonant(SINGLE[ch], ch);
+      unit(i, 1, SINGLE[ch]);
       i += 1;
     } else {
       i += 1;
@@ -233,6 +254,14 @@ function respellAs(word: string, reading: Reading): string {
   });
   // one syllable has nothing to be louder than
   return parts.map((p, i) => (i === stressed && parts.length > 1 ? p.toUpperCase() : p)).join('-');
+}
+
+/** How Modern Greek reads the word, unit by unit (mw-5r3p30.351): a letter alone, or a pair it says as one sound (οι, ου, αυ, μπ, γκ ...), with the sound
+ * the respelling writes for it. A letter is read in the context the rules look at, so σ before μ is 'z' and γ before ε is 'y'. */
+export function spellingsModern(word: string): Spelling[] {
+  const units: Spelling[] = [];
+  tokensOf(lettersOf(word), { units });
+  return units;
 }
 
 /** The sounds respellModern writes, each as the standard sound it is (../sounds.ts, mw-5r3p30.352): the lessons say each through the reader's
@@ -366,6 +395,7 @@ export const MODERN: Pronunciation = {
   scoringLang: 'el',
   note: "How Greek is spoken today, by the phone's Greek voice.",
   respell: respellModern,
+  spellings: spellingsModern,
   sounds: MODERN_SOUNDS,
   loneLetterClip: loneLetterClipModern,
   voiceForm: voiceFormModern,

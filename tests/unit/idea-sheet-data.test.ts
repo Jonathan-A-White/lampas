@@ -4,7 +4,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadChapter, loadIndex, type BookIndex, type Chapter } from '../../src/data/chapter';
-import { exampleMeaning, ideaExamples, ideaExamplesFor, ideaPassage } from '../../src/data/grammar/ideaSheet';
+import { exampleMeaning, ideaExamples, ideaExamplesFor, ideaPassage, isSoundIdea } from '../../src/data/grammar/ideaSheet';
 import { ideaOfTerm, ideasOf, LADDER } from '../../src/data/grammar/ladder';
 import { decodeParse, parseSegments } from '../../src/data/parseCode';
 import { DEFAULT_CHAPTER } from '../../src/data/readerChapter';
@@ -92,11 +92,13 @@ describe('the examples of a foundation idea (letters, pairs, marks, syllables, p
     expect(found.every((e) => verse.has(e.word.t) && e.verse === 1)).toBe(true);
   });
 
-  it('a letter marks that letter wherever it stands, a capital too', () => {
+  it('a letter marks that letter wherever it is said alone, a capital too (mw-5r3p30.351: a word with the letter inside a pair is no example)', () => {
     const found = ideaExamples('letter-omicron', [john], 1);
     const marks = new Map(found.map((e) => [e.word.t, markedOf(e)]));
-    expect(marks.get('λόγου')).toEqual(['ό', 'ο']);
-    expect(marks.get('ὀφθαλμοῖς')).toEqual(['ὀ', 'ο']);
+    expect(marks.get('Ὃ')).toEqual(['Ὃ']);
+    expect(marks.get('ἀκηκόαμεν')).toEqual(['ό']);
+    expect(marks.has('λόγου')).toBe(false);
+    expect(marks.has('ὀφθαλμοῖς')).toBe(false);
   });
 
   it('a final sigma is a sigma', () => {
@@ -272,7 +274,7 @@ describe('the examples of an idea when the goal verse has none (mw-5r3p30.350)',
   const goalOne = async () => ideaPassage('1 John 1:1', DEFAULT_CHAPTER, loadChapter, index);
 
   it('stay in the goal verse, labelled as it, when the verse has one', async () => {
-    const found = await ideaExamplesFor('letter-omicron', await goalOne(), loadChapter);
+    const found = await ideaExamplesFor('case-genitive', await goalOne(), loadChapter);
     expect(found.title).toBe('1 John 1:1');
     expect(found.examples.length).toBeGreaterThan(0);
     expect(found.examples.every((e) => e.verse === 1)).toBe(true);
@@ -280,7 +282,8 @@ describe('the examples of an idea when the goal verse has none (mw-5r3p30.350)',
 
   it('come from the pericope, labelled with its verses, when the verse has none but the heading section does', async () => {
     // 1:1 has no ξ nor ψ, so find an idea the pericope 1:1-4 holds that 1:1 does not
-    const idea = ['letter-theta', 'letter-zeta', 'letter-phi', 'letter-beta', 'letter-psi', 'letter-lambda', 'letter-rho', 'letter-delta']
+    // (an idea that is not a letter or a sound: those widen until they have four easy words, mw-5r3p30.351)
+    const idea = ['tense-future', 'tense-aorist', 'tense-perfect', 'mood-imperative', 'mood-subjunctive', 'voice-passive', 'case-vocative', 'mood-participle']
       .find((id) => ideaExamples(id, [john], 1).length === 0 && ideaExamples(id, [{ ...john, verses: john.verses.filter((v) => v.n <= 4) }]).length > 0);
     expect(idea).toBeDefined();
     const found = await ideaExamplesFor(idea as string, await goalOne(), loadChapter);
@@ -290,7 +293,7 @@ describe('the examples of an idea when the goal verse has none (mw-5r3p30.350)',
 
   it('come from the chapter after the pericope, labelled with the chapter', async () => {
     const pericope = { ...john, verses: john.verses.filter((v) => v.n <= 4) };
-    const idea = LADDER.find((i) => ideaExamples(i.id, [pericope]).length === 0 && ideaExamples(i.id, [john]).length > 0);
+    const idea = LADDER.find((i) => !isSoundIdea(i.id) && ideaExamples(i.id, [pericope]).length === 0 && ideaExamples(i.id, [john]).length > 0);
     expect(idea).toBeDefined();
     const found = await ideaExamplesFor((idea as { id: string }).id, await goalOne(), loadChapter);
     expect(found.title).toBe('1 John 1');

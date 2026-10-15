@@ -103,14 +103,16 @@ export function foundationSpans(form: string): Map<string, Span[]> {
     if (l.marks.includes(IOTA_SUBSCRIPT)) add('iota-subscript', k, k + 1);
     if (l.marks.includes(DIAERESIS)) add('punctuation', k, k + 1);
     const next = places[j + 1] === undefined ? undefined : clusters[places[j + 1]];
-    if (VOWELS.includes(l.base) && k >= nucleusEnd) {
+    // a vowel already taken into the pair before it opens no pair of its own: Δαυίδ is αυ and ί, never αυ and υί (mw-5r3p30.351)
+    const opens = VOWELS.includes(l.base) && k >= nucleusEnd;
+    if (opens) {
       const pair = next !== undefined && isDiphthong(l, next);
       add('syllables', k, pair ? places[j + 1] + 1 : k + 1);
       nucleusEnd = pair ? places[j + 1] + 1 : k + 1;
     }
     if (!next) return;
     const [pair, end] = [l.base + next.base, places[j + 1] + 1];
-    if (isDiphthong(l, next)) {
+    if (opens && isDiphthong(l, next)) {
       add('diphthongs', k, end);
       add(ITEM_OF_PAIR.get(pair)!, k, end);
     }

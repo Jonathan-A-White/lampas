@@ -194,6 +194,20 @@ step by step, back off by halves when it is too hard, "kind of like a binary sea
   pericope (the heading's verses, labelled '1 John 1:1-4'), then its chapter ('1 John 1'), then its book ('1 John', PROVISIONAL: he named the
   pericope or the chapter, the Governor is to confirm the book); the sheet says 'Examples from <that place>', and only when nothing is found
   anywhere does it say 'No word of <goal> ...'.
+- **A letter's or a sound's examples make its sound (mw-5r3p30.351).** His words about the Omicron, Upsilon and Phi sheets on 1 John 1:1: the examples
+  must match what the card teaches, and a different sound is shown on purpose. `isSoundIdea(id)` (the 24 letters, each vowel pair and consonant pair,
+  their two groups) holds its examples to the chosen pronunciation's own reading, `Pronunciation.spellings(word)`: units `{from, to, sound}`, a letter
+  alone or a pair said as one sound. A letter is marked only where the scheme reads it ALONE as a sound its lesson teaches (`SoundLesson.sounds`:
+  'gh' and 'y' for γ), a pair only where the scheme reads exactly that pair; a word with ONE occurrence that is not (ο in τοῖς is half of οι, σ in
+  κόσμος is z) is no example of the letter, so the underline is never on a letter that says something else. Nothing in the sheet knows a sound: it asks
+  the scheme, and a scheme with no `spellings` holds nothing back. The search for them (`ideaExamplesFor`, PROVISIONAL, the Governor to confirm)
+  widens verse, pericope, chapter, book until it has `SOUND_EXAMPLES` (4) easy words (`ladderScore.ts` score at most `EASY_SCORE`, about three
+  syllables), and ranks them: easy first, then words made of letters he has met or is learning, then the nearest to the goal, the commonest in the
+  New Testament (`ExampleRanking`, read once by the sheet), the shortest; a long cluster like ὀφθαλμοῖς comes last or not at all. The heading names the
+  widest place an example came from, and each row its verse. Under the examples a LETTER sheet may add ONE line, 'In a pair it sounds different:
+  τοῖς, οι = ee' (`pairCaseOf`: the easiest word in range where the letter sits inside a pair; the wording is PROVISIONAL), whose word opens the pair's
+  own idea sheet; with no such word in range, no line. `tests/unit/idea-sound-examples.test.ts` re-derives every marked stretch of every one of these
+  sheets from the scheme, over 1 John 1 and over all 260 chapters.
 - **The teaching (mw-5r3p30.234).** Every card teaches a total beginner who has proved the cards below it, from the card alone; the parts are
   data, one file per tier in `src/data/grammar/teach/` (`teachOf(id)`), never in the component, and `docs/card-audit.md` judges what each card
   lacked before. Under the title (and the tiles): **What it is**, plain English with an English example; **How to spot it**, the Greek form or

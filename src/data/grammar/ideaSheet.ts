@@ -3,13 +3,16 @@
 // one the card can explain (mw-5r3p30.234): its parsing carries the idea, it is a part of speech the cards below taught, its form is in the
 // card's table, and it is shown with the ending the table names marked, its one sense here, and its parsing in the card's own terms.
 // Pure data work: no store, no screen; docs/grammar.md.
+import { chosenPronunciation } from '../../speech/greek';
+import { lessonsOf, type Pronunciation } from '../../speech/pronunciation';
 import { type BookIndex, type Chapter, type GreekWord, ownEnglish, wordGloss } from '../chapter';
 import { goalText, parseGoal } from '../goal';
+import { scoreWords } from '../ladderScore';
 import { decodeParse, parseSegments, splitParse } from '../parseCode';
 import { passagesOf } from '../passage';
 import type { OpenChapter } from '../readerChapter';
-import { clustersOf, foundationSpans, isFoundation, type Span } from './inference';
-import { ideaOfTerm, ideasBelow, ideasOfWord, type GrammarIdea } from './ladder';
+import { clustersOf, foundationOf, foundationSpans, isFoundation, LETTER_IDS, letterIdOf, type Span } from './inference';
+import { ideaOfTerm, ideasBelow, ideasOfWord, LADDER, type GrammarIdea } from './ladder';
 import { bare, cellOptions, tableHas, teachOf, type TeachTable } from './teach';
 
 /** A book goal looks in its first chapters only: every chapter would be a request each. */
@@ -127,9 +130,55 @@ function partsOf(form: string, spans: Span[]): ExamplePart[] {
   return parts;
 }
 
-/** The spans of a form an idea of spelling is about, or undefined when the form is not spelt with it; 'alphabet' (any form) has none to mark. */
-function spellingOf(id: string, form: string): Span[] | undefined {
+/** The ideas whose sheet teaches a SOUND: a letter, a pair of vowels or of consonants, and their two groups. Their examples are held to that sound (mw-5r3p30.351). */
+const SOUND_IDEAS: ReadonlySet<string> = new Set([
+  ...LETTER_IDS,
+  'diphthongs',
+  'consonant-pairs',
+  ...LADDER.filter((i) => i.parent && i.parent !== 'breathings').map((i) => i.id),
+]);
+export const isSoundIdea = (id: string): boolean => SOUND_IDEAS.has(id);
+/** The ideas whose marked stretches must be one unit of the scheme's reading: the sound ideas, and the syllables, whose nuclei are letters or pairs. */
+const UNIT_IDEAS: ReadonlySet<string> = new Set([...SOUND_IDEAS, 'syllables']);
+
+const spansKept = new WeakMap<Pronunciation, Map<string, Map<string, Span[]>>>();
+
+/**
+ * Where in a form each idea of spelling stands (foundationSpans), kept to the stretches the scheme reads as the idea says (mw-5r3p30.351, his words:
+ * "if you're going to talk about different sounds then need to do so on purpose"): a letter only where the scheme reads it ALONE, as one of the sounds its
+ * lesson teaches (not inside οι, which says 'ee', nor the σ of κόσμος, which says 'z'), a pair only where the scheme reads exactly that pair as one unit.
+ * A form with one occurrence the idea does not teach is not spelt with the idea for the sheet: a word is a plain example only when every occurrence is. A scheme
+ * that does not say how it reads (no `spellings`) holds nothing back.
+ */
+function spellingSpans(form: string, scheme: Pronunciation): Map<string, Span[]> {
+  const byScheme = spansKept.get(scheme) ?? new Map<string, Map<string, Span[]>>();
+  spansKept.set(scheme, byScheme);
+  const known = byScheme.get(form);
+  if (known) return known;
   const spans = foundationSpans(form);
+  const units = scheme.spellings?.(form);
+  const place = clustersOf(form).flatMap((c, k) => (c.letter ? [k] : []));
+  let kept = spans;
+  // the letters the scheme counted are the letters the form's clusters hold, else its positions mean nothing here
+  if (units && place.length === Math.max(0, ...units.map((u) => u.to))) {
+    const exact = new Map(units.map((u) => [`${place[u.from]}:${place[u.to - 1] + 1}`, u]));
+    kept = new Map();
+    for (const [id, list] of spans) {
+      const taught = LETTER_IDS.includes(id) ? lessonsOf(scheme)[id]?.sounds : undefined;
+      const plain = !UNIT_IDEAS.has(id) || list.every((span) => {
+        const unit = exact.get(`${span.start}:${span.end}`);
+        return unit !== undefined && (taught === undefined || taught.includes(unit.sound));
+      });
+      if (plain) kept.set(id, list);
+    }
+  }
+  byScheme.set(form, kept);
+  return kept;
+}
+
+/** The spans of a form an idea of spelling is about, or undefined when the form is not spelt with it; 'alphabet' (any form) has none to mark. */
+function spellingOf(id: string, form: string, scheme: Pronunciation): Span[] | undefined {
+  const spans = spellingSpans(form, scheme);
   if (id === 'alphabet') return clustersOf(form).some((c) => c.letter) ? [] : undefined;
   const found = spans.get(id);
   // a word of one syllable has nothing to cut
@@ -184,9 +233,10 @@ export function cardExplains(id: string, word: GreekWord): boolean {
 /**
  * Up to `max` words of the passage in the order of the text. For a grammar idea: the words its card can explain (cardExplains), one for each lemma
  * (one for each form, for the article), with the ending its table names marked. For an idea of spelling (isSpellingIdea): the words spelt with it,
- * one for each form, with the letters it is about marked in `parts`, up to MAX_FOUNDATION_EXAMPLES when `max` is not given.
+ * one for each form, with the letters it is about marked in `parts`, up to MAX_FOUNDATION_EXAMPLES when `max` is not given. For a letter or a sound the word
+ * must make the sound the card teaches in `scheme` (the chosen pronunciation): a letter inside a pair, or said otherwise by what is next to it, is no example.
  */
-export function ideaExamples(id: string, chapters: Chapter[], verse?: number, max?: number): IdeaExample[] {
+export function ideaExamples(id: string, chapters: Chapter[], verse?: number, max?: number, scheme: Pronunciation = chosenPronunciation()): IdeaExample[] {
   const spelling = isSpellingIdea(id);
   const byForm = BY_FORM.includes(id);
   const limit = max ?? (spelling ? MAX_FOUNDATION_EXAMPLES : byForm ? MAX_FORM_EXAMPLES : MAX_EXAMPLES);
@@ -209,7 +259,7 @@ export function ideaExamples(id: string, chapters: Chapter[], verse?: number, ma
     if (seen.has(key)) continue;
     let parts: ExamplePart[];
     if (spelling) {
-      const spans = spellingOf(id, word.t);
+      const spans = spellingOf(id, word.t, scheme);
       if (!spans) continue;
       parts = partsOf(word.t, spans);
     } else {
@@ -273,10 +323,135 @@ export function exampleNote(idea: GrammarIdea, example: IdeaExample): string | u
   return parts.length ? parts.join(' · ') : undefined;
 }
 
+/** A word where a letter is read inside a pair, shown on purpose under its own line: 'In a pair it sounds different: τοῖς, οι = ee'. */
+export interface PairCase {
+  word: GreekWord;
+  chapter: Chapter;
+  verse: number;
+  reference: string;
+  /** the pair the letter stands in, as the ladder spells it: 'οι' */
+  pair: string;
+  /** what the scheme says the pair sounds like, in its own respelling: 'ee' */
+  sound: string;
+  /** the pair's own idea, which the word links to */
+  idea: GrammarIdea;
+}
+
+/**
+ * The easiest word of the passage where the letter idea `id` stands inside a pair the scheme reads as one sound (mw-5r3p30.351), with the pair, or undefined
+ * when `id` is no letter, the scheme does not say how it reads, or no word of the passage has such a case.
+ */
+export function pairCaseOf(id: string, chapters: Chapter[], verse?: number, scheme: Pronunciation = chosenPronunciation()): PairCase | undefined {
+  if (!LETTER_IDS.includes(id) || !scheme.spellings) return undefined;
+  let best: { score: number; found: PairCase } | undefined;
+  for (const { word, chapter, verse: n } of wordsOf(chapters, verse)) {
+    const clusters = clustersOf(word.t).filter((c) => c.letter);
+    for (const unit of scheme.spellings(word.t)) {
+      if (unit.to - unit.from < 2) continue;
+      const letters = clusters.slice(unit.from, unit.to);
+      if (!letters.some((c) => letterIdOf(c.text) === id)) continue;
+      const pair = letters.map((c) => c.base).join('');
+      const idea = LADDER.find((i) => i.pair === pair && i.parent !== 'breathings');
+      if (!idea) continue;
+      const score = scoreWords([word.t]).score;
+      if (!best || score < best.score) best = { score, found: { word, chapter, verse: n, reference: `${chapter.book} ${chapter.chapter}:${n}`, pair, sound: unit.sound, idea } };
+    }
+  }
+  return best?.found;
+}
+
 /** Where the examples of an idea come from, and what the sheet calls that place: 'Examples from <title>'. */
 export interface IdeaExamples {
   title: string;
   examples: IdeaExample[];
+  /** a letter only: a word where it is read inside a pair, to show on purpose under the examples (a letter sheet only; none when no word in range has one) */
+  pairCase?: PairCase;
+}
+
+/** What the ranking of a sound's examples may know of him (mw-5r3p30.351): the letters he has met or is learning, and how often each word is used. */
+export interface ExampleRanking {
+  /** letter ideas that are solid or frontier */
+  known?: ReadonlySet<string>;
+  /** a lemma (NFC) -> how many times the New Testament uses it */
+  frequency?: ReadonlyMap<string, number>;
+}
+
+/** A sheet of a letter or a sound shows this many examples, looking further out until it has them. */
+export const SOUND_EXAMPLES = 4;
+/** A word scoring at most this by ladderScore.ts (about three syllables with at most a pair or a cluster) is easy to say; PROVISIONAL, the Governor to confirm. */
+export const EASY_SCORE = 4;
+
+/** A place the examples are looked for, nearest first: the goal itself, its pericope, its chapter, its book. */
+interface Place {
+  title: string;
+  chapters: Chapter[];
+  verse?: number;
+  /** the chapter a word of a pericope's cut is shown with, so its word sheet reads the whole chapter */
+  whole?: Chapter;
+}
+
+async function* placesOf(passage: IdeaPassage, load: ChapterLoader): AsyncGenerator<Place> {
+  yield { title: passage.title, chapters: passage.chapters, verse: passage.verse };
+  const first = passage.chapters[0];
+  if (!first) return;
+  if (passage.verse !== undefined && passage.chapters.length === 1) {
+    const name = `${first.book} ${first.chapter}`;
+    const open = passagesOf(first.verses).filter((p) => p.first <= (passage.verse ?? 0)).pop();
+    // verses before the chapter's first heading belong to no passage: they run from verse 1 to the verse before it
+    const [from, to] = open ? [open.first, open.last] : [1, (first.verses.find((v) => v.h)?.n ?? first.verses.length + 1) - 1];
+    if (to > from) yield { title: `${name}:${from}-${to}`, chapters: [{ ...first, verses: first.verses.filter((v) => v.n >= from && v.n <= to) }], whole: first };
+    yield { title: name, chapters: [first] };
+  }
+  if (passage.chapterCount !== undefined && passage.chapters.length < passage.chapterCount) {
+    const all = await Promise.all(Array.from({ length: passage.chapterCount }, (_, i) => i + 1).map((n) => load(first.code, n)));
+    yield { title: first.book, chapters: all };
+  }
+}
+
+interface Candidate {
+  example: IdeaExample;
+  level: number;
+  easy: boolean;
+  score: number;
+  /** letters of the word he has not met yet */
+  unmet: number;
+  uses: number;
+  order: number;
+}
+
+/**
+ * The examples of a letter or a sound for a passage (mw-5r3p30.351, his words: "a simpler word, what you've learned so far, rather than being from your goal"):
+ * every candidate is a word that makes the sound the card teaches (ideaExamples). The search widens, the goal, its pericope, its chapter, its book, until there
+ * are SOUND_EXAMPLES easy words. They are shown easy first (EASY_SCORE), the ones made of letters he has met first, then the nearest to the goal, the commonest
+ * in the New Testament, the shortest; a word too hard to say comes last, or not at all. `title` names the widest place an example came from. The ranking is PROVISIONAL.
+ */
+async function soundExamplesFor(id: string, passage: IdeaPassage, load: ChapterLoader, ranking: ExampleRanking, scheme: Pronunciation): Promise<IdeaExamples> {
+  const candidates: Candidate[] = [];
+  const titles: string[] = [];
+  const seen = new Set<string>();
+  let pairCase: PairCase | undefined;
+  let level = 0;
+  for await (const place of placesOf(passage, load)) {
+    titles.push(place.title);
+    const examples = ideaExamples(id, place.chapters, place.verse, Number.MAX_SAFE_INTEGER, scheme).map((e) => (place.whole ? { ...e, chapter: place.whole } : e));
+    pairCase ??= pairCaseOf(id, place.chapters, place.verse, scheme);
+    for (const example of examples) {
+      const key = bare(example.word.t);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const score = scoreWords([example.word.t]).score;
+      const unmet = ranking.known ? foundationOf(example.word.t).filter((f) => LETTER_IDS.includes(f) && !ranking.known?.has(f)).length : 0;
+      candidates.push({ example, level, easy: score <= EASY_SCORE, score, unmet, uses: ranking.frequency?.get(example.word.l.normalize('NFC')) ?? 0, order: candidates.length });
+    }
+    level++;
+    if (candidates.filter((c) => c.easy).length >= SOUND_EXAMPLES) break;
+  }
+  const ranked = candidates.sort(
+    (a, b) => Number(b.easy) - Number(a.easy) || a.unmet - b.unmet || a.level - b.level || b.uses - a.uses || a.score - b.score || a.order - b.order,
+  );
+  const chosen = ranked.slice(0, SOUND_EXAMPLES);
+  const widest = chosen.reduce((n, c) => Math.max(n, c.level), 0);
+  return { title: chosen.length ? titles[widest] : passage.title, examples: chosen.map((c) => c.example), pairCase };
 }
 
 /**
@@ -284,30 +459,17 @@ export interface IdeaExamples {
  * look outside of it, in the pericope or in the chapter"). The order is the goal itself, then (for a verse goal) its pericope, the heading's verses, then
  * its chapter, then its book. The book step is PROVISIONAL: he named the pericope or the chapter, the Governor is to confirm the whole book.
  * `title` names the place the examples came from ('1 John 1:1-4'); with none found it is the passage's own title and `examples` is empty.
+ * A letter or a sound (isSoundIdea) widens until it has SOUND_EXAMPLES easy examples and ranks them (soundExamplesFor, mw-5r3p30.351).
  */
-export async function ideaExamplesFor(id: string, passage: IdeaPassage, load: ChapterLoader): Promise<IdeaExamples> {
-  const found = ideaExamples(id, passage.chapters, passage.verse);
-  if (found.length) return { title: passage.title, examples: found };
-  const first = passage.chapters[0];
-  if (first) {
-    if (passage.verse !== undefined && passage.chapters.length === 1) {
-      const name = `${first.book} ${first.chapter}`;
-      const open = passagesOf(first.verses).filter((p) => p.first <= (passage.verse ?? 0)).pop();
-      // verses before the chapter's first heading belong to no passage: they run from verse 1 to the verse before it
-      const [from, to] = open ? [open.first, open.last] : [1, (first.verses.find((v) => v.h)?.n ?? first.verses.length + 1) - 1];
-      if (to > from) {
-        const verses = first.verses.filter((v) => v.n >= from && v.n <= to);
-        const examples = ideaExamples(id, [{ ...first, verses }]);
-        if (examples.length) return { title: `${name}:${from}-${to}`, examples: examples.map((e) => ({ ...e, chapter: first })) };
-      }
-      const wholeChapter = ideaExamples(id, [first]);
-      if (wholeChapter.length) return { title: name, examples: wholeChapter };
-    }
-    if (passage.chapterCount !== undefined && passage.chapters.length < passage.chapterCount) {
-      const rest = await Promise.all(Array.from({ length: passage.chapterCount }, (_, i) => i + 1).map((n) => load(first.code, n)));
-      const wholeBook = ideaExamples(id, rest);
-      if (wholeBook.length) return { title: first.book, examples: wholeBook };
+export async function ideaExamplesFor(id: string, passage: IdeaPassage, load: ChapterLoader, ranking: ExampleRanking = {}, scheme: Pronunciation = chosenPronunciation()): Promise<IdeaExamples> {
+  if (isSoundIdea(id)) return soundExamplesFor(id, passage, load, ranking, scheme);
+  let found: IdeaExamples = { title: passage.title, examples: [] };
+  for await (const place of placesOf(passage, load)) {
+    const examples = ideaExamples(id, place.chapters, place.verse, undefined, scheme).map((e) => (place.whole ? { ...e, chapter: place.whole } : e));
+    if (examples.length) {
+      found = { title: place.title, examples };
+      break;
     }
   }
-  return { title: passage.title, examples: [] };
+  return found;
 }

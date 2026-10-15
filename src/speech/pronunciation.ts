@@ -17,6 +17,20 @@ export interface SoundLesson {
   /** `sound` as one choice of a quiz (mw-5r3p30.355): the sound's short label only, 'o, as in “or”, short', never a rule or an aside; `sound` when left out
    * (cut at its first semicolon, quickRound.ts shortSound). */
   choice?: string;
+  /** A sentence added after 'In <label> it sounds like <sound>.' on the idea sheet, for what the sound alone does not say (Upsilon: 'In αυ, ευ and ηυ it is v or f'); the
+   * `sound` stays the letter's own, which a quiz compares letters by. */
+  also?: string;
+  /** The sounds the lesson teaches for this letter, as the respelling writes them: 'gh' and 'y' for gamma, 'kh' and 'hy' for chi, 'o' for omicron. A word is a
+   * plain example of a letter only where the scheme reads the letter alone as one of these (mw-5r3p30.351); without them any sound counts. */
+  sounds?: readonly string[];
+}
+
+/** One spelling the scheme reads as a unit: a letter alone, or a pair it says as one sound (οι, ου, αυ, μπ, γκ ...). `from` and `to` count the word's Greek
+ * letters in order, marks and signs left out (so `to` is one past the last), and `sound` is what the respelling writes for it ('ee' for οι). */
+export interface Spelling {
+  from: number;
+  to: number;
+  sound: string;
 }
 
 /** One side of a sound rule: when it holds, and the words that stand on it. */
@@ -54,6 +68,9 @@ export interface Pronunciation {
   note: string;
   /** the Greek word as syllables an English reader can say, the stressed one in capitals: 'χριστῷ' is 'khree-STO' */
   respell(greekWord: string): string;
+  /** How this scheme reads the Greek word, unit by unit, in order: where a pair of letters is one sound, and what each unit sounds like (mw-5r3p30.351: the
+   * idea sheet shows a letter's examples only where the letter is read alone). A scheme that leaves it out cannot say, and no word is held back. */
+  spellings?(greekWord: string): readonly Spelling[];
   /** Each sound the respelling writes, as the standard sound it is (./sounds.ts): 'o' is '/o/', 'kh' is '/x/' (mw-5r3p30.352). The scheme names no
    * English word: its lessons say a sound through the SoundWords they are handed ('o, as in “or”, short'), which ask the reader's English accent
    * (./accents/), so every accent table must hint every id here (tests/unit/english-accents.test.ts). */

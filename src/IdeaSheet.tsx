@@ -15,7 +15,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { loadChapter, loadIndex, type Chapter, type GreekWord } from './data/chapter';
 import { unmetNeed } from './data/grammar/drillIt';
-import { exampleGloss, exampleNote, ideaExamples, ideaExamplesFor, ideaPassage, isSpellingIdea, passageForms, type IdeaExample, type IdeaExamples, type IdeaPassage } from './data/grammar/ideaSheet';
+import { loadFrequency } from './data/frequency';
+import { exampleGloss, exampleNote, ideaExamples, ideaExamplesFor, ideaPassage, isSoundIdea, isSpellingIdea, passageForms, type ExampleRanking, type IdeaExample, type IdeaExamples, type IdeaPassage, type PairCase } from './data/grammar/ideaSheet';
 import { ideaOf, type GrammarIdea } from './data/grammar/ladder';
 import { soundLesson } from './data/grammar/lessons';
 import { teachOf, workedFor, type Teach, type TeachTable } from './data/grammar/teach';
@@ -57,14 +58,39 @@ function sinceText(since: number, now = Date.now()): string {
   return days < 7 ? WEEKDAYS[then.getDay()] : `${then.getDate()} ${MONTHS[then.getMonth()]}`;
 }
 
-/** Where an idea with no example in the goal's passage finds them (ideaExamplesFor); undefined while it looks, and when there is no passage to widen. */
-function useWiderExamples(id: string, passage: IdeaPassage | undefined): IdeaExamples | undefined {
-  const [found, setFound] = useState<{ key: string; value: IdeaExamples }>();
-  const key = passage ? `${id}|${passage.title}` : '';
+/**
+ * What ranks the examples of a letter or a sound (mw-5r3p30.351): the letters he has met or is learning, and how often each word is used. Read once, when both
+ * are in, so the examples do not reorder under his thumb when he moves the slider; undefined until then. A table that cannot be read ranks without it.
+ */
+function useRanking(): ExampleRanking | undefined {
+  const [ranking, setRanking] = useState<ExampleRanking>();
   useEffect(() => {
-    if (!passage) return;
     let alive = true;
-    ideaExamplesFor(id, passage, loadChapter).then(
+    void Promise.all([listLevels().catch(() => new Map()), loadFrequency().catch(() => [])]).then(([levels, entries]) => {
+      if (!alive) return;
+      setRanking({
+        known: new Set([...levels].filter(([, row]) => row.level !== 'notYet').map(([id]) => id)),
+        frequency: new Map(entries.map((e) => [e.lemma.normalize('NFC'), e.count])),
+      });
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return ranking;
+}
+
+/**
+ * Where the examples of an idea come from beyond the goal's own words (ideaExamplesFor); undefined while it looks, and when there is no passage to widen. A
+ * letter or a sound always looks (its examples are ranked, mw-5r3p30.351) and waits for its ranking; the others only when the goal has none.
+ */
+function useWiderExamples(id: string, passage: IdeaPassage | undefined, scheme: Pronunciation, ranking: ExampleRanking | undefined): IdeaExamples | undefined {
+  const [found, setFound] = useState<{ key: string; value: IdeaExamples }>();
+  const key = passage && (ranking || !isSoundIdea(id)) ? `${id}|${passage.title}|${scheme.id}` : '';
+  useEffect(() => {
+    if (!passage || !key) return;
+    let alive = true;
+    ideaExamplesFor(id, passage, loadChapter, ranking, scheme).then(
       (value) => alive && setFound({ key, value }),
       // offline: the goal's own line, as before
       () => alive && setFound({ key, value: { title: passage.title, examples: [] } }),
@@ -172,6 +198,19 @@ function Worked({ teach, passage, scheme }: { teach: Teach; passage: IdeaPassage
   );
 }
 
+/** A letter said otherwise in a pair, shown on purpose (mw-5r3p30.351; the wording is PROVISIONAL, the Governor to confirm): the word opens the pair's own idea. */
+function PairLine({ pairCase, onOpen }: { pairCase: PairCase; onOpen: () => void }) {
+  return (
+    <p data-testid="pair-line" className="pt-3 text-base text-muted">
+      In a pair it sounds different:{' '}
+      <button type="button" data-testid="pair-word" onClick={onOpen} className="min-h-11 px-1 text-accent underline underline-offset-4">
+        <span lang="grc" className="font-greek text-[length:var(--lp-greek-size)]">{pairCase.word.t}</span>
+      </button>
+      , <span lang="grc" className="font-greek text-[length:var(--lp-greek-size)]">{pairCase.pair}</span> = {pairCase.sound}
+    </p>
+  );
+}
+
 function Example({ idea, example, onWord }: { idea: GrammarIdea; example: IdeaExample; onWord: (chapter: Chapter, word: GreekWord) => void }) {
   const { word, chapter, reference } = example;
   const note = exampleNote(idea, example);
@@ -247,13 +286,14 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false }: {
     'Worked example', worked.word, worked.gloss, ...worked.steps,
   ]);
   // the goal's own examples at once; with none, the pericope, chapter and book are looked in (mw-5r3p30.350) and the sheet says which gave them
-  const own = passage ? ideaExamples(idea.id, passage.chapters, passage.verse) : [];
-  const wider = useWiderExamples(idea.id, own.length ? undefined : passage);
+  const levels = useLiveQuery(listLevels, []);
+  const ranking = useRanking();
+  const own = passage && !isSoundIdea(idea.id) ? ideaExamples(idea.id, passage.chapters, passage.verse, undefined, scheme) : [];
+  const wider = useWiderExamples(idea.id, own.length ? undefined : passage, scheme, ranking);
   const examples = own.length ? own : wider?.examples ?? [];
   const exampleTitle = own.length || !wider ? passage?.title : wider.title;
 
   // the idea under this one that is not solid yet, the lowest (the sheet teaches only its own idea)
-  const levels = useLiveQuery(listLevels, []);
   const builtOn = levels ? unmetNeed(idea.id, new Map([...levels].map(([id, row]) => [id, row.level]))) : null;
   const need = builtOn === null ? null : ideaOf(builtOn);
 
@@ -382,6 +422,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false }: {
                       : `No word of ${loaded.passage.title} has this idea in its parsing.`}
                   </p>
                 )}
+                {wider?.pairCase && !own.length ? <PairLine pairCase={wider.pairCase} onOpen={() => setOpened(wider.pairCase!.idea)} /> : null}
               </div>
             </>
           )}

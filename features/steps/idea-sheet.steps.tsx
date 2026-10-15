@@ -559,13 +559,54 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario("An idea the goal verse has keeps the goal verse's examples", ({ Given, When, Then }) => {
+  const shownForms = (): string[] => within(letterSheet()).getAllByTestId('idea-example').map((e) => e.getAttribute('data-form') ?? '');
+  const examplesFrom = async (_: unknown, title: string): Promise<void> => {
+    await waitFor(() => expect(within(letterSheet()).getByText(`Examples from ${title}`)).toBeInTheDocument());
+    // each example names the verse it stands in, which lies within the heading's place
+    expect(shownForms().length).toBeGreaterThan(0);
+  };
+  const noExample = async (_: unknown, form: string): Promise<void> => {
+    await waitFor(() => expect(within(letterSheet()).queryByTestId('idea-loading')).toBeNull());
+    expect(shownForms()).not.toContain(form);
+  };
+
+  Scenario('The Omicron sheet shows only words where ο is said alone, and says on purpose what a pair does', ({ Given, When, Then, And }) => {
     Given(GIVEN_GOAL, opensWithGoal);
     When('he opens the letter sheet of {string} from the alphabet sheet', openLetterSheet);
-    Then('the idea sheet shows examples from {string}', (_, title: string) => {
-      expect(within(letterSheet()).getByText(`Examples from ${title}`)).toBeInTheDocument();
-      for (const example of within(letterSheet()).getAllByTestId('idea-example')) expect(within(example).getByTestId('idea-verse').textContent).toBe(title);
+    Then('the idea sheet shows examples from {string}', examplesFrom);
+    And('the idea sheet shows the example {string} first', (_, form: string) => {
+      expect(shownForms()[0]).toBe(form);
     });
+    And('the idea sheet shows no example {string}', noExample);
+    And('the idea sheet does not list {string}', noExample);
+    And('the idea sheet says {string}', (_, line: string) => {
+      expect(within(letterSheet()).getByTestId('pair-line').textContent?.replace(/\s+/g, ' ').trim()).toBe(line);
+    });
+    When('he taps the word {string} of that line', async (_, word: string) => {
+      await user.click(within(within(letterSheet()).getByTestId('pair-line')).getByRole('button', { name: word }));
+    });
+    Then('a third idea sheet titled {string} opens over the letter sheet', async (_, title: string) => {
+      await waitFor(() => expect(screen.getAllByRole('dialog', { name: 'Idea' })).toHaveLength(3));
+      expect(within(screen.getAllByRole('dialog', { name: 'Idea' })[2]).getByRole('heading', { name: title })).toBeInTheDocument();
+    });
+  });
+
+  Scenario('The Upsilon sheet shows no word where υ is half of ου', ({ Given, When, Then, And }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the letter sheet of {string} from the alphabet sheet', openLetterSheet);
+    Then('the idea sheet shows no example {string}', noExample);
+    And('the idea sheet does not list {string}', noExample);
+    And("the letter sheet's How it sounds says {string}", (_, text: string) => {
+      expect(letterSheet().textContent).toContain(text);
+    });
+  });
+
+  Scenario('The Phi sheet puts a short easy word before a hard cluster, even from further away', ({ Given, When, Then, And }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the letter sheet of {string} from the alphabet sheet', openLetterSheet);
+    Then('the idea sheet shows examples from {string}', examplesFrom);
+    And('the idea sheet shows no example {string}', noExample);
+    And('the idea sheet does not list {string}', noExample);
   });
   const ownTile = (): HTMLElement => within(letterSheet()).getAllByTestId('teach-tile')[0];
   const howItSounds = (): HTMLElement => within(letterSheet()).getByTestId('idea-text');
