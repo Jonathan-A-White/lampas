@@ -1,5 +1,5 @@
 // src/ParadigmsScreen.tsx — Paradigms (mw-5r3p30.82, #/paradigms, reached from Settings > More beside Review; docs/paradigms.md): the list of
-// tables (The article, Noun endings, εἰμί, Verb endings) with 'Available forms: N of M' and a bar, and a table (#/paradigms?t=article&mode=study).
+// tables (nine, listed in data/paradigms/index.ts) with 'Available forms: N of M' and a bar, and a table (#/paradigms?t=article&mode=study).
 // A form is available once every grammar idea it needs is at the frontier or solid (grammarLevels); a locked form shows as locked, not hidden, so the
 // table keeps its shape. Study mode: an available cell says 'reveal' and a tap shows its form (a tap on a shown one hides it); Review mode: every
 // available cell shows its form. One button switches modes; Ask the tutor opens the Reader's Talk sheet on the open chapter with the table's name

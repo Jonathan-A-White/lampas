@@ -93,6 +93,14 @@ const listRow = (name: string): HTMLElement => {
   return el;
 };
 
+/** Each "Name: Available forms: N of M" has to be on the list. */
+const listReads = async (_: unknown, ...rows: string[]): Promise<void> => {
+  for (const row of rows.slice(0, 5)) {
+    const [name, count] = [row.slice(0, row.indexOf(': ')), row.slice(row.indexOf(': ') + 2)];
+    await waitFor(() => expect(within(listRow(name)).getByTestId('paradigm-available')).toHaveTextContent(count));
+  }
+};
+
 const shows = async (place: string, form: string): Promise<void> => {
   await waitFor(() => expect(cellAt(place)).toHaveAttribute('data-state', 'shown'));
   expect(cellAt(place)).toHaveTextContent(form);
@@ -129,6 +137,52 @@ describeFeature(feature, ({ Background, Scenario }) => {
       const bar = within(listRow(name)).getByRole('progressbar');
       await waitFor(() => expect(bar).toHaveAttribute('aria-valuenow', String(now)));
       expect(bar).toHaveAttribute('aria-valuemax', String(max));
+    });
+  });
+
+  Scenario('The list shows the five tables of the nouns and pronouns, each with how many of its forms are available', ({ When, Then }) => {
+    When('he opens the Paradigms screen', () => openAt('#/paradigms'));
+    Then('the list also reads {string}, {string}, {string}, {string} and {string}', listReads);
+  });
+
+  Scenario('The count follows the ideas he has, and the interrogative table stays shut while its idea is not yet', ({ Given, When, Then }) => {
+    Given('the ideas {string} and {string} are at the frontier', async (_, a: string, b: string) => {
+      await db.grammarLevels.bulkPut([a, b].map((id) => ({ id, level: 'frontier' as const, since: Date.now(), how: 'marked' as const })));
+    });
+    When('he opens the Paradigms screen', () => openAt('#/paradigms'));
+    Then('the list also reads {string}, {string}, {string}, {string} and {string}', listReads);
+  });
+
+  Scenario('Opening The third declension shows its 48 cells, every one locked while its idea is not yet', ({ When, And, Then }) => {
+    When('he opens the Paradigms screen', () => openAt('#/paradigms'));
+    And('he taps {string} in the list', async (_, name: string) => {
+      await waitFor(() => listRow(name));
+      await user.click(listRow(name));
+    });
+    Then('the table {string} is on screen with {int} cells', async (_, name: string, count: number) => {
+      await screen.findByRole('heading', { name });
+      expect(document.querySelectorAll('[data-cell]')).toHaveLength(count);
+    });
+    And('the address is for the table {string}', (_, id: string) => {
+      expect(window.location.hash).toMatch(new RegExp(`^#/paradigms\\?t=${id}(&|$)`));
+    });
+    And('all {int} cells of the table are locked', async (_, count: number) => {
+      await waitFor(() => expect(document.querySelectorAll('[data-cell][data-state="locked"]')).toHaveLength(count));
+    });
+  });
+
+  Scenario('A third declension form opens with its ideas and stays locked without them', ({ Given, Then, When, And }) => {
+    Given('the table {string} is open in Review mode', (_, id: string) => openAt(`#/paradigms?t=${id}&mode=review`));
+    Then('the cell {string} is locked and shows no form', (_, place: string) => showsNothing(place, 'locked'));
+    When('the idea {string} moves to frontier', async (_, id: string) => {
+      await db.grammarLevels.put({ id, level: 'frontier', since: Date.now(), how: 'marked' });
+    });
+    Then('the cell {string} now shows {string}', (_, place: string, form: string) => shows(place, form));
+    And('the cell {string} also shows {string}', (_, place: string, form: string) => shows(place, form));
+    And('the cell {string} is locked and shows no form', (_, place: string) => showsNothing(place, 'locked'));
+    And('the cell {string} is also locked and shows no form', (_, place: string) => showsNothing(place, 'locked'));
+    And('the table still has {int} cells', (_, count: number) => {
+      expect(document.querySelectorAll('[data-cell]')).toHaveLength(count);
     });
   });
 

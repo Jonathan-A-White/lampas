@@ -62,7 +62,7 @@ test('Paradigms: the list, a table in Study and Review mode, locked cells, at ph
   await page.getByRole('button', { name: /^Paradigms/ }).click();
   await expect(page.getByRole('heading', { name: 'Paradigms', level: 1 })).toBeVisible();
   const rows = page.locator('[data-paradigm]');
-  await expect(rows).toHaveCount(4);
+  await expect(rows).toHaveCount(9);
   await expect(page.locator('[data-paradigm="article"]').getByTestId('paradigm-available')).toHaveText('Available forms: 12 of 24');
   await expect(page.locator('[data-paradigm="eimi"]').getByTestId('paradigm-available')).toHaveText('Available forms: 24 of 36');
   for (const row of await rows.all()) expect((await row.boundingBox())?.height).toBeGreaterThanOrEqual(63.5);
@@ -98,8 +98,17 @@ test('Paradigms: the list, a table in Study and Review mode, locked cells, at ph
   await expect(page.getByRole('button', { name: 'Study mode', exact: true })).toBeVisible();
   expect(page.url()).toContain('#/paradigms?t=article&mode=review');
 
-  // the other three tables fit the phone, and Ask the tutor is a 48 px button inside the screen
-  for (const [id, name, count] of [['noun-endings', 'Noun endings', 40], ['eimi', 'εἰμί', 36], ['verb-endings', 'Verb endings', 24]] as const) {
+  // the other tables fit the phone, and Ask the tutor is a 48 px button inside the screen
+  for (const [id, name, count] of [
+    ['noun-endings', 'Noun endings', 40],
+    ['eimi', 'εἰμί', 36],
+    ['verb-endings', 'Verb endings', 24],
+    ['third-declension', 'The third declension', 48],
+    ['adjective-endings', 'Adjective endings', 48],
+    ['pronouns-personal', 'Personal pronouns', 40],
+    ['pronouns-demonstrative-relative', 'Demonstrative and relative pronouns', 48],
+    ['pronouns-interrogative-indefinite', 'Interrogative and indefinite pronouns', 32],
+  ] as const) {
     await page.goto(`/#/paradigms?t=${id}&mode=review`);
     await expect(page.getByRole('heading', { name, level: 1 })).toBeVisible();
     await expect(page.locator('[data-cell]')).toHaveCount(count);
