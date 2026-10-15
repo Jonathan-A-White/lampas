@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.254
+_2026-10-15_
+- Fixed: Ask the tutor, with the phone held sideways, shows the question and its Copy button on one line, so more of the answer is in view.
+
 ## 0.1.253
 _2026-10-15_
 - Fixed: Three Logos lexicon buttons on the word sheet now show the book's name instead of a code.

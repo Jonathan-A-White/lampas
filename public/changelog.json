@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.254",
+    "date": "2026-10-15",
+    "story": "mw-5r3p30.392",
+    "kind": "fixed",
+    "text": "Ask the tutor, with the phone held sideways, shows the question and its Copy button on one line, so more of the answer is in view."
+  },
+  {
     "version": "0.1.253",
     "date": "2026-10-15",
     "story": "mw-5r3p30.148",
