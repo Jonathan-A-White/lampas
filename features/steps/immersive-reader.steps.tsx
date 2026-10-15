@@ -4,6 +4,7 @@
 import '@testing-library/react/dont-cleanup-after-each';
 import { act, fireEvent, render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import Dexie from 'dexie';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
@@ -80,7 +81,7 @@ function fakeWakeLock(): void {
   });
 }
 
-async function open(options: { immersive: 'on' | 'off'; recogniser?: boolean; speaks?: boolean; fullscreen?: 'works' | 'refuses'; wakeLock?: boolean }): Promise<void> {
+async function open(options: { immersive: 'on' | 'off'; recogniser?: boolean; speaks?: boolean; fullscreen?: 'works' | 'refuses'; wakeLock?: boolean; slowSetting?: boolean; address?: string }): Promise<void> {
   cleanup();
   stopReading();
   clearBus();
@@ -95,11 +96,17 @@ async function open(options: { immersive: 'on' | 'off'; recogniser?: boolean; sp
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
   window.history.replaceState(null, '', '/');
-  window.location.hash = '';
+  window.location.hash = options.address ?? '';
   stubChapterFetch();
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.reviews.clear(), db.talks.clear(), db.tips.clear()]);
   if (options.immersive === 'on') await db.settings.put({ key: 'immersiveReader', value: 'on' });
+  // the Reader's box can be drawn, and its place restored, well before the saved setting is read: a loaded host does that on its own, this does it on purpose
+  const realGet = db.settings.get;
+  if (options.slowSetting) {
+    db.settings.get = ((key: string) =>
+      realGet.call(db.settings, key).then((row) => new Dexie.Promise((resolve) => setTimeout(() => resolve(row), 300)))) as unknown as typeof db.settings.get;
+  }
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
@@ -107,6 +114,9 @@ async function open(options: { immersive: 'on' | 'off'; recogniser?: boolean; sp
   await screen.findByTestId('reader-chips');
   await waitFor(() => expect(reader()).toHaveAttribute('data-immersive', options.immersive));
   // the box is given its size and sits at the top (the app takes this first scroll as a resize, as it would a real one)
+  db.settings.get = realGet;
+  // the Reader has attached its listeners (and taken the box's place as its last): the next scroll is measured from there, whichever came first
+  await act(async () => {});
   at = 0;
   scrollTo(0);
 }
@@ -414,6 +424,22 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the page has left full screen', async () => {
       await waitFor(() => expect(fs.exits).toBe(1));
       expect(document.fullscreenElement).toBeNull();
+    });
+  });
+
+  Scenario('A Reader opened again where he left it has not asked for full screen', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader On and a phone that can go full screen', () => open({ immersive: 'on', fullscreen: 'works' }));
+    let left = '';
+    When('he scrolls the text down {int} px', (_, px: number) => {
+      scrollBy(px);
+      left = window.location.hash;
+    });
+    And('Lampas is opened again on Romans 8 with Immersive reader On, the saved setting slow to be read, and a phone that can go full screen', () =>
+      open({ immersive: 'on', fullscreen: 'works', slowSetting: true, address: left }),
+    );
+    Then('the page has not asked for full screen', async () => {
+      await sleep(50);
+      expect(fs).toEqual({ requests: 0, exits: 0 });
     });
   });
 
