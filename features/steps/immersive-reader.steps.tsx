@@ -13,6 +13,7 @@ import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
+import { forgetScrolls } from '../../src/nav/scrollMemory';
 import { getReading, stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { FakeRecognizer, stubRecognizer } from '../../tests/support/fake-recognizer';
@@ -86,6 +87,8 @@ async function open(options: { immersive: 'on' | 'off'; recogniser?: boolean; sp
   stopReading();
   clearBus();
   forgetTrail();
+  // the places the last scenario scrolled to would be restored in this Reader, at a moment that depends on the host, and read as a scroll
+  forgetScrolls();
   vi.unstubAllGlobals();
   if (options.recogniser) stubRecognizer();
   FakeRecognizer.instances = [];
