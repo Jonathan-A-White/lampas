@@ -3,7 +3,7 @@
 // one the card can explain (mw-5r3p30.234): its parsing carries the idea, it is a part of speech the cards below taught, its form is in the
 // card's table, and it is shown with the ending the table names marked, its one sense here, and its parsing in the card's own terms.
 // Pure data work: no store, no screen; docs/grammar.md.
-import { type BookIndex, type Chapter, type GreekWord, wordGloss } from '../chapter';
+import { type BookIndex, type Chapter, type GreekWord, ownEnglish, wordGloss } from '../chapter';
 import { goalText, parseGoal } from '../goal';
 import { decodeParse, parseSegments, splitParse } from '../parseCode';
 import { passagesOf } from '../passage';
@@ -63,15 +63,19 @@ export interface IdeaExample {
   parts: ExamplePart[];
 }
 
+/** The English the verse gives `word` alone, '' when no chunk renders it alone or the chunk has no word of its own (chapter.ts ownEnglish). */
+export function wordEnglish(chapter: Chapter, verse: number, word: GreekWord): string {
+  const chunk = word.e === undefined ? undefined : chapter.verses.find((x) => x.n === verse)?.e[word.e];
+  return chunk && chunk.g.length === 1 ? ownEnglish(chunk) : '';
+}
+
 /**
  * What an example row says the word means. The lexicon's gloss is for the lemma ('this/he/she/it' for οὗτος), so beside a plural form it
  * teaches the wrong number; the word's own English is the chunk of its verse that renders it alone ('these things'). When the chunk renders
  * other Greek words too, or the word has none, the gloss is labelled as the dictionary form's: 'οὗτος: this/he/she/it'.
  */
 export function exampleMeaning(chapter: Chapter, verse: number, word: GreekWord): string {
-  const v = chapter.verses.find((x) => x.n === verse);
-  const chunk = word.e === undefined ? undefined : v?.e[word.e];
-  const own = chunk && chunk.g.length === 1 ? chunk.t.trim().replace(/[\s,.;:!?—–-]+$/u, '') : '';
+  const own = wordEnglish(chapter, verse, word);
   if (own) return own;
   const gloss = wordGloss(chapter, word);
   return gloss ? `${word.l}: ${gloss}` : word.l;
@@ -229,9 +233,7 @@ const firstSense = (gloss: string): string => gloss.split(/[/;:,]/)[0].trim();
 export function exampleGloss(idea: GrammarIdea, example: IdeaExample): string {
   const { word, chapter, verse } = example;
   if (idea.id === 'article' && word.p.startsWith('T-')) return 'the';
-  const v = chapter.verses.find((x) => x.n === verse);
-  const chunk = word.e === undefined ? undefined : v?.e[word.e];
-  const own = chunk && chunk.g.length === 1 ? chunk.t.trim().replace(/[\s,.;:!?—–-]+$/u, '') : '';
+  const own = wordEnglish(chapter, verse, word);
   if (own) return own;
   return firstSense(wordGloss(chapter, word) ?? '') || word.l;
 }

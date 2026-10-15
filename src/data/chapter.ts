@@ -52,6 +52,27 @@ export function englishRuns(chunk: EnglishChunk): EnglishRun[] {
   return runs;
 }
 
+/** Words a translator may supply in front of a noun without them being a neighbour's: 'the beginning' stays whole. */
+const ARTICLES = new Set(['the', 'a', 'an']);
+
+/**
+ * What a chunk that renders ONE Greek word says of that word (mw-5r3p30.360). The MSB aligns the words it supplies to the Greek word beside them,
+ * so the chunk of ἐψηλάφησαν is 'touched [with]' (the 'with' is for 'our hands') and the chunk of περί is '[this is]' (nothing of its own): the
+ * supplied words at either edge are dropped, except an article in front ('[the] beginning'); a chunk with no word of its own left gives ''.
+ * Supplied words in the middle stay. The old shape (`s: 1`, no word named) is not trimmed.
+ */
+export function ownEnglish(chunk: EnglishChunk): string {
+  const words = englishRuns(Array.isArray(chunk.s) ? chunk : { ...chunk, s: undefined })
+    .flatMap((run) => run.text.split(' ').map((text) => ({ text, supplied: run.supplied })))
+    // a mark on its own ('—', ',') is no word: it is not a word of the chunk's, so it neither keeps nor ends a supplied word
+    .filter((w) => /[\p{L}\p{N}]/u.test(w.text));
+  let end = words.length;
+  while (end > 0 && words[end - 1].supplied) end--;
+  let start = 0;
+  while (start < end && words[start].supplied && !(ARTICLES.has(words[start].text.toLowerCase()) && words.slice(start, end).some((w) => !w.supplied))) start++;
+  return words.slice(start, end).map((w) => w.text).join(' ').replace(/[\s,.;:!?—–-]+$/u, '');
+}
+
 /** The chunk's English with each run of supplied words between asterisks, as Markdown italics: '*was* king'. What the tutor is sent. */
 export const markSupplied = (chunk: EnglishChunk): string =>
   chunk.s && (!Array.isArray(chunk.s) || chunk.s.length) ? englishRuns(chunk).map((r) => (r.supplied ? `*${r.text}*` : r.text)).join(' ') : chunk.t.trim();
