@@ -1,5 +1,5 @@
 // src/ParadigmsScreen.tsx — Paradigms (mw-5r3p30.82, #/paradigms, reached from Settings > More beside Review; docs/paradigms.md): the list of
-// tables (nine, listed in data/paradigms/index.ts) with 'Available forms: N of M' and a bar, and a table (#/paradigms?t=article&mode=study).
+// tables (sixteen, listed in data/paradigms/index.ts) with 'Available forms: N of M' and a bar, and a table (#/paradigms?t=article&mode=study).
 // A form is available once every grammar idea it needs is at the frontier or solid (grammarLevels); a locked form shows as locked, not hidden, so the
 // table keeps its shape. Study mode: an available cell says 'reveal' and a tap shows its form (a tap on a shown one hides it); Review mode: every
 // available cell shows its form. One button switches modes; Ask the tutor opens the Reader's Talk sheet on the open chapter with the table's name
@@ -72,7 +72,7 @@ function ParadigmList({ levels }: { levels: Levels | undefined }) {
                   onClick={() => openParadigm({ table: table.id })}
                   className="block min-h-16 w-full rounded-xl border border-line px-4 py-3 text-left active:bg-line"
                 >
-                  <span data-testid="paradigm-name" lang={table.id === 'eimi' ? 'grc' : undefined} className="block text-xl font-semibold">
+                  <span data-testid="paradigm-name" lang={table.id === 'eimi' || table.id === 'oida' ? 'grc' : undefined} className="block text-xl font-semibold">
                     {table.name}
                   </span>
                   <span className="block text-base text-muted">{table.about}</span>

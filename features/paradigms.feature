@@ -1,7 +1,8 @@
 Feature: Paradigms
-  The Paradigms screen (#/paradigms, reached from Settings > More, beside Review) lists nine tables: The article, Noun endings, εἰμί,
-  Verb endings, The third declension, Adjective endings, Personal pronouns, Demonstrative and relative pronouns and Interrogative
-  and indefinite pronouns (src/data/paradigms/, docs/paradigms.md), each with 'Available forms: N of M' and a progress bar. A form is
+  The Paradigms screen (#/paradigms, reached from Settings > More, beside Review) lists sixteen tables: The article, Noun endings, εἰμί,
+  Verb endings, The third declension, Adjective endings, Personal pronouns, Demonstrative and relative pronouns, Interrogative
+  and indefinite pronouns, Future and aorist, Aorist and future passive, Perfect and pluperfect, Second aorist, Contract verbs,
+  Verbs in -μι and οἶδα (src/data/paradigms/, docs/paradigms.md), each with 'Available forms: N of M' and a progress bar. A form is
   available once every grammar idea it needs is at the frontier or solid (grammarLevels); a locked form shows as locked, not hidden,
   so the table keeps its shape. A table opens in Study mode (an available cell says reveal and a tap shows its form) or Review mode
   (every available cell shows its form); one button switches. Ask the tutor sends the table's name and the forms he has revealed
@@ -23,6 +24,19 @@ Feature: Paradigms
     Given the ideas "declension-3" and "pronoun-interrogative" are at the frontier
     When he opens the Paradigms screen
     Then the list also reads "The third declension: Available forms: 8 of 48", "Adjective endings: Available forms: 0 of 48", "Personal pronouns: Available forms: 0 of 40", "Demonstrative and relative pronouns: Available forms: 0 of 48" and "Interrogative and indefinite pronouns: Available forms: 2 of 32"
+
+  Scenario: The list shows the seven tables of the verb, with the tenses he has not met still locked
+    Given the ideas "tense-aorist, voice-active, voice-middle, mood-indicative, person-1st, person-2nd, person-3rd, number-plural, verb, augment, tense-signs" are at the frontier
+    When he opens the Paradigms screen
+    Then the verb tables read "Future and aorist: Available forms: 12 of 24, Aorist and future passive: Available forms: 0 of 12, Perfect and pluperfect: Available forms: 0 of 18, Second aorist: Available forms: 0 of 12, Contract verbs: Available forms: 0 of 18, Verbs in -μι: Available forms: 0 of 36, οἶδα: Available forms: 0 of 12"
+
+  Scenario: The future cells of Future and aorist stay locked, naming the future tense, while the aorist cells open
+    Given the ideas "tense-aorist, voice-active, voice-middle, mood-indicative, person-1st, person-2nd, person-3rd, number-plural, verb, augment, tense-signs" are at the frontier
+    And the table "future-and-aorist" is open in Review mode
+    Then the table says "Available forms: 12 of 24"
+    And the cell "1st person singular Aorist Active" shows "ἔλυσ-α"
+    And the 12 future cells are locked and their accessible names name "The future tense"
+    And the cell "1st person singular Future Active" is locked and shows no form
 
   Scenario: Opening The third declension shows its 48 cells, every one locked while its idea is not yet
     When he opens the Paradigms screen

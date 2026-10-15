@@ -13,10 +13,17 @@ const COUNTS: Record<string, number> = {
   'pronouns-personal': 40,
   'pronouns-demonstrative-relative': 48,
   'pronouns-interrogative-indefinite': 32,
+  'future-and-aorist': 24,
+  'aorist-and-future-passive': 12,
+  'perfect-and-pluperfect': 18,
+  'second-aorist': 12,
+  'contract-verbs': 18,
+  'mi-verbs': 36,
+  oida: 12,
 };
 
 describe('the paradigm tables', () => {
-  it('are nine, each with its stated number of cells', () => {
+  it('are sixteen, each with its stated number of cells', () => {
     expect(PARADIGMS.map((p) => p.id)).toEqual([
       'article',
       'noun-endings',
@@ -27,6 +34,13 @@ describe('the paradigm tables', () => {
       'pronouns-personal',
       'pronouns-demonstrative-relative',
       'pronouns-interrogative-indefinite',
+      'future-and-aorist',
+      'aorist-and-future-passive',
+      'perfect-and-pluperfect',
+      'second-aorist',
+      'contract-verbs',
+      'mi-verbs',
+      'oida',
     ]);
     for (const table of PARADIGMS) expect(cellsOf(table), table.id).toHaveLength(COUNTS[table.id]);
   });
@@ -187,5 +201,103 @@ describe('the third declension, the adjectives and the pronouns', () => {
     expect(cellsOf(table).filter((c) => c.ideas.includes('pronoun-relative'))).toHaveLength(24);
     expect(formAt('pronouns-demonstrative-relative', /οὗτος/, 'Nominative', 1)).toBe('αὕτη');
     expect(formAt('pronouns-demonstrative-relative', /ὅς/, 'Dative', 0)).toBe('ᾧ');
+  });
+});
+
+describe('the verb tables of the indicative', () => {
+  const table = (id: string) => {
+    const found = paradigmById(id);
+    if (!found) throw new Error(`no ${id}`);
+    return found;
+  };
+  /** The cell at a row and column, found by the column's tense and voice headings and the row's label (and group). */
+  const cellAt = (id: string, column: string, row: string, group?: RegExp) => {
+    const t = table(id);
+    const c = t.columns.findIndex((col) => `${col.group ?? ''} ${col.label}`.trim() === column);
+    const r = t.rows.find((x) => x.label === row && (!group || (x.group && group.test(x.group))));
+    if (c < 0 || !r) throw new Error(`no ${column} / ${row} in ${id}`);
+    return r.cells[c];
+  };
+  /** The hyphen only marks where the stem or the tense sign ends; the word is what is left. */
+  const word = (form: string) => form.replace(/-/g, '');
+
+  it('name the future and aorist tables by the names the list shows', () => {
+    expect(PARADIGMS.slice(9).map((p) => p.name)).toEqual([
+      'Future and aorist',
+      'Aorist and future passive',
+      'Perfect and pluperfect',
+      'Second aorist',
+      'Contract verbs',
+      'Verbs in -μι',
+      'οἶδα',
+    ]);
+    for (const p of PARADIGMS.slice(9)) expect(p.tier, p.id).toBe('verbs');
+  });
+
+  it('write the passive, perfect and second aorist forms the story asks for', () => {
+    expect(word(cellAt('aorist-and-future-passive', 'Aorist Passive', '3rd person singular').form)).toBe('ἐλύθη');
+    expect(word(cellAt('aorist-and-future-passive', 'Aorist Passive', '1st person singular').form)).toBe('ἐλύθην');
+    expect(word(cellAt('aorist-and-future-passive', 'Future Passive', '1st person singular').form)).toBe('λυθήσομαι');
+    expect(word(cellAt('perfect-and-pluperfect', 'Perfect Active', '1st person plural').form)).toBe('λελύκαμεν');
+    expect(word(cellAt('perfect-and-pluperfect', 'Perfect Middle or passive', '1st person singular').form)).toBe('λέλυμαι');
+    expect(word(cellAt('perfect-and-pluperfect', 'Pluperfect Active', '1st person singular').form)).toBe('ἐλελύκειν');
+    expect(word(cellAt('second-aorist', 'Second aorist Active', '3rd person plural').form)).toBe('ἔβαλον');
+    expect(word(cellAt('second-aorist', 'Second aorist Middle', '1st person singular').form)).toBe('ἐβαλόμην');
+  });
+
+  it('show the tense sign in the future and aorist forms, and the merged vowel in the contract verbs', () => {
+    expect(cellAt('future-and-aorist', 'Future Active', '1st person singular').form).toBe('λύσ-ω');
+    expect(cellAt('future-and-aorist', 'Aorist Active', '1st person singular').form).toBe('ἔλυσ-α');
+    expect(cellAt('contract-verbs', 'Present Active', '3rd person singular', /ἀγαπάω/).form).toBe('ἀγαπᾷ');
+    expect(cellAt('contract-verbs', 'Present Active', '1st person plural', /ποιέω/).form).toBe('ποιοῦμεν');
+    expect(cellAt('contract-verbs', 'Present Active', '1st person singular', /πληρόω/).form).toBe('πληρῶ');
+  });
+
+  it('give the -μι verbs their present and aorist, and οἶδα its perfect form and its past', () => {
+    expect(cellAt('mi-verbs', 'Present Active', '3rd person plural', /δίδωμι/).form).toBe('διδόασι(ν)');
+    expect(cellAt('mi-verbs', 'Aorist Active', '1st person singular', /τίθημι/).form).toBe('ἔθηκα');
+    expect(cellAt('mi-verbs', 'Aorist Active', '3rd person singular', /ἵστημι/).form).toBe('ἔστη');
+    expect(cellAt('oida', 'Greek', '1st person singular', /οἶδα/).form).toBe('οἶδα');
+    expect(cellAt('oida', 'Greek', '3rd person plural', /ᾔδειν/).form).toBe('ᾔδεισαν');
+  });
+
+  it('make every cell of the future and aorist table name its tense signs, and every aorist cell its augment', () => {
+    const cells = cellsOf(table('future-and-aorist'));
+    for (const cell of cells) expect(cell.ideas, cell.form).toContain('tense-signs');
+    const aorist = cells.filter((cell) => cell.ideas.includes('tense-aorist'));
+    expect(aorist).toHaveLength(12);
+    for (const cell of aorist) expect(cell.ideas, cell.form).toContain('augment');
+    expect(cells.filter((cell) => cell.ideas.includes('tense-future'))).toHaveLength(12);
+    for (const cell of cells.filter((c) => c.ideas.includes('tense-future'))) expect(cell.ideas, cell.form).not.toContain('augment');
+  });
+
+  it('name in every verb cell the verb, a mood, a person and a number, and one tense', () => {
+    for (const t of PARADIGMS.slice(9))
+      for (const cell of cellsOf(t)) {
+        expect(cell.ideas, `${t.id} ${cell.form}`).toEqual(expect.arrayContaining(['verb', 'mood-indicative']));
+        expect(cell.ideas.filter((id) => id.startsWith('person-')), `${t.id} ${cell.form}`).toHaveLength(1);
+        expect(cell.ideas.filter((id) => id.startsWith('number-')), `${t.id} ${cell.form}`).toHaveLength(1);
+        if (t.id !== 'oida') expect(cell.ideas.filter((id) => id.startsWith('tense-') && id !== 'tense-signs'), `${t.id} ${cell.form}`).toHaveLength(1);
+      }
+  });
+
+  it('name the idea each of the other tables teaches in its cells', () => {
+    const named = (id: string, idea: string) => {
+      for (const cell of cellsOf(table(id))) expect(cell.ideas, `${id} ${cell.form}`).toContain(idea);
+    };
+    named('perfect-and-pluperfect', 'reduplication');
+    named('contract-verbs', 'contract-verbs');
+    named('mi-verbs', 'mi-verbs');
+    named('oida', 'oida');
+    named('second-aorist', 'second-tenses');
+    named('second-aorist', 'augment');
+    named('aorist-and-future-passive', 'voice-passive');
+    named('aorist-and-future-passive', 'tense-signs');
+    const pluperfect = cellsOf(table('perfect-and-pluperfect')).filter((c) => c.ideas.includes('tense-pluperfect'));
+    expect(pluperfect).toHaveLength(6);
+    for (const cell of pluperfect) expect(cell.ideas, cell.form).toEqual(expect.arrayContaining(['augment', 'tense-signs']));
+    const seconds = cellsOf(table('mi-verbs')).filter((c) => c.ideas.includes('second-tenses'));
+    expect(seconds).toHaveLength(6);
+    for (const cell of cellsOf(table('mi-verbs')).filter((c) => c.ideas.includes('tense-aorist'))) expect(cell.ideas, cell.form).toContain('augment');
   });
 });

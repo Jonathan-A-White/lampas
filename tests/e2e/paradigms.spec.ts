@@ -62,7 +62,7 @@ test('Paradigms: the list, a table in Study and Review mode, locked cells, at ph
   await page.getByRole('button', { name: /^Paradigms/ }).click();
   await expect(page.getByRole('heading', { name: 'Paradigms', level: 1 })).toBeVisible();
   const rows = page.locator('[data-paradigm]');
-  await expect(rows).toHaveCount(9);
+  await expect(rows).toHaveCount(16);
   await expect(page.locator('[data-paradigm="article"]').getByTestId('paradigm-available')).toHaveText('Available forms: 12 of 24');
   await expect(page.locator('[data-paradigm="eimi"]').getByTestId('paradigm-available')).toHaveText('Available forms: 24 of 36');
   for (const row of await rows.all()) expect((await row.boundingBox())?.height).toBeGreaterThanOrEqual(63.5);
