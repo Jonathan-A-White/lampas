@@ -808,6 +808,12 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
+            "properties": { "key": { "const": "audioBible" }, "value": { "type": "string", "enum": ["off", "word-of-promise"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
             "properties": { "key": { "const": "logosBible" }, "value": { "type": "string", "maxLength": 80 } }
           },
           {

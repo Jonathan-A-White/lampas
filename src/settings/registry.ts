@@ -67,7 +67,7 @@ import { READ_SPANS, type ReadSpan } from '../speech/readSpan';
 import { PRONUNCIATIONS } from '../speech/pronunciation';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS, type Depth } from '../script/scripts';
 import type { Allowed, Dependency, SectionId, SettingDef, SettingValue } from './define';
-import { askBySetting, immersiveHintSetting, immersiveSetting, themeSetting, tipsSetting, weaveSetting } from './definitions';
+import { askBySetting, audioBibleSetting, immersiveHintSetting, immersiveSetting, themeSetting, tipsSetting, weaveSetting } from './definitions';
 import type { Immersive } from './definitions/immersive';
 import type { Tips } from './definitions/tips';
 import type { Weave } from './definitions/weave';
@@ -476,6 +476,7 @@ export const SETTINGS: readonly SettingEntry[] = [
     { section: 'pronunciation' },
   ),
   ...resourceEntries,
+  fromDefinition(audioBibleSetting),
   logosBibleEntry,
   quizGoalEntry,
 ];

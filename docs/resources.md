@@ -211,3 +211,15 @@ Old Testament has a card too, headed `Psalm 110`, saying `Not in Lampas yet`, wi
 read by `nav/links.ts` and `resources/tutorLinks.ts` `placeOf` (no second parser). A name needs a capital letter (`a 7:2 ratio` is not a reference), and one that names no
 book or a chapter or verse the book lacks is plain text. The instructions of both talk grinds say to answer a question about another passage there and then
 and to name its verse this way, never to send him to ask elsewhere.
+
+## Audio Bible: Listen in Audible (mw-5r3p30.390)
+
+Settings > Study resources > Audio Bible is `Off` or `The Word of Promise (NKJV), in Audible` (the setting `audioBible`, `src/settings/definitions/audioBible.ts`;
+the list of audio Bibles is `AUDIO_BIBLES` in `src/resources/audioBible.ts`, so a second one slots in later). With it on, the Verse view's Listen shows a
+`Listen in Audible` link, the line `In Audible: Chapters > Luke 15` and the credit. No licence is needed.
+
+Audible publishes no way to open a book at a chapter or a time (no documented `audible://` path takes a chapter; the web player takes no chapter; a share clip plays
+alone), so Lampas opens the book and names the chapter to pick. The link's href is an Android intent (`MEDIA_PLAY_FROM_SEARCH`, package `com.audible.application`, query
+`The Word of Promise Audio Bible`, `browser_fallback_url` the book's page `https://www.audible.com/pd/B003UC45I8`); `openApp.ts` `armFallback` opens the book's page
+only when the page stays in front 1.5 s after the tap. **UNVERIFIED on a device:** that Audible's app accepts the search intent from the browser and opens the player, and that its chapter list for this
+book names chapters by Bible book and chapter (`audibleChapterLabel`: the NKJV book name and the chapter). If its chapters are per book only, a later story adds a time map.

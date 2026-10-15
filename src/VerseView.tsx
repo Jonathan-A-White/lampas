@@ -26,6 +26,10 @@ import { BarSlot } from './speech/SpeakingBarSlot';
 import type { AskState } from './useAsks';
 import { actionsFor, type VerseAction } from './verse/action';
 import { useAiAllowed } from './gate/licenceContext';
+import { audibleChapterLabel, audioBibleOf } from './resources/audioBible';
+import { armFallback } from './resources/openApp';
+import { audioBibleSetting } from './settings/definitions';
+import { useSetting } from './settings/store';
 
 /** Listen is a player: Play reads the verse or passage on to its end by itself. */
 export interface ListenPlayer {
@@ -83,6 +87,8 @@ export function VerseView(props: VerseViewProps) {
   // Read it aloud, Ask the tutor and Quiz me are the AI: not offered, and nothing of theirs drawn, without a licence (mw-8m9dyu.2).
   const ai = useAiAllowed();
   const reference = unitReference(title, verse);
+  const audioBible = audioBibleOf(useSetting(audioBibleSetting) ?? 'off');
+  const audibleChapter = audibleChapterLabel(book, chapter);
   const passage = verse.to !== undefined;
   const name = unitName(verse);
   const noun = passage ? 'passage' : 'verse';
@@ -152,6 +158,20 @@ export function VerseView(props: VerseViewProps) {
             <p data-action-help className="px-1 text-sm text-muted">
               Tap Play to hear {name}.
             </p>
+          ) : null}
+          {action === 'listen' && audioBible && audibleChapter ? (
+            <div data-audio-bible className="mt-3 rounded-xl border border-line p-3">
+              <a
+                href={audioBible.intentUrl}
+                aria-label={`Listen in Audible: ${audioBible.name}, ${audibleChapter}`}
+                onClick={() => armFallback(audioBible.pageUrl)}
+                className="flex min-h-12 items-center rounded-lg bg-surface px-3 text-base font-medium text-accent active:bg-line"
+              >
+                Listen in Audible
+              </a>
+              <p className="px-1 pt-2 text-base">{`In Audible: Chapters > ${audibleChapter}`}</p>
+              <p className="px-1 pt-1 text-sm text-muted">{audioBible.credit}</p>
+            </div>
           ) : null}
           {action === 'read' && ai ? (
             <ReadCheckPanel key={unitId(verse)} verse={verse} view={view} book={book} chapter={chapter} checks={checks} hold={read} onRetry={onRetryRead} slot={slot} />
