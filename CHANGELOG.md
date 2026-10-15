@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.264
+_2026-10-15_
+- Fixed: The passage view of a heading now shows its verses in the same type and spacing as the Reader.
+
 ## 0.1.263
 _2026-10-15_
 - New: Lessons can now read themselves aloud when they open, if you turn on 'Read lessons to me' in Settings; the words stay on screen.

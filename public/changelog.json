@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.264",
+    "date": "2026-10-15",
+    "story": "mw-5r3p30.319",
+    "kind": "fixed",
+    "text": "The passage view of a heading now shows its verses in the same type and spacing as the Reader."
+  },
+  {
     "version": "0.1.263",
     "date": "2026-10-15",
     "story": "mw-5r3p30.366",
