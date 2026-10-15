@@ -34,6 +34,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'Blue Letter Bible', use: 'Links a word to its Strong\'s entry', licence: 'its terms; links only', link: 'https://www.blueletterbible.org' },
   { name: 'STEPBible', use: 'Links a word to its Strong\'s entry', licence: 'its terms; links only', link: 'https://www.stepbible.org' },
   { name: 'Web Speech API', use: 'Your phone\'s voices speak and hear', licence: 'a web standard', link: 'https://developer.mozilla.org/docs/Web/API/Web_Speech_API' },
+  { name: '$P recognizer', use: 'Checks a letter you write by its shape', licence: 'none needed; a method', link: 'https://depts.washington.edu/acelab/proj/dollar/pdollar.html' },
   { name: 'Beads', use: 'How the factory keeps its work: small tracked tasks', licence: 'MIT', link: 'https://github.com/steveyegge/beads' },
   { name: 'Gas Town', use: 'Agents that take them one at a time', licence: 'MIT', link: 'https://github.com/steveyegge/gastown' },
   { name: 'Claude Code', use: 'Writes most of the code, as Jonathan directs', licence: 'none needed; its terms', link: 'https://www.anthropic.com/claude-code' },
