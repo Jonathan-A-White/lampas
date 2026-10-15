@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.252
+_2026-10-15_
+- Fixed: A letter's example words now really make the sound the card teaches, simple words come first, and a different sound in a pair is shown on purpose.
+
 ## 0.1.250
 _2026-10-15_
 - Fixed: the Talk message box no longer squeezes to one letter wide with the keyboard up, grows upward as you type, and "Hold to talk" no longer has a notch cut out of it.
