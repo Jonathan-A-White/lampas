@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.229
+_2026-10-15_
+- Fixed: after you answer a question in Review, the Quick test, the Parsing drill or Placement, the Next button stays in view at the bottom of the screen, with no scrolling.
+
 ## 0.1.226
 _2026-10-14_
 - New: When the verse you are reading has no word showing a letter or idea, its card now takes examples from the nearby section, the chapter or the book, and says where they come from.

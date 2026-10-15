@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.229",
+    "date": "2026-10-15",
+    "story": "mw-5r3p30.377",
+    "kind": "fixed",
+    "text": "after you answer a question in Review, the Quick test, the Parsing drill or Placement, the Next button stays in view at the bottom of the screen, with no scrolling."
+  },
+  {
     "version": "0.1.226",
     "date": "2026-10-14",
     "story": "mw-5r3p30.350",
