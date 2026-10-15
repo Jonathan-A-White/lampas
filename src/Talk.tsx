@@ -369,11 +369,16 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
   return (
     <article data-turn data-turn-id={turn.id} className="space-y-2">
       <TurnPictures turnId={turn.id} />
-      <p data-talk-q className="ml-auto w-fit max-w-[88%] break-words rounded-2xl bg-accent/15 px-3 py-2 text-lg">
-        {turn.cleanQ ?? turn.q}
-      </p>
-      {/* what he said, word for word (not the tidied line above), so a question can be handed on whole */}
-      <CopyText text={turn.q} label="Copy my question" />
+      {/* what he said, word for word (not the tidied line above), so a question can be handed on whole; sideways it sits beside the question, not under it,
+          so the answer keeps its room (tests/e2e/talk-landscape.spec.ts) */}
+      <div className="space-y-2 short:flex short:items-start short:justify-end short:gap-2 short:space-y-0">
+        <p data-talk-q className="ml-auto w-fit max-w-[88%] break-words rounded-2xl bg-accent/15 px-3 py-2 text-lg short:ml-0 short:min-w-0">
+          {turn.cleanQ ?? turn.q}
+        </p>
+        <div className="short:shrink-0">
+          <CopyText text={turn.q} label="Copy my question" />
+        </div>
+      </div>
       <div data-talk-a onClick={stopOnTap} className="rounded-2xl border border-line px-3 py-2">
         <div data-answer-text className="break-words text-lg leading-snug">
           <Markdown text={turn.a} onOpen={onLeave} />

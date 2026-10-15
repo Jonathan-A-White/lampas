@@ -5,6 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { honestSpeech } from '../support/honest-fakes';
 import { shot } from './shot';
+import { NEEDED } from './needed-ideas';
 import { openUnlocked } from './unlocked';
 
 const BUTTON = 'button[data-ask-tutor]';
@@ -104,12 +105,6 @@ test.describe('phone sideways', () => {
     await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
     await put(page, 'settings', [{ key: 'goal', value: '1 John 1:1' }]);
     // everything the walk needs and every letter, pair and breathing is solid but ξ, ψ and ου, so Start goes straight to the quick round
-    const NEEDED = [
-      'alphabet', 'diphthongs', 'consonant-pairs', 'syllables', 'breathings', 'accents', 'iota-subscript', 'punctuation', 'noun', 'article', 'case-nominative', 'case-accusative', 'case-genitive', 'case-dative',
-      'gender-masculine', 'gender-feminine', 'gender-neuter', 'person-1st', 'person-3rd', 'number-singular', 'number-plural', 'pronoun',
-      'pronoun-personal', 'pronoun-relative', 'preposition', 'preposition-apo', 'preposition-peri', 'verb', 'tense-imperfect', 'tense-aorist', 'tense-perfect', 'second-tenses',
-      'voice-active', 'voice-middle-deponent', 'mood-indicative', 'conjunction', 'attic-form',
-    ];
     const items = LADDER.filter((i) => i.glyphs || i.parent).map((i) => i.id);
     const missed = ['letter-xi', 'letter-psi', 'diphthong-ou'];
     const rest = [...new Set([...NEEDED, ...items])].filter((id) => !missed.includes(id) && !['alphabet', 'diphthongs'].includes(id));

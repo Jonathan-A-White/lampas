@@ -92,7 +92,7 @@ test('the Goal chip under the Reader header is on one row with Due and opens the
   await openWithGoal(page, '1 John 1:1');
   const strip = page.getByTestId('goal-strip');
   await expect(strip).toHaveText(/^Goal \d+\/16$/);
-  await expect(strip).toHaveAccessibleName(/^Goal: 1 John 1:1, \d+ of 16 words, \d+ of 37 ideas$/);
+  await expect(strip).toHaveAccessibleName(/^Goal: 1 John 1:1, \d+ of 16 words, \d+ of 46 ideas$/);
   const box = await strip.boundingBox();
   expect(box?.height).toBeGreaterThanOrEqual(38);
   expect(box?.height).toBeLessThanOrEqual(40);
@@ -127,7 +127,7 @@ test('the Goal screen: two bars that fit, the lists, Learn next, Next words and 
   await expectThumbSized(page.getByTestId('learn-next'));
   await expect(page.getByTestId('learn-next')).toHaveText('Learn next: The singular · Your first words');
   await expect(page.getByTestId('words-legend')).toHaveText(/^Solid \d+ · Frontier \d+ · Not yet \d+$/);
-  await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 9 · Frontier 0 · Not yet 28');
+  await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 9 · Frontier 0 · Not yet 37');
   await expect(page.getByText('Solid when both are full.')).toBeVisible();
   for (const bar of ['words-bar', 'ideas-bar']) {
     const box = await page.getByTestId(bar).boundingBox();
@@ -154,7 +154,7 @@ test('the Goal screen: two bars that fit, the lists, Learn next, Next words and 
   await page.keyboard.press('ArrowRight');
   await expect(sheet.getByTestId('idea-level')).toHaveText('Frontier since today');
   await sheet.getByRole('button', { name: 'Done' }).click();
-  await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 9 · Frontier 1 · Not yet 27');
+  await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 9 · Frontier 1 · Not yet 36');
   // he learns one idea at a time: the Goal screen names it, and Learn next gives way to it
   await expect(page.getByTestId('learning-now')).toHaveText('Learning now: The singular');
   await expect(page.getByTestId('learn-next')).toHaveCount(0);
