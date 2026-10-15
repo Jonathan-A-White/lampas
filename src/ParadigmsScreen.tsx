@@ -102,10 +102,12 @@ function groupsOf(columns: ParadigmColumn[]): { label: string; span: number }[] 
   return groups;
 }
 
-// The Greek's size follows the columns the phone has to share (390 px): 6 columns of the article, 4 of the verb endings, or 2.
-const formSize = (columns: number): string => (columns >= 6 ? 'text-xl' : columns >= 4 ? 'text-lg' : 'text-2xl');
-// The labels around the cells shrink in the six-column table, where a column is 45 px.
-const labelSize = (columns: number): string => (columns >= 6 ? 'text-xs' : 'text-sm');
+// The Greek's size follows the columns the phone has to share (390 px): 6 columns of the article, 4 of the verb endings, 3 of the
+// participle (λελυκότος is 9 letters in a column of 95 px), or 2.
+const formSize = (columns: number): string => (columns >= 6 ? 'text-xl' : columns >= 3 ? 'text-lg' : 'text-2xl');
+// The labels around the cells shrink in the six-column table, where a column is 45 px, and in the three-column ones, whose row labels
+// ('Nominative singular') are long.
+const labelSize = (columns: number): string => (columns >= 6 || columns === 3 ? 'text-xs' : 'text-sm');
 
 function Table({ table, levels, mode, revealed, onToggle }: {
   table: Paradigm;
