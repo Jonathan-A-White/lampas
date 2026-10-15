@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.263",
+    "date": "2026-10-15",
+    "story": "mw-5r3p30.366",
+    "kind": "new",
+    "text": "Lessons can now read themselves aloud when they open, if you turn on 'Read lessons to me' in Settings; the words stay on screen."
+  },
+  {
     "version": "0.1.261",
     "date": "2026-10-15",
     "story": "mw-svw421.6",
