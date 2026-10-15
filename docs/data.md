@@ -148,7 +148,8 @@ starts a paragraph whether or not it has `p`; the reader treats it so.
 
 Not part of the text data: the phone's own store (`src/data/db.ts`, version 10) has a `reviews` table, one row per
 item he reviews, key `[kind+id]` (indexes `due`, `kind`): `{kind, id, step, due, lastWhen, lapses, rights}`. A word
-is kind `'word'` with its NFC headword as the id; the course epic adds other kinds. `src/data/schedule.ts` holds the
+is kind `'word'` with its NFC headword as the id; the other kinds are `'grammar'` (a ladder idea's id), `'paradigm'` (a table's id, docs/paradigms.md
+'Drill this table'), `'sound'` (a drilled sound or word) and `'drill-plan'` (a step of Your drill plan). `src/data/schedule.ts` holds the
 rule (pure) and `src/data/repositories/reviews.ts` the rows (`recordReview`, `listDue`, `countDue`, `ensureScheduled`).
 
 * Steps (provisional, the Governor to confirm): 1, 3, 7, 14, 30, 60 days (`STEP_DAYS`); past the last, a rare check
