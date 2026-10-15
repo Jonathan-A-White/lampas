@@ -152,3 +152,18 @@ describe('docs/events.md', () => {
     for (const kind of Object.keys(kinds)) expect(doc, kind).toContain(`\`${kind}\``);
   });
 });
+
+describe('event kinds by domain', () => {
+  it('declares no kind in bus.ts, which composes AppEvent from src/events/kinds/', () => {
+    const bus = readFileSync('src/events/bus.ts', 'utf8');
+    expect(bus.match(/kind:/g) ?? []).toHaveLength(0);
+  });
+
+  it('names each kinds file in docs/events.md', () => {
+    const doc = readFileSync('docs/events.md', 'utf8');
+    for (const domain of ['settings', 'reader', 'learning', 'talk']) {
+      expect(readFileSync(`src/events/kinds/${domain}.ts`, 'utf8')).toContain('Event');
+      expect(doc).toContain(`src/events/kinds/${domain}.ts`);
+    }
+  });
+});
