@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.253
+_2026-10-15_
+- Fixed: Three Logos lexicon buttons on the word sheet now show the book's name instead of a code.
+
 ## 0.1.252
 _2026-10-15_
 - Fixed: A letter's example words now really make the sound the card teaches, simple words come first, and a different sound in a pair is shown on purpose.

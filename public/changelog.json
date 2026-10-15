@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.253",
+    "date": "2026-10-15",
+    "story": "mw-5r3p30.148",
+    "kind": "fixed",
+    "text": "Three Logos lexicon buttons on the word sheet now show the book's name instead of a code."
+  },
+  {
     "version": "0.1.252",
     "date": "2026-10-15",
     "story": "mw-5r3p30.351",
