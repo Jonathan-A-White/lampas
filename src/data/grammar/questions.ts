@@ -20,7 +20,7 @@ import { quickQuestion } from './quickRound';
 import { laterTermsIn, termIsTaught } from './taughtTerms';
 import { teachOf } from './teach';
 
-export type GrammarKind = 'ending' | 'tap-form' | 'letter' | 'sound' | 'stress' | 'breathing' | 'syllables' | 'preposition' | 'compound' | 'concept';
+export type GrammarKind = 'ending' | 'tap-form' | 'letter' | 'sound' | 'stress' | 'breathing' | 'syllables' | 'preposition' | 'compound' | 'concept' | 'cell';
 
 export interface GrammarQuestion {
   kind: GrammarKind;

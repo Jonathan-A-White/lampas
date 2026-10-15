@@ -8,6 +8,7 @@ import { mulberry32 } from '../../src/data/quiz';
 import { planFrom } from '../../src/data/grammar/drillPlan';
 import { ITEM_GROUPS, itemsOf } from '../../src/data/grammar/ladder';
 import { closeDrillPlan, saveDrillPlan } from '../../src/data/repositories/drillPlans';
+import { listDue } from '../../src/data/repositories/reviews';
 import { KINDS } from '../../src/review/kinds';
 import { drawReviewRound } from '../../src/review/round';
 import { stubChapterFetch } from '../support/chapter-fetch';
@@ -74,14 +75,16 @@ describe('a Review round', () => {
   });
 
   it('counts the steps of a drill plan as drills, then grammar ideas as ideas, in the order the counts are written', () => {
-    expect(KINDS.map((k) => k.kind)).toEqual(['drill-plan', 'grammar', 'sound', 'word']);
+    expect(KINDS.map((k) => k.kind)).toEqual(['drill-plan', 'grammar', 'paradigm', 'sound', 'word']);
     expect(KINDS[0].count(1)).toBe('1 drill');
     expect(KINDS[0].count(2)).toBe('2 drills');
     expect(KINDS[1].count(1)).toBe('1 idea');
     expect(KINDS[1].count(2)).toBe('2 ideas');
-    expect(KINDS[2].count(1)).toBe('1 sound');
-    expect(KINDS[2].count(2)).toBe('2 sounds');
-    expect(KINDS[3].count(2)).toBe('2 words');
+    expect(KINDS[2].count(1)).toBe('1 table');
+    expect(KINDS[2].count(2)).toBe('2 tables');
+    expect(KINDS[3].count(1)).toBe('1 sound');
+    expect(KINDS[3].count(2)).toBe('2 sounds');
+    expect(KINDS[4].count(2)).toBe('2 words');
   });
 
   it('asks a due step of a drill plan after the exact gaps and before a due grammar idea or word (mw-i7xe0n.4)', async () => {
@@ -113,5 +116,25 @@ describe('a Review round', () => {
     await db.reviews.bulkPut([due('grammar', 'no-such-idea', 60_000)]);
     const round = await drawReviewRound(mulberry32(7), NOW);
     expect(round.items.some((i) => i.kind === 'grammar')).toBe(false);
+  });
+
+  // mw-svw421.6: a table he drills is asked cell by cell
+  it('draws the same cells of a due table twice from the same seed (mw-svw421.6)', async () => {
+    const now = Date.now();
+    await db.grammarLevels.bulkPut(
+      ['article', 'case-nominative', 'case-genitive', 'number-singular', 'gender-masculine', 'gender-feminine'].map((id) => ({ id, level: 'frontier' as const, since: now, how: 'marked' as const })),
+    );
+    await db.reviews.put(due('paradigm', 'article', 60_000));
+    const asked = async () => (await drawReviewRound(mulberry32(5), NOW)).items.filter((i) => i.kind === 'paradigm').map((i) => (i.kind === 'paradigm' ? i.question : null));
+    const first = await asked();
+    expect(first.length).toBe(3);
+    expect(await asked()).toEqual(first);
+  });
+
+  it('asks nothing of a due table with no available cell, and it stays due (mw-svw421.6)', async () => {
+    await db.reviews.put(due('paradigm', 'article', 60_000));
+    const round = await drawReviewRound(mulberry32(5), NOW);
+    expect(round.items.filter((i) => i.kind === 'paradigm')).toEqual([]);
+    expect((await listDue('paradigm', NOW)).map((r) => r.id)).toEqual(['article']);
   });
 });

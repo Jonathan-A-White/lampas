@@ -148,6 +148,9 @@ export function formOfQuestion(question: Pick<GrammarQuestion, 'kind' | 'form' |
       return question.form?.replace('_', question.right);
     case 'tap-form':
       return question.right;
+    case 'cell':
+      // a cell of a table (mw-svw421.6): its form is the answer, when it is Greek (a table can hold English)
+      return /\p{Script=Greek}/u.test(question.right) ? question.right : undefined;
     case 'stress':
     case 'syllables':
     case 'breathing':
