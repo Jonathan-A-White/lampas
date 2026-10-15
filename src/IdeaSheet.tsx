@@ -211,16 +211,20 @@ function Example({ idea, example, onWord }: { idea: GrammarIdea; example: IdeaEx
   );
 }
 
-export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
+export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false }: {
   idea: GrammarIdea;
   onClose: () => void;
+  /** a sheet opened over this one is up: it takes the Escape */
+  covered?: boolean;
   /** an example was tapped: its chapter, so the word's parsing and meaning can be read */
   onWord: (chapter: Chapter, word: GreekWord) => void;
   /** Ask the tutor, with the idea's first term (its title when it covers none); the button is left out when the screen cannot send it */
   onAsk?: (term: string) => void;
 }) {
   const { drag, handle } = useSheetDrag(onClose);
-  useEscapeToClose(onClose);
+  // a tile's own idea sheet opens over this one
+  const [opened, setOpened] = useState<GrammarIdea | null>(null);
+  useEscapeToClose(onClose, !covered && opened === null);
   useSheetBack(onClose);
   const loaded = usePassage();
   const level = useLiveQuery(() => getLevel(idea.id), [idea.id]);
@@ -229,8 +233,6 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
   const scheme = chosen === undefined ? chosenPronunciation() : pronunciationOf(chosen);
   // the writes follow one another: a second move made while the first is being written waits for it, and is not lost
   const writing = useRef<Promise<unknown>>(Promise.resolve());
-  // a tile's own idea sheet opens over this one
-  const [opened, setOpened] = useState<GrammarIdea | null>(null);
   const tiles = teachTiles(idea, scheme);
   const card = teachOf(idea.id);
   const sounds = soundLesson(idea, scheme);
@@ -500,7 +502,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
           onClose={closeDrill}
         />
       ) : null}
-      {opened ? <IdeaSheet idea={opened} onClose={() => setOpened(null)} onWord={onWord} onAsk={onAsk} /> : null}
+      {opened ? <IdeaSheet idea={opened} onClose={() => setOpened(null)} onWord={onWord} onAsk={onAsk} covered={covered} /> : null}
     </div>
   );
 }

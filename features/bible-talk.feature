@@ -51,6 +51,15 @@ Feature: Bible talk
     When he taps Done on the word sheet
     Then the word sheet is gone and the Talk sheet is still open
 
+  Scenario: Back from a word opened in the Talk sheet closes only the word sheet
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern
+    And he selects verse 28
+    And he opens Talk
+    And he sends "What does συνεργεῖ mean here?"
+    When he taps the Greek word "συνεργεῖ" in the answer
+    And he goes back from the word sheet
+    Then the word sheet is gone and the Talk sheet is still open
+
   Scenario: The eleventh turn sends only the last 10 as history
     Given Lampas is opened on Romans 8 with a talk behind a fake Postern
     And ten turns were already kept for verse 28

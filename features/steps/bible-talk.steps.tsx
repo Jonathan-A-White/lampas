@@ -343,6 +343,26 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     });
   });
 
+  Scenario('Back from a word opened in the Talk sheet closes only the word sheet', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with a talk behind a fake Postern', () => open());
+    And('he selects verse 28', selectVerse28);
+    And('he opens Talk', openTalk);
+    And('he sends {string}', (_, question: string) => send(question));
+    When('he taps the Greek word {string} in the answer', async (_, word: string) => {
+      await turnsKept(1);
+      const explained = turns()[0].querySelector('[data-talk-words]') as HTMLElement;
+      await user.click(within(explained).getByRole('button', { name: word }));
+    });
+    And('he goes back from the word sheet', async () => {
+      await screen.findByRole('dialog', { name: 'Word' });
+      window.history.back();
+    });
+    Then('the word sheet is gone and the Talk sheet is still open', async () => {
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Word' })).toBeNull());
+      expect(sheet()).toBeInTheDocument();
+    });
+  });
+
   Scenario('The eleventh turn sends only the last 10 as history', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 with a talk behind a fake Postern', () => open());
     And('ten turns were already kept for verse 28', async () => {

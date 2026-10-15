@@ -40,8 +40,9 @@ export function BridgeIdeaHost({ owner }: { owner: BridgeOwner }) {
         <IdeaSheet
           idea={ideaOf(ideaId)}
           onClose={() => closeBridgeIdea()}
+          covered={word !== null}
           onWord={(chapter, tapped) => {
-            closeBridgeIdea();
+            // the word sheet opens over the idea sheet, which stays: Back closes one sheet at a time (mw-5r3p30.378)
             setWord({ chapter, word: tapped });
           }}
         />
