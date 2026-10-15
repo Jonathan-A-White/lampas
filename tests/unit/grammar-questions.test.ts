@@ -121,9 +121,13 @@ describe('a letter, its sound and the stress', () => {
       expect(q.kind).toBe('letter');
       expect(q.options).toHaveLength(4);
       expect(new Set(q.options).size).toBe(4);
-      expect(q.options).toContain('β');
-      expect(q.right).toBe('β');
+      // the small letter or the capital (mw-86e9r1.11): four glyphs of one form
+      expect(['β', 'Β']).toContain(q.right);
+      expect(q.options).toContain(q.right);
     }
+    const forms = new Set<string>();
+    for (let seed = 1; seed <= 60; seed += 1) forms.add(buildLetter(beta, mulberry32(seed)).right);
+    expect(forms).toEqual(new Set(['β', 'Β']));
   });
 
   it('never offers a letter that sounds the same as the right one (η, ι and υ are all ee)', () => {
@@ -131,11 +135,12 @@ describe('a letter, its sound and the stress', () => {
     for (let seed = 1; seed <= 60; seed += 1) {
       const q = buildSound(eta, mulberry32(seed));
       expect(q.kind).toBe('sound');
-      expect(q.say).toBe('η');
+      const capital = q.say === 'Η';
+      expect(q.say).toBe(capital ? 'Η' : 'η');
       expect(q.options).toHaveLength(4);
-      expect(q.options).not.toContain('ι');
-      expect(q.options).not.toContain('υ');
-      expect(q.options).toContain('η');
+      expect(q.options).not.toContain(capital ? 'Ι' : 'ι');
+      expect(q.options).not.toContain(capital ? 'Υ' : 'υ');
+      expect(q.options).toContain(q.say);
     }
   });
 

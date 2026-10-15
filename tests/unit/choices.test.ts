@@ -186,7 +186,7 @@ describe('questions.ts: every kind', () => {
   it('letter and sound: the look-alike', () => {
     for (const build of [buildLetter, buildSound]) {
       const qs = every((seed) => build(ideaOf('letter-rho'), mulberry32(seed), modern));
-      for (const q of qs) expect(holdsNear(q)).toEqual(['π']);
+      for (const q of qs) expect(holdsNear(q)).toEqual([q.right === 'ρ' ? 'π' : 'Π']);
     }
   });
 

@@ -287,7 +287,18 @@ export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], rand
 // ---- Letters and sounds ----
 
 const LETTER_IDEAS = LADDER.filter((i) => i.glyphs);
-const glyphOf = (idea: GrammarIdea): string => idea.glyphs?.[0] ?? '';
+
+/** The form of a letter a question asks: its small letter or its capital (mw-86e9r1.11). */
+export type LetterForm = 'small' | 'capital';
+/** The glyph of an idea in a form; a pair or a mark has only the one, the small. */
+const glyphOf = (idea: GrammarIdea, form: LetterForm = 'small'): string => idea.glyphs?.[form === 'capital' ? 1 : 0] ?? '';
+
+/** A letter and the form of it that a drill asks (the letter drill, letterDrill.ts); `byName` asks it by its name, never by its sound. */
+export interface LetterAsk {
+  letter: GrammarIdea;
+  form: LetterForm;
+  byName?: boolean;
+}
 
 /** The letter an idea is about; the alphabet is about any of them. */
 const letterOf = (idea: GrammarIdea, random: Random): GrammarIdea => (idea.glyphs ? idea : pick(LETTER_IDEAS, random));
@@ -296,8 +307,8 @@ const letterOf = (idea: GrammarIdea, random: Random): GrammarIdea => (idea.glyph
 const glyphs = (right: string, near: readonly string[], others: readonly string[], random: Random): Pick<GrammarQuestion, 'options' | 'near'> =>
   choicesOf({ right, near: near.filter((g) => others.includes(g)), fillers: others }, random);
 
-/** The glyphs of the letters a reader mistakes `letter` for. */
-const lookAlikeGlyphs = (letter: GrammarIdea): string[] => lookAlikesOf(letter.id).map((id) => glyphOf(LETTER_IDEAS.find((l) => l.id === id)!));
+/** The glyphs of the letters a reader mistakes `letter` for, in a form. */
+const lookAlikeGlyphs = (letter: GrammarIdea, form: LetterForm): string[] => lookAlikesOf(letter.id).map((id) => glyphOf(LETTER_IDEAS.find((l) => l.id === id)!, form));
 
 /** What a letter or pair sounds like in `scheme`: its lesson's sound, else the scheme's own respelling of it, so two that sound alike are never told apart by a missing lesson. */
 const soundKey = (idea: GrammarIdea, scheme: Pronunciation): string => ideaSound(idea, scheme) ?? scheme.respell(glyphOf(idea) || (idea.pair ?? ''));
@@ -305,33 +316,37 @@ const soundKey = (idea: GrammarIdea, scheme: Pronunciation): string => ideaSound
 /**
  * A letter: 'Which letter is Beta?' or 'Which letter sounds like v, as in “vase”?' (the sound is the chosen pronunciation's, mw-5r3p30.229; a
  * scheme that gives none asks by name), over four glyphs. A letter that sounds like another (η ι υ, ο ω) is never offered beside it when the sound is asked.
+ * It asks the small letter or the capital, by chance (mw-86e9r1.11): 'Which capital letter is Beta?' over four capitals. `ask` fixes the letter and its form.
  */
-export function buildLetter(idea: GrammarIdea, random: Random, scheme: Pronunciation = chosenPronunciation()): GrammarQuestion {
-  const letter = letterOf(idea, random);
+export function buildLetter(idea: GrammarIdea, random: Random, scheme: Pronunciation = chosenPronunciation(), ask?: LetterAsk): GrammarQuestion {
+  const letter = ask?.letter ?? letterOf(idea, random);
+  const form = ask?.form ?? (random() < 0.5 ? 'small' : 'capital');
   const sound = ideaSound(letter, scheme);
-  const bySound = random() < 0.5 && sound !== undefined;
+  const bySound = ask?.byName ? false : random() < 0.5 && sound !== undefined;
   const others = LETTER_IDEAS.filter((o) => o.id !== letter.id && (!bySound || ideaSound(o, scheme) !== sound));
+  const which = form === 'capital' ? 'Which capital letter' : 'Which letter';
   return {
     kind: 'letter',
     ideaId: idea.id,
-    prompt: bySound ? `Which letter sounds like ${sound}?` : `Which letter is ${letter.title}?`,
-    ...glyphs(glyphOf(letter), lookAlikeGlyphs(letter), others.map(glyphOf), random),
-    right: glyphOf(letter),
+    prompt: bySound ? `${which} sounds like ${sound}?` : `${which} is ${letter.title}?`,
+    ...glyphs(glyphOf(letter, form), lookAlikeGlyphs(letter, form), others.map((o) => glyphOf(o, form)), random),
+    right: glyphOf(letter, form),
     facet: itemFacet(letter),
   };
 }
 
-/** Which letter he hears: Tap to hear says it, and no other letter of its sound is among the four glyphs. */
-export function buildSound(idea: GrammarIdea, random: Random, scheme: Pronunciation = chosenPronunciation()): GrammarQuestion {
-  const letter = letterOf(idea, random);
+/** Which letter he hears: Tap to hear says it, and no other letter of its sound is among the four glyphs, small or capital by chance (`ask` fixes them). */
+export function buildSound(idea: GrammarIdea, random: Random, scheme: Pronunciation = chosenPronunciation(), ask?: LetterAsk): GrammarQuestion {
+  const letter = ask?.letter ?? letterOf(idea, random);
+  const form = ask?.form ?? (random() < 0.5 ? 'small' : 'capital');
   const others = LETTER_IDEAS.filter((o) => o.id !== letter.id && soundKey(o, scheme) !== soundKey(letter, scheme));
   return {
     kind: 'sound',
     ideaId: idea.id,
     prompt: 'Tap to hear a letter, then tap it',
-    ...glyphs(glyphOf(letter), lookAlikeGlyphs(letter), others.map(glyphOf), random),
-    right: glyphOf(letter),
-    say: glyphOf(letter),
+    ...glyphs(glyphOf(letter, form), lookAlikeGlyphs(letter, form), others.map((o) => glyphOf(o, form)), random),
+    right: glyphOf(letter, form),
+    say: glyphOf(letter, form),
     facet: itemFacet(letter),
   };
 }
