@@ -11,6 +11,7 @@ import { restoreAppearance } from './appearance/appearanceSync';
 import { APP_SEMVER } from './config';
 import { ErrorBoundary } from './ErrorBoundary';
 import { LicenceProvider } from './gate/LicenceProvider';
+import { noteVisit } from './gate/licenceTip';
 import { restoreLastRoute } from './nav/lastRoute';
 import { restoreScrolls } from './nav/scrollMemory';
 import { startAppUpdates } from './services/appUpdate';
@@ -23,6 +24,8 @@ restoreAppearance();
 // Reopen where he left it: the address and the scroll offsets, before the first render reads them.
 restoreLastRoute();
 restoreScrolls();
+// Counts today as a visit (the licence tip is due on the third, src/gate/licenceTip.ts).
+noteVisit();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

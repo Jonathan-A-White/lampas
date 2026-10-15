@@ -1,4 +1,4 @@
-import { navigate } from '../../nav/route';
+import { openLicence } from '../../nav/route';
 import type { SettingsRow } from '../rows';
 import { SettingRow } from './SettingRow';
 
@@ -13,7 +13,7 @@ export function NeedsLicenceRow({ row }: { row: SettingsRow }) {
       </div>
       <button
         type="button"
-        onClick={() => navigate('unlock')}
+        onClick={() => openLicence('settings')}
         className="ml-3 min-h-12 text-base font-medium text-accent underline"
       >
         Needs a licence
