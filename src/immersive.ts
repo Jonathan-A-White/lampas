@@ -48,12 +48,20 @@ async function enterFullScreen(): Promise<boolean> {
 
 /** Leaves full screen if the page is in it; quiet where there is nothing to leave or the browser refuses. */
 function leaveFullScreen(): void {
+  // the timer outlives its page when the page is torn down first (a test's jsdom, a closing window): nothing to leave then
+  if (typeof document === 'undefined') return;
   if (!document.fullscreenElement || typeof document.exitFullscreen !== 'function') return;
   try {
     void document.exitFullscreen().catch(() => {});
   } catch {
     // a browser that throws instead of rejecting: nothing to do
   }
+}
+
+/** Drops a pending leave-full-screen timer without leaving: for the end of a page's life (a test's After hook), when the timer must not fire into what comes next. */
+export function resetImmersive(): void {
+  clearTimeout(leaving);
+  leaving = undefined;
 }
 
 export interface Immersive {
