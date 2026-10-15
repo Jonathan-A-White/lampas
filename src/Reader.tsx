@@ -452,6 +452,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           chapter={CHAPTER}
           verse={viewUnit}
           view={view}
+          immersive={immersive}
           text={
             viewPassage ? (
               <PassageText

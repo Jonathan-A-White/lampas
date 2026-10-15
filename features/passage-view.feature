@@ -1,6 +1,6 @@
 Feature: A section heading opens the Verse view for its passage
   Tapping a section heading in the Reader opens the same Verse view a verse number opens (mw-5r3p30.73), for the passage under the
-  heading (the heading to the next heading): the heading and its verse range at the top, the passage's verses big, the same one row of
+  heading (the heading to the next heading): the heading and its verse range at the top, the passage's verses set as the Reader sets its text, the same one row of
   actions (Listen, Read it aloud, Ask the tutor, Quiz me, Copy link) and the same ONE control at the foot, each doing its action for the whole passage.
   Romans 8 has five headings: 8:1-11, 8:12-17, 8:18-27, 8:28-34 and 8:35-39. The phone's Back returns to the Reader.
 
@@ -20,6 +20,13 @@ Feature: A section heading opens the Verse view for its passage
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
     Then every section heading is one button holding its whole text
     And the heading "Walking by the Spirit" is still a level 2 heading
+
+  Scenario: The passage is set with the Reader's own type, and a word in it still opens the word sheet
+    Given Lampas is opened on Romans 8 in the Greek view with the weave "Off"
+    When he taps the heading "Walking by the Spirit"
+    Then the passage text carries the Reader's own face, size and line spacing and is not the big single-verse text
+    When he taps the first Greek word of the passage
+    Then the word sheet opens
 
   Scenario: The passage has the same one row of actions and exactly one control at the foot
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"

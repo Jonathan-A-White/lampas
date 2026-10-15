@@ -108,7 +108,7 @@ export function PassageText({ passage, view, wovenOf, reading, onLook }: {
     <span ref={box} data-passage={passage.first}>
       {passage.verses.map((verse) => (
         <span key={verse.n} data-passage-verse={verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${reading === verse.n ? READING_CLASS : ''}`}>
-          <sup className="mr-1 font-sans text-xs font-semibold text-muted">{verse.n}</sup>
+          <sup data-passage-number className="mr-1 font-sans text-xs font-semibold leading-[0] text-muted">{verse.n}</sup>
           <VerseText verse={verse} view={view} woven={wovenOf(verse)} onLook={onLook} />
         </span>
       ))}
