@@ -7,6 +7,8 @@
 // A letter or pair whose sound the scheme changes by the next letter (mw-i7xe0n.7: χ is kh before α, hy before ε) reads words of BOTH sides of the rule, each
 // offered beside itself misread by the rule, with the rule's line for a wrong pick; drilled for its own idea, each side is a facet (drillIt.ts proves it only
 // when both were answered right). Every choice is built by ../choices.ts, near misses first.
+// The words a step reads come from his passage first (mw-i7xe0n.8: the dictionary forms of the verses he holds, short and common first), the fixed lists
+// below only to fill what the passage lacks, and a drill reads a word once while another that fits exists (the rarest letters choose first).
 import type { Chapter } from '../chapter';
 import { LOOK_ALIKE_LETTERS, OPTION_COUNT, choicesOf, lookAlikesOf } from '../choices';
 import { mulberry32, type Random } from '../quiz';
@@ -208,10 +210,58 @@ function readWord(ctx: DrillContext, word: string, facet: Facet, random: Random,
   };
 }
 
-/** The words read for a letter or pair: words of each side of its sound rule when the scheme has one, else `plain`, VARIANTS at most a side. */
-function wordsToRead(ctx: DrillContext, item: GrammarIdea, plain: readonly string[]): string[] {
-  const rule = soundRuleOf(ctx.scheme, item.id);
-  return rule ? rule.sides.flatMap((side) => side.words.slice(0, VARIANTS)) : plain.slice(0, VARIANTS);
+/** What a word is asked for: a letter, a pair or one side of a sound rule, and the words that fit it, best first. */
+interface WordNeed {
+  item: GrammarIdea;
+  side?: SoundRuleSide;
+  fits: string[];
+}
+
+/** The lemmas of the passage, with no mark that makes a pair of letters two sounds (a diaeresis), short first, then common first. */
+export function passageWords(passage: readonly Chapter[]): string[] {
+  const count = new Map<string, number>();
+  for (const chapter of passage) for (const verse of chapter.verses) for (const word of verse.g) if (word.l) count.set(word.l, (count.get(word.l) ?? 0) + 1);
+  return [...count.keys()]
+    .filter((w) => !w.normalize('NFD').includes('\u0308'))
+    .sort((a, b) => baseLetters(a).length - baseLetters(b).length || count.get(b)! - count.get(a)! || (a < b ? -1 : 1));
+}
+
+/** The words of the passage that hold `text` (a letter or pair) and pass `also`, then the fallback words, none twice. */
+const fitting = (ctx: DrillContext, text: string, fallback: readonly string[], also: (word: string) => boolean = () => true): string[] => {
+  const base = baseLetters(text);
+  return [...new Set([...passageWords(ctx.passage).filter((w) => baseLetters(w).includes(base)), ...fallback].filter(also))];
+};
+
+/** The text (letter or pair) of an item: 'ψ', 'ου'. */
+const textOf = (item: GrammarIdea): string => item.glyphs?.[0] ?? item.pair ?? '';
+
+/**
+ * The needs of a set of items: one for each, or for each side of its sound rule when the scheme has one. `plain` gives an item's fixed words, the fallback.
+ */
+function needsOf(ctx: DrillContext, items: readonly GrammarIdea[], plain: (item: GrammarIdea) => readonly string[]): WordNeed[] {
+  return items.flatMap((item): WordNeed[] => {
+    const rule = soundRuleOf(ctx.scheme, item.id);
+    if (!rule) return [{ item, fits: fitting(ctx, textOf(item), plain(item)) }];
+    return rule.sides.map((side) => ({ item, side, fits: fitting(ctx, textOf(item), side.words, (w) => rule.sideOf(w) === side.id) }));
+  });
+}
+
+/**
+ * The words to read for each need, VARIANTS at most, a word read once in the whole drill while another that fits exists: the needs with the fewest
+ * words choose first, so a rare letter keeps its few. A need whose words are all taken reads its best again, and one with only one word reads it VARIANTS times.
+ */
+function assignWords(needs: readonly WordNeed[], once = VARIANTS): string[][] {
+  const taken = new Set<string>();
+  const given = needs.map((): string[] => []);
+  [...needs.keys()]
+    .sort((a, b) => needs[a].fits.length - needs[b].fits.length || a - b)
+    .forEach((i) => {
+      const { fits } = needs[i];
+      given[i] = fits.filter((w) => !taken.has(w)).slice(0, once);
+      if (given[i].length === 0 && fits.length > 0) given[i] = Array.from({ length: fits.length === 1 ? once : 1 }, () => fits[0]);
+      given[i].forEach((w) => taken.add(w));
+    });
+  return given;
 }
 
 // ---- The steps ----
@@ -221,9 +271,9 @@ function letterSteps(ctx: DrillContext, letters: readonly GrammarIdea[], pairs: 
   let n = 0;
   const each = (make: (s: Subject, v: number, random: Random) => GrammarQuestion | null): GrammarQuestion[] =>
     distinct(ctx, subjects.map((s, i) => make(s, i % VARIANTS, rng(ctx, (n += 1)))));
-  const words = letters.flatMap((letter) =>
-    wordsToRead(ctx, letter, wordsWith(lower(letter))).map((word) => readWord(ctx, word, itemFacet(letter), rng(ctx, (n += 1)), letter.id)),
-  );
+  const needs = needsOf(ctx, letters, (letter) => wordsWith(lower(letter)));
+  const given = assignWords(needs);
+  const words = needs.flatMap((need, i) => given[i].map((word) => readWord(ctx, word, itemFacet(need.item), rng(ctx, (n += 1)), need.item.id)));
   return [
     { title: 'See a letter, pick its name', questions: each((s, _v, random) => seeName(ctx, s, random)) },
     { title: 'See a name, pick the letter', questions: each((s, _v, random) => seeLetter(ctx, s, random)) },
@@ -256,12 +306,10 @@ function pairSteps(ctx: DrillContext, items: readonly GrammarIdea[]): RawStep[] 
   let n = 0;
   const ask = (mode: 'see' | 'hear'): GrammarQuestion[] =>
     distinct(ctx, items.flatMap((item) => Array.from({ length: VARIANTS }, () => ({ ...quickQuestion({ id: item.id, mode }, rng(ctx, (n += 1)), ctx.scheme), facet: itemFacet(item) }))));
-  const words = items.flatMap((item) => {
-    const word = PAIR_WORDS[item.id];
-    // a pair with a sound rule reads words of both its sides; any other reads its one word, VARIANTS times with other wrong choices
-    const read = soundRuleOf(ctx.scheme, item.id) ? wordsToRead(ctx, item, []) : word ? Array.from({ length: VARIANTS }, () => word) : [];
-    return read.map((w) => readWord(ctx, w, itemFacet(item), rng(ctx, (n += 1)), item.id));
-  });
+  // a pair with a sound rule reads words of both its sides; a word that only the fixed list has is read VARIANTS times, with other wrong choices
+  const needs = needsOf(ctx, items, (item) => (PAIR_WORDS[item.id] ? [PAIR_WORDS[item.id]] : []));
+  const given = assignWords(needs);
+  const words = needs.flatMap((need, i) => given[i].map((w) => readWord(ctx, w, itemFacet(need.item), rng(ctx, (n += 1)), need.item.id)));
   return [
     { title: 'See it and pick its sound', questions: ask('see') },
     { title: 'Hear it and pick it', questions: ask('hear') },

@@ -13,7 +13,7 @@ import {
   type DrillWalk,
 } from '../../src/data/grammar/drillIt';
 import { PAIR_WORD_OF, baseLetters, wordsWith } from '../../src/data/grammar/drillItems';
-import { LADDER, itemsOf } from '../../src/data/grammar/ladder';
+import { LADDER, ideaOf, itemsOf } from '../../src/data/grammar/ladder';
 import type { Level } from '../../src/data/grammar/needs';
 import { pronunciationOf } from '../../src/speech/pronunciation';
 
@@ -391,5 +391,68 @@ describe('a sound that changes by the next letter', () => {
         expect(q.rule, q.form).toBe(side.line);
       }
     }
+  });
+});
+
+// His Psi drill (mw-i7xe0n.8, 2026-10-14): 'How is this word said?' showed ψυχή twice, because the fixed list of 17 words holds one word for ψ, ξ, ζ and
+// others. A drill's words come from his goal passage first (short and common first), the fixed list only as a fallback, and a word is read once in a drill
+// while another word that fits exists.
+describe('the words of a drill come from his passage', () => {
+  const modern = pronunciationOf('modern');
+  const JOHN = [1, 2, 3, 4, 5].map((n) => JSON.parse(readFileSync(`public/data/1jn/${n}.json`, 'utf8')) as Chapter);
+  const lemmasOf = (chapters: readonly Chapter[]): Set<string> => new Set(chapters.flatMap((c) => c.verses.flatMap((v) => v.g.map((w) => w.l))));
+  const wordsRead = (ideaId: string, options: { passage?: readonly Chapter[]; seed?: number } = {}): string[] =>
+    drillSteps(ideaId, { seed: options.seed ?? 1, scheme: modern, passage: options.passage })
+      .flatMap((s) => s.questions)
+      .filter((q) => q.prompt === 'How is this word said?')
+      .map((q) => q.form!);
+  const fitting = (ideaId: string, chapters: readonly Chapter[]): string[] => {
+    const idea = ideaOf(ideaId);
+    const text = baseLetters(idea.glyphs?.[0] ?? idea.pair ?? '');
+    return [...lemmasOf(chapters)].filter((w) => baseLetters(w).includes(text) && !w.normalize('NFD').includes('̈'));
+  };
+  // every idea that reads words: the alphabet, a letter, the pair groups and each pair
+  const READERS = LADDER.filter((i) => i.id === 'alphabet' || i.id === 'diphthongs' || i.id === 'consonant-pairs' || i.glyphs || i.parent === 'diphthongs' || i.parent === 'consonant-pairs');
+
+  it('reads ψ in the Psi drill from his chapters, not the one fixed word', () => {
+    const words = wordsRead('letter-psi', { passage: JOHN });
+    expect(words.length).toBeGreaterThanOrEqual(2);
+    expect(new Set(words).size).toBe(words.length);
+    const chapter = lemmasOf(JOHN);
+    for (const w of words) expect(chapter.has(w), `${w} is in 1 John`).toBe(true);
+  });
+
+  it('takes a short, common word of the passage before any other', () => {
+    const words = wordsRead('letter-psi', { passage: JOHN });
+    const counts = new Map<string, number>();
+    for (const c of JOHN) for (const v of c.verses) for (const w of v.g) counts.set(w.l, (counts.get(w.l) ?? 0) + 1);
+    const best = fitting('letter-psi', JOHN).sort((a, b) => baseLetters(a).length - baseLetters(b).length || (counts.get(b) ?? 0) - (counts.get(a) ?? 0))[0];
+    expect(words).toContain(best);
+  });
+
+  it('falls back to the fixed list when the passage has no word that fits', () => {
+    expect(wordsRead('letter-psi', { passage: [] })).toEqual(['ψυχή']);
+    const empty: Chapter = { ...JOHN[0], verses: [] };
+    expect(wordsRead('letter-psi', { passage: [empty] })).toEqual(['ψυχή']);
+  });
+
+  it.each(READERS.map((i) => [i.id] as const))('%s: no word is read twice while another that fits exists', (ideaId) => {
+    for (const seed of [1, 2, 3]) {
+      const words = wordsRead(ideaId, { passage: JOHN, seed });
+      const dup = words.filter((w, i) => words.indexOf(w) !== i);
+      if (ideaId === 'alphabet' || ideaId === 'diphthongs' || ideaId === 'consonant-pairs') {
+        // a group reads each item's words; a word may be asked once for each item it holds only if the chapter has no other
+        expect(new Set(words).size, `${ideaId} seed ${seed}: ${words.join(' ')}`).toBe(words.length);
+        continue;
+      }
+      expect(dup, `${ideaId} seed ${seed}`).toEqual([]);
+    }
+  });
+
+  it('sweep: lists the ideas whose chapter holds fewer than two fitting words (Modern Greek is the one pronunciation there is)', () => {
+    const few = READERS.filter((i) => i.glyphs || i.parent).filter((i) => fitting(i.id, JOHN).length < 2).map((i) => i.id);
+    // 1 John has no second word with these rare pairs; they read the fixed list's words beside the one the passage has
+    expect(few).toEqual(['diphthong-ui', 'diphthong-eeu', 'pair-mp', 'pair-gk', 'pair-gch', 'pair-gks']);
+    for (const id of few) expect(wordsRead(id, { passage: JOHN }).length, id).toBeGreaterThan(0);
   });
 });
