@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.245
+_2026-10-15_
+- Fixed: In the letter sound questions, every choice is now one short sound like 'o, as in “or”, short', never a rule or a long aside.
+
 ## 0.1.244
 _2026-10-15_
 - New: The Paradigms screen now has tables for the future, aorist, perfect, contract and -μι verbs and οἶδα, with each form's tense sign or augment named.
