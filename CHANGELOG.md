@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.244
+_2026-10-15_
+- New: The Paradigms screen now has tables for the future, aorist, perfect, contract and -μι verbs and οἶδα, with each form's tense sign or augment named.
+
 ## 0.1.243
 _2026-10-15_
 - Fixed: Back from a word opened inside a letter or idea sheet now returns to that sheet instead of jumping out to the Goal screen.
