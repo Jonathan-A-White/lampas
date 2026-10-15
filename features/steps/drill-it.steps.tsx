@@ -16,6 +16,7 @@ import { LADDER, ideaOf } from '../../src/data/grammar/ladder';
 import { DAY, STEP_DAYS } from '../../src/data/schedule';
 import { drillSeed } from '../../src/data/grammar/drillSeed';
 import { clearBus, subscribe, type EventOf } from '../../src/events/bus';
+import { expectPublished } from '../../tests/support/published';
 import { mulberry32 } from '../../src/data/quiz';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
@@ -357,8 +358,8 @@ describeFeature(feature, ({ Scenario }) => {
       expect(await lastRun()).toMatchObject({ ideaId: id, proved: true });
       expect((await review(id)).step).toBe(STEP_DAYS.indexOf(30));
     });
-    And('an idea-taught event for {string} with the outcome {string} was published', (_, id: string, outcome: string) => {
-      expect(taught).toEqual([{ kind: 'idea-taught', id, outcome }]);
+    And('an idea-taught event for {string} with the outcome {string} was published', async (_, id: string, outcome: string) => {
+      await expectPublished(() => taught, [{ kind: 'idea-taught', id, outcome }]);
     });
   });
 

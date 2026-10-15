@@ -12,6 +12,7 @@ import { ideaOf, itemsOf } from '../../src/data/grammar/ladder';
 import { teachOf } from '../../src/data/grammar/teach';
 import { DAY, STEP_DAYS } from '../../src/data/schedule';
 import { clearBus, subscribe, type EventOf } from '../../src/events/bus';
+import { expectPublished } from '../../tests/support/published';
 import { chooseAccent, DEFAULT_ACCENT } from '../../src/speech/accents';
 import { pronunciationOf, registerPronunciation, type Pronunciation } from '../../src/speech/pronunciation';
 import { stopReading } from '../../src/speech/readAloud';
@@ -239,8 +240,8 @@ describeFeature(feature, ({ Scenario }) => {
       expect(row.due).toBeGreaterThanOrEqual(startedAt + DAY - CLOCK_SLACK);
       expect(row.due).toBeLessThanOrEqual(Date.now() + DAY + CLOCK_SLACK);
     });
-    And('an idea-taught event for {string} with the outcome {string} was published', (_, id: string, outcome: string) => {
-      expect(taught).toEqual([{ kind: 'idea-taught', id, outcome }]);
+    And('an idea-taught event for {string} with the outcome {string} was published', async (_, id: string, outcome: string) => {
+      await expectPublished(() => taught, [{ kind: 'idea-taught', id, outcome }]);
     });
     And('the idea sheet shows the chip {string}', async (_, chip: string) => {
       await waitFor(() => expect(within(ideaSheet()).getByTestId('idea-level')).toHaveTextContent(chip));
@@ -261,8 +262,8 @@ describeFeature(feature, ({ Scenario }) => {
       expect(row.due).toBeGreaterThanOrEqual(startedAt + 30 * DAY - CLOCK_SLACK);
       expect(row.due).toBeLessThanOrEqual(Date.now() + 30 * DAY + CLOCK_SLACK);
     });
-    And('an idea-taught event for {string} with the outcome {string} was published', (_, id: string, outcome: string) => {
-      expect(taught).toEqual([{ kind: 'idea-taught', id, outcome }]);
+    And('an idea-taught event for {string} with the outcome {string} was published', async (_, id: string, outcome: string) => {
+      await expectPublished(() => taught, [{ kind: 'idea-taught', id, outcome }]);
     });
     And('the idea sheet shows the chip {string}', async (_, chip: string) => {
       await waitFor(() => expect(within(ideaSheet()).getByTestId('idea-level')).toHaveTextContent(chip));

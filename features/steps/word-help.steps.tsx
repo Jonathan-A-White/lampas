@@ -13,6 +13,7 @@ import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { type Chapter, markSupplied } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { clearBus, subscribe, type EventOf } from '../../src/events/bus';
+import { expectPublished } from '../../tests/support/published';
 import { stopReading } from '../../src/speech/readAloud';
 import { respellModern } from '../../src/speech/schemes/modern';
 import { greekSyllables, stressedSyllable } from '../../src/speech/greekSyllables';
@@ -137,8 +138,8 @@ describeFeature(feature, ({ Scenario }) => {
       const question = String(received(0).input.question);
       for (const part of [FORM, LEMMA, PARSE, 'Romans 8:28', 'Explain the grammar of this form and what I need to know to read it']) expect(question).toContain(part);
     });
-    And('a word-help event for grammar on {string} in verse {int} was published', (_, form: string, verse: number) => {
-      expect(heard).toEqual([{ kind: 'word-help', help: 'grammar', form, lemma: LEMMA, parse: PARSE, chapter: 8, verse }]);
+    And('a word-help event for grammar on {string} in verse {int} was published', async (_, form: string, verse: number) => {
+      await expectPublished(() => heard, [{ kind: 'word-help', help: 'grammar', form, lemma: LEMMA, parse: PARSE, chapter: 8, verse }]);
     });
   });
 

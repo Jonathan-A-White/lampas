@@ -19,10 +19,11 @@ import { teachIdea } from '../../src/data/repositories/grammarLevels';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { setGoal } from '../../src/data/repositories/settings';
 import { seedWordsIfFirstOpen } from '../../src/data/repositories/words';
-import { clearBus, latest } from '../../src/events/bus';
+import { clearBus } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { storedId } from '../../src/data/grammar/soundScope';
+import { expectLatest } from '../../tests/support/published';
 
 afterAll(() => {
   cleanup();
@@ -176,10 +177,11 @@ describeFeature(feature, ({ Scenario }) => {
       const row = within(nouns).getByText(title).closest('li');
       expect(row).toHaveTextContent(level);
     });
-    And('the bus has heard the placement is done', () => {
-      const heard = latest('placement-done');
-      expect(heard).toMatchObject({ goal: '1 John 1:1', approach: 'bma-tutor', solid: 11, frontier: 0, notYet: 1 });
-      expect(heard?.untested).toBeGreaterThan(10);
+    And('the bus has heard the placement is done', async () => {
+      await expectLatest('placement-done', (heard) => {
+        expect(heard).toMatchObject({ goal: '1 John 1:1', approach: 'bma-tutor', solid: 11, frontier: 0, notYet: 1 });
+        expect(heard?.untested).toBeGreaterThan(10);
+      });
     });
     When('he taps {string}', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
     Then('the Goal screen is open', async () => {

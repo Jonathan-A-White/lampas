@@ -10,11 +10,12 @@ import { readFileSync } from 'node:fs';
 import { App } from '../../src/App';
 import { type Chapter, type Verse, wordLemma } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
-import { clearBus, latest } from '../../src/events/bus';
+import { clearBus } from '../../src/events/bus';
 import { loneLetterClip } from '../../src/speech/greek';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
+import { expectLatest } from '../../tests/support/published';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse1: Verse = chapter.verses[0];
@@ -260,8 +261,8 @@ describeFeature(feature, ({ Scenario }) => {
     And('he switches the reader to Greek', switchToGreek);
     When('he long presses the word {string} in verse {int}', (_, text: string, n: number) => press(wordEl(text, n), HOLD_MS));
     Then('the phone gives one light buzz of {int} ms', (_, ms: number) => expect(vibrations).toEqual([ms]));
-    And('the bus has heard word-spoken for {string} in {string} in verse {int}', (_, text: string, language: string, n: number) => {
-      expect(latest('word-spoken')).toEqual({ kind: 'word-spoken', text, language, verse: n });
+    And('the bus has heard word-spoken for {string} in {string} in verse {int}', async (_, text: string, language: string, n: number) => {
+      await expectLatest('word-spoken', (e) => expect(e).toEqual({ kind: 'word-spoken', text, language, verse: n }));
     });
   });
 

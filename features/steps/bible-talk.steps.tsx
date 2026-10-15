@@ -14,7 +14,7 @@ import { type Chapter, markSupplied } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { addTurn, getGoal, getPickerGrammar, getSpeechRate, getStudyResources, getTheme, setLevel, setResourceOn, talkRef } from '../../src/data/repositories';
 import { setGoal } from '../../src/data/repositories/settings';
-import { clearBus, latest } from '../../src/events/bus';
+import { clearBus } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -23,6 +23,7 @@ import { exchangeMarkdown, stubClipboard } from '../../tests/support/exchange';
 import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
 import { SOLID_WORDS_SENT } from '../../src/services/solidWords';
+import { expectLatest } from '../../tests/support/published';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verseData = (n: number) => {
@@ -517,7 +518,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     And('the Greek speed is saved as 0.8 and the English speed is still 1', async () => {
       expect(await getSpeechRate('greek')).toBe(0.8);
       expect(await getSpeechRate('english')).toBe(1);
-      expect(latest('rates-changed')?.rates).toEqual({ english: 1, greek: 0.8 });
+      await expectLatest('rates-changed', (e) => expect(e?.rates).toEqual({ english: 1, greek: 0.8 }));
     });
     And('the grist carried the settings as they stood, the Greek speed at 1', () => {
       expect(received(0).input.settings).toMatchObject({ greekRate: 1, theme: 'phone', textSize: 'normal' });
@@ -529,7 +530,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     });
     And('the Greek speed is saved as 1', async () => {
       expect(await getSpeechRate('greek')).toBe(1);
-      expect(latest('rates-changed')?.rates.greek).toBe(1);
+      await expectLatest('rates-changed', (e) => expect(e?.rates.greek).toBe(1));
     });
   });
 

@@ -13,6 +13,7 @@ import { pickFrontier, type Candidate, type Known } from '../../src/data/frontie
 import { ALWAYS_NEEDED, ideasOf } from '../../src/data/grammar/ladder';
 import { pickerPasses, type PickerGrammar } from '../../src/data/grammar/formLevel';
 import { mulberry32 } from '../../src/data/quiz';
+import { expectLatest } from '../../tests/support/published';
 import {
   getGrammarAnswers,
   getGrammarMove,
@@ -25,7 +26,7 @@ import {
 } from '../../src/data/repositories';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { DAY } from '../../src/data/schedule';
-import { clearBus, latest, subscribe } from '../../src/events/bus';
+import { clearBus, subscribe } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { FIXTURE_CHAPTER, FIXTURE_FREQUENCY } from '../../tests/fixtures/frontier';
@@ -197,7 +198,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('New words at is {string} and the move was told as {string}', async (_, level: string, how: string) => {
       await waitFor(async () => expect(await getPickerGrammar()).toBe(level === 'Frontier grammar' ? 'frontier' : 'solid'));
-      expect(latest('picker-level-moved')).toEqual({ kind: 'picker-level-moved', level: 'frontier', how });
+      await expectLatest('picker-level-moved', (e) => expect(e).toEqual({ kind: 'picker-level-moved', level: 'frontier', how }));
       // the answers that made the move do not judge the new level
       expect(await getGrammarAnswers()).toEqual([]);
     });
@@ -213,7 +214,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('New words at is {string} and the move was told as {string}', async (_, level: string, how: string) => {
       expect(await getPickerGrammar()).toBe(level === 'Frontier grammar' ? 'frontier' : 'solid');
-      expect(latest('picker-level-moved')).toEqual({ kind: 'picker-level-moved', level: 'frontier', how });
+      await expectLatest('picker-level-moved', (e) => expect(e).toEqual({ kind: 'picker-level-moved', level: 'frontier', how }));
     });
   });
 
@@ -240,7 +241,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('New words at is {string} and the move was told as {string}', async (_, level: string, how: string) => {
       expect(await getPickerGrammar()).toBe(level === 'Frontier grammar' ? 'frontier' : 'solid');
-      expect(latest('picker-level-moved')).toEqual({ kind: 'picker-level-moved', level: 'solid', how });
+      await expectLatest('picker-level-moved', (e) => expect(e).toEqual({ kind: 'picker-level-moved', level: 'solid', how }));
     });
   });
 });

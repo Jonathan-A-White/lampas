@@ -51,8 +51,8 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Selecting verse 28 publishes verse-selected and the Verse view opens on verse 28', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 and the bus is listened to', openAndListen);
     When('he selects verse 28', () => selectVerse(28));
-    Then('verse-selected was published for chapter {int} verse {int}', (_, chapter: number, verse: number) => {
-      expect(lastOf('verse-selected')).toEqual({ kind: 'verse-selected', chapter, verse });
+    Then('verse-selected was published for chapter {int} verse {int}', async (_, chapter: number, verse: number) => {
+      await waitFor(() => expect(lastOf('verse-selected')).toEqual({ kind: 'verse-selected', chapter, verse }));
     });
     And('the Verse view shows verse {int}', async (_, verse: number) => {
       await screen.findByRole('region', { name: 'Verse view' });
