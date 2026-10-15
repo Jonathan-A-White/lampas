@@ -6,7 +6,7 @@ const IDEA_IDS = new Set(LADDER.map((idea) => idea.id));
 const COUNTS: Record<string, number> = {
   article: 24,
   'noun-endings': 40,
-  eimi: 36,
+  eimi: 70,
   'verb-endings': 24,
   'third-declension': 48,
   'adjective-endings': 48,
@@ -20,10 +20,14 @@ const COUNTS: Record<string, number> = {
   'contract-verbs': 18,
   'mi-verbs': 36,
   oida: 12,
+  subjunctive: 30,
+  imperative: 20,
+  infinitive: 9,
+  participle: 30,
 };
 
 describe('the paradigm tables', () => {
-  it('are sixteen, each with its stated number of cells', () => {
+  it('are twenty, each with its stated number of cells', () => {
     expect(PARADIGMS.map((p) => p.id)).toEqual([
       'article',
       'noun-endings',
@@ -41,6 +45,10 @@ describe('the paradigm tables', () => {
       'contract-verbs',
       'mi-verbs',
       'oida',
+      'subjunctive',
+      'imperative',
+      'infinitive',
+      'participle',
     ]);
     for (const table of PARADIGMS) expect(cellsOf(table), table.id).toHaveLength(COUNTS[table.id]);
   });
@@ -222,7 +230,7 @@ describe('the verb tables of the indicative', () => {
   const word = (form: string) => form.replace(/-/g, '');
 
   it('name the future and aorist tables by the names the list shows', () => {
-    expect(PARADIGMS.slice(9).map((p) => p.name)).toEqual([
+    expect(PARADIGMS.slice(9, 16).map((p) => p.name)).toEqual([
       'Future and aorist',
       'Aorist and future passive',
       'Perfect and pluperfect',
@@ -272,7 +280,7 @@ describe('the verb tables of the indicative', () => {
   });
 
   it('name in every verb cell the verb, a mood, a person and a number, and one tense', () => {
-    for (const t of PARADIGMS.slice(9))
+    for (const t of PARADIGMS.slice(9, 16))
       for (const cell of cellsOf(t)) {
         expect(cell.ideas, `${t.id} ${cell.form}`).toEqual(expect.arrayContaining(['verb', 'mood-indicative']));
         expect(cell.ideas.filter((id) => id.startsWith('person-')), `${t.id} ${cell.form}`).toHaveLength(1);
@@ -299,5 +307,91 @@ describe('the verb tables of the indicative', () => {
     const seconds = cellsOf(table('mi-verbs')).filter((c) => c.ideas.includes('second-tenses'));
     expect(seconds).toHaveLength(6);
     for (const cell of cellsOf(table('mi-verbs')).filter((c) => c.ideas.includes('tense-aorist'))) expect(cell.ideas, cell.form).toContain('augment');
+  });
+});
+
+describe('the verb tables of the other moods', () => {
+  const table = (id: string) => {
+    const found = paradigmById(id);
+    if (!found) throw new Error(`no ${id}`);
+    return found;
+  };
+  /** The form at a place, as cellName says it ('Aorist passive 3rd person Singular'). */
+  const formAt = (id: string, place: string): string => {
+    const t = table(id);
+    for (const row of t.rows) for (let c = 0; c < row.cells.length; c++) if (cellName(t, row, c) === place) return row.cells[c].form;
+    throw new Error(`no ${place} in ${id}`);
+  };
+
+  it('are named as the list shows them, in the verbs tier, each teaching its mood', () => {
+    expect(PARADIGMS.slice(16).map((p) => [p.name, p.tier, p.ideas])).toEqual([
+      ['The subjunctive', 'verbs', ['mood-subjunctive']],
+      ['The imperative', 'verbs', ['mood-imperative']],
+      ['The infinitive', 'verbs', ['mood-infinitive']],
+      ['The participle', 'verbs', ['mood-participle']],
+    ]);
+  });
+
+  it('write the forms the story asks for', () => {
+    expect(formAt('subjunctive', 'Aorist passive 3rd person Singular')).toBe('λυθῇ');
+    expect(formAt('subjunctive', 'Present active 1st person Singular')).toBe('λύω');
+    expect(formAt('subjunctive', 'Aorist active 2nd person Singular')).toBe('λύσῃς');
+    expect(formAt('imperative', 'Aorist active 2nd person Singular')).toBe('λῦσον');
+    expect(formAt('imperative', 'Present active 3rd person Plural')).toBe('λυέτωσαν');
+    expect(formAt('imperative', 'Aorist passive 2nd person Singular')).toBe('λύθητι');
+    expect(formAt('infinitive', 'Aorist Active')).toBe('λῦσαι');
+    expect(formAt('infinitive', 'Aorist Passive')).toBe('λυθῆναι');
+    expect(formAt('infinitive', 'Perfect Active')).toBe('λελυκέναι');
+    expect(formAt('participle', 'Aorist passive Nominative singular Feminine')).toBe('λυθεῖσα');
+    expect(formAt('participle', 'Present active Nominative singular Masculine')).toBe('λύων');
+    expect(formAt('participle', 'Present active Genitive singular Feminine')).toBe('λυούσης');
+    expect(formAt('participle', 'Perfect active Nominative singular Masculine')).toBe('λελυκώς');
+  });
+
+  it('give the infinitive one present form for the middle and the passive', () => {
+    expect(formAt('infinitive', 'Present Middle')).toBe(formAt('infinitive', 'Present Passive'));
+    expect(formAt('infinitive', 'Present Middle')).toBe('λύεσθαι');
+  });
+
+  it('make every cell name the verb and its mood, and the subjunctive and the imperative a person and a number', () => {
+    for (const [id, mood] of [['subjunctive', 'mood-subjunctive'], ['imperative', 'mood-imperative'], ['infinitive', 'mood-infinitive'], ['participle', 'mood-participle']] as const)
+      for (const cell of cellsOf(table(id))) {
+        expect(cell.ideas, `${id} ${cell.form}`).toEqual(expect.arrayContaining(['verb', mood]));
+        expect(cell.ideas.filter((i) => i.startsWith('mood-')), `${id} ${cell.form}`).toEqual([mood]);
+        expect(cell.ideas.filter((i) => i.startsWith('tense-') && i !== 'tense-signs'), `${id} ${cell.form}`).toHaveLength(1);
+        const persons = cell.ideas.filter((i) => i.startsWith('person-'));
+        expect(persons, `${id} ${cell.form}`).toHaveLength(id === 'subjunctive' || id === 'imperative' ? 1 : 0);
+      }
+  });
+
+  it('name tense-signs on the aorist forms of the subjunctive and no augment', () => {
+    for (const cell of cellsOf(table('subjunctive'))) {
+      expect(cell.ideas, cell.form).not.toContain('augment');
+      if (cell.ideas.includes('tense-aorist')) expect(cell.ideas, cell.form).toContain('tense-signs');
+    }
+  });
+
+  it('name the case, number and gender of every participle cell', () => {
+    for (const cell of cellsOf(table('participle'))) {
+      expect(cell.ideas.filter((i) => i.startsWith('case-')), cell.form).toHaveLength(1);
+      expect(cell.ideas.filter((i) => i.startsWith('gender-')), cell.form).toHaveLength(1);
+      expect(cell.ideas, cell.form).toContain('number-singular');
+      expect(cell.ideas.filter((i) => i.startsWith('voice-')), cell.form).toHaveLength(1);
+      expect(cell.ideas.filter((i) => i.startsWith('declension-')), cell.form).toHaveLength(1);
+    }
+    const perfect = cellsOf(table('participle')).filter((c) => c.ideas.includes('tense-perfect'));
+    expect(perfect).toHaveLength(6);
+    for (const cell of perfect) expect(cell.ideas, cell.form).toContain('reduplication');
+  });
+
+  it('grow εἰμί by its subjunctive, imperative, infinitive and participle, each cell naming eimi', () => {
+    const eimi = table('eimi');
+    for (const cell of cellsOf(eimi)) expect(cell.ideas, cell.form).toContain('eimi');
+    const greek = (mood: string) => cellsOf(eimi).filter((c) => c.lang === 'el' && c.ideas.includes(mood)).map((c) => c.form);
+    expect(greek('mood-subjunctive')).toEqual(['ὦ', 'ᾖς', 'ᾖ', 'ὦμεν', 'ἦτε', 'ὦσι(ν)']);
+    expect(greek('mood-imperative')).toEqual(['ἴσθι', 'ἔστω', 'ἔστε', 'ἔστωσαν']);
+    expect(greek('mood-infinitive')).toEqual(['εἶναι']);
+    expect(greek('mood-participle')).toEqual(['ὤν', 'ὄντος', 'οὖσα', 'οὔσης', 'ὄν', 'ὄντος']);
+    expect(cellsOf(eimi).filter((c) => c.lang === 'el')).toHaveLength(35);
   });
 });

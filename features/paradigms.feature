@@ -1,8 +1,8 @@
 Feature: Paradigms
-  The Paradigms screen (#/paradigms, reached from Settings > More, beside Review) lists sixteen tables: The article, Noun endings, εἰμί,
+  The Paradigms screen (#/paradigms, reached from Settings > More, beside Review) lists twenty tables: The article, Noun endings, εἰμί,
   Verb endings, The third declension, Adjective endings, Personal pronouns, Demonstrative and relative pronouns, Interrogative
   and indefinite pronouns, Future and aorist, Aorist and future passive, Perfect and pluperfect, Second aorist, Contract verbs,
-  Verbs in -μι and οἶδα (src/data/paradigms/, docs/paradigms.md), each with 'Available forms: N of M' and a progress bar. A form is
+  Verbs in -μι, οἶδα, The subjunctive, The imperative, The infinitive and The participle (src/data/paradigms/, docs/paradigms.md), each with 'Available forms: N of M' and a progress bar. A form is
   available once every grammar idea it needs is at the frontier or solid (grammarLevels); a locked form shows as locked, not hidden,
   so the table keeps its shape. A table opens in Study mode (an available cell says reveal and a tap shows its form) or Review mode
   (every available cell shows its form); one button switches. Ask the tutor sends the table's name and the forms he has revealed
@@ -13,7 +13,7 @@ Feature: Paradigms
 
   Scenario: The list shows each table with how many of its forms are available
     When he opens the Paradigms screen
-    Then the list reads "The article: Available forms: 4 of 24", "Noun endings: Available forms: 8 of 40", "εἰμί: Available forms: 0 of 36" and "Verb endings: Available forms: 0 of 24"
+    Then the list reads "The article: Available forms: 4 of 24", "Noun endings: Available forms: 8 of 40", "εἰμί: Available forms: 0 of 70" and "Verb endings: Available forms: 0 of 24"
     And the progress bar of "The article" is at 4 of 24
 
   Scenario: The list shows the five tables of the nouns and pronouns, each with how many of its forms are available
@@ -37,6 +37,18 @@ Feature: Paradigms
     And the cell "1st person singular Aorist Active" shows "ἔλυσ-α"
     And the 12 future cells are locked and their accessible names name "The future tense"
     And the cell "1st person singular Future Active" is locked and shows no form
+
+  Scenario: The participle table stays shut while the participle idea is not yet, and opens with it
+    Given every idea of the table "participle" except "mood-participle" is at the frontier
+    And the table "participle" is open in Review mode
+    Then the table says "Available forms: 0 of 30"
+    And all 30 cells of the table are locked
+    And every lock names "The participle"
+    When the idea "mood-participle" moves to frontier
+    Then the table now says "Available forms: 30 of 30"
+    And the cell "Present active Nominative singular Masculine" now shows "λύων"
+    And the cell "Present active Nominative singular Feminine" also shows "λύουσα"
+    And the cell "Present active Nominative singular Neuter" likewise shows "λῦον"
 
   Scenario: Opening The third declension shows its 48 cells, every one locked while its idea is not yet
     When he opens the Paradigms screen
