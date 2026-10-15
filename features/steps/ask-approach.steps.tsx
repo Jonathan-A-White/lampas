@@ -226,5 +226,29 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(pictureRows()).toHaveLength(3));
     });
   });
+  Scenario('An approach pasted past the limit is kept whole, counted in the warning colour, and Send says why it is off', ({ Given, When, Then, And }) => {
+    const long = (n: number): string => 'Teach the cases with colours, one at a time. '.repeat(Math.ceil(n / 45)).slice(0, n - 1) + '.';
+    Given('the Ask for another approach sheet is open', async () => {
+      await openSettings();
+      await openSheet();
+    });
+    When('he pastes an approach of {number} characters', async (_, n: number) => {
+      await user.click(textField());
+      await user.paste(long(n));
+    });
+    And('he types the credit name {string}', (_, name: string) => fillName(name));
+    Then('the approach box holds all {number} characters', (_, n: number) => {
+      expect((textField() as HTMLTextAreaElement).value).toBe(long(n));
+    });
+    And('the sheet shows {string} in the warning colour', (_, count: string) => {
+      expect(within(sheet()).getByText(count, { exact: false }).className).toMatch(/\btext-bad\b/);
+    });
+    And('the Send button is disabled and says the approach is too long', () => {
+      expect(send()).toBeDisabled();
+      const why = send().getAttribute('aria-describedby');
+      expect(why).toBeTruthy();
+      expect(document.getElementById(why as string)).toHaveTextContent(/too long/i);
+    });
+  });
 });
 

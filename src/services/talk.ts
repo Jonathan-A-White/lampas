@@ -24,14 +24,14 @@ import { MAX_SUMMARY } from './feedback';
 import { greekSyllables, stressedSyllable } from '../speech/greekSyllables';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
 import { askGrind, type AskOptions } from './tutor';
-import { MAX_REQUEST_BYTES } from './requestBudget';
+import { MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudget';
 import { solidWordsField } from './solidWords';
 
 /** The kind the mill runs the grind under (grinds/bible-talk.json). */
 export const TALK_KIND = 'bible-talk';
 
-/** How long a message may be (the grist's record is capped at 10 KiB; the history and the text share it). */
-export const MAX_TALK_CHARS = 600;
+/** How long a message may be (src/services/requestBudget.ts: the same as Ask the tutor's). */
+export const MAX_TALK_CHARS = MAX_QUESTION_CHARS;
 /** How many earlier turns the grind is sent. */
 export const MAX_HISTORY_TURNS = 10;
 export { MAX_REQUEST_BYTES };

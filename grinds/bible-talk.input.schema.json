@@ -23,7 +23,7 @@
         }
       }
     },
-    "question": { "description": "What he just said.", "type": "string", "minLength": 1, "maxLength": 600 },
+    "question": { "description": "What he just said, at most 4000 characters.", "type": "string", "minLength": 1, "maxLength": 4000 },
     "spoken": { "description": "Optional. true only when he spoke the question to the phone's English speech recogniser (Hold to talk, Hold to ask); missing when he typed it. A Greek word in it may have come as English sound-alikes. See the instructions.", "type": "boolean", "const": true },
     "history": {
       "description": "The last turns of the conversation, oldest first.",

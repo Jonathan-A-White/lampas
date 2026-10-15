@@ -170,8 +170,8 @@ describe('buildTalkRequest', () => {
     expect(question).toContain('Explain the grammar term');
   });
 
-  it('keeps a question to 600 characters', () => {
-    expect(MAX_TALK_CHARS).toBe(600);
+  it('keeps a question to 4000 characters, the same as Ask the tutor', () => {
+    expect(MAX_TALK_CHARS).toBe(4000);
   });
 });
 

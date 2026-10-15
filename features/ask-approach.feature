@@ -53,3 +53,11 @@ Feature: Ask for another approach
     And four pictures are listed
     When he removes the first picture
     Then three pictures are listed
+
+  Scenario: An approach pasted past the limit is kept whole, counted in the warning colour, and Send says why it is off
+    Given the Ask for another approach sheet is open
+    When he pastes an approach of 1500 characters
+    And he types the credit name "Anna Example"
+    Then the approach box holds all 1500 characters
+    And the sheet shows "1500 of 1200" in the warning colour
+    And the Send button is disabled and says the approach is too long

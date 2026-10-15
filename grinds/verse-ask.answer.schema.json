@@ -15,7 +15,7 @@
       "description": "What he just said, put into clean written words: the capitals and punctuation it needs (question marks, full stops), the ums, uhs, repeated words and dropped starts taken out, the meaning and his own words kept. Never an answer or an explanation; unchanged when it was clean already. At most the length of what he said.",
       "type": "string",
       "minLength": 1,
-      "maxLength": 400
+      "maxLength": 4000
     },
     "settings_changes": {
       "description": "Only when he asked in words to switch how Ask the tutor opens: askBy to typing (\"let me type\") or to speaking (\"switch back to speaking\"). The app applies it at once; say in `answer` what you did. Leave it out otherwise, and never change any other setting.",

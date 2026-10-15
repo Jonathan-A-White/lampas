@@ -13,7 +13,7 @@ import type { MemoryField } from '../data/learnerMemory';
 import type { TutorRequest } from '../data/requestsForTutor';
 import type { RustyItem } from '../data/rusty';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
-import { MAX_REQUEST_BYTES } from './requestBudget';
+import { MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudget';
 import { solidWordsField } from './solidWords';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
 import { listenForAnswers, type StreamTarget } from './answerStream';
@@ -24,8 +24,8 @@ export const TUTOR_APP = 'lampas';
 export const TUTOR_KIND = 'verse-ask';
 export const TUTOR_VERSION = '1';
 
-/** How long a question may be: a grist's record is capped at 10 KiB and Greek letters take two bytes each. */
-export const MAX_QUESTION_CHARS = 400;
+/** How long a question may be (src/services/requestBudget.ts). */
+export { MAX_QUESTION_CHARS };
 
 /** The timings, in one object so a test may shorten them. */
 export const tutorTimings = {
@@ -215,7 +215,7 @@ export function askByChange(answer: VerseAnswer): AskByChange[] {
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isVerseAnswer(value: unknown): value is VerseAnswer {
   if (!isObject(value) || Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'bridge') || !isText(value.answer, 1200)) return false;
-  if ('question' in value && !isText(value.question, 400)) return false;
+  if ('question' in value && !isText(value.question, MAX_QUESTION_CHARS)) return false;
   if ('bridge' in value && !isAnswerBridge(value.bridge)) return false;
   if (!Array.isArray(value.words) || value.words.length > 12) return false;
   return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));

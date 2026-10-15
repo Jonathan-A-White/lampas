@@ -81,7 +81,7 @@ no punctuation or capitals, an "um" or "uh", a word said twice, or a start he dr
   gave them (with their accents, if the raw words have them). Keep a word he chose even when another would read better.
 - Never answer in `question`, and never explain or correct it: it holds what he asked, nothing more. If the raw `question` is
   already clean, give it back unchanged.
-- It is never longer than the raw `question`, and at most 400 characters.
+- It is never longer than the raw `question`, and at most 4000 characters.
 
 For example, `um why are there uh italic words what does it mean for the words to be italic` becomes `Why are there italic words? What does it mean for the words to be italic?`
 

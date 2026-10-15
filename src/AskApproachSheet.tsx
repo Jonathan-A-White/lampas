@@ -9,6 +9,8 @@ import { shrinkImage } from './images/shrink';
 import { buildFeedbackRequest, MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, submitFeedback } from './services/feedback';
 import { FAILURE_TITLES, TutorError, type TutorFailure } from './services/tutor';
 import { focusOnMount } from './ui/focus';
+import { isTooLong } from './ui/lengthLimit';
+import { LengthNote } from './ui/LengthNote';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 
@@ -46,7 +48,7 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
-  const ids = { text: useId(), name: useId(), link: useId(), nameHint: useId(), linkHint: useId() };
+  const ids = { text: useId(), name: useId(), link: useId(), count: useId(), nameHint: useId(), linkHint: useId() };
   const nextId = useRef(0);
   const live = useRef(new AbortController());
   const urls = useRef<string[]>([]);
@@ -70,7 +72,8 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
   const ring = (field: string): string => (filled === field ? ' ring-2 ring-accent' : '');
 
   const busy = phase.name === 'sending';
-  const ready = text.trim().length > 0 && name.trim().length > 0 && shrinking === 0;
+  const tooLong = isTooLong(text, MAX_FEEDBACK_CHARS);
+  const ready = text.trim().length > 0 && !tooLong && name.trim().length > 0 && shrinking === 0;
 
   async function add(chosen: File[]): Promise<void> {
     const room = Math.max(0, MAX_PICTURES - pictures.length - shrinking);
@@ -167,12 +170,13 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
                 <textarea
                   id={ids.text}
                   rows={5}
-                  maxLength={MAX_FEEDBACK_CHARS}
+                  aria-invalid={tooLong || undefined}
                   value={text}
                   disabled={busy}
                   onChange={(e) => setText(e.target.value)}
                   className={`${FIELD} resize-none py-2${ring('approach')}`}
                 />
+                <LengthNote id={ids.count} text={text} max={MAX_FEEDBACK_CHARS} what="approach" className="pt-1" />
               </div>
               <div>
                 <label className="flex min-h-12 w-full items-center justify-center rounded-xl border border-line px-4 text-base font-medium has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent">
@@ -281,6 +285,7 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
               <button
                 type="button"
                 disabled={!ready || busy}
+                aria-describedby={tooLong ? ids.count : undefined}
                 onClick={() => void send()}
                 className="min-h-12 w-full rounded-xl bg-accent px-5 text-lg font-medium text-accent-fg disabled:opacity-40"
               >

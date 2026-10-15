@@ -8,7 +8,7 @@
     "reference": { "description": "The verse he asks about: 'Romans 8:28', or a passage under a heading ('Romans 8:1-11').", "type": "string", "minLength": 1, "maxLength": 80 },
     "greek": { "description": "The Greek of the verse (the Byzantine text), in Greek word order.", "type": "string" },
     "english": { "description": "The same verse in English (the Majority Standard Bible); words the translators supplied are between asterisks.", "type": "string" },
-    "question": { "description": "What he asked, at most 400 characters.", "type": "string", "minLength": 1, "maxLength": 400 },
+    "question": { "description": "What he asked, at most 4000 characters.", "type": "string", "minLength": 1, "maxLength": 4000 },
     "spoken": { "description": "Optional. true only when he spoke the question to the phone's English speech recogniser (Hold to talk, Hold to ask); missing when he typed it. A Greek word in it may have come as English sound-alikes. See the instructions.", "type": "boolean", "const": true },
     "solid_count": { "description": "Optional. How many Greek words he knows well in all. `solid_words` names only the most recent of them.", "type": "number", "minimum": 0 },
     "solid_words": { "description": "The Greek lemmas he most recently came to know well: at most 50, the newest last. `solid_count` says how many he knows in all.", "type": "array", "maxItems": 50, "items": { "type": "string" } },
