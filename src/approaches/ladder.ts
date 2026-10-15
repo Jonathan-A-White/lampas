@@ -2,7 +2,8 @@
 import { LADDER, TIERS, type Tier } from '../data/grammar/ladder';
 import type { GrammarApproach } from './types';
 
-const TIER_TITLES: Record<Tier, string> = {
+/** The tier's name as the ladder approach and the Paradigms list say it. */
+export const TIER_TITLES: Record<Tier, string> = {
   letters: 'Letters',
   sounds: 'Sounds',
   marks: 'Marks',

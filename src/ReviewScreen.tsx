@@ -7,10 +7,11 @@ import { countDue, recordRound, reviewsOf } from './data/repositories';
 import { DAY } from './data/schedule';
 import { type Random } from './data/quiz';
 import { ideaOf } from './data/grammar/ladder';
-import { navigate } from './nav/route';
+import { navigate, openParadigm } from './nav/route';
 import { ItemCard } from './review/ItemCard';
 import { KINDS, kindOf, type ReviewItem } from './review/kinds';
 import { makeMove, moveQuestion, moveSaid, pendingMove, type PendingMove } from './review/pickerMove';
+import { heldRound, holdRound, releaseRound } from './review/heldRound';
 import { hasPractise, takePractise } from './review/practise';
 import { drawReviewRound } from './review/round';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -111,7 +112,9 @@ function reviewFacts(round: Round, dueLine: string | undefined): ScreenFact[] {
 
 export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
   // Items chosen to practise (rusty ones moved back to Frontier, Welcome back's) open their round at once; the rest of Review waits for Start
-  const [round, setRound] = useState<Round>(() => (hasPractise() ? { status: 'loading' } : { status: 'start' }));
+  // A round he left to see a table (GrammarCard's 'See the table') is taken up again where he stood on Back (mw-svw421.5)
+  const [round, setRound] = useState<Round>(() => heldRound() ?? (hasPractise() ? { status: 'loading' } : { status: 'start' }));
+  useEffect(() => releaseRound(), []);
   // The answers are written one after the other; the end card waits for the last of them.
   const writing = useRef<Promise<unknown>>(Promise.resolve());
   const due = useLiveQuery(() => Promise.all(KINDS.map((k) => countDue(Date.now(), k.kind))), []);
@@ -223,7 +226,16 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
       {header(`${index + 1} of ${items.length}`)}
       {/* sideways the round Ask button (56 px, right-3) sits over the options' right edge: the options leave it its room (mw-hqd5bz.35) */}
       <main className="screen min-h-0 flex-1 px-4 pt-6 short:pr-20">
-        <ItemCard item={item} index={index} picked={picked} onPick={pick} />
+        <ItemCard
+          item={item}
+          index={index}
+          picked={picked}
+          onPick={pick}
+          onSeeTable={(table) => {
+            holdRound(round);
+            openParadigm({ table });
+          }}
+        />
         {picked !== null ? (
           <NextBar>
             <button

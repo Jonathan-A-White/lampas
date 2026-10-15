@@ -13,9 +13,11 @@ async function expectFitsPhone(page: Page) {
   expect(scrollTop).toBe(0);
 }
 
-const inReach = async (page: Page, name: string, exact = true) => {
+const inReach = async (page: Page, name: string, exact = true, scroll = false) => {
   const button = page.getByRole('button', { name, exact });
   await expect(button).toBeVisible();
+  // after an answer only Next is pinned (src/ui/NextBar.tsx); the links under it are at the end of the screen's box, which a full parsing that wraps pushes below the fold
+  if (scroll) await button.scrollIntoViewIfNeeded();
   const box = await button.boundingBox();
   expect(box && box.y + box.height).toBeLessThanOrEqual(844);
   expect(box?.height).toBeGreaterThanOrEqual(44);
@@ -39,10 +41,10 @@ test('a Parsing drill question shows the verse, four choices and both links in r
 
   await options.first().click();
   await expect(page.locator('[data-option][data-result="right"]')).toHaveCount(1);
-  // With the answer, the full parsing and Next showing, the links are still in reach.
+  // With the answer and the full parsing showing, Next stays in reach where it is and the links are a scroll of the screen's box away (mw-5r3p30.377 pinned Next).
   await inReach(page, 'Next step');
-  await inReach(page, 'Ask the tutor');
-  await inReach(page, 'Talk about it');
+  await inReach(page, 'Ask the tutor', true, true);
+  await inReach(page, 'Talk about it', true, true);
   await expectFitsPhone(page);
   await shot(page, 'drill-question');
 });

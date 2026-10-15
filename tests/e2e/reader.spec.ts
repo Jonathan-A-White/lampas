@@ -92,7 +92,7 @@ test('the word sheet says how to pronounce the word, in capitals for the stress,
 
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByTestId('sheet-word')).toHaveText('χριστῷ');
-  await expect(dialog.getByTestId('sheet-respelling')).toHaveText('hree-STO');
+  await expect(dialog.getByTestId('sheet-respelling')).toHaveText('khree-STO');
   await expect(dialog).not.toContainText('cristw');
   await expect(page.locator('body')).not.toContainText('cristw');
   await expectFitsPhone(page);

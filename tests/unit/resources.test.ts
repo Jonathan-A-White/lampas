@@ -3,6 +3,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { getStudyResources, setResourceOption, setResourceOn } from '../../src/data/repositories';
+import { AUDIO_BIBLES } from '../../src/resources/audioBible';
 import { RESOURCES, optionOf, resourceOf, type StudyWord } from '../../src/resources';
 
 const WORD: StudyWord = { form: 'συνεργεῖ', lemma: 'συνεργέω', strongs: 'G4903' };
@@ -194,5 +195,46 @@ describe('the kept choices', () => {
     expect(await getStudyResources()).toEqual({ on: ['logos', 'strongs'], options: { logos: '["louwnida"]' } });
     await setResourceOn('strongs', false);
     expect((await getStudyResources()).on).toEqual(['logos']);
+  });
+});
+
+describe('every resource is named in words, never by a code (mw-5r3p30.148)', () => {
+  /** acronyms the books are known by, and that Logos prints in the product's own title ('... | EDNT (3 vols.)', '(TDNTA)', '(BDAG)') */
+  const KNOWN_ABBREVIATIONS = new Set(['BDAG', 'EDNT', 'TDNTA']);
+  /** a code: capitals, digits and punctuation only (LXGRCANLEX, FBGNTLEX, 46.30.18), unless it is a known abbreviation */
+  const isCode = (text: string): boolean => /^[A-Z0-9.:_-]+$/.test(text.trim()) && !KNOWN_ABBREVIATIONS.has(text.trim());
+  const word = { ...BIBLOS, topic: 'book', strongs: 'G976' };
+
+  it('gives no Logos tile or lexicon name that is its Resource ID or any code in capitals', () => {
+    const logos = resourceOf('logos');
+    for (const item of logos?.choices?.items ?? []) {
+      const link = logos?.linksFor(word, item.id)[0];
+      const code = /^logosres:LLS:([^;]+);/.exec(link?.url ?? '')?.[1] ?? '';
+      expect(code, item.id).not.toBe('');
+      for (const [what, text] of [['name', item.name], ['label', link?.label.replace(/^Open in Logos: /, '') ?? ''], ['tile', link?.tile ?? '']]) {
+        expect(text.toUpperCase(), `${item.id} ${what}`).not.toBe(code.toUpperCase());
+        expect(text, `${item.id} ${what}`).not.toBe(item.id);
+        expect(isCode(text), `${item.id} ${what} '${text}' is a code`).toBe(false);
+      }
+    }
+  });
+
+  it('gives no two Logos tiles the same words', () => {
+    const logos = resourceOf('logos');
+    const tiles = (logos?.choices?.items ?? []).map((i) => logos?.linksFor(word, i.id)[0].tile);
+    expect(new Set(tiles).size).toBe(tiles.length);
+  });
+
+  it('names every resource, its description and its audio Bibles in words', () => {
+    for (const r of RESOURCES) {
+      expect(isCode(r.name), r.id).toBe(false);
+      expect(r.name, r.id).not.toBe(r.id);
+    }
+    for (const b of AUDIO_BIBLES) {
+      for (const text of [b.choice, b.name]) {
+        expect(isCode(text), b.id).toBe(false);
+        expect(text, b.id).not.toBe(b.id);
+      }
+    }
   });
 });

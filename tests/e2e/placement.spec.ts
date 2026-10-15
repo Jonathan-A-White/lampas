@@ -4,6 +4,7 @@ import { approachOf, orderOf } from '../../src/approaches';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { startPlacement } from '../../src/data/grammar/placement';
 import { honestSpeech, spoken } from '../support/honest-fakes';
+import { NEEDED } from './needed-ideas';
 import { openUnlocked } from './unlocked';
 
 // Puts rows in the app's own store through raw IndexedDB, as the app wrote them.
@@ -45,14 +46,6 @@ async function openWithGoal(page: Page, goal: string) {
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await put(page, 'settings', [{ key: 'goal', value: goal }]);
 }
-
-// The ideas 1 John 1:1 needs (src/data/grammar/needs.ts): a preposition it uses (ἀπό, περί) needs its own idea too
-const NEEDED = [
-  'alphabet', 'diphthongs', 'consonant-pairs', 'syllables', 'breathings', 'accents', 'iota-subscript', 'punctuation', 'noun', 'article', 'case-nominative', 'case-accusative', 'case-genitive', 'case-dative',
-  'gender-masculine', 'gender-feminine', 'gender-neuter', 'person-1st', 'person-3rd', 'number-singular', 'number-plural', 'pronoun',
-  'pronoun-personal', 'pronoun-relative', 'preposition', 'preposition-apo', 'preposition-peri', 'verb', 'tense-imperfect', 'tense-aorist', 'tense-perfect', 'second-tenses',
-  'voice-active', 'voice-middle-deponent', 'mood-indicative', 'conjunction', 'attic-form',
-];
 
 // every letter, diphthong, consonant pair and breathing (the items of the quick round), by id
 const ITEMS = LADDER.filter((i) => i.glyphs || i.parent).map((i) => i.id);

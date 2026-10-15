@@ -66,6 +66,8 @@ export interface FakePostern {
    * as it arrives. For the end of a scenario, so a grist held for a step that never ran (the scenario failed first) does not keep the
    * app waiting into the next one. */
   endAll(reply: Reply): void;
+  /** how many grists the fake has taken in and not answered yet: a scenario's end leaves none (`endAll`) */
+  readonly inFlight: number;
   /** the `since` of every GET /api/messages, in order */
   sinces: number[];
   /** Puts a request-status record (docs/protocol.md section 19) for the key `to` (a public key in hex) on the backend, sealed by the mill unless
@@ -228,6 +230,9 @@ export function makeFakePostern(): FakePostern {
     sinces: [],
     events: false,
     eventsRefused: false,
+    get inFlight() {
+      return unanswered.length;
+    },
     get openStreams() {
       return streams.size;
     },

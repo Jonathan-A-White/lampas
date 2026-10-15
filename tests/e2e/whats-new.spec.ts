@@ -74,6 +74,19 @@ test.describe('with a service worker', () => {
     await page.goBack();
     await expect(sheet).toBeHidden();
   });
+
+  test('Check for updates says Up to date once the server has been asked and has nothing new', async ({ page }) => {
+    await serveChangelog(page);
+    await openUnlocked(page);
+    await page.goto('/#/about');
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+    const section = page.getByRole('region', { name: "What's new" });
+    await section.scrollIntoViewIfNeeded();
+    await section.getByRole('button', { name: 'Check for updates' }).click();
+    await expect(section.getByText('Up to date')).toBeVisible({ timeout: 20_000 });
+  });
 });
 
 test.describe('without a service worker', () => {
@@ -114,7 +127,9 @@ test.describe('without a service worker', () => {
     const check = section.getByRole('button', { name: 'Check for updates' });
     expect((await check.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
     await check.click();
-    await expect(section.getByText('Up to date')).toBeVisible();
+    // no worker, so nothing was asked of a server: the kit never says 'Up to date' then (it says so only after reaching the server for the worker's script)
+    await expect(section.getByText('Updates are not checked here')).toBeVisible();
+    await expect(section.getByText('Up to date')).toHaveCount(0);
 
     const link = page.getByTestId('version-link');
     await link.scrollIntoViewIfNeeded();

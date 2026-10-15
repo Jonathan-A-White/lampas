@@ -49,6 +49,10 @@ export function restoreScrolls(): void {
 /** How long a restore keeps waiting for the content behind it to arrive. */
 const RESTORE_WAIT_MS = 2500;
 
+/** Once the box is at the remembered offset, how long its content must stay unchanged before the restore ends: a row that draws late (Settings' controls read their
+ * saved value first) changes the height, and the browser's scroll anchoring then moves the box off the place (mw-8m9dyu.6). */
+const QUIET_MS = 400;
+
 function scrollBoxTo(box: HTMLElement, top: number): void {
   box.scrollTop = top;
 }
@@ -74,16 +78,22 @@ export function useScrollMemory(slot: string): (el: HTMLElement | null) => void 
     let restoring = target !== undefined;
     let observer: ResizeObserver | undefined;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let quiet: ReturnType<typeof setTimeout> | undefined;
 
     const settle = () => {
       restoring = false;
       observer?.disconnect();
       clearTimeout(timer);
+      clearTimeout(quiet);
     };
     const restore = () => {
       if (!restoring || target === undefined) return;
       scrollBoxTo(box, target);
-      if (Math.abs(box.scrollTop - target) < 1) settle();
+      // at the offset: wait for the content to stay put for QUIET_MS (each resize re-places it and restarts the wait) before this is his place to remember
+      if (Math.abs(box.scrollTop - target) < 1) {
+        clearTimeout(quiet);
+        quiet = setTimeout(settle, QUIET_MS);
+      }
     };
     const onScroll = () => {
       if (restoring) return;
@@ -98,14 +108,12 @@ export function useScrollMemory(slot: string): (el: HTMLElement | null) => void 
     for (const type of touches) box.addEventListener(type, interrupt, { passive: true });
 
     if (restoring) {
-      restore();
-      if (restoring) {
-        if (typeof ResizeObserver !== 'undefined') {
-          observer = new ResizeObserver(restore);
-          observer.observe(box.firstElementChild ?? box);
-        }
-        timer = setTimeout(settle, RESTORE_WAIT_MS);
+      if (typeof ResizeObserver !== 'undefined') {
+        observer = new ResizeObserver(restore);
+        observer.observe(box.firstElementChild ?? box);
       }
+      timer = setTimeout(settle, RESTORE_WAIT_MS);
+      restore();
     }
 
     return () => {

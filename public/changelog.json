@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.1.257",
+    "date": "2026-10-15",
+    "story": "mw-svw421.5",
+    "kind": "new",
+    "text": "A grammar idea now links to its table, and Review asks you for an ending only after you have opened the table that shows it."
+  },
+  {
+    "version": "0.1.255",
+    "date": "2026-10-15",
+    "story": "mw-8m9dyu.6",
+    "kind": "new",
+    "text": "After a few visits, Lampas shows a free reader one quiet line, once, about what a licence adds, and it is easy to find out how to get one."
+  },
+  {
+    "version": "0.1.254",
+    "date": "2026-10-15",
+    "story": "mw-5r3p30.392",
+    "kind": "fixed",
+    "text": "Ask the tutor, with the phone held sideways, shows the question and its Copy button on one line, so more of the answer is in view."
+  },
+  {
+    "version": "0.1.253",
+    "date": "2026-10-15",
+    "story": "mw-5r3p30.148",
+    "kind": "fixed",
+    "text": "Three Logos lexicon buttons on the word sheet now show the book's name instead of a code."
+  },
+  {
     "version": "0.1.252",
     "date": "2026-10-15",
     "story": "mw-5r3p30.351",
