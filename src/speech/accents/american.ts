@@ -6,6 +6,7 @@ import type { EnglishAccent } from './types';
 export const AMERICAN: EnglishAccent = {
   id: 'american',
   label: 'American',
+  hintedBy: "with a word of the reader's English that has it",
   hints: {
     '/a/': { word: 'father' },
     '/e/': { word: 'pet' },

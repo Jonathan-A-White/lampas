@@ -14,5 +14,7 @@ export interface EnglishAccent {
   id: string;
   /** what a choice of accent will show: 'American' */
   label: string;
+  /** how a hint is given, to finish 'each ...' in a guide: "with a word of the reader's English that has it" */
+  hintedBy: string;
   hints: Readonly<Record<SoundId, SoundHint>>;
 }

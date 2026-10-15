@@ -53,7 +53,8 @@ describe('the foundation lessons give every sound an English key word', () => {
     for (const scheme of PRONUNCIATIONS) {
       for (const sound of ['e', 'ee', 'oo', 'v', 'f', 'b', 'd', 'g', 'mb', 'nd', 'ng', 'kh', 'nks', 'hy', 'y']) {
         expect(scheme.sounds[sound], `${scheme.id}: ${sound}`).toBeTruthy();
-        for (const accent of ACCENTS) expect(soundWords(scheme, accent).asIn(sound), `${scheme.id} in ${accent.id}: ${sound}`).toMatch(/ as in [a-z]/);
+        // IPA gives no English key word: it shows the sound's own symbol instead (tests/unit/english-accent-setting.test.ts)
+        for (const accent of ACCENTS.filter((a) => a.id !== 'ipa')) expect(soundWords(scheme, accent).asIn(sound), `${scheme.id} in ${accent.id}: ${sound}`).toMatch(/ as in [a-z]/);
       }
     }
     expect(soundWords(modern, accentOf('american')).asIn('e')).toBe('e as in pet');

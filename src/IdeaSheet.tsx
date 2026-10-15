@@ -27,6 +27,7 @@ import { getGreekPronunciation, getLevel, getSavedGoalText, listLevels, recordDr
 import { DrillItScreen } from './DrillItScreen';
 import { holdIdea } from './ideaReturn';
 import { openParadigm } from './nav/route';
+import { useAccent } from './speech/accents/useAccent';
 import { chosenPronunciation } from './speech/greek';
 import { pronunciationOf, type Pronunciation } from './speech/pronunciation';
 import { proseOf } from './speech/proseOf';
@@ -275,6 +276,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false }: {
   const scheme = chosen === undefined ? chosenPronunciation() : pronunciationOf(chosen);
   // the writes follow one another: a second move made while the first is being written waits for it, and is not lost
   const writing = useRef<Promise<unknown>>(Promise.resolve());
+  useAccent(); // the hints below are said in the chosen English accent: draw again when it is chosen
   const tiles = teachTiles(idea, scheme);
   const card = teachOf(idea.id);
   const sounds = soundLesson(idea, scheme);

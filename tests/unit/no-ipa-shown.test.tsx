@@ -1,6 +1,6 @@
 // The standard ids are for the app's module boundaries (mw-5r3p30.352, his words: "I'm trying to bring the user from wherever they're at [to] the Greek
 // without necessarily having to know the standard"): with American or British English chosen, no lesson, sheet, tile, question, drill line or what the
-// tutor is told shows an IPA-only character or a sound's id. Only choosing IPA as the accent (mw-5r3p30.353) will show them.
+// tutor is told shows an IPA-only character or a sound's id. Only choosing IPA as the accent (mw-5r3p30.353) shows them.
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { IdeaSheet } from '../../src/IdeaSheet';
@@ -27,7 +27,8 @@ const ipaIn = (text: string): string[] => [...(text.match(new RegExp(IPA_ONLY.so
 const SOUND_IDEAS = LADDER.filter(bearsSound);
 const QUICK_ITEMS = LADDER.filter((i) => i.parent || i.glyphs);
 
-describe.each(ACCENTS.map((a) => [a.id, a] as const))('in %s English, nothing the learner reads of a sound is IPA', (_, accent: EnglishAccent) => {
+// IPA itself (the third accent, mw-5r3p30.353) is the one that shows them: tests/unit/english-accent-setting.test.ts holds it to that.
+describe.each(ACCENTS.filter((a) => a.id !== 'ipa').map((a) => [a.id, a] as const))('in %s English, nothing the learner reads of a sound is IPA', (_, accent: EnglishAccent) => {
   it('every lesson, sound line and How it sounds of a letter, pair, breathing or group', () => {
     for (const idea of SOUND_IDEAS) {
       for (const text of [ideaText(idea, modern, accent), ideaSound(idea, modern, accent) ?? '', soundLesson(idea, modern, accent) ?? '']) expect(ipaIn(text), idea.id).toEqual([]);

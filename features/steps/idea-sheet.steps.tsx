@@ -53,7 +53,7 @@ const TESTISH: Pronunciation = {
 };
 
 /** Opens the app on Romans 8 with every store emptied, `goal` saved as the goal setting when there is one, the pronunciation `chosen` saved, a fake Postern and, with `greekVoice`, a phone that has a Greek voice. */
-async function open(goal: string | undefined, chosen?: string, greekVoice = false): Promise<void> {
+async function open(goal: string | undefined, chosen?: string, greekVoice = false, accent?: string): Promise<void> {
   unregisterTestish?.();
   unregisterTestish = undefined;
   chooseAccent(DEFAULT_ACCENT);
@@ -81,6 +81,7 @@ async function open(goal: string | undefined, chosen?: string, greekVoice = fals
     if (chosen === TESTISH.id) unregisterTestish = registerPronunciation(TESTISH);
     await db.settings.put({ key: 'greekPronunciation', value: chosen });
   }
+  if (accent !== undefined) await db.settings.put({ key: 'englishAccent', value: accent });
   await seedHisWords();
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
@@ -636,6 +637,60 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And("the letter sheet's How it sounds reads {string}", (_, text: string) => {
       expect(howItSounds().textContent).toBe(text);
+    });
+  });
+  const chooseInSettings = async (_: unknown, choice: string, group: string): Promise<void> => {
+    window.location.hash = '#/settings';
+    const box = await screen.findByRole('group', { name: group });
+    await user.click(within(box).getByRole('button', { name: choice, exact: true }));
+    await waitFor(() => expect(within(box).getByRole('button', { name: choice, exact: true })).toHaveAttribute('aria-pressed', 'true'));
+  };
+  const savedAccent = async (_: unknown, id: string): Promise<void> => {
+    await waitFor(async () => expect((await db.settings.get('englishAccent'))?.value).toBe(id));
+  };
+
+  Scenario('Choosing British in Settings makes the Omicron sheet read the British hint, and American brings the American one back', ({ Given, When, Then, And }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he chooses {string} in the group {string} in Settings', chooseInSettings);
+    And('he opens the letter sheet of {string} from the alphabet sheet', openLetterSheet);
+    Then("the letter sheet's tile reads {string}", (_, sound: string) => {
+      expect(ownTile().querySelector('[data-sound]')?.textContent).toBe(sound);
+    });
+    And("the letter sheet's How it sounds reads {string}", (_, text: string) => {
+      expect(howItSounds().textContent).toBe(text);
+    });
+    And('the English accent is saved as {string}', savedAccent);
+  });
+
+  Scenario('A phone that kept British starts on it, and choosing American again puts the American hint back', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 with the goal {string}, no idea level, a fake Postern and the English accent {string} saved', async (_, goal: string, accent: string) => {
+      await open(goal, undefined, false, accent);
+    });
+    Then('the group {string} in Settings has {string} chosen', async (_, group: string, choice: string) => {
+      window.location.hash = '#/settings';
+      const box = await screen.findByRole('group', { name: group });
+      await waitFor(() => expect(within(box).getByRole('button', { name: choice, exact: true })).toHaveAttribute('aria-pressed', 'true'));
+    });
+    When('he chooses {string} in the group {string} in Settings', chooseInSettings);
+    And('he opens the letter sheet of {string} from the alphabet sheet', openLetterSheet);
+    Then("the letter sheet's tile reads {string}", (_, sound: string) => {
+      expect(ownTile().querySelector('[data-sound]')?.textContent).toBe(sound);
+    });
+    And('the English accent is saved as {string}', savedAccent);
+  });
+
+  Scenario('Choosing IPA (the standard) shows the standard id instead of a key word', ({ Given, When, Then, And }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he chooses {string} in the group {string} in Settings', chooseInSettings);
+    And('he opens the letter sheet of {string} from the alphabet sheet', openLetterSheet);
+    Then("the letter sheet's tile reads {string}", (_, sound: string) => {
+      expect(ownTile().querySelector('[data-sound]')?.textContent).toBe(sound);
+    });
+    And("the letter sheet's How it sounds reads {string}", (_, text: string) => {
+      expect(howItSounds().textContent).toBe(text);
+    });
+    And('the letter sheet does not say {string}', (_, word: string) => {
+      expect(letterSheet().textContent).not.toMatch(new RegExp(`\\b${word}\\b`));
     });
   });
   Scenario('An idea links to its table', ({ Given, When, Then }) => {
