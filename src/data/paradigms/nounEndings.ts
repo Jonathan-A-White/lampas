@@ -23,6 +23,8 @@ export const NOUN_ENDINGS: Paradigm = {
   id: 'noun-endings',
   name: 'Noun endings',
   about: 'The endings of the first and second declension',
+  ideas: ['declension-1', 'declension-2'],
+  tier: 'nouns',
   columns: [{ label: 'Singular' }, { label: 'Plural' }],
   rows: KINDS.flatMap(([group, genderIdea, singular, plural]) =>
     CASES.map(([label, caseIdea], i) => ({

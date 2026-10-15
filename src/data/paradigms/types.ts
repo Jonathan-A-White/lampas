@@ -1,6 +1,7 @@
 // src/data/paradigms/types.ts — the shape of a paradigm table (mw-5r3p30.82, docs/paradigms.md). A table is rows of cells under
 // columns; a cell is one form (Greek, or English for εἰμί) and names the grammar ideas of src/data/grammar/ladder.ts that a reader
 // needs before the form is his to learn. Pure data: no store and no screen.
+import type { Tier } from '../grammar/ladder';
 
 export interface ParadigmCell {
   /** The text shown: Greek in NFC with its accents, or English (lang 'en'). A noun or verb ending starts with a hyphen: '-ος'. */
@@ -33,6 +34,10 @@ export interface Paradigm {
   name: string;
   /** One line under the name on the list. */
   about: string;
+  /** The ladder ideas the table teaches (ids of LADDER, at least one): the link the idea sheet uses to name the table. */
+  ideas: string[];
+  /** The ladder tier the table belongs to: the Paradigms list groups by it. */
+  tier: Tier;
   columns: ParadigmColumn[];
   rows: ParadigmRow[];
 }

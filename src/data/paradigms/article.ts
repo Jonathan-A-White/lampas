@@ -33,6 +33,8 @@ export const ARTICLE: Paradigm = {
   id: 'article',
   name: 'The article',
   about: 'ὁ ἡ τό, “the”, in every case, gender and number',
+  ideas: ['article'],
+  tier: 'nouns',
   columns: COLUMNS.map(([group, , label]) => ({ group, label, short: SHORT[label] })),
   rows: CASES.map(([label, caseIdea], r) => ({
     label,

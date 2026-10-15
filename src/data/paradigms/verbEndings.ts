@@ -25,6 +25,8 @@ export const VERB_ENDINGS: Paradigm = {
   id: 'verb-endings',
   name: 'Verb endings',
   about: 'Present and imperfect endings, active and middle or passive',
+  ideas: ['tense-present', 'tense-imperfect', 'voice-active', 'voice-middle-or-passive'],
+  tier: 'verbs',
   columns: COLUMNS.map(([group, label]) => ({ group, label })),
   rows: PERSONS.map(([label, personIdea, numberIdea], i) => ({
     label,
