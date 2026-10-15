@@ -51,6 +51,14 @@ Feature: Appearance and speech speed in Settings
     Then English is spoken at 0.8
     And a Greek speaker button still speaks at 0.6
 
+  Scenario: a touch that turns into a scroll leaves a speed where it was, and a touch that lifts sets it
+    Given Lampas is opened on a phone whose colour scheme is dark, with nothing saved
+    When he sets the Greek speed to 0.5 in Settings
+    And a finger goes down at 1.5 on the Greek speed slider and the page scrolls instead
+    Then the Greek speed in Settings stays 0.5 and is saved as 0.5
+    When a finger goes down at 1.4 on the Greek speed slider and lifts
+    Then the Greek speed in Settings becomes 1.4 and is saved as 1.4
+
   Scenario: Theme, Text size and both rates survive a reload
     Given Lampas is opened on a phone whose colour scheme is light, with nothing saved
     When he sets Theme to Dark in Settings

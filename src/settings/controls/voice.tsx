@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { getGreekPronunciation, getReadSpan, getSpeechRates, getVoice, type ReadSpan, type VoiceLanguage } from '../../data/repositories';
 import { speaksLanguage, useVoices, voiceKey } from '../../speech/greek';
 import { DEFAULT_RATE, RATE_MAX, RATE_MIN, RATE_STEP } from '../../speech/languages';
@@ -55,12 +55,35 @@ function VoicePicker({ language, label, lang, saved }: { language: VoiceLanguage
 }
 
 /** How fast one language is read aloud: a slider from slower to faster, 1 in the middle. It keeps its own value while
- * it is dragged, so the thumb does not wait on the settings store. */
+ * it is dragged, so the thumb does not wait on the settings store.
+ *
+ * A touch moves a range input's thumb the moment the finger goes down, before the phone knows the touch is a scroll: a thumb that
+ * scrolled Settings from the slider's right end saved 1.5 (mw-5r3p30.146). So while a pointer is on the slider the value is only
+ * shown; it is saved when the finger lifts, and a touch that turns into a scroll (pointercancel) puts the speed back as it was. A key
+ * press, with no pointer down, saves at once. */
 function SpeedSlider({ language, label, saved }: { language: VoiceLanguage; label: string; saved: number }) {
   const [value, setValue] = useState(saved);
-  const change = async (next: number) => {
+  // the speed when the pointer went down, and what the slider shows now: null while no pointer is down
+  const touch = useRef<{ before: number; now: number } | null>(null);
+  const keep = async (next: number) => {
     setValue(next);
     await writeSetting(`${language}Rate`, next);
+  };
+  const change = (next: number) => {
+    if (touch.current) {
+      touch.current.now = next;
+      setValue(next);
+    } else void keep(next);
+  };
+  const lift = () => {
+    const held = touch.current;
+    touch.current = null;
+    if (held && held.now !== held.before) void keep(held.now);
+  };
+  const cancel = () => {
+    const held = touch.current;
+    touch.current = null;
+    if (held) setValue(held.before);
   };
   return (
     <label className="mt-3 block">
@@ -78,7 +101,16 @@ function SpeedSlider({ language, label, saved }: { language: VoiceLanguage; labe
         max={RATE_MAX}
         step={RATE_STEP}
         value={value}
-        onChange={(e) => void change(Number(e.target.value))}
+        onPointerDown={() => {
+          touch.current = { before: value, now: value };
+        }}
+        onPointerUp={lift}
+        onPointerCancel={cancel}
+        onBlur={lift}
+        onKeyDown={() => {
+          touch.current = null;
+        }}
+        onChange={(e) => change(Number(e.target.value))}
         className="mt-1 block min-h-12 w-full accent-accent"
       />
     </label>

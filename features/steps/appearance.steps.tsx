@@ -113,6 +113,18 @@ const setSpeed = async (name: 'English speed' | 'Greek speed', value: string) =>
   // the start-up sync has already published the saved speeds: wait for this one
   await waitFor(() => expect(latest('rates-changed')?.rates[name === 'English speed' ? 'english' : 'greek']).toBe(Number(value)));
 };
+/** A finger on a speed slider: Chrome moves the thumb at touch-down (pointerdown, then input), then either lifts (pointerup) or starts a scroll (pointercancel). */
+const touchSlider = (name: 'English speed' | 'Greek speed', value: number, ends: 'lifts' | 'scrolls') => {
+  const input = slider(name);
+  fireEvent.pointerDown(input);
+  fireEvent.change(input, { target: { value: String(value) } });
+  if (ends === 'lifts') fireEvent.pointerUp(input);
+  else fireEvent.pointerCancel(input);
+};
+const greekSpeedIs = async (shown: number, kept: number) => {
+  await waitFor(() => expect(Number((slider('Greek speed') as HTMLInputElement).value)).toBe(shown));
+  await waitFor(async () => expect(Number((await db.settings.get('rate.greek'))?.value)).toBe(kept));
+};
 const speedsAre = async (english: number, greek: number) =>
   waitFor(() => {
     expect(Number((slider('English speed') as HTMLInputElement).value)).toBe(english);
@@ -215,6 +227,19 @@ describeFeature(feature, ({ Scenario }) => {
       And('a Greek speaker button still speaks at {number}', async (_, rate: number) => expect(await greekRateOfAButton()).toBe(rate));
     },
   );
+
+  Scenario('a touch that turns into a scroll leaves a speed where it was, and a touch that lifts sets it', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on a phone whose colour scheme is dark, with nothing saved', () => openOnPhone(true));
+    When('he sets the Greek speed to {number} in Settings', (_, value: number) => setSpeed('Greek speed', String(value)));
+    And('a finger goes down at {number} on the Greek speed slider and the page scrolls instead', async (_, value: number) => {
+      touchSlider('Greek speed', value, 'scrolls');
+      // give a wrong save the time it would take
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+    Then('the Greek speed in Settings stays {number} and is saved as {number}', (_, shown: number, kept: number) => greekSpeedIs(shown, kept));
+    When('a finger goes down at {number} on the Greek speed slider and lifts', (_, value: number) => touchSlider('Greek speed', value, 'lifts'));
+    Then('the Greek speed in Settings becomes {number} and is saved as {number}', (_, shown: number, kept: number) => greekSpeedIs(shown, kept));
+  });
 
   Scenario('Theme, Text size and both rates survive a reload', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on a phone whose colour scheme is light, with nothing saved', () => openOnPhone(false));
