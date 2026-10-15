@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.240
+_2026-10-15_
+- New: Listen in Audible: turn on the Audio Bible in Settings and a verse's Listen opens The Word of Promise in Audible and tells you which chapter to pick.
+
 ## 0.1.239
 _2026-10-15_
 - New: The Paradigms screen now has tables for the third declension, adjective endings, the personal pronouns, this and who, and the question and "someone" pronouns.
