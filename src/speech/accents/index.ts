@@ -32,6 +32,8 @@ export function chooseAccent(id: string): void {
 export interface SoundWords {
   /** as a sound of its own, the key word quoted: 'o, as in “or”, short', 'dh, the th of “this”' */
   keyed(symbol: string): string;
+  /** as one choice of a quiz (mw-5r3p30.355): the symbol and the short hint only, never an aside or a rule: 'kh, as in “loch”', 'r, a quick tap of the tongue' */
+  choice(symbol: string): string;
   /** inside a sentence: 'o as in or, short', 'e as in pet' */
   asIn(symbol: string): string;
 }
@@ -55,6 +57,10 @@ export function soundWords(scheme: Pronunciation, accent: EnglishAccent = chosen
     keyed: (symbol) => {
       const { word, note } = hint(symbol);
       return word ? `${symbol}, as in “${word}”${after(note)}` : `${symbol}${after(note)}`;
+    },
+    choice: (symbol) => {
+      const { word, note, choice } = hint(symbol);
+      return `${symbol}, ${choice ?? (word ? `as in “${word}”` : note)}`;
     },
     asIn: (symbol) => {
       const { word, note } = hint(symbol);

@@ -6,6 +6,8 @@ import { gapsOf, groupIsSolid, lettersText } from '../../src/data/grammar/infere
 import { LADDER, ITEM_GROUPS, ideaOf, itemName, itemsOf } from '../../src/data/grammar/ladder';
 import { ideaSound } from '../../src/data/grammar/lessons';
 import { pronunciationOf } from '../../src/speech/pronunciation';
+import { ACCENTS, chooseAccent, DEFAULT_ACCENT } from '../../src/speech/accents';
+import { drillSteps } from '../../src/data/grammar/drillIt';
 import { learnNext } from '../../src/data/grammar/goalProgress';
 import type { Level } from '../../src/data/grammar/needs';
 import { QUICK_LIMIT, answerQuick, currentQuick, quickItems, quickOver, quickQuestion, quickSeed, startQuick, stopQuick } from '../../src/data/grammar/quickRound';
@@ -125,6 +127,46 @@ describe('the questions', () => {
       expect(q.options).toContain(q.right);
       expect(new Set(q.options).size).toBe(4);
     }
+  });
+
+  // his words (mw-5r3p30.355): "comprehensive clean up needed" on Omicron's step 4, where one choice carried a whole rule beside three plain ones
+  describe('the sound choices of every letter and pair, in every English accent', () => {
+    afterEach(() => chooseAccent(DEFAULT_ACCENT));
+    const SOUND_PROMPT = 'What sound does it make?';
+    const soundQuestions = () =>
+      ACCENTS.flatMap((accent) => {
+        chooseAccent(accent.id);
+        const quick = ['alphabet', 'diphthongs', 'consonant-pairs'].flatMap((g) => itemsOf(g)).flatMap((idea) =>
+          [1, 2, 3, 4, 5, 6].map((seed) => ({ where: `${accent.id} ${idea.id} quick ${seed}`, q: quickQuestion({ id: idea.id, mode: 'see' }, mulberry32(seed)) })));
+        const drills = ['alphabet', 'diphthongs', 'consonant-pairs', 'letter-omicron', 'letter-chi', 'letter-gamma', 'letter-omega', 'letter-rho'].flatMap((id) =>
+          [1, 2, 3].flatMap((seed) => drillSteps(id, { seed }).flatMap((s) => s.questions.map((q) => ({ where: `${accent.id} drill ${id} ${seed} step ${s.step}`, q })))));
+        return [...quick, ...drills].filter(({ q }) => q.prompt === SOUND_PROMPT);
+      });
+
+    it('shows every choice as one short sound label, with no rule, aside or bracket', () => {
+      const questions = soundQuestions();
+      expect(questions.length).toBeGreaterThan(100);
+      for (const { where, q } of questions) {
+        for (const option of q.options) {
+          expect(option, `${where}: ${option}`).not.toMatch(/\(|\)| before | after | at the start| inside | plus | the same as /);
+          expect(option.length, `${where}: ${option}`).toBeLessThanOrEqual(32);
+        }
+      }
+    });
+
+    it('never offers two choices that make the same sound', () => {
+      for (const { where, q } of soundQuestions()) expect(new Set(q.options).size, `${where}: ${q.options.join(' | ')}`).toBe(q.options.length);
+    });
+
+    it('keys Omicron to "or", short, beside three short choices of its own shape', () => {
+      const omicron = soundQuestions().filter(({ where }) => where.startsWith('american letter-omicron quick'));
+      expect(omicron.length).toBeGreaterThan(0);
+      for (const { q } of omicron) {
+        expect(q.right).toBe('o, as in “or”, short');
+        expect(q.options).toHaveLength(4);
+        expect(q.options.every((o) => /^\S+, /.test(o))).toBe(true);
+      }
+    });
   });
 
   it('shows a word for a breathing and asks which', () => {

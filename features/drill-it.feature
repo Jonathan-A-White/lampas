@@ -65,6 +65,15 @@ Feature: Drill it on the idea sheet
     And the idea "noun" is solid, proved by drill, and its run is kept as proved
     And an idea-taught event for "noun" with the outcome "known" was published
 
+  # His words (Postern general 2026-10-14, mw-5r3p30.355), on Omicron's step 4: "comprehensive clean up needed". Every choice of 'What sound does it make?' is
+  # one short sound label of one shape; the rule of a letter (chi's 'before a, o, ou') stays on its sheet and in the Hint.
+  Scenario: Omicron's sound step shows four short choices of one shape
+    Given Lampas is opened on Romans 8 with the goal "1 John 1" and a fake Postern
+    When he opens the letter sheet of "omicron" from the alphabet sheet
+    And he taps Drill it on the letter sheet
+    And he answers right until step 4 of Drill it
+    Then step 4 asks "What sound does it make?" with four short choices, one of them "o, as in “or”, short"
+
   Scenario: A miss takes the next question to an easier step
     Given Lampas is opened on Romans 8 with the goal "1 John 1", "Accents and stress" solid, "The noun" at the frontier and a fake Postern
     And he opens the idea sheet of "noun" from the Goal screen

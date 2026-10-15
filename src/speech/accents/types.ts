@@ -3,7 +3,10 @@ import type { SoundId } from '../sounds';
 
 /** How an English reader of one accent hears a standard sound: an English word that has it ('or'), and what to say beside it ('short'), or what to
  * say instead of a word where English has none ('a soft throaty g'). */
-export type SoundHint = { word: string; note?: string } | { word?: undefined; note: string };
+export type SoundHint = ({ word: string; note?: string } | { word?: undefined; note: string }) & {
+  /** What a quiz choice shows after the Greek symbol, when the whole hint is longer than a choice should be or carries an aside ('as in “or”, short'). */
+  choice?: string;
+};
 
 /** One English accent: a hint for every standard sound, so a Greek pronunciation's lessons are said in words this reader hears right. */
 export interface EnglishAccent {

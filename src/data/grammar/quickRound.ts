@@ -9,7 +9,7 @@ import type { Random } from '../quiz';
 import { chosenPronunciation } from '../../speech/greek';
 import type { Pronunciation } from '../../speech/pronunciation';
 import { ITEM_GROUPS, ideaOf, itemFacet, itemsOf, type GrammarIdea } from './ladder';
-import { ideaSound } from './lessons';
+import { ideaChoice, ideaSound } from './lessons';
 import type { Level } from './needs';
 import type { GrammarQuestion } from './questions';
 
@@ -92,8 +92,9 @@ export function quickQuestion(item: QuickItem, random: Random, scheme: Pronuncia
     return { kind: 'breathing', ideaId: idea.id, prompt: 'Which breathing does this word begin with?', options: ['Rough', 'Smooth'], right: breathing, near: [breathing === 'Rough' ? 'Smooth' : 'Rough'], form: word, facet: itemFacet(idea) };
   }
   const same = itemsOf(idea.parent ?? 'alphabet');
-  // the scheme's sound for it, else (a scheme with no lesson for it) its respelling, so the others that sound alike are left out either way
-  const soundOf = (o: GrammarIdea): string => shortSound(ideaSound(o, scheme) ?? scheme.respell(glyphOf(o)));
+  // the scheme's short label for its sound (mw-5r3p30.355: one label of one shape, never a rule or an aside, those stay on the sheet and the Hint), else (a
+  // scheme with no lesson for it) its respelling, so the others that sound alike are left out either way
+  const soundOf = (o: GrammarIdea): string => ideaChoice(o, scheme) ?? scheme.respell(glyphOf(o));
   const sound = soundOf(idea);
   // the others of its group that sound different, so only one answer is right
   const others = same.filter((o) => o.id !== idea.id && soundOf(o) !== sound);
@@ -114,7 +115,7 @@ export function quickQuestion(item: QuickItem, random: Random, scheme: Pronuncia
       facet: itemFacet(idea),
     };
   }
-  const named = (list: readonly GrammarIdea[]): string[] => list.flatMap((o) => { const said = ideaSound(o, scheme); return said === undefined ? [] : [shortSound(said)]; });
+  const named = (list: readonly GrammarIdea[]): string[] => list.flatMap((o) => { const said = ideaChoice(o, scheme); return said === undefined ? [] : [said]; });
   // the near miss is the sound of the letter it looks like: ν read as υ is 'ee'
   const { options, near } = choicesOf({ right: sound, near: named(mates), fillers: named(others) }, random);
   return {
