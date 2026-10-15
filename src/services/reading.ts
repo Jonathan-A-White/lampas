@@ -7,6 +7,7 @@ import type { LearnerProfile } from '../data/learnerProfile';
 import type { MemoryField } from '../data/learnerMemory';
 import type { Recording } from '../audio/recorder';
 import { extensionOf } from '../audio/recorder';
+import { chosenAccent } from '../speech/accents';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
 import { askGrind, type AskOptions } from './tutor';
 
@@ -33,6 +34,8 @@ export interface VerseReadRequest {
   pronunciation: GreekPronunciation;
   /** that pronunciation's name and sound rules, from its scheme (mw-5r3p30.268, Pronunciation.tutorGuide): a tip on a Greek sound follows them */
   pronunciation_guide: string;
+  /** the English the reader hears sounds in (mw-5r3p30.353, Settings > English accent): the tip's sounds and respellings are written for it */
+  english_accent: string;
   /** who he is as a student (src/data/learnerProfile.ts, Settings > About you): missing when he has filled in nothing */
   learner_profile?: LearnerProfile;
   /** what Lampas remembers of him (src/data/learnerMemory.ts, Settings > Memory), as the Bible talk is sent it: missing when nothing is kept */
@@ -162,6 +165,7 @@ export function buildReadingRequest(reference: string, verse: Verse, view: Readi
     lang,
     pronunciation,
     pronunciation_guide: tutorGuideOf(pronunciationOf(pronunciation)),
+    english_accent: chosenAccent().id,
     ...(learnerProfile ? { learner_profile: learnerProfile } : {}),
     ...(memory ? { memory } : {}),
     ...(learner ? { learner } : {}),

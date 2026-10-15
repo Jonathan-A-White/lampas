@@ -1,0 +1,41 @@
+{
+  "description": "Sound it out on ταῦτα for a reader whose English accent is British (the request says so, and its guide keys the o to the British word): the explanation still describes αυ by the app's respelling, TAF-ta, never as aw, and any English example is a British one.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:31",
+    "greek": "Τί οὖν ἐροῦμεν πρὸς ταῦτα Εἰ ὁ θεὸς ὑπὲρ ἡμῶν τίς καθ' ἡμῶν",
+    "english": "What then shall we say in response to these things? If God is for us, who can be against us?",
+    "question": "The word ταῦτα (lemma οὗτος; demonstrative pronoun, accusative plural neuter) in Romans 8:31. Help me pronounce this word: its syllables and how each sounds.",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {
+      "greekPronunciation": "modern",
+      "englishAccent": "british"
+    },
+    "pronunciation": "modern",
+    "pronunciation_guide": "Modern Greek, as Greek is spoken in Greece today: never by English spelling habit and never by the Erasmian (school) pronunciation. The app respells a word in syllables, the stressed one in capitals: ταῦτα is TAF-ta, Πάντοτε is PAN-do-te, χαίρετε is HYE-re-te. The vowels, each with a word of the reader's English that has it: a as in father; e as in pet; ee as in see; o as in lot; oo as in food. αυ and ευ are af and ef before θ κ ξ π σ τ φ χ ψ, and av and ev before a voiced consonant or a vowel (never \"aw\", never \"ow\"); ηυ is eef or eev the same way. αι is e; ει, οι, υι, η, ι and υ are ee; ου is oo; ω and ο are o. β is v; δ is dh, the th of “this”; γ is gh (or y before e or i); θ is th as in thin; φ is f; ρ is r, lightly rolled; χ is kh as in loch, the Scottish ch, before a, o, ou and a consonant, and the softer hy before e or i. μπ, ντ and γκ are b, d and g at the start of a word and mb, nd and ng inside it; γγ is ng; γχ is ng plus kh (or hy before e or i); γξ is nks. σ is z before β γ δ ζ λ μ ν ρ. A doubled consonant is said once. Both breathings are silent, and the iota under a letter is not said.",
+    "focus": {
+      "form": "ταῦτα",
+      "lemma": "οὗτος",
+      "parse": "demonstrative pronoun, accusative plural neuter",
+      "kind": "sound",
+      "respelling": "TAF-ta"
+    }
+  },
+  "expect": {
+    "answer": {
+      "contains": "TAF",
+      "matches": "^(?:[^aA]|[aA]+[^aAwW])*[aA]*$"
+    },
+    "syllables.0": {
+      "matches": "^τα[υῦύ]"
+    },
+    "settings_changes": {
+      "present": false
+    }
+  }
+}

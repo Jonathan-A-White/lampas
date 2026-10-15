@@ -56,7 +56,7 @@ or a note alone: 'the th of “this”'). `soundWords(scheme, accent)` (`src/spe
 `keyed('o')` is 'o, as in “or”, short' and `asIn('o')` 'o as in or, short' in American English, 'o, as in “lot”' and 'o as in lot' in British.
 A scheme's `lessons`, `soundRules` and `tutorGuide` are functions of it, and the app reads them only through `lessonsOf`, `soundRulesOf` and
 `tutorGuideOf` (`src/speech/pronunciation.ts`; `src/data/grammar/lessons.ts` for the sheets, tiles and questions), which say them in the chosen
-accent (`chosenAccent()`, American until the Settings choice of mw-5r3p30.353 sets it with `chooseAccent`).
+accent (`chosenAccent()`, American until the choice in Settings sets it with `chooseAccent`: see 'The English accent setting' below).
 
 A quiz choice is one short label (mw-5r3p30.355): `soundWords(...).choice('kh')` is 'kh, as in “loch”' (a hint may give its own `choice`, as American's o: 'as in “or”, short'),
 a lesson's `choice` is that label for the idea, and `ideaChoice` (`lessons.ts`) is what `quickQuestion` (so Drill it's 'What sound does it make?') offers; the rule that goes
@@ -65,11 +65,25 @@ with a sound ('before a, o, ou') stays in the lesson's `sound` and `text`. tests
 American keys the o to “or”, said short (PROVISIONAL, the Governor to confirm): the o of 'lot' is 'ah' to an American. Its r is 'a quick tap of
 the tongue, like the tt of “butter”', since an American never rolls one. British keeps the words the lessons gave before (“lot”, 'lightly rolled').
 
-The ids never reach the learner: `tests/unit/no-ipa-shown.test.tsx` draws every sound idea's sheet and asks every lesson, tile, question and
-rule line in each accent, and fails on an IPA-only character or a slashed id. `tests/unit/english-accents.test.ts` fails when an accent table
+The ids never reach the learner unless he chooses IPA (below): `tests/unit/no-ipa-shown.test.tsx` draws every sound idea's sheet and asks every lesson, tile, question and
+rule line in each accent but IPA, and fails on an IPA-only character or a slashed id. `tests/unit/english-accents.test.ts` fails when an accent table
 misses an id a scheme uses, and `tests/unit/one-english-accent.test.ts` when a file outside `src/speech/accents/`, a scheme included, keys a
 sound to an English word. A third accent is one more table plus a line in `ACCENTS`; a new sound is one line in `sounds.ts` plus a hint in
 every table.
+
+## The English accent setting (mw-5r3p30.353)
+
+His words: "can you have that as a setting American versus British". Settings > Greek pronunciation > English accent (`englishAccent`,
+`src/settings/definitions/englishAccent.ts`): American (default) | British | IPA (the standard), one 48 px button a line, kept on the device. The registry
+entry's `write` calls `chooseAccent` at once, `startSpeechSettingsSync` hands the saved choice to the accent module at start, and `useAccent()`
+(`src/speech/accents/useAccent.ts`) makes a screen that draws hints (the idea sheet) draw again when it changes; a lesson, tile, question or choice
+built afterwards is said in it. IPA is the third accent table (`src/speech/accents/ipa.ts`), made from the inventory: every hint is `{ note: id }`, so
+`keyed('o')` is 'o, /o/' and a guide's vowels are 'each by its IPA symbol, with no English word' (`EnglishAccent.hintedBy`). It is the one accent that
+shows the ids (PROVISIONAL label; the Governor to confirm). Teaching the standard rigorously, not only showing it, is a story of its own.
+
+The tutor is told it: every grist (`bible-talk`, `verse-ask`, `verse-read` and the form helper's) carries `english_accent` (`american | british | ipa`), the
+`pronunciation_guide` is already said in it, and the three grinds' instructions say to give sound examples and respellings for that accent
+(`tests/unit/english-accent-setting.test.ts`; examples `grinds/examples/bible-talk/sound-it-out-british.json`, `verse-ask/sound-of-a-word-ipa.json`).
 
 ## One scheme for every sound (mw-5r3p30.268)
 

@@ -15,6 +15,7 @@ You receive a Verse Read Request (a JSON object) with a recording scored by the 
   pronunciation, the one he hears from the app's own speaker, and never by another.
 - `pronunciation_guide`: that pronunciation's name and the sound rules the app speaks and respells by, as the app's pronunciation scheme gives
   them. A tip on a Greek sound follows these rules and no others.
+- `english_accent`: the English the reader hears sounds in (Settings > English accent): `american`, `british` or `ipa` (IPA, the standard, for a reader who knows it). Whenever a tip gives an English example word for a sound in a tip or respell a word, choose the example and the respelling for that accent: a word that sounds right to a British ear is not always right to an American one, and the reverse. For `ipa` give no English example word at all: name the sound by its IPA symbol between slashes, as `pronunciation_guide` does. `pronunciation_guide` is already written in this accent; follow it, and give no example that disagrees with it.
 - `learner`: where he stands in words, in one line (it may be missing): `solid N words; learning: a, b, c; new today: x, y; due now: M`.
 - `learner_grammar`: where his grammar stands (it may be missing): `goal`, `words` and `ideas` (the titles of the grammar ideas he has
   `solid`, at the `frontier` and `not_yet`), `placed`, `suggested_move`, `picker_level`, `approach` and, when he has drilled an idea, `weak`

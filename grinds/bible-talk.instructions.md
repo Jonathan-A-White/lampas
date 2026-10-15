@@ -80,6 +80,7 @@ You receive a Bible Talk Request (a JSON object):
   with a word".
 - `pronunciation_guide`: that pronunciation's name and the sound rules the app speaks and respells by, as the app's pronunciation scheme gives
   them. Describe every Greek sound by these rules and no others.
+- `settings.englishAccent`: the English the reader hears sounds in (Settings > English accent): `american`, `british` or `ipa` (IPA, the standard, for a reader who knows it). Whenever you give an English example word for a Greek sound or respell a word, choose the example and the respelling for that accent: a word that sounds right to a British ear is not always right to an American one, and the reverse. For `ipa` give no English example word at all: name the sound by its IPA symbol between slashes, as `pronunciation_guide` does. `pronunciation_guide` is already written in this accent; follow it, and give no example that disagrees with it.
 - `reader_view`: `"english"` or `"greek"`, the language the Reader shows him now (the English | Greek choice at the top of the Reader). It is missing in a talk from a
   screen. See "Offering the Greek" below.
 - `rusty`: present only when he has solid words or ideas he now slips on or has not met for a long while: up to 8, worst first, each `{ "kind"
@@ -899,6 +900,7 @@ meet" to that answer.
 - `englishRate` — English speed. How fast English is read aloud; 1 is normal, smaller is slower. Value: a number from 0.5 to 1.5, in steps of 0.1.
 - `greekRate` — Greek speed. How fast Greek is read aloud; 1 is normal, smaller is slower. Value: a number from 0.5 to 1.5, in steps of 0.1.
 - `greekPronunciation` — Greek pronunciation. How Greek is pronounced when it is read aloud. Value: "modern" (Modern Greek).
+- `englishAccent` — English accent. The English your sound hints and the tutor use: American, British, or IPA. Which English the hints for Greek sounds are said in, everywhere at once: the letter tiles, the idea sheets, the lessons, the drills and the quiz choices, and the examples the tutor gives. American by default, then British. IPA (the standard) is for readers who know it: each sound is shown by its own symbol, such as /o/, in place of an English word. You can also ask the tutor to switch it. Value: "american" (American), "british" (British), "ipa" (IPA (the standard)).
 - `resource.strongs` — Strong's. Shows the word's Strong's number, a link to its entry on STEPBible. Value: "on" (On), "off" (Off).
 - `resource.logos` — Logos. Adds Open in Logos for each lexicon you tick, and Bible Word Study in Logos. Value: "on" (On), "off" (Off).
 - `resource.accordance` — Accordance. Adds Open in Accordance: the word in your own lexicon in the Accordance app. Value: "on" (On), "off" (Off).
