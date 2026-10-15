@@ -4,6 +4,7 @@
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { accentOf } from '../../src/speech/accents';
 import { pronunciationOf, tutorGuideOf } from '../../src/speech/pronunciation';
 import { respellModern } from '../../src/speech/schemes/modern';
 import { soundRulesIn } from '../support/sound-rules-scan';
@@ -88,6 +89,8 @@ describe('what the tutor is told of the sounds is the scheme\'s', () => {
     const examples = execSync('git ls-files grinds/examples', { encoding: 'utf8' }).split('\n').filter((f) => f.endsWith('.json'));
     const named = examples.map((f) => ({ f, request: (JSON.parse(readFileSync(f, 'utf8')) as { request?: Record<string, unknown> }).request ?? {} })).filter((e) => 'pronunciation' in e.request);
     expect(named.length).toBeGreaterThan(3);
-    for (const { f, request } of named) expect(request.pronunciation_guide, f).toBe(tutorGuideOf(pronunciationOf(request.pronunciation)));
+    // the guide is said in the reader's English accent (mw-5r3p30.353): the request names it in settings.englishAccent (Bible talk, Ask) or english_accent (Read it aloud), American when it names none
+    const accentOfRequest = (request: Record<string, unknown>): string => String(request.english_accent ?? (request.settings as Record<string, unknown> | undefined)?.englishAccent ?? 'american');
+    for (const { f, request } of named) expect(request.pronunciation_guide, f).toBe(tutorGuideOf(pronunciationOf(request.pronunciation), accentOf(accentOfRequest(request))));
   });
 });
