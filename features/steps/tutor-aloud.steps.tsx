@@ -12,7 +12,7 @@ import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { setReadTutor } from '../../src/data/repositories';
-import { clearBus, latest } from '../../src/events/bus';
+import { clearBus } from '../../src/events/bus';
 import { tutorTimings } from '../../src/services/tutor';
 import { getReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -21,6 +21,7 @@ import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../te
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { expectLatest } from '../../tests/support/published';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse28 = chapter.verses.find((v) => v.n === 28);
@@ -346,7 +347,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('{string} is Off', async () => {
       await waitFor(async () => expect((await groupSwitch()).getByRole('button', { name: 'Off' })).toHaveAttribute('aria-pressed', 'true'));
     });
-    And('the bus has heard the tutor is not read aloud', () => expect(latest('read-tutor-changed')?.readTutor).toBe('off'));
+    And('the bus has heard the tutor is not read aloud', () => expectLatest('read-tutor-changed', (e) => expect(e?.readTutor).toBe('off')));
     When('he reopens Lampas on its Settings screen', async () => {
       cleanup();
       clearBus();

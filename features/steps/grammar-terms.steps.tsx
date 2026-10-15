@@ -13,6 +13,7 @@ import { type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { conceptOf } from '../../src/data/grammar-concepts';
 import { clearBus, subscribe, type EventOf } from '../../src/events/bus';
+import { expectPublished } from '../../tests/support/published';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -134,8 +135,8 @@ describeFeature(feature, ({ Scenario }) => {
         expect(word?.l).not.toBe(lemma);
       }
     });
-    And('a grammar-term-opened event for {string} was published', (_, term: string) => {
-      expect(opened).toEqual([{ kind: 'grammar-term-opened', term }]);
+    And('a grammar-term-opened event for {string} was published', async (_, term: string) => {
+      await expectPublished(() => opened, [{ kind: 'grammar-term-opened', term }]);
     });
   });
 
@@ -166,7 +167,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he marks I know this on the Grammar sheet', marks);
     Then('I know this is pressed and a grammar-term-known event for {string} was published', async (_, term: string) => {
       await waitFor(() => expect(knowThis()).toHaveAttribute('aria-pressed', 'true'));
-      expect(known).toEqual([{ kind: 'grammar-term-known', term, known: true }]);
+      await expectPublished(() => known, [{ kind: 'grammar-term-known', term, known: true }]);
       expect(await db.grammarKnown.get(term)).toBeDefined();
     });
     And('the term {string} is shown plain on the word sheet behind it', (_, term: string) => shownPlain(term));
@@ -200,7 +201,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('I know this is not pressed and a grammar-term-known event for {string} saying he does not know it was published', async (_, term: string) => {
       await waitFor(() => expect(knowThis()).toHaveAttribute('aria-pressed', 'false'));
-      expect(known.at(-1)).toEqual({ kind: 'grammar-term-known', term, known: false });
+      await expectPublished(() => known.slice(-1), [{ kind: 'grammar-term-known', term, known: false }]);
       expect(await db.grammarKnown.get(term)).toBeUndefined();
     });
     And('the term {string} is shown underlined on the word sheet behind it', (_, term: string) => shownUnderlined(term));

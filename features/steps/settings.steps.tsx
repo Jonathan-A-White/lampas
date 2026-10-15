@@ -11,6 +11,7 @@ import { clearBus, latest } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
+import { expectLatest } from '../../tests/support/published';
 
 const voice = (lang: string, name: string): FakeVoice => ({ lang, name, voiceURI: name });
 const GREEK = voice('el-GR', 'Greek (Greece)');
@@ -99,7 +100,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH, GREEK]));
     When("he taps the gear in the reader's header", openSettings);
     And('he sets Weave to Solid words in Settings', () => setWeaveInSettings('Solid'));
-    Then('the bus has heard the weave is solid', () => expect(latest('weave-changed')?.weave).toBe('solid'));
+    Then('the bus has heard the weave is solid', () => expectLatest('weave-changed', (e) => expect(e?.weave).toBe('solid')));
     When('he taps Back on the Settings screen', goBack);
     Then('verse 1 of the reader has woven Greek words', async () => {
       await waitFor(() => expect(verseEl(1).querySelectorAll('[data-woven]').length).toBeGreaterThan(0));

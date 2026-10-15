@@ -10,12 +10,13 @@ import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { getGrammarApproach } from '../../src/data/repositories';
 import { getLevel, setLevel } from '../../src/data/repositories/grammarLevels';
-import { clearBus, latest } from '../../src/events/bus';
+import { clearBus } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
+import { expectLatest } from '../../tests/support/published';
 
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
@@ -111,7 +112,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('{string} is chosen and the bus has heard the approach is {string}', async (_, name: string, id: string) => {
       await waitFor(() => expect(radio(name)).toHaveAttribute('aria-checked', 'true'));
-      expect(latest('approach-changed')).toEqual({ kind: 'approach-changed', approach: id });
+      await expectLatest('approach-changed', (e) => expect(e).toEqual({ kind: 'approach-changed', approach: id }));
     });
   });
 

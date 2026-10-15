@@ -11,9 +11,10 @@ import { LADDER } from '../../src/data/grammar/ladder';
 import { passageNeeds, progressToward, type PassageNeeds } from '../../src/data/grammar/needs';
 import type { WordState } from '../../src/data/db';
 import { db } from '../../src/data/db';
-import { clearBus, latest } from '../../src/events/bus';
+import { clearBus } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { expectLatest } from '../../tests/support/published';
 
 const user = userEvent.setup();
 
@@ -134,8 +135,8 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario }) => {
     });
     When('he picks the verse {string}', picks('Verse'));
     Then('the Goal says {string}', (_, text: string) => saysGoal(text));
-    And('the bus has heard the goal is verse 1 of chapter 1 of 1 John', () => {
-      expect(latest('goal-changed')?.goal).toEqual({ book: '1jn', chapter: 1, verse: 1 });
+    And('the bus has heard the goal is verse 1 of chapter 1 of 1 John', async () => {
+      await expectLatest('goal-changed', (e) => expect(e?.goal).toEqual({ book: '1jn', chapter: 1, verse: 1 }));
     });
   });
 
@@ -174,8 +175,8 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario }) => {
       await saysGoal(text);
       await waitsForBook();
     });
-    And('the bus has heard there is no goal', () => {
-      expect(latest('goal-changed')).toEqual({ kind: 'goal-changed', goal: null });
+    And('the bus has heard there is no goal', async () => {
+      await expectLatest('goal-changed', (e) => expect(e).toEqual({ kind: 'goal-changed', goal: null }));
     });
   });
 });

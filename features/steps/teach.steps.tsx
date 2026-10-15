@@ -14,6 +14,7 @@ import { forgetFrequency } from '../../src/data/frequency';
 import { forgetSkipped } from '../../src/data/skipped';
 import { STEP_DAYS, DAY } from '../../src/data/schedule';
 import { clearBus, subscribe, type EventOf } from '../../src/events/bus';
+import { expectPublished } from '../../tests/support/published';
 import { pronunciationOf } from '../../src/speech/pronunciation';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
@@ -191,8 +192,8 @@ describeFeature(feature, ({ Background, Scenario }) => {
       expect(row?.due).toBeLessThanOrEqual(Date.now() + CLOCK_SLACK);
       expect(row?.due).toBeGreaterThanOrEqual(startedAt - DAY - CLOCK_SLACK);
     });
-    And('a frontier-taught event for {string} with the outcome {string} was published', (_, lemma: string, outcome: string) => {
-      expect(taught).toEqual([{ kind: 'frontier-taught', lemma: nfc(lemma), outcome }]);
+    And('a frontier-taught event for {string} with the outcome {string} was published', async (_, lemma: string, outcome: string) => {
+      await expectPublished(() => taught, [{ kind: 'frontier-taught', lemma: nfc(lemma), outcome }]);
     });
     And('the teach sheet now shows {string}', async (_, lemma: string) => {
       await shows(lemma);
@@ -220,8 +221,8 @@ describeFeature(feature, ({ Background, Scenario }) => {
       expect(row?.due).toBeGreaterThanOrEqual(startedAt + 30 * DAY - CLOCK_SLACK);
       expect(row?.due).toBeLessThanOrEqual(Date.now() + 30 * DAY + CLOCK_SLACK);
     });
-    And('a frontier-taught event for {string} with the outcome {string} was published', (_, lemma: string, outcome: string) => {
-      expect(taught).toEqual([{ kind: 'frontier-taught', lemma: nfc(lemma), outcome }]);
+    And('a frontier-taught event for {string} with the outcome {string} was published', async (_, lemma: string, outcome: string) => {
+      await expectPublished(() => taught, [{ kind: 'frontier-taught', lemma: nfc(lemma), outcome }]);
     });
     And('the teach sheet now shows {string}', async (_, lemma: string) => {
       await shows(lemma);

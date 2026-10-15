@@ -10,12 +10,13 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db, type GrammarLevelName } from '../../src/data/db';
 import { forgetRevealed } from '../../src/data/paradigms/revealed';
-import { clearBus, latest } from '../../src/events/bus';
+import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { expectLatest } from '../../tests/support/published';
 
 afterAll(() => {
   cleanup();
@@ -281,8 +282,8 @@ describeFeature(feature, ({ Background, Scenario }) => {
     And('the grist question names the table {string}', (_, table: string) => {
       expect(String(fake?.received[0].input.question)).toContain(table);
     });
-    And('a reader request for the table {string} was published', (_, table: string) => {
-      expect(latest('reader-requested')).toMatchObject({ action: 'paradigm', table, book: 'rom', chapter: 8 });
+    And('a reader request for the table {string} was published', async (_, table: string) => {
+      await expectLatest('reader-requested', (e) => expect(e).toMatchObject({ action: 'paradigm', table, book: 'rom', chapter: 8 }));
     });
   });
 });
