@@ -1,5 +1,6 @@
 // src/data/paradigms/index.ts — the paradigm tables, in the order the Paradigms list shows them (docs/paradigms.md), and what his
 // grammar levels make of them. Pure: the levels come in as a lookup (listLevels' rows, or a fixture).
+import { ideasOf } from '../grammar/ladder';
 import type { Level } from '../grammar/needs';
 import { ADJECTIVE_ENDINGS } from './adjectiveEndings';
 import { AORIST_AND_FUTURE_PASSIVE } from './aoristAndFuturePassive';
@@ -80,3 +81,27 @@ export function cellName(table: Paradigm, row: ParadigmRow, column: number): str
 /** The ideas of a locked cell that are not yet at the frontier, as the ladder's titles would say them (ids; the screen looks the titles up). */
 export const missingIdeas = (cell: ParadigmCell, levels: Levels): string[] =>
   cell.ideas.filter((id) => !AVAILABLE.includes(levels.get(id)?.level ?? 'notYet'));
+
+/** The tables that teach an idea (their `ideas` name it), in the list's order: what the idea sheet links to. None for an idea no table teaches. */
+export const paradigmsOf = (ideaId: string): Paradigm[] => PARADIGMS.filter((p) => p.ideas.includes(ideaId));
+
+/**
+ * The one table that holds the ending of a form with this RP code (mw-svw421.5): the table with a cell whose ideas share the most with the ideas the code names
+ * (ladder.ts ideasOf); the earlier table in the list when two share as many; undefined when none shares any (a preposition, a conjunction). A code the ladder does
+ * not know has none.
+ */
+export function tableFor(code: string): Paradigm | undefined {
+  let wanted: string[];
+  try {
+    wanted = ideasOf(code);
+  } catch {
+    return undefined;
+  }
+  let best: Paradigm | undefined;
+  let bestShared = 0;
+  for (const table of PARADIGMS) {
+    const shared = Math.max(0, ...cellsOf(table).map((cell) => cell.ideas.filter((id) => wanted.includes(id)).length));
+    if (shared > bestShared) [best, bestShared] = [table, shared];
+  }
+  return best;
+}

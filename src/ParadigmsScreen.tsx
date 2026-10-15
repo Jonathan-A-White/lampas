@@ -1,12 +1,13 @@
 // src/ParadigmsScreen.tsx — Paradigms (mw-5r3p30.82, #/paradigms, reached from Settings > More beside Review; docs/paradigms.md): the list of
 // tables (sixteen, listed in data/paradigms/index.ts) with 'Available forms: N of M' and a bar, and a table (#/paradigms?t=article&mode=study).
-// A form is available once every grammar idea it needs is at the frontier or solid (grammarLevels); a locked form shows as locked, not hidden, so the
+// The list groups the tables by the ladder's tier, under the tier's title. A form is available once every grammar idea it needs is at the frontier or solid (grammarLevels); a locked form shows as locked, not hidden, so the
 // table keeps its shape. Study mode: an available cell says 'reveal' and a tap shows its form (a tap on a shown one hides it); Review mode: every
 // available cell shows its form. One button switches modes; Ask the tutor opens the Reader's Talk sheet on the open chapter with the table's name
 // and the forms shown. Names are PROVISIONAL, the Governor to confirm.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Fragment, useState } from 'react';
-import { ideaOf } from './data/grammar/ladder';
+import { Fragment, useEffect, useState } from 'react';
+import { TIER_TITLES } from './approaches/ladder';
+import { ideaOf, TIERS } from './data/grammar/ladder';
 import {
   availableCount,
   availableText,
@@ -21,7 +22,7 @@ import {
 } from './data/paradigms';
 import { hideAll, revealedOf, toggleRevealed } from './data/paradigms/revealed';
 import { getOpenChapter } from './data/readerChapter';
-import { listLevels } from './data/repositories';
+import { listLevels, markParadigmOpened } from './data/repositories';
 import { useAiAllowed } from './gate/licenceContext';
 import { askAboutParadigm } from './nav/readerRequest';
 import { navigate, openParadigm, paradigmHash, paradigmOf, replaceHash, useAddress } from './nav/route';
@@ -61,30 +62,41 @@ function ParadigmList({ levels }: { levels: Levels | undefined }) {
       <ScreenHeader title="Paradigms" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />
       <main className="screen min-h-0 flex-1 px-4 pt-4">
         <p className="text-base text-muted">Tables to learn by heart. A form unlocks when you have the grammar it needs.</p>
-        <ul className="mt-3 grid gap-3">
-          {PARADIGMS.map((table) => {
-            const count = levels ? availableCount(table, levels) : undefined;
-            return (
-              <li key={table.id}>
-                <button
-                  type="button"
-                  data-paradigm={table.id}
-                  onClick={() => openParadigm({ table: table.id })}
-                  className="block min-h-16 w-full rounded-xl border border-line px-4 py-3 text-left active:bg-line"
-                >
-                  <span data-testid="paradigm-name" lang={table.id === 'eimi' || table.id === 'oida' ? 'grc' : undefined} className="block text-xl font-semibold">
-                    {table.name}
-                  </span>
-                  <span className="block text-base text-muted">{table.about}</span>
-                  <span data-testid="paradigm-available" className="mt-1 block text-base">
-                    {count ? availableText(count) : '…'}
-                  </span>
-                  {count ? <Bar {...count} /> : null}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        {TIERS.map((tier) => {
+          const tables = PARADIGMS.filter((table) => table.tier === tier);
+          if (tables.length === 0) return null;
+          return (
+            <section key={tier} data-tier={tier} aria-labelledby={`tier-${tier}`} className="mt-5">
+              <h2 id={`tier-${tier}`} className="text-lg font-semibold text-muted">
+                {TIER_TITLES[tier]}
+              </h2>
+              <ul className="mt-2 grid gap-3">
+                {tables.map((table) => {
+                  const count = levels ? availableCount(table, levels) : undefined;
+                  return (
+                    <li key={table.id}>
+                      <button
+                        type="button"
+                        data-paradigm={table.id}
+                        onClick={() => openParadigm({ table: table.id })}
+                        className="block min-h-16 w-full rounded-xl border border-line px-4 py-3 text-left active:bg-line"
+                      >
+                        <span data-testid="paradigm-name" lang={table.id === 'eimi' || table.id === 'oida' ? 'grc' : undefined} className="block text-xl font-semibold">
+                          {table.name}
+                        </span>
+                        <span className="block text-base text-muted">{table.about}</span>
+                        <span data-testid="paradigm-available" className="mt-1 block text-base">
+                          {count ? availableText(count) : '…'}
+                        </span>
+                        {count ? <Bar {...count} /> : null}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          );
+        })}
       </main>
     </>
   );
@@ -222,6 +234,10 @@ function ParadigmTable({ table, mode, levels }: { table: Paradigm; mode: 'study'
   const [revealed, setRevealed] = useState<ReadonlySet<string>>(() => revealedOf(table.id));
   const switchTo = mode === 'study' ? 'review' : 'study';
   const ai = useAiAllowed();
+  // opening a table is what lets Review ask the endings in it (mw-svw421.5)
+  useEffect(() => {
+    void markParadigmOpened(table.id).catch((error: unknown) => console.error('could not keep that the table was opened', error));
+  }, [table.id]);
   const ask = () => {
     if (!levels) return;
     const { book, chapter } = getOpenChapter();

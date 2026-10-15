@@ -21,9 +21,12 @@ import { ideaOf, type GrammarIdea } from './data/grammar/ladder';
 import { soundLesson } from './data/grammar/lessons';
 import { teachOf, workedFor, type Teach, type TeachTable } from './data/grammar/teach';
 import { teachTiles } from './data/grammar/teachTiles';
+import { paradigmsOf } from './data/paradigms';
 import { getOpenChapter } from './data/readerChapter';
 import { getGreekPronunciation, getLevel, getSavedGoalText, listLevels, recordDrill, teachIdea, type DrillMode, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
 import { DrillItScreen } from './DrillItScreen';
+import { holdIdea } from './ideaReturn';
+import { openParadigm } from './nav/route';
 import { chosenPronunciation } from './speech/greek';
 import { pronunciationOf, type Pronunciation } from './speech/pronunciation';
 import { proseOf } from './speech/proseOf';
@@ -345,6 +348,12 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false }: {
     setMoved(null);
   };
   const markKnown = (): void => teach('known');
+  // the tables that teach this idea (mw-svw421.5): a tap opens one in Study mode, and Back brings this sheet back (src/ideaReturn.ts)
+  const tables = paradigmsOf(idea.id);
+  const seeTable = (table: string): void => {
+    holdIdea(idea.id);
+    openParadigm({ table });
+  };
 
   return (
     <div className="fixed inset-0 z-30 flex flex-col justify-end">
@@ -426,6 +435,21 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false }: {
               </div>
             </>
           )}
+          {tables.length ? (
+            <div data-testid="idea-tables" className="mt-4 flex flex-col gap-2">
+              {tables.map((table) => (
+                <button
+                  key={table.id}
+                  type="button"
+                  data-table={table.id}
+                  onClick={() => seeTable(table.id)}
+                  className="min-h-12 rounded-xl border border-line px-4 text-left text-lg font-medium text-accent active:bg-line"
+                >
+                  Table: {greekMarked(table.name)}
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
         {/* what is read aloud keeps its Pause and Stop in view: this sheet is over the Grammar and word sheets' own bars */}
         <BarSlot level={6} />

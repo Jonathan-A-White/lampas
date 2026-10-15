@@ -147,6 +147,39 @@ describeFeature(feature, ({ Background, Scenario }) => {
     });
   });
 
+  Scenario("The list groups the tables by tier under the tier's title", ({ When, Then, And }) => {
+    When('he opens the Paradigms screen', () => openAt('#/paradigms'));
+    Then('the list has the groups {string}, {string} and {string}, in that order', async (_, ...titles: string[]) => {
+      await screen.findByRole('heading', { name: titles[0], level: 2 });
+      expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual(titles.slice(0, 3));
+    });
+    And('the group {string} holds {string}', async (_, title: string, names: string) => {
+      const group = (await screen.findByRole('heading', { name: title, level: 2 })).closest('section') as HTMLElement;
+      expect(within(group).getAllByTestId('paradigm-name').map((n) => n.textContent)).toEqual(names.split(', '));
+    });
+    And('the group {string} holds {int} tables, the first {string} and the last {string}', async (_, title: string, n: number, first: string, last: string) => {
+      const group = (await screen.findByRole('heading', { name: title, level: 2 })).closest('section') as HTMLElement;
+      const names = within(group).getAllByTestId('paradigm-name').map((el) => el.textContent);
+      expect(names).toHaveLength(n);
+      expect(names.includes(first) && names[names.length - 1] === last).toBe(true);
+    });
+  });
+
+  Scenario('Opening a table keeps that he opened it', ({ When, Then, And }) => {
+    When('he opens the Paradigms screen', () => openAt('#/paradigms'));
+    And('he taps {string} in the list', async (_, name: string) => user.click(await screen.findByRole('button', { name: new RegExp(`^${name}`) })));
+    Then('the tables he has opened are {string}', async (_, ids: string) => {
+      await waitFor(async () => expect(JSON.parse((await db.settings.get('paradigmsOpened'))?.value ?? '[]')).toEqual([ids]));
+    });
+    When('he goes back to the list and opens {string}', async (_, name: string) => {
+      await user.click(await screen.findByRole('button', { name: '‹ Paradigms' }));
+      await user.click(await screen.findByRole('button', { name: new RegExp(`^${name}`) }));
+    });
+    Then('the tables he has opened are {string} and {string}', async (_, a: string, b: string) => {
+      await waitFor(async () => expect(JSON.parse((await db.settings.get('paradigmsOpened'))?.value ?? '[]')).toEqual([a, b]));
+    });
+  });
+
   Scenario('The list shows the five tables of the nouns and pronouns, each with how many of its forms are available', ({ When, Then }) => {
     When('he opens the Paradigms screen', () => openAt('#/paradigms'));
     Then('the list also reads {string}, {string}, {string}, {string} and {string}', listReads);

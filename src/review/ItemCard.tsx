@@ -14,6 +14,8 @@ export interface ItemCardProps {
   /** what he tapped, or null while he has not answered */
   picked: string | null;
   onPick: (option: string) => void;
+  /** Review only: opens the table of the ending just asked (GrammarCard's 'See the table'); a screen that cannot come back to its card leaves it out */
+  onSeeTable?: (table: string) => void;
 }
 
 const RENDERERS: { [K in ReviewItem['kind']]: (props: ItemCardProps & { item: Extract<ReviewItem, { kind: K }> }) => ReactNode } = {
@@ -23,7 +25,9 @@ const RENDERERS: { [K in ReviewItem['kind']]: (props: ItemCardProps & { item: Ex
     ) : (
       <WordQuestion question={item.question} index={index} picked={picked} onPick={onPick} />
     ),
-  grammar: ({ item, index, picked, onPick }) => <GrammarCard key={index} question={item.question} mode={item.mode} picked={picked} onPick={onPick} />,
+  grammar: ({ item, index, picked, onPick, onSeeTable }) => (
+    <GrammarCard key={index} question={item.question} mode={item.mode} picked={picked} onPick={onPick} onSeeTable={onSeeTable} />
+  ),
   'drill-plan': ({ item, index, picked, onPick }) => <DrillPlanCard key={index} item={item} picked={picked} onPick={onPick} />,
   sound: ({ item, index, picked, onPick }) =>
     item.question ? (

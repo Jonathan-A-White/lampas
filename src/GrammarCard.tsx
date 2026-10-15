@@ -32,6 +32,21 @@ interface Props {
   taken?: ReadonlySet<number>;
   /** in a short window (sideways) the question stands at the left and the answers at the right, with tighter buttons (Drill it) */
   sideBySide?: boolean;
+  /** after an ending is answered, 'See the table' opens the table that holds it (Review, mw-svw421.5); without it the card has no such button */
+  onSeeTable?: (table: string) => void;
+}
+
+const SEE_TABLE = 'mt-3 min-h-12 w-full rounded-xl border border-line px-4 text-lg font-medium text-accent active:bg-line';
+
+/** 'See the table' under the answer of an ending (mw-svw421.5): the table the form is in, to look at now that he has been asked it. */
+function SeeTable({ question, onSeeTable }: { question: GrammarQuestion; onSeeTable?: (table: string) => void }) {
+  if (!onSeeTable || question.kind !== 'ending' || !question.table) return null;
+  const table = question.table;
+  return (
+    <button type="button" data-testid="see-table" data-table={table} onClick={() => onSeeTable(table)} className={SEE_TABLE}>
+      See the table
+    </button>
+  );
 }
 
 /** What Show reveals: the whole form for an ending, else the right answer. */
@@ -67,7 +82,7 @@ function Heading({ question, mode, hint }: { question: GrammarQuestion; mode: Qu
   );
 }
 
-function Flash({ question, picked, onPick }: Omit<Props, 'mode'>) {
+function Flash({ question, picked, onPick, onSeeTable }: Omit<Props, 'mode'>) {
   const [shown, setShown] = useState(false);
   const graded = picked !== null;
   return (
@@ -89,11 +104,12 @@ function Flash({ question, picked, onPick }: Omit<Props, 'mode'>) {
       <p data-testid="feedback" role="status" className="mt-4 min-h-12 text-center text-lg">
         {!graded ? '' : picked === KNEW_IT ? 'Right.' : 'It comes back tomorrow.'}
       </p>
+      {graded ? <SeeTable question={question} onSeeTable={onSeeTable} /> : null}
     </>
   );
 }
 
-function Choice({ question, picked, onPick, taken, sideBySide }: Omit<Props, 'mode'>) {
+function Choice({ question, picked, onPick, taken, sideBySide, onSeeTable }: Omit<Props, 'mode'>) {
   // the place he tapped: a verse can hold the same word twice, and only the one he tapped is wrong
   const [at, setAt] = useState<number | null>(null);
   const answered = picked !== null;
@@ -149,6 +165,7 @@ function Choice({ question, picked, onPick, taken, sideBySide }: Omit<Props, 'mo
       <p data-testid="feedback" role="status" className={`mt-4 text-center text-lg ${sideBySide ? 'min-h-12 short:mt-1 short:min-h-8' : 'min-h-12'}`}>
         {!answered ? '' : picked === question.right ? 'Right.' : `Not quite. ${tapForm ? 'The word is' : 'It is'} ${answerOf(question)}.`}
       </p>
+      {answered ? <SeeTable question={question} onSeeTable={onSeeTable} /> : null}
       {answered && picked !== question.right && question.rule ? (
         <p data-testid="rule-line" className="mt-1 text-center text-base">
           <GreekRuns text={question.rule} />
@@ -174,10 +191,10 @@ function Choice({ question, picked, onPick, taken, sideBySide }: Omit<Props, 'mo
   );
 }
 
-export function GrammarCard({ question, mode, picked, onPick, taken, sideBySide }: Props) {
+export function GrammarCard({ question, mode, picked, onPick, taken, sideBySide, onSeeTable }: Props) {
   return mode === 'flashcard' ? (
-    <Flash question={question} picked={picked} onPick={onPick} />
+    <Flash question={question} picked={picked} onPick={onPick} onSeeTable={onSeeTable} />
   ) : (
-    <Choice question={question} picked={picked} onPick={onPick} taken={taken} sideBySide={sideBySide} />
+    <Choice question={question} picked={picked} onPick={onPick} taken={taken} sideBySide={sideBySide} onSeeTable={onSeeTable} />
   );
 }

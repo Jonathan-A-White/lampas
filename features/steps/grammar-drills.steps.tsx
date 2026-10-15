@@ -42,6 +42,7 @@ async function freshStore(): Promise<void> {
   localStorage.clear();
   stubChapterFetch();
   seed = 7;
+  opened = new Set();
   expected = undefined;
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.results.clear(), db.reviews.clear(), db.settings.clear(), db.grammarLevels.clear()]);
@@ -55,13 +56,16 @@ async function makeIdeaDue(id: string, step = 0, rights = 0): Promise<void> {
   await db.reviews.put({ kind: 'grammar', id, step, rights, due: now - 60_000, lastWhen: now - 3 * DAY, lapses: 0 });
 }
 
+/** The ids of the tables the scenario has opened (what Review's draw is given), as the app will have them in the store. */
+let opened = new Set<string>();
+
 /** The question the scenario expects to be asked, so a step can tap its right answer. */
 let expected: GrammarQuestion | undefined;
 
 /** Makes the app's random the first seed whose draw of `id` over `passage` is a question of `kind`. */
-function drawAs(id: string, passage: Chapter[], kind: GrammarKind): void {
+function drawAs(id: string, passage: Chapter[], kind: GrammarKind, tablesOpen: ReadonlySet<string> = opened): void {
   for (let s = 1; s < 500; s += 1) {
-    const q = buildIdeaQuestion(ideaOf(id), passage, grammarRandom(mulberry32(s)));
+    const q = buildIdeaQuestion(ideaOf(id), passage, grammarRandom(mulberry32(s)), undefined, undefined, tablesOpen);
     if (q.kind !== kind) continue;
     seed = s;
     expected = q;
@@ -125,6 +129,10 @@ describeFeature(feature, ({ Scenario }) => {
       await setGoal(goal);
     });
     And('the idea {string} is due and was right once before', async (_, id: string) => makeIdeaDue(id, 0, 1));
+    And('he has opened the table {string}', async (_, id: string) => {
+      opened.add(id);
+      await db.settings.put({ key: 'paradigmsOpened', value: JSON.stringify([...opened]) });
+    });
     And('the draw asks {string} as a paradigm ending', async (_, id: string) => {
       drawAs(id, [chapter('1jn/1')], 'ending');
     });
@@ -147,6 +155,71 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('{string} is at the frontier', async (_, id: string) => {
       expect((await db.grammarLevels.get(id))?.level).toBe('frontier');
+    });
+  });
+
+  Scenario('An ending is asked only once its table is open', ({ Given, And, When, Then }) => {
+    Given('his goal is {string}', async (_, goal: string) => {
+      await freshStore();
+      await setGoal(goal);
+    });
+    And('the idea {string} is due', async (_, id: string) => makeIdeaDue(id));
+    And('the draw would ask {string} as a paradigm ending if its table were open', async (_, id: string) => {
+      // the seed that gives an ending once the table is open also gives the tap the form while it is shut
+      for (let s = 1; s < 500; s += 1) {
+        const shut = buildIdeaQuestion(ideaOf(id), [chapter('1jn/1')], grammarRandom(mulberry32(s)), undefined, undefined, new Set());
+        const open = buildIdeaQuestion(ideaOf(id), [chapter('1jn/1')], grammarRandom(mulberry32(s)), undefined, undefined, new Set(['noun-endings']));
+        if (shut.kind !== 'tap-form' || open.kind !== 'ending') continue;
+        seed = s;
+        expected = open;
+        return;
+      }
+      throw new Error('no seed asks the ending once its table is open');
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    Then('the question is to tap the form', () => {
+      expect(screen.getByTestId('grammar-prompt').getAttribute('data-kind')).toBe('tap-form');
+    });
+    When('he opens the table {string} on the Paradigms screen', async (_, name: string) => {
+      window.location.hash = '#/paradigms';
+      await user.click(await screen.findByRole('button', { name: new RegExp(`^${name}`) }));
+      await screen.findByRole('heading', { name, level: 1 });
+      await waitFor(async () => expect((await db.settings.get('paradigmsOpened'))?.value).toContain('noun-endings'));
+    });
+    And('he opens Review from Settings again', async () => {
+      window.location.hash = '#/review';
+      await screen.findByRole('heading', { name: 'Review', level: 1 });
+    });
+    And('he starts the review again', start);
+    Then('the question blanks the end of a form and offers four endings', () => {
+      expect(screen.getByTestId('grammar-prompt').getAttribute('data-kind')).toBe('ending');
+      expect(screen.getByTestId('grammar-form').textContent).toMatch(/_$/);
+      expect(optionButtons()).toHaveLength(4);
+    });
+    And('there is no {string} button', (_, name: string) => {
+      expect(screen.queryByRole('button', { name })).toBeNull();
+    });
+    When('he taps the right ending', async () => user.click(rightOne()));
+    Then('{string} is shown', async (_, name: string) => {
+      expect(await screen.findByRole('button', { name })).toBeVisible();
+    });
+    When('he taps {string}', async (_, name: string) => user.click(screen.getByRole('button', { name })));
+    Then('the Paradigms screen shows the table {string} in Study mode', async (_, name: string) => {
+      expect(await screen.findByRole('heading', { name, level: 1 })).toBeInTheDocument();
+      expect(window.location.hash).toBe('#/paradigms?t=noun-endings');
+      expect(screen.getByTestId('mode-help')).toHaveTextContent('Study mode');
+    });
+    When('he goes Back', async () => {
+      window.history.back();
+    });
+    Then('the Review question is still on screen, answered', async () => {
+      expect(await screen.findByTestId('grammar-prompt')).toBeInTheDocument();
+      expect(window.location.hash).toBe('#/review');
+      expect(screen.getByTestId('grammar-prompt').getAttribute('data-kind')).toBe('ending');
+      expect(rightOne().getAttribute('data-result')).toBe('right');
+      expect(screen.getByTestId('feedback')).toHaveTextContent('Right.');
     });
   });
 

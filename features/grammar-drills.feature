@@ -14,6 +14,7 @@ Feature: Review asks grammar ideas, and asks them before words
   Scenario: A paradigm ending asked and answered right moves the idea on the schedule
     Given his goal is "1 John 1"
     And the idea "case-genitive" is due and was right once before
+    And he has opened the table "noun-endings"
     And the draw asks "case-genitive" as a paradigm ending
     When Lampas is opened on the Reader
     And he opens Review from Settings
@@ -23,6 +24,27 @@ Feature: Review asks grammar ideas, and asks them before words
     Then the right ending turns green
     And "case-genitive" is on step 1 and due in 3 days
     And "case-genitive" is at the frontier
+
+  # mw-svw421.5: an ending is asked only of a form whose table he has opened, and the table is one tap away after the answer.
+  Scenario: An ending is asked only once its table is open
+    Given his goal is "1 John 1"
+    And the idea "case-genitive" is due
+    And the draw would ask "case-genitive" as a paradigm ending if its table were open
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    Then the question is to tap the form
+    When he opens the table "Noun endings" on the Paradigms screen
+    And he opens Review from Settings again
+    And he starts the review again
+    Then the question blanks the end of a form and offers four endings
+    And there is no "See the table" button
+    When he taps the right ending
+    Then "See the table" is shown
+    When he taps "See the table"
+    Then the Paradigms screen shows the table "Noun endings" in Study mode
+    When he goes Back
+    Then the Review question is still on screen, answered
 
   Scenario: Tap the form shows the verse's words and the right one turns green
     Given his goal is "1 John 1"

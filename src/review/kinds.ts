@@ -19,6 +19,7 @@ import {
   getDrillPlan,
   answerPlanItem,
   getGoal,
+  listOpenedParadigms,
   listWords,
   pushGrammarAnswer,
   recordAnswer,
@@ -172,10 +173,12 @@ export const GRAMMAR: ReviewKind = {
     const seed = grammarSeed(random);
     const own = mulberry32(seed);
     const passage = await loadPassage(mulberry32(seed ^ 0x5bd1e995));
-    const { respell } = chosenPronunciation();
+    const scheme = chosenPronunciation();
+    // an ending is asked only of a form whose table he has opened (mw-svw421.5)
+    const opened = new Set(await listOpenedParadigms());
     return due.flatMap((r): GrammarItem[] => {
       const idea = ideaIfAny(r.id);
-      return idea ? [{ kind: 'grammar', id: idea.id, question: buildIdeaQuestion(idea, passage, own, respell), mode: modeFor(r.step) }] : [];
+      return idea ? [{ kind: 'grammar', id: idea.id, question: buildIdeaQuestion(idea, passage, own, scheme.respell, scheme, opened), mode: modeFor(r.step) }] : [];
     });
   },
   isRight: (item, picked) => item.kind === 'grammar' && (item.mode === 'flashcard' ? picked === KNEW_IT : picked === item.question.right),

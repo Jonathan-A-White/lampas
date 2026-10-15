@@ -14,6 +14,7 @@ import { startReaderAddressSync } from './nav/readerAddress';
 import { routeOf, useAddress } from './nav/route';
 import { Reader } from './Reader';
 import { GoalScreen } from './GoalScreen';
+import { IdeaReturn } from './IdeaReturn';
 import { ParadigmsScreen } from './ParadigmsScreen';
 import { RequestsScreen } from './RequestsScreen';
 import { StudyWayScreen } from './StudyWayScreen';
@@ -112,6 +113,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
       ) : (
         <Reader />
       )}
+      {/* the idea sheet he left for a table comes back on Back (mw-svw421.5) */}
+      <IdeaReturn />
       {/* the round Ask the tutor control of every screen but the Reader and the Share screen (its sheets are talks), which draws its own beside its Talk bar */}
       {route === 'home' || route === 'share' || route === 'unlock' ? null : <AskTutor route={route} />}
       {/* the one bar for anything read aloud (bsv-kit/speech): drawn into the highest BarSlot on screen, this one at the shell's foot when no screen has its own */}

@@ -54,6 +54,23 @@ Besides its columns and rows, a `Paradigm` has two fields of its own:
   form is his.
 - `tier`: the ladder tier the table belongs to (`nouns`, `pronouns`, `verbs`); the Paradigms list groups by it.
 
+## Where a table is linked (mw-svw421.5)
+
+A table is never a dead end, and an ending is never asked before the table that holds it has been seen. Names and wording are PROVISIONAL, the Governor to confirm.
+
+- **The idea sheet** shows `Table: <name>` under its examples for each table whose `ideas` name the idea (`paradigmsOf(ideaId)`; 'The aorist tense' shows
+  'Table: Future and aorist'). A tap opens `#/paradigms?t=<id>` in Study mode as a new Back step. The Paradigms screen is a page of its own, so the screen under the sheet
+  goes with the sheets over it; the idea sheet holds its idea and the address it was over (`src/ideaReturn.ts`) and `IdeaReturn` (`src/IdeaReturn.tsx`, in App) opens that
+  idea's sheet again, over the screen it was over, when Back brings him to that address. The word and Grammar sheets under it are not brought back; Back then closes it as it
+  closes any sheet.
+- **The list** is grouped by the table's `tier`, under the tier's title (`TIER_TITLES`, src/approaches/ladder.ts): Nouns, Pronouns, Verbs; a tier with no table is left out.
+- **Opening a table is kept**: ParadigmsScreen writes the table's id to the settings store key `paradigmsOpened` (a JSON list, oldest first;
+  `src/data/repositories/paradigmsOpened.ts` `markParadigmOpened` / `listOpenedParadigms`; no Dexie version, outside the settings registry).
+- **`tableFor(code)`** names the one table that holds the ending of a form with this RP code: the table with a cell sharing the most ideas with `ideasOf(code)`, the earlier table
+  in the list on a tie, none for a word that has no endings to learn (`PREP`, `CONJ`). `tableFor('N-GSF')` is `noun-endings`, `tableFor('V-API-3S')` is
+  `aorist-and-future-passive`.
+- **An ending is asked once its table is open**: see 'Ending questions' in docs/grammar.md.
+
 ## What unlocks a form
 
 A form is available when every idea it names is `frontier` or `solid` in `grammarLevels` (`isAvailable`); an idea with no level is not
