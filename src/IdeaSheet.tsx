@@ -25,7 +25,10 @@ import { getGreekPronunciation, getLevel, getSavedGoalText, listLevels, recordDr
 import { DrillItScreen } from './DrillItScreen';
 import { chosenPronunciation } from './speech/greek';
 import { pronunciationOf, type Pronunciation } from './speech/pronunciation';
+import { proseOf } from './speech/proseOf';
+import { ReadAloud } from './speech/ReadAloud';
 import { SpeakButton } from './speech/SpeakButton';
+import { BarSlot } from './speech/SpeakingBarSlot';
 import { TeachTiles } from './TeachTiles';
 import { focusOnMount } from './ui/focus';
 import { greekMarked } from './ui/GreekMarked';
@@ -232,6 +235,15 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
   const card = teachOf(idea.id);
   const sounds = soundLesson(idea, scheme);
   const passage = loaded && loaded !== 'failed' ? loaded.passage : undefined;
+  // what the speaker reads: the lesson as it is drawn, part by part (the tiles, the table and the examples are for the eye and the tap)
+  const { worked } = workedFor(card, passage ? passageForms(passage) : new Set());
+  const lesson = proseOf([
+    idea.title,
+    'What it is', card.whatItIs,
+    'How to spot it', card.howToSpot,
+    sounds ? 'How it sounds' : null, sounds,
+    'Worked example', worked.word, worked.gloss, ...worked.steps,
+  ]);
   // the goal's own examples at once; with none, the pericope, chapter and book are looked in (mw-5r3p30.350) and the sheet says which gave them
   const own = passage ? ideaExamples(idea.id, passage.chapters, passage.verse) : [];
   const wider = useWiderExamples(idea.id, own.length ? undefined : passage);
@@ -309,7 +321,10 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
           </button>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-1">
-          <h2 className="pr-14 text-2xl font-bold">{idea.title}</h2>
+          <div className="flex items-start justify-between gap-2">
+            <h2 className="min-w-0 break-words text-2xl font-bold">{idea.title}</h2>
+            <ReadAloud id={`idea:${idea.id}`} text={lesson} />
+          </div>
           {level ? (
             <p data-testid="idea-level" className="mt-1 inline-block rounded-full border border-line px-3 py-1 text-sm text-muted">
               {level.level === 'solid' && level.how === 'drill' ? 'Proved by drill' : `${LEVEL_NAMES[level.level]} since`} {sinceText(level.since)}
@@ -369,6 +384,8 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk }: {
             </>
           )}
         </div>
+        {/* what is read aloud keeps its Pause and Stop in view: this sheet is over the Grammar and word sheets' own bars */}
+        <BarSlot level={6} />
         <div className="shrink-0 border-t border-line px-4 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))]">
           <div data-testid="level-slider">
             <input

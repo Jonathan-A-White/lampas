@@ -98,7 +98,7 @@ English voice and Greek words in the Greek voice):
   Ask the tutor from any screen (as the Talk sheet already read them, now through the setting). 'Sound it out' still sounds the syllables out: he asked for that.
 
 A new question or message (`useAsks`, `useTalk`), leaving the panel or the cards, and a tap on the response (not on a button in it, `stopOnTap`) stop the speech
-at once; a tapped word, a speaker or a hold to talk only pause it (above). Off, nothing is spoken by itself; the speaker on an answer ('Hear the answer') still reads it.
+at once; a tapped word, a speaker or a hold to talk only pause it (above). Off, nothing is spoken by itself; the speaker on an answer ('Read aloud') still reads it.
 
 A response that comes while the page is hidden (he is in another app, `document.visibilityState` 'hidden') is not spoken (mw-5r3p30.270): `tutorVoice.ts`
 `startAnswerWhenSeen` keeps it in `src/speech/tutorWaiting.ts`, and when he is back a bar at the top of the app (`TutorWaitingBar.tsx`, in the shell under the
@@ -117,3 +117,16 @@ The tutor respells a Greek sound ('πνεῦμα sounds like PNEV-ma', 'Say it "
 (`respell`, whole or by runs of syllables) and a capitalised or hyphened-capital token, or a quoted lower-case one, that matches is replaced by that Greek
 ('PNEV-ma' by πνεῦμα, "pnev" by πνεῦ). A capitalised respelling that matches no Greek in the answer is said by the English voice as a lower-case word;
 acronyms (NT, BDAG, LSB ...) and a quoted English meaning are left alone. The match is on the text: the grinds' answer shape does not tie a respelling to its Greek.
+
+## A speaker on any text he may want heard (mw-5r3p30.238)
+
+Wherever Lampas shows a block of prose a learner may want to hear, a small quiet speaker reads it aloud: `src/speech/ReadAloud.tsx`, ONE component
+(icon only, aria-label 'Read aloud', 'Stop reading' while its text is read; a second tap stops it). It is on the Grammar sheet (title, explanation, 'In Greek'),
+the idea sheet of every idea and letter (title, What it is, How to spot it, How it sounds, the Worked example), a new word's sheet, each tutor answer (in the
+Talk sheet and in the Verse view's Ask; where the 'Hear the answer' play button used to be) and each version in About's What's new (`DEFAULT_LABELS` kind, then
+the line). It is the reading engine of 'Pages of prose' and 'The tutor's responses': the text is cut into runs (`pageRuns`, or the answer's `answerRuns` when
+the Markdown must go first), each Greek stretch in the Greek voice and the rest in the English one, at his speed and in his voices; the package's bar has Pause,
+Resume and Stop; the words stay on screen. The read starts from the tap itself (section 12). A sheet that sits over the screen's bar has a `BarSlot` so the bar
+shows above its foot (Grammar 5, new word 5, idea 6). `proseOf(parts)` (src/speech/proseOf.ts) joins a block's parts with a stop between them. A phone with no Greek voice reads the English,
+leaves the Greek out and shows the same one-line help as the word speakers (`noVoiceHelp`); a phone that cannot speak at all says so in a line, never a silent button.
+Tests: features/read-aloud-anywhere.feature.

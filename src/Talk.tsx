@@ -30,9 +30,9 @@ import { pastedPictures, PICTURE_ONLY_QUESTION, type OutgoingPicture } from './t
 import { PictureControls } from './talk/PictureControls';
 import { PictureThumbs, TurnPictures } from './talk/TurnPictures';
 import { usePictureBox, type BoxPicture } from './talk/usePictureBox';
-import { startAnswer, stopAnswer, useReading } from './speech/readAloud';
+import { stopAnswer } from './speech/readAloud';
 import { stopOnTap } from './speech/tutorVoice';
-import { Icon } from './speech/ReadControls';
+import { ReadAloud } from './speech/ReadAloud';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { answerRuns } from './speech/answerRuns';
 import { focusOnMount, focusQuietly } from './ui/focus';
@@ -78,22 +78,9 @@ function HoldToTalk({ voice, disabled }: { voice: Voice; disabled: boolean }) {
   );
 }
 
-/** Hear the answer, or Stop while it is being read. */
+/** The speaker under an answer: reads it, or stops it while it is being read (a tutor's answer read by itself is read under the turn's id, so the button knows). */
 function AnswerSpeaker({ turn }: { turn: TalkTurn }) {
-  const reading = useReading();
-  const id = turn.id as number;
-  const playing = reading.status === 'reading' && reading.answer === id;
-  return (
-    <button
-      type="button"
-      aria-label={playing ? 'Stop' : 'Hear the answer'}
-      aria-pressed={playing}
-      onClick={() => (playing ? stopAnswer() : startAnswer(id, answerRuns(turn.a)))}
-      className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-accent active:bg-line"
-    >
-      <Icon kind={playing ? 'stop' : 'play'} />
-    </button>
-  );
+  return <ReadAloud id={turn.id as number} runs={answerRuns(turn.a)} />;
 }
 
 /** One setting the answer changed: 'Changed: Greek speed 0.8x' with Undo, or, once undone, what it was put back to. */
