@@ -103,9 +103,10 @@ async function answerQuestion(index: number, right: boolean): Promise<void> {
   expect(options.map((o) => o.textContent)).toEqual(item.question.options);
   asked.push({ mode: item.mode, form: item.target.form, prompt: item.question.prompt });
   const wrong = item.question.options.find((o) => o !== item.question.right)!;
-  await user.click(options.find((o) => o.textContent === (right ? item.question.right : wrong))!);
+  // fireEvent, not user-event: a drill is some forty questions and each pointer sequence costs a loaded host real time
+  fireEvent.click(options.find((o) => o.textContent === (right ? item.question.right : wrong))!);
   state = answerTarget(state, item.target, right);
-  await user.click(await within(dialog).findByTestId('letter-next'));
+  fireEvent.click(await within(dialog).findByTestId('letter-next'));
 }
 
 /** Answers the round on screen, every question right except those in `wrongAt`; the screen then shows the round's end. */
