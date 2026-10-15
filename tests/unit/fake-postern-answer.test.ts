@@ -62,3 +62,22 @@ describe("the fake Postern's answer", () => {
     expect(Date.now() - started).toBeGreaterThanOrEqual(25);
   });
 });
+
+// mw-skwocd.9: a scenario that leaves a grist in flight must not fail the next one. The fake counts what it has taken in and not
+// answered (`inFlight`); `endAll` answers every one of them and what is sent after, so a step file can end a scenario with none left.
+describe("the fake Postern's grists in flight", () => {
+  it('counts a grist taken in and not answered, and endAll leaves none, now or later', async () => {
+    expect(postern.inFlight).toBe(0);
+    let sent!: () => void;
+    const arrived = new Promise<void>((resolve) => (sent = resolve));
+    const shown = askGrind('verse-read', { reference: 'Romans 8:28' }, isAnswer, { key, onSent: () => sent() });
+    await arrived;
+    expect(postern.inFlight).toBe(1);
+    postern.endAll({ status: 'failed', reason: 'the scenario ended' });
+    expect(postern.inFlight).toBe(0);
+    await expect(shown).rejects.toBeDefined();
+    const later = ask();
+    await expect(later).rejects.toBeDefined();
+    expect(postern.inFlight).toBe(0);
+  });
+});
