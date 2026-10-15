@@ -3,12 +3,13 @@
 // they move here (docs/module-map.md R2b to R2d).
 import type { SettingDef, SettingValue } from '../define';
 import { askBySetting } from './askBy';
+import { audioBibleSetting } from './audioBible';
 import { immersiveSetting } from './immersive';
 import { immersiveHintSetting } from './immersiveHint';
 import { themeSetting } from './theme';
 import { tipsSetting } from './tips';
 import { weaveSetting } from './weave';
 
-export { askBySetting, immersiveHintSetting, immersiveSetting, themeSetting, tipsSetting, weaveSetting };
+export { askBySetting, audioBibleSetting, immersiveHintSetting, immersiveSetting, themeSetting, tipsSetting, weaveSetting };
 
-export const DEFINITIONS: readonly SettingDef<SettingValue>[] = [themeSetting, weaveSetting, tipsSetting, immersiveSetting, immersiveHintSetting, askBySetting];
+export const DEFINITIONS: readonly SettingDef<SettingValue>[] = [themeSetting, weaveSetting, tipsSetting, immersiveSetting, immersiveHintSetting, askBySetting, audioBibleSetting];

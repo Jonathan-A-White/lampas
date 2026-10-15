@@ -7,7 +7,7 @@ import { GoalControl } from './goal';
 import { LinkControl } from './links';
 import { NewWordsControl } from './newWords';
 import { QuizGoalControl } from './quizGoal';
-import { LogosBibleControl, ResourceControl } from './resources';
+import { AudioBibleControl, LogosBibleControl, ResourceControl } from './resources';
 import { AskByControl, ReadTutorControl, ScriptDepthControl, TipsControl } from './tutor';
 import type { Control } from './types';
 import { PronunciationControl, ReadSpanControl, SpeedControl, VoiceControl } from './voice';
@@ -35,6 +35,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   greekRate: SpeedControl,
   greekPronunciation: PronunciationControl,
   logosBible: LogosBibleControl,
+  audioBible: AudioBibleControl,
   tips: TipsControl,
   readTutor: ReadTutorControl,
   askBy: AskByControl,

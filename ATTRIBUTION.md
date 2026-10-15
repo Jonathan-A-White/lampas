@@ -82,6 +82,8 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   Licence: none needed, it is a service used through the mill; its [terms](https://www.anthropic.com/legal/consumer-terms) apply. Changes: none.
 - **[Logos Bible Software](https://www.logos.com)** and **[Accordance](https://www.accordancebible.com)**. Only if you switch them on in
   Settings: Lampas links to a word or a verse in the app you already own, and offers a link to the app's page in your phone's store if you do not have it yet. No text, image or data is taken from either. Their own licences are yours.
+- **[Audible](https://www.audible.com)** and **The Word of Promise Audio Bible** (NKJV), by Thomas Nelson. Only if you choose it in Settings > Study resources >
+  Audio Bible: Lampas links to the book in the Audible app, or its page on audible.com, and says which chapter to pick. You need the book in your own Audible library. No audio, text or data is taken from either. Their own terms apply; the audio is yours through Audible.
 - **[Blue Letter Bible](https://www.blueletterbible.org)** and **[STEPBible](https://www.stepbible.org)**. Links from a word to its Strong's
   entry, if you switch Strong's on. Links only: nothing is copied. Their own terms apply.
 - **[Web Speech API](https://developer.mozilla.org/docs/Web/API/Web_Speech_API)**. Your phone's own voices speak the Greek and English and its

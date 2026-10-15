@@ -3,11 +3,14 @@ import { useState } from 'react';
 import { getLogosBible, getStudyResources, setResourceOn, setResourceOption } from '../../data/repositories';
 import { resourceOf, tickedOf, type ResourceChoices, type StudyResource } from '../../resources';
 import { storeUrl } from '../../resources/appStore';
+import { AUDIO_BIBLES } from '../../resources/audioBible';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../../resources/logosBible';
 import { SearchableList } from '../../ui/SearchableList';
+import { audioBibleSetting } from '../definitions';
 import { writeSetting } from '../registry';
 import type { SettingsRow } from '../rows';
-import { PICKER, SettingRow } from './SettingRow';
+import { useSetting } from '../store';
+import { ON_COLOUR, PICKER, SettingRow } from './SettingRow';
 import type { Control } from './types';
 
 /** The lexicons (or other choices) of a resource, in the shared searchable list; kept as he taps (a JSON array of ids). */
@@ -158,4 +161,29 @@ export const ResourceControl: Control = ({ row }) => {
 export const LogosBibleControl: Control = ({ row }) => {
   const logosBible = useLiveQuery(getLogosBible, []);
   return <SettingRow row={row}>{logosBible !== undefined ? <LogosBiblePicker saved={logosBible} /> : null}</SettingRow>;
+};
+
+/** Audio Bible: Off, or an audio Bible the Verse view links to. Stacked, full-width choices: the names are long. */
+export const AudioBibleControl: Control = ({ row }) => {
+  const audioBible = useSetting(audioBibleSetting);
+  const choices = [{ value: 'off', label: 'Off' }, ...AUDIO_BIBLES.map((b) => ({ value: b.id, label: b.choice }))];
+  return (
+    <SettingRow row={row}>
+      {audioBible !== undefined ? (
+        <div role="group" aria-label={row.label} className="flex flex-col gap-1 rounded-xl border border-line p-0.5">
+          {choices.map((c) => (
+            <button
+              key={c.value}
+              type="button"
+              aria-pressed={audioBible === c.value}
+              onClick={() => void writeSetting(audioBibleSetting.key, c.value)}
+              className={`min-h-12 rounded-lg px-4 text-left text-base font-medium ${audioBible === c.value ? ON_COLOUR : 'text-fg'}`}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </SettingRow>
+  );
 };

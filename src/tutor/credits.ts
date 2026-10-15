@@ -6,7 +6,7 @@
 import type { ScreenCredit } from './screen';
 
 /** The most the credits weigh as JSON in UTF-8, so the screen, his words and a little history still fit MAX_REQUEST_BYTES (src/services/talk.ts). */
-export const MAX_CREDITS_BYTES = 4300;
+export const MAX_CREDITS_BYTES = 4500;
 
 export const CREDITS: ScreenCredit[] = [
   { name: 'Majority Standard Bible', use: 'The Greek you read, aligned to its English, with Strong\'s and parsing', licence: 'Public domain', link: 'https://majoritybible.com' },
@@ -29,6 +29,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'Claude', use: 'The model behind the tutor, which reads your pictures', licence: 'none needed; its terms', link: 'https://www.anthropic.com/claude' },
   { name: 'Logos Bible Software', use: 'If switched on: links into your own Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
   { name: 'Accordance', use: 'If switched on: links into your own Accordance', licence: 'yours; nothing copied', link: 'https://www.accordancebible.com' },
+  { name: 'Audible', use: 'If chosen: links to The Word of Promise in your Audible', licence: 'yours; nothing copied', link: 'https://www.audible.com' },
   { name: 'Blue Letter Bible', use: 'Links a word to its Strong\'s entry', licence: 'its terms; links only', link: 'https://www.blueletterbible.org' },
   { name: 'STEPBible', use: 'Links a word to its Strong\'s entry', licence: 'its terms; links only', link: 'https://www.stepbible.org' },
   { name: 'Web Speech API', use: 'Your phone\'s voices speak and hear', licence: 'a web standard', link: 'https://developer.mozilla.org/docs/Web/API/Web_Speech_API' },
