@@ -12,7 +12,7 @@
 import type { Chapter } from '../chapter';
 import { LOOK_ALIKE_LETTERS, OPTION_COUNT, choicesOf, lookAlikesOf } from '../choices';
 import { mulberry32, type Random } from '../quiz';
-import { soundRuleOf, type Pronunciation, type SoundRule, type SoundRuleSide } from '../../speech/pronunciation';
+import { soundRuleOf, soundRulesOf, type Pronunciation, type SoundRule, type SoundRuleSide } from '../../speech/pronunciation';
 import { itemFacet, itemsOf, ideaOf, type Facet, type GrammarIdea } from './ladder';
 import { ideaSound } from './lessons';
 import { quickQuestion } from './quickRound';
@@ -191,7 +191,7 @@ export const sideFacet = (rule: SoundRule, side: SoundRuleSide): Facet => ({ id:
 function readWord(ctx: DrillContext, word: string, facet: Facet, random: Random, subject?: string): GrammarQuestion | null {
   const say = ctx.scheme.respell(word);
   const own = subject === undefined ? undefined : soundRuleOf(ctx.scheme, subject);
-  const rules = [...(own ? [own] : []), ...(ctx.scheme.soundRules ?? []).filter((r) => r !== own)].filter((r) => r.sideOf(word) !== null);
+  const rules = [...(own ? [own] : []), ...soundRulesOf(ctx.scheme).filter((r) => r !== own)].filter((r) => r.sideOf(word) !== null);
   const { options, near } = choicesOf({ right: say, near: rules.map((r) => r.misread(word)), fillers: WORDS.filter((w) => w !== word).map((w) => ctx.scheme.respell(w)) }, random);
   if (options.length < OPTION_COUNT) return null;
   const rule = rules[0];

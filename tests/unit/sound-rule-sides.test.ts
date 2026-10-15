@@ -4,7 +4,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { ideaOf } from '../../src/data/grammar/ladder';
-import { PRONUNCIATIONS, pronunciationOf } from '../../src/speech/pronunciation';
+import { PRONUNCIATIONS, pronunciationOf, soundRulesOf } from '../../src/speech/pronunciation';
 
 const nfc = (s: string): string => s.normalize('NFC');
 const ROOT = 'public/data';
@@ -16,15 +16,15 @@ const TEXT = new Set(
 );
 
 describe.each(PRONUNCIATIONS.map((p) => [p.id, p] as const))('the sound rules of %s', (_id, scheme) => {
-  it.each((scheme.soundRules ?? []).flatMap((r) => r.sides.flatMap((s) => s.words.map((w) => [r.ideaId, s.id, w] as const))))('%s %s: %s', (ideaId, sideId, word) => {
-    const rule = scheme.soundRules!.find((r) => r.ideaId === ideaId)!;
+  it.each(soundRulesOf(scheme).flatMap((r) => r.sides.flatMap((s) => s.words.map((w) => [r.ideaId, s.id, w] as const))))('%s %s: %s', (ideaId, sideId, word) => {
+    const rule = soundRulesOf(scheme).find((r) => r.ideaId === ideaId)!;
     expect(TEXT.has(nfc(word)), `${word} is in the text`).toBe(true);
     expect(rule.sideOf(word)).toBe(sideId);
     expect(rule.misread(word)).not.toBe(scheme.respell(word));
   });
 
   it('names each rule on a ladder idea, once, with two sides and a line for each', () => {
-    const rules = scheme.soundRules ?? [];
+    const rules = soundRulesOf(scheme);
     expect(new Set(rules.map((r) => r.ideaId)).size).toBe(rules.length);
     for (const rule of rules) {
       expect(() => ideaOf(rule.ideaId)).not.toThrow();
@@ -37,20 +37,20 @@ describe.each(PRONUNCIATIONS.map((p) => [p.id, p] as const))('the sound rules of
 describe('Modern Greek', () => {
   const modern = pronunciationOf('modern');
   it('has a rule for χ, γ, σ, αυ, ευ, ηυ, μπ, ντ, γκ and γχ, and none for γγ or γξ, which never change', () => {
-    expect(modern.soundRules!.map((r) => r.ideaId).sort()).toEqual(
+    expect(soundRulesOf(modern).map((r) => r.ideaId).sort()).toEqual(
       ['letter-chi', 'letter-gamma', 'letter-sigma', 'diphthong-au', 'diphthong-eu', 'diphthong-eeu', 'pair-mp', 'pair-nt', 'pair-gk', 'pair-gch'].sort(),
     );
   });
 
   it('has words on both sides of every rule but μπ, ντ and γκ, which no word of the text begins with', () => {
-    for (const rule of modern.soundRules!) {
+    for (const rule of soundRulesOf(modern)) {
       const empty = rule.sides.filter((s) => s.words.length === 0).map((s) => s.id);
       expect(empty, rule.ideaId).toEqual(['pair-mp', 'pair-nt', 'pair-gk'].includes(rule.ideaId) ? ['start'] : []);
     }
   });
 
   it('reads no rule in a word that has none, and a word with χ on both sides on neither', () => {
-    const chi = modern.soundRules!.find((r) => r.ideaId === 'letter-chi')!;
+    const chi = soundRulesOf(modern).find((r) => r.ideaId === 'letter-chi')!;
     expect(chi.sideOf('λόγος')).toBeNull();
     expect(chi.sideOf('χαρίσματα')).toBe('hard');
     expect(chi.sideOf('χαρᾷ χεῖρες')).toBeNull();

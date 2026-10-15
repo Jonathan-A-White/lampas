@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { LADDER, ideaOf } from '../../src/data/grammar/ladder';
 import { ideaSound, ideaText } from '../../src/data/grammar/lessons';
+import { ACCENTS, accentOf, soundWords } from '../../src/speech/accents';
 import { PRONUNCIATIONS, pronunciationOf } from '../../src/speech/pronunciation';
 
 const modern = pronunciationOf('modern');
@@ -48,8 +49,13 @@ describe('the foundation lessons give every sound an English key word', () => {
     }
   });
 
-  it('reads the key words from the Greek pronunciation, so another scheme changes the lessons', () => {
-    for (const scheme of PRONUNCIATIONS) for (const sound of ['e', 'ee', 'oo', 'v', 'f', 'b', 'd', 'g', 'mb', 'nd', 'ng', 'kh', 'nks', 'hy', 'y']) expect(scheme.keyWords[sound], `${scheme.id}: ${sound}`).toBeTruthy();
-    expect(pronunciationOf('modern').keyWords.e).toBe('pet');
+  it("reads the key words from the reader's English accent, through the standard sound the Greek pronunciation names, so another scheme or accent changes the lessons (mw-5r3p30.352)", () => {
+    for (const scheme of PRONUNCIATIONS) {
+      for (const sound of ['e', 'ee', 'oo', 'v', 'f', 'b', 'd', 'g', 'mb', 'nd', 'ng', 'kh', 'nks', 'hy', 'y']) {
+        expect(scheme.sounds[sound], `${scheme.id}: ${sound}`).toBeTruthy();
+        for (const accent of ACCENTS) expect(soundWords(scheme, accent).asIn(sound), `${scheme.id} in ${accent.id}: ${sound}`).toMatch(/ as in [a-z]/);
+      }
+    }
+    expect(soundWords(modern, accentOf('american')).asIn('e')).toBe('e as in pet');
   });
 });

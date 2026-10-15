@@ -11,7 +11,7 @@ sound-alikes for the letters.
 ## How it is built
 
 `src/speech/pronunciation.ts` is the registry: a list of `Pronunciation` entries
-`{ id, label, lang, scoringLang, note, respell(greekWord), keyWords, loneLetterClip(word), voiceForm(text), letterForm(letter), tutorGuide, lessons? }`. `keyWords` gives each sound the respelling writes an English word that has it (`e` is the e of pet); the sound lessons say every sound as 'e as in pet' from it. Settings lists the entries, the word sheet calls
+`{ id, label, lang, scoringLang, note, respell(greekWord), sounds, loneLetterClip(word), voiceForm(text), letterForm(letter), tutorGuide(say), lessons?(say), soundRules?(say) }`. `sounds` maps each sound the respelling writes to its standard id (`o` is `/o/`, `kh` is `/x/`; see 'A standard in the middle' below); the scheme names no English word, and its lessons, rules and guide say each sound through `say`. Settings lists the entries, the word sheet calls
 `pronunciationOf(chosen).respell(word.t)`, and `lang` is the language tag of the voice that speaks (Settings keeps
 the chosen id under `greekPronunciation`). Each scheme is one file in `src/speech/schemes/`.
 
@@ -35,11 +35,32 @@ scheme writes the rule (`tests/unit/voice-form.test.ts` holds every bundled word
 `letterForm(letter)` (mw-5r3p30.268) is what the scheme's voice is handed to NAME a letter, in a letter drill's Tap to hear (`speakLetter`):
 Modern Greek's is the bare letter in lower case, which a Greek voice names the modern way ('vita' for β).
 
-`tutorGuide` (mw-5r3p30.268) is what the tutor is told of the scheme: its name and the sound rules it respells and speaks by. Every tutor ask
+`tutorGuide(say)` (mw-5r3p30.268), read as `tutorGuideOf(scheme)`, is what the tutor is told of the scheme: its name and the sound rules it respells and speaks by. Every tutor ask
 that may speak of a sound sends it as `pronunciation_guide` beside `pronunciation` (the id): bible-talk (`buildTalkRequest`; a full record
 drops it before the history, except on a sound question), verse-ask (`buildRequest`) and verse-read (`buildReadingRequest`). The grinds'
 instructions name no sound and no scheme of their own: they say to describe every sound by `pronunciation_guide`. The grind examples carry
-Modern Greek's guide word for word.
+Modern Greek's guide, in American English, word for word.
+
+## A standard in the middle (mw-5r3p30.352)
+
+His words: "there should be a standard ... the module explains how to get to The Standard and then the app [uses] the module". Every sound has
+one standard id, its IPA between slashes, listed once in `src/speech/sounds.ts` (`/o/`, `/x/`, `/ɣ/` ...). A Greek pronunciation maps the sounds
+its respelling writes to those ids (`Pronunciation.sounds`); an English accent maps each id to the hint a reader of that accent hears it in:
+one table per accent in `src/speech/accents/` (`american.ts`, the default, and `british.ts`), each a `{ word?, note? }` per id ('or', 'short';
+or a note alone: 'the th of “this”'). `soundWords(scheme, accent)` (`src/speech/accents/index.ts`) is the ONE accessor that puts them together:
+`keyed('o')` is 'o, as in “or”, short' and `asIn('o')` 'o as in or, short' in American English, 'o, as in “lot”' and 'o as in lot' in British.
+A scheme's `lessons`, `soundRules` and `tutorGuide` are functions of it, and the app reads them only through `lessonsOf`, `soundRulesOf` and
+`tutorGuideOf` (`src/speech/pronunciation.ts`; `src/data/grammar/lessons.ts` for the sheets, tiles and questions), which say them in the chosen
+accent (`chosenAccent()`, American until the Settings choice of mw-5r3p30.353 sets it with `chooseAccent`).
+
+American keys the o to “or”, said short (PROVISIONAL, the Governor to confirm): the o of 'lot' is 'ah' to an American. Its r is 'a quick tap of
+the tongue, like the tt of “butter”', since an American never rolls one. British keeps the words the lessons gave before (“lot”, 'lightly rolled').
+
+The ids never reach the learner: `tests/unit/no-ipa-shown.test.tsx` draws every sound idea's sheet and asks every lesson, tile, question and
+rule line in each accent, and fails on an IPA-only character or a slashed id. `tests/unit/english-accents.test.ts` fails when an accent table
+misses an id a scheme uses, and `tests/unit/one-english-accent.test.ts` when a file outside `src/speech/accents/`, a scheme included, keys a
+sound to an English word. A third accent is one more table plus a line in `ACCENTS`; a new sound is one line in `sounds.ts` plus a hint in
+every table.
 
 ## One scheme for every sound (mw-5r3p30.268)
 
@@ -51,7 +72,7 @@ not Greek sounds; `tests/unit/pronunciation-swap.test.ts` registers a second sch
 the tutor's guide all follow it. The spelling's own rules (which pairs are one vowel, which clusters open a syllable: `src/speech/greekSyllables.ts`
 `ONSETS`) are the same in every scheme and live outside the schemes.
 
-`lessons` (mw-5r3p30.229) is what the scheme TEACHES of each sound-bearing idea of the grammar ladder, keyed by idea id (`letter-beta`,
+`lessons(say)` (mw-5r3p30.229), read as `lessonsOf(scheme)`, is what the scheme TEACHES of each sound-bearing idea of the grammar ladder, keyed by idea id (`letter-beta`,
 `diphthong-ou`, `pair-mp`, `breathing-rough`, and the groups `diphthongs`, `consonant-pairs`, `breathings`): `{ sound?, text? }`. The idea sheet
 (`IdeaSheet.tsx`), the quick round, the sound questions and the reading drill read them through `src/data/grammar/lessons.ts` (`ideaText`, `ideaSound`)
 for the chosen scheme; the ladder itself holds only the spelling, so no scheme's sounds are written outside its own file. An idea the scheme has no
@@ -104,7 +125,7 @@ moving to the next syllable the longest group of consonants that can open a Gree
 ## Adding a scheme (Erasmian next, not built yet)
 
 1. Write `src/speech/schemes/<id>.ts` exporting a `Pronunciation` (see `modern.ts`): its `respell` takes the Greek
-   word and returns the respelling; its `keyWords` name an English word for each sound it writes; its `loneLetter` gives the form
+   word and returns the respelling; its `sounds` give the standard id (`src/speech/sounds.ts`) of each sound it writes, a new id with a hint in every accent table; its `loneLetter` gives the form
    its voice is handed for a word of one letter (Erasmian on a Greek voice: find what that voice says as the sound, not the name); its `voiceForm` gives what the voice is handed for any other Greek, so it says the respelling's sounds (the text as it is when it already does; Erasmian's `nt` on a Modern Greek voice would need a form of its own). Erasmian's table (the story's note): μπ `mp`, ντ `nt`, γκ `nk`, γχ `nk`.
 2. Put it in `SCHEMES` in `src/speech/pronunciation.ts`, after Modern Greek. Settings, the saved choice and the word
    sheet pick it up; nothing else names an id.
@@ -112,8 +133,8 @@ moving to the next syllable the longest group of consonants that can open a Gree
 4. Set `scoringLang`: the language the Greek reading check asks the mill to score a reading in (modern Greek is `el`).
    It goes as `lang` on the verse-read grist, so the grind's `scoring.langs` (grinds/verse-read.json) must list it and the
    mill's scorers must be able to score it; a scheme the mill cannot score cannot be given a reading check until they can.
-5. Give it `lessons` for every letter, pair and breathing it says (copy `schemes/modernLessons.ts`; Erasmian's rough breathing adds an h, which is where that lesson belongs, not in the ladder).
-   Give it a `letterForm` (how its voice names a letter) and a `tutorGuide` (its name and sound rules, for the tutor; copy `MODERN_TUTOR_GUIDE`).
+5. Give it `lessons(say)` for every letter, pair and breathing it says (copy `schemes/modernLessons.ts`, every sound through `say.keyed` or `say.asIn`, never an English word; Erasmian's rough breathing adds an h, which is where that lesson belongs, not in the ladder).
+   Give it a `letterForm` (how its voice names a letter) and a `tutorGuide(say)` (its name and sound rules, for the tutor; copy `modernTutorGuide`).
 6. Test it the way `tests/unit/respell-modern.test.ts` does, one row per rule.
 
 A test adds a scheme for one scenario with `registerPronunciation(scheme)`, which returns the function that takes

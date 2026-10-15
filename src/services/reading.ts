@@ -7,7 +7,7 @@ import type { LearnerProfile } from '../data/learnerProfile';
 import type { MemoryField } from '../data/learnerMemory';
 import type { Recording } from '../audio/recorder';
 import { extensionOf } from '../audio/recorder';
-import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation } from '../speech/pronunciation';
+import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
 import { askGrind, type AskOptions } from './tutor';
 
 export const READING_KIND = 'verse-read';
@@ -161,7 +161,7 @@ export function buildReadingRequest(reference: string, verse: Verse, view: Readi
     target_text: readingText(verse, view),
     lang,
     pronunciation,
-    pronunciation_guide: pronunciationOf(pronunciation).tutorGuide,
+    pronunciation_guide: tutorGuideOf(pronunciationOf(pronunciation)),
     ...(learnerProfile ? { learner_profile: learnerProfile } : {}),
     ...(memory ? { memory } : {}),
     ...(learner ? { learner } : {}),

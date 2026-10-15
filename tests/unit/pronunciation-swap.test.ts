@@ -14,7 +14,7 @@ import { buildReadingRequest } from '../../src/services/reading';
 import { buildTalkRequest, type TalkScope } from '../../src/services/talk';
 import { buildRequest } from '../../src/services/tutor';
 import { setGreekPronunciation, speakWord, stopSpeaking } from '../../src/speech/greek';
-import { DEFAULT_PRONUNCIATION, pronunciationOf, registerPronunciation, type Pronunciation } from '../../src/speech/pronunciation';
+import { DEFAULT_PRONUNCIATION, pronunciationOf, registerPronunciation, tutorGuideOf, type Pronunciation } from '../../src/speech/pronunciation';
 import { speakQuestion } from '../../src/speech/speakQuestion';
 import { stubAudio, type FakeAudio } from '../support/fake-audio';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../support/fake-speech';
@@ -27,16 +27,16 @@ const STUBBISH: Pronunciation = {
   scoringLang: 'el',
   note: 'A test scheme.',
   respell: (word) => `STUB-${[...word].length}`,
-  keyWords: { b: 'bat', ow: 'out' },
+  sounds: { b: '/b/' },
   loneLetterClip: (word) => `/sounds/stubbish/${[...word].length}.mp3`,
   voiceForm: (text) => `‹${text}›`,
   letterForm: (letter) => `letter ${letter.toLowerCase()}`,
-  tutorGuide: 'Stubbish: β is b, as in “bat”; ου is ow, as in “out”.',
-  lessons: {
+  tutorGuide: () => 'Stubbish: β is b, as in “bat”; ου is ow, as in “out”.',
+  lessons: () => ({
     'letter-beta': { sound: 'b, as in “bat”' },
     'diphthong-ou': { sound: 'ow, as in “out”' },
     'diphthong-ai': { sound: 'eye, as in “I”' },
-  },
+  }),
 };
 
 const verse = { n: 31, g: [{ t: 'ταῦτα', l: 'οὗτος', p: 'D-APN', s: 'G3778' }], e: [{ t: 'these things' }] } as unknown as Chapter['verses'][number];
@@ -78,13 +78,13 @@ describe('a second pronunciation, chosen, is followed everywhere', () => {
     const talk = buildTalkRequest(scope, 'How do I say it?', [], [], {}, soundFocus, undefined, undefined, [], [], 0, { kept: '' }, undefined, [], undefined, STUBBISH.id);
     expect(talk.pronunciation).toBe('stubbish');
     expect(talk.focus).toMatchObject({ respelling: 'STUB-5' });
-    expect(talk.pronunciation_guide).toBe(STUBBISH.tutorGuide);
+    expect(talk.pronunciation_guide).toBe(tutorGuideOf(STUBBISH));
     expect(syllablesOf('ταῦτα')).toEqual({ syllables: ['stub', '5'], stressed: 0 });
   });
 
   it('tells every tutor grind that speaks of a sound the scheme by its own rules', () => {
-    expect(buildRequest('Romans 8:31', verse, 'How is ταῦτα said?', [], undefined, undefined, undefined, [], undefined, false, STUBBISH.id).pronunciation_guide).toBe(STUBBISH.tutorGuide);
-    expect(buildReadingRequest('Romans 8:31', verse, 'greek', 'el', undefined, undefined, undefined, STUBBISH.id).pronunciation_guide).toBe(STUBBISH.tutorGuide);
+    expect(buildRequest('Romans 8:31', verse, 'How is ταῦτα said?', [], undefined, undefined, undefined, [], undefined, false, STUBBISH.id).pronunciation_guide).toBe(tutorGuideOf(STUBBISH));
+    expect(buildReadingRequest('Romans 8:31', verse, 'greek', 'el', undefined, undefined, undefined, STUBBISH.id).pronunciation_guide).toBe(tutorGuideOf(STUBBISH));
   });
 
   it("asks a letter drill in its sounds and says the letter as it names one", () => {
@@ -107,7 +107,7 @@ describe('a second pronunciation, chosen, is followed everywhere', () => {
     setGreekPronunciation(DEFAULT_PRONUNCIATION);
     expect(ideaText(ideaOf('letter-beta'))).toContain('vase');
     expect(syllablesOf('ταῦτα')).toEqual({ syllables: ['taf', 'ta'], stressed: 0 });
-    expect(buildTalkRequest(scope, 'How do I say it?', [], [], {}, soundFocus).pronunciation_guide).toBe(pronunciationOf('modern').tutorGuide);
+    expect(buildTalkRequest(scope, 'How do I say it?', [], [], {}, soundFocus).pronunciation_guide).toBe(tutorGuideOf(pronunciationOf('modern')));
     act(() => void speakWord('πάντοτε', 'greek'));
     expect(lastSaid().text).toBe('πάν-ντοτε');
     act(() => void speakQuestion(quickQuestion({ id: 'letter-beta', mode: 'hear' }, mulberry32(1))));

@@ -6,8 +6,9 @@
 // the code's own notes and may name a sound. A grind's instructions and schemas are read whole: the tutor reads every word of them.
 import ts from 'typescript';
 
-/** The files that own the sounds: anything may be written here. */
-export const SCHEME_FILES = ['src/speech/pronunciation.ts', 'src/speech/schemes/'];
+/** The files that own the sounds: anything may be written here. The accent tables (mw-5r3p30.352) own the English hints, which these patterns also
+ * find ('the th of “this”'); keyWordsIn below keeps those to the accent tables alone. */
+export const SCHEME_FILES = ['src/speech/pronunciation.ts', 'src/speech/schemes/', 'src/speech/accents/'];
 
 export interface SoundRule {
   /** what kind of sound rule it is */
@@ -68,5 +69,26 @@ export function soundRulesIn(file: string, text: string): SoundRule[] {
   const { texts, imports } = scriptParts(file, text);
   const found = texts.flatMap(matchesIn);
   for (const spec of imports) if (/(^|\/)schemes\//.test(spec)) found.push({ rule: 'a scheme imported by name, not asked of the registry', text: spec });
+  return found;
+}
+
+/** The files that own the English key words (mw-5r3p30.352): one table per English accent. Nothing else, not even a Greek scheme, names one. */
+export const ACCENT_FILES = ['src/speech/accents/'];
+
+/** The patterns of an English key word given to a sound: 'v, as in “vase”', 'dh, the th of “this”'. */
+const KEY_WORD_PATTERNS = SOUND_PATTERNS.slice(0, 2);
+
+/**
+ * The English key words `text` (the contents of `file`) gives a sound outside the accent tables: a sound keyed or likened to an English word, and, in
+ * a Greek scheme's own file, any word an accent table keys a sound to, quoted (`words`). None for an accent's own file.
+ */
+export function keyWordsIn(file: string, text: string, words: readonly string[] = []): SoundRule[] {
+  if (ACCENT_FILES.some((f) => file.startsWith(f))) return [];
+  const texts = /\.(ts|tsx)$/.test(file) ? scriptParts(file, text).texts : [text.replace(/\s+/g, ' ')];
+  const found: SoundRule[] = [];
+  for (const piece of texts) for (const { rule, pattern } of KEY_WORD_PATTERNS) for (const m of piece.matchAll(pattern)) found.push({ rule, text: m[0] });
+  if (owned(file)) {
+    for (const piece of texts) for (const word of words) if (new RegExp(`[“"]${word}[”"]`).test(piece)) found.push({ rule: 'an accent key word in a Greek scheme', text: word });
+  }
   return found;
 }

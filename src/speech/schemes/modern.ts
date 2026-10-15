@@ -1,7 +1,9 @@
 // src/speech/schemes/modern.ts — Modern Greek as a respelling: the Greek word in syllables an English reader can say,
 // the stressed syllable in capitals ("khree-STO"). Written from Modern Greek's own rules (docs/pronunciation.md lists
 // them); the other schemes (Erasmian next) are further files beside this one, registered in ../pronunciation.ts.
+import type { SoundWords } from '../accents';
 import type { Pronunciation, SoundRule, SoundRuleSide } from '../pronunciation';
+import type { SoundId } from '../sounds';
 import { ONSETS } from '../greekSyllables';
 import { modernLessons } from './modernLessons';
 
@@ -233,11 +235,13 @@ function respellAs(word: string, reading: Reading): string {
   return parts.map((p, i) => (i === stressed && parts.length > 1 ? p.toUpperCase() : p)).join('-');
 }
 
-/** The sounds respellModern writes, each with an English word that has it; the lessons say 'e as in pet'. */
-export const MODERN_KEY_WORDS: Readonly<Record<string, string>> = {
-  a: 'father', e: 'pet', ee: 'see', o: 'lot', oo: 'food',
-  v: 'vase', f: 'fan', b: 'bed', d: 'dog', g: 'go', y: 'yes', hy: 'huge', s: 'sun', z: 'zoo',
-  mb: 'number', nd: 'under', ng: 'finger', nks: 'thanks', kh: 'loch',
+/** The sounds respellModern writes, each as the standard sound it is (../sounds.ts, mw-5r3p30.352): the lessons say each through the reader's
+ * English accent ('o, as in “or”, short' in American English), never by an English word of their own. */
+export const MODERN_SOUNDS: Readonly<Record<string, SoundId>> = {
+  a: '/a/', e: '/e/', ee: '/i/', o: '/o/', oo: '/u/',
+  v: '/v/', f: '/f/', dh: '/ð/', th: '/θ/', gh: '/ɣ/', y: '/ʝ/', kh: '/x/', hy: '/ç/', z: '/z/', s: '/s/',
+  b: '/b/', p: '/p/', d: '/d/', t: '/t/', g: '/ɡ/', k: '/k/', m: '/m/', n: '/n/', l: '/l/', r: '/ɾ/',
+  ks: '/ks/', ps: '/ps/', mb: '/mb/', nd: '/nd/', ng: '/ŋɡ/', nks: '/ŋks/',
 };
 
 /** The bundled clip of the sound of a Greek word of ONE letter (mw-5r3p30.347): ὁ, Ὃ and ὦ play the o, ἡ and ἤ the ee, ἃ the a. A Greek voice handed one
@@ -296,8 +300,8 @@ const VOICED_LIST = 'β, γ, δ, ζ, λ, μ, ν or ρ';
 
 /** The sounds of Modern Greek that change by the next letter (mw-i7xe0n.7), each with its two sides, the line a wrong pick shows, and New Testament words of
  * each side (tests/unit/sound-rule-sides.test.ts holds every word to its side and to the text). No word of the text begins with μπ, ντ or γκ, so their start side has none. */
-function modernSoundRules(keyWords: Readonly<Record<string, string>>): SoundRule[] {
-  const asIn = (sound: string): string => `${sound}, as in “${keyWords[sound]}”`;
+function modernSoundRules(say: SoundWords): SoundRule[] {
+  const asIn = say.keyed;
   const side = (id: string, label: string, line: string, words: readonly string[] = []): SoundRuleSide => ({ id, label, line, words });
   const rule = (ideaId: string, id: RuleId, sides: [SoundRuleSide, SoundRuleSide]): SoundRule => ({
     ideaId,
@@ -321,7 +325,7 @@ function modernSoundRules(keyWords: Readonly<Record<string, string>>): SoundRule
       side('soft', `χ before ${FRONT}: hy`, `χ before ${FRONT} is soft: ${asIn('hy')}`, ['χεῖρες', 'ψυχή', 'ἔχει']),
     ]),
     rule('letter-gamma', 'gamma', [
-      side('hard', `γ before ${BACK}: gh`, `γ before ${BACK} is gh, a soft throaty g`, ['λόγος', 'γάρ', 'λέγω']),
+      side('hard', `γ before ${BACK}: gh`, `γ before ${BACK} is ${asIn('gh')}`, ['λόγος', 'γάρ', 'λέγω']),
       side('soft', `γ before ${FRONT}: y`, `γ before ${FRONT} is ${asIn('y')}`, ['γῆ', 'λέγει', 'ἡγεμών']),
     ]),
     rule('letter-sigma', 'sigma', [
@@ -335,21 +339,23 @@ function modernSoundRules(keyWords: Readonly<Record<string, string>>): SoundRule
     nasal('pair-nt', 'nt', 'ντ', 'd', 'nd', ['ἐντολή', 'πάντοτε']),
     nasal('pair-gk', 'gk', 'γκ', 'g', 'ng', ['ἀνάγκη', 'ἤνεγκεν']),
     rule('pair-gch', 'gch', [
-      side('hard', `γχ before ${BACK}: ngkh`, `γχ before ${BACK} is ng plus kh, as in “${keyWords.ng}” and “${keyWords.kh}”`, ['ἔλεγχος', 'ἔλεγχον']),
-      side('soft', `γχ before ${FRONT}: nghy`, `γχ before ${FRONT} is ng plus hy, as in “${keyWords.ng}” and “${keyWords.hy}”`, ['ἐλέγχει', 'συγχαίρω']),
+      side('hard', `γχ before ${BACK}: ngkh`, `γχ before ${BACK} is ${asIn('ng')}, plus ${asIn('kh')}`, ['ἔλεγχος', 'ἔλεγχον']),
+      side('soft', `γχ before ${FRONT}: nghy`, `γχ before ${FRONT} is ${asIn('ng')}, plus ${asIn('hy')}`, ['ἐλέγχει', 'συγχαίρω']),
     ]),
   ];
 }
 
 /** What the tutor is told of Modern Greek (mw-5r3p30.268): the rules respellModern writes, and the ones the lessons teach, so its answers say the sounds
- * the app speaks and respells. tests/unit/one-pronunciation-scheme.test.ts holds its examples to respellModern. */
-export const MODERN_TUTOR_GUIDE =
+ * the app speaks and respells; each sound's English hint is the reader's accent's (`say`, mw-5r3p30.352), so the tutor's examples fit his ear.
+ * tests/unit/one-pronunciation-scheme.test.ts holds its examples to respellModern. */
+export const modernTutorGuide = (say: SoundWords): string =>
   'Modern Greek, as Greek is spoken in Greece today: never by English spelling habit and never by the Erasmian (school) pronunciation. ' +
   'The app respells a word in syllables, the stressed one in capitals: ταῦτα is TAF-ta, Πάντοτε is PAN-do-te, χαίρετε is HYE-re-te. ' +
+  `The vowels, each with a word of the reader's English that has it: ${['a', 'e', 'ee', 'o', 'oo'].map(say.asIn).join('; ')}. ` +
   'αυ and ευ are af and ef before θ κ ξ π σ τ φ χ ψ, and av and ev before a voiced consonant or a vowel (never "aw", never "ow"); ηυ is eef or eev the same way. ' +
   'αι is e; ει, οι, υι, η, ι and υ are ee; ου is oo; ω and ο are o. ' +
-  'β is v; δ is dh as in "this"; γ is gh (or y before e or i); θ is th as in "thin"; φ is f; ' +
-  'χ is kh, the ch of "loch", before a, o, ou and a consonant, and the softer hy before e or i. ' +
+  `β is v; δ is ${say.asIn('dh')}; γ is gh (or y before e or i); θ is ${say.asIn('th')}; φ is f; ρ is ${say.asIn('r')}; ` +
+  `χ is ${say.asIn('kh')}, before a, o, ou and a consonant, and the softer hy before e or i. ` +
   'μπ, ντ and γκ are b, d and g at the start of a word and mb, nd and ng inside it; γγ is ng; γχ is ng plus kh (or hy before e or i); γξ is nks. ' +
   'σ is z before β γ δ ζ λ μ ν ρ. A doubled consonant is said once. Both breathings are silent, and the iota under a letter is not said.';
 
@@ -360,12 +366,12 @@ export const MODERN: Pronunciation = {
   scoringLang: 'el',
   note: "How Greek is spoken today, by the phone's Greek voice.",
   respell: respellModern,
-  keyWords: MODERN_KEY_WORDS,
+  sounds: MODERN_SOUNDS,
   loneLetterClip: loneLetterClipModern,
   voiceForm: voiceFormModern,
   // a Greek voice names a bare lower-case letter the modern way ('vita' for β); a capital would be read 'capital ...'
   letterForm: (letter) => letter.toLowerCase(),
-  tutorGuide: MODERN_TUTOR_GUIDE,
-  lessons: modernLessons(MODERN_KEY_WORDS),
-  soundRules: modernSoundRules(MODERN_KEY_WORDS),
+  tutorGuide: modernTutorGuide,
+  lessons: modernLessons,
+  soundRules: modernSoundRules,
 };

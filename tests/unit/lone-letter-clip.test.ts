@@ -50,11 +50,11 @@ const STUB: Pronunciation = {
   scoringLang: 'el',
   note: '',
   respell: (w) => w,
-  keyWords: {},
+  sounds: {},
   loneLetterClip: (w) => `/sounds/stub/${w.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()}.mp3`,
   voiceForm: (t) => t,
   letterForm: (l) => l,
-  tutorGuide: 'Stub.',
+  tutorGuide: () => 'Stub.',
 };
 
 describe('a one-letter Greek word said alone', () => {
