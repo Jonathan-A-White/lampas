@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.241",
+    "date": "2026-10-15",
+    "story": "mw-5r3p30.376",
+    "kind": "fixed",
+    "text": "A reader who chose English no longer gets a Greek word card when asking what an English word like \"love\" means."
+  },
+  {
     "version": "0.1.240",
     "date": "2026-10-15",
     "story": "mw-5r3p30.390",

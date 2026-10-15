@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.241
+_2026-10-15_
+- Fixed: A reader who chose English no longer gets a Greek word card when asking what an English word like "love" means.
+
 ## 0.1.240
 _2026-10-15_
 - New: Listen in Audible: turn on the Audio Bible in Settings and a verse's Listen opens The Word of Promise in Audible and tells you which chapter to pick.
