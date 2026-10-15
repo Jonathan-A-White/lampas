@@ -280,6 +280,7 @@ scripts/data-build.ts # the New Testament data build (npx tsx); tests/fixtures/d
 public/              # icon.svg (lamp glyph), icon-192.png, icon-512.png
 public/pictures/     # the hand-drawn memory pictures, one SVG each (docs/pictures.md says how to add one)
 public/data/         # generated NT JSON, committed (~30 MB); only index.json, lexicon.json, frequency.json and rom/8.json are precached
+public/sounds-trial.html sounds-trial/ scripts/sounds-trial/  # the letter-sounds listening page (mw-5r3p30.395, docs/research/letter-sounds.md): the same lone vowels, one-letter words, letter names and letter sounds in eSpeak NG (today's), Piper, Coqui and Chatterbox beside the phone's own voice; served, never precached (pwa-precache.ts globIgnores), linked from nothing in the app, its clips made by scripts/sounds-trial/make-clips.py (research tooling, not in the gate); tests/unit/sounds-trial.test.ts and tests/e2e/sounds-trial.spec.ts hold it
 features/ tests/     # BDD features + steps; unit tests; e2e + shots; support fakes
 docs/pwa-best-practices.md   # copied verbatim from the vault; the law for every screen
 docs/example-words.md        # the owner's own BMA word list (public, an example template); the seed's source

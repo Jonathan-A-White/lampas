@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#0a0e17" />
+    <title>Lampas: letter sounds, a listening trial</title>
+    <!--
+      docs/research/letter-sounds.md (mw-5r3p30.395): the page the Governor opens on his phone to hear, side by side, every way a lone Greek
+      vowel, a one-letter word and a letter drill's sound could be said. It is served from the site like any file in public/ and linked from
+      nothing in the app; the app's worker never precaches it (pwa-precache.ts globIgnores). Nothing here changes the app.
+      The clips are public/sounds-trial/<candidate>/<name>.mp3, made by scripts/sounds-trial/make-clips.py.
+    -->
+    <style>
+      :root {
+        color-scheme: dark;
+        --canvas: #0a0e17;
+        --card: #141a27;
+        --ink: #e9e6df;
+        --dim: #a7a69f;
+        --line: #2a3242;
+        --accent: #f2b544;
+        --accent-fg: #1a1204;
+        --playing: #3b6a3f;
+        --greek: "Gentium Plus", "Noto Serif", "Cardo", "Times New Roman", serif;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--canvas); color: var(--ink); font: 17px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+      body { padding: 16px 16px max(env(safe-area-inset-bottom), 48px); max-width: 44rem; margin: 0 auto; }
+      h1 { font-size: 1.5rem; margin: 0 0 4px; }
+      h2 { font-size: 1.15rem; margin: 28px 0 8px; color: var(--accent); }
+      p { margin: 6px 0; }
+      .dim { color: var(--dim); font-size: 0.95rem; }
+      .greek { font-family: var(--greek); font-size: 1.75rem; line-height: 1.2; }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin: 12px 0; }
+      .head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+      .cell { display: grid; grid-template-columns: 7.5rem 1fr; gap: 6px 10px; align-items: start; padding: 8px 0; border-top: 1px solid var(--line); }
+      .cell .who { font-size: 0.9rem; color: var(--dim); padding-top: 10px; }
+      .cell .who b { display: block; color: var(--ink); font-weight: 600; }
+      .buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+      button { font: inherit; min-height: 44px; min-width: 44px; padding: 6px 12px; border-radius: 10px; border: 1px solid var(--line); background: #1e2636; color: var(--ink); text-align: left; }
+      button .g { font-family: var(--greek); font-size: 1.35rem; line-height: 1.1; }
+      button small { display: block; color: var(--dim); font-size: 0.78rem; line-height: 1.2; margin-top: 2px; }
+      button[data-playing] { background: var(--playing); }
+      button.row { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 600; }
+      button.row small { color: #4a3a10; }
+      button:disabled { opacity: 0.4; }
+      select { font: inherit; min-height: 44px; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line); background: #1e2636; color: var(--ink); max-width: 100%; }
+      #status { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.85rem; white-space: pre-wrap; color: var(--dim); min-height: 2.4em; }
+      .missing { color: #d98c8c; }
+      ol { padding-left: 1.3rem; }
+      @media (max-width: 420px) { .cell { grid-template-columns: 1fr; } .cell .who { padding-top: 0; } }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Letter sounds: a listening trial</h1>
+      <p class="dim">Lampas research (mw-5r3p30.395). Not part of the app: nothing here changes it. Tap, listen, and say which column sounds like the Greek voice you hear elsewhere in Lampas. “Phone voice” is this phone’s own Greek voice through Web Speech, the one the Reader uses.</p>
+    </header>
+
+    <section class="card" id="voice-card">
+      <h2 style="margin-top:0">Your phone’s Greek voice</h2>
+      <p><label for="voices">Greek voices this phone lists: </label><select id="voices" aria-label="Greek voice"></select></p>
+      <div class="buttons">
+        <button type="button" data-candidate="phone" data-say="ὁ λόγος" data-mode="plain"><span class="g">ὁ λόγος</span><small>the voice, saying a phrase</small></button>
+        <button type="button" data-candidate="phone" data-say="πατήρ" data-mode="plain"><span class="g">πατήρ</span><small>a word with its stress at the end</small></button>
+      </div>
+      <p class="dim">What was handed to the voice, and what it reported:</p>
+      <p id="status" aria-live="polite"></p>
+    </section>
+
+    <main id="trial"></main>
+
+    <section class="card">
+      <h2 style="margin-top:0">How to report</h2>
+      <ol>
+        <li>Under <b>Your phone’s Greek voice</b>, tap <b>ὁ λόγος</b>: that is the voice the rest of the app uses. Note its name.</li>
+        <li>In each card, tap the buttons across the columns. <b>Play the row</b> plays every clip of a card one after another.</li>
+        <li>Under <b>Phone voice</b>, the small grey buttons are tricks: the same voice handed different text. Note any that says the bare sound and not the letter’s name.</li>
+        <li>Say which column sounds most like the voice you hear elsewhere, and which single-letter and drill sounds you would accept.</li>
+      </ol>
+    </section>
+
+    <script>
+      // The candidates: 'phone' speaks through Web Speech on this phone; the others are clips under /sounds-trial/<id>/.
+      const CANDIDATES = [
+        { id: 'phone', name: 'Phone voice', note: 'Web Speech, lang el-GR' },
+        { id: 'espeak', name: 'eSpeak NG', note: 'what the app plays today (formant voice)' },
+        { id: 'piper', name: 'Piper el_GR', note: 'rapunzelina low, 16 kHz, CC0 voice data' },
+        { id: 'coqui', name: 'Coqui el/cv', note: 'VITS on Common Voice Greek, 22 kHz, BSD-3' },
+        { id: 'chatterbox', name: 'Chatterbox', note: 'Resemble AI multilingual, 24 kHz, MIT' },
+      ];
+      const NEURAL = ['piper', 'coqui', 'chatterbox'];
+      const clip = (candidate, name) => `/sounds-trial/${candidate}/${name}.mp3`;
+
+      // One phone-voice button: t = the text handed over, l = the label under it, mode = plain | ssml-xml | ssml-raw | cut, ph = the IPA for an SSML phoneme, ms = when a cut stops.
+      const say = (t, l, extra = {}) => ({ kind: 'say', t, l, mode: 'plain', ...extra });
+      // One clip button.
+      const c = (name, l) => ({ kind: 'clip', name, l });
+      const stressedNote = 'a word, with its stress on the end';
+
+      const ROWS = [
+        { section: 'One-letter words', id: 'O-1jn', title: 'Ὃ', sub: '1 John 1:1, “That which”. Said as ὁ: the sound o, not “omicron”.',
+          phone: [say('ὃ ἦν ἀπ᾽ ἀρχῆς', 'in its verse, in lower case: what the Reader hands the voice'), say('Ὃ ἦν ἀπ᾽ ἀρχῆς', 'in its verse, as written'), say('ο ην απ αρχής', 'in its verse, plain modern spelling'),
+            say('ὃ', 'alone, as written (what 0.1.119 handed it)'), say('ό', 'alone, stressed (what 0.1.159 handed it)'), say('ο', 'alone, bare'), say('οο', 'doubled'), say('ο‍', 'with a zero-width joiner after it'), say('ο.', 'with a full stop')],
+          espeak: [c('o', 'o: the clip the app plays today')],
+          neural: [c('o-article', 'ὁ, cut from “ὁ λόγος”'), c('phrase-1jn', 'the verse, whole')] },
+        { section: 'One-letter words', id: 'o', title: 'ὁ', sub: 'the article, as in ὁ λόγος',
+          phone: [say('ὁ λόγος', 'in a phrase'), say('ὁ', 'alone, as written'), say('ο', 'alone, bare'), say('οο', 'doubled'), say('ωω', 'omega doubled'), say('ο‍', 'with a zero-width joiner'), say('ο, ο', 'twice, with a comma'),
+            say('ο', 'SSML phoneme o, with the XML header (Chrome strips the tags before the voice sees them)', { mode: 'ssml-xml', ph: 'o' }), say('ο', 'SSML phoneme o, raw tag (the voice sees the tag)', { mode: 'ssml-raw', ph: 'o' }),
+            say('ὁ λόγος', '“ὁ λόγος” stopped after 0.4 s', { mode: 'cut', ms: 400 })],
+          espeak: [c('o', 'o: the clip the app plays today')],
+          neural: [c('o-article', 'ὁ, cut from “ὁ λόγος”'), c('o', 'o, cut from a stressed syllable'), c('word-o-logos', 'ὁ λόγος, whole')] },
+        { section: 'One-letter words', id: 'ee', title: 'ἡ', sub: 'the article, as in ἡ ζωή. Said as ee.',
+          phone: [say('ἡ ζωή', 'in a phrase'), say('ἡ', 'alone, as written'), say('η', 'alone, bare'), say('ή', 'alone, stressed'), say('ηη', 'doubled'), say('ιι', 'iota doubled'), say('η‍', 'with a zero-width joiner'), say('ἡ ζωή', '“ἡ ζωή” stopped after 0.4 s', { mode: 'cut', ms: 400 })],
+          espeak: [c('ee', 'ee: the clip the app plays today')],
+          neural: [c('ee-article', 'ἡ, cut from “ἡ ζωή”'), c('ee', 'ee, cut from a stressed syllable'), c('word-ee-zoe', 'ἡ ζωή, whole')] },
+        { section: 'One-letter words', id: 'omega', title: 'ὦ', sub: '“O”, as in ὦ ἄνθρωπε. Said as o.',
+          phone: [say('ὦ ἄνθρωπε', 'in a phrase'), say('ὦ', 'alone, as written'), say('ω', 'alone, bare'), say('ώ', 'alone, stressed'), say('ωω', 'doubled'), say('ω‍', 'with a zero-width joiner')],
+          espeak: [c('o', 'o: the clip the app plays today')],
+          neural: [c('o', 'o, cut from a stressed syllable'), c('word-o-anthrope', 'ὦ ἄνθρωπε, whole')] },
+
+        { section: 'The four vowel sounds (lessons, drills)', id: 'vowel-a', title: 'α', sub: 'a',
+          phone: [say('α', 'alone, bare'), say('ά', 'stressed'), say('αα', 'doubled'), say('α‍', 'with a zero-width joiner')],
+          espeak: [c('a', 'a: today’s clip')], neural: [c('a', 'a, cut from ἅγιος')] },
+        { section: 'The four vowel sounds (lessons, drills)', id: 'vowel-e', title: 'ε', sub: 'e',
+          phone: [say('ε', 'alone, bare'), say('έ', 'stressed'), say('εε', 'doubled'), say('ε‍', 'with a zero-width joiner')],
+          espeak: [c('e', 'e: today’s clip')], neural: [c('e', 'e, cut from ἔργον')] },
+        { section: 'The four vowel sounds (lessons, drills)', id: 'vowel-ee', title: 'η ι υ', sub: 'ee',
+          phone: [say('ι', 'iota alone'), say('ί', 'iota stressed'), say('ιι', 'iota doubled'), say('η', 'eta alone'), say('ηη', 'eta doubled')],
+          espeak: [c('ee', 'ee: today’s clip')], neural: [c('ee', 'ee, cut from ἥλιος')] },
+        { section: 'The four vowel sounds (lessons, drills)', id: 'vowel-o', title: 'ο ω', sub: 'o',
+          phone: [say('ο', 'omicron alone'), say('ό', 'omicron stressed'), say('οο', 'omicron doubled'), say('ωω', 'omega doubled')],
+          espeak: [c('o', 'o: today’s clip')], neural: [c('o', 'o, cut from ὅλος')] },
+
+        { section: 'Three letter drills (Hear a letter and pick it)', id: 'beta', title: 'β', sub: 'the drill says the letter today; its sound is v',
+          phone: [say('β', 'names the letter: what the drill plays today'), say('βίβλος', 'a word with it')],
+          espeak: [c('v', 'the sound v, alone')],
+          neural: [c('name-vita', 'βήτα, the name'), c('v', 'the sound v, cut from βάση'), c('word-vivlos', 'βίβλος')] },
+        { section: 'Three letter drills (Hear a letter and pick it)', id: 'gamma', title: 'γ', sub: 'the drill says the letter today; its sound before α is gh',
+          phone: [say('γ', 'names the letter: what the drill plays today'), say('ἀγάπη', 'a word with it')],
+          espeak: [c('gh', 'the sound gh, alone')],
+          neural: [c('name-ghama', 'γάμα, the name'), c('gh', 'the sound gh, cut from γάλα'), c('word-agape', 'ἀγάπη')] },
+        { section: 'Three letter drills (Hear a letter and pick it)', id: 'theta', title: 'θ', sub: 'the drill says the letter today; its sound is th',
+          phone: [say('θ', 'names the letter: what the drill plays today'), say('θεός', 'a word with it')],
+          espeak: [c('th', 'the sound th, alone')],
+          neural: [c('name-thita', 'θήτα, the name'), c('th', 'the sound th, cut from θέση'), c('word-theos', 'θεός')] },
+
+        { section: 'The whole voice, for comparison', id: 'voice-o-logos', title: 'ὁ λόγος', sub: 'the word',
+          phone: [say('ὁ λόγος', 'the phone')], espeak: [c('word-o-logos', 'eSpeak NG')], neural: [c('word-o-logos', 'this voice')] },
+        { section: 'The whole voice, for comparison', id: 'voice-ee-zoe', title: 'ἡ ζωή', sub: 'the life',
+          phone: [say('ἡ ζωή', 'the phone')], espeak: [c('word-ee-zoe', 'eSpeak NG')], neural: [c('word-ee-zoe', 'this voice')] },
+        { section: 'The whole voice, for comparison', id: 'voice-o-anthrope', title: 'ὦ ἄνθρωπε', sub: 'O man',
+          phone: [say('ὦ ἄνθρωπε', 'the phone')], espeak: [c('word-o-anthrope', 'eSpeak NG')], neural: [c('word-o-anthrope', 'this voice')] },
+        { section: 'The whole voice, for comparison', id: 'voice-1jn', title: 'ὃ ἦν ἀπ᾽ ἀρχῆς', sub: '1 John 1:1',
+          phone: [say('ὃ ἦν ἀπ᾽ ἀρχῆς', 'the phone')], espeak: [c('phrase-1jn', 'eSpeak NG')], neural: [c('phrase-1jn', 'this voice')] },
+        { section: 'The whole voice, for comparison', id: 'voice-pater', title: 'πατήρ', sub: stressedNote,
+          phone: [say('πατήρ', 'the phone')], espeak: [], neural: [] },
+      ];
+
+      // ---- rendering ----
+      const main = document.getElementById('trial');
+      const esc = (s) => s.replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
+      const buttonHtml = (row, candidate, b) => {
+        if (b.kind === 'say') {
+          const shown = b.t.replace(/‍/g, '') || '␣';
+          return `<button type="button" data-item="${row.id}" data-candidate="${candidate}" data-say="${esc(b.t)}" data-mode="${b.mode}"${b.ph ? ` data-ph="${b.ph}"` : ''}${b.ms ? ` data-ms="${b.ms}"` : ''}><span class="g" lang="el">${esc(shown)}</span><small>${esc(b.l)}</small></button>`;
+        }
+        return `<button type="button" data-item="${row.id}" data-candidate="${candidate}" data-clip="${clip(candidate, b.name)}"><span class="g">▶</span><small>${esc(b.l)}</small></button>`;
+      };
+      let lastSection = null;
+      for (const row of ROWS) {
+        if (row.section !== lastSection) {
+          main.insertAdjacentHTML('beforeend', `<h2>${esc(row.section)}</h2>`);
+          lastSection = row.section;
+        }
+        const cells = CANDIDATES.map((cand) => {
+          const buttons = cand.id === 'phone' ? row.phone : cand.id === 'espeak' ? row.espeak : row.neural;
+          if (buttons.length === 0) return '';
+          return `<div class="cell" data-candidate="${cand.id}"><div class="who"><b>${esc(cand.name)}</b>${esc(cand.note)}</div><div class="buttons">${buttons.map((b) => buttonHtml(row, cand.id, b)).join('')}</div></div>`;
+        }).join('');
+        const rowButton = row.espeak.length + row.neural.length > 0 ? `<button type="button" class="row" data-row="${row.id}">Play the row<small>every clip, one after another</small></button>` : '';
+        main.insertAdjacentHTML('beforeend', `<section class="card" data-item="${row.id}"><div class="head"><span class="greek" lang="el">${esc(row.title)}</span><span class="dim">${esc(row.sub)}</span>${rowButton}</div>${cells}</section>`);
+      }
+
+      // ---- the phone's voice ----
+      const status = document.getElementById('status');
+      const voicesSelect = document.getElementById('voices');
+      const synth = window.speechSynthesis;
+      const greekVoices = () => (synth ? synth.getVoices().filter((v) => v.lang.split(/[-_]/)[0].toLowerCase() === 'el') : []);
+      function fillVoices() {
+        const voices = greekVoices();
+        voicesSelect.innerHTML = voices.length === 0 ? '<option value="">no Greek voice listed (yet)</option>' : voices.map((v, i) => `<option value="${i}">${esc(v.name)} (${esc(v.lang)})${v.localService ? '' : ', online'}</option>`).join('');
+        if (!synth) voicesSelect.innerHTML = '<option value="">this browser cannot speak</option>';
+      }
+      fillVoices();
+      if (synth) synth.addEventListener('voiceschanged', fillVoices);
+      const chosenVoice = () => greekVoices()[Number(voicesSelect.value)] || null;
+      const log = (line) => { status.textContent = `${line}\n${status.textContent}`.split('\n').slice(0, 6).join('\n'); };
+
+      function ssmlOf(b) {
+        const inner = `<phoneme alphabet="ipa" ph="${b.ph}">${b.t}</phoneme>`;
+        return b.mode === 'ssml-xml' ? `<?xml version="1.0"?><speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="el-GR">${inner}</speak>` : `<speak>${inner}</speak>`;
+      }
+      function speakButton(button) {
+        return new Promise((resolve) => {
+          if (!synth || typeof SpeechSynthesisUtterance === 'undefined') { log('This browser cannot speak.'); resolve(); return; }
+          const b = { t: button.dataset.say, mode: button.dataset.mode, ph: button.dataset.ph, ms: Number(button.dataset.ms || 0) };
+          const text = b.mode.startsWith('ssml') ? ssmlOf(b) : b.t;
+          synth.cancel();
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = 'el-GR';
+          const voice = chosenVoice();
+          if (voice) u.voice = voice;
+          const shown = JSON.stringify(text).replace(/\\u200d/g, '<ZWJ>');
+          log(`→ ${shown} lang=${u.lang} voice=${voice ? voice.name : '(phone picks)'}`);
+          let done = false;
+          const finish = (what) => { if (done) return; done = true; log(`   ${what}`); button.removeAttribute('data-playing'); resolve(); };
+          u.onstart = () => log('   started');
+          u.onend = () => finish('ended');
+          u.onerror = (e) => finish(`error: ${e.error}`);
+          button.setAttribute('data-playing', '');
+          synth.speak(u);
+          if (b.mode === 'cut' && b.ms > 0) setTimeout(() => { synth.cancel(); finish(`cut at ${b.ms} ms`); }, b.ms);
+          setTimeout(() => finish('no end event after 6 s'), 6000);
+        });
+      }
+
+      // ---- the clips ----
+      const audio = new Audio();
+      audio.preload = 'auto';
+      let playingButton = null;
+      function playClip(button) {
+        return new Promise((resolve) => {
+          if (synth) synth.cancel();
+          audio.pause();
+          if (playingButton) playingButton.removeAttribute('data-playing');
+          playingButton = button;
+          button.setAttribute('data-playing', '');
+          const over = (what) => {
+            audio.onended = audio.onerror = null;
+            button.removeAttribute('data-playing');
+            if (what) log(what);
+            resolve();
+          };
+          audio.onended = () => over(null);
+          audio.onerror = () => { button.classList.add('missing'); over(`could not play ${button.dataset.clip}`); };
+          audio.src = button.dataset.clip;
+          audio.currentTime = 0;
+          audio.play().catch((e) => over(`could not play ${button.dataset.clip}: ${e.message}`));
+        });
+      }
+
+      async function playRow(id) {
+        const buttons = [...document.querySelectorAll(`section[data-item="${id}"] button[data-clip]`)];
+        for (const b of buttons) {
+          await playClip(b);
+          await new Promise((r) => setTimeout(r, 500));
+        }
+      }
+
+      document.addEventListener('click', (event) => {
+        const button = event.target.closest('button');
+        if (!button) return;
+        if (button.dataset.clip) void playClip(button);
+        else if (button.dataset.say) void speakButton(button);
+        else if (button.dataset.row) void playRow(button.dataset.row);
+      });
+    </script>
+  </body>
+</html>
