@@ -260,7 +260,7 @@ describe('the letter descriptions name Greek letters and the scheme says what α
 
 describe('the worked example and the tile words of a sound card make the sound it teaches (found by the sweep for mw-5r3p30.351)', () => {
   /** The idea's word, as the card shows it, handed to the same check as an example with its letter or pair marked wherever the idea's spans stand. */
-  const asExample = (id: string, form: string): IdeaExample => {
+  const asExample = (id: string, form: string): IdeaExample | undefined => {
     const [example] = ideaExamples(id, [{ ...john, verses: [{ ...john.verses[0], g: [{ ...john.verses[0].g[0], t: form, l: form, p: 'N-NSM' }] }] }], undefined, undefined, scheme);
     return example;
   };
@@ -268,7 +268,7 @@ describe('the worked example and the tile words of a sound card make the sound i
   it("each letter's worked word has the letter said alone, in the sound its card teaches", () => {
     const wrong: string[] = [];
     for (const letter of LADDER.filter((i) => i.glyphs)) {
-      for (const { say: form } of teachOf(letter.id).worked) if (!asExample(letter.id, form)) wrong.push(`${letter.id}: ${form} is not an example of it`);
+      for (const { say, word } of teachOf(letter.id).worked) for (const form of [say ?? word]) if (!asExample(letter.id, form)) wrong.push(`${letter.id}: ${form} is not an example of it`);
     }
     expect(wrong).toEqual([]);
   });
