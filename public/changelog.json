@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.246",
+    "date": "2026-10-15",
+    "story": "mw-5r3p30.249",
+    "kind": "fixed",
+    "text": "the tutor's Sound it out help no longer adds an \"h\" for a rough breathing in Modern Greek."
+  },
+  {
     "version": "0.1.245",
     "date": "2026-10-15",
     "story": "mw-5r3p30.355",

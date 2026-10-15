@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.246
+_2026-10-15_
+- Fixed: the tutor's Sound it out help no longer adds an "h" for a rough breathing in Modern Greek.
+
 ## 0.1.245
 _2026-10-15_
 - Fixed: In the letter sound questions, every choice is now one short sound like 'o, as in “or”, short', never a rule or a long aside.
