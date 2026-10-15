@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.261
+_2026-10-15_
+- New: A table of forms can be put in Review, which asks you for its forms one by one by their grammatical names.
+
 ## 0.1.259
 _2026-10-15_
 - Fixed: Talk and Ask now keep and send a long pasted prayer or passage, up to 4000 characters, instead of cutting it off.

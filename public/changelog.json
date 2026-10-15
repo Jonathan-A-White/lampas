@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.261",
+    "date": "2026-10-15",
+    "story": "mw-svw421.6",
+    "kind": "new",
+    "text": "A table of forms can be put in Review, which asks you for its forms one by one by their grammatical names."
+  },
+  {
     "version": "0.1.259",
     "date": "2026-10-15",
     "story": "mw-5r3p30.413",
