@@ -143,8 +143,22 @@ function chooseVoices(synth: SpeechSynthesis): void {
   const speakOn = synth.speak.bind(synth);
   synth.speak = (utterance: SpeechSynthesisUtterance) => {
     applyChoices(utterance, synth);
+    // the package sets onerror before it hands the utterance over; a browser that wants a tap first refuses with 'not-allowed' (mw-5r3p30.366)
+    const prior = utterance.onerror;
+    utterance.onerror = function (this: SpeechSynthesisUtterance, event: SpeechSynthesisErrorEvent) {
+      if (event.error === 'not-allowed') refusedListeners.forEach((l) => l());
+      prior?.call(this, event);
+    };
     speakOn(utterance);
   };
+}
+
+const refusedListeners = new Set<() => void>();
+
+/** Calls `listener` when the browser refuses to speak because nothing has been tapped yet (an utterance ends in the error 'not-allowed'); returns the unsubscribe. */
+export function onSpeechRefused(listener: () => void): () => void {
+  refusedListeners.add(listener);
+  return () => refusedListeners.delete(listener);
 }
 
 // A word, a speaker or a hold that speaks while a reading or a tutor's answer is under way INTERRUPTS it (docs/read-aloud.md 'The speaking bar'): the

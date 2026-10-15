@@ -12,7 +12,7 @@ import { weaveForTeaching } from './data/weave';
 import { publish, useLatest } from './events/bus';
 import { pronunciationOf } from './speech/pronunciation';
 import { proseOf } from './speech/proseOf';
-import { ReadAloud } from './speech/ReadAloud';
+import { LessonReadAloud } from './speech/ReadAloud';
 import { SpeakButton } from './speech/SpeakButton';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { focusOnMount } from './ui/focus';
@@ -108,7 +108,7 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
                   {current.lemma}
                 </p>
                 <SpeakButton text={current.lemma} id={`teach:${current.lemma}`} label="Hear it" kind="speaker" className="min-h-12 min-w-12 shrink-0" />
-                <ReadAloud id={`teach-word:${current.lemma}`} text={proseOf([current.lemma, current.gloss, parse ? `As it first stands in the chapter: ${parse}` : null])} className="ml-auto" />
+                <LessonReadAloud id={`teach-word:${current.lemma}`} text={proseOf([current.lemma, current.gloss, parse ? `As it first stands in the chapter: ${parse}` : null])} className="ml-auto" />
               </div>
               <p data-testid="teach-translit" className="mt-1 break-words text-xl text-muted">
                 {pronunciationOf(pronunciation).respell(current.lemma)}

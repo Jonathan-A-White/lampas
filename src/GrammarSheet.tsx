@@ -6,7 +6,7 @@ import { exampleMeaning } from './data/grammar/ideaSheet';
 import { conceptOf } from './data/grammar-concepts';
 import { grammarExamples } from './data/grammarExamples';
 import { proseOf } from './speech/proseOf';
-import { ReadAloud } from './speech/ReadAloud';
+import { LessonReadAloud } from './speech/ReadAloud';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { focusOnMount } from './ui/focus';
 import { useSheetBack } from './ui/sheetBack';
@@ -60,7 +60,7 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onT
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-1">
           <div className="flex items-start justify-between gap-2">
             <h2 className="min-w-0 break-words text-2xl font-bold">{term}</h2>
-            <ReadAloud id={`grammar:${term}`} text={proseOf([term, concept?.explanation, concept ? 'In Greek' : null, concept?.greek])} />
+            <LessonReadAloud id={`grammar:${term}`} text={proseOf([term, concept?.explanation, concept ? 'In Greek' : null, concept?.greek])} />
           </div>
           {concept ? (
             <>
