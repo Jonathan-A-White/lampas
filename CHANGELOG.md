@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.235
+_2026-10-15_
+- Fixed: The sound of o (omicron and omega) is now explained with the o of "or", said short, which fits an American ear, instead of "lot".
+
 ## 0.1.234
 _2026-10-15_
 - Fixed: A reader who has said no to the Greek no longer gets Greek words in the tutor's answer when he asks what an English word means.
