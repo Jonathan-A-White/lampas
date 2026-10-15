@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.259
+_2026-10-15_
+- Fixed: Talk and Ask now keep and send a long pasted prayer or passage, up to 4000 characters, instead of cutting it off.
+
 ## 0.1.257
 _2026-10-15_
 - New: A grammar idea now links to its table, and Review asks you for an ending only after you have opened the table that shows it.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.259",
+    "date": "2026-10-15",
+    "story": "mw-5r3p30.413",
+    "kind": "fixed",
+    "text": "Talk and Ask now keep and send a long pasted prayer or passage, up to 4000 characters, instead of cutting it off."
+  },
+  {
     "version": "0.1.257",
     "date": "2026-10-15",
     "story": "mw-svw421.5",
