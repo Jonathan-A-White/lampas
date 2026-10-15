@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.232
+_2026-10-15_
+- New: The grammar ladder now teaches how Greek words are built (stems and endings, the three declensions, the augment, tense signs, contract and -μι verbs, εἰμί and οἶδα), and a passage you are reading tells you which of these its words use.
+
 ## 0.1.231
 _2026-10-15_
 - Fixed: Drill it now takes its words from the chapter you are reading toward, and does not show the same word twice in one drill.
