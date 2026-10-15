@@ -15,6 +15,11 @@ sound-alikes for the letters.
 `pronunciationOf(chosen).respell(word.t)`, and `lang` is the language tag of the voice that speaks (Settings keeps
 the chosen id under `greekPronunciation`). Each scheme is one file in `src/speech/schemes/`.
 
+`spellings?(greekWord)` (mw-5r3p30.351) is how the scheme reads a word unit by unit: `[{from, to, sound}]` over the word's Greek letters, a letter alone or
+a pair it says as one sound (οι is one unit, 'ee'; σ before μ is a unit 'z'). The idea sheet asks it so that a letter's examples are only words where the
+letter is read alone as a sound the lesson teaches (`SoundLesson.sounds`), and a pair's only where the scheme reads that pair; a scheme that leaves it out
+holds nothing back.
+
 `loneLetterClip(word)` is the bundled clip of the sound of a Greek word of ONE letter (ὁ, ἡ, ὦ, Ὃ), played instead of any voice (mw-5r3p30.347).
 A Greek voice handed one letter names it ('omicron'), with or without an accent: mw-5r3p30.262 handed it the stressed vowel 'ό', which
 passed its tests, and his phone (and espeak-ng's `el`: 'omikron tonos') still said the name. So no voice is handed such a word at all.

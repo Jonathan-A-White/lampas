@@ -12,12 +12,12 @@ export function modernLessons(say: SoundWords): Readonly<Record<string, SoundLes
   const keyed = say.keyed;
   /** As one choice of a quiz (mw-5r3p30.355): 'e, as in “pet”', nothing else; the rule that goes with a sound stays in its `sound` and its lesson. */
   const choice = say.choice;
-  const one = (symbol: string): SoundLesson => ({ sound: keyed(symbol), choice: choice(symbol) });
+  const one = (symbol: string): SoundLesson => ({ sound: keyed(symbol), choice: choice(symbol), sounds: [symbol] });
 
   const letters: [string, SoundLesson][] = [
     ['alpha', one('a')],
     ['beta', one('v')],
-    ['gamma', { sound: `${keyed('gh')}; before e and i it is ${keyed('y')}`, choice: choice('gh') }],
+    ['gamma', { sound: `${keyed('gh')}; before e and i it is ${keyed('y')}`, choice: choice('gh'), sounds: ['gh', 'y'] }],
     ['delta', one('dh')],
     ['epsilon', one('e')],
     ['zeta', one('z')],
@@ -34,11 +34,11 @@ export function modernLessons(say: SoundWords): Readonly<Record<string, SoundLes
     ['rho', one('r')],
     ['sigma', one('s')],
     ['tau', one('t')],
-    ['upsilon', one('ee')],
+    ['upsilon', { sound: keyed('ee'), choice: choice('ee'), sounds: ['ee'], also: 'In αυ, ευ and ηυ it is v or f (av or af, ev or ef, eev or eef).' }],
     ['phi', one('f')],
-    ['chi', { sound: `${keyed('kh')}, before a, o, ou and a consonant; before e and i it is softer, ${asIn('hy')}`, choice: choice('kh') }],
+    ['chi', { sound: `${keyed('kh')}, before a, o, ou and a consonant; before e and i it is softer, ${asIn('hy')}`, choice: choice('kh'), sounds: ['kh', 'hy'] }],
     ['psi', one('ps')],
-    ['omega', { sound: `${keyed('o')}, the same as omicron`, choice: choice('o') }],
+    ['omega', { sound: `${keyed('o')}, the same as omicron`, choice: choice('o'), sounds: ['o'] }],
   ];
   const vowelPairs: [string, SoundLesson][] = [
     ['ai', one('e')],
