@@ -10,56 +10,59 @@ export function modernLessons(say: SoundWords): Readonly<Record<string, SoundLes
   const asIn = say.asIn;
   /** As an idea's sound: 'e, as in “pet”'. */
   const keyed = say.keyed;
+  /** As one choice of a quiz (mw-5r3p30.355): 'e, as in “pet”', nothing else; the rule that goes with a sound stays in its `sound` and its lesson. */
+  const choice = say.choice;
+  const one = (symbol: string): SoundLesson => ({ sound: keyed(symbol), choice: choice(symbol) });
 
-  const letters: [string, string][] = [
-    ['alpha', keyed('a')],
-    ['beta', keyed('v')],
-    ['gamma', `${keyed('gh')}; before e and i it is ${keyed('y')}`],
-    ['delta', keyed('dh')],
-    ['epsilon', keyed('e')],
-    ['zeta', keyed('z')],
-    ['eta', keyed('ee')],
-    ['theta', keyed('th')],
-    ['iota', keyed('ee')],
-    ['kappa', keyed('k')],
-    ['lambda', keyed('l')],
-    ['mu', keyed('m')],
-    ['nu', keyed('n')],
-    ['xi', keyed('ks')],
-    ['omicron', keyed('o')],
-    ['pi', keyed('p')],
-    ['rho', keyed('r')],
-    ['sigma', keyed('s')],
-    ['tau', keyed('t')],
-    ['upsilon', keyed('ee')],
-    ['phi', keyed('f')],
-    ['chi', `${keyed('kh')}, before a, o, ou and a consonant; before e and i it is softer, ${asIn('hy')}`],
-    ['psi', keyed('ps')],
-    ['omega', `${keyed('o')}, the same as omicron`],
+  const letters: [string, SoundLesson][] = [
+    ['alpha', one('a')],
+    ['beta', one('v')],
+    ['gamma', { sound: `${keyed('gh')}; before e and i it is ${keyed('y')}`, choice: choice('gh') }],
+    ['delta', one('dh')],
+    ['epsilon', one('e')],
+    ['zeta', one('z')],
+    ['eta', one('ee')],
+    ['theta', one('th')],
+    ['iota', one('ee')],
+    ['kappa', one('k')],
+    ['lambda', one('l')],
+    ['mu', one('m')],
+    ['nu', one('n')],
+    ['xi', one('ks')],
+    ['omicron', one('o')],
+    ['pi', one('p')],
+    ['rho', one('r')],
+    ['sigma', one('s')],
+    ['tau', one('t')],
+    ['upsilon', one('ee')],
+    ['phi', one('f')],
+    ['chi', { sound: `${keyed('kh')}, before a, o, ou and a consonant; before e and i it is softer, ${asIn('hy')}`, choice: choice('kh') }],
+    ['psi', one('ps')],
+    ['omega', { sound: `${keyed('o')}, the same as omicron`, choice: choice('o') }],
   ];
-  const vowelPairs: [string, string][] = [
-    ['ai', keyed('e')],
-    ['ei', keyed('ee')],
-    ['oi', keyed('ee')],
-    ['ui', keyed('ee')],
-    ['ou', keyed('oo')],
-    ['au', `${asIn('a')} plus ${asIn('v')} or ${asIn('f')}`],
-    ['eu', `${asIn('e')} plus ${asIn('v')} or ${asIn('f')}`],
-    ['eeu', `${asIn('ee')} plus ${asIn('v')} or ${asIn('f')}`],
+  const vowelPairs: [string, SoundLesson][] = [
+    ['ai', one('e')],
+    ['ei', one('ee')],
+    ['oi', one('ee')],
+    ['ui', one('ee')],
+    ['ou', one('oo')],
+    ['au', { sound: `${asIn('a')} plus ${asIn('v')} or ${asIn('f')}`, choice: 'av or af' }],
+    ['eu', { sound: `${asIn('e')} plus ${asIn('v')} or ${asIn('f')}`, choice: 'ev or ef' }],
+    ['eeu', { sound: `${asIn('ee')} plus ${asIn('v')} or ${asIn('f')}`, choice: 'eev or eef' }],
   ];
-  const consonantPairs: [string, string][] = [
-    ['mp', `${asIn('b')} at the start of a word, ${asIn('mb')} inside it`],
-    ['nt', `${asIn('d')} at the start of a word, ${asIn('nd')} inside it`],
-    ['gk', `${asIn('g')} at the start of a word, ${asIn('ng')} inside it`],
-    ['gg', asIn('ng')],
-    ['gch', `${asIn('ng')} plus ${asIn('kh')}, or ${asIn('hy')} before e and i`],
-    ['gks', asIn('nks')],
+  const consonantPairs: [string, SoundLesson][] = [
+    ['mp', { sound: `${asIn('b')} at the start of a word, ${asIn('mb')} inside it`, choice: choice('b') }],
+    ['nt', { sound: `${asIn('d')} at the start of a word, ${asIn('nd')} inside it`, choice: choice('d') }],
+    ['gk', { sound: `${asIn('g')} at the start of a word, ${asIn('ng')} inside it`, choice: choice('g') }],
+    ['gg', { sound: asIn('ng'), choice: choice('ng') }],
+    ['gch', { sound: `${asIn('ng')} plus ${asIn('kh')}, or ${asIn('hy')} before e and i`, choice: 'ngkh' }],
+    ['gks', { sound: asIn('nks'), choice: choice('nks') }],
   ];
 
   const lessons: Record<string, SoundLesson> = {};
-  for (const [name, sound] of letters) lessons[`letter-${name}`] = { sound };
-  for (const [name, sound] of vowelPairs) lessons[`diphthong-${name}`] = { sound };
-  for (const [name, sound] of consonantPairs) lessons[`pair-${name}`] = { sound };
+  for (const [name, lesson] of letters) lessons[`letter-${name}`] = lesson;
+  for (const [name, lesson] of vowelPairs) lessons[`diphthong-${name}`] = lesson;
+  for (const [name, lesson] of consonantPairs) lessons[`pair-${name}`] = lesson;
 
   lessons.diphthongs = {
     text: `Some vowels pair up and make one sound, said the Modern Greek way: αι is the ${asIn('e')} (like ε), ει, οι and υι are the ${asIn('ee')}, and ου is the ${asIn('oo')}. In αυ, ευ and ηυ the υ is a ${asIn('v')} before a vowel or β, γ, δ, ζ, λ, μ, ν or ρ, and an ${asIn('f')} before any other letter or at the end of the word: Παῦλος is “PAV-los” and εὐαγγέλιον is “ev-an-GHE-lee-on”, but αὐτός is “af-TOS” and εὐθύς is “ef-THEES”. Marks you meet soon will show when two vowels are not a pair.`,

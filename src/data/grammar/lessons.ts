@@ -38,6 +38,13 @@ export function ideaSound(idea: GrammarIdea, scheme: Pronunciation = chosenPronu
   return lessonOf(idea, scheme, accent)?.sound;
 }
 
+/** How the idea sounds as ONE choice of a quiz (mw-5r3p30.355): the lesson's short label ('o, as in “or”, short'), else its sound up to the first semicolon;
+ * never a rule ('before a, o, ou'), an aside or a bracket, which stay on the sheet and the Hint. Undefined when the scheme does not say. */
+export function ideaChoice(idea: GrammarIdea, scheme: Pronunciation = chosenPronunciation(), accent: EnglishAccent = chosenAccent()): string | undefined {
+  const lesson = lessonOf(idea, scheme, accent);
+  return lesson?.choice ?? lesson?.sound?.split(';')[0].trim();
+}
+
 /**
  * How a sound-bearing idea sounds, for the idea sheet's 'How it sounds' (mw-5r3p30.234): the scheme's whole lesson, else 'In <label> it sounds like
  * <sound>.', else the line saying the scheme has no lesson for it; undefined for an idea about no sound. The card's own teaching (teach/) says what

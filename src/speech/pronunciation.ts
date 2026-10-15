@@ -14,6 +14,9 @@ export type GreekPronunciation = string;
 export interface SoundLesson {
   text?: string;
   sound?: string;
+  /** `sound` as one choice of a quiz (mw-5r3p30.355): the sound's short label only, 'o, as in “or”, short', never a rule or an aside; `sound` when left out
+   * (cut at its first semicolon, quickRound.ts shortSound). */
+  choice?: string;
 }
 
 /** One side of a sound rule: when it holds, and the words that stand on it. */

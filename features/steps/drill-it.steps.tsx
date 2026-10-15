@@ -363,6 +363,41 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario("Omicron's sound step shows four short choices of one shape", ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with the goal {string} and a fake Postern', (_, goal: string) => open(goal, {}));
+    When('he opens the letter sheet of {string} from the alphabet sheet', async (_, name: string) => {
+      await opensIdeaFromGoal('alphabet');
+      const tile = within(ideaSheet()).getAllByTestId('teach-tile').find((t) => t.getAttribute('data-name') === name);
+      if (!tile) throw new Error(`no tile ${name} on the alphabet sheet`);
+      await user.click(within(tile).getByRole('button', { name: `About ${name}` }));
+      await waitFor(() => expect(screen.getAllByRole('dialog', { name: 'Idea' })).toHaveLength(2));
+    });
+    And('he taps Drill it on the letter sheet', async () => {
+      const letterSheet = screen.getAllByRole('dialog', { name: 'Idea' })[1];
+      await user.click(await within(letterSheet).findByRole('button', { name: 'Drill it', exact: true }));
+      await screen.findByRole('dialog', { name: 'Drill it' });
+    });
+    And('he answers right until step {int} of Drill it', async (_, step: number) => {
+      for (let guard = 0; guard < 20 && stepNow() < step; guard += 1) {
+        await answer('letter-omicron', true);
+        await next();
+      }
+      expect(stepNow()).toBe(step);
+    });
+    Then('step {int} asks {string} with four short choices, one of them {string}', (_, step: number, prompt: string, right: string) => {
+      expect(stepNow()).toBe(step);
+      expect(within(drillDialog()).getByTestId('grammar-prompt')).toHaveTextContent(prompt);
+      const options = Array.from(drillDialog().querySelectorAll('[data-option]')).map((o) => o.textContent ?? '');
+      expect(options).toHaveLength(4);
+      expect(options).toContain(right);
+      for (const option of options) {
+        expect(option, option).toMatch(/^\S+, /);
+        expect(option, option).not.toMatch(/\(| before | after /);
+        expect(option.length, option).toBeLessThanOrEqual(32);
+      }
+    });
+  });
+
   Scenario('A miss takes the next question to an easier step', ({ Given, And, When, Then }) => {
     Given(...givens.solidFrontier);
     And(OPENS, opensIdea);
