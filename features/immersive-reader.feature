@@ -105,6 +105,12 @@ Feature: Immersive reader
     When Immersive reader is switched Off
     Then the page has left full screen
 
+  Scenario: A Reader opened again where he left it has not asked for full screen
+    Given Lampas is opened on Romans 8 with Immersive reader On and a phone that can go full screen
+    When he scrolls the text down 1500 px
+    And Lampas is opened again on Romans 8 with Immersive reader On, the saved setting slow to be read, and a phone that can go full screen
+    Then the page has not asked for full screen
+
   Scenario: Two-finger taps bring back Lampas's own bars but keep the page full screen
     Given Lampas is opened on Romans 8 with Immersive reader On and a phone that can go full screen
     When he scrolls the text down 200 px
