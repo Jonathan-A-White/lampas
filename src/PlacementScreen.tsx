@@ -35,6 +35,7 @@ import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { chosenPronunciation } from './speech/greek';
 import { speakQuestion } from './speech/speakQuestion';
 import { focusOnMount } from './ui/focus';
+import { NextBar } from './ui/NextBar';
 
 /** What a placement is of: the saved goal text ('' for none), the approach it walks and 'Read 1 John 1:1' for the goal. */
 interface Session {
@@ -293,11 +294,11 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
             </button>
           ) : null}
           {answered ? (
-            <div className="mt-2">
+            <NextBar>
               <button type="button" data-testid="next" ref={focusOnMount} onClick={() => void afterWalk({ ...state, quick: after! })} className={`${BUTTON} bg-accent text-accent-fg`}>
                 {over ? 'Finish' : 'Next'}
               </button>
-            </div>
+            </NextBar>
           ) : null}
           {!over ? (
             <button type="button" data-testid="stop-here" onClick={() => settled() && stop()} className={`${BUTTON} mt-3 border border-line`}>
@@ -414,11 +415,11 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
         </p>
         <ItemCard item={item} index={state.asked.length} picked={picked} onPick={pick} />
         {picked !== null ? (
-          <div className="mt-2">
+          <NextBar>
             <button type="button" data-testid="next" ref={focusOnMount} onClick={() => void next()} className={`${BUTTON} bg-accent text-accent-fg`}>
               {after && after.done === 'finished' ? 'Finish' : 'Next'}
             </button>
-          </div>
+          </NextBar>
         ) : null}
         <div className="pb-4" />
       </main>

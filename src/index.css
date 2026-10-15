@@ -250,6 +250,19 @@ html {
   padding-bottom: calc(1rem + var(--lp-ask-end, calc(var(--lp-end-inset) + var(--spacing) * 16)));
 }
 
+/* A question screen whose Next bar leaves the round Ask button its place at the bar's right end (src/ui/NextBar.tsx, mw-5r3p30.377) has no room for the button
+ * under it: the box ends at the phone's bar, and the button, which stands 12 px above that, is in the bar. Upright only: sideways the box already has a gutter. */
+/* A sticky bar stops short of the box's end by the box's own padding, so a box with a Next bar has none: the bar ends where the box does and nothing shows
+ * under it (what follows the bar keeps its own room). Doubled so it also wins over `[data-verse-view] .screen`. */
+.screen.screen:has([data-next-bar]) {
+  padding-bottom: 0;
+}
+@media (min-height: 501px) {
+  .screen:has([data-ask-beside]) {
+    margin-bottom: var(--lp-bar-inset);
+  }
+}
+
 /* Sideways the round button sits in a gutter beside the text, not in a row under it (as on the Reader, mw-5r3p30.195). */
 @media (max-height: 500px) {
   .screen {

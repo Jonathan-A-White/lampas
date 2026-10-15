@@ -9,6 +9,7 @@ import { GrammarCard } from './GrammarCard';
 import { FacetLabel } from './FacetLabel';
 import { useSheetBack } from './ui/sheetBack';
 import { focusOnMount } from './ui/focus';
+import { FootBar } from './ui/NextBar';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border text-lg font-medium';
 
@@ -68,7 +69,7 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions, onFinish, onClo
           </div>
         )}
       </div>
-      <div className="shrink-0 border-t border-line px-4 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))]">
+      <FootBar>
         {over ? (
           <button type="button" data-testid="plan-drill-done" ref={focusOnMount} onClick={() => onFinish(passed)} className={`${BUTTON} border-accent bg-accent text-accent-fg`}>
             Done
@@ -78,7 +79,7 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions, onFinish, onClo
             {index === questions.length - 1 ? 'Finish' : 'Next'}
           </button>
         ) : null}
-      </div>
+      </FootBar>
     </div>
   );
 }

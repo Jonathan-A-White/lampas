@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { currentLadderPlace, refParts, type LadderLang } from './data/readingLadder';
 import { setLadderShowing, setReaderView, skipLadderVerse, type ReaderView, type VerseReading } from './data/repositories';
 import { moveVerse, openVerseAt } from './nav/route';
+import { NextBar } from './ui/NextBar';
 import type { LadderHere } from './useLadder';
 import { setVerseAction } from './verse/action';
 
@@ -82,21 +83,25 @@ export function LadderActions({ lang, here, verseKey, verdict, onTryAgain }: { l
     return here.place === null ? (
       <p role="status" className="text-base text-muted">Every verse on the {NAMES[lang]} ladder is read well.</p>
     ) : (
-      <button type="button" onClick={() => void move(false)} className={`${BUTTON} bg-accent text-accent-fg`}>
-        Next verse
-      </button>
+      <NextBar where="view">
+        <button type="button" onClick={() => void move(false)} className={`${BUTTON} bg-accent text-accent-fg`}>
+          Next verse
+        </button>
+      </NextBar>
     );
   }
   return (
-    <div className="space-y-2">
-      {verdict ? (
-        <button type="button" onClick={onTryAgain} className={BUTTON}>
-          Try again
+    <NextBar where="view">
+      <div className="space-y-2">
+        {verdict ? (
+          <button type="button" onClick={onTryAgain} className={BUTTON}>
+            Try again
+          </button>
+        ) : null}
+        <button type="button" onClick={() => void move(true)} className={BUTTON}>
+          Skip for now
         </button>
-      ) : null}
-      <button type="button" onClick={() => void move(true)} className={BUTTON}>
-        Skip for now
-      </button>
-    </div>
+      </div>
+    </NextBar>
   );
 }

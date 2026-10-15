@@ -15,6 +15,7 @@ import { getOpenChapter } from './data/readerChapter';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { WordQuestion } from './WordQuestion';
 import { focusOnMount } from './ui/focus';
+import { NextBar } from './ui/NextBar';
 import { useSettled } from './ui/settle';
 
 type Round = { status: 'loading' } | { status: 'offer' } | { status: 'ready'; questions: Question[] };
@@ -226,7 +227,7 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
       <main className="screen min-h-0 flex-1 px-4 pt-6">
         <WordQuestion question={question} index={index} picked={picked} onPick={pick} />
         {answered ? (
-          <div className="mt-2 grid grid-cols-2 gap-3">
+          <NextBar grid>
             <button
               type="button"
               data-testid="next"
@@ -248,7 +249,7 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
                 Ask the tutor
               </button>
             ) : null}
-          </div>
+          </NextBar>
         ) : null}
         <div className="pb-4">
           <DrillLink card={index} />

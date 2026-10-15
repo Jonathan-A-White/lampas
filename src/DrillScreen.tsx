@@ -15,6 +15,7 @@ import { askInReader, talkInReader } from './nav/readerRequest';
 import { navigate } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { focusOnMount } from './ui/focus';
+import { NextBar } from './ui/NextBar';
 
 interface Session {
   status: 'loading' | 'offer' | 'failed' | 'ready';
@@ -325,15 +326,17 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
           </p>
         ) : null}
         {answered ? (
-          <button
-            type="button"
-            data-testid="next"
-            ref={focusOnMount}
-            onClick={goOn}
-            className="mt-3 min-h-12 w-full rounded-xl bg-accent text-lg font-medium text-accent-fg"
-          >
-            {!lastStep ? 'Next step' : lastWord ? 'Finish' : 'Next word'}
-          </button>
+          <NextBar>
+            <button
+              type="button"
+              data-testid="next"
+              ref={focusOnMount}
+              onClick={goOn}
+              className="min-h-12 w-full rounded-xl bg-accent text-lg font-medium text-accent-fg"
+            >
+              {!lastStep ? 'Next step' : lastWord ? 'Finish' : 'Next word'}
+            </button>
+          </NextBar>
         ) : null}
         {ai ? (
           <div className="mt-3 grid grid-cols-2 gap-3 pb-4">
