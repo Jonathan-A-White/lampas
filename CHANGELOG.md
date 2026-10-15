@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.238
+_2026-10-15_
+- Fixed: The example words on the grammar sheets no longer show a neighbouring word's English, so περί reads 'about' and ἐψηλάφησαν reads 'touched'.
+
 ## 0.1.236
 _2026-10-15_
 - Fixed: A grammar lesson question now uses only the words you have already been taught, such as 'Tap the singular noun' instead of 'Tap the accusative singular personal pronoun'.

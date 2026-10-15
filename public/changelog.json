@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.238",
+    "date": "2026-10-15",
+    "story": "mw-5r3p30.360",
+    "kind": "fixed",
+    "text": "The example words on the grammar sheets no longer show a neighbouring word's English, so περί reads 'about' and ἐψηλάφησαν reads 'touched'."
+  },
+  {
     "version": "0.1.236",
     "date": "2026-10-15",
     "story": "mw-5r3p30.379",
