@@ -25,8 +25,17 @@ const LEVITES_READING_ANSWER = {
   note: 'Nearly there: one word to say again.',
 };
 
+/** TIMED_READING_ANSWER with 'together' lasting from `start` to `end` seconds of the 2.2 s clip. */
+const timedFrom = (start: number, end: number) => ({
+  ...TIMED_READING_ANSWER,
+  focus_words: [{ ...TIMED_READING_ANSWER.focus_words[0], start, end }, TIMED_READING_ANSWER.focus_words[1]],
+});
+
+/** A word of 1.9 s, so a Stop that a loaded host delivers late still lands while it plays. */
+const LONG_WORD_ANSWER = timedFrom(0.2, 2.1);
+
 /** Reads verse `verse` of the chapter at `hash` through the fake mill, which answers with `answer`, and waits for the result with the `marked` words.
- * The clip is as long as he holds the bar, 2.2 s here: the timed word (1.2 to 1.7 s) lies inside it. */
+ * The clip is as long as he holds the bar, 2.2 s here: the timed word lies inside it. */
 async function readVerse(page: Page, answer: unknown, { hash, verse, marked }: { hash: string; verse: number; marked: string[] }) {
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer };
@@ -49,7 +58,8 @@ const paused = (page: Page) => page.evaluate(() => (window as unknown as FakeWin
 
 test("'Me' beside a timed word's speaker plays only that word of the clip, and stops at its end", async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
-  const panel = await readVerse28(page, TIMED_READING_ANSWER);
+  // the word is 0.2 s to 1.0 s of the 2.2 s clip: a loaded host that starves the page for most of a second still sees it paused at its end, not run on to the clip's
+  const panel = await readVerse28(page, timedFrom(0.2, 1.0));
 
   const speaker = panel.getByRole('button', { name: 'Hear together', exact: true });
   const me = panel.getByRole('button', { name: 'Hear me say together', exact: true });
@@ -73,12 +83,12 @@ test("'Me' beside a timed word's speaker plays only that word of the clip, and s
   const plays = await seen(page);
   expect(plays).toHaveLength(1);
   expect(plays[0].src).toMatch(/^blob:/);
-  expect(plays[0].from).toBeCloseTo(1.2, 2);
+  expect(plays[0].from).toBeCloseTo(0.2, 2);
   // ... and pauses where the word ends, not at the end of the clip, and the button says Me again
   await expect.poll(() => paused(page)).toHaveLength(1);
   const [at] = await paused(page);
-  expect(at).toBeGreaterThanOrEqual(1.7);
-  expect(at).toBeLessThan(1.7 + 0.2);
+  expect(at).toBeGreaterThanOrEqual(1.0);
+  expect(at).toBeLessThan(1.0 + 0.5);
   await expect(me).toHaveText('Me');
 });
 
@@ -110,8 +120,11 @@ test("A flagged word's comma stays with the word, before its speaker and Me, on 
 
 test('Stop ends a word before its end, and Play my reading still plays all of the clip', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
-  const panel = await readVerse28(page, TIMED_READING_ANSWER);
+  // a long word (1.9 s of the 2.2 s clip): Stop must land while it still plays, though a loaded host takes most of a second to deliver the second tap
+  // (mw-5r3p30.338: with the 0.5 s word of TIMED_READING_ANSWER the word could end first, and the tap on the button that had turned back to Me played it again)
+  const panel = await readVerse28(page, LONG_WORD_ANSWER);
   await panel.getByRole('button', { name: 'Hear me say together', exact: true }).click();
+  await page.waitForTimeout(700);
   await panel.getByRole('button', { name: 'Stop hearing me say together', exact: true }).click();
   await expect(panel.getByRole('button', { name: 'Hear me say together', exact: true })).toHaveText('Me');
   expect(await paused(page)).toHaveLength(1);

@@ -65,10 +65,13 @@ export async function fakeMedia(page: Page, seconds = 0.2): Promise<void> {
     const pauses: number[] = [];
     Object.assign(window, { played, plays, pauses });
     const clocks = new WeakMap<HTMLMediaElement, number>();
+    // where each playing element is by the clock, read at the instant of a pause (the 10 ms tick below can be many ms stale on a loaded host)
+    const positions = new WeakMap<HTMLMediaElement, () => number>();
     const stopClock = (el: HTMLMediaElement) => {
       const clock = clocks.get(el);
       if (clock !== undefined) clearInterval(clock);
       clocks.delete(el);
+      positions.delete(el);
     };
     HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
       played.push(this.src);
@@ -76,6 +79,7 @@ export async function fakeMedia(page: Page, seconds = 0.2): Promise<void> {
       stopClock(this);
       const startedAt = performance.now();
       const from = this.currentTime;
+      positions.set(this, () => Math.min(length, from + (performance.now() - startedAt) / 1000));
       clocks.set(
         this,
         window.setInterval(() => {
@@ -89,6 +93,8 @@ export async function fakeMedia(page: Page, seconds = 0.2): Promise<void> {
       return Promise.resolve();
     };
     HTMLMediaElement.prototype.pause = function (this: HTMLMediaElement) {
+      const position = positions.get(this);
+      if (position) this.currentTime = position();
       pauses.push(this.currentTime);
       stopClock(this);
     };
