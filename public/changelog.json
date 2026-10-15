@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.243",
+    "date": "2026-10-15",
+    "story": "mw-5r3p30.378",
+    "kind": "fixed",
+    "text": "Back from a word opened inside a letter or idea sheet now returns to that sheet instead of jumping out to the Goal screen."
+  },
+  {
     "version": "0.1.241",
     "date": "2026-10-15",
     "story": "mw-5r3p30.376",

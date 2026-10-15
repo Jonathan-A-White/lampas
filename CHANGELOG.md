@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.243
+_2026-10-15_
+- Fixed: Back from a word opened inside a letter or idea sheet now returns to that sheet instead of jumping out to the Goal screen.
+
 ## 0.1.241
 _2026-10-15_
 - Fixed: A reader who chose English no longer gets a Greek word card when asking what an English word like "love" means.
