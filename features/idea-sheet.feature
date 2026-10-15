@@ -195,3 +195,18 @@ Feature: The idea sheet
     When he opens the letter sheet of "omicron" from the alphabet sheet
     Then the letter sheet's tile reads "o, as in “lot”"
     And the letter sheet's How it sounds reads "In Modern Greek it sounds like o, as in “lot”."
+
+  # mw-svw421.5: an idea that a paradigm table teaches links to it; Back brings the sheet back.
+  Scenario: An idea links to its table
+    Given Lampas is opened on Romans 8 with the goal "1 John 1", no idea level and a fake Postern
+    When he opens the idea sheet of "tense-aorist" from the Goal screen
+    Then the idea sheet shows the button "Table: Future and aorist"
+    When he taps "Table: Future and aorist" on the idea sheet
+    Then the address is "#/paradigms?t=future-and-aorist" and the table "Future and aorist" is open in Study mode
+    When he goes Back
+    Then the idea sheet "The aorist tense" is on screen over the Goal screen
+
+  Scenario: An idea no table teaches has no table link
+    Given Lampas is opened on Romans 8 with the goal "1 John 1", no idea level and a fake Postern
+    When he opens the idea sheet of "alphabet" from the Goal screen
+    Then the idea sheet shows no button that starts "Table:"

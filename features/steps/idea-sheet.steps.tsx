@@ -638,4 +638,37 @@ describeFeature(feature, ({ Scenario }) => {
       expect(howItSounds().textContent).toBe(text);
     });
   });
+  Scenario('An idea links to its table', ({ Given, When, Then }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the idea sheet of {string} from the Goal screen', opensIdeaOfGoal);
+    Then('the idea sheet shows the button {string}', (_, name: string) => {
+      expect(within(ideaSheet()).getByRole('button', { name })).toBeInTheDocument();
+    });
+    When('he taps {string} on the idea sheet', async (_, name: string) => user.click(within(ideaSheet()).getByRole('button', { name })));
+    Then('the address is {string} and the table {string} is open in Study mode', async (_, hash: string, name: string) => {
+      expect(window.location.hash).toBe(hash);
+      expect(await screen.findByRole('heading', { name, level: 1 })).toBeInTheDocument();
+      expect(screen.getByTestId('mode-help')).toHaveTextContent('Study mode');
+    });
+    When('he goes Back', async () => {
+      window.history.back();
+    });
+    Then('the idea sheet {string} is on screen over the Goal screen', async (_, title: string) => {
+      const sheet = await screen.findByRole('dialog', { name: 'Idea' });
+      expect(within(sheet).getByRole('heading', { name: title })).toBeInTheDocument();
+      expect(window.location.hash).toBe('#/goal');
+      // Back closes it as it closes any sheet, and leaves him on the Goal screen
+      window.history.back();
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Idea' })).toBeNull());
+      expect(window.location.hash).toBe('#/goal');
+    });
+  });
+
+  Scenario('An idea no table teaches has no table link', ({ Given, When, Then }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the idea sheet of {string} from the Goal screen', opensIdeaOfGoal);
+    Then('the idea sheet shows no button that starts {string}', (_, start: string) => {
+      expect(within(ideaSheet()).queryAllByRole('button').filter((b) => b.textContent?.startsWith(start))).toEqual([]);
+    });
+  });
 });

@@ -16,6 +16,20 @@ Feature: Paradigms
     Then the list reads "The article: Available forms: 4 of 24", "Noun endings: Available forms: 8 of 40", "εἰμί: Available forms: 0 of 70" and "Verb endings: Available forms: 0 of 24"
     And the progress bar of "The article" is at 4 of 24
 
+  # mw-svw421.5: the list is grouped by the ladder's tiers, and opening a table is kept: Review asks the endings of a form only once its table has been opened.
+  Scenario: The list groups the tables by tier under the tier's title
+    When he opens the Paradigms screen
+    Then the list has the groups "Nouns", "Pronouns" and "Verbs", in that order
+    And the group "Nouns" holds "The article, Noun endings, The third declension, Adjective endings"
+    And the group "Verbs" holds 13 tables, the first "εἰμί" and the last "The participle"
+
+  Scenario: Opening a table keeps that he opened it
+    When he opens the Paradigms screen
+    And he taps "Noun endings" in the list
+    Then the tables he has opened are "noun-endings"
+    When he goes back to the list and opens "The article"
+    Then the tables he has opened are "noun-endings" and "article"
+
   Scenario: The list shows the five tables of the nouns and pronouns, each with how many of its forms are available
     When he opens the Paradigms screen
     Then the list also reads "The third declension: Available forms: 0 of 48", "Adjective endings: Available forms: 0 of 48", "Personal pronouns: Available forms: 0 of 40", "Demonstrative and relative pronouns: Available forms: 0 of 48" and "Interrogative and indefinite pronouns: Available forms: 0 of 32"
