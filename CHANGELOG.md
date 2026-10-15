@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.247
+_2026-10-15_
+- Fixed: Scrolling Settings with your thumb over a speed slider no longer changes your Greek or English speed.
+
 ## 0.1.246
 _2026-10-15_
 - Fixed: the tutor's Sound it out help no longer adds an "h" for a rough breathing in Modern Greek.

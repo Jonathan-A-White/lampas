@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.247",
+    "date": "2026-10-15",
+    "story": "mw-5r3p30.146",
+    "kind": "fixed",
+    "text": "Scrolling Settings with your thumb over a speed slider no longer changes your Greek or English speed."
+  },
+  {
     "version": "0.1.246",
     "date": "2026-10-15",
     "story": "mw-5r3p30.249",
