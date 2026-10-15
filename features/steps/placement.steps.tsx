@@ -134,7 +134,8 @@ describeFeature(feature, ({ Scenario }) => {
     And('he answers {int} questions wrong', wrong);
     Then('the question line says {string}', asks);
     And('the idea {string} is not yet', (_, id: string) => levelBecomes(id, 'notYet'));
-    And('the idea {string} is also not yet', (_, id: string) => levelBecomes(id, 'notYet'));
+    // the placement leaves the lowest unproved idea the frontier (setLevel, mw-i7xe0n.6): accents, below the noun, was missed twice and is the one he starts at
+    And('the idea {string} is the frontier, the lowest idea he has not proved', (_, id: string) => levelBecomes(id, 'frontier'));
     And('the alphabet as a whole was not asked', async () => {
       expect(await levelOf('alphabet')).toBeUndefined();
       expect(await db.reviews.get(['grammar', storedId('alphabet', 'modern')])).toBeUndefined();
@@ -177,7 +178,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the bus has heard the placement is done', () => {
       const heard = latest('placement-done');
-      expect(heard).toMatchObject({ goal: '1 John 1:1', approach: 'bma-tutor', solid: 12, frontier: 0, notYet: 1 });
+      expect(heard).toMatchObject({ goal: '1 John 1:1', approach: 'bma-tutor', solid: 11, frontier: 0, notYet: 1 });
       expect(heard?.untested).toBeGreaterThan(10);
     });
     When('he taps {string}', async (_, name: string) => user.click(await screen.findByRole('button', { name })));

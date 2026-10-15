@@ -12,8 +12,8 @@ Feature: What my right answers show
     And he starts the placement
     And he answers 8 questions right
     And he answers 2 questions wrong
-    Then the letter "letter-omicron" is solid, inferred from his answers
-    And the placement did not ask the letter "letter-omicron"
+    Then the letter "letter-chi" is solid, inferred from his answers
+    And the placement did not ask the letter "letter-chi"
     And the letter "letter-xi" has no level
     When he opens the Goal screen
     Then Learn next does not say "The Greek alphabet"

@@ -4,12 +4,10 @@
 import { describe, expect, it } from 'vitest';
 import { loadChapter, loadIndex } from '../../src/data/chapter';
 import { foundationOf } from '../../src/data/grammar/inference';
-import { LADDER, ideaOf, ideaOfTerm, ideasBelow, type GrammarIdea } from '../../src/data/grammar/ladder';
+import { LADDER, ideaOf, ideasBelow, type GrammarIdea } from '../../src/data/grammar/ladder';
 import { cardTexts, teachOf } from '../../src/data/grammar/teach';
-import { GRAMMAR_TERMS } from '../../src/data/parseCode';
 import { stubChapterFetch } from '../support/chapter-fetch';
-
-const ids = (prefix: string): string[] => LADDER.filter((i) => i.id.startsWith(prefix) && !i.parent && !i.glyphs).map((i) => i.id);
+import { TERMS, ideaIdsStartingWith as ids, termsIn } from '../../src/data/grammar/taughtTerms';
 
 /**
  * The ideas that are a set of endings or forms, so their card has a table: the ones whose title says so, and these. A beginner learns them by
@@ -123,79 +121,6 @@ describe('a worked example that names its verse', () => {
     expect(missing).toEqual([]);
   });
 });
-
-/**
- * Each grammar term and title key word a card might use, with the ideas that teach it (any one of them will do). GRAMMAR_TERMS map to their own
- * idea (ideaOfTerm); the rest are the key words of the ladder's titles and the words the cards teach on the way ('stem', 'ending', 'case' are the
- * noun's; the augment is the imperfect's). An everyday word that is also a term is only a term in a grammar phrase: 'the second vowel' is no
- * second aorist, and 'letter' is the alphabet's word (the 'letter' of the parsing, a letter used as a name, is taught under 'indeclinable').
- */
-const KEY_WORDS: [term: string, pattern: RegExp, teachers: string[]][] = [
-  ['case', /\bcases?\b/i, ['noun', ...ids('case-')]],
-  ['gender', /\bgenders?\b/i, ids('gender-')],
-  ['number', /\bnumber\b(?! words?)/i, ['number-singular', 'number-plural']],
-  ['person', /\b(?:first|second|third) person\b|\bperson and number\b/i, ids('person-')],
-  ['tense', /\btenses?\b/i, ids('tense-')],
-  ['voice', /\bvoices?\b/i, ids('voice-')],
-  ['mood', /\bmoods?\b/i, ids('mood-')],
-  ['pronoun', /\bpronouns?\b/i, ids('pronoun')],
-  ['stem', /\bstems?\b/i, ['noun']],
-  ['ending', /\bendings?\b/i, ['noun']],
-  ['dictionary form', /\bdictionary form\b/i, ['noun']],
-  ['subject', /\bsubjects?\b/i, ['case-nominative']],
-  ['object', /\bobjects?\b/i, ['case-accusative']],
-  ['augment', /\baugment\b/i, ['tense-imperfect']],
-  ['reduplication', /\breduplicat\w*/i, ['tense-perfect']],
-  ['deponent', /\bdeponents?\b/i, ids('voice-middle-deponent').concat(ids('voice-passive-deponent'))],
-  ['enclitic', /\benclitics?\b/i, ['enclitics']],
-  ['breathing', /\bbreathings?\b/i, ['breathings']],
-  ['accent', /\baccents?\b|\bacute\b|\bgrave\b|\bcircumflex\b/i, ['accents']],
-  ['stress', /\bstress(?:ed)?\b/i, ['accents']],
-  ['syllable', /\bsyllables?\b/i, ['syllables']],
-  ['vowel pair', /\bvowel pairs?\b|\bpairs? of vowels\b|\bdiphthongs?\b/i, ['diphthongs']],
-  ['consonant pair', /\bconsonant pairs?\b|\bpairs? of consonants\b/i, ['consonant-pairs']],
-  ['iota subscript', /\biota subscript\b|\biota under\b/i, ['iota-subscript']],
-  ['punctuation', /\bpunctuation\b|\bapostrophe\b|\bdiaeresis\b|\belision\b/i, ['punctuation']],
-  ['movable', /\bmovable\b/i, ['movable-letters']],
-  ['compound verb', /\bcompound verbs?\b/i, ['compound-verbs']],
-  ['vowel', /\bvowels?\b/i, ['alphabet']],
-  ['consonant', /\bconsonants?\b/i, ['alphabet']],
-];
-
-/** Everyday words that are GRAMMAR_TERMS, matched only where they are grammar. */
-const TERM_PATTERNS: Record<string, RegExp> = {
-  letter: /\bletters?\b/i,
-  second: /\bsecond (?:aorists?|perfects?|tenses?)\b/i,
-  '1st person': /\b(?:1st|first) person\b/i,
-  '2nd person': /\b(?:2nd|second) person\b/i,
-  '3rd person': /\b(?:3rd|third) person\b/i,
-};
-const TERM_TEACHERS: Record<string, string[]> = { letter: ['alphabet'] };
-
-const escape = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-/** The whole term list, the longest first, so 'middle or passive deponent' is read as one term and not as 'middle' and 'passive'. */
-const TERMS: [term: string, pattern: RegExp, teachers: string[]][] = [
-  ...GRAMMAR_TERMS.map((term): [string, RegExp, string[]] => [
-    term,
-    TERM_PATTERNS[term] ?? new RegExp(`(?<![\\w-])${escape(term)}s?(?![\\w-])`, 'i'),
-    TERM_TEACHERS[term] ?? [ideaOfTerm(term) as string],
-  ]),
-  ...KEY_WORDS,
-].sort((a, b) => b[0].length - a[0].length);
-
-/** The terms a text uses, each matched stretch taken out once read, so a long term's words are not read again as short ones. */
-function termsIn(text: string): [string, string[]][] {
-  let rest = text;
-  const found: [string, string[]][] = [];
-  for (const [term, pattern, teachers] of TERMS) {
-    const global = new RegExp(pattern.source, `${pattern.flags.replace('g', '')}g`);
-    if (!global.test(rest)) continue;
-    found.push([term, teachers]);
-    rest = rest.replace(global, ' ');
-  }
-  return found;
-}
 
 describe('no term before it is taught', () => {
   it('maps every term to the idea that teaches it', () => {

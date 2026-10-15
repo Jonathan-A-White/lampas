@@ -46,7 +46,8 @@ describe('the Movable letters idea', () => {
 
 describe('an ending question and the movable ν', () => {
   const dative = ideaOf('case-dative');
-  const verb = ideaOf('verb');
+  // mw-5r3p30.379: an ending is asked of a verb only once its tense, voice, mood, person and number are taught; the indicative is the first idea to have them all
+  const verb = ideaOf('mood-indicative');
 
   it('asks for -ουσι(ν) for λέγουσιν, not for a bare ν', () => {
     const passage = chapterOf(word('λέγουσιν', 'λέγω', 'V-PAI-3P'));

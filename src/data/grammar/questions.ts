@@ -16,6 +16,8 @@ import { ENCLITIC_USES, MARK_PAIRS, blankWord } from './marks';
 import { SOUND_ALIKE } from './soundAlike';
 import { COMPOUND_VERBS, PREPOSITIONS, type CompoundVerb, type PrepCase, type VerseRef } from './prepositions';
 import { quickQuestion } from './quickRound';
+import { laterTermsIn, termIsTaught } from './taughtTerms';
+import { teachOf } from './teach';
 
 export type GrammarKind = 'ending' | 'tap-form' | 'letter' | 'sound' | 'stress' | 'breathing' | 'syllables' | 'preposition' | 'compound' | 'concept';
 
@@ -99,23 +101,41 @@ function combinations<T>(items: readonly T[], size: number): T[][] {
   return items.flatMap((item, i) => combinations(items.slice(i + 1), size - 1).map((rest) => [item, ...rest]));
 }
 
+/** The parts of speech a word can be named by: its parsing's own, and 'pronoun' for any kind of pronoun (the pronoun is taught before its kinds). */
+function partsOf(code: string): string[] {
+  const [pos] = termsOf(code);
+  return splitParse(code).pos === 'pronoun' && pos !== 'pronoun' ? [pos, 'pronoun'] : [pos];
+}
+
+/** Every term that can describe a word: its parsing's terms, and 'pronoun' beside the part of speech of a pronoun. */
+const describingTerms = (code: string): string[] => {
+  const [pos, ...features] = termsOf(code);
+  return [...new Set([pos, ...partsOf(code), ...features])];
+};
+
 /**
  * The fewest terms, starting from the idea's own, that make the word the only one in its verse to have them all: more of its
- * features first, its part of speech last. Null when the verse has the word's text twice, or cannot tell it from another.
+ * features first, its part of speech last. Only terms the idea and the ideas before it teach are used (mw-5r3p30.379: the singular is not asked
+ * as the accusative singular personal pronoun). Null when the verse has the word's text twice, or the taught terms cannot tell it from another word.
  */
 function describe(idea: GrammarIdea, place: Place): string[] | null {
-  const terms = termsOf(place.word.p);
-  const [pos, ...features] = terms;
+  const terms = describingTerms(place.word.p);
+  const parts = partsOf(place.word.p);
+  const part = parts.find((t) => termIsTaught(t, idea));
   if (place.verse.g.filter((g) => g.t === place.word.t).length > 1) return null;
   // an idea with no term of its own (the pronoun) is asked by the word's part of speech
   const seed = idea.terms.filter((t) => terms.includes(t));
-  if (seed.length === 0) seed.push(pos);
-  const extras = [...features.filter((t) => !seed.includes(t)), ...(seed.includes(pos) ? [] : [pos])];
+  if (seed.length === 0) {
+    if (!part) return null;
+    seed.push(part);
+  }
+  const features = terms.filter((t) => !parts.includes(t) && !seed.includes(t) && termIsTaught(t, idea));
+  const extras = [...features, ...(part && !seed.some((t) => parts.includes(t)) ? [part] : [])];
   for (let size = 0; size <= extras.length; size += 1) {
     for (const added of combinations(extras, size)) {
       const chosen = [...seed, ...added];
       const holders = place.verse.g.filter((g) => {
-        const has = termsOf(g.p);
+        const has = describingTerms(g.p);
         return chosen.every((t) => has.includes(t));
       });
       if (holders.length === 1) return terms.filter((t) => chosen.includes(t));
@@ -125,9 +145,10 @@ function describe(idea: GrammarIdea, place: Place): string[] | null {
 }
 
 /** 'Tap the dative article', 'Tap the word that is genitive singular', 'Tap the preposition'. */
-function tapPrompt(terms: readonly string[], pos: string): string {
+function tapPrompt(terms: readonly string[], parts: readonly string[]): string {
+  const pos = terms.find((t) => parts.includes(t));
   const features = terms.filter((t) => t !== pos).join(' ');
-  if (!terms.includes(pos)) return `Tap the word that is ${features}`;
+  if (!pos) return `Tap the word that is ${features}`;
   return features ? `Tap the ${features} ${pos}` : `Tap the ${pos}`;
 }
 
@@ -141,11 +162,11 @@ export function buildTapForm(idea: GrammarIdea, passage: readonly Chapter[], ran
     const terms = describe(idea, place);
     if (!terms) continue;
     // the near misses are the verse's words that have all the prompt names but one (the genitive plural beside the genitive singular asked)
-    const near = place.verse.g.filter((g) => g.t !== place.word.t && terms.filter((t) => !termsOf(g.p).includes(t)).length === 1).map((g) => g.t);
+    const near = place.verse.g.filter((g) => g.t !== place.word.t && terms.filter((t) => !describingTerms(g.p).includes(t)).length === 1).map((g) => g.t);
     return {
       kind: 'tap-form',
       ideaId: idea.id,
-      prompt: tapPrompt(terms, termsOf(place.word.p)[0]),
+      prompt: tapPrompt(terms, partsOf(place.word.p)),
       options: place.verse.g.map((g) => g.t),
       near: [...new Set(near)],
       right: place.word.t,
@@ -185,8 +206,17 @@ export function stemOf(lemma: string, form: string): { stem: string; ending: str
   return keyOf(ending).length > MAX_ENDING ? null : { stem: f.slice(0, k).join(''), ending };
 }
 
-/** What a form of a word that inflects is: 'genitive singular feminine', 'present active indicative 3rd person singular'. */
-const featuresOf = (code: string): string => splitParse(code).features.map((f) => f.value).join(' ');
+/**
+ * What a form of a word that inflects is, in the terms the idea and the ideas before it teach: 'genitive singular', 'present active indicative 3rd person singular'
+ * (mw-5r3p30.379). Null when that leaves the ending unsettled: every feature must be named, except a noun's gender, which never changes the ending of the noun
+ * (its lemma has one gender), and at least one must be.
+ */
+function featuresOf(code: string, idea: GrammarIdea): string[] | null {
+  const { pos, features } = splitParse(code);
+  const named = features.filter((f) => termIsTaught(f.value, idea));
+  const settled = features.every((f) => termIsTaught(f.value, idea) || (pos === 'noun' && f.id === 'gender'));
+  return settled && named.length > 0 ? named.map((f) => f.value) : null;
+}
 
 const COMMON_ENDINGS: Record<'noun' | 'verb', string[]> = {
   noun: ['ος', 'ου', 'ῳ', 'ον', 'οι', 'ων', 'οις', 'ους', 'α', 'ης', 'ῃ', 'ην', 'ας', 'αις', 'ις', 'ι', 'ες', 'εως'],
@@ -212,7 +242,8 @@ function shownEnding(ending: string, pos: string): { text: string; key: string }
 export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], random: Random): GrammarQuestion | null {
   const places = placesOf(passage).filter((p) => splitParse(p.word.p).features.length > 0);
   const stems = (p: Place) => stemOf(p.word.l, p.word.t);
-  const candidates = shuffle(places.filter((p) => needsIdea(p.word.p, idea.id) && stems(p)), random);
+  // only in the terms taught so far, and still one right ending (featuresOf)
+  const candidates = shuffle(places.filter((p) => needsIdea(p.word.p, idea.id) && stems(p) && featuresOf(p.word.p, idea)), random);
   const place = candidates[0];
   if (!place) return null;
   const { stem, ending: plainEnding } = stems(place)!;
@@ -229,7 +260,7 @@ export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], rand
   return {
     kind: 'ending',
     ideaId: idea.id,
-    prompt: `Fill in the ending: ${featuresOf(place.word.p)} of ${place.word.l}`,
+    prompt: `Fill in the ending: ${featuresOf(place.word.p, idea)!.join(' ')} of ${place.word.l}`,
     options: options.map((e) => e.text),
     near: near.map((e) => e.text),
     right: right.text,
@@ -626,15 +657,11 @@ function nameStems(idea: GrammarIdea): string[] {
   return [...new Set(words.filter((w) => w.length >= 4 && !PLAIN_NAME_WORDS.has(w)).map(contentStem))];
 }
 
-/**
- * What the idea says of itself with its own name taken out (mw-86e9r1.3, .25): the pronunciation hint '(say AIR-ist)' goes, and the title, the terms
- * and every content word of both become a blank, the whole word with them ('pronoun' for the term 'noun', 'Hebrew' for 'Hebrew words'), so the text no longer
- * hands over its answer however it words the idea ('the middle and the passive', 'from Hebrew').
- */
-export function blankedText(idea: GrammarIdea, scheme: Pronunciation = chosenPronunciation()): string {
+/** `text` with the idea's own name taken out (blankedText's work). */
+function blankOut(idea: GrammarIdea, text: string): string {
   const secrets = [idea.title, idea.title.replace(/^The /, ''), ...idea.terms, ...nameStems(idea)].sort((a, b) => b.length - a.length);
   const pattern = new RegExp(`\\w*(?:${secrets.map(escapeRegExp).join('|')})\\w*`, 'giu');
-  const blanked = ideaText(idea, scheme).replace(/\s*\(say [^)]*\)/gi, '').replace(pattern, BLANK);
+  const blanked = text.replace(/\s*\(say [^)]*\)/gi, '').replace(pattern, BLANK);
   // an idea named by a Greek word (the preposition εἰς) loses it too, whatever its accent or breathing ('ὑπό' and 'ὑπὸ')
   const greek = [...new Set((idea.title.match(/\p{Script=Greek}+/gu) ?? []).map((w) => w.normalize('NFD').replace(/\p{M}/gu, '')))];
   if (greek.length === 0) return blanked;
@@ -642,15 +669,45 @@ export function blankedText(idea: GrammarIdea, scheme: Pronunciation = chosenPro
   return blanked.normalize('NFD').replace(greekPattern, BLANK).normalize('NFC');
 }
 
+/**
+ * What the idea says of itself with its own name taken out (mw-86e9r1.3, .25): the pronunciation hint '(say AIR-ist)' goes, and the title, the terms
+ * and every content word of both become a blank, the whole word with them ('pronoun' for the term 'noun', 'Hebrew' for 'Hebrew words'), so the text no longer
+ * hands over its answer however it words the idea ('the middle and the passive', 'from Hebrew').
+ */
+export function blankedText(idea: GrammarIdea, scheme: Pronunciation = chosenPronunciation()): string {
+  return blankOut(idea, ideaText(idea, scheme));
+}
+
+/**
+ * What the concept question shows (mw-5r3p30.379): blankedText less every sentence that names a term only a later idea teaches, so a learner is never asked
+ * about an idea in words he has not met. When no sentence is left the card's own first paragraph is used, which the card test holds to taught terms.
+ */
+export function conceptText(idea: GrammarIdea, scheme: Pronunciation = chosenPronunciation()): string {
+  const kept = blankedText(idea, scheme).split(/(?<=[.!?])\s+/).filter((sentence) => laterTermsIn(sentence, idea).length === 0);
+  return kept.length > 0 ? kept.join(' ') : blankOut(idea, teachOf(idea.id).whatItIs);
+}
+
+const titlesCache = new Map<string, GrammarIdea[]>();
+/** The other ideas whose titles name no term that a later idea teaches than `idea`: the choices the concept question may offer. */
+function titlesFor(idea: GrammarIdea): GrammarIdea[] {
+  let found = titlesCache.get(idea.id);
+  if (!found) {
+    found = LADDER.filter((o) => o.id !== idea.id && laterTermsIn(o.title, idea).length === 0);
+    titlesCache.set(idea.id, found);
+  }
+  return found;
+}
+
 /** Which idea this is, from what it says with its own name blanked: used only for an idea the passage gives no form of. */
 export function buildConcept(idea: GrammarIdea, random: Random, scheme: Pronunciation = chosenPronunciation()): GrammarQuestion {
-  // the near misses are ideas of its own tier (another case for a case), the fillers any other
-  const near = shuffle(LADDER.filter((o) => o.id !== idea.id && o.tier === idea.tier), random).map((o) => o.title);
-  const far = LADDER.filter((o) => o.id !== idea.id && o.tier !== idea.tier).map((o) => o.title);
+  // the near misses are ideas of its own tier (another case for a case), the fillers any other; a title is offered only if it names no later term (the genitive is not a choice for the singular)
+  const others = titlesFor(idea);
+  const near = shuffle(others.filter((o) => o.tier === idea.tier), random).map((o) => o.title);
+  const far = others.filter((o) => o.tier !== idea.tier).map((o) => o.title);
   return {
     kind: 'concept',
     ideaId: idea.id,
-    prompt: `Which idea is this? ${blankedText(idea, scheme)}`,
+    prompt: `Which idea is this? ${conceptText(idea, scheme)}`,
     ...choicesOf({ right: idea.title, near, fillers: far }, random),
     right: idea.title,
     facet: MEANING,

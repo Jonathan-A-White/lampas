@@ -16,10 +16,10 @@ Feature: Test me on the grammar, and meet me where I am
     Given his goal is "Read 1 John 1:1" and he knows nothing yet
     When he opens the placement
     And he starts the placement
-    And he answers 16 questions wrong
-    Then the question line says "Question 17 · Eta · BMA Tutor L1"
+    And he answers 8 questions wrong
+    Then the question line says "Question 9 · Alpha · BMA Tutor L1"
     And the idea "noun" is not yet
-    And the idea "accents" is also not yet
+    And the idea "accents" is the frontier, the lowest idea he has not proved
     And the alphabet as a whole was not asked
 
   Scenario: It does not ask the harder things after that
@@ -29,7 +29,7 @@ Feature: Test me on the grammar, and meet me where I am
     And he answers 4 questions wrong
     And he answers 2 questions right
     Then no idea after the noun has a level
-    And the idea "breathings" is solid
+    And the idea "letter-chi" is solid
 
   Scenario: The end card says where I am
     Given his goal is "Read 1 John 1:1" and he knows nothing yet
@@ -39,7 +39,7 @@ Feature: Test me on the grammar, and meet me where I am
     And he answers 2 questions wrong
     Then the question line says "Quick round 1 of"
     When he stops the quick round
-    Then the end card says "Where you are: solid 12, frontier 0, not yet 1; untested 38"
+    Then the end card says "Where you are: solid 11, frontier 0, not yet 1; untested 39"
     And the end card lists "The noun" as "Solid" under Nouns
     And the bus has heard the placement is done
     When he taps "Back to the goal"
