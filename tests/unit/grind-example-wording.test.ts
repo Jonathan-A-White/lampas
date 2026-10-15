@@ -80,3 +80,32 @@ describe('bible-talk/memory-update-wished makes the note plain, and the grind sa
     expect(memory).toContain('I keep mixing up');
   });
 });
+
+// mw-5r3p30.424: the smoke of 2026-10-15 20:15Z failed bible-talk/rusty-offer on a right answer that never said "rusty" (the ids were
+// exact). The behaviour is that the answer names the items the request listed as rusty, in any words; the offer's ids stay exact.
+describe('bible-talk/rusty-offer tests the meaning (mw-5r3p30.424)', () => {
+  const checks = answerChecks('bible-talk/rusty-offer');
+
+  it('takes the answer the mill gave, and any other that names both rusty items', () => {
+    for (const said of [
+      'Start with a short round on what slipped: λόγος and the genitive case. They were solid before; a few minutes will bring them back. Tap Move back to Frontier and practise.',
+      "You're rusty on λόγος and the genitive case: they were solid before. Tap Move back to Frontier and practise.",
+      'The genitive case has not come up for three weeks, and λόγος slipped twice this week. A short practice of both is on offer.',
+      'Λόγος and the Genitive case have slipped a little since your break. Want to practise them?',
+    ]) expect(checkExpect(checks, { answer: said }), said).toEqual([]);
+  });
+
+  it('does not take an answer that names only one of them, or neither', () => {
+    for (const said of [
+      "You're rusty on λόγος. Tap Move back to Frontier and practise.",
+      "You're rusty on the genitive case. Tap Move back to Frontier and practise.",
+      "You're a bit rusty. Let's read Romans 8:28 together.",
+    ]) expect(checkExpect(checks, { answer: said }), said).not.toEqual([]);
+  });
+
+  it('keeps the offer\'s ids exact', () => {
+    const { expect: block } = example('bible-talk/rusty-offer');
+    expect(block['rusty_offer.items.0.id']).toEqual({ equals: 'λόγος' });
+    expect(block['rusty_offer.items.1.id']).toEqual({ equals: 'case-genitive' });
+  });
+});
