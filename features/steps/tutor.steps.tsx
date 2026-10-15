@@ -261,9 +261,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       await waitFor(() => expect(status).toHaveTextContent(/^Waiting for the tutor… \d+ s$/));
       expect(holdBarIn(viewEl())).toBeDisabled();
     });
-    When('the tutor answers', () => {
-      fake.answer({ status: 'answered', answer: SYNERGEI_ANSWER });
-    });
+    When('the tutor answers', () => fake.answer({ status: 'answered', answer: SYNERGEI_ANSWER }));
     Then('the answer shows under verse 28', answerShows);
   });
 

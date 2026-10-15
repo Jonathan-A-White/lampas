@@ -43,7 +43,7 @@ const isPolling = (path: string, method: string) => path === '/api/messages' && 
 describe('a slow answer', () => {
   it('is waited for: the mill answers after 45 s of fake time and every request answers within 30 s', async () => {
     behave = (path, method) => (isPolling(path, method) ? { delayMs: 20_000 } : undefined);
-    const wait = outcome(ask(() => setTimeout(() => postern.answer(ANSWER), 45_000)));
+    const wait = outcome(ask(() => setTimeout(() => void postern.answer(ANSWER), 45_000)));
     await vi.advanceTimersByTimeAsync(120_000);
     expect(await wait).toEqual({ answer: { verdict: 'well-read' } });
   });
@@ -57,7 +57,7 @@ describe('a poll that fails inside the wait', () => {
       polls += 1;
       return polls === 2 || polls === 3 ? { hang: true } : undefined;
     };
-    const wait = outcome(ask(() => setTimeout(() => postern.answer(ANSWER), 50_000)));
+    const wait = outcome(ask(() => setTimeout(() => void postern.answer(ANSWER), 50_000)));
     await vi.advanceTimersByTimeAsync(170_000);
     expect(await wait).toEqual({ answer: { verdict: 'well-read' } });
     expect(polls).toBeGreaterThan(3);
@@ -70,7 +70,7 @@ describe('a poll that fails inside the wait', () => {
       ask(() => {
         setTimeout(() => (blip = true), 3_000);
         setTimeout(() => (blip = false), 15_000);
-        setTimeout(() => postern.answer(ANSWER), 20_000);
+        setTimeout(() => void postern.answer(ANSWER), 20_000);
       }),
     );
     await vi.advanceTimersByTimeAsync(60_000);
@@ -198,7 +198,7 @@ describe('a phone with a long history, on mobile data (mw-5r3p30.269)', () => {
     const wait = outcome(
       ask(() => {
         sentAt = Date.now();
-        setTimeout(() => postern.answer(ANSWER), 10_000); // sent 22:34:21Z, answered 22:34:31Z
+        setTimeout(() => void postern.answer(ANSWER), 10_000); // sent 22:34:21Z, answered 22:34:31Z
       }),
     ).then((result) => {
       settledAt = Date.now();
@@ -216,7 +216,7 @@ describe('a phone with a long history, on mobile data (mw-5r3p30.269)', () => {
     const wait = outcome(
       ask(() => {
         sentAt = Date.now();
-        setTimeout(() => postern.answer(ANSWER), 2_000);
+        setTimeout(() => void postern.answer(ANSWER), 2_000);
       }),
     ).then((result) => {
       settledAt = Date.now();
@@ -245,7 +245,7 @@ describe('a phone with a long history, on mobile data (mw-5r3p30.269)', () => {
 describe('where the wait starts reading (mw-5r3p30.275)', () => {
   it('reads from the grist\'s own place, not from 0, with 500 earlier answer records on the backend: one page finds the answer', async () => {
     history(500, 200);
-    const wait = outcome(ask(() => setTimeout(() => postern.answer(ANSWER), 1_000)));
+    const wait = outcome(ask(() => setTimeout(() => void postern.answer(ANSWER), 1_000)));
     await vi.advanceTimersByTimeAsync(10_000);
     expect(await wait).toEqual({ answer: { verdict: 'well-read' } });
     expect(postern.sinces.length).toBeLessThanOrEqual(2);
@@ -263,7 +263,7 @@ describe('where the wait starts reading (mw-5r3p30.275)', () => {
       const body = (await response.json()) as { txid: string; seq: number };
       return new Response(JSON.stringify({ ...body, seq: 5_000 }), { status: response.status, headers: response.headers });
     });
-    const wait = outcome(ask(() => setTimeout(() => postern.answer(ANSWER), 1_000)));
+    const wait = outcome(ask(() => setTimeout(() => void postern.answer(ANSWER), 1_000)));
     await vi.advanceTimersByTimeAsync(20_000);
     expect(await wait).toEqual({ answer: { verdict: 'well-read' } });
     expect(postern.sinces.filter((since) => since === 0)).toHaveLength(1);

@@ -154,7 +154,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('the mill answers with the references {string} at {string} and {string} at {string}', async (_, ...strings: string[]) => {
       await waitFor(() => expect(fake.received).toHaveLength(1));
-      fake.answer(answered(...pairsOf(strings)));
+      await fake.answer(answered(...pairsOf(strings)));
     });
     Then('the sheet shows {string} with the link {string}', sheetShows);
     And('the link {string} goes to {string}', (_, name: string, href: string) => {

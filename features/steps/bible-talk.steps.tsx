@@ -49,7 +49,10 @@ let synth: FakeSynth | undefined;
 
 async function open(configure: (f: FakePostern) => void = (f) => void (f.autoReply = { status: 'answered', answer: TALK_ANSWER }), speaks = false): Promise<void> {
   // The scenario before may have ended with its answer still on the way (a step that only checked the grist): let it land, kept and
-  // spoken or not, before its screen goes, so it cannot write a turn or start a voice in this scenario.
+  // spoken or not, before its screen goes, so it cannot write a turn or start a voice in this scenario. A scenario that failed before
+  // its held grist was answered would leave the field off for good, and every later scenario failing here: end what its fake still has
+  // in flight as a failure first, so it lands at once (mw-5r3p30.370).
+  if (fake) fake.endAll({ status: 'failed', reason: 'the scenario before this one ended' });
   const asking = screen.queryByRole('textbox', { name: 'Your message' });
   if (asking) await waitFor(() => expect(asking).toBeEnabled());
   cleanup();
@@ -450,11 +453,8 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       expect(sendButton()).toBeDisabled();
       expect(within(sheet()).getByText(QUESTION)).toBeInTheDocument();
     });
-    When('the tutor answers', async () => {
-      // the question reaches the mill a moment after Send: answer it only once it is there
-      await waitFor(() => expect(fake.received.length).toBeGreaterThan(0));
-      fake.answer({ status: 'answered', answer: TALK_ANSWER });
-    });
+    // the question reaches the mill a moment after Send: the fake's answer waits for it
+    When('the tutor answers', () => fake.answer({ status: 'answered', answer: TALK_ANSWER }));
     Then('the answer shows in the sheet under his question', answerShowsUnderQuestion);
   });
 
@@ -888,11 +888,8 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     Then('the clipboard holds {string}', (_, text: string) => {
       expect(clipboard.copied).toEqual([text]);
     });
-    When('the tutor answers', async () => {
-      // the question shows as pending before the request is built and sent: on a loaded host the grist is not at the mill yet
-      await waitFor(() => expect(fake.received).toHaveLength(1));
-      fake.answer({ status: 'answered', answer: TALK_ANSWER });
-    });
+    // the question shows as pending before the request is built and sent: on a loaded host the grist is not at the mill yet, and the fake's answer waits for it
+    When('the tutor answers', () => fake.answer({ status: 'answered', answer: TALK_ANSWER }));
     Then('the answer shows in the sheet under his question', answerShowsUnderQuestion);
   });
 

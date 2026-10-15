@@ -3,6 +3,7 @@
 // key and answers it, sealed to the phone. No network. Shared by the tutor feature steps and the e2e specs.
 import { Hash, PrivateKey, PublicKey, Signature, Utils } from '@bsv/sdk';
 import { grist } from 'bsv-kit/grist';
+import { ASYNC_WAIT_MS } from './timeouts';
 
 export const POSTERN_ORIGIN = 'https://postern.allmymind.org';
 /** The mill's key: what the fake seals its answers with. */
@@ -10,6 +11,9 @@ export const MILL_KEY_HEX = '00'.repeat(31) + '07';
 const MILL_KEY = PrivateKey.fromHex(MILL_KEY_HEX);
 export const MILL_PUBLIC_KEY = MILL_KEY.toPublicKey().toString();
 const millBytes = Uint8Array.from(Utils.toArray(MILL_KEY_HEX, 'hex'));
+// the bound on answer()'s wait is real time even where a test fakes the clock: taken before any test can install fake timers
+const realSetTimeout = globalThis.setTimeout;
+const realClearTimeout = globalThis.clearTimeout;
 
 /** What the fake opened of a grist: the header, the app's request, the attachments. */
 export interface ReceivedGrist {
@@ -53,8 +57,15 @@ export interface FakePostern {
   down: boolean;
   /** Every call is answered with this HTTP status and no work done, as the VPS's proxy does while the factory's home is off (502, 503 or 504); undefined = a working backend. */
   gateway: number | undefined;
-  /** Answer the oldest grist not yet answered. */
-  answer(reply: Reply): void;
+  /** Answer the oldest grist not yet answered. The app sends its grist a moment after the tap that asks (on a loaded host, later than
+   * the next step): with none waiting it waits up to `answerWaitMs` for the next one to arrive, and fails only then. Always await it. */
+  answer(reply: Reply): Promise<void>;
+  /** how long `answer` waits for a grist to arrive: the suite's ASYNC_WAIT_MS (real time, under fake timers too) */
+  answerWaitMs: number;
+  /** Ends whatever the phone still has in flight: answers every grist still waiting with `reply`, and every grist sent from now on as soon
+   * as it arrives. For the end of a scenario, so a grist held for a step that never ran (the scenario failed first) does not keep the
+   * app waiting into the next one. */
+  endAll(reply: Reply): void;
   /** the `since` of every GET /api/messages, in order */
   sinces: number[];
   /** Puts a request-status record (docs/protocol.md section 19) for the key `to` (a public key in hex) on the backend, sealed by the mill unless
@@ -182,10 +193,15 @@ export const SOUND_HELP_ANSWER = {
   syllables: ['συν', 'ερ', 'γεῖ'],
 };
 
+/** a grist taken in and not answered yet */
+type Waiting = { txid: string; from: string; kind: string };
+
 export function makeFakePostern(): FakePostern {
   const issued = new Set<string>();
   const records: { seq: number; firstSeen: string; txid: string; signer?: string; payload: Record<string, unknown> }[] = [];
-  const unanswered: { txid: string; from: string; kind: string }[] = [];
+  const unanswered: Waiting[] = [];
+  /** the answer() calls waiting for a grist to arrive, oldest first: each takes one */
+  const waiters: (() => void)[] = [];
   const streams = new Set<ReadableStreamDefaultController<Uint8Array>>();
   const encoder = new TextEncoder();
   let counter = 0;
@@ -228,13 +244,36 @@ export function makeFakePostern(): FakePostern {
       records.push({ seq: records.length + 1, firstSeen: new Date().toISOString(), txid: `direct:${hex(Hash.sha256(Utils.toArray(`status-${records.length}`, 'utf8')))}`, signer, payload: { ...envelope } });
       announce(records.length);
     },
+    answerWaitMs: ASYNC_WAIT_MS,
     answer(reply) {
-      const next = unanswered.shift();
-      if (!next) throw new Error('no grist is waiting for an answer');
-      answerGrist(next, reply);
+      const take = (): void => answerGrist(unanswered.shift() as Waiting, reply);
+      // a grist only waits while no answer() does: the first answer() to wait takes the next one in
+      if (unanswered.length > 0) {
+        take();
+        return Promise.resolve();
+      }
+      const waitMs = fake.answerWaitMs;
+      return new Promise<void>((resolve, reject) => {
+        const waiter = (): void => {
+          realClearTimeout(timer);
+          take();
+          resolve();
+        };
+        const timer = realSetTimeout(() => {
+          waiters.splice(waiters.indexOf(waiter), 1);
+          reject(new Error(`no grist arrived within ${waitMs} ms`));
+        }, waitMs);
+        waiters.push(waiter);
+      });
+    },
+    endAll(reply) {
+      fake.autoReply = reply;
+      fake.greekReply = undefined;
+      fake.kindReplies = {};
+      while (unanswered.length > 0) answerGrist(unanswered.shift() as Waiting, reply);
     },
   };
-  const answerGrist = (next: { txid: string; from: string; kind: string }, reply: Reply): void => {
+  const answerGrist = (next: Waiting, reply: Reply): void => {
     const plaintext = { re: next.txid, ...reply, grind: { app: 'lampas', kind: next.kind, v: '1' } };
     const envelope = grist.sealEnvelope(JSON.stringify(plaintext), millBytes, next.from, 1_790_000_000);
     records.push({ seq: records.length + 1, firstSeen: new Date().toISOString(), txid: `direct:${hex(Hash.sha256(Utils.toArray(`answer-${next.txid}`, 'utf8')))}`, signer: MILL_PUBLIC_KEY, payload: { ...envelope } });
@@ -319,6 +358,7 @@ export function makeFakePostern(): FakePostern {
       const byKind = fake.kindReplies[opened.grist.kind];
       if (byKind) answerThis(byKind);
       else if (fake.autoReply) answerThis(greek && fake.greekReply ? fake.greekReply : fake.autoReply);
+      else waiters.shift()?.();
       const held = fake.holds[opened.grist.kind];
       if (held) await held;
       // the grist's own place, as the backend names it: an answer the fake made at once is after it

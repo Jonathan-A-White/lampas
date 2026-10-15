@@ -131,7 +131,7 @@ test.describe('at 390 x 844', () => {
     await expect.poll(() => fake.received.length).toBe(1);
     await sheet.getByRole('button', { name: 'Done' }).click();
     await expect(sheet).toBeHidden();
-    fake.answer({ status: 'answered', answer: { ...TALK_ANSWER, answer: 'Taking you to John 3.', go: { book: 'John', chapter: 3 } } });
+    await fake.answer({ status: 'answered', answer: { ...TALK_ANSWER, answer: 'Taking you to John 3.', go: { book: 'John', chapter: 3 } } });
     await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
     // the app polls the mill every 3 s: wait until it has kept the answer before opening Talk again, or the open sheet would be taken to John 3
     await expect.poll(() => keptTurns(page), { timeout: 15_000 }).toBe(1);
