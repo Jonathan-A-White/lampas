@@ -18,6 +18,7 @@
     "e2e:live": "LAMPAS_E2E=live TZ=UTC playwright test --project=live",
     "icons": "node scripts/make-icons.mjs",
     "seed:build": "node scripts/seed-build.ts",
+    "pictures:queue": "tsx scripts/pictures-queue.ts",
     "data:build": "tsx scripts/data-build.ts",
     "ladder": "tsx scripts/ladder-el.ts && tsx scripts/ladder-en.ts",
     "check:step": "tsx scripts/step-check.ts",
