@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.267",
+    "date": "2026-10-16",
+    "story": "mw-46z0my.12",
+    "kind": "fixed",
+    "text": "on a phone whose clock is ahead, About's 'Last tutor answer' no longer shows a wait longer than the whole answer, and its parts add up to the total."
+  },
+  {
+    "version": "0.1.267",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.384",
+    "kind": "fixed",
+    "text": "Word meanings no longer show the dictionary's shorthand: πνεῦμα reads \"spirit, breath\" and ἐν reads \"in, by, with (dative)\"."
+  },
+  {
     "version": "0.1.266",
     "date": "2026-10-16",
     "story": "mw-5r3p30.353",

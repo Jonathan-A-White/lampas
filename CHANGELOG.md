@@ -1,5 +1,13 @@
 # What's new
 
+## 0.1.267
+_2026-10-16_
+- Fixed: on a phone whose clock is ahead, About's 'Last tutor answer' no longer shows a wait longer than the whole answer, and its parts add up to the total.
+
+## 0.1.267
+_2026-10-16_
+- Fixed: Word meanings no longer show the dictionary's shorthand: πνεῦμα reads "spirit, breath" and ἐν reads "in, by, with (dative)".
+
 ## 0.1.266
 _2026-10-16_
 - New: Settings has an English accent choice (American, British or IPA) that changes every sound hint at once, and the tutor knows which you chose.
