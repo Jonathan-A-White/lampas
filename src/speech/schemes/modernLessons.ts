@@ -1,5 +1,6 @@
 // src/speech/schemes/modernLessons.ts — what Modern Greek teaches of each sound-bearing idea of the grammar ladder (mw-5r3p30.229): the sound of
-// each letter, vowel pair and consonant pair, and the breathings, which Modern Greek does not say. The sounds are the ones modern.ts respells by
+// each letter, vowel pair and consonant pair, the breathings, which Modern Greek does not say, and the accents and the marks that change a word
+// (mw-5r3p30.312: the stress is said louder, and a mark is not heard, each one sentence after the ladder's own text). The sounds are the ones modern.ts respells by
 // (docs/pronunciation.md lists the rules; tests/unit/sound-lessons.test.ts holds each to respellModern), each said through `say`, which gives the
 // symbol the respelling writes and the reader's English accent's hint for it (mw-5r3p30.352: no English word is written here).
 import type { SoundWords } from '../accents';
@@ -84,5 +85,8 @@ export function modernLessons(say: SoundWords): Readonly<Record<string, SoundLes
   lessons['words-sound-alike'] = {
     text: `Some different words are spelt alike but for one letter, and Modern Greek says each pair the same: ἡμεῖς “we” and ὑμεῖς “you” are both “ee-MEES” (η and υ are both ${asIn('ee')}); λύομεν “we loose” and λύωμεν “let us loose” are both “LEE-o-men” (ο and ω are both ${asIn('o')}); λύει “he looses” and λύῃ “he may loose” are both “LEE-ee” (ει and ῃ are both ${asIn('ee')}). Your ear cannot tell them apart, so trust the spelling: only the spelling does. The New Testament has the same endings, as in ἔχομεν “we have” and ἔχωμεν “let us have” (1 John 4:17).`,
   };
+  // the ladder's text of these two holds the spelling and the glosses; the lesson adds how Modern Greek says them (mw-5r3p30.312)
+  lessons.accents = { also: 'The stressed syllable is said louder in Modern Greek, and the three marks sound alike.' };
+  lessons['marks-change-word'] = { also: 'Modern Greek says each pair the same, so only the mark tells them apart.' };
   return lessons;
 }

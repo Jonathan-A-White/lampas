@@ -109,6 +109,19 @@ Feature: The idea sheet
     Then the idea sheet text says "Testish says the rough breathing as a hum."
     And the idea sheet text does not say "silent"
 
+  # mw-5r3p30.312: how the accents and the marks that change a word are said is the scheme's lesson too, so an Erasmian scheme says its own. No goal
+  # needs the marks that change a word (it covers no parsing term), so the sheet is opened by itself, as a Go to or a bridge opens it.
+  Scenario Outline: Another pronunciation teaches its own lesson of a mark on the sheet, never Modern Greek's
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level, a fake Postern and the pronunciation "testish" chosen
+    When the idea sheet of "<idea>" is opened
+    Then the idea sheet text says "<lesson>"
+    And the idea sheet text does not say "Modern Greek"
+
+    Examples:
+      | idea              | lesson                                     |
+      | accents           | Testish sings the accented syllable high.  |
+      | marks-change-word | Testish says ἡ and ἤ apart by their pitch. |
+
   # Teach tiles (mw-5r3p30.232): a card of the letters, sounds and marks tiers shows its items as tiles above the prose, each to hear, so a
   # beginner meets the letter, its name and its sound, and does not only read about them.
   Scenario: The Greek alphabet sheet shows 24 tiles, each with its name and sound, and a tap says the letter

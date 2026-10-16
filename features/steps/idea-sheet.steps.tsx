@@ -10,6 +10,7 @@ import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { ideaOf, itemsOf } from '../../src/data/grammar/ladder';
 import { teachOf } from '../../src/data/grammar/teach';
+import { IdeaSheet } from '../../src/IdeaSheet';
 import { DAY, STEP_DAYS } from '../../src/data/schedule';
 import { clearBus, subscribe, type EventOf } from '../../src/events/bus';
 import { expectPublished } from '../../tests/support/published';
@@ -45,12 +46,16 @@ let synth: FakeSynth | undefined;
 /** The Laptop's wall clock steps back by about a second now and then: a bound on a stored time allows for it. */
 const CLOCK_SLACK = 3000;
 
-/** A second pronunciation with a lesson of its own for the breathings only (mw-5r3p30.229). */
+/** A second pronunciation with lessons of its own for the breathings (mw-5r3p30.229), the accents and the marks that change a word (mw-5r3p30.312). */
 const TESTISH: Pronunciation = {
   ...MODERN,
   id: 'testish',
   label: 'Testish',
-  lessons: () => ({ breathings: { text: 'Testish says the rough breathing as a hum.' } }),
+  lessons: () => ({
+    breathings: { text: 'Testish says the rough breathing as a hum.' },
+    accents: { also: 'Testish sings the accented syllable high.' },
+    'marks-change-word': { also: 'Testish says ἡ and ἤ apart by their pitch.' },
+  }),
 };
 
 /** Opens the app on Romans 8 with every store emptied, `goal` saved as the goal setting when there is one, the pronunciation `chosen` saved, a fake Postern and, with `greekVoice`, a phone that has a Greek voice. */
@@ -150,7 +155,7 @@ async function opensIdeaFromGoal(id: string): Promise<void> {
 
 const feature = await loadFeature('features/idea-sheet.feature');
 
-describeFeature(feature, ({ Scenario }) => {
+describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   const opensWithGoal = (_: unknown, goal: string) => open(goal);
   const opensNoGoal = () => open(undefined);
   const GIVEN_GOAL = 'Lampas is opened on Romans 8 with the goal {string}, no idea level and a fake Postern';
@@ -419,6 +424,21 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the idea sheet text does not say {string}', (_, phrase: string) => {
       expect(within(ideaSheet()).getByTestId('idea-text').textContent).not.toContain(phrase);
+    });
+  });
+
+  ScenarioOutline("Another pronunciation teaches its own lesson of a mark on the sheet, never Modern Greek's", ({ Given, When, Then, And }, row) => {
+    Given('Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level, a fake Postern and the pronunciation "testish" chosen', () => open('1 John 1:1', TESTISH.id));
+    When('the idea sheet of "<idea>" is opened', async () => {
+      render(<IdeaSheet idea={ideaOf(String(row.idea))} onClose={() => undefined} onWord={() => undefined} />);
+      await screen.findByRole('dialog', { name: 'Idea' });
+      await waitFor(() => expect(within(ideaSheet()).queryByTestId('idea-loading')).toBeNull());
+    });
+    Then('the idea sheet text says "<lesson>"', async () => {
+      await waitFor(() => expect(within(ideaSheet()).getByTestId('idea-text')).toHaveTextContent(String(row.lesson)));
+    });
+    And('the idea sheet text does not say "Modern Greek"', () => {
+      expect(within(ideaSheet()).getByTestId('idea-text').textContent).not.toContain('Modern Greek');
     });
   });
   const tiles = (): HTMLElement[] => within(ideaSheet()).getAllByTestId('teach-tile');
