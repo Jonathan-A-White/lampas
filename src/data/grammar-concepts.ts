@@ -378,8 +378,8 @@ export const GRAMMAR_CONCEPTS: Record<string, GrammarConcept> = Object.fromEntri
   ),
   c(
     'no voice',
-    'A few verb forms have no voice at all, because they only state a condition and nobody acts on anything. Example: English “is” and “seems”.',
-    'The parsing does not name a voice for such a form. Read it as a plain statement and take its person and number from the ending.',
+    'Some forms have no voice, because they only state a condition and nobody acts on anything. Example: English “is” and “seems”.',
+    'The parsing gives such a form no voice. Most are forms of εἰμί “I am”: ἐστίν “is”, ἦν “was”. Read it as a plain statement and take its person and number from the ending.',
     ['active', 'verb'],
   ),
 
