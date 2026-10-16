@@ -22,6 +22,7 @@ export type SectionId =
   | 'newWords'
   | 'goal'
   | 'approach'
+  | 'handwriting'
   | 'readAloud'
   | 'readTutor'
   | 'askBy'

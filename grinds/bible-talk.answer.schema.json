@@ -772,6 +772,12 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
+            "properties": { "key": { "const": "handwritingDrills" }, "value": { "type": "string", "enum": ["auto", "on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
             "properties": { "key": { "const": "englishVoice" }, "value": { "type": "string", "enum": ["default"] } }
           },
           {

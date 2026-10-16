@@ -4,6 +4,7 @@ import { AppearanceControl, HeadingsControl, ImmersiveControl, ImmersiveHintCont
 import { ApproachControl } from './approach';
 import { DeveloperControl } from './developer';
 import { GoalControl } from './goal';
+import { HandwritingControl } from './handwriting';
 import { LinkControl } from './links';
 import { NewWordsControl } from './newWords';
 import { QuizGoalControl } from './quizGoal';
@@ -29,6 +30,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   grammarMove: NewWordsControl,
   goal: GoalControl,
   grammarApproach: ApproachControl,
+  handwritingDrills: HandwritingControl,
   readSpan: ReadSpanControl,
   englishVoice: VoiceControl,
   greekVoice: VoiceControl,

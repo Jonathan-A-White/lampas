@@ -26,6 +26,7 @@ import { getOpenChapter } from './data/readerChapter';
 import { getGreekPronunciation, getLevel, getSavedGoalText, listLevels, recordDrill, teachIdea, type DrillMode, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
 import { DrillItScreen } from './DrillItScreen';
 import { holdIdea } from './ideaReturn';
+import { LessonWriteIt } from './handwriting/LessonWriteIt';
 import { LetterDrillScreen } from './LetterDrillScreen';
 import { openParadigm } from './nav/route';
 import { useAccent } from './speech/accents/useAccent';
@@ -413,6 +414,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false }: {
               </p>
             </>
           ) : null}
+          {idea.glyphs ? <LessonWriteIt idea={idea} /> : null}
           <Worked teach={card} passage={passage} scheme={scheme} />
           {loaded === null || (!own.length && !wider && passage) ? (
             <p data-testid="idea-loading" className="mt-3 text-base text-muted">
