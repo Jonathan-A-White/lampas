@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.268",
+    "date": "2026-10-16",
+    "story": "mw-emk3xt.2",
+    "kind": "new",
+    "text": "Review now asks what a phrase of a verse says, showing the Greek and four English choices taken from the verse itself."
+  },
+  {
+    "version": "0.1.268",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.421",
+    "kind": "fixed",
+    "text": "a Greek word of one letter, like ὁ, now sounds in your phone's own Greek voice instead of a robotic clip, and the letter drills say a vowel's sound."
+  },
+  {
     "version": "0.1.267",
     "date": "2026-10-16",
     "story": "mw-46z0my.12",

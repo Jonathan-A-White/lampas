@@ -1,5 +1,13 @@
 # What's new
 
+## 0.1.268
+_2026-10-16_
+- New: Review now asks what a phrase of a verse says, showing the Greek and four English choices taken from the verse itself.
+
+## 0.1.268
+_2026-10-16_
+- Fixed: a Greek word of one letter, like ὁ, now sounds in your phone's own Greek voice instead of a robotic clip, and the letter drills say a vowel's sound.
+
 ## 0.1.267
 _2026-10-16_
 - Fixed: on a phone whose clock is ahead, About's 'Last tutor answer' no longer shows a wait longer than the whole answer, and its parts add up to the total.
