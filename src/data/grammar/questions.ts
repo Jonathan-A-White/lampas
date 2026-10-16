@@ -22,7 +22,7 @@ import { quickQuestion } from './quickRound';
 import { laterTermsIn, termIsTaught } from './taughtTerms';
 import { teachOf } from './teach';
 
-export type GrammarKind = 'ending' | 'tap-form' | 'letter' | 'sound' | 'stress' | 'breathing' | 'syllables' | 'preposition' | 'compound' | 'concept' | 'cell' | 'meaning' | 'parse' | 'roles';
+export type GrammarKind = 'ending' | 'tap-form' | 'letter' | 'sound' | 'say' | 'stress' | 'breathing' | 'syllables' | 'preposition' | 'compound' | 'concept' | 'cell' | 'meaning' | 'parse' | 'roles';
 
 export interface GrammarQuestion {
   kind: GrammarKind;
@@ -607,6 +607,18 @@ export function buildSound(idea: GrammarIdea, random: Random, scheme: Pronunciat
     say: glyphOf(letter, form),
     facet: itemFacet(letter),
   };
+}
+
+/** The prompt of Say it: the letter is shown, he says its name or its sound (the matcher is sayIt.ts). */
+export const SAY_PROMPT = 'Say its name or its sound';
+
+/**
+ * Say it (mw-86e9r1.12): a letter shown large, which he says aloud, its name or its sound, and the phone's speech recognition checks it (data/grammar/sayIt.ts). It has no choices:
+ * `form` is the glyph shown, `right` the same glyph (the letter a right or a missed answer is about), `say` the glyph the voice says on a miss, which plays the right sound.
+ */
+export function buildSay(idea: GrammarIdea, ask: LetterAsk): GrammarQuestion {
+  const glyph = glyphOf(ask.letter, ask.form);
+  return { kind: 'say', ideaId: idea.id, prompt: SAY_PROMPT, options: [], right: glyph, form: glyph, say: glyph, facet: itemFacet(ask.letter) };
 }
 
 /** One pair of a group for each sound the scheme gives (ει, οι and υι are one): its pair and the sound the scheme says for it. */
