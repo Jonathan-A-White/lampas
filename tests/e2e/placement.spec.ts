@@ -4,7 +4,7 @@ import { approachOf, orderOf } from '../../src/approaches';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { startPlacement } from '../../src/data/grammar/placement';
 import { honestSpeech, spoken } from '../support/honest-fakes';
-import { NEEDED } from './needed-ideas';
+import { neededIdeas, placementSummary } from './needed-ideas';
 import { openUnlocked } from './unlocked';
 
 // Puts rows in the app's own store through raw IndexedDB, as the app wrote them.
@@ -138,12 +138,14 @@ test('the paused card has Back to the goal, and Go on another day returns to the
 test('the end card: Where you are, by tier, with Back to the goal in reach', async ({ page }) => {
   await openWithGoal(page, '1 John 1:1');
   const now = Date.now();
-  await put(page, 'grammarLevels', [...new Set([...NEEDED, ...ITEMS])].map((id) => ({ id, level: 'solid', since: now, how: 'marked' })));
+  const known = [...new Set([...(await neededIdeas('1 John 1:1')), ...ITEMS])];
+  await put(page, 'grammarLevels', known.map((id) => ({ id, level: 'solid', since: now, how: 'marked' })));
   await page.goto('/#/placement');
   // everything the goal needs is solid already, and every letter and combination too: nothing is left to ask, so Start ends on the card
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('placement-title')).toHaveText('Where you are');
-  await expect(page.getByTestId('where')).toHaveText(`Where you are: solid ${NEEDED.length + 24}, frontier 0, not yet 0; untested 0`);
+  const { solid } = await placementSummary('1 John 1:1', Object.fromEntries(known.map((id) => [id, 'solid' as const])));
+  await expect(page.getByTestId('where')).toHaveText(`Where you are: solid ${solid}, frontier 0, not yet 0; untested 0`);
   const nouns = page.getByRole('region', { name: 'nouns' });
   await expect(nouns.getByRole('listitem').filter({ hasText: 'The noun' })).toContainText('Solid');
   const back = page.getByRole('button', { name: 'Back to the goal' });
@@ -158,7 +160,7 @@ async function knownExceptThree(page: Page) {
   await openWithGoal(page, '1 John 1:1');
   const now = Date.now();
   const missed = ['letter-xi', 'letter-psi', 'diphthong-ou'];
-  const rest = [...new Set([...NEEDED, ...ITEMS])].filter((id) => !missed.includes(id) && !['alphabet', 'diphthongs'].includes(id));
+  const rest = [...new Set([...(await neededIdeas('1 John 1:1')), ...ITEMS])].filter((id) => !missed.includes(id) && !['alphabet', 'diphthongs'].includes(id));
   await put(page, 'grammarLevels', rest.map((id) => ({ id, level: 'solid', since: now, how: 'marked' })));
   await page.goto('/#/placement');
   await page.getByRole('button', { name: 'Start', exact: true }).click();

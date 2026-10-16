@@ -5,7 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { honestSpeech } from '../support/honest-fakes';
 import { shot } from './shot';
-import { NEEDED } from './needed-ideas';
+import { neededIdeas } from './needed-ideas';
 import { openUnlocked } from './unlocked';
 
 const BUTTON = 'button[data-ask-tutor]';
@@ -107,7 +107,7 @@ test.describe('phone sideways', () => {
     // everything the walk needs and every letter, pair and breathing is solid but ξ, ψ and ου, so Start goes straight to the quick round
     const items = LADDER.filter((i) => i.glyphs || i.parent).map((i) => i.id);
     const missed = ['letter-xi', 'letter-psi', 'diphthong-ou'];
-    const rest = [...new Set([...NEEDED, ...items])].filter((id) => !missed.includes(id) && !['alphabet', 'diphthongs'].includes(id));
+    const rest = [...new Set([...(await neededIdeas('1 John 1:1')), ...items])].filter((id) => !missed.includes(id) && !['alphabet', 'diphthongs'].includes(id));
     await put(page, 'grammarLevels', rest.map((id) => ({ id, level: 'solid', since: Date.now(), how: 'marked' })));
     await page.goto('/#/placement');
     await expect(page.getByTestId('placement-goal')).toBeVisible();
