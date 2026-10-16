@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.271",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.416",
+    "kind": "fixed",
+    "text": "The tutor no longer asks again what you are learning Greek for after you have said you would rather not say."
+  },
+  {
+    "version": "0.1.271",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.383",
+    "kind": "new",
+    "text": "fifty more of the New Testament's commonest words now have a memory picture beside them on Words and in the Quick test."
+  },
+  {
     "version": "0.1.270",
     "date": "2026-10-16",
     "story": "mw-i7xe0n.14",

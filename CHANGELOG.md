@@ -1,5 +1,13 @@
 # What's new
 
+## 0.1.271
+_2026-10-16_
+- Fixed: The tutor no longer asks again what you are learning Greek for after you have said you would rather not say.
+
+## 0.1.271
+_2026-10-16_
+- New: fifty more of the New Testament's commonest words now have a memory picture beside them on Words and in the Quick test.
+
 ## 0.1.270
 _2026-10-16_
 - Fixed: Drill it no longer asks the same word twice when your reading goal has no word with the letter you are drilling.
