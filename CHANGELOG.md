@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.272
+_2026-10-16_
+- Fixed: The pluperfect table now gives you one set of endings, so ἐλελύκειμεν and ἐλελύκειτε agree with οἶδα's ᾔδειμεν and ᾔδειτε.
+
 ## 0.1.271
 _2026-10-16_
 - Fixed: The tutor no longer asks again what you are learning Greek for after you have said you would rather not say.
