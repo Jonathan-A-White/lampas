@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { neededIdeas } from './needed-ideas';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -71,7 +72,8 @@ test('with Due 9, a goal and new words the chips are one slim row and the text s
   const news = page.getByTestId('new-words');
   await expect(due).toHaveText('Due 9');
   await expect(goal).toHaveText(/^Goal \d+\/16$/);
-  await expect(goal).toHaveAccessibleName(/^Goal: 1 John 1:1, \d+ of 16 words, \d+ of 46 ideas$/);
+  const ideas = (await neededIdeas('1 John 1:1')).length;
+  await expect(goal).toHaveAccessibleName(new RegExp(`^Goal: 1 John 1:1, \\d+ of 16 words, \\d+ of ${ideas} ideas$`));
   await expect(news).toHaveText(/^New \d+$/);
   await expect(news).toHaveAccessibleName(/^New words: \d+$/);
 

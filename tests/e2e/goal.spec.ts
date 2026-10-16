@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { goalIdeaCounts, neededIdeas } from './needed-ideas';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -68,6 +69,10 @@ async function expectThumbSized(target: Locator) {
   expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390);
 }
 
+/** The ideas openWithGoal makes solid: the letters, sounds and marks and the noun. */
+const SOLID = ['alphabet', 'breathings', 'accents', 'diphthongs', 'consonant-pairs', 'syllables', 'iota-subscript', 'punctuation', 'noun'];
+const solid = Object.fromEntries(SOLID.map((id) => [id, 'solid' as const]));
+
 /** Opens the app once (the first open seeds his words), saves the goal and the levels, and loads the page again. */
 async function openWithGoal(page: Page, goal: string) {
   await openUnlocked(page);
@@ -77,13 +82,7 @@ async function openWithGoal(page: Page, goal: string) {
   await expect.poll(() => seeded(page)).toBe(true);
   const now = Date.now();
   await put(page, 'settings', [{ key: 'goal', value: goal }]);
-  await put(page, 'grammarLevels', [
-    { id: 'alphabet', level: 'solid', since: now, how: 'marked' },
-    { id: 'breathings', level: 'solid', since: now, how: 'marked' },
-    { id: 'accents', level: 'solid', since: now, how: 'marked' },
-    ...['diphthongs', 'consonant-pairs', 'syllables', 'iota-subscript', 'punctuation'].map((id) => ({ id, level: 'solid', since: now, how: 'marked' })),
-    { id: 'noun', level: 'solid', since: now, how: 'sheet' },
-  ]);
+  await put(page, 'grammarLevels', SOLID.map((id) => ({ id, level: 'solid', since: now, how: id === 'noun' ? 'sheet' : 'marked' })));
   // the app watches its own writes, not a raw one: load it again so it reads them
   await page.reload();
 }
@@ -92,7 +91,8 @@ test('the Goal chip under the Reader header is on one row with Due and opens the
   await openWithGoal(page, '1 John 1:1');
   const strip = page.getByTestId('goal-strip');
   await expect(strip).toHaveText(/^Goal \d+\/16$/);
-  await expect(strip).toHaveAccessibleName(/^Goal: 1 John 1:1, \d+ of 16 words, \d+ of 46 ideas$/);
+  const ideas = (await neededIdeas('1 John 1:1')).length;
+  await expect(strip).toHaveAccessibleName(new RegExp(`^Goal: 1 John 1:1, \\d+ of 16 words, \\d+ of ${ideas} ideas$`));
   const box = await strip.boundingBox();
   expect(box?.height).toBeGreaterThanOrEqual(38);
   expect(box?.height).toBeLessThanOrEqual(40);
@@ -127,7 +127,8 @@ test('the Goal screen: two bars that fit, the lists, Learn next, Next words and 
   await expectThumbSized(page.getByTestId('learn-next'));
   await expect(page.getByTestId('learn-next')).toHaveText('Learn next: The singular · Your first words');
   await expect(page.getByTestId('words-legend')).toHaveText(/^Solid \d+ · Frontier \d+ · Not yet \d+$/);
-  await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 9 · Frontier 0 · Not yet 37');
+  const before = await goalIdeaCounts('1 John 1:1', solid);
+  await expect(page.getByTestId('ideas-legend')).toHaveText(`Solid ${before.solid} · Frontier 0 · Not yet ${before.notYet}`);
   await expect(page.getByText('Solid when both are full.')).toBeVisible();
   for (const bar of ['words-bar', 'ideas-bar']) {
     const box = await page.getByTestId(bar).boundingBox();
@@ -154,7 +155,8 @@ test('the Goal screen: two bars that fit, the lists, Learn next, Next words and 
   await page.keyboard.press('ArrowRight');
   await expect(sheet.getByTestId('idea-level')).toHaveText('Frontier since today');
   await sheet.getByRole('button', { name: 'Done' }).click();
-  await expect(page.getByTestId('ideas-legend')).toHaveText('Solid 9 · Frontier 1 · Not yet 36');
+  const learning = await goalIdeaCounts('1 John 1:1', { ...solid, 'number-singular': 'frontier' });
+  await expect(page.getByTestId('ideas-legend')).toHaveText(`Solid ${learning.solid} · Frontier 1 · Not yet ${learning.notYet}`);
   // he learns one idea at a time: the Goal screen names it, and Learn next gives way to it
   await expect(page.getByTestId('learning-now')).toHaveText('Learning now: The singular');
   await expect(page.getByTestId('learn-next')).toHaveCount(0);
