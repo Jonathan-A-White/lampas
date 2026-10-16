@@ -12,7 +12,7 @@ import { shot } from './shot';
 import { seedDeviceKey } from './unlocked';
 
 const ANSWER_WITHIN_MS = 120_000;
-/** What the grind says to anything outside the Bible (grinds/bible-talk.instructions/; tests/unit/bible-talk-grind.test.ts holds the two equal). */
+/** What the grind says to anything outside the Bible (grinds/bible-talk.instructions.md; tests/unit/bible-talk-grind.test.ts holds the two equal). */
 const REFUSAL = 'I can only talk about the Bible here; ask for app changes in Postern.';
 
 let key = '';
