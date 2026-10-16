@@ -26,6 +26,7 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'newWords', title: 'New words' },
   { id: 'goal', title: 'Goal' },
   { id: 'approach', title: 'Grammar approach' },
+  { id: 'handwriting', title: 'Handwriting' },
   { id: 'readAloud', title: 'Read aloud' },
   { id: 'readTutor', title: "The tutor's responses" },
   { id: 'askBy', title: 'Asking the tutor' },

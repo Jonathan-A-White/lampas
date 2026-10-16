@@ -5,6 +5,7 @@ import type { SettingDef, SettingValue } from '../define';
 import { askBySetting } from './askBy';
 import { audioBibleSetting } from './audioBible';
 import { englishAccentSetting } from './englishAccent';
+import { handwritingSetting } from './handwriting';
 import { immersiveSetting } from './immersive';
 import { immersiveHintSetting } from './immersiveHint';
 import { readLessonsSetting } from './readLessons';
@@ -13,6 +14,6 @@ import { tipsSetting } from './tips';
 import { weaveSetting } from './weave';
 import { weaveOrderSetting } from './weaveOrder';
 
-export { askBySetting, audioBibleSetting, englishAccentSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, themeSetting, tipsSetting, weaveOrderSetting, weaveSetting };
+export { askBySetting, audioBibleSetting, englishAccentSetting, handwritingSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, themeSetting, tipsSetting, weaveOrderSetting, weaveSetting };
 
-export const DEFINITIONS: readonly SettingDef<SettingValue>[] = [themeSetting, weaveSetting, tipsSetting, immersiveSetting, immersiveHintSetting, askBySetting, audioBibleSetting, readLessonsSetting, englishAccentSetting, weaveOrderSetting];
+export const DEFINITIONS: readonly SettingDef<SettingValue>[] = [themeSetting, weaveSetting, tipsSetting, immersiveSetting, immersiveHintSetting, askBySetting, audioBibleSetting, readLessonsSetting, englishAccentSetting, weaveOrderSetting, handwritingSetting];

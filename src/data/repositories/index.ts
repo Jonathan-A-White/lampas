@@ -96,3 +96,5 @@ export { dismissTip, keepTip, openTip, shownTipIds } from './tips';
 export type { TipRow } from './tips';
 export { dropShares, parkShare, waitingShare } from './shares';
 export type { ShareRow } from './shares';
+
+export { getPenSeen, getWhySeen, getWriteProgress, handwritingOn, markPenSeen, markWhySeen, recordWrite } from './handwriting';

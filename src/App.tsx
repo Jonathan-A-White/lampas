@@ -14,6 +14,7 @@ import { startReaderAddressSync } from './nav/readerAddress';
 import { routeOf, useAddress } from './nav/route';
 import { Reader } from './Reader';
 import { GoalScreen } from './GoalScreen';
+import { watchForPen } from './handwriting/penWatch';
 import { IdeaReturn } from './IdeaReturn';
 import { ParadigmsScreen } from './ParadigmsScreen';
 import { RequestsScreen } from './RequestsScreen';
@@ -48,6 +49,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
   useEffect(() => startAppearanceSync(), []);
   // The saved voices and pronunciation reach the speaker before the first tap on a speaker button.
   useEffect(() => startSpeechSettingsSync(), []);
+  // A pen that touches anywhere is kept as 'pen seen', so Handwriting drills on Automatic offers Write it from then on (mw-86e9r1.51).
+  useEffect(() => watchForPen(), []);
   // What he uses is counted from the bus, a day at a time and without any text, so the tips can tell what he has not met (src/tips/).
   useEffect(() => {
     const stop = startUsageLog();

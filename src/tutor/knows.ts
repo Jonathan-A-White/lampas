@@ -45,6 +45,7 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   grammarMove: 'level',
   goal: 'level',
   grammarApproach: 'level',
+  handwritingDrills: 'screen',
   quizGoal: 'quizGoal',
 };
 
