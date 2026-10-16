@@ -62,6 +62,8 @@ export interface VerseViewProps {
   listen: ListenPlayer;
   checks: Pick<UseReadChecks, 'states'>;
   read: ReadHold;
+  /** some words of the verse are shown in Greek by the weave: the reading check says it can check English only */
+  weaveShown?: boolean;
   onRetryRead: () => void;
   /** the question in flight for this verse (Ask the tutor), and the way to send one (the composer at the foot, by voice or by hand) */
   ask: AskState | undefined;
@@ -84,7 +86,7 @@ function Arrow({ move, name, glyph }: { move: (() => void) | null; name: string;
 }
 
 export function VerseView(props: VerseViewProps) {
-  const { title, book, chapter, verse, view, immersive, text, previous, next, onClose, action, onAction, listen, checks, read, onRetryRead, ask, onAsk, prefill, onTalk, quiz } = props;
+  const { title, book, chapter, verse, view, immersive, text, previous, next, onClose, action, onAction, listen, checks, read, weaveShown, onRetryRead, ask, onAsk, prefill, onTalk, quiz } = props;
   // The foot of the view, where the chosen action draws its bar.
   const [slot, setSlot] = useState<HTMLDivElement | null>(null);
   // Read it aloud, Ask the tutor and Quiz me are the AI: not offered, and nothing of theirs drawn, without a licence (mw-8m9dyu.2).
@@ -185,7 +187,7 @@ export function VerseView(props: VerseViewProps) {
             </div>
           ) : null}
           {action === 'read' && ai ? (
-            <ReadCheckPanel key={unitId(verse)} verse={verse} view={view} book={book} chapter={chapter} checks={checks} hold={read} onRetry={onRetryRead} slot={slot} />
+            <ReadCheckPanel key={unitId(verse)} verse={verse} view={view} book={book} chapter={chapter} checks={checks} hold={read} weaveShown={weaveShown} onRetry={onRetryRead} slot={slot} />
           ) : null}
           {action === 'ask' && ai ? (
             <>

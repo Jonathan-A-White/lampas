@@ -2,6 +2,7 @@
 // the recording attached, scored by the mill and answered by its verse-read grind (grinds/verse-read.json). The wire work is
 // src/services/tutor.ts's askGrind; this file is the request, the answer's shape and the check the phone runs on it.
 import type { Verse } from '../data/chapter';
+import type { Woven } from '../data/weave';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
 import type { MemoryField } from '../data/learnerMemory';
@@ -187,6 +188,28 @@ export const normalWord = (word: string): string =>
 
 /** The verse's words as the scorer counts them: split on white space, in order (a focus word's `index` counts these). */
 export const wordsOfText = (text: string): string[] => text.split(/\s+/).filter(Boolean);
+
+/** The places, in the verse's English words as readingText gives them, of the words the weave shows him in Greek: every word of a chunk `woven`
+ * (chunk by chunk in `verse.e`'s own order, a passage's verses one after another) stands in Greek. Empty with no weave. */
+export function wovenPlaces(verse: Verse, woven: readonly Woven[] | null): ReadonlySet<number> {
+  const places = new Set<number>();
+  if (!woven) return places;
+  let at = 0;
+  verse.e.forEach((chunk, i) => {
+    const count = wordsOfText(chunk.t.trim()).length;
+    if (woven[i]) for (let k = 0; k < count; k++) places.add(at + k);
+    at += count;
+  });
+  return places;
+}
+
+/** The answer to a reading without the words shown to him in Greek (mw-5r3p30.410): the mill scores one language a reading, so a word he read in Greek
+ * where the weave showed its Greek is heard as an English word missed. Such a word (its `index` in `places`) is neither a word to fix nor the next word. */
+export function outsideWeave(answer: VerseReadAnswer, places: ReadonlySet<number>): VerseReadAnswer {
+  if (places.size === 0) return answer;
+  const { next_word: next, ...rest } = answer;
+  return { ...rest, focus_words: answer.focus_words.filter((w) => !places.has(w.index)), ...(next && !places.has(next.index) ? { next_word: next } : {}) };
+}
 
 /** Which words of `text` the focus words mark: a map from a word's place in the verse to the focus word that marks it, and the
  * focus words that mark nothing (their place is not in the verse). Only the exact instance named by `index` is marked, never

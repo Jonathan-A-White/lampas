@@ -4,7 +4,8 @@
 // a press under 500 ms is a tap and a hold under 1 s is too short, and neither sends anything; a slide off the button drops it. A reading keeps waiting when he selects
 // another verse, and all stop when the screen goes away. The view decides what is read and in which language the mill
 // scores it (English, or the Greek in the chosen pronunciation's scoring language); the states returned are those of the
-// language shown, a reading in the other one carries on unseen.
+// language shown, a reading in the other one carries on unseen. With the weave on, the words shown in Greek are not the mill's to judge (it scores
+// one language): an answer is kept without them (services/reading.ts outsideWeave), so no result, walk or drill offer names one.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Verse } from './data/chapter';
 import { unitId, unitReference } from './data/passage';
@@ -17,7 +18,7 @@ import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { learnerMemory } from './data/learnerMemory';
 import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
-import { askVerseRead, buildReadingRequest, readingLang, wordsOfText, type ReadingView, type VerseReadAnswer } from './services/reading';
+import { askVerseRead, buildReadingRequest, outsideWeave, readingLang, wordsOfText, type ReadingView, type VerseReadAnswer } from './services/reading';
 import { TutorError, type TutorFailure } from './services/tutor';
 import { interruptListen, stopReading } from './speech/readAloud';
 import { stopSpeaking, stopWordSaid } from './speech/greek';
@@ -38,7 +39,7 @@ export type ReadState =
   | { phase: 'short' }
   | { phase: 'dropped' }
   | { phase: 'sending' | 'waiting'; startedAt: number }
-  | { phase: 'failed'; failure: TutorFailure | 'mic'; detail: string; recording?: Recording };
+  | { phase: 'failed'; failure: TutorFailure | 'mic'; detail: string; recording?: Recording; woven?: ReadonlySet<number> };
 
 type States = Record<string, ReadState | undefined>;
 type AllStates = Record<string, ReadState | undefined>;
@@ -48,8 +49,8 @@ const stateKey = (verse: string, lang: string): string => `${lang}:${verse}`;
 
 export interface UseReadChecks {
   states: States;
-  /** the finger is down on Read for this verse */
-  press: (verse: Verse) => void;
+  /** the finger is down on Read for this verse; `woven` are the places of its English words the weave shows in Greek (services/reading.ts wovenPlaces) */
+  press: (verse: Verse, woven?: ReadonlySet<number>) => void;
   /** the finger lifted on the button */
   release: () => void;
   /** the finger slid off, or the browser cancelled the press */
@@ -62,6 +63,8 @@ interface Hold {
   verse: Verse;
   view: ReadingView;
   lang: string;
+  /** the places of the words shown in Greek as he pressed */
+  woven?: ReadonlySet<number>;
   recorder: HoldRecorder;
   started: boolean;
   released: boolean;
@@ -114,7 +117,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
   }, []);
 
   const send = useCallback(
-    (verse: Verse, readView: ReadingView, language: string, recording: Recording): void => {
+    (verse: Verse, readView: ReadingView, language: string, recording: Recording, woven?: ReadonlySet<number>): void => {
       const signal = live.current.signal;
       const startedAt = Date.now();
       set(unitId(verse), language, { phase: 'sending', startedAt });
@@ -124,7 +127,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
           const [profile, learner, grammar, chosen, memory] = await Promise.all([learnerProfile().catch(() => undefined), learnerSummary().catch(() => undefined), learnerGrammar().catch(() => undefined), getGreekPronunciation(), learnerMemory(unitReference(title, verse)).catch(() => undefined)]);
           const request = buildReadingRequest(unitReference(title, verse), verse, readView, language, profile, learner, grammar, chosen, memory);
           let sentAs: string | undefined;
-          const answer = await askVerseRead(request, recording, {
+          const heard = await askVerseRead(request, recording, {
             key: getDeviceKeyBytes(),
             signal,
             // the recording ended as he let go: that is his tap
@@ -134,6 +137,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
               set(unitId(verse), language, { phase: 'waiting', startedAt });
             },
           });
+          const answer = woven ? outsideWeave(heard, woven) : heard;
           if (keepRef.current) await keepRef.current(verse, answer, language);
           else {
             // the clip is kept with the result so he can hear himself (src/audio/clip.ts); a result is kept even if the clip cannot be
@@ -146,7 +150,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
         } catch (err) {
           if (signal.aborted) return;
           const failure = err instanceof TutorError ? err.failure : 'unreachable';
-          set(unitId(verse), language, { phase: 'failed', failure, detail: err instanceof Error ? err.message : 'Something went wrong.', recording });
+          set(unitId(verse), language, { phase: 'failed', failure, detail: err instanceof Error ? err.message : 'Something went wrong.', recording, woven });
         }
       })();
     },
@@ -160,13 +164,13 @@ export function useReadChecks(book: string, chapter: number, title: string, view
       h.giveBack?.();
       if (recording.durationMs < MIN_READING_MS) set(unitId(h.verse), h.lang, { phase: 'tap' });
       else if (recording.durationMs < SHORT_READING_MS) set(unitId(h.verse), h.lang, { phase: 'short' });
-      else send(h.verse, h.view, h.lang, recording);
+      else send(h.verse, h.view, h.lang, recording, h.woven);
     },
     [send, set],
   );
 
   const press = useCallback(
-    (verse: Verse): void => {
+    (verse: Verse, woven?: ReadonlySet<number>): void => {
       if (hold.current) return;
       // Page audio can take the microphone: nothing is read aloud while he reads. A Listen is paused, not ended, and goes on when the recording is over.
       const giveBack = interruptListen();
@@ -180,6 +184,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
         verse,
         view: shown.current.view,
         lang: shown.current.lang,
+        woven,
         // the recorder hands the clip on by itself at the one-minute cap
         recorder: recorderSeam.make((recording) => {
           h.over = true;
@@ -234,7 +239,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
   const retry = useCallback(
     (verse: Verse): void => {
       const state = states[unitId(verse)];
-      if (state?.phase === 'failed' && state.recording) send(verse, view, lang, state.recording);
+      if (state?.phase === 'failed' && state.recording) send(verse, view, lang, state.recording, state.woven);
     },
     [states, send, view, lang],
   );

@@ -366,15 +366,20 @@ function Walk({ words, text, view, passage, step, onStep, onDone }: { words: Fix
   );
 }
 
+/** What the reading check says while the weave shows some of the verse in Greek: the mill scores one language a reading (mw-5r3p30.410). */
+export const WEAVE_ENGLISH_ONLY = 'In weave mode I can check English only: read the whole verse in English, or turn weave off to read the Greek';
+
 /** The reading check of the verse in the Verse view. `hold` is the bar's hold for this verse, `checks` has the states; the bar itself is drawn
  * into `slot`, the foot of the Verse view (the one hold bar on that screen), and says what a hold does now. */
-export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRetry, slot }: {
+export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, weaveShown = false, onRetry, slot }: {
   verse: Verse;
   view: 'english' | 'greek';
   book: string;
   chapter: number;
   checks: Pick<UseReadChecks, 'states'>;
   hold: ReadHold;
+  /** the weave shows some of its words in Greek */
+  weaveShown?: boolean;
   onRetry: () => void;
   slot: HTMLElement | null;
 }) {
@@ -458,6 +463,11 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
             ) : null}
           </>
         )}
+        {weaveShown && view === 'english' ? (
+          <p data-weave-english-only className="text-base font-medium">
+            {WEAVE_ENGLISH_ONLY}
+          </p>
+        ) : null}
         <Status state={state} onRetry={onRetry} />
         {ladderLang && !ladder.onLadder && !walking && !out ? (
           <div className="space-y-1">
