@@ -112,6 +112,7 @@ const KINDS: Record<string, { hidden: string[]; feature: string }> = {
   'verse-read': { hidden: ['Read it aloud', 'Hold to read bar', 'Reading ladder'], feature: 'features/ai-needs-licence.feature' },
   tips: { hidden: ['Needs a licence'], feature: 'features/licence-page.feature' },
   feedback: { hidden: ['Needs a licence'], feature: 'features/licence-page.feature' },
+  'drill-items': { hidden: ['More drill items'], feature: 'features/fetched-drill-items.feature' },
   'find-refs': { hidden: ['Bible references from a picture'], feature: 'features/ai-needs-licence.feature' },
 };
 
