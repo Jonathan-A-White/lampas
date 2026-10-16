@@ -353,7 +353,7 @@ function readCode(code: string): { pos: string; value: Partial<Record<ParseFeatu
  * four choices), asked one after the other by the card; `right` is the whole parsing in plain words. Null with no graded verses, or when no such word has a feature to parse.
  */
 export function buildParse(idea: GrammarIdea, passage: readonly Chapter[], random: Random, graded?: readonly GradedVerse[]): GrammarQuestion | null {
-  const found = atLevelPlaces(placesOf(passage), graded).filter((p) => (readCode(p.word.p)?.pos ? parsedOf(p.word.p).features.length > 0 : false) && needs(p.word.p, idea.id));
+  const found = atLevelPlaces(placesOf(passage), graded).filter((p) => Object.keys(readCode(p.word.p)?.value ?? {}).length > 0 && needs(p.word.p, idea.id));
   for (const place of shuffle(easiestThird(found), random)) {
     let steps: ParseStep[];
     try {
