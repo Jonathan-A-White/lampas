@@ -1,5 +1,13 @@
 # What's new
 
+## 0.1.273
+_2026-10-16_
+- New: One path: Lampas now teaches by its own ladder for everyone. Thank you, Biblical Mastery Academy, for the inspiration (see About).
+
+## 0.1.273
+_2026-10-16_
+- New: 'Listen in Audible' now opens the Audible app and plays from the start of the chapter you are reading.
+
 ## 0.1.272
 _2026-10-16_
 - Fixed: The pluperfect table now gives you one set of endings, so ἐλελύκειμεν and ἐλελύκειτε agree with οἶδα's ᾔδειμεν and ᾔδειτε.
