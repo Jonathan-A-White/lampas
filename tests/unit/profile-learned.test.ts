@@ -1,4 +1,5 @@
 // What the tutor learns about the student in a talk (mw-1vuvq6.3): the answer's profile_update is kept beside what he set himself, never over it.
+import { readFileSync } from 'node:fs';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { learnerProfile } from '../../src/data/learnerProfile';
