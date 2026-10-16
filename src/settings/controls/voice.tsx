@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getGreekPronunciation, getReadSpan, getSpeechRates, getVoice, type ReadSpan, type VoiceLanguage } from '../../data/repositories';
-import { speaksLanguage, useVoices, voiceKey } from '../../speech/greek';
+import { hasVoice, noVoiceHelp, speaksLanguage, testGreekVoice, useSpeakingKey, useVoices, voiceInUse, voiceKey, VOICE_TEST_KEY, warmVoices } from '../../speech/greek';
 import { DEFAULT_RATE, RATE_MAX, RATE_MIN, RATE_STEP } from '../../speech/languages';
 import { ACCENTS } from '../../speech/accents';
 import { PRONUNCIATIONS, pronunciationOf, type GreekPronunciation } from '../../speech/pronunciation';
@@ -54,6 +54,44 @@ function VoicePicker({ language, label, lang, saved }: { language: VoiceLanguage
         ))}
       </select>
     </label>
+  );
+}
+
+/** Under the Greek voice picker (mw-5r3p30.357): the name of the voice the Greek is said in now (the one he picked, or the phone's own pick) and Test, which
+ * says πατήρ then ἀγάπη in it, as Tap to hear says a word, so he hears whether the stress falls where the respelling puts it; a second tap stops it. */
+function GreekVoiceInUse({ saved }: { saved: string | null }) {
+  const listed = useVoices();
+  const speaking = useSpeakingKey() === VOICE_TEST_KEY;
+  const [help, setHelp] = useState<string | null>(null);
+  useEffect(() => void warmVoices(), []);
+  const voice = voiceInUse(listed, 'greek', saved);
+  const none = listed.length > 0 && !voice;
+  const test = () => setHelp(testGreekVoice() === 'no-voice' ? noVoiceHelp() : null);
+  return (
+    <div data-testid="greek-voice-in-use" className="mt-2">
+      <p role="status" className="text-base">
+        {voice ? (
+          <>
+            In use: <span className="font-medium">{voice.name}</span>
+          </>
+        ) : none || hasVoice('greek') === false ? (
+          noVoiceHelp()
+        ) : (
+          'In use: the phone’s own Greek voice'
+        )}
+      </p>
+      {none ? null : (
+        <button
+          type="button"
+          onClick={test}
+          aria-label={speaking ? 'Stop the test' : 'Test the Greek voice'}
+          className="mt-2 min-h-12 min-w-24 rounded-xl border border-line px-4 text-base font-medium text-fg"
+        >
+          {speaking ? 'Stop' : 'Test'}
+        </button>
+      )}
+      {help ? <p className="mt-1 text-sm text-muted">{help}</p> : null}
+    </div>
   );
 }
 
@@ -158,6 +196,7 @@ export const VoiceControl: Control = ({ row }) => {
   return (
     <SettingRow row={row}>
       {saved !== undefined ? <VoicePicker language={language} label={row.label} lang={language === 'english' ? 'en' : pronunciationOf(pronunciation).lang} saved={saved} /> : null}
+      {saved !== undefined && language === 'greek' ? <GreekVoiceInUse saved={saved} /> : null}
     </SettingRow>
   );
 };

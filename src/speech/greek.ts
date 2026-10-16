@@ -390,10 +390,40 @@ function playLoneLetter(url: string, key: string): boolean {
  * writes (mw-5r3p30.264: a Modern Greek voice keeps the nasal the respelling shows). The rule is the scheme's, never written here. */
 export const greekVoiceForm = (text: string): string => chosenPronunciation().voiceForm(text);
 
-/** What is handed to the voice for a Greek word held alone (mw-5r3p30.226, .264), always to the Greek voice: a capital letter is read by its name
- * ('capital ...'), so the word goes in lower case, in its voiceForm. A word of ONE vowel never comes here: it is its loneLetterForm or a clip (loneLetterSpeech). */
+/** What is handed to the voice for a Greek word held alone (mw-5r3p30.226, .264, .357), always to the Greek voice: a capital letter is read by its name
+ * ('capital ...'), so the word goes in lower case, in the scheme's wordForm (Modern Greek: monotonic marks and '!', so a final stress is not heard first),
+ * or its voiceForm when it has none. A word of ONE vowel never comes here: it is its loneLetterForm or a clip (loneLetterSpeech). */
 export function greekWordSpeech(text: string): { text: string; language: SpeechLanguage } {
-  return { text: greekVoiceForm(text.toLowerCase()), language: 'greek' };
+  const scheme = chosenPronunciation();
+  const word = text.toLowerCase();
+  return { text: scheme.wordForm ? scheme.wordForm(word) : scheme.voiceForm(word), language: 'greek' };
+}
+
+/** What Settings > Reading voices' Test says, one after the other (mw-5r3p30.357): a word stressed on its last syllable, then one stressed before it, so he
+ * hears whether his Greek voice puts the stress where the respelling does. */
+export const VOICE_TEST_WORDS: readonly string[] = ['πατήρ', 'ἀγάπη'];
+
+/** The key the Test of the Greek voice speaks under. */
+export const VOICE_TEST_KEY = 'voice-test';
+
+/** Says VOICE_TEST_WORDS in the Greek voice he chose (or the phone's pick), each as Tap to hear says a word; a second tap while it speaks stops it. */
+export function testGreekVoice(): SpeakOutcome {
+  const synth = synthesis();
+  if (!synth || hasVoice('greek') === false) return 'no-voice';
+  if (beside?.key === VOICE_TEST_KEY || isSpeaking(VOICE_TEST_KEY)) {
+    stopIfSpeaking(VOICE_TEST_KEY);
+    return 'stopped';
+  }
+  // a line each: the speech package says each line as an utterance of its own
+  const text = VOICE_TEST_WORDS.map((w) => greekWordSpeech(w).text).join('\n');
+  return speakText(text, VOICE_TEST_KEY, { language: 'greek' }) ? 'speaking' : 'no-voice';
+}
+
+/** The voice an utterance in `language` is given among `voices`: the one he chose (`chosen`, a voiceKey) while the phone lists it, else the phone's own
+ * pick for the language (bsv-kit's preferredVoice: the exact tag, then the same language); undefined when the phone lists none for it. */
+export function voiceInUse(voices: readonly SpeechSynthesisVoice[], language: SpeechLanguage, chosen: string | null): SpeechSynthesisVoice | undefined {
+  const own = chosen === null ? undefined : voices.find((v) => voiceKey(v) === chosen && isLanguage(language)(v));
+  return own ?? preferredVoice([...voices], langOf(language));
 }
 
 /** Says a LETTER now, as the chosen pronunciation names one (a teach tile's letter, where the letter is the thing shown with its name): its letterForm

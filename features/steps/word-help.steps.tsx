@@ -22,6 +22,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GRAMMAR_HELP_ANSWER, makeFakePostern, POSTERN_ORIGIN, SOUND_HELP_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
+import { asSpoken } from '../../tests/support/lone-word';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse28 = chapter.verses.find((v) => v.n === 28);
@@ -162,7 +163,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the word {string} was spoken in Greek, slowly, before any answer', (_, word: string) => {
       const engine = synth as FakeSynth;
       expect(engine.spoken).toHaveLength(1);
-      expect(engine.spoken[0].text).toBe(word);
+      expect(engine.spoken[0].text).toBe(asSpoken(word));
       expect(engine.spoken[0].lang).toBe('el-GR');
       expect(engine.spoken[0].rate).toBeLessThan(1);
     });

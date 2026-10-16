@@ -10,6 +10,7 @@ import { typeQuestion } from './ask-composer';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction } from './verse-view';
+import { asSpoken } from '../support/lone-word';
 
 test.use({ viewport: { width: 412, height: 915 } });
 
@@ -73,10 +74,10 @@ test('a long press on a Greek word and on an English word of the answer says eac
   await openAnswer(page);
   const before = (await spoken(page)).length;
   await hold(page, 'ἀγαθόν', 700);
-  await expect.poll(async () => (await spoken(page)).slice(before)).toMatchObject([{ text: 'ἀγαθόν', lang: 'el-GR' }]);
+  await expect.poll(async () => (await spoken(page)).slice(before)).toMatchObject([{ text: asSpoken('ἀγαθόν'), lang: 'el-GR' }]);
   await hold(page, 'righteousness', 700);
   await expect.poll(async () => (await spoken(page)).slice(before)).toMatchObject([
-    { text: 'ἀγαθόν', lang: 'el-GR' },
+    { text: asSpoken('ἀγαθόν'), lang: 'el-GR' },
     { text: 'righteousness', lang: 'en-US' },
   ]);
   await hold(page, 'good', 150);

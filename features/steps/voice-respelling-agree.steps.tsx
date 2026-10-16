@@ -14,6 +14,7 @@ import { stopSpeaking } from '../../src/speech/greek';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
+import { asSpoken } from '../../tests/support/lone-word';
 
 const user = userEvent.setup();
 let synth: FakeSynth;
@@ -71,7 +72,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the phone is told to speak {string} with lang {string} in its Greek voice', (_, text: string, lang: string) => {
       expect(synth.spoken).toHaveLength(1);
-      expect(synth.spoken[0].text.normalize('NFC')).toBe(text.normalize('NFC'));
+      expect(synth.spoken[0].text.normalize('NFC')).toBe(asSpoken(text.normalize('NFC')));
       expect(synth.spoken[0].lang).toBe(lang);
       expect(synth.spoken[0].voice).toBe(GREEK_VOICE);
     });

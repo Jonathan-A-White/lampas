@@ -1,7 +1,8 @@
 // What the Greek voice is handed agrees with the respelling (mw-5r3p30.264): his report was Πάντοτε (1 Thessalonians 5:16) respelt 'PAN-do-te' and
 // heard 'PA-do-te', because a Modern Greek voice drops the n of ντ inside a word. The Modern scheme hands the voice a form that keeps the nasal
 // ('πάν-ντοτε': the nasal ends the first part, the pair opens the next as at a word's start), and the same for μπ and γκ; a word that begins with
-// the pair is handed over as it is. The rule is the scheme's (its voiceForm), never greek.ts's or readAloud.ts's, so another scheme brings its own.
+// the pair is handed over as it is. The rule is the scheme's (its voiceForm), never greek.ts's or readAloud.ts's, so another scheme brings its own. A word
+// said alone is also in monotonic marks with '!' (the scheme's wordForm, mw-5r3p30.357: tests/unit/greek-word-stress.test.ts).
 import { readFileSync, readdirSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from '@testing-library/react';
@@ -43,11 +44,11 @@ const hasMedialPair = (word: string): boolean => /[αεηιουω][^\s]*?(ντ|�
 
 describe('the Greek voice keeps the nasal of ντ, μπ and γκ inside a word', () => {
   it.each([
-    ['πάντοτε', 'πάν-ντοτε', 'PAN-do-te'],
-    ['Πάντοτε', 'πάν-ντοτε', 'PAN-do-te'],
-    ['ἐντολή', 'ἐν-ντολή', 'en-do-LEE'],
-    ['συμπάσχω', 'συμ-μπάσχω', 'seem-BA-skho'],
-    ['ἀγκάλη', 'ἀν-γκάλη', 'an-GA-lee'],
+    ['πάντοτε', 'πάν-ντοτε!', 'PAN-do-te'],
+    ['Πάντοτε', 'πάν-ντοτε!', 'PAN-do-te'],
+    ['ἐντολή', 'εν-ντολή!', 'en-do-LEE'],
+    ['συμπάσχω', 'συμ-μπάσχω!', 'seem-BA-skho'],
+    ['ἀγκάλη', 'αν-γκάλη!', 'an-GA-lee'],
   ])('%s goes to the Greek voice as %s, which keeps the n the respelling %s shows', (word, said, respelling) => {
     expect(heard(word)).toBe(said.normalize('NFC'));
     expect(respellModern(word)).toBe(respelling);
@@ -60,16 +61,16 @@ describe('the Greek voice keeps the nasal of ντ, μπ and γκ inside a word',
     ['μπαίνω', 'BE-no'],
     ['γκρεμός', 'gre-MOS'],
   ])('%s, which begins with the pair (said as d, b or g there), is handed over as it is', (word, respelling) => {
-    expect(heard(word)).toBe(word.normalize('NFC'));
+    expect(heard(word)).toBe(`${word}!`.normalize('NFC'));
     expect(respellModern(word)).toBe(respelling);
   });
 
   it('changes only the pair inside the word when the word also begins with one', () => {
-    expect(heard('μπαμπάς')).toBe('μπαμ-μπάς');
+    expect(heard('μπαμπάς')).toBe('μπαμ-μπάς!');
   });
 
   it('leaves γγ as it is: a Modern Greek voice says its nasal (ἄγγελος)', () => {
-    expect(heard('ἄγγελος')).toBe('ἄγγελος');
+    expect(heard('ἄγγελος')).toBe('άγγελος!'.normalize('NFC'));
   });
 
   it('is what a verse read aloud hands the voice too (1 Thessalonians 5:16)', () => {
@@ -114,8 +115,12 @@ describe('every bundled word', () => {
     expect(disagree.slice(0, 10)).toEqual([]);
   });
 
-  it('with no ντ, μπ or γκ inside it is handed over as it is', () => {
-    const changed = words.filter((w) => [...bare(w)].length > 1 && !hasMedialPair(w) && greekWordSpeech(w).text !== w);
+  it('with no ντ, μπ or γκ inside it is handed over as it is: the same letters (its marks made monotonic, its last stop the lone word\'s \'!\')', () => {
+    const letters = (text: string): string => bare(text).replace(/[^\p{L}]/gu, '');
+    const changed = words.filter((w) => {
+      const said = greekWordSpeech(w).text;
+      return [...bare(w)].length > 1 && !hasMedialPair(w) && (letters(said) !== letters(w) || !said.endsWith('!'));
+    });
     expect(changed.slice(0, 10)).toEqual([]);
   });
 });
@@ -148,7 +153,7 @@ describe('the voice form and the respelling are the scheme\'s', () => {
       expect(synth.spoken.map((u) => u.text.normalize('NFC')).join(' ')).toBe('Πάνθοθε χαίρεθε');
       stopReading();
       setGreekPronunciation(DEFAULT_PRONUNCIATION);
-      expect(heard('πάντοτε')).toBe('πάν-ντοτε');
+      expect(heard('πάντοτε')).toBe('πάν-ντοτε!');
     } finally {
       unregister();
     }

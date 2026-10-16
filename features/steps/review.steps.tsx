@@ -19,6 +19,7 @@ import { usageWritesSettled } from '../../src/tips/usageLog';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { findButton, queryButton } from '../../tests/support/find-button';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
+import { asSpoken } from '../../tests/support/lone-word';
 
 afterAll(async () => {
   cleanup();
@@ -479,7 +480,7 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(screen.getByTestId('tap-to-hear'));
     });
     Then('the Greek voice says {string}', (_, lemma: string) => {
-      expect(synth.spoken.map((u) => u.text)).toEqual([lemma.normalize('NFC')]);
+      expect(synth.spoken.map((u) => u.text)).toEqual([asSpoken(lemma.normalize('NFC'))]);
       expect(synth.spoken[0].lang).toBe('el-GR');
     });
   });

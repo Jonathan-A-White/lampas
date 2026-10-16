@@ -325,6 +325,56 @@ export function voiceFormModern(text: string): string {
   });
 }
 
+/** Greek text in monotonic marks, as Greece writes it today: an acute, grave or circumflex (oxia, varia, perispomeni) is the one tonos, the breathings and the
+ * iota under a letter go, a diaeresis stays. A Modern Greek voice reads the tonos; one may pass over an accent it was not made for (mw-5r3p30.357). */
+export function monotonicModern(text: string): string {
+  let out = '';
+  let accent = false;
+  let diaeresis = false;
+  const flush = () => {
+    out += (diaeresis ? '\u0308' : '') + (accent ? '\u0301' : '');
+    accent = false;
+    diaeresis = false;
+  };
+  for (const c of text.normalize('NFD')) {
+    if (!/\p{M}/u.test(c)) {
+      flush();
+      out += c;
+    } else if (/[\u0300\u0301\u0340\u0341\u0342]/u.test(c)) accent = true;
+    else if (c === '\u0308') diaeresis = true;
+    else if (c === '\u0344') {
+      accent = true;
+      diaeresis = true;
+    } else if (!/[\u0313\u0314\u0343\u0345\u0304\u0306]/u.test(c)) out += c;
+  }
+  flush();
+  return out.normalize('NFC');
+}
+
+/** A Greek word said alone, as the Modern Greek voice is handed it (mw-5r3p30.357): its voiceForm in monotonic marks, with '!'. His phone said πατήρ alone
+ * 'PA-teer', 'the Voice goes high and then low': a lone word is said as a statement, its pitch high at the start and falling, so a final stress sounds
+ * initial. espeak-ng el, measured on the box (Praat's pitch tracker over its phoneme times; docs/pronunciation.md 'A word said alone'): the bare πατήρ is
+ * 99 Hz on πα and 102 on τήρ, falling to 79 (no peak to hear); 'πατήρ!' is 99 on πα and 115 on τήρ; ἀγάπη! 116 on γά, 83 after; λόγος! 116, then 83. A
+ * comma, a question mark, '…' and a carrier before the word ('λέμε πατήρ') put no clearer peak on the stress. Each word keeps one tonos, the first. PROVISIONAL
+ * until the Governor has heard it. */
+export const wordFormModern = (word: string): string => `${voiceFormModern(oneStressEach(monotonicModern(word))).replace(/[\s.,;:·!?]+$/u, '')}!`;
+
+/** Each Greek word of `text` with its first tonos only: the word said alone has one stress, the one respelling stresses; a second accent is one an enclitic
+ * gave it (πρῶτός μου), said with the enclitic. */
+const oneStressEach = (text: string): string =>
+  text.replace(/[\p{Script=Greek}\p{M}]+/gu, (word) => {
+    let seen = false;
+    return [...word.normalize('NFD')]
+      .filter((c) => {
+        if (c !== '\u0301') return true;
+        const keep = !seen;
+        seen = true;
+        return keep;
+      })
+      .join('')
+      .normalize('NFC');
+  });
+
 /** The side each rule took in `word`: one side, or null when the word has no such place or has it on both sides. */
 function sideIn(word: string, rule: RuleId): string | null {
   const decided: Decision[] = [];
@@ -410,6 +460,7 @@ export const MODERN: Pronunciation = {
   loneLetterForm: loneLetterFormModern,
   loneLetterClip: loneLetterClipModern,
   voiceForm: voiceFormModern,
+  wordForm: wordFormModern,
   // a Greek voice names a bare lower-case letter the modern way ('vita' for β); a capital would be read 'capital ...'
   letterForm: (letter) => letter.toLowerCase(),
   tutorGuide: modernTutorGuide,
