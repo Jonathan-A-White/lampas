@@ -2,13 +2,14 @@
 // Hearing is always a tap, even one word (docs/pwa-best-practices.md section 12; nothing needs a finger kept down). The shared tap bar (src/ui/TapBar.tsx, the
 // look of the Talk bar), the same engine as a long press on a word of the reader (speakWord in speech/greek.ts).
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { hasGreekVoice, isWordSaid, noVoiceHelp, speakLetter, speakWord, stopSpeaking, warmVoices, watchWordEnd } from './speech/greek';
+import { hasGreekVoice, isWordSaid, noVoiceHelp, speakSound, speakWord, stopSpeaking, warmVoices, watchWordEnd } from './speech/greek';
 import { Icon } from './speech/SpeakButton';
 import { TapBar } from './ui/TapBar';
 
 const HELP_MS = 7000;
 
-/** `text` is the Greek said on a tap; `letter` says it is a letter asked about (a letter drill), which is named, not turned into a sound. */
+/** `text` is the Greek said on a tap; `letter` says it is a letter or pair asked about by ear (a sound question), whose sound is said (speakSound: a vowel
+ * doubled to the Greek voice, a consonant still named; mw-5r3p30.421). */
 export function TapToHear({ text, letter = false }: { text: string; letter?: boolean }) {
   const [help, setHelp] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -22,7 +23,7 @@ export function TapToHear({ text, letter = false }: { text: string; letter?: boo
     }
     unwatch.current?.();
     // with no Greek voice the phone would say it in another one: nothing is spoken, the help says where to get one (as a speaker button does)
-    if (hasGreekVoice() === false || !(letter ? speakLetter(text) : speakWord(text, 'greek'))) {
+    if (hasGreekVoice() === false || !(letter ? speakSound(text) : speakWord(text, 'greek'))) {
       setPlaying(false);
       setHelp(noVoiceHelp());
       clearTimeout(timer.current);

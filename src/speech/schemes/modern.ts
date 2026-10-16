@@ -273,10 +273,20 @@ export const MODERN_SOUNDS: Readonly<Record<string, SoundId>> = {
   ks: '/ks/', ps: '/ps/', mb: '/mb/', nd: '/nd/', ng: '/ŋɡ/', nks: '/ŋks/',
 };
 
-/** The bundled clip of the sound of a Greek word of ONE letter (mw-5r3p30.347): ὁ, Ὃ and ὦ play the o, ἡ and ἤ the ee, ἃ the a. A Greek voice handed one
- * letter names it, whatever accent it carries (mw-5r3p30.262 handed it 'ό', and his phone said 'Omicron'), so the word is never handed to a voice: the
- * clip, public/sounds/modern/<sound>.mp3, is named by the sound respellModern writes for the vowel and was made with eSpeak NG's phoneme input
- * (scripts/sounds-build.sh), which says a sound and cannot spell a letter. A consonant alone (no Greek word is one) has no clip: null. */
+/** What the Modern Greek voice is handed for a Greek word of ONE letter: the vowel bare, in lower case, doubled ('οο' for ὁ and Ὃ, 'ωω' for ὦ, 'ηη' for ἡ,
+ * 'αα' for ἃ). A Greek voice handed the letter alone names it, whatever accent it carries (mw-5r3p30.262 handed it 'ό', and his phone said 'Omicron');
+ * handed it doubled, his phone's own Greek voice says the sound: the Governor's pick on the listening trial, 'the best sound for the vowels is actually the
+ * double ones from the phone itself' (mw-5r3p30.395, 2026-10-15; mw-5r3p30.421). A consonant has no form the voice says as a sound (there is no bare v
+ * to double): null, and it is named as before. */
+export function loneLetterFormModern(word: string): string | null {
+  const bare = word.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+  return [...bare].length === 1 && VOWEL_SOUND[bare] ? bare + bare : null;
+}
+
+/** The bundled clip of the sound of a Greek word of ONE letter (mw-5r3p30.347), for a phone with no Greek voice to say loneLetterFormModern (mw-5r3p30.421):
+ * ὁ, Ὃ and ὦ play the o, ἡ and ἤ the ee, ἃ the a. The clip, public/sounds/modern/<sound>.mp3, is named by the sound respellModern writes for the vowel and
+ * was made with eSpeak NG's phoneme input (scripts/sounds-build.sh), which says a sound and cannot spell a letter. A consonant alone (no Greek word is one)
+ * has no clip: null. */
 export function loneLetterClipModern(word: string): string | null {
   const bare = word.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
   const sound = [...bare].length === 1 ? VOWEL_SOUND[bare] : undefined;
@@ -397,6 +407,7 @@ export const MODERN: Pronunciation = {
   respell: respellModern,
   spellings: spellingsModern,
   sounds: MODERN_SOUNDS,
+  loneLetterForm: loneLetterFormModern,
   loneLetterClip: loneLetterClipModern,
   voiceForm: voiceFormModern,
   // a Greek voice names a bare lower-case letter the modern way ('vita' for β); a capital would be read 'capital ...'

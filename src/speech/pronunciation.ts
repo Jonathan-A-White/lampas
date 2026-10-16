@@ -75,9 +75,14 @@ export interface Pronunciation {
    * English word: its lessons say a sound through the SoundWords they are handed ('o, as in “or”, short'), which ask the reader's English accent
    * (./accents/), so every accent table must hint every id here (tests/unit/english-accents.test.ts). */
   sounds: Readonly<Record<string, SoundId>>;
-  /** The bundled clip (a root-absolute path under public/sounds/<scheme>/) of the sound of a Greek word of ONE letter (ὁ, ἡ, ὦ, Ὃ), played instead of
-   * any voice: a Greek voice handed one letter names it ('omicron'), with or without an accent (mw-5r3p30.347). Null for a letter the scheme has no
-   * clip for. Modern Greek's are its vowels' sounds, '/sounds/modern/o.mp3' for ὁ. */
+  /** What this scheme's voice is handed for a Greek word of ONE letter (ὁ, ἡ, ὦ, Ὃ) so that it says the letter's SOUND: a Greek voice handed the letter
+   * alone names it ('omicron'), with or without an accent (mw-5r3p30.347). Modern Greek doubles the bare vowel, 'οο' for ὁ, which the phone's own Greek
+   * voice says as the sound (the Governor's pick on the listening trial, mw-5r3p30.421). Null for a letter no form makes the voice say as a sound (a
+   * consonant), which is then a clip or its name. */
+  loneLetterForm(word: string): string | null;
+  /** The bundled clip (a root-absolute path under public/sounds/<scheme>/) of the sound of a Greek word of ONE letter (ὁ, ἡ, ὦ, Ὃ), played on a phone that
+   * has no Greek voice to say loneLetterForm (mw-5r3p30.421; before it, on every phone, mw-5r3p30.347). Null for a letter the scheme has no clip for.
+   * Modern Greek's are its vowels' sounds, '/sounds/modern/o.mp3' for ὁ. */
   loneLetterClip(word: string): string | null;
   /** What this scheme's voice is handed for Greek text (a word, or a run of words read aloud), so that it says the sounds the respelling writes. A
    * voice reads the Greek its own way: a Modern Greek voice drops the n of ντ inside a word ('PA-do-te' for Πάντοτε, respelt 'PAN-do-te'), so Modern

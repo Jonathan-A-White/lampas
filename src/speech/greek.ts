@@ -3,7 +3,7 @@
 // Everything is spoken by bsv-kit/speech (mw-m7v5kc.3): the sentence queue, Pause / Resume / Restart / Stop, the language and voice
 // of each sentence from its letters, a page that hides pausing it. This file is what the app adds: his speed for a language and the
 // voice he picked in Settings (the package has neither), the help line for a language the phone has no voice for, and the words
-// said alone, and the clip of a one-letter word's sound, which no voice is handed (mw-5r3p30.347). speak() is called straight from the tap handler (docs/pwa-best-practices.md section 12: a speak() that leaves the
+// said alone, and a one-letter word, which the Greek voice is handed doubled so it says the sound (mw-5r3p30.421), or, with no Greek voice, a clip of it (mw-5r3p30.347). speak() is called straight from the tap handler (docs/pwa-best-practices.md section 12: a speak() that leaves the
 // tap loses user activation on Android Chrome), so it never waits: the voice list is loaded ahead by warmVoices(), and a phone that
 // has not listed its voices yet is still asked to speak with the language alone and picks its own voice.
 import { useRef, useSyncExternalStore } from 'react';
@@ -276,15 +276,16 @@ function speakBeside(synth: SpeechSynthesis, text: string, key: string): boolean
  * them, and the phone's default voice would read either one as English. */
 export function speak(text: string, key: string, language: SpeechLanguage = 'greek'): SpeakOutcome {
   const synth = synthesis();
-  // a one-letter word is a clip and needs no voice
-  const clip = language === 'greek' ? loneLetterClip(text) : null;
+  // a one-letter word with no Greek voice to say it is a clip, and needs no voice
+  const lone = language === 'greek' ? loneLetterSpeech(text) : null;
+  const clip = lone && 'clip' in lone ? lone.clip : null;
   if (!clip && (!synth || ((language === 'greek' || language === 'hebrew') && hasVoice(language) === false))) return 'no-voice';
   if (beside?.key === key || isSpeaking(key)) {
     stopIfSpeaking(key);
     return 'stopped';
   }
   if (clip) return playLoneLetter(clip, key) ? 'speaking' : 'no-voice';
-  const said = wordSpeech(text, language);
+  const said = lone && 'text' in lone ? { text: lone.text, language: 'greek' as const } : wordSpeech(text, language);
   return speakText(said.text, key, { language: said.language }) ? 'speaking' : 'no-voice';
 }
 
@@ -292,19 +293,35 @@ export function speak(text: string, key: string, language: SpeechLanguage = 'gre
  * again says it again). With no Greek voice it still speaks, to the phone's default voice with lang set, as a reading
  * does; the speaker buttons carry the help line. Returns false when the phone cannot speak at all. */
 export function speakWord(text: string, language: SpeechLanguage, slowly = false): boolean {
-  const clip = language === 'greek' ? loneLetterClip(text) : null;
-  if (clip) return playLoneLetter(clip, WORD_KEY);
-  const said = wordSpeech(text, language);
+  const lone = language === 'greek' ? loneLetterSpeech(text) : null;
+  if (lone && 'clip' in lone) return playLoneLetter(lone.clip, WORD_KEY);
+  const said = lone ? { text: lone.text, language: 'greek' as const } : wordSpeech(text, language);
   return speakText(said.text, WORD_KEY, { slowly, language: said.language });
 }
 
-/** The bundled clip of the sound of `text` when it is ONE Greek letter (ὁ, ἡ, ὦ, Ὃ), or null for any other text. A Greek voice handed one letter says its
- * name ('omicron'), whatever accent it carries: mw-5r3p30.226, .256 and .262 each handed a voice another form of it, and his phone still said 'Omicron'. So
- * such a word is never handed to a voice: the chosen pronunciation's clip of its sound is played instead (mw-5r3p30.347). The clip is the scheme's. */
-export function loneLetterClip(text: string): string | null {
+/** Whether `text` is ONE Greek letter, whatever marks it carries (ὁ, Ὃ, ἡ, ᾧ). */
+const isOneGreekLetter = (text: string): boolean => {
   const letters = [...text.trim().normalize('NFD').replace(/\p{M}/gu, '')];
-  if (letters.length !== 1 || !/\p{Script=Greek}/u.test(letters[0])) return null;
-  return chosenPronunciation().loneLetterClip(text.trim());
+  return letters.length === 1 && /\p{Script=Greek}/u.test(letters[0]);
+};
+
+/** How a word of ONE Greek letter is said, or null for any other text (and for a letter neither form nor clip says as a sound: a consonant, which is named).
+ * A Greek voice handed one letter says its name ('omicron'), whatever accent it carries: mw-5r3p30.226, .256 and .262 each handed a voice another form of
+ * it, and his phone still said 'Omicron'. Handed the vowel doubled ('οο'), his phone's own Greek voice says the sound, which he chose on the listening trial
+ * over every clip (mw-5r3p30.421): so the voice is handed the chosen pronunciation's loneLetterForm, `text`. On a phone that says it has no Greek voice the
+ * scheme's clip of the sound plays instead, `clip` (mw-5r3p30.347). A phone that has not listed its voices yet is handed the form, as any word is. */
+export function loneLetterSpeech(text: string): { text: string } | { clip: string } | null {
+  if (!isOneGreekLetter(text)) return null;
+  const form = chosenPronunciation().loneLetterForm(text.trim());
+  if (form !== null && hasGreekVoice() !== false) return { text: form };
+  const clip = loneLetterClip(text);
+  return clip ? { clip } : null;
+}
+
+/** The bundled clip of the sound of `text` when it is ONE Greek letter (ὁ, ἡ, ὦ, Ὃ), or null for any other text: the chosen pronunciation's, played when
+ * the phone has no Greek voice to say the letter's loneLetterForm (loneLetterSpeech). */
+export function loneLetterClip(text: string): string | null {
+  return isOneGreekLetter(text) ? chosenPronunciation().loneLetterClip(text.trim()) : null;
 }
 
 // The one player of those clips, with an audio element of its own (made at the first, from a tap: a phone lets a page play sound once he has touched it).
@@ -374,16 +391,24 @@ function playLoneLetter(url: string, key: string): boolean {
 export const greekVoiceForm = (text: string): string => chosenPronunciation().voiceForm(text);
 
 /** What is handed to the voice for a Greek word held alone (mw-5r3p30.226, .264), always to the Greek voice: a capital letter is read by its name
- * ('capital ...'), so the word goes in lower case, in its voiceForm. A word of ONE letter never comes here: it is a clip (loneLetterClip). */
+ * ('capital ...'), so the word goes in lower case, in its voiceForm. A word of ONE vowel never comes here: it is its loneLetterForm or a clip (loneLetterSpeech). */
 export function greekWordSpeech(text: string): { text: string; language: SpeechLanguage } {
   return { text: greekVoiceForm(text.toLowerCase()), language: 'greek' };
 }
 
-/** Says a LETTER now, as the chosen pronunciation names one (the letter drills 'Tap to hear a letter', where the letter is the thing asked about, not a word):
- * its letterForm (Modern Greek's is the letter in lower case, which a Greek voice names), to the Greek voice, never turned into a sound. A word of one letter
- * is not this: it goes through speakWord, which plays its clip. */
+/** Says a LETTER now, as the chosen pronunciation names one (a teach tile's letter, where the letter is the thing shown with its name): its letterForm
+ * (Modern Greek's is the letter in lower case, which a Greek voice names), to the Greek voice, never turned into a sound. A word of one letter is not this:
+ * it goes through speakWord, which says its sound. */
 export function speakLetter(letter: string): boolean {
   return speakText(chosenPronunciation().letterForm(letter), WORD_KEY, { language: 'greek' });
+}
+
+/** Says the SOUND of a letter or pair asked about by ear (a sound question's 'Tap to hear a letter, then tap it'; the question offers no other letter of
+ * its sound, so the sound alone names the answer): a letter the scheme has a loneLetterForm for (Modern Greek's vowels) is said as a one-letter word is,
+ * 'οο' for ο (speakWord; mw-5r3p30.421); a consonant, which no form makes the voice say alone as a sound, and a pair (ου, which a voice reads as its sound)
+ * go as speakLetter hands them, so a consonant is still named ('vita' for β). */
+export function speakSound(text: string): boolean {
+  return isOneGreekLetter(text) && chosenPronunciation().loneLetterForm(text.trim()) !== null ? speakWord(text, 'greek') : speakLetter(text);
 }
 
 const wordSpeech = (text: string, language: SpeechLanguage): { text: string; language: SpeechLanguage } =>
