@@ -1,5 +1,13 @@
 # What's new
 
+## 0.1.269
+_2026-10-16_
+- Fixed: after a partly read verse, the next word to practise is now always fully visible above the buttons instead of hidden behind them.
+
+## 0.1.269
+_2026-10-16_
+- New: a Weave setting 'Order' lays the woven verse out in the Greek word order, with the English of the other words where their Greek stands.
+
 ## 0.1.268
 _2026-10-16_
 - New: Review now asks what a phrase of a verse says, showing the Greek and four English choices taken from the verse itself.

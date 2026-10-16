@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.269",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.397",
+    "kind": "fixed",
+    "text": "after a partly read verse, the next word to practise is now always fully visible above the buttons instead of hidden behind them."
+  },
+  {
+    "version": "0.1.269",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.250",
+    "kind": "new",
+    "text": "a Weave setting 'Order' lays the woven verse out in the Greek word order, with the English of the other words where their Greek stands."
+  },
+  {
     "version": "0.1.268",
     "date": "2026-10-16",
     "story": "mw-emk3xt.2",
