@@ -119,7 +119,7 @@
       "items": { "type": "string", "minLength": 1, "maxLength": 60 }
     },
     "profile_question": {
-      "description": "Only when the question in your `answer` asks him about himself as a student (see 'Learning about him'): which field it is about. The app notes it so you are not told to ask the same field again within a day. Leave it out for anything else.",
+      "description": "Only when the question in your `answer` asks him about himself as a student (see 'Learning about him'): which field it is about. The app notes it so you are not told to ask the same field again within a day. Never in an answer that records a decline (`profile_update` with `declined`), and never when his question or the history shows he declined: a decline ends the question for good. Leave it out for anything else.",
       "type": "string",
       "enum": ["age", "pace", "ways", "background", "why"]
     },
