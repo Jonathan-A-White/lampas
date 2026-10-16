@@ -131,8 +131,8 @@ beyond `loadChapter`.
 |---|---|---|
 | `ending` | the form with its ending blanked (`ἀρχ_`), four endings; the wrong three are the same word's other endings in the passage first (its other cases or tenses: the near misses, mw-i7xe0n.7), then the endings of other inflected words of the same part of speech in the passage (the common endings when it has too few). The stem is what the lemma and the form share, a stem vowel goes to the ending; a movable ν (-σιν, a verb's -εν) is shown in brackets and is one ending with or without it, `ουσι(ν)` | any word idea whose forms share a stem with their lemma and whose prompt can name them in taught terms (below) |
 | `tap-form` | the Greek words of one verse as buttons: 'Tap the dative article'. The prompt names the fewest terms that leave exactly one word of the verse, and the word's text is not repeated in the verse | any word idea the passage has a form of |
-| `letter` | four glyphs: by name or by sound (a letter that sounds like the right one is never offered), vowel pairs, consonant pairs, the iota under a letter, the marks, and for `movable-letters` the form that fits a New Testament phrase (οὐ, οὐκ or οὐχ; ἐκ or ἐξ; ἀπ᾿ or ἀφ᾿; a word that takes a movable ν), and for `marks-change-word` and `enclitics` the word that fits a New Testament phrase, with its twin (the same letters, the other mark) always among the four, and for `words-sound-alike` Tap to hear a word by its meaning, then its spelling, the twin among the four | a letter, the alphabet, `diphthongs`, `consonant-pairs`, `iota-subscript`, `punctuation`, `movable-letters`, `marks-change-word`, `enclitics`, `words-sound-alike` |
-| `sound` | Tap to hear says a letter (`speakWord`), four glyphs | a letter, the alphabet |
+| `letter` | four glyphs, small or capital (mw-86e9r1.11: 'Which capital letter is Beta?' over four capitals): by name or by sound (a letter that sounds like the right one is never offered), vowel pairs, consonant pairs, the iota under a letter, the marks, and for `movable-letters` the form that fits a New Testament phrase (οὐ, οὐκ or οὐχ; ἐκ or ἐξ; ἀπ᾿ or ἀφ᾿; a word that takes a movable ν), and for `marks-change-word` and `enclitics` the word that fits a New Testament phrase, with its twin (the same letters, the other mark) always among the four, and for `words-sound-alike` Tap to hear a word by its meaning, then its spelling, the twin among the four | a letter, the alphabet, `diphthongs`, `consonant-pairs`, `iota-subscript`, `punctuation`, `movable-letters`, `marks-change-word`, `enclitics`, `words-sound-alike` |
+| `sound` | Tap to hear says a letter (`speakWord`), four glyphs, small or capital | a letter, the alphabet |
 | `stress` | the syllables of a word from the chosen pronunciation's respell, the stressed one right | `accents` |
 | `preposition` | 'What does διά mean here?' over a real phrase (`διὰ τοὺς λόγους`, John 10:19): four meanings, the right one is the meaning of the case the phrase is in; the other cases' meanings of the same preposition are among the wrong ones | each `preposition-<key>` |
 | `compound` | 'ἐκ + βάλλω (“throw”) makes ἐκβάλλω, as in ἐξεβάλομεν. What does ἐκβάλλω mean?': four meanings | `compound-verbs` |
@@ -276,6 +276,7 @@ step by step, back off by halves when it is too hard, "kind of like a binary sea
 
 `src/data/grammar/inference.ts` (pure) and `src/data/repositories/inference.ts` (mw-hqd5bz.17). The rules are PROVISIONAL, the Mayor's, the Governor to confirm. His words (2026-10-09): "I got some things right, can it infer that I know the alphabet? It will learn more as I try to read."
 
+- **A letter named or heard right credits that letter** (mw-86e9r1.11): a right answer to a `letter` or `sound` question that shows no form credits the letter whose glyph, small or capital, is the answer (`letterOf`), so a Review question about the alphabet moves the letter's own run, not only the idea's.
 - **A form read right is evidence for what it is spelt with.** `foundationOf(form)`: each of its letters (`letter-*`, a final sigma as sigma, once however often it stands), a pair of vowels (`diphthongs`: αι ει οι υι ου αυ ευ ηυ, not when the first carries a stress mark or the second two dots), a pair of consonants (`consonant-pairs`: μπ ντ γκ γγ γχ γξ), a breathing (`breathings`), an accent (`accents`: acute, grave or circumflex) and an iota under a letter (`iota-subscript`).
 - **Where the forms come from.** `formOfQuestion`: the ending question's stem with the right ending put back, the right word of a tap-form, the word of a stress, syllables or breathing question. Every right answer on such a question credits its form: in the placement, in Review's grammar ideas (`kinds.ts` GRAMMAR.record) and in a Quick test or Review word (`recordAnswer`: the lemma, right only, a self-graded 'I knew it' too). A miss on a question about a form (an ending, a tap) says nothing about its letters.
 - **Three right uses and no miss make it solid.** `INFERRED_RIGHTS` 3. A foundation idea's evidence is `{run, misses}`: right uses since its last miss, and its misses. At `run` 3 the idea is written solid, `how` 'inferred', whatever it was (a placement's not yet too: three reads since the miss outweigh it), and put on the back-off schedule at the 30-day step like a term he marked I know this. A solid he set himself is left alone.
@@ -555,6 +556,18 @@ The sheet hands the finished result to `recordDrill(result, mode)` (repositories
 ('Proved by drill', the 30-day step); a run in **prove** mode (from the slider) that did not prove it puts the idea on the frontier, how `drill` (its schedule is left alone when
 it was there already), so the slider goes back to Learning; a run in **practice** mode (the Drill it button) that did not prove it changes no level. The tutor's `weak` list follows
 the latest run as before.
+
+### The letter drill
+
+`src/LetterDrillScreen.tsx` and `src/data/grammar/letterDrill.ts` (mw-86e9r1.11, PROVISIONAL): Got it on The Greek alphabet (sliding 'Your level' to Learning, also by Switch) opens the letter drill at once, a full screen
+over the idea sheet (dialog 'Letter drill', `useSheetBack`). It asks all 24 letters in both forms, 48 targets, **by ear** ('Tap to hear a letter, then tap it', `buildSound`) or **by name** ('Which letter is Beta?' /
+'Which capital letter is Beta?', `buildLetter` by name), drawn as Review draws a letter (`GrammarCard`), in **rounds of 8** (`ROUND_SIZE`): the targets he missed first, then those not asked yet, and
+targets already right only to fill a last short round. A round ends on its score ('7 of 8 right', '7 of 48 right so far') and **Another round** / **Done**; when every target has been answered right the drill says so and offers
+only Done, which, like Stop, returns to the idea sheet. The seed is `letterDrillSeed.next()`, a seam a feature step fixes. (Hearing is a tap, not a hold: docs/pwa-best-practices.md section 12.)
+
+Each answer goes through `noteDrillAnswer` (repositories/inference.ts, `inferFromDrill`): a right answer credits the letter (`run` + 1) and a miss counts against it, **but a sitting never takes a letter's run past
+`DRILL_RUN_CAP`, one short of `INFERRED_RIGHTS`**, and writes no review and no level: Solid comes only from the schedule (`SOLID_STEP`) or from a later right answer in Review, never from one drill sitting.
+features/letter-drill.feature, tests/unit/letter-drill.test.ts.
 
 ### Your drill plan
 

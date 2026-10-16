@@ -133,10 +133,11 @@ describe('the questions that state or ask a sound read it from the scheme', () =
     for (let seed = 1; seed < 40; seed++) {
       const q = buildLetter(alpha, mulberry32(seed), modern);
       prompts.add(q.prompt);
-      expect(q.right).toBe('β');
+      // the small letter or the capital (mw-86e9r1.11)
+      expect(['β', 'Β']).toContain(q.right);
     }
     expect([...prompts].some((p) => p.includes('v, as in “vase”'))).toBe(true);
-    for (let seed = 1; seed < 40; seed++) expect(buildLetter(alpha, mulberry32(seed), bare).prompt).toBe('Which letter is Beta?');
+    for (let seed = 1; seed < 40; seed++) expect(['Which letter is Beta?', 'Which capital letter is Beta?']).toContain(buildLetter(alpha, mulberry32(seed), bare).prompt);
   });
 
   it('puts the scheme\'s sound on the quick round\'s "what sound does it make" card', () => {

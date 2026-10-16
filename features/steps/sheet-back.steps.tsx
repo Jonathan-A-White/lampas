@@ -367,7 +367,7 @@ describeFeature(feature, ({ Scenario }) => {
       const sheets = readdirSync('src')
         .filter((name) => name.endsWith('.tsx'))
         .filter((name) => readFileSync(`src/${name}`, 'utf8').includes('role="dialog"'));
-      expect(sheets.sort()).toEqual(['AskApproachSheet.tsx', 'ChapterPicker.tsx', 'DrillItScreen.tsx', 'GrammarSheet.tsx', 'IdeaSheet.tsx', 'PlanDrillScreen.tsx', 'ReadingDrill.tsx', 'Talk.tsx', 'TeachSheet.tsx', 'WordSheet.tsx']);
+      expect(sheets.sort()).toEqual(['AskApproachSheet.tsx', 'ChapterPicker.tsx', 'DrillItScreen.tsx', 'GrammarSheet.tsx', 'IdeaSheet.tsx', 'LetterDrillScreen.tsx', 'PlanDrillScreen.tsx', 'ReadingDrill.tsx', 'Talk.tsx', 'TeachSheet.tsx', 'WordSheet.tsx']);
       for (const name of sheets) expect(readFileSync(`src/${name}`, 'utf8'), name).toMatch(/useSheetBack\(/);
     });
   });

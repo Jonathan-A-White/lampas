@@ -5,7 +5,7 @@
 // inference: it falls back to the frontier. 'alphabet' follows the 24 letters (grammarLevels.ts syncAlphabet).
 import { db } from '../db';
 import { publish } from '../../events/bus';
-import { inferFromAnswer, inferFromWord, isInferredSolid, type Evidence, type EvidenceMap, type Inferred } from '../grammar/inference';
+import { inferFromAnswer, inferFromDrill, inferFromWord, isInferredSolid, type Evidence, type EvidenceMap, type Inferred } from '../grammar/inference';
 import { IDEA_KIND } from '../grammar/ladder';
 import { ideaOfStored, isItemId, storedId } from '../grammar/soundScope';
 import type { GrammarQuestion } from '../grammar/questions';
@@ -109,6 +109,11 @@ const settle = async (infer: (evidence: EvidenceMap) => Inferred, now: number): 
 /** An answer to a grammar question: a right one on a form credits its letters, sounds and marks; a miss on a letter or sound counts against it. */
 export function noteAnswer(question: Pick<GrammarQuestion, 'kind' | 'ideaId' | 'form' | 'right'>, right: boolean, now = Date.now()): Promise<void> {
   return settle((evidence) => inferFromAnswer(evidence, question, right), now);
+}
+
+/** An answer in the letter drill (mw-86e9r1.11): as noteAnswer, but a drill sitting never makes a letter solid (inferFromDrill). */
+export function noteDrillAnswer(question: Pick<GrammarQuestion, 'kind' | 'ideaId' | 'form' | 'right'>, right: boolean, now = Date.now()): Promise<void> {
+  return settle((evidence) => inferFromDrill(evidence, question, right), now);
 }
 
 /** A Greek word he read right (a Quick test or Review word): its letters, sounds and marks have one more right use. */

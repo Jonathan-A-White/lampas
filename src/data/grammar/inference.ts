@@ -163,9 +163,11 @@ export function formOfQuestion(question: Pick<GrammarQuestion, 'kind' | 'form' |
 /** The ideas a question is about, when it is about letters, sounds or marks: what a miss counts against. */
 export function questionFoundation(question: Pick<GrammarQuestion, 'kind' | 'ideaId' | 'right'>): string[] {
   const own = isFoundation(question.ideaId) && !question.ideaId.startsWith('letter-') ? [question.ideaId] : [];
-  const about = question.kind === 'letter' || question.kind === 'sound' ? letterOf(question) : [];
+  const about = isLetterQuestion(question) ? letterOf(question) : [];
   return [...new Set([...own, ...about])];
 }
+
+const isLetterQuestion = (question: Pick<GrammarQuestion, 'kind'>): boolean => question.kind === 'letter' || question.kind === 'sound';
 
 /** The letter a letter or sound question is about: its own idea, or (for the alphabet) the letter whose glyph is the right answer. */
 function letterOf(question: Pick<GrammarQuestion, 'ideaId' | 'right'>): string[] {
@@ -210,11 +212,32 @@ export interface Inferred {
 export function inferFromAnswer(evidence: EvidenceMap, question: Pick<GrammarQuestion, 'kind' | 'ideaId' | 'form' | 'right'>, right: boolean): Inferred {
   if (right) {
     const form = formOfQuestion(question);
-    return form ? inferFromWord(evidence, form) : { evidence: new Map(evidence), credited: [], missed: [] };
+    if (form) return inferFromWord(evidence, form);
+    // a letter named or heard right: the letter itself has one more right use (mw-86e9r1.11)
+    const letters = isLetterQuestion(question) ? letterOf(question) : [];
+    return { evidence: bump(evidence, letters, (e) => ({ ...e, run: e.run + 1 })), credited: letters, missed: [] };
   }
   const missed = questionFoundation(question);
   return { evidence: countMiss(evidence, missed), credited: [], missed };
 }
+
+/**
+ * An answer given in a letter drill sitting (mw-86e9r1.11, PROVISIONAL): what inferFromAnswer shows, except that a right answer never takes a letter's run past DRILL_RUN_CAP, one
+ * short of the right uses that make it solid. Solid comes from the spaced reviews, never from one sitting; the first right answer in a Review a day or more later finishes the job.
+ */
+export function inferFromDrill(evidence: EvidenceMap, question: Pick<GrammarQuestion, 'kind' | 'ideaId' | 'form' | 'right'>, right: boolean): Inferred {
+  const result = inferFromAnswer(evidence, question, right);
+  if (!right) return result;
+  const capped = new Map(result.evidence);
+  for (const id of result.credited) {
+    const [before, now] = [evidence.get(id), capped.get(id)];
+    if (now && now.run > DRILL_RUN_CAP) capped.set(id, { ...now, run: Math.max(DRILL_RUN_CAP, before?.run ?? 0) });
+  }
+  return { ...result, evidence: capped };
+}
+
+/** The most right uses in a row a drill sitting alone can give a letter. */
+export const DRILL_RUN_CAP = INFERRED_RIGHTS - 1;
 
 /** A Greek form shown and read right, such as a Quick test word: its letters, sounds and marks have one more right use. */
 export function inferFromWord(evidence: EvidenceMap, word: string): Inferred {
