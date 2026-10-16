@@ -61,7 +61,8 @@ describe('the steps of an idea', () => {
         }
       });
     }
-  });
+    // builds the questions of every idea of the ladder: about 17 s on a quiet host, so it may not be held to the 20 s every other test gets
+  }, 120_000);
 
   it('gives every idea a step with no passage at all', () => {
     for (const idea of LADDER) expect(drillSteps(idea.id).length, idea.id).toBeGreaterThanOrEqual(1);

@@ -32,6 +32,9 @@ const CLICK_GUARD_MS = 600;
 const LEAVE_DELAY_MS = 250;
 const AWAKE_HOLDER = 'immersive';
 let leaving: ReturnType<typeof setTimeout> | undefined;
+/** Whether the bars are away in the Reader on screen now. The next chapter is a new Reader (a new hook), which starts with them as the one it replaces
+ * had them (mw-5r3p30.318); like full screen, this is forgotten once no new Reader wants it (LEAVE_DELAY_MS), so a later visit starts with them shown. */
+let awayNow = false;
 
 /** Asks the browser to show the page full screen. False where it cannot or will not (no API, no gesture yet, refused). */
 async function enterFullScreen(): Promise<boolean> {
@@ -62,6 +65,7 @@ function leaveFullScreen(): void {
 export function resetImmersive(): void {
   clearTimeout(leaving);
   leaving = undefined;
+  awayNow = false;
 }
 
 export interface Immersive {
@@ -74,10 +78,12 @@ export function useImmersive(
   enabled: boolean,
   box: RefObject<HTMLElement | null>,
 ): Immersive {
-  const [away, setAway] = useState(false);
-  const awayRef = useRef(false);
+  // a Reader that replaces one with the bars away (the next chapter) opens with them away too
+  const [away, setAway] = useState(() => enabled && awayNow);
+  const awayRef = useRef(away);
   const set = useCallback((value: boolean) => {
     awayRef.current = value;
+    awayNow = value;
     setAway(value);
   }, []);
 
@@ -87,6 +93,8 @@ export function useImmersive(
     clearTimeout(leaving);
     leaving = undefined;
     holdAwake(AWAKE_HOLDER);
+    // the setting is read from the store after the first draw, so the state's start may have missed the Reader this one replaces
+    if (awayNow && !awayRef.current) set(true);
     let last = el.scrollTop;
     let down = 0;
     let stopped = false;
@@ -188,11 +196,16 @@ export function useImmersive(
     el.addEventListener('touchcancel', onTouchCancel, { passive: true });
     el.addEventListener('click', onClick, true);
     return () => {
-      // switched Off (or the box gone): the bars are shown again if he switches it back On
-      set(false);
+      // switched Off (or the box gone): the bars are shown again if he switches it back On. A Reader that replaces this one at once reads awayNow
+      // before this runs, and keeps it; with none, it is forgotten when the full-screen exit fires.
+      setAway(false);
+      awayRef.current = false;
       releaseAwake(AWAKE_HOLDER);
       stopped = true;
-      leaving = setTimeout(leaveFullScreen, LEAVE_DELAY_MS);
+      leaving = setTimeout(() => {
+        awayNow = false;
+        leaveFullScreen();
+      }, LEAVE_DELAY_MS);
       el.removeEventListener('scroll', onScroll);
       el.removeEventListener('touchstart', onTouchStart);
       el.removeEventListener('touchmove', onTouchMove);
