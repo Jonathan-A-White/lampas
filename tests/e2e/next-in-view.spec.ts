@@ -6,6 +6,7 @@ import { chooseAction } from './verse-view';
 import { expectInView, openWithTextSize, PHONES } from './next-in-view';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { holdFor } from '../support/hold';
 
 // After he answers, the button that moves on is in view with no scroll (mw-5r3p30.377). He read Review on his phone and the Next button sat below the fold:
 // 'Right.' and the help button were the last thing on the screen and 'what next' was not obvious. Each screen that asks and then moves on is walked at the
@@ -31,16 +32,6 @@ const PARTIAL_LONG_TIP_ANSWER = {
     tip: 'Say the stress on the third piece, πῶ. The γ before α is a soft sound made at the back of the throat, and the σ is a plain s.',
   },
 };
-
-// This host's wall clock can step back about 1.4 s while a hold goes on, and the recorder times a hold with Date.now(): hold longer than about 2.5 s.
-async function holdFor(page: Page, button: ReturnType<Page['getByRole']>, ms: number): Promise<void> {
-  const box = await button.boundingBox();
-  if (!box) throw new Error('the button is not on the page');
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.waitForTimeout(ms);
-  await page.mouse.up();
-}
 
 // Puts rows in the app's own store through raw IndexedDB, as the app wrote them.
 async function put(page: Page, store: 'settings' | 'grammarLevels', rows: object[]) {
@@ -162,6 +153,7 @@ for (const phone of PHONES) {
       });
 
       test('Reading ladder: after a good reading Next verse is in view', async ({ page }) => {
+        await page.clock.install();
         const fake = makeFakePostern();
         fake.autoReply = { status: 'answered', answer: WELL_READ_ANSWER };
         await routePostern(page, fake);
@@ -172,13 +164,7 @@ for (const phone of PHONES) {
         const panel = page.getByRole('region', { name: 'Reading check' });
         await panel.getByRole('button', { name: 'Reading ladder', exact: true }).click();
         await expect(view.getByRole('heading', { level: 2 })).toHaveText('1 Thessalonians 5:16');
-        const hold = page.getByRole('button', { name: 'Hold to read verse 16', exact: true });
-        const box = await hold.boundingBox();
-        if (!box) throw new Error('no hold bar');
-        await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-        await page.mouse.down();
-        await page.waitForTimeout(2800);
-        await page.mouse.up();
+        await holdFor(page, page.getByRole('button', { name: 'Hold to read verse 16', exact: true }), 2800);
         await expect(panel).toContainText('Well read');
         const next = panel.getByRole('button', { name: 'Next verse', exact: true });
         await expectInView(page, next, 'Next verse');
@@ -187,6 +173,7 @@ for (const phone of PHONES) {
 
       for (const speaking of [true, false]) {
         test(`Reading ladder, partial reading, read-aloud bar ${speaking ? 'showing' : 'not showing'}: the Next word card is whole, above the bottom stack`, async ({ page }) => {
+          await page.clock.install();
           const fake = makeFakePostern();
           fake.autoReply = { status: 'answered', answer: PARTIAL_LONG_TIP_ANSWER };
           await routePostern(page, fake);
@@ -235,6 +222,7 @@ for (const phone of PHONES) {
       }
 
       test('Reading drill (a sheet): after a word is read Next word is in view', async ({ page }) => {
+        await page.clock.install();
         const fake = makeFakePostern();
         fake.autoReply = { status: 'answered', answer: OU_WORD_ANSWER };
         await routePostern(page, fake);

@@ -5,17 +5,9 @@ import { fakeMedia, type FakeWindow } from './fake-media';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction } from './verse-view';
+import { holdFor } from '../support/hold';
 
 const VIEWPORT = { width: 390, height: 844 };
-
-async function holdFor(page: Page, button: ReturnType<Page['getByRole']>, ms: number): Promise<void> {
-  const box = await button.boundingBox();
-  if (!box) throw new Error('the button is not on the page');
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.waitForTimeout(ms);
-  await page.mouse.up();
-}
 
 /** The Governor's screen of 2026-10-09 (mw-5r3p30.139): Hebrews 7:8, 'In the case of the Levites, mortal men collect the tenth; ...', with 'Levites,' (the
  * sixth word, with its comma) flagged and timed. */
@@ -59,6 +51,11 @@ const readVerse28 = (page: Page, answer: unknown) => readVerse(page, answer, { h
 
 const seen = (page: Page) => page.evaluate(() => (window as unknown as FakeWindow).plays);
 const paused = (page: Page) => page.evaluate(() => (window as unknown as FakeWindow).pauses);
+
+// holdFor (tests/support/hold.ts) times each hold on the page's clock, so it is installed before the page opens.
+test.beforeEach(async ({ page }) => {
+  await page.clock.install();
+});
 
 test("'Me' beside a timed word's speaker plays only that word of the clip, and stops at its end", async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
