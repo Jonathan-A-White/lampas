@@ -9,7 +9,7 @@ import { type Random } from './data/quiz';
 import { ideaOf } from './data/grammar/ladder';
 import { navigate, openParadigm } from './nav/route';
 import { ItemCard } from './review/ItemCard';
-import { KINDS, kindOf, type ReviewItem } from './review/kinds';
+import { KINDS, kindOf, recordParseStep, type ReviewItem } from './review/kinds';
 import { makeMove, moveQuestion, moveSaid, pendingMove, type PendingMove } from './review/pickerMove';
 import { heldRound, holdRound, releaseRound } from './review/heldRound';
 import { hasPractise, takePractise } from './review/practise';
@@ -232,6 +232,9 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
           index={index}
           picked={picked}
           onPick={pick}
+          onStep={(step, wasRight) => {
+            writing.current = writing.current.then(() => recordParseStep(item, step, wasRight)).catch((error: unknown) => console.error('could not record the step', error));
+          }}
           onSeeTable={(table) => {
             holdRound(round);
             openParadigm({ table });

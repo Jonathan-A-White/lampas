@@ -83,6 +83,51 @@ Feature: Review asks grammar ideas, and asks them before words
     When he taps Show
     Then the English of the chunk is shown
 
+  # mw-emk3xt.3: the Parsing drill's steps as one Review question, right only when every step is.
+  Scenario: A full parsing in Review
+    Given his goal is "1 John 1"
+    And he knows every word and every idea of "1 John 1"
+    And the idea "tense-perfect" is due on step 3
+    And the draw asks "tense-perfect" as a full parsing of five steps
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    Then the card says "1 of 5" and asks the part of speech
+    When he taps the right answer at every step
+    Then the last step turns green and the full parsing is shown
+    And "tense-perfect" has one right review and no lapse
+    And five right answers are in the drills table for the word
+
+  Scenario: A wrong step ends a full parsing and shows it in plain words
+    Given his goal is "1 John 1"
+    And he knows every word and every idea of "1 John 1"
+    And the idea "tense-perfect" is due on step 3
+    And the draw asks "tense-perfect" as a full parsing of five steps
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    And he taps the right answer at the first step
+    Then the card says "2 of 5" and asks the tense
+    When he taps a wrong answer
+    Then the wrong answer turns red and the right one green
+    And the full parsing is shown in plain words
+    And "tense-perfect" has one wrong review
+    And two answers are in the drills table for the word, one right and one wrong
+
+  # mw-emk3xt.3: nothing asked who acts and who is acted on, which is what the cases are for.
+  Scenario: Who does it
+    Given his goal is "John 1"
+    And he knows every word and every idea of "John 1"
+    And the idea "case-nominative" is due
+    And the draw asks "case-nominative" as "Tap the one who does it"
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    Then the card shows the words of one verse as buttons under "Tap the one who does it"
+    When he taps the subject
+    Then the subject turns green
+    And "case-nominative" has one right review and no lapse
+
   Scenario: A preposition is asked by the case of a real phrase
     Given his goal is "1 John 1"
     And the idea "preposition-dia" is due

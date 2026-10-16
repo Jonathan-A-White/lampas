@@ -10,10 +10,12 @@ import { App } from '../../src/App';
 import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { foundationOf } from '../../src/data/grammar/inference';
-import { ideaOf } from '../../src/data/grammar/ladder';
+import { ideaOf, LADDER } from '../../src/data/grammar/ladder';
+import { storedId } from '../../src/data/grammar/soundScope';
 import { buildIdeaQuestion, type GrammarKind, type GrammarQuestion } from '../../src/data/grammar/questions';
+import { splitParse } from '../../src/data/parseCode';
 import { mulberry32 } from '../../src/data/quiz';
-import { getEvidence } from '../../src/data/repositories';
+import { getEvidence, SOLID_STEP } from '../../src/data/repositories';
 import { setGoal } from '../../src/data/repositories/settings';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { seedHisWords } from '../../tests/support/his-words';
@@ -46,14 +48,19 @@ async function freshStore(): Promise<void> {
   seed = 7;
   opened = new Set();
   expected = undefined;
+  dueStep = 0;
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.results.clear(), db.reviews.clear(), db.settings.clear(), db.grammarLevels.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.results.clear(), db.reviews.clear(), db.settings.clear(), db.grammarLevels.clear(), db.drills.clear()]);
   await seedHisWords();
   await seedScheduleIfFirstOpen();
   await db.reviews.clear();
 }
 
+/** The step the idea was made due on: from SOLID_STEP up Review may ask a full parsing (the draw is then `strong`). */
+let dueStep = 0;
+
 async function makeIdeaDue(id: string, step = 0, rights = 0): Promise<void> {
+  dueStep = step;
   const now = Date.now();
   await db.reviews.put({ kind: 'grammar', id, step, rights, due: now - 60_000, lastWhen: now - 3 * DAY, lapses: 0 });
 }
@@ -65,11 +72,11 @@ let opened = new Set<string>();
 let expected: GrammarQuestion | undefined;
 
 /** Makes the app's random the first seed whose draw of `id` over `passage` is a question of `kind`; Review draws from the verses graded to him (gradedVersesOf), so the step does. */
-async function drawAs(id: string, passage: Chapter[], kind: GrammarKind, tablesOpen: ReadonlySet<string> = opened): Promise<void> {
+async function drawAs(id: string, passage: Chapter[], kind: GrammarKind, wanted: (q: GrammarQuestion) => boolean = () => true, tablesOpen: ReadonlySet<string> = opened): Promise<void> {
   const graded = await gradedVersesOf(passage);
   for (let s = 1; s < 500; s += 1) {
-    const q = buildIdeaQuestion(ideaOf(id), passage, grammarRandom(mulberry32(s)), undefined, undefined, tablesOpen, graded);
-    if (q.kind !== kind) continue;
+    const q = buildIdeaQuestion(ideaOf(id), passage, grammarRandom(mulberry32(s)), undefined, undefined, tablesOpen, graded, dueStep >= SOLID_STEP);
+    if (q.kind !== kind || !wanted(q)) continue;
     seed = s;
     expected = q;
     return;
@@ -108,6 +115,29 @@ const review = async (id: string) => {
 const rightOne = (): HTMLElement => {
   const found = optionButtons().find((o) => o.textContent === expected?.right);
   if (!found) throw new Error('the right option is not on screen');
+  return found;
+};
+
+/** The chapter files of the goals the scenarios name. */
+const CHAPTER_FILES: Record<string, string> = { '1 John 1': '1jn/1', 'John 1': 'jhn/1' };
+
+/** He knows every word of the chapter and every idea of the ladder, so every verse of it is at his level (gradedVerses). */
+async function knowEverything(name: string): Promise<void> {
+  const file = CHAPTER_FILES[name];
+  if (!file) throw new Error(`no chapter file for ${name}`);
+  const now = Date.now();
+  const lemmas = new Set(chapter(file).verses.flatMap((v) => v.g.map((w) => w.l.normalize('NFC'))));
+  await db.words.bulkPut([...lemmas].map((lemma) => ({ lemma, lemmas: [], gloss: 'a word', lesson: 1, state: 'solid' as const, since: now })));
+  await db.grammarLevels.bulkPut(LADDER.map((idea) => ({ id: storedId(idea.id, 'modern'), level: 'solid' as const, since: now, how: 'marked' as const })));
+}
+
+/** The answers written for a word to the Parsing drill's table, oldest first. */
+const drillRows = async () => (await db.drills.where('lemma').equals(expected!.lemma!).toArray()).sort((a, b) => a.when - b.when || (a.id ?? 0) - (b.id ?? 0));
+
+/** The option with this text on the card now. */
+const optionWith = (text: string): HTMLElement => {
+  const found = optionButtons().find((o) => o.textContent === text);
+  if (!found) throw new Error(`no option "${text}" on screen`);
   return found;
 };
 
@@ -175,8 +205,8 @@ describeFeature(feature, ({ Scenario }) => {
       // the seed that gives an ending once the table is open also gives the tap the form while it is shut
       const graded = await gradedVersesOf([chapter('1jn/1')]);
       for (let s = 1; s < 500; s += 1) {
-        const shut = buildIdeaQuestion(ideaOf(id), [chapter('1jn/1')], grammarRandom(mulberry32(s)), undefined, undefined, new Set(), graded);
-        const open = buildIdeaQuestion(ideaOf(id), [chapter('1jn/1')], grammarRandom(mulberry32(s)), undefined, undefined, new Set(['noun-endings']), graded);
+        const shut = buildIdeaQuestion(ideaOf(id), [chapter('1jn/1')], grammarRandom(mulberry32(s)), undefined, undefined, new Set(), graded, dueStep >= SOLID_STEP);
+        const open = buildIdeaQuestion(ideaOf(id), [chapter('1jn/1')], grammarRandom(mulberry32(s)), undefined, undefined, new Set(['noun-endings']), graded, dueStep >= SOLID_STEP);
         if (shut.kind !== 'tap-form' || open.kind !== 'ending') continue;
         seed = s;
         expected = open;
@@ -322,6 +352,124 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps Show', async () => user.click(screen.getByRole('button', { name: 'Show' })));
     Then('the English of the chunk is shown', async () => {
       await waitFor(() => expect(screen.getByTestId('grammar-answer').textContent).toBe(expected!.right));
+    });
+  });
+
+  Scenario('A full parsing in Review', ({ Given, And, When, Then }) => {
+    Given('his goal is {string}', async (_, goal: string) => {
+      await freshStore();
+      await setGoal(goal);
+    });
+    And('he knows every word and every idea of {string}', async (_, name: string) => knowEverything(name));
+    And('the idea {string} is due on step {int}', async (_, id: string, step: number) => makeIdeaDue(id, step));
+    And('the draw asks {string} as a full parsing of five steps', async (_, id: string) => {
+      await drawAs(id, [chapter('1jn/1')], 'parse', (q) => q.steps?.length === 5);
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    Then('the card says {string} and asks the part of speech', (_, count: string) => {
+      expect(screen.getByTestId('grammar-prompt').getAttribute('data-kind')).toBe('parse');
+      expect(screen.getByTestId('grammar-prompt')).toHaveTextContent(expected!.prompt);
+      expect(screen.getByTestId('grammar-form').textContent).toBe(expected!.form);
+      expect(screen.getByTestId('parse-step')).toHaveTextContent(`${count}: part of speech`);
+      expect(optionButtons().map((o) => o.textContent).sort()).toEqual([...expected!.steps![0].options].sort());
+    });
+    When('he taps the right answer at every step', async () => {
+      for (const [i, step] of expected!.steps!.entries()) {
+        await waitFor(() => expect(screen.getByTestId('parse-step')).toHaveTextContent(`${i + 1} of 5`));
+        await user.click(optionWith(step.right));
+      }
+    });
+    Then('the last step turns green and the full parsing is shown', async () => {
+      const last = expected!.steps![4];
+      expect(optionWith(last.right).getAttribute('data-result')).toBe('right');
+      expect(screen.getByTestId('feedback')).toHaveTextContent('Right.');
+      expect(screen.getByTestId('parse-full')).toHaveTextContent(expected!.right);
+    });
+    And('{string} has one right review and no lapse', async (_, id: string) => {
+      await waitFor(async () => expect((await review(id)).rights).toBe(1));
+      expect((await review(id)).lapses).toBe(0);
+    });
+    And('five right answers are in the drills table for the word', async () => {
+      await waitFor(async () => expect(await drillRows()).toHaveLength(5));
+      const rows = await drillRows();
+      expect(rows.map((r) => r.step)).toEqual(expected!.steps!.map((s) => s.id));
+      expect(rows.every((r) => r.right)).toBe(true);
+    });
+  });
+
+  Scenario('A wrong step ends a full parsing and shows it in plain words', ({ Given, And, When, Then }) => {
+    Given('his goal is {string}', async (_, goal: string) => {
+      await freshStore();
+      await setGoal(goal);
+    });
+    And('he knows every word and every idea of {string}', async (_, name: string) => knowEverything(name));
+    And('the idea {string} is due on step {int}', async (_, id: string, step: number) => makeIdeaDue(id, step));
+    And('the draw asks {string} as a full parsing of five steps', async (_, id: string) => {
+      await drawAs(id, [chapter('1jn/1')], 'parse', (q) => q.steps?.length === 5);
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    And('he taps the right answer at the first step', async () => user.click(optionWith(expected!.steps![0].right)));
+    Then('the card says {string} and asks the tense', async (_, count: string) => {
+      await waitFor(() => expect(screen.getByTestId('parse-step')).toHaveTextContent(`${count}: tense`));
+    });
+    When('he taps a wrong answer', async () => {
+      const wrong = optionButtons().find((o) => o.textContent !== expected!.steps![1].right);
+      await user.click(wrong!);
+    });
+    Then('the wrong answer turns red and the right one green', () => {
+      expect(optionButtons().filter((o) => o.getAttribute('data-result') === 'wrong')).toHaveLength(1);
+      expect(optionWith(expected!.steps![1].right).getAttribute('data-result')).toBe('right');
+      expect(screen.getByTestId('parse-step')).toHaveTextContent('2 of 5: tense');
+    });
+    And('the full parsing is shown in plain words', () => {
+      expect(screen.getByTestId('parse-full')).toHaveTextContent(expected!.right);
+      expect(screen.getByTestId('parse-full').textContent).toContain('perfect active indicative');
+    });
+    And('{string} has one wrong review', async (_, id: string) => {
+      await waitFor(async () => expect((await review(id)).lapses).toBe(1));
+      expect((await review(id)).rights).toBe(0);
+    });
+    And('two answers are in the drills table for the word, one right and one wrong', async () => {
+      await waitFor(async () => expect(await drillRows()).toHaveLength(2));
+      expect((await drillRows()).map((r) => [r.step, r.right])).toEqual([['pos', true], ['tense', false]]);
+    });
+  });
+
+  Scenario('Who does it', ({ Given, And, When, Then }) => {
+    Given('his goal is {string}', async (_, goal: string) => {
+      await freshStore();
+      await setGoal(goal);
+    });
+    And('he knows every word and every idea of {string}', async (_, name: string) => knowEverything(name));
+    And('the idea {string} is due', async (_, id: string) => makeIdeaDue(id));
+    And('the draw asks {string} as {string}', async (_, id: string, prompt: string) => {
+      await drawAs(id, [chapter('jhn/1')], 'roles', (q) => q.prompt === prompt);
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    Then('the card shows the words of one verse as buttons under {string}', (_, prompt: string) => {
+      expect(screen.getByTestId('grammar-prompt').getAttribute('data-kind')).toBe('roles');
+      expect(screen.getByTestId('grammar-prompt')).toHaveTextContent(prompt);
+      const words = verseWords().map((b) => b.textContent);
+      const verse = chapter('jhn/1').verses.find((v) => v.g.map((g) => g.t).join(' ') === words.join(' '));
+      expect(verse, 'the buttons are the words of a verse of John 1').toBeTruthy();
+      expect(screen.getByTestId('grammar-ref').textContent).toBe(expected!.ref);
+    });
+    When('he taps the subject', async () => user.click(rightOne()));
+    Then('the subject turns green', () => {
+      expect(rightOne().getAttribute('data-result')).toBe('right');
+      expect(screen.getByTestId('feedback')).toHaveTextContent('Right.');
+      // the one who does it is in the nominative
+      expect(splitParse(expected!.code!).features.find((f) => f.id === 'case')?.value).toBe('nominative');
+    });
+    And('{string} has one right review and no lapse', async (_, id: string) => {
+      await waitFor(async () => expect((await review(id)).rights).toBe(1));
+      expect((await review(id)).lapses).toBe(0);
     });
   });
 

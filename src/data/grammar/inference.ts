@@ -151,6 +151,12 @@ export function formOfQuestion(question: Pick<GrammarQuestion, 'kind' | 'form' |
     case 'meaning':
       // the Greek of a chunk or clause: more than one word is credited word by word (inferFromAnswer)
       return question.form;
+    case 'parse':
+      // a word parsed right in every step (mw-emk3xt.3)
+      return question.form;
+    case 'roles':
+      // the word tapped as the subject, the verb or the object
+      return question.right;
     case 'cell':
       // a cell of a table (mw-svw421.6): its form is the answer, when it is Greek (a table can hold English)
       return /\p{Script=Greek}/u.test(question.right) ? question.right : undefined;
