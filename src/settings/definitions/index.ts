@@ -11,7 +11,8 @@ import { readLessonsSetting } from './readLessons';
 import { themeSetting } from './theme';
 import { tipsSetting } from './tips';
 import { weaveSetting } from './weave';
+import { weaveOrderSetting } from './weaveOrder';
 
-export { askBySetting, audioBibleSetting, englishAccentSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, themeSetting, tipsSetting, weaveSetting };
+export { askBySetting, audioBibleSetting, englishAccentSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, themeSetting, tipsSetting, weaveOrderSetting, weaveSetting };
 
-export const DEFINITIONS: readonly SettingDef<SettingValue>[] = [themeSetting, weaveSetting, tipsSetting, immersiveSetting, immersiveHintSetting, askBySetting, audioBibleSetting, readLessonsSetting, englishAccentSetting];
+export const DEFINITIONS: readonly SettingDef<SettingValue>[] = [themeSetting, weaveSetting, tipsSetting, immersiveSetting, immersiveHintSetting, askBySetting, audioBibleSetting, readLessonsSetting, englishAccentSetting, weaveOrderSetting];

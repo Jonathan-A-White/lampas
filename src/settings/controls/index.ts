@@ -23,6 +23,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   immersiveHint: ImmersiveHintControl,
   weave: WeaveControl,
   weaveGrammar: WeaveControl,
+  weaveOrder: WeaveControl,
   newWordsADay: NewWordsControl,
   pickerGrammar: NewWordsControl,
   grammarMove: NewWordsControl,

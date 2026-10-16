@@ -736,6 +736,12 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
+            "properties": { "key": { "const": "weaveOrder" }, "value": { "type": "string", "enum": ["english", "greek"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
             "properties": { "key": { "const": "newWordsADay" }, "value": { "type": "string", "enum": ["0", "3", "5", "10"] } }
           },
           {
