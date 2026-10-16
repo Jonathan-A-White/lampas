@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.277
+_2026-10-16_
+- New: After a Review round, Lampas quietly asks the tutor for fresh questions on the grammar you missed, ready for your next round.
+
 ## 0.1.276
 _2026-10-16_
 - New: The letter drill now asks you to say a letter's name or sound aloud and checks it with your phone's speech recognition; a miss plays the right sound.
