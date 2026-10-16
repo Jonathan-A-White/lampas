@@ -21,3 +21,52 @@ export function revealTop(el: HTMLElement | null): void {
   if (!el || !box) return;
   box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
 }
+
+/** The top of what is drawn over the foot of `box`'s scroll content: the sticky NextBar (src/ui/NextBar.tsx), when the box has one, else the box's own bottom.
+ * The speaking bar and the hold bar are outside the box, so the box's bottom is already above them. */
+function stackTopOf(box: HTMLElement): number {
+  const bottom = box.getBoundingClientRect().bottom;
+  const bars = [...box.querySelectorAll<HTMLElement>('[data-next-bar]')].map((bar) => bar.getBoundingClientRect().top);
+  return Math.min(bottom, ...bars);
+}
+
+/** Scrolls the box so the whole of `el` sits above the stack drawn over its foot (a sticky Try again / Skip for now bar, a Next bar), by `gap`; when `el`
+ * is taller than the room, its top stays in view (the heading wins) and the rest is a scroll away. Moves the box and never the document. Returns whether
+ * `el` was already where it should be. */
+export function revealAboveStack(el: HTMLElement | null, gap = 8): boolean {
+  const box = el?.closest<HTMLElement>('.screen');
+  if (!el || !box) return true;
+  for (let pass = 0; pass < 3; pass += 1) {
+    const inner = el.getBoundingClientRect();
+    const past = inner.bottom + gap - stackTopOf(box);
+    if (past <= 0.5) return pass === 0;
+    const room = inner.top - box.getBoundingClientRect().top - gap;
+    const by = Math.min(past, Math.max(0, room));
+    if (by <= 0) return false;
+    box.scrollTop += by;
+  }
+  return false;
+}
+
+/** Keeps `el()` above the stack while the screen settles around it: a result arrives, then the speaking bar appears under the box and shrinks it, a
+ * font loads. Follows the box's size until he touches, scrolls or types in it (his scroll is his), or `ms` pass. Call the returned function to stop. */
+export function keepAboveStack(el: () => HTMLElement | null, ms = 3000): () => void {
+  const first = el();
+  const box = first?.closest<HTMLElement>('.screen');
+  if (!first || !box) return () => undefined;
+  const run = () => revealAboveStack(el());
+  run();
+  const watcher = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(run);
+  watcher?.observe(box);
+  const around = first.closest('section');
+  if (around) watcher?.observe(around);
+  const timer = window.setTimeout(stop, ms);
+  const events = ['pointerdown', 'wheel', 'touchstart', 'keydown'] as const;
+  events.forEach((name) => box.addEventListener(name, stop, { passive: true }));
+  function stop() {
+    watcher?.disconnect();
+    window.clearTimeout(timer);
+    events.forEach((name) => box?.removeEventListener(name, stop));
+  }
+  return stop;
+}

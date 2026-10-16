@@ -12,7 +12,7 @@ import { setVerseAction } from './verse/action';
 
 const NAMES: Record<LadderLang, string> = { el: 'Greek', en: 'English' };
 const VIEWS: Record<LadderLang, ReaderView> = { el: 'greek', en: 'english' };
-const BUTTON = 'min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium';
+const BUTTON = 'min-h-12 w-full rounded-xl border border-line px-3 text-lg font-medium';
 
 /** Moves the Verse view to a ladder verse: on its own history entry (`here`, as the arrows do) or as a new Back step from another screen. */
 function goTo(ref: string, how: 'here' | 'push'): void {
@@ -92,7 +92,8 @@ export function LadderActions({ lang, here, verseKey, verdict, onTryAgain }: { l
   }
   return (
     <NextBar where="view">
-      <div className="space-y-2">
+      {/* side by side: the bar stands over the foot of the text, and two rows of it would hide the Next word card of a partial reading */}
+      <div className="grid grid-cols-2 gap-2 has-[:only-child]:grid-cols-1">
         {verdict ? (
           <button type="button" onClick={onTryAgain} className={BUTTON}>
             Try again

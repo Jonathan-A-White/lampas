@@ -27,7 +27,7 @@ import { speakTutor, stopOnTap, verdictRuns, VERDICT_ID } from './speech/tutorVo
 import { SpeakButton } from './speech/SpeakButton';
 import { HoldBar } from './ui/HoldBar';
 import { useElapsed } from './ui/useElapsed';
-import { revealInScrollBox } from './ui/reveal';
+import { keepAboveStack, revealInScrollBox } from './ui/reveal';
 import { DROPPED_NOTE, SHORT_HINT, TAP_HINT, type ReadState, type UseReadChecks } from './useReadChecks';
 
 type Marks = ReturnType<typeof markWords<FixWord>>;
@@ -123,7 +123,7 @@ function SayWord({ fix, view, id, label, className }: { fix: FixWord; view: Read
 }
 
 /** A word's chunks, big, with the tip and a speaker that says the whole word in the voice of the language read. */
-function Fix({ fix, view, large, player }: { fix: FixWord; view: ReadingView; large?: boolean; player?: ClipPlayer }) {
+function Fix({ fix, view, large, player, speaker = true }: { fix: FixWord; view: ReadingView; large?: boolean; player?: ClipPlayer; speaker?: boolean }) {
   const type = typeOf(view);
   return (
     <div className="space-y-1">
@@ -131,7 +131,7 @@ function Fix({ fix, view, large, player }: { fix: FixWord; view: ReadingView; la
         {chunksLine(fix.chunks)}
       </p>
       <p className="break-words text-base text-muted">{plainQuotes(fix.tip)}</p>
-      <SayWord fix={fix} view={view} id={`fix-${view}-${fix.word}`} label="Hear it" className="align-baseline" />
+      {speaker ? <SayWord fix={fix} view={view} id={`fix-${view}-${fix.word}`} label="Hear it" className="align-baseline" /> : null}
       {player ? <MeButton fix={fix} word={fix.word} id={`fix-${fix.word}`} player={player} className="ml-2 align-baseline" /> : null}
     </div>
   );
@@ -210,11 +210,15 @@ function NextWord({ fix, view }: { fix: FixWord; view: ReadingView }) {
   const type = typeOf(view);
   return (
     <div data-next-word className="space-y-1 rounded-xl border border-line bg-surface p-3">
-      <h4 className="text-sm font-semibold text-muted">Next word</h4>
+      {/* the speaker sits in the heading's row, not under the tip: the card is a row shorter, so it fits above the bar at the biggest text on a small phone */}
+      <div className="flex items-center justify-between gap-2">
+        <h4 className="text-sm font-semibold text-muted">Next word</h4>
+        <SayWord fix={fix} view={view} id={`fix-${view}-${fix.word}`} label="Hear it" className="align-middle" />
+      </div>
       <p lang={type.lang} className={`break-words text-4xl font-semibold ${type.chunks}`}>
         {fix.word}
       </p>
-      <Fix fix={fix} view={view} />
+      <Fix fix={fix} view={view} speaker={false} />
     </div>
   );
 }
@@ -392,9 +396,13 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, onRet
   const arrived = state?.phase === 'failed' ? 'failed' : reading?.when;
   const seen = useRef(arrived);
   useEffect(() => {
-    if (seen.current === arrived) return;
+    if (seen.current === arrived) return undefined;
     seen.current = arrived;
-    if (arrived !== undefined) revealInScrollBox(section.current);
+    if (arrived === undefined) return undefined;
+    revealInScrollBox(section.current);
+    // a partial reading's Next word card is the next step: it stands whole above the bar of Try again / Skip for now, and stays so when the speaking bar comes
+    if (!section.current?.querySelector('[data-next-word]')) return undefined;
+    return keepAboveStack(() => section.current?.querySelector<HTMLElement>('[data-next-word]') ?? null);
   }, [arrived]);
 
   // The walk stays while its last step is held to record (it would lose the let-go if it went), and ends when the clip is sent.
