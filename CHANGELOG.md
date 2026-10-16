@@ -1,5 +1,13 @@
 # What's new
 
+## 0.1.270
+_2026-10-16_
+- Fixed: Drill it no longer asks the same word twice when your reading goal has no word with the letter you are drilling.
+
+## 0.1.270
+_2026-10-16_
+- New: Review can ask you to parse a whole word step by step, and to tap who does the action, what is done and what it is done to in a verse.
+
 ## 0.1.269
 _2026-10-16_
 - Fixed: after a partly read verse, the next word to practise is now always fully visible above the buttons instead of hidden behind them.

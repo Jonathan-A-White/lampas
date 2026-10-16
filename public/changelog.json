@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.270",
+    "date": "2026-10-16",
+    "story": "mw-i7xe0n.14",
+    "kind": "fixed",
+    "text": "Drill it no longer asks the same word twice when your reading goal has no word with the letter you are drilling."
+  },
+  {
+    "version": "0.1.270",
+    "date": "2026-10-16",
+    "story": "mw-emk3xt.3",
+    "kind": "new",
+    "text": "Review can ask you to parse a whole word step by step, and to tap who does the action, what is done and what it is done to in a verse."
+  },
+  {
     "version": "0.1.269",
     "date": "2026-10-16",
     "story": "mw-5r3p30.397",
