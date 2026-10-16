@@ -122,10 +122,33 @@ export async function answerDrawn(txid: string | undefined): Promise<void> {
   });
 }
 
-const seconds = (value: number): string => (value / 1000).toFixed(1);
+const seconds = (tenths: number): string => (tenths / 10).toFixed(1);
+
+/** The parts (milliseconds) in tenths of a second that add up to the total's tenths: each part is its floor, and the tenths still missing go to the parts
+ * with the largest remainder (the larger part on a tie), so each part is within 0.1 s of its own time and the line adds up. Parts that come to more than
+ * the total (a clock that moved) lose tenths from the smallest remainder instead. */
+export function tenthsAddingUp(parts: number[], total: number): number[] {
+  const tenths = parts.map((part) => Math.floor(Math.max(0, part) / 100));
+  const rest = (i: number): number => Math.max(0, parts[i]) - tenths[i] * 100;
+  const order = parts.map((_, i) => i).sort((a, b) => rest(b) - rest(a) || parts[b] - parts[a]);
+  let missing = Math.round(total / 100) - tenths.reduce((sum, t) => sum + t, 0);
+  for (const i of order) {
+    if (missing <= 0) break;
+    tenths[i] += 1;
+    missing -= 1;
+  }
+  for (const i of [...order].reverse()) {
+    if (missing >= 0) break;
+    const take = Math.min(tenths[i], -missing);
+    tenths[i] -= take;
+    missing += take;
+  }
+  return tenths;
+}
 
 /** 'Last tutor answer: 8.6 s (phone 1.3 s, network 0.7 s, waiting to see it 1.5 s, factory 5.8 s)': the phone's share is its own work (tap to sent and
- * seen to drawn), the network's is the round trips inside them, waiting is the time before a poll saw the answer, and the factory is the rest. */
+ * seen to drawn), the network's is the round trips inside them, waiting is the time before a poll saw the answer, and the factory is the rest. The parts
+ * add up to the total exactly (tenthsAddingUp). */
 export function lastAnswerLine(last: LastAnswer | undefined = read()): string | undefined {
   if (!last) return undefined;
   const { timing, total } = last;
@@ -134,9 +157,11 @@ export function lastAnswerLine(last: LastAnswer | undefined = read()): string | 
   const phone = timing.tap_to_sent - send + timing.seen_to_shown;
   const waited = (timing.delivered_to_seen ?? 0) - poll;
   const factory = Math.max(0, total - phone - waited - send - poll);
-  const parts = [`phone ${seconds(phone)} s`];
-  if (timing.network !== undefined) parts.push(`network ${seconds(send + poll)} s`);
-  if (timing.delivered_to_seen !== undefined) parts.push(`waiting to see it ${seconds(waited)} s`);
-  parts.push(`factory ${seconds(factory)} s`);
-  return `Last tutor answer: ${seconds(total)} s (${parts.join(', ')})`;
+  const named: [string, number][] = [['phone', phone]];
+  if (timing.network !== undefined) named.push(['network', send + poll]);
+  if (timing.delivered_to_seen !== undefined) named.push(['waiting to see it', waited]);
+  named.push(['factory', factory]);
+  const tenths = tenthsAddingUp(named.map(([, value]) => value), total);
+  const parts = named.map(([name], i) => `${name} ${seconds(tenths[i])} s`);
+  return `Last tutor answer: ${seconds(Math.round(total / 100))} s (${parts.join(', ')})`;
 }
