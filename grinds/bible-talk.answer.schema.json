@@ -838,6 +838,12 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
+            "properties": { "key": { "const": "readingPlan" }, "value": { "type": "string", "enum": ["off", "on"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
             "properties": { "key": { "const": "logosBible" }, "value": { "type": "string", "maxLength": 80 } }
           },
           {

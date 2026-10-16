@@ -26,6 +26,7 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   'resource.accordance': 'screen',
   logosBible: 'screen',
   audioBible: 'screen',
+  readingPlan: 'screen',
   readSpan: 'speech',
   readTutor: 'speech',
   readLessons: 'speech',

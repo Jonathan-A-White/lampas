@@ -67,7 +67,7 @@ describe('the registry lists every Settings row', () => {
   it('gives every entry a distinct key, a label, a hint, and the values it allows', () => {
     expect(new Set(SETTINGS.map((s) => s.key)).size).toBe(SETTINGS.length);
     expect(SETTINGS.map((s) => s.key).sort()).toEqual(
-      ['askBy', 'audioBible', 'englishAccent', 'englishRate', 'englishVoice', 'goal', 'grammarApproach', 'grammarMove', 'greekPronunciation', 'greekRate', 'greekVoice', 'handwritingDrills', 'hebrewDepth', 'immersiveHint', 'immersiveReader', 'layout', 'logosBible', 'newWordsADay', 'pickerGrammar', 'quizGoal', 'readLessons', 'readSpan', 'readTutor', 'resource.accordance', 'resource.logos', 'resource.strongs', 'sectionHeadings', 'textSize', 'theme', 'tips', 'weave', 'weaveGrammar', 'weaveOrder'],
+      ['askBy', 'audioBible', 'englishAccent', 'englishRate', 'englishVoice', 'goal', 'grammarApproach', 'grammarMove', 'greekPronunciation', 'greekRate', 'greekVoice', 'handwritingDrills', 'hebrewDepth', 'immersiveHint', 'immersiveReader', 'layout', 'logosBible', 'newWordsADay', 'pickerGrammar', 'quizGoal', 'readLessons', 'readSpan', 'readTutor', 'readingPlan', 'resource.accordance', 'resource.logos', 'resource.strongs', 'sectionHeadings', 'textSize', 'theme', 'tips', 'weave', 'weaveGrammar', 'weaveOrder'],
     );
     for (const s of SETTINGS) {
       expect(s.label).not.toBe('');
@@ -302,6 +302,7 @@ describe('currentSettings', () => {
       'resource.logos': 'off',
       'resource.accordance': 'off',
       audioBible: 'off',
+      readingPlan: 'off',
     });
     await applyChanges([{ key: 'greekRate', value: 0.8 }, { key: 'theme', value: 'dark' }]);
     await db.settings.put({ key: 'voice.english', value: 'Some voice' });

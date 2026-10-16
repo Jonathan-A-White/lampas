@@ -8,7 +8,7 @@ import { HandwritingControl } from './handwriting';
 import { LinkControl } from './links';
 import { NewWordsControl } from './newWords';
 import { QuizGoalControl } from './quizGoal';
-import { AudioBibleControl, LogosBibleControl, ResourceControl } from './resources';
+import { AudioBibleControl, LogosBibleControl, ReadingPlanControl, ResourceControl } from './resources';
 import { AskByControl, ReadLessonsControl, ReadTutorControl, ScriptDepthControl, TipsControl } from './tutor';
 import type { Control } from './types';
 import { EnglishAccentControl, PronunciationControl, ReadSpanControl, SpeedControl, VoiceControl } from './voice';
@@ -40,6 +40,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   englishAccent: EnglishAccentControl,
   logosBible: LogosBibleControl,
   audioBible: AudioBibleControl,
+  readingPlan: ReadingPlanControl,
   tips: TipsControl,
   readTutor: ReadTutorControl,
   readLessons: ReadLessonsControl,
