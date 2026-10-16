@@ -93,3 +93,23 @@ export function drawRound(state: LetterDrillState, random: Random, scheme: Pronu
     return { target, mode, question: questionFor(target, mode, random, scheme) };
   });
 }
+
+/** Write it questions mixed into a round while Handwriting drills is on (mw-86e9r1.51). PROVISIONAL. */
+export const WRITE_PER_ROUND = 2;
+
+/** What the screen asks next: a question of the round, or Write it on a letter (its ladder id) the round has just asked. */
+export type DrillStep = { kind: 'choice'; item: RoundItem } | { kind: 'write'; letter: string };
+
+/**
+ * The round as it is asked: with `writing`, a Write it after every third question, on the letter that question asked, WRITE_PER_ROUND at most; without
+ * it, the round alone. Write it is a memory aid: it is not one of the round's questions, its score or its targets, and a skip moves on with nothing lost.
+ */
+export function withWriting(round: readonly RoundItem[], writing: boolean): DrillStep[] {
+  let written = 0;
+  return round.flatMap((item, i): DrillStep[] => {
+    const choice: DrillStep = { kind: 'choice', item };
+    if (!writing || written >= WRITE_PER_ROUND || (i + 1) % 3 !== 0) return [choice];
+    written += 1;
+    return [choice, { kind: 'write', letter: item.target.letter }];
+  });
+}
