@@ -1,7 +1,8 @@
 Feature: Old Testament chapters open in Logos
   Lampas has no Old Testament text. The Reader's chapter picker also lists the 39 Old Testament books, in canon order before
-  Matthew, each marked as opening in Logos. Picking one and then a chapter opens that chapter in the Bible he chose in Settings
-  (Bible in Logos, the Legacy Standard Bible to start), by the Logos app's own link, and never changes the chapter Lampas has open.
+  Matthew, each marked as opening in Logos. Picking one and then a chapter shows a choice (features/chapter-picker.feature); Read in Logos opens
+  that chapter in the Bible he chose in Settings (Bible in Logos, the Legacy Standard Bible to start), by the Logos app's own link, and
+  never changes the chapter Lampas has open.
   With Logos off in Settings the books still show; picking one says Logos is off and turns it on in one tap.
 
   Scenario: The picker lists the Old Testament before Matthew, each book marked as opening in Logos

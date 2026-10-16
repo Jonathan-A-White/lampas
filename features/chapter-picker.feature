@@ -57,3 +57,59 @@ Feature: Open any chapter of the New Testament
     When the phone is back online and he taps "Try again"
     Then the reader is headed "Jude 1"
     And verses are listed
+
+  Scenario: An Old Testament chapter offers a choice before it leaves the app
+    Given Lampas is opened with Logos on and the Audio Bible on
+    When he taps the title
+    And he chooses the book "Judges"
+    And he taps chapter 3
+    Then no app was opened
+    And the choice for "Judges 3" offers "Read in Logos" and "Listen in Audible"
+    And the choice says "In Audible: Chapters > Judges 3"
+    And "Read in Logos" is the chapter's Logos link
+    And "Listen in Audible" is Audible's link at the start of Judges 3
+    And the reader is headed "Romans 8"
+
+  Scenario: A second chapter moves the choice
+    Given Lampas is opened with Logos on and the Audio Bible on
+    When he taps the title
+    And he chooses the book "Leviticus"
+    And he taps chapter 10
+    Then the choice for "Leviticus 10" offers "Read in Logos" and "Listen in Audible"
+    When he then taps chapter 11
+    Then the choice has moved to "Leviticus 11" offering "Read in Logos" and "Listen in Audible"
+    And there is one choice on screen
+
+  Scenario: Read in Logos arms the fallback like the chapter link did
+    Given Lampas is opened with Logos on and the Audio Bible on
+    When he taps the title
+    And he chooses the book "Judges"
+    And he taps chapter 3
+    And he taps "Read in Logos"
+    And the page stays in front for the wait
+    Then the address "https://ref.ly/logosres/lgcystndrdbblsb?ref=Bible.Jdg3" was opened
+
+  Scenario: With only Logos on the choice is the one row
+    Given Lampas is opened with Logos on and the Audio Bible off
+    When he taps the title
+    And he chooses the book "Judges"
+    And he taps chapter 3
+    Then the choice for "Judges 3" offers only "Read in Logos"
+
+  Scenario: With only the Audio Bible on the choice is the one row and Logos can be turned on
+    Given Lampas is opened with Logos off and the Audio Bible on
+    When he taps the title
+    And he chooses the book "Judges"
+    And he taps chapter 3
+    Then the choice for "Judges 3" offers only "Listen in Audible"
+    And the picker says "Logos is off"
+    When he taps "Turn on Logos"
+    Then the choice for "Judges 3" offers "Read in Logos" and "Listen in Audible"
+
+  Scenario: With both off the picker says Logos is off and names Audio Bible in Settings
+    Given Lampas is opened with Logos off and the Audio Bible off
+    When he taps the title
+    And he chooses the book "Judges"
+    Then the picker says "Logos is off"
+    And the picker names "Audio Bible"
+    And no chapter is offered

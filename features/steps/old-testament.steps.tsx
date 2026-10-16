@@ -81,6 +81,11 @@ const chooseBook = async (name: string): Promise<void> => {
   await user.click(within(picker()).getByRole('button', { name: new RegExp(`^${name}`) }));
 };
 const chapters = (): number[] => [...picker().querySelectorAll('[data-chapter]')].map((el) => Number(el.getAttribute('data-chapter')));
+/** A chapter tap opens nothing now (mw-5r3p30.496): it shows the choice, whose Read in Logos is the link the tap used to be. */
+const readInLogos = async (n: number): Promise<HTMLElement> => {
+  await user.click(await within(picker()).findByRole('button', { name: `Chapter ${n}` }));
+  return within(picker()).findByRole('link', { name: 'Read in Logos' });
+};
 const group = (): HTMLElement => screen.getByRole('group', { name: 'Bible in Logos' });
 const resourceId = (): HTMLInputElement => within(group()).getByRole('textbox', { name: 'Resource ID' });
 
@@ -120,7 +125,7 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(chapters()).toEqual(Array.from({ length: to - from + 1 }, (_, i) => from + i)));
     });
     When('he picks chapter {int}', async (_, n: number) => {
-      const link = within(picker()).getByRole('link', { name: `Chapter ${n}` });
+      const link = await readInLogos(n);
       asked.push(link.getAttribute('href') ?? '');
       await user.click(link);
     });
@@ -141,7 +146,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the title', openPicker);
     And('he chooses the book {string}', (_, name: string) => chooseBook(name));
     And('he picks chapter {int}', async (_, n: number) => {
-      await user.click(await within(picker()).findByRole('link', { name: `Chapter ${n}` }));
+      await user.click(await readInLogos(n));
     });
     And('the page stays in front for the wait', () => {
       for (const t of [...timers]) t();
@@ -158,7 +163,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the title', openPicker);
     And('he chooses the book {string}', (_, name: string) => chooseBook(name));
     And('he picks chapter {int}', async (_, n: number) => {
-      const link = await within(picker()).findByRole('link', { name: `Chapter ${n}` });
+      const link = await readInLogos(n);
       asked.push(link.getAttribute('href') ?? '');
       await user.click(link);
     });
