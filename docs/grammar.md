@@ -572,6 +572,27 @@ Each answer goes through `noteDrillAnswer` (repositories/inference.ts, `inferFro
 `DRILL_RUN_CAP`, one short of `INFERRED_RIGHTS`**, and writes no review and no level: Solid comes only from the schedule (`SOLID_STEP`) or from a later right answer in Review, never from one drill sitting.
 features/letter-drill.feature, tests/unit/letter-drill.test.ts.
 
+### Write it
+
+`src/handwriting/` (mw-86e9r1.51, PROVISIONAL, the Mayor's design from the Governor's words of 2026-10-14, the Governor to confirm): writing a letter by hand **as a memory aid,
+never a goal**: "writing things out can help with memory ... not as if they will ever actually hand write something". A web page sees a pen only once it touches, so
+`penWatch.ts` keeps 'pen seen' on the phone at the first pointer event whose `pointerType` is 'pen', and **Settings > Handwriting > Handwriting drills** is
+**Automatic** (the default: on once a pen is seen), **On** (a finger too) or **Off** (nowhere).
+
+With it on, each letter's sheet has a **Write it** part after How it sounds (`LessonWriteIt.tsx`), which opens Write it over the sheet (`WriteItScreen.tsx`), and the
+letter drill mixes in **two Write it cards a round**, after every third question, on the letter it has just asked (`letterDrill.ts withWriting`); they are not
+questions of the round, its score or its targets. A card (`WriteIt.tsx`) shows the letter's name and sound, the pad (`WritingPad.tsx`: pen or finger; once a pen
+has touched or hovered over the pad a touch never draws, so a resting palm is ignored), and **Clear | Check | Skip**, the same size. The letter's sound plays as
+he starts writing. The first card he ever meets says why: 'Writing a letter by hand helps it stick. You never need to write Greek to read the Bible.'
+
+A letter is learnt in three stages (`progression.ts`), **two rights at each** (a miss never takes one away): **Trace** (the letter faint under the pad, its
+strokes drawn first, and 'Show the strokes' draws them again), **Copy** (the letter beside the pad) and **From memory** (only its name and sound). Check asks the
+checker on the phone (`recognizer.ts`), which judges which letter it is, not neatness, size or slant (no `capHeight` is given, so a small and a capital of the
+same shape both count); **Right**, or **Not quite** with the right strokes drawn and Try again, never a score. Skip keeps nothing and costs nothing: no stage,
+no level, no drill score. The progress is kept per small letter in the settings store ('handwritingProgress'); it never moves a grammar level or the inference.
+The strokes drawn are the checker's own templates (their first variant): the order and direction drawn are those the templates were written in, not a taught
+stroke order. features/handwriting-drills.feature, tests/unit/write-it.test.tsx.
+
 ### Your drill plan
 
 `src/data/grammar/drillPlan.ts` (mw-i7xe0n.4, PROVISIONAL, pure; the Governor's want: 'come back with a plan for drilling tailored to that person so that they can get to yes I really know
