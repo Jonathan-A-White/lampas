@@ -1,6 +1,8 @@
 // src/data/importWords.ts — reads the text he pastes into Import. A line is 'lemma — gloss' (an em or en
 // dash, a spaced hyphen or a tab between them), 'lemma, gloss', or a row of docs/example-words.md's table
-// ('| # | lemma | Lvl | Lsn | gloss | pos | note |'). Each line becomes a word to add or a flagged line.
+// ('| # | lemma | Lvl | Lsn | gloss | pos | note |'). Each line becomes a word to add or a flagged line; its gloss is cleaned of a
+// source form ('dat: in, by, with' is 'in, by, with (dative)', src/data/gloss.ts).
+import { cleanGloss } from './gloss';
 import { normaliseLemma } from './lemma';
 
 export interface ImportWord {
@@ -52,7 +54,7 @@ export function parseImport(text: string): ImportLine[] {
       out.push({ ok: false, line, reason: 'Not a Greek word' });
       continue;
     }
-    out.push({ ok: true, line, headword, lemmas, gloss: gloss.replace(/\s+/g, ' ').trim(), lesson });
+    out.push({ ok: true, line, headword, lemmas, gloss: cleanGloss(gloss.replace(/\s+/g, ' ').trim()), lesson });
   }
   return out;
 }
