@@ -42,6 +42,8 @@ export interface DrillContext {
 export interface RawStep {
   title: string;
   questions: GrammarQuestion[];
+  /** a step of words to read: a first miss there asks the same target with another word at the same step (mw-i7xe0n.12) */
+  words?: true;
 }
 
 /** Questions made for one facet in one step, with different wrong choices. */
@@ -310,7 +312,7 @@ function letterSteps(ctx: DrillContext, letters: readonly GrammarIdea[], pairs: 
     { title: 'Hear a letter and pick it, or see it and pick its sound', questions: each((s, v, random) => hearLetter(ctx, s, v, random)) },
   ];
   const read = filled(ctx, distinct(ctx, words), steps.flatMap((s) => s.questions), (i, random) => hearLetter(ctx, subjects[i % subjects.length], i % VARIANTS, random));
-  return [...steps, { title: 'Read a word and pick how it is said', questions: read }];
+  return [...steps, { title: 'Read a word and pick how it is said', questions: read, words: true }];
 }
 
 /** One word of the New Testament that holds each pair, to read. */
@@ -348,7 +350,7 @@ function pairSteps(ctx: DrillContext, items: readonly GrammarIdea[]): RawStep[] 
     const item = items[i % items.length];
     return { ...quickQuestion({ id: item.id, mode: i % 2 === 0 ? 'see' : 'hear' }, random, ctx.scheme), facet: itemFacet(item) };
   });
-  return [...steps, { title: 'Read a word that has it', questions: read }];
+  return [...steps, { title: 'Read a word that has it', questions: read, words: true }];
 }
 
 /** Words whose breathing is not on the first letter of a plain vowel: on the second of a pair, on a ρ, or on a capital. */
@@ -365,7 +367,7 @@ function breathingSteps(ctx: DrillContext, items: readonly GrammarIdea[]): RawSt
   });
   return [
     { title: 'Find the breathing on a plain word', questions: distinct(ctx, easy) },
-    { title: 'Find the breathing in a harder word', questions: distinct(ctx, hard) },
+    { title: 'Find the breathing in a harder word', questions: distinct(ctx, hard), words: true },
   ];
 }
 

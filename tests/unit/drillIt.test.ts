@@ -503,3 +503,78 @@ describe('a letter the passage lacks is not drilled on one word twice', () => {
     }
   });
 });
+
+// His Psi drill on 1 John 1 (mw-i7xe0n.12): a miss on 'How is this word said?' (ψηλαφάω) went back one step, to a letter question, and one right answer there
+// ended the drill at the edge, so Psi was never asked with another word. A first miss on a word question asks the same target again at the same step with another word.
+describe('a miss on a word question asks the same target with another word', () => {
+  const modern = pronunciationOf('modern');
+  const JOHN = [1, 2, 3, 4, 5].map((n) => JSON.parse(readFileSync(`public/data/1jn/${n}.json`, 'utf8')) as Chapter);
+  const JOHN1 = [JOHN[0]];
+  const isWord = (q: DrillQuestion): boolean => q.prompt === 'How is this word said?';
+  const lemmasOf = (chapters: readonly Chapter[]): string[] => [...new Set(chapters.flatMap((c) => c.verses.flatMap((v) => v.g.map((w) => w.l))))];
+  const fitting = (ideaId: string, chapters: readonly Chapter[]): string[] => {
+    const idea = ideaOf(ideaId);
+    const text = baseLetters(idea.glyphs?.[0] ?? idea.pair ?? '');
+    return lemmasOf(chapters).filter((w) => baseLetters(w).includes(text) && !w.normalize('NFD').includes('̈'));
+  };
+  /** The walk taken right all the way up to its first word question. */
+  function atWord(ideaId: string, seed: number, passage: readonly Chapter[]): DrillWalk {
+    let state = start(ideaId, ALL_SOLID, { passage, seed, scheme: modern }) as DrillWalk;
+    for (let guard = 0; guard < 20 && !isWord(currentQuestion(state)!); guard += 1) state = answer(state, true, false);
+    expect(isWord(currentQuestion(state)!), `${ideaId} seed ${seed} reaches a word`).toBe(true);
+    return state;
+  }
+
+  it('Psi on 1 John 1: the next question is another word of Psi at the same step, and the walk does not end at the step below', () => {
+    expect(fitting('letter-psi', JOHN1).length).toBeGreaterThanOrEqual(2);
+    for (const seed of [1, 2, 3, 4, 5]) {
+      const missed = atWord('letter-psi', seed, JOHN1);
+      const q = currentQuestion(missed)!;
+      const after = answer(missed, false, false);
+      const next = currentQuestion(after)!;
+      expect(after.result, `seed ${seed}`).toBeNull();
+      expect(next.step, `seed ${seed}`).toBe(q.step);
+      expect(isWord(next), `seed ${seed}`).toBe(true);
+      expect(next.facet.id).toBe('letter-psi');
+      expect(next.form).not.toBe(q.form);
+      // a right answer on the other word does not find an edge: the walk goes on at the top
+      const right = answer(after, true, false);
+      expect(right.result?.ended, `seed ${seed}`).not.toBe('edge');
+    }
+  });
+
+  it('a second miss in a row at that step goes back a step, as before', () => {
+    const after = answer(answer(atWord('letter-psi', 1, JOHN1), false, false), false, false);
+    expect(currentQuestion(after)!.step).toBeLessThan(5);
+  });
+
+  // the drills checked: the alphabet, each of its 24 letters and each pair of the diphthongs and consonant pairs, whose goal chapter holds two or more fitting words
+  const DRILLS = LADDER.filter((i) => i.id === 'alphabet' || i.glyphs || i.parent === 'diphthongs' || i.parent === 'consonant-pairs' || i.id === 'diphthongs' || i.id === 'consonant-pairs');
+  const TWO_OR_MORE = DRILLS.filter((i) => i.id === 'alphabet' || i.id === 'diphthongs' || i.id === 'consonant-pairs' || fitting(i.id, JOHN).length >= 2);
+
+  it('sweep: lists the drills checked and the ones whose chapters hold fewer than two fitting words', () => {
+    const few = DRILLS.filter((i) => !TWO_OR_MORE.includes(i)).map((i) => i.id);
+    expect(few).toEqual(['diphthong-ui', 'diphthong-eeu', 'pair-mp', 'pair-gk', 'pair-gch', 'pair-gks']);
+  });
+
+  it.each(TWO_OR_MORE.map((i) => [i.id] as const))('%s: after a miss on its word question, the same target is asked with another word, at the same step', (ideaId) => {
+    for (const seed of [1, 2, 3]) {
+      const missed = atWord(ideaId, seed, JOHN);
+      const q = currentQuestion(missed)!;
+      const after = answer(missed, false, false);
+      const next = currentQuestion(after)!;
+      expect(next.step, `${ideaId} seed ${seed}`).toBe(q.step);
+      expect(isWord(next), `${ideaId} seed ${seed}`).toBe(true);
+      expect(next.form, `${ideaId} seed ${seed}`).not.toBe(q.form);
+    }
+  });
+
+  it.each([['breathing-rough'], ['breathing-smooth']])('%s: a miss on its harder word asks another word at the same step', (ideaId) => {
+    let state = start(ideaId, ALL_SOLID, { passage: JOHN1, seed: 1, scheme: modern }) as DrillWalk;
+    while (!state.steps[currentQuestion(state)!.step - 1].words) state = answer(state, true, false);
+    const q = currentQuestion(state)!;
+    const next = currentQuestion(answer(state, false, false))!;
+    expect(next.step).toBe(q.step);
+    expect(next.form).not.toBe(q.form);
+  });
+});

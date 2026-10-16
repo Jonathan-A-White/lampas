@@ -56,6 +56,8 @@ export interface DrillStep {
   /** what is asked in this step, in plain words */
   title: string;
   questions: DrillQuestion[];
+  /** the step reads words: a first miss in it asks the same target with another word at the same step */
+  words?: boolean;
 }
 
 // ---- The steps ----
@@ -104,6 +106,7 @@ export function drillSteps(ideaId: string, options: DrillOptions = {}): DrillSte
   return steps.map((r, i) => ({
     step: i + 1,
     title: r.title,
+    ...(r.words ? { words: true } : {}),
     questions: shuffle(r.questions, mulberry32((ctx.seed + i * 31) >>> 0)).map((q): DrillQuestion => ({ ...q, facet: q.facet ?? (q.kind === 'concept' ? MEANING : own), step: i + 1, key: questionKey(q) })),
   }));
 }
@@ -264,8 +267,11 @@ export function answer(walk: DrillWalk, right: boolean, hinted: boolean): DrillW
     const base = highestHeld(stood, q.step);
     if (base === 0 && q.step === 1 && asked.filter((a) => a.step === 1 && !a.right).length >= 2) return finish(walk, asked, 'edge', streak);
     step = Math.max(1, Math.floor((base + q.step) / 2));
+    // a first miss on a word asks the same target with another word, at the same step (mw-i7xe0n.12); a second one goes back as any miss does
+    const second = walk.asked.some((a) => a.step === q.step && a.facet.id === q.facet.id && !a.right);
+    if (walk.steps[q.step - 1]?.words && !second) step = q.step;
     // an easier step asks the facet just missed again; step 1 asks another
-    retry = step < q.step ? q.facet.id : null;
+    retry = step < q.step || walk.steps[q.step - 1]?.words ? q.facet.id : null;
   }
   // at the top, a side of the sound rule not yet answered right is asked first
   if (retry === null && step === top) retry = missing[0] ?? null;
