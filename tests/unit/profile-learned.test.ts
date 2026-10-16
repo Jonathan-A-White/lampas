@@ -136,4 +136,32 @@ describe('the bible-talk instructions', () => {
     const section = text.slice(text.indexOf('## Learning about him'));
     for (const phrase of ['profile_update', 'profile_question', 'do_not_ask', '`guessed` true', '`declined`', 'ONE question', 'observed_pace', 'observed_ways', 'Settings > About you']) expect(section, phrase).toContain(phrase);
   });
+
+  it('say a decline ends the profile question for good, in his question or the history, with no profile_question beside it (mw-5r3p30.416)', () => {
+    const section = text.slice(text.indexOf('## Learning about him'));
+    for (const phrase of [
+      'A decline ends it for good',
+      'in his question or anywhere in `history`',
+      'never put a `profile_question` in an answer that records a decline',
+      'not telling',
+      'skip that',
+    ]) expect(section, phrase).toContain(phrase);
+    const schema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as { properties: { profile_question: { description: string } } };
+    expect(schema.properties.profile_question.description).toContain('Never in an answer that records a decline');
+  });
+});
+
+describe('the decline scenarios (mw-5r3p30.416): every wording of no leaves the answer with a decline and no profile_question', () => {
+  const NAMES = ['learn-declined', 'learn-declined-not-telling', 'learn-declined-skip-that'];
+  it.each(NAMES)('%s expects the decline recorded and no profile_question', (name) => {
+    const ex = JSON.parse(readFileSync(`grinds/examples/bible-talk/${name}.json`, 'utf8')) as { request: { question: string; history: { q: string; a: string }[] }; expect: Record<string, unknown> };
+    expect(ex.expect['profile_update.0.declined']).toEqual({ equals: true });
+    expect(ex.expect['profile_question']).toEqual({ present: false });
+    expect(ex.request.history.length).toBeGreaterThan(0);
+  });
+  it('words the no another way than I would rather not say', () => {
+    const q = (n: string): string => (JSON.parse(readFileSync(`grinds/examples/bible-talk/${n}.json`, 'utf8')) as { request: { question: string } }).request.question.toLowerCase();
+    expect(q('learn-declined-not-telling')).toContain('not telling');
+    expect(q('learn-declined-skip-that')).toContain('skip that');
+  });
 });
