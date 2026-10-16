@@ -3,7 +3,7 @@
 // built on them, now comes from the scheme (src/speech/schemes/modernLessons.ts); an idea a scheme has no lesson for says a neutral text.
 import { describe, expect, it } from 'vitest';
 import { LADDER, itemsOf, ideaOf } from '../../src/data/grammar/ladder';
-import { ideaSound, ideaText } from '../../src/data/grammar/lessons';
+import { ideaSound, ideaText, soundLesson } from '../../src/data/grammar/lessons';
 import { buildIdeaQuestion, buildLetter } from '../../src/data/grammar/questions';
 import { quickQuestion } from '../../src/data/grammar/quickRound';
 import { mulberry32 } from '../../src/data/quiz';
@@ -29,7 +29,7 @@ const SOUNDS: [string, string, string, string[]?][] = [
 describe('the sound lessons of the Modern Greek scheme', () => {
   it('gives a lesson to every letter, vowel pair, consonant pair and breathing of the sounds, letters and marks tiers', () => {
     const bearing = LADDER.filter((i) => i.glyphs || i.parent).map((i) => i.id);
-    expect(Object.keys(lessonsOf(modern)).sort()).toEqual([...bearing, 'breathings', 'consonant-pairs', 'diphthongs', 'words-sound-alike'].sort());
+    expect(Object.keys(lessonsOf(modern)).sort()).toEqual([...bearing, 'accents', 'breathings', 'consonant-pairs', 'diphthongs', 'marks-change-word', 'words-sound-alike'].sort());
   });
 
   it('says for each letter and pair a sound that agrees with respellModern for the idea\'s own example word', () => {
@@ -96,7 +96,7 @@ describe('a scheme with its own lessons, and one with none', () => {
 
   it('falls back to a scheme-neutral text, never an Erasmian one, for an idea the scheme has no lesson for', () => {
     const bare: Pronunciation = { ...MODERN, id: 'bare', label: 'Bare', lessons: undefined };
-    for (const idea of LADDER.filter((i) => i.glyphs || i.parent || ['breathings', 'diphthongs', 'consonant-pairs'].includes(i.id))) {
+    for (const idea of LADDER.filter((i) => i.glyphs || i.parent || ['breathings', 'diphthongs', 'consonant-pairs', 'accents', 'marks-change-word'].includes(i.id))) {
       const text = ideaText(idea, bare);
       expect(text.trim(), idea.id).not.toBe('');
       expect(text, idea.id).not.toMatch(/Modern Greek|“ho”|older Greek|Erasmian|silent/i);
@@ -106,7 +106,42 @@ describe('a scheme with its own lessons, and one with none', () => {
 
   it('leaves an idea that has nothing to do with sound as it was, whatever the scheme', () => {
     expect(ideaText(ideaOf('case-genitive'), modern)).toBe(ideaOf('case-genitive').text);
-    expect(ideaText(ideaOf('accents'), modern)).toBe(ideaOf('accents').text);
+    expect(ideaText(ideaOf('punctuation'), modern)).toBe(ideaOf('punctuation').text);
+  });
+});
+
+// The last two Modern-only phrases of ideas that are not a letter or a pair (mw-5r3p30.312): how an accent is said, and that the marks which change a
+// word are not heard, are Modern Greek's lessons, so an Erasmian scheme says its own.
+describe('the accents and the marks that change a word are taught by the scheme', () => {
+  it('keeps no pronunciation in the ladder\'s own text of either', () => {
+    for (const id of ['accents', 'marks-change-word']) expect(ideaOf(id).text, id).not.toMatch(/Modern Greek|louder|says each pair/);
+  });
+
+  it('gives Modern Greek\'s sound of them from its lessons', () => {
+    expect(lessonsOf(modern).accents.also).toContain('said louder in Modern Greek');
+    expect(lessonsOf(modern)['marks-change-word'].also).toContain('Modern Greek says each pair the same');
+    expect(ideaText(ideaOf('accents'), modern).startsWith(ideaOf('accents').text)).toBe(true);
+    expect(ideaText(ideaOf('marks-change-word'), modern).startsWith(ideaOf('marks-change-word').text)).toBe(true);
+    expect(soundLesson(ideaOf('accents'), modern)).toBe(lessonsOf(modern).accents.also);
+    expect(ideaText(ideaOf('accents'), modern)).toContain('said louder in Modern Greek');
+    expect(ideaText(ideaOf('marks-change-word'), modern)).toContain('Modern Greek says each pair the same');
+  });
+
+  it('gives another scheme\'s lesson of them, and Modern Greek\'s never', () => {
+    const testish: Pronunciation = {
+      ...MODERN,
+      id: 'testish',
+      label: 'Testish',
+      lessons: () => ({ accents: { also: 'Testish sings the accented syllable high.' }, 'marks-change-word': { also: 'Testish says ἡ and ἤ apart by their pitch.' } }),
+    };
+    const unregister = registerPronunciation(testish);
+    try {
+      expect(ideaText(ideaOf('accents'), pronunciationOf('testish'))).toBe(`${ideaOf('accents').text} Testish sings the accented syllable high.`);
+      expect(ideaText(ideaOf('marks-change-word'), pronunciationOf('testish'))).toBe(`${ideaOf('marks-change-word').text} Testish says ἡ and ἤ apart by their pitch.`);
+      for (const id of ['accents', 'marks-change-word']) expect(ideaText(ideaOf(id), pronunciationOf('testish')), id).not.toContain('Modern Greek');
+    } finally {
+      unregister();
+    }
   });
 });
 
