@@ -37,8 +37,8 @@
       "suggested_move": "none",
       "picker_level": "frontier",
       "approach": {
-        "name": "BMA Tutor",
-        "credit": "Biblical Mastery Academy",
+        "name": "Lampas ladder",
+        "credit": null,
         "next_lesson": "The nominative case"
       }
     },

@@ -20,7 +20,7 @@
       "placed": true,
       "suggested_move": "none",
       "picker_level": "frontier",
-      "approach": { "name": "BMA Tutor", "credit": "Biblical Mastery Academy", "next_lesson": "The accusative case" },
+      "approach": { "name": "Lampas ladder", "credit": null, "next_lesson": "The accusative case" },
       "weak": { "The accusative case": ["its ending", "spotting it in a verse"] }
     },
     "settings": {}

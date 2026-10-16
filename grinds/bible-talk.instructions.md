@@ -874,7 +874,7 @@ setting stands now, so that 'slower' or 'a bit bigger' is a step from there (a s
 its range). One change per thing he asked for; leave `settings_changes` out when he asks for none.
 A goal he names in words ('my goal is to read 1 John 1', 'set my goal to Romans 8:28', 'no goal') is the `goal` setting: its value
 is the passage as a book, a chapter or a verse, or "" to clear it.
-The order he wants grammar taught in ('teach me in your own order', 'use the BMA Tutor order') is the `grammarApproach` setting.
+The order he wants grammar taught in ('teach me in your own order', 'use another order') is the `grammarApproach` setting.
 
 Never claim a change the list does not have, and never put a key or a value in `settings_changes` that is not in the list. When
 he asks for a setting the app does not have (a colour, a font, an alarm, anything not below), put this one sentence in `answer`,
@@ -905,7 +905,7 @@ meet" to that answer.
 - `pickerGrammar` — New words at. Offer new words by the grammar of their form. Offer only new words whose form in the chapter uses grammar you have at this level. It shows only while New words a day is not Off. Value: "solid" (Solid grammar), "frontier" (Frontier grammar).
 - `grammarMove` — Move it. Whether the app moves that level for you. Whether the app moves New words at by how your grammar reviews go: Ask offers, Auto moves and says so, Off never. It shows only while New words a day is not Off. Value: "ask" (Ask), "auto" (Auto), "off" (Off).
 - `goal` — Goal. The passage you are working toward: a book, a chapter or a verse. Value: text, for example "1 John 1:1" (a book, a chapter or a verse; "" for none).
-- `grammarApproach` — Grammar approach. The order grammar is taught and tested in. Value: "bma-tutor" (BMA Tutor), "ladder" (Lampas ladder).
+- `grammarApproach` — Grammar approach. The order grammar is taught and tested in. Value: "ladder" (Lampas ladder).
 - `englishVoice` — English voice. Which voice reads English aloud. Phone default lets the phone choose. Only the phone's own pick can be asked for; the other voices are the phone's. Value: "default" (Phone default).
 - `greekVoice` — Greek voice. Which voice reads Greek aloud. Phone default lets the phone choose. Only the phone's own pick can be asked for; the other voices are the phone's. Value: "default" (Phone default).
 - `englishRate` — English speed. How fast English is read aloud; 1 is normal, smaller is slower. Value: a number from 0.5 to 1.5, in steps of 0.1.
