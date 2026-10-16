@@ -48,6 +48,7 @@ import { ChapterFailed } from './reader/ChapterFailed';
 import { useChapter } from './reader/useChapter';
 import { useReadFrom } from './reader/useReadFrom';
 import { useWoven } from './reader/useWoven';
+import { wovenPlaces } from './services/reading';
 import { ReaderHeader } from './reader/ReaderHeader';
 import { useReaderSettings, type ReaderSettings } from './reader/useReaderSettings';
 import { useReaderTutor } from './reader/useReaderTutor';
@@ -238,12 +239,19 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   }, []);
   const closeTeach = useCallback(() => setTeaching(false), []);
   const verseTalk: VerseTalk = { onHold: holdTalk, onRelease: () => void voice.release(), onDrop: voice.abort };
+  const woven = useWoven(chapter, settings);
+  // The words of the Verse view's verse or passage the weave shows in Greek, as places in its English (a passage's verses one after another): the mill
+  // scores a reading in one language, so the reading check leaves them out of its answer and says it can check English only (mw-5r3p30.410).
+  const viewWoven = useMemo(() => {
+    if (!viewUnit || !chapter || !woven) return new Set<number>();
+    const verses = viewPassage ? viewPassage.verses : [viewUnit];
+    return wovenPlaces(viewUnit, verses.flatMap((v) => woven[chapter.verses.indexOf(v)] ?? v.e.map(() => null)));
+  }, [viewUnit, viewPassage, chapter, woven]);
   // The Verse view's Read bar: the hold of the reading check for the verse the view shows.
   const readOf = (verse: Verse): ReadHold => {
     const phase = checks.states[unitId(verse)]?.phase;
-    return { onPress: () => checks.press(verse), onRelease: checks.release, onDrop: checks.drop, disabled: phase === 'sending' || phase === 'waiting' };
+    return { onPress: () => checks.press(verse, viewWoven), onRelease: checks.release, onDrop: checks.drop, disabled: phase === 'sending' || phase === 'waiting' };
   };
-  const woven = useWoven(chapter, settings);
   const { plan, readFrom, listenTo, listenVerse, listenedView } = useReadFrom(BOOK, CHAPTER, chapter, view, woven, readSpan, viewUnit);
   const chapterReading = reading.status !== 'idle' && reading.answer === null;
   const readingVerse = chapterReading ? reading.verse : null;
@@ -478,6 +486,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           }}
           checks={checks}
           read={readOf(viewUnit)}
+          weaveShown={viewWoven.size > 0}
           onRetryRead={() => checks.retry(viewUnit)}
           ask={asks[unitId(viewUnit)]}
           onAsk={(verse, question) => {
