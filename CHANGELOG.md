@@ -1,5 +1,21 @@
 # What's new
 
+## 0.1.274
+_2026-10-16_
+- New: once a pen has touched the screen, each letter's lesson and the letter drill let you write the letter by hand (trace, then copy, then from memory), checked on the phone, with a Handwriting drills switch in Settings.
+
+## 0.1.274
+_2026-10-16_
+- Fixed: When you paste a long question or prayer to the tutor, it now keeps all of it and does not cut it after the first line.
+
+## 0.1.274
+_2026-10-16_
+- Fixed: reading a verse aloud with Greek words woven in no longer marks the Greek words you read in Greek as missed, and the panel says it can check English only.
+
+## 0.1.274
+_2026-10-16_
+- Fixed: a Greek word you tap to hear is now said with its stress where the respelling shows it, and Settings names your Greek voice and lets you test it.
+
 ## 0.1.273
 _2026-10-16_
 - New: One path: Lampas now teaches by its own ladder for everyone. Thank you, Biblical Mastery Academy, for the inspiration (see About).
