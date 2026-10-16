@@ -144,3 +144,28 @@ test('the word speaks by itself once, a wrong answer waits for Next, and Ask the
   await expect(talk).toBeVisible();
   await expect(talk).toContainText(word ?? '');
 });
+
+// mw-5r3p30.324: the word an answer says by itself is the bar's word too: the bar shows the stop square while it speaks, and one tap stops it (never says
+// it again from the start).
+test('while the answered word speaks by itself, Tap to hear shows the stop square and one tap stops it', async ({ page }) => {
+  await openUnlocked(page);
+  await stubSpeech(page);
+  await page.goto('/#/test');
+  const bar = page.getByTestId('tap-to-hear');
+  await expect(bar).toBeVisible();
+  await expect(bar).toHaveAttribute('aria-pressed', 'false');
+  const word = await page.getByTestId('prompt').textContent();
+  const calls = async () => (await spoken(page)).map((e) => ({ text: e.text, lang: e.lang, outcome: e.outcome }));
+
+  await page.locator('[data-option]').first().click();
+  await expect.poll(calls).toEqual([{ text: asSpoken(word ?? ''), lang: 'el-GR', outcome: 'speaking' }]);
+  await expect(bar).toHaveAttribute('aria-pressed', 'true');
+  await expect(bar.locator('svg path')).toHaveAttribute('d', 'M6 6h12v12H6V6Z');
+  await shot(page, 'test-answered-speaking');
+
+  await bar.click();
+  await expect.poll(calls).toEqual([{ text: asSpoken(word ?? ''), lang: 'el-GR', outcome: 'interrupted' }]);
+  await expect(bar).toHaveAttribute('aria-pressed', 'false');
+  await page.waitForTimeout(500);
+  expect(await calls()).toEqual([{ text: asSpoken(word ?? ''), lang: 'el-GR', outcome: 'interrupted' }]);
+});

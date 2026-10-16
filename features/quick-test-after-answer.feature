@@ -46,3 +46,12 @@ Feature: After an answer on the Quick test the word says itself, a wrong answer 
     When he resumes the round
     Then nothing is spoken
     And there is an Ask the tutor button beside Next
+
+  Scenario: While the word says itself, the bar shows the stop square and one tap stops it
+    Given Lampas is opened with a Greek voice and the Quick test is on its first question
+    When he taps a wrong gloss
+    Then the word of the question is spoken once in Greek
+    And the Tap to hear bar shows the stop square
+    When he taps the Tap to hear bar
+    Then the word is stopped and not said again
+    And the Tap to hear bar shows the speaker again
