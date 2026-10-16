@@ -25,4 +25,23 @@ describe('the About screen and ATTRIBUTION.md', () => {
     for (const name of ['React', 'Dexie', 'WhatsOnChain', 'Gentium Plus', 'Beads', 'TBESG']) expect(said).toContain(name);
     expect(suggestionsFor('About')).toContain('What does each of these do for Lampas?');
   });
+
+  it('points the learner to Biblical Mastery Academy near the top, with a link that opens in a new tab', () => {
+    render(<About />);
+    const link = document.querySelector<HTMLAnchorElement>('[data-bma-note] a');
+    expect(link).not.toBeNull();
+    if (!link) return;
+    expect(link).toHaveTextContent('Biblical Mastery Academy');
+    expect(link).toHaveAttribute('href', 'https://biblicalmastery.academy/');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link.getAttribute('rel')).toContain('noreferrer');
+    const note = link.closest('[data-bma-note]');
+    expect(note).not.toBeNull();
+    expect(note?.textContent).toContain('Lampas was inspired by Biblical Mastery Academy.');
+    expect(note?.textContent).toContain('a warm community of people learning Greek together');
+    // above every credit, and not one of the credits' own list items
+    const firstCredit = screen.getAllByRole('listitem')[0];
+    expect(note?.compareDocumentPosition(firstCredit) ?? 0).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(note?.closest('li')).toBeNull();
+  });
 });
