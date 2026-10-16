@@ -18,8 +18,9 @@ const PASSAGES: Record<string, Chapter[]> = {
   'John 1 and Mark 1': [load('jhn/1'), load('mrk/1')],
   none: [],
 };
-// every idea of the ladder over a passage, many seeds: more than the default 20 s on a loaded host
-const SLOW = 120_000;
+// every idea of the ladder over a passage, many seeds: a whole walk takes seconds, so each test holds one SLICE of the ladder (every SLICES-th idea from k)
+const SLICES = 4;
+const sliceOf = (k: number): GrammarIdea[] => LADDER.filter((_, i) => i % SLICES === k);
 const SEEDS = Array.from({ length: 15 }, (_, i) => i + 1);
 
 /** Everything a question shows in English: what is asked and what can be picked (a Greek choice names no term). */
@@ -66,24 +67,30 @@ describe('a question uses only terms taught by its idea and the ideas before it'
     }
   });
 
-  for (const [name, passage] of Object.entries(PASSAGES)) {
-    it(`holds for every idea over ${name}: the review question, the form to tap, the ending and the concept`, () => {
-      const found: string[] = [];
-      for (const idea of LADDER) {
-        for (const seed of SEEDS) {
-          const questions = [buildIdeaQuestion(idea, passage, mulberry32(seed)), buildTapForm(idea, passage, mulberry32(seed)), buildEnding(idea, passage, mulberry32(seed)), buildConcept(idea, mulberry32(seed))];
-          for (const q of questions) if (q) found.push(...early(idea, q));
-        }
-      }
-      expect([...new Set(found)]).toEqual([]);
-    }, SLOW);
+  it('the slices of the ladder together are every idea of it', () => {
+    expect(Array.from({ length: SLICES }, (_, k) => sliceOf(k)).flat().map((i) => i.id).sort()).toEqual(LADDER.map((i) => i.id).sort());
+  });
 
-    it(`holds for every step of Drill it over ${name}`, () => {
-      const found: string[] = [];
-      for (const idea of LADDER) {
-        for (const step of drillSteps(idea.id, { passage, seed: 3 })) for (const q of step.questions) found.push(...early(idea, q));
-      }
-      expect([...new Set(found)]).toEqual([]);
-    }, SLOW);
+  for (const [name, passage] of Object.entries(PASSAGES)) {
+    for (let slice = 0; slice < SLICES; slice++) {
+      it(`holds for the ideas ${slice + 1} of ${SLICES} over ${name}: the review question, the form to tap, the ending and the concept`, () => {
+        const found: string[] = [];
+        for (const idea of sliceOf(slice)) {
+          for (const seed of SEEDS) {
+            const questions = [buildIdeaQuestion(idea, passage, mulberry32(seed)), buildTapForm(idea, passage, mulberry32(seed)), buildEnding(idea, passage, mulberry32(seed)), buildConcept(idea, mulberry32(seed))];
+            for (const q of questions) if (q) found.push(...early(idea, q));
+          }
+        }
+        expect([...new Set(found)]).toEqual([]);
+      });
+
+      it(`holds for every step of Drill it for the ideas ${slice + 1} of ${SLICES} over ${name}`, () => {
+        const found: string[] = [];
+        for (const idea of sliceOf(slice)) {
+          for (const step of drillSteps(idea.id, { passage, seed: 3 })) for (const q of step.questions) found.push(...early(idea, q));
+        }
+        expect([...new Set(found)]).toEqual([]);
+      });
+    }
   }
 });
