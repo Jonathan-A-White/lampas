@@ -11,7 +11,7 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
-import { setReaderView } from '../../src/data/repositories';
+import { getMissTally, setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -73,13 +73,14 @@ let fake: FakePostern;
 let synth: FakeSynth;
 
 interface Options {
-  reply?: 'reading' | 'well-read' | 'incomplete' | 'partial' | 'held' | 'second-who' | 'escaped' | 'tip-respelling' | 'tip-not-first';
+  reply?: 'reading' | 'woven-missed' | 'well-read' | 'incomplete' | 'partial' | 'held' | 'second-who' | 'escaped' | 'tip-respelling' | 'tip-not-first';
   view?: 'english' | 'greek';
   denied?: boolean;
   down?: boolean;
+  weave?: 'off' | 'solid';
 }
 
-async function open({ reply = 'reading', view = 'english', denied = false, down = false }: Options = {}): Promise<void> {
+async function open({ reply = 'reading', view = 'english', denied = false, down = false, weave = 'off' }: Options = {}): Promise<void> {
   cleanup();
   clearBus();
   window.localStorage.clear();
@@ -89,7 +90,7 @@ async function open({ reply = 'reading', view = 'english', denied = false, down 
   FakeRecorder.denied = denied;
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
-  if (reply !== 'held') fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : reply === 'second-who' ? SECOND_WHO_ANSWER : reply === 'escaped' ? ESCAPED_ANSWER : reply === 'tip-respelling' ? LEVITES_ANSWER : reply === 'tip-not-first' ? NOT_FIRST_ANSWER : reply === 'incomplete' ? INCOMPLETE_ANSWER : reply === 'partial' ? PARTIAL_ANSWER : WELL_READ_ANSWER };
+  if (reply !== 'held') fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : reply === 'woven-missed' ? WOVEN_MISSED_ANSWER : reply === 'second-who' ? SECOND_WHO_ANSWER : reply === 'escaped' ? ESCAPED_ANSWER : reply === 'tip-respelling' ? LEVITES_ANSWER : reply === 'tip-not-first' ? NOT_FIRST_ANSWER : reply === 'incomplete' ? INCOMPLETE_ANSWER : reply === 'partial' ? PARTIAL_ANSWER : WELL_READ_ANSWER };
   fake.greekReply = { status: 'answered', answer: GREEK_READING_ANSWER };
   fake.down = down;
   synth = stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
@@ -99,12 +100,14 @@ async function open({ reply = 'reading', view = 'english', denied = false, down 
     String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init),
   );
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.readings.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.readings.clear(), db.readingHistory.clear(), db.missTally.clear()]);
   await setReaderView(view);
+  await setWeave(weave);
   await seedHisWords();
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
+  if (weave !== 'off') await waitFor(() => expect(document.querySelectorAll('[data-reader] [data-woven]').length).toBeGreaterThan(0));
 }
 
 async function selectVerse28(): Promise<void> {
@@ -163,6 +166,25 @@ const saysOnly = (lang: string) => (_: unknown, text: string) => {
   // the verdict read before the tap was cut off by it: what is asked of the engine since its last cancel is the word alone
   expect(synth.since.map((u) => u.text)).toEqual([text]);
   expect(synth.since[0].lang).toBe(lang);
+};
+
+/** An answer to a reading of 8:28 woven with his solid words, read the way he read it: the Greek shown in Greek, so the scorer, hearing for the
+ * English, missed 'And' (word 0) and 'love' (word 14), whose Greek stood in their place; 'purpose' (word 22, English on screen) he really missed. */
+const WOVEN_MISSED_ANSWER = {
+  verdict: 'some-to-fix',
+  focus_words: [
+    { word: 'And', index: 0, chunks: ['and'], tip: 'Say the whole word.' },
+    { word: 'love', index: 14, chunks: ['love'], tip: 'Say the v.' },
+    READING_ANSWER.focus_words[1],
+  ],
+  note: 'Three words to say again.',
+};
+
+/** The Greek words that stand for the English chunk `english` of 8:28. */
+const greekOfChunk = (english: string): string[] => {
+  const chunk = verse28?.e.find((c) => c.t.trim() === english);
+  if (!chunk) throw new Error(`no chunk ${english}`);
+  return chunk.g.map((i) => verse28?.g[i]?.t ?? '');
 };
 
 const feature = await loadFeature('features/reading-check.feature');
@@ -647,5 +669,49 @@ describeFeature(feature, ({ Scenario }) => {
       await selectVerse28();
     });
     Then('the English result is still there with {string} and {string} marked to fix', verseMarkedSteps);
+  });
+  Scenario('With the weave on the reading check says it can check English only and marks no word shown in Greek', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 in English with the weave on Solid words and a reading check whose answer missed the English of the Greek shown', () =>
+      open({ reply: 'woven-missed', weave: 'solid' }),
+    );
+    And('he opens the reading check of verse 28', selectVerse28);
+    And('the verse shows {string} and {string} in Greek', async (_, first: string, second: string) => {
+      const shown = () => Array.from(document.querySelectorAll('[data-sheet-verse] [data-woven]')).map((w) => w.textContent ?? '').join(' ');
+      for (const english of [first, second]) for (const greek of greekOfChunk(english)) await waitFor(() => expect(shown()).toContain(greek));
+    });
+    Then('the reading check says {string} above the hold bar', async (_, line: string) => {
+      const said = await within(panel()).findByText(line);
+      const bar = readButton();
+      expect(said.compareDocumentPosition(bar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+    When(holdRead, async () => holdAndLetGo(readButton(), 2000));
+    Then('the result is headed {string}', async (_, heading: string) => {
+      await waitFor(() => expect(panel().querySelector('[data-reading-result] h3')).toHaveTextContent(heading));
+    });
+    And('the verse in the reading check shows only {string} marked to fix', async (_, word: string) => {
+      await waitFor(() => expect(marked().map((m) => m.textContent)).toEqual([word]));
+      expect(within(panel()).queryByText(/Also to fix/)).toBeNull();
+    });
+    When('he taps {string}', async (_, name: string) => {
+      await user.click(await markedWord(name));
+    });
+    Then('the walk shows the word {string} as word 1 of 1 in chunks {string}', async (_, word: string, chunks: string) => {
+      await waitFor(() => expect(walk()).toHaveTextContent('Word 1 of 1'));
+      expect(walk().querySelector('[data-walk-word]')).toHaveTextContent(word);
+      expect(walk().querySelector('[data-chunks]')).toHaveTextContent(chunks);
+    });
+    And('the misses kept for a drill name only {string}', async (_, word: string) => {
+      const units = (await getMissTally('en')).map((t) => t.unit);
+      expect(units).toEqual([word]);
+    });
+  });
+
+  Scenario('With the weave off the reading check says nothing about the weave', ({ Given, And, Then }) => {
+    Given(given, () => open());
+    And('he opens the reading check of verse 28', selectVerse28);
+    Then('the reading check says nothing about the weave', async () => {
+      await within(panel()).findByText(/Hold the bar below/);
+      expect(panel()).not.toHaveTextContent(/weave/i);
+    });
   });
 });
