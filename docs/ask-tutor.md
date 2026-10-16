@@ -302,6 +302,9 @@ a phone that installed Lampas before this version may need it removed and instal
   does not believe the answer: `checkedReferences` reads each `ref` again with `parseCanonReference` and the book's chapter count and drops a book that is not one of the Bible's 66, a chapter
   past the book's end or a verse 0; a range in `printed` keeps its last verse. A failed grist says **Could not find Bible references in the picture.** with **Try again**. A phone with no
   licence is not offered the grist (`useAiAllowed`; `features/ai-needs-licence.feature`). The smoke scenario is `grinds/examples/find-refs/kindle-gen-1-28.json` (a Kindle page quoting Gen. 1:28).
+- **Nothing moves under his thumb** (mw-s1dc0n.6, `tests/e2e/share-steady.spec.ts`): the sheet is its full height (85dvh) from the start, so what **Bible order** or
+  **Choose a talk** adds goes below the control he tapped instead of lifting the sheet (a double tap on **Bible order** used to land on the **Gen. 1:28** link), and its
+  content never gets shorter while it is up (`src/ui/neverShrink.ts` `useNeverShrink`), so closing a list at the end of a scrolled sheet slides nothing down onto the control.
 - **Cancel**, the phone's Back, Escape and a swipe down drop the share (`dropShares`) and open Home; Done or Back on the talk opens Home.
 - Pictures only JPEG, PNG or WebP join the composer (`image/*` from the share sheet may bring a GIF or HEIC: the composer says "Only JPEG, PNG or WebP pictures can
   be sent." as it does for an attach); at most four.
