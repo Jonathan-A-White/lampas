@@ -54,3 +54,7 @@ Feature: The phone times every tutor answer
     And he asks again
     Then the grist carries a delivered to seen of at most 8500
     And About's line has parts that add up to its total of 8.6 s within 0.1
+
+  Scenario: About's line adds up to its total exactly
+    Given a phone whose last answer kept tap to sent 260, delivered to seen 1120, seen to shown 0, network 160, poll network 60 and total 6340
+    Then About's line has parts that add up to its total of 6.3 s exactly

@@ -7,7 +7,7 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { About } from '../../src/About';
 import { db } from '../../src/data/db';
-import { answerDrawn } from '../../src/services/clientTiming';
+import { answerDrawn, LAST_ANSWER_KEY } from '../../src/services/clientTiming';
 import { askGrind, tutorTimings, TutorError } from '../../src/services/tutor';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 
@@ -77,6 +77,15 @@ async function timedAnswer(): Promise<void> {
 }
 
 const lastReceived = () => fake.received[fake.received.length - 1];
+
+/** The numbers of About's 'Last tutor answer' line: its total and each part, in seconds. */
+function aboutLine(): { line: string; total: number; parts: number[] } {
+  render(<About />);
+  const line = screen.getByText(/^Last tutor answer:/).textContent ?? '';
+  const match = /^Last tutor answer: ([\d.]+) s \((.*)\)$/.exec(line);
+  if (!match) throw new Error(`not an answer line: ${line}`);
+  return { line, total: Number(match[1]), parts: [...match[2].matchAll(/([\d.]+) s/g)].map((m) => Number(m[1])) };
+}
 
 describeFeature(feature, ({ Scenario }) => {
   Scenario('The next grist carries the phone\'s part of the last answer', ({ Given, When, And, Then }) => {
@@ -208,12 +217,8 @@ describeFeature(feature, ({ Scenario }) => {
       expect(timing.delivered_to_seen).toBeLessThanOrEqual(most);
     });
     And("About's line has parts that add up to its total of {number} s within {number}", (_, total: number, within: number) => {
-      render(<About />);
-      const line = screen.getByText(/^Last tutor answer:/).textContent ?? '';
-      const match = /^Last tutor answer: ([\d.]+) s \((.*)\)$/.exec(line);
-      if (!match) throw new Error(`not an answer line: ${line}`);
-      expect(Number(match[1])).toBe(total);
-      const parts = [...match[2].matchAll(/([\d.]+) s/g)].map((m) => Number(m[1]));
+      const { line, total: shown, parts } = aboutLine();
+      expect(shown).toBe(total);
       expect(Math.abs(parts.reduce((sum, part) => sum + part, 0) - total), line).toBeLessThanOrEqual(within + 1e-9);
     });
   });
@@ -248,6 +253,23 @@ describeFeature(feature, ({ Scenario }) => {
     And('About says {string}', (_, line: string) => {
       render(<About />);
       expect(screen.getByText(line)).toBeInTheDocument();
+    });
+  });
+
+  Scenario("About's line adds up to its total exactly", ({ Given, Then }) => {
+    Given(
+      'a phone whose last answer kept tap to sent {number}, delivered to seen {number}, seen to shown {number}, network {number}, poll network {number} and total {number}',
+      (_, tapToSent: number, deliveredToSeen: number, seenToShown: number, network: number, pollNetwork: number, total: number) => {
+        begin();
+        const timing = { txid: 'ab'.repeat(32), tap_to_sent: tapToSent, delivered_to_seen: deliveredToSeen, seen_to_shown: seenToShown, network, poll_network: pollNetwork };
+        window.localStorage.setItem(LAST_ANSWER_KEY, JSON.stringify({ timing, total, reported: true }));
+      },
+    );
+    Then("About's line has parts that add up to its total of {number} s exactly", (_, total: number) => {
+      const { line, total: shown, parts } = aboutLine();
+      expect(shown).toBe(total);
+      // in tenths, so 0.1 + 0.2 is 3 and not 0.30000000000000004
+      expect(parts.reduce((sum, part) => sum + Math.round(part * 10), 0), line).toBe(Math.round(total * 10));
     });
   });
 });
