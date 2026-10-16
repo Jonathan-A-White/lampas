@@ -1,5 +1,47 @@
 [
   {
+    "version": "0.1.266",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.353",
+    "kind": "new",
+    "text": "Settings has an English accent choice (American, British or IPA) that changes every sound hint at once, and the tutor knows which you chose."
+  },
+  {
+    "version": "0.1.266",
+    "date": "2026-10-16",
+    "story": "mw-86e9r1.11",
+    "kind": "new",
+    "text": "Moving The Greek alphabet to Learning now starts a letter drill: all 24 letters, small and capital, heard or named, in rounds until each is right."
+  },
+  {
+    "version": "0.1.266",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.318",
+    "kind": "fixed",
+    "text": "With the Immersive reader on, turning to the next or previous chapter now keeps the bars hidden instead of bringing them back."
+  },
+  {
+    "version": "0.1.266",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.396",
+    "kind": "fixed",
+    "text": "Play my reading now starts right where your voice starts, skipping the silence before your first word."
+  },
+  {
+    "version": "0.1.266",
+    "date": "2026-10-16",
+    "story": "mw-s1dc0n.6",
+    "kind": "fixed",
+    "text": "on Share to Lampas, a double tap on Page order, Bible order or Choose a talk no longer opens a reference or picks a talk by mistake."
+  },
+  {
+    "version": "0.1.266",
+    "date": "2026-10-16",
+    "story": "mw-yrmkdf.9",
+    "kind": "fixed",
+    "text": "In the evening, the Memory page wrote tomorrow's date beside your 'no' to learning Greek; it now writes today's."
+  },
+  {
     "version": "0.1.264",
     "date": "2026-10-15",
     "story": "mw-5r3p30.319",

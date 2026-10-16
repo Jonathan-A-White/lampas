@@ -1,5 +1,29 @@
 # What's new
 
+## 0.1.266
+_2026-10-16_
+- New: Settings has an English accent choice (American, British or IPA) that changes every sound hint at once, and the tutor knows which you chose.
+
+## 0.1.266
+_2026-10-16_
+- New: Moving The Greek alphabet to Learning now starts a letter drill: all 24 letters, small and capital, heard or named, in rounds until each is right.
+
+## 0.1.266
+_2026-10-16_
+- Fixed: With the Immersive reader on, turning to the next or previous chapter now keeps the bars hidden instead of bringing them back.
+
+## 0.1.266
+_2026-10-16_
+- Fixed: Play my reading now starts right where your voice starts, skipping the silence before your first word.
+
+## 0.1.266
+_2026-10-16_
+- Fixed: on Share to Lampas, a double tap on Page order, Bible order or Choose a talk no longer opens a reference or picks a talk by mistake.
+
+## 0.1.266
+_2026-10-16_
+- Fixed: In the evening, the Memory page wrote tomorrow's date beside your 'no' to learning Greek; it now writes today's.
+
 ## 0.1.264
 _2026-10-15_
 - Fixed: The passage view of a heading now shows its verses in the same type and spacing as the Reader.
