@@ -12,6 +12,7 @@ import { db } from '../../src/data/db';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
+import { asSpoken } from '../../tests/support/lone-word';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verseGreek = (n: number): string => {
@@ -91,7 +92,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH_VOICE, GREEK_VOICE]));
     When('he opens Words', openWords);
     And('he taps the speaker of the word {string}', (_, lemma: string) => tapWordSpeaker(lemma));
-    Then('the phone is told to speak {string} in {string}', (_, text: string, lang: string) => expectSpoken(text, lang));
+    Then('the phone is told to speak {string} in {string}', (_, text: string, lang: string) => expectSpoken(asSpoken(text), lang));
     And('the phone speaks it with its Greek voice', () => {
       expect(synth.spoken[synth.spoken.length - 1].voice).toBe(GREEK_VOICE);
     });
@@ -106,7 +107,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he taps the speaker on the word sheet', async () => {
       await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Hear it' }));
     });
-    Then('the phone is told to speak {string} in {string}', (_, text: string, lang: string) => expectSpoken(text, lang));
+    Then('the phone is told to speak {string} in {string}', (_, text: string, lang: string) => expectSpoken(asSpoken(text), lang));
   });
 
   Scenario("A verse's play button speaks the verse's Greek when the reader shows Greek", ({ Given, When, Then, And }) => {

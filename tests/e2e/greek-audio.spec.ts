@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { honestSpeech, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { asSpoken } from '../support/lone-word';
 
 // The engine is a stand-in that records what the page asks of it (a headless Chromium has no Greek voice);
 // whether a real phone's Greek voice sounds right is only a phone check (docs/pwa-best-practices.md section 12).
@@ -36,7 +37,7 @@ test('the Words screen has a speaker beside each lemma that speaks it in Greek',
 
   const lemma = await page.locator('[data-lemma]').first().getAttribute('data-lemma');
   await speakers.first().click();
-  expect(await spoken(page)).toMatchObject([{ text: lemma, lang: 'el-GR' }]);
+  expect(await spoken(page)).toMatchObject([{ text: asSpoken(lemma ?? ''), lang: 'el-GR' }]);
   await shot(page, 'words-audio');
 });
 
@@ -75,7 +76,7 @@ test('each verse has a play button that speaks its Greek in the Greek view, and 
   await expectFitsPhone(page);
   await speaker.click();
   const spokenNow = await spoken(page);
-  expect(spokenNow[spokenNow.length - 1]).toMatchObject({ text: 'οὐδὲν', lang: 'el-GR' });
+  expect(spokenNow[spokenNow.length - 1]).toMatchObject({ text: asSpoken('οὐδὲν'), lang: 'el-GR' });
   await shot(page, 'word-card-audio');
 });
 

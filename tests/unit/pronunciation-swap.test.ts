@@ -119,7 +119,7 @@ describe('a second pronunciation, chosen, is followed everywhere', () => {
     expect(syllablesOf('ταῦτα')).toEqual({ syllables: ['taf', 'ta'], stressed: 0 });
     expect(buildTalkRequest(scope, 'How do I say it?', [], [], {}, soundFocus).pronunciation_guide).toBe(tutorGuideOf(pronunciationOf('modern')));
     act(() => void speakWord('πάντοτε', 'greek'));
-    expect(lastSaid().text).toBe('πάν-ντοτε');
+    expect(lastSaid().text).toBe('πάν-ντοτε!');
     act(() => void speakQuestion(quickQuestion({ id: 'letter-beta', mode: 'hear' }, mulberry32(1))));
     expect(lastSaid().text).toBe('β');
   });

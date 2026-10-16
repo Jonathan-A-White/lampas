@@ -17,6 +17,7 @@ import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 import { expectLatest } from '../../tests/support/published';
 import { seedHisWords } from '../../tests/support/his-words';
+import { asSpoken } from '../../tests/support/lone-word';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse1: Verse = chapter.verses[0];
@@ -108,7 +109,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he long presses the word {string} in verse {int}', (_, text: string, n: number) => press(wordEl(text, n), HOLD_MS));
     Then('the phone is told to speak {string} with lang {string}', (_, text: string, lang: string) => {
       expect(synth.spoken).toHaveLength(1);
-      expect(lastSpoken()?.text).toBe(text);
+      expect(lastSpoken()?.text).toBe(lang.startsWith('el') ? asSpoken(text) : text);
       expect(spokenWordLang()).toBe(lang);
     });
     And('the phone speaks it with its Greek voice', () => expect(lastSpoken()?.voice).toBe(GREEK_VOICE));
@@ -164,7 +165,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the phone is told to speak the Greek of the lemma {string} in verse {int} with lang {string}', (_, lemma: string, __: number, lang: string) => {
       const word = verse1.g.find((w) => nfc(wordLemma(w)) === nfc(lemma));
       expect(synth.spoken).toHaveLength(1);
-      expect(lastSpoken()?.text).toBe(word?.t);
+      expect(lastSpoken()?.text).toBe(asSpoken(word?.t ?? ''));
       expect(spokenWordLang()).toBe(lang);
       expect(lastSpoken()?.voice).toBe(GREEK_VOICE);
     });
@@ -183,7 +184,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he long presses the word {string} in the Verse view', (_, text: string) => press(viewWord(text), HOLD_MS));
     Then('the phone is told to speak {string} with lang {string}', (_, text: string, lang: string) => {
       expect(synth.spoken).toHaveLength(1);
-      expect(lastSpoken()?.text).toBe(text);
+      expect(lastSpoken()?.text).toBe(lang.startsWith('el') ? asSpoken(text) : text);
       expect(spokenWordLang()).toBe(lang);
     });
     And('no word sheet is open', () => expect(screen.queryByRole('dialog')).toBeNull());
@@ -212,7 +213,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he long presses the first word of the list', () => press(first(), HOLD_MS));
     Then('the phone is told to speak that word with lang {string}', (_, lang: string) => {
       expect(synth.spoken).toHaveLength(1);
-      expect(lastSpoken()?.text).toBe(lemma);
+      expect(lastSpoken()?.text).toBe(asSpoken(lemma));
       expect(spokenWordLang()).toBe(lang);
     });
     And('that word keeps its state', () => expect(first().getAttribute('data-state')).toBe(before));

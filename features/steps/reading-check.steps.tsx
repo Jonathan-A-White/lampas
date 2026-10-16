@@ -19,6 +19,7 @@ import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../te
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { GREEK_READING_ANSWER, INCOMPLETE_ANSWER, makeFakePostern, PARTIAL_ANSWER, PARTIAL_FURTHER_ANSWER, POSTERN_ORIGIN, READING_ANSWER, WELL_READ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
+import { asSpoken } from '../../tests/support/lone-word';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse28 = chapter.verses.find((v) => v.n === 28);
@@ -161,7 +162,7 @@ const tapSpeakerBeside = async (_: unknown, word: string) => {
 /** The last thing the engine was asked to say is exactly `text`, in `lang`; neither the tip nor the note was spoken. */
 const saysOnly = (lang: string) => (_: unknown, text: string) => {
   // the verdict read before the tap was cut off by it: what is asked of the engine since its last cancel is the word alone
-  expect(synth.since.map((u) => u.text)).toEqual([text]);
+  expect(synth.since.map((u) => u.text)).toEqual([lang.startsWith('el') ? asSpoken(text) : text]);
   expect(synth.since[0].lang).toBe(lang);
 };
 
@@ -576,7 +577,7 @@ describeFeature(feature, ({ Scenario }) => {
       const detail = panel().querySelector<HTMLElement>('[data-fix-detail]') as HTMLElement;
       await user.click(within(detail).getByRole('button', { name: 'Hear it' }));
       const last = synth.spoken[synth.spoken.length - 1];
-      expect(last.text).toBe('συνεργεῖ');
+      expect(last.text).toBe(asSpoken('συνεργεῖ'));
       expect(last.lang).toBe('el-GR');
     });
   });

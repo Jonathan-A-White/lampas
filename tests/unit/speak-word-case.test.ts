@@ -35,20 +35,20 @@ describe('holding a Greek word', () => {
     expect(hasCapital(heard(word))).toBe(false);
   });
 
-  it('words of two letters or more are handed to the Greek voice in lower case', () => {
-    expect(heard('Ἐν')).toBe('ἐν');
-    expect(heard('οὐ')).toBe('οὐ');
+  it('words of two letters or more are handed to the Greek voice in lower case (in monotonic marks, with \'!\', mw-5r3p30.357)', () => {
+    expect(heard('Ἐν')).toBe('εν!');
+    expect(heard('οὐ')).toBe('ου!');
   });
 
-  it('every other word is unchanged but for case', () => {
-    expect(heard('Ἐν')).toBe('ἐν');
-    expect(heard('Ἰησοῦς')).toBe('ἰησοῦς');
-    expect(heard('λόγος')).toBe('λόγος');
+  it('every other word is unchanged but for case, its marks made monotonic and the lone word\'s \'!\'', () => {
+    expect(heard('Ἐν')).toBe('εν!');
+    expect(heard('Ἰησοῦς')).toBe('ιησούς!'.normalize('NFC'));
+    expect(heard('λόγος')).toBe('λόγος!');
   });
 
   it('a speaker button (speak) gives the voice the same lower-case form', () => {
     act(() => void speak('Ἰησοῦς', 'speaker-1', 'greek'));
-    expect(synth.spoken[synth.spoken.length - 1].text).toBe('ἰησοῦς');
+    expect(synth.spoken[synth.spoken.length - 1].text).toBe('ιησούς!'.normalize('NFC'));
   });
 
   it('leaves English as it is', () => {

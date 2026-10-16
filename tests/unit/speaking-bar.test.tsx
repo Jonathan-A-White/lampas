@@ -97,7 +97,7 @@ describe('a word said while a reading is under way', () => {
     act(() => synth.finish());
     act(() => void speakWord('λόγος', 'greek'));
     expect(buttons()).toEqual(['Resume', 'Restart', 'Stop']);
-    expect(synth.since.map((u) => u.text)).toEqual(['λόγος']);
+    expect(synth.since.map((u) => u.text)).toEqual(['λόγος!']);
     expect(getSpeech()).toMatchObject({ key: 'read-aloud', status: 'paused', index: 1 });
   });
 
@@ -145,7 +145,7 @@ describe('a word said while a reading is under way', () => {
     act(() => reading());
     act(() => void speakWord('λόγος', 'greek'));
     act(() => void speakWord('ἀγάπη', 'greek'));
-    expect(synth.since.map((u) => u.text)).toEqual(['ἀγάπη']);
+    expect(synth.since.map((u) => u.text)).toEqual(['αγάπη!']);
     expect(getSpeech().status).toBe('paused');
     act(() => synth.finishAll());
     expect(getSpeech().status).toBe('paused');

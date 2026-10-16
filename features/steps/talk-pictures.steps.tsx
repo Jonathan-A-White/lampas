@@ -17,6 +17,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
+import { asSpoken } from '../../tests/support/lone-word';
 
 const realSeam = { ...imageSeam };
 
@@ -272,7 +273,7 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(button);
     });
     Then('the phone is told to speak {string} in {string}', (_, text: string, lang: string) => {
-      expect(synth.spoken.at(-1)).toMatchObject({ text, lang });
+      expect(synth.spoken.at(-1)).toMatchObject({ text: lang.startsWith('el') ? asSpoken(text) : text, lang });
     });
   });
 

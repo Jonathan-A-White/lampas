@@ -88,6 +88,10 @@ export interface Pronunciation {
    * voice reads the Greek its own way: a Modern Greek voice drops the n of ντ inside a word ('PA-do-te' for Πάντοτε, respelt 'PAN-do-te'), so Modern
    * Greek hands it 'πάν-ντοτε' (mw-5r3p30.264). A scheme whose voice already says its respelling gives the text back as it is. */
   voiceForm(text: string): string;
+  /** What this scheme's voice is handed for a Greek word said ALONE (Tap to hear, a speaker, a long press): its voiceForm, plus what a lone word needs. A
+   * voice says a lone word as a statement, high then falling, so a final stress sounds initial (πατήρ heard 'PA-teer', mw-5r3p30.357): Modern Greek hands
+   * it in monotonic marks with '!', which keeps the pitch peak on the stressed syllable. A scheme that leaves it out is handed its voiceForm. */
+  wordForm?(word: string): string;
   /** What this scheme's voice is handed to name a LETTER (a letter drill's 'Tap to hear', where the letter itself is asked about, not a word): Modern
    * Greek gives the bare letter in lower case, which a Greek voice names the modern way ('vita' for β; mw-5r3p30.268). */
   letterForm(letter: string): string;

@@ -11,7 +11,7 @@ sound-alikes for the letters.
 ## How it is built
 
 `src/speech/pronunciation.ts` is the registry: a list of `Pronunciation` entries
-`{ id, label, lang, scoringLang, note, respell(greekWord), sounds, loneLetterClip(word), voiceForm(text), letterForm(letter), tutorGuide(say), lessons?(say), soundRules?(say) }`. `sounds` maps each sound the respelling writes to its standard id (`o` is `/o/`, `kh` is `/x/`; see 'A standard in the middle' below); the scheme names no English word, and its lessons, rules and guide say each sound through `say`. Settings lists the entries, the word sheet calls
+`{ id, label, lang, scoringLang, note, respell(greekWord), sounds, loneLetterClip(word), voiceForm(text), wordForm?(word), letterForm(letter), tutorGuide(say), lessons?(say), soundRules?(say) }`. `sounds` maps each sound the respelling writes to its standard id (`o` is `/o/`, `kh` is `/x/`; see 'A standard in the middle' below); the scheme names no English word, and its lessons, rules and guide say each sound through `say`. Settings lists the entries, the word sheet calls
 `pronunciationOf(chosen).respell(word.t)`, and `lang` is the language tag of the voice that speaks (Settings keeps
 the chosen id under `greekPronunciation`). Each scheme is one file in `src/speech/schemes/`.
 
@@ -44,6 +44,31 @@ hands the voice the nasal at the end of the part before and the pair at the star
 `πάν-ντοτε`, `ἐν-ντολή`, `συμ-μπάσχω`, `ἀν-γκάλη` (espeak-ng: `pˈandˈote`). A pair at the start of a word (`ντομάτα`), and γγ, γχ, γξ, which a
 voice says with their nasal, are left as they are. `src/speech/greek.ts` `greekVoiceForm` applies the chosen scheme's; nothing outside the
 scheme writes the rule (`tests/unit/voice-form.test.ts` holds every bundled word to it). PROVISIONAL until heard on the Governor's phone.
+
+### A word said alone (mw-5r3p30.357)
+
+`wordForm(word)` is what the scheme's voice is handed for a Greek word said ALONE (Tap to hear, a speaker, a long press, Sound it out, Settings >
+Reading voices' Test): `greek.ts` `greekWordSpeech` uses it, and its `voiceForm` where a scheme has none. His phone said πατήρ alone as 'PA-teer'
+('the Voice goes high and then low'): a voice says a lone word as a statement, high at the start and falling, so a stress on the last syllable is heard on
+the first. Modern Greek hands the word in monotonic marks (an acute, grave or circumflex is the one tonos, the first of the word only; the breathings and
+the iota under a letter go; a diaeresis stays: `monotonicModern`), in its voiceForm, its last stop replaced by `!`: `πατήρ!`, `αγάπη!`, `ουδέν!`.
+
+Measured with eSpeak NG's `el` on the factory's machine (`scripts/stress-peak/peaks.py`: the library's own phoneme times, Praat's pitch tracker):
+
+| handed | pitch of each vowel (highest, Hz) | the peak |
+|---|---|---|
+| `πατήρ` | a 99, i 102, then falling to 79 | barely on the stress: heard as a fall |
+| `πατήρ!` | a 99, i 115 | on the stress |
+| `πατήρ,` / `πατήρ;` / `πατήρ…` | a 99, i 102-106, mean of i 88 | no clearer |
+| `λέμε πατήρ` (a carrier) | e 118, e 111, a 112, i 102 | on the carrier |
+| `ἀγάπη` / `ἀγάπη!` | a 97, a 104, i 82 / a 99, a 116, i 83 | on the stress, clearer with `!` |
+| `λόγος` / `λόγος!` | o 103, o 82 / o 116, o 83 | on the stress, clearer with `!` |
+
+`!` raises the stressed syllable by 12 to 15 Hz over the rest wherever the stress is, and moves no stress; a carrier puts its own word first and adds a
+word he would hear. eSpeak NG reads the polytonic and the monotonic word alike; the monotonic marks are for a phone's voice that may pass over an
+accent it was not made for. `tests/unit/greek-word-stress.test.ts` walks every word of Drill it, every lesson example and every word of the lexicon
+through the phone's synthesiser (the honest fake): el-GR, a Greek voice (the one picked in Settings when there is one), one tonos where the respelling
+stresses, and the `!`. A verse read aloud is not changed: its words stand in a sentence. PROVISIONAL until he hears it.
 
 `letterForm(letter)` (mw-5r3p30.268) is what the scheme's voice is handed to NAME a letter, in a letter drill's Tap to hear (`speakLetter`):
 Modern Greek's is the bare letter in lower case, which a Greek voice names the modern way ('vita' for β).

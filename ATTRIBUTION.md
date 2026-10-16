@@ -38,6 +38,10 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   sound, where the letter alone it would name ('omicron').
   Each is eSpeak NG's Greek voice saying one vowel from its phoneme input, not a letter. Licence: eSpeak NG is [GPL-3.0](https://github.com/espeak-ng/espeak-ng/blob/master/COPYING);
   the clips are sound it made, and no eSpeak NG code is in the app. Changes: silence trimmed, cut to MP3 with [FFmpeg](https://ffmpeg.org) (scripts/sounds-build.sh).
+  Its Greek voice is also how the app chose what the phone's voice is handed for a word said alone (a word ending in '!', so the voice's pitch peaks on the
+  stressed syllable): the pitch of each syllable was measured with [Praat](https://www.fon.hum.uva.nl/praat/) (GPL-3.0) through
+  [Parselmouth](https://github.com/YannickJadoul/Parselmouth) (GPL-3.0) on the factory's machine (scripts/stress-peak/peaks.py, docs/pronunciation.md
+  'A word said alone'); neither is in the app.
 - **Trial clips of a neural Greek voice** (public/sounds-trial/, heard only on the listening page sounds-trial.html, which no screen of the app links to; docs/research/letter-sounds.md).
   The same vowels, one-letter words and letter sounds as above, cut out of sentences said by three free, local voices, so that they can be heard beside the phone's own voice before one is chosen:
   [Piper](https://github.com/rhasspy/piper) (engine [MIT](https://github.com/rhasspy/piper/blob/master/LICENSE.md); its voice el_GR-rapunzelina-low was trained on a

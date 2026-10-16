@@ -14,6 +14,7 @@ import { stopOnTap } from '../../src/speech/tutorVoice';
 import { HoldBar } from '../../src/ui/HoldBar';
 import { HearAnyWord } from '../../src/ui/HearAnyWord';
 import { ENGLISH_VOICE, type FakeSynth, GREEK_VOICE, HEBREW_VOICE, stubSpeech } from '../../tests/support/fake-speech';
+import { asSpoken } from '../../tests/support/lone-word';
 
 const ANSWER = [
   'In Romans 8:28 the word **ἀγαθόν** means good; the Hebrew מֶלֶךְ and צֶדֶק speak of a king and of righteousness.',
@@ -89,7 +90,8 @@ const feature = await loadFeature('features/hear-any-word.feature');
 const ALL = [GREEK_VOICE, HEBREW_VOICE, ENGLISH_VOICE];
 const spokenIn = (text: string, language: string) => {
   const tag = { greek: 'el-GR', hebrew: 'he-IL', english: 'en-US' }[language];
-  expect(synth.spoken.map((u) => [u.text, u.lang])).toEqual([[text, tag]]);
+  // a Greek word said alone goes in monotonic marks with '!' (mw-5r3p30.357)
+  expect(synth.spoken.map((u) => [u.text, u.lang])).toEqual([[language === 'greek' ? asSpoken(text) : text, tag]]);
 };
 
 describeFeature(feature, ({ Scenario, ScenarioOutline }) => {

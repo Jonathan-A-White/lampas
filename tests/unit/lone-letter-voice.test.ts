@@ -138,10 +138,10 @@ describe('a one-letter Greek word said alone', () => {
     }
   });
 
-  it('a word of two letters or more still goes to the Greek voice, in lower case', () => {
+  it('a word of two letters or more still goes to the Greek voice, in lower case (in monotonic marks, with \'!\')', () => {
     act(() => void speakWord('Ἐν', 'greek'));
     act(() => void speak('λόγος', 'speaker:λόγος', 'greek'));
-    expect(said()).toEqual(['ἐν', 'λόγος']);
+    expect(said()).toEqual(['εν!', 'λόγος!']);
     expect(synth.spoken.every((u) => u.voice === GREEK_VOICE)).toBe(true);
     expect(audio.played).toEqual([]);
   });
@@ -243,7 +243,7 @@ describe('a one-letter Greek word on a phone with no Greek voice', () => {
     act(() => void speakWord('ὁ', 'greek'));
     act(() => void speakWord('λόγος', 'greek'));
     expect(audio.playing()).toBeNull();
-    expect(said()).toEqual(['λόγος']);
+    expect(said()).toEqual(['λόγος!']);
   });
 });
 
@@ -362,7 +362,7 @@ describe('a reading with a run that is one Greek letter', () => {
       act(readRuns([{ text: 'ὁ', language: 'greek' }, { text: 'Word', language: 'english' }]));
       act(() => void speakWord('λόγος', 'greek'));
       expect(getReading()).toMatchObject({ status: 'paused', verse: 1 });
-      expect(said()).toEqual(['λόγος']);
+      expect(said()).toEqual(['λόγος!']);
     });
   });
 });

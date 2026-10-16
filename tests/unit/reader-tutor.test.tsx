@@ -13,6 +13,7 @@ import type { UseTalk } from '../../src/useTalk';
 import type { Voice } from '../../src/useVoice';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { stubSpeech } from '../support/fake-speech';
+import { asSpoken } from '../support/lone-word';
 
 const open = chapterOf('rom', 8)!;
 let romans: Chapter;
@@ -61,7 +62,7 @@ describe('helpWithWord', () => {
     const speech = stubSpeech([{ lang: 'el-GR', name: 'Greek' }]);
     const { tutor, talk } = setup();
     act(() => tutor.result.current.helpWithWord({ ...help, kind: 'sound' }));
-    expect(speech.spoken.map((s) => s.text)).toEqual([help.form]);
+    expect(speech.spoken.map((s) => s.text)).toEqual([asSpoken(help.form)]);
     expect(talk.say).toHaveBeenCalledTimes(1);
   });
 

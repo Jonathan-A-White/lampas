@@ -22,6 +22,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { GRAMMAR_TERM_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
+import { asSpoken, isOneLetter } from '../../tests/support/lone-word';
 
 let unregisterTestish: (() => void) | undefined;
 
@@ -456,7 +457,8 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(within(tileOf(name)).getByRole('button', { name: `Hear ${name}` }));
     });
     Then('the Greek voice is asked to say {string}', async (_, text: string) => {
-      await waitFor(() => expect(lastSpoken()).toBe(text));
+      // a letter tile names its letter; a word goes as a word said alone, in monotonic marks with '!' (mw-5r3p30.357)
+      await waitFor(() => expect(lastSpoken()).toBe(isOneLetter(text) ? text : asSpoken(text)));
       expect(synth?.spoken[synth.spoken.length - 1].lang).toBe('el-GR');
     });
   });
@@ -484,7 +486,8 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(within(ideaSheet()).getByRole('button', { name: `Hear ${word}` }));
     });
     Then('the Greek voice is asked to say {string}', async (_, text: string) => {
-      await waitFor(() => expect(lastSpoken()).toBe(text));
+      // a letter tile names its letter; a word goes as a word said alone, in monotonic marks with '!' (mw-5r3p30.357)
+      await waitFor(() => expect(lastSpoken()).toBe(isOneLetter(text) ? text : asSpoken(text)));
     });
   });
 

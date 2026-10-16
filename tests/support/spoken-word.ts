@@ -1,21 +1,11 @@
-// What is heard for a Greek word said alone. Any word of two letters or more goes to the Greek voice in lower case (mw-5r3p30.226); a word of ONE letter
-// would be named by the voice ('omicron'), so it goes to the Greek voice as its bare vowel doubled ('οο' for ὁ), which his phone's Greek voice says as the
-// sound (mw-5r3p30.421, his pick on the listening trial; the clip of mw-5r3p30.347 plays only on a phone with no Greek voice). Written out here, not
-// imported from src/speech/, so the steps check the rule and do not repeat it. The Quick test's first word is often ὁ, so its steps hear either.
+// What is heard for a Greek word said alone (the rule itself is written out in ./lone-word.ts: a word of one letter as its bare vowel doubled, any other in
+// lower case, monotonic marks and '!'). The Quick test's first word is often ὁ, so its steps hear either.
 import { expect } from 'vitest';
 import type { FakeAudio } from './fake-audio';
 import type { FakeSynth } from './fake-speech';
+import { asSpoken } from './lone-word';
 
-const bare = (word: string): string => word.normalize('NFD').replace(/\p{M}/gu, '');
-
-/** One letter, whatever marks it carries (ὁ, Ὃ, ἡ). */
-export const isOneLetter = (word: string): boolean => [...bare(word)].length === 1;
-
-/** What the Greek voice is handed for `word` said alone: lower case, and a word of one letter (a vowel) its bare letter doubled. */
-export const asSpoken = (word: string): string => {
-  const lower = word.toLowerCase();
-  return isOneLetter(word) ? bare(lower).repeat(2) : lower;
-};
+export { asSpoken, isOneLetter } from './lone-word';
 
 /** A word said alone, heard by the Greek voice. */
 export interface Hearing {

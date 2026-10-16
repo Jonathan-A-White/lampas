@@ -15,6 +15,7 @@ import { mulberry32, type Question } from '../../src/data/quiz';
 import { stopSpeaking } from '../../src/speech/greek';
 import { stubSpeech, GREEK_VOICE, ENGLISH_VOICE, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
+import { asSpoken } from '../../tests/support/lone-word';
 
 const user = userEvent.setup();
 const rom8 = readFileSync('public/data/rom/8.json', 'utf8');
@@ -148,7 +149,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps {string}', async (_, name: string) => user.click(bar(name)));
     Then('the phone is told to speak the lemma with lang {string}', (_, lang: string) => {
       expect(synth.spoken).toHaveLength(1);
-      expect(synth.spoken[0].text).toBe('ἀγαπάω');
+      expect(synth.spoken[0].text).toBe(asSpoken('ἀγαπάω'));
       expect(synth.spoken[0].text).not.toBe(AGAPAO.form);
       expect(synth.spoken[0].lang).toBe(lang);
     });

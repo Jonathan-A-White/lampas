@@ -4,6 +4,7 @@ import { routePostern } from '../support/playwright-postern';
 import { honestSpeech, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { asSpoken } from '../support/lone-word';
 
 const VIEWPORT = { width: 390, height: 844 };
 
@@ -42,7 +43,7 @@ test('a touch long-press on a word says it, selects no text and raises no menu o
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'greek');
   const word = '[data-verse="1"] [data-word="0"]';
   await touchHold(page, word, 900);
-  await expect.poll(() => spoken(page)).toMatchObject([{ text: 'οὐδὲν', lang: 'el-GR' }]);
+  await expect.poll(() => spoken(page)).toMatchObject([{ text: asSpoken('οὐδὲν'), lang: 'el-GR' }]);
   await expect(page.getByRole('dialog')).toHaveCount(0);
   const selection = await page.evaluate(() => ({ text: window.getSelection()?.toString() ?? '', collapsed: window.getSelection()?.isCollapsed ?? true }));
   expect(selection).toEqual({ text: '', collapsed: true });
