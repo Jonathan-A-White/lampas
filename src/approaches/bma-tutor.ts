@@ -1,4 +1,6 @@
-// src/approaches/bma-tutor.ts — 'BMA Tutor': the sequence of Biblical Mastery Academy's Greek course, followed with credit. Only the
+// src/approaches/bma-tutor.ts
+// Not listed: the record of BMA Tutor's order, read by the gap audit (docs/path-gaps.md). No app code imports this file (mw-foy5mb.1).
+// 'BMA Tutor': the sequence of Biblical Mastery Academy's Greek course, followed with credit. Only the
 // ORDER is theirs; every title, the method and the mapping to our ideas are Lampas's own words, and no course text, picture or exercise
 // is copied (mw-hqd5bz.5). PROVISIONAL, the Governor to confirm. Where the course names a lesson the RP parsing codes cannot tell apart
 // (root variations, assimilation), the lesson maps to the nearest ideas the ladder has, or revisits ideas taught earlier (docs/grammar.md,

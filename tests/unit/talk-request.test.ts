@@ -18,7 +18,7 @@ const FIELD: LearnerGrammar = learnerGrammarOf({
   placed: true,
   move: 'up',
   pickerLevel: 'solid',
-  approach: { name: 'BMA Tutor', credit: 'Biblical Mastery Academy', nextLesson: 'The nominative' },
+  approach: { name: 'Lampas ladder', credit: null, nextLesson: 'The nominative' },
 });
 
 describe('buildTalkRequest', () => {

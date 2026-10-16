@@ -43,8 +43,12 @@ const SEGMENT: Record<Level, { className: string; style?: CSSProperties }> = {
 const legendText = (c: Counts): string => `Solid ${c.solid} · Frontier ${c.frontier} · Not yet ${c.notYet}`;
 
 /** The idea Learn next names, with its lesson when the approach has one: 'The Greek alphabet · The Greek letters'; or, when only some letters, pairs or breathings are weak, those gaps: 'ξ, ψ and ου · The Greek letters'. */
-const learnNextText = (next: NonNullable<ReturnType<typeof learnNext>>): string =>
-  `${next.gaps ? lettersText(next.gaps) : next.idea.title}${next.lesson ? ` · ${next.lesson.lesson.title}` : ''}`;
+/** What Learn next names: the letters he is weak in, else the idea and, when it differs from the idea's own title, its lesson (the ladder's are the same). */
+const learnNextText = (next: NonNullable<ReturnType<typeof learnNext>>): string => {
+  if (next.gaps) return lettersText(next.gaps);
+  const lesson = next.lesson?.lesson.title;
+  return lesson && lesson !== next.idea.title ? `${next.idea.title} · ${lesson}` : next.idea.title;
+};
 
 function LearnNextButton({ next, onOpen }: { next: NonNullable<ReturnType<typeof learnNext>>; onOpen: () => void }) {
   return (

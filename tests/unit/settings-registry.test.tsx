@@ -44,7 +44,8 @@ describe('the registry lists every Settings row', () => {
     await screen.findByRole('group', { name: 'New words at' });
     await screen.findByRole('group', { name: 'Move it' });
     await screen.findByRole('group', { name: 'Goal' });
-    await screen.findByRole('radiogroup', { name: 'Grammar approach' });
+    // one grammar path: no choice to draw (mw-foy5mb.1), so the row's content is the group
+    await screen.findByRole('group', { name: 'Grammar approach' });
     await screen.findByRole('group', { name: 'Bible in Logos' });
     await screen.findByRole('group', { name: 'Read aloud span' });
     await screen.findByRole('group', { name: "Read the tutor's responses aloud" });
@@ -290,7 +291,7 @@ describe('currentSettings', () => {
       greekPronunciation: 'modern',
       englishAccent: 'american',
       goal: '',
-      grammarApproach: 'bma-tutor',
+      grammarApproach: 'ladder',
       pickerGrammar: 'frontier',
       grammarMove: 'ask',
       newWordsADay: '3',

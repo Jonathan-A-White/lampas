@@ -1,17 +1,18 @@
-// src/approaches/index.ts — every grammar approach, in the order Settings lists them. A new approach is one file here plus one line
-// below (docs/grammar.md, 'Approaches'). Settings, the placement, 'Learn next' and the Goal screen read this list and nothing else.
+// src/approaches/index.ts — every grammar approach, in the order Settings lists them. Lampas has ONE path today, the ladder; a second is one
+// file here plus one line below (docs/grammar.md, 'Approaches'). Settings, the placement, 'Learn next' and the Goal screen read this list and
+// nothing else.
 import type { GrammarLevelName } from '../data/db';
 import { LADDER } from '../data/grammar/ladder';
-import { bmaTutor } from './bma-tutor';
 import { ladder } from './ladder';
 import type { ApproachLesson, ApproachLevel, ApproachStage, GrammarApproach } from './types';
 
 export type { ApproachCredit, ApproachLesson, ApproachLevel, ApproachStage, GrammarApproach } from './types';
 
-export const APPROACHES: readonly GrammarApproach[] = [bmaTutor, ladder];
+export const APPROACHES: readonly GrammarApproach[] = [ladder];
 
-/** The approach used while none was chosen. PROVISIONAL, the Governor to confirm. */
-export const DEFAULT_APPROACH = 'bma-tutor';
+/** The approach used while none was chosen, and for a saved choice no longer listed (a phone that chose the old BMA path reads as the ladder:
+ *  nothing is deleted, no level or schedule row moves). PROVISIONAL, the Governor to confirm. */
+export const DEFAULT_APPROACH = 'ladder';
 
 export const approachOf = (id: string): GrammarApproach | undefined => APPROACHES.find((a) => a.id === id);
 
@@ -46,7 +47,7 @@ export function lessonOf(approach: GrammarApproach, ideaId: string): LessonPlace
   return undefined;
 }
 
-/** The number of the level (counted from 1 across the stages) whose lesson teaches `ideaId`: 'BMA Tutor L1'; undefined when no lesson does. */
+/** The number of the level (counted from 1 across the stages) whose lesson teaches `ideaId`: 'Lampas ladder L1'; undefined when no lesson does. */
 export function levelNumberOf(approach: GrammarApproach, ideaId: string): number | undefined {
   const place = lessonOf(approach, ideaId);
   if (!place) return undefined;

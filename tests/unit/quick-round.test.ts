@@ -1,6 +1,6 @@
 // The quick round of the placement (src/data/grammar/quickRound.ts, mw-hqd5bz.18) and the items it asks: one for each letter and each combination.
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { approachOf } from '../../src/approaches';
+import { fixturePath } from '../support/fixture-path';
 import { db } from '../../src/data/db';
 import { gapsOf, groupIsSolid, lettersText } from '../../src/data/grammar/inference';
 import { LADDER, ITEM_GROUPS, ideaOf, itemName, itemsOf } from '../../src/data/grammar/ladder';
@@ -185,7 +185,6 @@ describe('the questions', () => {
 });
 
 describe('the gaps', () => {
-  const bma = approachOf('bma-tutor')!;
   const needs = { ideas: ['alphabet', 'breathings', 'accents', 'noun'].map((id) => ({ id, count: 1, example: { form: '', code: '', ref: '' } })) };
   const missed = ['letter-xi', 'letter-psi', 'diphthong-ou'];
 
@@ -198,13 +197,13 @@ describe('the gaps', () => {
   });
 
   it("is what Learn next names, even a group the goal does not need", () => {
-    const next = learnNext(needs, bma, allSolid(missed))!;
+    const next = learnNext(needs, fixturePath, allSolid(missed))!;
     expect(next.gaps?.map((i) => i.id)).toEqual(missed);
     expect(next.idea.id).toBe('letter-xi');
     // only the diphthong is missing: the diphthongs are in no goal's needs, and are still named
-    const only = learnNext(needs, bma, allSolid(['diphthong-ou']))!;
+    const only = learnNext(needs, fixturePath, allSolid(['diphthong-ou']))!;
     expect(only.gaps?.map((i) => i.id)).toEqual(['diphthong-ou']);
-    expect(learnNext(needs, bma, allSolid())!.idea.id).toBe('accents');
+    expect(learnNext(needs, fixturePath, allSolid())!.idea.id).toBe('accents');
   });
 });
 

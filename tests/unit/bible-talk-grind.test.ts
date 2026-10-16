@@ -251,7 +251,7 @@ describe('learner_grammar in the request (mw-hqd5bz.12)', () => {
     placed: true,
     move: 'up',
     pickerLevel: 'solid',
-    approach: { name: 'BMA Tutor', credit: 'Biblical Mastery Academy', nextLesson: 'The nominative' },
+    approach: { name: 'Lampas ladder', credit: null, nextLesson: 'The nominative' },
   });
 
   it('the request schema takes the field the app builds, with no goal or no next lesson too, and does not require it', () => {
@@ -279,7 +279,7 @@ describe('learner_grammar.weak in the request (mw-i7xe0n.2)', () => {
     placed: false,
     move: 'none',
     pickerLevel: 'frontier',
-    approach: { name: 'BMA Tutor', credit: null, nextLesson: null },
+    approach: { name: 'Lampas ladder', credit: null, nextLesson: null },
     weak: [{ title: 'The genitive case', at: 1, labels: ['its ending', 'ν (Nu)'] }],
   });
 

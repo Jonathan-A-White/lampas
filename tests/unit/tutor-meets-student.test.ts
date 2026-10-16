@@ -26,7 +26,7 @@ const grammar: LearnerGrammar = learnerGrammarOf({
   placed: true,
   move: 'none',
   pickerLevel: 'frontier',
-  approach: { name: 'BMA Tutor', credit: 'Biblical Mastery Academy', nextLesson: 'The nominative case' },
+  approach: { name: 'Lampas ladder', credit: null, nextLesson: 'The nominative case' },
 });
 
 describe('verse-read and tips are sent learner and learner_grammar', () => {

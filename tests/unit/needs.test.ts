@@ -5,7 +5,7 @@ import { ALWAYS_NEEDED, ideaOf } from '../../src/data/grammar/ladder';
 import { passageNeeds, progressToward, type Level } from '../../src/data/grammar/needs';
 import type { BookIndex } from '../../src/data/chapter';
 import type { WordState } from '../../src/data/db';
-import { approachOf } from '../../src/approaches';
+import { fixturePath } from '../support/fixture-path';
 import { learnNext } from '../../src/data/grammar/goalProgress';
 
 const fromDisk = async (book: string, n: number): Promise<Chapter> => JSON.parse(readFileSync(`public/data/${book}/${n}.json`, 'utf8')) as Chapter;
@@ -56,11 +56,10 @@ describe('the foundation is needed by every goal (mw-86e9r1.1)', () => {
 
   it('has Learn next walk the alphabet, then Pairs of vowels, before any noun idea', async () => {
     const needs = await passageNeeds({ book: '1jn', chapter: 1, verse: 1 }, fromDisk, index);
-    const bma = approachOf('bma-tutor')!;
     const levels = new Map<string, Level>();
-    expect(learnNext(needs, bma, levels)!.idea.id).toBe('alphabet');
+    expect(learnNext(needs, fixturePath, levels)!.idea.id).toBe('alphabet');
     levels.set('alphabet', 'solid');
-    expect(learnNext(needs, bma, levels)!.idea).toMatchObject({ id: 'diphthongs', title: 'Pairs of vowels' });
+    expect(learnNext(needs, fixturePath, levels)!.idea).toMatchObject({ id: 'diphthongs', title: 'Pairs of vowels' });
   });
 });
 
