@@ -30,7 +30,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'Claude', use: 'The model behind the tutor, which reads your pictures', licence: 'none needed; its terms', link: 'https://www.anthropic.com/claude' },
   { name: 'Logos Bible Software', use: 'If switched on: links into your own Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
   { name: 'Accordance', use: 'If switched on: links into your own Accordance', licence: 'yours; nothing copied', link: 'https://www.accordancebible.com' },
-  { name: 'Audible', use: 'If chosen: links to The Word of Promise in your Audible', licence: 'yours; nothing copied', link: 'https://www.audible.com' },
+  { name: 'Audible', use: 'If chosen: opens The Word of Promise in your Audible', licence: 'yours; nothing copied', link: 'https://www.audible.com' },
   { name: 'Blue Letter Bible', use: 'Links a word to its Strong\'s entry', licence: 'its terms; links only', link: 'https://www.blueletterbible.org' },
   { name: 'STEPBible', use: 'Links a word to its Strong\'s entry', licence: 'its terms; links only', link: 'https://www.stepbible.org' },
   { name: 'Web Speech API', use: 'Your phone\'s voices speak and hear', licence: 'a web standard', link: 'https://developer.mozilla.org/docs/Web/API/Web_Speech_API' },

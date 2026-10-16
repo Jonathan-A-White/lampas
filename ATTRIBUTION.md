@@ -92,7 +92,10 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
 - **[Logos Bible Software](https://www.logos.com)** and **[Accordance](https://www.accordancebible.com)**. Only if you switch them on in
   Settings: Lampas links to a word or a verse in the app you already own, and offers a link to the app's page in your phone's store if you do not have it yet. No text, image or data is taken from either. Their own licences are yours.
 - **[Audible](https://www.audible.com)** and **The Word of Promise Audio Bible** (NKJV), by Thomas Nelson. Only if you choose it in Settings > Study resources >
-  Audio Bible: Lampas links to the book in the Audible app, or its page on audible.com, and says which chapter to pick. You need the book in your own Audible library. No audio, text or data is taken from either. Their own terms apply; the audio is yours through Audible.
+  Audio Bible: Lampas opens the Audible app on the chapter you are reading, using Audible's own app link, and names the chapter in Audible's list. The chapter start times
+  (a number of milliseconds for each of the Bible's chapters) were read once from [Audible's public catalogue](https://api.audible.com/1.0/content/B003UC45I8/metadata?response_groups=chapter_info) and are kept in Lampas; nothing is looked up as you read.
+  You need the book in your own Audible library. No audio or text is taken from either. Their own terms apply; the audio is yours through Audible.
+  The app link and the reading of the chapter list come from [audible-kit](https://github.com/Jonathan-A-White/audible-kit) (`audible-kit`) by Jonathan A. White. Licence: [MIT](https://github.com/Jonathan-A-White/audible-kit/blob/main/LICENSE). Changes: none.
 - **[Blue Letter Bible](https://www.blueletterbible.org)** and **[STEPBible](https://www.stepbible.org)**. Links from a word to its Strong's
   entry, if you switch Strong's on. Links only: nothing is copied. Their own terms apply.
 - **[Web Speech API](https://developer.mozilla.org/docs/Web/API/Web_Speech_API)**. Your phone's own voices speak the Greek and English and its

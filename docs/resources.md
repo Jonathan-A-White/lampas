@@ -212,14 +212,36 @@ read by `nav/links.ts` and `resources/tutorLinks.ts` `placeOf` (no second parser
 book or a chapter or verse the book lacks is plain text. The instructions of both talk grinds say to answer a question about another passage there and then
 and to name its verse this way, never to send him to ask elsewhere.
 
-## Audio Bible: Listen in Audible (mw-5r3p30.390)
+## Audio Bible: Listen in Audible (mw-5r3p30.390, mw-5r3p30.451)
 
 Settings > Study resources > Audio Bible is `Off` or `The Word of Promise (NKJV), in Audible` (the setting `audioBible`, `src/settings/definitions/audioBible.ts`;
 the list of audio Bibles is `AUDIO_BIBLES` in `src/resources/audioBible.ts`, so a second one slots in later). With it on, the Verse view's Listen shows a
 `Listen in Audible` link, the line `In Audible: Chapters > Luke 15` and the credit. No licence is needed.
 
-Audible publishes no way to open a book at a chapter or a time (no documented `audible://` path takes a chapter; the web player takes no chapter; a share clip plays
-alone), so Lampas opens the book and names the chapter to pick. The link's href is an Android intent (`MEDIA_PLAY_FROM_SEARCH`, package `com.audible.application`, query
-`The Word of Promise Audio Bible`, `browser_fallback_url` the book's page `https://www.audible.com/pd/B003UC45I8`); `openApp.ts` `armFallback` opens the book's page
-only when the page stays in front 1.5 s after the tap. **UNVERIFIED on a device:** that Audible's app accepts the search intent from the browser and opens the player, and that its chapter list for this
-book names chapters by Bible book and chapter (`audibleChapterLabel`: the NKJV book name and the chapter). If its chapters are per book only, a later story adds a time map.
+**The link** is Audible's own smart link, made by `audibleLink` in [audible-kit](https://github.com/Jonathan-A-White/audible-kit) (pinned by commit in `package.json`):
+`https://audible.smart.link/aexglzp2n?annotation_time_utc=<now ms>&asin=B003UC45I8&autoplay=true&content_delivery_type=MultiPartBook&device_id=device_id&marketplace_domain=.com&position_from_start=<ms>&site_id=1&source_code=Deep-link_Banner`.
+It opens the Audible app and plays The Word of Promise from that position; a phone without the app is sent to the app's store page by Audible itself, so Lampas arms no
+fallback page of its own for it. Audible wants `annotation_time_utc` to be the time of the tap, so `VerseView.tsx` makes the link again in the tap's `onClick`
+(`audibleListen(bible, book, chapter, now)`). It was proved on the Governor's phone (Luke 14 at 4:07, mw-5r3p30.451), but it is Audible's own link shape, not a documented
+API: if Audible changes it, `audible-kit` is the one place to change.
+
+**The start times** are in `src/resources/audibleStarts.json`, keyed by Lampas's book code and chapter (`luk.15`), for all 1,189 chapters of the Bible (the Old Testament is
+there for Psalm 23 and the rest, for when Lampas has the text). They are read from the live catalogue
+`https://api.audible.com/1.0/content/B003UC45I8/metadata?response_groups=chapter_info` (no login; `start_offset_ms`, chapters nested) once, by `npm run audible:build`
+(`scripts/audible-build.ts`, network, not in the gate; a second run changes nothing unless Audible changed its catalogue). The script reads the catalogue with audible-kit's
+`fetchChapterStarts`, maps Audible's titles with `wordOfPromiseChapters`, and fails if any chapter has no start or if `audibleChapterLabel` is not a title Audible really has.
+`tests/unit/audio-bible.test.ts` holds the file to audible-kit's own Word of Promise data for every chapter, to Luke 15 = 300423039 ms, and to a start for each of Lampas's 260
+New Testament chapters.
+
+**Why not the research's numbers.** `docs/research/audible-addon-seek.md` (mw-5r3p30.412) gave Luke 15 = 300,366,317 ms, 57 s early: it read the chapter list from the
+Audnexus mirror (`api.audnex.us`), which still holds an older timing of the title (Genesis 1 at 16,970 ms where Audible's live catalogue says 17,040, brand intro 3,970 ms where
+it says 4,040, the gap growing through the book). The Governor's phone played the live catalogue's number at the right place. Use Audible's own API, never the mirror.
+
+**The label** (`audibleChapterLabel`) is Audible's own title for the chapter, since the line tells him where it is in Audible's list: `Luke 15`, but `Psalm 23`, `Revelations 22`
+and, for the five one-chapter books, `The Book of Obadiah`, `The Epistle of Paul the Apostle to Philemon`, `The Second Epistle of John`, `The Third Epistle of John` and
+`The Epistle of Jude`.
+
+A chapter with no start known (none today) falls back to the older link: an Android intent (`MEDIA_PLAY_FROM_SEARCH`, package `com.audible.application`, query
+`The Word of Promise Audio Bible`, `browser_fallback_url` the book's page `https://www.audible.com/pd/B003UC45I8`) with `openApp.ts` `armFallback` opening the book's page only
+when the page stays in front 1.5 s after the tap. **A verse is not a place:** Audible is only timed per chapter, so a verse-level link would be an estimate within the chapter
+(a later step).
