@@ -7,7 +7,7 @@ import { mulberry32, shuffle, type Random } from '../random';
 import { chosenPronunciation } from '../../speech/greek';
 import type { Pronunciation } from '../../speech/pronunciation';
 import { LADDER, itemsOf, type GrammarIdea } from './ladder';
-import { buildLetter, buildSound, type GrammarQuestion, type LetterForm } from './questions';
+import { buildLetter, buildSay, buildSound, type GrammarQuestion, type LetterForm } from './questions';
 
 /** Where a drill gets its seed (src/LetterDrillScreen.tsx): a new one each time it opens. A seam: a feature step fixes it, so it knows the questions. */
 export const letterDrillSeed = { next: (): number => (Math.random() * 0x100000000) >>> 0 };
@@ -18,6 +18,9 @@ export const newDrillRandom = (): Random => mulberry32(letterDrillSeed.next());
 /** Questions in a round. */
 export const ROUND_SIZE = 8;
 
+/** Where in a round the one Say it question stands (the third), while the phone can hear him. PROVISIONAL. */
+export const SAY_AT = 2;
+
 /** One thing the drill asks: a letter in a form. */
 export interface LetterTarget {
   /** the letter's ladder id, 'letter-beta' */
@@ -25,8 +28,8 @@ export interface LetterTarget {
   form: LetterForm;
 }
 
-/** Heard (Tap to hear, then tap the glyph) or named ('Which letter is Beta?'). */
-export type LetterMode = 'hear' | 'name';
+/** Heard (Tap to hear, then tap the glyph), named ('Which letter is Beta?') or said (Say it: the letter is shown and he says its name or its sound, mw-86e9r1.12). */
+export type LetterMode = 'hear' | 'name' | 'say';
 
 const ALPHABET = LADDER.find((i) => i.id === 'alphabet')!;
 const LETTERS = itemsOf('alphabet');
@@ -72,24 +75,26 @@ export interface RoundItem {
 
 const letterOf = (id: string): GrammarIdea => LETTERS.find((l) => l.id === id)!;
 
-/** The question for a target in a mode: heard (buildSound) or named (buildLetter, by name). */
+/** The question for a target in a mode: heard (buildSound), named (buildLetter, by name) or said (buildSay). */
 export function questionFor(target: LetterTarget, mode: LetterMode, random: Random, scheme: Pronunciation = chosenPronunciation()): GrammarQuestion {
   const ask = { letter: letterOf(target.letter), form: target.form };
+  if (mode === 'say') return buildSay(ALPHABET, ask);
   return mode === 'hear' ? buildSound(ALPHABET, random, scheme, ask) : buildLetter(ALPHABET, random, scheme, { ...ask, byName: true });
 }
 
 /**
  * The next round: ROUND_SIZE questions in a random order. The ones he missed come first, then the ones not asked yet, and targets already right only fill a round when fewer
  * than a round are left, so a round is always a full one. Each is heard or named by chance, the two modes alternating from a random start so a round is never all of one.
+ * With `say` (the phone can hear him, mw-86e9r1.12) the question at SAY_AT is Say it instead; without it the round is the same as it always was.
  */
-export function drawRound(state: LetterDrillState, random: Random, scheme: Pronunciation = chosenPronunciation()): RoundItem[] {
+export function drawRound(state: LetterDrillState, random: Random, scheme: Pronunciation = chosenPronunciation(), say = false): RoundItem[] {
   const missed = shuffle(TARGETS.filter((t) => state.missed.includes(keyOf(t))), random);
   const fresh = shuffle(remainingTargets(state).filter((t) => !state.missed.includes(keyOf(t))), random);
   const done = shuffle(TARGETS.filter((t) => state.right.includes(keyOf(t))), random);
   const targets = [...missed, ...fresh, ...done].slice(0, ROUND_SIZE);
   const start = random() < 0.5 ? 0 : 1;
   return shuffle(targets, random).map((target, i) => {
-    const mode: LetterMode = (i + start) % 2 === 0 ? 'hear' : 'name';
+    const mode: LetterMode = say && i === SAY_AT ? 'say' : (i + start) % 2 === 0 ? 'hear' : 'name';
     return { target, mode, question: questionFor(target, mode, random, scheme) };
   });
 }

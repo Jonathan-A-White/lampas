@@ -176,7 +176,7 @@ export function questionFoundation(question: Pick<GrammarQuestion, 'kind' | 'ide
   return [...new Set([...own, ...about])];
 }
 
-const isLetterQuestion = (question: Pick<GrammarQuestion, 'kind'>): boolean => question.kind === 'letter' || question.kind === 'sound';
+const isLetterQuestion = (question: Pick<GrammarQuestion, 'kind'>): boolean => question.kind === 'letter' || question.kind === 'sound' || question.kind === 'say';
 
 /** The letter a letter or sound question is about: its own idea, or (for the alphabet) the letter whose glyph is the right answer. */
 function letterOf(question: Pick<GrammarQuestion, 'ideaId' | 'right'>): string[] {

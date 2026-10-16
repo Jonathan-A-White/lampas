@@ -577,6 +577,16 @@ Each answer goes through `noteDrillAnswer` (repositories/inference.ts, `inferFro
 `DRILL_RUN_CAP`, one short of `INFERRED_RIGHTS`**, and writes no review and no level: Solid comes only from the schedule (`SOLID_STEP`) or from a later right answer in Review, never from one drill sitting.
 features/letter-drill.feature, tests/unit/letter-drill.test.ts.
 
+**Say it** (mw-86e9r1.12, PROVISIONAL, the Governor to confirm: his words 'accept either the letter's sound or its name'): on a phone that can hear him (`src/useCanHear.ts`: it has speech
+recognition, `isListenSupported`, and the microphone is not refused for the page, `navigator.permissions`) the third question of a round (`SAY_AT`) is Say it instead of a choice
+(`drawRound(…, say)`, `buildSay`, kind 'say'): the letter shown large ('Say its name or its sound'), the hold bar 'Hold and say it' (the Talk sheet's `HoldBar` over `useVoice`, English
+recognition) and Skip this one. What the phone heard is checked by `src/data/grammar/sayIt.ts letterHeard`: right for the letter's **name** (its English title, 'beta', and the chosen
+pronunciation's own, `Pronunciation.letterNames`, 'vita') or its **sound** (the symbols of the pronunciation's lesson, 'v', and what a recogniser writes for them, `Pronunciation.heardAs`, 'vee'),
+with a little filler allowed ('it is beta') and nothing else: another letter, or the English b for β, is a miss. A right answer credits the letter like any drill answer; a miss says the right
+sound (`speakSound`), shows 'Not quite', what it heard and 'Β is Beta, and sounds like v', with Tap to hear. With no recognition, or the permission denied, Say it is never drawn. A refusal found
+at the bar (`permission-denied`, `no-microphone`, `not-supported`) leaves every Say it out of the rest of the drill and says so; Skip this one leaves out one. A Say it left out is neither right
+nor a miss: it is not in the round's score, its letter is not counted against, and the round says '7 of 7'. features/say-it.feature, tests/unit/say-it.test.ts.
+
 ### Write it
 
 `src/handwriting/` (mw-86e9r1.51, PROVISIONAL, the Mayor's design from the Governor's words of 2026-10-14, the Governor to confirm): writing a letter by hand **as a memory aid,

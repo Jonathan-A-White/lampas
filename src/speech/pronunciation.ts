@@ -95,6 +95,12 @@ export interface Pronunciation {
   /** What this scheme's voice is handed to name a LETTER (a letter drill's 'Tap to hear', where the letter itself is asked about, not a word): Modern
    * Greek gives the bare letter in lower case, which a Greek voice names the modern way ('vita' for β; mw-5r3p30.268). */
   letterForm(letter: string): string;
+  /** The names a Greek voice says for each letter, by the letter's ladder idea id, besides its English name (Say it, mw-86e9r1.12: 'vita' for beta). A scheme that
+   * leaves it out is heard by the English name alone. */
+  letterNames?: Readonly<Record<string, readonly string[]>>;
+  /** What a phone's English speech recognition writes when he says one symbol of this scheme's respelling alone ('g' for 'gh', 'ea' for 'ee'), besides the symbol
+   * itself, for Say it (mw-86e9r1.12). A scheme that leaves it out is heard by the symbols alone. */
+  heardAs?: Readonly<Record<string, readonly string[]>>;
   /** What the tutor is told of this scheme: its name and the sound rules it respells and speaks by, sent with every ask that may speak of a sound
    * (the grinds' `pronunciation_guide`), so the grinds' instructions name no sound of their own (mw-5r3p30.268). */
   tutorGuide(say: SoundWords): string;

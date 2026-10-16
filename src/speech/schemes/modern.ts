@@ -6,6 +6,7 @@ import type { Pronunciation, SoundRule, SoundRuleSide, Spelling } from '../pronu
 import type { SoundId } from '../sounds';
 import { ONSETS } from '../greekSyllables';
 import { modernLessons } from './modernLessons';
+import { MODERN_HEARD_AS, MODERN_LETTER_NAMES } from './modernSpoken';
 
 interface Letter {
   ch: string;
@@ -463,6 +464,8 @@ export const MODERN: Pronunciation = {
   wordForm: wordFormModern,
   // a Greek voice names a bare lower-case letter the modern way ('vita' for β); a capital would be read 'capital ...'
   letterForm: (letter) => letter.toLowerCase(),
+  letterNames: MODERN_LETTER_NAMES,
+  heardAs: MODERN_HEARD_AS,
   tutorGuide: modernTutorGuide,
   lessons: modernLessons,
   soundRules: modernSoundRules,
