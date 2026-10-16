@@ -98,10 +98,15 @@ test('a sitting of tapped answers ends on a card that fits: Where you are, or Pa
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   const end = page.getByTestId('where');
   // twenty questions of the walk, then up to forty taps of the quick round
-  for (let i = 0; i < 65 && !(await end.isVisible()); i += 1) {
+  const question = page.getByTestId('placement-question');
+  for (let i = 0; i < 65; i += 1) {
+    await expect(question.or(end)).toBeVisible();
+    if (await end.isVisible()) break;
+    const asked = await question.textContent();
     await page.locator('[data-option]').first().click();
     await page.getByTestId('next').click();
-    await expect(page.getByTestId('placement-question').or(end)).toBeVisible();
+    // the old question stays drawn for a moment: go on only once the next card (another question, or the end card) is up
+    await expect(question.or(end)).not.toHaveText(asked ?? '');
   }
   await expect(end).toHaveText(/^(Where you are|So far): solid \d+, frontier \d+, not yet \d+; untested \d+$/);
   await expectFitsPhone(page);
