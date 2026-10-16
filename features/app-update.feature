@@ -41,3 +41,12 @@ Feature: A new build waits for his tap and then loads once
     And the phone brings Lampas back at once without the worker taking over
     And the phone puts Lampas in the background again
     Then the waiting worker has been sent SKIP_WAITING twice
+
+  Scenario: A quiet take-over that lands while he is using the app reloads the next time the app is hidden
+    Given Lampas is open on a phone and a newer build with nothing new to show is found waiting
+    When the phone puts Lampas in the background
+    And the phone brings Lampas back before the worker takes over
+    And the new worker takes control while he reads
+    Then the page has not reloaded
+    When the phone puts Lampas in the background once more
+    Then the page has reloaded once, out of his sight

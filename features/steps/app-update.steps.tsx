@@ -138,4 +138,29 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
       expect(waiting!.postMessage).toHaveBeenCalledTimes(2);
     });
   });
+
+  Scenario('A quiet take-over that lands while he is using the app reloads the next time the app is hidden', ({ Given, When, And, Then }) => {
+    const setVisibility = (value: DocumentVisibilityState) => {
+      Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => value });
+      document.dispatchEvent(new Event('visibilitychange'));
+    };
+    Given('Lampas is open on a phone and a newer build with nothing new to show is found waiting', async () => {
+      open(false, async () => [{ version: APP_SEMVER, date: '2026-10-12', story: 'fx-1', kind: 'fixed', text: 'A line.' }]);
+      waiting = setup.newWorkerWaits();
+      await act(async () => void (await vi.advanceTimersByTimeAsync(0)));
+    });
+    When('the phone puts Lampas in the background', () => setVisibility('hidden'));
+    And('the phone brings Lampas back before the worker takes over', () => setVisibility('visible'));
+    And('the new worker takes control while he reads', () => {
+      act(() => setup.controllerChanges());
+    });
+    Then('the page has not reloaded', () => {
+      expect(setup.reload).not.toHaveBeenCalled();
+      expect(screen.queryByText('Update ready, tap to reload')).toBeNull();
+    });
+    When('the phone puts Lampas in the background once more', () => setVisibility('hidden'));
+    Then('the page has reloaded once, out of his sight', () => {
+      expect(setup.reload).toHaveBeenCalledTimes(1);
+    });
+  });
 });
