@@ -11,7 +11,7 @@ const modern = pronunciationOf('modern');
 const LESSON_PHRASES: Record<string, string[]> = {
   alphabet: [],
   diphthongs: ['e as in pet', 'ee as in see', 'oo as in food', 'v as in vase', 'f as in fan'],
-  'consonant-pairs': ['b as in bed', 'd as in dog', 'g as in go', 'mb as in number', 'nd as in under', 'ng as in finger', 'kh as in loch', 'nks as in thanks'],
+  'consonant-pairs': ['b as in bed', 'd as in dog', 'g as in go', 'mb as in number', 'nd as in under', 'ng as in finger', 'kh as in chutzpah', 'nks as in thanks'],
   syllables: [],
   breathings: [],
   accents: [],

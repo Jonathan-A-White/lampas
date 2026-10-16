@@ -115,3 +115,21 @@ describe('omicron and omega fit an American ear', () => {
     expect(ideaSound(ideaOf('letter-rho'), modern, british)).toBe('r, lightly rolled');
   });
 });
+
+describe('chi fits an American ear (mw-5r3p30.475)', () => {
+  // Many Americans say 'loch' as 'lock', so a reader keyed to it says a k, not the χ sound.
+  it('keys the American /x/ to no word an American says as lock', () => {
+    const hint = american.hints['/x/'];
+    expect(`${hint.word ?? ''} ${hint.note ?? ''} ${hint.choice ?? ''}`).not.toMatch(/\bloch\b/i);
+    for (const line of everyLine(american)) expect(line).not.toMatch(/\bloch\b/i);
+    expect(ideaSound(ideaOf('letter-chi'), modern, american)).not.toMatch(/\bloch\b/i);
+    expect(ideaText(ideaOf('consonant-pairs'), modern, american)).not.toMatch(/\bloch\b/i);
+  });
+
+  it('says chi, in American English, as in “chutzpah”, the throaty ch; British keeps loch', () => {
+    expect(ideaSound(ideaOf('letter-chi'), modern, american)).toBe('kh, as in “chutzpah”, the throaty ch, before a, o, ou and a consonant; before e and i it is softer, hy as in huge');
+    expect(soundWords(modern, american).choice('kh')).toBe('kh, as in “chutzpah”');
+    expect(ideaText(ideaOf('consonant-pairs'), modern, american)).toContain('γχ is ng plus kh as in chutzpah, the throaty ch (hy as in huge before e and i)');
+    expect(ideaSound(ideaOf('letter-chi'), modern, british)).toMatch(/^kh, as in “loch”, the Scottish ch/);
+  });
+});

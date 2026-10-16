@@ -91,12 +91,13 @@ A scheme's `lessons`, `soundRules` and `tutorGuide` are functions of it, and the
 `tutorGuideOf` (`src/speech/pronunciation.ts`; `src/data/grammar/lessons.ts` for the sheets, tiles and questions), which say them in the chosen
 accent (`chosenAccent()`, American until the choice in Settings sets it with `chooseAccent`: see 'The English accent setting' below).
 
-A quiz choice is one short label (mw-5r3p30.355): `soundWords(...).choice('kh')` is 'kh, as in “loch”' (a hint may give its own `choice`, as American's o: 'as in “or”, short'),
+A quiz choice is one short label (mw-5r3p30.355): `soundWords(...).choice('kh')` is 'kh, as in “chutzpah”' in American (a hint may give its own `choice`, as American's o: 'as in “or”, short'),
 a lesson's `choice` is that label for the idea, and `ideaChoice` (`lessons.ts`) is what `quickQuestion` (so Drill it's 'What sound does it make?') offers; the rule that goes
 with a sound ('before a, o, ou') stays in the lesson's `sound` and `text`. tests/unit/quick-round.test.ts holds every choice to 32 characters, no bracket, no 'before'/'after', no two alike.
 
 American keys the o to “or”, said short (PROVISIONAL, the Governor to confirm): the o of 'lot' is 'ah' to an American. Its r is 'a quick tap of
-the tongue, like the tt of “butter”', since an American never rolls one. British keeps the words the lessons gave before (“lot”, 'lightly rolled').
+the tongue, like the tt of “butter”', since an American never rolls one. Its χ is 'kh, as in “chutzpah”, the throaty ch' (mw-5r3p30.475, PROVISIONAL,
+the Governor to confirm): many Americans say 'loch' as 'lock', a k. British keeps the words the lessons gave before (“lot”, 'lightly rolled', “loch”).
 
 The ids never reach the learner unless he chooses IPA (below): `tests/unit/no-ipa-shown.test.tsx` draws every sound idea's sheet and asks every lesson, tile, question and
 rule line in each accent but IPA, and fails on an IPA-only character or a slashed id. `tests/unit/english-accents.test.ts` fails when an accent table

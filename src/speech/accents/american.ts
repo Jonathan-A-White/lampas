@@ -1,6 +1,7 @@
 // src/speech/accents/american.ts — the sound hints for a General American ear, the default (mw-5r3p30.352). Each was read for an American ear: the o
 // of 'lot' is 'ah' to an American, so the o is the o of 'or', said short (PROVISIONAL, the Governor to confirm); an American r is never rolled, so the
-// Greek tap is the tt of 'butter', the one place American English taps it. The rest are the words the lessons always gave.
+// Greek tap is the tt of 'butter', the one place American English taps it. Many Americans say 'loch' as 'lock', so χ is the throaty ch of
+// 'chutzpah' (mw-5r3p30.475, PROVISIONAL, the Governor to confirm); British keeps 'loch'. The rest are the words the lessons always gave.
 import type { EnglishAccent } from './types';
 
 export const AMERICAN: EnglishAccent = {
@@ -19,7 +20,7 @@ export const AMERICAN: EnglishAccent = {
     '/θ/': { word: 'thin' },
     '/ɣ/': { note: 'a soft throaty g' },
     '/ʝ/': { word: 'yes' },
-    '/x/': { word: 'loch', note: 'the Scottish ch' },
+    '/x/': { word: 'chutzpah', note: 'the throaty ch' },
     '/ç/': { word: 'huge' },
     '/z/': { word: 'zoo' },
     '/s/': { word: 'sun' },
