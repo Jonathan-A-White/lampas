@@ -248,7 +248,7 @@ function SayCard({ item, heard }: { item: RoundItem; heard: string | null }) {
             You said “{heard}”
           </p>
           <p data-testid="say-answer" className="mt-1 text-lg">
-            <span lang="grc" className="font-greek">
+            <span lang="grc" className="font-greek text-[length:var(--lp-greek-size)]">
               {glyph}
             </span>{' '}
             is {letter.title}
