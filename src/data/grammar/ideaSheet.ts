@@ -273,7 +273,7 @@ export function ideaExamples(id: string, chapters: Chapter[], verse?: number, ma
   return chosen;
 }
 
-/** The first sense of a gloss: 'the/this/who' is 'the', 'to keep: observe' is 'to keep'. */
+/** The first sense of a gloss: 'the/this/who' is 'the', 'to keep, observe' is 'to keep'. */
 const firstSense = (gloss: string): string => gloss.split(/[/;:,]/)[0].trim();
 
 /**

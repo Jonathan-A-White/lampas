@@ -1,5 +1,6 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type { AppliedChange } from '../settings/applied';
+import { cleanGloss } from './gloss';
 import { isItemId, legacyStoredId, plainIdOf } from './grammar/soundScope';
 
 export type WordState = 'solid' | 'learning' | 'dropped';
@@ -742,6 +743,39 @@ class LampasDB extends Dexie {
         if (learning.length < 2) return;
         const keep = learning.reduce((latest, row) => (row.since > latest.since ? row : latest));
         await levels.bulkPut(learning.filter((row) => row !== keep).map((row) => ({ ...row, level: 'notYet' as const })));
+      });
+    // v22: same tables. A word's gloss kept in a source form ('spirit/breath: spirit' from the lexicon, 'dat: in, by, with' from the old seed) is
+    // cleaned as every gloss now comes in (src/data/gloss.ts, mw-5r3p30.384); nothing else about the word changes.
+    this.version(22)
+      .stores({
+        words: 'lemma, lesson, state, *lemmas',
+        meta: 'key',
+        settings: 'key',
+        results: '++id, [lemma+when]',
+        answers: '++id, [ref+when]',
+        talks: '++id, [ref+when]',
+        drills: '++id, lemma, [lemma+step]',
+        readings: 'ref',
+        grammarKnown: 'term',
+        reviews: '[kind+id], due, kind',
+        grammarLevels: 'id, level',
+        usage: 'key, day, name',
+        tips: 'id, status',
+        talkPictures: '++id, turnId',
+        shares: 'id, createdAt',
+        requests: 'txid, sentAt, status',
+        readingHistory: '++id, ref, [lang+at]',
+        missTally: '[lang+unit], lang',
+        ladder: 'lang',
+        drillRuns: '++id, ideaId, at',
+      })
+      .upgrade(async (tx) => {
+        await tx
+          .table<Word, string>('words')
+          .toCollection()
+          .modify((word) => {
+            if (typeof word.gloss === 'string') word.gloss = cleanGloss(word.gloss);
+          });
       });
   }
 }

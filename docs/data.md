@@ -43,7 +43,7 @@ Every lemma of the text once (about 5,400, 320 KB), so a word he names that the 
 {"ἀγγελία":{"g":"message","s":"G31","c":"noun"},"σάρξ":{"g":"flesh","s":"G4561","c":"noun"}}
 ```
 
-`g` is the TBESG gloss, `s` the Strong's number, `c` the part of speech (`parseCode.ts` `splitParse`) of the lemma's first use in
+`g` is the TBESG gloss (cleaned of its `range: chosen` form, below), `s` the Strong's number, `c` the part of speech (`parseCode.ts` `splitParse`) of the lemma's first use in
 canonical order; keys are NFC, in alphabetical order. `src/data/lexicon.ts` (`loadLexicon`, `lookupLemma`) reads it.
 
 ## `frequency.json`
@@ -129,6 +129,13 @@ starts a paragraph whether or not it has `p`; the reader treats it so.
 * TBESG: a Strong's number with several entries (an extended-Strong's split such as G0032G / G0032H) resolves
   to its **first** entry, for the lemma, the gloss and the definition. The numbers that have more than one entry
   among the 5,381 the New Testament uses, with the gloss chosen, are: G1 (Alpha), G7 (Abijah), G32 (angel), G40 (holy), G68 (Field of), G129 (blood), G165 (an age: age), G223 (Alexander), G256 (Alphaeus), G301 (Amos), G367 (Ananias), G435 (man), G490 (Antioch), G630 (to release: release), G769 (weakness: weak), G770 (be weak: weak), G772 (weak), G863 (to release: leave), G906 (to throw: throw), G921 (Barnabas), G923 (Barsabbas), G928 (to torture: torture), G938 (queen), G1050 (Gaius), G1056 (Galilee), G1081 (offspring), G1085 (family: descendant), G1086 (Gerasene), G1093 (earth: planet), G1135 (woman), G1487 (if), G1492 (to perceive: understand), G1662 (Eliakim), G2060 (Hermes), G2197 (Zechariah), G2199 (Zebedee), G2216 (Zerubbabel), G2264 (Herod), G2266 (Herodias), G2269 (Esau), G2384 (Jacob), G2385 (James), G2424 (Jesus), G2455 (Judas), G2459 (Justus), G2491 (John), G2495 (John), G2500 (Joseph), G2501 (Joseph), G2533 (Caiaphas), G2536 (Cainan), G2541 (Caesar), G2542 (Caesarea), G2556 (evil/harm: evil), G2564 (to call: call), G2570 (good), G2577 (be weary/sick: weak), G2763 (potter), G2787 (ark: covenant), G2804 (Claudius), G2839 (common: unsanctified), G2857 (Colossae), G2962 (lord: God), G2976 (Lazarus), G3004 (to say), G3017 (Levi), G3123 (more), G3128 (Manasseh), G3137 (Mary), G3158 (Matthat), G3161 (Mattathias), G3197 (Melchi), G3558 (south), G3614 (home), G3624 (house: home), G3708 (to see: see), G3754 (that/since: that), G3972 (Paul), G3985 (to test/tempt: tempt), G3986 (temptation/testing: temptation), G4074 (Peter), G4102 (faith), G4151 (spirit/breath: spirit), G4160 (to do/make: do), G4245 (elder: Elder), G4413 (first), G4504 (Rufus), G4527 (Sala), G4528 (Shealtiel), G4549 (Saul), G4569 (Saul), G4613 (Simon), G4672 (Solomon), G4690 (seed: offspring), G4826 (Simeon), G5083 (to keep: observe), G5085 ((Sea of) Tiberias), G5259 (by/under: by), G5328 (Pharaoh), G5376 (Philip), G5438 (prison/watch: prison), G5442 (to keep/guard: observe), G5456 (voice/sound: voice), G5514 (Chloe), G5564 (place), G5586 (stone), G5590 (soul).
+* TBESG: a gloss written in the lexicon's own form, the word's range of senses and then the sense this entry is
+  (`spirit/breath: spirit`, the 33 of the list above and others with a colon), is shown as one plain list of meanings:
+  the range's senses, then the chosen one when the range lacks it (`spirit, breath`, `to keep, observe`, `an age`);
+  a slash alone (`cause/charge`) is the lexicon's plain 'or' and stays. `src/data/gloss.ts` `cleanGloss` does it in
+  `parseLexicon`, so `lexicon.json` and every chapter's `lex` hold the clean gloss; the seed build and Import run the same
+  function on the BMA list, whose case before a preposition's meanings (`dat: in, by, with`) becomes a word after them
+  (`in, by, with (dative)`), and Dexie v22 cleans a gloss a phone kept before (mw-5r3p30.384).
 * TBESG: the definition has its markup, scripture references, daggers and `(AS)` / `(ML)` source tags removed
   and is cut at a word boundary near 300 characters, ending in `…`. This is the "note of changes" CC BY 4.0
   asks for. The full lexicon is at the STEPBible address above.

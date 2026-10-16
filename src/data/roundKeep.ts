@@ -2,6 +2,7 @@
 // is kept whole in localStorage (the Quick test screen reads it synchronously when it opens), and cleared when the round
 // ends or he starts a new one.
 import type { QuizAnswer } from '../services/talk';
+import { cleanGloss } from './gloss';
 import type { Question } from './quiz';
 
 const KEY = 'lampas.round';
@@ -40,6 +41,9 @@ const asLemma = (q: Question): Question =>
     ? { ...q, prompt: q.lemma.normalize('NFC'), form: q.prompt }
     : q;
 
+/** A round kept before glosses were cleaned (mw-5r3p30.384) shows them as every gloss is shown now: 'spirit/breath: spirit' is 'spirit, breath'. */
+const cleaned = (q: Question): Question => ({ ...q, gloss: cleanGloss(q.gloss), options: q.options.map(cleanGloss) });
+
 function store(): Storage | undefined {
   try {
     return typeof localStorage === 'undefined' ? undefined : localStorage;
@@ -74,8 +78,9 @@ export function readRound(): SavedRound | null {
     if (typeof index !== 'number' || !Number.isInteger(index) || index < 0 || index >= round.questions.length) return null;
     if (picked !== null && typeof picked !== 'string') return null;
     if (picked !== null && !round.questions[index].options.includes(picked)) return null;
-    const answers = Array.isArray(round.answers) ? round.answers.filter(isAnswer) : [];
-    return { questions: round.questions.map(asLemma), index, picked: picked ?? null, missed: round.missed.map(asLemma), answers };
+    const answers = (Array.isArray(round.answers) ? round.answers.filter(isAnswer) : []).map((a) => ({ ...a, picked: cleanGloss(a.picked) }));
+    const kept = (q: Question): Question => cleaned(asLemma(q));
+    return { questions: round.questions.map(kept), index, picked: typeof picked === 'string' ? cleanGloss(picked) : null, missed: round.missed.map(kept), answers };
   } catch {
     return null;
   }

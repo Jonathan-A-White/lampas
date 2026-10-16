@@ -7,6 +7,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { cleanGloss } from '../src/data/gloss';
 import { decodeParse, splitParse } from '../src/data/parseCode';
 import type { BookIndex, Chapter, EnglishChunk, GreekWord, LexEntry, Verse } from '../src/data/chapter';
 import type { LemmaLexicon } from '../src/data/lexicon';
@@ -58,7 +59,7 @@ export function cleanDefinition(raw: string): string {
 /** 'G0686' -> 'G686' */
 const unpad = (key: string): string => `G${Number(key.slice(1))}`;
 
-/** A Strong's number with several TBESG entries resolves to its first. */
+/** A Strong's number with several TBESG entries resolves to its first. Its gloss is cleaned of the source's 'range: chosen' form (src/data/gloss.ts). */
 export function parseLexicon(text: string): Lexicon {
   const entries = new Map<string, { lemma: string; gloss: string; definition: string }>();
   for (const line of text.replace(/^\uFEFF/, '').split(/\r?\n/)) {
@@ -68,7 +69,7 @@ export function parseLexicon(text: string): Lexicon {
     if (entries.has(key)) continue;
     entries.set(key, {
       lemma: f[3].trim().normalize('NFC'),
-      gloss: f[6].trim().normalize('NFC'),
+      gloss: cleanGloss(f[6].trim().normalize('NFC')), // 'spirit/breath: spirit' is 'spirit, breath' (src/data/gloss.ts)
       definition: cleanDefinition(f[7]).normalize('NFC'),
     });
   }

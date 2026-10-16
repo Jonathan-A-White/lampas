@@ -4,6 +4,7 @@
 // Runs under plain node (type stripping), so it only uses erasable TypeScript.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
+import { cleanGloss } from '../src/data/gloss.ts';
 import type { SeedWord } from '../src/data/seedWord.ts';
 
 /** The distinct lemmas of the md's table, in the order they first appear. */
@@ -17,7 +18,7 @@ export function parseExampleWords(md: string): SeedWord[] {
     const lemma = rawLemma.normalize('NFC');
     const lesson = Number(lsn);
     const seen = byLemma.get(lemma);
-    if (!seen) byLemma.set(lemma, { lemma, gloss, lesson, pos });
+    if (!seen) byLemma.set(lemma, { lemma, gloss: cleanGloss(gloss), lesson, pos }); // 'dat: in, by, with' is 'in, by, with (dative)'
     else if (lesson < seen.lesson) seen.lesson = lesson;
   }
   return [...byLemma.values()];
