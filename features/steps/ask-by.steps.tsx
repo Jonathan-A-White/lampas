@@ -222,13 +222,24 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A setting change the app refuses never costs him the tutor\'s answer', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on the Verse view of Romans 8 with Ask the tutor chosen', openAskView);
-    When('the tutor answers {string} and also asks to change the theme', (_, text: string) => tutorAnswers(text, [{ key: 'theme', value: 'dark' }, { key: 'askBy', value: 'typing' }]));
+    When('the tutor answers {string} and also asks to change the theme', (_, text: string) => tutorAnswers(text, [{ key: 'theme', value: 'dark' }]));
     Then('the answer shows {string}', answerShows);
     And('no {string} is shown', noText);
     And('no {string} card is shown', noText);
     And('Ask by is still speaking', async () => {
       expect(await askBySaved()).not.toBe('typing');
     });
+  });
+
+  Scenario("Ask by Typing after a change the app ignores still switches it, and the reply's card says so", ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on the Verse view of Romans 8 with Ask the tutor chosen', openAskView);
+    When('the tutor answers {string} with a theme change first and then Ask by Typing', (_, text: string) => tutorAnswers(text, [{ key: 'theme', value: 'dark' }, { key: 'askBy', value: 'typing' }]));
+    Then('the answer shows {string}', answerShows);
+    And('the answer says {string}', async (_, text: string) => {
+      expect(await within(viewEl()).findByText(text)).toBeInTheDocument();
+    });
+    And('Ask by is saved as {string}', savedAs);
+    And('Ask the tutor shows the text box, Send and a small mic and no Hold to ask bar', typeFirst);
   });
 
   Scenario('A change to the value already set shows no Changed card', ({ Given, When, Then, And }) => {

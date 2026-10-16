@@ -43,6 +43,14 @@ Feature: Ask by Speaking or Typing
     And no "Changed:" card is shown
     And Ask by is still speaking
 
+  Scenario: Ask by Typing after a change the app ignores still switches it, and the reply's card says so
+    Given Lampas is opened on the Verse view of Romans 8 with Ask the tutor chosen
+    When the tutor answers "I have switched Ask by to Typing." with a theme change first and then Ask by Typing
+    Then the answer shows "I have switched Ask by to Typing."
+    And the answer says "Changed: Ask by: Typing"
+    And Ask by is saved as "typing"
+    And Ask the tutor shows the text box, Send and a small mic and no Hold to ask bar
+
   Scenario: A change to the value already set shows no Changed card
     Given Lampas is opened on the Verse view of Romans 8 with Ask the tutor chosen
     When the tutor answers "You are already typing." and also asks for Ask by Typing while it is Typing
