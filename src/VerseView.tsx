@@ -28,7 +28,8 @@ import type { AskState } from './useAsks';
 import { actionsFor, type VerseAction } from './verse/action';
 import { useAiAllowed } from './gate/licenceContext';
 import { audibleChapterLabel, audibleListen, audioBibleOf } from './resources/audioBible';
-import { armFallback } from './resources/openApp';
+import { SendOff } from './plan/SendOff';
+import { useSendOff } from './plan/useSendOff';
 import { audioBibleSetting } from './settings/definitions';
 import { useSetting } from './settings/store';
 
@@ -94,6 +95,7 @@ export function VerseView(props: VerseViewProps) {
   const reference = unitReference(title, verse);
   const audioBible = audioBibleOf(useSetting(audioBibleSetting) ?? 'off');
   const audibleChapter = audibleChapterLabel(book, chapter);
+  const sendOff = useSendOff();
   const passage = verse.to !== undefined;
   const name = unitName(verse);
   const noun = passage ? 'passage' : 'verse';
@@ -172,18 +174,14 @@ export function VerseView(props: VerseViewProps) {
               <a
                 href={audibleListen(audioBible, book, chapter).href}
                 aria-label={`Listen in Audible: ${audioBible.name}, ${audibleChapter}`}
-                onClick={(e) => {
-                  // Audible wants the link stamped with the time of the tap: make it again as the tap lands, before the phone follows it
-                  const listen = audibleListen(audioBible, book, chapter);
-                  e.currentTarget.href = listen.href;
-                  if (listen.fallback !== undefined) armFallback(listen.fallback);
-                }}
+                onClick={(e) => sendOff.tap(e, { audio: audioBible, code: book, chapter })}
                 className="flex min-h-12 items-center rounded-lg bg-surface px-3 text-base font-medium text-accent active:bg-line"
               >
                 Listen in Audible
               </a>
               <p className="px-1 pt-2 text-base">{`In Audible: Chapters > ${audibleChapter}`}</p>
               <p className="px-1 pt-1 text-sm text-muted">{audioBible.credit}</p>
+              <SendOff send={sendOff} />
             </div>
           ) : null}
           {action === 'read' && ai ? (

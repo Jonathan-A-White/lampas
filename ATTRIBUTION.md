@@ -98,7 +98,7 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
 - **[Audible](https://www.audible.com)** and **The Word of Promise Audio Bible** (NKJV), by Thomas Nelson. Only if you choose it in Settings > Study resources >
   Audio Bible: Lampas opens the Audible app on the chapter you are reading (in the Verse view's Listen) or on any chapter of the Old Testament you pick in the chapter picker (beside Read in Logos), using Audible's own app link, and names the chapter in Audible's list. The chapter start times
   (a number of milliseconds for each of the Bible's chapters) were read once from [Audible's public catalogue](https://api.audible.com/1.0/content/B003UC45I8/metadata?response_groups=chapter_info) and are kept in Lampas; nothing is looked up as you read.
-  You need the book in your own Audible library. No audio or text is taken from either. Their own terms apply; the audio is yours through Audible.
+  With a reading plan started, a short sheet comes first and Lampas notes the time you left, so it can help you find your place when you are back. You need the book in your own Audible library. No audio or text is taken from either. Their own terms apply; the audio is yours through Audible.
   The app link and the reading of the chapter list come from [audible-kit](https://github.com/Jonathan-A-White/audible-kit) (`audible-kit`) by Jonathan A. White. Licence: [MIT](https://github.com/Jonathan-A-White/audible-kit/blob/main/LICENSE). Changes: none.
 - **[Blue Letter Bible](https://www.blueletterbible.org)** and **[STEPBible](https://www.stepbible.org)**. Links from a word to its Strong's
   entry, if you switch Strong's on. Links only: nothing is copied. Their own terms apply.
