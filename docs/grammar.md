@@ -298,6 +298,16 @@ The strip and the screen that show his goal moving (mw-hqd5bz.10). Both read `us
 
 A word's state is looked up by its headword and by every lexicon lemma it goes by (`wordStatesOf`), the best state winning.
 
+## Graded verses
+
+mw-emk3xt.1, PROVISIONAL (`WORDS_SHARE`). A question about a verse's forms is only fair on a verse whose forms he has met. `src/data/grammar/gradedVerses.ts` (pure: no store, no screen) grades the verses of a goal as a whole; `frontier.ts` `easiestVerse` still ranks the verses of one new word.
+
+- **`gradeVerse(verse, passes, known, {code, chapter, ideaMet})`** gives `{ref, forms {pass, total}, words {known, total}, atLevel, missing, score}`. `passes` is the form test `formLevel.ts` `pickerPasses` builds, `known` the NFC lemmas he has solid or learning. `atLevel`: every form passes and `words.known / words.total >= WORDS_SHARE` (0.5); a verse with no Greek is never at level. `score` is the share of forms that pass times the share of words he knows (0 to 1). `missing` lists the ideas (`ideasOfWord`, so the pattern ideas too, plus `ALWAYS_NEEDED`) of the forms that fail, those `ideaMet` (`ideaMetBy(levels, 'solid' | 'frontier')`) says he has left out; with no `ideaMet` it lists every idea of a failing form.
+- **`gradedVerses(chapters, passes, known, ideaMet?)`** grades every verse, easiest first: the higher score, then the fewer Greek words, then the text's order.
+- **`easiestWith(ideaId, graded, chapters)`** is the easiest verse at his level that has a form needing the idea, else the easiest with one at all, else null.
+
+Tests: `tests/unit/gradedVerses.test.ts` (the fixture, and 1 John 1 with his seed, every noun idea solid and every verb idea not yet). No screen uses it yet.
+
 ## One idea at a time
 
 mw-i7xe0n.6, PROVISIONAL (the switch prompt, the one-time fix keeping the latest and the auto-advance are the Governor's to confirm). Only one idea is at the frontier at a time: the one he is learning now. The letters, vowel pairs, consonant pairs and breathings are items of a group (`groupOfItem`, `isItemId`), not ideas he learns one by one, so they are never counted and may be frontier together. The rule is in `repositories/grammarLevels.ts` and every path that writes a level keeps to it:
