@@ -52,6 +52,32 @@ export function englishRuns(chunk: EnglishChunk): EnglishRun[] {
   return runs;
 }
 
+/** The marks the verse's punctuation leaves at a chunk's ends: stops, commas, dashes, brackets, an ellipsis, double quotes, an opening single quote. */
+const EDGE_MARK = /[\s.,;:!?…—–\-"“”‘()[\]]/u;
+const APOSTROPHE = /[’']/u;
+const WORDLIKE = /[\p{L}\p{N}]/u;
+
+/**
+ * A chunk's English as the words alone, for a sheet that shows it out of its verse (mw-5r3p30.265): 'at all times.' is 'at all times',
+ * '“super-apostles,”' is 'super-apostles'. Only the ends lose marks; an apostrophe or a hyphen inside stays ('Lord’s,' is 'Lord’s'). A ’ at the
+ * end is a closing quote after a mark ('going?’') or when a ‘ opened the chunk ('‘Yes’'), and a possessive after a letter ('Jesus’'), which
+ * stays. A chunk of nothing but marks ('(-') is given back as it stands. The Reader's own text never goes through this.
+ */
+export function bareEnglish(text: string): string {
+  let start = 0;
+  let end = text.length;
+  while (start < end && (EDGE_MARK.test(text[start]) || APOSTROPHE.test(text[start]))) start++;
+  const quoted = text.slice(0, start).includes('‘');
+  while (end > start) {
+    const mark = text[end - 1];
+    if (EDGE_MARK.test(mark)) end--;
+    else if (APOSTROPHE.test(mark) && (!WORDLIKE.test(text[end - 2] ?? '') || (quoted && !text.slice(start, end - 1).includes('’')))) end--;
+    else break;
+  }
+  const words = text.slice(start, end);
+  return WORDLIKE.test(words) ? words : text.trim();
+}
+
 /** Words a translator may supply in front of a noun without them being a neighbour's: 'the beginning' stays whole. */
 const ARTICLES = new Set(['the', 'a', 'an']);
 
@@ -70,7 +96,7 @@ export function ownEnglish(chunk: EnglishChunk): string {
   while (end > 0 && words[end - 1].supplied) end--;
   let start = 0;
   while (start < end && words[start].supplied && !(ARTICLES.has(words[start].text.toLowerCase()) && words.slice(start, end).some((w) => !w.supplied))) start++;
-  return words.slice(start, end).map((w) => w.text).join(' ').replace(/[\s,.;:!?—–-]+$/u, '');
+  return bareEnglish(words.slice(start, end).map((w) => w.text).join(' '));
 }
 
 /** The chunk's English with each run of supplied words between asterisks, as Markdown italics: '*was* king'. What the tutor is sent. */
