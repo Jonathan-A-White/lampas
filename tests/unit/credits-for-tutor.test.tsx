@@ -100,4 +100,12 @@ describe('the questions About suggests', () => {
     expect(questions).toContain('What does STEPBible give me?');
     expect(questions.length).toBeLessThanOrEqual(3);
   });
+
+  it('say Biblical Mastery Academy inspired the path and nothing of theirs is copied, without naming BMA Tutor', () => {
+    const bma = CREDITS.find((c) => c.name === 'Biblical Mastery Academy');
+    expect(bma?.link).toBe('https://biblicalmastery.academy/');
+    expect(bma?.use).not.toContain('BMA Tutor');
+    expect(bma?.use).toMatch(/inspired/i);
+    expect(bma?.use).toMatch(/nothing of theirs is copied/i);
+  });
 });
