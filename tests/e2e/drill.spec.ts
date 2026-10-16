@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
+import { SETTLE_MS } from '../../src/ui/settle';
 import { openUnlocked } from './unlocked';
 
 // The page never scrolls and never grows wider than the window.
@@ -97,4 +98,38 @@ test('a drill left half done is offered again after a reload, and Resume goes on
   await page.getByRole('button', { name: 'Resume' }).click();
   await expect(page.getByTestId('drill-word')).toHaveAttribute('data-verse', verse ?? '');
   await expect(page.getByTestId('drill-step')).toHaveAttribute('data-step-id', step ?? '');
+});
+
+// The sweep (mw-5r3p30.430): when the next step is drawn, Ask the tutor | Talk about it move up under the top edge of where Next stood (when the full
+// parsing line under a miss goes too), so a double tap on Next near its top left the drill for the Reader. A new step's links wait for it to settle
+// (src/ui/settle.ts). The overlap depends on his answer, so the double tap is made near Next's top, left and right, step after step until one lands on a link.
+test('a double tap near the top of Next step stays in the drill, though Ask the tutor or Talk about it now stands there', async ({ page }) => {
+  await openUnlocked(page);
+  await page.addInitScript((ms) => window.localStorage.setItem('lampas.settleMs', ms), String(SETTLE_MS));
+  await page.goto('/#/drill');
+  await expect(page.getByTestId('drill-step')).toHaveAttribute('data-step-id', 'pos');
+  let landed = 0;
+  for (let k = 0; k < 12 && landed === 0; k += 1) {
+    const subtitle = await page.getByRole('heading', { name: 'Parsing drill', level: 1 }).locator('xpath=..').textContent();
+    await page.waitForTimeout(SETTLE_MS + 100);
+    await page.locator('[data-option]').first().click();
+    const box = (await page.getByTestId('next').boundingBox())!;
+    const x = box.x + box.width * (k % 2 === 0 ? 0.25 : 0.75);
+    const y = box.y + 2;
+    await page.mouse.click(x, y);
+    await page.waitForTimeout(120);
+    landed += await page.evaluate(([px, py]) => (document.elementFromPoint(px, py)?.closest('button')?.textContent?.match(/^(Ask the tutor|Talk about it)$/) ? 1 : 0), [x, y]);
+    await page.mouse.click(x, y);
+    await expect(page.getByTestId('next'), `step ${k + 1}`).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Parsing drill', level: 1 }), `step ${k + 1}`).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Parsing drill', level: 1 }).locator('xpath=..')).not.toHaveText(subtitle ?? '');
+    await expect(page.getByRole('textbox', { name: 'Your question' })).toHaveCount(0);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+  }
+  // the second tap did land on a link at least once, so the guard was tried
+  expect(landed).toBeGreaterThan(0);
+  // a link he taps after reading the step still leaves for the Reader
+  await page.waitForTimeout(SETTLE_MS + 100);
+  await page.getByRole('button', { name: 'Ask the tutor', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Parsing drill', level: 1 })).toHaveCount(0);
 });

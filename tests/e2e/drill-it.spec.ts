@@ -106,8 +106,8 @@ for (const { name, size } of VIEWPORTS) {
   });
 }
 
-/** The idea sheet of The noun at phone width, with a new card ignoring taps for its moment (src/ui/settle.ts) as on his phone: openUnlocked turns that moment off. */
-async function openNoun(page: Page) {
+/** An idea sheet (The noun unless named) at phone width, with a new card ignoring taps for its moment (src/ui/settle.ts) as on his phone: openUnlocked turns that moment off. */
+async function openIdea(page: Page, name = 'The noun') {
   await page.setViewportSize({ width: 390, height: 844 });
   await openUnlocked(page);
   // init scripts run in order: this one puts the moment back after openUnlocked's '0'
@@ -119,7 +119,7 @@ async function openNoun(page: Page) {
   await page.goto('/#/goal');
   await page.reload();
   await page.getByTestId('ideas-bar').click();
-  await page.getByTestId('ideas-list').getByRole('button', { name: 'The noun', exact: true }).click();
+  await page.getByTestId('ideas-list').getByRole('button', { name, exact: true }).click();
   const idea = page.getByRole('dialog', { name: 'Idea' });
   await expect(idea.getByTestId('idea-loading')).toHaveCount(0);
   return idea;
@@ -154,7 +154,7 @@ async function doubleTap(page: Page, target: ReturnType<Page['locator']>, gap: n
 // Each gap is a new walk, so a miss can never end it before the next question: one answer at step 1 always leads to a second question.
 // 300 ms is the moment itself (SETTLE_MS): a second tap that close to it races the browser's own delay, so the gaps stop short of it.
 test('a double tap on Next takes no answers away from the next question', async ({ page }) => {
-  const idea = await openNoun(page);
+  const idea = await openIdea(page);
   for (const gap of [80, 120, 200]) {
     const drill = await startDrill(page, idea);
     await answerOne(page, drill);
@@ -181,12 +181,8 @@ test('a double tap on Next takes no answers away from the next question', async 
 
 // The sweep (mw-5r3p30.430): Done stands where Finish was, so a double tap on Finish closed the result before he could read it.
 test('a double tap on Finish leaves the result of Drill it on screen', async ({ page }) => {
-  const drill = await startDrill(page, await openNoun(page));
-  for (;;) {
-    await answerOne(page, drill);
-    if ((await drill.getByTestId('drill-next').textContent()) === 'Finish') break;
-    await drill.getByTestId('drill-next').click();
-  }
+  const drill = await startDrill(page, await openIdea(page));
+  await answerToFinish(page, drill);
   await doubleTap(page, drill.getByTestId('drill-next'), 120);
   await expect(drill.getByTestId('drill-result')).toBeVisible();
   await expect(drill.getByRole('button', { name: 'Done', exact: true })).toBeVisible();
@@ -194,4 +190,66 @@ test('a double tap on Finish leaves the result of Drill it on screen', async ({ 
   await page.waitForTimeout(SETTLE_MS + 100);
   await drill.getByRole('button', { name: 'Done', exact: true }).click();
   await expect(drill).toHaveCount(0);
+});
+
+/** He answers until the last question of the walk shows Finish. */
+async function answerToFinish(page: Page, drill: ReturnType<Page['locator']>) {
+  for (;;) {
+    await answerOne(page, drill);
+    if ((await drill.getByTestId('drill-next').textContent()) === 'Finish') return;
+    await drill.getByTestId('drill-next').click();
+  }
+}
+
+// The sweep (mw-5r3p30.430): in a short drill of Your drill plan, Done stands where Finish was.
+test('a double tap on Finish leaves the result of a short drill on screen', async ({ page }) => {
+  const idea = await openIdea(page);
+  // a run that proves the idea makes no plan: run again until one does not (his answers are the first left, so most runs miss)
+  let plan = idea.getByRole('button', { name: 'Start the first drill' });
+  for (let run = 0; run < 5 && !(await plan.count()); run += 1) {
+    if (run > 0) {
+      await page.waitForTimeout(SETTLE_MS + 100);
+      await page.getByRole('dialog', { name: 'Drill it' }).getByRole('button', { name: 'Done', exact: true }).click();
+    }
+    const drill = await startDrill(page, idea);
+    await answerToFinish(page, drill);
+    await drill.getByTestId('drill-next').click();
+    await expect(drill.getByTestId('drill-result')).toBeVisible();
+    plan = drill.getByRole('button', { name: 'Start the first drill' });
+  }
+  await plan.click();
+  const short = page.getByRole('dialog', { name: 'Short drill' });
+  for (;;) {
+    await page.waitForTimeout(SETTLE_MS + 100);
+    await short.locator('[data-option]').first().click();
+    if ((await short.getByTestId('plan-drill-next').textContent()) === 'Finish') break;
+    await short.getByTestId('plan-drill-next').click();
+  }
+  await doubleTap(page, short.getByTestId('plan-drill-next'), 120);
+  await expect(short.getByTestId('plan-drill-result')).toBeVisible();
+  await page.waitForTimeout(SETTLE_MS + 100);
+  await short.getByTestId('plan-drill-done').click();
+  await expect(short).toHaveCount(0);
+});
+
+// The sweep (mw-5r3p30.430): in the letter drill, Done stands where Finish the round was, so a double tap on it ended the sitting unread.
+test('a double tap on Finish the round leaves the round result of the letter drill on screen', async ({ page }) => {
+  const idea = await openIdea(page, 'The Greek alphabet');
+  // Learning on The Greek alphabet opens the letter drill
+  await idea.getByRole('slider', { name: 'Your level' }).focus();
+  await page.keyboard.press('ArrowRight');
+  const drill = page.getByRole('dialog', { name: 'Letter drill' });
+  for (;;) {
+    await page.waitForTimeout(SETTLE_MS + 100);
+    await drill.locator('[data-option]').first().click();
+    if ((await drill.getByTestId('letter-next').textContent()) === 'Finish the round') break;
+    await drill.getByTestId('letter-next').click();
+  }
+  await doubleTap(page, drill.getByTestId('letter-next'), 120);
+  await expect(drill.getByTestId('letter-round-result')).toBeVisible();
+  await expect(drill.getByTestId('letter-drill-step')).toHaveText('Round 1 done');
+  // after reading it, Another round starts the next
+  await page.waitForTimeout(SETTLE_MS + 100);
+  await drill.getByRole('button', { name: 'Another round', exact: true }).click();
+  await expect(drill.getByTestId('letter-drill-step')).toHaveText(/^Round 2 · Question 1 of \d+$/);
 });

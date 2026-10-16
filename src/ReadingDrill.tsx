@@ -15,6 +15,7 @@ import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
 import { HoldBar } from './ui/HoldBar';
 import { NextBar } from './ui/NextBar';
+import { useSettled } from './ui/settle';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { useElapsed } from './ui/useElapsed';
@@ -135,6 +136,9 @@ export function ReadingDrill({ offer, pronunciation, onClose }: { offer: DrillOf
   const sent = state?.phase === 'sending' || state?.phase === 'waiting';
   const recording = state?.phase === 'recording';
   const last = at === words.length - 1;
+  // the next word's Skip this word is the button Next word was, in the same place: a second tap of a double tap on Next word waits for the new word to
+  // settle (src/ui/settle.ts, mw-5r3p30.430)
+  const settled = useSettled(at);
   const lang = view === 'greek' ? 'grc' : 'en';
   const idea = offer.kind === 'sound' ? ideaOfSound(offer.unit) : undefined;
   const title = offer.kind === 'sound' ? `Drill: ${offer.glyphs}` : 'Drill: words you keep missing';
@@ -199,7 +203,7 @@ export function ReadingDrill({ offer, pronunciation, onClose }: { offer: DrillOf
               <WordStatus state={state} onRetry={() => checks.retry(verse)} />
               {answer && !sent && state?.phase !== 'failed' ? <WordResult answer={answer} view={view} /> : null}
               <NextBar where="sheet">
-                <button type="button" onClick={() => setAt(at + 1)} className={answer ? PRIMARY : BUTTON}>
+                <button type="button" onClick={() => settled() && setAt(at + 1)} className={answer ? PRIMARY : BUTTON}>
                   {answer ? (last ? 'Finish' : 'Next word') : 'Skip this word'}
                 </button>
               </NextBar>

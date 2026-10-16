@@ -10,6 +10,7 @@ import { FacetLabel } from './FacetLabel';
 import { useSheetBack } from './ui/sheetBack';
 import { focusOnMount } from './ui/focus';
 import { FootBar } from './ui/NextBar';
+import { useSettled } from './ui/settle';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border text-lg font-medium';
 
@@ -30,6 +31,8 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions, onFinish, onClo
   const leave = over ? () => onFinish(passed) : onClose;
   useSheetBack(leave);
   const question = over ? null : questions[index];
+  // Done stands where Finish was: a second tap of a double tap on Finish waits for the result to settle (src/ui/settle.ts, mw-5r3p30.430)
+  const settled = useSettled(index);
 
   const pick = (option: string) => {
     if (!question || picked !== null) return;
@@ -71,7 +74,7 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions, onFinish, onClo
       </div>
       <FootBar>
         {over ? (
-          <button type="button" data-testid="plan-drill-done" ref={focusOnMount} onClick={() => onFinish(passed)} className={`${BUTTON} border-accent bg-accent text-accent-fg`}>
+          <button type="button" data-testid="plan-drill-done" ref={focusOnMount} onClick={() => settled() && onFinish(passed)} className={`${BUTTON} border-accent bg-accent text-accent-fg`}>
             Done
           </button>
         ) : picked !== null ? (

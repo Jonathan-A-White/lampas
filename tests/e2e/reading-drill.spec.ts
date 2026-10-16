@@ -3,6 +3,7 @@ import { honestMic } from '../support/honest-fakes';
 import { makeFakePostern, WELL_READ_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
+import { SETTLE_MS } from '../../src/ui/settle';
 import { openUnlocked } from './unlocked';
 import { chooseAction } from './verse-view';
 import { holdFor } from '../support/hold';
@@ -84,4 +85,48 @@ test('two misses of ου offer Drill this sound, which shows the rule and reads 
   await expect(drill).toContainText('Drilled ου');
   await drill.getByRole('button', { name: 'Back to the ladder', exact: true }).click();
   await expect(drill).toHaveCount(0);
+});
+
+// The sweep (mw-5r3p30.430): the next word's Skip this word is the button Next word was, so a double tap on Next word skipped a word unread; it
+// waits for the new word to settle (src/ui/settle.ts). Back to the ladder on the end card does not stand where Finish was: the end card stays.
+test('a double tap on Next word skips no word, and one on Finish leaves the end card on screen', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: OU_WORD_ANSWER };
+  await routePostern(page, fake);
+  await honestMic(page);
+  await openUnlocked(page);
+  await page.addInitScript((ms) => window.localStorage.setItem('lampas.settleMs', ms), String(SETTLE_MS));
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Greek', exact: true }).click();
+  await chooseAction(page, 28, 'Read it aloud');
+  const panel = page.getByRole('region', { name: 'Reading check' });
+  const bar = page.getByRole('button', { name: 'Hold to read verse 28', exact: true });
+  await holdFor(page, bar, HOLD_MS);
+  await expect(panel).toContainText('Words to fix');
+  await holdFor(page, bar, HOLD_MS);
+  await panel.getByRole('button', { name: 'Drill this sound', exact: true }).click();
+  const drill = page.getByRole('dialog', { name: 'Reading drill' });
+  await drill.getByRole('button', { name: 'Start the drill', exact: true }).click();
+
+  fake.autoReply = { status: 'answered', answer: WELL_READ_ANSWER };
+  const twice = async (name: string) => {
+    const box = (await drill.getByRole('button', { name, exact: true }).boundingBox())!;
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await page.waitForTimeout(120);
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  };
+  for (let i = 0; i < 5; i++) {
+    await expect(drill).toContainText(`Word ${i + 1} of 5`);
+    await holdFor(page, drill.getByRole('button', { name: /^Hold to read / }), HOLD_MS);
+    await expect(drill).toContainText('Well read');
+    await twice(i === 4 ? 'Finish' : 'Next word');
+    if (i < 4) {
+      // the next word is up, not skipped: the double tap moved on one word
+      await expect(drill).toContainText(`Word ${i + 2} of 5`);
+      await expect(drill.getByRole('button', { name: 'Skip this word', exact: true })).toBeVisible();
+    }
+  }
+  await expect(drill).toContainText('Drilled ου');
+  await expect(drill.getByRole('button', { name: 'Back to the ladder', exact: true })).toBeVisible();
 });
