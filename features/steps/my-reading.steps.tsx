@@ -126,8 +126,11 @@ function coarseClock(step: number, first: number): void {
       this.currentTime = position();
       this.dispatchEvent(new Event('playing'));
     }, 0);
+    // the element shows the last tick of its own grid (first, first + step, ...), however late the timer ran on a loaded host
+    let tick = 0;
     const update = () => {
-      this.currentTime = position();
+      this.currentTime = Math.min(position(), from + first + tick * step);
+      tick += 1;
       this.dispatchEvent(new Event('timeupdate'));
       coarseTimer = setTimeout(update, step * 1000);
     };
