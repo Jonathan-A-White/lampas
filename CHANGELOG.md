@@ -1,51 +1,24 @@
 # What's new
 
-## 0.1.275
+## 0.1.276
 _2026-10-16_
-- New: About now thanks Biblical Mastery Academy and links to their course and community for anyone who wants a teacher.
+- New: The letter drill now asks you to say a letter's name or sound aloud and checks it with your phone's speech recognition; a miss plays the right sound.
 
 ## 0.1.275
 _2026-10-16_
+- New: About now thanks Biblical Mastery Academy and links to their course and community for anyone who wants a teacher.
 - Fixed: A quick double tap on Next in the grammar drills no longer uses up your Hint, skips a word, closes the result or leaves for the tutor.
 
 ## 0.1.274
 _2026-10-16_
 - Fixed: When you paste a long question or prayer to the tutor, it now keeps all of it and does not cut it after the first line.
-
-## 0.1.274
-_2026-10-16_
 - New: once a pen has touched the screen, each letter's lesson and the letter drill let you write the letter by hand (trace, then copy, then from memory), checked on the phone, with a Handwriting drills switch in Settings.
-
-## 0.1.274
-_2026-10-16_
 - Fixed: reading a verse aloud with Greek words woven in no longer marks the Greek words you read in Greek as missed, and the panel says it can check English only.
-
-## 0.1.274
-_2026-10-16_
-- Fixed: a Greek word you tap to hear is now said with its stress where the respelling shows it, and Settings names your Greek voice and lets you test it.
-
-## 0.1.274
-_2026-10-16_
-- New: once a pen has touched the screen, each letter's lesson and the letter drill let you write the letter by hand (trace, then copy, then from memory), checked on the phone, with a Handwriting drills switch in Settings.
-
-## 0.1.274
-_2026-10-16_
-- Fixed: When you paste a long question or prayer to the tutor, it now keeps all of it and does not cut it after the first line.
-
-## 0.1.274
-_2026-10-16_
-- Fixed: reading a verse aloud with Greek words woven in no longer marks the Greek words you read in Greek as missed, and the panel says it can check English only.
-
-## 0.1.274
-_2026-10-16_
 - Fixed: a Greek word you tap to hear is now said with its stress where the respelling shows it, and Settings names your Greek voice and lets you test it.
 
 ## 0.1.273
 _2026-10-16_
 - New: One path: Lampas now teaches by its own ladder for everyone. Thank you, Biblical Mastery Academy, for the inspiration (see About).
-
-## 0.1.273
-_2026-10-16_
 - New: 'Listen in Audible' now opens the Audible app and plays from the start of the chapter you are reading.
 
 ## 0.1.272
@@ -55,65 +28,35 @@ _2026-10-16_
 ## 0.1.271
 _2026-10-16_
 - Fixed: The tutor no longer asks again what you are learning Greek for after you have said you would rather not say.
-
-## 0.1.271
-_2026-10-16_
 - New: fifty more of the New Testament's commonest words now have a memory picture beside them on Words and in the Quick test.
 
 ## 0.1.270
 _2026-10-16_
 - Fixed: Drill it no longer asks the same word twice when your reading goal has no word with the letter you are drilling.
-
-## 0.1.270
-_2026-10-16_
 - New: Review can ask you to parse a whole word step by step, and to tap who does the action, what is done and what it is done to in a verse.
 
 ## 0.1.269
 _2026-10-16_
 - Fixed: after a partly read verse, the next word to practise is now always fully visible above the buttons instead of hidden behind them.
-
-## 0.1.269
-_2026-10-16_
 - New: a Weave setting 'Order' lays the woven verse out in the Greek word order, with the English of the other words where their Greek stands.
 
 ## 0.1.268
 _2026-10-16_
 - New: Review now asks what a phrase of a verse says, showing the Greek and four English choices taken from the verse itself.
-
-## 0.1.268
-_2026-10-16_
 - Fixed: a Greek word of one letter, like ὁ, now sounds in your phone's own Greek voice instead of a robotic clip, and the letter drills say a vowel's sound.
 
 ## 0.1.267
 _2026-10-16_
 - Fixed: on a phone whose clock is ahead, About's 'Last tutor answer' no longer shows a wait longer than the whole answer, and its parts add up to the total.
-
-## 0.1.267
-_2026-10-16_
 - Fixed: Word meanings no longer show the dictionary's shorthand: πνεῦμα reads "spirit, breath" and ἐν reads "in, by, with (dative)".
 
 ## 0.1.266
 _2026-10-16_
 - New: Settings has an English accent choice (American, British or IPA) that changes every sound hint at once, and the tutor knows which you chose.
-
-## 0.1.266
-_2026-10-16_
 - New: Moving The Greek alphabet to Learning now starts a letter drill: all 24 letters, small and capital, heard or named, in rounds until each is right.
-
-## 0.1.266
-_2026-10-16_
 - Fixed: With the Immersive reader on, turning to the next or previous chapter now keeps the bars hidden instead of bringing them back.
-
-## 0.1.266
-_2026-10-16_
 - Fixed: Play my reading now starts right where your voice starts, skipping the silence before your first word.
-
-## 0.1.266
-_2026-10-16_
 - Fixed: on Share to Lampas, a double tap on Page order, Bible order or Choose a talk no longer opens a reference or picks a talk by mistake.
-
-## 0.1.266
-_2026-10-16_
 - Fixed: In the evening, the Memory page wrote tomorrow's date beside your 'no' to learning Greek; it now writes today's.
 
 ## 0.1.264
