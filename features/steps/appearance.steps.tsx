@@ -188,6 +188,20 @@ describeFeature(feature, ({ Scenario }) => {
     And('the browser bar colour is the light one', () => waitFor(() => expect(barColour()).toBe(THEME_COLORS.light)));
   });
 
+  Scenario('Theme Sepia gives warm paper whatever the phone says, and Light and Dark still come back', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on a phone whose colour scheme is dark, with nothing saved', () => openOnPhone(true));
+    When('he sets Theme to Sepia in Settings', () => pickChoice('Theme', 'Sepia'));
+    Then('the bus has heard the theme is sepia', () => waitFor(() => expect(latest('theme-changed')?.theme).toBe('sepia')));
+    And('the page is sepia', () => waitFor(() => expect(pageTheme()).toBe('sepia')));
+    And('the browser bar colour is the sepia one', () => waitFor(() => expect(barColour()).toBe(THEME_COLORS.sepia)));
+    When('he sets Theme to Light in Settings', () => pickChoice('Theme', 'Light'));
+    Then('the page is light', () => waitFor(() => expect(pageTheme()).toBe('light')));
+    And('the browser bar colour is the light one', () => waitFor(() => expect(barColour()).toBe(THEME_COLORS.light)));
+    When('he sets Theme to Dark in Settings', () => pickChoice('Theme', 'Dark'));
+    Then('the page is dark', () => waitFor(() => expect(pageTheme()).toBe('dark')));
+    And('the browser bar colour is the dark one', () => waitFor(() => expect(barColour()).toBe(THEME_COLORS.dark)));
+  });
+
   Scenario('Theme and Text size can be set on a loaded phone whose Settings draws its controls late', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone whose colour scheme is light, with nothing saved, and Settings is slow to draw its controls', () =>
       openOnPhone(false, 400),

@@ -10,8 +10,10 @@ import { openUnlocked } from './unlocked';
 const TAP_WITH_MARGIN = 45;
 const DARK_CANVAS = 'rgb(10, 14, 23)';
 const LIGHT_CANVAS = 'rgb(243, 245, 249)';
+const SEPIA_CANVAS = 'rgb(244, 236, 216)';
 
 const canvasOf = (page: Page) => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+const themeOf = (page: Page) => page.evaluate(() => document.documentElement.dataset.theme);
 const barOf = (page: Page) => page.evaluate(() => document.querySelector('meta[name="theme-color"]')?.getAttribute('content'));
 
 async function openReader(page: Page) {
@@ -76,6 +78,35 @@ test('Theme Dark makes the reader dark whatever the phone says', async ({ page }
   await openSettings(page);
   await choose(page, 'Theme', 'Light');
   await expect.poll(() => canvasOf(page)).toBe(LIGHT_CANVAS);
+});
+
+test('Theme Sepia gives warm paper and dark brown text on a dark phone, and Light and Dark still come back', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await openReader(page);
+  await openSettings(page);
+  await choose(page, 'Theme', 'Sepia');
+  await expect.poll(() => themeOf(page)).toBe('sepia');
+  await expect(page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: 'Sepia', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(() => canvasOf(page)).toBe(SEPIA_CANVAS);
+  expect(await barOf(page)).toBe('#f4ecd8');
+  await expectFitsPhone(page);
+  await shot(page, 'settings-sepia');
+
+  await backToReader(page);
+  expect(await canvasOf(page)).toBe(SEPIA_CANVAS);
+  const colour = await page.locator('[data-verse="1"]').evaluate((el) => getComputedStyle(el).color);
+  expect(colour).toBe('rgb(59, 47, 32)');
+  await shot(page, 'reader-sepia');
+
+  await openSettings(page);
+  await choose(page, 'Theme', 'Light');
+  await expect.poll(() => themeOf(page)).toBe('light');
+  await expect.poll(() => canvasOf(page)).toBe(LIGHT_CANVAS);
+  expect(await barOf(page)).toBe('#f3f5f9');
+  await choose(page, 'Theme', 'Dark');
+  await expect.poll(() => themeOf(page)).toBe('dark');
+  await expect.poll(() => canvasOf(page)).toBe(DARK_CANVAS);
+  expect(await barOf(page)).toBe('#0a0e17');
 });
 
 test('Text size Large makes the verse text larger and every tap target stays at least 44 px tall', async ({ page }) => {
