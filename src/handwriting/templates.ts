@@ -22,7 +22,7 @@ function arc(cx: number, cy: number, rx: number, ry: number, from: number, to: n
 }
 
 /** Straight stretches are drawn as many points, at most this far apart, so that a pen that jumps shows as a gap between two points. */
-const STEP = 0.05;
+const STEP = 0.1;
 
 /** A straight line through the points, with a point at least every STEP along it. */
 function line(...points: Point[]): Point[] {
@@ -41,7 +41,7 @@ function curve(...points: Point[]): Point[] {
   const out: Point[] = [points[0]];
   for (let i = 0; i < points.length - 1; i += 1) {
     const [p0, p1, p2, p3] = [at(i - 1), at(i), at(i + 1), at(i + 2)];
-    const parts = Math.max(2, Math.ceil(Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) / (STEP * 0.8)));
+    const parts = Math.max(2, Math.ceil(Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) / (STEP * 0.6)));
     for (let k = 1; k <= parts; k += 1) {
       const t = k / parts;
       const [t2, t3] = [t * t, t * t * t];
