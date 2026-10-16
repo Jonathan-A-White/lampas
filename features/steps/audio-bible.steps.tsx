@@ -20,6 +20,9 @@ let timers: (() => void)[] = [];
 let leave: (() => void)[] = [];
 let opened: string[] = [];
 let link: HTMLElement | undefined;
+/** the time before each tap, and the annotation_time_utc each tap wrote into the link */
+let tappedAt: number[] = [];
+let stamps: number[] = [];
 
 // The scenario's steps are tests of their own, so the stubs live until the file ends rather than until each step does.
 const real = { ...browserEnv };
@@ -31,8 +34,6 @@ afterAll(() => {
   vi.unstubAllGlobals();
   db.close();
 });
-
-const AUDIBLE_PAGE = 'https://www.audible.com/pd/B003UC45I8';
 
 async function openWith(settings: Record<string, string>, { licence }: { licence: boolean } = { licence: true }): Promise<void> {
   cleanup();
@@ -46,6 +47,8 @@ async function openWith(settings: Record<string, string>, { licence }: { licence
   leave = [];
   opened = [];
   link = undefined;
+  tappedAt = [];
+  stamps = [];
   browserEnv.after = (fn) => {
     timers.push(fn);
     return () => {
@@ -83,6 +86,15 @@ async function openLuke15Verse11(): Promise<void> {
 }
 
 const verseView = (): HTMLElement => screen.getByRole('region', { name: 'Verse view' });
+/** Taps the link as a phone does: jsdom follows no link, so the click is stopped once it has run Lampas's own handler. */
+async function tapListen(_: unknown, name: string): Promise<void> {
+  link = await within(verseView()).findByRole('link', { name: new RegExp(`^${name}`) });
+  link.addEventListener('click', (e) => e.preventDefault(), { once: true });
+  tappedAt.push(Date.now());
+  await user.click(link);
+  stamps.push(Number(new URL(link.getAttribute('href') ?? '').searchParams.get('annotation_time_utc')));
+}
+
 const group = (): HTMLElement => screen.getByRole('group', { name: 'Audio Bible' });
 
 const feature = await loadFeature('features/audio-bible.feature');
@@ -155,53 +167,43 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario("Tapping Listen in Audible asks the phone to open the Audible app, with the book's page as the fallback", ({ Given, When, And, Then }) => {
+  Scenario("Tapping Listen in Audible opens Audible's own link at the start of the chapter", ({ Given, When, And, Then }) => {
     Given('Lampas is opened with the Audio Bible on', () => openWith({ audioBible: 'word-of-promise' }));
     When('he opens the Verse view of Luke 15:11', openLuke15Verse11);
-    And('he taps {string}', async (_, name: string) => {
-      link = await within(verseView()).findByRole('link', { name: new RegExp(`^${name}`) });
-      // jsdom follows no link; the tap is what arms the wait
-      link.addEventListener('click', (e) => e.preventDefault());
-      await user.click(link);
-    });
+    And('he taps {string}', tapListen);
     Then(
-      'the link\'s address is the Android intent for the Audible app searching {string}, falling back to {string}',
-      (_, query: string, fallback: string) => {
-        expect(link?.getAttribute('href')).toBe(
-          `intent:#Intent;action=android.media.action.MEDIA_PLAY_FROM_SEARCH;package=com.audible.application;S.query=${encodeURIComponent(query)};S.browser_fallback_url=${encodeURIComponent(fallback)};end`,
-        );
-        expect(fallback).toBe(AUDIBLE_PAGE);
+      "the link's address is Audible's smart link for {string} at {int} ms, stamped with the time of the tap",
+      (_, asin: string, ms: number) => {
+        const url = new URL(link?.getAttribute('href') ?? '');
+        expect(url.origin + url.pathname).toBe('https://audible.smart.link/aexglzp2n');
+        expect(url.searchParams.get('asin')).toBe(asin);
+        expect(url.searchParams.get('position_from_start')).toBe(String(ms));
+        expect(url.searchParams.get('autoplay')).toBe('true');
+        const stamp = Number(url.searchParams.get('annotation_time_utc'));
+        expect(stamp).toBeGreaterThanOrEqual(tappedAt[0]);
+        expect(stamp).toBeLessThanOrEqual(Date.now());
       },
     );
   });
 
-  Scenario("The book's page opens only when the phone stays on Lampas", ({ Given, When, And, Then }) => {
+  Scenario('Each tap stamps the link with its own time', ({ Given, When, And, Then }) => {
     Given('Lampas is opened with the Audio Bible on', () => openWith({ audioBible: 'word-of-promise' }));
     When('he opens the Verse view of Luke 15:11', openLuke15Verse11);
-    And('he taps {string}', async (_, name: string) => {
-      const a = await within(verseView()).findByRole('link', { name: new RegExp(`^${name}`) });
-      a.addEventListener('click', (e) => e.preventDefault());
-      await user.click(a);
+    And('he taps {string}', tapListen);
+    And('a second goes by', async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1100));
     });
-    And('the page stays in front for the wait', () => {
-      for (const t of [...timers]) t();
-    });
-    Then('the address {string} was opened', (_, url: string) => {
-      expect(opened).toEqual([url]);
+    And('he taps {string} again', tapListen);
+    Then("the second tap's time is later than the first's", () => {
+      expect(stamps).toHaveLength(2);
+      expect(stamps[1]).toBeGreaterThan(stamps[0]);
     });
   });
 
-  Scenario("The book's page does not open when Audible took the tap", ({ Given, When, And, Then }) => {
+  Scenario("Audible's own link needs no fallback page from Lampas", ({ Given, When, And, Then }) => {
     Given('Lampas is opened with the Audio Bible on', () => openWith({ audioBible: 'word-of-promise' }));
     When('he opens the Verse view of Luke 15:11', openLuke15Verse11);
-    And('he taps {string}', async (_, name: string) => {
-      const a = await within(verseView()).findByRole('link', { name: new RegExp(`^${name}`) });
-      a.addEventListener('click', (e) => e.preventDefault());
-      await user.click(a);
-    });
-    And('the page goes away', () => {
-      for (const l of [...leave]) l();
-    });
+    And('he taps {string}', tapListen);
     And('the page stays in front for the wait', () => {
       for (const t of [...timers]) t();
     });

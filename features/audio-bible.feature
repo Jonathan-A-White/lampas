@@ -1,8 +1,9 @@
 Feature: Listen in Audible
   The first audio Bible a reader can turn on: Settings > Study resources > Audio Bible, Off to start, or The Word of Promise (NKJV), in
-  Audible. With it on, the Verse view's Listen shows a "Listen in Audible" link that opens the book in the Audible app and a line that says
-  which Audible chapter to pick ("Chapters > Luke 15"), with the credit under it. Free to read: no licence is needed for any of it.
-  Audible takes no chapter or time from outside, so Lampas can only open the book and name the chapter.
+  Audible. With it on, the Verse view's Listen shows a "Listen in Audible" link that opens the Audible app and plays from the start of the chapter
+  (Audible's own smart link with position_from_start, from the chapter start times in src/resources/audibleStarts.json, built once from Audible's
+  public catalogue by npm run audible:build), a line that names the Audible chapter ("Chapters > Luke 15"), and the credit under it. Free to read:
+  no licence is needed for any of it. A verse is not a place Audible can be sent to (only the chapter is timed).
 
   Scenario: Settings offers an Audio Bible, Off to start
     Given Lampas is opened with the Audio Bible Off
@@ -34,23 +35,23 @@ Feature: Listen in Audible
     Then the link is named "Listen in Audible: The Word of Promise, Luke 15"
     And the credit line is plain text under the link, not part of it
 
-  Scenario: Tapping Listen in Audible asks the phone to open the Audible app, with the book's page as the fallback
+  Scenario: Tapping Listen in Audible opens Audible's own link at the start of the chapter
     Given Lampas is opened with the Audio Bible on
     When he opens the Verse view of Luke 15:11
     And he taps "Listen in Audible"
-    Then the link's address is the Android intent for the Audible app searching "The Word of Promise Audio Bible", falling back to "https://www.audible.com/pd/B003UC45I8"
+    Then the link's address is Audible's smart link for "B003UC45I8" at 300423039 ms, stamped with the time of the tap
 
-  Scenario: The book's page opens only when the phone stays on Lampas
+  Scenario: Each tap stamps the link with its own time
     Given Lampas is opened with the Audio Bible on
     When he opens the Verse view of Luke 15:11
     And he taps "Listen in Audible"
-    And the page stays in front for the wait
-    Then the address "https://www.audible.com/pd/B003UC45I8" was opened
+    And a second goes by
+    And he taps "Listen in Audible" again
+    Then the second tap's time is later than the first's
 
-  Scenario: The book's page does not open when Audible took the tap
+  Scenario: Audible's own link needs no fallback page from Lampas
     Given Lampas is opened with the Audio Bible on
     When he opens the Verse view of Luke 15:11
     And he taps "Listen in Audible"
-    And the page goes away
     And the page stays in front for the wait
     Then no address was opened

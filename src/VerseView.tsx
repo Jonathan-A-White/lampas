@@ -27,7 +27,7 @@ import { BarSlot } from './speech/SpeakingBarSlot';
 import type { AskState } from './useAsks';
 import { actionsFor, type VerseAction } from './verse/action';
 import { useAiAllowed } from './gate/licenceContext';
-import { audibleChapterLabel, audioBibleOf } from './resources/audioBible';
+import { audibleChapterLabel, audibleListen, audioBibleOf } from './resources/audioBible';
 import { armFallback } from './resources/openApp';
 import { audioBibleSetting } from './settings/definitions';
 import { useSetting } from './settings/store';
@@ -168,9 +168,14 @@ export function VerseView(props: VerseViewProps) {
           {action === 'listen' && audioBible && audibleChapter ? (
             <div data-audio-bible className="mt-3 rounded-xl border border-line p-3">
               <a
-                href={audioBible.intentUrl}
+                href={audibleListen(audioBible, book, chapter).href}
                 aria-label={`Listen in Audible: ${audioBible.name}, ${audibleChapter}`}
-                onClick={() => armFallback(audioBible.pageUrl)}
+                onClick={(e) => {
+                  // Audible wants the link stamped with the time of the tap: make it again as the tap lands, before the phone follows it
+                  const listen = audibleListen(audioBible, book, chapter);
+                  e.currentTarget.href = listen.href;
+                  if (listen.fallback !== undefined) armFallback(listen.fallback);
+                }}
                 className="flex min-h-12 items-center rounded-lg bg-surface px-3 text-base font-medium text-accent active:bg-line"
               >
                 Listen in Audible
