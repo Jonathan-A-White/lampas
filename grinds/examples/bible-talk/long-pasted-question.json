@@ -1,5 +1,5 @@
 {
-  "description": "A long question, a prayer of several paragraphs pasted in beside the question, is read whole: the cleaned question comes back to its last words, not cut.",
+  "description": "A long question, a prayer of several paragraphs pasted in beside the question, is read whole: the cleaned question keeps every paragraph, to its last words, and is not cut at the first line.",
   "schemaVersion": "1",
   "request": {
     "reference": "Romans 8:28",
@@ -16,7 +16,8 @@
   },
   "expect": {
     "question": {
-      "contains": "let me wake tomorrow ready to walk in your way. Amen."
+      "contains": "let me wake tomorrow ready to walk in your way. Amen.",
+      "matches": "Here is my own prayer for context[\\s\\S]*Guard me against envy, pride and anger[\\s\\S]*Give me patience with my family[\\s\\S]*Let me not read it to win an argument[\\s\\S]*Forgive me for the hours I wasted[\\s\\S]*let me wake tomorrow ready to walk in your way\\. Amen\\."
     }
   }
 }

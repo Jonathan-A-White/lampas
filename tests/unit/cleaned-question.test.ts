@@ -38,6 +38,24 @@ describe.each(KINDS)('$kind: the cleaned question', ({ kind, max, guard }) => {
     }
   });
 
+  // mw-5r3p30.491: the live smoke saw the model cut a long pasted question at its first line; the rule is spelled out, and the scenario checks the last words and a middle paragraph
+  it('is told to keep the whole of a long pasted question, every paragraph, to its last words', () => {
+    const section = instructions.slice(instructions.indexOf('## Cleaning up what he said')).split(/\n## /)[0].toLowerCase().replace(/\s+/g, ' ');
+    for (const rule of ['keeps the whole of what he pasted', 'every paragraph', 'to its last words', 'never cut it at its first line', 'only slips are cleaned']) {
+      expect(section, rule).toContain(rule);
+    }
+  });
+
+  it('has a scenario whose long pasted question comes back whole', () => {
+    const example = JSON.parse(readFileSync(`grinds/examples/${kind}/long-pasted-question.json`, 'utf8')) as { request: { question: string }; expect: { question: { contains: string; matches: string } } };
+    const paragraphs = example.request.question.split('\n\n');
+    // one pattern holds a phrase of every paragraph in order, so a question cut short fails it
+    const wanted = example.expect.question.matches.split('[\\s\\S]*').map((phrase) => phrase.replace(/\\(.)/g, '$1'));
+    for (const paragraph of paragraphs) expect(wanted.some((text) => paragraph.includes(text)), paragraph.slice(0, 30)).toBe(true);
+    expect(example.request.question.endsWith(example.expect.question.contains)).toBe(true);
+    expect(new RegExp(example.expect.question.matches).test(example.request.question)).toBe(true);
+  });
+
   it('is taken by the schema and the phone\'s guard, and an answer without it still is', () => {
     for (const value of [answer, { ...answer, question: CLEAN }, { ...answer, question: 'x'.repeat(max) }]) {
       expect(validate(value, schema)).toEqual([]);

@@ -10,6 +10,10 @@ no punctuation or capitals, an "um" or "uh", a word said twice, or a start he dr
   left for a new one. Every um, uh and er goes, even when you add punctuation around it: `Um, why are there, uh, italic words` is wrong; none of the three may be in `question`.
 - Keep his meaning and his words: do not rephrase, shorten, improve or add anything. Greek words, references and names stay as he
   gave them (with their accents, if the raw words have them). Keep a word he chose even when another would read better.
+- The `question` keeps the whole of what he pasted or said, every paragraph of it, to its last words. A long question, a prayer or
+  a passage he pasted in beside what he asked, is long on purpose: never cut it at its first line or its first paragraph, never
+  keep only the part that is the question, never sum the rest up. Only slips are cleaned (spelling, a dictation slip, a filler); a
+  paragraph break stays a paragraph break. The answer to what he asked goes in `answer`, never in a shorter `question`.
 - Never answer in `question`, and never explain or correct it: it holds what he asked, nothing more. If the raw `question` is
   already clean, give it back unchanged.
 - It is never longer than the raw `question`, and at most 4000 characters.
