@@ -72,3 +72,16 @@ Feature: Play my reading back, and Developer mode
   Scenario: A reading with no clip has no Me, even for a timed word
     Given Lampas is opened on Romans 8 with a reading of verse 28 kept with "together" timed from 1.2 to 1.7 seconds and no clip
     Then "together" is marked with its speaker "Hear together" and no "Me"
+
+  Scenario: Play my reading starts near his first word when the clip begins with silence, and the kept recording stays whole
+    Given Lampas is opened on Romans 8 with a reading check he has just made, the clip holding 2 seconds of silence before his voice
+    When he taps "Play my reading"
+    Then the audio element plays the recording from about 1.8 seconds
+    And the reading kept on the phone still holds the whole recording
+
+  Scenario: With the times of his first and last words, Play my reading plays from just before the first to just after the last
+    Given Lampas is opened on Romans 8 with a reading check he has just made, the mill timing his first word "And" from 1.5 to 1.7 seconds and his last word "purpose" from 4.0 to 4.6 seconds
+    When he taps "Play my reading"
+    Then the audio element plays the recording from 1.3 seconds
+    When the recording reaches 4.9 seconds
+    Then the audio element is paused and the button says "Play my reading"

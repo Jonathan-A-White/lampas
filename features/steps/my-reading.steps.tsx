@@ -7,9 +7,10 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { downloadSeam } from '../../src/audio/clip';
+import { decodeSeam } from '../../src/audio/voiceSpan';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
-import { keepVerseReading, setDeveloper } from '../../src/data/repositories';
+import { getVerseReading, keepVerseReading, setDeveloper } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -41,6 +42,7 @@ let saved: { name: string; blob: Blob }[] = [];
 /** Milliseconds the clock has been moved on by 'N seconds go by'. */
 let skew = 0;
 const realNow = Date.now.bind(Date);
+const realDecode = decodeSeam.decode;
 
 const bytesOf = (blob: Blob): Promise<number[]> =>
   new Promise((resolve, reject) => {
@@ -80,6 +82,7 @@ async function start(hash: string): Promise<void> {
   downloadSeam.save = (name, blob) => {
     saved.push({ name, blob });
   };
+  decodeSeam.decode = realDecode;
   stubRecorder();
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
@@ -398,5 +401,74 @@ describeFeature(feature, ({ Scenario }) => {
       await openReadingCheck();
     });
     Then('{string} is marked with its speaker {string} and no {string}', (ctx, word: string, speaker: string) => hasNoMe(ctx, word, speaker));
+  });
+
+  Scenario('Play my reading starts near his first word when the clip begins with silence, and the kept recording stays whole', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 with a reading check he has just made, the clip holding {number} seconds of silence before his voice', async (_, silence: number) => {
+      await start('');
+      // jsdom has no Web Audio: the phone's decode of the clip hands back `silence` seconds of nothing, then his voice (a tone) for 2 seconds
+      const rate = 16_000;
+      decodeSeam.decode = async () => {
+        const samples = new Float32Array(Math.round((silence + 2) * rate));
+        for (let i = Math.round(silence * rate); i < samples.length; i++) samples[i] = 0.4 * Math.sin((2 * Math.PI * 200 * i) / rate);
+        return { samples, sampleRate: rate };
+      };
+      await readVerse28();
+    });
+    When('he taps {string}', async (_, name: string) => {
+      await user.click(await within(panel()).findByRole('button', { name, exact: true }));
+    });
+    Then('the audio element plays the recording from about {number} seconds', async (_, from: number) => {
+      await waitFor(() => expect(played).toHaveLength(1));
+      expect(played[0]).toBe(audio());
+      expect(audio()?.currentTime).toBeGreaterThan(from - 0.05);
+      expect(audio()?.currentTime).toBeLessThan(from + 0.05);
+    });
+    And('the reading kept on the phone still holds the whole recording', async () => {
+      const kept = await getVerseReading('rom.8.28');
+      expect(kept?.clip?.mime).toBe('audio/webm');
+      expect(Array.from(new Uint8Array(kept?.clip?.bytes ?? new ArrayBuffer(0)))).toEqual(CLIP_BYTES);
+      // and what plays is the whole clip too: only where it starts moved
+      expect(await bytesOf(urls.get(audio()?.getAttribute('src') ?? '') as Blob)).toEqual(CLIP_BYTES);
+    });
+  });
+
+  Scenario('With the times of his first and last words, Play my reading plays from just before the first to just after the last', ({ Given, When, Then }) => {
+    Given(
+      'Lampas is opened on Romans 8 with a reading check he has just made, the mill timing his first word {string} from {number} to {number} seconds and his last word {string} from {number} to {number} seconds',
+      async (_, first: string, firstStart: number, firstEnd: number, last: string, lastStart: number, lastEnd: number) => {
+        await start('');
+        const [, purpose] = READING_ANSWER.focus_words;
+        fake.autoReply = {
+          status: 'answered',
+          answer: {
+            ...READING_ANSWER,
+            focus_words: [
+              { word: first, index: 0, chunks: [first], tip: 'Say it with the a of cat.', start: firstStart, end: firstEnd },
+              { ...purpose, word: last, start: lastStart, end: lastEnd },
+            ],
+          },
+        };
+        await readVerse28();
+      },
+    );
+    When('he taps {string}', async (_, name: string) => {
+      await user.click(await within(panel()).findByRole('button', { name, exact: true }));
+    });
+    Then('the audio element plays the recording from {number} seconds', async (_, from: number) => {
+      await waitFor(() => expect(played).toHaveLength(1));
+      expect(played[0]).toBe(audio());
+      expect(audio()?.currentTime).toBeCloseTo(from);
+      expect(await within(panel()).findByRole('button', { name: 'Stop my reading', exact: true })).toBeVisible();
+    });
+    When('the recording reaches {number} seconds', async (_, at: number) => {
+      const element = audio() as HTMLAudioElement;
+      expect(paused).not.toContain(element);
+      element.currentTime = at;
+    });
+    Then('the audio element is paused and the button says {string}', async (_, name: string) => {
+      expect(await within(panel()).findByRole('button', { name, exact: true })).toBeVisible();
+      expect(paused).toContain(audio());
+    });
   });
 });

@@ -36,16 +36,20 @@ const LONG_WORD_ANSWER = timedFrom(0.2, 2.1);
 
 /** Reads verse `verse` of the chapter at `hash` through the fake mill, which answers with `answer`, and waits for the result with the `marked` words.
  * The clip is as long as he holds the bar, 2.2 s here: the timed word lies inside it. */
-async function readVerse(page: Page, answer: unknown, { hash, verse, marked }: { hash: string; verse: number; marked: string[] }) {
+async function readVerse(
+  page: Page,
+  answer: unknown,
+  { hash, verse, marked, holdMs = 2200, silentMs }: { hash: string; verse: number; marked: string[]; holdMs?: number; silentMs?: number },
+) {
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer };
   await routePostern(page, fake);
-  await fakeMedia(page, 2.2);
+  await fakeMedia(page, holdMs / 1000, silentMs === undefined ? {} : { silent: silentMs });
   await openUnlocked(page);
   await page.goto(hash);
   await chooseAction(page, verse, 'Read it aloud');
   const panel = page.getByRole('region', { name: 'Reading check' });
-  await holdFor(page, page.getByRole('button', { name: `Hold to read verse ${verse}`, exact: true }), 2200);
+  await holdFor(page, page.getByRole('button', { name: `Hold to read verse ${verse}`, exact: true }), holdMs);
   await expect(panel.locator('[data-fix]')).toHaveText(marked);
   return panel;
 }
@@ -141,4 +145,17 @@ test('A reading whose words came back with no times has no Me button', async ({ 
   await expect(panel.getByRole('button', { name: 'Hear together', exact: true })).toBeVisible();
   await expect(panel.locator('[data-me]')).toHaveCount(0);
   await expect(panel.getByRole('button', { name: 'Play my reading', exact: true })).toBeVisible();
+});
+
+test('Play my reading starts near his first word when the clip he recorded begins with silence (the phone measures it: Web Audio)', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  // the microphone hears 1.5 s of nothing, then his voice; the scorer timed no first word, so the phone decodes the clip and finds where his voice starts
+  const panel = await readVerse(page, READING_ANSWER, { hash: '/', verse: 28, marked: ['together', 'purpose'], holdMs: 3500, silentMs: 1500 });
+  await panel.getByRole('button', { name: 'Play my reading', exact: true }).click();
+  await expect(panel.getByRole('button', { name: 'Stop my reading', exact: true })).toBeVisible();
+  const plays = await seen(page);
+  expect(plays).toHaveLength(1);
+  // 0.2 s before his voice, which starts 1.5 s into the clip: about 1.3 s (the whole clip would play from 0)
+  expect(plays[0].from).toBeGreaterThan(1.1);
+  expect(plays[0].from).toBeLessThan(1.45);
 });
