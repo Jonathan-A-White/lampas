@@ -7,6 +7,8 @@
 //       'proved'  after two unhinted rights in a row at the top step,
 //       'edge'    when the step he holds has the step above it failed (the highest step right, with a miss above it), or he misses step 1 twice (the edge is 0),
 //       'limit'   after MAX_QUESTIONS (14) questions.
+//   A first miss on a step of words to read (DrillStep.words: a letter's or pair's 'Read a word', the breathing in a harder word; mw-i7xe0n.12) stays at that step and asks
+//   the same target with another word, so a word he cannot say does not end the walk at the step below; a second miss on it goes back as any miss does.
 //   The result: {ideaId, proved, edgeStep, topStep, strong, weak, answers}; a facet is weak when missed at least once and right fewer than twice.
 //   An idea whose sound the scheme changes by the next letter (mw-i7xe0n.7: χ is kh before α, hy before ε) is proved only when a word of each side of its
 //   rule was answered right, unhinted: the walk keeps asking the side still missing at the top step (DrillWalk.sides).
