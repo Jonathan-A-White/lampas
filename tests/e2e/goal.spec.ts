@@ -125,7 +125,7 @@ test('the Goal screen: two bars that fit, the lists, Learn next, Next words and 
   await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
   for (const name of ['Change', 'Place me']) await expectThumbSized(page.getByRole('button', { name }));
   await expectThumbSized(page.getByTestId('learn-next'));
-  await expect(page.getByTestId('learn-next')).toHaveText('Learn next: The singular · Your first words');
+  await expect(page.getByTestId('learn-next')).toHaveText('Learn next: The singular');
   await expect(page.getByTestId('words-legend')).toHaveText(/^Solid \d+ · Frontier \d+ · Not yet \d+$/);
   const before = await goalIdeaCounts('1 John 1:1', solid);
   await expect(page.getByTestId('ideas-legend')).toHaveText(`Solid ${before.solid} · Frontier 0 · Not yet ${before.notYet}`);
@@ -191,7 +191,7 @@ test('Learn next names the letters that are not solid yet, not the whole alphabe
   await page.goto('/#/goal');
   await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
   const next = page.getByTestId('learn-next');
-  await expect(next).toHaveText('Learn next: ξ and ψ · The Greek letters');
+  await expect(next).toHaveText('Learn next: ξ and ψ');
   await expectThumbSized(next);
   expect(await next.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
   await expectFitsPhone(page);

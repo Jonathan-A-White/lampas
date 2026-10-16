@@ -28,13 +28,13 @@ function needsOf(goalText: string): Promise<PassageNeeds> {
 /** The ids of the grammar ideas the goal needs ('1 John 1:1'), as the Goal screen and the placement count them. */
 export const neededIdeas = async (goalText: string): Promise<string[]> => (await needsOf(goalText)).ideas.map((i) => i.id);
 
-/** The ideas the placement walks for the goal (BMA Tutor's order): the needed ideas plus the letters, sounds and marks. */
+/** The ideas the placement walks for the goal (the ladder's order): the needed ideas plus the letters, sounds and marks. */
 export const placementIdeas = async (goalText: string): Promise<string[]> =>
-  startPlacement(await needsOf(goalText), new Map(), orderOf(approachOf('bma-tutor')!), 0).ideas;
+  startPlacement(await needsOf(goalText), new Map(), orderOf(approachOf('ladder')!), 0).ideas;
 
 /** The placement's end card for the goal when he starts with these levels: it counts the needed ideas and the walk's others he has a level for. */
 export const placementSummary = async (goalText: string, levels: Record<string, Level>): Promise<PlacementSummary> =>
-  summarize(startPlacement(await needsOf(goalText), new Map(Object.entries(levels)), orderOf(approachOf('bma-tutor')!), 0));
+  summarize(startPlacement(await needsOf(goalText), new Map(Object.entries(levels)), orderOf(approachOf('ladder')!), 0));
 
 /** The Goal screen's ideas bar for the goal with these levels (an idea not named is not yet): solid, frontier, not yet and the total. */
 export const goalIdeaCounts = async (goalText: string, levels: Record<string, Level>): Promise<Counts> =>

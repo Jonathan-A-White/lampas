@@ -69,7 +69,7 @@ test('Start from the letters keeps what he has: the card says it, and Back to th
   const legend = page.getByTestId('ideas-legend');
   await expect(legend).toHaveText(/^Solid 1 · Frontier 0 · Not yet \d+$/);
   const goalCounts = countsOf((await legend.textContent()) ?? '');
-  await expect(page.getByTestId('learn-next')).toHaveText('Learn next: Pairs of vowels · Saying words aloud');
+  await expect(page.getByTestId('learn-next')).toHaveText('Learn next: Pairs of vowels');
   const before = await levelRows(page);
   expect(before.length).toBeGreaterThan(0);
 
@@ -89,7 +89,7 @@ test('Start from the letters keeps what he has: the card says it, and Back to th
 
   await page.getByRole('button', { name: 'Back to the goal' }).click();
   await expect(page.getByTestId('ideas-legend')).toHaveText(`Solid ${goalCounts[0]} · Frontier ${goalCounts[1]} · Not yet ${goalCounts[2]}`);
-  await expect(page.getByTestId('learn-next')).toHaveText('Learn next: Pairs of vowels · Saying words aloud');
+  await expect(page.getByTestId('learn-next')).toHaveText('Learn next: Pairs of vowels');
 });
 
 test('Start from the letters for a total beginner starts at The Greek alphabet, and writes nothing', async ({ page }) => {

@@ -39,9 +39,9 @@ async function openKept(page: Page, answers: number) {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await putGoal(page, '1 John 1:1');
-  const first = startPlacement(null, new Map(), orderOf(approachOf('bma-tutor')!), 7);
+  const first = startPlacement(null, new Map(), orderOf(approachOf('ladder')!), 7);
   const state = { ...first, asked: Array.from({ length: answers }, () => ({ ideaId: 'alphabet', right: true })), questionsLeft: 20 - answers };
-  const kept = { goal: '1 John 1:1', approach: 'bma-tutor', state: { ...state, levels: [...state.levels], evidence: [...state.evidence] } };
+  const kept = { goal: '1 John 1:1', approach: 'ladder', state: { ...state, levels: [...state.levels], evidence: [...state.evidence] } };
   await page.evaluate((saved) => localStorage.setItem('lampas.placement', JSON.stringify(saved)), kept);
   await page.goto('/#/placement');
   await expect(page.getByRole('button', { name: 'Start over' })).toBeVisible();

@@ -172,7 +172,7 @@ describeFeature(
           expect(field.ideas.frontier).toContain(title);
           for (const titles of Object.values(field.ideas)) expect(titles.length).toBeLessThanOrEqual(12);
           expect(field.suggested_move).toBe('none');
-          expect(field.approach.name).toBe('BMA Tutor');
+          expect(field.approach.name).toBe('Lampas ladder');
           expect(new TextEncoder().encode(JSON.stringify(field)).length).toBeLessThanOrEqual(900);
         },
       );

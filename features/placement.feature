@@ -10,14 +10,14 @@ Feature: Test me on the grammar, and meet me where I am
     When he opens the placement
     Then it says "Placement: Read 1 John 1:1"
     When he starts the placement
-    Then the question line says "Question 1 · the noun · BMA Tutor L1"
+    Then the question line says "Question 1 · the noun · Lampas ladder L4"
 
   Scenario: When I miss the easy things it goes easier, down to the letters and marks of the words I missed
     Given his goal is "Read 1 John 1:1" and he knows nothing yet
     When he opens the placement
     And he starts the placement
     And he answers 8 questions wrong
-    Then the question line says "Question 9 · Alpha · BMA Tutor L1"
+    Then the question line says "Question 9 · Alpha · Lampas ladder L1"
     And the idea "noun" is not yet
     And the idea "accents" is the frontier, the lowest idea he has not proved
     And the alphabet as a whole was not asked

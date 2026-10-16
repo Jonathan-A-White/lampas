@@ -118,7 +118,7 @@ describeFeature(feature, ({ Scenario }) => {
       const weak = lettersText(gapsOf(levels));
       expect(weak).toMatch(/^β/);
       expect(LETTER_IDS.filter((id) => levels.get(id) === 'solid').length).toBeGreaterThan(3);
-      await waitFor(async () => expect(await learnNext()).toHaveTextContent(`Learn next: ${weak} · The Greek letters`));
+      await waitFor(async () => expect(await learnNext()).toHaveTextContent(`Learn next: ${weak}`));
     });
   });
 

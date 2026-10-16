@@ -2,39 +2,40 @@ import { expect, test } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
-test('Settings > Grammar approach at phone width: BMA Tutor chosen with its credit, Lampas ladder one tap away, kept across a reload', async ({ page }) => {
+test('Settings > Grammar approach at phone width: the one path, the ladder, with no choice to make, and a phone that saved BMA Tutor reads as it', async ({ page }) => {
   await openUnlocked(page);
+  // an old phone: the saved choice is the BMA Tutor path, which is no longer listed
   await page.goto('/#/settings');
-  const group = page.getByRole('radiogroup', { name: 'Grammar approach' });
-  await expect(group).toBeVisible();
-  const bma = group.getByRole('radio', { name: 'BMA Tutor' });
-  const ladder = group.getByRole('radio', { name: 'Lampas ladder' });
-  await expect(bma).toHaveAttribute('aria-checked', 'true');
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const tx = open.result.transaction('settings', 'readwrite');
+          tx.objectStore('settings').put({ key: 'grammarApproach', value: 'bma-tutor' });
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+  );
+  await page.reload();
 
-  for (const radio of [bma, ladder]) {
-    const box = await radio.boundingBox();
-    expect(box?.height).toBeGreaterThanOrEqual(47.5);
-    expect(box?.x).toBeGreaterThanOrEqual(0);
-    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390);
-  }
-
-  const credit = page.locator('[data-approach-credit]');
-  await expect(credit).toContainText("After the Greek Success Path of Biblical Mastery Academy; the lessons and drills here are Lampas's own.");
-  await expect(credit.getByRole('link', { name: 'Biblical Mastery Academy' })).toHaveAttribute('href', /^https:\/\//);
   await expect(page.locator('[data-approach-method]')).toBeVisible();
+  await expect(page.getByRole('radiogroup', { name: 'Grammar approach' })).toHaveCount(0);
+  await expect(page.locator('[data-approach-credit]')).toHaveCount(0);
   await expect(page.locator('[data-next]')).toHaveCount(1);
+  await expect(page.locator('[data-approach-lessons] [data-lesson-title]').first()).toHaveText('The Greek alphabet');
   expect(await page.locator('[data-approach-method]').evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
   // nothing makes the page wider than the phone
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 
-  await ladder.click();
-  await expect(ladder).toHaveAttribute('aria-checked', 'true');
-  await expect(credit).toHaveCount(0);
+  const ask = page.getByRole('button', { name: 'Ask for another approach' });
+  await expect(ask).toBeVisible();
+  const box = await ask.boundingBox();
+  expect(box?.height).toBeGreaterThanOrEqual(47.5);
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390);
 
-  await page.reload();
-  await expect(page.getByRole('radiogroup', { name: 'Grammar approach' }).getByRole('radio', { name: 'Lampas ladder' })).toHaveAttribute('aria-checked', 'true');
-  await page.getByRole('radio', { name: 'BMA Tutor' }).click();
-  await expect(page.locator('[data-approach-credit]')).toBeVisible();
   // the screen scrolls in its own box: bring the section to the top so the shot shows it
   await page.getByRole('heading', { name: 'Grammar approach', level: 2 }).evaluate((el) => el.scrollIntoView({ block: 'start' }));
   await shot(page, 'grammar-approach');

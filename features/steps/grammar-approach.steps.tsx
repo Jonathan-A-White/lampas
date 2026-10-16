@@ -16,7 +16,6 @@ import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
-import { expectLatest } from '../../tests/support/published';
 import { seedHisWords } from '../../tests/support/his-words';
 
 const user = userEvent.setup();
@@ -31,8 +30,6 @@ afterAll(() => {
   db.close();
 });
 
-const group = () => screen.getByRole('radiogroup', { name: 'Grammar approach' });
-const radio = (name: string) => within(group()).getByRole('radio', { name });
 const credit = () => document.querySelector<HTMLElement>('[data-approach-credit]');
 const method = () => document.querySelector<HTMLElement>('[data-approach-method]');
 const nextRows = () => Array.from(document.querySelectorAll<HTMLElement>('[data-approach-lessons] li')).filter((li) => li.querySelector('[data-next]'));
@@ -44,7 +41,7 @@ async function openSettings(): Promise<void> {
   await db.open();
   await Promise.all([db.settings.clear(), db.grammarLevels.clear()]);
   render(<SettingsScreen />);
-  await screen.findByRole('radiogroup', { name: 'Grammar approach' });
+  await waitFor(() => expect(method()).not.toBeNull());
 }
 
 async function openTalkApp(changes: { key: string; value: unknown }[]): Promise<void> {
@@ -77,26 +74,12 @@ const changeRows = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data
 const feature = await loadFeature('features/grammar-approach.feature');
 
 describeFeature(feature, ({ Scenario }) => {
-  Scenario("Settings > Grammar approach offers BMA Tutor and Lampas ladder, BMA Tutor chosen", ({ Given, Then, And }) => {
+  Scenario('Settings > Grammar approach shows the one path, with no choice to make', ({ Given, Then, And }) => {
     Given('Settings is open on a fresh phone', openSettings);
-    Then('the Grammar approach offers {string} and {string}', (_, a: string, b: string) => {
-      expect(within(group()).getAllByRole('radio').map((r) => r.textContent?.startsWith(a) || r.textContent?.startsWith(b))).toEqual([true, true]);
-      radio(a);
-      radio(b);
-    });
-    And('{string} is chosen', (_, name: string) => {
-      expect(radio(name)).toHaveAttribute('aria-checked', 'true');
-    });
-  });
-
-  Scenario('The chosen approach shows its credit line and its method', ({ Given, Then, And, When }) => {
-    Given('Settings is open on a fresh phone', openSettings);
-    Then('the approach shows the credit line {string}', (_, line: string) => {
-      expect(credit()).toHaveTextContent(line);
-    });
-    And('the credit line links to Biblical Mastery Academy', () => {
-      const link = within(credit()!).getByRole('link', { name: 'Biblical Mastery Academy' });
-      expect(link.getAttribute('href')).toMatch(/^https:\/\//);
+    Then('the Grammar approach shows no choice', () => {
+      const section = screen.getByRole('group', { name: 'Grammar approach' });
+      expect(screen.queryByRole('radiogroup', { name: 'Grammar approach' })).toBeNull();
+      expect(within(section).queryAllByRole('radio')).toEqual([]);
     });
     And('the approach shows its method and its first lesson {string} marked {string}', (_, title: string, mark: string) => {
       expect(method()?.textContent?.trim().length).toBeGreaterThan(40);
@@ -105,44 +88,49 @@ describeFeature(feature, ({ Scenario }) => {
       expect(rows[0]).toHaveTextContent(title);
       expect(rows[0].querySelector('[data-next]')).toHaveTextContent(mark);
     });
-    When('he chooses {string}', async (_, name: string) => {
-      await user.click(radio(name));
+    And('the approach shows no credit line', () => {
+      expect(credit()).toBeNull();
     });
-    Then('the approach shows no credit line', async () => {
-      await waitFor(() => expect(credit()).toBeNull());
-      expect(method()).not.toBeNull();
-    });
-    And('{string} is chosen and the bus has heard the approach is {string}', async (_, name: string, id: string) => {
-      await waitFor(() => expect(radio(name)).toHaveAttribute('aria-checked', 'true'));
-      await expectLatest('approach-changed', (e) => expect(e).toEqual({ kind: 'approach-changed', approach: id }));
+    And('{string} is offered', async (_, name: string) => {
+      await screen.findByRole('button', { name });
     });
   });
 
-  Scenario("Switching to Lampas ladder changes nothing of his levels", ({ Given, And, When, Then }) => {
-    Given('Settings is open on a fresh phone', openSettings);
-    And('the alphabet and the genitive are solid and the aorist is at the frontier', async () => {
-      await setLevel('alphabet', 'solid', 'marked');
-      await setLevel('case-genitive', 'solid', 'marked');
-      await setLevel('tense-aorist', 'frontier', 'marked');
-    });
-    When('he chooses {string}', async (_, name: string) => {
-      await user.click(radio(name));
-      await waitFor(() => expect(radio(name)).toHaveAttribute('aria-checked', 'true'));
-    });
-    Then('the genitive is still solid and the aorist is still at the frontier', async () => {
-      expect((await getLevel('case-genitive'))?.level).toBe('solid');
-      expect((await getLevel('tense-aorist'))?.level).toBe('frontier');
-      expect((await getLevel('alphabet'))?.level).toBe('solid');
-      expect(await db.grammarLevels.count()).toBe(3);
-    });
-    And('the lesson marked {string} is {string}', async (_, mark: string, title: string) => {
+  Scenario('A phone that saved the BMA Tutor choice reads as the ladder', ({ Given, Then, And }) => {
+    Given(
+      'Settings is open on a phone that saved {string} with the alphabet and the genitive solid and the aorist at the frontier',
+      async (_, saved: string) => {
+        cleanup();
+        clearBus();
+        window.location.hash = '#/settings';
+        await db.open();
+        await Promise.all([db.settings.clear(), db.grammarLevels.clear()]);
+        await db.settings.put({ key: 'grammarApproach', value: saved });
+        await setLevel('alphabet', 'solid', 'marked');
+        await setLevel('case-genitive', 'solid', 'marked');
+        await setLevel('tense-aorist', 'frontier', 'marked');
+        render(<SettingsScreen />);
+        await waitFor(() => expect(method()).not.toBeNull());
+      },
+    );
+    Then('the approach shows its method and its first lesson {string} marked {string}', async (_, title: string, mark: string) => {
       await waitFor(() => expect(nextRows()).toHaveLength(1));
-      expect(nextRows()[0].querySelector('[data-lesson-title]')).toHaveTextContent(title);
+      expect(nextRows()[0]).toHaveTextContent(title);
       expect(nextRows()[0].querySelector('[data-next]')).toHaveTextContent(mark);
     });
+    And('the alphabet and the genitive are still solid and the aorist is still at the frontier', async () => {
+      expect((await getLevel('alphabet'))?.level).toBe('solid');
+      expect((await getLevel('case-genitive'))?.level).toBe('solid');
+      expect((await getLevel('tense-aorist'))?.level).toBe('frontier');
+      expect(await db.grammarLevels.count()).toBe(3);
+    });
+    And('the saved approach is {string} in the store and reads as {string}', async (_, saved: string, read: string) => {
+      expect((await db.settings.get('grammarApproach'))?.value).toBe(saved);
+      expect(await getGrammarApproach()).toBe(read);
+    });
   });
 
-  Scenario('The tutor changes the approach when asked', ({ Given, And, When, Then }) => {
+  Scenario('The tutor is told the ladder when asked about the approach', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the change grammarApproach ladder', () =>
       openTalkApp([{ key: 'grammarApproach', value: 'ladder' }]),
     );
@@ -161,12 +149,6 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the saved approach is {string}', async (_, id: string) => {
       expect(await getGrammarApproach()).toBe(id);
-    });
-    When('he taps Undo', async () => {
-      await user.click(within(sheet()).getByRole('button', { name: 'Undo Grammar approach' }));
-    });
-    Then('the saved approach is {string}', async (_, id: string) => {
-      await waitFor(async () => expect(await getGrammarApproach()).toBe(id));
     });
   });
 });

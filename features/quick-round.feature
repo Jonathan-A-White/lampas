@@ -70,7 +70,7 @@ Feature: The placement probes the letters and sounds one by one
     And no word is asked before them
 
   Scenario: Learn next names a gap that is not a letter, though no letter is known yet
-    The Tester (mw-hqd5bz.28): the end card said "Gaps to work on: rough breathing", Learn next said "The Greek alphabet · The Greek letters", and Review asked the breathing first.
+    The Tester (mw-hqd5bz.28): the end card said "Gaps to work on: rough breathing", Learn next said "The Greek alphabet", and Review asked the breathing first.
 
     Given his goal is "Read 1 John 1:1", no letter is known, and his grammar is known except "rough breathing"
     When he opens the Goal screen

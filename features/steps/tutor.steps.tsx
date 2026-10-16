@@ -388,10 +388,10 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       await waitFor(() => expect(fake.received).toHaveLength(1));
       expect(received().grist).toMatchObject({ app: 'lampas', kind: 'verse-ask' });
     });
-    And('its input carries learner_grammar with no goal and the BMA Tutor approach', () => {
-      const field = received().input.learner_grammar as { goal: string | null; approach: { name: string; credit: string } };
+    And('its input carries learner_grammar with no goal and the Lampas ladder approach', () => {
+      const field = received().input.learner_grammar as { goal: string | null; approach: { name: string; credit: string | null } };
       expect(field.goal).toBeNull();
-      expect(field.approach).toMatchObject({ name: 'BMA Tutor', credit: 'Biblical Mastery Academy' });
+      expect(field.approach).toMatchObject({ name: 'Lampas ladder', credit: null });
     });
     And('its input carries the Greek pronunciation {string} and the settings that bear on the answer', (_, pronunciation: string) => {
       // mw-5r3p30.242: the tutor is told the pronunciation the app speaks and the settings src/tutor/knows.ts lists for verse-ask

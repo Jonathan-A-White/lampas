@@ -26,11 +26,11 @@ Feature: See my goal move
     And the ideas bar says solid 8, frontier 1 and not yet 37
     And the screen says "Solid when both are full"
 
-  Scenario: Learn next names the earliest not-yet idea of BMA Tutor's sequence with its lesson and opens its sheet
+  Scenario: Learn next names the earliest not-yet idea of the ladder with its lesson and opens its sheet
     Given the goal is "1 John 1:1" and he knows no word and no idea
     And the foundation ideas are solid and "noun" is not yet
     When he opens the Goal screen
-    Then Learn next says "The noun · Your first words"
+    Then Learn next says "The noun"
     When he taps Learn next
     Then the idea sheet is open on "The noun"
 
