@@ -7,6 +7,8 @@ import { parseGoal } from '../data/goal';
 import { drillSteps, type DrillQuestion } from '../data/grammar/drillIt';
 import { facetQuestions, PLAN_KIND, parseRowId, type PlanItem } from '../data/grammar/drillPlan';
 import { goalChapterNumbers } from '../data/grammar/needs';
+import { gradedVerses, ideaMetBy } from '../data/grammar/gradedVerses';
+import { pickerPasses } from '../data/grammar/formLevel';
 import { ideaOf, IDEA_KIND, type GrammarIdea } from '../data/grammar/ladder';
 import { buildIdeaQuestion, type GrammarQuestion } from '../data/grammar/questions';
 import { paradigmById } from '../data/paradigms';
@@ -21,8 +23,11 @@ import {
   getDrillPlan,
   answerPlanItem,
   getGoal,
+  getPickerGrammar,
+  listLearningLemmas,
   listLevels,
   listOpenedParadigms,
+  listSolidLemmas,
   listWords,
   pushGrammarAnswer,
   recordAnswer,
@@ -181,6 +186,12 @@ function ideaIfAny(id: string): GrammarIdea | undefined {
   }
 }
 
+/** The verses of the passage graded to him (src/data/grammar/gradedVerses.ts): his grammar levels at the picker's level and the words he has solid or is learning. */
+export async function gradedVersesOf(passage: readonly Chapter[]) {
+  const [levels, level, solid, learning] = await Promise.all([listLevels(), getPickerGrammar(), listSolidLemmas(), listLearningLemmas()]);
+  return gradedVerses(passage, pickerPasses(levels, level), new Set([...solid, ...learning]), ideaMetBy(levels, level));
+}
+
 export const GRAMMAR: ReviewKind = {
   kind: IDEA_KIND,
   count: (n) => `${n} ${n === 1 ? 'idea' : 'ideas'}`,
@@ -192,9 +203,10 @@ export const GRAMMAR: ReviewKind = {
     const scheme = chosenPronunciation();
     // an ending is asked only of a form whose table he has opened (mw-svw421.5)
     const opened = new Set(await listOpenedParadigms());
+    const graded = await gradedVersesOf(passage);
     return due.flatMap((r): GrammarItem[] => {
       const idea = ideaIfAny(r.id);
-      return idea ? [{ kind: 'grammar', id: idea.id, question: buildIdeaQuestion(idea, passage, own, scheme.respell, scheme, opened), mode: modeFor(r.step) }] : [];
+      return idea ? [{ kind: 'grammar', id: idea.id, question: buildIdeaQuestion(idea, passage, own, scheme.respell, scheme, opened, graded), mode: modeFor(r.step) }] : [];
     });
   },
   isRight: (item, picked) => item.kind === 'grammar' && (item.mode === 'flashcard' ? picked === KNEW_IT : picked === item.question.right),

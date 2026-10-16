@@ -2,11 +2,13 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
-import { LADDER, ideaOf } from '../../src/data/grammar/ladder';
+import { gradedVerses } from '../../src/data/grammar/gradedVerses';
+import { LADDER, ideaOf, ideasOf } from '../../src/data/grammar/ladder';
 import {
   buildEnding,
   buildIdeaQuestion,
   buildLetter,
+  buildMeaning,
   buildSound,
   buildStress,
   buildTapForm,
@@ -178,5 +180,105 @@ describe('every idea of the ladder', () => {
     expect([...kinds('accents')]).toEqual(['stress']);
     expect([...kinds('breathings')]).toEqual(['breathing']);
     expect([...kinds('preposition')]).toEqual(['tap-form']);
+  });
+});
+
+describe('a meaning question: What does this say?', () => {
+  const genitive = ideaOf('case-genitive');
+  const verses = jn1.verses;
+  /** every English chunk of 1 John 1 as written, and the clauses (two to four chunks in a row) read as one */
+  const chunkTexts = new Set(verses.flatMap((v) => v.e.map((c) => c.t.trim())));
+  const clauseTexts = new Set(
+    verses.flatMap((v) => [2, 3, 4].flatMap((n) => v.e.flatMap((_, i) => (v.e.slice(i, i + n).length === n ? [v.e.slice(i, i + n).map((c) => c.t.trim()).join(' ')] : [])))),
+  );
+  const build = (seed: number) => buildMeaning(genitive, [jn1], mulberry32(seed));
+  const all = Array.from({ length: 120 }, (_, i) => build(i + 1)).filter((q): q is GrammarQuestion => q !== null);
+  const chunkQuestions = all.filter((q) => chunkTexts.has(q.right));
+  const clauseQuestions = all.filter((q) => !chunkTexts.has(q.right));
+
+  it('asks the Greek of a chunk with a genitive, and the chunk English among four distinct chunks of the verse', () => {
+    const q = all.find((x) => x.ref === '1 John 1:1' && x.form === 'ἀρχῆς')!;
+    expect(q.right).toBe('the beginning,');
+    expect(q.kind).toBe('meaning');
+    expect(q.prompt).toBe('What does this say?');
+    expect(q.options).toHaveLength(4);
+    expect(new Set(q.options.map((o) => o.toLowerCase())).size).toBe(4);
+    expect(q.options).toContain(q.right);
+    for (const o of q.options) expect(chunkTexts.has(o), o).toBe(true);
+    expect(q.ref).toMatch(/^1 John 1:\d+$/);
+    expect(q.say).toBe(q.form);
+    expect(q.marked).toEqual(q.form!.split(' '));
+    expect(q.facet?.id).toBe('says');
+  });
+
+  it('gives a chunk question for the form of the verse, its right the English of the chunk that holds a genitive', () => {
+    expect(chunkQuestions.length).toBeGreaterThan(20);
+    for (const q of chunkQuestions) {
+      const verse = verses.find((v) => `1 John 1:${v.n}` === q.ref)!;
+      const chunk = verse.e.find((c) => c.t.trim() === q.right && c.g.map((i) => verse.g[i].t).join(' ') === q.form)!;
+      expect(chunk, q.ref).toBeDefined();
+      expect(chunk.g.some((i) => verse.g[i].p === q.code), q.ref).toBe(true);
+      expect(termsOf(q.code!).has('genitive'), q.code).toBe(true);
+    }
+  });
+
+  it('gives the same question for the same seed', () => {
+    for (const seed of [1, 7, 42]) expect(build(seed)).toEqual(build(seed));
+  });
+
+  it('draws a clause of two to four chunks, with the form of those chunks and their English run', () => {
+    expect(clauseQuestions.length).toBeGreaterThan(5);
+    for (const q of clauseQuestions) {
+      expect(clauseTexts.has(q.right), q.right).toBe(true);
+      expect(q.options).toHaveLength(4);
+      for (const o of q.options) expect(clauseTexts.has(o), o).toBe(true);
+      const verse = verses.find((v) => `1 John 1:${v.n}` === q.ref)!;
+      const runs = [2, 3, 4].flatMap((n) => verse.e.flatMap((_, i) => (verse.e.slice(i, i + n).length === n ? [verse.e.slice(i, i + n)] : [])));
+      const run = runs.find((chunks) => chunks.map((c) => c.t.trim()).join(' ') === q.right && [...new Set(chunks.flatMap((c) => c.g))].sort((a, b) => a - b).map((i) => verse.g[i].t).join(' ') === q.form);
+      expect(run, `${q.ref} ${q.right}`).toBeDefined();
+    }
+  });
+
+  it('lends the common English of the passage when the verse and its neighbours have too few chunks', () => {
+    const verse1 = jn1.verses.find((v) => v.n === 1)!;
+    // a verse of two chunks alone in its chapter: its own chunks cannot make four choices, the rest of the passage lends
+    const lone: Chapter = { ...jn1, verses: [{ ...verse1, e: verse1.e.filter((c) => c.g.some((i) => /-G[SP]/.test(verse1.g[i].p))).slice(0, 2) }] };
+    expect(buildMeaning(genitive, [lone], mulberry32(1))).toBeNull();
+    const q = buildMeaning(genitive, [lone, jn1], mulberry32(1))!;
+    expect(q.options).toHaveLength(4);
+    for (const o of q.options) expect(chunkTexts.has(o), o).toBe(true);
+  });
+
+  it('is null when the passage has no form of the idea', () => {
+    expect(buildMeaning(genitive, [], mulberry32(1))).toBeNull();
+    const noDative: Chapter = { ...jn1, verses: jn1.verses.filter((v) => !v.g.some((w) => ideasOf(w.p).includes('case-dative'))) };
+    expect(buildMeaning(ideaOf('case-dative'), [noDative], mulberry32(1))).toBeNull();
+  });
+
+  it('holds a graded draw to the easiest third of the verses at his level', () => {
+    // he knows the words of verses 1 to 6 only, so those are at his level (half their words known or more), ranked by their score and Greek length
+    const known = new Set(jn1.verses.filter((v) => v.n <= 6).flatMap((v) => v.g.map((w) => w.l.normalize('NFC'))));
+    const graded = gradedVerses([jn1], () => true, known);
+    const holdsGenitive = (n: number) => jn1.verses.find((v) => v.n === n)!.g.some((w) => ideasOf(w.p).includes('case-genitive') && w.e !== undefined);
+    const eligible = graded.filter((g) => g.atLevel && holdsGenitive(g.verse));
+    expect(eligible.length).toBeGreaterThan(2);
+    const third = new Set(eligible.slice(0, Math.ceil(eligible.length / 3)).map((g) => `1 John 1:${g.verse}`));
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 80; seed += 1) {
+      const q = buildMeaning(genitive, [jn1], mulberry32(seed), graded);
+      if (q) {
+        expect(third.has(q.ref!), `${q.ref} seed ${seed}`).toBe(true);
+        seen.add(q.ref!);
+      }
+    }
+    expect(seen.size).toBeGreaterThan(0);
+  });
+
+  it('is drawn by buildIdeaQuestion for a word idea only when the graded verses are handed over', () => {
+    const graded = gradedVerses([jn1], () => true, new Set());
+    const kinds = new Set(Array.from({ length: 40 }, (_, i) => buildIdeaQuestion(genitive, [jn1], mulberry32(i + 1), undefined, undefined, undefined, graded).kind));
+    expect([...kinds].sort()).toEqual(['ending', 'meaning', 'tap-form']);
+    const plain = new Set(Array.from({ length: 40 }, (_, i) => buildIdeaQuestion(genitive, [jn1], mulberry32(i + 1)).kind));
+    expect([...plain].sort()).toEqual(['ending', 'tap-form']);
   });
 });

@@ -5,13 +5,14 @@
 // the question tests first (mw-i7xe0n.7): a look-alike letter, the same word's other ending, the twin with the other mark, the preposition's other case.
 import { bookOf } from '../books';
 import { OPTION_COUNT, choicesOf, lookAlikesOf, pairMates } from '../choices';
-import type { Chapter, GreekWord, Verse } from '../chapter';
+import type { Chapter, EnglishChunk, GreekWord, Verse } from '../chapter';
 import { decodeParse, parseSegments, splitParse, type SplitParse } from '../parseCode';
 import { PARADIGMS, tableFor } from '../paradigms';
 import { shuffle, type Random } from '../quiz';
 import { chosenPronunciation } from '../../speech/greek';
 import type { Pronunciation } from '../../speech/pronunciation';
 import { LADDER, itemFacet, itemsOf, ideasOf, type Facet, type GrammarIdea } from './ladder';
+import type { GradedVerse } from './gradedVerses';
 import { ideaSound, ideaText } from './lessons';
 import { ENCLITIC_USES, MARK_PAIRS, blankWord } from './marks';
 import { SOUND_ALIKE } from './soundAlike';
@@ -20,7 +21,7 @@ import { quickQuestion } from './quickRound';
 import { laterTermsIn, termIsTaught } from './taughtTerms';
 import { teachOf } from './teach';
 
-export type GrammarKind = 'ending' | 'tap-form' | 'letter' | 'sound' | 'stress' | 'breathing' | 'syllables' | 'preposition' | 'compound' | 'concept' | 'cell';
+export type GrammarKind = 'ending' | 'tap-form' | 'letter' | 'sound' | 'stress' | 'breathing' | 'syllables' | 'preposition' | 'compound' | 'concept' | 'cell' | 'meaning';
 
 export interface GrammarQuestion {
   kind: GrammarKind;
@@ -42,6 +43,8 @@ export interface GrammarQuestion {
   say?: string;
   /** what the question is about, for Drill it (drillIt.ts, mw-i7xe0n.1): the letter, the ending, the case; a miss on it names the gap */
   facet?: Facet;
+  /** the Greek words the question is about, for a 'meaning': the chunk's (or the clause's) words in text order, which the card may mark */
+  marked?: string[];
   /** the wrong options that are near misses of the point it tests (src/data/choices.ts, mw-i7xe0n.7): a Hint takes the others away first */
   near?: string[];
   /** an ending's table (mw-svw421.5, data/paradigms tableFor): the id of the paradigm that holds the ending, which the card offers to open after the answer */
@@ -107,6 +110,7 @@ const pick = <T>(items: readonly T[], random: Random): T => items[Math.floor(ran
 export const MEANING: Facet = { id: 'meaning', label: 'What it is' };
 export const SPOT: Facet = { id: 'spot', label: 'Finding it in a verse' };
 export const ENDING: Facet = { id: 'ending', label: 'Its ending' };
+export const SAYS: Facet = { id: 'says', label: 'What it says' };
 
 // ---- Tap the form ----
 
@@ -191,6 +195,110 @@ export function buildTapForm(idea: GrammarIdea, passage: readonly Chapter[], ran
     };
   }
   return null;
+}
+
+// ---- What does this say? ----
+
+/** The chunks of a clause: two to four of a verse's English chunks in a row. */
+const CLAUSE_MIN = 2;
+const CLAUSE_MAX = 4;
+/** The common English of the passage that lends wrong choices when the verse and its neighbours have too few. */
+const COMMON_ENGLISH = 40;
+
+const textOf = (chunk: EnglishChunk): string => chunk.t.trim();
+/** A chunk the question can use: it renders at least one Greek word and has English. */
+const usable = (chunk: EnglishChunk | undefined): chunk is EnglishChunk => chunk !== undefined && chunk.g.length > 0 && textOf(chunk) !== '';
+const sameText = (text: string): string => text.toLowerCase();
+
+/** The Greek words of these chunks of `verse`, once each, in text order. */
+const greekOf = (verse: Verse, chunks: readonly EnglishChunk[]): string[] =>
+  [...new Set(chunks.flatMap((c) => c.g))].sort((a, b) => a - b).flatMap((i) => (verse.g[i] ? [verse.g[i].t] : []));
+
+/** Every run of `size` usable chunks in a row of `verse`, as the English they read. */
+const runsOf = (verse: Verse | undefined, size: number): string[] =>
+  verse
+    ? verse.e.flatMap((_, i) => {
+        const run = verse.e.slice(i, i + size);
+        return run.length === size && run.every(usable) ? [run.map(textOf).join(' ')] : [];
+      })
+    : [];
+
+interface Spot {
+  chapter: Chapter;
+  verse: Verse;
+}
+
+/** The verses that have a form needing the idea in a chunk with English; with `graded`, the easiest third of those at his level (all of them when none is), seeded. */
+function meaningVerse(idea: GrammarIdea, passage: readonly Chapter[], random: Random, graded?: readonly GradedVerse[]): Spot | null {
+  const spots = passage.flatMap((chapter) =>
+    chapter.verses.filter((verse) => verse.g.some((w) => needsIdea(w.p, idea.id) && usable(verse.e[w.e ?? -1]))).map((verse): Spot => ({ chapter, verse })),
+  );
+  if (spots.length === 0) return null;
+  const keyOf = (s: Spot): string => `${s.chapter.code}.${s.chapter.chapter}.${s.verse.n}`;
+  const ranked = graded ? graded.flatMap((g) => spots.filter((s) => keyOf(s) === g.ref).map((spot) => ({ spot, atLevel: g.atLevel }))) : [];
+  if (ranked.length === 0) return pick(spots, random);
+  const pool = ranked.some((r) => r.atLevel) ? ranked.filter((r) => r.atLevel) : ranked;
+  return pick(pool.slice(0, Math.ceil(pool.length / 3)), random).spot;
+}
+
+/**
+ * What does this say? (mw-emk3xt.2): the Greek of one chunk, or of a clause of two to four chunks, of a verse with a form needing the idea, and four
+ * English chunks to choose from, the verse's own: the right one and three others of the same verse or its neighbours that render a Greek word and read
+ * differently (the passage's commonest English lends when too few). The English is the translators' chunk as written (EnglishChunk.t), never made up.
+ * `graded` (gradedVerses) holds it to the easiest third of the verses at his level; without it any verse with a form will do. Null when the passage has none.
+ */
+export function buildMeaning(idea: GrammarIdea, passage: readonly Chapter[], random: Random, graded?: readonly GradedVerse[]): GrammarQuestion | null {
+  const spot = meaningVerse(idea, passage, random, graded);
+  if (!spot) return null;
+  const { chapter, verse } = spot;
+  const word = pick(verse.g.filter((w) => needsIdea(w.p, idea.id) && usable(verse.e[w.e ?? -1])), random);
+  const at = word.e!;
+  const clause = verse.e.length - 1 - at >= CLAUSE_MIN + 1 && random() < 0.5;
+  const size = clause ? CLAUSE_MIN + Math.floor(random() * (CLAUSE_MAX - CLAUSE_MIN + 1)) : 1;
+  const chunks = verse.e.slice(at, at + size);
+  if (!chunks.every(usable)) return size > 1 ? chunkMeaning(idea, passage, chapter, verse, word, at, random) : null;
+  const made = meaningFrom(idea, passage, chapter, verse, word, chunks, random);
+  return made ?? (size > 1 ? chunkMeaning(idea, passage, chapter, verse, word, at, random) : null);
+}
+
+function chunkMeaning(idea: GrammarIdea, passage: readonly Chapter[], chapter: Chapter, verse: Verse, word: GreekWord, at: number, random: Random): GrammarQuestion | null {
+  return usable(verse.e[at]) ? meaningFrom(idea, passage, chapter, verse, word, [verse.e[at]], random) : null;
+}
+
+function meaningFrom(idea: GrammarIdea, passage: readonly Chapter[], chapter: Chapter, verse: Verse, word: GreekWord, chunks: EnglishChunk[], random: Random): GrammarQuestion | null {
+  const size = chunks.length;
+  const right = chunks.map(textOf).join(' ');
+  const index = chapter.verses.indexOf(verse);
+  const neighbours = [chapter.verses[index - 1], chapter.verses[index + 1]];
+  const ofVerse = (v: Verse | undefined): string[] => (size === 1 ? (v?.e ?? []).filter(usable).map(textOf) : runsOf(v, size));
+  const common = new Map<string, number>();
+  if (size === 1) for (const c of passage.flatMap((ch) => ch.verses.flatMap((v) => v.e))) if (usable(c)) common.set(textOf(c), (common.get(textOf(c)) ?? 0) + 1);
+  const { options, near } = choicesOf(
+    {
+      right,
+      near: shuffle(ofVerse(verse), random),
+      fillers: neighbours.flatMap(ofVerse),
+      lastResort: [...common].sort((a, b) => b[1] - a[1]).slice(0, COMMON_ENGLISH).map(([text]) => text),
+      keyOf: sameText,
+    },
+    random,
+  );
+  if (options.length < OPTION_COUNT) return null;
+  const marked = greekOf(verse, chunks);
+  return {
+    kind: 'meaning',
+    ideaId: idea.id,
+    prompt: 'What does this say?',
+    options,
+    near,
+    right,
+    ref: `${chapter.book} ${chapter.chapter}:${verse.n}`,
+    form: marked.join(' '),
+    marked,
+    say: marked.join(' '),
+    code: word.p,
+    facet: SAYS,
+  };
 }
 
 // ---- The ending of a form ----
@@ -779,6 +887,7 @@ export function buildIdeaQuestion(
   respell?: Respell,
   scheme: Pronunciation = chosenPronunciation(),
   tablesOpen: ReadonlySet<string> = EVERY_TABLE,
+  graded?: readonly GradedVerse[],
 ): GrammarQuestion {
   const said = respell ?? scheme.respell;
   // one diphthong, consonant pair or breathing (mw-hqd5bz.18): heard or seen, as the quick round asks it
@@ -810,10 +919,16 @@ export function buildIdeaQuestion(
     case 'words-sound-alike':
       return buildSoundAlike(idea, random, scheme);
   }
-  const endingFirst = random() < 0.5;
-  const builders = endingFirst ? [buildEnding, buildTapForm] : [buildTapForm, buildEnding];
-  for (const build of builders) {
-    const question = build === buildEnding ? buildEnding(idea, passage, random, tablesOpen) : build(idea, passage, random);
+  // Review hands the graded verses (mw-emk3xt.2): there a word idea is also asked what a chunk says; the placement and Drill it test the form alone
+  const first = random();
+  const order: ((idea: GrammarIdea) => GrammarQuestion | null)[] = [];
+  const ending = (i: GrammarIdea) => buildEnding(i, passage, random, tablesOpen);
+  const tap = (i: GrammarIdea) => buildTapForm(i, passage, random);
+  const meaning = (i: GrammarIdea) => buildMeaning(i, passage, random, graded);
+  if (!graded) order.push(...(first < 0.5 ? [ending, tap] : [tap, ending]));
+  else order.push(...(first < 1 / 3 ? [ending, tap, meaning] : first < 2 / 3 ? [tap, meaning, ending] : [meaning, ending, tap]));
+  for (const build of order) {
+    const question = build(idea);
     if (question) return question;
   }
   return buildConcept(idea, random, scheme);
