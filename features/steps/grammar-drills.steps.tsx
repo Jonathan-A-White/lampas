@@ -9,16 +9,18 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
+import { foundationOf } from '../../src/data/grammar/inference';
 import { ideaOf } from '../../src/data/grammar/ladder';
 import { buildIdeaQuestion, type GrammarKind, type GrammarQuestion } from '../../src/data/grammar/questions';
 import { mulberry32 } from '../../src/data/quiz';
+import { getEvidence } from '../../src/data/repositories';
 import { setGoal } from '../../src/data/repositories/settings';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { seedHisWords } from '../../tests/support/his-words';
 import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { grammarRandom } from '../../src/review/kinds';
+import { grammarRandom, gradedVersesOf } from '../../src/review/kinds';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 
 afterAll(() => {
@@ -62,10 +64,11 @@ let opened = new Set<string>();
 /** The question the scenario expects to be asked, so a step can tap its right answer. */
 let expected: GrammarQuestion | undefined;
 
-/** Makes the app's random the first seed whose draw of `id` over `passage` is a question of `kind`. */
-function drawAs(id: string, passage: Chapter[], kind: GrammarKind, tablesOpen: ReadonlySet<string> = opened): void {
+/** Makes the app's random the first seed whose draw of `id` over `passage` is a question of `kind`; Review draws from the verses graded to him (gradedVersesOf), so the step does. */
+async function drawAs(id: string, passage: Chapter[], kind: GrammarKind, tablesOpen: ReadonlySet<string> = opened): Promise<void> {
+  const graded = await gradedVersesOf(passage);
   for (let s = 1; s < 500; s += 1) {
-    const q = buildIdeaQuestion(ideaOf(id), passage, grammarRandom(mulberry32(s)), undefined, undefined, tablesOpen);
+    const q = buildIdeaQuestion(ideaOf(id), passage, grammarRandom(mulberry32(s)), undefined, undefined, tablesOpen, graded);
     if (q.kind !== kind) continue;
     seed = s;
     expected = q;
@@ -90,6 +93,10 @@ async function start(): Promise<void> {
   await user.click(await screen.findByRole('button', { name: 'Start' }));
   await screen.findByTestId('grammar-prompt');
 }
+
+/** The right uses in a row the evidence holds for the letters, sounds and marks of a Greek form (words split on white space), added up. */
+const runsOf = (evidence: Awaited<ReturnType<typeof getEvidence>>, form: string): number =>
+  form.split(' ').reduce((all, word) => all + foundationOf(word).reduce((sum, id) => sum + (evidence.get(id)?.run ?? 0), 0), 0);
 
 const optionButtons = (): HTMLElement[] => [...document.querySelectorAll<HTMLElement>('[data-option]')];
 const verseWords = (): HTMLElement[] => within(screen.getByTestId('verse-words')).getAllByRole('button');
@@ -134,7 +141,7 @@ describeFeature(feature, ({ Scenario }) => {
       await db.settings.put({ key: 'paradigmsOpened', value: JSON.stringify([...opened]) });
     });
     And('the draw asks {string} as a paradigm ending', async (_, id: string) => {
-      drawAs(id, [chapter('1jn/1')], 'ending');
+      await drawAs(id, [chapter('1jn/1')], 'ending');
     });
     When('Lampas is opened on the Reader', openReader);
     And('he opens Review from Settings', openReviewFromSettings);
@@ -166,9 +173,10 @@ describeFeature(feature, ({ Scenario }) => {
     And('the idea {string} is due', async (_, id: string) => makeIdeaDue(id));
     And('the draw would ask {string} as a paradigm ending if its table were open', async (_, id: string) => {
       // the seed that gives an ending once the table is open also gives the tap the form while it is shut
+      const graded = await gradedVersesOf([chapter('1jn/1')]);
       for (let s = 1; s < 500; s += 1) {
-        const shut = buildIdeaQuestion(ideaOf(id), [chapter('1jn/1')], grammarRandom(mulberry32(s)), undefined, undefined, new Set());
-        const open = buildIdeaQuestion(ideaOf(id), [chapter('1jn/1')], grammarRandom(mulberry32(s)), undefined, undefined, new Set(['noun-endings']));
+        const shut = buildIdeaQuestion(ideaOf(id), [chapter('1jn/1')], grammarRandom(mulberry32(s)), undefined, undefined, new Set(), graded);
+        const open = buildIdeaQuestion(ideaOf(id), [chapter('1jn/1')], grammarRandom(mulberry32(s)), undefined, undefined, new Set(['noun-endings']), graded);
         if (shut.kind !== 'tap-form' || open.kind !== 'ending') continue;
         seed = s;
         expected = open;
@@ -230,7 +238,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the idea {string} is due', async (_, id: string) => makeIdeaDue(id));
     And('the draw asks {string} as tap the form', async (_, id: string) => {
-      drawAs(id, [chapter('1jn/1')], 'tap-form');
+      await drawAs(id, [chapter('1jn/1')], 'tap-form');
     });
     When('Lampas is opened on the Reader', openReader);
     And('he opens Review from Settings', openReviewFromSettings);
@@ -252,6 +260,71 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('Review asks what a chunk says', ({ Given, And, When, Then }) => {
+    let before = 0;
+    Given('his goal is {string}', async (_, goal: string) => {
+      await freshStore();
+      await setGoal(goal);
+    });
+    And('the idea {string} is due', async (_, id: string) => makeIdeaDue(id));
+    And('the draw asks {string} as what a chunk says', async (_, id: string) => {
+      await drawAs(id, [chapter('1jn/1')], 'meaning');
+      before = runsOf(await getEvidence(), expected!.form!);
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    Then('the card shows the Greek large with Tap to hear and four English chunks', () => {
+      expect(screen.getByTestId('grammar-prompt')).toHaveTextContent('What does this say?');
+      expect(screen.getByTestId('grammar-prompt').getAttribute('data-kind')).toBe('meaning');
+      const form = screen.getByTestId('grammar-form');
+      expect(form.textContent).toBe(expected!.form);
+      expect(form.className).toMatch(/text-[45]xl/);
+      expect(form.getAttribute('lang')).toBe('grc');
+      expect(screen.getByTestId('tap-to-hear')).toBeTruthy();
+      const english = optionButtons().map((b) => b.textContent);
+      expect(english).toHaveLength(4);
+      expect(new Set(english).size).toBe(4);
+      const chunks = new Set(chapter('1jn/1').verses.flatMap((v) => v.e.map((c) => c.t.trim())));
+      for (const text of english) expect(chunks.has(text ?? ''), text ?? '').toBe(true);
+    });
+    When('he taps the right English chunk', async () => user.click(rightOne()));
+    Then('the right English chunk turns green', () => {
+      expect(rightOne().getAttribute('data-result')).toBe('right');
+    });
+    And('{string} has one right review and no lapse', async (_, id: string) => {
+      await waitFor(async () => expect((await review(id)).rights).toBe(1));
+      expect((await review(id)).lapses).toBe(0);
+    });
+    And('the letters of the chunk are credited', async () => {
+      await waitFor(async () => expect(runsOf(await getEvidence(), expected!.form!)).toBeGreaterThan(before));
+    });
+  });
+
+  Scenario('A strong idea asked what a chunk says shows the Greek and Show reveals the English', ({ Given, And, When, Then }) => {
+    Given('his goal is {string}', async (_, goal: string) => {
+      await freshStore();
+      await setGoal(goal);
+    });
+    And('the idea {string} is due on step {int}', async (_, id: string, step: number) => makeIdeaDue(id, step));
+    And('the draw asks {string} as what a chunk says', async (_, id: string) => {
+      await drawAs(id, [chapter('1jn/1')], 'meaning');
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    Then('the card shows the Greek of a chunk and no options', () => {
+      expect(screen.getByTestId('grammar-prompt').getAttribute('data-mode')).toBe('flashcard');
+      expect(screen.getByTestId('grammar-form').textContent).toBe(expected!.form);
+      expect(optionButtons()).toHaveLength(0);
+      expect(screen.getByTestId('grammar-answer').textContent).toBe('');
+    });
+    When('he taps Show', async () => user.click(screen.getByRole('button', { name: 'Show' })));
+    Then('the English of the chunk is shown', async () => {
+      await waitFor(() => expect(screen.getByTestId('grammar-answer').textContent).toBe(expected!.right));
+    });
+  });
+
   Scenario('A preposition is asked by the case of a real phrase', ({ Given, And, When, Then }) => {
     Given('his goal is {string}', async (_, goal: string) => {
       await freshStore();
@@ -259,7 +332,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the idea {string} is due', async (_, id: string) => makeIdeaDue(id));
     And('the draw asks {string} as a preposition\'s meaning', async (_, id: string) => {
-      drawAs(id, [chapter('1jn/1')], 'preposition');
+      await drawAs(id, [chapter('1jn/1')], 'preposition');
     });
     When('Lampas is opened on the Reader', openReader);
     And('he opens Review from Settings', openReviewFromSettings);
@@ -318,7 +391,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the idea {string} is due', async (_, id: string) => makeIdeaDue(id));
     And('the draw asks {string} as tap the form', async (_, id: string) => {
-      drawAs(id, [chapter('1jn/1')], 'tap-form');
+      await drawAs(id, [chapter('1jn/1')], 'tap-form');
     });
     When('Lampas is opened on the Reader', openReader);
     And('he opens Review from Settings', openReviewFromSettings);

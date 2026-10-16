@@ -58,6 +58,31 @@ Feature: Review asks grammar ideas, and asks them before words
     Then the right word turns green
     And "case-dative" has one right review and no lapse
 
+  # mw-emk3xt.2: no question asked what a form or a clause means; the verse's own English chunks answer it.
+  Scenario: Review asks what a chunk says
+    Given his goal is "1 John 1"
+    And the idea "case-genitive" is due
+    And the draw asks "case-genitive" as what a chunk says
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    Then the card shows the Greek large with Tap to hear and four English chunks
+    When he taps the right English chunk
+    Then the right English chunk turns green
+    And "case-genitive" has one right review and no lapse
+    And the letters of the chunk are credited
+
+  Scenario: A strong idea asked what a chunk says shows the Greek and Show reveals the English
+    Given his goal is "1 John 1"
+    And the idea "case-genitive" is due on step 3
+    And the draw asks "case-genitive" as what a chunk says
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    Then the card shows the Greek of a chunk and no options
+    When he taps Show
+    Then the English of the chunk is shown
+
   Scenario: A preposition is asked by the case of a real phrase
     Given his goal is "1 John 1"
     And the idea "preposition-dia" is due

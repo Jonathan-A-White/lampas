@@ -1,6 +1,6 @@
 // src/GrammarCard.tsx — one grammar question in Review (mw-hqd5bz.6): what is asked, the Greek form large, Tap to hear for a letter or a word,
 // then the choices. Multiple choice while the idea is weak: four endings, glyphs or syllables to tap, or the words of a verse as buttons
-// (tap the form) that wrap; a flashcard once it is strong: the prompt and the form, Show reveals the answer, then I knew it / Not yet.
+// (tap the form) that wrap; what a chunk or clause says (kind 'meaning'): the Greek large with Tap to hear, four English chunks; a flashcard once it is strong: the prompt and the form, Show reveals the answer, then I knew it / Not yet.
 import { useState } from 'react';
 import type { GrammarQuestion } from './data/grammar/questions';
 import type { QuestionMode } from './data/schedule';
@@ -60,7 +60,7 @@ function Heading({ question, mode, hint }: { question: GrammarQuestion; mode: Qu
           {question.prompt}
         </p>
         {question.form ? (
-          <p data-testid="grammar-form" lang="grc" className="mt-3 min-w-0 break-words font-greek text-5xl">
+          <p data-testid="grammar-form" lang="grc" className={`mt-3 min-w-0 break-words font-greek ${question.kind === 'meaning' && question.form.length > 16 ? 'text-4xl' : 'text-5xl'}`}>
             {question.form}
           </p>
         ) : null}

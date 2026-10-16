@@ -99,6 +99,17 @@ describe('an answer to a question', () => {
     expect(result.evidence.get('letter-rho')).toEqual({ run: 1, misses: 0 });
   });
 
+  it('credits the Greek of a meaning question, each word of a clause once, and nothing for the gap between words', () => {
+    const meaning = { kind: 'meaning', ideaId: 'case-genitive', form: 'τῆς ζωῆς', right: 'of life.' } as const;
+    expect(formOfQuestion(meaning)).toBe('τῆς ζωῆς');
+    const result = inferFromAnswer(none, meaning, true);
+    expect(result.credited).toEqual(expect.arrayContaining(['letter-tau', 'letter-zeta', 'letter-sigma']));
+    expect(result.credited).not.toContain('punctuation');
+    // the sigma of τῆς and of ζωῆς: a use for each word, so two
+    expect(result.evidence.get('letter-sigma')).toEqual({ run: 2, misses: 0 });
+    expect(inferFromAnswer(none, meaning, false).evidence.size).toBe(0);
+  });
+
   it('says nothing about the letters on a miss about a form', () => {
     const result = inferFromAnswer(none, ending, false);
     expect(result.evidence.size).toBe(0);

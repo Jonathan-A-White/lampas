@@ -141,13 +141,16 @@ export function foundationOf(form: string): string[] {
   return FOUNDATION_IDS.filter((id) => spans.has(id));
 }
 
-/** The whole Greek form a question shows: the word of a stress, syllable or breathing question, the right word of a tap-form, the form with its ending put back. */
+/** The whole Greek form a question shows: the word of a stress, syllable or breathing question, the right word of a tap-form, the form with its ending put back, the Greek of a meaning question's chunk. */
 export function formOfQuestion(question: Pick<GrammarQuestion, 'kind' | 'form' | 'right'>): string | undefined {
   switch (question.kind) {
     case 'ending':
       return question.form?.replace('_', question.right);
     case 'tap-form':
       return question.right;
+    case 'meaning':
+      // the Greek of a chunk or clause: more than one word is credited word by word (inferFromAnswer)
+      return question.form;
     case 'cell':
       // a cell of a table (mw-svw421.6): its form is the answer, when it is Greek (a table can hold English)
       return /\p{Script=Greek}/u.test(question.right) ? question.right : undefined;
@@ -212,7 +215,7 @@ export interface Inferred {
 export function inferFromAnswer(evidence: EvidenceMap, question: Pick<GrammarQuestion, 'kind' | 'ideaId' | 'form' | 'right'>, right: boolean): Inferred {
   if (right) {
     const form = formOfQuestion(question);
-    if (form) return inferFromWord(evidence, form);
+    if (form) return inferFromForms(evidence, form.split(/\s+/).filter(Boolean));
     // a letter named or heard right: the letter itself has one more right use (mw-86e9r1.11)
     const letters = isLetterQuestion(question) ? letterOf(question) : [];
     return { evidence: bump(evidence, letters, (e) => ({ ...e, run: e.run + 1 })), credited: letters, missed: [] };
@@ -243,6 +246,16 @@ export const DRILL_RUN_CAP = INFERRED_RIGHTS - 1;
 export function inferFromWord(evidence: EvidenceMap, word: string): Inferred {
   const credited = foundationOf(word);
   return { evidence: creditForm(evidence, word), credited, missed: [] };
+}
+
+/** Each of several Greek words of one right answer (a clause): a word's letters count once for the word, and the gap between words counts for nothing. */
+function inferFromForms(evidence: EvidenceMap, words: readonly string[]): Inferred {
+  let all: Inferred = { evidence: new Map(evidence), credited: [], missed: [] };
+  for (const word of words) {
+    const next = inferFromWord(all.evidence, word);
+    all = { evidence: next.evidence, credited: [...new Set([...all.credited, ...next.credited])], missed: [] };
+  }
+  return all;
 }
 
 /** The letters that are not solid, in alphabet order. */
