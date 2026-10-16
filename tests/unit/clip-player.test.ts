@@ -5,6 +5,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ClipPlayer } from '../../src/audio/clipPlayer';
 import type { Clip } from '../../src/audio/clip';
+import { decodeSeam } from '../../src/audio/voiceSpan';
+
+const realDecode = decodeSeam.decode;
 
 const CLIP: Clip = { bytes: new ArrayBuffer(8), mime: 'audio/webm' };
 const STEP = 0.25;
@@ -133,5 +136,79 @@ describe('ClipPlayer.toggle(id, from, to) on a phone with a coarse audio clock',
     await vi.advanceTimersByTimeAsync(5000);
     expect(audio.paused).toBe(false);
     expect(player.playing()).toBe('all');
+  });
+});
+
+// 'Play my reading' starts where his voice starts (mw-5r3p30.396): toggleVoice plays the clip from a little before his first word to a little after his
+// last, by the scorer's times when it gave them, else by the level the phone measures (decodeSeam); the kept clip is not touched.
+describe("ClipPlayer.toggleVoice(key): his reading from where his voice starts", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    URL.createObjectURL = () => 'blob:clip';
+    URL.revokeObjectURL = () => undefined;
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    decodeSeam.decode = realDecode;
+  });
+
+  it('with times for his first and last words, starts 0.2 s before the first and stops 0.3 s after the last', async () => {
+    decodeSeam.decode = async () => null;
+    const audio = new CoarseAudio(STEP, 0);
+    const player = new ClipPlayer(() => undefined);
+    player.attach(audio as unknown as HTMLAudioElement);
+    player.setClip(CLIP, { start: 1.5, end: 2.4 });
+    await vi.advanceTimersByTimeAsync(0);
+    player.toggleVoice('all');
+    expect(player.playing()).toBe('all');
+    expect(audio.currentTime).toBeCloseTo(1.3, 5);
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(audio.paused).toBe(true);
+    expect(audio.pausedAt).toBeGreaterThanOrEqual(2.7);
+    expect(audio.pausedAt).toBeLessThanOrEqual(2.8);
+    expect(player.playing()).toBeNull();
+  });
+
+  it('a first word that starts within 0.2 s of the clip plays from 0', async () => {
+    const audio = new CoarseAudio(STEP, 0);
+    const player = new ClipPlayer(() => undefined);
+    player.attach(audio as unknown as HTMLAudioElement);
+    player.setClip(CLIP, { start: 0.1, end: 2.4 });
+    await vi.advanceTimersByTimeAsync(0);
+    player.toggleVoice('all');
+    expect(audio.currentTime).toBe(0);
+  });
+
+  it('with no times, starts 0.2 s before the level first rises: 2 s of silence then a tone starts at about 1.8 s', async () => {
+    decodeSeam.decode = async () => {
+      const samples = new Float32Array(16_000 * 3);
+      for (let i = 16_000 * 2; i < samples.length; i++) samples[i] = 0.5 * Math.sin((2 * Math.PI * 220 * i) / 16_000);
+      return { samples, sampleRate: 16_000 };
+    };
+    const audio = new CoarseAudio(STEP, 0);
+    const player = new ClipPlayer(() => undefined);
+    player.attach(audio as unknown as HTMLAudioElement);
+    player.setClip(CLIP);
+    // a tap before the measure is done waits for it, then plays from there
+    player.toggleVoice('all');
+    await vi.advanceTimersByTimeAsync(0);
+    expect(player.playing()).toBe('all');
+    expect(audio.currentTime).toBeGreaterThan(1.75);
+    expect(audio.currentTime).toBeLessThan(1.85);
+    expect(CLIP.bytes.byteLength).toBe(8);
+  });
+
+  it('a second tap stops it', async () => {
+    decodeSeam.decode = async () => null;
+    const audio = new CoarseAudio(STEP, 0);
+    const player = new ClipPlayer(() => undefined);
+    player.attach(audio as unknown as HTMLAudioElement);
+    player.setClip(CLIP, { start: 1.5, end: 2.4 });
+    await vi.advanceTimersByTimeAsync(0);
+    player.toggleVoice('all');
+    await vi.advanceTimersByTimeAsync(100);
+    player.toggleVoice('all');
+    expect(audio.paused).toBe(true);
+    expect(player.playing()).toBeNull();
   });
 });

@@ -6,6 +6,7 @@
 // on by the clock (as fast as real time), the way a sound card would move it, until pause() or the end of the clip (`seconds`),
 // so a spec can watch an element stop where the app told it to.
 import type { Page } from '@playwright/test';
+import type { MicScriptOptions } from 'bsv-kit/testing/mic';
 import { honestMic } from '../support/honest-fakes';
 
 export interface FakeWindow {
@@ -14,8 +15,9 @@ export interface FakeWindow {
   pauses: number[];
 }
 
-export async function fakeMedia(page: Page, seconds = 0.2): Promise<void> {
-  await honestMic(page);
+/** `mic` is passed to the honest microphone: `{ silent: 1500 }` is a clip whose first 1.5 s are silence. */
+export async function fakeMedia(page: Page, seconds = 0.2, mic: MicScriptOptions = {}): Promise<void> {
+  await honestMic(page, mic);
   await page.addInitScript(() => {
     // The honest recorder's chunks are raw PCM (16 kHz, 16-bit, mono). The first chunk gets a WAV header that does not know the
     // length (0xFFFFFFFF, as a stream has it), so what the app keeps is a file Chromium can decode and play.
