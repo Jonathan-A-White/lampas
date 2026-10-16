@@ -1,5 +1,103 @@
 [
   {
+    "version": "0.1.278",
+    "date": "2026-10-16",
+    "story": "mw-86e9r1.55",
+    "kind": "fixed",
+    "text": "The letters Write it shows you now join up like real handwriting, so alpha is one smooth stroke instead of a bowl and a separate slash with a gap."
+  },
+  {
+    "version": "0.1.278",
+    "date": "2026-10-16",
+    "story": "mw-86e9r1.26",
+    "kind": "fixed",
+    "text": "The \"A verb with no voice\" question now reads as plain English, with the blank where the name was."
+  },
+  {
+    "version": "0.1.278",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.304",
+    "kind": "fixed",
+    "text": "a quiet update that arrives while you are reading now finishes the next time you leave the app, instead of waiting for the next restart."
+  },
+  {
+    "version": "0.1.278",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.302",
+    "kind": "fixed",
+    "text": "a reading sent over a slow link that the tutor received late is now answered, instead of showing 'Could not reach the tutor' and sending it twice on Retry."
+  },
+  {
+    "version": "0.1.278",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.312",
+    "kind": "fixed",
+    "text": "The Accents and stress lesson now says how the stress is said in the Greek pronunciation you chose, under How it sounds."
+  },
+  {
+    "version": "0.1.278",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.324",
+    "kind": "fixed",
+    "text": "In the Quick test, while the answered word speaks by itself, Tap to hear shows the stop square and one tap stops it."
+  },
+  {
+    "version": "0.1.278",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.369",
+    "kind": "fixed",
+    "text": "a grammar idea's example words now show at the top of its sheet, all in view when it opens, upright or sideways, with 'Show N more' when there are more than three."
+  },
+  {
+    "version": "0.1.278",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.265",
+    "kind": "fixed",
+    "text": "a word's sheet shows the English it stands for without the verse's full stop, comma or quotes."
+  },
+  {
+    "version": "0.1.278",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.191",
+    "kind": "fixed",
+    "text": "The tutor's switch to Typing or Speaking now takes even when it sent another change the app ignores."
+  },
+  {
+    "version": "0.1.278",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.475",
+    "kind": "fixed",
+    "text": "For an American reader, the sound of chi is now keyed to \"chutzpah\", the throaty ch, instead of \"loch\", which many Americans say as \"lock\"."
+  },
+  {
+    "version": "0.1.278",
+    "date": "2026-10-16",
+    "story": "mw-i7xe0n.12",
+    "kind": "fixed",
+    "text": "In Drill it, missing a \"How is this word said?\" question now asks the same letter again with a different word, instead of ending the drill on an easier question."
+  },
+  {
+    "version": "0.1.278",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.496",
+    "kind": "new",
+    "text": "Tapping an Old Testament chapter now lets you choose between reading it in Logos or listening to it in Audible."
+  },
+  {
+    "version": "0.1.278",
+    "date": "2026-10-16",
+    "story": "mw-svw421.31",
+    "kind": "fixed",
+    "text": "The third declension sheet no longer lists οὐδεμία, which belongs to the first declension, as one of its examples."
+  },
+  {
+    "version": "0.1.278",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.426",
+    "kind": "fixed",
+    "text": "Holding to talk on an Android phone no longer shows a \"language-not-supported\" error when the phone could have heard you another way."
+  },
+  {
     "version": "0.1.277",
     "date": "2026-10-16",
     "story": "mw-hqd5bz.36",

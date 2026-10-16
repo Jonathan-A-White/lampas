@@ -1,5 +1,22 @@
 # What's new
 
+## 0.1.278
+_2026-10-16_
+- Fixed: The letters Write it shows you now join up like real handwriting, so alpha is one smooth stroke instead of a bowl and a separate slash with a gap.
+- Fixed: The "A verb with no voice" question now reads as plain English, with the blank where the name was.
+- Fixed: a quiet update that arrives while you are reading now finishes the next time you leave the app, instead of waiting for the next restart.
+- Fixed: a reading sent over a slow link that the tutor received late is now answered, instead of showing 'Could not reach the tutor' and sending it twice on Retry.
+- Fixed: The Accents and stress lesson now says how the stress is said in the Greek pronunciation you chose, under How it sounds.
+- Fixed: In the Quick test, while the answered word speaks by itself, Tap to hear shows the stop square and one tap stops it.
+- Fixed: a grammar idea's example words now show at the top of its sheet, all in view when it opens, upright or sideways, with 'Show N more' when there are more than three.
+- Fixed: a word's sheet shows the English it stands for without the verse's full stop, comma or quotes.
+- Fixed: The tutor's switch to Typing or Speaking now takes even when it sent another change the app ignores.
+- Fixed: For an American reader, the sound of chi is now keyed to "chutzpah", the throaty ch, instead of "loch", which many Americans say as "lock".
+- Fixed: In Drill it, missing a "How is this word said?" question now asks the same letter again with a different word, instead of ending the drill on an easier question.
+- New: Tapping an Old Testament chapter now lets you choose between reading it in Logos or listening to it in Audible.
+- Fixed: The third declension sheet no longer lists οὐδεμία, which belongs to the first declension, as one of its examples.
+- Fixed: Holding to talk on an Android phone no longer shows a "language-not-supported" error when the phone could have heard you another way.
+
 ## 0.1.277
 _2026-10-16_
 - New: After a Review round, Lampas quietly asks the tutor for fresh questions on the grammar you missed, ready for your next round.
