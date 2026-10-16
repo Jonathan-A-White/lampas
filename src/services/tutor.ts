@@ -203,13 +203,16 @@ export type AskByChange = { key: 'askBy'; value: 'speaking' | 'typing' };
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 const isText = (value: unknown, max: number): value is string => typeof value === 'string' && value.length > 0 && value.length <= max;
 
-/** The change the app makes from an answer: the first entry, when it is Ask by set to Speaking or Typing (any case); anything else is ignored. */
+/** The change the app makes from an answer: the first entry that sets Ask by to Speaking or Typing (any case), wherever it stands in the list;
+ * every other entry is ignored, so a refused change before it never drops it (mw-5r3p30.191). */
 export function askByChange(answer: VerseAnswer): AskByChange[] {
-  const list = answer.settings_changes;
-  const first = Array.isArray(list) ? (list[0] as unknown) : undefined;
-  if (!isObject(first) || first.key !== 'askBy' || typeof first.value !== 'string') return [];
-  const value = first.value.trim().toLowerCase();
-  return value === 'speaking' || value === 'typing' ? [{ key: 'askBy', value }] : [];
+  const list: unknown[] = Array.isArray(answer.settings_changes) ? answer.settings_changes : [];
+  for (const entry of list) {
+    if (!isObject(entry) || entry.key !== 'askBy' || typeof entry.value !== 'string') continue;
+    const value = entry.value.trim().toLowerCase();
+    if (value === 'speaking' || value === 'typing') return [{ key: 'askBy', value }];
+  }
+  return [];
 }
 
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */

@@ -101,14 +101,23 @@ describe('askByChange: the one change Ask the tutor makes', () => {
     expect(of([{ key: 'askBy', value: ' SPEAKING ' }])).toEqual([{ key: 'askBy', value: 'speaking' }]);
   });
 
-  it('ignores any other setting, a bad value, a change after the first and a malformed list', () => {
+  it('ignores any other setting, a bad value and a malformed list', () => {
     expect(of([{ key: 'theme', value: 'dark' }])).toEqual([]);
     expect(of([{ key: 'askBy', value: 'shouting' }])).toEqual([]);
-    expect(of([{ key: 'askBy', value: 'typing' }, { key: 'askBy', value: 'speaking' }])).toEqual([{ key: 'askBy', value: 'typing' }]);
-    expect(of([{ key: 'theme', value: 'dark' }, { key: 'askBy', value: 'typing' }])).toEqual([]);
     expect(of('dark')).toEqual([]);
     expect(of([null, 3, { key: 7 }])).toEqual([]);
     expect(askByChange({ answer: 'x', words: [] })).toEqual([]);
+  });
+
+  // mw-5r3p30.191: a refused change before it must not drop the Ask by change, or the reply says it switched while nothing changes
+  it('takes askBy after a change it ignores', () => {
+    expect(of([{ key: 'theme', value: 'dark' }, { key: 'askBy', value: 'typing' }])).toEqual([{ key: 'askBy', value: 'typing' }]);
+    expect(of([null, { key: 'askBy', value: 'shouting' }, { key: 'askBy', value: 'Speaking' }])).toEqual([{ key: 'askBy', value: 'speaking' }]);
+  });
+
+  it('takes only the first valid askBy of two', () => {
+    expect(of([{ key: 'askBy', value: 'typing' }, { key: 'askBy', value: 'speaking' }])).toEqual([{ key: 'askBy', value: 'typing' }]);
+    expect(of([{ key: 'theme', value: 'dark' }, { key: 'askBy', value: 'speaking' }, { key: 'askBy', value: 'typing' }])).toEqual([{ key: 'askBy', value: 'speaking' }]);
   });
 });
 
