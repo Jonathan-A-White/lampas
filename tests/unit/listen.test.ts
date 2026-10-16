@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_LANG, isListenSupported, recognizerLang, startListening, IDLE_RESTART_WAIT_MS, MAX_IDLE_RESTARTS, STOP_TIMEOUT_MS, type ListenOptions } from '../../src/services/listen';
+import { DEFAULT_LANG, isListenSupported, recognizerLang, startListening, IDLE_RESTART_WAIT_MS, MAX_IDLE_RESTARTS, STOP_TIMEOUT_MS, type ListenOptions } from 'bsv-kit/composer';
 import { FakeRecognizer, result, stubRecognizer } from '../support/fake-recognizer';
 
 beforeEach(() => {
@@ -12,7 +12,7 @@ afterEach(() => {
 });
 
 function started(options: ListenOptions = {}) {
-  const got = startListening({ lang: 'en-GB', ...options });
+  const got = startListening({ lang: 'en-GB', appName: 'Lampas', ...options });
   if (!got.ok) throw new Error('expected listening to start');
   return got.session;
 }

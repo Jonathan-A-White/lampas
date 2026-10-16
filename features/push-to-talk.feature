@@ -96,3 +96,50 @@ Feature: Push-to-talk
     Then the sheet's hold-to-talk button is Postern's hold bar, 96 px high, labelled "Hold to talk", and the last control of the sheet
     When he presses the hold-to-talk button in the sheet
     Then the sheet's hold bar says "Starting the mic…" until the microphone is open and "Release to send" after
+
+  # Android Chrome offers on-device speech but never honours it: an on-device start opens no microphone and is answered
+  # language-not-supported a moment later (mw-5r3p30.426). Lampas listens through bsv-kit's startListening, which walks
+  # every route once (on-device and cloud en-US, then the cloud's own default) and shows the failure only when the last fails.
+  Scenario: On Android, letting go of the sheet's bar before the speech check answers shows no language error
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern and Android's recogniser
+    When he taps the Talk button quickly
+    And he presses the hold-to-talk button in the sheet
+    And he lets go of the hold-to-talk button
+    And the phone's speech check answers language-not-supported
+    Then the sheet says "No speech was heard."
+    And the sheet shows no language-not-supported line
+    And nothing was sent and the phone is not listening
+
+  Scenario: On Android, letting go of the Talk bar before the speech check answers shows no language error
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern and Android's recogniser
+    When he holds the Talk button
+    And he lets go of the Talk button
+    And the phone's speech check answers language-not-supported
+    Then the sheet says "No speech was heard."
+    And the sheet shows no language-not-supported line
+    And nothing was sent and the phone is not listening
+
+  Scenario: On Android, the speech check answering while he holds goes on in the cloud and sends his words
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern and Android's recogniser
+    When he holds the Talk button
+    And the phone's speech check answers language-not-supported
+    And he says "What is this chapter about"
+    And he lets go of the Talk button
+    Then the mill received 1 grists for the lampas app, kind bible-talk
+    And the first grist carries the reference "Romans 8" and the question "What is this chapter about"
+
+  Scenario: A phone with no en-US speech hears him through the cloud's own language
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern and Android's recogniser with no en-US in the cloud
+    When he holds the Talk button
+    And the phone's speech check answers language-not-supported
+    And he says "What is this chapter about"
+    And he lets go of the Talk button
+    Then the mill received 1 grists for the lampas app, kind bible-talk
+    And the recogniser that heard him was asked for no language
+
+  Scenario: A phone that can hear him by no route says which routes it tried
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern and Android's recogniser with no speech in the cloud
+    When he holds the Talk button
+    And the phone's speech check answers language-not-supported
+    Then the sheet says the language is not supported, tried "on-device en-US, cloud en-US, cloud default"
+    And nothing was sent and the phone is not listening
