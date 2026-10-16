@@ -79,9 +79,19 @@ interface Options {
   denied?: boolean;
   down?: boolean;
   weave?: 'off' | 'solid';
+  /** the grist's POST: taken only after the door gave up on it ('late'), or taken while no reply reaches the phone until `dead` is cleared ('dead') */
+  send?: 'late' | 'dead';
 }
 
-async function open({ reply = 'reading', view = 'english', denied = false, down = false, weave = 'off' }: Options = {}): Promise<void> {
+/** the door's time for a call, and how long no call may succeed, as a scenario shortens them (mw-5r3p30.302): restored by open() */
+const TIMINGS = { ...tutorTimings };
+/** a 'dead' link: the backend takes every send, and its reply never comes back while this is true */
+let dead = false;
+/** every 'Could not reach' the reading check showed, so a scenario can say it never did */
+let alerts: string[] = [];
+let watching: MutationObserver | undefined;
+
+async function open({ reply = 'reading', view = 'english', denied = false, down = false, weave = 'off', send }: Options = {}): Promise<void> {
   cleanup();
   clearBus();
   window.localStorage.clear();
@@ -89,16 +99,32 @@ async function open({ reply = 'reading', view = 'english', denied = false, down 
   window.location.hash = '';
   stubRecorder();
   FakeRecorder.denied = denied;
+  Object.assign(tutorTimings, TIMINGS);
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
+  dead = send === 'dead';
+  watching?.disconnect();
+  alerts = [];
+  if (send) {
+    // the door gives up on a call after 1 s here (30 s on the phone), and the wait after 1.5 s with no call succeeding (90 s)
+    tutorTimings.doorTimeoutMs = 1000;
+    tutorTimings.contactLostMs = 1500;
+  }
+  // the send is taken half a second after the door gave up on it, as the Tester's stalled link did 35 s after a 30 s door
+  if (send === 'late') fake.slowSendMs = 1500;
   if (reply !== 'held') fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : reply === 'woven-missed' ? WOVEN_MISSED_ANSWER : reply === 'second-who' ? SECOND_WHO_ANSWER : reply === 'escaped' ? ESCAPED_ANSWER : reply === 'tip-respelling' ? LEVITES_ANSWER : reply === 'tip-not-first' ? NOT_FIRST_ANSWER : reply === 'incomplete' ? INCOMPLETE_ANSWER : reply === 'partial' ? PARTIAL_ANSWER : WELL_READ_ANSWER };
   fake.greekReply = { status: 'answered', answer: GREEK_READING_ANSWER };
   fake.down = down;
   synth = stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
   stubChapterFetch();
   const chapterFetch = globalThis.fetch;
+  const sending = (input: RequestInfo | URL, init?: RequestInit) => String(input).endsWith('/api/messages') && (init?.method ?? 'GET').toUpperCase() === 'POST';
   vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) =>
-    String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init),
+    !String(input).startsWith(POSTERN_ORIGIN)
+      ? chapterFetch(input, init)
+      : dead && sending(input, init)
+        ? fake.fetch(input, init).then(() => new Promise<Response>(() => undefined))
+        : fake.fetch(input, init),
   );
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.readings.clear(), db.readingHistory.clear(), db.missTally.clear()]);
@@ -517,6 +543,54 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(within(panel()).getByRole('button', { name: 'Retry', exact: true }));
     });
     Then(verseMarked, verseMarkedSteps);
+  });
+
+  /** notes every alert the reading check shows while the reading goes */
+  const watchAlerts = (): void => {
+    watching = new MutationObserver(() => {
+      for (const alert of document.querySelectorAll('[role="alert"]')) if (alert.textContent) alerts.push(alert.textContent);
+    });
+    watching.observe(document.body, { subtree: true, childList: true, characterData: true });
+  };
+  const millOnce = async () => {
+    await waitFor(() => expect(fake.received).toHaveLength(1));
+    expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind: 'verse-read' });
+  };
+
+  Scenario("A reading whose send is taken late, past the door's time for a call, is answered and not failed, and the mill has it once", ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 in English with a reading check behind a fake Postern that takes the send only after the door has given up on it', () => open({ send: 'late' }));
+    And('he opens the reading check of verse 28', selectVerse28);
+    When(holdRead, async () => {
+      watchAlerts();
+      await holdAndLetGo(readButton(), 2000);
+    });
+    Then(verseMarked, verseMarkedSteps);
+    And('the late send has landed and the mill received the reading once', async () => {
+      // the phone sent the same bytes again after the door gave up; the first send, landing late, is the same record
+      await waitFor(() => expect(fake.calls.filter((c) => c === 'POST /api/messages').length).toBeGreaterThanOrEqual(2));
+      await new Promise((r) => setTimeout(r, 1700));
+      await millOnce();
+    });
+    And('the reading check never said {string}', (_, text: string) => {
+      expect(alerts.filter((a) => a.includes(text))).toEqual([]);
+    });
+  });
+
+  Scenario('A reading taken by a backend whose replies stop coming fails with Retry, and Retry finds that reading instead of sending a second', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 in English with a reading check behind a fake Postern that takes the send but whose replies never reach the phone', () => open({ send: 'dead' }));
+    And('he opens the reading check of verse 28', selectVerse28);
+    When(holdRead, async () => holdAndLetGo(readButton(), 2000));
+    Then('the reading check says {string} with a Retry button', async (_, title: string) => {
+      await waitFor(() => expect(within(panel()).getByRole('alert')).toHaveTextContent(title));
+      expect(within(panel()).getByRole('button', { name: 'Retry', exact: true })).toBeInTheDocument();
+      expect(fake.received).toHaveLength(1);
+    });
+    When('the link comes back and he taps Retry', async () => {
+      dead = false;
+      await user.click(within(panel()).getByRole('button', { name: 'Retry', exact: true }));
+    });
+    Then(verseMarked, verseMarkedSteps);
+    And('the mill received the reading once', millOnce);
   });
 
   Scenario('A reading that fails does not leave the reading before it on show as its result', ({ Given, And, When, Then }) => {

@@ -19,6 +19,7 @@ import { learnerMemory } from './data/learnerMemory';
 import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
 import { askVerseRead, buildReadingRequest, outsideWeave, readingLang, wordsOfText, type ReadingView, type VerseReadAnswer } from './services/reading';
+import type { Resend } from './services/mill';
 import { TutorError, type TutorFailure } from './services/tutor';
 import { interruptListen, stopReading } from './speech/readAloud';
 import { stopSpeaking, stopWordSaid } from './speech/greek';
@@ -39,7 +40,7 @@ export type ReadState =
   | { phase: 'short' }
   | { phase: 'dropped' }
   | { phase: 'sending' | 'waiting'; startedAt: number }
-  | { phase: 'failed'; failure: TutorFailure | 'mic'; detail: string; recording?: Recording; woven?: ReadonlySet<number> };
+  | { phase: 'failed'; failure: TutorFailure | 'mic'; detail: string; recording?: Recording; woven?: ReadonlySet<number>; resend?: Resend };
 
 type States = Record<string, ReadState | undefined>;
 type AllStates = Record<string, ReadState | undefined>;
@@ -55,7 +56,7 @@ export interface UseReadChecks {
   release: () => void;
   /** the finger slid off, or the browser cancelled the press */
   drop: () => void;
-  /** send the recording of a failed reading again */
+  /** send the recording of a failed reading again: the same grist, when the backend may hold the first (TutorError.resend) */
   retry: (verse: Verse) => void;
 }
 
@@ -117,7 +118,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
   }, []);
 
   const send = useCallback(
-    (verse: Verse, readView: ReadingView, language: string, recording: Recording, woven?: ReadonlySet<number>): void => {
+    (verse: Verse, readView: ReadingView, language: string, recording: Recording, woven?: ReadonlySet<number>, resend?: Resend): void => {
       const signal = live.current.signal;
       const startedAt = Date.now();
       set(unitId(verse), language, { phase: 'sending', startedAt });
@@ -132,6 +133,8 @@ export function useReadChecks(book: string, chapter: number, title: string, view
             signal,
             // the recording ended as he let go: that is his tap
             tapAt: startedAt,
+            // a reading the backend may already hold is sent again as itself, so its answer is found and no second reading is made (mw-5r3p30.302)
+            resend,
             onSent: (txid) => {
               sentAs = txid;
               set(unitId(verse), language, { phase: 'waiting', startedAt });
@@ -150,7 +153,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
         } catch (err) {
           if (signal.aborted) return;
           const failure = err instanceof TutorError ? err.failure : 'unreachable';
-          set(unitId(verse), language, { phase: 'failed', failure, detail: err instanceof Error ? err.message : 'Something went wrong.', recording, woven });
+          set(unitId(verse), language, { phase: 'failed', failure, detail: err instanceof Error ? err.message : 'Something went wrong.', recording, woven, resend: err instanceof TutorError ? err.resend : undefined });
         }
       })();
     },
@@ -239,7 +242,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
   const retry = useCallback(
     (verse: Verse): void => {
       const state = states[unitId(verse)];
-      if (state?.phase === 'failed' && state.recording) send(verse, view, lang, state.recording, state.woven);
+      if (state?.phase === 'failed' && state.recording) send(verse, view, lang, state.recording, state.woven, state.resend);
     },
     [states, send, view, lang],
   );
