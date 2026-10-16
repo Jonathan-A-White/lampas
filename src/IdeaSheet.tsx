@@ -1,11 +1,12 @@
 // src/IdeaSheet.tsx — the sheet that teaches one grammar idea (mw-hqd5bz.7), opened by Learn this idea on a Grammar sheet. It teaches a total
 // beginner from the card alone (mw-5r3p30.234, data in src/data/grammar/teach/): What it is, in plain English; How to spot it, in Greek, with a
 // table where the idea is a set of endings or forms; How it sounds, for an idea of a sound, in the chosen pronunciation; a Worked example, one
-// New Testament word taken apart step by step, from the verse he reads when it has one, with its respelling; then up to three examples from the
-// goal passage (or, with no goal, the open chapter) that the card can explain, each with its verse, its one sense here and its parsing in the
-// card's own terms (an idea of spelling, such as the alphabet, a pair of vowels or a breathing, shows more words with the letters it is about
-// marked), a speaker on each, and a tap opens the word; for an idea of the letters, sounds and marks (the alphabet, a pair of vowels, a breathing
-// ...), the items as tiles above the text, each to hear (TeachTiles). At the foot
+// New Testament word taken apart step by step, from the verse he reads when it has one, with its respelling. Above all of it, under the title,
+// up to three examples from the goal passage (or, with no goal, the open chapter) that the card can explain, each with its verse, its one sense
+// here and its parsing in the card's own terms (an idea of spelling, such as the alphabet, a pair of vowels or a breathing, shows more words with
+// the letters it is about marked), a speaker on each, and a tap opens the word: the first three are in view when the sheet opens, held upright or
+// on its side, and the rest wait under 'Show N more' (mw-5r3p30.369); for an idea of the letters, sounds and marks (the alphabet, a pair of vowels,
+// a breathing ...), the items as tiles above the text, each to hear (TeachTiles). On its side the foot is a column at the right. At the foot
 // the level SLIDER (mw-i7xe0n.3: Not yet · Learning · I know it, resting on the idea's level; Learning is frontier and due tomorrow; I know it opens Drill it
 // to prove it, and only a pass keeps it there), 'Mark known without a drill' (solid, the 30-day step), a Drill it button and Ask the tutor; the level shows as a chip
 // ('Proved by drill' once a run proved it). He learns one idea at a time (mw-i7xe0n.6): sliding to Learning while another idea is Learning asks 'You are learning <other>.
@@ -217,11 +218,11 @@ function PairLine({ pairCase, onOpen }: { pairCase: PairCase; onOpen: () => void
   );
 }
 
-function Example({ idea, example, onWord }: { idea: GrammarIdea; example: IdeaExample; onWord: (chapter: Chapter, word: GreekWord) => void }) {
+function Example({ idea, example, onWord, hidden }: { idea: GrammarIdea; example: IdeaExample; onWord: (chapter: Chapter, word: GreekWord) => void; hidden: boolean }) {
   const { word, chapter, reference } = example;
   const note = exampleNote(idea, example);
   return (
-    <li className="flex items-center gap-1">
+    <li hidden={hidden} className="flex items-center gap-1">
       <button
         type="button"
         data-testid="idea-example"
@@ -253,6 +254,29 @@ function Example({ idea, example, onWord }: { idea: GrammarIdea; example: IdeaEx
       </button>
       <SpeakButton text={word.t} id={`idea:${word.t}`} label={`Hear ${word.t}`} kind="speaker" className="shrink-0" />
     </li>
+  );
+}
+
+/** How many examples are drawn when the sheet opens: three fit above the slider on a phone held upright or on its side (mw-5r3p30.369). */
+const SHOWN_EXAMPLES = 3;
+
+/** The examples, the first SHOWN_EXAMPLES drawn and the rest folded under 'Show N more', so a row is never out of view when the sheet opens. */
+function Examples({ idea, examples, onWord }: { idea: GrammarIdea; examples: IdeaExample[]; onWord: (chapter: Chapter, word: GreekWord) => void }) {
+  const [all, setAll] = useState(false);
+  const folded = all ? 0 : Math.max(0, examples.length - SHOWN_EXAMPLES);
+  return (
+    <>
+      <ul className="space-y-2 pt-1">
+        {examples.map((example, i) => (
+          <Example key={`${example.reference}:${example.word.t}`} idea={idea} example={example} onWord={onWord} hidden={i >= examples.length - folded} />
+        ))}
+      </ul>
+      {folded ? (
+        <button type="button" onClick={() => setAll(true)} className="mt-1 min-h-11 px-1 text-base font-medium text-accent underline underline-offset-4">
+          Show {folded} more
+        </button>
+      ) : null}
+    </>
   );
 }
 
@@ -370,15 +394,15 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false }: {
         aria-modal="true"
         aria-label="Idea"
         style={{ transform: drag ? `translateY(${drag}px)` : undefined }}
-        className="relative flex max-h-[92dvh] flex-col rounded-t-2xl border-t border-line bg-surface"
+        className="relative flex max-h-[92dvh] flex-col rounded-t-2xl border-t border-line bg-surface short:grid short:h-dvh short:max-h-none short:grid-cols-[minmax(0,1fr)_18rem] short:grid-rows-[auto_minmax(0,1fr)_auto]"
       >
-        <div data-testid="idea-handle" {...handle} className="flex min-h-12 shrink-0 touch-none items-center justify-between gap-3 px-4 pt-2">
+        <div data-testid="idea-handle" {...handle} className="flex min-h-12 shrink-0 touch-none items-center justify-between gap-3 px-4 pt-2 short:col-span-2">
           <span aria-hidden="true" className="mx-auto h-1.5 w-10 rounded-full bg-line" />
           <button type="button" ref={focusOnMount} onClick={onClose} className="absolute right-2 top-1 min-h-11 min-w-11 rounded-lg px-3 text-base font-medium text-accent">
             Done
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-1">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-1 short:col-start-1 short:row-start-2 short:pb-[calc(0.75rem+var(--lp-end-inset))]">
           <div className="flex items-start justify-between gap-2">
             <h2 className="min-w-0 break-words text-2xl font-bold">{idea.title}</h2>
             <LessonReadAloud id={`idea:${idea.id}`} text={lesson} ready={loaded !== null} />
@@ -388,6 +412,27 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false }: {
               {level.level === 'solid' && level.how === 'drill' ? 'Proved by drill' : `${LEVEL_NAMES[level.level]} since`} {sinceText(level.since)}
             </p>
           ) : null}
+          {loaded === null || (!own.length && !wider && passage) ? (
+            <p data-testid="idea-loading" className="mt-3 text-base text-muted">
+              Finding examples…
+            </p>
+          ) : loaded === 'failed' ? (
+            <p className="mt-3 text-base text-muted">Could not load the passage, and you may be offline.</p>
+          ) : (
+            <div className="mt-3 short:mt-2">
+              <p className="text-sm text-muted">Examples from {exampleTitle}</p>
+              {examples.length ? (
+                <Examples idea={idea} examples={examples} onWord={onWord} />
+              ) : (
+                <p className="pt-1 text-base text-muted">
+                  {isSpellingIdea(idea.id)
+                    ? `No word of ${loaded.passage.title} is spelt with this.`
+                    : `No word of ${loaded.passage.title} has this idea in its parsing.`}
+                </p>
+              )}
+              {wider?.pairCase && !own.length ? <PairLine pairCase={wider.pairCase} onOpen={() => setOpened(wider.pairCase!.idea)} /> : null}
+            </div>
+          )}
           {need ? (
             <div data-testid="idea-builds-on" className="mt-3 rounded-xl border border-line p-3">
               <p className="text-base">This builds on {need.title}. Prove it first.</p>
@@ -416,33 +461,6 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false }: {
           ) : null}
           {idea.glyphs ? <LessonWriteIt idea={idea} /> : null}
           <Worked teach={card} passage={passage} scheme={scheme} />
-          {loaded === null || (!own.length && !wider && passage) ? (
-            <p data-testid="idea-loading" className="mt-3 text-base text-muted">
-              Finding examples…
-            </p>
-          ) : loaded === 'failed' ? (
-            <p className="mt-3 text-base text-muted">Could not load the passage, and you may be offline.</p>
-          ) : (
-            <>
-              <div className="mt-4">
-                <p className="text-sm text-muted">Examples from {exampleTitle}</p>
-                {examples.length ? (
-                  <ul className="space-y-2 pt-1">
-                    {examples.map((example) => (
-                      <Example key={`${example.reference}:${example.word.t}`} idea={idea} example={example} onWord={onWord} />
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="pt-1 text-base text-muted">
-                    {isSpellingIdea(idea.id)
-                      ? `No word of ${loaded.passage.title} is spelt with this.`
-                      : `No word of ${loaded.passage.title} has this idea in its parsing.`}
-                  </p>
-                )}
-                {wider?.pairCase && !own.length ? <PairLine pairCase={wider.pairCase} onOpen={() => setOpened(wider.pairCase!.idea)} /> : null}
-              </div>
-            </>
-          )}
           {tables.length ? (
             <div data-testid="idea-tables" className="mt-4 flex flex-col gap-2">
               {tables.map((table) => (
@@ -460,8 +478,11 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false }: {
           ) : null}
         </div>
         {/* what is read aloud keeps its Pause and Stop in view: this sheet is over the Grammar and word sheets' own bars */}
-        <BarSlot level={6} />
-        <div className="shrink-0 border-t border-line px-4 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))]">
+        <div className="contents short:col-span-2 short:row-start-3 short:block">
+          <BarSlot level={6} />
+        </div>
+        {/* on its side (a short window) the slider and buttons are a column at the right, so the examples keep the height (mw-5r3p30.369) */}
+        <div className="shrink-0 border-t border-line px-4 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))] short:col-start-2 short:row-start-2 short:overflow-y-auto short:overscroll-contain short:border-t-0 short:border-l">
           <div data-testid="level-slider">
             <input
               type="range"
