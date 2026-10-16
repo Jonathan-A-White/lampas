@@ -4,6 +4,7 @@
 import { BOOK_INDEX } from '../data/bookIndex';
 import { loadChapter, type Chapter } from '../data/chapter';
 import { parseGoal } from '../data/goal';
+import type { ParseStep } from '../data/drill';
 import { drillSteps, type DrillQuestion } from '../data/grammar/drillIt';
 import { facetQuestions, PLAN_KIND, parseRowId, type PlanItem } from '../data/grammar/drillPlan';
 import { goalChapterNumbers } from '../data/grammar/needs';
@@ -32,9 +33,11 @@ import {
   pushGrammarAnswer,
   recordAnswer,
   noteAnswer,
+  recordDrillStep,
   recordGrammarAnswer,
   recordReview,
   reviewsOf,
+  SOLID_STEP,
   SOUND_KIND,
   type Review,
 } from '../data/repositories';
@@ -52,6 +55,8 @@ export interface WordItem {
 /** What he taps on a flashcard to grade himself; isRight reads them. */
 export const KNEW_IT = 'I knew it';
 export const NOT_YET = 'Not yet';
+/** What a full parsing (GrammarCard) hands over when a step was wrong; the right answer is the parsing in plain words. */
+export const NOT_PARSED = 'A step was wrong';
 
 /** A grammar idea asked as a question about the passage of his goal (src/data/grammar/questions.ts). */
 export interface GrammarItem {
@@ -206,7 +211,11 @@ export const GRAMMAR: ReviewKind = {
     const graded = await gradedVersesOf(passage);
     return due.flatMap((r): GrammarItem[] => {
       const idea = ideaIfAny(r.id);
-      return idea ? [{ kind: 'grammar', id: idea.id, question: buildIdeaQuestion(idea, passage, own, scheme.respell, scheme, opened, graded), mode: modeFor(r.step) }] : [];
+      if (!idea) return [];
+      // an idea at SOLID_STEP or more may also be asked to parse a whole word (mw-emk3xt.3, PROVISIONAL)
+      const question = buildIdeaQuestion(idea, passage, own, scheme.respell, scheme, opened, graded, r.step >= SOLID_STEP);
+      // a full parsing is asked step by step, for a strong idea too: it is never a flashcard
+      return [{ kind: 'grammar', id: idea.id, question, mode: question.kind === 'parse' ? 'choice' : modeFor(r.step) }];
     });
   },
   isRight: (item, picked) => item.kind === 'grammar' && (item.mode === 'flashcard' ? picked === KNEW_IT : picked === item.question.right),
@@ -222,6 +231,14 @@ export const GRAMMAR: ReviewKind = {
     await pushGrammarAnswer(right);
   },
 };
+
+/**
+ * A step of a full parsing answered (mw-emk3xt.3): it goes to the Parsing drill's table as DrillScreen writes it, by the word's headword and the step's id. The answer to the question as a whole
+ * (right only when every step was) goes through GRAMMAR.record to the idea that was due.
+ */
+export async function recordParseStep(item: ReviewItem, step: ParseStep, right: boolean): Promise<void> {
+  if (item.kind === 'grammar' && item.question.kind === 'parse' && item.question.lemma) await recordDrillStep(item.question.lemma, step.id, right);
+}
 
 /** The tables he drills that are due (mw-svw421.6): up to CELLS_A_ROUND available cells of each, a table with none available asks nothing and stays due. */
 export const PARADIGM: ReviewKind = {

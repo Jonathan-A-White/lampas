@@ -24,6 +24,9 @@ export interface DrillStep {
   near?: string[];
 }
 
+/** One step of a full parsing in Review (src/data/grammar/questions.ts buildParse): the Parsing drill's step. */
+export type ParseStep = DrillStep;
+
 /** One word of the chapter to parse, with its verse so the screen can show it, and the steps to ask. */
 export interface DrillQuestion {
   /** the word's key in the store: the headword he knows it by */

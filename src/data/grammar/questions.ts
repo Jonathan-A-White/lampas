@@ -5,8 +5,9 @@
 // the question tests first (mw-i7xe0n.7): a look-alike letter, the same word's other ending, the twin with the other mark, the preposition's other case.
 import { bookOf } from '../books';
 import { OPTION_COUNT, choicesOf, lookAlikesOf, pairMates } from '../choices';
-import type { Chapter, EnglishChunk, GreekWord, Verse } from '../chapter';
-import { decodeParse, parseSegments, splitParse, type SplitParse } from '../parseCode';
+import { wordLemma, type Chapter, type EnglishChunk, type GreekWord, type Verse } from '../chapter';
+import { buildSteps, type ParseStep } from '../drill';
+import { decodeParse, parseSegments, splitParse, type ParseFeatureId, type SplitParse } from '../parseCode';
 import { PARADIGMS, tableFor } from '../paradigms';
 import { shuffle, type Random } from '../quiz';
 import { chosenPronunciation } from '../../speech/greek';
@@ -21,7 +22,7 @@ import { quickQuestion } from './quickRound';
 import { laterTermsIn, termIsTaught } from './taughtTerms';
 import { teachOf } from './teach';
 
-export type GrammarKind = 'ending' | 'tap-form' | 'letter' | 'sound' | 'stress' | 'breathing' | 'syllables' | 'preposition' | 'compound' | 'concept' | 'cell' | 'meaning';
+export type GrammarKind = 'ending' | 'tap-form' | 'letter' | 'sound' | 'stress' | 'breathing' | 'syllables' | 'preposition' | 'compound' | 'concept' | 'cell' | 'meaning' | 'parse' | 'roles';
 
 export interface GrammarQuestion {
   kind: GrammarKind;
@@ -51,6 +52,10 @@ export interface GrammarQuestion {
   table?: string;
   /** the one line a wrong pick shows under the answer: the sound rule of the word's side, the scheme's ('χ before ε, ι, η ... is soft: hy ...') */
   rule?: string;
+  /** a full parsing (kind 'parse', mw-emk3xt.3): the Parsing drill's steps, each a feature with four choices, asked one after the other; `right` is the whole parsing in plain words */
+  steps?: ParseStep[];
+  /** the word's headword, whose Parsing drill answers each step is written to (kind 'parse') */
+  lemma?: string;
 }
 
 /** The words of the pronunciation that gives the syllables: the chosen pronunciation's respell, 'khree-STO'. */
@@ -65,10 +70,14 @@ interface Place {
   verse: Verse;
   /** '1 John 1:1' */
   ref: string;
+  /** '1jn.1.1': the verse as gradedVerses names it */
+  key: string;
 }
 
 function placesOf(passage: readonly Chapter[]): Place[] {
-  return passage.flatMap((c) => c.verses.flatMap((verse) => verse.g.map((word) => ({ word, verse, ref: `${c.book} ${c.chapter}:${verse.n}` }))));
+  return passage.flatMap((c) =>
+    c.verses.flatMap((verse) => verse.g.map((word) => ({ word, verse, ref: `${c.book} ${c.chapter}:${verse.n}`, key: `${c.code}.${c.chapter}.${verse.n}` }))),
+  );
 }
 
 const termCache = new Map<string, string[]>();
@@ -299,6 +308,125 @@ function meaningFrom(idea: GrammarIdea, passage: readonly Chapter[], chapter: Ch
     code: word.p,
     facet: SAYS,
   };
+}
+
+// ---- Parse this word, and who does what to whom (mw-emk3xt.3) ----
+
+/** The places of the verses at his level (gradedVerses' atLevel), the easiest verse first; none without graded verses. */
+function atLevelPlaces(places: readonly Place[], graded: readonly GradedVerse[] | undefined): Place[] {
+  const rank = new Map<string, number>();
+  graded?.forEach((g, i) => {
+    if (g.atLevel) rank.set(g.ref, i);
+  });
+  return places.filter((p) => rank.has(p.key)).sort((a, b) => rank.get(a.key)! - rank.get(b.key)!);
+}
+
+/** The places of the easiest third of the verses they stand in (all of them when the verses are few), `places` easiest first. */
+function easiestThird(places: readonly Place[]): Place[] {
+  const verses = [...new Set(places.map((p) => p.key))];
+  const keep = new Set(verses.slice(0, Math.ceil(verses.length / 3)));
+  return places.filter((p) => keep.has(p.key));
+}
+
+/** Whether a form's code needs the idea; a code the ladder cannot read needs none. */
+function needs(code: string, id: string): boolean {
+  try {
+    return needsIdea(code, id);
+  } catch {
+    return false;
+  }
+}
+
+/** What a code says, by feature: { pos 'verb', value { tense 'perfect', person '1st person' ... } }; null for a code splitParse cannot read. */
+function readCode(code: string): { pos: string; value: Partial<Record<ParseFeatureId, string>> } | null {
+  try {
+    const { pos, features } = parsedOf(code);
+    return { pos, value: Object.fromEntries(features.map((f) => [f.id, f.value])) };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Parse this word (mw-emk3xt.3, PROVISIONAL): a word of a verse at his level (`graded`) whose forms all pass, so every idea it has is frontier or solid, and that
+ * needs the idea, in the easiest third of such verses. It is the Parsing drill's steps as one question (drill.ts buildSteps: the part of speech, then what the code goes on to say, each with
+ * four choices), asked one after the other by the card; `right` is the whole parsing in plain words. Null with no graded verses, or when no such word has a feature to parse.
+ */
+export function buildParse(idea: GrammarIdea, passage: readonly Chapter[], random: Random, graded?: readonly GradedVerse[]): GrammarQuestion | null {
+  const found = atLevelPlaces(placesOf(passage), graded).filter((p) => (readCode(p.word.p)?.pos ? parsedOf(p.word.p).features.length > 0 : false) && needs(p.word.p, idea.id));
+  for (const place of shuffle(easiestThird(found), random)) {
+    let steps: ParseStep[];
+    try {
+      steps = buildSteps(place.word.p, random);
+    } catch {
+      continue;
+    }
+    const right = decodeParse(place.word.p);
+    return {
+      kind: 'parse',
+      ideaId: idea.id,
+      prompt: `Parse ${place.word.t}`,
+      options: [right],
+      right,
+      ref: place.ref,
+      form: place.word.t,
+      code: place.word.p,
+      say: place.word.t,
+      steps,
+      lemma: nfc(wordLemma(place.word)),
+    };
+  }
+  return null;
+}
+
+/** The ideas whose forms a verse's subject, verb and object show (mw-emk3xt.3): the cases of the one who acts and the one acted on, the verb and its person. */
+const ROLE_IDEAS: ReadonlySet<string> = new Set(['case-nominative', 'case-accusative', 'verb', 'person-1st', 'person-2nd', 'person-3rd']);
+
+export const ROLE_PROMPTS = { subject: 'Tap the one who does it', verb: 'Tap what is done', object: 'Tap what it is done to' } as const;
+
+interface Roles {
+  verb: GreekWord;
+  subject: GreekWord;
+  object?: GreekWord;
+}
+
+/**
+ * The roles of a verse that has exactly one finite verb (a verb with a person: no participle or infinitive) and exactly one nominative noun or pronoun of the verb's number, its
+ * subject; the object is the verse's one accusative noun or pronoun, when it has exactly one. Each word asked is the only one of its text in the verse, so a tap is unambiguous. Null otherwise.
+ */
+function rolesOf(verse: Verse): Roles | null {
+  const read = verse.g.map((word) => ({ word, code: readCode(word.p) }));
+  const verbs = read.filter((r) => r.code?.pos === 'verb' && r.code.value.person !== undefined);
+  if (verbs.length !== 1) return null;
+  const nominal = (r: (typeof read)[number], at: string) => (r.code?.pos === 'noun' || r.code?.pos === 'pronoun') && r.code.value.case === at;
+  const subjects = read.filter((r) => nominal(r, 'nominative') && r.code?.value.number === verbs[0].code?.value.number);
+  const objects = read.filter((r) => nominal(r, 'accusative'));
+  const once = (w: GreekWord) => verse.g.filter((g) => g.t === w.t).length === 1;
+  if (subjects.length !== 1 || !once(verbs[0].word) || !once(subjects[0].word)) return null;
+  return { verb: verbs[0].word, subject: subjects[0].word, object: objects.length === 1 && once(objects[0].word) ? objects[0].word : undefined };
+}
+
+/**
+ * Who does what to whom (mw-emk3xt.3, PROVISIONAL): the words of a verse at his level (`graded`) with one finite verb and one subject (rolesOf), in the easiest third of such verses whose
+ * subject, verb or object needs the idea; the prompt is drawn from 'Tap the one who does it' (the subject), 'Tap what is done' (the verb) and, when the verse has one accusative object,
+ * 'Tap what it is done to'. For case-nominative, case-accusative, verb and the three persons; null for another idea, with no graded verses or when no verse fits.
+ */
+export function buildRoles(idea: GrammarIdea, passage: readonly Chapter[], random: Random, graded?: readonly GradedVerse[]): GrammarQuestion | null {
+  if (!ROLE_IDEAS.has(idea.id)) return null;
+  const spots = atLevelPlaces(placesOf(passage), graded).filter((p, i, all) => all.findIndex((q) => q.key === p.key) === i);
+  const roles = spots.flatMap((place) => {
+    const found = rolesOf(place.verse);
+    return found && [found.verb, found.subject, ...(found.object ? [found.object] : [])].some((w) => needs(w.p, idea.id)) ? [{ place, found }] : [];
+  });
+  if (roles.length === 0) return null;
+  const { place, found } = pick(roles.slice(0, Math.ceil(roles.length / 3)), random);
+  const asked = [
+    { prompt: ROLE_PROMPTS.subject, word: found.subject },
+    { prompt: ROLE_PROMPTS.verb, word: found.verb },
+    ...(found.object ? [{ prompt: ROLE_PROMPTS.object, word: found.object }] : []),
+  ];
+  const { prompt, word } = pick(asked, random);
+  return { kind: 'roles', ideaId: idea.id, prompt, options: place.verse.g.map((g) => g.t), right: word.t, ref: place.ref, code: word.p, facet: SPOT };
 }
 
 // ---- The ending of a form ----
@@ -888,6 +1016,7 @@ export function buildIdeaQuestion(
   scheme: Pronunciation = chosenPronunciation(),
   tablesOpen: ReadonlySet<string> = EVERY_TABLE,
   graded?: readonly GradedVerse[],
+  strong = false,
 ): GrammarQuestion {
   const said = respell ?? scheme.respell;
   // one diphthong, consonant pair or breathing (mw-hqd5bz.18): heard or seen, as the quick round asks it
@@ -919,14 +1048,21 @@ export function buildIdeaQuestion(
     case 'words-sound-alike':
       return buildSoundAlike(idea, random, scheme);
   }
-  // Review hands the graded verses (mw-emk3xt.2): there a word idea is also asked what a chunk says; the placement and Drill it test the form alone
+  // Review hands the graded verses (mw-emk3xt.2): there a word idea is also asked what a chunk says, and (mw-emk3xt.3) who does what to whom for the ideas of a subject, verb and object, and, for a `strong`
+  // idea (a step of SOLID_STEP or more, PROVISIONAL), to parse a whole word; the placement and Drill it test the form alone. The first draw picks where the rotation starts.
   const first = random();
   const order: ((idea: GrammarIdea) => GrammarQuestion | null)[] = [];
   const ending = (i: GrammarIdea) => buildEnding(i, passage, random, tablesOpen);
   const tap = (i: GrammarIdea) => buildTapForm(i, passage, random);
   const meaning = (i: GrammarIdea) => buildMeaning(i, passage, random, graded);
+  const roles = (i: GrammarIdea) => buildRoles(i, passage, random, graded);
+  const parse = (i: GrammarIdea) => buildParse(i, passage, random, graded);
   if (!graded) order.push(...(first < 0.5 ? [ending, tap] : [tap, ending]));
-  else order.push(...(first < 1 / 3 ? [ending, tap, meaning] : first < 2 / 3 ? [tap, meaning, ending] : [meaning, ending, tap]));
+  else {
+    const kinds = [ending, tap, meaning, ...(ROLE_IDEAS.has(idea.id) ? [roles] : []), ...(strong ? [parse] : [])];
+    const start = Math.floor(first * kinds.length);
+    order.push(...kinds.slice(start), ...kinds.slice(0, start));
+  }
   for (const build of order) {
     const question = build(idea);
     if (question) return question;
