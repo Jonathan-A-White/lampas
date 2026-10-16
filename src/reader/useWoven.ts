@@ -3,14 +3,15 @@
 import { useMemo } from 'react';
 import type { Chapter, GreekWord } from '../data/chapter';
 import { formPasses } from '../data/grammar/formLevel';
-import { weaveVerse } from '../data/weave';
+import { weaveVerse, wovenInOrder } from '../data/weave';
 import type { ReaderSettings } from './useReaderSettings';
 
 const EMPTY_LEMMAS: ReadonlySet<string> = new Set();
 
-/** The weave of every verse of `chapter`; `settings` is empty while they load. The grammar dial: with it on, a form stays English unless every idea its parsing needs is at that level. */
+/** The weave of every verse of `chapter`; `settings` is empty while they load. The grammar dial: with it on, a form stays English unless every idea its parsing needs is at that level.
+ * The Order: Greek lays each verse out in the Greek word order (src/data/weave.ts chunkOrder), which VerseText draws and read aloud reads. */
 export function useWoven(chapter: Chapter | null, settings: Partial<ReaderSettings>) {
-  const { view, weave, weaveGrammar, levels, solid, learning } = settings;
+  const { view, weave, weaveGrammar, weaveOrder, levels, solid, learning } = settings;
   const weaving = view === 'english' && (weave === 'solid' || weave === 'solid+learning');
   const withLearning = weave === 'solid+learning';
   return useMemo(() => {
@@ -22,7 +23,7 @@ export function useWoven(chapter: Chapter | null, settings: Partial<ReaderSettin
           ? undefined
           : (w: GreekWord) => formPasses(w.p, levels, weaveGrammar);
     return chapter.verses.map((v) =>
-      weaveVerse(v, { solid: solid ?? EMPTY_LEMMAS, learning: withLearning ? learning ?? EMPTY_LEMMAS : undefined, formPasses: formOk }),
+      wovenInOrder(v, weaveVerse(v, { solid: solid ?? EMPTY_LEMMAS, learning: withLearning ? learning ?? EMPTY_LEMMAS : undefined, formPasses: formOk }), weaveOrder ?? 'english'),
     );
-  }, [chapter, weaving, withLearning, solid, learning, weaveGrammar, levels]);
+  }, [chapter, weaving, withLearning, solid, learning, weaveGrammar, weaveOrder, levels]);
 }

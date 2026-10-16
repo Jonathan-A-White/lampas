@@ -39,6 +39,7 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   hebrewDepth: 'language',
   weave: 'level',
   weaveGrammar: 'level',
+  weaveOrder: 'screen',
   newWordsADay: 'level',
   pickerGrammar: 'level',
   grammarMove: 'level',

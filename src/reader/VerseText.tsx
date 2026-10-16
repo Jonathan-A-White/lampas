@@ -2,7 +2,7 @@
 import { Fragment, type ReactNode } from 'react';
 import { type EnglishChunk, type GreekWord, type Verse, englishRuns } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
-import type { Woven } from '../data/weave';
+import { drawnOrder, type WovenVerse } from '../data/weave';
 import { publish } from '../events/bus';
 import { useAiAllowed } from '../gate/licenceContext';
 import { useHoldPress } from '../ui/holdPress';
@@ -108,8 +108,8 @@ export function VerseNumber({ n, selected, onSelect, talk, className, children }
 export interface VerseProps {
   verse: Verse;
   view: ReaderView;
-  /** per English chunk, the Greek words shown in its place or null; null for the whole verse when the weave is off */
-  woven: Woven[] | null;
+  /** per English chunk, the Greek words shown in its place or null, and the order the chunks are laid out in; null for the whole verse when the weave is off */
+  woven: WovenVerse | null;
   selected: boolean;
   /** this verse is the one being read aloud */
   reading: boolean;
@@ -119,7 +119,8 @@ export interface VerseProps {
   talk: VerseTalk;
 }
 
-/** The words of one verse, every one tappable: the Greek in Greek order, or the English chunks (woven or not). */
+/** The words of one verse, every one tappable: the Greek in Greek order, or the English chunks (woven or not) in the order the weave lays them out
+ * (the English order, or with the Weave's Order Greek the Greek one, mw-5r3p30.250). */
 export function VerseText({ verse, view, woven, onLook }: Pick<VerseProps, 'verse' | 'view' | 'woven' | 'onLook'>) {
   const lookGreek = (w: GreekWord) =>
     onLook({ words: [w], english: w.e === undefined ? undefined : verse.e[w.e]?.t, fromEnglish: false });
@@ -137,7 +138,8 @@ export function VerseText({ verse, view, woven, onLook }: Pick<VerseProps, 'vers
               {w.t}
             </Tap>
           ))
-        : verse.e.map((c, i) => {
+        : drawnOrder(verse, woven).map((i) => {
+            const c = verse.e[i];
             const weft = woven?.[i];
             return weft ? (
               <Tap

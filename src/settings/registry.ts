@@ -68,7 +68,7 @@ import { chooseAccent } from '../speech/accents';
 import { PRONUNCIATIONS } from '../speech/pronunciation';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS, type Depth } from '../script/scripts';
 import type { Allowed, Dependency, SectionId, SettingDef, SettingValue } from './define';
-import { askBySetting, audioBibleSetting, englishAccentSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, themeSetting, tipsSetting, weaveSetting } from './definitions';
+import { askBySetting, audioBibleSetting, englishAccentSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, themeSetting, tipsSetting, weaveOrderSetting, weaveSetting } from './definitions';
 import type { Immersive } from './definitions/immersive';
 import type { Tips } from './definitions/tips';
 import type { Weave } from './definitions/weave';
@@ -405,6 +405,7 @@ export const SETTINGS: readonly SettingEntry[] = [
       help: 'Of the words that stand in Greek, keep only the forms whose grammar you have at this level: Any, Solid, or Solid and frontier. It shows only while the Weave is not Off.',
     },
   ),
+  fromDefinition(weaveOrderSetting),
   choice(
     'newWordsADay',
     'New words a day',

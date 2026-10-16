@@ -6,9 +6,9 @@ import type { ReaderView, ReadSpan } from '../data/repositories';
 import { passageVerse, unitId, type Passage } from '../data/passage';
 import type { Verse } from '../data/chapter';
 import { getReading, listenKeyOf, pauseReading, planOf, startReading, useListenCompleted } from '../speech/readAloud';
-import type { Woven } from '../data/weave';
+import type { WovenVerse } from '../data/weave';
 
-export function useReadFrom(book: string, chapterN: number, chapter: Chapter | null, view: ReaderView | undefined, woven: (Woven[] | null)[] | null, readSpan: ReadSpan | undefined, viewUnit?: Verse) {
+export function useReadFrom(book: string, chapterN: number, chapter: Chapter | null, view: ReaderView | undefined, woven: (WovenVerse | null)[] | null, readSpan: ReadSpan | undefined, viewUnit?: Verse) {
   const plan = useMemo(() => (chapter && view ? planOf(chapter.verses, view, woven) : null), [chapter, view, woven]);
   const readFrom = useCallback(
     (from: number, continuous: boolean) => {

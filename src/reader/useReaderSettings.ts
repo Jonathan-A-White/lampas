@@ -1,5 +1,5 @@
-// src/reader/useReaderSettings.ts — what the Reader reads from the settings (docs/module-map.md R1, part b): the view, the weave and its grammar
-// dial, the layout, the section headings, the read-aloud span, his solid and learning lemmas and the grammar levels, each a live query, so a change
+// src/reader/useReaderSettings.ts — what the Reader reads from the settings (docs/module-map.md R1, part b): the view, the weave, its grammar
+// dial and its order, the layout, the section headings, the read-aloud span, his solid and learning lemmas and the grammar levels, each a live query, so a change
 // made in Settings or by the tutor reaches the open Reader. The value is undefined until every one has loaded, as the Reader waits today.
 // The hook also tells the bus (docs/events.md): view-changed, the weave (announceSetting), layout-changed and headings-changed, each once its value
 // is here and again when it changes. The address the Reader opened on wins over the saved view and weave at first (a reopen, Back to an earlier
@@ -29,13 +29,16 @@ import {
 } from '../data/repositories';
 import { publish } from '../events/bus';
 import { readerOf } from '../nav/route';
-import { weaveSetting } from '../settings/definitions';
-import { announceSetting, toldSetting } from '../settings/store';
+import { weaveOrderSetting, weaveSetting } from '../settings/definitions';
+import type { WeaveOrder } from '../settings/definitions/weaveOrder';
+import { announceSetting, toldSetting, useSetting } from '../settings/store';
 
 export interface ReaderSettings {
   view: ReaderView;
   weave: Weave;
   weaveGrammar: WeaveGrammar;
+  /** the order the woven verse is laid out in (mw-5r3p30.250) */
+  weaveOrder: WeaveOrder;
   layout: ReadingLayout;
   headings: SectionHeadings;
   readSpan: ReadSpan;
@@ -49,6 +52,7 @@ export function useReaderSettings(): ReaderSettings | undefined {
   const view = useLiveQuery(getReaderView, []);
   const weave = useLiveQuery(getWeave, []);
   const weaveGrammar = useLiveQuery(getWeaveGrammar, []);
+  const weaveOrder = useSetting(weaveOrderSetting);
   const levels = useLiveQuery(listLevels, []);
   const solid = useLiveQuery(listSolidLemmas, []);
   const learning = useLiveQuery(listLearningLemmas, []);
@@ -85,9 +89,9 @@ export function useReaderSettings(): ReaderSettings | undefined {
   }, [headings]);
   return useMemo(
     () =>
-      view && weave && weaveGrammar && levels && solid && learning && layout && headings && readSpan
-        ? { view, weave, weaveGrammar, layout, headings, readSpan, solid, learning, levels }
+      view && weave && weaveGrammar && weaveOrder && levels && solid && learning && layout && headings && readSpan
+        ? { view, weave, weaveGrammar, weaveOrder, layout, headings, readSpan, solid, learning, levels }
         : undefined,
-    [view, weave, weaveGrammar, levels, solid, learning, layout, headings, readSpan],
+    [view, weave, weaveGrammar, weaveOrder, levels, solid, learning, layout, headings, readSpan],
   );
 }

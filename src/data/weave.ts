@@ -1,10 +1,15 @@
 // src/data/weave.ts — the diglot weave: which English chunks of a verse are shown as their Greek instead.
+import type { WeaveOrder } from '../settings/definitions/weaveOrder';
 import { type GreekWord, type Verse, wordLemma } from './chapter';
 
 /** The Greek words to show in place of English chunk `i` (in the chunk's own order), or null when it stays English.
  * `learning` is true when at least one of them is a word he is still learning: the Reader sets the chunk's English
  * in small grey beneath the Greek until the word turns solid. */
 export type Woven = { words: GreekWord[]; learning: boolean } | null;
+
+/** A verse's weave, chunk by chunk in `verse.e`'s own indexes, and the order the chunks are drawn and read in (mw-5r3p30.250): absent, the
+ * English order. */
+export type WovenVerse = Woven[] & { readonly order?: readonly number[] };
 
 /** The lemmas the weave knows (NFC): the solid ones, and with Weave 'Solid and learning words' the learning ones too. */
 export interface WeaveLemmas {
@@ -56,3 +61,28 @@ export function weaveForTeaching(verse: Verse, solid: ReadonlySet<string>, lemma
     return words.some((w) => wordLemma(w).normalize('NFC') === lemma) ? { words, learning: true } : woven[i];
   });
 }
+
+/**
+ * The order the chunks of a verse are laid out in (mw-5r3p30.250), as indexes into `verse.e`. English: the MSB's English order, 0, 1, 2 ...
+ * Greek: the table's Greek order, each chunk standing once, where its first Greek word stands (a chunk that renders words 2 and 5 stands at 2);
+ * a chunk with no Greek of its own stays behind the chunk before it in the English (or first, when none is). A Greek word the MSB gives no
+ * English is in no chunk, so it is not drawn, in either order.
+ */
+export function chunkOrder(verse: Verse, order: WeaveOrder): number[] {
+  const english = verse.e.map((_, i) => i);
+  if (order === 'english') return english;
+  let place = -1;
+  const at = verse.e.map((chunk) => {
+    if (chunk.g.length) place = Math.min(...chunk.g);
+    return place;
+  });
+  return english.sort((a, b) => at[a] - at[b] || a - b);
+}
+
+/** The weave `woven` of `verse` with the order it is laid out in: Greek carries chunkOrder's, English none (the chunks' own order). */
+export function wovenInOrder(verse: Verse, woven: Woven[], order: WeaveOrder): WovenVerse {
+  return order === 'greek' ? Object.assign([...woven], { order: chunkOrder(verse, order) }) : woven;
+}
+
+/** The chunk indexes of `verse` in the order a weave lays them out. */
+export const drawnOrder = (verse: Verse, woven: WovenVerse | null): readonly number[] => woven?.order ?? verse.e.map((_, i) => i);
