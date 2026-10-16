@@ -381,5 +381,5 @@ describe('following bsv-kit/speech (mw-m7v5kc.3)', () => {
   });
 });
 
-// A run that is one Greek letter (a one-letter syllable in Sound it out, a lone ὁ woven into the English or in a tutor's answer) is never handed to a voice:
-// its clip plays (mw-5r3p30.347, tests/unit/lone-letter-clip.test.ts).
+// A run that is one Greek letter (a one-letter syllable in Sound it out, a lone ὁ woven into the English or in a tutor's answer) is never handed to a voice
+// as it is: it goes as its vowel doubled, 'οο', or its clip plays on a phone with no Greek voice (mw-5r3p30.421, tests/unit/lone-letter-voice.test.ts).

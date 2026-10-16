@@ -92,8 +92,8 @@ async function tapGloss(right: boolean): Promise<void> {
   await user.click(target);
 }
 
-// a one-letter word (ὁ, the round's first word) is never handed to the voice: its clip plays (mw-5r3p30.347)
-const expectSpokenOnce = () => hearing(synth, audio, promptText).once(promptText(), 'el-GR');
+// a one-letter word (ὁ, the round's first word) goes to the voice as its vowel doubled, οο (mw-5r3p30.421)
+const expectSpokenOnce = () => hearing(synth, audio).once(promptText(), 'el-GR');
 
 const resume = async () => user.click(await screen.findByRole('button', { name: 'Resume' }));
 

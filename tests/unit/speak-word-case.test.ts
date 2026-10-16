@@ -57,11 +57,11 @@ describe('holding a Greek word', () => {
   });
 });
 
-// A word of ONE letter (Ὃ, ὁ) never reaches the voice at all: its clip plays (mw-5r3p30.347, tests/unit/lone-letter-clip.test.ts, which holds that the
-// speech port is handed nothing for it).
+// A word of ONE letter (Ὃ, ὁ) reaches the voice as its vowel doubled in lower case, 'οο', which the phone says as the sound (mw-5r3p30.421,
+// tests/unit/lone-letter-voice.test.ts, which holds that the speech port is never handed the letter alone).
 
-describe('a letter drill (Tap to hear a letter)', () => {
-  it('names the letter in lower case with the Greek voice: the letter is the thing asked about, not a word', () => {
+describe('a letter named (a teach tile)', () => {
+  it('names the letter in lower case with the Greek voice: the letter is the thing shown, not a word', () => {
     act(() => void speakLetter('Ο'));
     const u = synth.spoken[synth.spoken.length - 1];
     expect(u.text).toBe('ο');

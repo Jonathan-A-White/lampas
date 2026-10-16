@@ -28,6 +28,8 @@ const STUBBISH: Pronunciation = {
   note: 'A test scheme.',
   respell: (word) => `STUB-${[...word].length}`,
   sounds: { b: '/b/' },
+  // a form for its o alone, so a consonant asked by ear is still named by letterForm
+  loneLetterForm: (word) => (/^[ὁοΟ]$/u.test(word) ? 'lone o' : null),
   loneLetterClip: (word) => `/sounds/stubbish/${[...word].length}.mp3`,
   voiceForm: (text) => `‹${text}›`,
   letterForm: (letter) => `letter ${letter.toLowerCase()}`,
@@ -96,11 +98,19 @@ describe('a second pronunciation, chosen, is followed everywhere', () => {
     expect(lastSaid()).toEqual({ text: 'letter β', lang: 'el-GR' });
   });
 
-  it('plays its clip for a word of one letter, and hands the voice its form of any other Greek', () => {
+  it('hands the voice its form of a word of one letter, and its voice form of any other Greek', () => {
+    act(() => void speakWord('ὁ', 'greek'));
+    act(() => void speakWord('πάντοτε', 'greek'));
+    expect(synth.spoken.map((u) => u.text)).toEqual(['lone o', '‹πάντοτε›']);
+    expect(audio.played).toEqual([]);
+  });
+
+  it('plays its clip for a word of one letter on a phone with no Greek voice', () => {
+    vi.unstubAllGlobals();
+    synth = stubSpeech([ENGLISH_VOICE]);
     act(() => void speakWord('ὁ', 'greek'));
     expect(audio.played).toEqual(['/sounds/stubbish/1.mp3']);
-    act(() => void speakWord('πάντοτε', 'greek'));
-    expect(synth.spoken.map((u) => u.text)).toEqual(['‹πάντοτε›']);
+    expect(synth.spoken).toEqual([]);
   });
 
   it('gives every place back to Modern Greek when it is chosen again', () => {
