@@ -1,9 +1,11 @@
-// src/useVoice.ts — push-to-talk for the Bible talk. press() starts the phone's recogniser (src/services/listen.ts) and
-// stops any reading aloud; his words so far are `transcript`, live; release() waits for the last words and hands them to
+// src/useVoice.ts — push-to-talk for the Bible talk. press() starts the phone's recogniser (bsv-kit/composer startListening, the
+// one listen the Ask composer's browserSpeech uses too: a language-not-supported walks every route once, on-device and cloud en-US
+// then the cloud's own default, and a hold let go before Android's on-device check answers settles with nothing heard; mw-5r3p30.426)
+// and stops any reading aloud; his words so far are `transcript`, live; release() waits for the last words and hands them to
 // `onSend` as the turn; abort() drops them. Errors come back as a `notice` worded for him, never a dead button. A phone
 // with no recogniser says so and asks the sheet to focus its typed field (`typing` counts those asks).
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { isListenSupported, startListening, type ListenErrorKind, type ListenSession } from './services/listen';
+import { isListenSupported, startListening, type ListenErrorKind, type ListenSession } from 'bsv-kit/composer';
 import { interruptListen, pauseReading } from './speech/readAloud';
 import { noteSpoken } from './speech/spoken';
 
@@ -82,6 +84,7 @@ export function useVoice(onSend: (text: string) => void): Voice {
     hold.current = thisHold;
     const started = startListening({
       lang: 'en-US',
+      appName: 'Lampas',
       onInterim: (text) => hold.current === thisHold && setTranscript(text),
       onStart: () => hold.current === thisHold && setReady(true),
       // The recogniser failed while he is still holding: the hold is over, and he is told why.
