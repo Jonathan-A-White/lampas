@@ -1,5 +1,13 @@
 # What's new
 
+## 0.1.275
+_2026-10-16_
+- New: About now thanks Biblical Mastery Academy and links to their course and community for anyone who wants a teacher.
+
+## 0.1.275
+_2026-10-16_
+- Fixed: A quick double tap on Next in the grammar drills no longer uses up your Hint, skips a word, closes the result or leaves for the tutor.
+
 ## 0.1.274
 _2026-10-16_
 - Fixed: When you paste a long question or prayer to the tutor, it now keeps all of it and does not cut it after the first line.

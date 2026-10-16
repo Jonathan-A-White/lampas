@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.275",
+    "date": "2026-10-16",
+    "story": "mw-foy5mb.2",
+    "kind": "new",
+    "text": "About now thanks Biblical Mastery Academy and links to their course and community for anyone who wants a teacher."
+  },
+  {
+    "version": "0.1.275",
+    "date": "2026-10-16",
+    "story": "mw-5r3p30.430",
+    "kind": "fixed",
+    "text": "A quick double tap on Next in the grammar drills no longer uses up your Hint, skips a word, closes the result or leaves for the tutor."
+  },
+  {
     "version": "0.1.274",
     "date": "2026-10-16",
     "story": "mw-5r3p30.491",
