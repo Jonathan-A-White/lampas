@@ -1,5 +1,5 @@
 {
-  "description": "A reader who has come back after a break asks what to work on; two solid items have gone rusty. The tutor says so plainly, once, and offers to move them back to Frontier and practise, naming only items the request listed.",
+  "description": "A reader who has come back after a break asks what to work on; two solid items have gone rusty. The tutor says so plainly, once, and offers to move them back to Frontier and practise, naming only items the request listed. The answer is checked for the two titles (λόγος and the genitive), not for the word 'rusty': the grind says it plainly in its own words ('what slipped', 'has not come up for weeks'), and the offer's ids are what the app acts on.",
   "schemaVersion": "1",
   "request": {
     "reference": "Romans 8:28",
@@ -23,7 +23,7 @@
   },
   "expect": {
     "answer": {
-      "matches": "[Rr]usty"
+      "matches": "[Λλ][όόο]γ[\\s\\S]*[Gg]enitive|[Gg]enitive[\\s\\S]*[Λλ][όόο]γ"
     },
     "rusty_offer.items.0.id": {
       "equals": "λόγος"

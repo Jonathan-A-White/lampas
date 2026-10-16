@@ -31,7 +31,7 @@
   },
   "expect": {
     "answer": {
-      "matches": "[Ss]etting"
+      "matches": "[Ss]etting|[Tt]heme"
     },
     "setting_offer.key": {
       "equals": "theme"

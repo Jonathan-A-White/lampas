@@ -80,3 +80,118 @@ describe('bible-talk/memory-update-wished makes the note plain, and the grind sa
     expect(memory).toContain('I keep mixing up');
   });
 });
+
+// mw-5r3p30.424: the smoke of 2026-10-15 20:15Z failed bible-talk/rusty-offer on a right answer that never said "rusty" (the ids were
+// exact). The behaviour is that the answer names the items the request listed as rusty, in any words; the offer's ids stay exact.
+describe('bible-talk/rusty-offer tests the meaning (mw-5r3p30.424)', () => {
+  const checks = answerChecks('bible-talk/rusty-offer');
+
+  it('takes the answer the mill gave, and any other that names both rusty items', () => {
+    for (const said of [
+      'Start with a short round on what slipped: λόγος and the genitive case. They were solid before; a few minutes will bring them back. Tap Move back to Frontier and practise.',
+      "You're rusty on λόγος and the genitive case: they were solid before. Tap Move back to Frontier and practise.",
+      'The genitive case has not come up for three weeks, and λόγος slipped twice this week. A short practice of both is on offer.',
+      'Λόγος and the Genitive case have slipped a little since your break. Want to practise them?',
+    ]) expect(checkExpect(checks, { answer: said }), said).toEqual([]);
+  });
+
+  it('does not take an answer that names only one of them, or neither', () => {
+    for (const said of [
+      "You're rusty on λόγος. Tap Move back to Frontier and practise.",
+      "You're rusty on the genitive case. Tap Move back to Frontier and practise.",
+      "You're a bit rusty. Let's read Romans 8:28 together.",
+    ]) expect(checkExpect(checks, { answer: said }), said).not.toEqual([]);
+  });
+
+  it('keeps the offer\'s ids exact', () => {
+    const { expect: block } = example('bible-talk/rusty-offer');
+    expect(block['rusty_offer.items.0.id']).toEqual({ equals: 'λόγος' });
+    expect(block['rusty_offer.items.1.id']).toEqual({ equals: 'case-genitive' });
+  });
+});
+
+// The sweep of mw-5r3p30.424: each scenario below checked its answer for one English word or phrase a faithful answer may say otherwise.
+describe('bible-talk/bridge-quite-a-bit tests the meaning, as verse-ask\'s does (mw-5r3p30.424)', () => {
+  const checks = answerChecks('bible-talk/bridge-quite-a-bit');
+
+  it('takes any answer that says the question rests on more he has not met', () => {
+    for (const said of [
+      'Briefly: the genitive says "of". You are missing quite a bit for this: the top three are the nominative case, the noun and accents. Start with Pairs of vowels.',
+      'Briefly: the genitive says "of". This rests on several ideas you have not met yet; start with Pairs of vowels.',
+      'The genitive marks "of". There is a lot under this you have not learned yet, so begin with Pairs of vowels.',
+    ]) expect(checkExpect(checks, { answer: said }), said).toEqual([]);
+  });
+
+  it('does not take an answer that says nothing of what he lacks', () => {
+    expect(checkExpect(checks, { answer: 'The genitive is the case that says "of". It appears three times in this verse.' })).not.toEqual([]);
+  });
+});
+
+describe('bible-talk/bridge-one-missing takes the nominative named at the start of a sentence (mw-5r3p30.424)', () => {
+  const checks = answerChecks('bible-talk/bridge-one-missing');
+  it.each(['Nominative case comes first: it names the subject.', 'Start with the nominative case: it names the subject.'])('%s', (said) => {
+    expect(checkExpect(checks, { answer: said })).toEqual([]);
+  });
+  it('still wants it named', () => {
+    expect(checkExpect(checks, { answer: 'Start with the case that names the subject.' })).not.toEqual([]);
+  });
+});
+
+describe.each(['bible-talk', 'verse-ask'])('%s request scenarios test the status, not one word for it (mw-5r3p30.424)', (kind) => {
+  it('request-building takes any answer that says it is being made now', () => {
+    const checks = answerChecks(`${kind}/request-building`);
+    for (const said of [
+      'Your sepia theme is being built now.',
+      'The makers are working on your sepia theme now.',
+      'Your sepia theme is in progress.',
+      'Work on your sepia theme is under way.',
+    ]) expect(checkExpect(checks, { answer: said }), said).toEqual([]);
+    expect(checkExpect(checks, { answer: 'The makers have your idea.' })).not.toEqual([]);
+  });
+
+  it('request-filed takes any answer that says the makers have it down to do', () => {
+    const checks = answerChecks(`${kind}/request-filed`);
+    for (const said of [
+      'The makers filed your sepia theme.',
+      'Your sepia theme is on the makers\' list.',
+      'The makers have queued your sepia theme; it is not built.',
+      'The makers have it logged as something to do.',
+      'They have noted it for later.',
+    ]) expect(checkExpect(checks, { answer: said }), said).toEqual([]);
+    expect(checkExpect(checks, { answer: 'Thank you for your idea.' })).not.toEqual([]);
+  });
+
+  it('request-adopted-as-setting takes the setting named in any case', () => {
+    const checks = answerChecks(`${kind}/request-adopted-as-setting`);
+    for (const said of [
+      'Your idea is now the Theme setting.',
+      'You can now choose a dark theme.',
+      'It became a setting: you can pick Dark.',
+    ]) expect(checkExpect(checks, { answer: said }), said).toEqual([]);
+    expect(checkExpect(checks, { answer: 'The makers did your idea.' })).not.toEqual([]);
+  });
+});
+
+describe('bible-talk/screen-goal takes any of the bar\'s three labels (mw-5r3p30.424)', () => {
+  const checks = answerChecks('bible-talk/screen-goal');
+  it.each(['Green is solid: words you know well.', 'The middle colour is the frontier, what you are learning now.', 'Grey is not yet: words you have not met.'])('%s', (said) => {
+    expect(checkExpect(checks, { answer: said })).toEqual([]);
+  });
+  it('does not take an answer that names none of them', () => {
+    expect(checkExpect(checks, { answer: 'The bar shows your progress toward Romans 8.' })).not.toEqual([]);
+  });
+});
+
+describe('bible-talk/sound-it-out-svennyte takes the stress said any way (mw-5r3p30.424)', () => {
+  const checks = answerChecks('bible-talk/sound-it-out-svennyte');
+  it.each([
+    'σβέννυτε has three syllables: σβέν, νυ, τε. The first is stressed.',
+    'σβέννυτε has three syllables: σβέν, νυ, τε. The stress falls on σβέν.',
+    'σβέννυτε has three syllables: σβέν, νυ, τε; the accent is on σβέν, SVE-nee-te.',
+  ])('%s', (said) => {
+    expect(checkExpect(checks, { answer: said })).toEqual([]);
+  });
+  it('still wants the stress said', () => {
+    expect(checkExpect(checks, { answer: 'σβέννυτε has three syllables: σβέν, νυ, τε.' })).not.toEqual([]);
+  });
+});

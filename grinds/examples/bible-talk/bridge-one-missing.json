@@ -29,7 +29,7 @@
       "equals": "case-nominative"
     },
     "answer": {
-      "contains": "nominative"
+      "matches": "[Nn]ominative"
     },
     "bridge.missing.1": {
       "present": false
