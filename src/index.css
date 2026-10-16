@@ -663,3 +663,19 @@ textarea,
 .level-slider:disabled {
   opacity: 0.5;
 }
+
+/* Write it (mw-86e9r1.51, src/handwriting/GlyphStrokes.tsx): a letter's strokes are drawn one after another, each from its start to its end (each path
+   has pathLength 1, so a dash of 1 is the whole stroke); under prefers-reduced-motion the rule above makes it all but instant. */
+@keyframes lp-stroke-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.glyph-stroke[data-animate] {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: lp-stroke-draw var(--lp-stroke-ms, 700ms) ease-in-out forwards;
+}
