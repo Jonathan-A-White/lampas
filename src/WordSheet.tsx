@@ -7,7 +7,7 @@
 // and is not drawn when none is on.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { type Chapter, type GreekWord, wordGloss, wordLemma, wordParse } from './data/chapter';
+import { bareEnglish, type Chapter, type GreekWord, wordGloss, wordLemma, wordParse } from './data/chapter';
 import { parseSegments } from './data/parseCode';
 import { getStudyResources, setResourceOn, type StudyResources } from './data/repositories';
 import { publish, useLatest } from './events/bus';
@@ -281,7 +281,7 @@ function WordCard({ chapter, word, english, pronunciation, known, study, onHelp,
         )}
         {english ? (
           <Fact label="English" testId="sheet-english">
-            {english}
+            {bareEnglish(english)}
           </Fact>
         ) : null}
       </dl>
@@ -399,8 +399,8 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
         <BarSlot level={4} />
         {/* the English he tapped is a heading of its own under the tip, outside the scrolling facts: it never slides half under the tip's edge */}
         {heading ? (
-          <p className="pl-4 pr-14 pt-3 text-lg text-muted">
-            <span className="sr-only">English: </span>“{lookup.english}”
+          <p data-testid="sheet-heading" className="pl-4 pr-14 pt-3 text-lg text-muted">
+            <span className="sr-only">English: </span>“{bareEnglish(heading)}”
           </p>
         ) : null}
         <div className="relative">

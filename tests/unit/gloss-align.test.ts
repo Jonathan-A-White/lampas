@@ -3,7 +3,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { loadChapter, type Chapter, type GreekWord } from '../../src/data/chapter';
+import { bareEnglish, loadChapter, type Chapter, type GreekWord } from '../../src/data/chapter';
 import { exampleGloss, exampleMeaning, ideaExamples, wordEnglish, type IdeaExample } from '../../src/data/grammar/ideaSheet';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { stubChapterFetch } from '../support/chapter-fetch';
@@ -67,11 +67,12 @@ describe('the per-word English of every chapter', () => {
         if (!chunk || chunk.g.length !== 1 || !Array.isArray(chunk.s) || !chunk.s.length) continue;
         // the chunk's words (a mark on its own is none) with whether the translators supplied each, positions as `s` counts them
         const all = chunk.t.split(/\s+/).filter(Boolean);
-        const words = all.flatMap((text, i) => (/[\p{L}\p{N}]/u.test(text) ? [{ text: text.replace(/[\s,.;:!?—–-]+$/u, ''), supplied: chunk.s!.includes(i) }] : []));
+        const words = all.flatMap((text, i) => (/[\p{L}\p{N}]/u.test(text) ? [{ text: bareEnglish(text), supplied: chunk.s!.includes(i) }] : []));
         const shown = wordEnglish(chapter, v.n, w);
         if (!shown) continue; // nothing of its own: the row falls back to the dictionary gloss
-        // the shown words are a stretch of the chunk's whose first and last word the translators did not supply (an article in front is the one allowance)
-        const bare = (text: string) => text.replace(/[\s,.;:!?—–-]+$/u, '');
+        // the shown words are a stretch of the chunk's whose first and last word the translators did not supply (an article in front is the one allowance);
+        // each word is compared without the marks at its ends, as the row shows it (bareEnglish, mw-5r3p30.265)
+        const bare = bareEnglish;
         const own = shown.split(' ').map(bare);
         const sound = words.some((_, i) => {
           const stretch = words.slice(i, i + own.length);

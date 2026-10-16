@@ -34,7 +34,7 @@ Feature: Read Romans 8
     And the word sheet shows the parsing "noun, accusative singular neuter"
     And the word sheet shows a gloss containing "spirit"
     And the word sheet shows Strong's "G4151"
-    And the word sheet shows the English "the Spirit."
+    And the word sheet shows the English "the Spirit"
 
   Scenario: An English chunk that renders several Greek words shows them all
     Given Lampas is opened with nothing saved
