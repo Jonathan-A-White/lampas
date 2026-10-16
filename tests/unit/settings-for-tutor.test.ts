@@ -63,7 +63,7 @@ describe('the Settings request', () => {
 
   it('is within the size a request may weigh with a full history left to cut', async () => {
     const settings = await settingsForTutor();
-    expect(new TextEncoder().encode(JSON.stringify({ name: 'Settings', facts: [], settings })).length).toBeLessThan(3200);
+    expect(new TextEncoder().encode(JSON.stringify({ name: 'Settings', facts: [], settings })).length).toBeLessThan(3500);
   });
 });
 

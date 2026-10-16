@@ -35,6 +35,7 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   englishRate: 'speech',
   greekRate: 'speech',
   greekPronunciation: 'speech',
+  englishAccent: 'speech',
   hebrewDepth: 'language',
   weave: 'level',
   weaveGrammar: 'level',
@@ -93,6 +94,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
       weave: 'settings.weave',
       weaveGrammar: 'settings.weaveGrammar',
       greekPronunciation: 'pronunciation',
+      englishAccent: 'settings.englishAccent',
       goal: 'learner_grammar.goal',
       pickerGrammar: 'learner_grammar.picker_level',
       grammarApproach: 'learner_grammar.approach',
@@ -114,6 +116,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
   'verse-read': {
     settings: {
       greekPronunciation: 'pronunciation',
+      englishAccent: 'english_accent',
       goal: 'learner_grammar.goal',
       pickerGrammar: 'learner_grammar.picker_level',
       grammarApproach: 'learner_grammar.approach',

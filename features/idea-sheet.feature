@@ -196,6 +196,31 @@ Feature: The idea sheet
     Then the letter sheet's tile reads "o, as in “lot”"
     And the letter sheet's How it sounds reads "In Modern Greek it sounds like o, as in “lot”."
 
+  # mw-5r3p30.353, his words: "can you have that as a setting American versus British": Settings > English accent changes every hint at once, and is kept.
+  Scenario: Choosing British in Settings makes the Omicron sheet read the British hint, and American brings the American one back
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
+    When he chooses "British" in the group "English accent" in Settings
+    And he opens the letter sheet of "omicron" from the alphabet sheet
+    Then the letter sheet's tile reads "o, as in “lot”"
+    And the letter sheet's How it sounds reads "In Modern Greek it sounds like o, as in “lot”."
+    And the English accent is saved as "british"
+
+  Scenario: A phone that kept British starts on it, and choosing American again puts the American hint back
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level, a fake Postern and the English accent "british" saved
+    Then the group "English accent" in Settings has "British" chosen
+    When he chooses "American" in the group "English accent" in Settings
+    And he opens the letter sheet of "omicron" from the alphabet sheet
+    Then the letter sheet's tile reads "o, as in “or”, short"
+    And the English accent is saved as "american"
+
+  Scenario: Choosing IPA (the standard) shows the standard id instead of a key word
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
+    When he chooses "IPA (the standard)" in the group "English accent" in Settings
+    And he opens the letter sheet of "omicron" from the alphabet sheet
+    Then the letter sheet's tile reads "o, /o/"
+    And the letter sheet's How it sounds reads "In Modern Greek it sounds like o, /o/."
+    And the letter sheet does not say "lot"
+
   # mw-svw421.5: an idea that a paradigm table teaches links to it; Back brings the sheet back.
   Scenario: An idea links to its table
     Given Lampas is opened on Romans 8 with the goal "1 John 1", no idea level and a fake Postern

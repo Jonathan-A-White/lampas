@@ -64,10 +64,11 @@ import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from '../speec
 import { RESOURCES } from '../resources';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../resources/logosBible';
 import { READ_SPANS, type ReadSpan } from '../speech/readSpan';
+import { chooseAccent } from '../speech/accents';
 import { PRONUNCIATIONS } from '../speech/pronunciation';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS, type Depth } from '../script/scripts';
 import type { Allowed, Dependency, SectionId, SettingDef, SettingValue } from './define';
-import { askBySetting, audioBibleSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, themeSetting, tipsSetting, weaveSetting } from './definitions';
+import { askBySetting, audioBibleSetting, englishAccentSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, themeSetting, tipsSetting, weaveSetting } from './definitions';
 import type { Immersive } from './definitions/immersive';
 import type { Tips } from './definitions/tips';
 import type { Weave } from './definitions/weave';
@@ -176,6 +177,18 @@ const depthEntries = SCRIPTS.map((script) =>
     },
   ),
 );
+
+/** English accent: saved like any declared setting, and handed to the accent module at once, so the next hint drawn is said in it. */
+const englishAccentEntry: SettingEntry = (() => {
+  const entry = fromDefinition(englishAccentSetting);
+  return {
+    ...entry,
+    write: async (value) => {
+      await entry.write(value);
+      chooseAccent(englishAccentSetting.parse(value));
+    },
+  };
+})();
 
 const textSizeId = (percent: number): SettingValue => TEXT_SIZES.find((t) => t.percent === percent)?.id ?? percent;
 
@@ -476,6 +489,7 @@ export const SETTINGS: readonly SettingEntry[] = [
     },
     { section: 'pronunciation' },
   ),
+  englishAccentEntry,
   ...resourceEntries,
   fromDefinition(audioBibleSetting),
   logosBibleEntry,

@@ -796,6 +796,12 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
+            "properties": { "key": { "const": "englishAccent" }, "value": { "type": "string", "enum": ["american", "british", "ipa"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
             "properties": { "key": { "const": "resource.strongs" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {

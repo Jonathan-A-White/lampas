@@ -380,7 +380,7 @@ function modernSoundRules(say: SoundWords): SoundRule[] {
 export const modernTutorGuide = (say: SoundWords): string =>
   'Modern Greek, as Greek is spoken in Greece today: never by English spelling habit and never by the Erasmian (school) pronunciation. ' +
   'The app respells a word in syllables, the stressed one in capitals: ταῦτα is TAF-ta, Πάντοτε is PAN-do-te, χαίρετε is HYE-re-te. ' +
-  `The vowels, each with a word of the reader's English that has it: ${['a', 'e', 'ee', 'o', 'oo'].map(say.asIn).join('; ')}. ` +
+  `The vowels, each ${say.hintedBy}: ${['a', 'e', 'ee', 'o', 'oo'].map(say.asIn).join('; ')}. ` +
   'αυ and ευ are af and ef before θ κ ξ π σ τ φ χ ψ, and av and ev before a voiced consonant or a vowel (never "aw", never "ow"); ηυ is eef or eev the same way. ' +
   'αι is e; ει, οι, υι, η, ι and υ are ee; ου is oo; ω and ο are o. ' +
   `β is v; δ is ${say.asIn('dh')}; γ is gh (or y before e or i); θ is ${say.asIn('th')}; φ is f; ρ is ${say.asIn('r')}; ` +

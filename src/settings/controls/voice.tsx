@@ -3,9 +3,12 @@ import { useRef, useState } from 'react';
 import { getGreekPronunciation, getReadSpan, getSpeechRates, getVoice, type ReadSpan, type VoiceLanguage } from '../../data/repositories';
 import { speaksLanguage, useVoices, voiceKey } from '../../speech/greek';
 import { DEFAULT_RATE, RATE_MAX, RATE_MIN, RATE_STEP } from '../../speech/languages';
+import { ACCENTS } from '../../speech/accents';
 import { PRONUNCIATIONS, pronunciationOf, type GreekPronunciation } from '../../speech/pronunciation';
 import { READ_SPANS } from '../../speech/readSpan';
+import { englishAccentSetting } from '../definitions';
 import { PHONE_VOICE, writeSetting } from '../registry';
+import { useSetting } from '../store';
 import { SettingRow } from './SettingRow';
 import type { Control } from './types';
 
@@ -168,4 +171,28 @@ export const SpeedControl: Control = ({ row }) => {
 export const PronunciationControl: Control = ({ row }) => {
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
   return <SettingRow row={row}>{pronunciation ? <PronunciationList chosen={pronunciation} /> : null}</SettingRow>;
+};
+
+/** The accent the sound hints are said in: one 48 px button a line, so the longest name fits any width, upright or sideways. */
+export const EnglishAccentControl: Control = ({ row }) => {
+  const accent = useSetting(englishAccentSetting);
+  return (
+    <SettingRow row={row}>
+      {accent ? (
+        <div role="group" aria-label={row.label} className="flex flex-col gap-1 rounded-xl border border-line p-0.5">
+          {ACCENTS.map((a) => (
+            <button
+              key={a.id}
+              type="button"
+              aria-pressed={accent === a.id}
+              onClick={() => void writeSetting('englishAccent', a.id)}
+              className={`min-h-12 rounded-lg px-4 text-left text-base font-medium ${accent === a.id ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+            >
+              {a.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </SettingRow>
+  );
 };

@@ -41,8 +41,8 @@ describe('one standard sound inventory', () => {
 });
 
 describe('one hint table per English accent', () => {
-  it('has American and British, and American is the default', () => {
-    expect(ACCENTS.map((a) => a.id)).toEqual(['american', 'british']);
+  it('has American, British and IPA, and American is the default', () => {
+    expect(ACCENTS.map((a) => a.id)).toEqual(['american', 'british', 'ipa']);
     expect(DEFAULT_ACCENT).toBe('american');
     expect(chosenAccent().id).toBe('american');
     expect(accentOf('klingon').id).toBe('american');
