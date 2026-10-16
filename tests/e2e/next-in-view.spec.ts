@@ -18,6 +18,20 @@ const OU_WORD_ANSWER = {
   note: 'Nearly there: one word to say again.',
 };
 
+// He read part of the verse and stopped: the card for the word he stopped at has a tip as long as the grind writes one (mw-5r3p30.397).
+const PARTIAL_LONG_TIP_ANSWER = {
+  verdict: 'partial',
+  focus_words: [{ word: 'πάντων', index: 2, chunks: ['πάν', 'των'], tip: 'The ντ is a d, as in pándon.' }],
+  note: 'Good start: I heard the first words, then you stopped.',
+  reached: 1,
+  next_word: {
+    word: 'ἀγαπῶσιν',
+    index: 2,
+    chunks: ['ἀ', 'γα', 'πῶ', 'σιν'],
+    tip: 'Say the stress on the third piece, πῶ. The γ before α is a soft sound made at the back of the throat, and the σ is a plain s.',
+  },
+};
+
 // This host's wall clock can step back about 1.4 s while a hold goes on, and the recorder times a hold with Date.now(): hold longer than about 2.5 s.
 async function holdFor(page: Page, button: ReturnType<Page['getByRole']>, ms: number): Promise<void> {
   const box = await button.boundingBox();
@@ -170,6 +184,55 @@ for (const phone of PHONES) {
         await expectInView(page, next, 'Next verse');
         await shot(page, `next-in-view-ladder-${phone.name}-${percent}`);
       });
+
+      for (const speaking of [true, false]) {
+        test(`Reading ladder, partial reading, read-aloud bar ${speaking ? 'showing' : 'not showing'}: the Next word card is whole, above the bottom stack`, async ({ page }) => {
+          const fake = makeFakePostern();
+          fake.autoReply = { status: 'answered', answer: PARTIAL_LONG_TIP_ANSWER };
+          await routePostern(page, fake);
+          await honestMic(page);
+          await honestSpeech(page, { msPerWord: 800 });
+          await page.goto('/');
+          await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+          if (!speaking) await put(page, 'settings', [{ key: 'readTutor', value: 'off' }]);
+          await openWithTextSize(page, '', percent);
+          await page.getByRole('button', { name: 'Greek', exact: true }).click();
+          const view = await chooseAction(page, 28, 'Read it aloud');
+          const panel = page.getByRole('region', { name: 'Reading check' });
+          await panel.getByRole('button', { name: 'Reading ladder', exact: true }).click();
+          await expect(view.getByRole('heading', { level: 2 })).toHaveText('1 Thessalonians 5:16');
+          await holdFor(page, page.getByRole('button', { name: 'Hold to read verse 16', exact: true }), 2800);
+          await expect(panel).toContainText('Part of the verse');
+          const card = panel.locator('[data-next-word]');
+          const tip = card.getByText('Say the stress');
+          await expect(card).toBeVisible();
+          if (speaking) await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
+          else await expect(page.getByRole('button', { name: 'Pause', exact: true })).toHaveCount(0);
+          // the card, its heading and its whole tip stand inside the window and above the topmost thing drawn under the text
+          await expect
+            .poll(async () => {
+              const measured = await page.evaluate(() => {
+                const el = document.querySelector('[data-next-word]');
+                const box = document.querySelector('[data-verse-view] .screen');
+                if (!el || !box) return null;
+                const cardBox = el.getBoundingClientRect();
+                const boxRect = box.getBoundingClientRect();
+                const tops = [...document.querySelectorAll('[data-next-bar], [data-verse-bar], [data-speaking-slot]')]
+                  .filter((n) => n.getBoundingClientRect().height > 0)
+                  .map((n) => n.getBoundingClientRect().top);
+                const stackTop = Math.min(boxRect.bottom, ...tops);
+                return { top: cardBox.top, bottom: cardBox.bottom, boxTop: boxRect.top, stackTop };
+              });
+              if (!measured) return 'no card';
+              if (measured.top < measured.boxTop - 0.5) return `card top ${measured.top} is above the scroll box ${measured.boxTop}`;
+              if (measured.bottom > measured.stackTop + 0.5) return `card bottom ${measured.bottom} is under the stack (top ${measured.stackTop})`;
+              return 'ok';
+            })
+            .toBe('ok');
+          await expect(tip).toBeInViewport({ ratio: 1 });
+          await shot(page, `next-in-view-partial-${speaking ? 'bar' : 'nobar'}-${phone.name}-${percent}`);
+        });
+      }
 
       test('Reading drill (a sheet): after a word is read Next word is in view', async ({ page }) => {
         const fake = makeFakePostern();
