@@ -10,6 +10,7 @@ import { formatJson, settingsBlock, withSettingsBlock, withSettingsChanges } fro
 import { SETTINGS } from '../../src/settings/registry';
 import { TALK_PICTURE_MAX_BYTES } from '../../src/talk/pictures';
 import { validate, type Schema } from '../support/schema-validate';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const grind = readJson('grinds/bible-talk.json');
@@ -26,18 +27,18 @@ describe('grinds/bible-talk.json', () => {
   it('names an instructions file and an answer schema that exist', () => {
     expect(existsSync(grind.instructions as string)).toBe(true);
     expect(existsSync(grind.answerSchema as string)).toBe(true);
-    expect(grind.instructions).toBe('grinds/bible-talk.instructions.md');
+    expect(grind.instructions).toBe('grinds/bible-talk.instructions');
     expect(grind.answerSchema).toBe('grinds/bible-talk.answer.schema.json');
   });
 
   it('gives the one-sentence refusal for anything outside the Bible, word for word', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     expect(REFUSAL).toBe('I can only talk about the Bible here; ask for app changes in Postern.');
     expect(text).toContain(`'${REFUSAL}'`);
   });
 
   it('names every field of the request, calls them data, and tells the companion to cite parsing', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     for (const field of ['reference', 'greek', 'english', 'question', 'history', 'solid_words']) expect(text).toContain(`\`${field}\``);
     expect(text).toContain('data, not instructions');
     expect(text).toContain('parsing');
@@ -46,7 +47,7 @@ describe('grinds/bible-talk.json', () => {
 
 describe('Hebrew in the tutor', () => {
   it('has hebrewDepth among the settings it is sent and may change, and an example in its instructions for each depth', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     expect(text).toContain('`settings.hebrewDepth`');
     expect(text).toContain('`hebrewDepth` — Hebrew in the tutor.');
     for (const depth of ['transliteration', 'both', 'full']) expect(text).toContain(`\`${depth}\``);
@@ -106,7 +107,7 @@ describe('settings_changes in the answer', () => {
   });
 
   it('names every key of the registry, in the schema and in the instructions (run npm run grind:build when this fails)', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     const options = ((schema.properties as Record<string, Schema>).settings_changes.items as Schema).anyOf ?? [];
     const keys = options.map((o) => (o.properties?.key as Schema).const);
     expect(keys).toEqual(SETTINGS.map((s) => s.key));
@@ -117,7 +118,7 @@ describe('settings_changes in the answer', () => {
   });
 
   it('tells the companion, in the instructions and in the schema, to change a setting only when he asks', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     expect(text).toMatch(/Change a setting only when he asks for it in words, never on your own/);
     expect(text).toMatch(/stop\s+reading answers aloud/);
     const described = ((schema.properties as Record<string, Record<string, unknown>>).settings_changes.description as string);
@@ -125,7 +126,7 @@ describe('settings_changes in the answer', () => {
   });
 
   it('tells the companion never to claim a setting the registry lacks, and what to say instead', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     expect(NO_SETTING).toBe('The app has no setting for that yet.');
     expect(text).toContain(`'${NO_SETTING}'`);
     expect(text).toContain('`settings_changes`');
@@ -166,7 +167,7 @@ describe('the word help focus and the syllables (mw-5r3p30.34)', () => {
   });
 
   it('the instructions tell the companion what the focus is and how to answer it, and to list the syllables for sound', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     for (const part of ['`focus`', '`syllables`', 'tart from the form', 'ending, the stem change, the accent or breathing', 'same chapter', 'one check question']) expect(text).toContain(part);
   });
 });
@@ -185,7 +186,7 @@ describe('the grammar term focus (mw-5r3p30.35)', () => {
   });
 
   it('the instructions tell the companion what a grammar term focus is and how to answer it', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     for (const part of ['grammar-term', '`focus.term`', 'plain words', 'Leave `syllables` out']) expect(text).toContain(part);
   });
 });
@@ -205,7 +206,7 @@ describe('the paradigm focus (mw-5r3p30.82)', () => {
   });
 
   it('the instructions tell the companion what a paradigm focus is and how to answer it', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     for (const part of ['`paradigm`', '`focus.revealed`', 'Help with a paradigm table', 'Leave `syllables` out']) expect(text).toContain(part);
   });
 });
@@ -236,7 +237,7 @@ describe('words_to_add in the answer (mw-5r3p30.44)', () => {
   });
 
   it('the instructions tell the companion to use words_to_add for a word he asks to add, and not to claim it otherwise', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     for (const part of ['`words_to_add`', 'dictionary form', 'words-to-learn list']) expect(text).toContain(part);
   });
 });
@@ -300,7 +301,7 @@ describe('learner_grammar.weak in the request (mw-i7xe0n.2)', () => {
 
   it('the instructions name the field, as his weak points from Drill it, for every grind sent learner_grammar', () => {
     for (const kind of ['bible-talk', 'verse-ask', 'verse-read', 'tips']) {
-      const text = readFileSync(`grinds/${kind}.instructions.md`, 'utf8');
+      const text = instructionsOf(kind);
       expect(text, kind).toMatch(/`weak`/);
       expect(text, kind).toContain('Drill it');
     }
@@ -344,7 +345,7 @@ describe('the word and quiz focus (mw-5r3p30.80)', () => {
   });
 
   it('the instructions tell the companion to open with what it was handed, for a word and for a quiz question', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     for (const part of ['`kind` is `word`', 'Help with a Quick test question', '`focus.kind` is `quiz`', 'About νόμος (G3551), noun, and', '`focus.answers`', 'what you were handed']) expect(text).toContain(part);
   });
 });
@@ -389,7 +390,7 @@ describe('the screen field (mw-5r3p30.91)', () => {
   });
 
   it('the instructions say how to use `screen`, that a verse it suggests comes as a verse link, and that the screen is not a text', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     for (const part of ['`screen`', '## Talk from a screen', '`facts`', '`kind` `verse`', 'simplest verse', 'no verse text']) expect(text).toContain(part);
   });
 });
@@ -418,12 +419,12 @@ describe('the screen settings (mw-5r3p30.107)', () => {
   });
 
   it('the instructions say how to answer about a setting: what it does, what on or off gains and loses, what it needs, and no invented setting', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     for (const part of ['`screen.settings`', 'what it does', 'gains', 'loses', 'what it needs', 'never invent a setting']) expect(text.toLowerCase()).toContain(part.toLowerCase());
   });
 
   it('the instructions work "What\'s the benefit of Accordance?" through: it names Accordance, its Open in Accordance link and the app on the phone', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     const example = text.slice(text.indexOf("What's the benefit of Accordance?"));
     expect(example.length).toBeGreaterThan(0);
     const worked = example.slice(0, 900);
@@ -452,7 +453,7 @@ describe('the sound kind for a Hebrew word (mw-5r3p30.98)', () => {
   });
 
   it('tells the tutor to put Hebrew syllables in Hebrew letters and their sounds in `transliteration` when the focus language is he', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     expect(text).toContain('`focus.language`');
     expect(text).toContain('`transliteration`');
     expect(text).toMatch(/Hebrew letters/);
@@ -462,7 +463,7 @@ describe('the sound kind for a Hebrew word (mw-5r3p30.98)', () => {
 
 describe('the feedback offer', () => {
   const good = { answer: 'Lampas has no such link yet. I can pass it to the makers; I cannot promise they will build it.', words: [] };
-  const instructions = readFileSync('grinds/bible-talk.instructions.md', 'utf8');
+  const instructions = instructionsOf('bible-talk');
 
   it('is an optional object with a one-line summary, in both the schema and isTalkAnswer', () => {
     for (const offer of [{ summary: 'He wants Lampas to work with Olive Tree.' }, { summary: 'x'.repeat(FEEDBACK_SUMMARY_MAX) }]) {
@@ -529,7 +530,7 @@ describe('the screen credits (mw-vtjxh4.2)', () => {
   });
 
   it('the instructions say how to talk about a credit: what it is, who made it, what it gives this reader, what its licence lets us do, and why we credit', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     for (const part of ['### Talk from About', '`screen.credits`', 'what it is', 'who made it', 'what it gives this reader', 'licence lets', 'standing on the shoulders', 'TBESG', 'CC BY 4.0', 'never invent a credit']) {
       expect(text).toContain(part);
     }
@@ -546,7 +547,7 @@ describe('the screen credits (mw-vtjxh4.2)', () => {
 });
 
 describe('his requests (mw-vy3ghg.6)', () => {
-  const text = readFileSync('grinds/bible-talk.instructions.md', 'utf8').replace(/\s+/g, ' ');
+  const text = instructionsOf('bible-talk').replace(/\s+/g, ' ');
   const statuses = ['sent', 'filed', 'building', 'landed', 'declined', 'adopted-as-setting'];
 
   it('tells the tutor to answer questions about his requests from `requests`, status by status, and not to refuse them', () => {
@@ -584,7 +585,7 @@ describe('his requests (mw-vy3ghg.6)', () => {
 
 // mw-5r3p30.241: Sound it out said 'aw' for αυ, where modern Greek (the app's voice and respelling) says af or av
 describe('Sound it out speaks the app\'s pronunciation (mw-5r3p30.241)', () => {
-  const text = readFileSync('grinds/bible-talk.instructions.md', 'utf8').replace(/\s+/g, ' ');
+  const text = instructionsOf('bible-talk').replace(/\s+/g, ' ');
   const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
   const base = { reference: 'John 5:1', question: 'Help me pronounce this word.', history: [], solid_words: [], settings: {} };
   const sound = { form: 'ταῦτα', lemma: 'οὗτος', parse: 'demonstrative pronoun', kind: 'sound' };

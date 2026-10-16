@@ -5,6 +5,7 @@ import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction } from './verse-view';
+import { holdFor } from '../support/hold';
 
 const VIEWPORT = { width: 390, height: 844 };
 
@@ -19,14 +20,10 @@ async function expectFitsPhone(page: Page) {
   expect(scrollTop).toBe(0);
 }
 
-async function holdFor(page: Page, button: ReturnType<Page['getByRole']>, ms: number): Promise<void> {
-  const box = await button.boundingBox();
-  if (!box) throw new Error('the button is not on the page');
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.waitForTimeout(ms);
-  await page.mouse.up();
-}
+// holdFor (tests/support/hold.ts) times each hold on the page's clock, so it is installed before the page opens.
+test.beforeEach(async ({ page }) => {
+  await page.clock.install();
+});
 
 test('the Reading ladder in Greek opens the easiest verse, says Verse 1 of M, and offers Next verse after a good reading, at phone width', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);

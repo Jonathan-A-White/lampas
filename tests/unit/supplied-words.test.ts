@@ -5,6 +5,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { type BookIndex, type Chapter, type EnglishChunk, englishRuns, markSupplied } from '../../src/data/chapter';
 import { buildRequest } from '../../src/services/tutor';
 import { buildTalkRequest } from '../../src/services/talk';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 const load = (path: string): Chapter => JSON.parse(readFileSync(`public/data/${path}.json`, 'utf8')) as Chapter;
 const hebrews7 = load('heb/7');
@@ -90,7 +91,7 @@ describe('what the tutor is sent', () => {
 describe('what the grinds are told', () => {
   for (const grind of ['verse-ask', 'bible-talk']) {
     it(`${grind}: marked words are italic in his reader, supplied by the translators, and the text always shows them`, () => {
-      const text = readFileSync(`grinds/${grind}.instructions.md`, 'utf8').replace(/\s+/g, ' ');
+      const text = instructionsOf(grind).replace(/\s+/g, ' ');
       expect(text).toContain('## Italic words');
       const section = text.slice(text.indexOf('## Italic words'), text.indexOf(' ## ', text.indexOf('## Italic words') + 5));
       expect(section).toContain('between asterisks');

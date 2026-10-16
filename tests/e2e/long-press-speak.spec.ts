@@ -26,7 +26,7 @@ async function hold(page: Page, selector: string, ms: number, drag = 0) {
   await page.mouse.move(x, y);
   await page.mouse.down();
   if (drag) await page.mouse.move(x + drag, y, { steps: 4 });
-  await page.waitForTimeout(ms);
+  await page.waitForTimeout(ms); // a real-time hold: with page.clock.install() the Reader's Due chip did not draw on a loaded host (7 of 18 runs, mw-5r3p30.388), so this spec stays on the real clock until that is found
   await page.mouse.up();
 }
 

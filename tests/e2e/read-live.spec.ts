@@ -35,7 +35,7 @@ async function readEightTwentyEight(page: Page, view: 'English' | 'Greek', holdM
   if (!box) throw new Error('the Read button is not on the page');
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
-  await page.waitForTimeout(holdMs);
+  await page.waitForTimeout(holdMs); // a real-time hold: the deployed app records Chromium's real fake microphone, which plays its clip in real time, and holdMs is the clip's length, seconds over the one-second floor
   await page.mouse.up();
 
   const result = panel.locator('[data-reading-result]');

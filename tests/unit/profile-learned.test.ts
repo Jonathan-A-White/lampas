@@ -14,6 +14,7 @@ import {
   saveProfile,
 } from '../../src/data/repositories/profile';
 import { isTalkAnswer } from '../../src/services/talk';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 afterAll(() => db.close());
 beforeEach(async () => {
@@ -131,7 +132,7 @@ describe('the answer check', () => {
 });
 
 describe('the bible-talk instructions', () => {
-  const text = readFileSync('grinds/bible-talk.instructions.md', 'utf8');
+  const text = instructionsOf('bible-talk');
   it('say how the tutor learns about him: detect first, one light question, never twice, a guess marked', () => {
     const section = text.slice(text.indexOf('## Learning about him'));
     for (const phrase of ['profile_update', 'profile_question', 'do_not_ask', '`guessed` true', '`declined`', 'ONE question', 'observed_pace', 'observed_ways', 'Settings > About you']) expect(section, phrase).toContain(phrase);

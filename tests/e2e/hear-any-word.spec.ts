@@ -5,6 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestSpeech, spoken } from '../support/honest-fakes';
+import { holdFor } from '../support/hold';
 import { typeQuestion } from './ask-composer';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
@@ -23,6 +24,7 @@ async function openAnswer(page: Page) {
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: ANSWER };
   await routePostern(page, fake);
+  await page.clock.install();
   await openUnlocked(page);
   await page.goto('/');
   const view = await chooseAction(page, 28, 'Ask the tutor');
@@ -35,7 +37,7 @@ async function openAnswer(page: Page) {
 }
 
 
-/** Holds the mouse on the middle of `word` as the page draws it, for `ms`. */
+/** Holds the mouse on the middle of `word` as the page draws it, for `ms` of the page's clock (tests/support/hold.ts). */
 async function hold(page: Page, word: string, ms: number) {
   const at = await page.evaluate((needle) => {
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -51,10 +53,7 @@ async function hold(page: Page, word: string, ms: number) {
     }
     throw new Error(`no ${needle} in the answer`);
   }, word);
-  await page.mouse.move(at.x, at.y);
-  await page.mouse.down();
-  await page.waitForTimeout(ms);
-  await page.mouse.up();
+  await holdFor(page, at, ms);
 }
 
 test('a long press on a Hebrew word of the answer says it with lang he-IL, selects nothing and opens no guide', async ({ page }) => {

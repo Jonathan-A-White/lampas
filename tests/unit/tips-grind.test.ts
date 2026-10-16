@@ -6,13 +6,14 @@ import { existsSync, readFileSync } from 'node:fs';
 import { SCREENS, FEATURES, summarize } from '../../src/tips/summary';
 import { isTipAnswer } from '../../src/tips/tip';
 import { validate, type Schema } from '../support/schema-validate';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const grind = readJson('grinds/tips.json');
 const verseAsk = readJson('grinds/verse-ask.json');
 const answerSchema = readJson('grinds/tips.answer.schema.json') as Schema;
 const inputSchema = readJson('grinds/tips.input.schema.json') as Schema;
-const instructions = readFileSync('grinds/tips.instructions.md', 'utf8');
+const instructions = instructionsOf('tips');
 
 describe('grinds/tips.json', () => {
   it('has the same keys as grinds/verse-ask.json, for the lampas app and the tips kind, on haiku at low effort', () => {

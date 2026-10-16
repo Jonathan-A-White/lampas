@@ -28,6 +28,14 @@ export function withSettingsBlock(instructions: string): string {
   return instructions.slice(0, from) + settingsBlock() + instructions.slice(to + SETTINGS_END.length);
 }
 
+/**
+ * A grind's instructions read from a directory of parts (grinds/<kind>.instructions/NNN-<section>.md, in name order): each part but the last
+ * loses its trailing newlines and one blank line goes between them, as the mill joins them (millwright mw-skwocd.7, joinGrindParts).
+ */
+export function joinGrindParts(parts: readonly string[]): string {
+  return parts.map((part, i) => (i < parts.length - 1 ? part.replace(/\n+$/, '') : part)).join('\n\n');
+}
+
 type Json = Record<string, unknown>;
 
 function valueSchema({ allowed }: SettingEntry): Json {
