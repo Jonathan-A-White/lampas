@@ -4,6 +4,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { GREEK_READING_ANSWER, makeFakePostern, READING_ANSWER, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestMic } from '../support/honest-fakes';
+import { holdFor } from '../support/hold';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction, openTalkAbout } from './verse-view';
@@ -74,6 +75,7 @@ test("the reader's foot Talk bar is Postern's bar", async ({ page }) => {
 
 for (const [view, answer] of [['english', READING_ANSWER], ['greek', GREEK_READING_ANSWER]] as const) {
   test(`the Verse view's one hold bar is Postern's bar, in Read it aloud and in 'Read the whole verse again' (${view})`, async ({ page }) => {
+    await page.clock.install();
     await page.setViewportSize(VIEWPORT);
     const fake = makeFakePostern();
     fake.autoReply = { status: 'answered', answer };
@@ -90,11 +92,7 @@ for (const [view, answer] of [['english', READING_ANSWER], ['greek', GREEK_READI
     // the foot of the view, across its width, the lowest thing on the screen
     expect((await box(read)).y + (await box(read)).height).toBeLessThanOrEqual(VIEWPORT.height);
 
-    const b = await box(read);
-    await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
-    await page.mouse.down();
-    await page.waitForTimeout(1200);
-    await page.mouse.up();
+    await holdFor(page, read, 1200);
     await expect(panel.locator('[data-fix]').first()).toBeVisible();
     await panel.getByRole('button', { name: 'Read these again', exact: true }).click();
     const walk = panel.getByRole('group', { name: 'Read these again' });
