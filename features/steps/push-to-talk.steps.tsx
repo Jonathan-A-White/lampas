@@ -34,14 +34,16 @@ const PHONE_KEY = '00'.repeat(31) + '02';
 const AT = { clientX: 100, clientY: 700 };
 let fake: FakePostern;
 
-async function open(options: { recogniser?: boolean; speaks?: boolean } = {}): Promise<void> {
-  const { recogniser = true, speaks = false } = options;
+async function open(options: { recogniser?: boolean; speaks?: boolean; android?: boolean; noSpeechFor?: string[] } = {}): Promise<void> {
+  const { recogniser = true, speaks = false, android = false, noSpeechFor = [] } = options;
   cleanup();
   stopReading();
   clearBus();
   vi.unstubAllGlobals();
   if (recogniser) stubRecognizer();
   FakeRecognizer.instances = [];
+  FakeRecognizer.android = android;
+  FakeRecognizer.noSpeechFor = noSpeechFor;
   if (speaks) stubSpeech([ENGLISH_VOICE]);
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
@@ -287,5 +289,82 @@ describeFeature(feature, ({ Scenario }) => {
       act(() => FakeRecognizer.last().open());
       await waitFor(() => expect(holdInSheet()).toHaveTextContent(after));
     });
+  });
+
+  const android = "Lampas is opened on Romans 8 with a talk behind a fake Postern and Android's recogniser";
+  const checkAnswers = "the phone's speech check answers language-not-supported";
+  const answerChecks = () => act(() => FakeRecognizer.answerChecks());
+  const saysNothingHeard = async (_: unknown, words: string) => {
+    expect(await within(sheet()).findByRole('alert')).toHaveTextContent(words);
+  };
+  const noLanguageLine = async () => {
+    // the stop's own wait (bsv-kit STOP_TIMEOUT_MS is 3 s) is long gone by the time a late answer would have shown
+    await sleep(150);
+    expect(sheet()).not.toHaveTextContent('language-not-supported');
+  };
+
+  Scenario("On Android, letting go of the sheet's bar before the speech check answers shows no language error", ({ Given, When, And, Then }) => {
+    Given(android, () => open({ android: true }));
+    When('he taps the Talk button quickly', () => user.click(talkButton()));
+    And('he presses the hold-to-talk button in the sheet', async () => {
+      await screen.findByRole('dialog', { name: /^Talk about / });
+      await pressDown(holdInSheet());
+      await waitFor(() => expect(FakeRecognizer.last().checking).toBe(true));
+    });
+    And('he lets go of the hold-to-talk button', () => letGo(holdInSheet()));
+    And(checkAnswers, answerChecks);
+    Then('the sheet says {string}', saysNothingHeard);
+    And('the sheet shows no language-not-supported line', noLanguageLine);
+    And('nothing was sent and the phone is not listening', nothingSent);
+  });
+
+  Scenario('On Android, letting go of the Talk bar before the speech check answers shows no language error', ({ Given, When, And, Then }) => {
+    Given(android, () => open({ android: true }));
+    When('he holds the Talk button', async () => {
+      await hold(talkButton());
+      await waitFor(() => expect(FakeRecognizer.last().checking).toBe(true));
+    });
+    And('he lets go of the Talk button', () => letGo(talkButton()));
+    And(checkAnswers, answerChecks);
+    Then('the sheet says {string}', saysNothingHeard);
+    And('the sheet shows no language-not-supported line', noLanguageLine);
+    And('nothing was sent and the phone is not listening', nothingSent);
+  });
+
+  Scenario('On Android, the speech check answering while he holds goes on in the cloud and sends his words', ({ Given, When, And, Then }) => {
+    Given(android, () => open({ android: true }));
+    When('he holds the Talk button', () => hold(talkButton()));
+    And(checkAnswers, answerChecks);
+    And('he says {string}', (_, words: string) => {
+      expect(FakeRecognizer.last()).toMatchObject({ processLocally: false, lang: 'en-US', checking: false });
+      return says(words);
+    });
+    And('he lets go of the Talk button', () => letGo(talkButton()));
+    Then(mill, millSteps);
+    And('the first grist carries the reference {string} and the question {string}', grist);
+  });
+
+  Scenario("A phone with no en-US speech hears him through the cloud's own language", ({ Given, When, And, Then }) => {
+    Given(`${android} with no en-US in the cloud`, () => open({ android: true, noSpeechFor: ['en-US'] }));
+    When('he holds the Talk button', () => hold(talkButton()));
+    And(checkAnswers, answerChecks);
+    And('he says {string}', (_, words: string) => says(words));
+    And('he lets go of the Talk button', () => letGo(talkButton()));
+    Then(mill, millSteps);
+    And('the recogniser that heard him was asked for no language', () => {
+      expect(FakeRecognizer.last()).toMatchObject({ processLocally: false, lang: '', checking: false });
+    });
+  });
+
+  Scenario('A phone that can hear him by no route says which routes it tried', ({ Given, When, And, Then }) => {
+    Given(`${android} with no speech in the cloud`, () => open({ android: true, noSpeechFor: ['en-US', ''] }));
+    When('he holds the Talk button', () => hold(talkButton()));
+    And(checkAnswers, answerChecks);
+    Then('the sheet says the language is not supported, tried {string}', async (_, routes: string) => {
+      const alert = await within(sheet()).findByRole('alert');
+      expect(alert).toHaveTextContent('language-not-supported');
+      expect(alert).toHaveTextContent(`(tried: ${routes})`);
+    });
+    And('nothing was sent and the phone is not listening', nothingSent);
   });
 });
