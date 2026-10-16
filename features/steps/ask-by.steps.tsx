@@ -22,6 +22,7 @@ import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { validate, type Schema } from '../../tests/support/schema-validate';
 import { seedHisWords } from '../../tests/support/his-words';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 afterAll(() => {
   cleanup();
@@ -249,7 +250,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(validate({ ...base, settings_changes: [{ key: 'askBy', value: 'speaking' }] }, schema)).toEqual([]);
       expect(validate({ ...base, settings_changes: [{ key: 'askBy', value: 'shouting' }] }, schema)).not.toEqual([]);
       expect(validate({ ...base, settings_changes: [{ key: 'theme', value: 'dark' }] }, schema)).not.toEqual([]);
-      const text = readFileSync('grinds/verse-ask.instructions.md', 'utf8');
+      const text = instructionsOf('verse-ask');
       expect(text).toContain('`settings_changes`');
       expect(text).toContain('askBy');
       expect(text).toContain('only when he asks');

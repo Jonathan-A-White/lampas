@@ -22,6 +22,7 @@ import { SOUND_IDS } from '../../src/speech/sounds';
 import { TUTOR_KNOWS, settingsSentTo } from '../../src/tutor/knows';
 import { startSpeechSettingsSync } from '../../src/speech/settingsSync';
 import type { Schema } from '../support/schema-validate';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 const modern = pronunciationOf('modern');
 
@@ -155,7 +156,7 @@ describe('the tutor knows the accent', () => {
     const verseAsk = JSON.parse(readFileSync('grinds/verse-ask.input.schema.json', 'utf8')) as Schema;
     expect(JSON.stringify((verseAsk.properties ?? {}).settings)).toContain('englishAccent');
     for (const [kind, name] of [['bible-talk', 'settings.englishAccent'], ['verse-ask', 'settings.englishAccent'], ['verse-read', 'english_accent']]) {
-      const instructions = readFileSync(`grinds/${kind}.instructions.md`, 'utf8');
+      const instructions = instructionsOf(kind);
       const line = instructions.split('\n').find((l) => l.startsWith(`- \`${name}\`:`));
       expect(line, `${kind} does not describe ${name}`).toBeDefined();
       expect(line).toMatch(/example/i);

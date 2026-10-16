@@ -5,6 +5,7 @@ import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction } from './verse-view';
+import { holdFor } from '../support/hold';
 
 const VIEWPORT = { width: 390, height: 844 };
 
@@ -25,17 +26,13 @@ async function expectFitsPhone(page: Page) {
   expect(scrollTop).toBe(0);
 }
 
-// This host's wall clock can step back about 1.4 s while a hold is going on, and the recorder times a hold with Date.now(): a hold shorter than about 2.5 s sometimes reads as a tap.
+// Well over the reading's one second (SHORT_READING_MS): on the page's clock the hold is exactly this long.
 const HOLD_MS = 2800;
 
-async function holdFor(page: Page, button: ReturnType<Page['getByRole']>, ms: number): Promise<void> {
-  const box = await button.boundingBox();
-  if (!box) throw new Error('the button is not on the page');
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.waitForTimeout(ms);
-  await page.mouse.up();
-}
+// holdFor (tests/support/hold.ts) times each hold on the page's clock, so it is installed before the page opens.
+test.beforeEach(async ({ page }) => {
+  await page.clock.install();
+});
 
 test('two misses of ου offer Drill this sound, which shows the rule and reads five words, at phone width', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);

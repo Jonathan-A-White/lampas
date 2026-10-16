@@ -5,9 +5,10 @@ import { BOOKS } from '../../src/data/books';
 import { isTalkAnswer } from '../../src/services/talk';
 import { readGo } from '../../src/talk/go';
 import { validate, type Schema } from '../support/schema-validate';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 const schema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as Schema;
-const instructions = readFileSync('grinds/bible-talk.instructions.md', 'utf8');
+const instructions = instructionsOf('bible-talk');
 
 describe('readGo', () => {
   it('reads no go as none', () => {

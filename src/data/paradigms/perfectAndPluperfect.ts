@@ -2,7 +2,7 @@
 // 6 persons each = 18 cells. PROVISIONAL (the Governor to confirm the name and which forms the table holds). Every form is reduplicated
 // (λέ-λυ-: the first consonant repeated with ε); the active perfect and pluperfect have κ as their tense sign, the pluperfect also the
 // augment (ἐ-λελύκ-ειν); the middle or passive perfect adds its endings straight to the stem (λέλυ-μαι). The hyphen stands where the
-// stem, with its sign, ends.
+// stem, with its sign, ends. The pluperfect has ONE set of endings, -ειν -εις -ει -ειμεν -ειτε -εισαν, as οἶδα’s ᾔδειν has (oida.ts).
 import { PERSONS, verbIdeas } from './persons';
 import type { Paradigm } from './types';
 
@@ -10,7 +10,7 @@ import type { Paradigm } from './types';
 const COLUMNS: [string, string, string, string, string[], string[]][] = [
   ['Perfect', 'Active', 'tense-perfect', 'voice-active', ['λέλυκ-α', 'λέλυκ-ας', 'λέλυκ-ε(ν)', 'λελύκ-αμεν', 'λελύκ-ατε', 'λελύκ-ασι(ν)'], ['tense-signs']],
   ['Perfect', 'Middle or passive', 'tense-perfect', 'voice-middle-or-passive', ['λέλυ-μαι', 'λέλυ-σαι', 'λέλυ-ται', 'λελύ-μεθα', 'λέλυ-σθε', 'λέλυ-νται'], []],
-  ['Pluperfect', 'Active', 'tense-pluperfect', 'voice-active', ['ἐλελύκ-ειν', 'ἐλελύκ-εις', 'ἐλελύκ-ει', 'ἐλελύκ-εμεν', 'ἐλελύκ-ετε', 'ἐλελύκ-εισαν'], ['augment', 'tense-signs']],
+  ['Pluperfect', 'Active', 'tense-pluperfect', 'voice-active', ['ἐλελύκ-ειν', 'ἐλελύκ-εις', 'ἐλελύκ-ει', 'ἐλελύκ-ειμεν', 'ἐλελύκ-ειτε', 'ἐλελύκ-εισαν'], ['augment', 'tense-signs']],
 ];
 
 export const PERFECT_AND_PLUPERFECT: Paradigm = {

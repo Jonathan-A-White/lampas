@@ -5,19 +5,11 @@ import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction } from './verse-view';
+import { holdFor } from '../support/hold';
 
 const VIEWPORT = { width: 390, height: 844 };
-/** The honest microphone records 16 kHz, 16-bit mono PCM, 32 bytes a millisecond, for as long as the bar was held (1.2 s here, a little more with the page's lag; fake-media.ts adds a WAV header). */
+/** The honest microphone records 16 kHz, 16-bit mono PCM, 32 bytes a millisecond, for as long as the bar was held (1.2 s of the page clock here; fake-media.ts adds a WAV header). */
 const PCM_BYTES_A_MS = 32;
-
-async function holdFor(page: Page, button: ReturnType<Page['getByRole']>, ms: number): Promise<void> {
-  const box = await button.boundingBox();
-  if (!box) throw new Error('the button is not on the page');
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.waitForTimeout(ms);
-  await page.mouse.up();
-}
 
 /** Reads verse 28 in English through the fake mill and waits for the result. */
 async function readVerse28(page: Page) {
@@ -44,6 +36,11 @@ async function findDeveloperMode(page: Page): Promise<void> {
   // About's Check for updates has an empty status of its own: find the one that says it
   await expect(page.getByRole('status').filter({ hasText: 'Developer mode is on' })).toBeVisible();
 }
+
+// holdFor (tests/support/hold.ts) times each hold on the page's clock, so it is installed before the page opens.
+test.beforeEach(async ({ page }) => {
+  await page.clock.install();
+});
 
 test('Play my reading plays the clip he recorded, and Download my recording is not there', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);

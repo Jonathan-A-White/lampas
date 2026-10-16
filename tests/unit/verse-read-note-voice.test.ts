@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
 import { checkExpect, expectProblems, type GrindExample } from '../support/grind-examples';
 import type { Schema } from '../support/schema-validate';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 const readJson = (rel: string): unknown => JSON.parse(readFileSync(rel, 'utf8'));
 const DIR = 'grinds/examples/verse-read';
@@ -75,11 +76,11 @@ describe('no scenario note, and no instructions, use the past tense of read', ()
   // bible-talk's own text has present-tense lines ("the texts you read") and a settings list written from the registry, so there the
   // section is checked; verse-read's whole file is.
   it('verse-read\'s instructions write none anywhere', () => {
-    expect(readFileSync('grinds/verse-read.instructions.md', 'utf8')).not.toMatch(PAST_READ);
+    expect(instructionsOf('verse-read')).not.toMatch(PAST_READ);
   });
 
   it.each(['verse-read', 'verse-ask', 'bible-talk'])('the %s instructions have a section on words the voice can misread', (kind) => {
-    const text = readFileSync(`grinds/${kind}.instructions.md`, 'utf8');
+    const text = instructionsOf(kind);
     const start = text.indexOf('## Words the voice can misread');
     expect(start, 'the section').toBeGreaterThanOrEqual(0);
     const section = text.slice(start, text.indexOf('\n## ', start + 1));
@@ -90,7 +91,7 @@ describe('no scenario note, and no instructions, use the past tense of read', ()
 });
 
 describe('the verse-read instructions say what was heard from the produced sounds', () => {
-  const text = readFileSync('grinds/verse-read.instructions.md', 'utf8');
+  const text = instructionsOf('verse-read');
 
   it('tells the model never to quote the target as heard, and to name what it heard from produced_phonemes in plain letters', () => {
     expect(text).toContain('## What you heard');

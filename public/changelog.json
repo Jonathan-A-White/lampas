@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.272",
+    "date": "2026-10-16",
+    "story": "mw-svw421.20",
+    "kind": "fixed",
+    "text": "The pluperfect table now gives you one set of endings, so ἐλελύκειμεν and ἐλελύκειτε agree with οἶδα's ᾔδειμεν and ᾔδειτε."
+  },
+  {
     "version": "0.1.271",
     "date": "2026-10-16",
     "story": "mw-5r3p30.416",

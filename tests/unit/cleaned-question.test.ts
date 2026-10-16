@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import { isVerseAnswer } from '../../src/services/tutor';
 import { isTalkAnswer } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 const readJson = (rel: string): Schema & { required: string[]; properties: Record<string, Schema & { description: string; maxLength: number }> } =>
   JSON.parse(readFileSync(rel, 'utf8')) as never;
@@ -20,7 +21,7 @@ const CLEAN = 'Why are there italic words? What does it mean for the words to be
 
 describe.each(KINDS)('$kind: the cleaned question', ({ kind, max, guard }) => {
   const schema = readJson(`grinds/${kind}.answer.schema.json`);
-  const instructions = readFileSync(`grinds/${kind}.instructions.md`, 'utf8');
+  const instructions = instructionsOf(kind);
   const answer = { answer: 'They are words the translators added.', words: [] };
 
   it('is a field of the answer schema, as long as the question may be, and not required', () => {

@@ -2,9 +2,9 @@
 // app: a grep proves each rule is named. The first reply for an empty form is also a grind scenario (grinds/examples/bible-talk/
 // form-approach-first-question.json) that `mw grist smoke lampas` runs against the live grist.
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { instructionsOf } from '../../scripts/grind-parts';
 
-const text = readFileSync('grinds/bible-talk.instructions.md', 'utf8');
+const text = instructionsOf('bible-talk');
 const section = (): string => {
   const start = text.indexOf('## Helping him fill in a form');
   expect(start).toBeGreaterThan(-1);

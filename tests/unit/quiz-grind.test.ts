@@ -6,8 +6,9 @@ import { type Chapter, markSupplied } from '../../src/data/chapter';
 import { passageVerse, passagesOf } from '../../src/data/passage';
 import { MAX_REQUEST_BYTES, buildTalkRequest, scopeTitle } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
+import { instructionsOf } from '../../scripts/grind-parts';
 
-const text = readFileSync('grinds/bible-talk.instructions.md', 'utf8');
+const text = instructionsOf('bible-talk');
 const inputSchema = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema & { properties: Record<string, { enum?: string[]; description?: string }> };
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const passage = passageVerse(passagesOf(chapter.verses)[0]);
@@ -48,7 +49,7 @@ describe('the quiz request', () => {
   });
 });
 
-describe('the quiz instructions (grinds/bible-talk.instructions.md)', () => {
+describe('the quiz instructions (grinds/bible-talk.instructions/)', () => {
   it('names the mode field in the contract', () => {
     expect(text).toContain('`mode`');
   });

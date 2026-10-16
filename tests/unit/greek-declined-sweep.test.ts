@@ -5,6 +5,7 @@
 // this reader, so the smoke sees a leak in any of them.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 const read = (rel: string): string => readFileSync(rel, 'utf8');
 type Example = { request: { memory?: { index: string }; reader_view?: string }; expect: Record<string, Record<string, unknown>> };
@@ -14,7 +15,7 @@ const NO = 'said no to the Greek offer';
 const GREEK_LETTERS = /[Ͱ-Ͼἀ-῿]/;
 
 describe('verse-ask for a reader who said no to the Greek', () => {
-  const text = read('grinds/verse-ask.instructions.md');
+  const text = instructionsOf('verse-ask');
   const section = text.slice(text.indexOf('## English for a reader not learning the Greek'), text.indexOf('## When he is not ready for the question'));
 
   it('says an English word\'s meaning is not a request for the Greek, and keeps `words` empty', () => {
@@ -42,8 +43,8 @@ describe('verse-ask for a reader who said no to the Greek', () => {
 // because 'Teach a new word on the spot' read the English word 'love' as a word to teach. The said-no rule is stated once in each
 // grind that teaches words, and every rule that teaches a word points to it and says it is about a GREEK word.
 describe('teaching a word yields to the reader who said no to the Greek', () => {
-  const verseAsk = read('grinds/verse-ask.instructions.md');
-  const talk = read('grinds/bible-talk.instructions.md');
+  const verseAsk = instructionsOf('verse-ask');
+  const talk = instructionsOf('bible-talk');
   const bullet = (text: string): string => {
     const at = text.indexOf('- Teach a new word on the spot. ');
     return text.slice(at, text.indexOf('\n- ', at + 1));
@@ -88,7 +89,7 @@ describe('every grind sent `memory` has a scenario of the reader who said no', (
   });
 
   it('tips: the grind says to offer him no tip about the Greek, and the scenario holds the tip free of Greek letters', () => {
-    expect(read('grinds/tips.instructions.md')).toContain(NO);
+    expect(instructionsOf('tips')).toContain(NO);
     const e = example('tips', 'english-reader-said-no');
     expect(e.request.memory?.index).toContain(NO);
     expect(e.expect['tip']).toEqual({ is_null: false });

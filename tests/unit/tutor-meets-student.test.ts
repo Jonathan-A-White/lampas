@@ -9,6 +9,7 @@ import { buildReadingRequest } from '../../src/services/reading';
 import { buildTipRequest } from '../../src/tips/tip';
 import { validate, type Schema } from '../support/schema-validate';
 import type { GrindExample } from '../support/grind-examples';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 
@@ -65,7 +66,7 @@ describe('every instruction file says how the profile changes an answer', () => 
   const kinds = ['bible-talk', 'verse-ask', 'verse-read', 'tips'];
 
   it.each(kinds)('%s: names learner_profile and what age, pace, ways of learning and background do', (kind) => {
-    const text = readFileSync(`grinds/${kind}.instructions.md`, 'utf8');
+    const text = instructionsOf(kind);
     expect(text).toContain('`learner_profile`');
     for (const word of ['age', 'pace', 'ways', 'background']) expect(text, `${kind} says nothing of ${word}`).toMatch(new RegExp(`\\b${word}\\b`));
     for (const value of ['quick', 'slow', 'hearing', 'seeing', 'reading', 'doing']) expect(text, `${kind} does not say what ${value} changes`).toContain(`\`${value}\``);
@@ -73,12 +74,12 @@ describe('every instruction file says how the profile changes an answer', () => 
   });
 
   it.each(kinds)('%s: says never to build on grammar or words he has not met without saying so', (kind) => {
-    const text = readFileSync(`grinds/${kind}.instructions.md`, 'utf8');
+    const text = instructionsOf(kind);
     expect(text).toMatch(/not (yet )?met|has not met|have not met/);
   });
 
   it.each(['verse-read', 'tips'])('%s: names learner and learner_grammar and how to use them', (kind) => {
-    const text = readFileSync(`grinds/${kind}.instructions.md`, 'utf8');
+    const text = instructionsOf(kind);
     expect(text).toContain('`learner`');
     expect(text).toContain('`learner_grammar`');
   });
