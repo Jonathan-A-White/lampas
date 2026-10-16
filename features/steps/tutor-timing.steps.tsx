@@ -181,6 +181,43 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario("A phone whose clock is ahead of the backend's never waits longer than the answer took", ({ Given, When, And, Then }) => {
+    Given('a phone that has never asked the tutor', begin);
+    When('he taps at {number} s and the mill accepts the request at {number} s', async (_, tap: number, accepted: number) => {
+      now(accepted);
+      await ask(at(tap)).txid;
+    });
+    And("the backend, its clock {number} s behind the phone's, delivers the answer at {number} s and the poll sees it at {number} s", async (_, behind: number, delivered: number, seen: number) => {
+      // the fake names the record's firstSeen by the clock: the backend's clock is the phone's less `behind`
+      now(delivered - behind);
+      await fake.answer({ status: 'answered', answer: {} });
+      now(seen);
+      await asks[0].done;
+    });
+    And('the answer is drawn at {number} s', async (_, drawn: number) => {
+      now(drawn);
+      await answerDrawn(await asks[0].txid);
+    });
+    And('he asks again', async () => {
+      now(20);
+      await ask().txid;
+    });
+    Then('the grist carries a delivered to seen of at most {number}', (_, most: number) => {
+      const timing = lastReceived().client_timing as { txid: string; delivered_to_seen: number };
+      expect(timing.txid).toBe(fake.txids[0]);
+      expect(timing.delivered_to_seen).toBeLessThanOrEqual(most);
+    });
+    And("About's line has parts that add up to its total of {number} s within {number}", (_, total: number, within: number) => {
+      render(<About />);
+      const line = screen.getByText(/^Last tutor answer:/).textContent ?? '';
+      const match = /^Last tutor answer: ([\d.]+) s \((.*)\)$/.exec(line);
+      if (!match) throw new Error(`not an answer line: ${line}`);
+      expect(Number(match[1])).toBe(total);
+      const parts = [...match[2].matchAll(/([\d.]+) s/g)].map((m) => Number(m[1]));
+      expect(Math.abs(parts.reduce((sum, part) => sum + part, 0) - total), line).toBeLessThanOrEqual(within + 1e-9);
+    });
+  });
+
   Scenario('The network time rides with the report and shows in About', ({ Given, When, And, Then }) => {
     Given('a phone that has never asked the tutor', begin);
     When('he taps at {number} s and the request takes {number} s to reach the mill and be accepted at {number} s', async (_, tap: number, takes: number, accepted: number) => {
