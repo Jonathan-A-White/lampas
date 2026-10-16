@@ -465,3 +465,41 @@ describe('the words of a drill come from his passage', () => {
     for (const id of few) expect(wordsRead(id, { passage: JOHN }).length, id).toBeGreaterThan(0);
   });
 });
+
+// His Psi drill on 2 John 1 (mw-i7xe0n.14): a chapter with no word holding the letter leaves the fixed list's ONE word, and a step with one question asks it again
+// ('ψυχή' twice, every answer right, then Proved). The step gets a letter question beside the one word.
+describe('a letter the passage lacks is not drilled on one word twice', () => {
+  const modern = pronunciationOf('modern');
+  const JOHN2 = [JSON.parse(readFileSync('public/data/2jn/1.json', 'utf8')) as Chapter];
+  /** The passage without any word that holds `letter`: a goal chapter with no word for it. */
+  const without = (letter: string): Chapter[] =>
+    JOHN2.map((c) => ({ ...c, verses: c.verses.map((v) => ({ ...v, g: v.g.filter((w) => !baseLetters(w.l).includes(baseLetters(letter))) })) }));
+  const ONE_WORD = itemsOf('alphabet').filter((l) => wordsWith(l.glyphs![0]).length === 1);
+  // the story named ξ too: the fixed list holds two words for it (δόξα, ξένος), so it is checked beside the one-word letters
+  const SWEEP = itemsOf('alphabet').filter((l) => ONE_WORD.includes(l) || l.glyphs![0] === 'ξ');
+
+  const wordsAsked = (asked: readonly DrillQuestion[]): string[] => asked.filter((q) => q.prompt === 'How is this word said?').map((q) => q.form!);
+
+  it('has the letters of the sweep: the fixed list holds one word for β ζ κ τ φ ψ', () => {
+    expect(ONE_WORD.map((l) => l.glyphs![0])).toEqual(['β', 'ζ', 'κ', 'τ', 'φ', 'ψ']);
+  });
+
+  it.each(SWEEP.map((l) => [l.id, l.glyphs![0]] as const))('%s (%s): no word is asked twice in a drill, and no step is one question', (ideaId, letter) => {
+    const passage = without(letter);
+    for (const seed of [1, 2, 3, 4, 5]) {
+      const steps = drillSteps(ideaId, { passage, seed, scheme: modern });
+      for (const s of steps) {
+        expect(s.questions.length, `${ideaId} step ${s.step} seed ${seed}`).toBeGreaterThanOrEqual(2);
+        const forms = wordsAsked(s.questions);
+        expect(new Set(forms).size, `${ideaId} step ${s.step} seed ${seed}`).toBe(forms.length);
+      }
+      // the drill as he took it: every answer right, to the top and proved
+      const { walk, asked } = run(begin(ideaId, seed, passage), () => ({ right: true }));
+      const words = wordsAsked(asked);
+      expect(new Set(words).size, `${ideaId} seed ${seed}: ${words.join(' ')}`).toBe(words.length);
+      expect(walk.result?.proved, `${ideaId} seed ${seed}`).toBe(true);
+      const keys = asked.map((q) => q.key);
+      expect(new Set(keys).size, `${ideaId} seed ${seed}: a question asked twice`).toBe(keys.length);
+    }
+  });
+});

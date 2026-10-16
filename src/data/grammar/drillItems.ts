@@ -276,6 +276,25 @@ function assignWords(needs: readonly WordNeed[], once = VARIANTS): string[][] {
 
 // ---- The steps ----
 
+/** Questions a step needs to ask each of them once before one comes round again. */
+const STEP_MIN = 2;
+
+/**
+ * A step of words that holds fewer than STEP_MIN questions (his goal has no word with the letter, the fixed list one: mw-i7xe0n.14) gets questions of the
+ * letter or pair made by `make`, none the same as one already in the drill, so the walk never asks its one word again.
+ */
+function filled(ctx: DrillContext, step: GrammarQuestion[], others: readonly GrammarQuestion[], make: (n: number, random: Random) => GrammarQuestion | null): GrammarQuestion[] {
+  const seen = new Set([...step, ...others].map(questionKey));
+  const out = [...step];
+  for (let n = 0; n < 40 && out.length < STEP_MIN; n += 1) {
+    const q = make(n, rng(ctx, 1000 + n));
+    if (!q || seen.has(questionKey(q))) continue;
+    seen.add(questionKey(q));
+    out.push({ ...q, ideaId: ctx.idea.id });
+  }
+  return out;
+}
+
 function letterSteps(ctx: DrillContext, letters: readonly GrammarIdea[], pairs: boolean): RawStep[] {
   const subjects = subjectsOf(letters, pairs).flat();
   let n = 0;
@@ -284,13 +303,14 @@ function letterSteps(ctx: DrillContext, letters: readonly GrammarIdea[], pairs: 
   const needs = needsOf(ctx, letters, (letter) => wordsWith(lower(letter)));
   const given = assignWords(needs);
   const words = needs.flatMap((need, i) => given[i].map((word) => readWord(ctx, word, itemFacet(need.item), rng(ctx, (n += 1)), need.item.id)));
-  return [
+  const steps: RawStep[] = [
     { title: 'See a letter, pick its name', questions: each((s, _v, random) => seeName(ctx, s, random)) },
     { title: 'See a name, pick the letter', questions: each((s, _v, random) => seeLetter(ctx, s, random)) },
     { title: 'Match a capital to its small letter', questions: each((s, _v, random) => seeCapital(ctx, s, random)) },
     { title: 'Hear a letter and pick it, or see it and pick its sound', questions: each((s, v, random) => hearLetter(ctx, s, v, random)) },
-    { title: 'Read a word and pick how it is said', questions: distinct(ctx, words) },
   ];
+  const read = filled(ctx, distinct(ctx, words), steps.flatMap((s) => s.questions), (i, random) => hearLetter(ctx, subjects[i % subjects.length], i % VARIANTS, random));
+  return [...steps, { title: 'Read a word and pick how it is said', questions: read }];
 }
 
 /** One word of the New Testament that holds each pair, to read. */
@@ -320,11 +340,15 @@ function pairSteps(ctx: DrillContext, items: readonly GrammarIdea[]): RawStep[] 
   const needs = needsOf(ctx, items, (item) => (PAIR_WORDS[item.id] ? [PAIR_WORDS[item.id]] : []));
   const given = assignWords(needs);
   const words = needs.flatMap((need, i) => given[i].map((w) => readWord(ctx, w, itemFacet(need.item), rng(ctx, (n += 1)), need.item.id)));
-  return [
+  const steps: RawStep[] = [
     { title: 'See it and pick its sound', questions: ask('see') },
     { title: 'Hear it and pick it', questions: ask('hear') },
-    { title: 'Read a word that has it', questions: distinct(ctx, words) },
   ];
+  const read = filled(ctx, distinct(ctx, words), steps.flatMap((s) => s.questions), (i, random) => {
+    const item = items[i % items.length];
+    return { ...quickQuestion({ id: item.id, mode: i % 2 === 0 ? 'see' : 'hear' }, random, ctx.scheme), facet: itemFacet(item) };
+  });
+  return [...steps, { title: 'Read a word that has it', questions: read }];
 }
 
 /** Words whose breathing is not on the first letter of a plain vowel: on the second of a pair, on a ρ, or on a capital. */
