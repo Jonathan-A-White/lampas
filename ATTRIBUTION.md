@@ -34,7 +34,8 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   Abbott-Smith definition has its markup, scripture references and daggers removed and is cut near 300
   characters (scripts/data-build.ts, docs/data.md).
 - **[eSpeak NG](https://github.com/espeak-ng/espeak-ng)** speech synthesizer. The short clips of a vowel's sound that play when you hear a Greek word of one
-  letter (ὁ, ἡ, ὦ, Ὃ), in public/sounds/: the phone's own Greek voice says such a word as the letter's name ('omicron'), so the app plays these instead.
+  letter (ὁ, ἡ, ὦ, Ὃ) on a phone with no Greek voice, in public/sounds/: with a Greek voice the app hands it the vowel doubled ('οο'), which it says as the
+  sound, where the letter alone it would name ('omicron').
   Each is eSpeak NG's Greek voice saying one vowel from its phoneme input, not a letter. Licence: eSpeak NG is [GPL-3.0](https://github.com/espeak-ng/espeak-ng/blob/master/COPYING);
   the clips are sound it made, and no eSpeak NG code is in the app. Changes: silence trimmed, cut to MP3 with [FFmpeg](https://ffmpeg.org) (scripts/sounds-build.sh).
 - **Trial clips of a neural Greek voice** (public/sounds-trial/, heard only on the listening page sounds-trial.html, which no screen of the app links to; docs/research/letter-sounds.md).

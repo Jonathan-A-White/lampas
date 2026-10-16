@@ -11,7 +11,7 @@ import { App } from '../../src/App';
 import { type Chapter, type Verse, wordLemma } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
-import { loneLetterClip } from '../../src/speech/greek';
+import { chosenPronunciation } from '../../src/speech/greek';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
@@ -115,7 +115,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('no word sheet is open', () => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
-  Scenario("A long press on a one-letter Greek word plays its sound, never a letter's name", ({ Given, And, When, Then }) => {
+  Scenario("A long press on a one-letter Greek word says its sound, never a letter's name", ({ Given, And, When, Then }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH_VOICE, GREEK_VOICE]));
     And('he opens 1 John 1 in Greek', async () => {
       act(() => {
@@ -126,12 +126,15 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(within(verseEl(1)).getAllByRole('button').length).toBeGreaterThan(1));
     });
     When('he long presses the word {string} in verse {int}', (_, text: string, n: number) => press(wordEl(text, n), HOLD_MS));
-    // a Greek voice handed one letter names it ('omicron'), with or without an accent: the word is a clip (mw-5r3p30.347)
-    Then("the phone's voice is handed nothing", () => expect(synth.spoken).toEqual([]));
-    And('the clip of the sound the pronunciation he chose gives {string} is played', (_, text: string) => {
-      expect(loneLetterClip(text)).toMatch(/^\/sounds\/.+\.mp3$/);
-      expect(audio.played).toEqual([loneLetterClip(text)]);
+    // a Greek voice handed one letter names it ('omicron'), with or without an accent; handed the vowel doubled it says the sound (mw-5r3p30.421)
+    Then('the phone is told to speak the form the pronunciation he chose gives {string}, {string}, with lang {string}', (_, word: string, form: string, lang: string) => {
+      expect(chosenPronunciation().loneLetterForm(word)).toBe(form);
+      expect(synth.spoken).toHaveLength(1);
+      expect(lastSpoken()?.text).toBe(form);
+      expect(spokenWordLang()).toBe(lang);
+      expect(lastSpoken()?.voice).toBe(GREEK_VOICE);
     });
+    And('no clip is played', () => expect(audio.played).toEqual([]));
   });
 
   Scenario('A long press on an English word speaks it with lang en', ({ Given, When, Then, And }) => {

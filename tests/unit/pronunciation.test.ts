@@ -28,7 +28,7 @@ describe('the Greek pronunciation registry', () => {
   });
 
   it('takes a registered scheme, and gives it up again', () => {
-    const unregister = registerPronunciation({ id: 'test', label: 'Test', lang: 'el-GR', note: '', scoringLang: 'el', respell: (w) => `<${w}>`, sounds: {}, loneLetterClip: () => null, voiceForm: (t) => t, letterForm: (l) => l, tutorGuide: () => 'Test.' });
+    const unregister = registerPronunciation({ id: 'test', label: 'Test', lang: 'el-GR', note: '', scoringLang: 'el', respell: (w) => `<${w}>`, sounds: {}, loneLetterForm: () => null, loneLetterClip: () => null, voiceForm: (t) => t, letterForm: (l) => l, tutorGuide: () => 'Test.' });
     expect(PRONUNCIATIONS.map((p) => p.id)).toEqual(['modern', 'test']);
     expect(isPronunciation('test')).toBe(true);
     expect(pronunciationOf('test').respell('λόγος')).toBe('<λόγος>');

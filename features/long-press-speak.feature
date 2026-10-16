@@ -12,12 +12,12 @@ Feature: A long press on a word speaks it
     And the phone speaks it with its Greek voice
     And no word sheet is open
 
-  Scenario: A long press on a one-letter Greek word plays its sound, never a letter's name
+  Scenario: A long press on a one-letter Greek word says its sound, never a letter's name
     Given Lampas is opened on a phone with a Greek voice
     And he opens 1 John 1 in Greek
     When he long presses the word "Ὃ" in verse 1
-    Then the phone's voice is handed nothing
-    And the clip of the sound the pronunciation he chose gives "Ὃ" is played
+    Then the phone is told to speak the form the pronunciation he chose gives "Ὃ", "οο", with lang "el-GR"
+    And no clip is played
 
   Scenario: A long press on an English word speaks it with lang en
     Given Lampas is opened on a phone with a Greek voice

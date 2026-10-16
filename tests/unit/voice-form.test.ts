@@ -129,6 +129,7 @@ describe('the voice form and the respelling are the scheme\'s', () => {
     note: '',
     respell: (w) => `<${bare(w)}>`,
     sounds: {},
+    loneLetterForm: () => null,
     loneLetterClip: () => null,
     voiceForm: (text) => text.replace(/τ/gu, 'θ'),
     letterForm: (letter) => letter,

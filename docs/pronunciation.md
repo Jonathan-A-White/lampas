@@ -20,14 +20,22 @@ a pair it says as one sound (οι is one unit, 'ee'; σ before μ is a unit 'z')
 letter is read alone as a sound the lesson teaches (`SoundLesson.sounds`), and a pair's only where the scheme reads that pair; a scheme that leaves it out
 holds nothing back.
 
-`loneLetterClip(word)` is the bundled clip of the sound of a Greek word of ONE letter (ὁ, ἡ, ὦ, Ὃ), played instead of any voice (mw-5r3p30.347).
-A Greek voice handed one letter names it ('omicron'), with or without an accent: mw-5r3p30.262 handed it the stressed vowel 'ό', which
-passed its tests, and his phone (and espeak-ng's `el`: 'omikron tonos') still said the name. So no voice is handed such a word at all.
-Modern Greek's clips are `public/sounds/modern/<sound>.mp3`, one per vowel sound its respelling writes (`a`, `e`, `ee`, `o`: ὁ and ὦ play
-`o`, ἡ plays `ee`), made by `scripts/sounds-build.sh` with eSpeak NG's phoneme input (`[[o]]`), which says a sound and cannot spell a letter;
-they are precached. A held word, a speaker, Tap to hear and a one-letter run of a reading all play it (`src/speech/greek.ts` `loneLetterClip`,
-`playLetterClip`; `readAloud.ts` `piecesOf`); a letter drill (`speakLetter`) does not, since there the letter is the thing named. A new scheme
-(Erasmian) gives its own clips, from its own vowel sounds, in `public/sounds/<id>/`, and the build script a line for them.
+`loneLetterForm(word)` (mw-5r3p30.421) is what the scheme's voice is handed for a Greek word of ONE letter (ὁ, ἡ, ὦ, Ὃ) so that it says the
+SOUND. A Greek voice handed one letter names it ('omicron'), with or without an accent: mw-5r3p30.262 handed it the stressed vowel 'ό', which
+passed its tests, and his phone (and espeak-ng's `el`: 'omikron tonos') still said the name. Handed the vowel doubled, his phone's own Greek voice
+says the sound: on the listening trial (public/sounds-trial.html, docs/research/letter-sounds.md) the Governor chose it over every clip ('the best
+sound for the vowels is actually the double ones from the phone itself', 2026-10-15). So Modern Greek's form is the bare vowel in lower case,
+doubled: `οο` for ὁ and Ὃ, `ωω` for ὦ, `ηη` for ἡ, `αα` for ἃ; a consonant has none (null: there is no bare v to double). A held word, a speaker,
+Tap to hear, a one-letter run of a reading (a line of its own) and a sound question's vowel ('Tap to hear a letter, then tap it', `speakSound`)
+all hand the voice the form (`src/speech/greek.ts` `loneLetterSpeech`; `readAloud.ts` `piecesOf`); a sound question's consonant and a teach tile's
+letter (`speakLetter`) are named.
+
+`loneLetterClip(word)` is the bundled clip of the same sound, played only on a phone that says it has no Greek voice (`hasGreekVoice() === false`;
+from mw-5r3p30.347 to mw-5r3p30.421 it played on every phone). Modern Greek's clips are `public/sounds/modern/<sound>.mp3`, one per vowel sound its
+respelling writes (`a`, `e`, `ee`, `o`: ὁ and ὦ play `o`, ἡ plays `ee`), made by `scripts/sounds-build.sh` with eSpeak NG's phoneme input
+(`[[o]]`), which says a sound and cannot spell a letter; they are precached (`playLetterClip`; `readAloud.ts` `piecesOf` plays them between the
+voice's pieces). A new scheme (Erasmian) gives its own form and its own clips, from its own vowel sounds, in `public/sounds/<id>/`, and the build
+script a line for them.
 
 `voiceForm(text)` (mw-5r3p30.264) is what the scheme's voice is handed for any other Greek text (a held word, a speaker, a verse read
 aloud), so the voice says the sounds the respelling writes. A Greek voice reads ντ, μπ and γκ inside a word as a bare d, b, g (Πάντοτε

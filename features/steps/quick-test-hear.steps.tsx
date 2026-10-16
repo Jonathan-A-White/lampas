@@ -14,7 +14,7 @@ import { mulberry32 } from '../../src/data/quiz';
 import { stopSpeaking } from '../../src/speech/greek';
 import { stubSpeech, GREEK_VOICE, ENGLISH_VOICE, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
-import { hearing, isOneLetter, type Hearing } from '../../tests/support/spoken-word';
+import { hearing, type Hearing } from '../../tests/support/spoken-word';
 import { seedHisWords } from '../../tests/support/his-words';
 
 const user = userEvent.setup();
@@ -22,7 +22,7 @@ const rom8 = readFileSync('public/data/rom/8.json', 'utf8');
 
 let synth: FakeSynth;
 let audio: FakeAudio;
-/** the word of the question as he hears it: its first word is ὁ, whose clip plays (mw-5r3p30.347) */
+/** the word of the question as he hears it: its first word is ὁ, handed to the voice doubled (mw-5r3p30.421) */
 let heard: Hearing;
 
 afterAll(() => {
@@ -41,7 +41,7 @@ async function openWith(voices: FakeVoice[]): Promise<void> {
   vi.stubGlobal('fetch', vi.fn<typeof fetch>(async () => new Response(rom8)));
   synth = stubSpeech(voices);
   audio = stubAudio();
-  heard = hearing(synth, audio, () => promptText());
+  heard = hearing(synth, audio);
   forgetChapters();
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.results.clear()]);
@@ -68,7 +68,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened with a Greek voice and the Quick test is on its first question', openQuickTest);
     When('he taps {string}', tapBar);
     Then('the phone is told to speak the word of the question with lang {string}', (_, lang: string) => {
-      // a one-letter word (ὁ) is never handed to the voice: its clip plays (mw-5r3p30.347)
+      // a one-letter word (ὁ) goes to the voice as its vowel doubled, οο (mw-5r3p30.421)
       heard.once(promptText(), lang);
     });
     And('the word is being spoken', () => expect(heard.sounding()).toBe(true));
@@ -81,7 +81,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the word was spoken once and never cancelled', () => {
       isSpoken();
       expect(heard.sounding()).toBe(false);
-      if (!isOneLetter(promptText())) expect(synth.calls[synth.calls.length - 1]).not.toBe('cancel');
+      expect(synth.calls[synth.calls.length - 1]).not.toBe('cancel');
     });
   });
 

@@ -6,6 +6,24 @@ His words (Postern general, 2026-10-15T04:09Z): "so the o Omicron sounds really 
 you use the Greek voice phone and how do you get it to actually say the letter ... sound ... instead of saying Omicron ... it's just a totally
 different voice ... it's not elegant".
 
+## His pick, and what was built (mw-5r3p30.421)
+
+He listened on his phone (2026-10-15T22:32Z, in an incognito tab, since the installed app captures the site's links): "so the best sound for the
+vowels is actually the double ones from the phone itself". That is option D, slice 3 below: his phone's one Greek voice, "Greek (Greece)", handed the
+vowel doubled. What was built:
+
+* Every one-letter Greek word said alone (a speaker, a held word, the word sheet, Tap to hear) and every one-letter Greek run of a reading (a lone
+  woven ὁ, a one-letter syllable of Sound it out, a lone ὁ in a tutor's answer) is handed to the phone's Greek voice as the scheme's
+  `loneLetterForm`: Modern Greek's is the bare vowel in lower case, doubled (`οο` for ὁ and Ὃ, `ωω` for ὦ, `ηη` for ἡ, `αα` for ἃ).
+* A sound question ("Tap to hear a letter, then tap it", the quick round's and Drill it's "hear") says a vowel the same way (`speakSound`), since
+  the question never offers two letters of one sound.
+* The eSpeak NG clips stay, unchanged, and play only on a phone that says it has no Greek voice.
+* Not changed: a consonant. No string makes a voice say a bare consonant (there is no v to double) and the page offered no doubled consonant for the
+  phone column, so a sound question on β, γ, θ still has the voice name the letter ("vita"), as before; a consonant's sound needs a clip (slice 2),
+  which waits on his word. A teach tile still names its letter. `υυ` was not on the page (`ιι` and `ηη` were); it is handed over by the same rule.
+* Not changed: a one-letter word inside a longer Greek run (the Greek view reads a verse as one run, so `Ὃ ἦν ἀπ᾽ ἀρχῆς` goes as it is): that is
+  mw-5r3p30.448.
+
 ## The short answer
 
 * **Why it jars.** A Greek voice handed a lone letter names it ("omicron"), with or without an accent: three landed fixes handed it other forms
