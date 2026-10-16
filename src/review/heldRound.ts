@@ -8,6 +8,8 @@ export interface RunningRound {
   index: number;
   picked: string | null;
   right: number;
+  /** the ideas of the grammar questions he has missed so far, one id for each miss (src/review/moreItems.ts) */
+  missed: string[];
 }
 
 export const HELD_MS = 30 * 60 * 1000;

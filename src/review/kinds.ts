@@ -39,6 +39,7 @@ import {
   reviewsOf,
   SOLID_STEP,
   SOUND_KIND,
+  takeFetchedItems,
   type Review,
 } from '../data/repositories';
 
@@ -209,9 +210,13 @@ export const GRAMMAR: ReviewKind = {
     // an ending is asked only of a form whose table he has opened (mw-svw421.5)
     const opened = new Set(await listOpenedParadigms());
     const graded = await gradedVersesOf(passage);
+    // the items the mill wrote after an earlier round (src/review/moreItems.ts) are served first on their idea; they are read from the phone, so nothing waits on the network (mw-hqd5bz.36)
+    const fetched = await takeFetchedItems(due.map((r) => r.id)).catch(() => new Map<string, GrammarQuestion>());
     return due.flatMap((r): GrammarItem[] => {
       const idea = ideaIfAny(r.id);
       if (!idea) return [];
+      const kept = fetched.get(idea.id);
+      if (kept) return [{ kind: 'grammar', id: idea.id, question: kept, mode: modeFor(r.step) }];
       // an idea at SOLID_STEP or more may also be asked to parse a whole word (mw-emk3xt.3, PROVISIONAL)
       const question = buildIdeaQuestion(idea, passage, own, scheme.respell, scheme, opened, graded, r.step >= SOLID_STEP);
       // a full parsing is asked step by step, for a strong idea too: it is never a flashcard

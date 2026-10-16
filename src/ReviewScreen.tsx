@@ -9,6 +9,7 @@ import { type Random } from './data/quiz';
 import { ideaOf } from './data/grammar/ladder';
 import { navigate, openParadigm } from './nav/route';
 import { ItemCard } from './review/ItemCard';
+import { askForMoreItems } from './review/moreItems';
 import { KINDS, kindOf, recordParseStep, type ReviewItem } from './review/kinds';
 import { makeMove, moveQuestion, moveSaid, pendingMove, type PendingMove } from './review/pickerMove';
 import { heldRound, holdRound, releaseRound } from './review/heldRound';
@@ -26,7 +27,7 @@ type MoveCard = { status: 'none' } | { status: 'offer'; move: PendingMove } | { 
 type Round =
   | { status: 'start' }
   | { status: 'loading' }
-  | { status: 'running'; items: ReviewItem[]; index: number; picked: string | null; right: number }
+  | { status: 'running'; items: ReviewItem[]; index: number; picked: string | null; right: number; missed: string[] }
   | { status: 'done'; total: number; right: number; tomorrow: number; later: number; move: MoveCard };
 
 /** 'N come back tomorrow, M later', from the schedule rows the round's items now have. */
@@ -124,7 +125,7 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
 
   const draw = () =>
     void drawReviewRound(newRandom(), Date.now(), undefined, takePractise()).then(({ items }) =>
-      setRound(items.length > 0 ? { status: 'running', items, index: 0, picked: null, right: 0 } : { status: 'start' }),
+      setRound(items.length > 0 ? { status: 'running', items, index: 0, picked: null, right: 0, missed: [] } : { status: 'start' }),
     );
   const start = () => {
     setRound({ status: 'loading' });
@@ -211,7 +212,8 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
     const kind = kindOf(item.kind);
     const wasRight = kind.isRight(item, option);
     writing.current = writing.current.then(() => kind.record(item, wasRight)).catch((error: unknown) => console.error('could not record the answer', error));
-    setRound({ ...round, picked: option, right: right + (wasRight ? 1 : 0) });
+    // a miss on a grammar idea is remembered: when the round ends the mill is asked, in the background, for more on the weakest of them
+    setRound({ ...round, picked: option, right: right + (wasRight ? 1 : 0), missed: !wasRight && item.kind === 'grammar' ? [...round.missed, item.id] : round.missed });
     kind.hear?.(item);
   };
   const next = async () => {
@@ -220,6 +222,8 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
     const back = await whatComesBack(items);
     // the round's score is what the pace dial reads (src/data/pace.ts)
     await recordRound(right, items.length);
+    // not waited for: the end card does not depend on the mill, and the next round starts from what is kept
+    void askForMoreItems(round.missed);
     setRound({ status: 'done', total: items.length, right, ...back, move: await moveAfter(items) });
   };
   return (
