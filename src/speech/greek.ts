@@ -293,6 +293,7 @@ export function speak(text: string, key: string, language: SpeechLanguage = 'gre
  * again says it again). With no Greek voice it still speaks, to the phone's default voice with lang set, as a reading
  * does; the speaker buttons carry the help line. Returns false when the phone cannot speak at all. */
 export function speakWord(text: string, language: SpeechLanguage, slowly = false): boolean {
+  setWordText(text);
   const lone = language === 'greek' ? loneLetterSpeech(text) : null;
   if (lone && 'clip' in lone) return playLoneLetter(lone.clip, WORD_KEY);
   const said = lone ? { text: lone.text, language: 'greek' as const } : wordSpeech(text, language);
@@ -430,6 +431,7 @@ export function voiceInUse(voices: readonly SpeechSynthesisVoice[], language: Sp
  * (Modern Greek's is the letter in lower case, which a Greek voice names), to the Greek voice, never turned into a sound. A word of one letter is not this:
  * it goes through speakWord, which says its sound. */
 export function speakLetter(letter: string): boolean {
+  setWordText(letter);
   return speakText(chosenPronunciation().letterForm(letter), WORD_KEY, { language: 'greek' });
 }
 
@@ -446,6 +448,36 @@ const wordSpeech = (text: string, language: SpeechLanguage): { text: string; lan
 
 /** Whether a word said by speakWord / speakLetter is being said now (the page's tap-to-hear bars toggle on it). */
 export const isWordSaid = (): boolean => beside?.key === WORD_KEY || isSpeaking(WORD_KEY);
+
+// The text last handed to speakWord / speakLetter, so a bar can tell its own word is being said, whoever started it (mw-5r3p30.324: the Quick test's answer
+// says the word by itself, and its Tap to hear bar shows the stop square and stops it on a tap).
+let wordText: string | null = null;
+const wordListeners = new Set<() => void>();
+
+function setWordText(text: string): void {
+  if (wordText === text) return;
+  wordText = text;
+  wordListeners.forEach((l) => l());
+}
+
+/** Whether `text` is the word being said now by speakWord / speakLetter (a tap, a long press or a screen that says it by itself). */
+export const isWordSaidOf = (text: string): boolean => wordText === text && isWordSaid();
+
+function subscribeWordSaid(notify: () => void): () => void {
+  const offEngine = subscribeEngine(notify);
+  besideListeners.add(notify);
+  wordListeners.add(notify);
+  return () => {
+    offEngine();
+    besideListeners.delete(notify);
+    wordListeners.delete(notify);
+  };
+}
+
+/** isWordSaidOf(text), kept current: a tap-to-hear bar draws its stop square from it. */
+export function useWordSaid(text: string): boolean {
+  return useSyncExternalStore(subscribeWordSaid, () => isWordSaidOf(text), () => false);
+}
 
 /** Whether the speech now is a single word or speaker (not a reading): it has no bar. */
 export const isWordSpeech = (key: string | null): boolean => key !== null && key !== READ_KEY;

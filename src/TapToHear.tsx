@@ -1,8 +1,9 @@
 // src/TapToHear.tsx — the wide bar under a Quick test word, a flashcard or a grammar question: one tap says the word, a second tap while it speaks stops it.
 // Hearing is always a tap, even one word (docs/pwa-best-practices.md section 12; nothing needs a finger kept down). The shared tap bar (src/ui/TapBar.tsx, the
-// look of the Talk bar), the same engine as a long press on a word of the reader (speakWord in speech/greek.ts).
+// look of the Talk bar), the same engine as a long press on a word of the reader (speakWord in speech/greek.ts). The bar follows its word, whoever said it: the
+// Quick test's answer says it by itself, and the bar still shows the stop square and stops it on a tap (useWordSaid; mw-5r3p30.324).
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { hasGreekVoice, isWordSaid, noVoiceHelp, speakSound, speakWord, stopSpeaking, warmVoices, watchWordEnd } from './speech/greek';
+import { hasGreekVoice, noVoiceHelp, speakSound, speakWord, stopSpeaking, useWordSaid, warmVoices } from './speech/greek';
 import { Icon } from './speech/SpeakButton';
 import { TapBar } from './ui/TapBar';
 
@@ -12,35 +13,28 @@ const HELP_MS = 7000;
  * doubled to the Greek voice, a consonant still named; mw-5r3p30.421). */
 export function TapToHear({ text, letter = false }: { text: string; letter?: boolean }) {
   const [help, setHelp] = useState<string | null>(null);
-  const [playing, setPlaying] = useState(false);
+  const playing = useWordSaid(text);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const unwatch = useRef<(() => void) | undefined>(undefined);
 
   const tap = useCallback(() => {
-    if (playing && isWordSaid()) {
+    if (playing) {
       stopSpeaking();
       return;
     }
-    unwatch.current?.();
     // with no Greek voice the phone would say it in another one: nothing is spoken, the help says where to get one (as a speaker button does)
     if (hasGreekVoice() === false || !(letter ? speakSound(text) : speakWord(text, 'greek'))) {
-      setPlaying(false);
       setHelp(noVoiceHelp());
       clearTimeout(timer.current);
       timer.current = setTimeout(() => setHelp(null), HELP_MS);
       return;
     }
     setHelp(null);
-    setPlaying(true);
-    unwatch.current = watchWordEnd(() => setPlaying(false));
   }, [text, letter, playing]);
 
   useEffect(() => {
     void warmVoices();
     return () => {
       clearTimeout(timer.current);
-      unwatch.current?.();
-      setPlaying(false);
       stopSpeaking();
     };
   }, [text]);

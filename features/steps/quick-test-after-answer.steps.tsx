@@ -184,4 +184,15 @@ describeFeature(feature, ({ Scenario }) => {
       expect(screen.getByRole('button', { name: 'Ask the tutor' }).parentElement).toBe(next.parentElement);
     });
   });
+
+  Scenario('While the word says itself, the bar shows the stop square and one tap stops it', ({ Given, When, Then, And }) => {
+    const bar = () => screen.getByTestId('tap-to-hear');
+    Given(firstQuestion, () => open());
+    When('he taps a wrong gloss', () => tapGloss(false));
+    Then('the word of the question is spoken once in Greek', expectSpokenOnce);
+    And('the Tap to hear bar shows the stop square', () => waitFor(() => expect(bar()).toHaveAttribute('aria-pressed', 'true')));
+    When('he taps the Tap to hear bar', () => user.click(bar()));
+    Then('the word is stopped and not said again', () => hearing(synth, audio).stopped());
+    And('the Tap to hear bar shows the speaker again', () => waitFor(() => expect(bar()).toHaveAttribute('aria-pressed', 'false')));
+  });
 });
