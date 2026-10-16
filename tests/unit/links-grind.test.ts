@@ -1,9 +1,9 @@
 // The bible-talk grind's links (mw-5r3p30.160): the app draws a link only in a study resource he switched on, so with `resources` empty a link is a link no
 // resource of his can open. The instructions are read by the mill, not by this app, so a grep proves the rule is stated, in every place that speaks of links.
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { instructionsOf } from '../../scripts/grind-parts';
 
-const text = readFileSync('grinds/bible-talk.instructions.md', 'utf8');
+const text = instructionsOf('bible-talk');
 
 /** A section of the instructions, up to the next one, on one line. */
 const section = (heading: string): string => {

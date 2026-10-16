@@ -7,9 +7,10 @@ import { verseLink } from '../../src/resources/logosBible';
 import { placeOf, verseChips, wordChips } from '../../src/resources/tutorLinks';
 import type { StudyResources } from '../../src/data/repositories';
 import { validate, type Schema } from '../support/schema-validate';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 const schema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as Schema;
-const instructions = readFileSync('grinds/bible-talk.instructions.md', 'utf8');
+const instructions = instructionsOf('bible-talk');
 const base = { answer: 'Love, mostly.', words: [] };
 const word = { kind: 'word', lemma: 'ἀγάπη' };
 const verse = { kind: 'verse', reference: 'Romans 8:31' };

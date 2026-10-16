@@ -10,6 +10,7 @@ import { buildTalkRequest, isTalkAnswer, type PendingOffer, type TalkScope } fro
 import { offeredChange } from '../../src/settings/registry';
 import { offerOfTurn, pendingOfferOf, settleOffer } from '../../src/talk/offers';
 import { validate, type Schema } from '../support/schema-validate';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 afterAll(() => db.close());
 beforeEach(async () => {
@@ -122,7 +123,7 @@ describe('what a reply does to the waiting offer', () => {
 });
 
 describe('the grind', () => {
-  const instructions = readFileSync('grinds/bible-talk.instructions.md', 'utf8');
+  const instructions = instructionsOf('bible-talk');
   it('carries the pending offer and the three replies, and speaks the text word for word on a read back', () => {
     expect(instructions).toContain('## Answering an offer by voice');
     for (const rule of ['`pending_offer`', '`offer_reply`', '`confirm`', '`decline`', '`read_back`', 'word for word', 'yes send it', 'read it back to me', 'no', 'not now', 'Shall I do that?']) {

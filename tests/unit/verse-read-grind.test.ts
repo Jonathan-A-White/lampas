@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { isVerseReadAnswer } from '../../src/services/reading';
 import { validate, type Schema } from '../support/schema-validate';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const grind = readJson('grinds/verse-read.json');
@@ -25,7 +26,7 @@ describe('grinds/verse-read.json', () => {
 
   it('scores in English and in modern Greek, and its instructions cover a Greek reading', () => {
     expect((grind.scoring as { langs: string[] }).langs).toEqual(['en', 'el']);
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     expect(text).toContain('`el`');
     // mw-5r3p30.268: the pronunciation is named by the request's pronunciation_guide, from the scheme, not by these instructions
     expect(text).toContain('`pronunciation_guide`');
@@ -39,7 +40,7 @@ describe('grinds/verse-read.json', () => {
   });
 
   it('tells the model to mark only real misreadings, at most 8 words, with chunks', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     expect(text).toContain('reading_result');
     expect(text).toContain('target_text');
     expect(text).toContain('8 words');
@@ -79,14 +80,14 @@ describe('the answer schema and isVerseReadAnswer', () => {
   });
 
   it('tells the model to use partial when he read the start of target_text and stopped, and incomplete only when nothing clear was heard', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8').replace(/\s+/g, ' ');
+    const text = instructionsOf(grind.kind as string).replace(/\s+/g, ' ');
     expect(text).toContain('`incomplete`');
     expect(text).toMatch(/read the start of `target_text` and stopped/);
     expect(text).toMatch(/where he stopped/);
   });
 
   it('tells the model to give each word its place from the scorer\'s word list, counting from 0', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     expect(text).toContain('`index`');
     expect(text).toMatch(/0-based|counting from 0/);
     expect(text).toMatch(/word list/);
@@ -130,7 +131,7 @@ describe('the optional say respelling of a focus word (mw-5r3p30.101)', () => {
   });
 
   it('tells the model to give say for a word the English voice would say wrongly, with the blessed example', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     expect(text).toContain('`say`');
     expect(text).toContain('blessed');
     expect(text).toContain('blest');
@@ -176,7 +177,7 @@ describe('the optional start and end of a focus word (mw-5r3p30.96)', () => {
   });
 
   it('tells the model to copy each word\'s start and end from reading_result, and to leave them out when the scorer gave none', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     expect(text).toContain('`start`');
     expect(text).toContain('`end`');
     expect(text).toMatch(/seconds/);
@@ -186,14 +187,14 @@ describe('the optional start and end of a focus word (mw-5r3p30.96)', () => {
 
 describe('quotes in the note and the tip', () => {
   it('tells the model to write plain quotes, never a backslash before one', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     expect(text).toContain('plain quote marks');
     expect(text).toContain('never put a backslash before a quote');
   });
 });
 
 describe('say whenever the tip names a sound or a stress (mw-5r3p30.140)', () => {
-  const text = (): string => readFileSync(grind.instructions as string, 'utf8').replace(/\s+/g, ' ');
+  const text = (): string => instructionsOf(grind.kind as string).replace(/\s+/g, ' ');
 
   it('requires say when the tip names a sound or a stress, with the Levites example', () => {
     expect(text()).toMatch(/`say` is required when the `tip` names a sound or a stress/);
@@ -214,7 +215,7 @@ describe('a partial reading (mw-neuq78.7)', () => {
   const next = { word: 'all', index: 4, chunks: ['all'], tip: 'Say it with an open mouth, as in call.' };
   const fix = { word: 'know', index: 2, chunks: ['know'], tip: 'The k is silent: say no.', say: 'no' };
   const partial = { verdict: 'partial', focus_words: [], note: 'Good start. You read 4 of 8 words.', reached: 3, next_word: next };
-  const text = (): string => readFileSync(grind.instructions as string, 'utf8').replace(/\s+/g, ' ');
+  const text = (): string => instructionsOf(grind.kind as string).replace(/\s+/g, ' ');
 
   it('keeps both versions in the grind, so the mill takes older answers and new ones', () => {
     expect(grind.versions).toEqual(['1', '2']);

@@ -11,8 +11,9 @@ import { getNewWordsADay, getReaderView, getWeave } from '../../src/data/reposit
 import { WELCOME_OPENING, WELCOME_REF, getWelcome, isExistingReader, setWelcome, showWelcomeAgain, skipWelcome, startWelcomeIfFirst, welcomeStartFor } from '../../src/data/repositories/welcome';
 import { buildTalkRequest, isTalkAnswer, scopeRef } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
+import { instructionsOf } from '../../scripts/grind-parts';
 
-const text = readFileSync('grinds/bible-talk.instructions.md', 'utf8');
+const text = instructionsOf('bible-talk');
 const inputSchema = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema & { properties: Record<string, { enum?: string[] }> };
 const answerSchema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as { properties: Record<string, unknown> };
 

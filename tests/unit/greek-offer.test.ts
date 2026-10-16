@@ -14,6 +14,7 @@ import { greekOfferOf, registerGreekWordOpener, takeGreekOffer } from '../../src
 import { applyMemoryFromAnswer } from '../../src/talk/memoryUpdate';
 import { offerOfTurn, pendingOfferOf, settleOffer } from '../../src/talk/offers';
 import { validate, type Schema } from '../support/schema-validate';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 afterAll(() => db.close());
 beforeEach(async () => {
@@ -150,8 +151,8 @@ describe('which greek_offer is kept', () => {
 });
 
 describe('the grind', () => {
-  const instructions = readFileSync('grinds/bible-talk.instructions.md', 'utf8');
-  const verseAsk = readFileSync('grinds/verse-ask.instructions.md', 'utf8');
+  const instructions = instructionsOf('bible-talk');
+  const verseAsk = instructionsOf('verse-ask');
 
   it('says when to answer in English, when to offer, and the three limits', () => {
     expect(instructions).toContain('## Offering the Greek');

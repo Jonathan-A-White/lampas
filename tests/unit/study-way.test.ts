@@ -14,6 +14,7 @@ import {
 } from '../../src/data/repositories/studyWay';
 import { MAX_REQUEST_BYTES, buildTalkRequest, isTalkAnswer } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 afterAll(() => db.close());
 beforeEach(async () => {
@@ -114,8 +115,8 @@ describe('the answer', () => {
   });
 });
 
-describe('the grind instructions (grinds/bible-talk.instructions.md)', () => {
-  const text = readFileSync('grinds/bible-talk.instructions.md', 'utf8');
+describe('the grind instructions (grinds/bible-talk.instructions/)', () => {
+  const text = instructionsOf('bible-talk');
   const section = (): string => {
     const start = text.indexOf('## My study way');
     expect(start).toBeGreaterThan(-1);
