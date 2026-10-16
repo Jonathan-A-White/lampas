@@ -18,6 +18,7 @@ import { PlanDrillScreen } from './PlanDrillScreen';
 import { useSheetBack } from './ui/sheetBack';
 import { focusOnMount } from './ui/focus';
 import { FootBar } from './ui/NextBar';
+import { useSettled } from './ui/settle';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border text-lg font-medium';
 
@@ -132,6 +133,9 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
   const [taken, setTaken] = useState<ReadonlySet<number> | null>(null);
   const reported = useRef(false);
   const result = walk?.result ?? null;
+  // Hint (and Done, after Finish) stands where Next was: a second tap of a double tap on Next lands on it, so it waits for the new card to settle
+  // as the card's options do (src/ui/settle.ts, mw-5r3p30.430)
+  const settled = useSettled(walk?.asked.length ?? 0);
   useEffect(() => {
     if (result && !reported.current) {
       reported.current = true;
@@ -187,7 +191,7 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
       </div>
       <FootBar>
         {result || walk === null ? (
-          <button type="button" ref={focusOnMount} onClick={onClose} className={`${BUTTON} border-accent bg-accent text-accent-fg`}>
+          <button type="button" ref={focusOnMount} onClick={() => settled() && onClose()} className={`${BUTTON} border-accent bg-accent text-accent-fg`}>
             Done
           </button>
         ) : after ? (
@@ -198,7 +202,7 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
           <button
             type="button"
             disabled={taken !== null || question === null}
-            onClick={() => question && setTaken(hintTakes(question.options, question.right, question.near))}
+            onClick={() => settled() && question && setTaken(hintTakes(question.options, question.right, question.near))}
             className={`${BUTTON} border-line text-accent active:bg-line disabled:text-muted`}
           >
             {taken !== null ? 'Hint used' : 'Hint'}

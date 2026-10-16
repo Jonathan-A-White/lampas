@@ -4,7 +4,8 @@
 // tap is never that quick: he has to read the question first. Every question card (WordQuestion, GrammarCard, SelfGrade: Placement, Review and the
 // Quick test) asks `useSettled` for its answer, and so does every control that moves up into the place Next sat when the next card is drawn (the Quick
 // test's Parsing drill button, the placement's quick round Say it again and Stop here; mw-hqd5bz.26, and the placement intro's buttons, which sit where Place me /
-// Place again sat on the Goal screen; mw-hqd5bz.27). Review and the placement's walk have none.
+// Place again sat on the Goal screen; mw-hqd5bz.27; Drill it's Hint and its Done after Finish, the short drill's Done, the letter drill's Done and
+// Another round, the Parsing drill's Ask the tutor | Talk about it and the reading drill's Skip this word; mw-5r3p30.430). Review and the placement's walk have none.
 import { useCallback, useEffect, useRef } from 'react';
 
 /** How long a new card ignores taps. The Tester's double taps were 120 ms apart; reading a question takes longer than this. PROVISIONAL */

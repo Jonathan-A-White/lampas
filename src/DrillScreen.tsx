@@ -16,6 +16,7 @@ import { navigate } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { focusOnMount } from './ui/focus';
 import { NextBar } from './ui/NextBar';
+import { useSettled } from './ui/settle';
 
 interface Session {
   status: 'loading' | 'offer' | 'failed' | 'ready';
@@ -141,6 +142,9 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
   const question = s.questions[s.question];
   const step = question?.steps[s.step];
   const reader = getOpenChapter();
+  // Ask the tutor and Talk about it move up into the place Next stood when the next step is drawn: a second tap of a double tap on Next lands on
+  // one of them, so they wait for the step to settle (src/ui/settle.ts, mw-5r3p30.430)
+  const settled = useSettled(`${s.question}:${s.step}`);
 
   const header = (
     <ScreenHeader
@@ -338,10 +342,10 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
         ) : null}
         {ai ? (
           <div className="mt-3 grid grid-cols-2 gap-3 pb-4">
-            <button type="button" onClick={ask} className="min-h-12 rounded-xl border border-line text-base font-medium">
+            <button type="button" onClick={() => settled() && ask()} className="min-h-12 rounded-xl border border-line text-base font-medium">
               Ask the tutor
             </button>
-            <button type="button" onClick={talk} className="min-h-12 rounded-xl border border-line text-base font-medium">
+            <button type="button" onClick={() => settled() && talk()} className="min-h-12 rounded-xl border border-line text-base font-medium">
               Talk about it
             </button>
           </div>

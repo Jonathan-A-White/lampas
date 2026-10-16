@@ -14,6 +14,7 @@ import { WriteIt } from './handwriting/WriteIt';
 import { WRITE_PRIMARY } from './handwriting/writeText';
 import { focusOnMount } from './ui/focus';
 import { FootBar } from './ui/NextBar';
+import { useSettled } from './ui/settle';
 import { useSheetBack } from './ui/sheetBack';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border text-lg font-medium';
@@ -78,6 +79,8 @@ export function LetterDrillScreen({ onClose }: { onClose: () => void }) {
     setSitting({ drill, number: sitting.number + 1, round: withWriting(drawRound(drill, random), writing ?? false), at: 0, rights: 0 });
   };
   const done = isComplete(drill);
+  // Done (and Another round) stand where Finish the round was: a second tap of a double tap on it waits for the round's end to settle (src/ui/settle.ts, mw-5r3p30.430)
+  const settled = useSettled(`${sitting.number}:${at}`);
 
   return (
     <div role="dialog" aria-modal="true" aria-label="Letter drill" className="fixed inset-0 z-40 flex flex-col bg-surface">
@@ -136,11 +139,11 @@ export function LetterDrillScreen({ onClose }: { onClose: () => void }) {
         ) : (
           <div className="flex flex-col gap-2">
             {done ? null : (
-              <button type="button" ref={focusOnMount} onClick={another} className={PRIMARY}>
+              <button type="button" ref={focusOnMount} onClick={() => settled() && another()} className={PRIMARY}>
                 Another round
               </button>
             )}
-            <button type="button" ref={done ? focusOnMount : undefined} onClick={onClose} className={done ? PRIMARY : PLAIN}>
+            <button type="button" ref={done ? focusOnMount : undefined} onClick={() => settled() && onClose()} className={done ? PRIMARY : PLAIN}>
               Done
             </button>
           </div>
