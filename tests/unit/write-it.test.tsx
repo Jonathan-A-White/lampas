@@ -7,10 +7,124 @@ import { drawRound, startLetterDrill, withWriting, ROUND_SIZE, WRITE_PER_ROUND }
 import { mulberry32 } from '../../src/data/random';
 import { watchForPen } from '../../src/handwriting/penWatch';
 import { FIRST_PROGRESS, RIGHTS_TO_MOVE, afterWrite, isWrittenFromMemory, parseProgress, progressLine, type WriteProgress } from '../../src/handwriting/progression';
-import type { InkStroke } from '../../src/handwriting/recognizer';
+import { recognize, type InkStroke } from '../../src/handwriting/recognizer';
+import { GLYPHS, LETTERS, type Point, type Variant } from '../../src/handwriting/templates';
 import { WritingPad } from '../../src/handwriting/WritingPad';
+import { WRITERS, padOf, writing } from '../support/handwriting';
 
 afterEach(cleanup);
+
+// The model Write it draws is the FIRST variant of a letter's templates (GlyphStrokes.tsx), so it must be a letter as a pen writes it (mw-86e9r1.55): no jump
+// inside a stroke, and a second stroke that begins on the first. The Governor saw alpha as a C bowl and a separate slash with a gap between them.
+const dist = (a: Point, b: Point): number => Math.hypot(a[0] - b[0], a[1] - b[1]);
+/** No two consecutive points of a stroke are further apart than this (design units: a capital is 1 high). */
+const MAX_JUMP = 0.15;
+/** A stroke after the first starts within this of a point of an earlier stroke. */
+const TOUCH = 0.08;
+
+/** Every place a variant's drawing breaks: a jump inside a stroke, or a later stroke that starts away from the strokes before it. */
+function breaks(variant: Variant): { jumps: string[]; apart: number[] } {
+  const jumps: string[] = [];
+  variant.forEach((stroke, i) => {
+    for (let k = 1; k < stroke.length; k += 1) {
+      const d = dist(stroke[k - 1], stroke[k]);
+      if (d > MAX_JUMP) jumps.push(`stroke ${i} jumps ${d.toFixed(2)} at point ${k}`);
+    }
+  });
+  const apart: number[] = [];
+  for (let i = 1; i < variant.length; i += 1) {
+    const before = variant.slice(0, i).flat();
+    if (!before.some((p) => dist(p, variant[i][0]) <= TOUCH)) apart.push(i);
+  }
+  return { jumps, apart };
+}
+
+/** The letters whose first variant has a stroke that starts away from the others, each with why a pen does that. Nothing else may. */
+const SEPARATE_STROKES: Readonly<Record<string, string>> = {
+  χ: 'two diagonals that cross: the second is drawn from its own top corner through the first',
+  Χ: 'two diagonals that cross: the second is drawn from its own top corner through the first',
+  ψ: 'the stem is a line of its own that the cup is drawn across',
+  Ψ: 'the stem is a line of its own that the cup is drawn across',
+  Η: 'two upright legs: the right leg is lifted to and drawn from its own top, across the end of the bar',
+  Ξ: 'three separate bars, as printed: the middle and the bottom bar are lifted to',
+};
+
+describe('the model strokes Write it draws (the first variant of every letter)', () => {
+  it('holds all 49 letters: the 24 small, the final sigma and the 24 capitals', () => {
+    expect(LETTERS).toHaveLength(49);
+    expect(LETTERS).toContain('ς');
+    expect(LETTERS.filter((l) => l !== 'ς' && l === l.toUpperCase())).toHaveLength(24);
+  });
+
+  it('has no jump inside any stroke, and every later stroke starts on an earlier one, except the letters named with a reason', () => {
+    const problems: string[] = [];
+    for (const letter of LETTERS) {
+      const { jumps, apart } = breaks(GLYPHS[letter][0]);
+      problems.push(...jumps.map((j) => `${letter}: ${j}`));
+      if (apart.length > 0 && !(letter in SEPARATE_STROKES)) problems.push(`${letter}: stroke ${apart.join(', ')} starts away from the strokes before it (the gap Write it showed on alpha)`);
+    }
+    expect(problems).toEqual([]);
+  });
+
+  it('keeps the list of separate strokes short, and every letter on it really has one', () => {
+    expect(Object.keys(SEPARATE_STROKES).length).toBeLessThanOrEqual(8);
+    for (const [letter, why] of Object.entries(SEPARATE_STROKES)) {
+      expect(why.length, letter).toBeGreaterThan(10);
+      expect(breaks(GLYPHS[letter][0]).apart, `${letter} is on the list but no longer has a separate stroke: take it off`).not.toEqual([]);
+    }
+  });
+
+  it('catches the gap the Governor saw: a C bowl and a slash that starts away from its end', () => {
+    const bowl: Point[] = [[0.47, 0.89], [0.4, 0.95]];
+    const slash: Point[] = [[0.58, 0.5], [0.6, 0.78], [0.72, 0.98]];
+    expect(breaks([bowl, slash]).apart).toEqual([1]);
+    expect(breaks([[[0, 0], [0.4, 0]]]).jumps).toHaveLength(1);
+  });
+
+  it('draws small alpha as one joined stroke whose tail leaves the bowl at the bowl\'s end', () => {
+    const alpha = GLYPHS['α'][0];
+    // one pen movement, or two strokes that touch
+    expect(alpha.length === 1 || breaks(alpha).apart.length === 0).toBe(true);
+    expect(breaks(alpha).jumps).toEqual([]);
+    const points = alpha.flat();
+    // the bowl is there (it reaches the left, the top and the bottom of the body) ...
+    expect(Math.min(...points.map((p) => p[0]))).toBeLessThan(0.1);
+    expect(Math.min(...points.map((p) => p[1]))).toBeLessThan(0.55);
+    expect(Math.max(...points.map((p) => p[1]))).toBeGreaterThan(0.98);
+    // ... and the stroke ends in the tail, out to the lower right of it, every point of the way joined to the last
+    const end = alpha[alpha.length - 1].at(-1)!;
+    expect(end[0]).toBeGreaterThan(0.65);
+    expect(end[1]).toBeGreaterThan(0.95);
+    for (let i = 1; i < alpha.length; i += 1) expect(alpha[i].some((p) => dist(p, alpha[i - 1].at(-1)!) <= TOUCH) || alpha[i - 1].some((p) => dist(p, alpha[i][0]) <= TOUCH)).toBe(true);
+  });
+});
+
+describe('the checker over the redrawn templates', () => {
+  const ink = (letter: string, variant: number): InkStroke[] => writing(letter, { ...WRITERS[0], variant }, {});
+
+  it('accepts every variant of every one of the 49 letters, drawn as written', () => {
+    const refused: string[] = [];
+    for (const letter of LETTERS) {
+      GLYPHS[letter].forEach((_, variant) => {
+        if (!recognize(ink(letter, variant), letter, padOf()).match) refused.push(`${letter} variant ${variant}`);
+      });
+    }
+    expect(refused).toEqual([]);
+  });
+
+  it('still turns down a different letter: alpha and delta, nu and upsilon, rho and omicron, each both ways', () => {
+    const mistaken: string[] = [];
+    for (const [a, b] of [['α', 'δ'], ['ν', 'υ'], ['ρ', 'ο']]) {
+      for (const [written, asked] of [[a, b], [b, a]]) {
+        GLYPHS[written].forEach((_, variant) => {
+          const result = recognize(ink(written, variant), asked, padOf());
+          if (result.match || result.closest !== written) mistaken.push(`${written} variant ${variant} asked as ${asked}: match ${result.match}, closest ${result.closest}`);
+        });
+      }
+    }
+    expect(mistaken).toEqual([]);
+  });
+});
 
 describe('the progression of a letter', () => {
   it('moves on after two rights at a stage, trace to copy to from memory', () => {
