@@ -124,9 +124,45 @@ function scriptOf(p: SendParams, attachments: grist.Attachment[]): string {
   return grist.recordScriptHex(grist.sealEnvelope(JSON.stringify(plaintext), p.key, p.mill, Math.floor(Date.now() / 1000)));
 }
 
-/** Sends a grist as bsv-kit's sendGristRecord does and resolves with its txid and its place in the backend's sequence (`seq`, where the wait pages from);
- * throws the same errors (GristInputError when nothing was sent). */
-export async function sendTimedGrist(p: SendParams): Promise<{ txid: string; seq: number }> {
+/** A grist the backend has taken: its id, and its place in the backend's sequence (`seq`, where the wait pages from). */
+export interface SentGrist {
+  txid: string;
+  seq: number;
+}
+
+/** Posts a grist's very bytes again, through `door`. Postern names a direct record by the sha256 of its script and answers the same bytes with the
+ * record it already holds (server/internal/api/direct.go), so a resend never makes a second record: it either finds the first or is the first. */
+export type Resend = (door: TimedDoor) => Promise<SentGrist>;
+
+/**
+ * The grist's POST went out and no reply came in time (the door's ApiTimeoutError with `sent`, on the call or on its body): the backend may have
+ * taken it, late, on a stalled link (mw-5r3p30.302). Sending it as a new grist would make a second one; `resend` sends the same bytes again.
+ */
+export class SendUnknownError extends Error {
+  readonly resend: Resend;
+  constructor(resend: Resend, cause: unknown) {
+    super('The grist went out and no reply came: the backend may have it.', { cause });
+    this.name = 'SendUnknownError';
+    this.resend = resend;
+  }
+}
+
+/** POST /api/messages with a record's script. */
+async function postRecord(d: TimedDoor, scriptHex: string): Promise<SentGrist> {
+  const response = await d.fetch('/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ scriptHex }) });
+  if (response.status === 502 || response.status === 503 || response.status === 504) {
+    throw new door.BackendUnreachableError(await refusal(response, 'The backend refused the grist.'));
+  }
+  if (!response.ok) throw new door.RefusedError(await refusal(response, 'The backend refused the grist.'), response.status);
+  const body = (await door.withTimeout(response.json(), true)) as { txid?: unknown; seq?: unknown };
+  if (typeof body.txid !== 'string') throw new Error('The backend took the grist but named no id.');
+  if (typeof body.seq !== 'number') throw new Error('The backend took the grist but named no seq.');
+  return { txid: body.txid, seq: body.seq };
+}
+
+/** Sends a grist as bsv-kit's sendGristRecord does and resolves with its txid and its place in the backend's sequence (`seq`, where the wait pages from),
+ * and `resend`, which posts its very bytes again; throws the same errors (GristInputError when nothing was sent), and SendUnknownError when its fate is unknown. */
+export async function sendTimedGrist(p: SendParams): Promise<SentGrist & { resend: Resend }> {
   requireLicence();
   check(p.files);
   const files = p.files.map((f) => ({ ...f, mime: baseMime(f.mime) }));
@@ -147,15 +183,18 @@ export async function sendTimedGrist(p: SendParams): Promise<{ txid: string; seq
     if (typeof body.hash !== 'string' || typeof body.size !== 'number') throw new Error('The upload succeeded but returned no hash.');
     attachments.push({ hash: body.hash, size: body.size, mime: file.mime, ...(file.name === undefined ? {} : { name: file.name }) });
   }
-  const response = await p.door.fetch('/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ scriptHex: scriptOf(p, attachments) }) });
-  if (response.status === 502 || response.status === 503 || response.status === 504) {
-    throw new door.BackendUnreachableError(await refusal(response, 'The backend refused the grist.'));
+  // the script is made once: a second making seals afresh, and would be a second grist
+  const scriptHex = scriptOf(p, attachments);
+  const resend: Resend = (d) => {
+    requireLicence();
+    return postRecord(d, scriptHex);
+  };
+  try {
+    return { ...(await postRecord(p.door, scriptHex)), resend };
+  } catch (err) {
+    if (err instanceof door.ApiTimeoutError && err.sent) throw new SendUnknownError(resend, err);
+    throw err;
   }
-  if (!response.ok) throw new door.RefusedError(await refusal(response, 'The backend refused the grist.'), response.status);
-  const body = (await door.withTimeout(response.json(), true)) as { txid?: unknown; seq?: unknown };
-  if (typeof body.txid !== 'string') throw new Error('The backend took the grist but named no id.');
-  if (typeof body.seq !== 'number') throw new Error('The backend took the grist but named no seq.');
-  return { txid: body.txid, seq: body.seq };
 }
 
 interface Row {

@@ -39,6 +39,7 @@ const ask = (onSent?: () => void) => askGrind('verse-read', { reference: 'Romans
 /** settles with the TutorError the wait ends in, or the answer */
 const outcome = (wait: Promise<unknown>) => wait.then((answer) => ({ answer }), (error: unknown) => ({ error }));
 const isPolling = (path: string, method: string) => path === '/api/messages' && method === 'GET';
+const isSending = (path: string, method: string) => path === '/api/messages' && method === 'POST';
 
 describe('a slow answer', () => {
   it('is waited for: the mill answers after 45 s of fake time and every request answers within 30 s', async () => {
@@ -75,6 +76,98 @@ describe('a poll that fails inside the wait', () => {
     );
     await vi.advanceTimersByTimeAsync(60_000);
     expect(await wait).toEqual({ answer: { verdict: 'well-read' } });
+  });
+});
+
+// mw-5r3p30.302: the Tester delayed the grist's POST 35 s and then let the backend take it: the door gives up on the POST at its 30 s, and the box
+// said 'Could not reach the tutor' though the mill had the reading, and Retry sent a second one. A send whose fate is unknown is sent again as the
+// very same bytes, which Postern answers with the record it holds (or takes now), and the wait goes on from there.
+describe('a send that times out', () => {
+  it('is waited out: the POST is taken 35 s late, the answer comes and the mill has one grist', async () => {
+    let sends = 0;
+    behave = (path, method) => (isSending(path, method) && ++sends === 1 ? { delayMs: 35_000 } : undefined);
+    postern.autoReply = ANSWER;
+    const wait = outcome(ask());
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(await wait).toEqual({ answer: { verdict: 'well-read' } });
+    expect(sends).toBeGreaterThan(1);
+    expect(postern.received).toHaveLength(1);
+  });
+
+  it('is waited out when every send stalls until the link recovers at 35 s', async () => {
+    const recovers = Date.now() + 35_000;
+    behave = (path, method) => (isSending(path, method) && Date.now() < recovers ? { delayMs: recovers - Date.now() } : undefined);
+    postern.autoReply = ANSWER;
+    const wait = outcome(ask());
+    await vi.advanceTimersByTimeAsync(90_000);
+    expect(await wait).toEqual({ answer: { verdict: 'well-read' } });
+    expect(postern.received).toHaveLength(1);
+  });
+
+  it('is sent again when the first POST never reached the backend, and the mill has one grist', async () => {
+    let sends = 0;
+    behave = (path, method) => (isSending(path, method) && ++sends === 1 ? { hang: true } : undefined);
+    postern.autoReply = ANSWER;
+    const wait = outcome(ask());
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(await wait).toEqual({ answer: { verdict: 'well-read' } });
+    expect(postern.received).toHaveLength(1);
+  });
+
+  it('ends as Could not reach the tutor once no send has succeeded for CONTACT_LOST_MS, and its resend finds the grist the backend took, not a second one', async () => {
+    let dead = true;
+    let sends = 0;
+    // the first POST is taken by the backend but its reply never comes; every send after it stalls
+    behave = (path, method) => {
+      if (!isSending(path, method) || !dead) return undefined;
+      sends += 1;
+      return sends === 1 ? undefined : { hang: true };
+    };
+    const reply = postern.fetch;
+    postern.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const response = await reply(input, init);
+      return dead && isSending(new URL(String(input)).pathname, (init?.method ?? 'GET').toUpperCase()) ? new Promise<Response>(() => undefined) : response;
+    }) as typeof fetch;
+    const wait = outcome(ask());
+    await vi.advanceTimersByTimeAsync(tutorTimings.deadlineMs);
+    const result = (await wait) as { error: TutorError };
+    expect(result.error).toBeInstanceOf(TutorError);
+    expect(result.error.failure).toBe('unreachable');
+    expect(postern.received).toHaveLength(1);
+    expect(result.error.resend).toBeDefined();
+
+    // a Retry while the phone is still offline fails before it sends, and keeps the resend for the next one
+    behave = () => ({ unreachable: true });
+    const offline = outcome(askGrind('verse-read', { reference: 'Romans 8:28' }, isAnswer, { key, resend: result.error.resend }));
+    await vi.advanceTimersByTimeAsync(1_000);
+    const stillOffline = (await offline) as { error: TutorError };
+    expect(stillOffline.error.failure).toBe('unreachable');
+    expect(stillOffline.error.resend).toBe(result.error.resend);
+
+    behave = () => undefined;
+    dead = false;
+    postern.autoReply = ANSWER;
+    const again = outcome(askGrind('verse-read', { reference: 'Romans 8:28' }, isAnswer, { key, resend: result.error.resend }));
+    setTimeout(() => void postern.answer(ANSWER), 5_000);
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(await again).toEqual({ answer: { verdict: 'well-read' } });
+    expect(postern.received).toHaveLength(1);
+  });
+
+  it('is not sent again when the backend answered it with a refusal', async () => {
+    let sends = 0;
+    const real = postern.fetch;
+    postern.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (!isSending(new URL(String(input)).pathname, (init?.method ?? 'GET').toUpperCase())) return real(input, init);
+      sends += 1;
+      return new Response(JSON.stringify({ error: 'scriptHex is not hex' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    }) as typeof fetch;
+    const wait = outcome(ask());
+    await vi.advanceTimersByTimeAsync(60_000);
+    const result = (await wait) as { error: TutorError };
+    expect(result.error.message).toBe('scriptHex is not hex');
+    expect(result.error.resend).toBeUndefined();
+    expect(sends).toBe(1);
   });
 });
 

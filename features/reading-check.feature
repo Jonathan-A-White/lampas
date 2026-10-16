@@ -175,6 +175,23 @@ Feature: Reading check, in English and in Greek
     When the backend comes back and he taps Retry
     Then the verse in the reading check shows "together" and "purpose" marked to fix
 
+  Scenario: A reading whose send is taken late, past the door's time for a call, is answered and not failed, and the mill has it once
+    Given Lampas is opened on Romans 8 in English with a reading check behind a fake Postern that takes the send only after the door has given up on it
+    And he opens the reading check of verse 28
+    When he holds the bar for 2 seconds and lets go
+    Then the verse in the reading check shows "together" and "purpose" marked to fix
+    And the late send has landed and the mill received the reading once
+    And the reading check never said "Could not reach the tutor"
+
+  Scenario: A reading taken by a backend whose replies stop coming fails with Retry, and Retry finds that reading instead of sending a second
+    Given Lampas is opened on Romans 8 in English with a reading check behind a fake Postern that takes the send but whose replies never reach the phone
+    And he opens the reading check of verse 28
+    When he holds the bar for 2 seconds and lets go
+    Then the reading check says "Could not reach the tutor" with a Retry button
+    When the link comes back and he taps Retry
+    Then the verse in the reading check shows "together" and "purpose" marked to fix
+    And the mill received the reading once
+
   Scenario: A reading that fails does not leave the reading before it on show as its result
     Given Lampas is opened on Romans 8 in English with a reading check behind a fake Postern
     And he opens the reading check of verse 28

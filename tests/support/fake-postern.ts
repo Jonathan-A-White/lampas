@@ -51,6 +51,8 @@ export interface FakePostern {
   kindReplies: Record<string, Reply>;
   /** A grist of a given kind is held: the fake takes it in but its POST does not return until this promise settles (a slow mill or phone on slow data). */
   holds: Record<string, Promise<void>>;
+  /** The next POST /api/messages waits this long (ms, on the test's clock) before the fake takes its grist in, as a stalled link that delivers it late does; used once. */
+  slowSendMs: number | undefined;
   /** Refuse every signed call as a backend does a key with no licence. */
   licensed: boolean;
   /** Make every call fail as an unreachable backend does (fetch rejects with a TypeError). */
@@ -224,6 +226,7 @@ export function makeFakePostern(): FakePostern {
     greekReply: undefined,
     kindReplies: {},
     holds: {},
+    slowSendMs: undefined,
     licensed: true,
     down: false,
     gateway: undefined,
@@ -342,10 +345,16 @@ export function makeFakePostern(): FakePostern {
       return json(201, blob);
     }
     if (url.pathname === '/api/messages' && method === 'POST') {
+      const slow = fake.slowSendMs;
+      fake.slowSendMs = undefined;
+      if (slow !== undefined) await new Promise((resolve) => setTimeout(resolve, slow));
       const { scriptHex } = JSON.parse(String(init?.body)) as { scriptHex: string };
       const { envelope } = grist.readRecordScript(scriptHex);
       if (envelope.from !== pubkey || envelope.to !== MILL_PUBLIC_KEY) return json(403, { error: 'not to the mill from you' });
       const txid = `direct:${hex(Hash.sha256(Utils.toArray(scriptHex, 'hex')))}`;
+      // as Postern does (server/internal/api/direct.go): a record is named by its script's hash, and the same bytes again are answered 200 with the record it holds, never taken twice
+      const held = records.find((r) => r.txid === txid);
+      if (held) return json(200, { txid, seq: held.seq });
       const seq = records.length + 1;
       records.push({ seq, firstSeen: new Date().toISOString(), txid, signer: pubkey, payload: { ...envelope } });
       announce(seq);
@@ -364,8 +373,8 @@ export function makeFakePostern(): FakePostern {
       if (byKind) answerThis(byKind);
       else if (fake.autoReply) answerThis(greek && fake.greekReply ? fake.greekReply : fake.autoReply);
       else waiters.shift()?.();
-      const held = fake.holds[opened.grist.kind];
-      if (held) await held;
+      const hold = fake.holds[opened.grist.kind];
+      if (hold) await hold;
       // the grist's own place, as the backend names it: an answer the fake made at once is after it
       return json(201, { txid, seq });
     }

@@ -17,7 +17,7 @@ import { MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudget';
 import { solidWordsField } from './solidWords';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
 import { listenForAnswers, type StreamTarget } from './answerStream';
-import { AwaitAbortedError, BackendStatusError, GristInputError, meOf, readTimedPage, sendTimedGrist, timedDoor, type MillAnswer, type MillFile, type Page, type TimedDoor } from './mill';
+import { AwaitAbortedError, BackendStatusError, GristInputError, meOf, readTimedPage, SendUnknownError, sendTimedGrist, timedDoor, type MillAnswer, type MillFile, type Page, type Resend, type SentGrist, type TimedDoor } from './mill';
 
 /** The app and kind the mill runs the grind under (grinds/verse-ask.json), and the version of the request below. */
 export const TUTOR_APP = 'lampas';
@@ -26,6 +26,13 @@ export const TUTOR_VERSION = '1';
 
 /** How long a question may be (src/services/requestBudget.ts). */
 export { MAX_QUESTION_CHARS };
+
+/**
+ * How long the send and the wait for an answer go on with no call to Postern succeeding before it says the tutor could not be reached.
+ * One poll gives up after pollTimeoutMs, so this lets polls fail for a while (a train through a tunnel, a phone changing
+ * from wifi to data) before the wait is called lost; the 180 s deadline below still ends a wait that has contact but no answer.
+ */
+export const CONTACT_LOST_MS = 90_000;
 
 /** The timings, in one object so a test may shorten them. */
 export const tutorTimings = {
@@ -40,17 +47,14 @@ export const tutorTimings = {
   pollTimeoutMs: 30_000,
   /** How long it has to answer before the question is given up on. */
   deadlineMs: 180_000,
+  /** How long the door gives any one call before it gives up on it: the door's own 30 s. */
+  doorTimeoutMs: door.API_TIMEOUT_MS,
+  /** CONTACT_LOST_MS, for a test to shorten. */
+  contactLostMs: CONTACT_LOST_MS,
 };
 
 /** The most polls out at once: a slow one is not abandoned for being slow, and a stalled one does not hold up the next. */
 const POLLS_IN_FLIGHT = 3;
-
-/**
- * How long the wait for an answer goes on with no call to Postern succeeding before it says the tutor could not be reached.
- * One poll gives up after pollTimeoutMs, so this lets polls fail for a while (a train through a tunnel, a phone changing
- * from wifi to data) before the wait is called lost; the 180 s deadline above still ends a wait that has contact but no answer.
- */
-export const CONTACT_LOST_MS = 90_000;
 
 /** One page of the wait: rejects with the door's ApiTimeoutError (and aborts it) when it has not come, body and all, in pollTimeoutMs,
  * and with an AwaitAbortedError at once when `signal` aborts, even from a fetch that does not heed its signal. */
@@ -94,13 +98,13 @@ interface Waited {
  * serves GET /api/events) the wait also listens on it while it waits, and pages at once when the stream names a record after `since` or says hello
  * (mw-46z0my.6); the stream is closed when the wait ends. A poll starts every pollMs (backstopMs while the stream is up) while fewer than
  * POLLS_IN_FLIGHT are out, so one that stalls does not hold up the next. A page that fails (it timed out, no connection, a 5xx) does not end the wait:
- * only when no call has succeeded for CONTACT_LOST_MS does it throw that failure. A licence refusal ends it at once. bsv-kit's awaitAnswer ends at
+ * only when no call has succeeded for CONTACT_LOST_MS (`lastContact` is when one last did) does it throw that failure. A licence refusal ends it at once. bsv-kit's awaitAnswer ends at
  * the first failed page, which a phone that blinks offline for a moment turns into 'could not reach the tutor'.
  */
-function waitForAnswer(txid: string, since: number, mill: string, d: TimedDoor, key: Uint8Array, signal: AbortSignal, stream?: StreamTarget): Promise<Waited> {
+function waitForAnswer(txid: string, since: number, mill: string, d: TimedDoor, key: Uint8Array, signal: AbortSignal, stream?: StreamTarget, contactAt = Date.now()): Promise<Waited> {
   return new Promise((resolve, reject) => {
     const polls = new AbortController();
-    let lastContact = Date.now();
+    let lastContact = contactAt;
     let out = 0;
     // a place the backend's sequence has not reached (it was reset, or is a new mill) is read from 0, once
     let fellBack = false;
@@ -118,7 +122,7 @@ function waitForAnswer(txid: string, since: number, mill: string, d: TimedDoor, 
     };
     const onAbort = (): void => finish(() => reject(new AwaitAbortedError()));
     const failed = (err: unknown): void => {
-      if (err instanceof door.RefusedError || Date.now() - lastContact >= CONTACT_LOST_MS) finish(() => reject(err));
+      if (err instanceof door.RefusedError || Date.now() - lastContact >= tutorTimings.contactLostMs) finish(() => reject(err));
     };
     const poll = (): void => {
       if (done) return;
@@ -265,10 +269,56 @@ const phoneIsOffline = (): boolean => typeof navigator !== 'undefined' && naviga
 
 export class TutorError extends Error {
   readonly failure: TutorFailure;
-  constructor(failure: TutorFailure, message: string) {
+  /** Set when the grist went out (or may have) and the link, not the mill, failed: the backend may hold it, and its answer may come.
+   * Asking again with it as AskOptions.resend sends the same grist again, which finds the one the backend holds: never a second (mw-5r3p30.302). */
+  readonly resend?: Resend;
+  constructor(failure: TutorFailure, message: string, resend?: Resend) {
     super(message);
     this.failure = failure;
     this.name = 'TutorError';
+    if (resend) this.resend = resend;
+  }
+}
+
+/** A call that failed on the way (no reply in time, no connection, a gateway or a 5xx), not one the backend refused. */
+const lostOnTheWay = (err: unknown): boolean =>
+  err instanceof SendUnknownError || err instanceof door.ApiTimeoutError || err instanceof door.BackendUnreachableError || (err instanceof BackendStatusError && err.status >= 500);
+
+/** Waits `ms`, or rejects with an AwaitAbortedError at once when `signal` aborts. */
+function pause(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal.aborted) return reject(new AwaitAbortedError());
+    const onAbort = (): void => {
+      clearTimeout(timer);
+      reject(new AwaitAbortedError());
+    };
+    const timer = setTimeout(() => {
+      signal.removeEventListener('abort', onAbort);
+      resolve();
+    }, ms);
+    signal.addEventListener('abort', onAbort, { once: true });
+  });
+}
+
+/**
+ * Sends the grist with `first`, and once it may have gone (`first` threw SendUnknownError, or this is a resend) sends its same bytes again every pollMs
+ * until the backend names it, as the wait pages for an answer: a send whose reply was lost on a stalled link is the backend's all the same, and its
+ * answer will come (mw-5r3p30.302). Gives up with the last failure once no call has succeeded for CONTACT_LOST_MS since `contactAt`, at once on a refusal,
+ * and with an AwaitAbortedError when `signal` aborts. `known` is told the resend as soon as there is one.
+ */
+async function sendSurely(first: () => Promise<SentGrist>, resend: Resend | undefined, d: TimedDoor, signal: AbortSignal, contactAt: number, known: (resend: Resend) => void): Promise<SentGrist> {
+  let again = resend;
+  for (;;) {
+    try {
+      return await (again ? again(d) : first());
+    } catch (err) {
+      if (err instanceof SendUnknownError) {
+        again = err.resend;
+        known(again);
+      }
+      if (!again || !lostOnTheWay(err) || Date.now() - contactAt >= tutorTimings.contactLostMs) throw err instanceof SendUnknownError ? err.cause : err;
+    }
+    await pause(tutorTimings.pollMs, signal);
   }
 }
 
@@ -304,6 +354,9 @@ export interface AskOptions {
   onSent?: (txid: string) => void;
   /** Files sent with the grist: a recording of him reading (src/services/reading.ts). */
   files?: MillFile[];
+  /** The resend of a failed ask (TutorError.resend): the same grist is sent again, so the answer to the one the backend may hold is waited for, and
+   * no second grist is made; `request` and `files` are not sent. */
+  resend?: Resend;
   baseUrl?: string;
 }
 
@@ -316,22 +369,36 @@ export interface AskOptions {
 export async function askGrind<Answer>(kind: string, request: object, isAnswer: (value: unknown) => value is Answer, options: AskOptions): Promise<Answer> {
   const { key } = options;
   const tapAt = options.tapAt ?? Date.now();
-  const d = timedDoor(new door.Door({ baseUrl: options.baseUrl ?? POSTERN_DOOR, key }));
+  const d = timedDoor(new door.Door({ baseUrl: options.baseUrl ?? POSTERN_DOOR, key, timeoutMs: tutorTimings.doorTimeoutMs }));
   const deadline = new AbortController();
   const stop = (): void => deadline.abort();
   options.signal?.addEventListener('abort', stop, { once: true });
   const timer = setTimeout(stop, tutorTimings.deadlineMs);
   // the timing of his previous answer rides with this grist (and is let go again if the grist never reaches the backend)
-  const report = options.untimed ? undefined : claimReport();
-  let sent = false;
+  // a resend carries the timing its first sending did
+  const report = options.untimed || options.resend ? undefined : claimReport();
+  // a resend is of a grist that may have gone: a failure before it is sent again still keeps it, so the next Retry makes no second one either
+  let sent = options.resend !== undefined;
+  // how to send this grist again, once it may have gone
+  let resend = options.resend;
   try {
     const { mill, events } = await meOf(d, deadline.signal);
-    const { txid, seq } = await sendTimedGrist({ door: d, key, mill, app: TUTOR_APP, kind, v: TUTOR_VERSION, input: request, files: options.files ?? [], clientTiming: report });
+    const contactAt = Date.now();
+    const send = async (): Promise<SentGrist> => {
+      const grist = await sendTimedGrist({ door: d, key, mill, app: TUTOR_APP, kind, v: TUTOR_VERSION, input: request, files: options.files ?? [], clientTiming: report });
+      resend = grist.resend;
+      return grist;
+    };
+    const { txid, seq } = await sendSurely(send, resend, d, deadline.signal, contactAt, (known) => {
+      // it may have gone: its timing is not given back to ride on the next one
+      sent = true;
+      resend = known;
+    });
     sent = true;
     const sentAt = Date.now();
     const sendNetwork = d.total;
     options.onSent?.(txid);
-    const waited = await waitForAnswer(txid, seq, mill, d, key, deadline.signal, events ? { baseUrl: options.baseUrl ?? POSTERN_DOOR, key } : undefined);
+    const waited = await waitForAnswer(txid, seq, mill, d, key, deadline.signal, events ? { baseUrl: options.baseUrl ?? POSTERN_DOOR, key } : undefined, sentAt);
     const reply = waited.answer;
     if (reply.status !== 'answered') {
       throw new TutorError('no-answer', reply.reason ? `The tutor could not answer: ${reply.reason}` : 'The tutor could not answer.');
@@ -342,7 +409,10 @@ export async function askGrind<Answer>(kind: string, request: object, isAnswer: 
   } catch (err) {
     if (report && !sent) releaseReport(report.txid);
     if (err instanceof AwaitAbortedError && !options.signal?.aborted) throw new TutorError('no-answer', phoneIsOffline() ? OFFLINE_MESSAGE : TUTOR_OFFLINE_MESSAGE);
-    throw explain(err);
+    const failure = explain(err);
+    // the grist went (or may have) and the link failed: the backend may hold it, and Retry is to find it, not to send a second
+    if (resend && sent && lostOnTheWay(err)) throw new TutorError(failure.failure, failure.message, resend);
+    throw failure;
   } finally {
     clearTimeout(timer);
     options.signal?.removeEventListener('abort', stop);
