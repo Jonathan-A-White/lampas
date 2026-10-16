@@ -14,7 +14,6 @@ import { soundRulesIn } from '../support/sound-rules-scan';
  * later Builder can check; an entry the scan no longer finds fails the test, so the list never keeps a dead line.
  */
 const ALLOWED: readonly [string, string, string][] = [
-  ['src/data/grammar/ladder.ts', 'Modern Greek', "the 'accents' and 'marks-change-word' texts: mw-5r3p30.312 moves both into the scheme's lessons"],
   ['grinds/bible-talk.instructions/330-changing-the-apps-settings.md', 'Modern Greek', "the settings list, written by npm run grind:build from the scheme's own label"],
   ['grinds/verse-read.instructions.md', 'LEE-vites', 'an English respelling of an English word, for the English voice'],
   ['src/data/grammar-concepts.ts', 'AIR-ist', 'how to say the English grammar word "aorist"'],

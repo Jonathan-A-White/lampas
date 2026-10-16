@@ -26,7 +26,8 @@ export interface GrammarIdea {
   /** The GRAMMAR_TERMS this idea covers (parseCode.ts); a term belongs to exactly one idea. A letter covers none. */
   terms: string[];
   /** One short paragraph in plain words (under 80 words). For an idea that is about a sound (a letter, a pair, a breathing, their groups) it names
-   * no sound: the sound lessons are the chosen pronunciation's (src/data/grammar/lessons.ts ideaText / ideaSound, src/speech/pronunciation.ts `lessons`). */
+   * no sound, and an idea of the marks names no pronunciation (how an accent is said, that a mark is not heard: mw-5r3p30.312): the sound lessons are the
+   * chosen pronunciation's (src/data/grammar/lessons.ts ideaText / ideaSound, src/speech/pronunciation.ts `lessons`). */
   text: string;
   /** Ids of the ideas below it that it rests on. */
   needs: string[];
@@ -214,7 +215,7 @@ const DEFS: Def[] = [
     'Accents and stress',
     [],
     ['syllables'],
-    'Most Greek words carry an accent over a vowel: the acute (ά), the grave (ὰ) or the circumflex (ᾶ). It marks the syllable to stress, said louder in Modern Greek, and the three marks sound alike. They still matter: a mark can change the word (ἡ “the”, ἤ “or”), and a few small words have none because they lean on the word before. An accent on the first of two vowels shows two sounds, not a pair.',
+    'Most Greek words carry an accent over a vowel: the acute (ά), the grave (ὰ) or the circumflex (ᾶ). It marks the syllable to stress. A mark can change the word (ἡ “the”, ἤ “or”), and a few small words have none because they lean on the word before. An accent on the first of two vowels shows two sounds, not a pair.',
   ),
   def(
     'iota-subscript',
@@ -254,7 +255,7 @@ const DEFS: Def[] = [
     'Marks that change the word',
     [],
     ['breathings', 'accents'],
-    'Some words are spelt alike but for a breathing or an accent, and the mark makes them different words. Modern Greek says each pair the same, so you must read the mark: ἡ “the” and ἤ “or”; ὁ “the” and ὅ “which”; εἰ “if” and εἶ “you are”; ἐν “in” and ἕν “one”; οὐ “not” and οὗ “of whom”; ἀλλά “but” and ἄλλα “other things”; αὐτή “herself” and αὕτη “this”; τίς “who?” and τις “someone”.',
+    'Some words are spelt alike but for a breathing or an accent, and the mark makes them different words, so read the mark: ἡ “the” and ἤ “or”; ὁ “the” and ὅ “which”; εἰ “if” and εἶ “you are”; ἐν “in” and ἕν “one”; οὐ “not” and οὗ “of whom”; ἀλλά “but” and ἄλλα “other things”; αὐτή “herself” and αὕτη “this”; τίς “who?” and τις “someone”.',
   ),
   def(
     'enclitics',

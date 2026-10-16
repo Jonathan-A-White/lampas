@@ -18,7 +18,8 @@ export interface SoundLesson {
    * (cut at its first semicolon, quickRound.ts shortSound). */
   choice?: string;
   /** A sentence added after 'In <label> it sounds like <sound>.' on the idea sheet, for what the sound alone does not say (Upsilon: 'In αυ, ευ and ηυ it is v or f'); the
-   * `sound` stays the letter's own, which a quiz compares letters by. */
+   * `sound` stays the letter's own, which a quiz compares letters by. Alone (no `text`, no `sound`) it is the sentence added after the idea's own text, and the
+   * whole of How it sounds: how a scheme says the accents, or that it says the marks that change a word alike (mw-5r3p30.312). */
   also?: string;
   /** The sounds the lesson teaches for this letter, as the respelling writes them: 'gh' and 'y' for gamma, 'kh' and 'hy' for chi, 'o' for omicron. A word is a
    * plain example of a letter only where the scheme reads the letter alone as one of these (mw-5r3p30.351); without them any sound counts. */
