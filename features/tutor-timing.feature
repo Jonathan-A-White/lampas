@@ -45,3 +45,12 @@ Feature: The phone times every tutor answer
     And he asks again
     Then the grist carries network 700
     And About says "Last tutor answer: 8.6 s (phone 0.9 s, network 0.7 s, waiting to see it 1.2 s, factory 5.8 s)"
+
+  Scenario: A phone whose clock is ahead of the backend's never waits longer than the answer took
+    Given a phone that has never asked the tutor
+    When he taps at 0 s and the mill accepts the request at 1.2 s
+    And the backend, its clock 30 s behind the phone's, delivers the answer at 7.0 s and the poll sees it at 8.5 s
+    And the answer is drawn at 8.6 s
+    And he asks again
+    Then the grist carries a delivered to seen of at most 8500
+    And About's line has parts that add up to its total of 8.6 s within 0.1

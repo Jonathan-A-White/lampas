@@ -111,7 +111,9 @@ export async function answerDrawn(txid: string | undefined): Promise<void> {
     timing: {
       txid,
       tap_to_sent: ms(seen.sentAt - seen.tapAt),
-      ...(seen.deliveredAt === undefined ? {} : { delivered_to_seen: ms(seen.seenAt - seen.deliveredAt) }),
+      // deliveredAt is the backend's clock and seenAt the phone's: a phone clock behind gives a negative wait (held at 0 by ms), one ahead a wait longer
+      // than the answer took, so it is held to seen less sent (the answer cannot have been delivered before the request was accepted)
+      ...(seen.deliveredAt === undefined ? {} : { delivered_to_seen: ms(Math.min(seen.seenAt - seen.deliveredAt, seen.seenAt - seen.sentAt)) }),
       seen_to_shown: ms(shownAt - seen.seenAt),
       ...(network > 0 ? { network: ms(network), poll_network: ms(seen.pollNetwork) } : {}),
     },

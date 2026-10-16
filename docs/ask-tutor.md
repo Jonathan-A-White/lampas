@@ -426,7 +426,7 @@ The profile is filled mainly by what the phone and the tutor can tell, and a que
 Every tutor answer is timed on the phone (src/services/tutor.ts askGrind, src/services/clientTiming.ts), in milliseconds:
 `tap_to_sent` (his tap, or the end of the recording, to the request accepted by the backend, upload included), `delivered_to_seen`
 (the backend's `firstSeen` for the answer's record to the poll that saw it; both clocks are read as they are, so a phone's clock that is off
-shifts it, and a negative result is held at 0) and `seen_to_shown` (the poll's sight of it to the answer drawn: the screen that keeps the answer calls
+shifts it: a negative result is held at 0, and one longer than the poll's sight less the request accepted is held to that, mw-46z0my.12) and `seen_to_shown` (the poll's sight of it to the answer drawn: the screen that keeps the answer calls
 `answerDrawn(txid)`). `network` is the round trips of the calls that sent the grist plus the one poll that saw the answer, and `poll_network` the poll's alone
 (it lies inside the other two). The finished timing is kept in localStorage `lampas.lastAnswerTiming` and goes to the mill as `client_timing` (with the
 answered grist's txid) beside `input` in the NEXT grist's plaintext (millwright's docs/grist-client-timing.md); the first grist after install, a failed
