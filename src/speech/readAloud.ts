@@ -16,7 +16,7 @@ import { getSpeech, isSpeaking, pause as enginePause, resume as engineResume, st
 import { loadChapter, type Verse } from '../data/chapter';
 import { neighbours } from '../data/neighbours';
 import type { ReaderView } from '../data/repositories';
-import type { Woven } from '../data/weave';
+import { drawnOrder, type WovenVerse } from '../data/weave';
 import { publish } from '../events/bus';
 import { openReader } from '../nav/route';
 import { besideNow, greekVoiceForm, hasGreekVoice, loneLetterClip, playLetterClip, READ_KEY, speakText, stopLetterClip, subscribeBeside } from './greek';
@@ -51,11 +51,12 @@ export const NO_GREEK_VOICE_NOTICE = 'This phone has no Greek voice: Greek is re
 const speakable = (text: string): boolean => /[\p{L}\p{N}]/u.test(text);
 
 /** What is shown of `verse`, as runs of one language each, in the order it is shown. */
-export function runsOf(verse: Verse, view: ReaderView, woven: Woven[] | null): Run[] {
+export function runsOf(verse: Verse, view: ReaderView, woven: WovenVerse | null): Run[] {
   const parts: Run[] =
     view === 'greek'
       ? verse.g.map((w) => ({ text: w.t, language: 'greek' as const }))
-      : verse.e.map((chunk, i) => {
+      : drawnOrder(verse, woven).map((i) => {
+          const chunk = verse.e[i];
           const words = woven?.[i]?.words;
           return words ? { text: words.map((w) => w.t).join(' '), language: 'greek' as const } : { text: chunk.t, language: 'english' as const };
         });
@@ -69,7 +70,7 @@ export function runsOf(verse: Verse, view: ReaderView, woven: Woven[] | null): R
 }
 
 /** The whole chapter as it is shown now. `woven` is per verse, as the Reader weaves it (null: no weave). */
-export function planOf(verses: Verse[], view: ReaderView, woven: (Woven[] | null)[] | null): PlanVerse[] {
+export function planOf(verses: Verse[], view: ReaderView, woven: (WovenVerse | null)[] | null): PlanVerse[] {
   return verses.map((v, i) => ({ n: v.n, runs: runsOf(v, view, woven?.[i] ?? null), heading: Boolean(v.h) }));
 }
 

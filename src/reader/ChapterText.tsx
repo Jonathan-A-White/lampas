@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import type { Verse } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
 import type { Passage } from '../data/passage';
-import type { Woven } from '../data/weave';
+import type { WovenVerse } from '../data/weave';
 import { VersePlay } from '../speech/ReadControls';
 import type { Lookup } from '../WordSheet';
 import { READING_CLASS, textClass } from './textClass';
@@ -42,7 +42,7 @@ export function VerseLine(props: VerseProps) {
 export function ParagraphView({ verses, view, woven, selected, reading, onSelect, onPlay, onLook, talk }: {
   verses: Verse[];
   view: ReaderView;
-  woven: (Woven[] | null)[];
+  woven: (WovenVerse | null)[];
   selected: number | null;
   /** the verse being read aloud */
   reading: number | null;
@@ -91,7 +91,7 @@ export function SectionHeading({ text, onOpen }: { text: string; onOpen: () => v
 export function PassageText({ passage, view, wovenOf, reading, onLook }: {
   passage: Passage;
   view: ReaderView;
-  wovenOf: (verse: Verse) => Woven[] | null;
+  wovenOf: (verse: Verse) => WovenVerse | null;
   reading: number | null;
   onLook: (lookup: Lookup) => void;
 }) {

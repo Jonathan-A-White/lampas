@@ -117,3 +117,37 @@ Feature: The diglot weave
     When he opens Settings
     Then each of Solid words, + Learning words, with Solid grammar, + Frontier grammar is set by one tap on each row
 
+
+  Scenario: Settings > Weave has an Order row under Grammar, English by default
+    Given Lampas is opened with nothing saved
+    When he opens Settings
+    Then there is no Order row
+    When he turns the Weave on in Settings
+    Then the Order row comes after the Grammar row and offers "English" and "Greek"
+    And the Order row is set to "English"
+    And the Order setting allows the values "english" and "greek"
+
+  Scenario: Order Greek lays the woven verse out in the Greek word order
+    Given Lampas is opened with nothing saved
+    And he sets Weave to Solid words
+    And verse 1 begins "Therefore there is now no condemnation"
+    When he sets the Weave order to Greek
+    Then verse 1 now begins "no Therefore there is now condemnation"
+    And the chunks of verse 1 stand in the order of their first Greek words
+    And the Greek "Χριστός" is woven in verse 1
+    When he taps the woven word for the lemma "Χριστός" in verse 1
+    Then the word sheet shows the lemma "Χριστός"
+
+  Scenario: Order English puts the MSB's English order back
+    Given Lampas is opened with nothing saved
+    And he sets Weave to Solid words
+    And he sets the Weave order to Greek
+    When he sets the Weave order back to English
+    Then verse 1 reads in the data's English order
+
+  Scenario: The Weave order is remembered after reload
+    Given Lampas is opened with nothing saved
+    And he sets Weave to Solid words
+    And he sets the Weave order to Greek
+    When he reopens Lampas
+    Then verse 1 still begins "no Therefore there is now condemnation"

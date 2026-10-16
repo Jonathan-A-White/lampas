@@ -101,6 +101,20 @@ async function setGrammar(chip: string): Promise<void> {
   await waitForReader();
 }
 
+/** The Weave's Order (mw-5r3p30.250) is in Settings too: set it there and come back to the reader. */
+async function setOrder(chip: 'English' | 'Greek'): Promise<void> {
+  await openSettings();
+  await user.click(within(await screen.findByRole('group', { name: 'Order' })).getByRole('button', { name: chip }));
+  await waitFor(async () => expect((await db.settings.get('weaveOrder'))?.value).toBe(chip.toLowerCase()));
+  await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+  await waitForReader();
+}
+const verseText = (n: number): string => squash(verseEl(n).querySelector('[data-text]')?.textContent);
+const chunksShown = (n: number): number[] => [...verseEl(n).querySelectorAll<HTMLElement>('[data-chunk]')].map((el) => Number(el.dataset.chunk));
+const beginsWith = async (n: number, start: string): Promise<void> => {
+  await waitFor(() => expect(verseText(n).startsWith(start)).toBe(true));
+};
+
 /** Every idea of the ladder gets `level`, except the dative case, which gets `dative`. */
 async function setLevels(dative: 'notYet' | 'frontier'): Promise<void> {
   await Promise.all(LADDER.map((idea) => setLevel(idea.id, idea.id === 'case-dative' ? dative : 'solid', 'placement')));
@@ -437,5 +451,80 @@ describeFeature(feature, ({ Scenario }) => {
         expect(grammar.getByRole('button', { name: gChip })).toHaveAttribute('aria-pressed', 'true');
       }
     });
+  });
+  Scenario('Settings > Weave has an Order row under Grammar, English by default', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened with nothing saved', openFresh);
+    When('he opens Settings', openSettings);
+    Then('there is no Order row', async () => {
+      await screen.findByRole('group', { name: 'Weave' });
+      expect(screen.queryByRole('group', { name: 'Order' })).toBeNull();
+    });
+    When('he turns the Weave on in Settings', async () => {
+      await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: 'Solid' }));
+    });
+    Then('the Order row comes after the Grammar row and offers {string} and {string}', async (_, a: string, b: string) => {
+      const order = await screen.findByRole('group', { name: 'Order' });
+      const grammar = await screen.findByRole('group', { name: 'Grammar' });
+      expect(grammar.compareDocumentPosition(order) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(order.parentElement).toHaveTextContent('Order');
+      expect(within(order).getAllByRole('button').map((e) => e.textContent)).toEqual([a, b]);
+    });
+    And('the Order row is set to {string}', async (_, chip: string) => {
+      const group = await screen.findByRole('group', { name: 'Order' });
+      expect(within(group).getByRole('button', { name: chip })).toHaveAttribute('aria-pressed', 'true');
+    });
+    And('the Order setting allows the values {string} and {string}', (_, a: string, b: string) => {
+      const allowed = SETTINGS.find((s) => s.key === 'weaveOrder')?.allowed;
+      expect(allowed?.kind === 'choice' ? allowed.values.map((v) => v.value) : []).toEqual([a, b]);
+    });
+  });
+
+  Scenario('Order Greek lays the woven verse out in the Greek word order', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened with nothing saved', openFresh);
+    And('he sets Weave to Solid words', async () => setWeave('Solid words'));
+    And('verse 1 begins {string}', async (_, start: string) => beginsWith(1, start));
+    When('he sets the Weave order to Greek', async () => setOrder('Greek'));
+    Then('verse 1 now begins {string}', async (_, start: string) => beginsWith(1, start));
+    And('the chunks of verse 1 stand in the order of their first Greek words', () => {
+      const firsts = chunksShown(1).map((i) => Math.min(...verse1.e[i].g));
+      expect(firsts).toEqual([...firsts].sort((a, b) => a - b));
+      expect([...chunksShown(1)].sort((a, b) => a - b)).toEqual(verse1.e.map((_, i) => i));
+    });
+    And('the Greek {string} is woven in verse {int}', (_, lemma: string, n: number) => {
+      expect(chunkEl(n, wordOfLemma(lemma).chunk)).toHaveAttribute('data-woven');
+    });
+    When('he taps the woven word for the lemma {string} in verse {int}', async (_, lemma: string, n: number) => {
+      await user.click(chunkEl(n, wordOfLemma(lemma).chunk));
+      await screen.findByRole('dialog');
+    });
+    Then('the word sheet shows the lemma {string}', (_, lemma: string) => {
+      expect(within(screen.getByRole('dialog')).getAllByTestId('sheet-lemma').map((e) => e.textContent)).toEqual([lemma]);
+    });
+  });
+
+  Scenario('Order English puts the MSB\'s English order back', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened with nothing saved', openFresh);
+    And('he sets Weave to Solid words', async () => setWeave('Solid words'));
+    And('he sets the Weave order to Greek', async () => {
+      await setOrder('Greek');
+      await waitFor(() => expect(chunksShown(1)).not.toEqual(verse1.e.map((_, i) => i)));
+    });
+    When('he sets the Weave order back to English', async () => setOrder('English'));
+    Then("verse 1 reads in the data's English order", async () => {
+      await waitFor(() => expect(chunksShown(1)).toEqual(verse1.e.map((_, i) => i)));
+    });
+  });
+
+  Scenario('The Weave order is remembered after reload', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened with nothing saved', openFresh);
+    And('he sets Weave to Solid words', async () => setWeave('Solid words'));
+    And('he sets the Weave order to Greek', async () => setOrder('Greek'));
+    When('he reopens Lampas', async () => {
+      cleanup();
+      await seedHisWords();
+      render(<App />);
+      await waitForReader();
+    });
+    Then('verse 1 still begins {string}', async (_, start: string) => beginsWith(1, start));
   });
 });
