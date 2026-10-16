@@ -4,12 +4,17 @@
 // object URL and the timer that watches for the end of a word, none of which are for rendering. It also plays a clip the app ships, by its URL: the sound of a
 // one-letter Greek word (src/speech/greek.ts, mw-5r3p30.347), from an element of its own.
 //
+// His reading from where his voice starts (mw-5r3p30.396): toggleVoice plays a recorded clip from just before his first word to just after his last
+// (src/audio/voiceSpan.ts, by the scorer's times or the level the phone measures), so a silent lead-in is skipped; the clip itself is never cut. The span
+// is measured once, when the clip is set, so a tap plays at once; a tap before the measure is done waits for it (a few milliseconds of decoding).
+//
 // The end of a word (mw-5r3p30.139): a word is a fraction of a second, and a phone can move the element's currentTime only as its timeupdate events come,
 // about 0.25 s apart, so a watch that reads currentTime alone stops up to a quarter second late and the next words play ('Levites' came back with 'mortal
 // men'). The watch therefore also counts our own clock from the moment the sound starts (the play() promise, the 'playing' and 'seeked' events) and stops at
 // the later of the two positions; while the element waits for data or seeks ('waiting', 'seeking') only its own clock counts, so a stall never cuts a word short.
 import { useSyncExternalStore } from 'react';
 import { blobOf, type Clip } from './clip';
+import { voiceSpan, type SpeechTimes, type VoiceSpan } from './voiceSpan';
 
 /** How often the watch looks for the end of a word, in milliseconds. */
 const TICK_MS = 15;
@@ -20,6 +25,16 @@ interface Anchor {
   at: number;
 }
 
+/** Where his voice is in the clip set now: measured for this clip and these times, `span` once known. */
+interface Measured {
+  of: Clip;
+  times: SpeechTimes;
+  pending: Promise<VoiceSpan>;
+  span?: VoiceSpan;
+}
+
+const sameTimes = (a: SpeechTimes, b: SpeechTimes): boolean => a.start === b.start && a.end === b.end;
+
 export class ClipPlayer {
   private audio: HTMLAudioElement | null = null;
   private detach: (() => void) | null = null;
@@ -28,6 +43,7 @@ export class ClipPlayer {
   private urlOf: Clip | string | undefined;
   private timer: ReturnType<typeof setTimeout> | undefined;
   private anchor: Anchor | null = null;
+  private measured: Measured | undefined;
   private now: string | null = null;
   private listeners = new Set<() => void>();
   /** called before a clip starts: whatever else speaks must stop while he hears himself */
@@ -64,9 +80,20 @@ export class ClipPlayer {
       audio.removeEventListener('seeking', standing);
     };
   };
-  /** the clip behind the buttons now (a new reading of the verse is a new clip, and a new source); a string is the URL of a clip the app ships */
-  setClip(clip: Clip | string | undefined): void {
+  /** the clip behind the buttons now (a new reading of the verse is a new clip, and a new source); a string is the URL of a clip the app ships.
+   * A recorded clip is measured for where his voice is (toggleVoice), with the scorer's times for his first and last words when it gave them. */
+  setClip(clip: Clip | string | undefined, times: SpeechTimes = {}): void {
     this.clip = clip;
+    if (clip === undefined || typeof clip === 'string') {
+      this.measured = undefined;
+      return;
+    }
+    if (this.measured?.of === clip && sameTimes(this.measured.times, times)) return;
+    const measured: Measured = { of: clip, times, pending: voiceSpan(clip, times) };
+    void measured.pending.then((span) => {
+      measured.span = span;
+    });
+    this.measured = measured;
   }
   /** the audio element ended, or failed, on its own */
   readonly ended = (): void => {
@@ -140,6 +167,19 @@ export class ClipPlayer {
       }
     };
     this.timer = setTimeout(watch, TICK_MS);
+  }
+
+  /** Plays his recorded clip from just before his voice starts to just after it ends (the whole clip when that is not known), or stops when `key`
+   * is what plays now. */
+  toggleVoice(key: string): void {
+    const measured = this.measured;
+    if (this.now === key || !measured || measured.span) {
+      this.toggle(key, measured?.span?.from, measured?.span?.to);
+      return;
+    }
+    void measured.pending.then((span) => {
+      if (this.measured === measured && this.now !== key) this.toggle(key, span.from, span.to);
+    });
   }
 
   /** Stops what plays, if anything. */

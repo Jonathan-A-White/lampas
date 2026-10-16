@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { blobOf, clipFileName, downloadSeam, type Clip } from './audio/clip';
 import { ClipPlayer, usePlaying } from './audio/clipPlayer';
+import { speechTimesOf, type SpeechTimes } from './audio/voiceSpan';
 import type { Verse } from './data/chapter';
 import { unitId, unitName } from './data/passage';
 import { getDeveloper, getGreekPronunciation, getMissTally, getVerseReading, verseRef, type FixWord, type VerseReading } from './data/repositories';
@@ -218,22 +219,24 @@ function NextWord({ fix, view }: { fix: FixWord; view: ReadingView }) {
   );
 }
 
-/** One player for the clip of this result; it stops speech before it plays, and lets its URL go when the result goes. */
-function useClipPlayer(clip: Clip | undefined): [ClipPlayer, (audio: HTMLAudioElement | null) => void] {
+/** One player for the clip of this result; it stops speech before it plays, and lets its URL go when the result goes. `times` are the scorer's for
+ * his first and last words, when it gave them: where 'Play my reading' starts and stops (else the player measures the clip). */
+function useClipPlayer(clip: Clip | undefined, times: SpeechTimes): [ClipPlayer, (audio: HTMLAudioElement | null) => void] {
   const [player] = useState(() => new ClipPlayer(() => {
     stopReading();
     stopSpeaking();
     stopAnswer();
   }));
   useEffect(() => {
-    player.setClip(clip);
-  }, [player, clip]);
+    player.setClip(clip, times);
+  }, [player, clip, times]);
   useEffect(() => () => player.dispose(), [player]);
   const audioRef = useCallback((audio: HTMLAudioElement | null) => player.attach(audio), [player]);
   return [player, audioRef];
 }
 
-/** 'Play my reading': the clip he recorded, all of it. 'Download my recording' is there only in Developer mode (a debugging option, found on About),
+/** 'Play my reading': the clip he recorded, from just before his voice starts to just after it ends (mw-5r3p30.396: the silence before his first word
+ * is skipped; the clip itself stays whole). 'Download my recording' is there only in Developer mode (a debugging option, found on About),
  * and saves the clip as it was recorded, named for the verse and the UTC time it was read. */
 function MyReading({ clip, fileName, player }: { clip: Clip; fileName: string; player: ClipPlayer }) {
   const developer = useLiveQuery(getDeveloper, []);
@@ -241,7 +244,7 @@ function MyReading({ clip, fileName, player }: { clip: Clip; fileName: string; p
   const button = 'min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium';
   return (
     <div className="space-y-2">
-      <button type="button" onClick={() => player.toggle(ALL)} className={button}>
+      <button type="button" onClick={() => player.toggleVoice(ALL)} className={button}>
         {playing === ALL ? 'Stop my reading' : 'Play my reading'}
       </button>
       {developer === 'on' ? (
@@ -281,7 +284,8 @@ function Result({ reading, text, view, passage, fileName, onWalk }: { reading: V
   const [open, setOpen] = useState<string | null>(null);
   const marks = useMemo(() => markWords(text, reading.words), [text, reading.words]);
   const fix = open === null ? undefined : open.startsWith('l') ? marks.lost[Number(open.slice(1))] : marks.marked.get(Number(open));
-  const [player, audioRef] = useClipPlayer(reading.clip);
+  const times = useMemo(() => speechTimesOf(reading.words, reading.reached), [reading.words, reading.reached]);
+  const [player, audioRef] = useClipPlayer(reading.clip, times);
   const partial = reading.verdict === 'partial';
   const walkable = walkWordsOf(reading).length > 0;
   return (
