@@ -1,6 +1,7 @@
 // src/GrammarSheet.tsx — the sheet a grammar word of a word's Parsing opens (mw-5r3p30.35), over the word sheet: the term, a plain
-// explanation, how it shows in Koine Greek, related terms, up to three examples from the chapter (each opens its own word
-// sheet), and at the bottom I know this (kept on the phone; the word sheet then shows the term plain) and Ask the tutor.
+// explanation, up to three examples from the chapter (each opens its own word sheet; straight under the explanation, so all three are
+// in view when the sheet opens, mw-5r3p30.369), how it shows in Koine Greek, related terms, and at the bottom I know this (kept on the
+// phone; the word sheet then shows the term plain) and Ask the tutor.
 import { type Chapter, type GreekWord } from './data/chapter';
 import { exampleMeaning } from './data/grammar/ideaSheet';
 import { conceptOf } from './data/grammar-concepts';
@@ -13,7 +14,7 @@ import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { markTermKnown } from './useKnownTerms';
 
-const BUTTON = 'min-h-12 min-w-0 flex-1 rounded-xl border px-3 text-base font-medium';
+const BUTTON = 'min-h-12 min-w-0 flex-1 rounded-xl border px-3 text-base font-medium short:flex-none';
 
 export function GrammarSheet({ chapter, term, word, known, covered, onClose, onTerm, onWord, onAsk, onLearn }: {
   chapter: Chapter;
@@ -49,24 +50,56 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onT
         aria-modal="true"
         aria-label="Grammar"
         style={{ transform: drag ? `translateY(${drag}px)` : undefined }}
-        className="relative flex max-h-[92dvh] flex-col rounded-t-2xl border-t border-line bg-surface"
+        className="relative flex max-h-[92dvh] flex-col rounded-t-2xl border-t border-line bg-surface short:grid short:h-dvh short:max-h-none short:grid-cols-[minmax(0,1fr)_18rem] short:grid-rows-[auto_minmax(0,1fr)_auto]"
       >
-        <div data-testid="grammar-handle" {...handle} className="flex min-h-12 shrink-0 touch-none items-center justify-between gap-3 px-4 pt-2">
+        <div data-testid="grammar-handle" {...handle} className="flex min-h-12 shrink-0 touch-none items-center justify-between gap-3 px-4 pt-2 short:col-span-2">
           <span aria-hidden="true" className="mx-auto h-1.5 w-10 rounded-full bg-line" />
           <button type="button" ref={focusOnMount} onClick={onClose} className="absolute right-2 top-1 min-h-11 min-w-11 rounded-lg px-3 text-base font-medium text-accent">
             Done
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-1">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-1 short:col-start-1 short:row-start-2 short:pb-[calc(0.75rem+var(--lp-end-inset))]">
           <div className="flex items-start justify-between gap-2">
             <h2 className="min-w-0 break-words text-2xl font-bold">{term}</h2>
             <LessonReadAloud id={`grammar:${term}`} text={proseOf([term, concept?.explanation, concept ? 'In Greek' : null, concept?.greek])} />
           </div>
           {concept ? (
+            <p data-testid="grammar-explanation" className="mt-2 text-lg">
+              {concept.explanation}
+            </p>
+          ) : null}
+          {/* the examples come straight after what the term means, so all three are in view when the sheet opens (mw-5r3p30.369) */}
+          <div className="mt-3">
+            <p className="text-sm text-muted">Examples from {title}</p>
+            {examples.length ? (
+              <ul className="space-y-2 pt-1">
+                {examples.map(({ word: example, verse }) => (
+                  <li key={`${verse}:${example.t}`}>
+                    <button
+                      type="button"
+                      data-testid="grammar-example"
+                      data-form={example.t}
+                      data-lemma={example.l}
+                      onClick={() => onWord(example)}
+                      className="flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-line px-3 py-1 text-left active:bg-line"
+                    >
+                      <span lang="grc" className="font-greek text-2xl">
+                        {example.t}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-base text-muted">{exampleMeaning(chapter, verse, example)}</span>
+                      <span className="shrink-0 text-sm text-muted">
+                        {chapter.chapter}:{verse}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="pt-1 text-base text-muted">No word of {title} has this in its parsing.</p>
+            )}
+          </div>
+          {concept ? (
             <>
-              <p data-testid="grammar-explanation" className="mt-2 text-lg">
-                {concept.explanation}
-              </p>
               <p className="mt-3 text-sm text-muted">In Greek</p>
               <p data-testid="grammar-greek" className="text-lg">
                 {concept.greek}
@@ -99,39 +132,13 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onT
               Learn this idea
             </button>
           ) : null}
-          <div className="mt-3">
-            <p className="text-sm text-muted">Examples from {title}</p>
-            {examples.length ? (
-              <ul className="space-y-2 pt-1">
-                {examples.map(({ word: example, verse }) => (
-                  <li key={`${verse}:${example.t}`}>
-                    <button
-                      type="button"
-                      data-testid="grammar-example"
-                      data-form={example.t}
-                      data-lemma={example.l}
-                      onClick={() => onWord(example)}
-                      className="flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-line px-3 py-1 text-left active:bg-line"
-                    >
-                      <span lang="grc" className="font-greek text-2xl">
-                        {example.t}
-                      </span>
-                      <span className="min-w-0 flex-1 truncate text-base text-muted">{exampleMeaning(chapter, verse, example)}</span>
-                      <span className="shrink-0 text-sm text-muted">
-                        {chapter.chapter}:{verse}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="pt-1 text-base text-muted">No word of {title} has this in its parsing.</p>
-            )}
-          </div>
         </div>
         {/* what is read aloud keeps its Pause and Stop in view: the sheet is over the screen's own bar */}
-        <BarSlot level={5} />
-        <div className="flex shrink-0 gap-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+var(--lp-bar-inset))]">
+        <div className="contents short:col-span-2 short:row-start-3 short:block">
+          <BarSlot level={5} />
+        </div>
+        {/* on its side (a short window) the buttons are a column at the right, so the examples keep the height (mw-5r3p30.369) */}
+        <div className="flex shrink-0 gap-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+var(--lp-bar-inset))] short:col-start-2 short:row-start-2 short:flex-col short:overflow-y-auto short:border-t-0 short:border-l">
           <button
             type="button"
             aria-pressed={known}

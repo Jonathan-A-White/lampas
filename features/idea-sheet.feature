@@ -181,6 +181,15 @@ Feature: The idea sheet
     And the idea sheet shows no example "ὀφθαλμοῖς"
     And the idea sheet does not list "ἐψηλάφησαν"
 
+  # mw-5r3p30.369: 'plural' in 1 John 2 looked as if it left out Τεκνία, because rows of the examples were out of view. The sheet draws three
+  # (they fit above the slider on a phone held upright or on its side, tests/e2e/sheet-rows-in-view.spec.ts) and folds the rest under one button.
+  Scenario: The Chi sheet draws its first three examples and folds the rest under Show N more
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
+    When he opens the letter sheet of "chi" from the alphabet sheet
+    Then the letter sheet draws its first 3 examples and a button that shows the rest
+    When he taps the button that shows the rest
+    Then the letter sheet draws every example and no such button
+
   # Sound hints fit his English (mw-5r3p30.352): 'o, as in “lot”' says 'ah' to an American ear, so American English, the default, keys the o
   # to “or”, said short (PROVISIONAL wording, the Governor to confirm); British English keeps “lot”. Each accent is one table of hints.
   Scenario: The Omicron sheet says its o the way an American says it

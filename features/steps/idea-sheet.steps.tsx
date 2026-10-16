@@ -722,6 +722,27 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('The Chi sheet draws its first three examples and folds the rest under Show N more', ({ Given, When, Then }) => {
+    // a folded row stays in the page, hidden, so every example is still one tap away
+    const drawn = (): HTMLElement[] => shownRows().filter((row) => !row.closest('li')?.hidden);
+    const shownRows = (): HTMLElement[] => within(letterSheet()).getAllByTestId('idea-example');
+    const showRest = (): HTMLElement | null => within(letterSheet()).queryByRole('button', { name: /^Show \d+ more$/ });
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the letter sheet of {string} from the alphabet sheet', openLetterSheet);
+    Then('the letter sheet draws its first {int} examples and a button that shows the rest', async (_, shown: number) => {
+      await waitFor(() => expect(within(letterSheet()).queryByTestId('idea-loading')).toBeNull());
+      const all = shownRows();
+      expect(all.length).toBeGreaterThan(shown);
+      expect(drawn()).toEqual(all.slice(0, shown));
+      expect(showRest()).toHaveTextContent(`Show ${all.length - shown} more`);
+    });
+    When('he taps the button that shows the rest', async () => user.click(showRest() as HTMLElement));
+    Then('the letter sheet draws every example and no such button', () => {
+      expect(drawn()).toEqual(shownRows());
+      expect(showRest()).toBeNull();
+    });
+  });
+
   Scenario('An idea no table teaches has no table link', ({ Given, When, Then }) => {
     Given(GIVEN_GOAL, opensWithGoal);
     When('he opens the idea sheet of {string} from the Goal screen', opensIdeaOfGoal);
