@@ -14,20 +14,29 @@ const VERB_CODE = /^V-(2?)([PIFARL])([AMPEDONQX])([IMSONPR])(?:-|$)/;
 /** The gender letter of a noun or adjective code ('N-GSF' is 'F'), or '' when it has none. */
 const genderOf = (code: string): string => /^[NA]-[NGDAV][SP]([MFN])?/.exec(code)?.[1] ?? '';
 
-/** Which declension a noun or an adjective is, from the lemma's ending and the word's gender. First: feminine in -η or -α, masculine in -ης or -ας
- * (and the feminine of an adjective in -ος); second: -ος and -ον (an adjective's masculine and neuter); the rest, and any neuter in -ος, -α or -ας, third. */
+/** Which declension a noun or an adjective is, from the lemma's ending and the word's gender. First: feminine in -η, -α or -αι, masculine in -ης or -ας
+ * (and the feminine of an adjective in -ος, and of a three-ending adjective in -ς: πᾶς, μέγας, πολύς, οὐδείς, εὐθύς, διπλοῦς); second: -ος and -ον (an
+ * adjective's masculine and neuter); the rest, and any neuter in -ος, -α or -ας, third, as is a comparative in -ων and a two-ending adjective in -ης or -ων. */
 function declensionOf(code: string, lemma: string, form?: string): PatternIdea | undefined {
   const head = code.split('-');
   if (!['N', 'A'].includes(head[0]) || ['LI', 'OI', 'PRI', 'NUI'].includes(head[1])) return undefined;
   const gender = genderOf(code);
-  const ending = bare(lemma);
+  // a name with two dictionary forms ('Ἰωάννα, Ἰωανάν') is read by the first
+  const ending = bare(lemma.split(',')[0]);
   const ends = (...suffixes: string[]): boolean => suffixes.some((s) => ending.endsWith(s));
   if (head[0] === 'A') {
-    // a two-ending adjective (αἰώνιος) has the feminine in -ος and -ον: the form, when it is known, says which
-    if (ends('ος')) return gender === 'F' && !(form && /(ος|ον|ου|ῳ|οις|ους|οι)$/.test(bare(form))) ? 'declension-1' : 'declension-2';
+    // a two-ending adjective (αἰώνιος) has the feminine in -ος and -ον, a plural-only one (χίλιοι) is read like -ος: the form, when it is known, says which
+    if (ends('ος', 'οι')) return gender === 'F' && !(form && /(ος|ον|ου|ῳ|οις|ους|οι)$/.test(bare(form))) ? 'declension-1' : 'declension-2';
+    // an adjective that is only ever feminine (δεκάτη, ὀψία)
+    if (ends('η', 'α')) return 'declension-1';
+    // a comparative in -ων is third whatever the positive was (μέγας, μείζων)
+    if (/^[NA]-[NGDAV][SP][MFN]?-C/.test(code)) return 'declension-3';
+    // a three-ending adjective: the masculine and neuter are third (πᾶς, πάντα) or contracted second (διπλοῦς), the feminine is first (πᾶσα, μιᾶς, οὐδεμία)
+    if (ends('ους')) return gender === 'F' ? 'declension-1' : 'declension-2';
+    if (ends('υς', 'ας', 'εις')) return gender === 'F' ? 'declension-1' : 'declension-3';
     return 'declension-3';
   }
-  if (gender === 'F' && ends('η', 'α')) return 'declension-1';
+  if (gender === 'F' && ends('η', 'α', 'αι')) return 'declension-1';
   if (gender === 'M' && ends('ης', 'ας')) return 'declension-1';
   if (gender !== 'N' && ends('ος')) return 'declension-2';
   if (gender === 'N' && ends('ον')) return 'declension-2';

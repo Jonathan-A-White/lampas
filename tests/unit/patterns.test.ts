@@ -5,6 +5,7 @@ import type { Chapter, GreekWord } from '../../src/data/chapter';
 import { ideasOf, ideasOfWord } from '../../src/data/grammar/ladder';
 import { PATTERN_IDEAS, patternsOf } from '../../src/data/grammar/patterns';
 
+const bareOf = (text: string): string => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 const chapter = (book: string, n: number): Chapter => JSON.parse(readFileSync(`public/data/${book}/${n}.json`, 'utf8')) as Chapter;
 const john1 = chapter('1jn', 1);
 const wordsOf = (c: Chapter, verse?: number): GreekWord[] => c.verses.filter((v) => verse === undefined || v.n === verse).flatMap((v) => v.g);
@@ -32,6 +33,14 @@ describe('patternsOf on the words of 1 John 1', () => {
   it('gives ἀρχῆς the first declension and χεῖρες the third', () => {
     expect(patternsOf(find('ἀρχῆς'))).toContain('declension-1');
     expect(patternsOf(find('χεῖρες'))).toContain('declension-3');
+  });
+
+  it('gives οὐδεμία, a feminine of οὐδείς in -α, the first declension and not the third', () => {
+    const word = find('οὐδεμία', 5);
+    expect(word.l).toBe('οὐδείς');
+    expect(word.p).toBe('A-NSF-N');
+    expect(patternsOf(word)).toContain('declension-1');
+    expect(patternsOf(word)).not.toContain('declension-3');
   });
 
   it('gives every form of πατήρ in the chapter the third declension', () => {
@@ -79,6 +88,31 @@ describe('patternsOf from a lemma and a code', () => {
     expect(of('ἀγαθός', 'A-NSF')).toContain('declension-1');
     expect(patternsOf({ l: 'αἰώνιος', p: 'A-ASF', t: 'αἰώνιον' })).toContain('declension-2');
     expect(of('ἀληθής', 'A-NSM')).toContain('declension-3');
+  });
+
+  it('reads the feminine of a three-ending adjective in -ς as the first declension, and a two-ending one as the third', () => {
+    for (const [l, p] of [['οὐδείς', 'A-NSF-N'], ['πᾶς', 'A-NSF'], ['πᾶς', 'A-GSF'], ['μέγας', 'A-DSF'], ['πολύς', 'A-APF'], ['εἷς', 'A-GSF'], ['εὐθύς', 'A-NSF']]) {
+      expect(of(l, p), `${l} ${p}`).toContain('declension-1');
+      expect(of(l, p), `${l} ${p}`).not.toContain('declension-3');
+    }
+    for (const [l, p] of [['ἀληθής', 'A-ASF'], ['ἀσθενής', 'A-NSF'], ['εὐσχήμων', 'A-APF'], ['τέσσαρες', 'A-APF']]) expect(of(l, p), `${l} ${p}`).toContain('declension-3');
+    // the comparative in -ων is third whatever the positive was
+    expect(of('μέγας', 'A-ASF-C')).toContain('declension-3');
+    expect(of('πολύς', 'A-APF-C')).toContain('declension-3');
+    expect(of('πᾶς', 'A-NSM')).toContain('declension-3');
+  });
+
+  it('reads an adjective whose lemma is itself feminine, and a plural-only noun, as the first declension', () => {
+    expect(of('δεκάτη', 'A-APF')).toContain('declension-1');
+    expect(of('ὀψία', 'A-GSF')).toContain('declension-1');
+    expect(of('Συράκουσαι', 'N-APF')).toContain('declension-1');
+    expect(of('Ἰωάννα, Ἰωανάν', 'N-NSF')).toContain('declension-1');
+    expect(of('διπλοῦς', 'A-NSM')).toContain('declension-2');
+    expect(of('διπλοῦς', 'A-GSF')).toContain('declension-1');
+  });
+
+  it('keeps a third-declension noun third in its accusative in -α and -ας', () => {
+    for (const [l, p] of [['σάρξ', 'N-ASF'], ['χείρ', 'N-APF'], ['ἐλπίς', 'N-ASF'], ['μήτηρ', 'N-ASF']]) expect(of(l, p), `${l} ${p}`).toContain('declension-3');
   });
 
   it('gives every noun, adjective and verb a stem and an ending, and nothing else without one', () => {
@@ -148,6 +182,26 @@ describe('ideasOfWord', () => {
 });
 
 describe('a walk of every token of the 260 chapter files', () => {
+  it('gives no feminine adjective in a first-declension ending the third declension unless its lemma is a two-ending one', () => {
+    const wrong = new Map<string, number>();
+    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder')) {
+      for (const file of readdirSync(`public/data/${book.name}`)) {
+        const c = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Chapter;
+        for (const w of c.verses.flatMap((v) => v.g)) {
+          // a feminine form ending in -α, -η, -ᾶς or -ης (accents and case aside) of a three-ending adjective or a feminine-lemma adjective or noun
+          if (!/^[NA]-[NGDAV][SP]F/.test(w.p) || !/(α|η|ας|ης)$/.test(bareOf(w.t))) continue;
+          if (!patternsOf(w).includes('declension-3')) continue;
+          const lemma = bareOf(w.l.split(',')[0]);
+          const comparative = /-C$/.test(w.p);
+          // genuinely third: any noun whose lemma is not a first-declension one (σάρξ, χείρ, ἐλπίς, μήτηρ, -της), the two-ending adjectives and the comparatives
+          const genuine = w.p.startsWith('N-') ? !/(η|α|αι)$/.test(lemma) : comparative || /(ης|ων|ες|ον)$/.test(lemma);
+          if (!genuine) wrong.set(`${w.l} ${w.p} ${w.t}`, (wrong.get(`${w.l} ${w.p} ${w.t}`) ?? 0) + 1);
+        }
+      }
+    }
+    expect([...wrong.keys()]).toEqual([]);
+  });
+
   it('names only ideas the ladder has, and throws nothing', () => {
     const seen = new Map<string, number>();
     let files = 0;
