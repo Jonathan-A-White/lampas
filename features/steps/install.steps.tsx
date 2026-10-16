@@ -12,6 +12,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { UpdateBanner } from '../../src/UpdateBanner';
 import { startAppUpdates, type AppUpdates } from '../../src/services/appUpdate';
 import { fakeSetup, fakeWorker, type FakeSetup, type FakeWorker } from '../../tests/support/fake-registration';
+import { HOOK_TIMEOUT_MS } from '../../tests/support/timeouts';
 
 // A real vite build takes a few seconds.
 vi.setConfig({ testTimeout: 90_000 });
@@ -33,7 +34,7 @@ interface Manifest {
 
 const outDir = mkdtempSync(join(tmpdir(), 'lampas-build-'));
 let built = false;
-afterAll(() => rmSync(outDir, { recursive: true, force: true }));
+afterAll(() => rmSync(outDir, { recursive: true, force: true }), HOOK_TIMEOUT_MS);
 
 // vite's own CLI in a child process: esbuild refuses to run inside this jsdom test environment.
 function buildOnce(): void {

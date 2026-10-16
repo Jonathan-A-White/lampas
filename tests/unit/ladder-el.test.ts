@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { buildLadder, scoreWords, type LadderEntry } from '../../scripts/ladder-el';
+import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 
 const words = (text: string): string[] => text.split(' ');
 
@@ -44,7 +45,7 @@ describe('the score of a verse', () => {
 
 describe('the ladder of the whole New Testament', () => {
   const tmp = mkdtempSync(join(tmpdir(), 'ladder-el-'));
-  afterAll(() => rmSync(tmp, { recursive: true, force: true }));
+  afterAll(() => rmSync(tmp, { recursive: true, force: true }), HOOK_TIMEOUT_MS);
   const first = join(tmp, 'a', 'el.json');
   const second = join(tmp, 'b', 'el.json');
   const verseCount = (): number => {
