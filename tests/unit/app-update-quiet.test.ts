@@ -83,6 +83,27 @@ describe('a waiting build with nothing new to show', () => {
     expect(setup.reload).not.toHaveBeenCalled();
   });
 
+  // mw-5r3p30.304: the page must not keep running the old build under the new worker until the next cold start
+  it('took over while visible, reloads when next hidden', async () => {
+    const setup = fakeSetup();
+    start(setup, async () => NO_NEWER);
+    await settle();
+    setup.newWorkerWaits();
+    await settle();
+    hide();
+    show();
+    setup.controllerChanges();
+    expect(setup.reload).not.toHaveBeenCalled();
+    expect(stateOf()).toBe('none');
+    show();
+    expect(setup.reload).not.toHaveBeenCalled();
+    hide();
+    expect(setup.reload).toHaveBeenCalledTimes(1);
+    show();
+    hide();
+    expect(setup.reload).toHaveBeenCalledTimes(1);
+  });
+
   it('is asked for again at the next hide when the app was hidden and visible at once and the worker did not take over', async () => {
     const setup = fakeSetup();
     start(setup, async () => NO_NEWER);

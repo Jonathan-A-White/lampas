@@ -8,6 +8,8 @@
 // A waiting build with nothing new to show him (the changelog has no entry after the running version, mw-5r3p30.236)
 // is never offered: no banner, and it takes over by itself, at start-up or when the app is hidden, never while he
 // uses it; the page then reloads (hidden, or at start-up). A take-over that did not happen is asked for again at the next hide.
+// One that lands after he came back (the worker held by a slow request) reloads the page at the next hide (mw-5r3p30.304),
+// so the page does not run the old build under the new worker until the next cold start.
 // When the changelog cannot be read the banner shows as usual.
 import { useSyncExternalStore } from 'react';
 import { summarise, type ChangelogEntry } from 'bsv-kit/whats-new';
@@ -100,6 +102,8 @@ export function startAppUpdates(deps: {
   // A build with nothing to show: the worker that is to take over quietly, and whether the page reloads when it has.
   let quiet: WorkerLike | undefined;
   let quietAsked: 'start-up' | 'hidden' | undefined;
+  // A quiet take-over landed while he used the app: the page reloads the next time it is hidden.
+  let reloadWhenHidden = false;
   // The worker whose changelog is being read or was read.
   let judged: WorkerLike | undefined;
   const atStart = registration.waiting;
@@ -163,6 +167,7 @@ export function startAppUpdates(deps: {
       const mode = quietAsked;
       quietAsked = undefined;
       if (mode === 'start-up' || hidden()) reload();
+      else reloadWhenHidden = true;
       return;
     }
     if (!asked) return;
@@ -177,7 +182,10 @@ export function startAppUpdates(deps: {
   };
   const onVisible = () => {
     if (document.visibilityState === 'visible') checkNow();
-    else takeOverQuietly();
+    else if (reloadWhenHidden) {
+      reloadWhenHidden = false;
+      reload();
+    } else takeOverQuietly();
   };
 
   registration.addEventListener('updatefound', onFound);
