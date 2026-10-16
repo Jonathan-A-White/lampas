@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Drill Items Answer 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["items"],
+  "properties": {
+    "items": {
+      "description": "Short drill items, at most `per_idea` for each idea asked about, each made from one of the verses sent.",
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["idea", "kind", "ref", "prompt", "options", "right"],
+        "properties": {
+          "idea": { "description": "The id of the idea the item drills, copied from the request.", "type": "string", "minLength": 1, "maxLength": 60 },
+          "kind": {
+            "description": "tap-form: he taps the word of the verse that is what the prompt names. meaning: he is shown some Greek words of the verse and picks what they say.",
+            "type": "string",
+            "enum": ["tap-form", "meaning"]
+          },
+          "ref": { "description": "The verse the item is made from, copied from the request.", "type": "string", "minLength": 1, "maxLength": 40 },
+          "prompt": { "description": "What is asked, in one plain line, such as 'Tap the genitive singular noun'.", "type": "string", "minLength": 1, "maxLength": 120 },
+          "form": { "description": "A meaning item only: the Greek word or words of the verse, in the verse's order, copied exactly. Left out of a tap-form item.", "type": "string", "minLength": 1, "maxLength": 120 },
+          "options": { "description": "Exactly four different choices. A tap-form item's are four words of the verse, copied exactly; a meaning item's are four short English renderings.", "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "string", "minLength": 1, "maxLength": 80 } },
+          "right": { "description": "The one right choice, exactly as it is among the options.", "type": "string", "minLength": 1, "maxLength": 80 }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "description": "He missed the genitive case and the second declension in one round: items come back for the ideas asked about, and the first is on the one he missed most.",
+  "schemaVersion": "1",
+  "request": {
+    "ideas": [
+      {
+        "id": "case-genitive",
+        "title": "The genitive case",
+        "what": "The genitive case shows belonging or source: of, from. English uses “of” or ’s. Example: “the house of my father” or “my father’s house”. Greek puts the noun in the genitive instead of using “of”: ὁ λόγος τοῦ θεοῦ is “the word of God”. Some prepositions also take the genitive, and then it can mean “from” or “about”.",
+        "misses": 3
+      },
+      {
+        "id": "declension-2",
+        "title": "The second declension",
+        "what": "Nouns whose stem ends in ο make up the second declension: λόγος “word” (1 John 1:1) and ἄνθρωπος “man” are masculine, and τέκνον “child” is neuter. The nominative ends in -ος or -ον and the genitive in -ου: λόγος, λόγου; τέκνον, τέκνου.",
+        "misses": 1
+      }
+    ],
+    "verses": [
+      {
+        "ref": "1 John 1:1",
+        "greek": "Ὃ ἦν ἀπ' ἀρχῆς ὃ ἀκηκόαμεν ὃ ἑωράκαμεν τοῖς ὀφθαλμοῖς ἡμῶν ὃ ἐθεασάμεθα καὶ αἱ χεῖρες ἡμῶν ἐψηλάφησαν περὶ τοῦ λόγου τῆς ζωῆς",
+        "english": "That which was from the beginning, which we have heard, which we have seen with our own eyes, which we have gazed upon and touched with our own hands — this is the Word of life.",
+        "uses": [
+          {
+            "idea": "case-genitive",
+            "form": "ἀρχῆς",
+            "parse": "noun, genitive singular feminine"
+          },
+          {
+            "idea": "case-genitive",
+            "form": "ἡμῶν",
+            "parse": "personal pronoun, 1st person genitive plural"
+          },
+          {
+            "idea": "case-genitive",
+            "form": "ἡμῶν",
+            "parse": "personal pronoun, 1st person genitive plural"
+          },
+          {
+            "idea": "case-genitive",
+            "form": "τοῦ",
+            "parse": "article, genitive singular masculine"
+          },
+          {
+            "idea": "case-genitive",
+            "form": "λόγου",
+            "parse": "noun, genitive singular masculine"
+          },
+          {
+            "idea": "case-genitive",
+            "form": "τῆς",
+            "parse": "article, genitive singular feminine"
+          }
+        ]
+      },
+      {
+        "ref": "1 John 1:2",
+        "greek": "Καὶ ἡ ζωὴ ἐφανερώθη καὶ ἑωράκαμεν καὶ μαρτυροῦμεν καὶ ἀπαγγέλλομεν ὑμῖν τὴν ζωὴν τὴν αἰώνιον ἥτις ἦν πρὸς τὸν πατέρα καὶ ἐφανερώθη ἡμῖν",
+        "english": "And this is the life that was revealed; we have seen it and testified to it, and we proclaim to you the eternal life that was with the Father and was revealed to us.",
+        "uses": [
+          {
+            "idea": "declension-2",
+            "form": "αἰώνιον",
+            "parse": "adjective, accusative singular feminine"
+          }
+        ]
+      },
+      {
+        "ref": "1 John 1:3",
+        "greek": "Ὃ ἑωράκαμεν καὶ ἀκηκόαμεν ἀπαγγέλλομεν ὑμῖν ἵνα καὶ ὑμεῖς κοινωνίαν ἔχητε μεθ' ἡμῶν καὶ ἡ κοινωνία δὲ ἡ ἡμετέρα μετὰ τοῦ πατρὸς καὶ μετὰ τοῦ υἱοῦ αὐτοῦ Ἰησοῦ χριστοῦ",
+        "english": "We proclaim to you what we have seen and heard, so that you also may have fellowship with us. And this fellowship of ours is with the Father and with His Son, Jesus Christ.",
+        "uses": [
+          {
+            "idea": "case-genitive",
+            "form": "ἡμῶν",
+            "parse": "personal pronoun, 1st person genitive plural"
+          },
+          {
+            "idea": "case-genitive",
+            "form": "τοῦ",
+            "parse": "article, genitive singular masculine"
+          },
+          {
+            "idea": "case-genitive",
+            "form": "πατρὸς",
+            "parse": "noun, genitive singular masculine"
+          },
+          {
+            "idea": "case-genitive",
+            "form": "τοῦ",
+            "parse": "article, genitive singular masculine"
+          },
+          {
+            "idea": "case-genitive",
+            "form": "υἱοῦ",
+            "parse": "noun, genitive singular masculine"
+          },
+          {
+            "idea": "case-genitive",
+            "form": "αὐτοῦ",
+            "parse": "personal pronoun, genitive singular masculine"
+          }
+        ]
+      },
+      {
+        "ref": "1 John 1:5",
+        "greek": "Καὶ ἔστιν αὕτη ἡ ἀγγελία ἣν ἀκηκόαμεν ἀπ' αὐτοῦ καὶ ἀναγγέλλομεν ὑμῖν ὅτι ὁ θεὸς φῶς ἐστίν καὶ σκοτία ἐν αὐτῷ οὐκ ἔστιν οὐδεμία",
+        "english": "And this is the message we have heard from Him and announce to you: God is light, and in Him there is no darkness at all.",
+        "uses": [
+          {
+            "idea": "case-genitive",
+            "form": "αὐτοῦ",
+            "parse": "personal pronoun, genitive singular masculine"
+          },
+          {
+            "idea": "declension-2",
+            "form": "θεὸς",
+            "parse": "noun, nominative singular masculine"
+          }
+        ]
+      }
+    ],
+    "per_idea": 2
+  },
+  "expect": {
+    "items.0.idea": {
+      "one_of": [
+        "case-genitive",
+        "declension-2"
+      ]
+    },
+    "items.0.ref": {
+      "present": true
+    },
+    "items.0.prompt": {
+      "present": true
+    }
+  }
+}
