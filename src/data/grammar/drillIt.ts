@@ -7,6 +7,8 @@
 //       'proved'  after two unhinted rights in a row at the top step,
 //       'edge'    when the step he holds has the step above it failed (the highest step right, with a miss above it), or he misses step 1 twice (the edge is 0),
 //       'limit'   after MAX_QUESTIONS (14) questions.
+//   A first miss on a step of words to read (DrillStep.words: a letter's or pair's 'Read a word', the breathing in a harder word; mw-i7xe0n.12) stays at that step and asks
+//   the same target with another word, so a word he cannot say does not end the walk at the step below; a second miss on it goes back as any miss does.
 //   The result: {ideaId, proved, edgeStep, topStep, strong, weak, answers}; a facet is weak when missed at least once and right fewer than twice.
 //   An idea whose sound the scheme changes by the next letter (mw-i7xe0n.7: χ is kh before α, hy before ε) is proved only when a word of each side of its
 //   rule was answered right, unhinted: the walk keeps asking the side still missing at the top step (DrillWalk.sides).
@@ -56,6 +58,8 @@ export interface DrillStep {
   /** what is asked in this step, in plain words */
   title: string;
   questions: DrillQuestion[];
+  /** the step reads words: a first miss in it asks the same target with another word at the same step */
+  words?: boolean;
 }
 
 // ---- The steps ----
@@ -104,6 +108,7 @@ export function drillSteps(ideaId: string, options: DrillOptions = {}): DrillSte
   return steps.map((r, i) => ({
     step: i + 1,
     title: r.title,
+    ...(r.words ? { words: true } : {}),
     questions: shuffle(r.questions, mulberry32((ctx.seed + i * 31) >>> 0)).map((q): DrillQuestion => ({ ...q, facet: q.facet ?? (q.kind === 'concept' ? MEANING : own), step: i + 1, key: questionKey(q) })),
   }));
 }
@@ -264,8 +269,11 @@ export function answer(walk: DrillWalk, right: boolean, hinted: boolean): DrillW
     const base = highestHeld(stood, q.step);
     if (base === 0 && q.step === 1 && asked.filter((a) => a.step === 1 && !a.right).length >= 2) return finish(walk, asked, 'edge', streak);
     step = Math.max(1, Math.floor((base + q.step) / 2));
+    // a first miss on a word asks the same target with another word, at the same step (mw-i7xe0n.12); a second one goes back as any miss does
+    const second = walk.asked.some((a) => a.step === q.step && a.facet.id === q.facet.id && !a.right);
+    if (walk.steps[q.step - 1]?.words && !second) step = q.step;
     // an easier step asks the facet just missed again; step 1 asks another
-    retry = step < q.step ? q.facet.id : null;
+    retry = step < q.step || walk.steps[q.step - 1]?.words ? q.facet.id : null;
   }
   // at the top, a side of the sound rule not yet answered right is asked first
   if (retry === null && step === top) retry = missing[0] ?? null;
