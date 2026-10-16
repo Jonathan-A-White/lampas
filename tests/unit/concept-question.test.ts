@@ -47,6 +47,19 @@ describe('the concept question', () => {
     expect(blankedText(LADDER.find((i) => i.id === 'voice-middle-or-passive')!)).toMatch(/look the same for the ___ and the ___,/);
   });
 
+  // mw-86e9r1.26: 'A verb with no voice' read 'A few ___ forms have ___ at all' once blanked, and its second line still said 'does not name a voice':
+  // read aloud, the blank must stand where the name was, alone, and no other word of the name may be left or blanked out of a phrase.
+  it('reads A verb with no voice as plain English with the blank where the name was', () => {
+    const idea = LADDER.find((i) => i.id === 'voice-none')!;
+    for (const text of [blankedText(idea), buildConcept(idea, mulberry32(1)).prompt]) {
+      expect(text).toContain('___');
+      expect(text.toLowerCase()).not.toContain('voice');
+      expect(text).not.toMatch(/___ (?:at all|forms?\b)/);
+      expect(text).not.toMatch(/(?:name|a|an|the) ___ for\b/);
+      expect(text).toMatch(/have ___[,.:;]/);
+    }
+  });
+
   it('shows the blanks and keeps the rest of the idea to read', () => {
     const aorist = LADDER.find((i) => i.id === 'tense-aorist')!;
     const prompt = buildConcept(aorist, mulberry32(1)).prompt;
