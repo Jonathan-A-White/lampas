@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { buildLadder, scoreEnglish, syllablesOf } from '../../scripts/ladder-en';
 import type { LadderEntry } from '../../scripts/ladder-shared';
+import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 
 describe('syllables of an English word', () => {
   it.each([
@@ -58,7 +59,7 @@ describe('the score of a verse', () => {
 
 describe('the English ladder of the whole New Testament', () => {
   const tmp = mkdtempSync(join(tmpdir(), 'ladder-en-'));
-  afterAll(() => rmSync(tmp, { recursive: true, force: true }));
+  afterAll(() => rmSync(tmp, { recursive: true, force: true }), HOOK_TIMEOUT_MS);
   const first = join(tmp, 'a', 'en.json');
   const second = join(tmp, 'b', 'en.json');
   const verseCount = (): number => {

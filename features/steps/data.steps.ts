@@ -11,6 +11,7 @@ import { runBuild } from '../../scripts/data-build';
 import type { BookIndex, Chapter } from '../../src/data/chapter';
 import type { FrequencyEntry } from '../../src/data/frequency';
 import { serveChapter } from '../../src/dataCache';
+import { HOOK_TIMEOUT_MS } from '../../tests/support/timeouts';
 
 // A real vite build takes a few seconds.
 vi.setConfig({ testTimeout: 90_000 });
@@ -26,7 +27,7 @@ const tmp = () => {
   tmpDirs.push(dir);
   return dir;
 };
-afterAll(() => tmpDirs.forEach((dir) => rmSync(dir, { recursive: true, force: true })));
+afterAll(() => tmpDirs.forEach((dir) => rmSync(dir, { recursive: true, force: true })), HOOK_TIMEOUT_MS);
 
 let index: BookIndex;
 let chapter: Chapter;

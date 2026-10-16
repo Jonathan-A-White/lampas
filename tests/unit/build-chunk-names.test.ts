@@ -6,9 +6,11 @@ import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 
 const dirs: string[] = [];
-afterAll(() => dirs.forEach((dir) => rmSync(dir, { recursive: true, force: true })));
+// A loaded host takes longer than vitest's 10 s hook limit to delete two vite builds (mw-5r3p30.420).
+afterAll(() => dirs.forEach((dir) => rmSync(dir, { recursive: true, force: true })), HOOK_TIMEOUT_MS);
 
 // vite's own CLI in a child process: esbuild refuses to run inside the jsdom test environment.
 function build(time: string): string {
