@@ -5,7 +5,7 @@
   "versions": ["1"],
   "model": "sonnet",
   "effort": "medium",
-  "instructions": "grinds/verse-ask.instructions.md",
+  "instructions": "grinds/verse-ask.instructions",
   "answerSchema": "grinds/verse-ask.answer.schema.json",
   "attachments": {
     "min": 0,

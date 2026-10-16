@@ -5,7 +5,7 @@
   "versions": ["1"],
   "model": "sonnet",
   "effort": "medium",
-  "instructions": "grinds/bible-talk.instructions.md",
+  "instructions": "grinds/bible-talk.instructions",
   "answerSchema": "grinds/bible-talk.answer.schema.json",
   "attachments": {
     "min": 0,
