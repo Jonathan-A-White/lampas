@@ -10,6 +10,7 @@ import {
   exportMemory,
   getIndex,
   getNote,
+  greekNoLine,
   importMemory,
   listNotes,
   putNote,
@@ -224,5 +225,19 @@ describe('export and import', () => {
       expect(await importMemory(bad), bad).toEqual({ status: 'bad-file' });
     }
     expect((await listNotes()).map((n) => n.name)).toEqual(['topic:keep']);
+  });
+});
+
+describe('the line for his no to the Greek offer (mw-yrmkdf.9)', () => {
+  it('carries the phone\'s own date, not the UTC day: 22:30 in New York on 13 October is the 13th', () => {
+    const tz = process.env.TZ;
+    process.env.TZ = 'America/New_York';
+    try {
+      const evening = new Date(2026, 9, 13, 22, 30).getTime();
+      expect(new Date(evening).toISOString()).toBe('2026-10-14T02:30:00.000Z');
+      expect(greekNoLine(evening)).toBe('said no to the Greek offer 2026-10-13');
+    } finally {
+      process.env.TZ = tz;
+    }
   });
 });
