@@ -68,7 +68,7 @@ import { chooseAccent } from '../speech/accents';
 import { PRONUNCIATIONS } from '../speech/pronunciation';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS, type Depth } from '../script/scripts';
 import type { Allowed, Dependency, SectionId, SettingDef, SettingValue } from './define';
-import { askBySetting, audioBibleSetting, englishAccentSetting, handwritingSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, themeSetting, tipsSetting, weaveOrderSetting, weaveSetting } from './definitions';
+import { askBySetting, audioBibleSetting, englishAccentSetting, handwritingSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, readingPlanSetting, themeSetting, tipsSetting, weaveOrderSetting, weaveSetting } from './definitions';
 import type { Immersive } from './definitions/immersive';
 import type { Tips } from './definitions/tips';
 import type { Weave } from './definitions/weave';
@@ -494,6 +494,7 @@ export const SETTINGS: readonly SettingEntry[] = [
   englishAccentEntry,
   ...resourceEntries,
   fromDefinition(audioBibleSetting),
+  fromDefinition(readingPlanSetting),
   logosBibleEntry,
   quizGoalEntry,
 ];

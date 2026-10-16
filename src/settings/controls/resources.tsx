@@ -6,11 +6,11 @@ import { storeUrl } from '../../resources/appStore';
 import { AUDIO_BIBLES } from '../../resources/audioBible';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../../resources/logosBible';
 import { SearchableList } from '../../ui/SearchableList';
-import { audioBibleSetting } from '../definitions';
+import { audioBibleSetting, readingPlanSetting } from '../definitions';
 import { writeSetting } from '../registry';
 import type { SettingsRow } from '../rows';
 import { useSetting } from '../store';
-import { ON_COLOUR, PICKER, SettingRow } from './SettingRow';
+import { ON_COLOUR, OnOff, PICKER, SettingRow } from './SettingRow';
 import type { Control } from './types';
 
 /** The lexicons (or other choices) of a resource, in the shared searchable list; kept as he taps (a JSON array of ids). */
@@ -186,4 +186,10 @@ export const AudioBibleControl: Control = ({ row }) => {
       ) : null}
     </SettingRow>
   );
+};
+
+/** Reading plan: On | Off (src/data/repositories/readingPlan.ts startPlan turns it On). */
+export const ReadingPlanControl: Control = ({ row }) => {
+  const readingPlan = useSetting(readingPlanSetting);
+  return <SettingRow row={row}>{readingPlan ? <OnOff name={row.label} current={readingPlan} settingKey="readingPlan" /> : null}</SettingRow>;
 };
