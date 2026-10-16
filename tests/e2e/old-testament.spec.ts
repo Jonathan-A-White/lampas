@@ -31,7 +31,16 @@ test('the picker lists the Old Testament before Matthew, and an Old Testament ch
   await expect(picker.getByText('Logos is off')).toBeVisible();
   await picker.getByRole('button', { name: 'Turn on Logos' }).click();
   await expect(picker.locator('[data-chapter]')).toHaveCount(150);
-  await expect(picker.getByRole('link', { name: 'Chapter 23' })).toHaveAttribute('href', 'logosres:lgcystndrdbblsb;ref=Bible.Ps23');
+  // A chapter tap opens no app: the choice shows under the grid, in view even for a chapter far down the 150 (mw-5r3p30.496).
+  await picker.getByRole('button', { name: 'Chapter 150' }).scrollIntoViewIfNeeded();
+  await picker.getByRole('button', { name: 'Chapter 150' }).click();
+  const choice = picker.locator('[data-ot-choice]');
+  await expect(choice).toBeInViewport({ ratio: 1 });
+  await picker.getByRole('button', { name: 'Chapter 23' }).scrollIntoViewIfNeeded();
+  await picker.getByRole('button', { name: 'Chapter 23' }).click();
+  await expect(choice).toBeInViewport({ ratio: 1 });
+  await expect(choice.getByRole('link', { name: 'Read in Logos' })).toHaveAttribute('href', 'logosres:lgcystndrdbblsb;ref=Bible.Ps23');
+  expect(await choice.getByRole('link', { name: 'Read in Logos' }).evaluate((el) => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(TAP);
   await shot(page, 'old-testament-psalms');
   await picker.getByRole('button', { name: 'Done' }).click();
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();

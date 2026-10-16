@@ -2,7 +2,9 @@
 // and the link that opens a chapter in the Bible he chose (logosres: first, ref.ly as the fallback).
 import { describe, expect, it } from 'vitest';
 import { OT_BOOKS, otBookOf } from '../../src/data/otBooks';
+import { AUDIO_BIBLES, audibleListen, audibleStartOf } from '../../src/resources/audioBible';
 import { DEFAULT_LOGOS_BIBLE, COMMON_BIBLES, isResourceId, chapterLink } from '../../src/resources/logosBible';
+import { oldTestamentChoices } from '../../src/resources/oldTestamentChoices';
 
 describe('the Old Testament books', () => {
   it('are the 39 in canon order, Genesis to Malachi, with distinct codes that never meet an NT code', async () => {
@@ -74,5 +76,34 @@ describe('the Bibles he can pick', () => {
     expect(isResourceId('LLS:')).toBe(false);
     expect(isResourceId('LLS:a b')).toBe(false);
     expect(isResourceId('LLS:x;y')).toBe(false);
+  });
+});
+
+describe('the choice an Old Testament chapter offers (mw-5r3p30.496)', () => {
+  const [bible] = AUDIO_BIBLES;
+  const at = 1760000000000;
+
+  it("Read in Logos is exactly the chapter's Logos link, fallback and all", () => {
+    const { logos } = oldTestamentChoices('jdg', 3, { logosOn: true, logosBible: DEFAULT_LOGOS_BIBLE, audio: bible, now: at });
+    const link = chapterLink('jdg', 3, DEFAULT_LOGOS_BIBLE);
+    expect(link).toBeDefined();
+    expect(logos).toEqual({ href: link?.url, fallback: link?.fallback });
+  });
+
+  it("Listen in Audible is audibleListen's link at the chapter's start (Judges 3 and Genesis 1)", () => {
+    const jdg = oldTestamentChoices('jdg', 3, { logosOn: true, logosBible: DEFAULT_LOGOS_BIBLE, audio: bible, now: at }).audible;
+    expect(jdg?.href).toBe(audibleListen(bible, 'jdg', 3, at).href);
+    expect(new URL(jdg?.href ?? '').searchParams.get('position_from_start')).toBe(String(audibleStartOf('jdg', 3)));
+    expect(audibleStartOf('jdg', 3)).toBe(81424892);
+    const gen = oldTestamentChoices('gen', 1, { logosOn: true, logosBible: DEFAULT_LOGOS_BIBLE, audio: bible, now: at }).audible;
+    expect(new URL(gen?.href ?? '').searchParams.get('position_from_start')).toBe('17040');
+    expect(jdg?.label).toBe('Judges 3');
+  });
+
+  it('offers only the rows that are on, and none for both off', () => {
+    const base = { logosBible: DEFAULT_LOGOS_BIBLE, now: at };
+    expect(oldTestamentChoices('lev', 10, { ...base, logosOn: true, audio: undefined })).toMatchObject({ audible: undefined, logos: { href: expect.any(String) } });
+    expect(oldTestamentChoices('lev', 10, { ...base, logosOn: false, audio: bible })).toMatchObject({ logos: undefined, audible: { href: expect.any(String) } });
+    expect(oldTestamentChoices('lev', 10, { ...base, logosOn: false, audio: undefined })).toEqual({ logos: undefined, audible: undefined });
   });
 });

@@ -125,7 +125,7 @@ entry, the fix is in that resource's file.
 
 Lampas holds no Old Testament text, so the Reader's chapter picker (`src/ChapterPicker.tsx`) lists the 39 Old Testament books in canon order before
 Matthew, each marked `Opens in Logos ↗` (`OT_BOOKS`, `src/data/otBooks.ts`: our three-letter code, the name, the book's Logos abbreviation and its chapter count). Picking
-a book shows its chapters; each is a link that opens that chapter in his Logos library, in the **Bible in Logos** (Settings > Bible in Logos, the registry setting
+a book shows its chapters; a tap on one opens no app (mw-5r3p30.496): a panel under the grid (`[data-ot-choice]`, `src/resources/oldTestamentChoices.ts`, kept in view at the foot of the box) offers one row for each study resource that is on, **Read in Logos** (the chapter's link, below) and **Listen in Audible** (`audibleListen`, the link made again at the tap, with the line `In Audible: Chapters > Judges 3` and the credit; Audio Bible off: no row), so a Word of Promise chapter of the Old Testament is a tap away. Read in Logos opens that chapter in his Logos library, in the **Bible in Logos** (Settings > Bible in Logos, the registry setting
 `logosBible`, `LLS:LGCYSTNDRDBBLSB`, the Legacy Standard Bible, until he changes it; a short list of common Bibles, `COMMON_BIBLES` in `src/resources/logosBible.ts`,
 or a typed Resource ID of the form `LLS:...`). The link is built by `chapterLink(book, chapter, resourceId)` in the same two forms as the lexicon links:
 
@@ -137,7 +137,7 @@ or a typed Resource ID of the form `LLS:...`). The link is built by `chapterLink
 `<bible>` is the Resource ID without `LLS:`, in lower case (the form the story gave: `lgcystndrdbblsb`). The scheme is the link's `href`; `openApp.ts armFallback` opens the
 https address only when the page is still in front 1.5 s after the tap. Picking an Old Testament chapter opens no Lampas chapter and changes neither the address nor the
 open chapter. With Logos off in Settings > Study resources the books still show; picking one says "Logos is off" and `Turn on Logos` switches it on in one tap (no app check, as
-the link's own fallback covers a phone with no Logos).
+the link's own fallback covers a phone with no Logos). With Logos off and the Audio Bible on the grid shows and the panel has the Audible row only, under the same prompt; with both off the prompt adds one line naming Audio Bible in Settings and no grid is shown.
 
 **Book abbreviations** (the `ref=Bible.<book><chapter>` part; `Bible.Ac6.3` is the form in the Logos forum post above). Each abbreviation is one on Logos' own list of Bible book
 abbreviations (https://www.logos.com/bible-book-abbreviations, read 2026-10-08, which lists the spellings Logos accepts for each book), taking the two- or three-letter form where the list has one (also the form of the Logos COM API list,

@@ -2,9 +2,10 @@
 // books in canonical order in a box of their own with a search field (a long list is a widget, docs/pwa-best-practices.md section 8),
 // then, for the book he taps, a grid of its chapters (the counts of the New Testament come from data/index.json). A tap on a New Testament
 // chapter opens it in the Reader as a new Back step; the phone's Back, Done, Escape, a swipe down or a tap outside closes the picker
-// (src/ui/sheetBack.ts). Lampas has no Old Testament text (mw-5r3p30.71): an Old Testament book is marked 'Logos' and its chapter is a link
-// that opens in Logos, in the Bible he chose in Settings (src/resources/logosBible.ts); the open Lampas chapter does not change. With
-// Logos off in Settings the books still show; picking one says so and turns Logos on in one tap.
+// (src/ui/sheetBack.ts). Lampas has no Old Testament text (mw-5r3p30.71): an Old Testament book is marked 'Logos' and a tap on its chapter opens no
+// app (mw-5r3p30.496): a panel under the grid offers Read in Logos (in the Bible he chose in Settings, src/resources/logosBible.ts) and Listen in
+// Audible (The Word of Promise, src/resources/audioBible.ts), each only while its setting is on; the open Lampas chapter does not change. With
+// Logos off in Settings the books still show; picking one says so and turns Logos on in one tap, and with the Audio Bible off too it names that setting.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { BOOKS, bookOf } from './data/books';
@@ -14,8 +15,11 @@ import { getLogosBible } from './data/repositories';
 import { OT_BOOKS, otBookOf } from './data/otBooks';
 import { getStudyResources, setResourceOn } from './data/repositories/resources';
 import { navigate, openReader } from './nav/route';
-import { chapterLink } from './resources/logosBible';
+import { type AudioBible, audibleListen, audioBibleOf } from './resources/audioBible';
+import { oldTestamentChoices } from './resources/oldTestamentChoices';
 import { armFallback } from './resources/openApp';
+import { audioBibleSetting } from './settings/definitions';
+import { useSetting } from './settings/store';
 import { focusOnMount } from './ui/focus';
 import { matching } from './ui/listFilter';
 import { useSheetBack } from './ui/sheetBack';
@@ -78,46 +82,95 @@ function Chapters({ code, current, onPick }: { code: string; current: OpenChapte
   );
 }
 
-/** The chapters of an Old Testament book, each a link that opens it in Logos; or, with Logos off, the way to turn it on. */
-function LogosChapters({ code }: { code: string }) {
+/** The prompt for Logos being off: one tap turns it on. With the Audio Bible off too, a line names where to turn that on. */
+function LogosOff({ name, audioOff }: { name: string; audioOff: boolean }) {
+  return (
+    <div role="status" className="px-1 pt-2">
+      <p className="text-base font-medium">Logos is off</p>
+      <p className="pt-1 text-base text-muted">{`${name} opens in Logos. Turn Logos on to read it there.`}</p>
+      {audioOff ? <p className="pt-1 text-base text-muted">Or choose an Audio Bible in Settings to listen to it in Audible.</p> : null}
+      <button
+        type="button"
+        onClick={() => void setResourceOn('logos', true)}
+        className="mt-3 min-h-12 rounded-xl bg-accent px-6 text-base font-medium text-accent-fg"
+      >
+        Turn on Logos
+      </button>
+    </div>
+  );
+}
+
+/** What one Old Testament chapter offers, under the grid: Read in Logos and Listen in Audible, each only while it is on. Nothing leaves the app until he taps one. */
+function ChapterChoice({ name, code, chapter, logosOn, bible, audio }: { name: string; code: string; chapter: number; logosOn: boolean; bible: string; audio: AudioBible | undefined }) {
+  const { logos, audible } = oldTestamentChoices(code, chapter, { logosOn, logosBible: bible, audio });
+  const rowClass = 'flex min-h-12 items-center rounded-lg bg-surface px-3 text-base font-medium text-accent active:bg-line';
+  return (
+    <div
+      role="group"
+      data-ot-choice
+      aria-label={`${name} ${chapter}: read or listen`}
+      className="sticky bottom-0 z-10 mt-3 flex flex-col gap-2 rounded-xl border border-line bg-surface p-3 shadow-lg"
+    >
+      <p className="px-1 text-lg font-semibold">{`${name} ${chapter}`}</p>
+      {logos ? (
+        <a href={logos.href} data-fallback={logos.fallback} onClick={() => armFallback(logos.fallback)} className={rowClass}>
+          Read in Logos
+        </a>
+      ) : null}
+      {audio && audible ? (
+        <div>
+          <a
+            href={audible.href}
+            aria-label={`Listen in Audible: ${audio.name}, ${audible.label}`}
+            onClick={(e) => {
+              // Audible wants the link stamped with the time of the tap: make it again as the tap lands, before the phone follows it
+              const listen = audibleListen(audio, code, chapter);
+              e.currentTarget.href = listen.href;
+              if (listen.fallback !== undefined) armFallback(listen.fallback);
+            }}
+            className={rowClass}
+          >
+            Listen in Audible
+          </a>
+          <p className="px-1 pt-2 text-base">{`In Audible: Chapters > ${audible.label}`}</p>
+          <p className="px-1 pt-1 text-sm text-muted">{audio.credit}</p>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** The chapters of an Old Testament book. A tap on one opens no app: it shows what the chapter offers (Read in Logos, Listen in Audible) under the grid. */
+function OtChapters({ code }: { code: string }) {
   const resources = useLiveQuery(getStudyResources, []);
   const bible = useLiveQuery(getLogosBible, []);
+  const audioId = useSetting(audioBibleSetting);
+  const [chosen, setChosen] = useState<number | null>(null);
   const book = otBookOf(code);
-  if (!book || !resources || bible === undefined) return null;
-  if (!resources.on.includes('logos')) {
-    return (
-      <div role="status" className="px-1 pt-2">
-        <p className="text-base font-medium">Logos is off</p>
-        <p className="pt-1 text-base text-muted">{`${book.name} opens in Logos. Turn Logos on to read it there.`}</p>
-        <button
-          type="button"
-          onClick={() => void setResourceOn('logos', true)}
-          className="mt-3 min-h-12 rounded-xl bg-accent px-6 text-base font-medium text-accent-fg"
-        >
-          Turn on Logos
-        </button>
-      </div>
-    );
-  }
+  if (!book || !resources || bible === undefined || audioId === undefined) return null;
+  const logosOn = resources.on.includes('logos');
+  const audio = audioBibleOf(audioId);
+  if (!logosOn && !audio) return <LogosOff name={book.name} audioOff />;
   return (
-    <div role="group" aria-label={`${book.name} chapters, opening in Logos`} className="grid grid-cols-4 gap-2 px-1 pt-1">
-      {Array.from({ length: book.chapters }, (_, i) => i + 1).map((n) => {
-        const link = chapterLink(code, n, bible);
-        return link ? (
-          <a
+    <>
+      {logosOn ? null : <LogosOff name={book.name} audioOff={false} />}
+      <div role="group" aria-label={`${book.name} chapters`} className="grid grid-cols-4 gap-2 px-1 pt-1">
+        {Array.from({ length: book.chapters }, (_, i) => i + 1).map((n) => (
+          <button
             key={n}
-            href={link.url}
+            type="button"
             data-chapter={n}
-            data-fallback={link.fallback}
             aria-label={`Chapter ${n}`}
-            onClick={() => armFallback(link.fallback)}
-            className="flex min-h-12 items-center justify-center rounded-xl border border-line bg-surface text-lg font-medium"
+            aria-pressed={chosen === n}
+            onClick={() => setChosen(n)}
+            className={`min-h-12 rounded-xl border text-lg font-medium ${chosen === n ? 'border-accent bg-accent text-accent-fg' : 'border-line bg-surface'}`}
           >
             {n}
-          </a>
-        ) : null;
-      })}
-    </div>
+          </button>
+        ))}
+      </div>
+      {chosen === null ? null : <ChapterChoice name={book.name} code={code} chapter={chosen} logosOn={logosOn} bible={bible} audio={audio} />}
+    </>
   );
 }
 
@@ -192,7 +245,7 @@ export function ChapterPicker({ current, onClose }: { current: OpenChapter; onCl
         >
           {book ? (
             otBookOf(book) ? (
-              <LogosChapters code={book} />
+              <OtChapters code={book} />
             ) : (
               <Chapters code={book} current={current} onPick={pick} />
             )
