@@ -45,6 +45,9 @@ function firstGreekWord(ref: string): string {
 }
 
 let fake: FakePostern;
+/** While set, a fetch of a ladder list waits for it: the list is on its way (a slow connection). */
+let ladderHeld: Promise<void> | null = null;
+let letLadderThrough: () => void = () => {};
 type Reply = 'well-read' | 'two-words' | 'incomplete';
 
 async function open(startView: 'english' | 'greek', reply: Reply, hash = ''): Promise<void> {
@@ -67,10 +70,13 @@ async function open(startView: 'english' | 'greek', reply: Reply, hash = ''): Pr
   stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
   stubChapterFetch();
   forgetLadders();
+  ladderHeld = null;
   const chapterFetch = globalThis.fetch;
-  vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) =>
-    String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init),
-  );
+  vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+    if (String(input).startsWith(POSTERN_ORIGIN)) return fake.fetch(input, init);
+    if (ladderHeld && String(input).includes('/data/ladder/')) await ladderHeld;
+    return chapterFetch(input, init);
+  });
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.readings.clear(), db.readingHistory.clear(), db.missTally.clear(), db.ladder.clear()]);
   await setReaderView(startView);
@@ -275,6 +281,32 @@ describeFeature(feature, ({ Scenario }) => {
     And('the Read it aloud action is chosen', () => {
       expect(within(verseView()).getByRole('button', { name: 'Read it aloud', exact: true })).toHaveAttribute('aria-pressed', 'true');
     });
+    And('the reading panel says {string} and the number of verses on the Greek list', async (_, text: string) => {
+      await waitFor(() => expect(panel()).toHaveTextContent(`${text} ${ladders.el.length}`));
+    });
+  });
+
+  Scenario('While the list is on its way the Reading ladder button says it is loading', ({ Given, And, When, Then }) => {
+    Given(opensGreek, () => open('greek', 'well-read'));
+    And('the ladder list is slow to arrive', () => {
+      ladderHeld = new Promise<void>((resolve) => {
+        letLadderThrough = resolve;
+      });
+    });
+    When('he opens the reading check of verse 28 and taps {string} before the list has come', async (_, name: string) => {
+      await openReadCheck();
+      await user.click(await within(panel()).findByRole('button', { name, exact: true }));
+    });
+    Then('the button reads {string} and cannot be tapped again', async (_, text: string) => {
+      const button = await within(panel()).findByRole('button', { name: text, exact: true });
+      expect(button).toBeDisabled();
+      expect(button).toHaveAttribute('aria-busy', 'true');
+      expect(within(panel()).queryByRole('button', { name: 'Reading ladder', exact: true })).toBeNull();
+    });
+    When('the ladder list arrives', () => {
+      letLadderThrough();
+    });
+    Then('the Verse view is on the first verse of the Greek list', sayVerseView('first', 'Greek'));
     And('the reading panel says {string} and the number of verses on the Greek list', async (_, text: string) => {
       await waitFor(() => expect(panel()).toHaveTextContent(`${text} ${ladders.el.length}`));
     });

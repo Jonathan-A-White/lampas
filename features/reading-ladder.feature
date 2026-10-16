@@ -74,3 +74,12 @@ Feature: The reading ladder, in Greek and in English
     Then the Verse view is on the first verse of the Greek list
     And the Read it aloud action is chosen
     And the reading panel says "Verse 1 of" and the number of verses on the Greek list
+
+  Scenario: While the list is on its way the Reading ladder button says it is loading
+    Given Lampas is opened on Romans 8 in Greek with a reading ladder behind a fake Postern
+    And the ladder list is slow to arrive
+    When he opens the reading check of verse 28 and taps "Reading ladder" before the list has come
+    Then the button reads "Loading the ladder…" and cannot be tapped again
+    When the ladder list arrives
+    Then the Verse view is on the first verse of the Greek list
+    And the reading panel says "Verse 1 of" and the number of verses on the Greek list
