@@ -212,6 +212,8 @@ describe('the third declension, the adjectives and the pronouns', () => {
   });
 });
 
+const PERSONS_ROWS = ['1st person singular', '2nd person singular', '3rd person singular', '1st person plural', '2nd person plural', '3rd person plural'];
+
 describe('the verb tables of the indicative', () => {
   const table = (id: string) => {
     const found = paradigmById(id);
@@ -287,6 +289,30 @@ describe('the verb tables of the indicative', () => {
         expect(cell.ideas.filter((id) => id.startsWith('number-')), `${t.id} ${cell.form}`).toHaveLength(1);
         if (t.id !== 'oida') expect(cell.ideas.filter((id) => id.startsWith('tense-') && id !== 'tense-signs'), `${t.id} ${cell.form}`).toHaveLength(1);
       }
+  });
+
+  it('give the pluperfect one set of endings, the same in every table that has one', () => {
+    // -ειν -εις -ει -ειμεν -ειτε -εισαν: the six persons in the order of the rows; no -εμεν or -ετε beside them
+    const ENDINGS = ['ειν', 'εις', 'ει', 'ειμεν', 'ειτε', 'εισαν'];
+    let seen = 0;
+    for (const t of PARADIGMS)
+      for (const row of t.rows) {
+        const person = row.cells[0] && ENDINGS[t.rows.filter((r) => r.group === row.group).indexOf(row)];
+        row.cells.forEach((cell, c) => {
+          if (!cell.ideas.includes('tense-pluperfect')) return;
+          seen += 1;
+          const ending = word(cell.form).replace(/^.*?(?=ει(?:ν|ς|μεν|τε|σαν)?$)/u, '');
+          expect(ENDINGS, `${t.id} ${t.columns[c].group ?? ''} ${row.label}: ${cell.form}`).toContain(ending);
+          expect(ending, `${t.id} ${row.label}: ${cell.form}`).toBe(person);
+        });
+      }
+    expect(seen).toBe(12);
+  });
+
+  it('write the pluperfect of οἶδα with the endings of the pluperfect of λύω', () => {
+    const endingOf = (form: string) => word(form).replace(/^.*?(?=ει(?:ν|ς|μεν|τε|σαν)?$)/u, '');
+    for (const person of PERSONS_ROWS)
+      expect(endingOf(cellAt('oida', 'Greek', person, /ᾔδειν/).form), person).toBe(endingOf(cellAt('perfect-and-pluperfect', 'Pluperfect Active', person).form));
   });
 
   it('name the idea each of the other tables teaches in its cells', () => {
