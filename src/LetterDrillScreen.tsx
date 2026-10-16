@@ -46,6 +46,9 @@ export function LetterDrillScreen({ onClose }: { onClose: () => void }) {
   }
   // what he tapped on the question, held until he taps Next so he can read whether he was right
   const [picked, setPicked] = useState<string | null>(null);
+  // Done (and Another round) stand where Finish the round was: a second tap of a double tap on it waits for the round's end to settle (src/ui/settle.ts, mw-5r3p30.430)
+  // (before the early return below: a hook may not come after it)
+  const settled = useSettled(sitting ? `${sitting.number}:${sitting.at}` : 'waiting');
   if (sitting === null) {
     return (
       <div role="dialog" aria-modal="true" aria-label="Letter drill" className="fixed inset-0 z-40 flex flex-col bg-surface">
@@ -79,8 +82,6 @@ export function LetterDrillScreen({ onClose }: { onClose: () => void }) {
     setSitting({ drill, number: sitting.number + 1, round: withWriting(drawRound(drill, random), writing ?? false), at: 0, rights: 0 });
   };
   const done = isComplete(drill);
-  // Done (and Another round) stand where Finish the round was: a second tap of a double tap on it waits for the round's end to settle (src/ui/settle.ts, mw-5r3p30.430)
-  const settled = useSettled(`${sitting.number}:${at}`);
 
   return (
     <div role="dialog" aria-modal="true" aria-label="Letter drill" className="fixed inset-0 z-40 flex flex-col bg-surface">
