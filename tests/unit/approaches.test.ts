@@ -10,10 +10,10 @@ const IDS = LADDER.map((i) => i.id);
 const lessonsOf = (a: { stages: { levels: { lessons: unknown[] }[] }[] }) => a.stages.flatMap((s) => s.levels.flatMap((l) => l.lessons));
 
 describe('the list', () => {
-  it('has BMA Tutor first, then the Lampas ladder, with distinct ids; BMA Tutor is the default', () => {
-    expect(APPROACHES.map((a) => a.id)).toEqual(['bma-tutor', 'ladder']);
-    expect(APPROACHES.map((a) => a.name)).toEqual(['BMA Tutor', 'Lampas ladder']);
-    expect(DEFAULT_APPROACH).toBe('bma-tutor');
+  it('lists one path, the Lampas ladder, and it is the default (tests/unit/one-path.test.ts)', () => {
+    expect(APPROACHES.map((a) => a.id)).toEqual(['ladder']);
+    expect(APPROACHES.map((a) => a.name)).toEqual(['Lampas ladder']);
+    expect(DEFAULT_APPROACH).toBe('ladder');
     expect(approachOf('ladder')).toBe(ladder);
     expect(approachOf('nope')).toBeUndefined();
   });
@@ -34,7 +34,7 @@ describe('the list', () => {
 });
 
 describe('orderOf', () => {
-  it('lists every idea of the ladder exactly once, for BMA Tutor and for the Lampas ladder', () => {
+  it('lists every idea of the ladder exactly once, for the record of BMA Tutor and for the Lampas ladder', () => {
     for (const a of [bmaTutor, ladder]) {
       const order = orderOf(a);
       expect(order).toHaveLength(IDS.length);
@@ -54,7 +54,7 @@ describe('orderOf', () => {
   });
 });
 
-describe('BMA Tutor', () => {
+describe('the record of BMA Tutor (src/approaches/bma-tutor.ts, not listed)', () => {
   it('names three stages; the first has six levels of twelve lessons', () => {
     expect(bmaTutor.stages).toHaveLength(3);
     expect(bmaTutor.stages[0].levels).toHaveLength(6);

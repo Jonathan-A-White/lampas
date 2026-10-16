@@ -95,7 +95,7 @@ describe('the builders send what the table says', () => {
     placed: true,
     move: 'none',
     pickerLevel: 'frontier',
-    approach: { name: 'BMA Tutor', credit: null, nextLesson: null },
+    approach: { name: 'Lampas ladder', credit: null, nextLesson: null },
   });
   const profile = { pace: 'steady' as const };
   const memory = { index: 'Likes a picture first.', notes: [{ name: 'book:Romans', text: 'Reads it slowly.' }] };

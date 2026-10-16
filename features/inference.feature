@@ -23,7 +23,7 @@ Feature: What my right answers show
     Given the goal is "Read 1 John 1:1" and he knows no word and no idea
     And all the letters are solid but ξ and ψ
     When he opens the Goal screen
-    Then Learn next says "Learn next: ξ and ψ · The Greek letters"
+    Then Learn next says "Learn next: ξ and ψ"
     And the idea "alphabet" is not solid
 
   Scenario: With all 24 letters solid the alphabet is solid
@@ -32,7 +32,7 @@ Feature: What my right answers show
     When he makes the letters ξ and ψ solid
     Then the idea "alphabet" is solid, inferred from his answers
     When he opens the Goal screen
-    Then Learn next says "Learn next: Pairs of vowels · Saying words aloud"
+    Then Learn next says "Learn next: Pairs of vowels"
 
   Scenario: Right answers in Review after the placement move a foundation idea to solid
     Given the goal is "Read 1 John 1:1" and he knows no word and no idea

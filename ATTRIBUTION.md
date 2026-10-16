@@ -45,9 +45,9 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   [MPL-2.0](https://github.com/idiap/coqui-ai-TTS/blob/dev/LICENSE.txt); its voice tts_models/el/cv/vits, trained on Common Voice Greek, is released BSD-3-Clause in its model list) and
   [Chatterbox](https://github.com/resemble-ai/chatterbox) by Resemble AI ([MIT](https://github.com/resemble-ai/chatterbox/blob/master/LICENSE)). Licence: the clips are sound these made; no code or model of theirs is in the app.
   Changes: each sound is cut out of a carrier sentence by the voice's own alignment, silence trimmed, cut to MP3 with [FFmpeg](https://ffmpeg.org) (scripts/sounds-trial/make-clips.py).
-- **[Biblical Mastery Academy](https://biblicalmastery.academy/).** The order in which the BMA Tutor grammar approach teaches Greek
-  follows the sequence of the Greek Success Path of Biblical Mastery Academy. Only the sequence is followed: the lesson titles,
-  the method, the drills, Drill it (the walk that proves an idea, its wrong answers near misses of the point first, a sound that changes by the next letter drilled on both sides) and the drill plan that follows a Drill it that does not prove an idea (a short drill on each weak point, easiest first, then Drill it again) in Lampas are its own, and no course text, image or exercise is copied. Changes: a few lessons are moved earlier or later, so that no idea is taught before an idea it rests on.
+- **[Biblical Mastery Academy](https://biblicalmastery.academy/).** The inspiration for Lampas's one grammar path, the ladder. An earlier path taught
+  in the sequence of the Greek Success Path of Biblical Mastery Academy; it no longer teaches anyone, but its order is kept as a record and the ladder's own order was worked out beside it. Only a sequence was ever followed: the lesson titles,
+  the method, the drills, Drill it (the walk that proves an idea, its wrong answers near misses of the point first, a sound that changes by the next letter drilled on both sides) and the drill plan that follows a Drill it that does not prove an idea (a short drill on each weak point, easiest first, then Drill it again) in Lampas are its own, and no course text, image or exercise is copied. Changes: in the record of its order a few lessons are moved earlier or later, so that no idea is taught before an idea it rests on.
 
 ## Type
 

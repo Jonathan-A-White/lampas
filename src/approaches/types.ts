@@ -30,9 +30,9 @@ export interface ApproachStage {
 }
 
 export interface GrammarApproach {
-  /** kept in the settings store, so it never changes: 'bma-tutor' */
+  /** kept in the settings store, so it never changes: 'ladder' */
   id: string;
-  /** the choice's name in Settings: 'BMA Tutor' */
+  /** the choice's name in Settings: 'Lampas ladder' */
   name: string;
   credit: ApproachCredit | null;
   /** our own words, under 120: what comes first, why, how a lesson teaches and drills */

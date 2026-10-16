@@ -265,7 +265,7 @@ step by step, back off by halves when it is too hard, "kind of like a binary sea
 
 `#/placement` (opened by Place me under Settings > Goal; its intro also offers 'Start from the letters' for a total beginner: no quiz, nothing written, so Learn next stays where it is, The Greek alphabet for a beginner; the card counts what he already has solid and names the idea Learn next opens, mw-86e9r1.19) tests the grammar the goal needs and writes where he stands. The rules are PROVISIONAL (the Mayor's, the Governor to confirm) and live in `src/data/grammar/placement.ts`, pure:
 
-- The walk is the goal's needed ideas in `orderOf(the chosen approach)` (BMA Tutor by default), with the letters, sounds and marks always on it below them (so a walk of misses reaches them; since mw-hqd5bz.17 not the alphabet as a whole, see below). With no goal it is the whole ladder, and the questions' forms come from the open chapter.
+- The walk is the goal's needed ideas in `orderOf(the chosen approach)` (the ladder, the one path), with the letters, sounds and marks always on it below them (so a walk of misses reaches them; since mw-hqd5bz.17 not the alphabet as a whole, see below). With no goal it is the whole ladder, and the questions' forms come from the open chapter.
 - It starts at the first idea past the letters, sounds and marks that is not already solid, and skips nothing below it. (For 1 John 1:1 that is `noun` in both BMA Tutor and the Lampas ladder, the noun coming before the article in each.)
 - Two questions an idea (`questions.ts` `buildIdeaQuestion`, seeded from the state, `placementQuestion.ts`): both right is solid, one is frontier, none is not yet. Solid or frontier moves to the next idea later in the sequence that was not asked; not yet steps BACK to the idea before it.
 - Two ideas missed in a row: nothing above is asked, the walk only goes down. Every idea above the first miss stays untested (no level is written).
@@ -493,12 +493,14 @@ tenses, the stress mark, the diaeresis, the parts of speech) and fails on one it
 
 ## Approaches
 
-**PROVISIONAL**, the Governor to confirm: BMA Tutor is the default, and the lessons below that the RP codes cannot tell apart are
-mapped to the nearest ideas we have.
+**PROVISIONAL**, the Governor to confirm (mw-foy5mb.1): Lampas has ONE path, the ladder, for every learner. The approaches stay data
+so that another path can be added later by one file and one line; `APPROACHES` is `[ladder]` and `DEFAULT_APPROACH` is `'ladder'`.
+A phone that saved the old choice, `'bma-tutor'`, reads as the ladder (the saved value is no longer listed, so `getGrammarApproach` gives
+the default): no row is deleted or rewritten, and every idea's level and schedule row stays as it was.
 
 An approach is the ORDER the ladder's ideas are taught, tested and suggested in, and how that order teaches. It is data, one file
 each in `src/approaches/` (as `src/resources/` are), listed in `index.ts`. The choice is the `grammarApproach` setting (Settings >
-Grammar approach; the tutor can change it; `getGrammarApproach` / `setGrammarApproach`; `approach-changed` on the bus, docs/events.md).
+Grammar approach, which draws its radio choice only while two or more approaches are listed; the tutor can change it; `getGrammarApproach` / `setGrammarApproach`; `approach-changed` on the bus, docs/events.md).
 Choosing one changes no level: levels belong to the ideas, not to the approach.
 
 - `GrammarApproach` (`types.ts`): `{ id, name, credit, method, stages }`. `credit` is `{ name, url, line }` or `null`; `method` is
@@ -516,9 +518,11 @@ it rests on (`tests/unit/ladder-needs.test.ts`). BMA Tutor still teaches the aor
 rest on a case; it teaches the article after the cases and the genders, because the article does. The first lessons name number
 and the joining words straight after the noun.
 
-### BMA Tutor
+### BMA Tutor (not listed)
 
-Follows the sequence of Biblical Mastery Academy's Greek course, credited in Settings and About (`ATTRIBUTION.md`). Stage 1 has six
+`src/approaches/bma-tutor.ts` is no longer in `APPROACHES` and no app code imports it (`tests/unit/one-path.test.ts` greps `src/`); it stays as the
+record of BMA Tutor's order, read by the gap audit (docs/path-gaps.md), and the tests' `tests/support/fixture-path.ts` copies it as a second,
+unlisted path whose order is not the ladder's. Biblical Mastery Academy is thanked in About (`ATTRIBUTION.md`) for the inspiration. It followed the sequence of Biblical Mastery Academy's Greek course. Stage 1 has six
 levels of twelve lessons; stages 2 and 3 are one lesson each, 'Reading', until more is known. Only the sequence is followed: every
 lesson title and the method are written here, and no course text, picture or exercise is copied (a test keeps the course's own
 phrases out of `bma-tutor.ts`). Mapping, where the RP codes cannot tell a lesson apart:
@@ -529,11 +533,12 @@ phrases out of `bma-tutor.ts`). Mapping, where the RP codes cannot tell a lesson
 - assimilation (letters changing at a joint): `crasis`, the nearest idea for sounds that run together;
 - the periphrastic, clauses and 'reading Paul' lessons, and level 6 (1, 2 and 3 John), name the ideas that passage uses again.
 
-### Adding an approach
+### Adding an approach (a second path)
 
 1. One file in `src/approaches/` exporting a `GrammarApproach` (a credit when the order is someone's, with their name and address).
 2. One line in `src/approaches/index.ts` (`APPROACHES`).
 3. `npm run grind:build`, so the tutor may be asked for it. `tests/unit/approaches.test.ts` checks that `orderOf` lists every idea once.
+   With two approaches listed Settings > Grammar approach draws the choice again (`tests/unit/approach-control.test.tsx` holds that door open with a stub).
 
 ### Drill it, the runs kept
 

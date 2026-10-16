@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
 import { AskApproachSheet } from '../../AskApproachSheet';
 import { useAiAllowed } from '../../gate/licenceContext';
-import { APPROACHES, approachOf, nextLessonOf, type GrammarApproach } from '../../approaches';
+import { APPROACHES, nextLessonOf, type GrammarApproach } from '../../approaches';
 import { getGrammarApproach } from '../../data/repositories';
 import { listLevels } from '../../data/repositories/grammarLevels';
 import { writeSetting } from '../registry';
@@ -31,27 +31,40 @@ function CreditLine({ approach }: { approach: GrammarApproach }) {
   );
 }
 
-/** The grammar approach: a choice of the approaches, then the chosen one's credit line, its method and its lessons, with the lesson
- * that holds the earliest idea he has no level for marked Next. Choosing writes only the approach: his levels are not touched. */
-function ApproachPicker({ chosen, levels }: { chosen: string; levels: ReadonlyMap<string, { level: 'solid' | 'frontier' | 'notYet' }> }) {
-  const approach = approachOf(chosen) ?? APPROACHES[0];
+/** The grammar approach: a choice of the approaches (none is drawn while there is only one path), then the chosen one's credit line, its method
+ * and its lessons, with the lesson that holds the earliest idea he has no level for marked Next. Choosing writes only the approach: his levels
+ * are not touched. `approaches` is the list; a test hands it a second. */
+export function ApproachPicker({
+  chosen,
+  levels,
+  approaches = APPROACHES,
+}: {
+  chosen: string;
+  levels: ReadonlyMap<string, { level: 'solid' | 'frontier' | 'notYet' }>;
+  approaches?: readonly GrammarApproach[];
+}) {
+  const approach = approaches.find((a) => a.id === chosen) ?? approaches[0];
   const next = nextLessonOf(approach, (id) => levels.get(id)?.level);
+  const choice = approaches.length > 1;
   return (
-    <div>
-      <div role="radiogroup" aria-label="Grammar approach" className="space-y-2">
-        {APPROACHES.map((a) => (
-          <button
-            key={a.id}
-            type="button"
-            role="radio"
-            aria-checked={approach.id === a.id}
-            onClick={() => void writeSetting('grammarApproach', a.id)}
-            className={`block min-h-12 w-full rounded-xl border px-4 py-2 text-left text-base font-medium ${approach.id === a.id ? 'border-accent bg-accent/15' : 'border-line'}`}
-          >
-            {a.name}
-          </button>
-        ))}
-      </div>
+    // with one path there is no radiogroup to name the row, so the row's own content is the group
+    <div role={choice ? undefined : 'group'} aria-label={choice ? undefined : 'Grammar approach'}>
+      {choice ? (
+        <div role="radiogroup" aria-label="Grammar approach" className="space-y-2">
+          {approaches.map((a) => (
+            <button
+              key={a.id}
+              type="button"
+              role="radio"
+              aria-checked={approach.id === a.id}
+              onClick={() => void writeSetting('grammarApproach', a.id)}
+              className={`block min-h-12 w-full rounded-xl border px-4 py-2 text-left text-base font-medium ${approach.id === a.id ? 'border-accent bg-accent/15' : 'border-line'}`}
+            >
+              {a.name}
+            </button>
+          ))}
+        </div>
+      ) : null}
       <CreditLine approach={approach} />
       <p data-approach-method className="pt-3 text-base">
         {approach.method}

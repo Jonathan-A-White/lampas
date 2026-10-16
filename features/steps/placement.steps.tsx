@@ -150,7 +150,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he answers {int} questions wrong', wrong);
     And('he answers {int} questions right', right);
     Then('no idea after the noun has a level', async () => {
-      const order = orderOf(approachOf('bma-tutor')!);
+      const order = orderOf(approachOf('ladder')!);
       const after = order.slice(order.indexOf('noun') + 1);
       const rows = await db.grammarLevels.toArray();
       expect(rows.filter((r) => after.includes(r.id))).toEqual([]);
@@ -179,7 +179,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the bus has heard the placement is done', async () => {
       await expectLatest('placement-done', (heard) => {
-        expect(heard).toMatchObject({ goal: '1 John 1:1', approach: 'bma-tutor', solid: 11, frontier: 0, notYet: 1 });
+        expect(heard).toMatchObject({ goal: '1 John 1:1', approach: 'ladder', solid: 11, frontier: 0, notYet: 1 });
         expect(heard?.untested).toBeGreaterThan(10);
       });
     });

@@ -157,7 +157,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario("Learn next names the earliest not-yet idea of BMA Tutor's sequence with its lesson and opens its sheet", ({ Given, And, When, Then }) => {
+  Scenario("Learn next names the earliest not-yet idea of the ladder with its lesson and opens its sheet", ({ Given, And, When, Then }) => {
     Given(GIVEN_GOAL, givenGoal);
     And('the foundation ideas are solid and {string} is not yet', async (_, d: string) => {
       await Promise.all([...ALWAYS_NEEDED.map((id) => putLevel(id, 'solid')), putLevel(d, 'notYet')]);

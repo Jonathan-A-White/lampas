@@ -10,7 +10,7 @@ import {
   learnerGrammarOf,
   type GrammarSnapshot,
 } from '../../src/data/grammar/learnerGrammar';
-import { setGoal, setGrammarApproach, setPickerGrammar, pushGrammarAnswer } from '../../src/data/repositories/settings';
+import { setGoal, setPickerGrammar, pushGrammarAnswer } from '../../src/data/repositories/settings';
 import { setLevel } from '../../src/data/repositories/grammarLevels';
 import { stubChapterFetch } from '../support/chapter-fetch';
 
@@ -25,7 +25,7 @@ const snapshot = (over: Partial<GrammarSnapshot> = {}): GrammarSnapshot => ({
   placed: true,
   move: 'none',
   pickerLevel: 'frontier',
-  approach: { name: 'BMA Tutor', credit: 'Biblical Mastery Academy', nextLesson: 'The nominative' },
+  approach: { name: 'Lampas ladder', credit: null, nextLesson: 'The nominative' },
   ...over,
 });
 
@@ -53,7 +53,7 @@ describe('learnerGrammarOf', () => {
   it('carries the goal, whether he is placed, the picker level and the approach', () => {
     const out = learnerGrammarOf(snapshot({ move: 'up', placed: false, pickerLevel: 'solid' }));
     expect(out).toMatchObject({ goal: 'Read 1 John 1:1', placed: false, suggested_move: 'up', picker_level: 'solid' });
-    expect(out.approach).toEqual({ name: 'BMA Tutor', credit: 'Biblical Mastery Academy', next_lesson: 'The nominative' });
+    expect(out.approach).toEqual({ name: 'Lampas ladder', credit: null, next_lesson: 'The nominative' });
   });
 });
 
@@ -75,13 +75,13 @@ describe('learnerGrammar', () => {
     expect(bytes(out)).toBeLessThanOrEqual(900);
   });
 
-  it('names the approach BMA Tutor with its credit and the title of its next lesson', async () => {
+  it('names the one path, the Lampas ladder, with no credit and the title of its next lesson; a saved BMA Tutor choice reads as it', async () => {
     const out = await learnerGrammar();
-    expect(out.approach.name).toBe('BMA Tutor');
-    expect(out.approach.credit).toBe('Biblical Mastery Academy');
+    expect(out.approach.name).toBe('Lampas ladder');
+    expect(out.approach.credit).toBeNull();
     expect(typeof out.approach.next_lesson).toBe('string');
-    await setGrammarApproach('ladder');
-    expect((await learnerGrammar()).approach.name).not.toBe('BMA Tutor');
+    await db.settings.put({ key: 'grammarApproach', value: 'bma-tutor' });
+    expect((await learnerGrammar()).approach.name).toBe('Lampas ladder');
   });
 
   it('with a goal: its title, the goal\'s needs first in each list, then by rung', async () => {

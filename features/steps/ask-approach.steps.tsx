@@ -56,7 +56,7 @@ async function openSettings(): Promise<void> {
   await db.open();
   await Promise.all([db.settings.clear(), db.requests.clear()]);
   render(<SettingsScreen />);
-  await screen.findByRole('radiogroup', { name: 'Grammar approach' });
+  await screen.findByRole('group', { name: 'Grammar approach' });
 }
 
 async function openSheet(): Promise<void> {

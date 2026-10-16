@@ -130,7 +130,7 @@ Feature: Ask the tutor about a verse
     And he selects verse 28
     When he asks "What does πρόθεσιν mean here?"
     Then the mill received one grist for the lampas app, kind verse-ask
-    And its input carries learner_grammar with no goal and the BMA Tutor approach
+    And its input carries learner_grammar with no goal and the Lampas ladder approach
     And its input carries the Greek pronunciation "modern" and the settings that bear on the answer
     And the verse-ask instructions pitch frontier and not-yet ideas and do not offer the move
 

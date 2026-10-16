@@ -67,7 +67,7 @@ test('Place me in Settings > Goal opens the placement; a question fits the phone
   await expectFitsPhone(page);
 
   await start.click();
-  await expect(page.getByTestId('placement-question')).toHaveText('Question 1 · the noun · BMA Tutor L1');
+  await expect(page.getByTestId('placement-question')).toHaveText('Question 1 · the noun · Lampas ladder L4');
   const options = page.locator('[data-option]');
   const count = await options.count();
   expect(count).toBeGreaterThanOrEqual(3);
@@ -98,10 +98,15 @@ test('a sitting of tapped answers ends on a card that fits: Where you are, or Pa
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   const end = page.getByTestId('where');
   // twenty questions of the walk, then up to forty taps of the quick round
-  for (let i = 0; i < 65 && !(await end.isVisible()); i += 1) {
+  const question = page.getByTestId('placement-question');
+  for (let i = 0; i < 65; i += 1) {
+    await expect(question.or(end)).toBeVisible();
+    if (await end.isVisible()) break;
+    const asked = await question.textContent();
     await page.locator('[data-option]').first().click();
     await page.getByTestId('next').click();
-    await expect(page.getByTestId('placement-question').or(end)).toBeVisible();
+    // the old question stays drawn for a moment: go on only once the next card (another question, or the end card) is up
+    await expect(question.or(end)).not.toHaveText(asked ?? '');
   }
   await expect(end).toHaveText(/^(Where you are|So far): solid \d+, frontier \d+, not yet \d+; untested \d+$/);
   await expectFitsPhone(page);
@@ -113,11 +118,11 @@ test('a sitting of tapped answers ends on a card that fits: Where you are, or Pa
 // the paused card (mw-hqd5bz.22): a placement started from the Goal screen whose next answer is the twentieth
 test('the paused card has Back to the goal, and Go on another day returns to the Goal screen', async ({ page }) => {
   await openWithGoal(page, '1 John 1:1');
-  const order = orderOf(approachOf('bma-tutor')!);
+  const order = orderOf(approachOf('ladder')!);
   const first = startPlacement(null, new Map(), order, 7);
   // nineteen answers on ideas already past, so the next is the twentieth
   const state = { ...first, asked: Array.from({ length: 19 }, () => ({ ideaId: 'alphabet', right: true })), questionsLeft: 1 };
-  const kept = { goal: '1 John 1:1', approach: 'bma-tutor', state: { ...state, levels: [...state.levels], evidence: [...state.evidence] } };
+  const kept = { goal: '1 John 1:1', approach: 'ladder', state: { ...state, levels: [...state.levels], evidence: [...state.evidence] } };
   await page.evaluate((saved) => localStorage.setItem('lampas.placement', JSON.stringify(saved)), kept);
   await page.goto('/#/goal');
   await page.getByRole('button', { name: /^Place (me|again)$/ }).click();

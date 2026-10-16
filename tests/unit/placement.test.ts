@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { approachOf, orderOf } from '../../src/approaches';
 import type { BookIndex, Chapter } from '../../src/data/chapter';
 import { ideaOf } from '../../src/data/grammar/ladder';
+import { fixturePath } from '../support/fixture-path';
 import { passageNeeds, type Level, type PassageNeeds } from '../../src/data/grammar/needs';
 import {
   QUESTION_LIMIT,
@@ -19,12 +20,12 @@ const fromDisk = async (book: string, n: number): Promise<Chapter> => JSON.parse
 const index = JSON.parse(readFileSync('public/data/index.json', 'utf8')) as BookIndex;
 const needs: PassageNeeds = await passageNeeds({ book: '1jn', chapter: 1, verse: 1 }, fromDisk, index);
 
-const BMA = orderOf(approachOf('bma-tutor')!);
+const FIXTURE_ORDER = orderOf(fixturePath);
 const LADDER_ORDER = orderOf(approachOf('ladder')!);
 const NONE = new Map<string, Level>();
 const FOUNDATION = ['letters', 'sounds', 'marks'];
 
-const start = (known: Map<string, Level> = NONE, order = BMA): PlacementState => startPlacement(needs, known, order, 7);
+const start = (known: Map<string, Level> = NONE, order = FIXTURE_ORDER): PlacementState => startPlacement(needs, known, order, 7);
 const times = (state: PlacementState, right: boolean, n: number): PlacementState => {
   for (let i = 0; i < n; i += 1) state = answer(state, right);
   return state;
@@ -33,9 +34,9 @@ const idx = (state: PlacementState, id: string): number => state.ideas.indexOf(i
 
 describe('where the placement starts', () => {
   it('is the first idea past the letters, marks and sounds in the approach sequence, with nothing known', () => {
-    // 1 John 1:1 needs the noun before the singular, in BMA Tutor's sequence and in the ladder's
+    // 1 John 1:1 needs the noun before the singular, in the fixture path's sequence and in the ladder's
     const first = (order: string[]) => order.find((id) => needs.ideas.some((n) => n.id === id) && !FOUNDATION.includes(ideaOf(id).tier));
-    expect(first(BMA)).toBe('noun');
+    expect(first(FIXTURE_ORDER)).toBe('noun');
     expect(currentIdea(start())).toBe('noun');
     expect(first(LADDER_ORDER)).toBe('noun');
     expect(currentIdea(start(NONE, LADDER_ORDER))).toBe('noun');
@@ -46,15 +47,15 @@ describe('where the placement starts', () => {
     expect(state.ideas).toEqual(expect.arrayContaining(['letter-alpha', 'diphthongs', 'syllables', 'accents', 'noun', 'number-singular']));
     expect(state.ideas).not.toContain('mood-subjunctive');
     expect(state.ideas).not.toContain('case-vocative');
-    const order = state.ideas.map((id) => BMA.indexOf(id));
+    const order = state.ideas.map((id) => FIXTURE_ORDER.indexOf(id));
     expect(order).toEqual([...order].sort((a, b) => a - b));
     expect(state.needed).toEqual(expect.arrayContaining(['noun', 'number-singular', 'pronoun-relative']));
   });
 
   it('with no goal walks the whole ladder', () => {
-    const state = startPlacement(null, NONE, BMA, 1);
+    const state = startPlacement(null, NONE, FIXTURE_ORDER, 1);
     // a diphthong, a consonant pair or a breathing is an item of the quick round, not an idea of the walk (mw-hqd5bz.18)
-    expect(state.ideas).toEqual(BMA.filter((id) => !ideaOf(id).parent));
+    expect(state.ideas).toEqual(FIXTURE_ORDER.filter((id) => !ideaOf(id).parent));
     expect(currentIdea(state)).toBe('noun');
   });
 
@@ -63,7 +64,7 @@ describe('where the placement starts', () => {
     // the accusative is solid but the nominative is not: nothing below the first idea that is not solid is skipped
     expect(currentIdea(start(known))).toBe('case-nominative');
     known.set('case-nominative', 'solid');
-    // a word as a stem and an ending (mw-svw421.1) is the next idea of BMA Tutor's lesson 'Who acts and who is acted on'
+    // a word as a stem and an ending (mw-svw421.1) is the next idea of the fixture path's lesson 'Who acts and who is acted on'
     expect(currentIdea(start(known))).toBe('stem-and-ending');
     known.set('stem-and-ending', 'solid');
     expect(currentIdea(start(known))).toBe('person-1st');
@@ -160,7 +161,7 @@ describe('answering', () => {
   });
 
   it('a wrong walk ends when there is no idea left below', () => {
-    let state = startPlacement(null, NONE, BMA, 1);
+    let state = startPlacement(null, NONE, FIXTURE_ORDER, 1);
     for (let i = 0; i < 100 && state.done === null; i += 1) {
       state = answer(state, false);
       if (state.done === 'paused') state = resumePlacement(state);

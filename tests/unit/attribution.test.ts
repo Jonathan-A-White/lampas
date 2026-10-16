@@ -34,7 +34,7 @@ describe('ATTRIBUTION.md carries what CC BY 4.0 requires', () => {
   });
 });
 
-describe('ATTRIBUTION.md credits the BMA Tutor approach', () => {
+describe('ATTRIBUTION.md credits Biblical Mastery Academy for the ladder', () => {
   const text = plainText(file);
   it('names Biblical Mastery Academy for the sequence and says the lessons are Lampas\'s own', () => {
     expect(text).toContain('Biblical Mastery Academy');

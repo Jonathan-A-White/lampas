@@ -149,7 +149,7 @@ describe('learnerGrammarOf with weak facets', () => {
     placed: true,
     move: 'none',
     pickerLevel: 'frontier',
-    approach: { name: 'BMA Tutor', credit: 'Biblical Mastery Academy', nextLesson: 'The nominative' },
+    approach: { name: 'Lampas ladder', credit: null, nextLesson: 'The nominative' },
     ...over,
   });
   const long = (n: number) => `a long title for a weak facet number ${n}`.padEnd(40, 'x');
