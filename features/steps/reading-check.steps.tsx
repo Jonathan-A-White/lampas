@@ -87,6 +87,9 @@ interface Options {
 const TIMINGS = { ...tutorTimings };
 /** a 'dead' link: the backend takes every send, and its reply never comes back while this is true */
 let dead = false;
+const DOOR_MS = 2000;
+const LATE_MS = 3000;
+const CONTACT_MS = 3000;
 /** every 'Could not reach' the reading check showed, so a scenario can say it never did */
 let alerts: string[] = [];
 let watching: MutationObserver | undefined;
@@ -106,12 +109,12 @@ async function open({ reply = 'reading', view = 'english', denied = false, down 
   watching?.disconnect();
   alerts = [];
   if (send) {
-    // the door gives up on a call after 1 s here (30 s on the phone), and the wait after 1.5 s with no call succeeding (90 s)
-    tutorTimings.doorTimeoutMs = 1000;
-    tutorTimings.contactLostMs = 1500;
+    // the door gives up on a call after DOOR_MS here (30 s on the phone; room for a loaded host's sign-in), and the wait after CONTACT_MS with no call succeeding (90 s)
+    tutorTimings.doorTimeoutMs = DOOR_MS;
+    tutorTimings.contactLostMs = CONTACT_MS;
   }
-  // the send is taken half a second after the door gave up on it, as the Tester's stalled link did 35 s after a 30 s door
-  if (send === 'late') fake.slowSendMs = 1500;
+  // the send is taken a second after the door gave up on it, as the Tester's stalled link did 35 s after a 30 s door
+  if (send === 'late') fake.slowSendMs = LATE_MS;
   if (reply !== 'held') fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : reply === 'woven-missed' ? WOVEN_MISSED_ANSWER : reply === 'second-who' ? SECOND_WHO_ANSWER : reply === 'escaped' ? ESCAPED_ANSWER : reply === 'tip-respelling' ? LEVITES_ANSWER : reply === 'tip-not-first' ? NOT_FIRST_ANSWER : reply === 'incomplete' ? INCOMPLETE_ANSWER : reply === 'partial' ? PARTIAL_ANSWER : WELL_READ_ANSWER };
   fake.greekReply = { status: 'answered', answer: GREEK_READING_ANSWER };
   fake.down = down;
@@ -568,7 +571,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the late send has landed and the mill received the reading once', async () => {
       // the phone sent the same bytes again after the door gave up; the first send, landing late, is the same record
       await waitFor(() => expect(fake.calls.filter((c) => c === 'POST /api/messages').length).toBeGreaterThanOrEqual(2));
-      await new Promise((r) => setTimeout(r, 1700));
+      await new Promise((r) => setTimeout(r, LATE_MS));
       await millOnce();
     });
     And('the reading check never said {string}', (_, text: string) => {
