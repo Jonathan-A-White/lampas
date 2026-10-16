@@ -70,7 +70,7 @@ A screen talk is kept in the `talks` table under `screen.<slug of the name>` (`s
 ## An ask Lampas cannot meet
 
 When he asks for something Lampas does not do ('can this work with Olive Tree?', a new setting, a change), the answer carries `feedback_offer`
-`{summary}` (one line, at most 200 characters; `grinds/bible-talk.instructions.md` "Asks the app cannot meet": say it plainly, never promise the
+`{summary}` (one line, at most 200 characters; `grinds/bible-talk.instructions/` "Asks the app cannot meet": say it plainly, never promise the
 change). The turn then shows the summary and **Send this to the makers** (`FeedbackOffer` in `src/Talk.tsx`, on every Talk sheet, the Reader's too).
 Nothing is sent without the tap. The tap is `submitFeedback` (`src/services/feedback.ts`, the one feedback sender Ask for another approach uses too):
 a `feedback` grist of kind `tutor-ask` with his words, the summary, the screen's name (`Reader` for a talk about the text), the talk's reference and the
@@ -114,7 +114,7 @@ The tutor leaves three kinds of offer for a tap: **Send this to the makers** (`f
 He may say yes, no or 'read it back' instead, in Talk, spoken or typed. `src/talk/offers.ts` `pendingOfferOf(turns)` finds the newest turn of the talk with an
 offer nobody has settled; `useTalk.say` sends it with his next turn as `pending_offer` `{kind: 'feedback' | 'setting' | 'quiz-goal' | 'bridge' | 'greek' | 'rusty', text}` (the exact text it would
 send or do). The bible-talk grind, not a word list in the app, decides from his words and answers `offer_reply`: `confirm`, `decline` or `read_back`
-(`grinds/bible-talk.instructions.md` "Answering an offer by voice"; five examples under `grinds/examples/bible-talk/offer-*.json`). `settleOffer` then does it:
+(`grinds/bible-talk.instructions/` "Answering an offer by voice"; five examples under `grinds/examples/bible-talk/offer-*.json`). `settleOffer` then does it:
 confirm does exactly what the tap does (feedback: `sendMakersOffer`, the one function the button calls too; a tap and a yes for the same turn share the one send in flight, so the makers get one grist, and the button is off while either is sending, `useOfferSending`; setting: `takeSettingOffer`, the change lands on the
 answer's turn with its Undo; quiz goal: keeps it), decline withdraws it (**Not sent**, **Not changed**, **Not kept**; nothing is sent), read_back changes nothing and the
 answer, which the app reads aloud like any answer, holds the text word for word. No `offer_reply`, or no offer waiting, is an ordinary question: the offer and its
@@ -147,7 +147,7 @@ His words (12 Oct 2026): a person is not always going forward; he takes a break,
   `writeReview`; a row from before has none), or when it is 7 or more days past its due date (a 30-day step is meant to be rare, so only an overdue item counts). The request carries up to 8 as `rusty` `[{kind: 'word' | 'idea', id, title, why}]`,
   worst first (most slips, then the longest unseen); `why` is plain: 'slipped twice this week', 'slipped lately', 'not seen for 3 weeks'. Missing when nothing is rusty, and in a quiz. It goes in the bible-talk and verse-ask requests
   (`tests/unit/tutor-knows.test.ts`: verse-read and tips have a written reason they are not sent it). The thresholds are constants at the top of `src/data/rusty.ts`; all PROVISIONAL.
-- **What the tutor says** (`grinds/bible-talk.instructions.md` 'When he has gone rusty'): when it fits the talk, once, plainly ('You're rusty on X and Y: they were solid before'), and leaves ONE `rusty_offer` `{items: [{kind, id}]}`.
+- **What the tutor says** (`grinds/bible-talk.instructions/` 'When he has gone rusty'): when it fits the talk, once, plainly ('You're rusty on X and Y: they were solid before'), and leaves ONE `rusty_offer` `{items: [{kind, id}]}`.
   The verse-ask tutor may mention it in its answer; it leaves no button (the Talk is where the app offers).
 - **What the app does with it** (`src/talk/rustyOffer.ts`): `rustyOfferOf` keeps only the items the request itself listed, in its order, with its titles, once a talk, none after his no or in a quiz; the turn keeps it (`TalkTurn.rustyOffer`)
   and `src/talk/RustyOffer.tsx` draws the titles and **Move back to Frontier and practise**. A tap, or a spoken yes (`pending_offer` of kind `rusty`, `settleOffer` -> `takeRustyOffer`, the function the button calls), moves the items
@@ -227,7 +227,7 @@ Checks: `tests/unit/exchange.test.ts`, "Copy on an answer card ..." and "With se
 
 ## Taking him to a chapter (mw-5r3p30.172)
 
-Asked in the Talk sheet to switch to, open, go to or take him to a chapter ('can you switch to Colossians 1'), the tutor puts `go` {book, chapter} in its answer (the book's name from the app's own list, `src/data/books.ts`, a chapter in range; `grinds/bible-talk.instructions.md` 'Taking him to a chapter') and says where it is taking him. The app reads `go` itself, never the text: `src/talk/go.ts` `readGo`. `isTalkAnswer` lets any `go` through, so a shape the app refuses never costs him the answer.
+Asked in the Talk sheet to switch to, open, go to or take him to a chapter ('can you switch to Colossians 1'), the tutor puts `go` {book, chapter} in its answer (the book's name from the app's own list, `src/data/books.ts`, a chapter in range; `grinds/bible-talk.instructions/` 'Taking him to a chapter') and says where it is taking him. The app reads `go` itself, never the text: `src/talk/go.ts` `readGo`. `isTalkAnswer` lets any `go` through, so a shape the app refuses never costs him the answer.
 
 - A `go` the app can take, while that talk's sheet is open (`useTalk`'s `GoTo.allowed`): the turn is kept with `opened` ('Colossians 1', shown under the answer as `Opened Colossians 1`), the sheet closes and `nav/readerRequest.ts` `openedByTutor` opens the Reader there as a new Back step, which shows the notice `Opened Colossians 1` under the header. The phone's Back returns to the chapter he was on. The answer is not read aloud (the Reader that would read it is gone).
 - The same from the round Ask button of any other screen (mw-5r3p30.198, `src/AskTutor.tsx`, `tests/e2e/ask-tutor-go.spec.ts`): the screen's sheet is the talk whose sheet must be open; the Reader opens on the chapter with `Opened Colossians 1` and the phone's Back returns to the screen he asked from. Share links (`ShareTalk.tsx`) keep not opening a go.

@@ -93,7 +93,7 @@ the whole passage.
   sent from that sheet carries `mode: 'quiz'`.
 * **The request** holds the whole verse or passage's Greek and English (the app's own Byzantine text and MSB, never the web, never Logos), the
   reference (`Romans 8:1-11`), `solid_words`, `learner` and `learner_grammar`, which the instructions use to pitch the questions.
-* **The instructions** (`## Quiz mode` in `grinds/bible-talk.instructions.md`) carry the method for any reader: questions in the order of the passage,
+* **The instructions** (`## Quiz mode` in `grinds/bible-talk.instructions/`) carry the method for any reader: questions in the order of the passage,
   one idea at a time; confirm what is right before correcting; nudge rather than tell when close; follow up vague answers; engage a tangent briefly and
   always land it by restating the next question; note a rabbit hole and pivot back; then build a structural map through the reader's own answers (the
   Genesis 1 days as the model). The map is Markdown text in the Talk sheet; a diagram is offered only as that text structure.
@@ -119,7 +119,7 @@ quiz method by talking with the tutor, and the phone keeps it for every later qu
 * **The page:** Settings > My study way (`#/studyway`, `src/StudyWayScreen.tsx`) lists the lines, each with Edit (a field, Save | Cancel) and Delete.
   It adds none: lines come only from Keep this.
 * **In every quiz request:** `study_way` (input schema, at most 12 lines), sent only in quiz mode and only when lines are kept; `fitHistory` never cuts
-  it. `## My study way` in `grinds/bible-talk.instructions.md` says the reader's lines override the default method where they conflict. They leave the
+  it. `## My study way` in `grinds/bible-talk.instructions/` says the reader's lines override the default method where they conflict. They leave the
   phone only inside a tutor request.
 * **PROVISIONAL, the Governor to confirm:** the page's name 'My study way', 'For your study way', 'Keep this' / 'Kept', the limits of 12 lines and 100
   characters, and that the lines go in quiz requests only (not in an ordinary talk).
@@ -130,7 +130,7 @@ The Governor, through the tutor (2026-10-11): some readers use Lampas to learn G
 others for reasons nobody listed; the quiz should begin by talking with him about why he wants it, then offer to keep that as his default.
 
 * **The tutor asks, not the app.** The quiz request carries `quiz_goal` (input schema; a string of at most 80 characters, or `null` when none is kept) in
-  quiz mode only. With `null`, no `quiz_goal_once` and an empty history, `### His quiz goal` in `grinds/bible-talk.instructions.md` makes the tutor open by
+  quiz mode only. With `null`, no `quiz_goal_once` and an empty history, `### His quiz goal` in `grinds/bible-talk.instructions/` makes the tutor open by
   asking why he wants the quiz in one short plain question with no list of options, ask at most one follow-up, then quiz to match (understanding: plain
   English, no Greek unless he asks; Greek; English; reading the Bible; anything else in his words). There is no list in the app either.
 * **The offer.** In that turn the answer carries `quiz_goal_offer` (at most 80

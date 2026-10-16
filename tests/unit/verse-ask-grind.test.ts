@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { askByChange, isVerseAnswer } from '../../src/services/tutor';
 import { validate, type Schema } from '../support/schema-validate';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const grind = readJson('grinds/verse-ask.json');
@@ -27,14 +28,14 @@ describe('grinds/verse-ask.json', () => {
   });
 
   it('tells the tutor the 120 word limit, the parsing and his solid words', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     expect(text).toContain('120 words');
     expect(text).toContain('solid_words');
     expect(text).toContain('parsing');
   });
 
   it('names settings.hebrewDepth and gives an example for each of its three depths', () => {
-    const text = readFileSync(grind.instructions as string, 'utf8');
+    const text = instructionsOf(grind.kind as string);
     expect(text).toContain('`settings`');
     expect(text).toContain('hebrewDepth');
     for (const depth of ['transliteration', 'both', 'full']) expect(text).toContain(`\`${depth}\``);
@@ -112,7 +113,7 @@ describe('askByChange: the one change Ask the tutor makes', () => {
 });
 
 describe('his requests (mw-vy3ghg.6)', () => {
-  const text = readFileSync('grinds/verse-ask.instructions.md', 'utf8').replace(/\s+/g, ' ');
+  const text = instructionsOf('verse-ask').replace(/\s+/g, ' ');
 
   it('tells the tutor to answer questions about his requests from `requests`, status by status', () => {
     expect(text).toContain('- `requests`:');

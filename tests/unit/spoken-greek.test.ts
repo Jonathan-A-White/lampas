@@ -9,6 +9,7 @@ import { askTranscriber } from '../../src/speech/askTranscriber';
 import { forgetSpoken, noteSpoken, wasSpoken } from '../../src/speech/spoken';
 import { FakeRecognizer, result, stubRecognizer } from '../support/fake-recognizer';
 import { validate, type Schema } from '../support/schema-validate';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const verse = { n: 1, g: [{ t: 'Τεκνία' }], e: [{ t: 'My little children' }] } as unknown as Verse;
@@ -97,7 +98,7 @@ describe('words kept unsent in the Ask field are marked spoken (mw-5r3p30.307)',
 });
 
 describe.each(['bible-talk', 'verse-ask'])('the %s grind tells the tutor about spoken Greek words', (kind) => {
-  const text = readFileSync(`grinds/${kind}.instructions.md`, 'utf8');
+  const text = instructionsOf(kind);
 
   it('says a spoken question went through an English recogniser and a Greek word may come as sound-alikes', () => {
     expect(text).toContain('`spoken`');

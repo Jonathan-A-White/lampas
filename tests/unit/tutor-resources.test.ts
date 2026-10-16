@@ -8,11 +8,12 @@ import { RESOURCES } from '../../src/resources';
 import { resourcesForTutor } from '../../src/resources/tutorLinks';
 import { buildTalkRequest } from '../../src/services/talk';
 import type { Schema } from '../support/schema-validate';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 const on = (...ids: string[]): StudyResources => ({ on: ids, options: {} });
 const chapter = { verses: [] } as never;
-const instructions = readFileSync('grinds/bible-talk.instructions.md', 'utf8');
-const verseAsk = readFileSync('grinds/verse-ask.instructions.md', 'utf8');
+const instructions = instructionsOf('bible-talk');
+const verseAsk = instructionsOf('verse-ask');
 const input = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema;
 
 describe('resourcesForTutor', () => {

@@ -9,13 +9,14 @@ import { buildTalkRequest, type TalkScope } from '../../src/services/talk';
 import { dataUrlOf, filesOf, isTalkPicture, PICTURE_ONLY_QUESTION, TALK_MAX_EDGE, TALK_MAX_PICTURES, TALK_PICTURE_MAX_BYTES, TALK_PICTURE_MIMES } from '../../src/talk/pictures';
 import { validate, type Schema } from '../support/schema-validate';
 import { remarkScripts } from '../../src/markdown/scriptRuns';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 afterAll(() => db.close());
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const grind = readJson('grinds/bible-talk.json') as { attachments: { min: number; max: number; mime: string[]; maxBytes: number } };
 const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
-const instructions = readFileSync('grinds/bible-talk.instructions.md', 'utf8');
+const instructions = instructionsOf('bible-talk');
 
 const scope: TalkScope = { title: 'Goal', chapter: { verses: [] } as never, verse: null, screen: { name: 'Goal', facts: [] } };
 

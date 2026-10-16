@@ -41,10 +41,10 @@ const CLIP_MARK = '…';
 /** The verses of a chapter the grind is given when the talk is about the chapter. */
 const CHAPTER_VERSES = 3;
 
-/** What the grind says to anything outside the Bible (grinds/bible-talk.instructions.md), word for word. */
+/** What the grind says to anything outside the Bible (grinds/bible-talk.instructions/), word for word. */
 export const REFUSAL = 'I can only talk about the Bible here; ask for app changes in Postern.';
 
-/** What the grind says when he asks for a setting the app does not have (grinds/bible-talk.instructions.md), word for word. */
+/** What the grind says when he asks for a setting the app does not have (grinds/bible-talk.instructions/), word for word. */
 export const NO_SETTING = 'The app has no setting for that yet.';
 
 export interface TalkHistoryEntry {

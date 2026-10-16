@@ -4,6 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { checkExpect, type ExpectBlock } from '../support/grind-examples';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 const example = (path: string): { request: Record<string, unknown>; expect: ExpectBlock } => JSON.parse(readFileSync(`grinds/examples/${path}.json`, 'utf8')) as { request: Record<string, unknown>; expect: ExpectBlock };
 const answerChecks = (path: string): ExpectBlock => ({ answer: example(path).expect.answer });
@@ -65,7 +66,7 @@ describe('verse-ask/spoken-greek-word takes either case of τεκνία (as bibl
 
 describe('bible-talk/memory-update-wished makes the note plain, and the grind says when the entries are required', () => {
   const { request } = example('bible-talk/memory-update-wished');
-  const instructions = readFileSync('grinds/bible-talk.instructions.md', 'utf8');
+  const instructions = instructionsOf('bible-talk');
 
   it('the question asks for the mix-up to be kept', () => {
     expect(String(request.question)).toMatch(/remember|keep a note|make a note|note (of|that|down)/i);

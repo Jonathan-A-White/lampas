@@ -1,6 +1,5 @@
 // tests/support/learner.ts — what the tutor features share about the learner summary (src/data/learnerSummary.ts): putting a word
 // he added today on his list, checking the 'learner' field of a grist the fake mill opened, and reading a grind's instructions.
-import { readFileSync } from 'node:fs';
 import { expect, vi } from 'vitest';
 import { db } from '../../src/data/db';
 
@@ -34,7 +33,8 @@ export async function expectLearnerSummary(input: Record<string, unknown>, lemma
   expect(text).toMatch(/due now: \d+$/);
 }
 
-export const instructionsOf = (kind: 'verse-ask' | 'bible-talk'): string => readFileSync(`grinds/${kind}.instructions.md`, 'utf8');
+/** A grind's instructions whole (scripts/grind-parts.ts: its parts joined as the mill joins them). */
+export { instructionsOf } from '../../scripts/grind-parts';
 
 /** The instructions describe the request's `learner` field. */
 export const expectLearnerField = (text: string): void => expect(text).toContain('`learner`');
