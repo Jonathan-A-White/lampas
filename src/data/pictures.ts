@@ -1,6 +1,6 @@
 // src/data/pictures.ts — the memory pictures: a small hand-drawn SVG for a word, in public/pictures.
 // The key is the word's headword as the store keeps it (src/data/lemma.ts); a word with no entry has no
-// picture and shows none. docs/pictures.md says which seed words have none, and how to add one.
+// picture and shows none. docs/pictures.md says which words have none, and how the next ones are chosen.
 import { normaliseHeadword } from './lemma';
 
 export const PICTURES: Readonly<Record<string, string>> = {
@@ -56,6 +56,57 @@ export const PICTURES: Readonly<Record<string, string>> = {
   "ὑμεῖς": "hymeis.svg",
   "Φαρισαῖος": "pharisaios.svg",
   "Χριστός": "christos.svg",
+  // Slice 1 (mw-5r3p30.383): the top of the picture queue, commonest first (npm run pictures:queue, docs/pictures.md).
+  "αὐτός": "autos.svg",
+  "εἰς": "eis.svg",
+  "οὗτος": "houtos.svg",
+  "πᾶς": "pas.svg",
+  "μή": "me.svg",
+  "ἐπί": "epi.svg",
+  "ἔχω": "echo.svg",
+  "πρός": "pros.svg",
+  "ὁράω": "horao.svg",
+  "γίνομαι": "ginomai.svg",
+  "διά": "dia.svg",
+  "ἵνα": "hina.svg",
+  "ἀπό": "apo.svg",
+  "ἔρχομαι": "erchomai.svg",
+  "κατά": "kata.svg",
+  "μετά": "meta.svg",
+  "πολύς": "polys.svg",
+  "πατήρ": "pater.svg",
+  "δίδωμι": "didomi.svg",
+  "ἡμέρα": "hemera.svg",
+  "πνεῦμα": "pneuma.svg",
+  "εἷς": "heis.svg",
+  "ἑαυτοῦ": "heautou.svg",
+  "περί": "peri.svg",
+  "εἴδω": "eido.svg",
+  "λαλέω": "laleo.svg",
+  "λαμβάνω": "lambano.svg",
+  "ἐκεῖνος": "ekeinos.svg",
+  "γῆ": "ge.svg",
+  "ἀποκρίνω": "apokrino.svg",
+  "πίστις": "pistis.svg",
+  "ἅγιος": "hagios.svg",
+  "μέγας": "megas.svg",
+  "οὐδείς": "oudeis.svg",
+  "ὄνομα": "onoma.svg",
+  "ὑπό": "hypo.svg",
+  "ἐξέρχομαι": "exerchomai.svg",
+  "γινώσκω": "ginosko.svg",
+  "γυνή": "gyne.svg",
+  "ἀνήρ": "aner.svg",
+  "δύναμαι": "dynamai.svg",
+  "παρά": "para.svg",
+  "Ἰουδαῖος": "ioudaios.svg",
+  "εἰσέρχομαι": "eiserchomai.svg",
+  "νόμος": "nomos.svg",
+  "εὑρίσκω": "heurisko.svg",
+  "χείρ": "cheir.svg",
+  "ἁμαρτία": "hamartia.svg",
+  "ἔργον": "ergon.svg",
+  "ὄχλος": "ochlos.svg",
 };
 
 /** The picture file for a headword (or a BMA lemma line), or undefined when the word has none. */
