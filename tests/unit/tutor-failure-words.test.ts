@@ -36,11 +36,24 @@ describe('the phone is offline', () => {
     expect(error?.message).toBe(OFFLINE_MESSAGE);
   });
 
-  it('says he is offline when the call fails before any response (a network error)', async () => {
+});
+
+describe('the call fails before any response with the phone online (mw-5r3p30.433)', () => {
+  // the gateway's error page with no CORS headers is refused by the browser, a TypeError as a lost network is: only navigator.onLine tells them apart
+  it('says the tutor is offline, not his connection', async () => {
     postern.down = true;
     const error = await failure(ask());
     expect(error?.failure).toBe('unreachable');
-    expect(error?.message).toBe(OFFLINE_MESSAGE);
+    expect(error?.message).toBe(TUTOR_OFFLINE_MESSAGE);
+  });
+
+  it('says he is offline once the browser says so', async () => {
+    postern.down = true;
+    const first = await failure(ask());
+    expect(first?.message).toBe(TUTOR_OFFLINE_MESSAGE);
+    online = false;
+    const again = await failure(ask());
+    expect(again?.message).toBe(OFFLINE_MESSAGE);
   });
 });
 
