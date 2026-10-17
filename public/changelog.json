@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.285",
+    "date": "2026-10-17",
+    "story": "mw-umv8sp.4",
+    "kind": "new",
+    "text": "Back from Audible, you can send a screenshot of Audible's playing screen and Lampas reads which chapter you reached; one tap accepts it."
+  },
+  {
+    "version": "0.1.285",
+    "date": "2026-10-17",
+    "story": "mw-neuq78.13",
+    "kind": "fixed",
+    "text": "the Next word box no longer shows a one-syllable word twice."
+  },
+  {
+    "version": "0.1.285",
+    "date": "2026-10-17",
+    "story": "mw-86e9r1.41",
+    "kind": "fixed",
+    "text": "in the 'Which fits?' cards for words told apart by their marks, no wrong choice means the same as the right one any more."
+  },
+  {
     "version": "0.1.284",
     "date": "2026-10-17",
     "story": "mw-86e9r1.23",

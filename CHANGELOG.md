@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.285
+_2026-10-17_
+- New: Back from Audible, you can send a screenshot of Audible's playing screen and Lampas reads which chapter you reached; one tap accepts it.
+- Fixed: the Next word box no longer shows a one-syllable word twice.
+- Fixed: in the 'Which fits?' cards for words told apart by their marks, no wrong choice means the same as the right one any more.
+
 ## 0.1.284
 _2026-10-17_
 - Fixed: reloading the placement's 'Where you are' card, or going Back to it from the Goal screen, now shows the card again instead of starting over.
