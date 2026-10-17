@@ -679,3 +679,29 @@ textarea,
   stroke-dashoffset: 1;
   animation: lp-stroke-draw var(--lp-stroke-ms, 700ms) ease-in-out forwards;
 }
+
+/* The return sheet (mw-umv8sp.3, src/plan/WhereDidYouGetTo.tsx): the backdrop fades in and the sheet slides up from the foot; prefers-reduced-motion above makes both all but instant. */
+@keyframes lp-sheet-in {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes lp-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.lp-sheet-in {
+  animation: lp-sheet-in 240ms ease-out backwards;
+}
+.lp-fade-in {
+  animation: lp-fade-in 240ms ease-out backwards;
+}
