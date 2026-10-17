@@ -151,26 +151,53 @@ describe('every letter of the alphabet over 1 John, in Modern mode (AC 5)', () =
   });
 });
 
-describe('every chapter Lampas holds (AC 4)', () => {
-  it('has no letter or sound sheet whose underline marks anything but what the scheme reads as that letter or pair alone', async () => {
-    const books = index.books.flatMap((b) => Array.from({ length: b.chapters }, (_, i) => [b.code, i + 1] as const));
-    const wrong: string[] = [];
-    let chapters = 0;
-    let marked = 0;
-    for (const [code, n] of books) {
-      const chapter = await loadChapter(code, n);
-      chapters++;
-      for (const id of SOUND_SHEETS) {
-        for (const example of ideaExamples(id, [chapter])) {
-          marked += example.parts.filter((p) => p.marked).length;
-          wrong.push(...faults(id, example));
+/** The 260 chapters are walked in SLICES (every SLICES-th chapter from k): one walk of all of them takes 8 s, so each test holds a slice of it. */
+const SLICES = 8;
+const allChapters = () => index.books.flatMap((b) => Array.from({ length: b.chapters }, (_, i) => [b.code, i + 1] as const));
+const sliceOf = (k: number) => allChapters().filter((_, i) => i % SLICES === k);
+
+const walkMemo = new Map<number, Promise<{ chapters: string[]; marked: number; wrong: string[] }>>();
+/** Every sound sheet's examples over the chapters of one slice: the chapters walked, the marked stretches seen and what the check finds wrong. The work is done once per slice. */
+function walk(slice: number) {
+  let done = walkMemo.get(slice);
+  if (!done) {
+    done = (async () => {
+      const wrong: string[] = [];
+      const chapters: string[] = [];
+      let marked = 0;
+      for (const [code, n] of sliceOf(slice)) {
+        const chapter = await loadChapter(code, n);
+        chapters.push(`${code} ${n}`);
+        for (const id of SOUND_SHEETS) {
+          for (const example of ideaExamples(id, [chapter])) {
+            marked += example.parts.filter((p) => p.marked).length;
+            wrong.push(...faults(id, example));
+          }
         }
       }
-    }
+      return { chapters, marked, wrong };
+    })();
+    walkMemo.set(slice, done);
+  }
+  return done;
+}
+
+describe('every chapter Lampas holds (AC 4)', () => {
+  for (let slice = 0; slice < SLICES; slice++)
+    it(`has no letter or sound sheet whose underline marks anything but what the scheme reads as that letter or pair alone: chapters ${slice + 1} of ${SLICES}`, async () => {
+      const { chapters, wrong } = await walk(slice);
+      expect(chapters.length).toBeGreaterThan(0);
+      expect(wrong).toEqual([]);
+    }, 120_000);
+
+  it('the slices together walk all 260 chapters once each, and check more than 100,000 marked stretches between them', async () => {
+    const walked = (await Promise.all(Array.from({ length: SLICES }, (_, k) => walk(k)))).flatMap((w) => w.chapters);
+    const marked = (await Promise.all(Array.from({ length: SLICES }, (_, k) => walk(k)))).reduce((n, w) => n + w.marked, 0);
     // the closing comment reports these counts
-    console.log(`checked ${chapters} chapters, ${SOUND_SHEETS.length} sheets, ${marked} marked stretches`);
-    expect(chapters).toBe(260);
-    expect(wrong).toEqual([]);
+    console.log(`checked ${walked.length} chapters, ${SOUND_SHEETS.length} sheets, ${marked} marked stretches`);
+    expect(walked.sort()).toEqual(allChapters().map(([code, n]) => `${code} ${n}`).sort());
+    expect(walked).toHaveLength(260);
+    expect(marked).toBeGreaterThan(100_000);
   }, 120_000);
 
   it('the scheme counts the same letters as the forms have, for every form of the text', async () => {
