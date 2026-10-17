@@ -19,7 +19,8 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
-import { WRITERS, writing } from '../../tests/support/handwriting';
+import { LOOKALIKES } from '../../src/handwriting/templates';
+import { WRITERS, drawing, writing } from '../../tests/support/handwriting';
 import { seedHisWords } from '../../tests/support/his-words';
 
 afterAll(() => {
@@ -90,9 +91,9 @@ async function opensLetterSheet(name: string): Promise<void> {
 }
 
 /** The letter written on the pad as pointer events, stroke by stroke, with a pen or a finger. */
-function writeOnPad(letter: string, type: 'pen' | 'touch'): void {
+function writeOnPad(letter: string, type: 'pen' | 'touch', strokes = writing(letter, WRITERS[0])): void {
   const pad = within(card()).getByTestId('writing-pad');
-  for (const stroke of writing(letter, WRITERS[0])) {
+  for (const stroke of strokes) {
     const pointerId = (pointer += 1);
     const at = (i: number) => ({ pointerId, pointerType: type, isPrimary: true, button: 0, buttons: 1, clientX: stroke[i].x, clientY: stroke[i].y });
     fireEvent.pointerDown(pad, at(0));
@@ -101,10 +102,10 @@ function writeOnPad(letter: string, type: 'pen' | 'touch'): void {
   }
 }
 
-async function writesAndChecks(letter: string, type: 'pen' | 'touch'): Promise<void> {
+async function writesAndChecks(letter: string, type: 'pen' | 'touch', strokes?: ReturnType<typeof writing>): Promise<void> {
   await screen.findByTestId('write-it');
   spokenBefore = synth.spoken.length;
-  writeOnPad(letter, type);
+  writeOnPad(letter, type, strokes);
   await user.click(within(card()).getByRole('button', { name: 'Check' }));
   await within(card()).findByTestId('write-verdict');
 }
@@ -323,6 +324,30 @@ describeFeature(feature, ({ Scenario }) => {
       expect(await within(card()).findByTestId('writing-pad')).toHaveAttribute('data-strokes', '0');
       await asksToTrace(undefined, letter);
       expect(await getWriteProgress(letter)).toEqual({ stage: 'trace', rights: 0 });
+    });
+  });
+
+  Scenario('A Greek letter written as its Latin look-alike is close, with the line that says where', ({ Given, When, Then, And }) => {
+    Given(PEN, (_, goal: string) => open(goal, true));
+    When('he opens the letter sheet of {string} from the alphabet sheet', letterSheetFor);
+    And('he taps {string} on the letter sheet', tapsOnSheet);
+    And('he writes a Latin {string} for {string} with the pen and taps Check', (_, latin: string, letter: string) => {
+      const shape = LOOKALIKES[letter].find((l) => l.latin === latin)?.variants[0];
+      if (!shape) throw new Error(`no Latin ${latin} for ${letter}`);
+      return writesAndChecks(letter, 'pen', drawing(shape));
+    });
+    Then('the card says {string} and the line {string}', (_, text: string, line: string) => {
+      const verdict = within(card()).getByTestId('write-verdict');
+      expect(verdict).toHaveAttribute('data-right', 'false');
+      expect(verdict).toHaveTextContent(text);
+      expect(verdict).not.toHaveTextContent('Not quite');
+      expect(within(card()).getByTestId('write-hint')).toHaveTextContent(line);
+    });
+    And('the card draws the strokes of {string}', (_, letter: string) => {
+      expect(within(card()).getByTestId('write-strokes-shown')).toHaveAttribute('data-letter', letter);
+    });
+    And('Gamma has no right kept', async () => {
+      expect(await getWriteProgress('γ')).toEqual({ stage: 'trace', rights: 0 });
     });
   });
 
