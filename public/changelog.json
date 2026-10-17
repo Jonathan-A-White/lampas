@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.1.291",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.223",
+    "kind": "fixed",
+    "text": "after the tutor's offer to change a setting is tapped, the card no longer shows a stray second 'Changed' line."
+  },
+  {
+    "version": "0.1.291",
+    "date": "2026-10-17",
+    "story": "mw-svw421.24",
+    "kind": "fixed",
+    "text": "the table for the verb οἶδα no longer has a column headed 'Greek'."
+  },
+  {
+    "version": "0.1.291",
+    "date": "2026-10-17",
+    "story": "mw-s1dc0n.7",
+    "kind": "fixed",
+    "text": "Tapping an Old Testament reference such as Gen. 1:28 in Share to Lampas now shows a \"Not in Lampas yet\" card (with Open in Logos) instead of jumping to Romans 8."
+  },
+  {
+    "version": "0.1.291",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.356",
+    "kind": "new",
+    "text": "An optional course, Learn the IPA sounds, under Optional on the Goal screen, teaches the symbols for Greek's sounds with a drill and a pass check; nothing else in the app needs it."
+  },
+  {
     "version": "0.1.290",
     "date": "2026-10-17",
     "story": "mw-neuq78.14",

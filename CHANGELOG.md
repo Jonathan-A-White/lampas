@@ -1,5 +1,12 @@
 # What's new
 
+## 0.1.291
+_2026-10-17_
+- Fixed: after the tutor's offer to change a setting is tapped, the card no longer shows a stray second 'Changed' line.
+- Fixed: the table for the verb οἶδα no longer has a column headed 'Greek'.
+- Fixed: Tapping an Old Testament reference such as Gen. 1:28 in Share to Lampas now shows a "Not in Lampas yet" card (with Open in Logos) instead of jumping to Romans 8.
+- New: An optional course, Learn the IPA sounds, under Optional on the Goal screen, teaches the symbols for Greek's sounds with a drill and a pass check; nothing else in the app needs it.
+
 ## 0.1.290
 _2026-10-17_
 - New: After a partly read verse, the word you stopped at is now underlined in the verse, and tapping it takes you to the Next word box.
