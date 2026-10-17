@@ -76,6 +76,34 @@ export interface StudyResource {
   versesFor?(place: StudyPlace, bible: string): StudyLink[];
 }
 
+/** A part of a grammar book that teaches some ideas of the ladder (mw-5r3p30.381): a lesson, a chapter, an appendix. */
+export interface BookSection {
+  /** as the book's table of contents names it: 'Lesson 4: Nouns of the Second Declension' */
+  title: string;
+  /** where Logos opens it: a reference of a data type the book is indexed by, 'Page.p+26' (docs/resources.md says which are UNVERIFIED) */
+  ref: string;
+  /** the ids of the ladder ideas (src/data/grammar/ladder.ts) it teaches */
+  ideas: string[];
+}
+
+/** One grammar book of his Logos library, linked from the idea sheet's Read more: a reference inside the learning, never a grammar approach. */
+export interface GrammarBook {
+  /** kept in the settings store, so it never changes: 'black' */
+  id: string;
+  /** the book's line on the idea sheet: 'Black, Learn to Read NT Greek' */
+  short: string;
+  /** its tick in Settings > Study resources > Logos > Grammar books */
+  name: string;
+  /** the Resource ID his Logos library lists: 'LLS:LRNTOREADNTGRK' */
+  resource: string;
+  /** ticked until he changes the ticks */
+  startsTicked?: boolean;
+  /** where the section titles and references were read: one line, also in docs/resources.md */
+  source: string;
+  /** in the book's order; the first section that names an idea is the one that teaches it first */
+  sections: BookSection[];
+}
+
 /** The ids ticked in a kept JSON array; the default when nothing was kept or it cannot be read. */
 export function tickedOf(resource: StudyResource, kept: string | undefined): string[] {
   const choices = resource.choices;
