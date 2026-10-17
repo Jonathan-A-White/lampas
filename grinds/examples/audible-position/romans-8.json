@@ -1,0 +1,12 @@
+{
+  "description": "A drawn screenshot of Audible's now-playing screen in The Word of Promise at 'Romans 8', 4:10 in with 2:02 left, after she set off from Romans 6: Rom 8 comes back with high confidence, and the position is the time played, not the time left or the phone's clock.",
+  "schemaVersion": "1",
+  "request": { "language": "en", "set_off_from": "Romans 6" },
+  "photos": ["romans-8.jpg"],
+  "expect": {
+    "book": { "equals": "Rom" },
+    "chapter": { "equals": 8 },
+    "position": { "equals": "4:10" },
+    "confidence": { "equals": "high" }
+  }
+}

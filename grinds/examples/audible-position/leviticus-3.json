@@ -1,0 +1,12 @@
+{
+  "description": "A drawn screenshot of Audible's now-playing screen in The Word of Promise at 'Leviticus 3', 2:41 in, after she set off from Leviticus 1: the chapter on the screen comes back, not the one she began at, with high confidence and the time played.",
+  "schemaVersion": "1",
+  "request": { "language": "en", "set_off_from": "Leviticus 1" },
+  "photos": ["leviticus-3.jpg"],
+  "expect": {
+    "book": { "equals": "Lev" },
+    "chapter": { "equals": 3 },
+    "position": { "equals": "2:41" },
+    "confidence": { "equals": "high" }
+  }
+}
