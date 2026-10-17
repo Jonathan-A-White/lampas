@@ -90,3 +90,76 @@ export function depthIn<T extends PathIdea>(path: Path<T>, id: string): number {
 /** The frontier: the ideas not yet solid whose every need is solid, in the path's order. These, and only these, are ready to learn now. */
 export const frontierIn = <T extends PathIdea>(path: Path<T>, solid: ReadonlySet<string>): T[] =>
   path.ideas.filter((i) => !solid.has(i.id) && i.needs.every((n) => solid.has(n)));
+
+// ---- The path drawn (mw-foy5mb.5): where each idea sits on a picture of the graph, taking the path as data ----
+
+/** A node's box and the gaps around it, in the picture's own units. */
+export const NODE_W = 132;
+export const NODE_H = 48;
+export const COLUMN_GAP = 16;
+export const ROW_GAP = 56;
+
+export interface LaidOutNode {
+  id: string;
+  /** the row it sits in: depthIn */
+  depth: number;
+  x: number;
+  y: number;
+  width: number;
+}
+
+/** A need drawn: `from` is the idea that is rested on (the row above), `to` the idea that rests on it. */
+export interface LaidOutEdge {
+  from: string;
+  to: string;
+}
+
+export interface PathLayout {
+  nodes: LaidOutNode[];
+  edges: LaidOutEdge[];
+  width: number;
+  height: number;
+}
+
+/**
+ * The path laid out by depth: one row per depth (the ideas that need nothing at the top, an idea below every idea it needs), each row centred, the ideas
+ * of a row ordered by where the ideas they rest on and the ideas resting on them sit (a few sweeps of the barycentre, to keep the edges from crossing
+ * more than they must). Pure and deterministic: the same path is the same picture.
+ */
+export function layoutPath<T extends PathIdea>(path: Path<T>): PathLayout {
+  const depths = new Map(path.ideas.map((i) => [i.id, depthIn(path, i.id)]));
+  const rows: string[][] = [];
+  for (const idea of path.ideas) (rows[depths.get(idea.id)!] ??= []).push(idea.id);
+  const dependents = new Map<string, string[]>(path.ideas.map((i) => [i.id, []]));
+  for (const idea of path.ideas) for (const need of idea.needs) dependents.get(need)!.push(idea.id);
+
+  const step = NODE_W + COLUMN_GAP;
+  const widest = Math.max(0, ...rows.map((r) => r.length)) * step - COLUMN_GAP;
+  const centreOf = new Map<string, number>();
+  const place = (row: string[]): void => row.forEach((id, i) => centreOf.set(id, (widest - (row.length * step - COLUMN_GAP)) / 2 + i * step + NODE_W / 2));
+  rows.forEach(place);
+
+  const sortBy = (row: string[], neighbours: (id: string) => readonly string[]): void => {
+    const mean = (id: string): number => {
+      const near = neighbours(id);
+      return near.length === 0 ? centreOf.get(id)! : near.reduce((sum, n) => sum + centreOf.get(n)!, 0) / near.length;
+    };
+    const keyed = row.map((id, i) => ({ id, i, at: mean(id) }));
+    keyed.sort((a, b) => a.at - b.at || a.i - b.i);
+    keyed.forEach((k, i) => (row[i] = k.id));
+    place(row);
+  };
+  for (let sweep = 0; sweep < 4; sweep += 1) {
+    for (let d = 1; d < rows.length; d += 1) sortBy(rows[d], (id) => path.byId.get(id)!.needs);
+    for (let d = rows.length - 2; d >= 0; d -= 1) sortBy(rows[d], (id) => dependents.get(id)!);
+  }
+
+  const nodes: LaidOutNode[] = [];
+  const order = new Map(path.ideas.map((i, n) => [i.id, n]));
+  rows.forEach((row, depth) => {
+    for (const id of row) nodes.push({ id, depth, x: centreOf.get(id)! - NODE_W / 2, y: depth * (NODE_H + ROW_GAP), width: NODE_W });
+  });
+  nodes.sort((a, b) => order.get(a.id)! - order.get(b.id)!);
+  const edges = path.ideas.flatMap((idea) => idea.needs.map((need) => ({ from: need, to: idea.id })));
+  return { nodes, edges, width: widest, height: rows.length * (NODE_H + ROW_GAP) - ROW_GAP };
+}
