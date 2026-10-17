@@ -4,7 +4,7 @@
 // (src/services/requestStatus.ts) when it opens, every requestTimings.pollMs and at once when the phone shows the app again (never while it is
 // hidden); the list is a live query, so a record shows as it is applied.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { listRequests, type RequestRow } from './data/repositories/requests';
 import { navigate, requestsOf, useAddress } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -77,12 +77,46 @@ function useStatusPulling(): boolean {
   return failed;
 }
 
+/** A request's words, cut at three lines; when the cut hides some, the words are a button that opens them all and folds them again. Whether the
+ * cut hides anything is measured (a phone's width and type size decide), at first and whenever the box changes size while it is folded. */
+function RequestText({ text }: { text: string }) {
+  const box = useRef<HTMLParagraphElement>(null);
+  const [cut, setCut] = useState(false);
+  const [open, setOpen] = useState(false);
+  useLayoutEffect(() => {
+    const el = box.current;
+    if (!el || open) return;
+    const measure = (): void => setCut(el.scrollHeight > el.clientHeight + 1);
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const watch = new ResizeObserver(measure);
+    watch.observe(el);
+    return () => watch.disconnect();
+  }, [text, open]);
+  const toggle = (): void => setOpen((was) => !was);
+  const onKeyDown = (e: KeyboardEvent): void => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    toggle();
+  };
+  const openable = cut || open;
+  return (
+    <p
+      ref={box}
+      className={`break-words text-lg ${open ? '' : 'line-clamp-3'} ${openable ? 'cursor-pointer' : ''}`}
+      {...(openable ? { role: 'button', tabIndex: 0, 'aria-expanded': open, onClick: toggle, onKeyDown } : {})}
+    >
+      {text}
+    </p>
+  );
+}
+
 function Request({ row }: { row: RequestRow }) {
   const line = statusLine(row);
   const adopted = row.status === 'landed' && row.url;
   return (
     <li data-request className="border-b border-line py-3">
-      <p className="line-clamp-3 break-words text-lg">{row.summary ?? row.text ?? 'A request'}</p>
+      <RequestText text={row.summary ?? row.text ?? 'A request'} />
       <p data-request-sent className="pt-1 text-sm text-muted">
         {KIND_NAMES[row.kind] ?? 'Request'} · {sentOn(row.sentAt)}
       </p>
