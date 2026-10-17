@@ -330,11 +330,11 @@ function explain(err: unknown): TutorError {
   }
   if (err instanceof GristInputError) return new TutorError('not-sent', err.message);
   if (err instanceof door.RefusedError) return new TutorError('unreachable', err.message);
-  // the phone has no network: the browser says so, or the call failed before any response (the door keeps the fetch's TypeError as the cause)
-  const noResponse = err instanceof door.BackendUnreachableError && err.cause instanceof TypeError;
-  if (noResponse || phoneIsOffline()) return new TutorError('unreachable', OFFLINE_MESSAGE);
-  // the backend answered with a gateway error, or did not answer in time: it is the tutor's side that is down
-  if (err instanceof door.ApiTimeoutError || err instanceof door.BackendUnreachableError || (err instanceof BackendStatusError && err.status >= 500)) {
+  // the phone has no network only when the browser says so (mw-5r3p30.433): a call that failed before any response is no proof, since the gateway's
+  // error page with no CORS headers, and a refused connection with the factory's home off, fail just as a lost network does (a TypeError)
+  if (phoneIsOffline()) return new TutorError('unreachable', OFFLINE_MESSAGE);
+  // the backend answered with a gateway error, could not be reached with the phone online, or did not answer in time: it is the tutor's side that is down
+  if (lostOnTheWay(err)) {
     return new TutorError('unreachable', TUTOR_OFFLINE_MESSAGE);
   }
   return new TutorError('unreachable', err instanceof Error ? err.message : 'Something went wrong.');
