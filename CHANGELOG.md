@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.297
+_2026-10-17_
+- Fixed: Holding the Talk button no longer makes the phone chime at every pause while you speak, and the words after a pause still reach your question.
+
 ## 0.1.296
 _2026-10-17_
 - Fixed: Open in Logos no longer replaces Lampas with a web page when the Logos app is not on the phone; the web page opens in its own tab.

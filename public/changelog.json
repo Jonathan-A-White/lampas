@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.297",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.498",
+    "kind": "fixed",
+    "text": "Holding the Talk button no longer makes the phone chime at every pause while you speak, and the words after a pause still reach your question."
+  },
+  {
     "version": "0.1.296",
     "date": "2026-10-17",
     "story": "mw-5r3p30.428",
