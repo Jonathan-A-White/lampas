@@ -1,0 +1,38 @@
+{
+  "description": "From Settings > Ask for more he finishes the sentence the talk opened with and asks for a translation Lampas lacks: the tutor offers to send it to the makers (feedback_offer) and changes nothing.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Ask for more",
+    "question": "I'd like Lampas to have the ESV to read beside the Greek",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί"
+    ],
+    "settings": {},
+    "screen": {
+      "name": "Ask for more",
+      "facts": [
+        {
+          "label": "For",
+          "value": "Asks that would grow Lampas: an approach or programme, a study resource, a text or a translation it does not have"
+        },
+        {
+          "label": "Forms",
+          "value": "An approach or programme, A study resource, A text, A translation"
+        }
+      ]
+    }
+  },
+  "expect": {
+    "feedback_offer": {
+      "present": true
+    },
+    "feedback_offer.summary": {
+      "matches": "ESV"
+    },
+    "settings_changes": {
+      "present": false
+    }
+  }
+}
