@@ -81,6 +81,13 @@ const HEIGHT_APART = 0.2;
 /** Two same-shaped letters whose place on the line differs by less than this many cap heights cannot be told by place. */
 const PLACE_APART = 0.15;
 
+/**
+ * What the checker has done so far, counted so a test can hold its speed to a budget of work, which a loaded host cannot move,
+ * rather than to a wall clock, which it can (mw-5r3p30.504): `pairs` is the point-to-point distances measured, `templates` the
+ * templates built from their drawn strokes.
+ */
+export const work = { pairs: 0, templates: 0 };
+
 interface Pt {
   x: number;
   y: number;
@@ -218,6 +225,7 @@ function distance(a: Cloud, b: Cloud, cutoff = Infinity): number {
       if (d < min) min = d;
       if (d < nearestOfB[j]) nearestOfB[j] = d;
     }
+    work.pairs += n;
     sumA += min * min;
     if (sumA > limit) return Infinity;
   }
@@ -265,6 +273,7 @@ function templates(): Template[] {
       if (!sampled || !frame) throw new Error(`template ${letter} has no ink`);
       const placed = sampled.map((p) => ({ ...place(p, frame), id: p.id }));
       const cloud = cloudOf(placed);
+      work.templates += 1;
       out.push({ letter, cloud, coarse: thin(cloud), top: Math.min(...ys), bottom: Math.max(...ys), points: placed });
     }
   }
