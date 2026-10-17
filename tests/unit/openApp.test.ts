@@ -1,6 +1,6 @@
 // The scheme-then-fallback opener (src/resources/openApp.ts): the app's own scheme is tried first by the link itself; the https
 // address is opened only when the page stayed in front for the wait (the phone found no app for the scheme).
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { armFallback, browserEnv, type OpenEnv } from '../../src/resources/openApp';
 import { storeUrl } from '../../src/resources/appStore';
 
@@ -114,5 +114,16 @@ describe('storeUrl', () => {
 
   it('encodes the app name', () => {
     expect(storeUrl('A & B', 'Android')).toContain('q=A%20%26%20B');
+  });
+});
+
+describe('browserEnv.open', () => {
+  it('opens a tab, cut loose from this page, and does not move this page', () => {
+    const tab = { opener: 'this page' } as unknown as Window;
+    const open = vi.spyOn(window, 'open').mockReturnValue(tab);
+    browserEnv.open('https://ref.ly/x');
+    expect(open).toHaveBeenCalledWith('https://ref.ly/x', '_blank');
+    expect(tab.opener).toBeNull();
+    open.mockRestore();
   });
 });

@@ -155,3 +155,42 @@ test('a quick second tap on the reference leaves its card on screen', async ({ p
   await page.mouse.click(VIEWPORT.width / 2, 8);
   await expect(card).toBeHidden();
 });
+
+// Open in Logos on a phone with no Logos app (mw-5r3p30.428): the scheme goes nowhere, 1.5 s later the https fallback opens in a new tab and Lampas itself stays where it is.
+test('Open in Logos with no Logos app keeps the Lampas page on screen', async ({ page, context }) => {
+  await page.setViewportSize(VIEWPORT);
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: { answer: 'The end of the matter is in Ecclesiastes 12:13.', words: [] } };
+  await routePostern(page, fake);
+  const refly: string[] = [];
+  await context.route('https://ref.ly/**', (route) => {
+    refly.push(route.request().url());
+    return route.fulfill({ status: 200, contentType: 'text/html', body: '<title>ref.ly</title>' });
+  });
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+
+  await page.goto('/#/settings?section=resources');
+  const logos = page.getByRole('switch', { name: 'Logos', exact: true });
+  await logos.click();
+  await expect(logos).toBeChecked();
+  await page.getByRole('button', { name: '‹ Reader' }).click();
+
+  await openTalkAbout(page, 28);
+  const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
+  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Where does Ecclesiastes end?');
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+  await sheet.getByRole('link', { name: 'Ecclesiastes 12:13', exact: true }).click();
+  const card = page.getByRole('dialog', { name: 'Ecclesiastes 12:13' });
+  const lampas = page.url();
+  const pagesBefore = context.pages().length;
+
+  await card.getByRole('link', { name: 'Open in Logos' }).click();
+  await page.waitForTimeout(2500);
+
+  expect(page.url(), 'Lampas is still the page in front').toBe(lampas);
+  await expect(card).toBeVisible();
+  expect(refly.length, 'the https fallback was asked for once').toBe(1);
+  expect(context.pages().length - pagesBefore, 'one new tab holds the fallback').toBe(1);
+});
