@@ -1,0 +1,8 @@
+{
+  "name": "A path of three ideas that is not the Lampas ladder",
+  "ideas": [
+    { "id": "sow", "needs": [] },
+    { "id": "water", "needs": ["sow"] },
+    { "id": "reap", "needs": ["sow", "water"] }
+  ]
+}

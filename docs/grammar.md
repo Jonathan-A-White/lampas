@@ -346,6 +346,7 @@ tenses, the stress mark, the diaeresis, the parts of speech) and fails on one it
 
 ## The ladder
 
+<!-- ladder:begin — written by `npm run ladder:docs` from src/data/grammar/ladder.ts; edit the ladder, not this table -->
 | Rung | Tier | Id | Title | Terms | Rests on |
 | --- | --- | --- | --- | --- | --- |
 | 1 | letters | `alphabet` | The Greek alphabet | – | – |
@@ -496,6 +497,7 @@ tenses, the stress mark, the diaeresis, the parts of speech) and fails on one it
 | 146 | joiners | `crasis` | Two words run together | crasis | `conjunction`, `punctuation` |
 | 147 | joiners | `aramaic` | Aramaic words | Aramaic word | `indeclinable` |
 | 148 | joiners | `hebrew` | Hebrew words | Hebrew word | `indeclinable` |
+<!-- ladder:end -->
 
 ## Approaches
 

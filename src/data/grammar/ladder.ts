@@ -7,6 +7,7 @@ import { GRAMMAR_CONCEPTS } from '../grammar-concepts';
 import { bookOf } from '../books';
 import { GRAMMAR_TERMS, decodeParse, parseSegments, splitParse } from '../parseCode';
 import { patternsOf } from './patterns';
+import { belowIn, makePath } from './pathGraph';
 import { PREPOSITIONS, type Preposition } from './prepositions';
 
 /** The kind string of a schedule row whose item is a grammar idea (src/data/repositories/reviews.ts). */
@@ -482,6 +483,9 @@ for (const idea of LADDER) {
   if (BY_ID.has(idea.id)) throw new Error(`Grammar idea ${idea.id} is listed twice`);
   BY_ID.set(idea.id, idea);
 }
+/** The ladder as a path (pathGraph.ts): the same graph functions answer for any other path; makePath throws, naming it, on a cycle. */
+export const LADDER_PATH = makePath(LADDER);
+
 for (const idea of LADDER) {
   for (const need of idea.needs) {
     const below = BY_ID.get(need);
@@ -532,19 +536,7 @@ export function ideaOf(id: string): GrammarIdea {
 }
 
 /** Every idea this one rests on, however far down, sorted by rung. */
-export function ideasBelow(id: string): GrammarIdea[] {
-  const seen = new Set<string>();
-  const walk = (at: string): void => {
-    for (const need of ideaOf(at).needs) {
-      if (!seen.has(need)) {
-        seen.add(need);
-        walk(need);
-      }
-    }
-  };
-  walk(id);
-  return [...seen].map(ideaOf).sort((a, b) => a.rung - b.rung);
-}
+export const ideasBelow = (id: string): GrammarIdea[] => belowIn(LADDER_PATH, id);
 
 /** The ids of the ideas a word with this RP parsing code needs, sorted by rung: its part of speech, and one idea for each case,
  * number, gender, person, tense, voice, mood and suffix its parsing names. ALWAYS_NEEDED are not listed. Throws on an unknown code. */
