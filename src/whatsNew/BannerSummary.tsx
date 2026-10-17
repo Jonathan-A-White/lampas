@@ -2,15 +2,16 @@
 // where What's new opens the lines of the waiting versions (nothing is remembered: the sheet shows once more after the
 // update, src/whatsNew/WhatsNewOnUpdate.tsx). Nothing at all while the changelog loads, offline, or when it has nothing after this build.
 import { useState } from 'react';
-import { summarise, UpdateSummary, WhatsNewSheet } from 'bsv-kit/whats-new';
+import { summarise, UpdateSummary } from 'bsv-kit/whats-new';
 import { APP_SEMVER, LAST_SEEN_VERSION_STORAGE_KEY } from '../config';
 import { useSheetBack } from '../ui/sheetBack';
+import { SpokenWhatsNewSheet } from './SpokenWhatsNewSheet';
 import { useAppChangelog } from './useAppChangelog';
 
 /** Open from the banner: the phone's Back closes it, as it does every sheet. */
 function BannerSheet({ onClose, entries }: { onClose: () => void; entries: NonNullable<ReturnType<typeof useAppChangelog>> }) {
   useSheetBack(onClose);
-  return <WhatsNewSheet open since={APP_SEMVER} entries={entries} version={APP_SEMVER} storageKey={LAST_SEEN_VERSION_STORAGE_KEY} onClose={onClose} />;
+  return <SpokenWhatsNewSheet open since={APP_SEMVER} entries={entries} version={APP_SEMVER} storageKey={LAST_SEEN_VERSION_STORAGE_KEY} onClose={onClose} />;
 }
 
 export function BannerSummary() {

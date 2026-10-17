@@ -1,6 +1,6 @@
 Feature: A small speaker reads any text he may want heard
   Wherever Lampas shows a block of prose a learner may want to hear (the Grammar sheet of a term, the idea sheet of a letter or of any idea, a
-  new word's sheet, each answer of the tutor, each version in About's What's new) a small, quiet speaker at the top right of the block reads it
+  new word's sheet, each answer of the tutor, each version in About's What's new and in the sheet shown after an update, each Settings row's More help) a small, quiet speaker at the top right of the block reads it
   aloud with the phone's own voices: each stretch of Greek in the Greek voice, the rest in the English one, at his speed. The button is the one
   component src/speech/ReadAloud.tsx: icon only, named 'Read aloud', and 'Stop reading' while its text is read; a second tap stops it. The words
   stay on screen while they are read. A phone with no voice for a language gets the one line of help and not a silent button. speechSynthesis is
@@ -80,3 +80,27 @@ Feature: A small speaker reads any text he may want heard
     And About's What's new lists a version with one new line
     When he taps Read aloud
     Then the phone speaks the line of that version in "en-US"
+
+  Scenario: Each version in the What's new sheet shown after an update has the speaker, and a second tap stops it
+    Given a phone with an English and a Greek voice
+    And the phone last saw an older version and the changelog lists two versions since
+    When Lampas opens
+    Then the What's new sheet has a Read aloud button for each of the two versions
+    When he taps the first Read aloud
+    Then the phone speaks "New: Pin a verse to the top." in "en-US"
+    And the button is named Stop reading
+    And the lines of the versions are still on screen
+    When he taps Stop reading
+    Then the phone is silent and the button is named Read aloud
+
+  Scenario: The More help of a Settings row has the speaker once it is open
+    Given a phone with an English and a Greek voice
+    And a Settings row whose More help names "λόγος"
+    Then the row has no Read aloud button
+    When he taps More help
+    Then the row has a Read aloud button
+    When he taps Read aloud
+    Then the phone speaks "λόγος" in "el-GR"
+    And the More help is still on screen
+    When he taps Less help
+    Then the phone is silent
