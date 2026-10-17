@@ -20,7 +20,7 @@ import { loadFrequency } from './data/frequency';
 import { exampleGloss, exampleNote, ideaExamples, ideaExamplesFor, ideaPassage, isSoundIdea, isSpellingIdea, passageForms, type ExampleRanking, type IdeaExample, type IdeaExamples, type IdeaPassage, type PairCase } from './data/grammar/ideaSheet';
 import { ideaOf, type GrammarIdea } from './data/grammar/ladder';
 import { soundLesson } from './data/grammar/lessons';
-import { teachOf, workedFor, type Teach, type TeachTable } from './data/grammar/teach';
+import { stepsOf, teachOf, workedFor, type Teach, type TeachTable } from './data/grammar/teach';
 import { teachTiles } from './data/grammar/teachTiles';
 import { paradigmsOf } from './data/paradigms';
 import { getOpenChapter } from './data/readerChapter';
@@ -200,7 +200,7 @@ function Worked({ teach, passage, scheme }: { teach: Teach; passage: IdeaPassage
         Say it: {scheme.respell(said)}
       </p>
       <ol className="mt-2 list-decimal space-y-1 pl-6 text-lg">
-        {worked.steps.map((step) => (
+        {stepsOf(worked, scheme).map((step) => (
           <li key={step}>{greekMarked(step)}</li>
         ))}
       </ol>
@@ -369,7 +369,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
     'What it is', card.whatItIs,
     'How to spot it', card.howToSpot,
     sounds ? 'How it sounds' : null, sounds,
-    'Worked example', worked.word, worked.gloss, ...worked.steps,
+    'Worked example', worked.word, worked.gloss, ...stepsOf(worked, scheme),
   ]);
   // the goal's own examples at once; with none, the pericope, chapter and book are looked in (mw-5r3p30.350) and the sheet says which gave them
   const levels = useLiveQuery(listLevels, []);

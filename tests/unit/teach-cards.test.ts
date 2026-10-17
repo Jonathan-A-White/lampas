@@ -5,7 +5,9 @@ import { describe, expect, it } from 'vitest';
 import { loadChapter, loadIndex } from '../../src/data/chapter';
 import { foundationOf } from '../../src/data/grammar/inference';
 import { LADDER, ideaOf, ideasBelow, type GrammarIdea } from '../../src/data/grammar/ladder';
-import { cardTexts, teachOf } from '../../src/data/grammar/teach';
+import { cardTexts, stepsOf, teachOf } from '../../src/data/grammar/teach';
+import { ideaChoice } from '../../src/data/grammar/lessons';
+import { DEFAULT_PRONUNCIATION, pronunciationOf } from '../../src/speech/pronunciation';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { TERMS, ideaIdsStartingWith as ids, termsIn } from '../../src/data/grammar/taughtTerms';
 
@@ -146,5 +148,39 @@ describe('no term before it is taught', () => {
       }
     }
     expect(early).toEqual([]);
+  });
+});
+
+describe('a worked example that reads a word letter by letter', () => {
+  const scheme = pronunciationOf(DEFAULT_PRONUNCIATION);
+  /** a letter's sound as the tiles give it, up to the first comma: 'z, as in “zoo”' is 'z' */
+  const shortSound = (letter: GrammarIdea): string => ideaChoice(letter, scheme)!.split(',')[0].trim();
+  const alphabet = LADDER.filter((i) => i.glyphs && i.id.startsWith('letter-'));
+
+  it('gives each letter its sound with its name, as the tiles do, not only the name', () => {
+    const lines: string[] = [];
+    for (const idea of LADDER) {
+      for (const worked of teachOf(idea.id).worked) {
+        const spelled = stepsOf(worked, scheme).find((step) => step.startsWith('Letter by letter:'));
+        if (!spelled) continue;
+        for (const c of worked.word) {
+          const letter = alphabet.find((l) => l.glyphs![1] === c)!;
+          const name = letter.title.toLowerCase();
+          if (!spelled.includes(`${c} ${name} (${shortSound(letter)})`)) lines.push(`${idea.id}: ${worked.word}: ${c} ${name} has no sound in “${spelled}”`);
+        }
+      }
+    }
+    expect(lines).toEqual([]);
+  });
+
+  it('reads the worked example of the alphabet as ΖΩΗΣ with Ζ z, Ω o, Η ee and Σ s', () => {
+    const [worked] = teachOf('alphabet').worked;
+    expect(worked.word).toBe('ΖΩΗΣ');
+    expect(stepsOf(worked, scheme)).toContain('Letter by letter: Ζ zeta (z) · Ω omega (o) · Η eta (ee) · Σ sigma (s).');
+  });
+
+  it('names the letters only when no pronunciation is chosen', () => {
+    const [worked] = teachOf('alphabet').worked;
+    expect(stepsOf(worked, null)).toContain('Letter by letter: Ζ zeta · Ω omega · Η eta · Σ sigma.');
   });
 });

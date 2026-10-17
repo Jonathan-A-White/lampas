@@ -3,7 +3,8 @@
 // the idea from the card alone, with no term a card below has not taught (tests/unit/teach-cards.test.ts). One file per tier; pure data.
 import { LADDER } from '../ladder';
 import { JOINERS } from './joiners';
-import { LETTERS } from './letters';
+import type { Pronunciation } from '../../../speech/pronunciation';
+import { LETTERS, readSpelled } from './letters';
 import { MARKS } from './marks';
 import { NOUNS } from './nouns';
 import { PREPOSITIONS_TEACH } from './prepositions';
@@ -29,7 +30,7 @@ export function teachOf(id: string): Teach {
 /** Every line of text a card shows: what it is, how to spot it, the table's words, and each worked example's meaning and steps. */
 export function cardTexts(teach: Teach): string[] {
   const table = teach.table ? [teach.table.caption, ...teach.table.columns, ...teach.table.rows.flatMap((r) => [r.label, ...r.cells]), teach.table.note ?? ''] : [];
-  return [teach.whatItIs, teach.howToSpot, ...table, ...teach.worked.flatMap((w) => [w.gloss, ...w.steps])].filter((t) => t !== '');
+  return [teach.whatItIs, teach.howToSpot, ...table, ...teach.worked.flatMap((w) => [w.gloss, ...stepsOf(w, null)])].filter((t) => t !== '');
 }
 
 /** The worked example to show: the first whose word is in the passage he reads (`words`, its forms), else the card's first. */
@@ -38,3 +39,6 @@ export function workedFor(teach: Teach, words: ReadonlySet<string>): { worked: W
   const found = teach.worked.find(has);
   return found ? { worked: found, inPassage: true } : { worked: teach.worked[0], inPassage: false };
 }
+
+/** The worked example's steps as they are read in `scheme` (none: the neutral text): a word read letter by letter gives each letter its sound as well as its name. */
+export const stepsOf = (worked: WorkedExample, scheme: Pronunciation | null): string[] => worked.steps.map((step) => readSpelled(step, scheme));

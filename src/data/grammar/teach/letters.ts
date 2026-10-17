@@ -1,14 +1,36 @@
 // src/data/grammar/teach/letters.ts — the cards of the letters tier (mw-5r3p30.234): the alphabet and its 24 letters. Before the marks are taught, a
 // worked word is written in capitals with no marks, as the oldest copies of the New Testament wrote it; the voice and the respelling take the
 // word as the text has it (`say`). How a letter SOUNDS is never written here: it is the chosen pronunciation's (the tiles and 'How it sounds').
+import type { Pronunciation } from '../../../speech/pronunciation';
 import { itemsOf } from '../ladder';
+import { ideaChoice } from '../lessons';
 import type { Teach, WorkedExample } from './types';
 
 /** The capital letter's name: 'Λ' is 'lambda'. */
 const NAMES = new Map(itemsOf('alphabet').map((letter) => [letter.glyphs![1], letter.title.toLowerCase()]));
 
-/** A word in capitals named letter by letter: 'Λ lambda · Ο omicron · Γ gamma ...'. */
-export const spelledOut = (capitals: string): string => [...capitals].map((c) => `${c} ${NAMES.get(c) ?? c}`).join(' · ');
+const LETTERS_BY_CAPITAL = new Map(itemsOf('alphabet').map((letter) => [letter.glyphs![1], letter]));
+
+/**
+ * A word in capitals read letter by letter, as a token in a step: the sound of a letter is the chosen pronunciation's, so a step cannot write it;
+ * `stepsOf` (teach/index.ts) turns the token into 'Λ lambda (l) · Ο omicron (o) · ...' once the scheme is known (mw-5r3p30.518).
+ */
+export const spelledOut = (capitals: string): string => `{spelled:${capitals}}`;
+
+const SPELLED = /\{spelled:([^}]+)\}/gu;
+
+/** A step with each `spelledOut` token in it read out: every letter by its name, and with its sound in `scheme` ('Ζ zeta (z)'); the names alone with no scheme,
+ * or for a letter the scheme gives no sound. */
+export function readSpelled(step: string, scheme: Pronunciation | null): string {
+  return step.replace(SPELLED, (_, capitals: string) =>
+    [...capitals]
+      .map((c) => {
+        const sound = scheme ? (LETTERS_BY_CAPITAL.get(c) && ideaChoice(LETTERS_BY_CAPITAL.get(c)!, scheme))?.split(',')[0].trim() : undefined;
+        return `${c} ${NAMES.get(c) ?? c}${sound ? ` (${sound})` : ''}`;
+      })
+      .join(' · '),
+  );
+}
 
 /** A word in capitals in small letters, the last sigma written ς: 'ΛΟΓΟΣ' is 'λογος'. */
 export const inSmall = (capitals: string): string => capitals.toLowerCase().replace(/σ$/u, 'ς');
