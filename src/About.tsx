@@ -84,7 +84,7 @@ export function About() {
             aria-label="Preface"
             aria-describedby="preface-about"
             onClick={() => navigate('preface')}
-            className="mt-4 min-h-12 w-full rounded-xl border border-line bg-surface px-4 text-left text-base font-medium"
+            className="mt-4 min-h-12 w-full rounded-xl border border-line bg-surface px-4 py-3 text-left text-base font-medium"
           >
             Preface
             <span id="preface-about" className="block text-sm font-normal text-muted">Why the Byzantine (Majority) text, and where to read more</span>
@@ -94,7 +94,7 @@ export function About() {
             aria-label="Your requests"
             aria-describedby="requests-about"
             onClick={() => openRequests('about')}
-            className="mt-3 min-h-12 w-full rounded-xl border border-line bg-surface px-4 text-left text-base font-medium"
+            className="mt-3 min-h-12 w-full rounded-xl border border-line bg-surface px-4 py-3 text-left text-base font-medium"
           >
             Your requests
             <span id="requests-about" className="block text-sm font-normal text-muted">What became of the things you asked for</span>
