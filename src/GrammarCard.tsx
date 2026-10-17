@@ -64,7 +64,7 @@ function Heading({ question, mode, hint }: { question: GrammarQuestion; mode: Qu
     <>
       <div className="text-center">
         <p data-testid="grammar-prompt" data-idea={question.ideaId} data-kind={question.kind} data-mode={mode} className="text-xl font-medium">
-          {question.prompt}
+          <GreekRuns text={question.prompt} size="text-3xl" />
         </p>
         {question.form ? (
           <p data-testid="grammar-form" lang="grc" className={`mt-3 min-w-0 break-words font-greek ${question.kind === 'meaning' && question.form.length > 16 ? 'text-4xl' : 'text-5xl'}`}>
@@ -150,7 +150,7 @@ function Choice({ question, picked, onPick, taken, sideBySide, onSeeTable }: Omi
         className={`${LOOK[look]} rounded-xl border ${look === 'taken' ? 'disabled:opacity-40' : 'disabled:opacity-100'} ${
           tapForm
             ? 'min-h-12 min-w-12 px-3 font-greek text-2xl'
-            : `${sideBySide ? 'min-h-14 short:min-h-12 short:py-1' : 'min-h-14 py-3'} w-full px-4 text-lg ${greek ? `font-greek ${sideBySide ? 'text-3xl short:text-2xl' : 'text-3xl'}` : 'text-left'}`
+            : `${sideBySide ? 'min-h-14 short:min-h-12 short:py-1' : 'min-h-14 py-3'} w-full px-4 ${greek ? `font-greek ${sideBySide ? 'text-3xl short:text-2xl' : 'text-3xl'}` : 'text-left text-lg'}`
         }`}
       >
         {option}
