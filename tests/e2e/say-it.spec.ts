@@ -79,6 +79,8 @@ test('Say it: the letter, the hold bar and Skip fit the phone; the answer shows 
   await page.getByTestId('ideas-bar').click();
   await page.getByTestId('ideas-list').getByRole('button', { name: 'The Greek alphabet' }).click();
   const sheet = page.getByRole('dialog', { name: 'Idea' });
+  // the slider is disabled until the sheet has found its examples, and a disabled control takes no focus or key (mw-5r3p30.485)
+  await expect(sheet.getByRole('slider', { name: 'Your level' })).toBeEnabled();
   await sheet.getByRole('slider', { name: 'Your level' }).focus();
   await page.keyboard.press('ArrowRight');
 
