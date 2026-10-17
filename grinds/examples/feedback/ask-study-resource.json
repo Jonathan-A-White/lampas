@@ -1,0 +1,15 @@
+{
+  "description": "A study resource he asked for on Settings > Ask for more, with no link: the mill forwards it and answers that it was sent.",
+  "schemaVersion": "1",
+  "request": {
+    "kind": "study-resource",
+    "name": "Logeion",
+    "text": "To look up a word in several lexicons at once.",
+    "app_version": "0.1.296"
+  },
+  "expect": {
+    "status": {
+      "equals": "sent"
+    }
+  }
+}

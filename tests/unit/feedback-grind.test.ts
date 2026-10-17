@@ -6,16 +6,17 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { PrivateKey, Utils } from '@bsv/sdk';
 import { grist } from 'bsv-kit/grist';
-import { MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, MAX_ASK_BYTES, MAX_BOOK_CHARS, MAX_REFERENCE, MAX_SCREEN_NAME, MAX_SUMMARY, buildBookRequest, buildFeedbackRequest, buildTutorAskRequest, isFeedbackAnswer } from '../../src/services/feedback';
+import { MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, MAX_ASK_BYTES, MAX_BOOK_CHARS, MAX_MORE_NAME, MAX_REFERENCE, MAX_SCREEN_NAME, MAX_SUMMARY, MORE_KINDS, buildBookRequest, buildFeedbackRequest, buildMoreRequest, buildTutorAskRequest, isFeedbackAnswer } from '../../src/services/feedback';
 import { MILL_PUBLIC_KEY } from '../support/fake-postern';
 import { validate, type Schema } from '../support/schema-validate';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const grind = readJson('grinds/feedback.json');
 const input = readJson('grinds/feedback.input.schema.json');
-/** The input schema has one branch for each kind of feedback (anyOf): the grammar approach, the ask the tutor could not meet and the grammar book. */
+/** The input schema has one branch for each form of feedback (anyOf): the grammar approach, the ask the tutor could not meet, the grammar book, and
+ * the four asks of Ask for more (one branch: the same fields, the kind one of four). */
 const branches = input.anyOf as Schema[];
-const branch = (kind: string): Schema => branches.find((b) => (b.properties?.kind as { enum?: string[] }).enum?.[0] === kind) as Schema;
+const branch = (kind: string): Schema => branches.find((b) => (b.properties?.kind as { enum?: string[] }).enum?.includes(kind)) as Schema;
 
 describe('grinds/feedback.json', () => {
   it('forwards to the Mayor: no model, effort, instructions or answer schema', () => {
@@ -88,7 +89,7 @@ describe('the tutor-ask kind and buildTutorAskRequest', () => {
   const ask = { text: 'Can this work with Olive Tree?', summary: 'He wants Lampas to work with Olive Tree.', screen: 'Goal', reference: 'Goal' };
 
   it('has a branch for each kind of feedback, and all are the same grist kind', () => {
-    expect(branches).toHaveLength(3);
+    expect(branches).toHaveLength(4);
     expect(branch('grammar-book')).toBeDefined();
     expect(branch('grammar-approach')).toBeDefined();
     expect(branch('tutor-ask')).toBeDefined();
@@ -161,6 +162,40 @@ describe('the grammar-book kind and buildBookRequest', () => {
     ['no text', { kind: 'grammar-book', app_version: 'v' }],
     ['an empty text', { kind: 'grammar-book', text: '', app_version: 'v' }],
     ['a credit on a book', { kind: 'grammar-book', text: 'x', credit: { name: 'y' }, app_version: 'v' }],
+  ])('refuses %s', (_, value) => {
+    expect(validate(value, input as Schema)).not.toEqual([]);
+  });
+});
+
+describe('the four kinds of Ask for more and buildMoreRequest', () => {
+  it('are an approach or programme, a study resource, a text and a translation', () => {
+    expect(MORE_KINDS).toEqual(['approach', 'study-resource', 'text', 'translation']);
+  });
+
+  it.each(['approach', 'study-resource', 'text', 'translation'] as const)('builds a %s request the schema accepts, with the kind named', (kind) => {
+    const full = buildMoreRequest(kind, '  The Septuagint ', '  To read the Old Testament in Greek. ', ' example.org/lxx ');
+    expect(full).toEqual({ kind, name: 'The Septuagint', text: 'To read the Old Testament in Greek.', url: 'https://example.org/lxx', app_version: __APP_VERSION__ });
+    expect(validate(full, input as Schema)).toEqual([]);
+    expect(branch(kind)).toBeDefined();
+    const bare = buildMoreRequest(kind, 'The ESV', '  ', '');
+    expect(bare).toEqual({ kind, name: 'The ESV', app_version: __APP_VERSION__ });
+    expect(validate(bare, input as Schema)).toEqual([]);
+  });
+
+  it('has limits in the schema that are the constants', () => {
+    const props = branch('translation').properties as unknown as Record<string, { maxLength: number }>;
+    expect(props.name.maxLength).toBe(MAX_MORE_NAME);
+    expect(props.text.maxLength).toBe(MAX_FEEDBACK_CHARS);
+    expect(props.url.maxLength).toBe(MAX_CREDIT_URL);
+  });
+
+  it.each<[string, unknown]>([
+    ['an unknown kind', { kind: 'programme', name: 'x', app_version: 'v' }],
+    ['no name', { kind: 'text', text: 'why', app_version: 'v' }],
+    ['an empty name', { kind: 'text', name: '', app_version: 'v' }],
+    ['an empty reason', { kind: 'text', name: 'x', text: '', app_version: 'v' }],
+    ['a credit on a translation', { kind: 'translation', name: 'x', credit: { name: 'y' }, app_version: 'v' }],
+    ['a name on a grammar book', { kind: 'grammar-book', text: 'x', name: 'y', app_version: 'v' }],
   ])('refuses %s', (_, value) => {
     expect(validate(value, input as Schema)).not.toEqual([]);
   });

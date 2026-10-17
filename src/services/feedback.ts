@@ -1,7 +1,8 @@
 // src/services/feedback.ts — feedback to the factory: a grist of the kind 'feedback' (grinds/feedback.json) with the app's version,
 // his words and, for a grammar approach, who to credit and up to four pictures attached; or, for an ask the tutor could not meet, the
-// tutor's one-line summary and the screen he asked from; or, for a grammar book of his Logos library, the title he typed. This is the ONE sender:
-// Ask for another approach, Ask for another book and the tutor's 'Send this to the makers' all call submitFeedback (tests/unit/feedback-shared.test.ts keeps it so). The wire work is src/services/tutor.ts's askGrind. The grind forwards
+// tutor's one-line summary and the screen he asked from; or, for a grammar book of his Logos library, the title he typed; or, for an ask of Settings >
+// Ask for more (an approach or programme, a study resource, a text, a translation), what he wants, why and a link. This is the ONE sender:
+// Ask for another approach, Ask for another book, the Ask for more forms and the tutor's 'Send this to the makers' all call submitFeedback (tests/unit/feedback-shared.test.ts keeps it so). The wire work is src/services/tutor.ts's askGrind. The grind forwards
 // ("forward": "mayor"): no model reads it, the mill mails it to the Mayor with the pictures and answers {"status":"sent"}.
 import { publish } from '../events/bus';
 import { keepRequest } from '../data/repositories/requests';
@@ -60,7 +61,23 @@ export interface GrammarBookRequest {
   app_version: string;
 }
 
-export type FeedbackRequest = GrammarApproachRequest | TutorAskRequest | GrammarBookRequest;
+/** The kinds of ask on Settings > Ask for more, each a short form (the input schema's fourth branch): an approach or programme, a study resource, a text, a translation. */
+export const MORE_KINDS = ['approach', 'study-resource', 'text', 'translation'] as const;
+export type MoreKind = (typeof MORE_KINDS)[number];
+
+/** The most the name of what he asks for may be. */
+export const MAX_MORE_NAME = 120;
+
+/** What the grind is sent from an Ask for more form: what he wants by name, why (when he said), and a link (when he gave one). */
+export interface MoreRequest {
+  kind: MoreKind;
+  name: string;
+  text?: string;
+  url?: string;
+  app_version: string;
+}
+
+export type FeedbackRequest = GrammarApproachRequest | TutorAskRequest | GrammarBookRequest | MoreRequest;
 
 /** The kinds of feedback; the bus announces one when the mill has it. */
 export type FeedbackKind = FeedbackRequest['kind'];
@@ -92,6 +109,13 @@ export function buildBookRequest(title: string): GrammarBookRequest {
   return { kind: 'grammar-book', text: title.trim(), app_version: __APP_VERSION__ };
 }
 
+/** The request of an Ask for more form: the name trimmed; why and the link only when he wrote them (https:// put in front of a bare link). */
+export function buildMoreRequest(kind: MoreKind, name: string, why = '', link = ''): MoreRequest {
+  const text = why.trim();
+  const url = linkOf(link);
+  return { kind, name: name.trim(), ...(text ? { text } : {}), ...(url ? { url } : {}), app_version: __APP_VERSION__ };
+}
+
 /** The most a tutor-ask request may weigh, as JSON in UTF-8 (the same as a talk's, src/services/talk.ts MAX_REQUEST_BYTES): a grist's record
  * is capped at 10 KiB and the sealed grist is base64 of this. Greek is two bytes a letter, so the facts are what gives way. */
 export const MAX_ASK_BYTES = 6500;
@@ -120,9 +144,15 @@ export function isFeedbackAnswer(value: unknown): value is FeedbackAnswer {
   return Object.keys(answer).length === 1 && answer.status === 'sent';
 }
 
-/** What the requests table keeps of a request: the tutor's summary for a tutor-ask, his words for a grammar approach. */
+/** What the requests table keeps of a request: the tutor's summary for a tutor-ask, his words for a grammar approach or book, and for an
+ * Ask for more form the name with why after it ('The ESV: To read it beside the Greek.'). */
 function kept(request: FeedbackRequest, txid: string, sentAt: number): Parameters<typeof keepRequest>[0] {
-  const what = request.kind === 'tutor-ask' ? { summary: request.summary } : { text: request.text };
+  const what =
+    request.kind === 'tutor-ask'
+      ? { summary: request.summary }
+      : 'name' in request
+        ? { text: request.text ? `${request.name}: ${request.text}` : request.name }
+        : { text: request.text };
   return { txid, kind: request.kind, ...what, app_version: request.app_version, sentAt };
 }
 
