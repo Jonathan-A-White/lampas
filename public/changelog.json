@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.290",
+    "date": "2026-10-17",
+    "story": "mw-neuq78.14",
+    "kind": "new",
+    "text": "After a partly read verse, the word you stopped at is now underlined in the verse, and tapping it takes you to the Next word box."
+  },
+  {
+    "version": "0.1.290",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.382",
+    "kind": "new",
+    "text": "Under Grammar books in Settings you can now ask for another grammar book from your Logos library; the request goes to the makers, and if you are offline it waits and goes when you are back online."
+  },
+  {
     "version": "0.1.289",
     "date": "2026-10-17",
     "story": "mw-86e9r1.32",

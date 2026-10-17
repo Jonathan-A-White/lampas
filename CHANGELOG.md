@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.290
+_2026-10-17_
+- New: After a partly read verse, the word you stopped at is now underlined in the verse, and tapping it takes you to the Next word box.
+- New: Under Grammar books in Settings you can now ask for another grammar book from your Logos library; the request goes to the makers, and if you are offline it waits and goes when you are back online.
+
 ## 0.1.289
 _2026-10-17_
 - Fixed: A Review round you leave mid-way, by reloading or by the phone dropping the page, now picks up at your next question instead of going back to Start.
