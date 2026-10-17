@@ -16,7 +16,7 @@ export const OIDA: Paradigm = {
   about: 'The verb “to know”: οἶδα and ᾔδειν, a perfect and a pluperfect in form',
   ideas: ['oida'],
   tier: 'verbs',
-  columns: [{ label: 'Greek' }],
+  columns: [{ label: '' }], // no heading: the cells are the forms themselves
   rows: VERBS.flatMap(([group, tenseIdea, forms]) =>
     PERSONS.map((person, i) => ({
       group,

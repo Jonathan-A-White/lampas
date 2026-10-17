@@ -267,8 +267,14 @@ describe('the verb tables of the indicative', () => {
     expect(cellAt('mi-verbs', 'Present Active', '3rd person plural', /δίδωμι/).form).toBe('διδόασι(ν)');
     expect(cellAt('mi-verbs', 'Aorist Active', '1st person singular', /τίθημι/).form).toBe('ἔθηκα');
     expect(cellAt('mi-verbs', 'Aorist Active', '3rd person singular', /ἵστημι/).form).toBe('ἔστη');
-    expect(cellAt('oida', 'Greek', '1st person singular', /οἶδα/).form).toBe('οἶδα');
-    expect(cellAt('oida', 'Greek', '3rd person plural', /ᾔδειν/).form).toBe('ᾔδεισαν');
+    expect(cellAt('oida', '', '1st person singular', /οἶδα/).form).toBe('οἶδα');
+    expect(cellAt('oida', '', '3rd person plural', /ᾔδειν/).form).toBe('ᾔδεισαν');
+  });
+
+  it('head the one column of the οἶδα table with nothing, since its cells are the forms themselves', () => {
+    expect(table('oida').columns).toHaveLength(1);
+    expect(table('oida').columns[0].label).not.toBe('Greek');
+    expect(table('oida').columns[0].label).toBe('');
   });
 
   it('make every cell of the future and aorist table name its tense signs, and every aorist cell its augment', () => {
@@ -312,7 +318,7 @@ describe('the verb tables of the indicative', () => {
   it('write the pluperfect of οἶδα with the endings of the pluperfect of λύω', () => {
     const endingOf = (form: string) => word(form).replace(/^.*?(?=ει(?:ν|ς|μεν|τε|σαν)?$)/u, '');
     for (const person of PERSONS_ROWS)
-      expect(endingOf(cellAt('oida', 'Greek', person, /ᾔδειν/).form), person).toBe(endingOf(cellAt('perfect-and-pluperfect', 'Pluperfect Active', person).form));
+      expect(endingOf(cellAt('oida', '', person, /ᾔδειν/).form), person).toBe(endingOf(cellAt('perfect-and-pluperfect', 'Pluperfect Active', person).form));
   });
 
   it('name the idea each of the other tables teaches in its cells', () => {
