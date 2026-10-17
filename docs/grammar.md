@@ -621,8 +621,10 @@ same shape both count); **Right**, or **Close** (mw-86e9r1.57: a Greek letter dr
 or **Not quite**, with the right strokes drawn and Try again, never a score. Close is never Right and keeps nothing: the checker (`recognizer.ts`, `Recognition.hint`) holds the look-alike shapes of γ (y), κ (a tall k), χ (x),
 υ (u with a stem) and a dot over ι (templates.ts `LOOKALIKES`), and the writing is Close when it is nearer to one of them than to the letter; ν/v, ρ/p, ο/o and ω/w are the same shape to a hand and are not told apart, on purpose. Skip keeps nothing and costs nothing: no stage,
 no level, no drill score. The progress is kept per small letter in the settings store ('handwritingProgress'); it never moves a grammar level or the inference.
-The strokes drawn are the checker's own templates (their first variant): the order and direction drawn are those the templates were written in, not a taught
-stroke order. features/handwriting-drills.feature, tests/unit/write-it.test.tsx.
+The strokes drawn are the checker's own templates (their first variant), which are written in the order and direction a good hand writes the letter (from the top or
+the left, an upright downwards, a bar to the right, a round letter anticlockwise; mw-86e9r1.56). The model teaches the form: each stroke has a numbered start point and
+an arrowhead along it, drawn in the SVG and kept after the animation (GlyphStrokes.tsx), and a plain line under it counts the strokes and names each ('Two strokes: the
+top bar first, then the stem.'; templates.ts `STROKE_NOTES`). features/handwriting-drills.feature, tests/unit/write-it.test.tsx, tests/unit/write-it-order.test.tsx.
 
 ### Your drill plan
 

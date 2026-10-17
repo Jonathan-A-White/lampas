@@ -10,7 +10,7 @@ import { ideaChoice } from '../data/grammar/lessons';
 import { getWhySeen, getWriteProgress, markWhySeen, recordWrite } from '../data/repositories';
 import { speakSound } from '../speech/greek';
 import { greekMarked } from '../ui/GreekMarked';
-import { GlyphStrokes } from './GlyphStrokes';
+import { GlyphStrokes, StrokeLine } from './GlyphStrokes';
 import { recognize, type InkStroke } from './recognizer';
 import { STAGES, STAGE_NAMES, type WriteProgress, type WriteStage } from './progression';
 import { WHY_LINES, WRITE_PLAIN, WRITE_PRIMARY } from './writeText';
@@ -104,7 +104,7 @@ export function WriteIt({ idea, onSkip, onRight, afterRight }: {
       {first ? <WhyLine /> : null}
       <div className="mt-3 flex items-stretch gap-3">
         {stage === 'copy' ? (
-          <div data-testid="write-beside" className="flex w-20 shrink-0 items-center justify-center rounded-2xl border border-line p-1">
+          <div data-testid="write-beside" className="flex w-28 shrink-0 items-center justify-center rounded-2xl border border-line p-1">
             {model}
           </div>
         ) : null}
@@ -124,6 +124,7 @@ export function WriteIt({ idea, onSkip, onRight, afterRight }: {
           )}
         </div>
       </div>
+      {stage !== 'memory' || verdict?.right === false ? <StrokeLine letter={glyph} /> : null}
       {stage !== 'memory' && verdict === null ? (
         <button type="button" onClick={() => setShown(shown + 1)} className="mt-1 min-h-11 px-1 text-base font-medium text-accent underline underline-offset-4">
           Show the strokes
