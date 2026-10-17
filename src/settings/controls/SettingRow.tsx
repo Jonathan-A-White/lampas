@@ -1,4 +1,6 @@
 import { useId, useState, type ReactNode } from 'react';
+import { proseOf } from '../../speech/proseOf';
+import { ReadAloud } from '../../speech/ReadAloud';
 import { writeSetting } from '../registry';
 import type { SettingsRow } from '../rows';
 
@@ -12,8 +14,9 @@ export function Section({ id, title, hint, labelled, children }: { id?: string; 
   );
 }
 
-/** The row's longer help, behind a small 'More help' that sits on the hint's line (its tap area reaches 44 px without costing height). */
-export function MoreHelp({ text }: { text: string }) {
+/** The row's longer help, behind a small 'More help' that sits on the hint's line (its tap area reaches 44 px without costing height); open, it has the
+ * small Read aloud speaker at its right (mw-5r3p30.393). */
+export function MoreHelp({ text, id: rowKey }: { text: string; id?: string }) {
   const [open, setOpen] = useState(false);
   const id = useId();
   return (
@@ -28,8 +31,9 @@ export function MoreHelp({ text }: { text: string }) {
         {open ? 'Less help' : 'More help'}
       </button>
       {open ? (
-        <span id={id} className="mt-1 block text-base text-muted">
-          {text}
+        <span id={id} className="mt-1 flex items-start gap-2 text-base text-muted">
+          <span className="min-w-0 flex-1 self-center">{text}</span>
+          <ReadAloud id={`help:${rowKey ?? text}`} text={proseOf([text])} />
         </span>
       ) : null}
     </>
@@ -41,10 +45,10 @@ export function SettingRow({ row, children, details, className = 'pb-3' }: { row
   return (
     <div data-setting={row.key} className={className}>
       {children}
-      <p className="pt-1 text-base text-muted">
+      <div className="pt-1 text-base text-muted">
         {row.hint}
-        {row.help ? <MoreHelp text={row.help} /> : null}
-      </p>
+        {row.help ? <MoreHelp text={row.help} id={row.key} /> : null}
+      </div>
       {details}
     </div>
   );

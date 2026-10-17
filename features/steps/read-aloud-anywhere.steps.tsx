@@ -1,5 +1,5 @@
 // features/steps/read-aloud-anywhere.steps.tsx — runs features/read-aloud-anywhere.feature: the one small ReadAloud speaker (src/speech/ReadAloud.tsx) on
-// the Grammar sheet, the idea sheet, the new word's sheet, a tutor's kept answer and About's What's new, over the recording speech fake.
+// the Grammar sheet, the idea sheet, the new word's sheet, a tutor's kept answer, About's What's new, the sheet shown after an update and a row's More help, over the recording speech fake.
 import '@testing-library/react/dont-cleanup-after-each';
 import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -19,9 +19,12 @@ import { noVoiceHelp } from '../../src/speech/greek';
 import { ReadAloud } from '../../src/speech/ReadAloud';
 import { stopReading } from '../../src/speech/readAloud';
 import { TeachSheet } from '../../src/TeachSheet';
+import { SettingRow } from '../../src/settings/controls/SettingRow';
+import { WhatsNewOnUpdate } from '../../src/whatsNew/WhatsNewOnUpdate';
 import { WhatsNewSection } from '../../src/whatsNew/WhatsNewSection';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { fixtureChangelog, stubChangelog, RUNNING_NEW } from '../../tests/support/changelog';
+import { APP_SEMVER, LAST_SEEN_VERSION_STORAGE_KEY } from '../../src/config';
+import { fixtureChangelog, stubChangelog, OLDER_VERSION, RUNNING_NEW } from '../../tests/support/changelog';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 
 const feature = await loadFeature('features/read-aloud-anywhere.feature');
@@ -210,6 +213,75 @@ describeFeature(feature, ({ Scenario, ScenarioOutline, BeforeEachScenario, After
     Then('the phone speaks the line of that version in {string}', async (_, lang: string) => {
       await waitFor(() => expect(spokenIn(lang).length).toBeGreaterThan(0));
       expect(spokenIn(lang).join(' ')).toMatch(/Pin a verse to the top|Seeing what is new in the app|Reading the Greek aloud/);
+    });
+  });
+
+  Scenario("Each version in the What's new sheet shown after an update has the speaker, and a second tap stops it", ({ Given, And, When, Then }) => {
+    Given('a phone with an English and a Greek voice', withBoth);
+    And('the phone last saw an older version and the changelog lists two versions since', () => {
+      window.localStorage.setItem(LAST_SEEN_VERSION_STORAGE_KEY, OLDER_VERSION);
+      stubChangelog([
+        { version: APP_SEMVER, date: '2026-10-12', story: 'fx-3', kind: 'new', text: 'Pin a verse to the top.' },
+        { version: APP_SEMVER, date: '2026-10-12', story: 'fx-4', kind: 'fixed', text: 'The chapter list no longer jumps.' },
+        { version: '0.0.2', date: '2026-09-02', story: 'fx-2', kind: 'new', text: 'Seeing what is new in the app.' },
+        { version: OLDER_VERSION, date: '2026-09-01', story: 'fx-1', kind: 'new', text: 'Reading the Greek aloud.' },
+      ]);
+    });
+    When('Lampas opens', () => {
+      render(<WhatsNewOnUpdate />);
+    });
+    Then("the What's new sheet has a Read aloud button for each of the two versions", async () => {
+      const dialog = await screen.findByRole('dialog', { name: "What's new" });
+      expect(within(dialog).getAllByRole('button', { name: 'Read aloud', exact: true })).toHaveLength(2);
+    });
+    When('he taps the first Read aloud', async () => {
+      const dialog = screen.getByRole('dialog', { name: "What's new" });
+      await user.click(within(dialog).getAllByRole('button', { name: 'Read aloud', exact: true })[0]);
+    });
+    Then('the phone speaks {string} in {string}', async (_, text: string, lang: string) => {
+      await waitFor(() => speaks(text, lang));
+    });
+    And('the button is named Stop reading', () => {
+      expect(screen.getByRole('button', { name: 'Stop reading', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    });
+    And('the lines of the versions are still on screen', () => {
+      const dialog = screen.getByRole('dialog', { name: "What's new" });
+      expect(within(dialog).getByText('Pin a verse to the top.')).toBeVisible();
+      expect(within(dialog).getByText('Seeing what is new in the app.')).toBeVisible();
+    });
+    When('he taps Stop reading', () => user.click(screen.getByRole('button', { name: 'Stop reading', exact: true })));
+    Then('the phone is silent and the button is named Read aloud', () => {
+      expect(engine().speaking).toBe(false);
+      expect(within(screen.getByRole('dialog', { name: "What's new" })).getAllByRole('button', { name: 'Read aloud', exact: true })).toHaveLength(2);
+    });
+  });
+
+  Scenario('The More help of a Settings row has the speaker once it is open', ({ Given, And, When, Then }) => {
+    Given('a phone with an English and a Greek voice', withBoth);
+    And('a Settings row whose More help names {string}', (_, word: string) => {
+      render(
+        <SettingRow row={{ key: 'weave', label: 'Weave', hint: 'One line.', help: `The long help says ${word} and a little more.`, section: 'more' }}>
+          <span>control</span>
+        </SettingRow>,
+      );
+    });
+    Then('the row has no Read aloud button', () => {
+      expect(screen.queryByRole('button', { name: 'Read aloud', exact: true })).toBeNull();
+    });
+    When('he taps More help', () => user.click(screen.getByRole('button', { name: 'More help' })));
+    Then('the row has a Read aloud button', () => {
+      expect(readAloud()).toBeInTheDocument();
+    });
+    When('he taps Read aloud', () => user.click(readAloud()));
+    Then('the phone speaks {string} in {string}', async (_, text: string, lang: string) => {
+      await waitFor(() => speaks(text, lang));
+    });
+    And('the More help is still on screen', () => {
+      expect(screen.getByText(/The long help says λόγος/)).toBeVisible();
+    });
+    When('he taps Less help', () => user.click(screen.getByRole('button', { name: 'Less help' })));
+    Then('the phone is silent', () => {
+      expect(engine().speaking).toBe(false);
     });
   });
 });

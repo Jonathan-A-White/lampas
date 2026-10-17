@@ -126,8 +126,8 @@ acronyms (NT, BDAG, LSB ...) and a quoted English meaning are left alone. The ma
 Wherever Lampas shows a block of prose a learner may want to hear, a small quiet speaker reads it aloud: `src/speech/ReadAloud.tsx`, ONE component
 (icon only, aria-label 'Read aloud', 'Stop reading' while its text is read; a second tap stops it). It is on the Grammar sheet (title, explanation, 'In Greek'),
 the idea sheet of every idea and letter (title, What it is, How to spot it, How it sounds, the Worked example), a new word's sheet, each tutor answer (in the
-Talk sheet and in the Verse view's Ask; where the 'Hear the answer' play button used to be) and each version in About's What's new (`DEFAULT_LABELS` kind, then
-the line). It is the reading engine of 'Pages of prose' and 'The tutor's responses': the text is cut into runs (`pageRuns`, or the answer's `answerRuns` when
+Talk sheet and in the Verse view's Ask; where the 'Hear the answer' play button used to be) and each version in About's What's new and in the sheet shown after an update or opened from the Update ready banner (`DEFAULT_LABELS` kind, then
+the line; the sheet is Lampas's own SpokenWhatsNewSheet, with a speaking bar slot, since bsv-kit's has no place for one) and each Settings row's open More help (at its right). It is the reading engine of 'Pages of prose' and 'The tutor's responses': the text is cut into runs (`pageRuns`, or the answer's `answerRuns` when
 the Markdown must go first), each Greek stretch in the Greek voice and the rest in the English one, at his speed and in his voices; the package's bar has Pause,
 Resume and Stop; the words stay on screen. The read starts from the tap itself (section 12). A sheet that sits over the screen's bar has a `BarSlot` so the bar
 shows above its foot (Grammar 5, new word 5, idea 6). `proseOf(parts)` (src/speech/proseOf.ts) joins a block's parts with a stop between them. A phone with no Greek voice reads the English,
