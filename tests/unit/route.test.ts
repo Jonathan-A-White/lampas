@@ -31,6 +31,7 @@ describe('the address', () => {
     expect(routeOf('#/paradigms')).toBe('paradigms');
     expect(routeOf('#/paradigms?t=article&mode=review')).toBe('paradigms');
     expect(routeOf('#/goal')).toBe('goal');
+    expect(routeOf('#/path')).toBe('path');
     expect(routeOf('#/studyway')).toBe('studyway');
     expect(routeOf('#/aboutyou')).toBe('aboutyou');
     expect(routeOf('#/memory')).toBe('memory');

@@ -14,6 +14,7 @@ import { startReaderAddressSync } from './nav/readerAddress';
 import { routeOf, useAddress } from './nav/route';
 import { Reader } from './Reader';
 import { GoalScreen } from './GoalScreen';
+import { LadderGraph } from './LadderGraph';
 import { watchForPen } from './handwriting/penWatch';
 import { IdeaReturn } from './IdeaReturn';
 import { ParadigmsScreen } from './ParadigmsScreen';
@@ -94,6 +95,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <PlacementScreen newRandom={newRandom} />
       ) : route === 'goal' ? (
         <GoalScreen />
+      ) : route === 'path' ? (
+        <LadderGraph />
       ) : route === 'studyway' ? (
         <StudyWayScreen />
       ) : route === 'aboutyou' ? (

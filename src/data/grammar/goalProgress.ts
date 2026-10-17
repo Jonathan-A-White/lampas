@@ -3,6 +3,7 @@
 import type { GrammarApproach, LessonPlace } from '../../approaches';
 import { lessonOf, nextLessonOf, orderOf } from '../../approaches';
 import type { GrammarLevel, WordState } from '../db';
+import { unmetNeed } from './drillIt';
 import { gapsOf, groupIsSolid } from './inference';
 import { groupOfItem, ideaOf, ITEM_GROUPS, LADDER, type GrammarIdea } from './ladder';
 import type { Level, NeededIdea, NeededWord, PassageNeeds } from './needs';
@@ -31,6 +32,22 @@ export function wordStatesOf(words: readonly { lemma: string; lemmas: string[]; 
 /** The level of each idea that has one. */
 export const levelsOf = (rows: ReadonlyMap<string, GrammarLevel>): Map<string, Level> => new Map(Array.from(rows, ([id, row]): [string, Level] => [id, row.level]));
 
+/** An idea's level: the one he has, or not yet when he has none. */
+export const levelOf = (levels: ReadonlyMap<string, Level>, id: string): Level => levels.get(id) ?? 'notYet';
+
+/** What a node of the ladder graph shows: solid; learning (the frontier he is working on); next (not yet, and everything it rests on is solid, so it is ready to learn); not yet. */
+export type IdeaState = 'solid' | 'learning' | 'next' | 'notYet';
+
+export const STATE_NAMES: Record<IdeaState, string> = { solid: 'Solid', learning: 'Learning', next: 'Next', notYet: 'Not yet' };
+
+/** The state of the idea `id`, from the same levels Learn reads (Learn next, Learning now, the lists behind the Goal bars); `next` is the test the frontier moves on by (drillIt.ts unmetNeed). */
+export function ideaState(id: string, levels: ReadonlyMap<string, Level>): IdeaState {
+  const level = levelOf(levels, id);
+  if (level === 'solid') return 'solid';
+  if (level === 'frontier') return 'learning';
+  return unmetNeed(id, levels) === null ? 'next' : 'notYet';
+}
+
 /** A word's level as progressToward counts it: a learning word is frontier; a dropped or unlisted one is not yet. */
 export const wordLevel = (state: WordState | undefined): Level => (state === 'solid' ? 'solid' : state === 'learning' ? 'frontier' : 'notYet');
 
@@ -54,7 +71,7 @@ export function learnNext(needs: Pick<PassageNeeds, 'ideas'>, approach: GrammarA
   if (gaps.length > 0) return { idea: gaps[0], lesson: lessonOf(approach, gaps[0].id), gaps };
   const needed = new Set(needs.ideas.map((i) => i.id));
   const grouped = new Set(ITEM_GROUPS);
-  const id = orderOf(approach).find((i) => needed.has(i) && (levels.get(i) ?? 'notYet') === 'notYet' && !(grouped.has(i) && groupIsSolid(levels, i)));
+  const id = orderOf(approach).find((i) => needed.has(i) && levelOf(levels, i) === 'notYet' && !(grouped.has(i) && groupIsSolid(levels, i)));
   return id === undefined ? undefined : { idea: ideaOf(id), lesson: lessonOf(approach, id) };
 }
 
@@ -81,7 +98,7 @@ export function groupWords(needs: Pick<PassageNeeds, 'words'>, states: ReadonlyM
 
 export function groupIdeas(needs: Pick<PassageNeeds, 'ideas'>, levels: ReadonlyMap<string, Level>): Record<Level, NeededIdea[]> {
   const groups: Record<Level, NeededIdea[]> = { solid: [], frontier: [], notYet: [] };
-  for (const idea of needs.ideas) groups[levels.get(idea.id) ?? 'notYet'].push(idea);
+  for (const idea of needs.ideas) groups[levelOf(levels, idea.id)].push(idea);
   return groups;
 }
 
