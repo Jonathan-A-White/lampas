@@ -122,3 +122,36 @@ test('an Old Testament reference links to Settings until Logos is linked, then o
   await expect(card.getByRole('button', { name: 'Open', exact: true })).toHaveCount(0);
   await shot(page, 'reference-card-open-in-logos');
 });
+
+// A second tap on the reference a moment after the first (mw-5r3p30.429): the card's backdrop covers the reference, but that tap is not one outside the card.
+test('a quick second tap on the reference leaves its card on screen', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: { answer: 'The end of the matter is in Ecclesiastes 12:13 and the whole of Psalm 110.', words: [] } };
+  await routePostern(page, fake);
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+
+  await openTalkAbout(page, 28);
+  const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
+  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Where does Ecclesiastes end?');
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+
+  const link = sheet.getByRole('link', { name: 'Ecclesiastes 12:13', exact: true });
+  const card = page.getByRole('dialog', { name: 'Ecclesiastes 12:13' });
+  await link.click();
+  await expect(card).toBeVisible();
+  await page.waitForTimeout(150);
+  const at = await link.boundingBox();
+  expect(at).toBeTruthy();
+  if (at) await page.mouse.click(at.x + at.width / 2, at.y + at.height / 2);
+  await page.waitForTimeout(300);
+  await expect(card).toBeVisible();
+  await expect(sheet).toBeVisible();
+  await shot(page, 'reference-card-second-tap');
+
+  // A tap elsewhere still closes it.
+  await page.mouse.click(VIEWPORT.width / 2, 8);
+  await expect(card).toBeHidden();
+});

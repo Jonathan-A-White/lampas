@@ -2,7 +2,7 @@
 // under it with the reference as its heading, the passage's English (the Majority Standard Bible, the only English in the reader) and Open, which opens the reader
 // on the verse. A whole chapter shows its first verse. Lampas holds no Old Testament text, so that card says 'Not in Lampas yet' and has no Open: with Logos linked in Settings it has 'Open in Logos' instead, at that
 // verse (a whole chapter at its first) in the Bible he chose there (src/resources/logosBible.ts), and with no Bible app linked a link to Settings where he links Logos. A tap outside the
-// card, Close, Escape or Back closes it and nothing moves (it is a sheet for Back, src/ui/sheetBack.ts). The card sits below the reference, or above it when
+// card (not on the reference itself: a second tap there changes nothing, mw-5r3p30.429), Close, Escape or Back closes it and nothing moves (it is a sheet for Back, src/ui/sheetBack.ts). The card sits below the reference, or above it when
 // there is no room below, so it never covers what was tapped.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
@@ -97,6 +97,11 @@ function spotFor(anchor: DOMRect, natural: number): Spot {
   return { top: anchor.top - GAP - height, left, width, maxHeight: Math.max(above, 0) };
 }
 
+/** True when a tap at (x, y) is on the reference that opened the card: the backdrop covers it, but a second tap there is not one outside the card. */
+function onReference(reference: HTMLElement | null, x: number, y: number): boolean {
+  return [...(reference?.getClientRects() ?? [])].some((r) => x >= r.left && x <= r.right && y >= r.top && y <= r.bottom);
+}
+
 function ReferenceCardView({ card, place, anchor, onClose, onOpen, onSettings }: { card: Card; place: ElsewherePlace | null; anchor: RefObject<HTMLElement | null>; onClose: () => void; onOpen: () => void; onSettings: () => void }) {
   useSheetBack(onClose);
   const { held } = card;
@@ -135,7 +140,7 @@ function ReferenceCardView({ card, place, anchor, onClose, onOpen, onSettings }:
   }, [anchor, passage]);
 
   return createPortal(
-    <div data-reference-backdrop className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); onClose(); }}>
+    <div data-reference-backdrop className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); if (!onReference(anchor.current, e.clientX, e.clientY)) onClose(); }}>
       <div
         ref={box}
         role="dialog"
