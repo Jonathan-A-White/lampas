@@ -60,6 +60,40 @@ describe('the Marks that change the word idea', () => {
     }
   });
 
+  it('offers no decoy that also fits the gloss, so a reader who reads the marks right is never marked wrong (mw-86e9r1.41)', () => {
+    // the forms that would fill each blank as the English has it: ὧν is 'of whom' as much as οὗ, ὁ and τό are 'the' as much as ἡ, οὗτος is 'this'
+    const ARTICLE = ['ὁ', 'ἡ', 'τό', 'τοῦ', 'τῆς', 'τῷ', 'τῇ', 'τόν', 'τήν', 'οἱ', 'αἱ', 'τά', 'τῶν', 'τοῖς', 'ταῖς', 'τούς', 'τάς'];
+    const RELATIVE = ['ὅς', 'ἥ', 'ὅ', 'οὗ', 'ἧς', 'ᾧ', 'ᾗ', 'ὅν', 'ἥν', 'οἵ', 'αἵ', 'ἅ', 'ὧν', 'οἷς', 'αἷς', 'οὕς', 'ἅς'];
+    const FITS: Record<string, readonly string[]> = {
+      ἡ: ARTICLE,
+      ἤ: ['ἤ'],
+      ὁ: ARTICLE,
+      ὅ: RELATIVE,
+      εἰ: ['εἰ', 'ἐάν'],
+      εἶ: ['εἶ'],
+      ἐν: ['ἐν'],
+      ἕν: ['ἕν', 'εἷς', 'μία'],
+      οὐ: ['οὐ', 'οὐκ', 'οὐχ', 'μή'],
+      οὗ: ['οὗ', 'ἧς', 'ὧν'],
+      ἀλλά: ['ἀλλά', 'δέ', 'πλήν'],
+      ἄλλα: ['ἄλλα', 'ἄλλος', 'ἄλλη', 'ἄλλο', 'ἄλλοι', 'ἄλλαι'],
+      αὐτή: ['αὐτή', 'αὐτός', 'αὐτό'],
+      αὕτη: ['αὕτη', 'οὗτος', 'τοῦτο'],
+      τίς: ['τίς'],
+      τις: ['τις'],
+    };
+    for (const pair of MARK_PAIRS) {
+      for (const w of [pair.a, pair.b]) {
+        const fits = FITS[nfc(w.word)];
+        expect(fits, `a list of what fits “${w.gloss}”`).toBeDefined();
+        expect(w.decoys.map(nfc).filter((d) => fits!.map(nfc).includes(d)), `${w.phrase} (“${w.gloss}”)`).toEqual([]);
+      }
+    }
+    const hou = MARK_PAIRS.flatMap((p) => [p.a, p.b]).find((w) => nfc(w.word) === nfc('οὗ'));
+    expect(hou!.gloss).toBe('of whom I am not worthy');
+    expect(hou!.decoys.map(nfc)).not.toContain(nfc('ὧν'));
+  });
+
   it('asks a question that is wrong if the mark is ignored: the twin is offered, four different choices, one right', () => {
     const asked = new Set<string>();
     for (let seed = 1; seed <= 120; seed += 1) {
