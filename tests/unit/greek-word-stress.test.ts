@@ -39,15 +39,27 @@ const isGreek = (w: string): boolean => /\p{Script=Greek}/u.test(w);
 /** One letter, whatever its marks: said by its sound (a doubled vowel, mw-5r3p30.421) or a clip, never as a word. */
 const oneLetter = (w: string): boolean => [...w.normalize('NFD').replace(/\p{M}/gu, '')].filter((c) => /\p{L}/u.test(c)).length <= 1;
 
-/** Every word a 'How is this word said?' or any other Tap to hear of Drill it hands the voice, over every idea (a 'sound' question says a letter's sound). */
-function drillWords(): string[] {
-  const out = new Set<string>();
-  // with no passage a drill reads its fixed words (his drill read πατήρ there); with one, the passage's first
-  for (const idea of LADDER)
-    for (const [passage, seed] of [[[], 1], [[], 2], [PASSAGE, 1], [PASSAGE, 2]] as const)
+/** The drill walks: with no passage a drill reads its fixed words (his drill read πατήρ there); with one, the passage's first. */
+const WALKS = [['no passage', [], 1], ['no passage', [], 2], ['Romans 8, 1 John 1 and John 1', PASSAGE, 1], ['Romans 8, 1 John 1 and John 1', PASSAGE, 2]] as const;
+/** The ladder is walked in SLICES (every SLICES-th idea from k): drillSteps is the cost, a whole walk of a passage takes seconds, so each test holds a slice of it. */
+const SLICES = 4;
+const sliceOf = (k: number) => LADDER.filter((_, i) => i % SLICES === k);
+
+const drillWordsMemo = new Map<string, string[]>();
+/** Every word a 'How is this word said?' or any other Tap to hear of Drill it hands the voice, over the ideas of one slice of the ladder in one walk (a 'sound' question says a letter's sound). The work is done once per slice. */
+function drillWords(walk: number, slice: number): string[] {
+  const key = `${walk}:${slice}`;
+  let words = drillWordsMemo.get(key);
+  if (!words) {
+    const [, passage, seed] = WALKS[walk];
+    const out = new Set<string>();
+    for (const idea of sliceOf(slice))
       for (const step of drillSteps(idea.id, { passage, seed }))
         for (const q of step.questions) if (q.say && q.kind !== 'sound' && isGreek(q.say)) out.add(q.say);
-  return [...out];
+    words = [...out];
+    drillWordsMemo.set(key, words);
+  }
+  return words;
 }
 
 /** Every word of a lesson with a speaker: the worked examples of each idea's card and the example words of its tiles. */
@@ -142,11 +154,18 @@ describe('his report: πατήρ on Drill it, Pi, step 5', () => {
 });
 
 describe('every word with Tap to hear reaches the Greek voice with one stress mark, where the respelling puts it', () => {
-  it('every word a drill says (every idea, two seeds, with no passage and with Romans 8, 1 John 1 and John 1)', () => {
-    const words = drillWords();
+  for (const [walk, [what, , seed]] of WALKS.entries())
+    for (let slice = 0; slice < SLICES; slice++)
+      it(`every word a drill says: ideas ${slice + 1} of ${SLICES}, seed ${seed}, with ${what}`, () => {
+        expect(faults(drillWords(walk, slice)).slice(0, 10)).toEqual([]);
+      });
+
+  it('the drill walks cover every idea of the ladder, and the words they say are the same set: more than 100, πατήρ among them', () => {
+    expect(Array.from({ length: SLICES }, (_, k) => sliceOf(k)).flat().map((i) => i.id).sort()).toEqual(LADDER.map((i) => i.id).sort());
+    const words = new Set<string>();
+    for (const walk of WALKS.keys()) for (let slice = 0; slice < SLICES; slice++) for (const w of drillWords(walk, slice)) words.add(w);
     expect(words).toContain('πατήρ');
-    expect(words.length).toBeGreaterThan(100);
-    expect(faults(words).slice(0, 10)).toEqual([]);
+    expect(words.size).toBeGreaterThan(100);
   });
 
   it("every lesson's example word", () => {
