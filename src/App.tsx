@@ -117,8 +117,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
       ) : (
         <Reader />
       )}
-      {/* back from Audible with a listening session open: 'Where did you get to?' (mw-umv8sp.3) */}
-      <WhereDidYouGetTo />
+      {/* back from Audible with a listening session open: 'Where did you get to?' (mw-umv8sp.3); not over the Licence page its 'Needs a licence' opens (mw-umv8sp.4) */}
+      <WhereDidYouGetTo hidden={route === 'unlock'} />
       {/* the idea sheet he left for a table comes back on Back (mw-svw421.5) */}
       <IdeaReturn />
       {/* the round Ask the tutor control of every screen but the Reader and the Share screen (its sheets are talks), which draws its own beside its Talk bar */}
