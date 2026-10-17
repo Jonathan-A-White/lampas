@@ -5,6 +5,7 @@ import { door } from 'bsv-kit/bsv';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { GRIST_KINDS, type GristKind } from '../../src/services/gristKinds';
 import { setCurrentLicence } from '../../src/services/licenceNow';
 import { readTimedPage, requireLicence, sendTimedGrist, timedDoor } from '../../src/services/mill';
 import { pullStatuses } from '../../src/services/requestStatus';
@@ -106,7 +107,7 @@ describe('every send to the mill goes through the gate', () => {
 // because this guard watched the wire (who imports the client) and not the kinds: nothing made a new or forgotten kind say where it is hidden.
 // So each kind the app sends is listed here with the entry points a phone with no licence is not shown, and each of those names must stand in a scenario
 // of its feature file; a kind sent but not listed, or listed but not sent, fails.
-const KINDS: Record<string, { hidden: string[]; feature: string }> = {
+const KINDS: Record<GristKind, { hidden: string[]; feature: string }> = {
   'verse-ask': { hidden: ['Ask the tutor'], feature: 'features/ai-needs-licence.feature' },
   'bible-talk': { hidden: ['Talk bar', 'Help with this word'], feature: 'features/ai-needs-licence.feature' },
   'verse-read': { hidden: ['Read it aloud', 'Hold to read bar', 'Reading ladder'], feature: 'features/ai-needs-licence.feature' },
@@ -114,6 +115,7 @@ const KINDS: Record<string, { hidden: string[]; feature: string }> = {
   feedback: { hidden: ['Needs a licence'], feature: 'features/licence-page.feature' },
   'drill-items': { hidden: ['More drill items'], feature: 'features/fetched-drill-items.feature' },
   'find-refs': { hidden: ['Bible references from a picture'], feature: 'features/ai-needs-licence.feature' },
+  'audible-position': { hidden: ['Send a screenshot'], feature: 'features/reading-plan-screenshot.feature' },
 };
 
 /** The kinds the app's code sends: the first argument of each askGrind call, a literal or a constant (`export const X = '...'`) found in any file. */
@@ -125,13 +127,18 @@ const kindsSent = (files: { path: string; text: string }[]): string[] => {
 
 describe('every kind of grist the app can send is hidden from a phone with no licence', () => {
   const files = sources('src').map((path) => ({ path, text: readFileSync(path, 'utf8') }));
-  const listed = Object.keys(KINDS).sort();
+  const listed = (Object.keys(KINDS) as GristKind[]).sort();
 
   it('lists the kind of every grind the mill is given, and every kind the code sends (verse-read included)', () => {
     const grinds = readdirSync('grinds').filter((n) => /^[a-z-]+\.json$/.test(n)).map((n) => n.replace(/\.json$/, '')).sort();
     expect(grinds).toEqual(listed);
     expect(kindsSent(files)).toEqual(listed);
     expect(listed).toContain('verse-read');
+  });
+
+  it('is the registry the gated client takes its kinds from (src/services/gristKinds.ts), each kind once', () => {
+    expect([...GRIST_KINDS].sort()).toEqual(listed);
+    expect(new Set(GRIST_KINDS).size).toBe(GRIST_KINDS.length);
   });
 
   it('finds a kind that is sent and not listed (planted)', () => {

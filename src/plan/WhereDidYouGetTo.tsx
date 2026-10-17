@@ -1,30 +1,39 @@
 // src/plan/WhereDidYouGetTo.tsx — the return sheet (mw-umv8sp.3): back from Audible with a listening session open, 'Where did you get to?' proposes the chapter the time
 // away most likely reached (src/plan/estimate.ts) and asks in a tap or two: Finished <the chapter she began>, Got further (the chapters around the estimate, the estimate
 // highlighted), Pick it myself (the chapter picker in choose mode) or Stopped partway (marks nothing). Each answer but the last marks the plan done through that chapter
-// and every one ends the session (src/plan/useReturn.ts). Not now puts the sheet away and leaves the session open. The sheet is as tall as its content and nothing on it
-// opens or closes a list, so the control she tapped never moves under her thumb. It slides up and fades in (src/index.css .lp-sheet-in, all but instant under reduced motion).
-import { useState } from 'react';
+// and every one ends the session (src/plan/useReturn.ts). Not now puts the sheet away and leaves the session open. Send a screenshot (mw-umv8sp.4) picks one picture, a
+// screenshot of Audible, and the sheet 'Your screenshot' over this one reads it with the audible-position grist and proposes its chapter (src/plan/ScreenshotRead.tsx); with
+// no licence the row says 'Needs a licence' and opens the Licence page (the sheet is hidden there, App passes `hidden`, and shows again on Back). The sheet is as tall
+// as its content and nothing on it opens or closes a list, so the control she tapped never moves under her thumb. It slides up and fades in (src/index.css .lp-sheet-in, all but instant under reduced motion).
+import { useRef, useState } from 'react';
 import { ChapterPicker } from '../ChapterPicker';
 import type { PlanChapter } from '../data/plans';
+import { useAiAllowed } from '../gate/licenceContext';
+import { openLicence } from '../nav/route';
+import { TALK_PICTURE_MIMES } from '../talk/pictures';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { awayText } from './awayText';
 import { chapterName } from './chapterName';
+import { ScreenshotRead } from './ScreenshotRead';
 import { useReturn, type ReturnProposal } from './useReturn';
 
 const same = (a: PlanChapter, b: PlanChapter): boolean => a.code === b.code && a.chapter === b.chapter;
 
 const rowClass = 'flex min-h-12 w-full items-center justify-between gap-2 rounded-xl border px-4 text-left text-lg font-medium';
 
-function Sheet({ proposal, onAnswer, onClose }: { proposal: ReturnProposal; onAnswer: (chosen: PlanChapter | null) => void; onClose: () => void }) {
+function Sheet({ proposal, hidden, onAnswer, onClose }: { proposal: ReturnProposal; hidden: boolean; onAnswer: (chosen: PlanChapter | null) => void; onClose: () => void }) {
   const [picking, setPicking] = useState(false);
+  const [screenshot, setScreenshot] = useState<File | null>(null);
+  const picker = useRef<HTMLInputElement>(null);
+  const ai = useAiAllowed();
   const { drag, handle } = useSheetDrag(onClose);
-  useEscapeToClose(onClose, !picking);
+  useEscapeToClose(onClose, !picking && !screenshot && !hidden);
   useSheetBack(onClose);
   const { session, elapsedMs, estimate } = proposal;
   return (
-    <div className="fixed inset-0 z-10 flex flex-col justify-end">
+    <div hidden={hidden} className="fixed inset-0 z-10 flex flex-col justify-end">
       <div data-testid="sheet-backdrop" aria-hidden="true" onClick={onClose} className="lp-fade-in absolute inset-0 bg-black/60" />
       <div
         role="dialog"
@@ -77,6 +86,31 @@ function Sheet({ proposal, onAnswer, onClose }: { proposal: ReturnProposal; onAn
             <button type="button" onClick={() => setPicking(true)} className={`${rowClass} border-line bg-surface`}>
               Pick it myself
             </button>
+            {ai ? (
+              <>
+                <button type="button" onClick={() => picker.current?.click()} className={`${rowClass} border-line bg-surface`}>
+                  <span>Send a screenshot</span>
+                  <span className="shrink-0 text-sm font-medium text-muted">of Audible</span>
+                </button>
+                <input
+                  ref={picker}
+                  type="file"
+                  hidden
+                  accept={TALK_PICTURE_MIMES.join(',')}
+                  aria-label="Screenshot file"
+                  onChange={(e) => {
+                    const chosen = e.target.files?.[0] ?? null;
+                    e.target.value = '';
+                    if (chosen) setScreenshot(chosen);
+                  }}
+                />
+              </>
+            ) : (
+              <button type="button" onClick={() => openLicence('reader')} className={`${rowClass} border-line bg-surface`}>
+                <span className="text-muted">Send a screenshot</span>
+                <span className="shrink-0 text-base font-medium text-accent underline">Needs a licence</span>
+              </button>
+            )}
             <button type="button" onClick={() => onAnswer(null)} className={`${rowClass} border-line bg-surface text-muted`}>
               Stopped partway
             </button>
@@ -90,13 +124,15 @@ function Sheet({ proposal, onAnswer, onClose }: { proposal: ReturnProposal; onAn
           onChoose={(chosen) => onAnswer(chosen)}
         />
       ) : null}
+      {screenshot ? <ScreenshotRead picture={screenshot} setOffFrom={session} onAccept={(chosen) => onAnswer(chosen)} onClose={() => setScreenshot(null)} /> : null}
     </div>
   );
 }
 
-/** The return sheet, drawn while a return from Audible is proposed (App draws it once). */
-export function WhereDidYouGetTo() {
+/** The return sheet, drawn while a return from Audible is proposed (App draws it once). `hidden` (the Licence page is open over it) keeps it mounted, with its
+ *  place in history (src/ui/sheetBack.ts), and out of sight: Back from the Licence page finds it as she left it. */
+export function WhereDidYouGetTo({ hidden = false }: { hidden?: boolean }) {
   const { proposal, close, answer } = useReturn();
   if (!proposal) return null;
-  return <Sheet proposal={proposal} onAnswer={(chosen) => void answer(chosen)} onClose={close} />;
+  return <Sheet proposal={proposal} hidden={hidden} onAnswer={(chosen) => void answer(chosen)} onClose={close} />;
 }

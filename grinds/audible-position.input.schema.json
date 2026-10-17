@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Audible Position Request 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["language", "set_off_from"],
+  "properties": {
+    "language": {
+      "description": "The language of the app she reads in, as a short code ('en'). The one attached picture is a screenshot of the Audible app's now-playing screen, taken when she stopped listening to an audio Bible.",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 10
+    },
+    "set_off_from": {
+      "description": "The chapter she began listening at, by name ('Leviticus 1', 'Romans 8'): where the screenshot's chapter most likely is, at or after it. Only a hint for a chapter line that names no book; the picture decides.",
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 40
+    }
+  }
+}

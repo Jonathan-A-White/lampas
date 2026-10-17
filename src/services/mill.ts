@@ -8,6 +8,7 @@
 import { door, vault } from 'bsv-kit/bsv';
 import { grist } from 'bsv-kit/grist';
 import type { ClientTiming } from './clientTiming';
+import type { GristKind } from './gristKinds';
 import { currentLicence } from './licenceNow';
 
 export type MillFile = grist.GristFile;
@@ -92,7 +93,8 @@ export interface SendParams {
   key: Uint8Array;
   mill: string;
   app: string;
-  kind: string;
+  /** one of the kinds Lampas sends (gristKinds.ts) */
+  kind: GristKind;
   v: string;
   input: unknown;
   files: MillFile[];
