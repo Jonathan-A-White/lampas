@@ -16,6 +16,7 @@ import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunc
 import { MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudget';
 import { solidWordsField } from './solidWords';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
+import type { GristKind } from './gristKinds';
 import { listenForAnswers, type StreamTarget } from './answerStream';
 import { AwaitAbortedError, BackendStatusError, GristInputError, meOf, readTimedPage, SendUnknownError, sendTimedGrist, timedDoor, type MillAnswer, type MillFile, type Page, type Resend, type SentGrist, type TimedDoor } from './mill';
 
@@ -361,12 +362,12 @@ export interface AskOptions {
 }
 
 /**
- * Sends `request` to the mill's grind `kind` and waits for its answer, which `isAnswer` must accept. Throws a TutorError:
+ * Sends `request` to the mill's grind `kind` (one of gristKinds.ts GRIST_KINDS) and waits for its answer, which `isAnswer` must accept. Throws a TutorError:
  * no-licence, unreachable, not-sent (the grist was refused for its shape, nothing went out) or no-answer (the mill refused
  * or failed, or answered in a shape this app cannot use, or took past the deadline). The tutor and the Bible talk
  * (src/services/talk.ts) are two kinds sent this one way.
  */
-export async function askGrind<Answer>(kind: string, request: object, isAnswer: (value: unknown) => value is Answer, options: AskOptions): Promise<Answer> {
+export async function askGrind<Answer>(kind: GristKind, request: object, isAnswer: (value: unknown) => value is Answer, options: AskOptions): Promise<Answer> {
   const { key } = options;
   const tapAt = options.tapAt ?? Date.now();
   const d = timedDoor(new door.Door({ baseUrl: options.baseUrl ?? POSTERN_DOOR, key, timeoutMs: tutorTimings.doorTimeoutMs }));
