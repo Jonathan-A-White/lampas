@@ -15,7 +15,9 @@ import { getLogosBible } from './data/repositories';
 import { OT_BOOKS, otBookOf } from './data/otBooks';
 import { getStudyResources, setResourceOn } from './data/repositories/resources';
 import { navigate, openReader } from './nav/route';
-import { type AudioBible, audibleListen, audioBibleOf } from './resources/audioBible';
+import { SendOff } from './plan/SendOff';
+import { useSendOff } from './plan/useSendOff';
+import { type AudioBible, audioBibleOf } from './resources/audioBible';
 import { oldTestamentChoices } from './resources/oldTestamentChoices';
 import { armFallback } from './resources/openApp';
 import { audioBibleSetting } from './settings/definitions';
@@ -103,6 +105,7 @@ function LogosOff({ name, audioOff }: { name: string; audioOff: boolean }) {
 /** What one Old Testament chapter offers, under the grid: Read in Logos and Listen in Audible, each only while it is on. Nothing leaves the app until he taps one. */
 function ChapterChoice({ name, code, chapter, logosOn, bible, audio }: { name: string; code: string; chapter: number; logosOn: boolean; bible: string; audio: AudioBible | undefined }) {
   const { logos, audible } = oldTestamentChoices(code, chapter, { logosOn, logosBible: bible, audio });
+  const sendOff = useSendOff();
   const rowClass = 'flex min-h-12 items-center rounded-lg bg-surface px-3 text-base font-medium text-accent active:bg-line';
   return (
     <div
@@ -122,18 +125,14 @@ function ChapterChoice({ name, code, chapter, logosOn, bible, audio }: { name: s
           <a
             href={audible.href}
             aria-label={`Listen in Audible: ${audio.name}, ${audible.label}`}
-            onClick={(e) => {
-              // Audible wants the link stamped with the time of the tap: make it again as the tap lands, before the phone follows it
-              const listen = audibleListen(audio, code, chapter);
-              e.currentTarget.href = listen.href;
-              if (listen.fallback !== undefined) armFallback(listen.fallback);
-            }}
+            onClick={(e) => sendOff.tap(e, { audio, code, chapter })}
             className={rowClass}
           >
             Listen in Audible
           </a>
           <p className="px-1 pt-2 text-base">{`In Audible: Chapters > ${audible.label}`}</p>
           <p className="px-1 pt-1 text-sm text-muted">{audio.credit}</p>
+          <SendOff send={sendOff} />
         </div>
       ) : null}
     </div>
