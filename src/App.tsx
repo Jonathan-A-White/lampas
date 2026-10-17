@@ -17,6 +17,7 @@ import { GoalScreen } from './GoalScreen';
 import { watchForPen } from './handwriting/penWatch';
 import { IdeaReturn } from './IdeaReturn';
 import { ParadigmsScreen } from './ParadigmsScreen';
+import { WhereDidYouGetTo } from './plan/WhereDidYouGetTo';
 import { RequestsScreen } from './RequestsScreen';
 import { StudyWayScreen } from './StudyWayScreen';
 import { AboutYouScreen } from './AboutYouScreen';
@@ -116,6 +117,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
       ) : (
         <Reader />
       )}
+      {/* back from Audible with a listening session open: 'Where did you get to?' (mw-umv8sp.3) */}
+      <WhereDidYouGetTo />
       {/* the idea sheet he left for a table comes back on Back (mw-svw421.5) */}
       <IdeaReturn />
       {/* the round Ask the tutor control of every screen but the Reader and the Share screen (its sheets are talks), which draws its own beside its Talk bar */}

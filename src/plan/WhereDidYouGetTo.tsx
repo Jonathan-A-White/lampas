@@ -1,0 +1,102 @@
+// src/plan/WhereDidYouGetTo.tsx — the return sheet (mw-umv8sp.3): back from Audible with a listening session open, 'Where did you get to?' proposes the chapter the time
+// away most likely reached (src/plan/estimate.ts) and asks in a tap or two: Finished <the chapter she began>, Got further (the chapters around the estimate, the estimate
+// highlighted), Pick it myself (the chapter picker in choose mode) or Stopped partway (marks nothing). Each answer but the last marks the plan done through that chapter
+// and every one ends the session (src/plan/useReturn.ts). Not now puts the sheet away and leaves the session open. The sheet is as tall as its content and nothing on it
+// opens or closes a list, so the control she tapped never moves under her thumb. It slides up and fades in (src/index.css .lp-sheet-in, all but instant under reduced motion).
+import { useState } from 'react';
+import { ChapterPicker } from '../ChapterPicker';
+import type { PlanChapter } from '../data/plans';
+import { focusOnMount } from '../ui/focus';
+import { useSheetBack } from '../ui/sheetBack';
+import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
+import { awayText } from './awayText';
+import { chapterName } from './chapterName';
+import { useReturn, type ReturnProposal } from './useReturn';
+
+const same = (a: PlanChapter, b: PlanChapter): boolean => a.code === b.code && a.chapter === b.chapter;
+
+const rowClass = 'flex min-h-12 w-full items-center justify-between gap-2 rounded-xl border px-4 text-left text-lg font-medium';
+
+function Sheet({ proposal, onAnswer, onClose }: { proposal: ReturnProposal; onAnswer: (chosen: PlanChapter | null) => void; onClose: () => void }) {
+  const [picking, setPicking] = useState(false);
+  const { drag, handle } = useSheetDrag(onClose);
+  useEscapeToClose(onClose, !picking);
+  useSheetBack(onClose);
+  const { session, elapsedMs, estimate } = proposal;
+  return (
+    <div className="fixed inset-0 z-10 flex flex-col justify-end">
+      <div data-testid="sheet-backdrop" aria-hidden="true" onClick={onClose} className="lp-fade-in absolute inset-0 bg-black/60" />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Where did you get to?"
+        style={{ transform: drag ? `translateY(${drag}px)` : undefined }}
+        className="lp-sheet-in relative flex max-h-[92dvh] flex-col rounded-t-2xl border-t border-line bg-surface"
+      >
+        <div data-testid="sheet-handle" {...handle} className="flex shrink-0 touch-none flex-col items-center px-4 pt-2">
+          <span aria-hidden="true" className="h-1.5 w-10 rounded-full bg-line" />
+          <div className="flex min-h-12 w-full items-center gap-2">
+            <h2 className="min-w-0 flex-1 text-xl font-semibold">Where did you get to?</h2>
+            <button type="button" ref={focusOnMount} onClick={onClose} className="min-h-11 min-w-11 shrink-0 rounded-lg px-3 text-base font-medium text-accent">
+              Not now
+            </button>
+          </div>
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(1rem+var(--lp-bar-inset))] pt-1">
+          <p className="text-base text-muted">{`You set off from ${chapterName(session)} ${awayText(elapsedMs)} ago.`}</p>
+          <p className="pt-1 text-lg">
+            {'I think you got to '}
+            <strong className="font-semibold text-accent">{chapterName(estimate.reached)}</strong>.
+          </p>
+          <div className="flex flex-col gap-2 pt-4">
+            <button type="button" onClick={() => onAnswer(session)} className={`${rowClass} border-line bg-surface`}>
+              {`Finished ${chapterName(session)}`}
+            </button>
+            <div role="group" aria-label="Got further" className="rounded-xl border border-line p-2">
+              <p className="px-2 pb-1 pt-1 text-sm font-medium text-muted">Got further</p>
+              <div className="flex flex-col gap-2">
+                {estimate.around.map((c) => {
+                  const proposed = same(c, estimate.reached);
+                  return (
+                    <button
+                      key={`${c.code}.${c.chapter}`}
+                      type="button"
+                      aria-label={`Got further: ${chapterName(c)}`}
+                      aria-current={proposed ? 'true' : undefined}
+                      data-proposal={proposed ? '' : undefined}
+                      onClick={() => onAnswer(c)}
+                      className={`${rowClass} ${proposed ? 'border-accent bg-accent text-accent-fg' : 'border-line bg-surface'}`}
+                    >
+                      <span>{chapterName(c)}</span>
+                      {proposed ? <span className="shrink-0 text-sm font-medium opacity-90">my guess</span> : null}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <button type="button" onClick={() => setPicking(true)} className={`${rowClass} border-line bg-surface`}>
+              Pick it myself
+            </button>
+            <button type="button" onClick={() => onAnswer(null)} className={`${rowClass} border-line bg-surface text-muted`}>
+              Stopped partway
+            </button>
+          </div>
+        </div>
+      </div>
+      {picking ? (
+        <ChapterPicker
+          current={{ book: session.code, chapter: session.chapter, title: chapterName(session) }}
+          onClose={() => setPicking(false)}
+          onChoose={(chosen) => onAnswer(chosen)}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+/** The return sheet, drawn while a return from Audible is proposed (App draws it once). */
+export function WhereDidYouGetTo() {
+  const { proposal, close, answer } = useReturn();
+  if (!proposal) return null;
+  return <Sheet proposal={proposal} onAnswer={(chosen) => void answer(chosen)} onClose={close} />;
+}
