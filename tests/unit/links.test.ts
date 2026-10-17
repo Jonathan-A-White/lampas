@@ -5,7 +5,7 @@ import { BOOKS } from '../../src/data/books';
 import { OT_BOOKS } from '../../src/data/otBooks';
 import type { LemmaLexicon } from '../../src/data/lexicon';
 import { DEFAULT_CHAPTER } from '../../src/data/readerChapter';
-import { findWord, linkOf, OSIS, parseCanonReference, parseReference, referenceUrl, resolveReference, wordUrl } from '../../src/nav/links';
+import { findWord, inWords, linkOf, OSIS, parseCanonReference, parseReference, referenceUrl, resolveReference, wordUrl } from '../../src/nav/links';
 
 const index = JSON.parse(readFileSync('public/data/index.json', 'utf8')) as BookIndex;
 const lexicon = JSON.parse(readFileSync('public/data/lexicon.json', 'utf8')) as LemmaLexicon;
@@ -109,7 +109,7 @@ describe('resolveReference', () => {
     const last = index.books.find((b) => b.code === 'rom')!.verses[7];
     const opened = resolve('Rom.8.99');
     expect(opened).toMatchObject({ book: 'rom', chapter: 8, verse: last });
-    expect(opened.notice).toBe(`“Rom.8.99” is not in Lampas; showing Romans 8:${last}.`);
+    expect(opened.notice).toBe(`“Romans 8:99” is not in Lampas; showing Romans 8:${last}.`);
   });
 
   it('opens the last chapter of the book for a chapter past its end, with no verse selected', () => {
@@ -128,11 +128,38 @@ describe('resolveReference', () => {
     expect(opened).toEqual({ book: 'rom', chapter: 8, verse: null, notice: '“Tobit 3:1” is not in Lampas; showing Romans 8.' });
   });
 
+  it('says an Old Testament reference is not in Lampas yet, in words, with where a Bible app opens it', () => {
+    const opened = resolve('Gen.1.28');
+    expect(opened).toEqual({
+      book: 'rom',
+      chapter: 8,
+      verse: null,
+      notice: '“Genesis 1:28” is not in Lampas yet; showing Romans 8.',
+      elsewhere: { book: 'gen', chapter: 1, verse: 28 },
+    });
+    expect(resolve('Psalm 23').elsewhere).toEqual({ book: 'psa', chapter: 23 });
+  });
+
   it('treats a book missing from the index as not held', () => {
     const without: BookIndex = { books: index.books.filter((b) => b.code !== 'jud') };
     const opened = resolveReference('Jude 1:3', without, DEFAULT_CHAPTER);
     expect(opened).toMatchObject({ book: 'rom', chapter: 8, verse: null });
     expect(opened.notice).toBe('“Jude 1:3” is not in Lampas; showing Romans 8.');
+  });
+});
+
+describe('inWords', () => {
+  it('names a reference as words, never as the code it was written in', () => {
+    expect(inWords('Gen.1.28')).toBe('Genesis 1:28');
+    expect(inWords('Rom.8.99')).toBe('Romans 8:99');
+    expect(inWords('1John.1.9')).toBe('1 John 1:9');
+    expect(inWords('Ps.23')).toBe('Psalms 23');
+    expect(inWords('Jude')).toBe('Jude');
+  });
+
+  it('leaves what names no book of the Bible as it was asked', () => {
+    expect(inWords('G99999')).toBe('G99999');
+    expect(inWords('Tobit 3:1')).toBe('Tobit 3:1');
   });
 });
 

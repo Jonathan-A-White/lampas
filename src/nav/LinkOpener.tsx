@@ -21,7 +21,7 @@ async function open(link: Link, hash: string, current: () => boolean): Promise<v
     const index = await loadIndex().catch(() => null);
     if (!current()) return;
     const opened = resolveReference(link.text, index, there);
-    announceLink({ book: opened.book, chapter: opened.chapter, verse: opened.verse, notice: opened.notice, word: null });
+    announceLink({ book: opened.book, chapter: opened.chapter, verse: opened.verse, notice: opened.notice, word: null, ...(opened.elsewhere ? { elsewhere: opened.elsewhere } : {}) });
     replaceHash(plainAddress(kept, { book: opened.book, chapter: opened.chapter, verse: opened.verse ?? undefined }));
     return;
   }

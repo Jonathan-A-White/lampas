@@ -345,7 +345,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       {chapterReading || !tipOpen ? null : <TipCard onClose={() => setTipOpen(false)} />}
       </div>
       </Away>
-      {notice ? <LinkNotice text={notice} onDismiss={() => setNotice(null)} /> : null}
+      {notice ? <LinkNotice text={notice} elsewhere={link?.elsewhere} onDismiss={() => setNotice(null)} /> : null}
       {swipeEnd ? <SwipeNote end={swipeEnd} lastBook={BOOKS[BOOKS.length - 1].name} onDismiss={dismissSwipeNote} /> : null}
       <ReadingBar reading={reading} />
       {chapter && !failed ? <ImmersiveHint enabled={immersive} /> : null}

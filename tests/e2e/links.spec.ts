@@ -26,7 +26,7 @@ test('a reference past the end opens the nearest place with a one-line notice', 
   await open(page, '#/?ref=1Jn.9.9');
   await expect(page.getByRole('heading', { name: '1 John 5', level: 1 })).toBeVisible();
   const notice = page.locator('[data-link-notice]');
-  await expect(notice).toContainText('“1Jn.9.9” is not in Lampas; showing 1 John 5.');
+  await expect(notice).toContainText('“1 John 9:9” is not in Lampas; showing 1 John 5.');
   const { scrollWidth, clientWidth } = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth }));
   expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
   await shot(page, 'links-notice');

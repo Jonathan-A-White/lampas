@@ -141,6 +141,17 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('An Old Testament reference says it is not in Lampas yet, in words, and says where to read it', ({ Given, Then, And }) => {
+    Given('a link {string} is opened', (_, hash: string) => openLink(hash));
+    Then('the reader is headed {string}', (_, title: string) => headed(title));
+    And('the notice reads {string}', async (_, text: string) => {
+      await waitFor(() => expect(notice()).toHaveTextContent(text));
+    });
+    And('the notice says to link Logos in Settings', async () => {
+      await waitFor(() => expect(notice()).toHaveTextContent('Link Logos in Settings'));
+    });
+  });
+
   Scenario('The notice can be dismissed', ({ Given, When, Then }) => {
     Given('a link {string} is opened', (_, hash: string) => openLink(hash));
     When('he dismisses the notice', async () => {
