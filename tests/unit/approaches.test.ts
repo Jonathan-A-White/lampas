@@ -4,7 +4,12 @@ import { describe, expect, it } from 'vitest';
 import { APPROACHES, DEFAULT_APPROACH, approachOf, lessonOf, nextLessonOf, orderOf } from '../../src/approaches';
 import { bmaTutor } from '../../src/approaches/bma-tutor';
 import { ladder } from '../../src/approaches/ladder';
+import { BOOK_INDEX } from '../../src/data/bookIndex';
+import type { Chapter } from '../../src/data/chapter';
+import { parseGoal } from '../../src/data/goal';
+import { learnNext, nextLesson } from '../../src/data/grammar/goalProgress';
 import { LADDER } from '../../src/data/grammar/ladder';
+import { passageNeeds, type Level } from '../../src/data/grammar/needs';
 
 const IDS = LADDER.map((i) => i.id);
 const lessonsOf = (a: { stages: { levels: { lessons: unknown[] }[] }[] }) => a.stages.flatMap((s) => s.levels.flatMap((l) => l.lessons));
@@ -105,5 +110,26 @@ describe('nextLessonOf', () => {
     const next = nextLessonOf(bmaTutor, (id) => (done.has(id) ? 'solid' : id === orderOf(bmaTutor)[30] ? 'notYet' : undefined));
     expect(next?.lesson).toBe(lessonOf(bmaTutor, orderOf(bmaTutor)[30])?.lesson);
     expect(nextLessonOf(bmaTutor, () => 'frontier')).toBeUndefined();
+  });
+});
+
+describe('nextLesson: the lesson Settings marks Next (mw-86e9r1.24)', () => {
+  const loadChapter = async (book: string, n: number): Promise<Chapter> => JSON.parse(readFileSync(`public/data/${book}/${n}.json`, 'utf8')) as Chapter;
+
+  it("with the goal 1 John 1:1 is the lesson learnNext returns: with no progress, then after 'Got it' on each of the first ten ideas", async () => {
+    const needs = await passageNeeds(parseGoal('1 John 1:1', BOOK_INDEX)!, loadChapter, BOOK_INDEX);
+    const levels = new Map<string, Level>();
+    for (let step = 0; step <= 10; step += 1) {
+      const next = learnNext(needs, ladder, levels);
+      expect(nextLesson(needs, ladder, levels)?.lesson, `after ${step} ideas`).toBe(next?.lesson?.lesson);
+      expect(next, `after ${step} ideas`).toBeDefined();
+      levels.set(next!.idea.id, 'frontier');
+    }
+  });
+
+  it('with no goal is the lesson of the earliest idea with no level or not yet', () => {
+    expect(nextLesson(undefined, ladder, new Map())?.lesson).toBe(lessonOf(ladder, 'alphabet')?.lesson);
+    const levels = new Map<string, Level>([['alphabet', 'frontier'], ['letter-alpha', 'solid']]);
+    expect(nextLesson(undefined, ladder, levels)?.lesson).toBe(lessonOf(ladder, 'letter-beta')?.lesson);
   });
 });
