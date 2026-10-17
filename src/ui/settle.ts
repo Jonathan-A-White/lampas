@@ -52,7 +52,10 @@ const SWALLOWED = ['pointerdown', 'click'] as const;
 export function swallowTaps(): void {
   if (settle.ms <= 0) return;
   const until = performance.now() + settle.ms;
-  const off = () => SWALLOWED.forEach((type) => window.removeEventListener(type, drop, true));
+  // a sweep that fires after its page is gone (a test file's environment torn down) has nothing left to remove
+  const off = () => {
+    if (typeof window !== 'undefined') SWALLOWED.forEach((type) => window.removeEventListener(type, drop, true));
+  };
   const drop = (event: Event) => {
     if (performance.now() >= until) return off();
     if (event.type === 'click') event.preventDefault();
