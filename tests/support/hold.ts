@@ -10,6 +10,8 @@ export type PressAt = { x: number; y: number; width?: number; height?: number };
 export interface HoldOptions {
   /** Real time to wait after the page's `ms` and before the release: a host that delivers the release late. */
   lagMs?: number;
+  /** Pixels to drag sideways while the press is down, as a finger that moves: a drag is not a hold. */
+  drag?: number;
 }
 
 /** Pauses the page clock a moment ahead of the page's now. A loaded host can take longer than the margin between reading the page's
@@ -26,12 +28,15 @@ async function pauseNow(page: Page): Promise<void> {
 }
 
 /** Holds a press on `target` for `ms` of the page's clock. The spec must call page.clock.install() before the page opens. */
-export async function holdFor(page: Page, target: Locator | PressAt, ms: number, { lagMs = 0 }: HoldOptions = {}): Promise<void> {
+export async function holdFor(page: Page, target: Locator | PressAt, ms: number, { lagMs = 0, drag = 0 }: HoldOptions = {}): Promise<void> {
   const box = 'boundingBox' in target ? await target.boundingBox() : target;
   if (!box) throw new Error('the press target is not on the page');
-  await page.mouse.move(box.x + (box.width ?? 0) / 2, box.y + (box.height ?? 0) / 2);
+  const x = box.x + (box.width ?? 0) / 2;
+  const y = box.y + (box.height ?? 0) / 2;
+  await page.mouse.move(x, y);
   await pauseNow(page);
   await page.mouse.down();
+  if (drag) await page.mouse.move(x + drag, y, { steps: 4 });
   await page.clock.runFor(ms);
   if (lagMs) await page.waitForTimeout(lagMs);
   await page.mouse.up();
