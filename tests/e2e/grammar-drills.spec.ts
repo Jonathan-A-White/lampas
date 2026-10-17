@@ -26,6 +26,11 @@ async function put(page: Page, store: 'reviews' | 'settings', rows: object[]) {
 
 test('a due grammar idea is asked first, as tap the form: the verse words are buttons of 48 px or more', async ({ page }) => {
   await openUnlocked(page);
+  // Review draws a word idea's question from its seed: tap the form, what does this say, or an ending (a preposition has no ending). A fixed random (0.25 gives the tap; another number may not) makes the first draw the tap
+  // the spec is about; left free, the draw was "What does this say?" about one run in four (mw-5r3p30.484).
+  await page.addInitScript(() => {
+    Math.random = () => 0.25;
+  });
   await page.goto('/');
   await expect(page.getByRole('button', { name: /^Due: \d+$/ })).toBeVisible();
   // the goal is 1 John 1; the preposition can only be asked as a form to tap
