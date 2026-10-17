@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import { mulberry32 } from '../../src/data/random';
 import { LETTERS, GLYPHS } from '../../src/handwriting/templates';
-import { caseTwins, recognize, type InkStroke } from '../../src/handwriting/recognizer';
+import { caseTwins, recognize, work, type InkStroke } from '../../src/handwriting/recognizer';
 import { WRITERS, padOf, writing, type Distortion } from '../support/handwriting';
 
 const SMALL = 'αβγδεζηθικλμνξοπρστυφχψω';
@@ -271,27 +271,34 @@ describe('ink that is not the letter asked for', () => {
 });
 
 describe('speed and the network', () => {
-  it('checks one letter in well under 50 ms: the quicker quarter of 40 checks under 10 ms, so a phone five times slower still has room', () => {
+  // The speed claim is a count of work, not a wall clock: a loaded host (129 ms in mw check, mw-5r3p30.496) slows the clock and
+  // not the count (mw-5r3p30.504). The ceiling is below what comparing the writing with every template at full size in every
+  // turn would take (98 templates x 7 turns x 1024 = 702,464 point pairs), so losing the half-size first look fails it.
+  const PAIRS_CEILING = 400_000;
+
+  it('checks one letter within a budget of point-pair distances, counted not timed: the half-size first look keeps it far below comparing every template in full', () => {
     const strokes = ink('ξ', 1);
-    recognize(strokes, 'ξ'); // warm up
-    const times: number[] = [];
-    for (let i = 0; i < 40; i += 1) {
-      const start = performance.now();
+    recognize(strokes, 'ξ'); // warm up: builds the templates
+    for (let i = 0; i < 5; i += 1) {
+      const before = work.pairs;
+      const builtBefore = work.templates;
       recognize(strokes, 'ξ', padOf());
-      times.push(performance.now() - start);
+      expect(work.pairs - before, `check ${i + 1}`).toBeLessThanOrEqual(PAIRS_CEILING);
+      expect(work.templates - builtBefore, 'templates are built once, not per check').toBe(0);
     }
-    times.sort((a, b) => a - b);
-    expect(times[Math.floor(times.length / 4)]).toBeLessThan(10);
   });
 
-  it('builds its templates and answers the first letter of a session in under 50 ms on this box too', async () => {
+  it('builds its templates once and answers the first letter of a session within the same budget, counted not timed', async () => {
     vi.resetModules();
     const fresh = await import('../../src/handwriting/recognizer');
-    const strokes = ink('ζ', 0);
-    const start = performance.now();
-    const result = fresh.recognize(strokes, 'ζ', padOf());
-    expect(performance.now() - start).toBeLessThan(50);
+    expect(fresh.work).toEqual({ pairs: 0, templates: 0 });
+    const result = fresh.recognize(ink('ζ', 0), 'ζ', padOf());
     expect(result.match).toBe(true);
+    expect(fresh.work.templates).toBe(Object.values(GLYPHS).reduce((sum, variants) => sum + variants.length, 0));
+    expect(fresh.work.pairs).toBeLessThanOrEqual(PAIRS_CEILING);
+    const built = fresh.work.templates;
+    fresh.recognize(ink('ζ', 0), 'ζ', padOf());
+    expect(fresh.work.templates, 'a second letter builds no template').toBe(built);
   });
 
   it('never touches the network and imports nothing but itself', () => {
