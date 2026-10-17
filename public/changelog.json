@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.292",
+    "date": "2026-10-17",
+    "story": "mw-86e9r1.31",
+    "kind": "fixed",
+    "text": "The Greek words in a Review question's sentence, and the Greek answer choices, are now drawn large in the Greek typeface."
+  },
+  {
+    "version": "0.1.292",
+    "date": "2026-10-17",
+    "story": "mw-i7xe0n.16",
+    "kind": "fixed",
+    "text": "Drill it now names the letter you misread in a word as a weak point, instead of saying Weak: none."
+  },
+  {
+    "version": "0.1.292",
+    "date": "2026-10-17",
+    "story": "mw-i7xe0n.26",
+    "kind": "fixed",
+    "text": "a quick double tap on Done or Drill it in a sheet no longer taps whatever is underneath, such as opening Settings or closing the sheet below."
+  },
+  {
     "version": "0.1.291",
     "date": "2026-10-17",
     "story": "mw-5r3p30.223",

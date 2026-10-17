@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.292
+_2026-10-17_
+- Fixed: The Greek words in a Review question's sentence, and the Greek answer choices, are now drawn large in the Greek typeface.
+- Fixed: Drill it now names the letter you misread in a word as a weak point, instead of saying Weak: none.
+- Fixed: a quick double tap on Done or Drill it in a sheet no longer taps whatever is underneath, such as opening Settings or closing the sheet below.
+
 ## 0.1.291
 _2026-10-17_
 - Fixed: after the tutor's offer to change a setting is tapped, the card no longer shows a stray second 'Changed' line.
