@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.1.279",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.310",
+    "kind": "new",
+    "text": "a Sepia theme in Settings > Appearance, with warm paper and dark brown text for long reading."
+  },
+  {
+    "version": "0.1.279",
+    "date": "2026-10-17",
+    "story": "mw-neuq78.17",
+    "kind": "fixed",
+    "text": "tapping Reading ladder now shows 'Loading the ladder…' at once instead of seeming to do nothing while the list loads."
+  },
+  {
+    "version": "0.1.279",
+    "date": "2026-10-17",
+    "story": "mw-86e9r1.24",
+    "kind": "fixed",
+    "text": "the Next mark in Settings under Grammar approach now names the same lesson as Learn next on the Goal screen."
+  },
+  {
+    "version": "0.1.279",
+    "date": "2026-10-17",
+    "story": "mw-8m9dyu.10",
+    "kind": "fixed",
+    "text": "Double-tapping the close button of the licence tip no longer opens a word sheet by accident."
+  },
+  {
     "version": "0.1.278",
     "date": "2026-10-16",
     "story": "mw-86e9r1.55",

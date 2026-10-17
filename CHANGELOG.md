@@ -1,5 +1,12 @@
 # What's new
 
+## 0.1.279
+_2026-10-17_
+- New: a Sepia theme in Settings > Appearance, with warm paper and dark brown text for long reading.
+- Fixed: tapping Reading ladder now shows 'Loading the ladder…' at once instead of seeming to do nothing while the list loads.
+- Fixed: the Next mark in Settings under Grammar approach now names the same lesson as Learn next on the Goal screen.
+- Fixed: Double-tapping the close button of the licence tip no longer opens a word sheet by accident.
+
 ## 0.1.278
 _2026-10-16_
 - Fixed: The letters Write it shows you now join up like real handwriting, so alpha is one smooth stroke instead of a bowl and a separate slash with a gap.
