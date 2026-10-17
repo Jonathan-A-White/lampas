@@ -21,6 +21,7 @@ import { IdeaReturn } from './IdeaReturn';
 import { ParadigmsScreen } from './ParadigmsScreen';
 import { WhereDidYouGetTo } from './plan/WhereDidYouGetTo';
 import { RequestsScreen } from './RequestsScreen';
+import { AskMoreScreen } from './settings/AskMoreScreen';
 import { StudyWayScreen } from './StudyWayScreen';
 import { AboutYouScreen } from './AboutYouScreen';
 import { MemoryScreen } from './MemoryScreen';
@@ -108,6 +109,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <MemoryScreen />
       ) : route === 'requests' ? (
         <RequestsScreen />
+      ) : route === 'askmore' ? (
+        <AskMoreScreen />
       ) : route === 'about' ? (
         <About />
       ) : route === 'preface' ? (
