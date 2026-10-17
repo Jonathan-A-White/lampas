@@ -628,6 +628,26 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
       follow.disconnect();
     };
   }, [turnCount, state?.phase, waiting]);
+  // A tap on a setting offer adds its change to a turn already on screen: its foot (Changed: ..., Undo, Copy) is brought into the box, which the speaking bar
+  // and the composer leave about 190 px at 390 x 844, so the confirmation is not left under the bar (mw-5r3p30.224). The Changed line stays the first thing seen.
+  const changeCounts = useRef<Map<number, number> | null>(null);
+  useEffect(() => {
+    if (turns === undefined) return;
+    const now = new Map<number, number>();
+    for (const t of turns) if (t.id !== undefined) now.set(t.id, t.changes?.length ?? 0);
+    const before = changeCounts.current;
+    changeCounts.current = now;
+    const box = list.current;
+    if (!before || !box) return;
+    const grown = [...now].filter(([id, n]) => before.has(id) && n > (before.get(id) as number)).map(([id]) => id).pop();
+    if (grown === undefined) return;
+    const turn = box.querySelector<HTMLElement>(`[data-turn-id="${grown}"]`);
+    const card = turn?.querySelector<HTMLElement>('[data-talk-a]');
+    const line = turn?.querySelector<HTMLElement>('[data-talk-change]');
+    if (!card || !line) return;
+    const room = box.getBoundingClientRect();
+    box.scrollTop += Math.min(Math.max(0, card.getBoundingClientRect().bottom - room.bottom + 8), line.getBoundingClientRect().top - room.top - 8);
+  }, [turns]);
   // Closing the sheet takes its answer's speech with it.
   useEffect(() => () => stopAnswer(), []);
   // A phone with no recogniser sends a hold to the typed field.
