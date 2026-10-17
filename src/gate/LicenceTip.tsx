@@ -8,7 +8,7 @@ import { useLicence } from './licenceContext';
 import { useHeldSpace } from '../ui/heldSpace';
 import { endLicenceTip, licenceTipDue, markLicenceTipShown } from './licenceTip';
 
-export const LICENCE_TIP_TEXT = 'Lampas is free to read. A licence adds a tutor you can ask about any word or verse, and Read it aloud.';
+export const LICENCE_TIP_TEXT = 'Lampas is free to read. A licence adds a tutor you can ask about any word or verse, and one that listens to you read a verse aloud.';
 
 export function LicenceTip() {
   const licence = useLicence();

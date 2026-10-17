@@ -14,7 +14,8 @@ Feature: A free reader is told once, gently, what a licence adds
 
   Scenario: The third visit shows the tip once, with its words and a close
     Given this phone has no licence and Lampas is opened on its visit number 3
-    Then the licence tip says "Lampas is free to read. A licence adds a tutor you can ask about any word or verse, and Read it aloud."
+    Then the licence tip says "Lampas is free to read. A licence adds a tutor you can ask about any word or verse, and one that listens to you read a verse aloud."
+    And the licence tip does not call it "Read it aloud", which is the free ▶ to a reader who has never seen the Verse view's check
     And the licence tip has Learn more and a close
 
   Scenario: Closing the tip ends it
