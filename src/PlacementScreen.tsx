@@ -28,7 +28,7 @@ import { mulberry32, type Random } from './data/quiz';
 import { getEvidence, getGoal, getGrammarApproach, listLevels } from './data/repositories';
 import { publish } from './events/bus';
 import { navigate, placementOriginOf, useAddress } from './nav/route';
-import { useSettled } from './ui/settle';
+import { swallowTaps, useSettled } from './ui/settle';
 import { ItemCard } from './review/ItemCard';
 import { GRAMMAR, loadPassage, type GrammarItem } from './review/kinds';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -73,11 +73,17 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
   const [confirming, setConfirming] = useState(false);
   // The quick round's Say it again and Stop here sit where Next sat, so the second tap of a double tap on Next lands on them: they take no tap in the
   // moment after a new item is drawn (src/ui/settle.ts, mw-hqd5bz.26). The intro's buttons sit where Place me / Place again sat on the Goal screen, so
-  // they take none in the moment after the intro is drawn, nor after Start over turns into its question (mw-hqd5bz.27).
+  // they take none in the moment after the intro is drawn, nor after Start over turns into its question (mw-hqd5bz.27). The end card's buttons sit where
+  // Next or Finish sat, so they take none in the moment after it is drawn (mw-86e9r1.22).
   const settled = useSettled(run.status === 'quick' ? run.round.at : confirming ? 'confirm' : run.status);
-  // where Place me was tapped: the Goal screen or Settings; the ways out return there
+  // where Place me was tapped: the Goal screen or Settings; the ways out return there, and a second tap of a double tap on one lands nowhere: on the
+  // Goal screen the Grammar ideas bar sits under the end card's Back to the goal (mw-86e9r1.22)
   const origin = placementOriginOf(useAddress());
-  const leave = () => navigate(origin);
+  const leaveFor = (to: typeof origin) => {
+    swallowTaps();
+    navigate(to);
+  };
+  const leave = () => leaveFor(origin);
   // The answers are written one after the other; the next question waits for the last of them.
   const writing = useRef<Promise<unknown>>(Promise.resolve());
   const passage = useRef<Chapter[]>([]);
@@ -341,6 +347,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
               <button
                 type="button"
                 onClick={() => {
+                  if (!settled()) return;
                   const state = resumePlacement(run.state);
                   savePlacement({ goal: session.goal, approach: session.approach.id, state });
                   void ask(state);
@@ -351,11 +358,11 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
               </button>
             ) : null}
             {paused ? (
-              <button type="button" onClick={leave} className={`${BUTTON} border border-line`}>
+              <button type="button" onClick={() => settled() && leave()} className={`${BUTTON} border border-line`}>
                 Go on another day
               </button>
             ) : null}
-            <button type="button" onClick={() => navigate('goal')} className={`${BUTTON} ${paused ? 'border border-line' : 'bg-accent text-accent-fg'}`}>
+            <button type="button" onClick={() => settled() && leaveFor('goal')} className={`${BUTTON} ${paused ? 'border border-line' : 'bg-accent text-accent-fg'}`}>
               Back to the goal
             </button>
           </div>
