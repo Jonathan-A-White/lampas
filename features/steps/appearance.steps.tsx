@@ -88,7 +88,13 @@ afterAll(() => {
 });
 
 async function openSettings(): Promise<void> {
-  await user.click(await screen.findByRole('button', { name: 'Settings' }));
+  // the gear in the Reader's header, not through the whole chapter: a role query on `screen` for buttons walks every word of it (3 s, mw-5r3p30.555)
+  const header = await waitFor(() => {
+    const found = document.querySelector<HTMLElement>('[data-reader-top]');
+    if (!found) throw new Error('the Reader header is not drawn yet');
+    return found;
+  });
+  await user.click(await within(header).findByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
 }
 async function backToReader(): Promise<void> {
@@ -138,7 +144,9 @@ const speedsAre = async (english: number, greek: number) =>
 async function greekRateOfAButton(): Promise<number> {
   await backToReader();
   if (document.querySelector('[data-reader]')?.getAttribute('data-view') !== 'greek') {
-    await user.click(await screen.findByRole('button', { name: 'Greek' }));
+    // beside the view choice in the Reader's header, not through the whole chapter: a role query on `screen` for buttons walks every word of it (mw-5r3p30.555)
+    const header = document.querySelector<HTMLElement>('[data-reader-top]') as HTMLElement;
+    await user.click(await within(header).findByRole('button', { name: 'Greek' }));
     await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-view')).toBe('greek'));
   }
   const play = within(document.querySelector<HTMLElement>('[data-verse="1"]')!).getByRole('button', { name: 'Hear the verse' });

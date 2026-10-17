@@ -99,7 +99,13 @@ async function start(hash: string): Promise<void> {
 
 async function openReadingCheck(): Promise<void> {
   render(<App />);
-  const number = await screen.findByRole('button', { name: 'Verse 28', exact: true });
+  // beside verse 28's own line, not through the whole Reader: a role query on `screen` walks every word of the chapter (5 s on a loaded host, mw-5r3p30.555)
+  const verse28 = await waitFor(() => {
+    const found = document.querySelector<HTMLElement>('[data-verse="28"]');
+    if (!found) throw new Error('verse 28 is not drawn yet');
+    return found;
+  });
+  const number = await within(verse28).findByRole('button', { name: 'Verse 28', exact: true });
   await user.click(number);
   const view = await screen.findByRole('region', { name: 'Verse view' });
   await user.click(within(view).getByRole('button', { name: 'Read it aloud', exact: true }));
@@ -149,7 +155,8 @@ const audio = () => panel().querySelector<HTMLAudioElement>('audio[data-my-readi
 async function readVerse28(): Promise<void> {
   await openReadingCheck();
   FakeRecorder.durationMs = 2000;
-  const bar = screen.getByRole('button', { name: 'Hold to read verse 28', exact: true });
+  // inside the Verse view, not through the whole Reader: a role query on `screen` for buttons walks every word of the chapter (mw-5r3p30.555)
+  const bar = within(screen.getByRole('region', { name: 'Verse view' })).getByRole('button', { name: 'Hold to read verse 28', exact: true });
   await user.pointer([
     { keys: '[MouseLeft>]', target: bar, coords: AT },
     { keys: '[/MouseLeft]', target: bar, coords: AT },
