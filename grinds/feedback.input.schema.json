@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Feedback Request 1",
-  "description": "Feedback to the makers, forwarded to the Mayor. Two kinds: grammar-approach (Ask for another approach, with pictures attached) and tutor-ask (an ask the tutor could not meet, sent by his tap on Send this to the makers).",
+  "description": "Feedback to the makers, forwarded to the Mayor. Three kinds: grammar-approach (Ask for another approach, with pictures attached), tutor-ask (an ask the tutor could not meet, sent by his tap on Send this to the makers) and grammar-book (Ask for another book: a grammar book of his Logos library).",
   "type": "object",
   "anyOf": [
     {
@@ -55,6 +55,20 @@
             }
           }
         },
+        "app_version": { "description": "The Lampas build he sent it from.", "type": "string", "minLength": 1, "maxLength": 80 }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "text", "app_version"],
+      "properties": {
+        "kind": {
+          "description": "grammar-book asks for another grammar book of his Logos library to be added to the idea sheets' Read more.",
+          "type": "string",
+          "enum": ["grammar-book"]
+        },
+        "text": { "description": "The book's title, and its author if he gave one, as he typed it (Mounce, Basics of Biblical Greek).", "type": "string", "minLength": 1, "maxLength": 200 },
         "app_version": { "description": "The Lampas build he sent it from.", "type": "string", "minLength": 1, "maxLength": 80 }
       }
     }
