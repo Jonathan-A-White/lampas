@@ -17,6 +17,7 @@ All must pass clean before a story is done. A fresh worktree has no `node_module
 
 ## Read first
 
+Read `docs/overview.md` before the rest of this file.
 `docs/pwa-best-practices.md` is the owner's standing rules for his phone apps (zoom, scroll, keyboard,
 update flow, visibility, speech). A screen that breaks one of its rules is not done. The Governor's
 principle for every screen: "make this app easy to use correctly and hard to use incorrectly". He reads
@@ -119,6 +120,7 @@ docs/layout/grammar.md       # Layout: grammar terms, the ladder, inference, Dri
 docs/layout/data.md          # Layout: Dexie and its versions, the repositories, books, chapters, parsing codes, the data build
 docs/layout/licence.md       # Layout: the licence gate, the one gated mill client, the device key
 docs/layout/share.md         # Layout: Share to Lampas, Your requests, Ask for another approach and feedback
+docs/overview.md # the one-screen overview: read first
 docs/commands.md             # the long notes of the Quick reference: Playwright projects, e2e:live, grind:build, the data tools
 docs/grinds.md               # grinds' examples and the bible-talk / verse-ask instruction parts: how to change one
 docs/pwa-best-practices.md   # copied verbatim from the vault; the law for every screen
