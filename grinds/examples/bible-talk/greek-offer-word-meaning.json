@@ -30,6 +30,9 @@
     },
     "greek_asked": {
       "present": false
+    },
+    "setting_offer": {
+      "present": false
     }
   }
 }

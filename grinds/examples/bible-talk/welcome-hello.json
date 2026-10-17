@@ -28,6 +28,9 @@
     },
     "words.0": {
       "present": false
+    },
+    "setting_offer": {
+      "present": false
     }
   }
 }

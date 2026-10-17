@@ -25,6 +25,9 @@
     },
     "greek_offer": {
       "present": false
+    },
+    "setting_offer": {
+      "present": false
     }
   }
 }

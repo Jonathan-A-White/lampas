@@ -11,6 +11,7 @@
     "settings": {}
   },
   "expect": {
-    "question": { "matches": "^Why are there italic words\\? [A-Z][^,]*\\?$", "contains": "italic" }
+    "question": { "matches": "^Why are there italic words\\? [A-Z][^,]*\\?$", "contains": "italic" },
+    "setting_offer": { "present": false }
   }
 }

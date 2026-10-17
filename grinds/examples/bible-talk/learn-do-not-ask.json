@@ -65,6 +65,9 @@
     },
     "profile_update": {
       "present": false
+    },
+    "setting_offer": {
+      "present": false
     }
   }
 }

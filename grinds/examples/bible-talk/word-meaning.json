@@ -13,6 +13,7 @@
   "expect": {
     "answer": { "matches": "[Ll]ove" },
     "words.0.lemma": { "equals": "ἀγαπάω" },
-    "settings_changes": { "present": false }
+    "settings_changes": { "present": false },
+    "setting_offer": { "present": false }
   }
 }

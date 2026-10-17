@@ -53,6 +53,9 @@
     },
     "answer": {
       "matches": "quite a bit|a lot|several|[Mm]issing|(not|n.t) (yet )?(met|learned|learnt|seen|know)|have not|haven.t|do not have|don.t have|rests on|builds on|depends on"
+    },
+    "setting_offer": {
+      "present": false
     }
   }
 }

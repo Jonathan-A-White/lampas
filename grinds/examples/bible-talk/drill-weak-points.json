@@ -27,6 +27,7 @@
   },
   "expect": {
     "answer": { "present": true },
-    "settings_changes": { "present": false }
+    "settings_changes": { "present": false },
+    "setting_offer": { "present": false }
   }
 }

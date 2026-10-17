@@ -27,6 +27,7 @@
     "syllables.1": { "equals": "νυ" },
     "syllables.2": { "equals": "τε" },
     "syllables.3": { "present": false },
-    "settings_changes": { "present": false }
+    "settings_changes": { "present": false },
+    "setting_offer": { "present": false }
   }
 }

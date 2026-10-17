@@ -38,6 +38,9 @@
     },
     "settings_changes": {
       "present": false
+    },
+    "setting_offer": {
+      "present": false
     }
   }
 }
