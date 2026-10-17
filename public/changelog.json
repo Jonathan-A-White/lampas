@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.287",
+    "date": "2026-10-17",
+    "story": "mw-umv8sp.5",
+    "kind": "new",
+    "text": "The Bible view has a Plan chip showing the next chapter you will listen to and how far you are, and the chapter picker marks the chapters you have done and the next one; you start a listening plan from the chip or from Settings."
+  },
+  {
+    "version": "0.1.287",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.263",
+    "kind": "fixed",
+    "text": "A lesson's example word never shows a meaning that repeats itself, such as 'to see: see'."
+  },
+  {
+    "version": "0.1.287",
+    "date": "2026-10-17",
+    "story": "mw-foy5mb.5",
+    "kind": "new",
+    "text": "See the whole path draws every grammar idea as a map, with what you know, what you are learning and what comes next, that you can drag and zoom, opened from the Goal screen."
+  },
+  {
     "version": "0.1.286",
     "date": "2026-10-17",
     "story": "mw-5r3p30.222",

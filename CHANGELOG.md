@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.287
+_2026-10-17_
+- New: The Bible view has a Plan chip showing the next chapter you will listen to and how far you are, and the chapter picker marks the chapters you have done and the next one; you start a listening plan from the chip or from Settings.
+- Fixed: A lesson's example word never shows a meaning that repeats itself, such as 'to see: see'.
+- New: See the whole path draws every grammar idea as a map, with what you know, what you are learning and what comes next, that you can drag and zoom, opened from the Goal screen.
+
 ## 0.1.286
 _2026-10-17_
 - Fixed: On About, the Preface and Your requests buttons no longer have their small description line pressed against the bottom edge.
