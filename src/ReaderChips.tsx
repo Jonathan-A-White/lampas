@@ -3,8 +3,8 @@
 // and with no chip (and no woven-words count) there is no row. Each chip does what its strip did and keeps the strip's text as its accessible name.
 // The count of words woven into Greek ('<n> words in Greek', a status, not a control) sits at the row's right end. A chapter being read aloud
 // hides the chips, as it hid the strips; the count stays.
-import { useLiveQuery } from 'dexie-react-hooks';
 import { countDue } from './data/repositories';
+import { useLatestLiveQuery } from './data/useLatestLiveQuery';
 import { DueChip } from './DueBadge';
 import { GoalChip } from './GoalStrip';
 import { NewWordsChip } from './NewWordsStrip';
@@ -28,7 +28,7 @@ export function ReaderChips({
   /** words shown in Greek by the weave, or null when the text is not woven */
   wovenCount: number | null;
 }) {
-  const due = useLiveQuery(() => countDue(), []);
+  const due = useLatestLiveQuery(() => countDue());
   const goal = useGoalProgress();
   const tip = useOpenTip();
   const any = !hidden && (Boolean(due) || goal.status === 'ready' || tip !== undefined || newWords > 0);
