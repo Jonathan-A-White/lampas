@@ -10,6 +10,7 @@ import { logos } from '../../resources/logos';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../../resources/logosBible';
 import { SearchableList } from '../../ui/SearchableList';
 import { audioBibleSetting, readingPlanSetting } from '../definitions';
+import { AskForBook } from './askBook';
 import { writeSetting } from '../registry';
 import type { SettingsRow } from '../rows';
 import { useSetting } from '../store';
@@ -38,34 +39,44 @@ function GrammarBooks() {
     void setGrammarBooks(GRAMMAR_BOOKS.map((b) => b.id).filter((b) => next.includes(b)));
   };
   const hint = 'Tick the grammar books of your Logos library. An idea sheet links the part of each that teaches the idea.';
-  if (GRAMMAR_BOOKS.length >= LONG_LIST) return <SearchableList label="Grammar books" hint={hint} noun="book" items={GRAMMAR_BOOKS} ticked={ticked} onToggle={toggle} />;
+  if (GRAMMAR_BOOKS.length >= LONG_LIST) {
+    return (
+      <>
+        <SearchableList label="Grammar books" hint={hint} noun="book" items={GRAMMAR_BOOKS} ticked={ticked} onToggle={toggle} />
+        <AskForBook />
+      </>
+    );
+  }
   return (
-    <div role="group" aria-label="Grammar books" aria-describedby="grammar-books-hint" className="mt-3">
-      <p className="text-base font-medium">Grammar books</p>
-      <p id="grammar-books-hint" className="pb-1 text-sm text-muted">
-        {hint}
-      </p>
-      <div className="rounded-lg border border-line">
-        {GRAMMAR_BOOKS.map((book) => {
-          const on = ticked.includes(book.id);
-          return (
-            <button
-              key={book.id}
-              type="button"
-              role="checkbox"
-              aria-checked={on}
-              onClick={() => toggle(book.id)}
-              className="flex min-h-12 w-full items-center gap-3 border-t border-line px-3 text-left text-base first:border-t-0"
-            >
-              <span aria-hidden="true" className={`flex h-6 w-6 shrink-0 items-center justify-center rounded border border-line ${on ? 'bg-accent text-accent-fg' : ''}`}>
-                {on ? '✓' : ''}
-              </span>
-              {book.name}
-            </button>
-          );
-        })}
+    <>
+      <div role="group" aria-label="Grammar books" aria-describedby="grammar-books-hint" className="mt-3">
+        <p className="text-base font-medium">Grammar books</p>
+        <p id="grammar-books-hint" className="pb-1 text-sm text-muted">
+          {hint}
+        </p>
+        <div className="rounded-lg border border-line">
+          {GRAMMAR_BOOKS.map((book) => {
+            const on = ticked.includes(book.id);
+            return (
+              <button
+                key={book.id}
+                type="button"
+                role="checkbox"
+                aria-checked={on}
+                onClick={() => toggle(book.id)}
+                className="flex min-h-12 w-full items-center gap-3 border-t border-line px-3 text-left text-base first:border-t-0"
+              >
+                <span aria-hidden="true" className={`flex h-6 w-6 shrink-0 items-center justify-center rounded border border-line ${on ? 'bg-accent text-accent-fg' : ''}`}>
+                  {on ? '✓' : ''}
+                </span>
+                {book.name}
+              </button>
+            );
+          })}
+        </div>
       </div>
-    </div>
+      <AskForBook />
+    </>
   );
 }
 

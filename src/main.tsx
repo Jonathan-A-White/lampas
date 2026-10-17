@@ -15,6 +15,7 @@ import { noteVisit } from './gate/licenceTip';
 import { restoreLastRoute } from './nav/lastRoute';
 import { restoreScrolls } from './nav/scrollMemory';
 import { startAppUpdates } from './services/appUpdate';
+import { startBookRequests } from './services/bookRequests';
 import { LicensedTips } from './tips/LicensedTips';
 import { installScrollGuard } from './ui/scrollGuard';
 
@@ -26,6 +27,8 @@ restoreLastRoute();
 restoreScrolls();
 // Counts today as a visit (the licence tip is due on the third, src/gate/licenceTip.ts).
 noteVisit();
+// A request for a grammar book that waited offline goes when the phone is back online (Settings > Grammar books > Ask for another book).
+startBookRequests();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
