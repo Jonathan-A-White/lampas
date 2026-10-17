@@ -2,6 +2,7 @@
 // directly, and a repository owns its transactions (docs/pwa-best-practices.md section 15).
 export { addImportedWords, addWordToLearn, wordIsListed, listDroppedLemmas, listLearningLemmas, listSolidHeadwords, listSolidLemmas, listWords, setWordState, teachWord } from './words';
 export type { Word, WordOutcome, WordState } from './words';
+export { getIpaProgress, learnIpaSound, noteIpaAnswer, passIpaCheck, startIpaCourse } from './ipaCourse';
 export {
   clearGrammarAnswers,
   getGoal,

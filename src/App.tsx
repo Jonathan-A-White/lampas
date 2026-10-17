@@ -14,6 +14,7 @@ import { startReaderAddressSync } from './nav/readerAddress';
 import { routeOf, useAddress } from './nav/route';
 import { Reader } from './Reader';
 import { GoalScreen } from './GoalScreen';
+import { IpaCourse } from './ipa/IpaCourse';
 import { LadderGraph } from './LadderGraph';
 import { watchForPen } from './handwriting/penWatch';
 import { IdeaReturn } from './IdeaReturn';
@@ -97,6 +98,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <GoalScreen />
       ) : route === 'path' ? (
         <LadderGraph />
+      ) : route === 'ipa' ? (
+        <IpaCourse />
       ) : route === 'studyway' ? (
         <StudyWayScreen />
       ) : route === 'aboutyou' ? (
