@@ -72,6 +72,15 @@ function LearningNowButton({ idea, onOpen }: { idea: GrammarIdea; onOpen: () => 
   );
 }
 
+/** The one way to the ladder drawn as a graph (src/LadderGraph.tsx, #/path), whether or not a goal is set. */
+function WholePathButton() {
+  return (
+    <button type="button" data-testid="whole-path" onClick={() => navigate('path')} className={`${BUTTON} w-full border border-line text-accent`}>
+      See the whole path
+    </button>
+  );
+}
+
 /** With no goal set there are no needs, so Learn next can name only the exact gaps (mw-hqd5bz.31); with none, nothing is drawn. */
 function NoGoalBody({ levels }: { levels: ReadonlyMap<string, Level> }) {
   const [ideaId, setIdeaId] = useState<string | null>(null);
@@ -103,6 +112,9 @@ function NoGoalBody({ levels }: { levels: ReadonlyMap<string, Level> }) {
             {next && (!learning || next.gaps) ? <LearnNextButton next={next} onOpen={() => setIdeaId(next.idea.id)} /> : null}
           </section>
         ) : null}
+        <section className="mt-5">
+          <WholePathButton />
+        </section>
         <div className="text-left">
           <DrillPlans onOpen={setIdeaId} />
           <ReadingLadderSection />
@@ -370,6 +382,10 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
               Every idea this goal needs is on the frontier or solid.
             </p>
           ) : null}
+        </section>
+
+        <section className="mt-5">
+          <WholePathButton />
         </section>
 
         <section className="mt-5">
