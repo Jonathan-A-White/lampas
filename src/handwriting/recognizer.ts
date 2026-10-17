@@ -10,7 +10,7 @@
 // drifts off level, or a phone held at a slant, still meets the template. The templates are in templates.ts.
 // Nothing here reads the network, a clock or the page.
 
-import { GLYPHS, LETTERS, type Variant } from './templates';
+import { GLYPHS, LETTERS, LOOKALIKES, type Variant } from './templates';
 
 export interface InkPoint {
   x: number;
@@ -48,6 +48,11 @@ export interface Recognition {
   offStrokes: number[];
   /** Part of the asked-for letter has no ink near it: a stroke was left out or is too short. */
   missing: boolean;
+  /**
+   * One line that says where the writing is not the letter, when it is a near miss: the Greek letter drawn as its Latin look-alike
+   * (a y for γ, an x for χ), which is never a match. '' when there is nothing to say.
+   */
+  hint: string;
   /** The case was told by size or place (the pad gave a capHeight, and the letter's small and capital shapes are the same). */
   caseChecked: boolean;
 }
@@ -258,27 +263,58 @@ function inkOf(strokes: readonly InkStroke[]): { points: Pt[]; origin: number[] 
   return { points, origin };
 }
 
+/** A template from one drawn variant. */
+function build(letter: string, variant: Variant): Template {
+  const points: Pt[] = variant.flatMap((stroke, id) => stroke.map(([x, y]): Pt => ({ x, y, id })));
+  const ys = points.map((p) => p.y);
+  const sampled = resample(points, N);
+  const frame = sampled && frameOf(sampled);
+  if (!sampled || !frame) throw new Error(`template ${letter} has no ink`);
+  const placed = sampled.map((p) => ({ ...place(p, frame), id: p.id }));
+  const cloud = cloudOf(placed);
+  work.templates += 1;
+  return { letter, cloud, coarse: thin(cloud), top: Math.min(...ys), bottom: Math.max(...ys), points: placed };
+}
+
 let cache: Template[] | null = null;
 
 /** The templates, built on first use. */
 function templates(): Template[] {
   if (cache) return cache;
   const out: Template[] = [];
-  for (const letter of LETTERS) {
-    for (const variant of GLYPHS[letter] as readonly Variant[]) {
-      const points: Pt[] = variant.flatMap((stroke, id) => stroke.map(([x, y]): Pt => ({ x, y, id })));
-      const ys = points.map((p) => p.y);
-      const sampled = resample(points, N);
-      const frame = sampled && frameOf(sampled);
-      if (!sampled || !frame) throw new Error(`template ${letter} has no ink`);
-      const placed = sampled.map((p) => ({ ...place(p, frame), id: p.id }));
-      const cloud = cloudOf(placed);
-      work.templates += 1;
-      out.push({ letter, cloud, coarse: thin(cloud), top: Math.min(...ys), bottom: Math.max(...ys), points: placed });
-    }
-  }
+  for (const letter of LETTERS) for (const variant of GLYPHS[letter] as readonly Variant[]) out.push(build(letter, variant));
   cache = out;
   return out;
+}
+
+const lookalikeCache = new Map<string, { hint: string; templates: Template[] }[]>();
+
+/** The look-alike shapes of a letter as templates (built when that letter is first asked for), each with its line. */
+function lookalikesOf(letter: string): { hint: string; templates: Template[] }[] {
+  let found = lookalikeCache.get(letter);
+  if (!found) {
+    found = (Object.prototype.hasOwnProperty.call(LOOKALIKES, letter) ? LOOKALIKES[letter] : []).map((l) => ({ hint: l.hint, templates: l.variants.map((v) => build(letter, v)) }));
+    lookalikeCache.set(letter, found);
+  }
+  return found;
+}
+
+/** A dot is a stroke much shorter than the letter's own, above its top and over its width: the Latin i's. */
+const DOT_LENGTH = 0.3;
+function dotted(strokes: readonly InkStroke[]): boolean {
+  const own = strokes
+    .map((stroke) => (stroke ?? []).filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y)))
+    .filter((stroke) => stroke.length > 0)
+    .map((stroke) => {
+      const pts: Pt[] = stroke.map((p) => ({ x: p.x, y: p.y, id: 0 }));
+      const xs = pts.map((p) => p.x);
+      const ys = pts.map((p) => p.y);
+      return { length: pathLength(pts), top: Math.min(...ys), bottom: Math.max(...ys), left: Math.min(...xs), right: Math.max(...xs), x: xs.reduce((a, b) => a + b, 0) / xs.length, y: ys.reduce((a, b) => a + b, 0) / ys.length };
+    });
+  const main = own.reduce((a, b) => (b.length > a.length ? b : a), { length: 0, top: 0, bottom: 0, left: 0, right: 0, x: 0, y: 0 });
+  if (!(main.length > 0)) return false;
+  const height = main.bottom - main.top;
+  return own.some((s) => s !== main && s.length < DOT_LENGTH * main.length && s.y < main.top - 0.15 * height && s.x >= main.left - 0.6 * height && s.x <= main.right + 0.6 * height);
 }
 
 let twinCache: Map<string, string[]> | null = null;
@@ -313,6 +349,7 @@ const NOTHING = (target: string): Recognition => ({
   closestScore: 0,
   offStrokes: [],
   missing: false,
+  hint: '',
   caseChecked: false,
 });
 
@@ -454,7 +491,25 @@ export function recognize(strokes: readonly InkStroke[], target: string, options
   const dTarget = asked ? asked.d : Infinity;
   const shape = best.get(closest)?.d ?? Math.min(...all.filter((t) => t.letter === closest).map((t) => nearest(t, false).d));
   const sameShape = known && (closest === target || (!caseChecked && group.includes(target)));
-  const match = known && sameShape && dTarget <= ACCEPT;
+  const shaped = known && sameShape && dTarget <= ACCEPT;
+
+  // the letter drawn as its Latin look-alike is a near miss, never a match: nearer to the look-alike than to the letter, or a dot over it
+  let hint = '';
+  if (known) {
+    let nearestLookalike = Infinity;
+    for (const l of lookalikesOf(target)) {
+      for (const template of l.templates) {
+        const { d } = nearest(template, false, Math.min(nearestLookalike, ACCEPT));
+        if (d < nearestLookalike) {
+          nearestLookalike = d;
+          if (d <= ACCEPT && d < dTarget) hint = l.hint;
+        }
+      }
+    }
+    const dot = Object.prototype.hasOwnProperty.call(LOOKALIKES, target) ? LOOKALIKES[target].find((l) => l.dot) : undefined;
+    if (!hint && dot && shaped && dotted(strokes)) hint = dot.hint;
+  }
+  const match = shaped && hint === '';
 
   const off = asked
     ? compare(asked.view.ink, asked.view.sampled, asked.view.frame, origin, asked.template)
@@ -467,6 +522,7 @@ export function recognize(strokes: readonly InkStroke[], target: string, options
     closestScore: scoreOf(shape),
     offStrokes: off.offStrokes,
     missing: off.missing,
+    hint,
     caseChecked,
   };
 }

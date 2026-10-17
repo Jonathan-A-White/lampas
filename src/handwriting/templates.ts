@@ -261,6 +261,53 @@ const CAPITAL: Record<string, Variant[]> = {
   ],
 };
 
+/**
+ * A Greek letter drawn as its Latin look-alike (mw-86e9r1.57): a shape the checker must not take for the letter asked for. The writing
+ * is Close, not Right, when it is nearer to one of these `variants` than to the letter itself, and `hint` is the one line that says
+ * where it differs. A letter with no entry here is told from its look-alike already (or is the same shape, below). `dot` is a Latin
+ * i's dot: the strokes of a dot are too small for a cloud, so it is looked for beside the letter, not drawn.
+ */
+export interface Lookalike {
+  /** The Latin letter it is written as, for the tests. */
+  latin: string;
+  hint: string;
+  variants: readonly Variant[];
+  dot?: boolean;
+}
+
+/**
+ * The Greek small letters with a Latin look-alike that are told apart, keyed by the Greek letter. Not here, because a hand writes the
+ * Greek and the Latin letter the same way and the judge asks which letter, not which alphabet: ν and v (two strokes meeting at a
+ * point on the line), ρ and p (a stem below the line, a bowl on it), ο and o, and ω and w (omega is as often written pointed as
+ * round, and a pointed one is a w).
+ */
+export const LOOKALIKES: Readonly<Record<string, readonly Lookalike[]>> = {
+  γ: [
+    {
+      latin: 'y',
+      hint: 'The arms of γ meet on the line, in a V, before the tail drops.',
+      variants: [
+        // the Governor's y: a u-shaped left arm meets the right stroke halfway up the body, and the right stroke runs on below the line
+        [curve([0.05, 0.5], [0.08, 0.62], [0.15, 0.72], [0.27, 0.78], [0.4, 0.76], [0.47, 0.72]), line([0.55, 0.5], [0.35, 1.0], [0.15, 1.48])],
+        // the arms as a V that meets halfway up the body
+        [line([0.05, 0.5], [0.3, 0.78]), line([0.58, 0.5], [0.3, 0.78], [0.12, 1.47])],
+        // a bowl whose bottom is a third of the way down
+        [curve([0.05, 0.5], [0.08, 0.7], [0.18, 0.84], [0.32, 0.86], [0.44, 0.78]), line([0.5, 0.5], [0.35, 1.0], [0.18, 1.48])],
+      ],
+    },
+  ],
+  κ: [{ latin: 'k', hint: 'κ is no taller than the letters beside it: its stem does not rise above the arms.', variants: [[line([0.1, 0.0], [0.1, 1.0]), line([0.52, 0.5], [0.1, 0.78], [0.55, 1.0])]] }],
+  χ: [{ latin: 'x', hint: 'χ goes down through the line: its legs reach below it, as an x does not.', variants: [[line([0.05, 0.5], [0.55, 1.0]), line([0.55, 0.5], [0.05, 1.0])]] }],
+  υ: [
+    {
+      latin: 'u',
+      hint: 'υ is a plain cup: there is no stem on its right, as a u has.',
+      variants: [[curve([0.1, 0.5], [0.1, 0.85], [0.2, 0.98], [0.33, 1.0], [0.46, 0.96], [0.56, 0.85], [0.58, 0.5]), line([0.58, 0.5], [0.58, 1.0])]],
+    },
+  ],
+  ι: [{ latin: 'i', hint: 'ι has no dot: it is a stem alone.', variants: [], dot: true }],
+};
+
 /** Every letter the checker knows: the 24 small letters, the final sigma, and the 24 capitals. */
 export const GLYPHS: Readonly<Record<string, readonly Variant[]>> = (() => {
   const all: Record<string, readonly Variant[]> = { ...SMALL };
