@@ -1,6 +1,6 @@
 // UI code reaches the local store only through the repositories exported here, never through Dexie tables
 // directly, and a repository owns its transactions (docs/pwa-best-practices.md section 15).
-export { addImportedWords, addWordToLearn, wordIsListed, listDroppedLemmas, listLearningLemmas, listSolidHeadwords, listSolidLemmas, listWords, setWordState, teachWord } from './words';
+export { addImportedWords, addWordToLearn, holdsOnlyExampleWords, wordIsListed, listDroppedLemmas, listLearningLemmas, listSolidHeadwords, listSolidLemmas, listWords, setWordState, teachWord } from './words';
 export type { Word, WordOutcome, WordState } from './words';
 export { getIpaProgress, learnIpaSound, noteIpaAnswer, passIpaCheck, startIpaCourse } from './ipaCourse';
 export {

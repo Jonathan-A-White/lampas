@@ -7,7 +7,7 @@ import { approachOf, DEFAULT_APPROACH } from '../../approaches';
 import { BOOK_INDEX } from '../bookIndex';
 import type { WordState } from '../db';
 import { goalTitle, parseGoal } from '../goal';
-import { getGoal, getGrammarAnswers, getGrammarApproach, getPickerGrammar, listLevels, listWords, weakFacets } from '../repositories';
+import { getGoal, getGrammarAnswers, getGrammarApproach, getPickerGrammar, holdsOnlyExampleWords, listLevels, listWords, weakFacets } from '../repositories';
 import type { PickerGrammar } from './formLevel';
 import { levelsOf, nextLesson, placedAt, wordStatesOf } from './goalProgress';
 import { needsOf } from './goalNeeds';
@@ -111,15 +111,18 @@ const countStates = (words: readonly { state: WordState }[]) => ({
 /** The field as it stands now, from his goal, words, levels, answers and settings. A goal whose chapters cannot be fetched is still
  * named, with the whole ladder's ideas and the counts of his own words. */
 export async function learnerGrammar(): Promise<LearnerGrammar> {
-  const [text, words, rows, answers, pickerLevel, approachId, weakByIdea] = await Promise.all([
+  const [text, listed, examplesOnly, rows, answers, pickerLevel, approachId, weakByIdea] = await Promise.all([
     getGoal(),
     listWords(),
+    holdsOnlyExampleWords(),
     listLevels(),
     getGrammarAnswers(),
     getPickerGrammar(),
     getGrammarApproach(),
     weakFacets(),
   ]);
+  // the example words a phone was seeded with, none of them touched, are not his progress (src/data/learnerSummary.ts, mw-yrmkdf.8)
+  const words = examplesOnly ? [] : listed;
   const goal = text ? parseGoal(text, BOOK_INDEX) : undefined;
   const levels = levelsOf(rows);
   let needs: PassageNeeds | undefined;

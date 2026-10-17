@@ -1,7 +1,9 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db, type Word } from '../../src/data/db';
 import { DAY } from '../../src/data/schedule';
-import { ensureScheduled } from '../../src/data/repositories/reviews';
+import { ensureScheduled, recordReview, seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
+import { listSolidHeadwords } from '../../src/data/repositories/words';
+import { seedExampleWords } from '../support/his-words';
 import { LEARNER_MAX_CHARS, LEARNER_MAX_LEARNING, learnerSummary } from '../../src/data/learnerSummary';
 
 const NOW = Date.UTC(2026, 9, 8, 15, 0, 0);
@@ -12,7 +14,7 @@ const word = (lemma: string, state: Word['state'], since: number): Word => ({ le
 
 beforeEach(async () => {
   await db.open();
-  await Promise.all([db.words.clear(), db.reviews.clear()]);
+  await Promise.all([db.words.clear(), db.reviews.clear(), db.meta.clear()]);
 });
 afterAll(() => db.close());
 
@@ -72,3 +74,39 @@ describe('learnerSummary', () => {
     expect(await learnerSummary(NOW - 2 * DAY)).toMatch(/due now: 0$/);
   });
 });
+
+describe('a phone that holds only the example words it was seeded with (mw-yrmkdf.8)', () => {
+  const OPENED = NOW - 3 * DAY;
+  const seeded = async () => {
+    await seedExampleWords(OPENED);
+    await seedScheduleIfFirstOpen(OPENED);
+  };
+
+  it('is told what a new install is told, and no solid words', async () => {
+    await seeded();
+    expect(await db.words.count()).toBe(63);
+    expect(await learnerSummary(NOW)).toBe('solid 0 words; learning: none; new today: none; due now: 0');
+    expect(await listSolidHeadwords()).toEqual([]);
+  });
+
+  it('is told every word once he changes one', async () => {
+    await seeded();
+    await db.words.update('ἀγαπάω', { state: 'learning', since: NOW });
+    expect(await learnerSummary(NOW)).toMatch(/^solid 53 words; learning: ἀγαπάω, /);
+    expect((await listSolidHeadwords()).length).toBe(53);
+  });
+
+  it('is told every word once he drops one, adds one or answers one', async () => {
+    await seeded();
+    await db.words.update('ἀγαθός', { state: 'dropped', since: OPENED });
+    expect(await learnerSummary(NOW)).toMatch(/^solid 53 words;/);
+    await db.words.update('ἀγαθός', { state: 'solid', since: OPENED });
+    expect(await learnerSummary(NOW)).toMatch(/^solid 0 words;/);
+    await db.words.put(word('ἐλπίς', 'learning', OPENED));
+    expect(await learnerSummary(NOW)).toMatch(/^solid 54 words;/);
+    await db.words.delete('ἐλπίς');
+    await recordReview('word', 'ἀγαπάω', true, NOW);
+    expect(await learnerSummary(NOW)).toMatch(/^solid 54 words;/);
+  });
+});
+

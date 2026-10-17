@@ -13,6 +13,7 @@ import {
 import { setGoal, setPickerGrammar, pushGrammarAnswer } from '../../src/data/repositories/settings';
 import { setLevel } from '../../src/data/repositories/grammarLevels';
 import { stubChapterFetch } from '../support/chapter-fetch';
+import { seedExampleWords } from '../support/his-words';
 
 const bytes = (value: unknown): number => new TextEncoder().encode(JSON.stringify(value)).length;
 const many = (level: 'solid' | 'frontier' | 'notYet', title: (i: number) => string) =>
@@ -73,6 +74,13 @@ describe('learnerGrammar', () => {
     expect(out.ideas.frontier).toEqual([]);
     expect(out.ideas.not_yet).toEqual(LADDER.slice(0, 12).map((i) => i.title));
     expect(bytes(out)).toBeLessThanOrEqual(900);
+  });
+
+  it('counts no words on a phone that holds only the example words it was seeded with, and all of them once he touches one (mw-yrmkdf.8)', async () => {
+    await seedExampleWords(1000);
+    expect((await learnerGrammar()).words).toEqual({ solid: 0, frontier: 0, not_yet: 0 });
+    await db.words.update('ἀγαπάω', { state: 'learning', since: 2000 });
+    expect((await learnerGrammar()).words).toEqual({ solid: 53, frontier: 10, not_yet: 0 });
   });
 
   it('names the one path, the Lampas ladder, with no credit and the title of its next lesson; a saved BMA Tutor choice reads as it', async () => {

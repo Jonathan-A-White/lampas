@@ -1,0 +1,35 @@
+{
+  "description": "A reader whose phone was seeded with the 63 example words and who has touched none of them is told he knows no words, like a new install: the Reader shows English, so the answer is in English and carries ONE greek_offer, the Greek word's button.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "question": "What does love really mean in Romans 8:28?",
+    "history": [],
+    "solid_words": [],
+    "settings": {},
+    "reader_view": "english",
+    "learner": "solid 0 words; learning: none; new today: none; due now: 0"
+  },
+  "expect": {
+    "answer": {
+      "matches": "[Ll]ove"
+    },
+    "words.0": {
+      "present": false
+    },
+    "greek_offer.kind": {
+      "equals": "word"
+    },
+    "greek_offer.lemma": {
+      "present": true
+    },
+    "greek_offer.text": {
+      "present": true
+    },
+    "greek_asked": {
+      "present": false
+    }
+  }
+}
