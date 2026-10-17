@@ -197,7 +197,9 @@ test('a reading that stops part-way is graded as far as it went and offers the n
   const next = result.locator('[data-next-word]');
   await next.scrollIntoViewIfNeeded();
   await expect(next.getByRole('heading', { name: 'Next word', exact: true })).toBeInViewport();
-  await expect(next.locator('[data-chunks]')).toHaveText('work');
+  // a word of one chunk is drawn once: no line of chunks repeats it (mw-neuq78.13)
+  await expect(next.getByText('work', { exact: true })).toHaveCount(1);
+  await expect(next.locator('[data-chunks]')).toHaveCount(0);
   await expect(next).toContainText('It rhymes with jerk');
   await expect(next.getByRole('button', { name: 'Hear it', exact: true })).toBeInViewport();
   await expect(result).toContainText('go further');

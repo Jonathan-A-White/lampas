@@ -111,8 +111,15 @@ Feature: Reading check, in English and in Greek
     Then the reading check says "You read 6 of 23 words"
     And the reading check does not say "Read the whole verse"
     And the marked words are "know"
-    And the Next word shows "work" in chunks "work" with its tip and a speaker
+    And the Next word shows "work" once, with no chunks under it, with its tip and a speaker
     And the reading check says "go further"
+
+  Scenario: A Next word of more than one chunk shows the word and its chunks
+    Given Lampas is opened on Romans 8 in English with a reading check that stopped before "together"
+    And he opens the reading check of verse 28
+    When he holds the bar for 2 seconds and lets go
+    Then the reading check says "You read 7 of 23 words"
+    And the Next word shows "together" and its chunks "to · geth · er" with its tip and a speaker
 
   Scenario: Reading further than last time says so
     Given Lampas is opened on Romans 8 in English with a reading check that heard the first words of the verse

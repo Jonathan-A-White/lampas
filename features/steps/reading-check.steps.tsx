@@ -60,6 +60,15 @@ const ESCAPED_ANSWER = {
   note: 'It sounded like \\"laff\\" ... \\"to us\\".',
 };
 
+/** A partial reading that stopped before a word of three chunks: the Next word box shows the word and its chunks. */
+const PARTIAL_TOGETHER_ANSWER = {
+  verdict: 'partial',
+  focus_words: [],
+  note: 'Good start: I heard "and we know that all things work", then you stopped.',
+  reached: 6,
+  next_word: { word: 'together', index: 7, chunks: ['to', 'geth', 'er'], tip: 'Stress the second part: tuh-GETH-er.' },
+};
+
 afterAll(() => {
   cleanup();
   vi.unstubAllGlobals();
@@ -74,7 +83,7 @@ let fake: FakePostern;
 let synth: FakeSynth;
 
 interface Options {
-  reply?: 'reading' | 'woven-missed' | 'well-read' | 'incomplete' | 'partial' | 'held' | 'second-who' | 'escaped' | 'tip-respelling' | 'tip-not-first';
+  reply?: 'reading' | 'woven-missed' | 'well-read' | 'incomplete' | 'partial' | 'held' | 'second-who' | 'escaped' | 'tip-respelling' | 'tip-not-first' | 'partial-together';
   view?: 'english' | 'greek';
   denied?: boolean;
   down?: boolean;
@@ -115,7 +124,7 @@ async function open({ reply = 'reading', view = 'english', denied = false, down 
   }
   // the send is taken a second after the door gave up on it, as the Tester's stalled link did 35 s after a 30 s door
   if (send === 'late') fake.slowSendMs = LATE_MS;
-  if (reply !== 'held') fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : reply === 'woven-missed' ? WOVEN_MISSED_ANSWER : reply === 'second-who' ? SECOND_WHO_ANSWER : reply === 'escaped' ? ESCAPED_ANSWER : reply === 'tip-respelling' ? LEVITES_ANSWER : reply === 'tip-not-first' ? NOT_FIRST_ANSWER : reply === 'incomplete' ? INCOMPLETE_ANSWER : reply === 'partial' ? PARTIAL_ANSWER : WELL_READ_ANSWER };
+  if (reply !== 'held') fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : reply === 'woven-missed' ? WOVEN_MISSED_ANSWER : reply === 'second-who' ? SECOND_WHO_ANSWER : reply === 'escaped' ? ESCAPED_ANSWER : reply === 'tip-respelling' ? LEVITES_ANSWER : reply === 'tip-not-first' ? NOT_FIRST_ANSWER : reply === 'incomplete' ? INCOMPLETE_ANSWER : reply === 'partial' ? PARTIAL_ANSWER : reply === 'partial-together' ? PARTIAL_TOGETHER_ANSWER : WELL_READ_ANSWER };
   fake.greekReply = { status: 'answered', answer: GREEK_READING_ANSWER };
   fake.down = down;
   synth = stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
@@ -170,6 +179,13 @@ const received = () => {
 };
 
 const marked = () => Array.from(panel().querySelectorAll<HTMLElement>('[data-fix]'));
+/** The Next word box of a partial reading, once it is drawn. */
+const nextWordBlock = () =>
+  waitFor(() => {
+    const found = panel().querySelector<HTMLElement>('[data-next-word]');
+    expect(found).not.toBeNull();
+    return found as HTMLElement;
+  });
 const markedShow = async () => {
   await waitFor(() => expect(marked().map((m) => m.textContent)).toEqual(['together', 'purpose']));
 };
@@ -439,15 +455,27 @@ describeFeature(feature, ({ Scenario }) => {
     And('the marked words are {string}', async (_, names: string) => {
       await waitFor(() => expect(marked().map((m) => m.textContent)).toEqual(names.split(', ')));
     });
-    And('the Next word shows {string} in chunks {string} with its tip and a speaker', async (_, word: string, chunks: string) => {
-      const block = await waitFor(() => {
-        const found = panel().querySelector<HTMLElement>('[data-next-word]');
-        expect(found).not.toBeNull();
-        return found as HTMLElement;
-      });
-      expect(block).toHaveTextContent(word);
-      expect(block.querySelector('[data-chunks]')).toHaveTextContent(chunks);
+    And('the Next word shows {string} once, with no chunks under it, with its tip and a speaker', async (_, word: string) => {
+      const block = await nextWordBlock();
+      // the word is drawn once: one big line, no line of chunks repeating it (mw-neuq78.13)
+      const lines = [...block.querySelectorAll('p')].filter((p) => p.textContent === word);
+      expect(lines).toHaveLength(1);
+      expect(block.querySelector('[data-chunks]')).toBeNull();
       expect(block).toHaveTextContent('It rhymes with jerk');
+      expect(within(block).getByRole('button', { name: 'Hear it' })).toBeInTheDocument();
+    });
+  });
+
+  Scenario('A Next word of more than one chunk shows the word and its chunks', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 in English with a reading check that stopped before "together"', () => open({ reply: 'partial-together' }));
+    And('he opens the reading check of verse 28', selectVerse28);
+    When(holdRead, async () => holdAndLetGo(readButton(), 2000));
+    Then('the reading check says {string}', (_, text: string) => says(text)());
+    And('the Next word shows {string} and its chunks {string} with its tip and a speaker', async (_, word: string, chunks: string) => {
+      const block = await nextWordBlock();
+      expect([...block.querySelectorAll('p')].some((p) => p.textContent === word)).toBe(true);
+      expect(block.querySelector('[data-chunks]')).toHaveTextContent(chunks);
+      expect(block).toHaveTextContent('Stress the second part');
       expect(within(block).getByRole('button', { name: 'Hear it' })).toBeInTheDocument();
     });
   });
