@@ -113,11 +113,22 @@ entry's `write` calls `chooseAccent` at once, `startSpeechSettingsSync` hands th
 (`src/speech/accents/useAccent.ts`) makes a screen that draws hints (the idea sheet) draw again when it changes; a lesson, tile, question or choice
 built afterwards is said in it. IPA is the third accent table (`src/speech/accents/ipa.ts`), made from the inventory: every hint is `{ note: id }`, so
 `keyed('o')` is 'o, /o/' and a guide's vowels are 'each by its IPA symbol, with no English word' (`EnglishAccent.hintedBy`). It is the one accent that
-shows the ids (PROVISIONAL label; the Governor to confirm). Teaching the standard rigorously, not only showing it, is a story of its own.
+shows the ids (PROVISIONAL label; the Governor to confirm). Teaching the standard rigorously, not only showing it, is the optional course Learn the IPA sounds (below).
 
 The tutor is told it: every grist (`bible-talk`, `verse-ask`, `verse-read` and the form helper's) carries `english_accent` (`american | british | ipa`), the
 `pronunciation_guide` is already said in it, and the three grinds' instructions say to give sound examples and respellings for that accent
 (`tests/unit/english-accent-setting.test.ts`; examples `grinds/examples/bible-talk/sound-it-out-british.json`, `verse-ask/sound-of-a-word-ipa.json`).
+
+## Learn the IPA sounds, the optional course (mw-5r3p30.356, PROVISIONAL)
+
+His words: "if the user does choose the option of trying to learn the standard make sure that it's rigorous ... explain the benefits ... but I don't want to put that
+burden on people unless they want to ... make it clear to them that they won't need it for the app unless they want it". `src/ipa/` teaches the standard sounds
+of the chosen scheme (one lesson per id its `sounds` write, from its `soundGuide`): the symbol, the English accent's key word (American's when the chosen accent is
+IPA, which has none), the Greek letters, the voice saying a Greek word that has it; a drill both ways with the confusable pairs of `speech/sounds.ts` CONFUSABLE together
+(a miss comes back until it is right twice running); a pass check of every sound both ways with no hint (90% to pass, `PASS_FRACTION`), which on a pass offers 'Show IPA in
+hints' (the English accent set to IPA) and on any result names the symbols to practise. It is reached only from the 'Optional' entry on the Goal screen, which opens on
+'Why learn it?' (first line: not needed for Lampas or for reading Greek; Start and Not now the same size); nothing else prompts for it (`tests/unit/ipa-course.test.ts`
+reads `src/` and `grinds/`). Layout notes: `docs/layout/grammar.md` (src/ipa/).
 
 ## One scheme for every sound (mw-5r3p30.268)
 
@@ -192,7 +203,8 @@ moving to the next syllable the longest group of consonants that can open a Gree
    mill's scorers must be able to score it; a scheme the mill cannot score cannot be given a reading check until they can.
 5. Give it `lessons(say)` for every letter, pair and breathing it says (copy `schemes/modernLessons.ts`, every sound through `say.keyed` or `say.asIn`, never an English word; Erasmian's rough breathing adds an h, which is where that lesson belongs, not in the ladder).
    Give it a `letterForm` (how its voice names a letter) and a `tutorGuide(say)` (its name and sound rules, for the tutor; copy `modernTutorGuide`).
-6. Test it the way `tests/unit/respell-modern.test.ts` does, one row per rule.
+6. Give it a `soundGuide`: for each standard id its `sounds` write, the Greek letters that make it and a Greek word its voice says that has it (`at` 'start' or 'inside'), for the optional course (`src/ipa/course.ts` `courseSounds` throws, naming the sound, for one it lacks; copy `MODERN_SOUND_GUIDE`).
+7. Test it the way `tests/unit/respell-modern.test.ts` does, one row per rule.
 
 A test adds a scheme for one scenario with `registerPronunciation(scheme)`, which returns the function that takes
 it out again (features/pronunciation.feature).

@@ -18,7 +18,7 @@ export const PREFACE_PARAGRAPHS: string[] = [
 
 /** What Lampas costs: nothing to read; a licence is for the AI only (mw-8m9dyu.3). Under its own heading on the Preface. */
 export const PREFACE_FREE =
-  'Lampas is free to read: the Greek, the English, the lessons and the quizzes need no licence. A licence unlocks the AI, which is the tutor and everything sent to it. Until a phone has one, Settings shows those options off, with “Needs a licence”, and the Licence page shows how to get one. Once, on a third visit, a quiet line at the foot of the Reader says what a licence adds; it is never pressed on you. The first time a new phone’s licence is found, Lampas opens in plain English and the tutor welcomes you with three short questions, which you can skip.';
+  'Lampas is free to read: the Greek, the English, the lessons and the quizzes need no licence. A licence unlocks the AI, which is the tutor and everything sent to it. Until a phone has one, Settings shows those options off, with “Needs a licence”, and the Licence page shows how to get one. Once, on a third visit, a quiet line at the foot of the Reader says what a licence adds; it is never pressed on you. There is also an optional course in the standard symbols for the sounds of Greek (the IPA), under Optional on the Goal screen: nothing else in Lampas needs it. The first time a new phone’s licence is found, Lampas opens in plain English and the tutor welcomes you with three short questions, which you can skip.';
 
 export interface PrefaceLink {
   /** the name the link carries */

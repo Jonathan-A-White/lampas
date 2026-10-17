@@ -6,7 +6,7 @@
 import type { ScreenCredit } from './screen';
 
 /** The most the credits weigh as JSON in UTF-8, so the screen, his words and a little history still fit MAX_REQUEST_BYTES (src/services/talk.ts). */
-export const MAX_CREDITS_BYTES = 4800;
+export const MAX_CREDITS_BYTES = 5000;
 
 export const CREDITS: ScreenCredit[] = [
   { name: 'Majority Standard Bible', use: 'The Greek you read, aligned to its English, with Strong\'s and parsing', licence: 'Public domain', link: 'https://majoritybible.com' },
@@ -14,6 +14,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'TBESG', use: 'STEPBible (Tyndale House): each word\'s lemma, gloss and definition', licence: 'CC BY 4.0', link: 'https://www.stepbible.org' },
   { name: 'eSpeak NG', use: 'The sound of ὁ', licence: 'GPL-3.0', link: 'https://github.com/espeak-ng/espeak-ng' },
   { name: 'Piper', use: 'Trial clips of Greek sounds on a listening page, not in the app\'s screens', licence: 'MIT', link: 'https://github.com/rhasspy/piper' },
+  { name: 'IPA', use: 'The symbols of the optional IPA course', licence: 'none needed; a standard', link: 'https://www.internationalphoneticassociation.org' },
   { name: 'Biblical Mastery Academy', use: 'Inspired Lampas\'s path and its order; nothing of theirs is copied', licence: 'none taken; nothing copied', link: 'https://biblicalmastery.academy/' },
   { name: 'Gentium Plus', use: 'The Greek type of the reader', licence: 'SIL OFL 1.1', link: 'https://software.sil.org/gentium/' },
   { name: 'Noto Serif Hebrew', use: 'The Hebrew type of answers', licence: 'SIL OFL 1.1', link: 'https://github.com/notofonts/hebrew' },
