@@ -9,7 +9,8 @@
 //       'limit'   after MAX_QUESTIONS (14) questions.
 //   A first miss on a step of words to read (DrillStep.words: a letter's or pair's 'Read a word', the breathing in a harder word; mw-i7xe0n.12) stays at that step and asks
 //   the same target with another word, so a word he cannot say does not end the walk at the step below; a second miss on it goes back as any miss does.
-//   The result: {ideaId, proved, edgeStep, topStep, strong, weak, answers}; a facet is weak when missed at least once and right fewer than twice.
+//   The result: {ideaId, proved, edgeStep, topStep, strong, weak, answers}; a facet is weak when missed at least once and right fewer than twice, or when a word
+//   was missed at a step of words to read (mw-i7xe0n.16: the letter's other rights do not hide a word he could not say).
 //   An idea whose sound the scheme changes by the next letter (mw-i7xe0n.7: χ is kh before α, hy before ε) is proved only when a word of each side of its
 //   rule was answered right, unhinted: the walk keeps asking the side still missing at the top step (DrillWalk.sides).
 // A drill's facets are its own idea's. Its prerequisites (ladder.ts `needs`) are assumed SOLID, never tested and never scaffolded: start() takes the learner's
@@ -145,7 +146,7 @@ export interface DrillResult {
   topStep: number;
   /** facets right at least once and not weak */
   strong: Facet[];
-  /** facets missed at least once and right fewer than twice */
+  /** facets missed at least once and right fewer than twice, and facets missed on a word of a step of words to read */
   weak: Facet[];
   answers: DrillAnswer[];
   ended: DrillEnd;
@@ -173,12 +174,14 @@ export const currentQuestion = (walk: DrillWalk): DrillQuestion | null => walk.c
 export const resultOf = (walk: DrillWalk): DrillResult | null => walk.result;
 
 /** The questions asked so far at a facet: [rights, misses]; a hinted right is neither. */
-function tally(asked: readonly DrillAnswer[]): Map<string, { facet: Facet; right: number; missed: number }> {
-  const facets = new Map<string, { facet: Facet; right: number; missed: number }>();
+function tally(asked: readonly DrillAnswer[], steps: readonly DrillStep[]): Map<string, { facet: Facet; right: number; missed: number; word: boolean }> {
+  const facets = new Map<string, { facet: Facet; right: number; missed: number; word: boolean }>();
   for (const a of asked) {
-    const t = facets.get(a.facet.id) ?? { facet: a.facet, right: 0, missed: 0 };
-    if (!a.right) t.missed += 1;
-    else if (!a.hinted) t.right += 1;
+    const t = facets.get(a.facet.id) ?? { facet: a.facet, right: 0, missed: 0, word: false };
+    if (!a.right) {
+      t.missed += 1;
+      if (steps[a.step - 1]?.words) t.word = true;
+    } else if (!a.hinted) t.right += 1;
     facets.set(a.facet.id, t);
   }
   return facets;
@@ -236,9 +239,10 @@ const sidesMissing = (walk: DrillWalk, asked: readonly DrillAnswer[]): string[] 
 
 function finish(walk: DrillWalk, asked: DrillAnswer[], ended: DrillEnd, streak: number): DrillWalk {
   const topStep = walk.steps.length;
-  const facets = [...tally(asked).values()];
-  const weak = facets.filter((t) => t.missed >= 1 && t.right < 2).map((t) => t.facet);
-  const strong = facets.filter((t) => t.right >= 1 && !(t.missed >= 1 && t.right < 2)).map((t) => t.facet);
+  const facets = [...tally(asked, walk.steps).values()];
+  const isWeak = (t: { right: number; missed: number; word: boolean }): boolean => t.word || (t.missed >= 1 && t.right < 2);
+  const weak = facets.filter(isWeak).map((t) => t.facet);
+  const strong = facets.filter((t) => t.right >= 1 && !isWeak(t)).map((t) => t.facet);
   const edgeStep = ended === 'proved' ? topStep : highestHeld(standing(asked));
   return { ...walk, asked, current: null, streak, result: { ideaId: walk.ideaId, proved: ended === 'proved', edgeStep, topStep, strong, weak, answers: asked, ended } };
 }
