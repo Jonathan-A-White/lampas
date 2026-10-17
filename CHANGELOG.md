@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.295
+_2026-10-17_
+- New: Each grammar idea now has a 'Try it on a verse' button that asks three short questions on the easiest verse you can read with that idea, then opens the verse for you to read; Review's questions about the passage also come from verses at your level.
+
 ## 0.1.294
 _2026-10-17_
 - Fixed: the notice for a Bible reference that Lampas does not hold now names it the way the page you shared printed it.
