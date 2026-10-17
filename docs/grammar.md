@@ -516,8 +516,10 @@ Choosing one changes no level: levels belong to the ideas, not to the approach.
 - `orderOf(approach)`: every idea id once, in lesson order (an idea a later lesson names again is a revisit and keeps its first place);
   the ideas no lesson names follow, by rung. This is the sequence the placement, 'Learn next' and the Goal screen follow.
 - `lessonOf(approach, ideaId)`: `{ stage, level, lesson }` of the first lesson to name the idea, or `undefined`.
-- `nextLessonOf(approach, levelOf)`: the lesson holding the earliest idea in `orderOf` that has no level or is not yet; Settings
-  marks it 'Next'.
+- `nextLessonOf(approach, levelOf)`: the lesson holding the earliest idea in `orderOf` that has no level or is not yet.
+- Settings marks 'Next' the lesson the Goal's Learn next opens (mw-86e9r1.24): `goalProgress.ts nextLesson(needs, approach, levels)`
+  is `learnNext`'s lesson for the goal's needs (none marked when Learn next names none), and `nextLessonOf` with no goal or when
+  the goal's chapters cannot be fetched. The tutor's `learner_grammar` names the same lesson as `next_lesson`.
 
 An approach's order is bound by the ladder's `needs` (mw-86e9r1.2): in `orderOf` of every approach no idea comes before an idea
 it rests on (`tests/unit/ladder-needs.test.ts`). BMA Tutor still teaches the aorist before the genitive, because the aorist does not
