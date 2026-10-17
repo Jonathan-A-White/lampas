@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.288
+_2026-10-17_
+- Fixed: after you open the chapter the tutor offered, Talk no longer keeps saying it was not opened or offering the button.
+
 ## 0.1.287
 _2026-10-17_
 - New: The Bible view has a Plan chip showing the next chapter you will listen to and how far you are, and the chapter picker marks the chapters you have done and the next one; you start a listening plan from the chip or from Settings.

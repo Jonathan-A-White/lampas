@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.288",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.216",
+    "kind": "fixed",
+    "text": "after you open the chapter the tutor offered, Talk no longer keeps saying it was not opened or offering the button."
+  },
+  {
     "version": "0.1.287",
     "date": "2026-10-17",
     "story": "mw-umv8sp.5",
