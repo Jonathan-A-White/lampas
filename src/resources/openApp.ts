@@ -33,7 +33,11 @@ export const browserEnv: OpenEnv = {
     };
   },
   open: (url) => {
-    if (!window.open(url, '_blank', 'noopener')) window.location.assign(url);
+    // No 'noopener' feature: it makes window.open return null even when the tab opened, which then also moved this page to `url`.
+    // The tab is cut loose from this page by hand; only a blocked popup (null) sends this page there.
+    const tab = window.open(url, '_blank');
+    if (!tab) window.location.assign(url);
+    else tab.opener = null;
   },
 };
 
