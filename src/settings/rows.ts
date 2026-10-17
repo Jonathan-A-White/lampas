@@ -70,6 +70,7 @@ const LINKS: readonly SettingsRow[] = [
   { key: 'link.words', label: 'Words', hint: 'The words you are learning.', section: 'more' },
   { key: 'link.review', label: 'Review', hint: 'The words and ideas that are due.', section: 'more' },
   { key: 'link.paradigms', label: 'Paradigms', hint: 'Tables of endings, opened as you learn the grammar.', section: 'more' },
+  { key: 'link.askmore', label: 'Ask for more', hint: 'Ask for an approach, a study resource, a text or a translation Lampas lacks.', section: 'more' },
   { key: 'link.requests', label: 'Your requests', hint: 'What became of the things you asked the factory for.', section: 'more' },
   { key: 'link.about', label: 'About', hint: 'Where the text comes from, and its licences.', section: 'more' },
 ];

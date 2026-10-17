@@ -80,6 +80,11 @@ title and Retry. The bus hears `feedback-sent` with `feedback: 'tutor-ask'`.
 Every send, of either kind, also keeps a row in Dexie `requests` (v16: `{txid, kind, summary?, text?, app_version, sentAt, status}`, key `txid` = the
 grist's id, status `'sent'`; `src/data/repositories/requests.ts` `keepRequest`, `listRequests`), written as soon as the grist is out (askGrind's `onSent(txid)`),
 so a status that comes back can be matched to it. A tutor-ask keeps the tutor's `summary`, a grammar approach his `text`; a Retry is a new grist and a new row.
+Settings > Ask for more (mw-hqd5bz.37, `src/settings/AskMoreScreen.tsx`, #/askmore) leads him here for asks that would grow the app (an approach or programme, a study
+resource, a text, a translation): its first button, **Ask the tutor**, opens the talk of the screen 'Ask for more' with "I'd like Lampas to have " in the composer
+(TalkHost's `shared`, not sent), and the instructions' part 270 has the tutor offer `feedback_offer` for such an ask. Under it, **Or fill in a form**: one short
+form per kind, whose Send is a `feedback` grist of kind `approach`, `study-resource`, `text` or `translation` (`buildMoreRequest`: `name`, `text?` (why), `url?`);
+its request row keeps `name: why` as its `text`.
 
 ### Ask for another book (mw-5r3p30.382, PROVISIONAL)
 

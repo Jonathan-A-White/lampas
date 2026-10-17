@@ -494,6 +494,12 @@ describe('the feedback offer', () => {
     expect(instructions).toContain('only when');
   });
 
+  it('offers to send an ask that would grow the app (an approach, programme, resource, text or translation) to the makers (mw-hqd5bz.37)', () => {
+    for (const words of ['an approach or programme', 'a study resource', 'a text', 'a translation', 'Send this to the makers', 'Ask for more', "I'd like Lampas to have "]) {
+      expect(instructions).toContain(words);
+    }
+  });
+
   it("carries the worked example 'Can this work with Accordance's competitor, Olive Tree?' and the offer it yields", () => {
     expect(instructions).toContain("Can this work with Accordance's competitor, Olive Tree?");
     const block = /<!-- feedback-offer-example:start -->\s*```json\s*([\s\S]*?)```\s*<!-- feedback-offer-example:end -->/.exec(instructions);

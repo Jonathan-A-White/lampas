@@ -1,0 +1,35 @@
+{
+  "description": "From Settings > Ask for more he sends the sentence the talk opened with, unfinished: the tutor asks what he would like and makes no offer yet.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Ask for more",
+    "question": "I'd like Lampas to have",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί"
+    ],
+    "settings": {},
+    "screen": {
+      "name": "Ask for more",
+      "facts": [
+        {
+          "label": "For",
+          "value": "Asks that would grow Lampas: an approach or programme, a study resource, a text or a translation it does not have"
+        },
+        {
+          "label": "Forms",
+          "value": "An approach or programme, A study resource, A text, A translation"
+        }
+      ]
+    }
+  },
+  "expect": {
+    "feedback_offer": {
+      "present": false
+    },
+    "settings_changes": {
+      "present": false
+    }
+  }
+}
