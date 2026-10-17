@@ -245,7 +245,7 @@ function Example({ idea, example, onWord, hidden }: { idea: GrammarIdea; example
             ),
           )}
         </span>
-        <span className="min-w-0 flex-1 truncate text-base text-muted">{exampleGloss(idea, example)}</span>
+        <span data-testid="idea-gloss" className="flex-1 break-words text-base text-muted">{exampleGloss(idea, example)}</span>
         <span data-testid="idea-verse" className="shrink-0 text-sm text-muted">
           {reference}
         </span>

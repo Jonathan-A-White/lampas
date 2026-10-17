@@ -86,7 +86,7 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onT
                       <span lang="grc" className="font-greek text-2xl">
                         {example.t}
                       </span>
-                      <span className="min-w-0 flex-1 truncate text-base text-muted">{exampleMeaning(chapter, verse, example)}</span>
+                      <span data-testid="grammar-gloss" className="min-w-0 flex-1 break-words text-base text-muted">{exampleMeaning(chapter, verse, example)}</span>
                       <span className="shrink-0 text-sm text-muted">
                         {chapter.chapter}:{verse}
                       </span>
