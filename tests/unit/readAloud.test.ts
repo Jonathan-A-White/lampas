@@ -1,7 +1,7 @@
 // tests/unit/readAloud.test.ts — read aloud (mw-5r3p30.21): what is read is exactly what is shown, a woven verse changes
 // voice with its language, Read from the top runs to the chapter's end, Pause and Stop. The engine is a fake that records.
 import { readFileSync } from 'node:fs';
-import { pause as enginePause, resume as engineResume, restart as engineRestart, stop as engineStop } from 'bsv-kit/speech';
+import { pause as enginePause, resume as engineResume, restart as engineRestart, stop as engineStop } from 'voice-kit/speech';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { forgetChapters } from '../../src/data/chapter';
 import { clearBus, latest, subscribe } from '../../src/events/bus';
@@ -291,7 +291,7 @@ describe('the Read aloud span', () => {
   });
 });
 
-describe('following bsv-kit/speech (mw-m7v5kc.3)', () => {
+describe('following voice-kit/speech (mw-m7v5kc.3)', () => {
   const settle = () => new Promise<void>((resolve) => queueMicrotask(resolve));
   const english = plan('english');
   // verse 3's English has two sentences: the package speaks it one after the other

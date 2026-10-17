@@ -1,12 +1,12 @@
 // tests/e2e/fake-media.ts — the microphone and the sound card for the gate's Chromium, which has neither. The microphone is
-// bsv-kit's honest one (tests/support/honest-fakes.ts): a recorder that cuts a recorded clip into chunks in real time, so the clip
+// voice-kit's honest one (tests/support/honest-fakes.ts): a recorder that cuts a recorded clip into chunks in real time, so the clip
 // the app keeps is as long as he held the bar. Its bytes are raw PCM labelled webm, which Chromium cannot decode: playing is
 // recorded rather than heard, so no sound card is needed. window.played lists the src of each play(); window.plays lists {src, from}
 // (currentTime when play() was called) and window.pauses the currentTime at each pause(). While a play() is on, currentTime moves
 // on by the clock (as fast as real time), the way a sound card would move it, until pause() or the end of the clip (`seconds`),
 // so a spec can watch an element stop where the app told it to.
 import type { Page } from '@playwright/test';
-import type { MicScriptOptions } from 'bsv-kit/testing/mic';
+import type { MicScriptOptions } from 'voice-kit/testing/mic';
 import { honestMic } from '../support/honest-fakes';
 
 export interface FakeWindow {

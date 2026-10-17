@@ -1,5 +1,5 @@
 Feature: Ask the tutor uses the shared composer
-  The Verse view's Ask the tutor action is bsv-kit's Composer, the way Postern asks: one big Hold to ask bar with his words as he speaks, and a quiet
+  The Verse view's Ask the tutor action is voice-kit's Composer, the way Postern asks: one big Hold to ask bar with his words as he speaks, and a quiet
   Type a question under it. There is no separate Ask button and no second hold bar. What he says or types goes to the tutor as it always did, with the
   verses of the passage or the verse in the reference. The tutor takes no photo or file, so the composer shows no attach or camera button.
 

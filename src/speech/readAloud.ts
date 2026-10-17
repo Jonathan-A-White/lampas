@@ -1,7 +1,7 @@
 // src/speech/readAloud.ts — Lampas reads aloud what is shown (mw-5r3p30.21). A verse becomes runs: the English view's
 // chunks in English order (en-US), the Greek view's words in Greek order (el-GR), and with the weave on each chunk in its
 // own language, neighbours of one language joined so the voice changes only where the language does. The runs of a verse are
-// handed to bsv-kit/speech as ONE speech under READ_KEY, a run to a line: the package cuts it into sentences, reads each in the
+// handed to voice-kit/speech as ONE speech under READ_KEY, a run to a line: the package cuts it into sentences, reads each in the
 // language of its letters, keeps the sentence reached on Pause and shows its one bar (Pause / Resume, Restart, Stop). This file
 // goes on to the next verse when a verse is over and the reading is continuous, publishes verse-reading as each verse starts, and
 // follows the package: a Pause, Resume or Stop made on the bar moves the state here (syncWithEngine). A word said while a reading is under
@@ -12,7 +12,7 @@
 // opens that chapter hands over its plan (continueReading) and the voice starts verse 1 at once, so the chapter turns just as
 // the voice reaches it.
 import { useSyncExternalStore } from 'react';
-import { getSpeech, isSpeaking, pause as enginePause, resume as engineResume, stop as engineStop, subscribe as subscribeEngine } from 'bsv-kit/speech';
+import { getSpeech, isSpeaking, pause as enginePause, resume as engineResume, stop as engineStop, subscribe as subscribeEngine } from 'voice-kit/speech';
 import { loadChapter, type Verse } from '../data/chapter';
 import { neighbours } from '../data/neighbours';
 import type { ReaderView } from '../data/repositories';

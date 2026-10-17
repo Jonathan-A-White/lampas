@@ -154,7 +154,7 @@ test('Text size Large makes the verse text larger and every tap target stays at 
   }
 });
 
-// The engine is bsv-kit's honest fake (tests/support/honest-fakes.ts; headless Chromium has no Greek voice). A slow reader
+// The engine is voice-kit's honest fake (tests/support/honest-fakes.ts; headless Chromium has no Greek voice). A slow reader
 // (2 s a word), so a verse is still being spoken when the spec taps its button again to stop it.
 async function withVoices(page: Page) {
   await honestSpeech(page, { langs: ['el-GR'], msPerWord: 2000 });

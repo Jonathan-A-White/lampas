@@ -20,7 +20,7 @@ async function expectFitsPhone(page: Page) {
   expect(scrollTop).toBe(0);
 }
 
-// The Chromium of the gate has no microphone: bsv-kit's honest one (tests/support/honest-fakes.ts) hands out a stream, a MediaRecorder
+// The Chromium of the gate has no microphone: voice-kit's honest one (tests/support/honest-fakes.ts) hands out a stream, a MediaRecorder
 // and a recogniser that take the time a phone takes; a clip of speech plays in real time while the bar is held.
 const fakeMicrophone = (page: Page) => honestMic(page);
 

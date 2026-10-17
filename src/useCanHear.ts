@@ -1,8 +1,8 @@
-// src/useCanHear.ts — whether the phone can hear him say a letter (Say it, mw-86e9r1.12): it has speech recognition (bsv-kit/composer isListenSupported) and the microphone
+// src/useCanHear.ts — whether the phone can hear him say a letter (Say it, mw-86e9r1.12): it has speech recognition (voice-kit/composer isListenSupported) and the microphone
 // is not refused for the page. undefined while the phone is being asked, true or false after. A phone that does not answer the permission question (Safari and Firefox refuse the
 // name 'microphone') is taken as able: Say it then finds out at the press, where a refusal skips the question (LetterDrillScreen).
 import { useEffect, useState } from 'react';
-import { isListenSupported } from 'bsv-kit/composer';
+import { isListenSupported } from 'voice-kit/composer';
 
 /** True when the page's permission to use the microphone is refused; false when it is not, or when the phone will not say. */
 export async function microphoneRefused(): Promise<boolean> {

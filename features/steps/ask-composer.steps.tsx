@@ -1,4 +1,4 @@
-// features/steps/ask-composer.steps.tsx — runs features/ask-composer.feature: the Verse view's Ask the tutor is bsv-kit's Composer (one Hold to ask
+// features/steps/ask-composer.steps.tsx — runs features/ask-composer.feature: the Verse view's Ask the tutor is voice-kit's Composer (one Hold to ask
 // bar, Type a question beneath it), asking about Romans 8:1-11. The recogniser and Postern are fakes (tests/support/fake-recognizer.ts, fake-postern.ts);
 // the press is user-event pointer input.
 import '@testing-library/react/dont-cleanup-after-each';

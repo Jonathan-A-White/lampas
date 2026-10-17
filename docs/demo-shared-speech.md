@@ -1,7 +1,7 @@
 # Demo: one read-aloud bar in Postern, Lampas and SpellForge (mw-m7v5kc.5)
 
-The epic mw-m7v5kc moved read-aloud into bsv-kit's speech package (`bsv-kit/speech`) and its bar, `<SpeakingBar />`
-(`bsv-kit/speech/react`). This is the Governor's check on his phone: in each app start something reading aloud, Pause it,
+The epic mw-m7v5kc moved read-aloud into voice-kit's speech package (`voice-kit/speech`) and its bar, `<SpeakingBar />`
+(`voice-kit/speech/react`). This is the Governor's check on his phone: in each app start something reading aloud, Pause it,
 go to another screen and back, Resume (it carries on from the same sentence), Restart, then Stop. The bar looks and
 behaves the same in all three: big buttons in a row, **Pause** (which turns into **Resume**), **Restart**, **Stop**, each at
 least 44 px tall, in the app's own colours. When all three do, he says "Looks good".

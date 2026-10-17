@@ -34,10 +34,10 @@ view, and the wake lock.
 
 ## The speaking bar (mw-m7v5kc.3)
 
-Everything read aloud goes through bsv-kit's speech package (`bsv-kit/speech`, the engine Postern's read-aloud was lifted into, pinned by commit with the rest
+Everything read aloud goes through voice-kit's speech package (`voice-kit/speech`, the engine Postern's read-aloud was lifted into, pinned by commit with the rest
 of bsv-kit): the text is spoken a sentence at a time, each sentence in the language of its letters (`el-GR` for Greek, `he-IL` for Hebrew, the English voice
 for Latin letters), and **Pause** keeps the sentence reached, **Resume** goes on from it, **Restart** goes back to the first and **Stop** clears it. A page
-that hides pauses it. One bar, `<SpeakingBar />` of `bsv-kit/speech/react`, shows whenever a verse, a chapter or the tutor's answer is read, and is the same as
+that hides pauses it. One bar, `<SpeakingBar />` of `voice-kit/speech/react`, shows whenever a verse, a chapter or the tutor's answer is read, and is the same as
 Postern's and SpellForge's; its colours are Lampas's (`--bk-speech-*` in `src/index.css`).
 
 - A verse is ONE speech under the key `read-aloud` (`greek.ts` READ_KEY): `readAloud.ts` joins its runs with a line break (a run is one language, so the package
@@ -127,7 +127,7 @@ Wherever Lampas shows a block of prose a learner may want to hear, a small quiet
 (icon only, aria-label 'Read aloud', 'Stop reading' while its text is read, a speaker named 'Reading paused, tap to stop' while the bar offers Resume; a second tap stops it). It is on the Grammar sheet (title, explanation, 'In Greek'),
 the idea sheet of every idea and letter (title, What it is, How to spot it, How it sounds, the Worked example), a new word's sheet, each tutor answer (in the
 Talk sheet and in the Verse view's Ask; where the 'Hear the answer' play button used to be) and each version in About's What's new and in the sheet shown after an update or opened from the Update ready banner (`DEFAULT_LABELS` kind, then
-the line; the sheet is Lampas's own SpokenWhatsNewSheet, with a speaking bar slot, since bsv-kit's has no place for one) and each Settings row's open More help (at its right). It is the reading engine of 'Pages of prose' and 'The tutor's responses': the text is cut into runs (`pageRuns`, or the answer's `answerRuns` when
+the line; the sheet is Lampas's own SpokenWhatsNewSheet, with a speaking bar slot, since bsv-kit's WhatsNewSheet has no place for one) and each Settings row's open More help (at its right). It is the reading engine of 'Pages of prose' and 'The tutor's responses': the text is cut into runs (`pageRuns`, or the answer's `answerRuns` when
 the Markdown must go first), each Greek stretch in the Greek voice and the rest in the English one, at his speed and in his voices; the package's bar has Pause,
 Resume and Stop; the words stay on screen. The read starts from the tap itself (section 12). A sheet that sits over the screen's bar has a `BarSlot` so the bar
 shows above its foot (Grammar 5, new word 5, idea 6). `proseOf(parts)` (src/speech/proseOf.ts) joins a block's parts with a stop between them. A phone with no Greek voice reads the English,

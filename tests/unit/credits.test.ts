@@ -42,8 +42,8 @@ describe('a credit for a package that is no longer a dependency fails', () => {
     expect(stale, 'the Dexie credit names `dexie`, which a fake list has dropped').toContain('dexie');
     expect(stale).not.toContain('react');
   });
-  it('reads a subpath and a scope as the package: bsv-kit/speech is bsv-kit, @bsv/sdk is @bsv/sdk', () => {
-    expect(packageOf('bsv-kit/speech')).toBe('bsv-kit');
+  it('reads a subpath and a scope as the package: voice-kit/speech is voice-kit, @bsv/sdk is @bsv/sdk', () => {
+    expect(packageOf('voice-kit/speech')).toBe('voice-kit');
     expect(packageOf('@bsv/sdk')).toBe('@bsv/sdk');
     expect(packageOf('@bsv/sdk/primitives')).toBe('@bsv/sdk');
   });

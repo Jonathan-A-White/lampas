@@ -71,7 +71,7 @@ test('a Quick test question shows the picture beside a word that has one, and fi
   await expectFitsPhone(page);
 });
 
-// The engine is bsv-kit's honest fake (tests/support/honest-fakes.ts; headless Chromium has no Greek voice). A slow reader
+// The engine is voice-kit's honest fake (tests/support/honest-fakes.ts; headless Chromium has no Greek voice). A slow reader
 // (2 s a word), so the word is still being spoken while the bar is held.
 const stubSpeech = (page: Page) => honestSpeech(page, { langs: ['el-GR'], msPerWord: 2000 });
 

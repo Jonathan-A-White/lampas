@@ -1,4 +1,4 @@
-// tests/e2e/ask-composer.ts — drives the Verse view's Ask the tutor composer (bsv-kit/composer, src/Ask.tsx) the way a thumb does.
+// tests/e2e/ask-composer.ts — drives the Verse view's Ask the tutor composer (voice-kit/composer, src/Ask.tsx) the way a thumb does.
 import { expect, type Locator, type Page } from '@playwright/test';
 
 /** The composer at the foot of the Verse view. */

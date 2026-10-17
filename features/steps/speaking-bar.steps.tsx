@@ -1,4 +1,4 @@
-// features/steps/speaking-bar.steps.tsx — runs features/speaking-bar.feature: the one Pause / Resume / Restart / Stop bar (bsv-kit/speech) over
+// features/steps/speaking-bar.steps.tsx — runs features/speaking-bar.feature: the one Pause / Resume / Restart / Stop bar (voice-kit/speech) over
 // what Lampas reads aloud. speech synthesis is the honest fake of tests/support/fake-speech.ts.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';

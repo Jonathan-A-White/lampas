@@ -1,4 +1,4 @@
-// tests/support/composer.ts — finds the parts of bsv-kit's Composer (the Verse view's Ask the tutor) the way a person does: by what they say.
+// tests/support/composer.ts — finds the parts of voice-kit's Composer (the Verse view's Ask the tutor) the way a person does: by what they say.
 import { within } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
 

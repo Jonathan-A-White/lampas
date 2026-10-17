@@ -7,7 +7,7 @@ import { openUnlocked } from './unlocked';
 
 const VIEWPORT = { width: 390, height: 844 };
 
-// headless Chromium has no microphone: bsv-kit's honest one (tests/support/honest-fakes.ts) opens a recogniser after a moment and
+// headless Chromium has no microphone: voice-kit's honest one (tests/support/honest-fakes.ts) opens a recogniser after a moment and
 // sends the words of a recorded clip ("Please read me the first chapter") one by one as interim results while the bar is held, a
 // final one at the clip's end. How a phone really hears is only a phone check (docs/pwa-best-practices.md section 12).
 const SAID = 'Please read me the first chapter';

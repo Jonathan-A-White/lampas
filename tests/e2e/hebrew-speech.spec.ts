@@ -1,5 +1,5 @@
 // A Hebrew word in the tutor's answer is tappable (mw-5r3p30.98) at phone width: with a he-IL voice a tap speaks it with lang he-IL and opens the
-// guide; with none the line 'No Hebrew voice on this phone' shows and nothing is spoken. The engine is bsv-kit's honest fake
+// guide; with none the line 'No Hebrew voice on this phone' shows and nothing is spoken. The engine is voice-kit's honest fake
 // (tests/support/honest-fakes.ts; headless Chromium has no Hebrew voice); how a real voice sounds is only a phone check.
 import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';

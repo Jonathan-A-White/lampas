@@ -1,6 +1,6 @@
 // src/speech/greek.ts — the phone's own voice reading aloud (Web Speech), no server: modern Greek (el-GR) first, and any
 // language in src/speech/languages.ts at its own speed.
-// Everything is spoken by bsv-kit/speech (mw-m7v5kc.3): the sentence queue, Pause / Resume / Restart / Stop, the language and voice
+// Everything is spoken by voice-kit/speech (mw-m7v5kc.3): the sentence queue, Pause / Resume / Restart / Stop, the language and voice
 // of each sentence from its letters, a page that hides pausing it. This file is what the app adds: his speed for a language and the
 // voice he picked in Settings (the package has neither), the help line for a language the phone has no voice for, and the words
 // said alone, and a one-letter word, which the Greek voice is handed doubled so it says the sound (mw-5r3p30.421), or, with no Greek voice, a clip of it (mw-5r3p30.347). speak() is called straight from the tap handler (docs/pwa-best-practices.md section 12: a speak() that leaves the
@@ -18,8 +18,8 @@ import {
   speechText,
   stop as stopEngine,
   subscribe as subscribeEngine,
-} from 'bsv-kit/speech';
-import { useSpeech } from 'bsv-kit/speech/react';
+} from 'voice-kit/speech';
+import { useSpeech } from 'voice-kit/speech/react';
 import { ClipPlayer } from '../audio/clipPlayer';
 import { DEFAULT_RATE, DEFAULT_RATES, HEBREW_LANG, LANGUAGES, normaliseRate, type SettableLanguage, type SpeechLanguage, type SpeechRates } from './languages';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation, type Pronunciation } from './pronunciation';
@@ -117,7 +117,7 @@ function languageOfTag(tag: string): SpeechLanguage {
 /** How much slower than his speed a word is said when it is being sounded out (src/speech/soundOut.ts). */
 export const SLOW_FACTOR = 0.6;
 
-// bsv-kit/speech queues the sentences, names each one's language from its letters and picks a voice for it. What it does not
+// voice-kit/speech queues the sentences, names each one's language from its letters and picks a voice for it. What it does not
 // know are the choices of this app: his speed for the language and the voice he picked (Settings), and the slow speed of a word
 // being sounded out. They are put on each utterance as it is handed to the phone, by wrapping speak() of the phone's synthesiser once.
 let slow = false;
@@ -421,7 +421,7 @@ export function testGreekVoice(): SpeakOutcome {
 }
 
 /** The voice an utterance in `language` is given among `voices`: the one he chose (`chosen`, a voiceKey) while the phone lists it, else the phone's own
- * pick for the language (bsv-kit's preferredVoice: the exact tag, then the same language); undefined when the phone lists none for it. */
+ * pick for the language (voice-kit's preferredVoice: the exact tag, then the same language); undefined when the phone lists none for it. */
 export function voiceInUse(voices: readonly SpeechSynthesisVoice[], language: SpeechLanguage, chosen: string | null): SpeechSynthesisVoice | undefined {
   const own = chosen === null ? undefined : voices.find((v) => voiceKey(v) === chosen && isLanguage(language)(v));
   return own ?? preferredVoice([...voices], langOf(language));

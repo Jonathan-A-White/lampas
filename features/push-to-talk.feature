@@ -98,7 +98,7 @@ Feature: Push-to-talk
     Then the sheet's hold bar says "Starting the mic…" until the microphone is open and "Release to send" after
 
   # Android Chrome offers on-device speech but never honours it: an on-device start opens no microphone and is answered
-  # language-not-supported a moment later (mw-5r3p30.426). Lampas listens through bsv-kit's startListening, which walks
+  # language-not-supported a moment later (mw-5r3p30.426). Lampas listens through voice-kit's startListening, which walks
   # every route once (on-device and cloud en-US, then the cloud's own default) and shows the failure only when the last fails.
   Scenario: On Android, letting go of the sheet's bar before the speech check answers shows no language error
     Given Lampas is opened on Romans 8 with a talk behind a fake Postern and Android's recogniser

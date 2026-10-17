@@ -1,4 +1,4 @@
-// tests/e2e/ask-composer.spec.ts — Ask the tutor on Romans 8:1-11 is the shared composer (bsv-kit/composer, mw-jtzpw0.3) at 412 x 915: one big gold Hold to ask bar,
+// tests/e2e/ask-composer.spec.ts — Ask the tutor on Romans 8:1-11 is the shared composer (voice-kit/composer, mw-jtzpw0.3) at 412 x 915: one big gold Hold to ask bar,
 // Type a question quietly under it, no Ask button, no attach or camera (the tutor takes no file), no second bar. jsdom has no layout, so the look is proven here.
 import { expect, test } from '@playwright/test';
 import { makeFakePostern, SYNERGEI_ANSWER } from '../support/fake-postern';

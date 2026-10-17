@@ -5,7 +5,7 @@ import { openUnlocked } from './unlocked';
 import { asSpoken } from '../support/lone-word';
 import { holdFor } from '../support/hold';
 
-// The engine is bsv-kit's honest fake (tests/support/honest-fakes.ts; headless Chromium has no Greek voice); how a real
+// The engine is voice-kit's honest fake (tests/support/honest-fakes.ts; headless Chromium has no Greek voice); how a real
 // phone's voice sounds, and its long-press menu, are only a phone check (docs/pwa-best-practices.md section 12).
 async function openReader(page: Page, msPerWord?: number) {
   await page.clock.install();

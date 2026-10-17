@@ -296,7 +296,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     const going = getReading().crossing;
     if (going && !(going.book === BOOK && going.chapter === CHAPTER)) stopReading();
   }, [BOOK, CHAPTER]);
-  // Leaving this screen for another pauses the reading, and coming back offers Resume on the bar (bsv-kit/speech); opening another chapter ends it,
+  // Leaving this screen for another pauses the reading, and coming back offers Resume on the bar (voice-kit/speech); opening another chapter ends it,
   // and so does coming to a chapter that is not the one a paused reading belongs to. Going on into the next chapter is not leaving.
   useEffect(() => {
     void warmVoices();

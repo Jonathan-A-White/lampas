@@ -1,9 +1,9 @@
-// tests/support/fake-mic.ts — the phone's microphone for the feature steps: bsv-kit's honest one (bsv-kit/testing/mic) on a clock
+// tests/support/fake-mic.ts — the phone's microphone for the feature steps: voice-kit's honest one (voice-kit/testing/mic) on a clock
 // the test moves by hand. A recogniser opens a moment after start(), sends an interim result as each word of the clip ends, a
 // final one at the clip's end, and ends 1.5 s after; stop() gives the words heard so far. Unlike tests/support/fake-recognizer.ts,
 // which a test drives result by result, this one takes the time the phone takes: `advance(ms)` says how much has passed.
 import { vi } from 'vitest';
-import { clips, installMic, type MicFake, type MicOptions } from 'bsv-kit/testing/mic';
+import { clips, installMic, type MicFake, type MicOptions } from 'voice-kit/testing/mic';
 import { ManualClock } from './manual-clock';
 
 export interface StubbedMic {

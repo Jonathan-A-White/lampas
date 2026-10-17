@@ -13,7 +13,7 @@ export interface CreditSection {
 
 export const PACKAGE_SECTIONS = ['Libraries the app runs on'];
 
-/** `bsv-kit/speech` is the package bsv-kit; `@bsv/sdk/primitives` is @bsv/sdk. */
+/** `voice-kit/speech` is the package voice-kit; `@bsv/sdk/primitives` is @bsv/sdk. */
 export function packageOf(token: string): string {
   const parts = token.split('/');
   return token.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];

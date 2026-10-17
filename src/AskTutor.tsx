@@ -23,7 +23,7 @@ import { takeWaitingPictures } from './talk/outbox';
 /** The button's name for a screen reader and the tests; it starts with the words on the control. */
 export const ASK_TUTOR_LABEL = 'Ask the tutor about this screen';
 
-/** How far the speaking bar (bsv-kit/speech) raises the button while something is read aloud: a button's height, and the bar's padding and border. */
+/** How far the speaking bar (voice-kit/speech) raises the button while something is read aloud: a button's height, and the bar's padding and border. */
 const SPEAKING_BAR_LIFT = 'var(--lp-tap) + 1.25rem';
 
 /** The round button. `lift` raises it above a pinned bar the screen has at its foot (the Reader's Talk bar, Import's Add bar); it also clears the

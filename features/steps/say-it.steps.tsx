@@ -1,12 +1,12 @@
 // features/steps/say-it.steps.tsx — runs features/say-it.feature: Say it in the letter drill (src/LetterDrillScreen.tsx, src/data/grammar/sayIt.ts, mw-86e9r1.12).
-// The phone's microphone is bsv-kit's honest one (tests/support/fake-mic.ts) hearing a clip whose words the scenario names; the voice is the honest speech fake.
+// The phone's microphone is voice-kit's honest one (tests/support/fake-mic.ts) hearing a clip whose words the scenario names; the voice is the honest speech fake.
 // The steps fix the drill's seed (letterDrillSeed) to one whose round asks Β as its Say it question, and rebuild each round from it with the same pure functions the screen uses.
 import '@testing-library/react/dont-cleanup-after-each';
 import { act, render, screen, cleanup, fireEvent, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
-import { clips } from 'bsv-kit/testing/mic';
+import { clips } from 'voice-kit/testing/mic';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';

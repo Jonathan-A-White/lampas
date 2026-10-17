@@ -129,7 +129,7 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
       <IdeaReturn />
       {/* the round Ask the tutor control of every screen but the Reader and the Share screen (its sheets are talks), which draws its own beside its Talk bar */}
       {route === 'home' || route === 'share' || route === 'unlock' ? null : <AskTutor route={route} />}
-      {/* the one bar for anything read aloud (bsv-kit/speech): drawn into the highest BarSlot on screen, this one at the shell's foot when no screen has its own */}
+      {/* the one bar for anything read aloud (voice-kit/speech): drawn into the highest BarSlot on screen, this one at the shell's foot when no screen has its own */}
       <BarSlot level={0} inset />
       <LampasSpeakingBar />
     </div>

@@ -1,5 +1,5 @@
 // A long press on any word of prose says it in its own language (mw-5r3p30.124) at 412x915 on the Romans 8:28 Verse view, where a tutor answer
-// holds English, Greek and Hebrew. The engine is bsv-kit's honest fake (tests/support/honest-fakes.ts; headless Chromium has no Greek or Hebrew
+// holds English, Greek and Hebrew. The engine is voice-kit's honest fake (tests/support/honest-fakes.ts; headless Chromium has no Greek or Hebrew
 // voice); how a real voice sounds, and the phone's own long-press menu, are only a phone check (docs/pwa-best-practices.md section 12).
 import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';

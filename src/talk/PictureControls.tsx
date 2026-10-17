@@ -1,4 +1,4 @@
-// src/talk/PictureControls.tsx — the picture part of the Talk sheet's composer (mw-y3qno5.1): the attach and camera buttons (the labels of bsv-kit's
+// src/talk/PictureControls.tsx — the picture part of the Talk sheet's composer (mw-y3qno5.1): the attach and camera buttons (the labels of voice-kit's
 // Composer, which the Verse view's Ask uses) and the pictures waiting to go, each a thumbnail with a remove x. A paste anywhere in the sheet is
 // pastedPictures' business (pictures.ts). The state is src/talk/usePictureBox.ts.
 import { useRef } from 'react';

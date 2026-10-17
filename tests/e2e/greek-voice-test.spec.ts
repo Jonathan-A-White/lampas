@@ -5,7 +5,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
 // Settings > Reading voices (mw-5r3p30.357): under the Greek voice picker, the name of the voice in use and a 44 px Test that says πατήρ, then ἀγάπη, as Tap
-// to hear says a word; a voice picked there is named at once and kept. The engine is bsv-kit's honest fake (headless Chromium has no Greek voice), whose
+// to hear says a word; a voice picked there is named at once and kept. The engine is voice-kit's honest fake (headless Chromium has no Greek voice), whose
 // voices are named by their language; how a real voice stresses a word is only a phone check.
 test('Settings names the Greek voice in use and Test says πατήρ, then ἀγάπη, at 390x844', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });

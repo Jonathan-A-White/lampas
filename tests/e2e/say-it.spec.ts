@@ -5,7 +5,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
 // Say it in the letter drill (mw-86e9r1.12): the third question of a round is the letter shown large, the hold bar and Skip, all in the window; after the answer
-// the result, what the phone heard, the answer and Tap to hear, with Next in view. The phone's microphone is bsv-kit's honest one hearing a clip that says 'delta'.
+// the result, what the phone heard, the answer and Tap to hear, with Next in view. The phone's microphone is voice-kit's honest one hearing a clip that says 'delta'.
 test.use({ viewport: { width: 390, height: 844 } });
 
 // Puts a row in the app's own store through raw IndexedDB, as the app wrote it.

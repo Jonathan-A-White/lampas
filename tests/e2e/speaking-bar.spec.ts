@@ -3,7 +3,7 @@ import { honestSpeech, isSpeaking, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
-// The speaking bar (bsv-kit/speech, drawn by src/speech/SpeakingBarSlot.tsx) over a verse at phone width. The engine is bsv-kit's honest fake: a slow
+// The speaking bar (voice-kit/speech, drawn by src/speech/SpeakingBarSlot.tsx) over a verse at phone width. The engine is voice-kit's honest fake: a slow
 // reader (300 ms a word) keeps a verse on the bar long enough to look at. The shots are written by the spec (shots/ is not committed).
 async function openRomans8(page: Page) {
   await openUnlocked(page);

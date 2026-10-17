@@ -1,6 +1,6 @@
 # Demo: Postern's composer, shared with Lampas (mw-jtzpw0.6)
 
-The epic mw-jtzpw0 lifted Postern's message composer into bsv-kit (`bsv-kit/composer`). Lampas's **Ask the tutor** now uses it in
+The epic mw-jtzpw0 lifted Postern's message composer into voice-kit (`voice-kit/composer`). Lampas's **Ask the tutor** now uses it in
 place of the old text box, **Ask** button and separate **Hold to ask** bar, a setting **Ask by** makes it speak-first or
 type-first (and the tutor can switch it when he asks), and in Postern a tapped picture opens full screen. This is the
 Governor's check on his phone. When it all behaves as written, he says "Looks good".

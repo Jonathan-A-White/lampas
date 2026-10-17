@@ -1,5 +1,5 @@
 // features/steps/speaking-interruptions.steps.tsx — runs features/speaking-interruptions.feature: the speaking bar over the tutor's answer, and a word
-// said, a hold on the Talk bar or a page that hides pausing the answer instead of ending it. speech synthesis is bsv-kit's honest fake
+// said, a hold on the Talk bar or a page that hides pausing the answer instead of ending it. speech synthesis is voice-kit's honest fake
 // (tests/support/fake-speech.ts), the Postern the fake of tests/support/fake-postern.ts.
 import '@testing-library/react/dont-cleanup-after-each';
 import { act, render, screen, cleanup, waitFor, within } from '@testing-library/react';

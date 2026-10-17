@@ -1,8 +1,8 @@
 // src/Ask.tsx — the Verse view's 'Ask the tutor' action (src/VerseView.tsx): the answers kept, what the last question is doing, and the composer that asks.
-// AskComposer is bsv-kit's Composer (Hold to ask, Type a question; mw-jtzpw0.3), drawn at the foot of the view; AskStatus the Sending and Waiting lines and
+// AskComposer is voice-kit's Composer (Hold to ask, Type a question; mw-jtzpw0.3), drawn at the foot of the view; AskStatus the Sending and Waiting lines and
 // the failures; AnswerCards the kept answers (the tutor writes Markdown, src/markdown/). The questions in flight are src/useAsks.ts.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Composer, type ComposerLabels, type ComposerMessage } from 'bsv-kit/composer';
+import { Composer, type ComposerLabels, type ComposerMessage } from 'voice-kit/composer';
 import { useEffect, useRef } from 'react';
 import type { Verse } from './data/chapter';
 import { unitId } from './data/passage';
@@ -142,7 +142,7 @@ export function AskStatus({ verse, state, onAsk }: { verse: Verse; state: AskSta
   );
 }
 
-/** The composer for `verse` (or a passage, src/data/passage.ts): bsv-kit's Composer, speak-first or, by the setting Ask by, type-first, drawn at the foot of the Verse view. Hold to ask streams
+/** The composer for `verse` (or a passage, src/data/passage.ts): voice-kit's Composer, speak-first or, by the setting Ask by, type-first, drawn at the foot of the Verse view. Hold to ask streams
  * his words as he speaks and a release asks; Type a question brings out the field and Send asks. The tutor takes no photo or file, so there is no attach
  * or camera. A question that failed comes back into the field to be sent again. */
 export function AskComposer({ verse, state, onAsk, prefill = null }: {

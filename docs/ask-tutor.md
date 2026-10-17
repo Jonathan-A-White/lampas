@@ -252,7 +252,7 @@ Asked in the Talk sheet to switch to, open, go to or take him to a chapter ('can
 ## Pictures in a talk
 
 The Talk sheet takes pictures (mw-y3qno5.1, `features/talk-pictures.feature`): a screenshot of a lexicon entry, a page, a note. Above the field are
-**Attach a picture** and **Take a photo** (48 px; the labels of bsv-kit's Composer, which the Verse view's Ask uses; the Talk sheet keeps its own field and
+**Attach a picture** and **Take a photo** (48 px; the labels of voice-kit's Composer, which the Verse view's Ask uses; the Talk sheet keeps its own field and
 hold bar, so the buttons are its own, `src/talk/PictureControls.tsx`) and a **paste** anywhere in the sheet of a copied picture (`pastedPictures`, a
 clipboard that holds files) is an attachment too; pasted text pastes as before.
 

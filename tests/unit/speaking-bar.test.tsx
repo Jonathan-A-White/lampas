@@ -3,7 +3,7 @@
 import { act, cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { clearBus } from '../../src/events/bus';
-import { getSpeech } from 'bsv-kit/speech';
+import { getSpeech } from 'voice-kit/speech';
 import { speak, speakWord, stopSpeaking, watchWordEnd } from '../../src/speech/greek';
 import { startAnswer, stopReading } from '../../src/speech/readAloud';
 import { BarSlot, LampasSpeakingBar } from '../../src/speech/SpeakingBarSlot';

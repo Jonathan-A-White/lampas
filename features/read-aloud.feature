@@ -3,7 +3,7 @@ Feature: Lampas reads aloud what is shown
   header reads on to the chapter's end. What is read is what is shown: the English view in an English voice, the Greek
   view in the phone's Greek voice, a woven verse changing voice where the language does. The verse being read is
   highlighted; the header's button gives way to the one speaking bar (Pause or Resume, Restart, Stop: features/speaking-bar.feature); the screen
-  stays awake. The phone's own voices, no server, through bsv-kit's speech package.
+  stays awake. The phone's own voices, no server, through voice-kit's speech package.
 
   Scenario: A verse in the English view is read in English
     Given Lampas is opened on a phone with an English and a Greek voice

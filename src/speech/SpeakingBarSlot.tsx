@@ -1,11 +1,11 @@
-// src/speech/SpeakingBarSlot.tsx — where bsv-kit/speech's one SpeakingBar (Pause / Resume, Restart, Stop) is drawn (mw-m7v5kc.3). It shows while
+// src/speech/SpeakingBarSlot.tsx — where voice-kit/speech's one SpeakingBar (Pause / Resume, Restart, Stop) is drawn (mw-m7v5kc.3). It shows while
 // the app reads something aloud: a verse, a chapter, the tutor's answer (greek.ts READ_KEY); a word said alone, by a long press or a speaker,
 // is over in a moment and has no bar. A screen with a bottom edge leaves a <BarSlot level> there, and the bar is drawn into the highest
 // one that is on screen: the shell's foot (level 0), the Reader above its Talk bar (1), the Verse view above its hold bar (2), the Talk sheet above its
 // foot (3). So there is one bar, in flow and never over text or behind a sheet, and a screen that pushes its own controls up stays reachable.
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
-import { SpeakingBar } from 'bsv-kit/speech/react';
+import { SpeakingBar } from 'voice-kit/speech/react';
 import { useBarShown } from './barShown';
 import { restartListen } from './readAloud';
 

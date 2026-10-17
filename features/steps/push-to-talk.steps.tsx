@@ -298,7 +298,7 @@ describeFeature(feature, ({ Scenario }) => {
     expect(await within(sheet()).findByRole('alert')).toHaveTextContent(words);
   };
   const noLanguageLine = async () => {
-    // the stop's own wait (bsv-kit STOP_TIMEOUT_MS is 3 s) is long gone by the time a late answer would have shown
+    // the stop's own wait (voice-kit STOP_TIMEOUT_MS is 3 s) is long gone by the time a late answer would have shown
     await sleep(150);
     expect(sheet()).not.toHaveTextContent('language-not-supported');
   };

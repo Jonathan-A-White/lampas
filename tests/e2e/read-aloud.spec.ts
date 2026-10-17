@@ -3,7 +3,7 @@ import { honestSpeech, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
-// The engine is bsv-kit's honest fake (tests/support/honest-fakes.ts): a verse takes the time it takes to say, so it goes on
+// The engine is voice-kit's honest fake (tests/support/honest-fakes.ts): a verse takes the time it takes to say, so it goes on
 // by itself. A slow reader (300 ms a word) keeps a verse on the bar long enough to look at, and the page's clock (Playwright's
 // page.clock) runs ahead to get through the verses between; how a real phone's voices sound is only a phone check
 // (docs/pwa-best-practices.md section 12).

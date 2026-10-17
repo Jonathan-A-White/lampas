@@ -1,7 +1,7 @@
-// tests/e2e/verse-ask-voice.spec.ts — the Verse view's Ask the tutor composer (bsv-kit/composer, mw-jtzpw0.3; the voice half is mw-5r3p30.121): his words show as he speaks, in
+// tests/e2e/verse-ask-voice.spec.ts — the Verse view's Ask the tutor composer (voice-kit/composer, mw-jtzpw0.3; the voice half is mw-5r3p30.121): his words show as he speaks, in
 // the composer above its Hold to ask bar, and after he lets go his question stays shown above 'Waiting for the tutor…' until the answer comes. Every other
 // push-to-talk place in Lampas does this (docs/pwa-best-practices.md section 12, 'In every push-to-talk place, he sees his words where he is looking').
-// Phone width 412 x 915. The microphone is bsv-kit's honest one: the recogniser sends the clip's words one by one as interim results while the bar is held.
+// Phone width 412 x 915. The microphone is voice-kit's honest one: the recogniser sends the clip's words one by one as interim results while the bar is held.
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { makeFakePostern, SYNERGEI_ANSWER, type FakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';

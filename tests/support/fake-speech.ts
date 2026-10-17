@@ -1,12 +1,12 @@
-// tests/support/fake-speech.ts — the phone's speech engine for the feature steps: bsv-kit's honest fake
-// (bsv-kit/testing/speech: speak() queues, an utterance takes its time, start/boundary/end fire in order, cancel() ends the
+// tests/support/fake-speech.ts — the phone's speech engine for the feature steps: voice-kit's honest fake
+// (voice-kit/testing/speech: speak() queues, an utterance takes its time, start/boundary/end fire in order, cancel() ends the
 // one being spoken with error 'interrupted') on a clock the test moves by hand, so nothing waits for real time.
 // finish() and finishAll() keep the API the steps were written with: they let the clock run to the end of the utterance
 // being spoken (every event on the way fires) and, for finishAll(), of those queued behind it. advance(ms) moves the clock
 // a stretch, for a step that says time passes. Not Android Chrome's sound (docs/pwa-best-practices.md section 12).
 import { vi } from 'vitest';
 import { ManualClock } from './manual-clock';
-import { installSpeech, type FakeUtterance as HonestUtterance, type FakeVoice as HonestVoice, type SpeechFake } from 'bsv-kit/testing/speech';
+import { installSpeech, type FakeUtterance as HonestUtterance, type FakeVoice as HonestVoice, type SpeechFake } from 'voice-kit/testing/speech';
 
 export interface FakeVoice {
   lang: string;

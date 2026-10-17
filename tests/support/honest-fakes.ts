@@ -1,12 +1,12 @@
-// tests/support/honest-fakes.ts — bsv-kit's honest speech and microphone for a Playwright page (bsv-kit/testing/speech and
+// tests/support/honest-fakes.ts — voice-kit's honest speech and microphone for a Playwright page (voice-kit/testing/speech and
 // /mic): thin wrappers, so no spec writes a fake of its own. Speech takes the time Android Chrome takes (150 ms and 60 ms a
 // word, start, a boundary a word, end; cancel() interrupts the one being spoken); the microphone hands out a stream that
 // plays a recorded clip in real time, a MediaRecorder that cuts it into chunks and a SpeechRecognition that sends interim
 // words as the clip plays. A headless Chromium has neither a Greek voice nor a microphone; how a real phone sounds is only
 // a phone check (docs/pwa-best-practices.md section 12).
 import type { Page } from '@playwright/test';
-import { speechInitScript, type SpeechScriptOptions } from 'bsv-kit/testing/speech';
-import { clips, micInitScript, type MicScriptOptions } from 'bsv-kit/testing/mic';
+import { speechInitScript, type SpeechScriptOptions } from 'voice-kit/testing/speech';
+import { clips, micInitScript, type MicScriptOptions } from 'voice-kit/testing/mic';
 
 export { clips };
 

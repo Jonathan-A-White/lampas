@@ -61,7 +61,7 @@ Each grind (`grinds/<kind>.json`) has examples, an input schema and, for bible-t
 - Every behaviour is a Gherkin scenario under `features/*.feature` with steps in
   `features/steps/*.steps.ts(x)` (@amiceli/vitest-cucumber), run inside `npm test`. Import
   `@testing-library/react/dont-cleanup-after-each` before React Testing Library in a step file.
-- Speech and the microphone are never faked by hand (mw-it6qk5.3): they are bsv-kit's honest fakes (`bsv-kit/testing/speech` and `/mic`: an utterance
+- Speech and the microphone are never faked by hand (mw-it6qk5.3): they are voice-kit's honest fakes (`voice-kit/testing/speech` and `/mic`: an utterance
   takes `150 + 60 x words` ms and fires start, boundaries and end, `cancel()` interrupts the one being spoken, a recogniser sends interim words as a clip
   plays). Feature steps use `tests/support/fake-speech.ts` (`stubSpeech`: `finish()`, `finishAll()`, `advance(ms)`, `calls`, `spoken`, on a manual clock,
   `tests/support/manual-clock.ts`) and `tests/support/fake-mic.ts` (`stubMic()`, `advance(ms)`); Playwright specs use `tests/support/honest-fakes.ts`

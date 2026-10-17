@@ -1,4 +1,4 @@
-// tests/support/manual-clock.ts — the time of a test that moves it by hand: bsv-kit's honest speech and microphone take a clock
+// tests/support/manual-clock.ts — the time of a test that moves it by hand: voice-kit's honest speech and microphone take a clock
 // ({ now, setTimeout, clearTimeout }), and under this one nothing happens until the test says how much time has passed.
 /** A clock that moves only when the test says; timers run in order of their time, then of their making. */
 export class ManualClock {

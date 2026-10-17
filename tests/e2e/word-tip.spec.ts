@@ -8,7 +8,7 @@ import { asSpoken } from '../support/lone-word';
 
 const VIEWPORT = { width: 390, height: 844 };
 
-// A finger on a word of the reader, as a phone has it: touch points, not the mouse. The engine is bsv-kit's honest fake
+// A finger on a word of the reader, as a phone has it: touch points, not the mouse. The engine is voice-kit's honest fake
 // (tests/support/honest-fakes.ts; headless Chromium has no Greek voice).
 test.use({ hasTouch: true, viewport: VIEWPORT });
 

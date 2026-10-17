@@ -1,8 +1,8 @@
 Feature: Everything read aloud has the same Pause, Resume, Restart and Stop bar
-  Whatever Lampas reads aloud (a verse by its play button, the chapter, the tutor's answer) goes through bsv-kit's speech package, a sentence at a
+  Whatever Lampas reads aloud (a verse by its play button, the chapter, the tutor's answer) goes through voice-kit's speech package, a sentence at a
   time, and shows the one bar Postern has: Pause (Resume while paused), Restart and Stop. Pause keeps the sentence reached; Resume goes on from it.
   Listen stops at the end of the verse. Leaving the screen pauses the reading and coming back offers Resume. A word said by a long press is not
-  a reading and shows no bar. speechSynthesis is bsv-kit's honest fake (tests/support/fake-speech.ts).
+  a reading and shows no bar. speechSynthesis is voice-kit's honest fake (tests/support/fake-speech.ts).
 
   Scenario: Listen on a verse shows the bar
     Given Lampas is opened on Romans 8 on a phone with an English and a Greek voice

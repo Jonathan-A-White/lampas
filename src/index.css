@@ -545,7 +545,7 @@ textarea,
   --bk-whats-new-target: var(--lp-tap);
 }
 
-/* bsv-kit's speaking bar (Pause / Resume, Restart, Stop: bsv-kit/speech) takes its colours from the palette in force and keeps the phone's own size, like the header. */
+/* voice-kit's speaking bar (Pause / Resume, Restart, Stop: voice-kit/speech) takes its colours from the palette in force and keeps the phone's own size, like the header. */
 :root {
   --bk-speech-surface: var(--lp-surface);
   --bk-speech-fg: var(--lp-fg);
@@ -569,7 +569,7 @@ textarea,
   padding-bottom: var(--lp-bar-inset);
 }
 
-/* bsv-kit's composer (Ask the tutor, src/Ask.tsx; bsv-kit/composer) takes its colours from the palette in force, keeps the gold bar and the phone's
+/* voice-kit's composer (Ask the tutor, src/Ask.tsx; voice-kit/composer) takes its colours from the palette in force, keeps the gold bar and the phone's
  * own size, like the header; the Verse view's foot already has the border and the bar inset, so the composer draws neither of its own. */
 .bk-composer {
   --bk-composer-surface: var(--lp-surface);

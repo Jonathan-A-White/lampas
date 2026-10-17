@@ -1,6 +1,6 @@
 // The tutor's answer read aloud, interrupted by a tapped Hebrew word (mw-5r3p30.122) at 412x915: the speaking bar shows Pause, Restart and Stop over
 // the answer in the Talk sheet and covers none of its text; a tap on the Hebrew word says it and leaves the answer PAUSED, the bar offering Resume,
-// which goes on from the sentence it was in. The engine is bsv-kit's honest fake with a slow reader (tests/support/honest-fakes.ts).
+// which goes on from the sentence it was in. The engine is voice-kit's honest fake with a slow reader (tests/support/honest-fakes.ts).
 import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
