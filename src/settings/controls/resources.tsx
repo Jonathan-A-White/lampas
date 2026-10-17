@@ -1,9 +1,11 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
-import { getLogosBible, getStudyResources, setResourceOn, setResourceOption } from '../../data/repositories';
+import { getGrammarBooks, getLogosBible, getStudyResources, setGrammarBooks, setResourceOn, setResourceOption } from '../../data/repositories';
 import { resourceOf, tickedOf, type ResourceChoices, type StudyResource } from '../../resources';
 import { storeUrl } from '../../resources/appStore';
 import { AUDIO_BIBLES } from '../../resources/audioBible';
+import { GRAMMAR_BOOKS } from '../../resources/grammarBooks';
+import { logos } from '../../resources/logos';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../../resources/logosBible';
 import { SearchableList } from '../../ui/SearchableList';
 import { audioBibleSetting, readingPlanSetting } from '../definitions';
@@ -20,6 +22,50 @@ function ChoiceList({ resourceId, choices, ticked }: { resourceId: string; choic
     void setResourceOption(resourceId, JSON.stringify(choices.items.map((i) => i.id).filter((i) => next.includes(i))));
   };
   return <SearchableList label={choices.label} hint={choices.hint} noun="lexicon" items={choices.items} ticked={ticked} onToggle={toggle} />;
+}
+
+/** Fewer books than this are a plain list of ticks; a longer list is the searchable one (pwa-best-practices 08: a long list is a widget). */
+const LONG_LIST = 8;
+
+/** Logos > Grammar books (mw-5r3p30.381): a tick per book of GRAMMAR_BOOKS, the books that start ticked until he changes them. A ticked book's sections
+ *  show under Read more on the idea sheet of each idea it teaches. Kept as he taps. */
+function GrammarBooks() {
+  const ticked = useLiveQuery(getGrammarBooks, []);
+  if (!ticked) return null;
+  const toggle = (id: string): void => {
+    const next = ticked.includes(id) ? ticked.filter((t) => t !== id) : [...ticked, id];
+    void setGrammarBooks(GRAMMAR_BOOKS.map((b) => b.id).filter((b) => next.includes(b)));
+  };
+  const hint = 'Tick the grammar books of your Logos library. An idea sheet links the part of each that teaches the idea.';
+  if (GRAMMAR_BOOKS.length >= LONG_LIST) return <SearchableList label="Grammar books" hint={hint} noun="book" items={GRAMMAR_BOOKS} ticked={ticked} onToggle={toggle} />;
+  return (
+    <div role="group" aria-label="Grammar books" aria-describedby="grammar-books-hint" className="mt-3">
+      <p className="text-base font-medium">Grammar books</p>
+      <p id="grammar-books-hint" className="pb-1 text-sm text-muted">
+        {hint}
+      </p>
+      <div className="rounded-lg border border-line">
+        {GRAMMAR_BOOKS.map((book) => {
+          const on = ticked.includes(book.id);
+          return (
+            <button
+              key={book.id}
+              type="button"
+              role="checkbox"
+              aria-checked={on}
+              onClick={() => toggle(book.id)}
+              className="flex min-h-12 w-full items-center gap-3 border-t border-line px-3 text-left text-base first:border-t-0"
+            >
+              <span aria-hidden="true" className={`flex h-6 w-6 shrink-0 items-center justify-center rounded border border-line ${on ? 'bg-accent text-accent-fg' : ''}`}>
+                {on ? '✓' : ''}
+              </span>
+              {book.name}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 /** One study resource: its switch (a 44 px row), what it adds, and the field it asks for, if any (kept as he types).
@@ -53,6 +99,7 @@ function ResourceRow({ row, resource, on, typed }: { row: SettingsRow; resource:
               </div>
             ) : null}
             {resource.choices ? <ChoiceList resourceId={resource.id} choices={resource.choices} ticked={tickedOf(resource, typed)} /> : null}
+            {resource.id === logos.id ? <GrammarBooks /> : null}
             {option ? (
               <div className="mt-2">
                 <label className="block">
