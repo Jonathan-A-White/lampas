@@ -358,4 +358,65 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('no idea has a level', noIdeaHasALevel);
   });
+  // A reload keeps the address and the entry's place in the trail; only the page is drawn again (mw-86e9r1.23)
+  const reloaded = async () => {
+    cleanup();
+    clearBus();
+    render(<App newRandom={() => mulberry32(7)} />);
+  };
+  const endCard = async (_: unknown, text: string) => {
+    await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent(text));
+  };
+  const startsWith = async (_: unknown, title: string) => {
+    await waitFor(() => expect(screen.getByTestId('from-letters')).toHaveTextContent(`You start with ${title}. Learn next on the Goal screen opens it.`));
+  };
+  const backToGoal = async () => {
+    await user.click(await screen.findByRole('button', { name: 'Back to the goal' }));
+    await screen.findByRole('heading', { name: 'Goal', level: 1 });
+  };
+
+  Scenario('The end card of Start from the letters comes back after a reload, and Back from the Goal returns to it', ({ Given, When, And, Then }) => {
+    Given('his goal is {string} and he knows nothing yet', given);
+    When('he opens the Goal screen', goalScreen);
+    And('he taps {string}', tapped);
+    And('he starts from the letters', async () => user.click(await screen.findByRole('button', { name: 'Start from the letters' })));
+    Then('the end card says {string}', endCard);
+    And('the screen says he starts with {string}', startsWith);
+    When('the page is reloaded', reloaded);
+    Then('the end card still says {string}', endCard);
+    And('the card still says he starts with {string}', startsWith);
+    When('he goes back to the goal', backToGoal);
+    And("he presses the phone's Back", () => window.history.back());
+    Then('the card says once more he starts with {string}', async (_, title: string) => {
+      await screen.findByRole('heading', { name: 'Placement', level: 1 });
+      await startsWith(_, title);
+    });
+    When('he goes back to the goal again', backToGoal);
+    And('he places himself again from the Goal screen', async () => user.click(await screen.findByRole('button', { name: /^Place (me|again)$/ })));
+    Then('the intro offers {string}', async (_, name: string) => {
+      await screen.findByRole('heading', { name: 'Placement', level: 1 });
+      await screen.findByRole('button', { name });
+      expect(screen.queryByTestId('where')).toBeNull();
+    });
+  });
+
+  Scenario('The end card of a walk comes back after a reload', ({ Given, When, And, Then }) => {
+    Given('his goal is {string} and he knows nothing yet', given);
+    When('he opens the placement', opened);
+    And('he starts the placement', started);
+    And('he answers {int} questions right', (_, n: number) => answerMany(n, true));
+    And('he answers {int} questions wrong', (_, n: number) => answerMany(n, false));
+    Then('the question line says {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('placement-question')).toHaveTextContent(text));
+    });
+    When('he stops the quick round', async () => user.click(await screen.findByRole('button', { name: 'Stop here' })));
+    Then('the end card says {string}', endCard);
+    When('the page is reloaded', reloaded);
+    Then('the end card still says {string}', endCard);
+    And('the end card lists {string} as {string} under Nouns', (_, title: string, level: string) => {
+      const nouns = screen.getByRole('region', { name: 'nouns' });
+      expect(within(nouns).getByText(title).closest('li')).toHaveTextContent(level);
+    });
+    And('the placement is no longer kept', () => expect(readPlacement()).toBeNull());
+  });
 });

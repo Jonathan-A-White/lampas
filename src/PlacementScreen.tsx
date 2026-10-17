@@ -1,7 +1,8 @@
 // src/PlacementScreen.tsx — Placement (mw-hqd5bz.8, #/placement): an adaptive test of the grammar his goal needs. It walks the ideas in the order of
 // the approach he chose, two questions an idea, and goes easier when he misses (src/data/grammar/placement.ts has the rules), down to the
 // letters. Every answer goes on the back-off schedule and every finished idea gets its level. It ends on 'Where you are'; after twenty
-// questions it pauses and keeps its place (src/data/placementKeep.ts), so he can go on another day.
+// questions it pauses and keeps its place (src/data/placementKeep.ts), so he can go on another day. The end card is kept too, and its entry's address
+// names it, so a reload or Back to it shows the card again; a new Place me opens the intro (mw-86e9r1.23).
 import { useEffect, useRef, useState } from 'react';
 import { approachOf, DEFAULT_APPROACH, levelNumberOf, orderOf, type GrammarApproach } from './approaches';
 import { BOOK_INDEX } from './data/bookIndex';
@@ -23,11 +24,11 @@ import { writeAnswer, writeQuick } from './data/grammar/placementWrite';
 import { answerQuick, currentQuick, quickOver, quickProgress, quickQuestion, quickSeed, startQuick, stopQuick, type QuickRound } from './data/grammar/quickRound';
 import { questionFor } from './data/grammar/placementQuestion';
 import type { GrammarQuestion } from './data/grammar/questions';
-import { clearPlacement, readPlacement, savePlacement, type SavedPlacement } from './data/placementKeep';
+import { clearPlacement, readCard, readPlacement, saveCard, savePlacement, type SavedPlacement } from './data/placementKeep';
 import { mulberry32, type Random } from './data/quiz';
 import { getEvidence, getGoal, getGrammarApproach, listLevels } from './data/repositories';
 import { publish } from './events/bus';
-import { navigate, placementOriginOf, useAddress } from './nav/route';
+import { navigate, placementCardOf, placementOriginOf, showPlacementCard, useAddress } from './nav/route';
 import { swallowTaps, useSettled } from './ui/settle';
 import { ItemCard } from './review/ItemCard';
 import { GRAMMAR, loadPassage, type GrammarItem } from './review/kinds';
@@ -50,7 +51,9 @@ type Run =
   | { status: 'starting' }
   | { status: 'asking'; state: PlacementState; item: GrammarItem; picked: string | null; after: PlacementState | null }
   | { status: 'quick'; state: PlacementState; round: QuickRound; item: GrammarItem; picked: string | null; after: QuickRound | null }
-  | { status: 'over'; state: PlacementState; gaps: GrammarIdea[]; fromLetters?: FromLetters };
+  | Over;
+
+type Over = { status: 'over'; state: PlacementState; gaps: GrammarIdea[]; fromLetters?: FromLetters };
 
 /** What the card of 'Start from the letters' says besides the counts: the ideas he already has solid, and the one Learn next opens. */
 interface FromLetters {
@@ -98,9 +101,13 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
       const approach = approachOf(approachId) ?? approachOf(DEFAULT_APPROACH)!;
       const saved = readPlacement();
       const kept = saved && saved.goal === goalText && saved.approach === approach.id ? saved : null;
+      // this entry reached an end card: a reload, or Back to it, shows the card again (one of another goal or approach is not shown)
+      const card = readCard();
+      const shown = card && card.stamp === placementCardOf(window.location.hash) && card.goal === goalText && card.approach === approach.id ? card : null;
       if (cancelled) return;
       setSession({ goal: goalText, approach, title: goalTitleOf(goalText) });
-      setRun({ status: 'intro', kept });
+      if (shown) setRun({ status: 'over', state: shown.state, gaps: shown.gaps.map(ideaOf), fromLetters: shown.fromLetters });
+      else setRun({ status: 'intro', kept });
     })();
     return () => {
       cancelled = true;
@@ -136,6 +143,14 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
     return finish(state);
   };
 
+  /** Shows the end card of a placement that is over, and keeps it for this entry. */
+  const showCard = (over: Over): void => {
+    const stamp = Date.now().toString(36);
+    saveCard({ stamp, goal: session.goal, approach: session.approach.id, state: over.state, gaps: over.gaps.map((idea) => idea.id), fromLetters: over.fromLetters });
+    showPlacementCard(stamp);
+    setRun(over);
+  };
+
   const askQuick = (state: PlacementState): void => {
     const round = state.quick!;
     const item = currentQuick(round)!;
@@ -157,7 +172,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
     publish({ kind: 'placement-done', goal: session.goal, approach: session.approach.id, solid, frontier, notYet, untested });
     // the exact gaps, as the store has them now
     const gaps = gapsOf(levelsOf(await listLevels()));
-    setRun({ status: 'over', state, gaps });
+    showCard({ status: 'over', state, gaps });
   };
 
   /** Skips the quiz: nothing is asked or written, so Learn next stays where it is (The Greek alphabet for a total beginner, mw-86e9r1.1). The card tells what he already has (mw-86e9r1.19). */
@@ -172,7 +187,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
     publish({ kind: 'placement-done', goal: session.goal, approach: session.approach.id, solid, frontier, notYet, untested });
     const next = learnNext(needs ?? { ideas: [] }, session.approach, known);
     const have = state.ideas.filter((id) => state.levels.get(id) === 'solid').map((id) => ideaOf(id).title);
-    setRun({ status: 'over', state, gaps: [], fromLetters: { solid: have, next: next ? (next.gaps ? lettersText(next.gaps) : next.idea.title) : ideaOf('alphabet').title } });
+    showCard({ status: 'over', state, gaps: [], fromLetters: { solid: have, next: next ? (next.gaps ? lettersText(next.gaps) : next.idea.title) : ideaOf('alphabet').title } });
   };
 
   const begin = async (kept: SavedPlacement | null, resume: boolean): Promise<void> => {

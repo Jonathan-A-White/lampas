@@ -152,3 +152,34 @@ Feature: Test me on the grammar, and meet me where I am
     When he taps "Start from the letters"
     Then the end card says "Where you are: solid 0, frontier 0, not yet 0"
     And no idea has a level
+
+  Scenario: The end card of Start from the letters comes back after a reload, and Back from the Goal returns to it
+    Given his goal is "Read 1 John 1:1" and he knows nothing yet
+    When he opens the Goal screen
+    And he taps "Place me"
+    And he starts from the letters
+    Then the end card says "Where you are: solid 0, frontier 0, not yet 0"
+    And the screen says he starts with "The Greek alphabet"
+    When the page is reloaded
+    Then the end card still says "Where you are: solid 0, frontier 0, not yet 0"
+    And the card still says he starts with "The Greek alphabet"
+    When he goes back to the goal
+    And he presses the phone's Back
+    Then the card says once more he starts with "The Greek alphabet"
+    When he goes back to the goal again
+    And he places himself again from the Goal screen
+    Then the intro offers "Start from the letters"
+
+  Scenario: The end card of a walk comes back after a reload
+    Given his goal is "Read 1 John 1:1" and he knows nothing yet
+    When he opens the placement
+    And he starts the placement
+    And he answers 8 questions right
+    And he answers 2 questions wrong
+    Then the question line says "Quick round 1 of"
+    When he stops the quick round
+    Then the end card says "Where you are: solid 11, frontier 0, not yet 1; untested 39"
+    When the page is reloaded
+    Then the end card still says "Where you are: solid 11, frontier 0, not yet 1; untested 39"
+    And the end card lists "The noun" as "Solid" under Nouns
+    And the placement is no longer kept
