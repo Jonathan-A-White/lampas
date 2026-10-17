@@ -377,7 +377,22 @@
               "poetic",
               "crasis",
               "aramaic",
-              "hebrew"
+              "hebrew",
+              "agreement",
+              "article-substantival",
+              "article-position",
+              "postpositive",
+              "clause-hoti",
+              "clause-hina",
+              "participle-adverbial",
+              "genitive-absolute",
+              "periphrastic",
+              "infinitive-articular",
+              "infinitive-complement",
+              "subjunctive-hortatory",
+              "prohibition",
+              "ou-me",
+              "condition"
             ]
           }
         },
@@ -532,7 +547,22 @@
             "poetic",
             "crasis",
             "aramaic",
-            "hebrew"
+            "hebrew",
+            "agreement",
+            "article-substantival",
+            "article-position",
+            "postpositive",
+            "clause-hoti",
+            "clause-hina",
+            "participle-adverbial",
+            "genitive-absolute",
+            "periphrastic",
+            "infinitive-articular",
+            "infinitive-complement",
+            "subjunctive-hortatory",
+            "prohibition",
+            "ou-me",
+            "condition"
           ]
         },
         "why": {

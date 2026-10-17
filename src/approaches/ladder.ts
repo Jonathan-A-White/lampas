@@ -12,6 +12,7 @@ export const TIER_TITLES: Record<Tier, string> = {
   prepositions: 'Prepositions',
   verbs: 'Verbs',
   joiners: 'Joining words',
+  sentences: 'Sentences',
 };
 
 export const ladder: GrammarApproach = {
@@ -19,7 +20,7 @@ export const ladder: GrammarApproach = {
   name: 'Lampas ladder',
   credit: null,
   method:
-    'Easiest first: letters, sounds and marks, then nouns, pronouns, prepositions, verbs and the joining words. Every idea rests only on ideas below it, so nothing is met before what it needs. A lesson is one idea: read it, see it in a verse, then answer on the back-off schedule until it holds.',
+    'Easiest first: letters, sounds and marks, then nouns, pronouns, prepositions, verbs and the joining words, and last the sentences: what the words do together. Every idea rests only on ideas below it, so nothing is met before what it needs. A lesson is one idea: read it, see it in a verse, then answer on the back-off schedule until it holds.',
   stages: [
     {
       title: 'The ladder',

@@ -5,6 +5,7 @@ import type { WordState } from '../db';
 import { wordGloss, type BookIndex, type Chapter } from '../chapter';
 import type { Goal } from '../goal';
 import { ALWAYS_NEEDED, ideaOf, ideasOfWord } from './ladder';
+import { usesOf, type Use } from './uses';
 
 /** How far he is on one thing. The levels story moves this to its repository; both export the same literal type. */
 export type Level = 'solid' | 'frontier' | 'notYet';
@@ -24,9 +25,9 @@ export interface NeededWord {
 export interface NeededIdea {
   /** a ladder id (ladder.ts) */
   id: string;
-  /** how many words of the passage need it */
+  /** how many words of the passage need it; for a sentence idea (the 'sentences' tier), how many uses of it the passage holds */
   count: number;
-  /** the first word that does */
+  /** the first word that does; for a sentence idea, the first use's head word (its first word when the head is not among its words) */
   example: { form: string; code: string; ref: Ref };
 }
 
@@ -64,6 +65,9 @@ function chaptersOf(goal: Goal, load: ChapterLoader, index: BookIndex): Promise<
 
 type ChapterLoader = (book: string, n: number) => Promise<Chapter>;
 
+/** The word a use is shown by: its head, when the head is one of its words, else its first word. */
+export const exampleIndexOf = (use: Pick<Use, 'words' | 'head'>): number => (use.head !== undefined && use.words.includes(use.head) ? use.head : use.words[0]);
+
 /** The words and grammar ideas the goal passage requires; the index says how many chapters a whole book has. */
 export async function passageNeeds(goal: Goal, load: ChapterLoader, index: BookIndex): Promise<PassageNeeds> {
   const words = new Map<string, NeededWord>();
@@ -83,6 +87,15 @@ export async function passageNeeds(goal: Goal, load: ChapterLoader, index: BookI
           const idea = ideas.get(id);
           if (idea) idea.count++;
           else ideas.set(id, { id, count: 1, example: { form: w.t, code: w.p, ref } });
+        }
+      }
+      // a sentence idea is counted once for each use of it the verse holds (uses.ts), shown by the use's head word
+      for (const use of usesOf(verse)) {
+        const idea = ideas.get(use.id);
+        if (idea) idea.count++;
+        else {
+          const w = verse.g[exampleIndexOf(use)];
+          ideas.set(use.id, { id: use.id, count: 1, example: { form: w.t, code: w.p, ref } });
         }
       }
     }

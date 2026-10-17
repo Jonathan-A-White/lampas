@@ -2,7 +2,7 @@
 // from the alphabet and its pronunciation up, easy first, and ideasOf(code): the ideas a word with that RP parsing code needs.
 // Pure: no store and no screen. An idea's id is the item id of a spaced-schedule row of kind 'grammar' (IDEA_KIND), so the same
 // back-off that drills words can drill an idea. The tiers and rungs are PROVISIONAL (docs/grammar.md); other stories key on the
-// ids, so an id, once shipped, is not renamed.
+// ids, so an id, once shipped, is not renamed. The 'sentences' tier (mw-br588b.2) is the one tier that is not about a word: its ideas are the uses of uses.ts.
 import { GRAMMAR_CONCEPTS } from '../grammar-concepts';
 import { bookOf } from '../books';
 import { GRAMMAR_TERMS, decodeParse, parseSegments, splitParse } from '../parseCode';
@@ -13,7 +13,7 @@ import { PREPOSITIONS, type Preposition } from './prepositions';
 /** The kind string of a schedule row whose item is a grammar idea (src/data/repositories/reviews.ts). */
 export const IDEA_KIND = 'grammar';
 
-export const TIERS = ['letters', 'sounds', 'marks', 'nouns', 'pronouns', 'prepositions', 'verbs', 'joiners'] as const;
+export const TIERS = ['letters', 'sounds', 'marks', 'nouns', 'pronouns', 'prepositions', 'verbs', 'joiners', 'sentences'] as const;
 export type Tier = (typeof TIERS)[number];
 
 export interface GrammarIdea {
@@ -473,6 +473,128 @@ const DEFS: Def[] = [
   def('crasis', 'joiners', 'Two words run together', ['crasis'], ['conjunction', 'punctuation']),
   def('aramaic', 'joiners', 'Aramaic words', ['Aramaic word'], ['indeclinable']),
   def('hebrew', 'joiners', 'Hebrew words', ['Hebrew word'], ['indeclinable']),
+
+  // sentences (mw-br588b.2, PROVISIONAL): one idea for each use the finder knows (uses.ts, whose ids these are), built of the word ideas below; no GRAMMAR_TERM is theirs
+  def(
+    'agreement',
+    'sentences',
+    'Words that agree',
+    [],
+    ['article', 'adjective', ...NOUN_CASES, 'number-plural', ...GENDERS],
+    'An article or an adjective agrees with its noun: it has the same case, number and gender, so the endings show which words belong together. In ἡ ζωή “the life” (1 John 1:2) both words are nominative, singular and feminine. Words that agree usually stand side by side, but others may come between them.',
+  ),
+  def(
+    'article-substantival',
+    'sentences',
+    'The article standing alone',
+    [],
+    ['article', 'adjective', 'preposition', 'adverb', 'mood-participle'],
+    'An article with no noun after it stands for someone or something: “the one”, “those”. It leads a participle, an adjective or a phrase. οἱ μαρτυροῦντες “the ones who bear witness” (1 John 5:7); τοῖς ἐν Χριστῷ Ἰησοῦ “those in Christ Jesus” (Romans 8:1). Ask who or what the article points to.',
+  ),
+  def(
+    'article-position',
+    'sentences',
+    'Where the adjective stands',
+    [],
+    ['article', 'adjective', 'agreement'],
+    'Where an adjective stands beside the article and its noun changes the sense. Between the article and the noun, or after the noun with a second article, it says which one: τὴν ζωὴν τὴν αἰώνιον “the eternal life” (1 John 1:2). Outside them it states something: Πιστὸς ὁ λόγος “the word is faithful” (1 Timothy 4:9).',
+  ),
+  def(
+    'postpositive',
+    'sentences',
+    'Words that come second',
+    [],
+    ['conjunction', 'particle'],
+    'Some small words never stand first in their clause: δέ “and, but”, γάρ “for”, οὖν “so” and μέν come second, after the first word or phrase. In English you say them first. ἡ κοινωνία δὲ ἡ ἡμετέρα “and our fellowship” (1 John 1:3): read δέ in front of the words it follows.',
+  ),
+  def(
+    'clause-hoti',
+    'sentences',
+    'A clause with ὅτι',
+    [],
+    ['conjunction', 'mood-indicative'],
+    'ὅτι begins a clause that says what someone says, knows or sees (“that”), or gives a reason (“because”). The clause has a verb of its own. ἀναγγέλλομεν ὑμῖν ὅτι ὁ θεὸς φῶς ἐστιν “we announce to you that God is light” (1 John 1:5): the clause is ὁ θεὸς φῶς ἐστιν.',
+  ),
+  def(
+    'clause-hina',
+    'sentences',
+    'A clause with ἵνα',
+    [],
+    ['conjunction', 'mood-subjunctive'],
+    'ἵνα begins a clause of purpose or aim, “so that”, and its verb is in the subjunctive. ἀπαγγέλλομεν ὑμῖν ἵνα καὶ ὑμεῖς κοινωνίαν ἔχητε “we proclaim to you, so that you also may have fellowship” (1 John 1:3): ἔχητε is the subjunctive. English often adds “may”.',
+  ),
+  def(
+    'participle-adverbial',
+    'sentences',
+    'A participle beside a verb',
+    [],
+    ['mood-participle', 'case-nominative'],
+    'A participle in the nominative with no article often tells when, how or why the main verb happens. εἰσελθὼν διήρχετο τὴν Ἰεριχώ “he entered and was passing through Jericho” (Luke 19:1): εἰσελθών “having entered” is the participle, διήρχετο the main verb. Put it in English with “when”, “because” or “and”.',
+  ),
+  def(
+    'genitive-absolute',
+    'sentences',
+    'The genitive absolute',
+    [],
+    ['mood-participle', 'case-genitive'],
+    'A participle and a noun, both in the genitive and joined to nothing else in the clause, set the time or the reason for what follows. ἐξελθόντων αὐτῶν ἀπὸ Βηθανίας “when they had gone out from Bethany” (Mark 11:12): ἐξελθόντων and αὐτῶν are both genitive plural, and the main verb has another subject.',
+  ),
+  def(
+    'periphrastic',
+    'sentences',
+    'Being plus a participle',
+    [],
+    ['eimi', 'mood-participle'],
+    'A form of εἰμί “to be” beside a participle can act as one verb. ᾖ πεπληρωμένη “may be fulfilled” (1 John 1:4): ᾖ means “may be” and πεπληρωμένη “having been fulfilled”. The two together say what one verb would. The participle carries the meaning, and εἰμί carries the time and the mood.',
+  ),
+  def(
+    'infinitive-articular',
+    'sentences',
+    'The infinitive with the article',
+    [],
+    ['mood-infinitive', 'article', 'preposition'],
+    'An infinitive with the article τό or τοῦ works as a noun, “the doing of it”. τὸ ζῇν “living” and τὸ ἀποθανεῖν “dying” (Philippians 1:21). After a preposition it often gives a purpose or a result: εἰς τὸ φαγεῖν “so as to eat” (1 Corinthians 11:33).',
+  ),
+  def(
+    'infinitive-complement',
+    'sentences',
+    'An infinitive that finishes a verb',
+    [],
+    ['mood-infinitive', 'verb'],
+    'Some verbs need an infinitive to finish their sense: δύναμαι “I am able”, θέλω “I wish”, μέλλω “I am about to”, δεῖ “it is necessary”, ἄρχομαι “I begin”. οὐ θέλω ὑμᾶς ἀγνοεῖν “I do not wish you to be ignorant” (1 Corinthians 12:1): ἀγνοεῖν finishes θέλω, and has no article.',
+  ),
+  def(
+    'subjunctive-hortatory',
+    'sentences',
+    'Let us: urging with the subjunctive',
+    [],
+    ['mood-subjunctive', 'person-1st', 'number-plural'],
+    'A first person plural verb in the subjunctive, standing alone in its clause, urges: “let us”. Ἄγωμεν “let us go” (John 11:7); κατέχωμεν τὴν ὁμολογίαν “let us hold fast the confession” (Hebrews 10:23). A subjunctive after ἵνα or ἐάν is a different use, because a word before it begins a clause.',
+  ),
+  def(
+    'prohibition',
+    'sentences',
+    'Do not: the two ways to forbid',
+    [],
+    ['mood-imperative', 'mood-subjunctive', 'negative', 'tense-aorist', 'particle'],
+    'There are two ways to forbid something: μή with the present imperative, or μή with the aorist subjunctive. Μὴ θαυμάζετε “do not be amazed” (1 John 3:13) is the first; Μὴ θαυμάσῃς “do not be amazed” (John 3:7) is the second. Both say “do not”, and both are said to one person or to many.',
+  ),
+  def(
+    'ou-me',
+    'sentences',
+    'οὐ μή: a strong no',
+    [],
+    ['negative', 'mood-subjunctive', 'tense-future', 'particle'],
+    'οὐ μή together, with the subjunctive or the future, is the strongest no: “never”, “by no means”. It states what will not happen, and does not forbid. οἱ δὲ λόγοι μου οὐ μὴ παρέλθωσιν “my words will never pass away” (Matthew 24:35). Do not read the μή in it as “do not”.',
+  ),
+  def(
+    'condition',
+    'sentences',
+    'If: the three conditions',
+    [],
+    ['conditional', 'mood-indicative', 'mood-subjunctive'],
+    'An “if” clause is one of three kinds. εἰ with the indicative takes it as true: εἰ ζῶμεν πνεύματι “if we live by the Spirit” (Galatians 5:25). ἐάν with the subjunctive leaves it open: ἐὰν ὁμολογῶμεν “if we confess” (1 John 1:9). εἰ with a past indicative and ἄν says it was not so (1 Corinthians 11:31).',
+  ),
 ];
 
 /** The ladder, easy first. */

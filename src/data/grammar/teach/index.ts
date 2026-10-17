@@ -9,6 +9,7 @@ import { MARKS } from './marks';
 import { NOUNS } from './nouns';
 import { PREPOSITIONS_TEACH } from './prepositions';
 import { PRONOUNS } from './pronouns';
+import { SENTENCES } from './sentences';
 import { SOUNDS } from './sounds';
 import type { Teach, WorkedExample } from './types';
 import { VERBS } from './verbs';
@@ -16,7 +17,7 @@ import { VERBS } from './verbs';
 export type { Teach, TeachTable, WorkedExample } from './types';
 export { bare, cellOptions, tableHas } from './table';
 
-const TEACH: Readonly<Record<string, Teach>> = { ...LETTERS, ...SOUNDS, ...MARKS, ...NOUNS, ...PRONOUNS, ...PREPOSITIONS_TEACH, ...VERBS, ...JOINERS };
+const TEACH: Readonly<Record<string, Teach>> = { ...LETTERS, ...SOUNDS, ...MARKS, ...NOUNS, ...PRONOUNS, ...PREPOSITIONS_TEACH, ...VERBS, ...JOINERS, ...SENTENCES };
 
 for (const id of Object.keys(TEACH)) if (!LADDER.some((i) => i.id === id)) throw new Error(`Teaching for ${JSON.stringify(id)}, which the ladder has not`);
 

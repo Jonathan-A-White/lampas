@@ -3,7 +3,7 @@
 // card's table when the card has one, its gloss is the one sense it has here, and a word the lesson cannot explain is left out.
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadChapter, type Chapter } from '../../src/data/chapter';
-import { exampleGloss, exampleNote, ideaExamples, isSpellingIdea } from '../../src/data/grammar/ideaSheet';
+import { exampleGloss, exampleNote, ideaExamples, isSentenceIdea, isSpellingIdea } from '../../src/data/grammar/ideaSheet';
 import { foundationSpans } from '../../src/data/grammar/inference';
 import { LADDER, ideaOf, ideasOfWord } from '../../src/data/grammar/ladder';
 import { tableHas, teachOf } from '../../src/data/grammar/teach';
@@ -31,6 +31,9 @@ describe('every example matches its lesson, over 1 John 1:1 and John 1:1', () =>
           const form = example.word.t;
           if (isSpellingIdea(idea.id)) {
             if (idea.id !== 'alphabet' && !foundationSpans(form).has(idea.id)) wrong.push(`${idea.id}: ${form} is not spelt with it`);
+          } else if (isSentenceIdea(idea.id)) {
+            // a use of several words (uses.ts): its example word is one of the words marked in the verse shown
+            if (!example.parts.some((part) => part.marked && part.text === form)) wrong.push(`${idea.id}: ${form} is not marked in its verse`);
           } else {
             if (!ideasOfWord(example.word).includes(idea.id)) wrong.push(`${idea.id}: ${form} is not parsed with it`);
             if (table && !tableHas(table, form)) wrong.push(`${idea.id}: ${form} is not in the table`);

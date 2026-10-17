@@ -164,4 +164,19 @@ What every card lacked, whatever its verdict, and what this story gave each one 
 | `crasis` | Two words run together | teaches a beginner | Gave κἀγώ; lacked the others in a table. |
 | `aramaic` | Aramaic words | teaches a beginner | Gave ἀββά; lacked a word the text marks as Aramaic (Ῥαββουνί). |
 | `hebrew` | Hebrew words | teaches a beginner | Gave ἀμήν and σαβαώθ; lacked a verse. |
+| `agreement` | Words that agree | teaches a beginner | Gave one pair (ἡ ζωή); lacked a pair with an adjective. |
+| `article-substantival` | The article standing alone | teaches a beginner | Gave τοῖς ἐν Χριστῷ Ἰησοῦ; lacked the participle case (οἱ μαρτυροῦντες). |
+| `article-position` | Where the adjective stands | teaches a beginner | Gave the attributive τὴν ζωὴν τὴν αἰώνιον; the predicate position is in the sheet's text, not worked. |
+| `postpositive` | Words that come second | teaches a beginner | Gave δέ; lacked γάρ, οὖν and μέν worked. |
+| `clause-hoti` | A clause with ὅτι | teaches a beginner | Gave ὅτι as “that”; lacked ὅτι as “because”. |
+| `clause-hina` | A clause with ἵνα | teaches a beginner | Gave purpose; lacked the other uses of ἵνα (result, content). |
+| `participle-adverbial` | A participle beside a verb | teaches a beginner | Gave one participle; lacked how to choose between “when”, “because” and “and”. |
+| `genitive-absolute` | The genitive absolute | teaches a beginner | Gave one verse; lacked a pronoun-less pair (a noun and a participle). |
+| `periphrastic` | Being plus a participle | teaches a beginner | Gave ᾖ πεπληρωμένη; lacked a past form (ἦν ...). |
+| `infinitive-articular` | The infinitive with the article | teaches a beginner | Gave τὸ ζῇν; lacked the preposition use (εἰς τὸ ...) worked. |
+| `infinitive-complement` | An infinitive that finishes a verb | teaches a beginner | Gave θέλω; lacked δύναμαι and δεῖ worked. |
+| `subjunctive-hortatory` | Let us: urging with the subjunctive | teaches a beginner | Gave Ἄγωμεν; lacked how to tell it from a subjunctive after ἵνα. |
+| `prohibition` | Do not: the two ways to forbid | teaches a beginner | Gave the present imperative; the aorist subjunctive is in the sheet's text, not worked. |
+| `ou-me` | οὐ μή: a strong no | teaches a beginner | Gave οὐ μὴ παρέλθωσιν; lacked a future verb after it. |
+| `condition` | If: the three conditions | teaches a beginner | Gave ἐάν with the subjunctive; the other two kinds are in the sheet's text, not worked. |
 <!-- audit:end -->

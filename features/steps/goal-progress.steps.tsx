@@ -11,7 +11,7 @@ import { App } from '../../src/App';
 import { BOOK_INDEX } from '../../src/data/bookIndex';
 import type { Chapter } from '../../src/data/chapter';
 import { db, type GrammarLevelName, type WordState } from '../../src/data/db';
-import { ALWAYS_NEEDED } from '../../src/data/grammar/ladder';
+import { ALWAYS_NEEDED, LADDER } from '../../src/data/grammar/ladder';
 import { passageNeeds, progressToward, type Level } from '../../src/data/grammar/needs';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
@@ -241,6 +241,48 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(within(await screen.findByTestId('ideas-list')).getByRole('button', { name: title }));
     });
     Then('the idea sheet is open on {string}', ideaSheetOn);
+  });
+
+  Scenario('A passage needs the sentence ideas its verses use', ({ Given, When, And, Then }) => {
+    Given(GIVEN_GOAL, givenGoal);
+    When('he opens the Goal screen', opensGoal);
+    And('he taps the ideas bar', async () => {
+      await user.click(await screen.findByTestId('ideas-bar'));
+    });
+    Then('the ideas list has {string}, {string} and {string}', async (_, a: string, b: string, c: string) => {
+      const list = await screen.findByTestId('ideas-list');
+      for (const title of [a, b, c]) expect(within(list).getByRole('button', { name: title })).toBeInTheDocument();
+    });
+    const needsOf = async (title: string, times: number, form: string, ref: string) => {
+      const idea = LADDER.find((i) => i.title === title)!;
+      const needs = await passageNeeds({ book: '1jn', chapter: 1 }, async (_, n) => chapterFile('1jn', n), BOOK_INDEX);
+      const found = needs.ideas.find((i) => i.id === idea.id);
+      expect(found?.count, title).toBe(times);
+      expect(found?.example.form, title).toBe(form);
+      expect(found?.example.ref, title).toBe(ref);
+    };
+    And('the passage needs {string} {int} times, the first shown by {string} in 1 John 1:{int}', (_, title: string, times: number, form: string, verse: number) =>
+      needsOf(title, times, form, `1jn.1.${verse}`),
+    );
+    And('{string} is needed {int} times, the first shown by {string} in 1 John 1:{int}', (_, title: string, times: number, form: string, verse: number) =>
+      needsOf(title, times, form, `1jn.1.${verse}`),
+    );
+    And('{string} counts {int} times, the first shown by {string} in 1 John 1:{int}', (_, title: string, times: number, form: string, verse: number) =>
+      needsOf(title, times, form, `1jn.1.${verse}`),
+    );
+    When('he taps the idea {string} in the ideas list', async (_, title: string) => {
+      await user.click(within(await screen.findByTestId('ideas-list')).getByRole('button', { name: title }));
+    });
+    Then('the idea sheet is open on {string}', ideaSheetOn);
+    const marked = async (verse: number, a: string, b: string) => {
+      const dialog = await sheet();
+      await waitFor(() => expect(within(dialog).queryByTestId('idea-loading')).toBeNull());
+      const row = within(dialog).getAllByTestId('idea-example').find((e) => e.querySelector('[data-testid="idea-verse"]')?.textContent === `1 John 1:${verse}`);
+      expect(row, `1 John 1:${verse}`).toBeDefined();
+      expect(Array.from(row!.querySelectorAll('[data-use]')).map((m) => m.textContent)).toEqual([a, b]);
+    };
+    And('the idea sheet shows 1 John 1:{int} with {string} and {string} marked', (_, verse: number, a: string, b: string) => marked(verse, a, b));
+    And('1 John 1:{int} on the sheet has {string} and {string} marked too', (_, verse: number, a: string, b: string) => marked(verse, a, b));
   });
 
   Scenario('The Goal screen says when he was placed', ({ Given, When, And, Then }) => {

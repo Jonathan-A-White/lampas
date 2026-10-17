@@ -5,7 +5,7 @@
 // Pure data work: no store, no screen; docs/grammar.md.
 import { chosenPronunciation } from '../../speech/greek';
 import { lessonsOf, type Pronunciation } from '../../speech/pronunciation';
-import { type BookIndex, type Chapter, type GreekWord, ownEnglish, wordGloss } from '../chapter';
+import { type BookIndex, type Chapter, type GreekWord, type Verse, ownEnglish, wordGloss } from '../chapter';
 import { goalText, parseGoal } from '../goal';
 import type { FormTest } from '../frontier';
 import { scoreWords } from '../ladderScore';
@@ -15,9 +15,11 @@ import type { OpenChapter } from '../readerChapter';
 import { easiestWith, type GradedVerse } from './gradedVerses';
 import { clustersOf, foundationOf, foundationSpans, isFoundation, LETTER_IDS, letterIdOf, type Span } from './inference';
 import { ideaOfTerm, ideasBelow, ideasOfWord, LADDER, type GrammarIdea } from './ladder';
+import { exampleIndexOf } from './needs';
 import { buildEnding, buildMeaning, buildParse, buildRoles, buildTapForm, needs, type GrammarQuestion } from './questions';
 import type { Random } from '../quiz';
 import { bare, cellOptions, tableHas, teachOf, type TeachTable } from './teach';
+import { usesOf } from './uses';
 
 /** A book goal looks in its first chapters only: every chapter would be a request each. */
 export const MAX_CHAPTERS = 5;
@@ -66,8 +68,11 @@ export interface IdeaExample {
   verse: number;
   /** '1 John 1:1' */
   reference: string;
-  /** the word's Greek in order, the letters the idea is about marked; one unmarked part for a grammar idea */
+  /** the word's Greek in order, the letters the idea is about marked; one unmarked part for a grammar idea. For a sentence idea (isSentenceIdea): the whole verse,
+   * a part for each word and each space between, the words of the use marked, and `word` is the use's head word (or its first word) */
   parts: ExamplePart[];
+  /** a sentence idea only: the English the verse gives the use's words, its chunks joined */
+  english?: string;
 }
 
 /** The English the verse gives `word` alone, '' when no chunk renders it alone or the chunk has no word of its own (chapter.ts ownEnglish). */
@@ -86,6 +91,55 @@ export function exampleMeaning(chapter: Chapter, verse: number, word: GreekWord)
   if (own) return own;
   const gloss = wordGloss(chapter, word);
   return gloss ? `${word.l}: ${gloss}` : word.l;
+}
+
+/** True for an idea of the sentences tier (mw-br588b.2): it is a use of several words (uses.ts), shown as a verse with the use's words marked, never as one word. */
+export const isSentenceIdea = (id: string): boolean => SENTENCE_IDS.has(id);
+const SENTENCE_IDS: ReadonlySet<string> = new Set(LADDER.filter((i) => i.tier === 'sentences').map((i) => i.id));
+
+/** The English a verse gives the words of a use: the chunks that render any of them, in English order, joined with ' … ' where they are not neighbours. */
+function englishOfUse(verse: Verse, words: readonly number[]): string {
+  return verse.e.filter((chunk) => chunk.g.some((i) => words.includes(i))).map((chunk) => chunk.t.trim()).join(' … ');
+}
+
+/** The verse written out, a part for each word and each space, the words at `marked` marked. */
+function verseParts(verse: Verse, marked: readonly number[]): ExamplePart[] {
+  return verse.g.flatMap((word, i): ExamplePart[] => [...(i > 0 ? [{ text: ' ', marked: false }] : []), { text: word.t, marked: marked.includes(i) }]);
+}
+
+/**
+ * Up to `limit` uses of a sentence idea in the order of the text, one for each verse first (a verse holding four uses of agreement shows one, and the next
+ * verses show theirs), then more from the same verses when the passage has fewer verses than that.
+ */
+function sentenceExamples(id: string, chapters: Chapter[], verse: number | undefined, limit: number): IdeaExample[] {
+  const found: { example: IdeaExample; first: boolean; order: number }[] = [];
+  let fresh = 0;
+  for (const chapter of chapters) {
+    for (const v of chapter.verses) {
+      if (verse !== undefined && v.n !== verse) continue;
+      let first = true;
+      for (const use of usesOf(v)) {
+        if (use.id !== id) continue;
+        found.push({
+          example: {
+            word: v.g[exampleIndexOf(use)],
+            chapter,
+            verse: v.n,
+            reference: `${chapter.book} ${chapter.chapter}:${v.n}`,
+            parts: verseParts(v, use.words),
+            english: englishOfUse(v, use.words),
+          },
+          first,
+          order: found.length,
+        });
+        if (first) fresh++;
+        first = false;
+      }
+    }
+    if (fresh >= limit) break;
+  }
+  const chosen = [...found.filter((f) => f.first), ...found.filter((f) => !f.first)].slice(0, limit);
+  return chosen.sort((a, b) => a.order - b.order).map((f) => f.example);
 }
 
 /** Words of `chapters` (the one `verse` of the first, when given), in text order. */
@@ -241,6 +295,7 @@ export function cardExplains(id: string, word: GreekWord): boolean {
  * must make the sound the card teaches in `scheme` (the chosen pronunciation): a letter inside a pair, or said otherwise by what is next to it, is no example.
  */
 export function ideaExamples(id: string, chapters: Chapter[], verse?: number, max?: number, scheme: Pronunciation = chosenPronunciation()): IdeaExample[] {
+  if (isSentenceIdea(id)) return sentenceExamples(id, chapters, verse, max ?? MAX_EXAMPLES);
   const spelling = isSpellingIdea(id);
   const byForm = BY_FORM.includes(id);
   const limit = max ?? (spelling ? MAX_FOUNDATION_EXAMPLES : byForm ? MAX_FORM_EXAMPLES : MAX_EXAMPLES);
@@ -286,6 +341,7 @@ const firstSense = (gloss: string): string => gloss.split(/[/;:,]/)[0].trim();
  */
 export function exampleGloss(idea: GrammarIdea, example: IdeaExample): string {
   const { word, chapter, verse } = example;
+  if (example.english !== undefined) return example.english;
   if (idea.id === 'article' && word.p.startsWith('T-')) return 'the';
   const own = wordEnglish(chapter, verse, word);
   if (own) return own;
@@ -306,7 +362,7 @@ function partnerOf(example: IdeaExample): GreekWord | undefined {
  * Undefined for an idea of spelling, whose marked letters are the explanation, or when the card has taught none of its terms.
  */
 export function exampleNote(idea: GrammarIdea, example: IdeaExample): string | undefined {
-  if (isSpellingIdea(idea.id)) return undefined;
+  if (isSpellingIdea(idea.id) || isSentenceIdea(idea.id)) return undefined;
   const taught = taughtAt(idea.id);
   const pos = splitParse(example.word.p).pos;
   // the parsing's groups ('verb', 'imperfect active indicative', '3rd person singular'), each kept to the terms the card has taught, the part of speech left out

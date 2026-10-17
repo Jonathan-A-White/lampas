@@ -18,7 +18,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { loadChapter, loadIndex, type Chapter, type GreekWord } from './data/chapter';
 import { unmetNeed } from './data/grammar/drillIt';
 import { loadFrequency } from './data/frequency';
-import { exampleGloss, exampleNote, hasFormOf, ideaExamples, ideaExamplesFor, ideaPassage, isSoundIdea, isSpellingIdea, passageForms, type ExampleRanking, type IdeaExample, type IdeaExamples, type IdeaPassage, type PairCase } from './data/grammar/ideaSheet';
+import { exampleGloss, exampleNote, hasFormOf, ideaExamples, ideaExamplesFor, ideaPassage, isSentenceIdea, isSoundIdea, isSpellingIdea, passageForms, type ExampleRanking, type IdeaExample, type IdeaExamples, type IdeaPassage, type PairCase } from './data/grammar/ideaSheet';
 import { ideaOf, type GrammarIdea } from './data/grammar/ladder';
 import { soundLesson } from './data/grammar/lessons';
 import { stepsOf, teachOf, workedFor, type Teach, type TeachTable } from './data/grammar/teach';
@@ -230,6 +230,9 @@ function PairLine({ pairCase, onOpen }: { pairCase: PairCase; onOpen: () => void
 function Example({ idea, example, onWord, hidden }: { idea: GrammarIdea; example: IdeaExample; onWord: (chapter: Chapter, word: GreekWord) => void; hidden: boolean }) {
   const { word, chapter, reference } = example;
   const note = exampleNote(idea, example);
+  // a sentence idea shows its verse with the use's words marked (data-use), and the speaker says those words
+  const sentence = isSentenceIdea(idea.id);
+  const said = sentence ? example.parts.filter((p) => p.marked).map((p) => p.text).join(' ') : word.t;
   return (
     <li hidden={hidden} className="flex items-center gap-1">
       <button
@@ -240,10 +243,10 @@ function Example({ idea, example, onWord, hidden }: { idea: GrammarIdea; example
         onClick={() => onWord(chapter, word)}
         className="flex min-h-12 min-w-0 flex-1 flex-wrap items-center justify-between gap-x-3 rounded-xl border border-line px-3 py-1 text-left active:bg-line"
       >
-        <span lang="grc" className="font-greek text-2xl">
+        <span lang="grc" className={sentence ? 'font-greek text-[length:var(--lp-greek-size)] basis-full' : 'font-greek text-2xl'}>
           {example.parts.map((part, i) =>
             part.marked ? (
-              <span key={i} data-marked className="font-bold text-accent underline decoration-2 underline-offset-4">
+              <span key={i} data-marked data-use={sentence ? '' : undefined} className="font-bold text-accent underline decoration-2 underline-offset-4">
                 {part.text}
               </span>
             ) : (
@@ -261,7 +264,7 @@ function Example({ idea, example, onWord, hidden }: { idea: GrammarIdea; example
           </span>
         ) : null}
       </button>
-      <SpeakButton text={word.t} id={`idea:${word.t}`} label={`Hear ${word.t}`} kind="speaker" className="shrink-0" />
+      <SpeakButton text={said} id={`idea:${said}`} label={`Hear ${said}`} kind="speaker" className="shrink-0" />
     </li>
   );
 }
@@ -277,7 +280,7 @@ function Examples({ idea, examples, onWord }: { idea: GrammarIdea; examples: Ide
     <>
       <ul className="space-y-2 pt-1">
         {examples.map((example, i) => (
-          <Example key={`${example.reference}:${example.word.t}`} idea={idea} example={example} onWord={onWord} hidden={i >= examples.length - folded} />
+          <Example key={`${example.reference}:${i}:${example.word.t}`} idea={idea} example={example} onWord={onWord} hidden={i >= examples.length - folded} />
         ))}
       </ul>
       {folded ? (

@@ -23,7 +23,7 @@ Feature: See my goal move
     When he opens the Goal screen
     Then the title says "Read 1 John 1:1"
     And the words bar says solid 2, frontier 2 and not yet 12
-    And the ideas bar says solid 8, frontier 1 and not yet 37
+    And the ideas bar says solid 8, frontier 1 and not yet 38
     And the screen says "Solid when both are full"
 
   Scenario: Learn next names the earliest not-yet idea of the ladder with its lesson and opens its sheet
@@ -50,7 +50,7 @@ Feature: See my goal move
     When he opens the Goal screen
     And he taps Learn next
     And he slides the level on the idea sheet to Learning
-    Then the ideas bar says solid 8, frontier 1 and not yet 37
+    Then the ideas bar says solid 8, frontier 1 and not yet 38
     When he closes the idea sheet
     Then the Goal screen says "Learning now: The noun" and no Learn next
 
@@ -66,6 +66,19 @@ Feature: See my goal move
     Then the ideas list has "The Greek alphabet" under Solid
     When he taps the idea "The noun" in the ideas list
     Then the idea sheet is open on "The noun"
+
+  Scenario: A passage needs the sentence ideas its verses use
+    Given the goal is "1 John 1" and he knows no word and no idea
+    When he opens the Goal screen
+    And he taps the ideas bar
+    Then the ideas list has "A clause with ἵνα", "If: the three conditions" and "A clause with ὅτι"
+    And the passage needs "A clause with ἵνα" 3 times, the first shown by "ἔχητε" in 1 John 1:3
+    And "If: the three conditions" is needed 5 times, the first shown by "εἴπωμεν" in 1 John 1:6
+    And "A clause with ὅτι" counts 4 times, the first shown by "ὅτι" in 1 John 1:5
+    When he taps the idea "A clause with ἵνα" in the ideas list
+    Then the idea sheet is open on "A clause with ἵνα"
+    And the idea sheet shows 1 John 1:3 with "ἵνα" and "ἔχητε" marked
+    And 1 John 1:9 on the sheet has "ἵνα" and "ἀφῇ" marked too
 
   Scenario: The Goal screen says when he was placed
     Given the goal is "1 John 1:1" and he knows no word and no idea

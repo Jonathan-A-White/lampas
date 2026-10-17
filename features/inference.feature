@@ -42,4 +42,4 @@ Feature: What my right answers show
     And he answers 3 questions right
     Then the idea "accents" is solid, inferred from his answers
     When he opens the Goal screen
-    Then the grammar bar says solid 1, frontier 1 and not yet 44
+    Then the grammar bar says solid 1, frontier 1 and not yet 45

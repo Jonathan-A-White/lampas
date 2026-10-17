@@ -21,8 +21,10 @@ book he is integrating that the ladder is *missing*, and where in the directed a
 - **Verdicts.** *covered*: the named ideas teach it. *partly*: the forms are taught but what to do with them in a sentence is
   not, or a rarer variety is missing. *gap*: nothing in the ladder.
 
-Counts: 74 BMA lessons, 53 covered, 21 partly, 0 gap. 26 book chapters, 20 covered, 6 partly, 0 gap. 12 ideas are proposed in
+Counts: 74 BMA lessons, 53 covered, 21 partly, 0 gap. 26 book chapters, 20 covered, 6 partly, 0 gap. 11 ideas are proposed in
 section (c); that is the gap count.
+
+The sentences tier (`mw-br588b.2`) has since taken the ideas for the genitive absolute, the clauses with ἵνα and ὅτι, the three conditions and the other uses of `src/data/grammar/uses.ts`, so the lessons above name them; what remains below is what those do not yet teach.
 
 The pattern is plain: the ladder teaches every **form** both courses teach. What it lacks is the **use** of the forms: what a
 participle, an infinitive or a case is doing in a sentence, and the clause patterns (purpose, result, reported speech, the
@@ -72,23 +74,23 @@ kinds of "if") a New Testament sentence is built from.
 | Foundations | More tenses and moods | A finished action with a lasting result | `tense-perfect`, `reduplication`, `tense-signs`, `principal-parts`, `oida` | covered |  |
 | Foundations | More tenses and moods | That result, in the past | `tense-pluperfect` | covered |  |
 | Foundations | More tenses and moods | Verbs with their own endings | `tense-present`, `second-tenses`, `mi-verbs` | covered |  |
-| Foundations | More tenses and moods | What may happen | `mood-subjunctive` | covered |  |
+| Foundations | More tenses and moods | What may happen | `mood-subjunctive`, `subjunctive-hortatory` | covered |  |
 | Foundations | More tenses and moods | If and unless | `conditional` | partly | `conditional-classes` |
 | Foundations | More tenses and moods | A wish | `mood-optative` | covered |  |
 | Foundations | More tenses and moods | A command | `mood-imperative` | covered |  |
-| Foundations | More tenses and moods | No, not and do not | `negative` | covered |  |
+| Foundations | More tenses and moods | No, not and do not | `negative`, `prohibition`, `ou-me` | covered |  |
 | Foundations | More tenses and moods | Asking a question | `interrogative` | covered |  |
 | Foundations | More tenses and moods | Cries and calls | `interjection` | covered |  |
 | Foundations | More tenses and moods | The verb as a whole | `tense-future`, `tense-perfect`, `mood-subjunctive`, `mood-imperative` | covered |  |
 | Foundations | Participles, infinitives and clauses | The verb as a noun | `mood-infinitive` | partly | `infinitive-uses` |
 | Foundations | Participles, infinitives and clauses | The verb as a describing word | `mood-participle` | partly | `participle-uses` |
 | Foundations | Participles, infinitives and clauses | A participle that commands | `mood-participle-imperative` | covered |  |
-| Foundations | Participles, infinitives and clauses | Being plus a participle | `tense-perfect`, `mood-participle` | partly | `participle-uses` |
-| Foundations | Participles, infinitives and clauses | Clauses of condition and purpose | `conditional`, `mood-subjunctive` | partly | `conditional-classes`, `purpose-result-clauses` |
-| Foundations | Participles, infinitives and clauses | Clauses that say who or which | `pronoun-relative`, `mood-indicative` | covered |  |
-| Foundations | Participles, infinitives and clauses | Purpose and result with the infinitive | `mood-infinitive`, `mood-subjunctive` | partly | `purpose-result-clauses`, `infinitive-uses` |
-| Foundations | Participles, infinitives and clauses | Clauses built on a participle | `mood-participle`, `case-genitive` | partly | `genitive-absolute`, `participle-uses` |
-| Foundations | Participles, infinitives and clauses | Long sentences | `conjunction`, `particle` | partly | `sentence-patterns` |
+| Foundations | Participles, infinitives and clauses | Being plus a participle | `tense-perfect`, `mood-participle`, `periphrastic` | partly | `participle-uses` |
+| Foundations | Participles, infinitives and clauses | Clauses of condition and purpose | `conditional`, `mood-subjunctive`, `condition`, `clause-hina` | partly | `conditional-classes`, `purpose-result-clauses` |
+| Foundations | Participles, infinitives and clauses | Clauses that say who or which | `pronoun-relative`, `mood-indicative`, `agreement`, `article-substantival` | covered |  |
+| Foundations | Participles, infinitives and clauses | Purpose and result with the infinitive | `mood-infinitive`, `mood-subjunctive`, `infinitive-articular`, `infinitive-complement` | partly | `purpose-result-clauses`, `infinitive-uses` |
+| Foundations | Participles, infinitives and clauses | Clauses built on a participle | `mood-participle`, `case-genitive`, `participle-adverbial`, `genitive-absolute` | partly | `participle-uses` |
+| Foundations | Participles, infinitives and clauses | Long sentences | `conjunction`, `particle`, `postpositive`, `article-position`, `clause-hoti` | partly | `sentence-patterns` |
 | Foundations | Participles, infinitives and clauses | Reading Paul: the opening of a letter | `voice-passive`, `mood-participle` | partly | `case-uses`, `verbal-aspect` |
 | Foundations | Participles, infinitives and clauses | Reading Paul: an argument | `conditional`, `preposition` | partly | `conditional-classes`, `indirect-discourse` |
 | Foundations | Participles, infinitives and clauses | Reading Paul: an appeal | `mood-imperative`, `negative` | partly | `purpose-result-clauses`, `sentence-patterns` |
@@ -132,7 +134,7 @@ Black, *Learn to Read New Testament Greek*, 3rd edition (2009). Chapter titles o
 | 17 | Nouns of the Third Declension | `declension-3`, `dictionary-entry` | covered | |
 | 18 | Adjectives, Pronouns, and Numerals of the First and Third Declensions | `adjective`, `comparative`, `superlative`, `numeral`, `declension-3` | covered | |
 | 19 | Contract and Liquid Verbs | `contract-verbs`, `tense-signs` | partly | `liquid-verbs`, `consonant-changes` |
-| 20 | Participles (Verbal Adjectives) | `mood-participle`, `mood-participle-imperative` | partly | `participle-uses`, `genitive-absolute` |
+| 20 | Participles (Verbal Adjectives) | `mood-participle`, `mood-participle-imperative` | partly | `participle-uses` |
 | 21 | Infinitives (Verbal Nouns) | `mood-infinitive` | partly | `infinitive-uses` |
 | 22 | Additional Pronouns | `pronoun-relative`, `pronoun-interrogative`, `pronoun-indefinite`, `pronoun-reflexive`, `pronoun-reciprocal`, `pronoun-correlative` | covered | |
 | 23 | The Subjunctive Mood | `mood-subjunctive`, `conditional` | partly | `purpose-result-clauses`, `conditional-classes` |
@@ -153,24 +155,22 @@ ladder numbers them by its order. The first five are the most valuable to a read
 | # | Proposed id | Title | Tier | Needs | Why a reader needs it |
 | --- | --- | --- | --- | --- | --- |
 | 1 | `participle-uses` | What a participle is doing | verbs | `mood-participle`, `article`, `case-uses` | Participles are everywhere in the New Testament, and the same form is a noun ("the one believing"), a describer, or a clause ("having heard, he went"); only the use tells which. |
-| 2 | `genitive-absolute` | The genitive absolute | verbs | `mood-participle`, `case-genitive`, `participle-uses` | A noun and participle both in the genitive, apart from the main clause, is a stock way to say "when…" or "while…" and is a trap for a reader who looks for its subject in the sentence. |
-| 3 | `case-uses` | What each case does in a sentence | nouns | `case-nominative`, `case-accusative`, `case-genitive`, `case-dative` | Knowing a form is genitive is not knowing whether it means "of", "from" or "belonging to"; the uses (subject, object, possession, means, indirect object, direct address) turn a parsed word into a meaning. |
-| 4 | `purpose-result-clauses` | Clauses of purpose and result | joiners | `conjunction`, `mood-subjunctive`, `mood-infinitive` | "In order that" (ἵνα) and "so that" are among the commonest ways a New Testament author gives a reason; they take the subjunctive or the infinitive. |
-| 5 | `verbal-aspect` | What a tense says: kind of action | verbs | `tense-present`, `tense-imperfect`, `tense-aorist`, `tense-perfect` | The Greek tenses mark the kind of action (going on, done as a whole, done with a result that remains) more than its time, so "do not keep doing" and "do not start" differ by tense and a reader who hears only time misses it. |
-| 6 | `indirect-discourse` | Reported speech and thought | joiners | `conjunction`, `mood-indicative`, `mood-infinitive` | After "say", "know", "believe" and "see", ὅτι or an infinitive carries what was said or thought; without it a reader cannot tell the saying from the thing said. |
-| 7 | `conditional-classes` | The kinds of "if" | joiners | `conditional`, `mood-optative`, `tense-aorist` | The ladder has one idea for the conditional; but "if (and it is so)", "if (and it may be)" and "if (and it is not)" differ by mood and tense, and Paul's and John's arguments turn on which is meant. |
-| 8 | `infinitive-uses` | What an infinitive is doing | verbs | `mood-infinitive`, `article`, `case-uses` | The infinitive completes a verb ("able to"), states purpose, or with the article is a noun in a case ("by believing"); one form, several jobs. |
-| 9 | `liquid-verbs` | Verbs whose stem ends in λ, μ, ν or ρ | verbs | `tense-future`, `tense-aorist`, `tense-signs`, `stem-and-ending` | These verbs lose or change the tense sign (ἀποστέλλω gives ἀπέστειλα, μένω gives μενῶ), so a reader meets forms that look like no tense sign they were taught. |
-| 10 | `consonant-changes` | Letters that change where stem meets ending | verbs | `stem-and-ending`, `tense-signs`, `syllables` | A stop before σ, or a letter dropped before an ending, hides the stem (κηρύσσω, ἔπεμψα); this is the root-variation and assimilation BMA names, which `crasis` and `attic-form` only stand in for. |
-| 11 | `sentence-patterns` | How a Greek sentence is put together | joiners | `case-nominative`, `case-accusative`, `eimi`, `article`, `conjunction` | Word order is free: a reader needs the subject and object found by case, a predicate after "is", apposition, and the long chained sentences Paul writes. |
-| 12 | `reading-the-text` | Reading a printed Greek New Testament | joiners | `dictionary-entry`, `punctuation`, `enclitics`, `sentence-patterns` | The step from exercises to the page: the editions, the apparatus and its marks, the lexicon, and what to do with a form that is not in the paradigms. |
+| 2 | `case-uses` | What each case does in a sentence | nouns | `case-nominative`, `case-accusative`, `case-genitive`, `case-dative` | Knowing a form is genitive is not knowing whether it means "of", "from" or "belonging to"; the uses (subject, object, possession, means, indirect object, direct address) turn a parsed word into a meaning. |
+| 3 | `purpose-result-clauses` | Clauses of purpose and result | joiners | `conjunction`, `mood-subjunctive`, `mood-infinitive` | "In order that" (ἵνα) and "so that" are among the commonest ways a New Testament author gives a reason; they take the subjunctive or the infinitive. |
+| 4 | `verbal-aspect` | What a tense says: kind of action | verbs | `tense-present`, `tense-imperfect`, `tense-aorist`, `tense-perfect` | The Greek tenses mark the kind of action (going on, done as a whole, done with a result that remains) more than its time, so "do not keep doing" and "do not start" differ by tense and a reader who hears only time misses it. |
+| 5 | `indirect-discourse` | Reported speech and thought | joiners | `conjunction`, `mood-indicative`, `mood-infinitive` | After "say", "know", "believe" and "see", ὅτι or an infinitive carries what was said or thought; without it a reader cannot tell the saying from the thing said. |
+| 6 | `conditional-classes` | The kinds of "if" | joiners | `conditional`, `mood-optative`, `tense-aorist` | The ladder has one idea for the conditional; but "if (and it is so)", "if (and it may be)" and "if (and it is not)" differ by mood and tense, and Paul's and John's arguments turn on which is meant. |
+| 7 | `infinitive-uses` | What an infinitive is doing | verbs | `mood-infinitive`, `article`, `case-uses` | The infinitive completes a verb ("able to"), states purpose, or with the article is a noun in a case ("by believing"); one form, several jobs. |
+| 8 | `liquid-verbs` | Verbs whose stem ends in λ, μ, ν or ρ | verbs | `tense-future`, `tense-aorist`, `tense-signs`, `stem-and-ending` | These verbs lose or change the tense sign (ἀποστέλλω gives ἀπέστειλα, μένω gives μενῶ), so a reader meets forms that look like no tense sign they were taught. |
+| 9 | `consonant-changes` | Letters that change where stem meets ending | verbs | `stem-and-ending`, `tense-signs`, `syllables` | A stop before σ, or a letter dropped before an ending, hides the stem (κηρύσσω, ἔπεμψα); this is the root-variation and assimilation BMA names, which `crasis` and `attic-form` only stand in for. |
+| 10 | `sentence-patterns` | How a Greek sentence is put together | joiners | `case-nominative`, `case-accusative`, `eimi`, `article`, `conjunction` | Word order is free: a reader needs the subject and object found by case, a predicate after "is", apposition, and the long chained sentences Paul writes. |
+| 11 | `reading-the-text` | Reading a printed Greek New Testament | joiners | `dictionary-entry`, `punctuation`, `enclitics`, `sentence-patterns` | The step from exercises to the page: the editions, the apparatus and its marks, the lexicon, and what to do with a form that is not in the paradigms. |
 
 Proposed ideas as a list (the test checks that each tier is a ladder tier, that no id is already in the ladder, and that
 every id in `needs` is in `ladder.ts` or is another proposed idea above it):
 
 ```text
 participle-uses | verbs | mood-participle, article, case-uses
-genitive-absolute | verbs | mood-participle, case-genitive, participle-uses
 case-uses | nouns | case-nominative, case-accusative, case-genitive, case-dative
 purpose-result-clauses | joiners | conjunction, mood-subjunctive, mood-infinitive
 verbal-aspect | verbs | tense-present, tense-imperfect, tense-aorist, tense-perfect
@@ -185,8 +185,7 @@ reading-the-text | joiners | dictionary-entry, punctuation, enclitics, sentence-
 
 Where they sit: `case-uses` (nouns tier) rests on the four cases and is placed after `case-vocative`, so `preposition` could
 come to rest on it later. The verb ideas (`verbal-aspect`, `liquid-verbs`, `consonant-changes`, `participle-uses`,
-`infinitive-uses`, `genitive-absolute`) sit after `mood-participle` / `tense-perfect` in the verbs tier; the clause ideas and
+`infinitive-uses`) sit after `mood-participle` / `tense-perfect` in the verbs tier; the clause ideas and
 the two reading ideas go to the joiners tier, after `conditional`. BMA's lessons would name them as follows: `consonant-changes`
-in place of `crasis` and `attic-form` in "Letters that change at a joint" and "Stems that shift"; `participle-uses` and
-`genitive-absolute` in level 5; `purpose-result-clauses`, `indirect-discourse` and `conditional-classes` in "Clauses of
+in place of `crasis` and `attic-form` in "Letters that change at a joint" and "Stems that shift"; `participle-uses` in level 5; `purpose-result-clauses`, `indirect-discourse` and `conditional-classes` in "Clauses of
 condition and purpose" and the 1 John lessons.
