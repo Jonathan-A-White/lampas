@@ -43,7 +43,7 @@ function statusFor(txid: string, status: string, more: Record<string, unknown> =
   return { kind: 'request-status', request: txid, bead: 'mw-x.1', status, ts: 1_790_000_000_000 + clock, ...more };
 }
 
-async function openWith(summaries: string[]): Promise<void> {
+async function openWith(summaries: string[], pollMs = 20): Promise<void> {
   cleanup();
   // the screen of the last scenario may be in the middle of a pull: let it end before the tables are cleared
   await new Promise((r) => setTimeout(r, 100));
@@ -52,7 +52,7 @@ async function openWith(summaries: string[]): Promise<void> {
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
   window.history.replaceState(null, '', '/#/requests');
-  requestTimings.pollMs = 20;
+  requestTimings.pollMs = pollMs;
   clock = 0;
   fake = makeFakePostern();
   vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) =>
@@ -87,10 +87,25 @@ const readsAs = async (summary: string, line: string): Promise<void> => {
 /** Waits until the screen has pulled at least `count` more times than `before`. */
 const pulledSince = (before: number, count = 1): Promise<void> => waitFor(() => expect(fake.sinces.length).toBeGreaterThanOrEqual(before + count));
 
+/** The phone hides or shows the app: document.hidden and visibilityState say so, and visibilitychange fires. */
+function setHidden(hidden: boolean): void {
+  Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden });
+  Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => (hidden ? 'hidden' : 'visible') });
+  document.dispatchEvent(new Event('visibilitychange'));
+}
+
+/** Back to jsdom's own (always visible) document. */
+function forgetVisibility(): void {
+  Reflect.deleteProperty(document, 'hidden');
+  Reflect.deleteProperty(document, 'visibilityState');
+}
+
 const feature = await loadFeature('features/your-requests.feature');
 
-describeFeature(feature, ({ Scenario }) => {
+describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
   const open = 'Your requests is open behind a fake Postern with the request {string}';
+
+  AfterEachScenario(() => forgetVisibility());
 
   Scenario('A request nobody has answered yet reads Sent', ({ Given, Then }) => {
     Given(open, (_, summary: string) => openWith([summary]));
@@ -255,6 +270,50 @@ describeFeature(feature, ({ Scenario }) => {
       await new Promise((r) => setTimeout(r, 200));
       expect(fake.calls.length).toBe(calls);
     });
+  });
+
+  Scenario('Coming back to the app pulls at once, not at the next tick', ({ Given, When, Then, And }) => {
+    let before = 0;
+    Given('Your requests is open behind a fake Postern with the request {string}, pulling only once a minute', (_, summary: string) =>
+      openWith([summary], 60_000),
+    );
+    And('the first pull has been made', async () => {
+      await pulledSince(0);
+      // let that pull end (it reads the empty page and writes nothing), so the next one is the visible page's
+      await new Promise((r) => setTimeout(r, 100));
+    });
+    When('the phone hides Lampas', () => setHidden(true));
+    And('the mill sends the status {string} for {string}', (_, status: string, summary: string) => {
+      before = fake.sinces.length;
+      sendStatus(summary, status);
+    });
+    And('the phone shows Lampas again', () => setHidden(false));
+    Then('one pull is made at once', async () => {
+      // the next tick is a minute away: only becoming visible can explain a pull now
+      await pulledSince(before);
+      await new Promise((r) => setTimeout(r, 200));
+      // one pull reads pages until one is empty: the page with the record, then the empty page after it
+      expect(fake.sinces.slice(before)).toEqual([0, 1]);
+    });
+    And('the request {string} reads {string}', (_, summary: string, line: string) => readsAs(summary, line));
+  });
+
+  Scenario('While the app is hidden the screen pulls nothing', ({ Given, When, Then, And }) => {
+    let calls = 0;
+    Given(open, (_, summary: string) => openWith([summary]));
+    And('the first pull has been made', () => pulledSince(0));
+    When('the phone hides Lampas', async () => {
+      setHidden(true);
+      // a pull already on its way when the page was hidden may end; none starts after it
+      await new Promise((r) => setTimeout(r, 100));
+      calls = fake.calls.length;
+    });
+    And('the mill sends the status {string} for {string}', (_, status: string, summary: string) => sendStatus(summary, status));
+    Then('the backend is not asked while the app is hidden', async () => {
+      await new Promise((r) => setTimeout(r, 300));
+      expect(fake.calls.length).toBe(calls);
+    });
+    And('the request {string} still reads {string}', (_, summary: string, line: string) => readsAs(summary, line));
   });
 
   Scenario('With no request sent the screen says so', ({ Given, Then }) => {

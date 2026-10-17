@@ -2,7 +2,8 @@ Feature: Your requests
   Settings and About each have a Your requests row. It opens a screen that lists every request he sent to the factory (an approach he
   asked for, an ask the tutor could not meet), the newest first, each with where it stands: Sent, Filed, Being built, Adopted in a version
   (a link to the commit), Declined with the reason, or Now a setting with the setting's name. The backend pushes nothing, so the screen
-  pulls GET /api/messages?since= from a cursor it keeps, when it opens and every 20 seconds while it is up, and believes only a
+  pulls GET /api/messages?since= from a cursor it keeps, when it opens, every 20 seconds while it is up and at once when the phone shows
+  the app again after hiding it, never while it is hidden, and believes only a
   request-status record the mill key sealed to this phone, for a request this phone sent. Postern's protocol section 19 says what a record holds.
 
   Scenario: A request nobody has answered yet reads Sent
@@ -86,6 +87,23 @@ Feature: Your requests
     Given Your requests is open behind a fake Postern with the request "Add a sepia theme"
     When he leaves the screen
     Then the backend is not asked again
+
+  Scenario: Coming back to the app pulls at once, not at the next tick
+    Given Your requests is open behind a fake Postern with the request "Add a sepia theme", pulling only once a minute
+    And the first pull has been made
+    When the phone hides Lampas
+    And the mill sends the status "filed" for "Add a sepia theme"
+    And the phone shows Lampas again
+    Then one pull is made at once
+    And the request "Add a sepia theme" reads "Filed"
+
+  Scenario: While the app is hidden the screen pulls nothing
+    Given Your requests is open behind a fake Postern with the request "Add a sepia theme"
+    And the first pull has been made
+    When the phone hides Lampas
+    And the mill sends the status "filed" for "Add a sepia theme"
+    Then the backend is not asked while the app is hidden
+    And the request "Add a sepia theme" still reads "Sent"
 
   Scenario: With no request sent the screen says so
     Given Your requests is open behind a fake Postern with no request

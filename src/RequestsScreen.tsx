@@ -1,7 +1,8 @@
 // src/RequestsScreen.tsx — Your requests (mw-vy3ghg.5, #/requests, reached from Settings > More and from About): every request he sent to the
 // factory, the newest first, each with where it stands: Sent, Filed, Being built, Adopted in <version> (a link to the commit), Declined: <reason>
 // or Now a setting: <name>. The backend pushes nothing for a grist, so while the screen is up it pulls the mill's request-status records
-// (src/services/requestStatus.ts) when it opens and every requestTimings.pollMs; the list is a live query, so a record shows as it is applied.
+// (src/services/requestStatus.ts) when it opens, every requestTimings.pollMs and at once when the phone shows the app again (never while it is
+// hidden); the list is a live query, so a record shows as it is applied.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
 import { listRequests, type RequestRow } from './data/repositories/requests';
@@ -32,14 +33,19 @@ function statusLine(row: RequestRow): string {
 
 const sentOn = (ms: number): string => new Date(ms).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 
-/** Pulls the statuses now and then until the screen goes; true while the last pull failed. One pull at a time. */
+/** Pulls the statuses now and then until the screen goes, never while the page is hidden and at once when it is shown again; true while the
+ * last pull failed. One pull at a time: shown again during a pull, the next one starts as that one ends. */
 function useStatusPulling(): boolean {
   const [failed, setFailed] = useState(false);
   useEffect(() => {
     const stop = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;
     let mill: string | undefined;
+    let pulling = false;
+    let again = false;
     const run = async (): Promise<void> => {
+      clearTimeout(timer);
+      pulling = true;
       if (!document.hidden) {
         try {
           mill = (await pullStatuses({ key: getDeviceKeyBytes(), signal: stop.signal, mill })).mill;
@@ -48,12 +54,24 @@ function useStatusPulling(): boolean {
           if (!stop.signal.aborted) setFailed(true);
         }
       }
-      if (!stop.signal.aborted) timer = setTimeout(() => void run(), requestTimings.pollMs);
+      pulling = false;
+      if (stop.signal.aborted) return;
+      if (again) {
+        again = false;
+        void run();
+      } else timer = setTimeout(() => void run(), requestTimings.pollMs);
     };
+    const onVisible = (): void => {
+      if (document.hidden) return;
+      if (pulling) again = true;
+      else void run();
+    };
+    document.addEventListener('visibilitychange', onVisible);
     void run();
     return () => {
       stop.abort();
       clearTimeout(timer);
+      document.removeEventListener('visibilitychange', onVisible);
     };
   }, []);
   return failed;
