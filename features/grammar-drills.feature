@@ -128,6 +128,32 @@ Feature: Review asks grammar ideas, and asks them before words
     Then the subject turns green
     And "case-nominative" has one right review and no lapse
 
+  # mw-br588b.3: a sentence idea is asked on its verses, not by its definition.
+  Scenario: A clause idea is asked on its verse
+    Given his goal is "1 John 1"
+    And he knows every word and every idea of "1 John 1"
+    And the idea "clause-hina" is due
+    And the draw asks "clause-hina" as a use in "1 John 1:3"
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    Then the card shows "1 John 1:3" with ἵνα marked and four uses to choose from
+    When he taps the right use
+    Then the right use turns green
+    And "clause-hina" has one right review and no lapse
+
+  Scenario: A strong clause idea shows the verse and Show reveals its use
+    Given his goal is "1 John 1"
+    And he knows every word and every idea of "1 John 1"
+    And the idea "clause-hina" is due on step 3
+    And the draw asks "clause-hina" as a use in "1 John 1:3"
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    Then the card shows the verse "1 John 1:3" and the question and no options
+    When he taps Show
+    Then the title of the use is shown
+
   Scenario: A preposition is asked by the case of a real phrase
     Given his goal is "1 John 1"
     And the idea "preposition-dia" is due

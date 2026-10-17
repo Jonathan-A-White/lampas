@@ -485,6 +485,68 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('A clause idea is asked on its verse', ({ Given, And, When, Then }) => {
+    Given('his goal is {string}', async (_, goal: string) => {
+      await freshStore();
+      await setGoal(goal);
+    });
+    And('he knows every word and every idea of {string}', async (_, name: string) => knowEverything(name));
+    And('the idea {string} is due', async (_, id: string) => makeIdeaDue(id));
+    And('the draw asks {string} as a use in {string}', async (_, id: string, ref: string) => {
+      await drawAs(id, [chapter('1jn/1')], 'use', (q) => q.ref === ref);
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    Then('the card shows {string} with ἵνα marked and four uses to choose from', (_, ref: string) => {
+      expect(screen.getByTestId('grammar-prompt').getAttribute('data-kind')).toBe('use');
+      expect(screen.getByTestId('grammar-prompt')).toHaveTextContent('What is ἵνα doing here?');
+      expect(screen.getByTestId('grammar-ref').textContent).toBe(ref);
+      const marked = [...document.querySelectorAll('[data-marked]')].map((e) => e.textContent!.trim());
+      expect(marked).toHaveLength(2);
+      expect(marked[0]).toBe('ἵνα');
+      expect(screen.getByTestId('use-verse').textContent!.replace(/\s+/g, ' ').trim()).toBe(expected!.words!.join(' '));
+      expect(optionButtons()).toHaveLength(4);
+    });
+    When('he taps the right use', async () => user.click(rightOne()));
+    Then('the right use turns green', () => {
+      expect(rightOne().getAttribute('data-result')).toBe('right');
+      expect(rightOne().textContent).toBe('A clause with ἵνα');
+      expect(screen.getByTestId('feedback')).toHaveTextContent('Right.');
+    });
+    And('{string} has one right review and no lapse', async (_, id: string) => {
+      await waitFor(async () => expect((await review(id)).rights).toBe(1));
+      expect((await review(id)).lapses).toBe(0);
+    });
+  });
+
+  Scenario('A strong clause idea shows the verse and Show reveals its use', ({ Given, And, When, Then }) => {
+    Given('his goal is {string}', async (_, goal: string) => {
+      await freshStore();
+      await setGoal(goal);
+    });
+    And('he knows every word and every idea of {string}', async (_, name: string) => knowEverything(name));
+    And('the idea {string} is due on step {int}', async (_, id: string, step: number) => makeIdeaDue(id, step));
+    And('the draw asks {string} as a use in {string}', async (_, id: string, ref: string) => {
+      await drawAs(id, [chapter('1jn/1')], 'use', (q) => q.ref === ref);
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    Then('the card shows the verse {string} and the question and no options', (_, ref: string) => {
+      expect(screen.getByTestId('grammar-prompt').getAttribute('data-mode')).toBe('flashcard');
+      expect(screen.getByTestId('grammar-prompt')).toHaveTextContent('What is ἵνα doing here?');
+      expect(screen.getByTestId('grammar-ref').textContent).toBe(ref);
+      expect(document.querySelectorAll('[data-marked]')).toHaveLength(2);
+      expect(optionButtons()).toHaveLength(0);
+      expect(screen.getByTestId('grammar-answer').textContent).toBe('');
+    });
+    When('he taps Show', async () => user.click(screen.getByRole('button', { name: 'Show' })));
+    Then('the title of the use is shown', async () => {
+      await waitFor(() => expect(screen.getByTestId('grammar-answer').textContent).toBe('A clause with ἵνα'));
+    });
+  });
+
   Scenario('A preposition is asked by the case of a real phrase', ({ Given, And, When, Then }) => {
     Given('his goal is {string}', async (_, goal: string) => {
       await freshStore();

@@ -12,10 +12,14 @@ import {
   buildSound,
   buildStress,
   buildTapForm,
+  buildTapUse,
+  buildUse,
   type GrammarQuestion,
 } from '../../src/data/grammar/questions';
 import { decodeParse, parseSegments } from '../../src/data/parseCode';
 import { mulberry32 } from '../../src/data/quiz';
+import { formOfQuestion } from '../../src/data/grammar/inference';
+import { usesOf } from '../../src/data/grammar/uses';
 
 const load = (file: string) => JSON.parse(readFileSync(`public/data/${file}.json`, 'utf8')) as Chapter;
 const jn1 = load('1jn/1');
@@ -307,5 +311,95 @@ describe('an ending question and the movable ν of ἐστίν and a dative plur
     const pas = asked.find((x) => x.form === 'πᾶσ_' && x.code === 'A-DPN');
     expect(pas, 'no πᾶσιν asked').toBeDefined();
     expect(pas!.right).toBe('ι(ν)');
+  });
+});
+
+describe('a sentence idea drilled on its verses (mw-br588b.3)', () => {
+  const hina = ideaOf('clause-hina');
+  const agreement = ideaOf('agreement');
+  const verseOf = (q: GrammarQuestion, chapter: Chapter) => chapter.verses.find((v) => q.ref!.endsWith(`:${v.n}`))!;
+
+  it('asks what ἵνα is doing in 1 John 1: its words and its verb marked, the clause titled among four different uses', () => {
+    const q = buildUse(hina, [jn1], mulberry32(1))!;
+    expect(q.kind).toBe('use');
+    expect(q.ideaId).toBe('clause-hina');
+    expect(q.prompt).toBe('What is ἵνα doing here?');
+    expect(q.right).toBe('A clause with ἵνα');
+    expect(q.options).toHaveLength(4);
+    expect(new Set(q.options).size).toBe(4);
+    expect(q.options).toContain(q.right);
+    const verse = verseOf(q, jn1);
+    expect(q.words).toEqual(verse.g.map((w) => w.t));
+    const marked = q.markedAt!.map((i) => verse.g[i]);
+    expect(marked.map((w) => w.l)).toContain('ἵνα');
+    expect(marked.some((w) => w.p.startsWith('V-') && w.p.includes('S'))).toBe(true);
+    expect(marked).toHaveLength(2);
+    expect(usesOf(verse).some((u) => u.id === 'clause-hina' && u.words.join() === q.markedAt!.join())).toBe(true);
+    for (const o of q.options) expect(LADDER.some((i) => i.tier === 'sentences' && i.title === o), o).toBe(true);
+  });
+
+  it('asks the verse of 1 John 1:3 for some seed, and gives the same question for the same seed', () => {
+    const q = seedWhere((s) => buildUse(hina, [jn1], mulberry32(s)), (x) => x.ref === '1 John 1:3');
+    expect(q.words![q.markedAt![0]]).toBe('ἵνα');
+    for (const seed of [1, 7, 42]) expect(buildUse(hina, [jn1], mulberry32(seed))).toEqual(buildUse(hina, [jn1], mulberry32(seed)));
+  });
+
+  it('asks "What are these words doing?" for a use with no word of its own to name', () => {
+    const q = seedWhere((s) => buildUse(agreement, BOTH, mulberry32(s)), () => true);
+    expect(q.prompt).toBe('What are these words doing?');
+    expect(q.right).toBe('Words that agree');
+  });
+
+  it('asks the noun a word agrees with in Romans 8: the head is right, the verse\'s words are the options', () => {
+    const q = seedWhere((s) => buildTapUse(agreement, [rom8], mulberry32(s)), () => true);
+    expect(q.kind).toBe('tap-use');
+    expect(q.prompt).toMatch(/^Tap the noun that \S+ agrees with$/);
+    const verse = verseOf(q, rom8);
+    expect(q.options).toEqual(verse.g.map((w) => w.t));
+    expect(verse.g.filter((w) => w.t === q.right)).toHaveLength(1);
+    const use = usesOf(verse).find((u) => u.id === 'agreement' && verse.g[u.head!].t === q.right)!;
+    expect(use).toBeDefined();
+    expect(verse.g[use.head!].p.startsWith('N-')).toBe(true);
+    const asked = /^Tap the noun that (\S+) agrees with$/.exec(q.prompt)![1];
+    expect(use.words.map((i) => verse.g[i].t)).toContain(asked);
+  });
+
+  it('asks the participle that goes with ἐστίν, the participle right', () => {
+    const periphrastic = ideaOf('periphrastic');
+    const q = seedWhere((s) => buildTapUse(periphrastic, BOTH, mulberry32(s)), () => true);
+    expect(q.prompt).toMatch(/^Tap the participle that goes with \S+$/);
+    const verse = BOTH.flatMap((c) => c.verses).find((v) => v.g.some((w) => w.t === q.right) && q.options.join() === v.g.map((w) => w.t).join())!;
+    expect(verse.g.find((w) => w.t === q.right)!.p).toMatch(/^V-..P/);
+  });
+
+  it('gives the same tap-use question for the same seed', () => {
+    for (const seed of [1, 7, 42]) expect(buildTapUse(agreement, BOTH, mulberry32(seed))).toEqual(buildTapUse(agreement, BOTH, mulberry32(seed)));
+  });
+
+  it('gives null from both for an idea with no use in the passage, and a word idea; buildIdeaQuestion falls to the concept', () => {
+    const none: Chapter = { ...jn1, verses: jn1.verses.filter((v) => !usesOf(v).some((u) => u.id === 'clause-hina')) };
+    expect(buildUse(hina, [none], mulberry32(1))).toBeNull();
+    expect(buildTapUse(hina, [none], mulberry32(1))).toBeNull();
+    expect(buildUse(hina, [], mulberry32(1))).toBeNull();
+    expect(buildUse(ideaOf('case-genitive'), [jn1], mulberry32(1))).toBeNull();
+    expect(buildTapUse(ideaOf('case-genitive'), [jn1], mulberry32(1))).toBeNull();
+    expect(buildIdeaQuestion(hina, [none], mulberry32(1)).kind).toBe('concept');
+  });
+
+  it('draws a sentence idea as a use by buildIdeaQuestion, and as a tap-use when it has a head (the other when the first cannot be made)', () => {
+    const kinds = new Set(Array.from({ length: 40 }, (_, i) => buildIdeaQuestion(agreement, BOTH, mulberry32(i + 1)).kind));
+    expect([...kinds].sort()).toEqual(['tap-use', 'use']);
+    // ἵνα has a head (the subjunctive), but a use with no head only ever draws the use question
+    const postpositive = ideaOf('postpositive');
+    const only = new Set(Array.from({ length: 40 }, (_, i) => buildIdeaQuestion(postpositive, BOTH, mulberry32(i + 1)).kind));
+    expect([...only]).toEqual(['use']);
+  });
+
+  it('hands the marked words of a use to the inference as the forms credited', () => {
+    const q = buildUse(hina, [jn1], mulberry32(1))!;
+    const forms = q.markedAt!.map((i) => q.words![i]).join(' ');
+    expect(formOfQuestion(q)).toBe(forms);
+    const t = buildTapUse(agreement, [rom8], mulberry32(1))!;
+    expect(formOfQuestion(t)).toBe(t.right);
   });
 });
