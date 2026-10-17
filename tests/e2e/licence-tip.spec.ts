@@ -35,7 +35,8 @@ test('the third visit shows the tip at the foot; Learn more opens the Licence pa
   await expect(tip(page)).toBeVisible();
   await expect(tip(page)).toContainText('Lampas is free to read. A licence adds a tutor you can ask about any word or verse, and one that listens to you read a verse aloud.');
   await expect(tip(page)).not.toContainText('Read it aloud');
-  // at the foot, above the phone's bar, and a thumb's size to tap
+  // at the foot, above the phone's bar, and a thumb's size to tap; the tip slides in (mw-8m9dyu.13), so measure it where it comes to rest
+  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
   const box = (await tip(page).boundingBox())!;
   expect(box.y + box.height).toBeLessThanOrEqual(844);
   expect(box.y).toBeGreaterThan(844 / 2);
@@ -71,6 +72,8 @@ test.describe('the tip on a phone held sideways', () => {
     await page.goto('/#/?c=8&view=greek');
     await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
     await expect(tip(page)).toBeVisible();
+    // the tip slides in (mw-8m9dyu.13): measure it where it comes to rest
+    await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
     const box = (await tip(page).boundingBox())!;
     expect(box.height).toBeLessThan(390 * 0.25);
     expect(box.y + box.height).toBeLessThanOrEqual(390);

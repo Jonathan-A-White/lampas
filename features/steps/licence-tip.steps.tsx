@@ -19,8 +19,11 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { LicenceProbe } from '../../tests/support/licence-probe';
 import { addMint, HOLDER, ISSUER_PUB, newChain } from '../../tests/support/licence-chain';
 import { seedHisWords } from '../../tests/support/his-words';
+import { settle, SETTLE_MS } from '../../src/ui/settle';
 
 afterAll(() => {
+  settle.ms = 0;
+  vi.restoreAllMocks();
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
@@ -35,6 +38,11 @@ let chain: ReturnType<typeof newChain>;
 let licensed = false;
 /** The clock of the visit being drawn: a later day moves it on. */
 let at = NOW;
+/** While set, the licence check does not answer until `answerCheck` is called: the slow connection, the chain answering late. */
+let lateCheck = false;
+let answerCheck: () => void = () => {};
+/** The tip's settle moment counts performance.now() (src/ui/settle.ts), so the late scenario holds that clock by hand: it moves only when a step says so. */
+let elapsed = 0;
 
 async function fresh(): Promise<void> {
   cleanup();
@@ -45,6 +53,9 @@ async function fresh(): Promise<void> {
   window.localStorage.setItem('lampas.welcome', 'done');
   stubChapterFetch();
   at = NOW;
+  lateCheck = false;
+  settle.ms = 0;
+  vi.restoreAllMocks();
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.reviews.clear(), db.grammarLevels.clear()]);
 }
@@ -60,11 +71,19 @@ async function draw(hash: string): Promise<void> {
   restoreLastRoute();
   await seedHisWords();
   render(
-    <LicenceProvider issuer={ISSUER_PUB} now={() => at} check={(key) => fetchLicenceStatus(key, { issuer: ISSUER_PUB, reader: chain })}>
+    <LicenceProvider
+      issuer={ISSUER_PUB}
+      now={() => at}
+      check={async (key) => {
+        if (lateCheck) await new Promise<void>((resolve) => (answerCheck = resolve));
+        return fetchLicenceStatus(key, { issuer: ISSUER_PUB, reader: chain });
+      }}
+    >
       <App />
       <LicenceProbe />
     </LicenceProvider>,
   );
+  if (lateCheck) return;
   await waitFor(() => expect(screen.getByTestId('licence-state').textContent).toBe(licensed ? 'licensed' : 'not-licensed'));
 }
 
@@ -197,6 +216,47 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Reader is open in Greek', async () => {
       await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
       expect(window.location.hash).toContain('view=greek');
+    });
+  });
+
+  Scenario('A tap on the tip in its first moment does nothing, and one after it opens the Licence page', ({ Given, When, Then }) => {
+    Given('this phone has no licence and Lampas is opened on its visit number {int} with the licence check still out', async (_, visit: number) => {
+      licensed = false;
+      await fresh();
+      lateCheck = true;
+      settle.ms = SETTLE_MS;
+      elapsed = 0;
+      vi.spyOn(performance, 'now').mockImplementation(() => elapsed);
+      window.localStorage.setItem('lampas.visits', JSON.stringify({ count: visit - 1, last: '2026-09-01' }));
+      noteVisit(at);
+      await draw('#/');
+      await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
+    });
+    Then('no licence tip is shown', () => expect(tip()).toBeNull());
+    When('the licence check answers that this phone has no licence', async () => {
+      await act(async () => answerCheck());
+      await waitFor(() => expect(screen.getByTestId('licence-state').textContent).toBe('not-licensed'));
+    });
+    Then('the licence tip is shown', async () => {
+      await screen.findByRole('note', { name: 'About a licence' });
+    });
+    When('he taps Learn more on the licence tip within 500 ms of it appearing', async () => {
+      const note = await screen.findByRole('note', { name: 'About a licence' });
+      await act(async () => {});
+      elapsed += 200;
+      await user.click(within(note).getByRole('button', { name: 'Learn more' }));
+    });
+    Then('the licence tip is still shown and the Licence page is not open', () => {
+      expect(tip()).not.toBeNull();
+      expect(screen.queryByRole('heading', { name: 'Licence', level: 1 })).toBeNull();
+    });
+    When('he taps Learn more on the licence tip after it has settled', async () => {
+      elapsed += 600;
+      const note = await screen.findByRole('note', { name: 'About a licence' });
+      await user.click(within(note).getByRole('button', { name: 'Learn more' }));
+    });
+    Then('the Licence page is open', async () => {
+      await screen.findByRole('heading', { name: 'Licence', level: 1 });
     });
   });
 

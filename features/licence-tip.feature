@@ -45,6 +45,16 @@ Feature: A free reader is told once, gently, what a licence adds
     And he taps the Licence page's back button "‹ Reader"
     Then the Reader is open in Greek
 
+  Scenario: A tap on the tip in its first moment does nothing, and one after it opens the Licence page
+    Given this phone has no licence and Lampas is opened on its visit number 3 with the licence check still out
+    Then no licence tip is shown
+    When the licence check answers that this phone has no licence
+    Then the licence tip is shown
+    When he taps Learn more on the licence tip within 500 ms of it appearing
+    Then the licence tip is still shown and the Licence page is not open
+    When he taps Learn more on the licence tip after it has settled
+    Then the Licence page is open
+
   Scenario: A phone with a licence never sees the tip
     Given this phone has a licence and Lampas is opened on its visit number 3
     Then no licence tip is shown
