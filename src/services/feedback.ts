@@ -1,7 +1,7 @@
 // src/services/feedback.ts — feedback to the factory: a grist of the kind 'feedback' (grinds/feedback.json) with the app's version,
 // his words and, for a grammar approach, who to credit and up to four pictures attached; or, for an ask the tutor could not meet, the
-// tutor's one-line summary and the screen he asked from. This is the ONE sender: Ask for another approach and the tutor's 'Send this to
-// the makers' both call submitFeedback (tests/unit/feedback-shared.test.ts keeps it so). The wire work is src/services/tutor.ts's askGrind. The grind forwards
+// tutor's one-line summary and the screen he asked from; or, for a grammar book of his Logos library, the title he typed. This is the ONE sender:
+// Ask for another approach, Ask for another book and the tutor's 'Send this to the makers' all call submitFeedback (tests/unit/feedback-shared.test.ts keeps it so). The wire work is src/services/tutor.ts's askGrind. The grind forwards
 // ("forward": "mayor"): no model reads it, the mill mails it to the Mayor with the pictures and answers {"status":"sent"}.
 import { publish } from '../events/bus';
 import { keepRequest } from '../data/repositories/requests';
@@ -50,7 +50,17 @@ export interface TutorAskRequest {
   app_version: string;
 }
 
-export type FeedbackRequest = GrammarApproachRequest | TutorAskRequest;
+/** The most a grammar book's title (and author) may be: the input schema's third branch. */
+export const MAX_BOOK_CHARS = 200;
+
+/** What the grind is sent when he asks for another grammar book of his Logos library (Settings > Grammar books > Ask for another book). */
+export interface GrammarBookRequest {
+  kind: 'grammar-book';
+  text: string;
+  app_version: string;
+}
+
+export type FeedbackRequest = GrammarApproachRequest | TutorAskRequest | GrammarBookRequest;
 
 /** The kinds of feedback; the bus announces one when the mill has it. */
 export type FeedbackKind = FeedbackRequest['kind'];
@@ -75,6 +85,11 @@ export function buildFeedbackRequest(text: string, creditName: string, creditUrl
     credit: url ? { name: creditName.trim(), url } : { name: creditName.trim() },
     app_version: __APP_VERSION__,
   };
+}
+
+/** The request for a grammar book: the title as he typed it, with the author if he gave one. */
+export function buildBookRequest(title: string): GrammarBookRequest {
+  return { kind: 'grammar-book', text: title.trim(), app_version: __APP_VERSION__ };
 }
 
 /** The most a tutor-ask request may weigh, as JSON in UTF-8 (the same as a talk's, src/services/talk.ts MAX_REQUEST_BYTES): a grist's record
@@ -118,7 +133,10 @@ function sendFeedback(request: FeedbackRequest, files: MillFile[], options: AskO
 
 /** Sends `request` (with its pictures, if any) with the phone's key, keeps it in the requests table with its grist id once it is sent,
  * waits for the mill's receipt and tells the bus ('feedback-sent'). Throws a TutorError whatever went wrong; nothing is announced then. A `signal` that aborts stops the wait. */
-export async function submitFeedback(request: FeedbackRequest, options: { files?: MillFile[]; signal?: AbortSignal } = {}): Promise<void> {
+export async function submitFeedback(
+  request: FeedbackRequest,
+  options: { files?: MillFile[]; signal?: AbortSignal; /** called once the grist is out, before the receipt is waited for */ onSent?: () => void } = {},
+): Promise<void> {
   let keeping: Promise<void> = Promise.resolve();
   try {
     await sendFeedback(request, options.files ?? [], {
@@ -126,6 +144,7 @@ export async function submitFeedback(request: FeedbackRequest, options: { files?
       signal: options.signal,
       // A grist that went out is kept even if the receipt never comes; a failed write never turns a sent request into a failed one.
       onSent: (txid) => {
+        options.onSent?.();
         keeping = keepRequest(kept(request, txid, Date.now())).catch(() => undefined);
       },
     });

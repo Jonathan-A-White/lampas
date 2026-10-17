@@ -1,0 +1,12 @@
+{
+  "description": "A request for another grammar book of his Logos library: the mill forwards it and answers that it was sent.",
+  "schemaVersion": "1",
+  "request": {
+    "kind": "grammar-book",
+    "text": "Mounce, Basics of Biblical Greek",
+    "app_version": "0.1.288"
+  },
+  "expect": {
+    "status": { "equals": "sent" }
+  }
+}

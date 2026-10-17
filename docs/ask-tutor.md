@@ -81,6 +81,19 @@ Every send, of either kind, also keeps a row in Dexie `requests` (v16: `{txid, k
 grist's id, status `'sent'`; `src/data/repositories/requests.ts` `keepRequest`, `listRequests`), written as soon as the grist is out (askGrind's `onSent(txid)`),
 so a status that comes back can be matched to it. A tutor-ask keeps the tutor's `summary`, a grammar approach his `text`; a Retry is a new grist and a new row.
 
+### Ask for another book (mw-5r3p30.382, PROVISIONAL)
+
+Settings > Study resources > Logos > Grammar books ends with **Ask for another book** (`src/settings/controls/askBook.tsx` AskForBook; not drawn without a licence), a button that opens the box in place (the Logos card stays short enough that Accordance below it is one screen away, `tests/e2e/study-resources.spec.ts`): a
+'Book title', and the author if he knows it (at most `MAX_BOOK_CHARS` 200, counted not cut), and **Send**. It is a third kind of the one sender: `submitFeedback` with a
+`grammar-book` request `{kind, text, app_version}` (`buildBookRequest`; the input schema's third branch, `grinds/examples/feedback/grammar-book.json`), kept in `requests`
+with his title as `text` (Your requests names it 'Grammar book'; the tutor's `requests` lines use the text). The line under the box says **Asked: <title>** (the three newest
+`grammar-book` rows). Nothing is added to the app until a story adds the book's entry in `src/resources/grammarBooks.ts`; the Mayor weighs each against `VISION.md`.
+The request is kept on the phone first (settings store 'bookRequestsWaiting', `data/repositories/bookRequests.ts`), then sent by `src/services/bookRequests.ts`: offline
+(`navigator.onLine === false`) or with the mill unreachable it stays and the line says **Waiting to send: <title>** (with 'It goes when you are back online.', or the
+failure title and **Try again**); it goes by itself on the window's `online` event (`startBookRequests`, called from `main.tsx`, which also sends what waits at the app's start) and on Try again,
+one send at a time and in the order asked. A request is forgotten when its grist is out (`onSent`), so a receipt that never comes does not send it twice. Note that Talk
+and Ask for another approach do NOT wait offline (they show the failure and Retry); only this one queues. `features/ask-book.feature`, `tests/e2e/ask-book.spec.ts`.
+
 ### Your requests
 
 `#/requests` (route `requests`, kept; Settings > More > Your requests and a button on About) lists the rows of `requests`, newest first, each with its summary

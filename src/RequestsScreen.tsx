@@ -11,7 +11,7 @@ import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { pullStatuses, requestTimings } from './services/requestStatus';
 
-const KIND_NAMES: Record<string, string> = { 'grammar-approach': 'Grammar approach', 'tutor-ask': 'Asked the tutor' };
+const KIND_NAMES: Record<string, string> = { 'grammar-approach': 'Grammar approach', 'tutor-ask': 'Asked the tutor', 'grammar-book': 'Grammar book' };
 
 /** The line that says where a request stands, as plain text (the landed one is drawn as a link when it has one). */
 function statusLine(row: RequestRow): string {

@@ -6,14 +6,14 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { PrivateKey, Utils } from '@bsv/sdk';
 import { grist } from 'bsv-kit/grist';
-import { MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, MAX_ASK_BYTES, MAX_REFERENCE, MAX_SCREEN_NAME, MAX_SUMMARY, buildFeedbackRequest, buildTutorAskRequest, isFeedbackAnswer } from '../../src/services/feedback';
+import { MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, MAX_ASK_BYTES, MAX_BOOK_CHARS, MAX_REFERENCE, MAX_SCREEN_NAME, MAX_SUMMARY, buildBookRequest, buildFeedbackRequest, buildTutorAskRequest, isFeedbackAnswer } from '../../src/services/feedback';
 import { MILL_PUBLIC_KEY } from '../support/fake-postern';
 import { validate, type Schema } from '../support/schema-validate';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const grind = readJson('grinds/feedback.json');
 const input = readJson('grinds/feedback.input.schema.json');
-/** The input schema has one branch for each kind of feedback (anyOf): the grammar approach, and the ask the tutor could not meet. */
+/** The input schema has one branch for each kind of feedback (anyOf): the grammar approach, the ask the tutor could not meet and the grammar book. */
 const branches = input.anyOf as Schema[];
 const branch = (kind: string): Schema => branches.find((b) => (b.properties?.kind as { enum?: string[] }).enum?.[0] === kind) as Schema;
 
@@ -87,8 +87,9 @@ describe('the input schema and buildFeedbackRequest', () => {
 describe('the tutor-ask kind and buildTutorAskRequest', () => {
   const ask = { text: 'Can this work with Olive Tree?', summary: 'He wants Lampas to work with Olive Tree.', screen: 'Goal', reference: 'Goal' };
 
-  it('has a branch for each kind of feedback, and both are the same grist kind', () => {
-    expect(branches).toHaveLength(2);
+  it('has a branch for each kind of feedback, and all are the same grist kind', () => {
+    expect(branches).toHaveLength(3);
+    expect(branch('grammar-book')).toBeDefined();
     expect(branch('grammar-approach')).toBeDefined();
     expect(branch('tutor-ask')).toBeDefined();
   });
@@ -139,6 +140,29 @@ describe('the tutor-ask kind and buildTutorAskRequest', () => {
     const key = Uint8Array.from(Utils.toArray(PrivateKey.fromRandom().toHex(), 'hex'));
     const envelope = grist.sealEnvelope(JSON.stringify(plaintext), key, MILL_PUBLIC_KEY, 1_790_000_000);
     expect(() => grist.recordScriptHex(envelope)).not.toThrow();
+  });
+});
+
+describe('the grammar-book kind and buildBookRequest', () => {
+  it('builds a request the schema accepts: his title, trimmed, and the build', () => {
+    const request = buildBookRequest('  Mounce, Basics of Biblical Greek ');
+    expect(request).toEqual({ kind: 'grammar-book', text: 'Mounce, Basics of Biblical Greek', app_version: __APP_VERSION__ });
+    expect(validate(request, input as Schema)).toEqual([]);
+  });
+
+  it('has a limit in the schema that is the constant', () => {
+    const props = branch('grammar-book').properties as unknown as Record<string, { maxLength: number }>;
+    expect(props.text.maxLength).toBe(MAX_BOOK_CHARS);
+    expect(validate(buildBookRequest('x'.repeat(MAX_BOOK_CHARS)), input as Schema)).toEqual([]);
+    expect(validate(buildBookRequest('x'.repeat(MAX_BOOK_CHARS + 1)), input as Schema)).not.toEqual([]);
+  });
+
+  it.each<[string, unknown]>([
+    ['no text', { kind: 'grammar-book', app_version: 'v' }],
+    ['an empty text', { kind: 'grammar-book', text: '', app_version: 'v' }],
+    ['a credit on a book', { kind: 'grammar-book', text: 'x', credit: { name: 'y' }, app_version: 'v' }],
+  ])('refuses %s', (_, value) => {
+    expect(validate(value, input as Schema)).not.toEqual([]);
   });
 });
 
