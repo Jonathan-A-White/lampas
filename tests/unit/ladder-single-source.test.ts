@@ -101,7 +101,7 @@ describe('the graph functions take the path as data', () => {
     expect(frontierIn(path, new Set(['sow'])).map((i) => i.id)).toEqual(['water']);
     expect(frontierIn(path, new Set(['sow', 'water'])).map((i) => i.id)).toEqual(['reap']);
     expect(frontierIn(path, new Set(['sow', 'water', 'reap']))).toEqual([]);
-    expect(() => ideaIn(path, 'ploughed')).toThrow(/Unknown idea/);
+    expect(() => ideaIn(path, 'ploughed')).toThrow(/Unknown grammar idea/);
   });
 
   it('refuses a cycle, a need on itself, an unknown need and an idea listed twice, naming each', () => {

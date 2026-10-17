@@ -51,7 +51,7 @@ export function makePath<T extends PathIdea>(ideas: readonly T[]): Path<T> {
 /** The idea with this id. Throws on one the path does not have. */
 export function ideaIn<T extends PathIdea>(path: Path<T>, id: string): T {
   const idea = path.byId.get(id);
-  if (!idea) throw new Error(`Unknown idea: ${JSON.stringify(id)}`);
+  if (!idea) throw new Error(`Unknown grammar idea: ${JSON.stringify(id)}`);
   return idea;
 }
 
