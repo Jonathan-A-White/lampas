@@ -1,5 +1,12 @@
 # What's new
 
+## 0.1.289
+_2026-10-17_
+- Fixed: A Review round you leave mid-way, by reloading or by the phone dropping the page, now picks up at your next question instead of going back to Start.
+- Fixed: a wrong answer on a Movable letters card in Review now says why in one short line (consonant, smooth or rough breathing), not only the right answer.
+- New: Write it now shows where to start each stroke of a letter, in what order and which way to go, with a short line saying how many strokes.
+- Fixed: the English beside each example word on a grammar idea's page is shown in full, no longer cut short with '…'.
+
 ## 0.1.288
 _2026-10-17_
 - Fixed: after you open the chapter the tutor offered, Talk no longer keeps saying it was not opened or offering the button.

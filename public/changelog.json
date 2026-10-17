@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.1.289",
+    "date": "2026-10-17",
+    "story": "mw-86e9r1.32",
+    "kind": "fixed",
+    "text": "A Review round you leave mid-way, by reloading or by the phone dropping the page, now picks up at your next question instead of going back to Start."
+  },
+  {
+    "version": "0.1.289",
+    "date": "2026-10-17",
+    "story": "mw-86e9r1.30",
+    "kind": "fixed",
+    "text": "a wrong answer on a Movable letters card in Review now says why in one short line (consonant, smooth or rough breathing), not only the right answer."
+  },
+  {
+    "version": "0.1.289",
+    "date": "2026-10-17",
+    "story": "mw-86e9r1.56",
+    "kind": "new",
+    "text": "Write it now shows where to start each stroke of a letter, in what order and which way to go, with a short line saying how many strokes."
+  },
+  {
+    "version": "0.1.289",
+    "date": "2026-10-17",
+    "story": "mw-i7xe0n.25",
+    "kind": "fixed",
+    "text": "the English beside each example word on a grammar idea's page is shown in full, no longer cut short with '…'."
+  },
+  {
     "version": "0.1.288",
     "date": "2026-10-17",
     "story": "mw-5r3p30.216",
