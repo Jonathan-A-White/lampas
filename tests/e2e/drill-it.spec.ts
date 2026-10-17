@@ -235,12 +235,19 @@ test('a double tap on Finish leaves the result of a short drill on screen', asyn
 // The sweep (mw-5r3p30.430): in the letter drill, Done stands where Finish the round was, so a double tap on it ended the sitting unread.
 test('a double tap on Finish the round leaves the round result of the letter drill on screen', async ({ page }) => {
   const idea = await openIdea(page, 'The Greek alphabet');
-  // Learning on The Greek alphabet opens the letter drill
+  // Learning on The Greek alphabet opens the letter drill; the slider is disabled until the sheet has found its examples, and a disabled control takes no focus or key (mw-5r3p30.567)
+  await expect(idea.getByRole('slider', { name: 'Your level' })).toBeEnabled();
   await idea.getByRole('slider', { name: 'Your level' }).focus();
   await page.keyboard.press('ArrowRight');
   const drill = page.getByRole('dialog', { name: 'Letter drill' });
   for (;;) {
     await page.waitForTimeout(SETTLE_MS + 100);
+    // a phone that can hear him is asked Say it as the third question (mw-86e9r1.12): it has no answers to tap, so he skips it, which costs him nothing
+    const skip = drill.getByRole('button', { name: 'Skip this one' });
+    if (await skip.count()) {
+      await skip.click();
+      continue;
+    }
     await drill.locator('[data-option]').first().click();
     if ((await drill.getByTestId('letter-next').textContent()) === 'Finish the round') break;
     await drill.getByTestId('letter-next').click();
