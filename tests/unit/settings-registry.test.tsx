@@ -51,8 +51,8 @@ describe('the registry lists every Settings row', () => {
     await screen.findByRole('group', { name: "Read the tutor's responses aloud" });
     await screen.findByRole('group', { name: 'Hebrew in the tutor' });
     const drawn = [
-      // Logos' ticked list of lexicons belongs to the Logos switch, a study resource kept outside the registry
-      ...screen.getAllByRole('group').filter((el) => el.getAttribute('aria-label') !== 'Logos lexicons'),
+      // Logos' ticked lists of lexicons and of grammar books (mw-5r3p30.381) belong to the Logos switch, a study resource kept outside the registry
+      ...screen.getAllByRole('group').filter((el) => !['Logos lexicons', 'Grammar books'].includes(el.getAttribute('aria-label') ?? '')),
       ...screen.getAllByRole('radiogroup'),
       // the Goal group's own Book, Chapter and Verse pickers, and Bible in Logos' own Bible list, are parts of those one settings
       ...screen.getAllByRole('combobox').filter((el) => !el.closest('[role="group"][aria-label="Goal"], [role="group"][aria-label="Bible in Logos"]')),

@@ -91,7 +91,7 @@ export type { DrillMode, FrontierChoice, GrammarLevel, GrammarLevelHow, GrammarL
 export { getEvidence, noteAnswer, noteDrillAnswer, noteWordRead } from './inference';
 export { getSavedGoalText } from './goalSaved';
 export { isTermKnown, listKnownTerms, setTermKnown } from './grammar';
-export { getStudyResources, setResourceOn, setResourceOption } from './resources';
+export { getGrammarBooks, getStudyResources, setGrammarBooks, setResourceOn, setResourceOption } from './resources';
 export type { StudyResources } from './resources';
 export { dayOf, lastUsageDayBefore, listUsage, recordUsage, savedSettings, usageCounts } from './usage';
 export type { UsageCounts, UsageRow } from './usage';
