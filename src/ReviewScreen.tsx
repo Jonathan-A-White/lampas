@@ -229,7 +229,8 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
   return (
     <>
       {header(`${index + 1} of ${items.length}`)}
-      {/* sideways the round Ask button (56 px, right-3) sits over the options' right edge: the options leave it its room (mw-hqd5bz.35) */}
+      {/* sideways the round Ask button (56 px, right-3) sits over the options' right edge: the options leave it its room (mw-hqd5bz.35); upright it sits at
+          the Next bar's right end and NextBar leaves it its room there (tests/e2e/review-next-ask.spec.ts, mw-86e9r1.27) */}
       <main className="screen min-h-0 flex-1 px-4 pt-6 short:pr-20">
         <ItemCard
           item={item}
