@@ -9,7 +9,7 @@ import { READ_SPANS } from '../../speech/readSpan';
 import { englishAccentSetting } from '../definitions';
 import { PHONE_VOICE, writeSetting } from '../registry';
 import { useSetting } from '../store';
-import { SettingRow } from './SettingRow';
+import { RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
 
 function ReadSpanChoice({ span }: { span: ReadSpan }) {
@@ -186,7 +186,12 @@ function PronunciationList({ chosen }: { chosen: GreekPronunciation }) {
 
 export const ReadSpanControl: Control = ({ row }) => {
   const readSpan = useLiveQuery(getReadSpan, []);
-  return <SettingRow row={row}>{readSpan ? <ReadSpanChoice span={readSpan} /> : null}</SettingRow>;
+  return (
+    <SettingRow row={row}>
+      <RowName row={row} />
+      {readSpan ? <ReadSpanChoice span={readSpan} /> : null}
+    </SettingRow>
+  );
 };
 
 export const VoiceControl: Control = ({ row }) => {
@@ -217,6 +222,7 @@ export const EnglishAccentControl: Control = ({ row }) => {
   const accent = useSetting(englishAccentSetting);
   return (
     <SettingRow row={row}>
+      <RowName row={row} />
       {accent ? (
         <div role="group" aria-label={row.label} className="flex flex-col gap-1 rounded-xl border border-line p-0.5">
           {ACCENTS.map((a) => (

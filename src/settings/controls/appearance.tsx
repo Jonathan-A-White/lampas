@@ -6,7 +6,7 @@ import { immersiveHintSetting, immersiveSetting, themeSetting } from '../definit
 import { useSetting } from '../store';
 import { LAYOUTS } from '../../layout/layouts';
 import { writeSetting } from '../registry';
-import { OnOff, SettingRow } from './SettingRow';
+import { OnOff, RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
 
 function ThemeChoice({ theme }: { theme: Theme }) {
@@ -87,7 +87,12 @@ export const ImmersiveControl: Control = ({ row }) => {
 
 export const ImmersiveHintControl: Control = ({ row }) => {
   const hint = useSetting(immersiveHintSetting);
-  return <SettingRow row={row}>{hint ? <OnOff name={row.label} current={hint} settingKey="immersiveHint" /> : null}</SettingRow>;
+  return (
+    <SettingRow row={row}>
+      <RowName row={row} />
+      {hint ? <OnOff name={row.label} current={hint} settingKey="immersiveHint" /> : null}
+    </SettingRow>
+  );
 };
 
 export const HeadingsControl: Control = ({ row }) => {

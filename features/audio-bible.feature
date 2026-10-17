@@ -11,6 +11,11 @@ Feature: Listen in Audible
     Then the Audio Bible shows the choices "Off" and "The Word of Promise (NKJV), in Audible"
     And "Off" is the one chosen
 
+  Scenario: Settings writes the name Audio Bible above the choices
+    Given Lampas is opened with the Audio Bible Off
+    When he opens Settings
+    Then the Audio Bible row writes its name "Audio Bible" in its own text
+
   Scenario: Choosing The Word of Promise in Settings keeps it
     Given Lampas is opened with the Audio Bible Off
     When he opens Settings
