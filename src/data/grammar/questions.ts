@@ -675,7 +675,6 @@ export function buildPunctuation(idea: GrammarIdea, random: Random): GrammarQues
 
 // ---- Movable letters ----
 
-// [prompt, right, its near misses (the same word's other forms), the others it may be told from, its facet]. Every word is a real New Testament one, with its place.
 const NOT_FORMS = ['οὐ', 'οὐκ', 'οὐχ'];
 const OUT_FORMS = ['ἐκ', 'ἐξ'];
 export const MOVABLE_FACETS = {
@@ -684,22 +683,33 @@ export const MOVABLE_FACETS = {
   elision: { id: 'movable-elision', label: 'A dropped vowel: ἀπ᾿, ἀφ᾿' },
   nu: { id: 'movable-nu', label: 'A movable ν' },
 } as const;
-const MOVABLE: [string, string, readonly string[], readonly string[], Facet][] = [
-  ['Which fits? ___ κατέλαβεν (John 1:5, “did not overcome it”)', 'οὐ', NOT_FORMS, OUT_FORMS, MOVABLE_FACETS.not],
-  ['Which fits? ___ ἦν ἐκεῖνος τὸ φῶς (John 1:8, “he was not the light”)', 'οὐκ', NOT_FORMS, OUT_FORMS, MOVABLE_FACETS.not],
-  ['Which fits? ___ οὗτός ἐστιν (John 7:25, “Is this not he?”)', 'οὐχ', NOT_FORMS, OUT_FORMS, MOVABLE_FACETS.not],
-  ['Which fits? ___ θεοῦ ἐγεννήθησαν (John 1:13, “out of God they were born”)', 'ἐκ', OUT_FORMS, NOT_FORMS, MOVABLE_FACETS.out],
-  ['Which fits? ___ ἧς ἐγεννήθη Ἰησοῦς (Matthew 1:16, “out of whom Jesus was born”)', 'ἐξ', OUT_FORMS, NOT_FORMS, MOVABLE_FACETS.out],
-  ['Which fits? ___ ἀρχῆς (1 John 2:7, “from the beginning”; the word is ἀπό with its vowel dropped)', 'ἀπ᾿', ['ἀφ᾿', 'ἀπό'], ['ἐπ᾿'], MOVABLE_FACETS.elision],
-  ['Which fits? ___ ἑαυτοῦ (John 5:19, “of himself”; the next word begins with a rough breathing)', 'ἀφ᾿', ['ἀπ᾿', 'ἀπό'], ['ἐφ᾿'], MOVABLE_FACETS.elision],
+// Every word is a real New Testament one, with its place. `reason` is the one line a miss shows under 'Not quite. It is X.' (the card's rule line): when the word takes this form.
+interface MovableQuestion {
+  prompt: string;
+  right: string;
+  /** the same word's other forms: the near misses */
+  near: readonly string[];
+  /** the others it may be told from */
+  others: readonly string[];
+  facet: Facet;
+  reason: string;
+}
+export const MOVABLE: readonly MovableQuestion[] = [
+  { prompt: 'Which fits? ___ κατέλαβεν (John 1:5, “did not overcome it”)', right: 'οὐ', near: NOT_FORMS, others: OUT_FORMS, facet: MOVABLE_FACETS.not, reason: 'Before a consonant it is οὐ: κατέλαβεν begins with κ. Before a vowel it is οὐκ or οὐχ.' },
+  { prompt: 'Which fits? ___ ἦν ἐκεῖνος τὸ φῶς (John 1:8, “he was not the light”)', right: 'οὐκ', near: NOT_FORMS, others: OUT_FORMS, facet: MOVABLE_FACETS.not, reason: 'Before a vowel with a smooth breathing it is οὐκ: ἦν begins with a smooth breathing.' },
+  { prompt: 'Which fits? ___ οὗτός ἐστιν (John 7:25, “Is this not he?”)', right: 'οὐχ', near: NOT_FORMS, others: OUT_FORMS, facet: MOVABLE_FACETS.not, reason: 'Before a vowel with a rough breathing it is οὐχ: οὗτός begins with a rough breathing.' },
+  { prompt: 'Which fits? ___ θεοῦ ἐγεννήθησαν (John 1:13, “out of God they were born”)', right: 'ἐκ', near: OUT_FORMS, others: NOT_FORMS, facet: MOVABLE_FACETS.out, reason: 'Before a consonant it is ἐκ: θεοῦ begins with θ. Before a vowel it is ἐξ.' },
+  { prompt: 'Which fits? ___ ἧς ἐγεννήθη Ἰησοῦς (Matthew 1:16, “out of whom Jesus was born”)', right: 'ἐξ', near: OUT_FORMS, others: NOT_FORMS, facet: MOVABLE_FACETS.out, reason: 'Before a vowel it is ἐξ: ἧς begins with a vowel. Before a consonant it is ἐκ.' },
+  { prompt: 'Which fits? ___ ἀρχῆς (1 John 2:7, “from the beginning”; the word is ἀπό with its vowel dropped)', right: 'ἀπ᾿', near: ['ἀφ᾿', 'ἀπό'], others: ['ἐπ᾿'], facet: MOVABLE_FACETS.elision, reason: 'Before a vowel with a smooth breathing ἀπό drops its ο and keeps π: ἀρχῆς begins with a smooth breathing.' },
+  { prompt: 'Which fits? ___ ἑαυτοῦ (John 5:19, “of himself”; the next word begins with a rough breathing)', right: 'ἀφ᾿', near: ['ἀπ᾿', 'ἀπό'], others: ['ἐφ᾿'], facet: MOVABLE_FACETS.elision, reason: 'Before a rough breathing the π of ἀπ᾿ becomes φ: ἑαυτοῦ begins with a rough breathing.' },
   // no near miss: the others are words that never take the ν
-  ['Which of these may take a movable ν at its end (John 1:34)?', 'ἐστι(ν)', [], ['λόγος', 'ἀγάπη', 'τοῦτο', 'οὐκ'], MOVABLE_FACETS.nu],
+  { prompt: 'Which of these may take a movable ν at its end (John 1:34)?', right: 'ἐστι(ν)', near: [], others: ['λόγος', 'ἀγάπη', 'τοῦτο', 'οὐκ'], facet: MOVABLE_FACETS.nu, reason: 'A word ending in -σι or -στι, like ἐστί, may add a ν; λόγος, ἀγάπη, τοῦτο and οὐκ never do.' },
 ];
 
 /** A word that changes its last letter: οὐ, οὐκ or οὐχ, ἐκ or ἐξ, ἀπ᾿ or ἀφ᾿, a movable ν; four to choose from, one right, the same word's other forms first. */
 export function buildMovable(idea: GrammarIdea, random: Random): GrammarQuestion {
-  const [prompt, right, near, others, facet] = pick(MOVABLE, random);
-  return fromTable(idea, prompt, right, near.filter((o) => o !== right), others, random, facet);
+  const { prompt, right, near, others, facet, reason } = pick(MOVABLE, random);
+  return { ...fromTable(idea, prompt, right, near.filter((o) => o !== right), others, random, facet), rule: reason };
 }
 
 // ---- Marks that change the word, and enclitics (mw-86e9r1.6) ----

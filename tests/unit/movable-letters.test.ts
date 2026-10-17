@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Chapter, GreekWord } from '../../src/data/chapter';
 import { LADDER, ideaOf } from '../../src/data/grammar/ladder';
-import { buildEnding, buildIdeaQuestion } from '../../src/data/grammar/questions';
+import { buildEnding, buildIdeaQuestion, MOVABLE } from '../../src/data/grammar/questions';
 import { mulberry32 } from '../../src/data/quiz';
 
 const word = (t: string, l: string, p: string): GreekWord => ({ t, tr: '', s: 'G1', l, p });
@@ -41,6 +41,21 @@ describe('the Movable letters idea', () => {
       rights.add(q.right);
     }
     expect(rights.size).toBeGreaterThan(3);
+  });
+
+  // mw-86e9r1.30: a miss shows a one-line reason under 'Not quite. It is οὐκ.' (the card's rule line), so a miss teaches the rule
+  it('gives every question a one-line reason, and the question built carries it as its rule', () => {
+    expect(MOVABLE.length).toBeGreaterThan(7);
+    const built = new Map<string, string | undefined>();
+    for (let seed = 1; seed <= 300; seed += 1) {
+      const q = buildIdeaQuestion(idea!, [rom8], mulberry32(seed));
+      built.set(q.prompt, q.rule);
+    }
+    for (const { prompt, reason } of MOVABLE) {
+      expect(reason.trim().length, prompt).toBeGreaterThan(20);
+      expect(reason, prompt).not.toContain('\n');
+      expect(built.get(prompt), prompt).toBe(reason);
+    }
   });
 });
 
