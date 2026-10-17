@@ -11,7 +11,7 @@ export const SENTENCES: Record<string, Teach> = {
         word: 'ζωὴ',
         ref: '1 John 1:2',
         gloss: 'life',
-        steps: ['ζωὴ is a noun: nominative, singular, feminine.', 'The article ἡ in front of it is also nominative, singular and feminine, so the two agree.', 'ἡ ζωὴ: “the life”.'],
+        steps: ['ζωὴ: a noun, nominative, singular, feminine.', 'The article ἡ in front of it is also nominative, singular and feminine, so the two agree.', 'ἡ ζωὴ: “the life”.'],
       },
     ],
   },
