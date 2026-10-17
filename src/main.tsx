@@ -1,11 +1,11 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
-import 'bsv-kit/whats-new/styles.css';
+import 'pwa-kit/whats-new/styles.css';
 import 'voice-kit/speech/styles.css';
 import 'voice-kit/composer/styles.css';
 import { registerSW } from 'virtual:pwa-register';
-import { fetchChangelog } from 'bsv-kit/whats-new';
+import { fetchChangelog } from 'pwa-kit/whats-new';
 import { App } from './App';
 import { restoreAppearance } from './appearance/appearanceSync';
 import { APP_SEMVER } from './config';

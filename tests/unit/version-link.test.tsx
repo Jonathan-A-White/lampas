@@ -1,5 +1,5 @@
 // The version in About is a link to CHANGELOG.md on GitHub for a public repo, and not a link for a private one
-// (bsv-kit/whats-new's versionLink says null; About's own list is then the whole answer).
+// (pwa-kit/whats-new's versionLink says null; About's own list is then the whole answer).
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { VersionLink } from '../../src/whatsNew/VersionLink';

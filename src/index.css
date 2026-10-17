@@ -531,7 +531,7 @@ textarea,
   padding: 0.25em 0.5em;
 }
 
-/* bsv-kit's What's new (the banner's line, the sheet, About's list and Check for updates) takes its colours from the palette in force. */
+/* pwa-kit's What's new (the banner's line, the sheet, About's list and Check for updates) takes its colours from the palette in force. */
 :root {
   --bk-whats-new-surface: var(--lp-surface);
   --bk-whats-new-fg: var(--lp-fg);

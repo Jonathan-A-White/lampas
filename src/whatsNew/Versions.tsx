@@ -1,10 +1,10 @@
 // src/whatsNew/Versions.tsx: the versions of What's new with their lines, each with a small speaker (About's list and the sheets shown after an update or from the banner).
-import { DEFAULT_LABELS, versionsSince, type ChangelogEntry } from 'bsv-kit/whats-new';
+import { DEFAULT_LABELS, versionsSince, type ChangelogEntry } from 'pwa-kit/whats-new';
 import { useMemo } from 'react';
 import { proseOf } from '../speech/proseOf';
 import { ReadAloud } from '../speech/ReadAloud';
 
-/** Every version with its lines, as bsv-kit's WhatsNewList draws them (its markup and classes), and a small speaker at the head of each version that
+/** Every version with its lines, as pwa-kit's WhatsNewList draws them (its markup and classes), and a small speaker at the head of each version that
  * reads its lines (the kind, then the text: 'New: ...'). The list has no place of its own for one. */
 export function Versions({ entries, groups: given }: { entries?: readonly ChangelogEntry[] | null; groups?: ReturnType<typeof versionsSince> }) {
   const own = useMemo(() => versionsSince(entries ?? []), [entries]);

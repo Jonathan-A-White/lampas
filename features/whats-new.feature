@@ -1,7 +1,7 @@
 Feature: Lampas says what's new
   Every release says what changed. The Update ready banner names the waiting version and what is in it, a sheet
   tells him once after an update, About lists every version, and the version there links to CHANGELOG.md on GitHub.
-  The words come from the changelog the build ships (public/changelog.json) through bsv-kit's whats-new.
+  The words come from the changelog the build ships (public/changelog.json) through pwa-kit's whats-new.
 
   Scenario: The Update ready banner names the waiting version and what is in it
     Given a newer build is waiting and its changelog lists 1 new line and 1 fixed line for it

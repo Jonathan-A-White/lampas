@@ -55,9 +55,15 @@
         },
         {
           "name": "bsv-kit",
-          "use": "The licence gate, tutor messages, What's new, read aloud",
+          "use": "The licence gate and tutor messages",
           "licence": "MIT",
           "link": "https://github.com/Jonathan-A-White/bsv-kit"
+        },
+        {
+          "name": "pwa-kit",
+          "use": "What's new and one-time tips",
+          "licence": "MIT",
+          "link": "https://github.com/Jonathan-A-White/pwa-kit"
         },
         {
           "name": "BSV SDK",

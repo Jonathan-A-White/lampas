@@ -3,7 +3,7 @@
 import '@testing-library/react/dont-cleanup-after-each';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterAll, expect, vi } from 'vitest';
-import type { ChangelogEntry } from 'bsv-kit/whats-new';
+import type { ChangelogEntry } from 'pwa-kit/whats-new';
 import { APP_SEMVER } from '../../src/config';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { startAppUpdates, UPDATE_CHECK_EVERY_MS } from '../../src/services/appUpdate';

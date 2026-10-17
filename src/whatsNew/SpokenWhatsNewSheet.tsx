@@ -1,8 +1,8 @@
-// src/whatsNew/SpokenWhatsNewSheet.tsx: bsv-kit's WhatsNewSheet (its markup, classes and behaviour) with a small speaker on each version (mw-5r3p30.393).
+// src/whatsNew/SpokenWhatsNewSheet.tsx: pwa-kit's WhatsNewSheet (its markup, classes and behaviour) with a small speaker on each version (mw-5r3p30.393).
 // The package's sheet has no place for one, so Lampas draws it, from the package's own pieces (versionsSince, compareVersions, DEFAULT_LABELS) and its look.
 // Two uses, as the package's: on its own it shows once after the app starts on a version newer than the last one seen (the version is remembered
 // when it closes; never on a first install); with `open`, `since` and `onClose` it lists what is newer than `since` until closed.
-import { compareVersions, DEFAULT_LABELS, versionsSince, type ChangelogEntry } from 'bsv-kit/whats-new';
+import { compareVersions, DEFAULT_LABELS, versionsSince, type ChangelogEntry } from 'pwa-kit/whats-new';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { BarSlot } from '../speech/SpeakingBarSlot';
 import { useSettleAround } from '../ui/settle';

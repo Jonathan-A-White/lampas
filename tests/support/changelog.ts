@@ -1,7 +1,7 @@
 // tests/support/changelog.ts — a fixture changelog.json and a fetch that serves it, for the What's new screens
 // (src/whatsNew/). The versions are worked out from the build's own, so the fixture stays right when the version moves.
 import { vi } from 'vitest';
-import type { ChangelogEntry } from 'bsv-kit/whats-new';
+import type { ChangelogEntry } from 'pwa-kit/whats-new';
 import { APP_SEMVER } from '../../src/config';
 
 /** The version after this build's: the one a waiting update would be. */

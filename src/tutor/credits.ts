@@ -6,7 +6,7 @@
 import type { ScreenCredit } from './screen';
 
 /** The most the credits weigh as JSON in UTF-8, so the screen, his words and a little history still fit MAX_REQUEST_BYTES (src/services/talk.ts). */
-export const MAX_CREDITS_BYTES = 5000;
+export const MAX_CREDITS_BYTES = 5200;
 
 export const CREDITS: ScreenCredit[] = [
   { name: 'Majority Standard Bible', use: 'The Greek you read, aligned to its English, with Strong\'s and parsing', licence: 'Public domain', link: 'https://majoritybible.com' },
@@ -20,7 +20,8 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'Noto Serif Hebrew', use: 'The Hebrew type of answers', licence: 'SIL OFL 1.1', link: 'https://github.com/notofonts/hebrew' },
   { name: 'React', use: 'The interface library', licence: 'MIT', link: 'https://react.dev/' },
   { name: 'Dexie', use: 'Keeps your words and settings on the phone', licence: 'Apache-2.0', link: 'https://dexie.org/' },
-  { name: 'bsv-kit', use: 'The licence gate, tutor messages, What\'s new', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/bsv-kit' },
+  { name: 'bsv-kit', use: 'The licence gate and tutor messages', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/bsv-kit' },
+  { name: 'pwa-kit', use: 'What\'s new and one-time tips', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/pwa-kit' },
   { name: 'voice-kit', use: 'Read aloud and hold to talk', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/voice-kit' },
   { name: 'BSV SDK', use: 'Keys and signatures under bsv-kit', licence: 'Open BSV License', link: 'https://github.com/bsv-blockchain/ts-stack/tree/main/packages/sdk' },
   { name: 'react-markdown', use: 'Draws the tutor\'s answers', licence: 'MIT', link: 'https://github.com/remarkjs/react-markdown' },

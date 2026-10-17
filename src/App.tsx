@@ -76,7 +76,7 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
       <WelcomeBack hidden={route === 'review' || route === 'unlock'} />
       {/* a new licensed reader is welcomed by the tutor (mw-yrmkdf.3) */}
       <Welcome />
-      {/* what's new, once after an update (bsv-kit/whats-new) */}
+      {/* what's new, once after an update (pwa-kit/whats-new) */}
       <WhatsNewOnUpdate />
       {/* a long press on any word of prose says it (src/ui/HearAnyWord.tsx) */}
       <HearAnyWord />
