@@ -29,7 +29,7 @@ Feature: Lampas takes links in
     Given a link "#/?ref=Rom.8.99" is opened
     Then the reader is headed "Romans 8"
     And verse 39 is selected
-    And the notice reads "“Rom.8.99” is not in Lampas; showing Romans 8:39."
+    And the notice reads "“Romans 8:99” is not in Lampas; showing Romans 8:39."
 
   Scenario: A chapter past the end of the book opens the last chapter and says what was asked for
     Given a link "#/?ref=Romans%2099:1" is opened
@@ -41,6 +41,12 @@ Feature: Lampas takes links in
     Given a link "#/?ref=Tobit.3.1" is opened
     Then the reader is headed "Romans 8"
     And the notice reads "“Tobit.3.1” is not in Lampas; showing Romans 8."
+
+  Scenario: An Old Testament reference says it is not in Lampas yet, in words, and says where to read it
+    Given a link "#/?ref=Gen.1.28" is opened
+    Then the reader is headed "Romans 8"
+    And the notice reads "“Genesis 1:28” is not in Lampas yet; showing Romans 8."
+    And the notice says to link Logos in Settings
 
   Scenario: The notice can be dismissed
     Given a link "#/?ref=Tobit.3.1" is opened

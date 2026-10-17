@@ -3,7 +3,8 @@
 // puts them in Bible order, grouped under each book, and the choice is kept on the phone for the next share. The references of a shared picture (the find-refs grist,
 // src/share/findRefs.ts, mw-s1dc0n.2) join the same list: while the grist reads, 'Finding Bible references...'; a failure is one line with 'Try again'.
 import { useMemo, useState } from 'react';
-import { referenceUrl } from '../nav/links';
+import { ReferenceLink } from '../markdown/ReferenceCard';
+import { inWords, referenceUrl } from '../nav/links';
 import { openHash } from '../nav/route';
 import { findReferences, groupedByBook, listReferences, type FoundReference, type ListedReference, type RefsOrder } from '../nav/refsInText';
 import type { PictureRefs } from './findRefs';
@@ -30,10 +31,47 @@ function keepOrder(order: RefsOrder): void {
   }
 }
 
+const LINK_CLASS = 'flex min-h-12 items-center justify-between gap-3 rounded-xl border border-line bg-surface px-4 py-2 text-lg font-medium text-accent active:bg-line';
+
+/** What a reference is called on its card: in words ('Genesis 1:28', 'Psalm 23', a range 'Genesis 1:28-30'), as the tutor's cards head it. */
+function headingOf(r: ListedReference): string {
+  const words = inWords(r.ref).replace(/^Psalms /, 'Psalm ');
+  return r.lastVerse === undefined ? words : `${words}-${r.lastVerse}`;
+}
+
+/** What a link shows: the words as printed, and how many times the text names it. */
+function Printed({ r }: { r: ListedReference }) {
+  return (
+    <>
+      <span className="min-w-0 break-words">{r.printed}</span>
+      {r.count > 1 ? (
+        <>
+          {' '}
+          <span className="shrink-0 text-base text-muted">{`×${r.count}`}</span>
+        </>
+      ) : null}
+    </>
+  );
+}
+
 /** The link to the verse. A plain tap opens the Reader through the address (a Back step, so Back returns to the list; not a change of `location.hash`, whose popstate the open sheet would take for Back and cancel the share); anything else (a long press, a new tab)
- *  has the https link. */
+ *  has the https link. A reference to the Old Testament, which Lampas does not hold, opens the card the tutor's references open ('Not in Lampas yet', with Open in Logos when
+ *  Logos is on) and the list stays where it is. */
 function RefLink({ r }: { r: ListedReference }) {
   const href = referenceUrl(r.book, r.chapter, r.verse);
+  if (r.testament === 'ot') {
+    return (
+      <ReferenceLink
+        written={r.printed}
+        old={{ heading: headingOf(r), place: { book: r.book, chapter: r.chapter, ...(r.verse === undefined ? {} : { verse: r.verse }) } }}
+        href={href}
+        className={LINK_CLASS}
+        data={{ 'data-share-ref': r.ref }}
+      >
+        <Printed r={r} />
+      </ReferenceLink>
+    );
+  }
   return (
     <a
       href={href}
@@ -43,15 +81,9 @@ function RefLink({ r }: { r: ListedReference }) {
         e.preventDefault();
         openHash(href.slice(href.indexOf('#')));
       }}
-      className="flex min-h-12 items-center justify-between gap-3 rounded-xl border border-line bg-surface px-4 py-2 text-lg font-medium text-accent active:bg-line"
+      className={LINK_CLASS}
     >
-      <span className="min-w-0 break-words">{r.printed}</span>
-      {r.count > 1 ? (
-        <>
-          {' '}
-          <span className="shrink-0 text-base text-muted">{`×${r.count}`}</span>
-        </>
-      ) : null}
+      <Printed r={r} />
     </a>
   );
 }

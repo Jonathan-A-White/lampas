@@ -2,11 +2,11 @@
 // verse, #/?word=G3551 (or the lemma) opens a word's sheet, and the browser's web+lampas: scheme (the manifest's protocol_handlers) lands on the
 // same ref. This file is the pure part: reading the text of a link, finding the place or the word it names (against the book index and the
 // lexicon, handed in), and writing the https form of a link. docs/links.md lists every form it accepts.
-import { BOOKS, titleOf } from '../data/books';
+import { BOOKS, bookOf, titleOf } from '../data/books';
 import type { BookIndex, Chapter } from '../data/chapter';
 import type { Lookup } from '../WordSheet';
 import type { LemmaEntry, LemmaLexicon } from '../data/lexicon';
-import { OT_BOOKS } from '../data/otBooks';
+import { OT_BOOKS, otBookOf } from '../data/otBooks';
 import type { OpenChapter } from '../data/readerChapter';
 import { LINK_ORIGIN } from '../config';
 import { pathOf } from './route';
@@ -108,10 +108,22 @@ export interface Opened {
   /** the verse to select, or null for none */
   verse: number | null;
   notice: string | null;
+  /** set for a place in the Old Testament, which Lampas does not hold yet: where a Bible app can open it (the notice then offers that) */
+  elsewhere?: { book: string; chapter: number; verse?: number };
 }
 
-/** The sentence that says what was asked for and what is shown instead. */
-export const notHeld = (asked: string, shown: string): string => `“${asked}” is not in Lampas; showing ${shown}.`;
+/** A reference named in words, never as the code it was written in ('Gen.1.28' -> 'Genesis 1:28', 'Rom.8.99' -> 'Romans 8:99'); text that names no book of the
+ *  Bible (a word, a Strong's number, 'Tobit 3:1') is returned as it was asked. */
+export function inWords(asked: string): string {
+  const parsed = parseCanonReference(asked);
+  if (!parsed) return asked;
+  const name = (parsed.testament === 'nt' ? bookOf(parsed.book)?.name : otBookOf(parsed.book)?.name) ?? parsed.book;
+  if (parsed.chapter === undefined) return name;
+  return `${name} ${parsed.chapter}${parsed.verse === undefined ? '' : `:${parsed.verse}`}`;
+}
+
+/** The sentence that says what was asked for and what is shown instead. A reference asked for is named in words (`inWords`). */
+export const notHeld = (asked: string, shown: string): string => `“${inWords(asked)}” is not in Lampas; showing ${shown}.`;
 
 /** Where `text` opens the reader. A book or number Lampas does not hold opens the nearest it does (the last chapter or verse; chapter 0 and verse 0 the
  * first), a book it does not hold the chapter in `fallback`; either way with a notice. `index` null (the index could not be loaded) leaves the numbers
@@ -119,6 +131,17 @@ export const notHeld = (asked: string, shown: string): string => `“${asked}”
 export function resolveReference(text: string, index: BookIndex | null, fallback: OpenChapter): Opened {
   const asked = text.trim().replace(SCHEME, '');
   const parsed = parseReference(asked);
+  const old = parsed ? null : parseCanonReference(asked);
+  if (old && old.testament === 'ot' && old.chapter !== undefined) {
+    const { book, chapter, verse } = old;
+    return {
+      book: fallback.book,
+      chapter: fallback.chapter,
+      verse: null,
+      notice: `“${inWords(asked)}” is not in Lampas yet; showing ${fallback.title}.`,
+      elsewhere: { book, chapter, ...(verse === undefined ? {} : { verse }) },
+    };
+  }
   const info = parsed && (index === null ? { chapters: Infinity, verses: [] as number[] } : index.books.find((b) => b.code === parsed.book));
   if (!parsed || !info) return { book: fallback.book, chapter: fallback.chapter, verse: null, notice: notHeld(asked, fallback.title) };
   const { book } = parsed;
