@@ -26,6 +26,7 @@
     "audible:build": "tsx scripts/audible-build.ts",
     "essay:build": "tsx scripts/essay-build.ts",
     "grind:build": "tsx scripts/grind-build.ts",
+    "ladder:docs": "tsx scripts/ladder-docs.ts",
     "check:licence": "tsx scripts/check-licence.ts"
   },
   "dependencies": {

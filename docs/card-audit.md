@@ -13,6 +13,7 @@ What every card lacked, whatever its verdict, and what this story gave each one 
 - **No term before it is taught**: every grammar term and title key word a card uses is taught by that card or one below it (the same test). The ladder's `needs` grew where a card truly rests on another: the noun on the breathings and the iota under a letter, the iota under a letter on the breathings and accents, punctuation on the breathings, the nominative on the plural, the neuter on the feminine, the passive on the future and the aorist.
 - **Examples that match the lesson**: the old examples were any word whose parsing named the idea, glossed with the dictionary's list (τοῖς “the/this/who” on The article), and the case cards showed a table of the article. Now an example is only one the card can explain: its parsing carries the idea, it is a part of speech taught at or below the card, and its form is in the card's table; it shows its one sense here, its ending marked, and its parsing in the card's own terms (τοῖς: “the”, dative plural masculine, goes with ὀφθαλμοῖς “eyes”) (`tests/unit/examples-match-lesson.test.ts`).
 
+<!-- audit:begin — the id and title columns are written by `npm run ladder:docs` from src/data/grammar/ladder.ts; the verdict and what-a-beginner-lacked columns are by hand -->
 | id | title | verdict | what a beginner lacked |
 | --- | --- | --- | --- |
 | `alphabet` | The Greek alphabet | teaches a beginner | Its 24 tiles taught each letter, name and sound; it lacked a word read letter by letter and a warning about the look-alikes (η, ν, ρ, χ, ω read as n, v, p, x, w). |
@@ -163,3 +164,4 @@ What every card lacked, whatever its verdict, and what this story gave each one 
 | `crasis` | Two words run together | teaches a beginner | Gave κἀγώ; lacked the others in a table. |
 | `aramaic` | Aramaic words | teaches a beginner | Gave ἀββά; lacked a word the text marks as Aramaic (Ῥαββουνί). |
 | `hebrew` | Hebrew words | teaches a beginner | Gave ἀμήν and σαβαώθ; lacked a verse. |
+<!-- audit:end -->
