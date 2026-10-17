@@ -107,6 +107,10 @@ describeFeature(feature, ({ Scenario }) => {
       const note = await screen.findByRole('note', { name: 'About a licence' });
       expect(note.textContent).toContain(words);
     });
+    And('the licence tip does not call it {string}, which is the free ▶ to a reader who has never seen the Verse view\'s check', async (_, words: string) => {
+      const note = await screen.findByRole('note', { name: 'About a licence' });
+      expect(note.textContent).not.toContain(words);
+    });
     And('the licence tip has Learn more and a close', async () => {
       const note = await screen.findByRole('note', { name: 'About a licence' });
       expect(within(note).getByRole('button', { name: 'Learn more' })).toBeInTheDocument();
