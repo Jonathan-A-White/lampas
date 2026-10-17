@@ -145,7 +145,18 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
     <ScreenHeader title="Review" subtitle={subtitle} back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />
   );
 
-  if (round.status === 'loading') return <>{header()}<main className="screen min-h-0 flex-1" aria-busy="true" /></>;
+  if (round.status === 'loading') {
+    return (
+      <>
+        {header()}
+        <main className="screen min-h-0 flex-1" aria-busy="true">
+          <p role="status" className="px-4 pt-6 text-center text-muted">
+            Getting your questions…
+          </p>
+        </main>
+      </>
+    );
+  }
 
   if (round.status === 'start') {
     return (
