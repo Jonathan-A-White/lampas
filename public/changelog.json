@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.1.282",
+    "date": "2026-10-17",
+    "story": "mw-86e9r1.22",
+    "kind": "fixed",
+    "text": "a quick double tap on Back to the goal after a placement no longer opens the Goal screen's ideas list."
+  },
+  {
+    "version": "0.1.282",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.497",
+    "kind": "fixed",
+    "text": "Swiping to the next or previous chapter in the Immersive reader no longer flashes the title bar and bottom bar."
+  },
+  {
+    "version": "0.1.282",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.393",
+    "kind": "new",
+    "text": "Help text in Settings and the notes that show after an update now have a speaker button, so you can hear them read aloud."
+  },
+  {
+    "version": "0.1.282",
+    "date": "2026-10-17",
+    "story": "mw-8m9dyu.11",
+    "kind": "fixed",
+    "text": "Held sideways, the note about a licence is now one slim row at the foot instead of nearly half the screen."
+  },
+  {
     "version": "0.1.281",
     "date": "2026-10-17",
     "story": "mw-5r3p30.476",

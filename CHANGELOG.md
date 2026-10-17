@@ -1,5 +1,12 @@
 # What's new
 
+## 0.1.282
+_2026-10-17_
+- Fixed: a quick double tap on Back to the goal after a placement no longer opens the Goal screen's ideas list.
+- Fixed: Swiping to the next or previous chapter in the Immersive reader no longer flashes the title bar and bottom bar.
+- New: Help text in Settings and the notes that show after an update now have a speaker button, so you can hear them read aloud.
+- Fixed: Held sideways, the note about a licence is now one slim row at the foot instead of nearly half the screen.
+
 ## 0.1.281
 _2026-10-17_
 - Fixed: In American English, the example words for π, τ and κ are now spin, stop and skate, said without the puff of breath that Greek does not have.
