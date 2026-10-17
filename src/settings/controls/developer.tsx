@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { getDeveloper, setDeveloper } from '../../data/repositories';
+import { resetReadingPlan } from '../../data/repositories/readingPlan';
 import { showWelcomeAgain } from '../../data/repositories/welcome';
 import { ON_COLOUR, SettingRow } from './SettingRow';
 import type { Control } from './types';
@@ -28,9 +29,14 @@ export const DeveloperControl: Control = ({ row }) => {
     <SettingRow row={row}>
       {developer === 'on' || developer === 'off' ? <DeveloperChoice name={row.label} developer={developer} /> : null}
       {developer === 'on' ? (
-        <button type="button" onClick={() => void showWelcomeAgain()} className="mt-2 min-h-12 rounded-xl border border-line px-4 text-base font-medium">
-          Show the welcome again
-        </button>
+        <>
+          <button type="button" onClick={() => void showWelcomeAgain()} className="mt-2 min-h-12 rounded-xl border border-line px-4 text-base font-medium">
+            Show the welcome again
+          </button>
+          <button type="button" onClick={() => void resetReadingPlan()} className="mt-2 min-h-12 rounded-xl border border-line px-4 text-base font-medium">
+            Reset the listening plan, for the demo
+          </button>
+        </>
       ) : null}
     </SettingRow>
   );

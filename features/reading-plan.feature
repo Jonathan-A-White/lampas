@@ -56,3 +56,13 @@ Feature: The listening plan lives in the Bible view
   Scenario: Every chip has an accessible name
     Given Lampas is opened with a reading plan started at Leviticus 4 and 3 words due
     Then every chip in the row is named
+
+  Scenario: The Developer row resets the plan for the demo
+    Given Lampas is opened with a reading plan started at Leviticus 4
+    When he turns Developer mode on and opens Settings
+    And he taps "Reset the listening plan, for the demo" in Settings
+    Then the Reading plan setting is Off and no plan is kept
+    When he taps "Start a listening plan" in Settings
+    And he picks the plan "The whole Bible"
+    And he chooses Leviticus 1 there
+    Then the Reading plan setting is On and the plan starts at Leviticus 1
