@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { paradigmHash, paradigmOf, placementOriginOf, readerHash, readerOf, routeOf } from '../../src/nav/route';
+import { paradigmHash, paradigmOf, placementCardHash, placementCardOf, placementOriginOf, readerHash, readerOf, routeOf } from '../../src/nav/route';
 
 describe('the address', () => {
   it('says where the placement was started from', () => {
@@ -7,6 +7,16 @@ describe('the address', () => {
     expect(placementOriginOf('#/placement')).toBe('settings');
     expect(placementOriginOf('#/placement?from=else')).toBe('settings');
     expect(routeOf('#/placement?from=goal')).toBe('placement');
+  });
+
+  it('names the end card the placement reached, keeping where it was started from', () => {
+    expect(placementCardOf('#/placement?from=goal')).toBeNull();
+    expect(placementCardOf('#/placement')).toBeNull();
+    expect(placementCardHash('goal', 'k3x9')).toBe('#/placement?from=goal&card=k3x9');
+    expect(placementCardHash('settings', 'k3x9')).toBe('#/placement?card=k3x9');
+    expect(placementCardOf(placementCardHash('goal', 'k3x9'))).toBe('k3x9');
+    expect(placementOriginOf(placementCardHash('goal', 'k3x9'))).toBe('goal');
+    expect(routeOf(placementCardHash('settings', 'k3x9'))).toBe('placement');
   });
 
   it('names the screen', () => {

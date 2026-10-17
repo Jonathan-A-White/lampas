@@ -266,6 +266,26 @@ export function placementOriginOf(hash: string): PlacementOrigin {
   return new URLSearchParams(q < 0 ? '' : hash.slice(q + 1)).get('from') === 'goal' ? 'goal' : 'settings';
 }
 
+/** The end card the placement's entry reached, when it reached one: its address names it ('#/placement?from=goal&card=k3x9'), so a reload, or
+ * Back to the entry, shows the card again, while a new Place me (no card) opens the intro (mw-86e9r1.23). */
+export function placementCardOf(hash: string): string | null {
+  const q = hash.indexOf('?');
+  return new URLSearchParams(q < 0 ? '' : hash.slice(q + 1)).get('card') || null;
+}
+
+export function placementCardHash(from: PlacementOrigin, card: string): string {
+  const params = new URLSearchParams();
+  if (from === 'goal') params.set('from', 'goal');
+  params.set('card', card);
+  return `#/placement?${params.toString()}`;
+}
+
+/** The placement reached its end card `card`: the entry he is on says so, with no new Back step (nothing, once he has left the placement). */
+export function showPlacementCard(card: string): void {
+  const here = window.location.hash;
+  if (routeOf(here) === 'placement') replaceHash(placementCardHash(placementOriginOf(here), card));
+}
+
 /** Opens the placement as a new Back step, remembering where it was started from so its way out returns there. */
 export function openPlacement(from: PlacementOrigin): void {
   window.history.pushState(null, '', urlFor(from === 'goal' ? '#/placement?from=goal' : '#/placement'));
