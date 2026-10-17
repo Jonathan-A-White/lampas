@@ -142,6 +142,30 @@ test('the chapter picker marks done chapters and the next, in both testaments', 
   await shot(page, 'reading-plan-picker-nt-390x844');
 });
 
+test('the Developer row resets the plan, and Start a listening plan runs again', async ({ page }) => {
+  await openWith(page, [...START_LEV_4, { key: 'developerMode', value: 'on' }]);
+  await expect(chip(page)).toContainText('Next: Leviticus 4');
+
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  const reset = page.getByRole('button', { name: 'Reset the listening plan, for the demo' });
+  await reset.scrollIntoViewIfNeeded();
+  expect((await reset.boundingBox())?.height).toBeGreaterThanOrEqual(47.5);
+  await shot(page, 'reading-plan-developer-reset-390x844');
+  await reset.click();
+
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await expect(chip(page)).toHaveText('Listen through the Bible');
+  await chip(page).click();
+  await page.getByRole('dialog', { name: 'Start a listening plan' }).getByRole('button', { name: 'The whole Bible' }).click();
+  const picker = page.getByRole('dialog', { name: 'Where are you starting?' });
+  await picker.getByRole('button', { name: /^Leviticus/ }).click();
+  await picker.getByRole('button', { name: 'Chapter 1', exact: true }).click();
+  await expect(chip(page)).toContainText('Next: Leviticus 1');
+  await expect(chip(page)).toContainText('90 of 1,189');
+});
+
 /** Every chapter key from Leviticus 1 to Luke 14 (the rest of the Old Testament, Matthew, Mark and Luke 1-14), for a plan started at Luke 15. */
 function allBefore(): string[] {
   const ot: Record<string, number> = {

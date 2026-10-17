@@ -74,6 +74,12 @@ export async function startPlan(planId: string, start: PlanChapter): Promise<boo
   return true;
 }
 
+/** The Developer row's Reset the listening plan, for the demo: the plan, its done chapters and any open session are forgotten and the Reading plan setting is Off, so Start a listening plan runs again. */
+export async function resetReadingPlan(): Promise<void> {
+  await db.settings.delete(KEY);
+  await setSetting(readingPlanSetting, 'off');
+}
+
 /** The first chapter of the plan not done, or undefined with no plan or when every chapter is done. */
 export async function nextChapter(): Promise<PlanChapter | undefined> {
   const state = await read();

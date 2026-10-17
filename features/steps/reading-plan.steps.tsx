@@ -7,7 +7,8 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
-import { startPlan } from '../../src/data/repositories/readingPlan';
+import { setDeveloper } from '../../src/data/repositories';
+import { getReadingPlan, startPlan } from '../../src/data/repositories/readingPlan';
 import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
@@ -206,6 +207,35 @@ describeFeature(feature, ({ Scenario }) => {
       await planChip();
       await waitFor(() => expect(chipButtons().length).toBeGreaterThan(1));
       for (const chip of chipButtons()) expect(chip.getAttribute('aria-label') ?? '').not.toBe('');
+    });
+  });
+
+  Scenario('The Developer row resets the plan for the demo', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened with a reading plan started at Leviticus 4', lev4);
+    When('he turns Developer mode on and opens Settings', async () => {
+      await setDeveloper('on');
+      await user.click(screen.getByRole('button', { name: 'Settings' }));
+      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+    });
+    And('he taps {string} in Settings', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
+    Then('the Reading plan setting is Off and no plan is kept', async () => {
+      await waitFor(async () => expect((await db.settings.get('readingPlan'))?.value).toBe('off'));
+      expect(await getReadingPlan()).toBeUndefined();
+      expect(await db.settings.get('readingPlanState')).toBeUndefined();
+    });
+    When('he taps {string} in Settings', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
+    And('he picks the plan {string}', async (_, plan: string) => {
+      const sheet = await screen.findByRole('dialog', { name: 'Start a listening plan' });
+      await user.click(within(sheet).getByRole('button', { name: plan }));
+    });
+    And('he chooses Leviticus 1 there', async () => {
+      const picker = await screen.findByRole('dialog', { name: 'Where are you starting?' });
+      await user.click(await within(picker).findByRole('button', { name: /^Leviticus/ }));
+      await user.click(await within(picker).findByRole('button', { name: 'Chapter 1' }));
+    });
+    Then('the Reading plan setting is On and the plan starts at Leviticus 1', async () => {
+      await waitFor(async () => expect((await db.settings.get('readingPlan'))?.value).toBe('on'));
+      expect((await getReadingPlan())?.start).toEqual({ code: 'lev', chapter: 1 });
     });
   });
 });
