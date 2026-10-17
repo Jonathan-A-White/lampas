@@ -154,7 +154,7 @@ briefly at his level first, so he is never refused.
   device's list); the idea 'Take me there' opens is `missing_foundations.ideas[0]` whatever the model said. The turn keeps it (`TalkTurn.bridge`; a verse answer's `TutorAnswer.bridge`) and `src/talk/BridgeOffer.tsx` draws
   the ideas, the why and **Take me there: <title>**. A tap, or a spoken yes (`pending_offer` of kind `bridge`, `settleOffer` -> `takeBridgeOffer`, the same function the button calls), opens that idea's sheet
   (`src/IdeaSheet.tsx`) over the talk (`openBridgeIdea`, module state, so a tap and a yes for the same turn leave one sheet open). Done or the phone's Back closes it and the talk is there as it was; the
-  button stays to open it again. The talk is not a quiz (no bridge in Quiz me). The bridged idea becomes his frontier only if he starts it there (Got it).
+  button stays to open it again, and a yes to it on the talk's newest turn still carries `pending_offer` and opens it (`takenOfferOf` in `offers.ts`, the same for a taken Greek or rust offer; mw-1vuvq6.8). The talk is not a quiz (no bridge in Quiz me). The bridged idea becomes his frontier only if he starts it there (Got it).
 - Tests: `features/talk-bridge.feature`, `tests/unit/bridge.test.ts`, examples `grinds/examples/bible-talk/bridge-*.json` and `grinds/examples/verse-ask/bridge-quite-a-bit.json`.
 
 ## Rust: he comes back and is rusty (mw-1vuvq6.6, PROVISIONAL)

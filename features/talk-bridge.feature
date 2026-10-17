@@ -38,6 +38,16 @@ Feature: The tutor bridges a question he is not ready for
     When he goes Back
     Then the talk is shown again with its first turn and the button "Take me there: Pairs of vowels"
 
+  Scenario: A spoken yes after the tap still takes him there, once
+    Given only the letters are solid and Lampas is opened on 1 John 1 behind a fake Postern whose tutor names the foundations he lacks
+    When he opens the talk and asks "Why is the genitive used in 1 John 1:1?"
+    And he taps "Take me there: Pairs of vowels"
+    And he goes Back
+    And the tutor will take his next words as a yes
+    And he says "yes, take me there"
+    Then the second bible-talk grist carries the pending offer of kind bridge with the text "Take me there: Pairs of vowels"
+    And exactly one idea sheet "Pairs of vowels" is open over the talk
+
   Scenario: Missing quite a bit, he is shown three and taken to the next step
     Given only the letters are solid and Lampas is opened on 1 John 1 behind a fake Postern whose tutor lists the three most direct of those he lacks
     When he opens the talk and asks "Why is the genitive used in 1 John 1:1?"

@@ -50,6 +50,18 @@ describe('the offer a turn holds', () => {
   });
 });
 
+describe('an offer he already took, whose button stays on screen', () => {
+  it('still counts for a yes on the newest turn, but not on an older one, nor after his no', async () => {
+    const greek = { kind: 'word' as const, text: 'Hear it in Greek', lemma: 'λόγος' };
+    const turn = await turnWith({ ...none, greekOffer: greek });
+    expect(pendingOfferOf([turn])?.offer.kind).toBe('greek');
+    const taken = { ...turn, greekChoice: 'taken' as const };
+    expect(pendingOfferOf([taken])?.offer).toEqual({ kind: 'greek', text: 'Hear it in Greek' });
+    expect(pendingOfferOf([taken, { ...taken, id: 99, greekOffer: undefined, greekChoice: undefined }])).toBeUndefined();
+    expect(pendingOfferOf([{ ...taken, greekChoice: 'declined' }])).toBeUndefined();
+  });
+});
+
 describe('the request', () => {
   const offer: PendingOffer = { kind: 'feedback', text: 'He wants X.' };
   const request = (pending?: PendingOffer) => buildTalkRequest(scope, 'yes', [], [], {}, undefined, undefined, undefined, [], [], 0, { kept: '' }, pending);
