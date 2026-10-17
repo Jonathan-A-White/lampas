@@ -181,6 +181,37 @@ test('On in the light theme does not paint black', async ({ page }) => {
   expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).not.toBe('rgb(0, 0, 0)');
 });
 
+/** WCAG 2's contrast ratio of two [r, g, b] colours. */
+const contrast = (a: number[], b: number[]) => {
+  const lum = ([r, g, b]: number[]) => {
+    const [lr, lg, lb] = [r, g, b].map((v) => (v / 255 <= 0.03928 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * lr + 0.7152 * lg + 0.0722 * lb;
+  };
+  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
+
+test('in the sepia theme On keeps the warm paper on a dark phone, with dim verse numbers still at 4.5:1', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await openReader(page, 'on', { settings: { theme: 'sepia' } });
+  const paper = rgbOf(await page.evaluate(() => getComputedStyle(document.body).backgroundColor));
+  expect(paper).toEqual([244, 236, 216]);
+  expect((await look(page.locator('[data-reader]'))).background).not.toBe('rgb(0, 0, 0)');
+
+  const text = rgbOf(await verse(page, 2).evaluate((el) => getComputedStyle(el).color));
+  expect(text).toEqual([59, 47, 32]);
+  expect(contrast(text, paper)).toBeGreaterThanOrEqual(7);
+  // the number as drawn: its colour, faded by its opacity over the paper
+  const n = await verse(page, 2).locator('[data-verse-number]').evaluate((el) => {
+    const s = getComputedStyle(el);
+    return { color: s.color, opacity: parseFloat(s.opacity) };
+  });
+  const drawn = rgbOf(n.color).slice(0, 3).map((c, i) => c * n.opacity + paper[i] * (1 - n.opacity));
+  expect(contrast(drawn, paper)).toBeGreaterThanOrEqual(4.5);
+  expect(contrast(drawn, paper)).toBeLessThan(contrast(text, paper));
+  await shot(page, 'immersive-sepia');
+});
+
 test('Off in the dark theme keeps the usual dark', async ({ page }) => {
   await openReader(page, 'off', { settings: { theme: 'dark' } });
   expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).not.toBe('rgb(0, 0, 0)');

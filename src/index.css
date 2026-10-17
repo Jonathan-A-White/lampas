@@ -55,8 +55,8 @@
   src: url("./fonts/noto-serif-hebrew-hebrew-700-normal.woff2") format("woff2");
 }
 
-/* Design tokens: every colour the app uses is one of these (dark by default). Two palettes, picked by html[data-theme]
- * (src/appearance/appearanceSync.ts): 'dark' and 'light' are chosen; 'phone' (and no attribute yet) follows the phone's
+/* Design tokens: every colour the app uses is one of these (dark by default). Three palettes, picked by html[data-theme]
+ * (src/appearance/appearanceSync.ts): 'dark', 'light' and 'sepia' are chosen; 'phone' (and no attribute yet) follows the phone's
  * own scheme, live. The light palette is written twice, once for each way into it: tests/unit/themes.test.ts holds
  * the two the same, and their canvas the same as the browser bar's colour. */
 @theme inline {
@@ -159,7 +159,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
+  :root:not([data-theme="dark"]):not([data-theme="sepia"]) {
     color-scheme: light;
     --lp-canvas: #f3f5f9;
     --lp-surface: #ffffff;
@@ -184,6 +184,21 @@
   --lp-accent-fg: #ffffff;
   --lp-good: #15803d;
   --lp-bad: #c62828;
+}
+
+/* Sepia (mw-5r3p30.310): warm paper and dark brown text, for long reading, whatever the phone says. The text is 11:1 on the
+ * paper and the muted colour (verse numbers, hints) 5.9:1, so both clear WCAG's 7:1 and 4.5:1 (tests/unit/themes.test.ts). */
+:root[data-theme="sepia"] {
+  color-scheme: light;
+  --lp-canvas: #f4ecd8;
+  --lp-surface: #fbf6ea;
+  --lp-line: #e2d6bb;
+  --lp-fg: #3b2f20;
+  --lp-muted: #6b5638;
+  --lp-accent: #7a4f0e;
+  --lp-accent-fg: #ffffff;
+  --lp-good: #2f6b2a;
+  --lp-bad: #a3261e;
 }
 
 html {
@@ -394,12 +409,17 @@ textarea,
 [data-verse-view][data-immersive='on'] [data-passage-number] {
   opacity: 0.7;
 }
+/* Sepia's muted brown is already the dim of its page: faded further it would fall under 4.5:1 on the paper (mw-5r3p30.310). */
+:root[data-theme='sepia'] [data-reader][data-immersive='on'] [data-verse-number],
+:root[data-theme='sepia'] [data-verse-view][data-immersive='on'] [data-passage-number] {
+  opacity: 1;
+}
 :root[data-theme='dark']:has([data-reader][data-immersive='on']) {
   --lp-canvas: #000;
   --lp-reader-bg: #000;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']):has([data-reader][data-immersive='on']) {
+  :root:not([data-theme='light']):not([data-theme='sepia']):has([data-reader][data-immersive='on']) {
     --lp-canvas: #000;
     --lp-reader-bg: #000;
   }
