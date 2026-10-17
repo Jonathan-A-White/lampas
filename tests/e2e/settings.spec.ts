@@ -130,3 +130,53 @@ test('Settings > Quiz goal at phone width: the label is bold and a disabled Save
   await group.scrollIntoViewIfNeeded();
   await shot(page, 'settings-quiz-goal-save-off');
 });
+
+test('Settings > Quiz goal at phone width: an off Save looks as off as an off Clear, and Clear does not move when Save turns on', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/settings');
+  const group = page.getByRole('group', { name: 'Quiz goal', exact: true });
+  await group.scrollIntoViewIfNeeded();
+  await expect(group).toBeVisible();
+  const save = group.getByRole('button', { name: 'Save', exact: true });
+  const clear = group.getByRole('button', { name: 'Clear', exact: true });
+  const field = group.getByRole('textbox');
+  const look = (button: typeof save): Promise<{ color: string; background: string; border: string; x: number; width: number }> =>
+    button.evaluate((el) => {
+      const s = getComputedStyle(el);
+      const box = el.getBoundingClientRect();
+      return { color: s.color, background: s.backgroundColor, border: s.borderTopColor, x: box.x, width: box.width };
+    });
+
+  // nothing kept, nothing typed: both are off and look the same
+  await expect(save).toBeDisabled();
+  await expect(clear).toBeDisabled();
+  const bothOffSave = await look(save);
+  const bothOffClear = await look(clear);
+  expect(bothOffSave.background).toBe(bothOffClear.background);
+  expect(bothOffSave.color).toBe(bothOffClear.color);
+  expect(bothOffSave.border).toBe(bothOffClear.border);
+
+  // typing turns Save on; Clear stays where it was
+  await field.fill('learning to read Romans');
+  await expect(save).toBeEnabled();
+  const saveOn = await look(save);
+  const clearBesideSaveOn = await look(clear);
+  expect(saveOn.width).toBeCloseTo(bothOffSave.width, 1);
+  expect(clearBesideSaveOn.x).toBeCloseTo(bothOffClear.x, 1);
+
+  // a goal kept and the field unchanged: Save is off, Clear is on, and the two differ plainly
+  await save.click();
+  await expect(group.getByText('Quiz goal: learning to read Romans')).toBeVisible();
+  await expect(save).toBeDisabled();
+  await expect(clear).toBeEnabled();
+  const keptSave = await look(save);
+  const keptClear = await look(clear);
+  expect(keptSave.background).toBe(bothOffSave.background); // off Save is the off look, not a white box
+  expect(keptSave.color).toBe(bothOffSave.color);
+  expect(keptSave.color).not.toBe(keptClear.color); // off Save is faded, on Clear is not
+  expect(keptClear.color).not.toBe(bothOffClear.color);
+  expect(keptSave.width).toBeCloseTo(saveOn.width, 1);
+  expect(keptClear.x).toBeCloseTo(bothOffClear.x, 1);
+  await group.scrollIntoViewIfNeeded();
+  await shot(page, 'settings-quiz-goal-kept');
+});
