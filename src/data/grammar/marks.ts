@@ -17,7 +17,8 @@ export interface MarkWord {
   /** What the phrase means in its verse. */
   gloss: string;
   ref: VerseRef;
-  /** Two wrong choices besides the twin: other words that do not fit the phrase and are not alike but for their marks. */
+  /** Two wrong choices besides the twin: other words that do not fit the phrase and are not alike but for their marks, and none that the gloss
+   * would also take (ὧν is 'of whom' as much as οὗ, ὁ is 'the' as much as ἡ: only an ending the lesson does not teach tells them apart, mw-86e9r1.41). */
   decoys: [string, string];
 }
 
@@ -29,11 +30,11 @@ export interface MarkPair {
 
 export const MARK_PAIRS: readonly MarkPair[] = [
   {
-    a: { word: 'ἡ', inPhrase: 'ἡ', phrase: 'ἡ ζωὴ ἦν τὸ φῶς', gloss: 'the life was the light', ref: NT('jhn', 1, 4), decoys: ['ὁ', 'ἦν'] },
+    a: { word: 'ἡ', inPhrase: 'ἡ', phrase: 'ἡ ζωὴ ἦν τὸ φῶς', gloss: 'the life was the light', ref: NT('jhn', 1, 4), decoys: ['ἦν', 'οὐ'] },
     b: { word: 'ἤ', inPhrase: 'ἢ', phrase: 'ἢ τοὺς προφήτας', gloss: 'or the prophets', ref: NT('mat', 5, 17), decoys: ['ὁ', 'ἦν'] },
   },
   {
-    a: { word: 'ὁ', inPhrase: 'ὁ', phrase: 'ὁ πατήρ μου', gloss: 'my Father', ref: NT('jhn', 14, 23), decoys: ['ἡ', 'τό'] },
+    a: { word: 'ὁ', inPhrase: 'ὁ', phrase: 'ὁ πατήρ μου', gloss: 'my Father', ref: NT('jhn', 14, 23), decoys: ['ἐν', 'οὐ'] },
     b: { word: 'ὅ', inPhrase: 'ὃ', phrase: 'ὃ γέγονεν', gloss: 'what has come to be', ref: NT('jhn', 1, 3), decoys: ['ἡ', 'τό'] },
   },
   {
@@ -45,16 +46,16 @@ export const MARK_PAIRS: readonly MarkPair[] = [
     b: { word: 'ἕν', inPhrase: 'ἕν', phrase: 'ἕν ἐσμεν', gloss: 'we are one', ref: NT('jhn', 10, 30), decoys: ['ἐκ', 'εἰς'] },
   },
   {
-    a: { word: 'οὐ', inPhrase: 'οὐ', phrase: 'οὐ κατέλαβεν', gloss: 'did not overcome it', ref: NT('jhn', 1, 5), decoys: ['ὧν', 'ἡ'] },
-    b: { word: 'οὗ', inPhrase: 'οὗ', phrase: 'οὗ οὐκ εἰμὶ ἱκανὸς', gloss: 'of whom I am not worthy', ref: NT('mrk', 1, 7), decoys: ['ὧν', 'ἡ'] },
+    a: { word: 'οὐ', inPhrase: 'οὐ', phrase: 'οὐ κατέλαβεν', gloss: 'did not overcome it', ref: NT('jhn', 1, 5), decoys: ['ἐν', 'ἡ'] },
+    b: { word: 'οὗ', inPhrase: 'οὗ', phrase: 'οὗ οὐκ εἰμὶ ἱκανὸς', gloss: 'of whom I am not worthy', ref: NT('mrk', 1, 7), decoys: ['ἐν', 'ἡ'] },
   },
   {
     a: { word: 'ἀλλά', inPhrase: 'ἀλλὰ', phrase: 'ἀλλὰ πληρῶσαι', gloss: 'but to fulfil', ref: NT('mat', 5, 17), decoys: ['ἄλλος', 'ἄλλῳ'] },
-    b: { word: 'ἄλλα', inPhrase: 'ἄλλα', phrase: 'ἄλλα πολλὰ', gloss: 'many other things', ref: NT('jhn', 21, 25), decoys: ['ἄλλος', 'ἄλλῳ'] },
+    b: { word: 'ἄλλα', inPhrase: 'ἄλλα', phrase: 'ἄλλα πολλὰ', gloss: 'many other things', ref: NT('jhn', 21, 25), decoys: ['ἄρα', 'ἐν'] },
   },
   {
     a: { word: 'αὐτή', inPhrase: 'αὐτὴ', phrase: 'αὐτὴ ἡ φύσις', gloss: 'nature itself', ref: NT('1co', 11, 14), decoys: ['αὐτούς', 'αὐτῆς'] },
-    b: { word: 'αὕτη', inPhrase: 'αὕτη', phrase: 'αὕτη ἐστὶν ἡ μαρτυρία', gloss: 'this is the testimony', ref: NT('1jn', 5, 9), decoys: ['αὐτούς', 'οὗτος'] },
+    b: { word: 'αὕτη', inPhrase: 'αὕτη', phrase: 'αὕτη ἐστὶν ἡ μαρτυρία', gloss: 'this is the testimony', ref: NT('1jn', 5, 9), decoys: ['αὐτούς', 'αὐτῆς'] },
   },
   {
     a: { word: 'τίς', inPhrase: 'τίς', phrase: 'σὺ τίς εἶ', gloss: 'who are you?', ref: NT('rom', 9, 20), decoys: ['τί', 'τινί'] },
