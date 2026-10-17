@@ -76,6 +76,15 @@ Feature: Review brings back the words that are due
     And the app is closed and opened again
     Then the Review screen says "Due today: 3 words"
 
+  Scenario: A phone Back in the middle of a round keeps the round
+    Given 4 words are due, 2 of them on step 3
+    When Lampas is opened on the Reader
+    And he taps "Due: 4"
+    And he starts the review
+    And he answers the first question, goes on to "2 of 10", then goes Back to the Reader and Forward
+    Then the counter reads "2 of 10"
+    And the first question's answer is kept on the schedule
+
   Scenario: A weak word is asked as multiple choice and a strong one as a flashcard
     Given the word "λέγω" is due on step 0
     And the word "εἰμί" is also due on step 3

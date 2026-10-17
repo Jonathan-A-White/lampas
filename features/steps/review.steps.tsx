@@ -1,7 +1,7 @@
 // features/steps/review.steps.tsx — runs features/review.feature: the Reader's Due: N badge, the Review screen that
 // asks due words first, and the schedule and the end card after the answers.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor } from '@testing-library/react';
+import { act, render, screen, cleanup, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -316,6 +316,39 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(screen.getByTestId('due-today')).toHaveTextContent(text));
     });
   });
+
+  Scenario('A phone Back in the middle of a round keeps the round', ({ Given, When, And, Then }) => {
+    let first = '';
+    Given('{int} words are due, {int} of them on step 3', async (_, n: number, onStep: number) => {
+      await freshStore();
+      await makeDue(DUE.slice(0, n), (_, i) => ({ step: i >= n - onStep ? 3 : 0, rights: 0 }));
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he taps {string}', async (_, text: string) => {
+      await user.click(await findButton(text));
+      await screen.findByRole('heading', { name: 'Review', level: 1 });
+    });
+    And('he starts the review', start);
+    // one step: tests/setup.ts clears session storage after every step (each step is a test), and the kept round lives there
+    And('he answers the first question, goes on to {string}, then goes Back to the Reader and Forward', async (_, text: string) => {
+      first = await answerCurrent(true);
+      await goOn();
+      expect(await screen.findByText(/^\d+ of \d+$/)).toHaveTextContent(text);
+      act(() => window.history.back());
+      await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
+      act(() => window.history.forward());
+      await screen.findByRole('heading', { name: 'Review', level: 1 });
+    });
+    Then('the counter reads {string}', async (_, text: string) => {
+      expect(await screen.findByText(/^\d+ of \d+$/)).toHaveTextContent(text);
+    });
+    And("the first question's answer is kept on the schedule", async () => {
+      expect(first).not.toBe('');
+      expect(screen.getByTestId('prompt').getAttribute('data-lemma')).not.toBe(first);
+      await waitFor(async () => expect((await review(first)).rights).toBe(1));
+    });
+  });
+
   Scenario('A weak word is asked as multiple choice and a strong one as a flashcard', ({ Given, When, And, Then }) => {
     Given('the word {string} is due on step {int}', async (_, lemma: string, step: number) => {
       await freshStore();
