@@ -26,8 +26,8 @@ const REQUESTS = [
 const txidOf = (index: number): string => `direct:${String(index + 1).repeat(64)}`;
 
 // Puts the requests in the app's own store through raw IndexedDB, as the app wrote them.
-async function seed(page: Page): Promise<void> {
-  const rows = REQUESTS.map((r, i) => ({ txid: txidOf(i), kind: 'tutor-ask', summary: r.summary, app_version: '0.1.80', sentAt: Date.now() - (REQUESTS.length - i) * 86_400_000, status: 'sent' }));
+async function seed(page: Page, summaries: string[] = REQUESTS.map((r) => r.summary)): Promise<void> {
+  const rows = summaries.map((summary, i) => ({ txid: txidOf(i), kind: 'tutor-ask', summary, app_version: '0.1.80', sentAt: Date.now() - (summaries.length - i) * 86_400_000, status: 'sent' }));
   await page.evaluate(
     (list) =>
       new Promise<void>((resolve, reject) => {
@@ -84,6 +84,49 @@ for (const { name, width, height } of VIEWPORTS) {
     expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
     await page.locator('.screen').first().evaluate((el) => (el.scrollTop = 0));
     await shot(page, `your-requests-${name}`);
+  });
+}
+
+// A request of 400 characters is cut at three lines; a tap on it shows the rest and a second tap folds it; a short one is plain text; a 400-character
+// string with no break in it never scrolls the screen sideways, folded or open.
+for (const { name, width, height } of VIEWPORTS) {
+  test(`a long request opens and folds on a tap at ${width}x${height}`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    const fake = makeFakePostern();
+    await routePostern(page, fake);
+    await openUnlocked(page);
+    await page.goto('/#/requests');
+    await expect(page.getByRole('heading', { name: 'Your requests', level: 1 })).toBeVisible();
+    const long = 'Let me hear the Greek at half speed and then at full speed, '.repeat(7).slice(0, 400).trim();
+    const unbroken = 'W'.repeat(400);
+    const short = 'Add a sepia theme';
+    await seed(page, [unbroken, long, short]);
+    await page.reload();
+
+    const text = page.getByRole('button', { name: long });
+    const heightOf = async (): Promise<number> => (await text.boundingBox())?.height ?? 0;
+    const sideways = (): Promise<boolean> => page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+    await expect(text).toHaveAttribute('aria-expanded', 'false');
+    const folded = await heightOf();
+    await text.click();
+    await expect(text).toHaveAttribute('aria-expanded', 'true');
+    expect(await heightOf()).toBeGreaterThan(folded + 20);
+    expect(await text.evaluate((el) => el.scrollHeight <= el.clientHeight + 1)).toBe(true); // all of it shows
+    await shot(page, `your-requests-long-open-${name}`);
+    await text.click();
+    await expect(text).toHaveAttribute('aria-expanded', 'false');
+    expect(await heightOf()).toBeCloseTo(folded, 0);
+
+    await expect(page.getByRole('button', { name: short })).toHaveCount(0); // a short one is plain text
+    await expect(page.getByText(short)).toBeVisible();
+
+    const wide = page.getByRole('button', { name: unbroken });
+    await expect(wide).toHaveAttribute('aria-expanded', 'false');
+    expect(await sideways()).toBe(false);
+    await wide.click();
+    await expect(wide).toHaveAttribute('aria-expanded', 'true');
+    expect(await sideways()).toBe(false);
+    expect((await wide.boundingBox())?.width ?? 0).toBeLessThanOrEqual(width);
   });
 }
 

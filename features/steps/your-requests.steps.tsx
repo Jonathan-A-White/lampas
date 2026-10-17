@@ -100,16 +100,64 @@ function forgetVisibility(): void {
   Reflect.deleteProperty(document, 'visibilityState');
 }
 
+const LONG_REQUEST = 'Let me hear the Greek at half speed, and also the English, and then the next verse after it, and keep going to the end of the chapter, one tap, every time I open the app';
+const SHORT_REQUEST = 'Add a sepia theme';
+
+/** jsdom has no layout: a box that is cut short (line-clamp-3 on a text over 100 characters) reports a scrollHeight taller than its clientHeight,
+ * as a phone's would; tests/e2e/your-requests.spec.ts proves the real thing. Returns the undo. */
+function stubClampedLayout(): () => void {
+  const clamped = (el: HTMLElement): boolean => el.classList.contains('line-clamp-3') && (el.textContent ?? '').length > 100;
+  const box = HTMLElement.prototype;
+  Object.defineProperty(box, 'scrollHeight', { configurable: true, get(this: HTMLElement) { return clamped(this) ? 200 : 72; } });
+  Object.defineProperty(box, 'clientHeight', { configurable: true, get() { return 72; } });
+  return () => {
+    Reflect.deleteProperty(box, 'scrollHeight');
+    Reflect.deleteProperty(box, 'clientHeight');
+  };
+}
+let undoLayout: (() => void) | undefined;
+
 const feature = await loadFeature('features/your-requests.feature');
 
 describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
   const open = 'Your requests is open behind a fake Postern with the request {string}';
 
-  AfterEachScenario(() => forgetVisibility());
+  AfterEachScenario(() => {
+    forgetVisibility();
+    undoLayout?.();
+    undoLayout = undefined;
+  });
 
   Scenario('A request nobody has answered yet reads Sent', ({ Given, Then }) => {
     Given(open, (_, summary: string) => openWith([summary]));
     Then('the request {string} reads {string}', (_, summary: string, line: string) => readsAs(summary, line));
+  });
+
+  Scenario('A tap on a long request shows the whole of it, and a second tap folds it again', ({ Given, When, Then, And }) => {
+    const longRequest = (): HTMLElement => screen.getByRole('button', { name: LONG_REQUEST });
+    Given('Your requests is open with one long request and one short one', async () => {
+      undoLayout = stubClampedLayout();
+      await openWith([LONG_REQUEST, SHORT_REQUEST]);
+    });
+    Then('the short request is plain text, not a button', async () => {
+      expect(await screen.findByText(SHORT_REQUEST)).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: SHORT_REQUEST })).toBeNull();
+    });
+    And('the long request is cut short and can be opened', async () => {
+      await waitFor(() => expect(longRequest()).toHaveAttribute('aria-expanded', 'false'));
+      expect(longRequest().className).toContain('line-clamp-3');
+    });
+    When('he taps the long request', () => user.click(longRequest()));
+    Then('the long request shows all of its text', () => {
+      expect(longRequest()).toHaveAttribute('aria-expanded', 'true');
+      expect(longRequest().className).not.toContain('line-clamp-3');
+      expect(longRequest()).toHaveTextContent(LONG_REQUEST);
+    });
+    When('he taps the long request again', () => user.click(longRequest()));
+    Then('the long request is cut short and can be opened', () => {
+      expect(longRequest()).toHaveAttribute('aria-expanded', 'false');
+      expect(longRequest().className).toContain('line-clamp-3');
+    });
   });
 
   Scenario('A filed request reads Filed', ({ Given, When, Then }) => {
