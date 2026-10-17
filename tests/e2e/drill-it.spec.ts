@@ -125,8 +125,10 @@ async function openIdea(page: Page, name = 'The noun') {
   return idea;
 }
 
-/** Drill it, from the idea sheet: a new walk, on its first question. */
+/** Drill it, from the idea sheet: a new walk, on its first question. He taps it after the moment a sheet that opens or closes swallows taps for
+ * (src/ui/settle.ts useSettleAround, mw-i7xe0n.26). */
 async function startDrill(page: Page, idea: ReturnType<Page['locator']>) {
+  await page.waitForTimeout(SETTLE_MS + 100);
   await idea.getByRole('button', { name: 'Drill it', exact: true }).click();
   const drill = page.getByRole('dialog', { name: 'Drill it' });
   await expect(drill.getByTestId('grammar-prompt')).toBeVisible();

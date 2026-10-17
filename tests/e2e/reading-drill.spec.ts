@@ -107,6 +107,9 @@ test('a double tap on Next word skips no word, and one on Finish leaves the end 
   await holdFor(page, bar, HOLD_MS);
   await panel.getByRole('button', { name: 'Drill this sound', exact: true }).click();
   const drill = page.getByRole('dialog', { name: 'Reading drill' });
+  // a sheet that opens takes no tap in its first moment (src/ui/settle.ts useSettleAround, mw-i7xe0n.26): he reads it first
+  await expect(drill).toBeVisible();
+  await page.waitForTimeout(SETTLE_MS + 100);
   await drill.getByRole('button', { name: 'Start the drill', exact: true }).click();
 
   fake.autoReply = { status: 'answered', answer: WELL_READ_ANSWER };
