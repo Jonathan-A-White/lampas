@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.293
+_2026-10-17_
+- Fixed: Tapping a Bible reference twice quickly no longer makes its card vanish; the card stays up.
+
 ## 0.1.292
 _2026-10-17_
 - Fixed: The Greek words in a Review question's sentence, and the Greek answer choices, are now drawn large in the Greek typeface.

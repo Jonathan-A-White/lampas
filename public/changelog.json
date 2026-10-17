@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.293",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.429",
+    "kind": "fixed",
+    "text": "Tapping a Bible reference twice quickly no longer makes its card vanish; the card stays up."
+  },
+  {
     "version": "0.1.292",
     "date": "2026-10-17",
     "story": "mw-86e9r1.31",
