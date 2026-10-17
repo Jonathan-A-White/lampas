@@ -39,23 +39,32 @@ const passageOf = (chapter: Chapter, held: HeldPlace): PassageVerse[] =>
 /** Settings, scrolled to the Study resources, where Logos is linked. */
 const LINK_LOGOS_HASH = '#/settings?section=resources';
 
-/** What an Old Testament card says under its heading: that Lampas lacks it and where to read it instead. `onSettings` opens Settings. */
-function ElsewhereLine({ written, onSettings }: { written: string; onSettings: () => void }) {
+/** An Old Testament place, for a link to a Bible app: the book's code, the chapter and the verse (none for a whole chapter). */
+export interface ElsewherePlace {
+  book: string;
+  chapter: number;
+  verse?: number;
+}
+
+/** What an Old Testament card says under its heading: that Lampas lacks it and where to read it instead. `onSettings` opens Settings. `said` is false where the
+ *  words 'Not in Lampas yet' are already said above it (the notice a link leaves under the header). */
+export function ElsewhereLine({ place, said = true, onSettings }: { place: ElsewherePlace | null; said?: boolean; onSettings: () => void }) {
   const resources = useLiveQuery(getStudyResources, []);
   const bible = useLiveQuery(getLogosBible, []);
-  const place = useMemo(() => elsewhereOf(written), [written]);
-  if (!resources || bible === undefined) return <p className="py-1 text-lg text-muted">Not in Lampas yet</p>;
+  const not = said ? 'Not in Lampas yet' : null;
+  if (!resources || bible === undefined) return not ? <p className="py-1 text-lg text-muted">{not}</p> : null;
   const link = resources.on.includes('logos') && place ? verseLink(place.book, place.chapter, place.verse ?? 1, bible) : undefined;
   if (!link) {
     return (
       <p className="py-1 text-lg text-muted">
-        Not in Lampas yet. <a href={LINK_LOGOS_HASH} onClick={(e) => { e.preventDefault(); onSettings(); }} className="text-accent underline">Link Logos in Settings</a> to open it there.
+        {not ? `${not}. ` : null}
+        <a href={LINK_LOGOS_HASH} onClick={(e) => { e.preventDefault(); onSettings(); }} className="text-accent underline">Link Logos in Settings</a> to open it there.
       </p>
     );
   }
   return (
     <>
-      <p className="py-1 text-lg text-muted">Not in Lampas yet</p>
+      {not ? <p className="py-1 text-lg text-muted">{not}</p> : null}
       <a
         href={link.url}
         data-fallback={link.fallback}
@@ -88,7 +97,7 @@ function spotFor(anchor: DOMRect, natural: number): Spot {
   return { top: anchor.top - GAP - height, left, width, maxHeight: Math.max(above, 0) };
 }
 
-function ReferenceCardView({ card, written, anchor, onClose, onOpen, onSettings }: { card: Card; written: string; anchor: RefObject<HTMLElement | null>; onClose: () => void; onOpen: () => void; onSettings: () => void }) {
+function ReferenceCardView({ card, place, anchor, onClose, onOpen, onSettings }: { card: Card; place: ElsewherePlace | null; anchor: RefObject<HTMLElement | null>; onClose: () => void; onOpen: () => void; onSettings: () => void }) {
   useSheetBack(onClose);
   const { held } = card;
   const [passage, setPassage] = useState<Passage>(null);
@@ -144,7 +153,7 @@ function ReferenceCardView({ card, written, anchor, onClose, onOpen, onSettings 
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-2">
           {!held ? (
-            <ElsewhereLine written={written} onSettings={onSettings} />
+            <ElsewhereLine place={place} onSettings={onSettings} />
           ) : passage === null ? (
             <p role="status" className="py-1 text-base text-muted">Loading…</p>
           ) : passage === 'failed' ? (
@@ -175,9 +184,11 @@ function ReferenceCardView({ card, written, anchor, onClose, onOpen, onSettings 
   );
 }
 
-/** A reference link in an answer: the words stay where they are; a tap opens the card. `onLeave` is called before Open opens the reader (the Talk sheet closes there). */
-export function ReferenceLink({ written, onLeave, children }: { written: string; onLeave?: () => void; children: ReactNode }) {
-  const card = useMemo(() => cardOf(written), [written]);
+/** A reference link in an answer: the words stay where they are; a tap opens the card. `onLeave` is called before Open opens the reader (the Talk sheet closes there).
+ *  A reference found by name rather than written for the tutor's `cardOf` (Share to Lampas lists 'Song of Solomon 2:1', 'Gen. 1:28' with their book known) gives
+ *  its `old` Testament place and `heading`, and a `className`, `href` (what a long press has) and `data` of its own. */
+export function ReferenceLink({ written, onLeave, old, className, href, data, children }: { written: string; onLeave?: () => void; old?: { heading: string; place: ElsewherePlace }; className?: string; href?: string; data?: Record<string, string>; children: ReactNode }) {
+  const card = useMemo(() => (old ? { heading: old.heading, held: null } : cardOf(written)), [written, old]);
   const [open, setOpen] = useState(false);
   const anchor = useRef<HTMLAnchorElement>(null);
   if (!card) return <>{children}</>;
@@ -186,8 +197,10 @@ export function ReferenceLink({ written, onLeave, children }: { written: string;
     <>
       <a
         ref={anchor}
-        href={referenceHash(written)}
+        href={href ?? referenceHash(written)}
         aria-haspopup="dialog"
+        className={className}
+        {...data}
         onClick={(event) => {
           event.preventDefault();
           setOpen(true);
@@ -198,7 +211,7 @@ export function ReferenceLink({ written, onLeave, children }: { written: string;
       {open ? (
         <ReferenceCardView
           card={card}
-          written={written}
+          place={old ? old.place : elsewhereOf(written)}
           anchor={anchor}
           onClose={() => setOpen(false)}
           onOpen={() => {

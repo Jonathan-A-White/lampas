@@ -10,7 +10,8 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
-import { parkShare } from '../../src/data/repositories';
+import { parkShare, setLogosBible, setResourceOn } from '../../src/data/repositories';
+import { DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
 import { clearBus } from '../../src/events/bus';
 import { imageSeam } from '../../src/images/shrink';
 import { tutorTimings } from '../../src/services/tutor';
@@ -116,6 +117,49 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(document.querySelector('[data-verse][data-selected="true"]')).not.toBeNull());
       expect(document.querySelector('[data-verse][data-selected="true"]')).toHaveTextContent(/28/);
       expect(window.location.hash).toContain('c=8');
+    });
+  });
+
+  const card = () => screen.getByRole('dialog', { name: 'Genesis 1:28' });
+
+  Scenario('An Old Testament reference opens the not-in-Lampas card, not another chapter', ({ Given, When, Then, And }) => {
+    Given('the Share screen is opened with a share of the words {string}', sharedWords);
+    When('he taps the link {string}', async (_, name: string) => {
+      await user.click(linkNamed(name));
+    });
+    Then('a card headed {string} says {string}', async (_, heading: string, line: string) => {
+      const dialog = await screen.findByRole('dialog', { name: heading });
+      expect(await within(dialog).findByText(new RegExp(line))).toBeInTheDocument();
+    });
+    And('the Reader is not opened', () => {
+      expect(window.location.hash).toContain('/share');
+      expect(document.querySelector('[data-link-notice]')).toBeNull();
+      expect(sheet()).toBeInTheDocument();
+    });
+    When('he closes the card', async () => {
+      await user.click(within(card()).getByRole('button', { name: 'Close' }));
+    });
+    Then('the sheet shows the link {string} again', async (_, name: string) => {
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Genesis 1:28' })).toBeNull());
+      expect(linkNamed(name)).toBeInTheDocument();
+    });
+  });
+
+  Scenario('With Logos on, the card for an Old Testament reference offers Open in Logos', ({ Given, When, Then, And }) => {
+    Given('the Share screen is opened with a share of the words {string}', sharedWords);
+    And('Logos is linked and his Bible is the LSB', async () => {
+      await setResourceOn('logos', true);
+      await setLogosBible(DEFAULT_LOGOS_BIBLE);
+    });
+    When('he taps the link {string}', async (_, name: string) => {
+      await user.click(linkNamed(name));
+    });
+    Then('a card headed {string} says {string}', async (_, heading: string, line: string) => {
+      const dialog = await screen.findByRole('dialog', { name: heading });
+      expect(await within(dialog).findByText(new RegExp(line))).toBeInTheDocument();
+    });
+    And('the card has an Open in Logos link', async () => {
+      expect(await within(card()).findByRole('link', { name: 'Open in Logos' })).toBeInTheDocument();
     });
   });
 

@@ -19,6 +19,21 @@ Feature: Share to Lampas lists the Bible references in the shared words
     When he taps the link "Rom 8:28-30"
     Then the Reader is open at Romans 8 verse 28
 
+  Scenario: An Old Testament reference opens the not-in-Lampas card, not another chapter
+    Given the Share screen is opened with a share of the words "God said (Gen. 1:28 ESV) be fruitful."
+    When he taps the link "Gen. 1:28"
+    Then a card headed "Genesis 1:28" says "Not in Lampas yet"
+    And the Reader is not opened
+    When he closes the card
+    Then the sheet shows the link "Gen. 1:28" again
+
+  Scenario: With Logos on, the card for an Old Testament reference offers Open in Logos
+    Given the Share screen is opened with a share of the words "God said (Gen. 1:28 ESV) be fruitful."
+    And Logos is linked and his Bible is the LSB
+    When he taps the link "Gen. 1:28"
+    Then a card headed "Genesis 1:28" says "Not in Lampas yet"
+    And the card has an Open in Logos link
+
   Scenario: The references keep the order of the page, a repeat at its first place
     Given the Share screen is opened with a share of the words "Rom 8:28 ... Gen 1:28 ... Rom 8:28 ... Rom 1:16"
     Then the links are, in order, "Rom 8:28 ×2", "Gen 1:28" and "Rom 1:16"
