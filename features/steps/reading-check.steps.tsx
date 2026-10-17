@@ -157,6 +157,20 @@ async function selectVerse28(): Promise<void> {
   await screen.findByRole('region', { name: 'Reading check' });
 }
 
+/**
+ * Closes the Verse view and taps the Reader's Greek / English switch, then waits for it to read pressed. On the full app a role query for a
+ * button costs about 2 s (it computes the accessible name of every button in the chapter, a button to a word), so each button is looked up
+ * inside the one small region or group that holds it (mw-5r3p30.554); the checks are the same.
+ */
+async function backToReaderAndSwitchTo(name: 'Greek' | 'English'): Promise<void> {
+  const verseView = screen.getByRole('region', { name: 'Verse view' });
+  await user.click(within(verseView).getByRole('button', { name: '‹ Reader' }));
+  await waitFor(() => expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull());
+  const choice = () => within(screen.getByRole('group', { name: 'Language' })).getByRole('button', { name, exact: true });
+  await user.click(choice());
+  await waitFor(() => expect(choice()).toHaveAttribute('aria-pressed', 'true'));
+}
+
 const panel = () => screen.getByRole('region', { name: 'Reading check' });
 /** A marked word of the result or the walk: the verse above them (the sheet's own text) has tappable words of the same names. */
 const markedWord = async (name: string) =>
@@ -755,10 +769,7 @@ describeFeature(feature, ({ Scenario }) => {
     And(holdRead, async () => holdAndLetGo(readButton(), 2000));
     And(verseMarked, verseMarkedSteps);
     When('he closes the Verse view, switches to the Greek view and opens the reading check again', async () => {
-      await user.click(screen.getByRole('button', { name: '‹ Reader' }));
-      await waitFor(() => expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull());
-      await user.click(screen.getByRole('button', { name: 'Greek', exact: true }));
-      await waitFor(() => expect(screen.getByRole('button', { name: 'Greek', exact: true })).toHaveAttribute('aria-pressed', 'true'));
+      await backToReaderAndSwitchTo('Greek');
       await selectVerse28();
     });
     Then('the reading check has no result yet', async () => {
@@ -768,10 +779,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he holds the bar again in Greek for 2 seconds and lets go', async () => holdAndLetGo(readButton(), 2000));
     Then(verseMarked, greekMarkedSteps);
     When('he closes the Verse view, switches to the English view and opens the reading check again', async () => {
-      await user.click(screen.getByRole('button', { name: '‹ Reader' }));
-      await waitFor(() => expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull());
-      await user.click(screen.getByRole('button', { name: 'English', exact: true }));
-      await waitFor(() => expect(screen.getByRole('button', { name: 'English', exact: true })).toHaveAttribute('aria-pressed', 'true'));
+      await backToReaderAndSwitchTo('English');
       await selectVerse28();
     });
     Then('the English result is still there with {string} and {string} marked to fix', verseMarkedSteps);
