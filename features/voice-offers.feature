@@ -84,6 +84,15 @@ Feature: He can answer an offer by voice instead of tapping
     Then the Theme is Dark
     And the mill received 1 bible-talk grist
 
+  Scenario: A tapped setting offer shows its change once, and after Undo only that it was put back
+    Given Lampas is opened on #/goal behind a fake Postern whose tutor offers to change the Theme to Dark
+    When he taps the Ask the tutor control
+    And he sends "Make it dark"
+    And he taps Change Theme: Dark
+    Then the first turn shows the change "Changed: Theme: Dark" with an Undo button and no bare "Changed" line
+    When he taps Undo on the first turn
+    Then the first turn shows the change "Put back: Theme: Phone" and no bare "Changed" line
+
   Scenario: A tap and a spoken yes send once
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
     When he taps the Ask the tutor control
