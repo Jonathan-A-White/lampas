@@ -14,7 +14,9 @@
 // Awake (mw-5r3p30.309): with it On the screen stays on while the Reader is open (src/speech/wakeLock.ts, holder 'immersive', beside reading aloud's own
 // hold: the lock is let go with the last holder). Leaving the Reader or switching Off lets it go; the page hiding does so by itself and the lock is asked
 // for again when the page is visible again. A phone without the API reads on.
+import { useLiveQuery } from 'dexie-react-hooks';
 import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { getImmersive } from './data/repositories';
 import { holdAwake, releaseAwake } from './speech/wakeLock';
 
 /** Scrolling down this far hides them. */
@@ -35,6 +37,10 @@ let leaving: ReturnType<typeof setTimeout> | undefined;
 /** Whether the bars are away in the Reader on screen now. The next chapter is a new Reader (a new hook), which starts with them as the one it replaces
  * had them (mw-5r3p30.318); like full screen, this is forgotten once no new Reader wants it (LEAVE_DELAY_MS), so a later visit starts with them shown. */
 let awayNow = false;
+/** Whether the setting is On in the Reader on screen now. The next chapter is a new Reader whose live query of the setting has no answer on its first
+ * draw; without this that frame is drawn as if Immersive were Off, bars and all (mw-5r3p30.497). Forgotten with awayNow, so a visit after he has
+ * switched it Off in Settings does not start On. */
+let onNow = false;
 
 /** Asks the browser to show the page full screen. False where it cannot or will not (no API, no gesture yet, refused). */
 async function enterFullScreen(): Promise<boolean> {
@@ -66,6 +72,16 @@ export function resetImmersive(): void {
   clearTimeout(leaving);
   leaving = undefined;
   awayNow = false;
+  onNow = false;
+}
+
+/** Whether the Immersive reader setting is On: what the store says, and until it answers (a new Reader's first draw) what the Reader it replaces had. */
+export function useImmersiveSetting(): boolean {
+  const stored = useLiveQuery(getImmersive, []);
+  useEffect(() => {
+    if (stored !== undefined) onNow = stored === 'on';
+  }, [stored]);
+  return stored === undefined ? onNow : stored === 'on';
 }
 
 export interface Immersive {
@@ -204,6 +220,7 @@ export function useImmersive(
       stopped = true;
       leaving = setTimeout(() => {
         awayNow = false;
+        onNow = false;
         leaveFullScreen();
       }, LEAVE_DELAY_MS);
       el.removeEventListener('scroll', onScroll);
