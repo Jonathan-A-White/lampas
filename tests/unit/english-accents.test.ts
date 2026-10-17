@@ -133,3 +133,17 @@ describe('chi fits an American ear (mw-5r3p30.475)', () => {
     expect(ideaSound(ideaOf('letter-chi'), modern, british)).toMatch(/^kh, as in “loch”, the Scottish ch/);
   });
 });
+
+describe('pi, tau and kappa fit an American ear (mw-5r3p30.476)', () => {
+  // An English p, t or k that starts a word is said with a breath ('pen', 'top', 'kite'); after an s it is not, and Greek π, τ and κ never are.
+  it('keys the American /p/, /t/ and /k/ to no word that starts them with a breath: pen, top or kite', () => {
+    for (const id of ['/p/', '/t/', '/k/'] as const) expect(american.hints[id].word, id).not.toMatch(/^(pen|top|kite)$/);
+    for (const line of everyLine(american)) expect(line).not.toMatch(/“(pen|top|kite)”|\bas in (pen|top|kite)\b/);
+  });
+
+  it('says them, in American English, as in “spin”, “stop” and “skate”', () => {
+    expect(ideaSound(ideaOf('letter-pi'), modern, american)).toBe('p, as in “spin”');
+    expect(ideaSound(ideaOf('letter-tau'), modern, american)).toBe('t, as in “stop”');
+    expect(ideaSound(ideaOf('letter-kappa'), modern, american)).toBe('k, as in “skate”');
+  });
+});

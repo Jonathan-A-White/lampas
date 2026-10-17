@@ -1,7 +1,9 @@
 // src/speech/accents/american.ts — the sound hints for a General American ear, the default (mw-5r3p30.352). Each was read for an American ear: the o
 // of 'lot' is 'ah' to an American, so the o is the o of 'or', said short (PROVISIONAL, the Governor to confirm); an American r is never rolled, so the
 // Greek tap is the tt of 'butter', the one place American English taps it. Many Americans say 'loch' as 'lock', so χ is the throaty ch of
-// 'chutzpah' (mw-5r3p30.475, PROVISIONAL, the Governor to confirm); British keeps 'loch'. The rest are the words the lessons always gave.
+// 'chutzpah' (mw-5r3p30.475, PROVISIONAL, the Governor to confirm); British keeps 'loch'. A p, t or k that starts an English word is said with a
+// breath and Greek π, τ and κ never are, so they are keyed after an s, where English has no breath: 'spin', 'stop', 'skate' (mw-5r3p30.476,
+// PROVISIONAL, the Governor to pick the words). The rest are the words the lessons always gave.
 import type { EnglishAccent } from './types';
 
 export const AMERICAN: EnglishAccent = {
@@ -25,11 +27,11 @@ export const AMERICAN: EnglishAccent = {
     '/z/': { word: 'zoo' },
     '/s/': { word: 'sun' },
     '/b/': { word: 'bed' },
-    '/p/': { word: 'pen' },
+    '/p/': { word: 'spin' },
     '/d/': { word: 'dog' },
-    '/t/': { word: 'top' },
+    '/t/': { word: 'stop' },
     '/ɡ/': { word: 'go' },
-    '/k/': { word: 'kite' },
+    '/k/': { word: 'skate' },
     '/m/': { word: 'mother' },
     '/n/': { word: 'now' },
     '/l/': { word: 'lamp' },
