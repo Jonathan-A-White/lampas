@@ -11,7 +11,11 @@
 // step too (mw-5r3p30.239): pushSheetStep pushes one more entry, deeper than every sheet's, and keeps the way back to the content
 // the sheet showed. Back to the entry before runs that undo. A move that closes the sheets above its owner (an example word tapped
 // on the Grammar or idea sheet) keeps their entries; the undo brings them back and they take their entries again instead of pushing.
+//
+// A sheet that opens or closes swallows taps for the settle moment (src/ui/settle.ts useSettleAround, mw-i7xe0n.26): the second tap of a double
+// tap on Done would land on what lies under it (the Goal's Change, the sheet beneath's own Done), and the second of one on Drill it in the drill.
 import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
+import { useSettleAround } from './settle';
 
 type SheetState = { sheet?: number } | null;
 
@@ -105,6 +109,7 @@ export const sheetsAbove = (level: number): number => mounted.filter((at) => at 
 /** Back closes this sheet (calls `onClose`); closing it by other means removes its history entry. Call once in every sheet. Gives
  * a function that reads the sheet's level, for pushSheetStep. */
 export function useSheetBack(onClose: () => void): () => number {
+  useSettleAround();
   const close = useRef(onClose);
   const levelRef = useRef(0);
   const levelNow = useCallback(() => levelRef.current, []);
