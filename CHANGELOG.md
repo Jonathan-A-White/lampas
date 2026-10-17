@@ -1,5 +1,12 @@
 # What's new
 
+## 0.1.281
+_2026-10-17_
+- Fixed: In American English, the example words for π, τ and κ are now spin, stop and skate, said without the puff of breath that Greek does not have.
+- New: Back from Audible, Lampas now asks where you got to in the plan and suggests the chapter from how long you were away.
+- Fixed: When the tutor is down and your phone is online, Ask the tutor and Talk now say the tutor is offline instead of telling you to check your connection.
+- Fixed: Drill it on a letter no longer asks the same word twice in one drill after you tap Hint, when your chapter has another word with that letter.
+
 ## 0.1.280
 _2026-10-17_
 - Fixed: Your requests now checks for news as soon as you come back to the app, instead of up to 20 seconds later.

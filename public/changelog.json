@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.1.281",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.476",
+    "kind": "fixed",
+    "text": "In American English, the example words for π, τ and κ are now spin, stop and skate, said without the puff of breath that Greek does not have."
+  },
+  {
+    "version": "0.1.281",
+    "date": "2026-10-17",
+    "story": "mw-umv8sp.3",
+    "kind": "new",
+    "text": "Back from Audible, Lampas now asks where you got to in the plan and suggests the chapter from how long you were away."
+  },
+  {
+    "version": "0.1.281",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.433",
+    "kind": "fixed",
+    "text": "When the tutor is down and your phone is online, Ask the tutor and Talk now say the tutor is offline instead of telling you to check your connection."
+  },
+  {
+    "version": "0.1.281",
+    "date": "2026-10-17",
+    "story": "mw-i7xe0n.13",
+    "kind": "fixed",
+    "text": "Drill it on a letter no longer asks the same word twice in one drill after you tap Hint, when your chapter has another word with that letter."
+  },
+  {
     "version": "0.1.280",
     "date": "2026-10-17",
     "story": "mw-5r3p30.220",
