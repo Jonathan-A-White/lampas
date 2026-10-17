@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { openLicence } from '../nav/route';
 import { useLicence } from './licenceContext';
+import { useHeldSpace } from '../ui/heldSpace';
 import { endLicenceTip, licenceTipDue, markLicenceTipShown } from './licenceTip';
 
 export const LICENCE_TIP_TEXT = 'Lampas is free to read. A licence adds a tutor you can ask about any word or verse, and Read it aloud.';
@@ -14,16 +15,20 @@ export function LicenceTip() {
   const [due] = useState(() => licenceTipDue());
   const [closed, setClosed] = useState(false);
   const shown = due && !closed && licence === 'not-licensed';
+  // the tip's place stays empty for a moment after it goes, so a double tap on its × does not land on the Greek that slides into it (mw-8m9dyu.10)
+  const held = useHeldSpace<HTMLElement>();
   useEffect(() => {
     if (shown) markLicenceTipShown();
   }, [shown]);
-  if (!shown) return null;
+  if (!shown) return held.space;
   const end = () => {
+    held.hold();
     endLicenceTip();
     setClosed(true);
   };
   return (
     <aside
+      ref={held.ref}
       role="note"
       aria-label="About a licence"
       data-licence-tip
