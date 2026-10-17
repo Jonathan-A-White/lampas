@@ -480,6 +480,38 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('The word he stopped at is marked in the verse and a tap on it brings the Next word box into view', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 in English with a reading check that heard the first words of the verse', () => open({ reply: 'partial' }));
+    And('he opens the reading check of verse 28', selectVerse28);
+    When(holdRead, async () => holdAndLetGo(readButton(), 2000));
+    Then('the verse marks {string} as the word he stopped at', async (_, word: string) => {
+      const stopped = await waitFor(() => {
+        const found = panel().querySelector<HTMLElement>('[data-reading-verse] [data-stopped]');
+        expect(found).not.toBeNull();
+        return found as HTMLElement;
+      });
+      expect(stopped).toHaveTextContent(word);
+      // it is a button like a word to fix, and it is the only one: 'know' was read and 'work' is where he stopped
+      expect(stopped.tagName).toBe('BUTTON');
+    });
+    And('the words after it are still set in the muted colour', () => {
+      const unread = panel().querySelectorAll('[data-reading-verse] [data-unread]');
+      expect(unread.length).toBeGreaterThan(0);
+      // the stopped word ('work') is the first unread one and carries the mark; the words after it follow, plain and grey
+      expect(unread[0]).toContainElement(panel().querySelector<HTMLElement>('[data-stopped]'));
+      expect(unread[1]).toHaveTextContent('together');
+      expect(unread[1].querySelector('button')).toBeNull();
+    });
+    When('he taps the word he stopped at', async () => {
+      await user.click(panel().querySelector<HTMLElement>('[data-reading-verse] [data-stopped]') as HTMLElement);
+    });
+    Then('the Next word box is brought into view', async () => {
+      const block = await nextWordBlock();
+      // jsdom has no layout, so the proof of the move is where focus went: the box takes it quietly, and the scroll follows it (tests/e2e holds the layout)
+      await waitFor(() => expect(document.activeElement).toBe(block));
+    });
+  });
+
   Scenario('A Next word of more than one chunk shows the word and its chunks', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 in English with a reading check that stopped before "together"', () => open({ reply: 'partial-together' }));
     And('he opens the reading check of verse 28', selectVerse28);

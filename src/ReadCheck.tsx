@@ -4,7 +4,7 @@
 // the whole verse again'. The Greek view is the same check on the verse's Greek: the words to fix are Greek, their chunks are
 // Greek syllables, and the speaker is the Greek voice. The state is src/useReadChecks.ts's.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { blobOf, clipFileName, downloadSeam, type Clip } from './audio/clip';
 import { ClipPlayer, usePlaying } from './audio/clipPlayer';
@@ -27,7 +27,8 @@ import { speakTutor, stopOnTap, verdictRuns, VERDICT_ID } from './speech/tutorVo
 import { SpeakButton } from './speech/SpeakButton';
 import { HoldBar } from './ui/HoldBar';
 import { useElapsed } from './ui/useElapsed';
-import { keepAboveStack, revealInScrollBox } from './ui/reveal';
+import { focusQuietly } from './ui/focus';
+import { keepAboveStack, revealAboveStack, revealInScrollBox } from './ui/reveal';
 import { DROPPED_NOTE, SHORT_HINT, TAP_HINT, type ReadState, type UseReadChecks } from './useReadChecks';
 
 type Marks = ReturnType<typeof markWords<FixWord>>;
@@ -142,8 +143,9 @@ const WORD_PARTS = /^([^\p{L}\p{N}\p{M}]*)(.*?)([^\p{L}\p{N}\p{M}]*)$/u;
 /** The verse as he read it, every word of it, with the words the mill marked as buttons: only the exact instance named, so a word
  * he said right the second time is not marked because he missed it the first. A marked word whose place is not in the verse (the
  * mill counted wrongly) is offered after it, so no mark is lost. `open` is the key of the open mark ('3' for the word at place 3,
- * 'l0' for the first lost word). A partial reading's `reached` is the last word he read: the words after it are set in the muted colour. */
-function MarkedVerse({ text, view, passage, marks, open, onOpen, player, reached }: { text: string; view: ReadingView; passage?: boolean; marks: Marks; open: string | null; onOpen: (key: string | null) => void; player?: ClipPlayer; reached?: number }) {
+ * 'l0' for the first lost word). A partial reading's `reached` is the last word he read: the words after it are set in the muted colour, and the
+ * word right after it (the one he stopped at, the Next word) is a button marked like a word to fix; `onStopped` is its tap (mw-neuq78.14). */
+function MarkedVerse({ text, view, passage, marks, open, onOpen, player, reached, onStopped }: { text: string; view: ReadingView; passage?: boolean; marks: Marks; open: string | null; onOpen: (key: string | null) => void; player?: ClipPlayer; reached?: number; onStopped?: () => void }) {
   const type = typeOf(view);
   const tokens = useMemo(() => wordsOfText(text), [text]);
   // each flagged word has its speaker right after it (a sibling of the word's button): it says only how the word should sound; with times and a clip,
@@ -172,10 +174,28 @@ function MarkedVerse({ text, view, passage, marks, open, onOpen, player, reached
           const [, before, core, after] = WORD_PARTS.exec(token) ?? ['', '', token, ''];
           const mark = marks.marked.get(i);
           const unread = reached !== undefined && i > reached;
+          const stopped = onStopped !== undefined && reached !== undefined && i === reached + 1 && !mark;
           return (
             <span key={i} data-unread={unread ? '' : undefined} className={unread ? 'text-muted' : undefined}>
               {before}
-              {mark ? markButton(mark, core, String(i), after) : core + after}{' '}
+              {mark ? (
+                markButton(mark, core, String(i), after)
+              ) : stopped ? (
+                <>
+                  <button
+                    type="button"
+                    data-stopped
+                    aria-label={`Next word: ${core}`}
+                    onClick={onStopped}
+                    className="inline-block min-h-11 rounded-lg bg-bad/15 px-1 font-semibold text-bad underline decoration-2 underline-offset-4"
+                  >
+                    {core}
+                  </button>
+                  {after}
+                </>
+              ) : (
+                core + after
+              )}{' '}
             </span>
           );
         })}
@@ -210,10 +230,10 @@ const isOneChunk = (fix: FixWord): boolean => fix.chunks.length <= 1 && normalWo
 
 /** The word he stopped at, offered as his next: big, in chunks, with the tip and the speaker (the same as a word to fix). A word of one chunk is
  * drawn once, big, with its tip under it: a second line of the same word would be a repeat (mw-neuq78.13). */
-function NextWord({ fix, view }: { fix: FixWord; view: ReadingView }) {
+const NextWord = forwardRef<HTMLDivElement, { fix: FixWord; view: ReadingView }>(function NextWord({ fix, view }, ref) {
   const type = typeOf(view);
   return (
-    <div data-next-word className="space-y-1 rounded-xl border border-line bg-surface p-3">
+    <div ref={ref} tabIndex={-1} data-next-word className="space-y-1 rounded-xl border border-line bg-surface p-3 outline-none">
       {/* the speaker sits in the heading's row, not under the tip: the card is a row shorter, so it fits above the bar at the biggest text on a small phone */}
       <div className="flex items-center justify-between gap-2">
         <h4 className="text-sm font-semibold text-muted">Next word</h4>
@@ -225,7 +245,7 @@ function NextWord({ fix, view }: { fix: FixWord; view: ReadingView }) {
       {isOneChunk(fix) ? <p className="break-words text-base text-muted">{plainQuotes(fix.tip)}</p> : <Fix fix={fix} view={view} speaker={false} />}
     </div>
   );
-}
+});
 
 /** One player for the clip of this result; it stops speech before it plays, and lets its URL go when the result goes. `times` are the scorer's for
  * his first and last words, when it gave them: where 'Play my reading' starts and stops (else the player measures the clip). */
@@ -295,6 +315,12 @@ function Result({ reading, text, view, passage, fileName, onWalk }: { reading: V
   const times = useMemo(() => speechTimesOf(reading.words, reading.reached), [reading.words, reading.reached]);
   const [player, audioRef] = useClipPlayer(reading.clip, times);
   const partial = reading.verdict === 'partial';
+  // a tap on the word he stopped at in the verse brings the Next word box into view: the box is in the scroll box under the whole verse
+  const nextBox = useRef<HTMLDivElement>(null);
+  const showNext = useCallback(() => {
+    revealAboveStack(nextBox.current);
+    focusQuietly(nextBox.current);
+  }, []);
   const walkable = walkWordsOf(reading).length > 0;
   return (
     <div data-reading-result={reading.verdict} onClick={stopOnTap} className="space-y-2">
@@ -310,7 +336,7 @@ function Result({ reading, text, view, passage, fileName, onWalk }: { reading: V
       {reading.clip ? <MyReading clip={reading.clip} fileName={fileName} player={player} /> : null}
       {reading.words.length > 0 || partial ? (
         <>
-          <MarkedVerse text={text} view={view} passage={passage} marks={marks} open={open} onOpen={setOpen} player={reading.clip ? player : undefined} reached={partial ? reading.reached : undefined} />
+          <MarkedVerse text={text} view={view} passage={passage} marks={marks} open={open} onOpen={setOpen} player={reading.clip ? player : undefined} reached={partial ? reading.reached : undefined} onStopped={partial && reading.next ? showNext : undefined} />
           {fix ? (
             <div data-fix-detail className="rounded-xl border border-line bg-surface p-3">
               <Fix fix={fix} view={view} player={reading.clip ? player : undefined} />
@@ -318,7 +344,7 @@ function Result({ reading, text, view, passage, fileName, onWalk }: { reading: V
           ) : reading.words.length > 0 ? (
             <p className="text-sm text-muted">Tap a marked word to see it in chunks.</p>
           ) : null}
-          {partial && reading.next ? <NextWord fix={reading.next} view={view} /> : null}
+          {partial && reading.next ? <NextWord ref={nextBox} fix={reading.next} view={view} /> : null}
           {partial ? <p className="text-base">Read it again from the start and go further.</p> : null}
           {walkable ? (
             <button type="button" onClick={onWalk} className="min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium">
