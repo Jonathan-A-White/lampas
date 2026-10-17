@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
 import { getGrammarBooks, getLogosBible, getStudyResources, setGrammarBooks, setResourceOn, setResourceOption } from '../../data/repositories';
+import { StartPlan } from '../../plan/StartPlan';
 import { resourceOf, tickedOf, type ResourceChoices, type StudyResource } from '../../resources';
 import { storeUrl } from '../../resources/appStore';
 import { AUDIO_BIBLES } from '../../resources/audioBible';
@@ -235,8 +236,21 @@ export const AudioBibleControl: Control = ({ row }) => {
   );
 };
 
-/** Reading plan: On | Off (src/data/repositories/readingPlan.ts startPlan turns it On). */
+/** Reading plan: On | Off (src/data/repositories/readingPlan.ts startPlan turns it On), and Start a listening plan, the same sheet as the Reader's Plan chip (src/plan/StartPlan.tsx). */
 export const ReadingPlanControl: Control = ({ row }) => {
   const readingPlan = useSetting(readingPlanSetting);
-  return <SettingRow row={row}>{readingPlan ? <OnOff name={row.label} current={readingPlan} settingKey="readingPlan" /> : null}</SettingRow>;
+  const [starting, setStarting] = useState(false);
+  return (
+    <SettingRow row={row}>
+      {readingPlan ? (
+        <>
+          <OnOff name={row.label} current={readingPlan} settingKey="readingPlan" />
+          <button type="button" onClick={() => setStarting(true)} className="mt-2 block min-h-12 rounded-lg border border-line px-4 text-base font-medium text-accent">
+            Start a listening plan
+          </button>
+        </>
+      ) : null}
+      {starting ? <StartPlan onClose={() => setStarting(false)} /> : null}
+    </SettingRow>
+  );
 };
