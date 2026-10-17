@@ -32,13 +32,24 @@ export function offerOfTurn(turn: TalkTurn): PendingOffer | undefined {
   return undefined;
 }
 
-/** The newest turn of a talk with an offer still waiting, with that offer. */
+/** An offer whose button stays on screen after his tap (the bridge, the Greek, the rust: a tap opens it again), so a yes to it does what the tap does (mw-1vuvq6.8). */
+function takenOfferOf(turn: TalkTurn): PendingOffer | undefined {
+  if (turn.bridge && turn.bridgeChoice === 'taken') return { kind: 'bridge', text: bridgeButtonText(turn.bridge) };
+  if (turn.greekOffer && turn.greekChoice === 'taken') return { kind: 'greek', text: turn.greekOffer.text };
+  if (turn.rustyOffer && turn.rustyChoice === 'taken') return { kind: 'rusty', text: RUSTY_BUTTON };
+  return undefined;
+}
+
+/** The newest turn of a talk with an offer still waiting, with that offer. When none waits, the newest turn's offer he already took counts, if its button is
+ * still there to open again (takenOfferOf). */
 export function pendingOfferOf(turns: readonly TalkTurn[]): { turn: TalkTurn; offer: PendingOffer } | undefined {
   for (let i = turns.length - 1; i >= 0; i--) {
     const offer = offerOfTurn(turns[i]);
     if (offer) return { turn: turns[i], offer };
   }
-  return undefined;
+  const newest = turns[turns.length - 1];
+  const offer = newest && takenOfferOf(newest);
+  return offer ? { turn: newest, offer } : undefined;
 }
 
 /** The turns whose feedback offer is being sent right now, by either path (the tap or a spoken yes), with the one send each. Module state, not a component's,

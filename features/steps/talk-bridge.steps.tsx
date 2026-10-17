@@ -180,6 +180,27 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('A spoken yes after the tap still takes him there, once', ({ Given, When, And, Then }) => {
+    Given(FOUNDATIONS, opens(LACKS));
+    When(WHEN_ASKS, asks);
+    And('he taps {string}', taps);
+    And('he goes Back', back);
+    And('the tutor will take his next words as a yes', () => {
+      fake.autoReply = { status: 'answered', answer: { answer: 'Opening it for you.', words: [], offer_reply: 'confirm' } };
+    });
+    And('he says {string}', async (_, words: string) => {
+      await send(words);
+    });
+    Then('the second bible-talk grist carries the pending offer of kind bridge with the text {string}', async (_, text: string) => {
+      await waitFor(() => expect(talkGrists()).toHaveLength(2));
+      expect((talkGrists()[1].input as { pending_offer?: unknown }).pending_offer).toEqual({ kind: 'bridge', text });
+    });
+    And('exactly one idea sheet {string} is open over the talk', async (_, name: string) => {
+      await waitFor(() => expect(ideaSheets(name)).toHaveLength(1));
+      expect(screen.getAllByRole('dialog', { name: 'Idea' })).toHaveLength(1);
+    });
+  });
+
   Scenario('Missing quite a bit, he is shown three and taken to the next step', ({ Given, When, And, Then }) => {
     Given('only the letters are solid and Lampas is opened on 1 John 1 behind a fake Postern whose tutor lists the three most direct of those he lacks', opens(LACKS_MOST_DIRECT));
     When(WHEN_ASKS, asks);
