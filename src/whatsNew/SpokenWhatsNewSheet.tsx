@@ -5,6 +5,7 @@
 import { compareVersions, DEFAULT_LABELS, versionsSince, type ChangelogEntry } from 'bsv-kit/whats-new';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { BarSlot } from '../speech/SpeakingBarSlot';
+import { useSettleAround } from '../ui/settle';
 import { Versions } from './Versions';
 
 /** localStorage, or nothing where there is none or it throws (private mode): the sheet may then show again, the harmless way to be wrong. */
@@ -66,6 +67,8 @@ export function SpokenWhatsNewSheet({ entries, version, storageKey, open, since,
   }, [controlled, entries, seen, version, storageKey, groups.length]);
 
   const shown = groups.length > 0;
+  // its Close takes no second tap of the tap that opened it, and what is beneath none of a double tap on Close (src/ui/settle.ts, mw-i7xe0n.26)
+  useSettleAround(shown);
   const close = useCallback(() => {
     if (controlled) onClose?.();
     else markSeen();

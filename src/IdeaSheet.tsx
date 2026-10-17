@@ -43,6 +43,7 @@ import { BarSlot } from './speech/SpeakingBarSlot';
 import { TeachTiles } from './TeachTiles';
 import { focusOnMount } from './ui/focus';
 import { greekMarked } from './ui/GreekMarked';
+import { useSettleAround } from './ui/settle';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 
@@ -396,6 +397,9 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
   const [asking, setAsking] = useState<{ to: number; need: GrammarIdea } | null>(null);
   // the idea he is learning now, when he slid this one to Learning: one idea at a time, so he chooses (mw-i7xe0n.6)
   const [switching, setSwitching] = useState<GrammarIdea | null>(null);
+  // a confirm card takes no tap in the moment it appears, and the sheet none in the moment it goes (src/ui/settle.ts, mw-i7xe0n.26)
+  useSettleAround(asking !== null);
+  useSettleAround(switching !== null);
 
   const teach = (outcome: IdeaOutcome, choice?: FrontierChoice): void => {
     writing.current = writing.current
