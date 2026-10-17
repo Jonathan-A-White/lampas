@@ -123,3 +123,98 @@ test('with Immersive reader Off, flipping to the next chapter shows the bars', a
   await expect(page.getByRole('heading', { name: 'Ephesians 3', level: 1 })).toBeVisible();
   await expectAll(page, 'visible');
 });
+
+// No frame of the new chapter shows the Reader as if Immersive were Off (mw-5r3p30.497): the new chapter is a new Reader, whose live query of the
+// setting has no answer on its first draw, and that frame drew the bars and `data-immersive="off"` before Immersive came back. A MutationObserver
+// installed before the flip sees every state the DOM is left in between tasks, which includes the painted frame.
+
+/** Watches the page for any state with a Reader that is not Immersive, or a bar that is not away (`bars: 'away'`) or is away (`bars: 'shown'`). */
+async function watchFrames(page: Page, bars: 'away' | 'shown') {
+  await page.evaluate((expected) => {
+    const seen: string[] = [];
+    (window as unknown as { __frames: string[] }).__frames = seen;
+    const check = () => {
+      for (const reader of Array.from(document.querySelectorAll('[data-reader]'))) {
+        const mode = reader.getAttribute('data-immersive');
+        if (mode !== 'on') seen.push(`data-immersive=${mode}`);
+      }
+      const boxes = Array.from(document.querySelectorAll('.away-box'));
+      const plain = document.querySelector('[data-reader-top]') && !document.querySelector('.away-box [data-reader-top]');
+      if (plain) seen.push('bars drawn outside an away box');
+      for (const box of boxes) {
+        const away = box.hasAttribute('data-away');
+        if (expected === 'away' && !away) seen.push('bars shown');
+        if (expected === 'shown' && away) seen.push('bars away');
+      }
+    };
+    new MutationObserver(check).observe(document.documentElement, { subtree: true, childList: true, attributes: true });
+  }, bars);
+}
+
+const frames = (page: Page) => page.evaluate(() => (window as unknown as { __frames: string[] }).__frames);
+
+/** A finger drag as touch input to the browser. */
+async function swipe(page: Page, from: readonly [number, number], to: readonly [number, number]) {
+  const cdp = await page.context().newCDPSession(page);
+  const at = (t: number) => ({ x: from[0] + (to[0] - from[0]) * t, y: from[1] + (to[1] - from[1]) * t });
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: from[0], y: from[1] }] });
+  for (let i = 1; i <= 8; i++) {
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: at(i / 8).x, y: at(i / 8).y }] });
+    await page.waitForTimeout(10);
+  }
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await cdp.detach();
+}
+
+for (const [name, from, to, chapter] of [
+  ['left to the next chapter', [330, 500], [90, 500], 3],
+  ['right to the previous chapter', [90, 500], [330, 500], 1],
+] as const) {
+  test(`with the bars away, a swipe ${name} never draws the bars or the Reader without Immersive`, async ({ page }) => {
+    await openEphesians2(page, 'on');
+    await scrollText(page, 400);
+    await expectAll(page, 'hidden');
+    await watchFrames(page, 'away');
+    await swipe(page, from, to);
+    await expect(page).toHaveURL(new RegExp(`c=${chapter}`));
+    await expect(page.locator('[data-place-line]')).toHaveText(new RegExp(`^Ephesians ${chapter} · `));
+    await page.waitForTimeout(500);
+    expect(await frames(page)).toEqual([]);
+  });
+}
+
+test('with the bars away, the foot button never draws the bars or the Reader without Immersive', async ({ page }) => {
+  await openEphesians2(page, 'on');
+  await scrollText(page, 400);
+  await watchFrames(page, 'away');
+  await flipTo(page, 'Ephesians 3 ›', 3);
+  await page.waitForTimeout(500);
+  expect(await frames(page)).toEqual([]);
+});
+
+test('with the bars shown, a chapter chosen in the picker never draws the Reader without Immersive', async ({ page }) => {
+  await openEphesians2(page, 'on');
+  await expectAll(page, 'visible');
+  await page.getByRole('button', { name: /Ephesians 2/ }).first().click();
+  const picker = page.getByRole('dialog', { name: 'Choose a chapter' });
+  await expect(picker).toBeVisible();
+  await watchFrames(page, 'shown');
+  if ((await picker.locator('[data-chapter="4"]').count()) === 0) await picker.locator('[data-book="eph"]').click();
+  await picker.locator('[data-chapter="4"]').click();
+  await expect(page).toHaveURL(/c=4/);
+  await expect(page.getByRole('heading', { name: 'Ephesians 4', level: 1 })).toBeVisible();
+  await page.waitForTimeout(500);
+  expect(await frames(page)).toEqual([]);
+});
+
+test('with the bars away, Back to the earlier chapter never draws the bars or the Reader without Immersive', async ({ page }) => {
+  await openEphesians2(page, 'on');
+  await scrollText(page, 400);
+  await flipTo(page, 'Ephesians 3 ›', 3);
+  await watchFrames(page, 'away');
+  await page.goBack();
+  await expect(page).toHaveURL(/c=2/);
+  await expect(page.locator('[data-place-line]')).toHaveText(/^Ephesians 2 · /);
+  await page.waitForTimeout(500);
+  expect(await frames(page)).toEqual([]);
+});

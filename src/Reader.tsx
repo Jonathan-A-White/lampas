@@ -12,7 +12,7 @@ import type { ReadHold } from './ReadCheck';
 import { VerseView } from './VerseView';
 import { useVerseAction } from './verse/action';
 import { Away } from './Away';
-import { useImmersive, useScrolledPercent } from './immersive';
+import { useImmersive, useImmersiveSetting, useScrolledPercent } from './immersive';
 import { PlaceLine } from './PlaceLine';
 import { ImmersiveHint } from './ImmersiveHint';
 import { ASK_BUTTON_GUTTER, ASK_BUTTON_ROOM, AskTutorButton, TALK_BAR_LIFT } from './AskTutor';
@@ -21,7 +21,7 @@ import { LicenceTip } from './gate/LicenceTip';
 import { TalkBar, TalkSheet } from './Talk';
 import { ErrorBoundary } from './ErrorBoundary';
 import type { Verse } from './data/chapter';
-import { getGreekPronunciation, getImmersive, setReaderView, talkRef } from './data/repositories';
+import { getGreekPronunciation, setReaderView, talkRef } from './data/repositories';
 import { chapterOf, getOpenChapter, setOpenChapter, type OpenChapter } from './data/readerChapter';
 import { verseNeighbours } from './data/neighbours';
 import { passageAt, passageVerse, passagesOf, unitId } from './data/passage';
@@ -113,7 +113,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const closePicker = useCallback(() => setPicking(false), []);
   const settings = useReaderSettings() ?? NO_SETTINGS;
   const { view, weave, solid, learning, layout, headings, readSpan } = settings;
-  const immersive = useLiveQuery(getImmersive, []) === 'on';
+  const immersive = useImmersiveSetting();
   const { chapter, failed, retry } = useChapter(BOOK, CHAPTER);
   // What the address said when the reader opened (a reopen, Back to an earlier place): the selected verse (the view and weave it names are
   // put back in the settings by useReaderSettings). The address is the place; the settings follow it.
