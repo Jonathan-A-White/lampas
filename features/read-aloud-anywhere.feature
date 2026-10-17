@@ -24,6 +24,17 @@ Feature: A small speaker reads any text he may want heard
     And it also speaks "λύουσιν" in "el-GR"
     And the explanation of plural is still on screen
 
+  Scenario: A paused reading keeps its speaker from saying it is still playing, and a tap on it stops the reading
+    Given a phone with an English and a Greek voice
+    And the Grammar sheet of "plural" is open with the speaking bar at its foot
+    When he taps Read aloud
+    Then the button is named Stop reading
+    When he taps Pause on the bar
+    Then the bar offers Resume
+    And the speaker is not named Stop reading
+    When he taps the paused speaker
+    Then the phone is silent and the button is named Read aloud
+
   Scenario: A phone with no Greek voice gets the help line and the English is still read
     Given a phone with an English voice only
     And the Grammar sheet of "plural" is open
