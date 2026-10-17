@@ -67,7 +67,7 @@ const TESTISH: Pronunciation = {
 };
 
 /** Opens the app on Romans 8 with every store emptied, `goal` saved as the goal setting when there is one, the pronunciation `chosen` saved, a fake Postern and, with `greekVoice`, a phone that has a Greek voice. */
-async function open(goal: string | undefined, chosen?: string, greekVoice = false, accent?: string): Promise<void> {
+async function open(goal: string | undefined, chosen?: string, greekVoice = false, accent?: string, link = ''): Promise<void> {
   unregisterTestish?.();
   unregisterTestish = undefined;
   chooseAccent(DEFAULT_ACCENT);
@@ -80,6 +80,7 @@ async function open(goal: string | undefined, chosen?: string, greekVoice = fals
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
   window.location.hash = '';
+  if (link) window.history.replaceState(null, '', `/${link}`);
   tutorTimings.pollMs = 20;
   drillSeed.next = () => TRY_SEED;
   fake = makeFakePostern();
@@ -302,6 +303,24 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       expect(within(ideaSheet()).getByRole('heading', { name: 'The genitive case' })).toBeInTheDocument();
       expect(grammarSheet()).toBeInTheDocument();
       expect(wordSheet()).toBeInTheDocument();
+    });
+  });
+
+  Scenario("Learn this idea on the Grammar sheet of preposition opens the tapped preposition's own idea", ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on 1 John 1 in Greek with no goal, no idea level and a fake Postern', async () => {
+      await open(undefined, undefined, false, undefined, '#/?ref=1John.1.1&view=greek');
+      await waitFor(() => expect(within(verseEl(1)).getByRole('button', { name: 'περὶ' })).toBeInTheDocument());
+    });
+    And('he taps {string} in verse {int} and the term {string} on the word sheet', (_, text: string, verse: number, term: string) => tapsWordAndTerm(text, verse, term));
+    When('he taps Learn this idea', async () => {
+      await user.click(within(grammarSheet()).getByRole('button', { name: 'Learn this idea' }));
+    });
+    Then('the idea sheet is headed {string}', async (_, title: string) => {
+      await screen.findByRole('dialog', { name: 'Idea' });
+      expect(await within(ideaSheet()).findByRole('heading', { name: title })).toBeInTheDocument();
+    });
+    And('the idea sheet says {string}', (_, text: string) => {
+      expect(ideaSheet()).toHaveTextContent(text);
     });
   });
 
