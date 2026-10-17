@@ -16,19 +16,18 @@ export function LicenceTip() {
   const [closed, setClosed] = useState(false);
   const shown = due && !closed && licence === 'not-licensed';
   // the tip's place stays empty for a moment after it goes, so a double tap on its × does not land on the Greek that slides into it (mw-8m9dyu.10)
-  const held = useHeldSpace<HTMLElement>();
+  const held = useHeldSpace();
   useEffect(() => {
     if (shown) markLicenceTipShown();
   }, [shown]);
   if (!shown) return held.space;
-  const end = () => {
-    held.hold();
+  const end = (card: Element | null) => {
+    held.hold(card);
     endLicenceTip();
     setClosed(true);
   };
   return (
     <aside
-      ref={held.ref}
       role="note"
       aria-label="About a licence"
       data-licence-tip
@@ -38,8 +37,8 @@ export function LicenceTip() {
         <p className="leading-snug">{LICENCE_TIP_TEXT}</p>
         <button
           type="button"
-          onClick={() => {
-            end();
+          onClick={(e) => {
+            end(e.currentTarget.closest('aside'));
             openLicence('reader');
           }}
           className="-ml-1 min-h-12 px-1 font-medium text-accent underline"
@@ -47,7 +46,7 @@ export function LicenceTip() {
           Learn more
         </button>
       </div>
-      <button type="button" aria-label="Close" onClick={end} className="min-h-12 min-w-12 shrink-0 rounded-lg text-2xl leading-none">
+      <button type="button" aria-label="Close" onClick={(e) => end(e.currentTarget.closest('aside'))} className="min-h-12 min-w-12 shrink-0 rounded-lg text-2xl leading-none">
         <span aria-hidden="true">×</span>
       </button>
     </aside>

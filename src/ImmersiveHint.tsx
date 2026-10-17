@@ -17,27 +17,27 @@ export function ImmersiveHint({ enabled }: { enabled: boolean }) {
   const setting = useSetting(immersiveHintSetting);
   const [closed, setClosed] = useState(false);
   // the card's place stays empty for a moment after it goes, so a double tap on Got it does not land on the text that slides up into it (mw-8m9dyu.10)
-  const held = useHeldSpace<HTMLElement>();
+  const held = useHeldSpace();
   if (!enabled || setting !== 'on' || closed) return held.space;
-  const close = () => {
-    held.hold();
+  const close = (card: Element | null) => {
+    held.hold(card);
     setClosed(true);
   };
   return (
-    <aside ref={held.ref} role="note" aria-label="How the immersive reader works" data-immersive-hint className="mx-2 mt-2 shrink-0 rounded-2xl border border-line bg-surface p-3">
+    <aside role="note" aria-label="How the immersive reader works" data-immersive-hint className="mx-2 mt-2 shrink-0 rounded-2xl border border-line bg-surface p-3">
       {IMMERSIVE_HINT_LINES.map((line) => (
         <p key={line} className="py-0.5 text-lg leading-snug">
           {line}
         </p>
       ))}
       <div className="mt-2 flex flex-wrap gap-2">
-        <button type="button" onClick={close} className="min-h-12 flex-1 rounded-xl bg-accent px-4 text-base font-semibold text-accent-fg">
+        <button type="button" onClick={(e) => close(e.currentTarget.closest('aside'))} className="min-h-12 flex-1 rounded-xl bg-accent px-4 text-base font-semibold text-accent-fg">
           Got it
         </button>
         <button
           type="button"
-          onClick={() => {
-            close();
+          onClick={(e) => {
+            close(e.currentTarget.closest('aside'));
             void setSetting(immersiveHintSetting, 'off');
           }}
           className="min-h-12 flex-1 rounded-xl border border-line px-4 text-base font-medium"
