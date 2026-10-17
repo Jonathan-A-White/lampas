@@ -578,3 +578,65 @@ describe('a miss on a word question asks the same target with another word', () 
     expect(next.form).not.toBe(q.form);
   });
 });
+
+// His Psi drill on 1 John 1 (mw-i7xe0n.13): one Hint on a word question, then right answers, asked the hinted word again in one drill. 1 John 1 holds three words
+// with ψ (ψεύστης, ψηλαφάω, ψεύδομαι) but the step kept two; a hinted right stays on the top step, so the walk came round to the word it asked longest ago.
+// A word step keeps every fitting word, and a word is never asked again while another fitting word of the chapter is unasked.
+describe('a Hint on a word question never brings a word back while another is unasked', () => {
+  const modern = pronunciationOf('modern');
+  const JOHN1 = [JSON.parse(readFileSync('public/data/1jn/1.json', 'utf8')) as Chapter];
+  const isWord = (q: DrillQuestion): boolean => q.prompt === 'How is this word said?';
+  const lemmas = new Set(JOHN1.flatMap((c) => c.verses.flatMap((v) => v.g.map((w) => w.l))));
+  const fittingIn = (ideaId: string): string[] => {
+    const idea = ideaOf(ideaId);
+    const text = baseLetters(idea.glyphs?.[0] ?? idea.pair ?? '');
+    return [...lemmas].filter((w) => baseLetters(w).includes(text) && !w.normalize('NFD').includes('̈'));
+  };
+
+  it('Psi on 1 John 1: the step holds all three words of ψ', () => {
+    expect(fittingIn('letter-psi').length).toBe(3);
+    for (const seed of [1, 2, 3, 4, 5]) {
+      const forms = drillSteps('letter-psi', { passage: JOHN1, seed, scheme: modern }).flatMap((s) => s.questions).filter(isWord).map((q) => q.form);
+      expect([...forms].sort(), `seed ${seed}`).toEqual(fittingIn('letter-psi').sort());
+    }
+  });
+
+  it('Psi on 1 John 1: right to the word step, a Hint then the right respelling, then rights: no word comes twice', () => {
+    for (const seed of [1, 2, 3, 4, 5]) {
+      let state = start('letter-psi', ALL_SOLID, { passage: JOHN1, seed, scheme: modern }) as DrillWalk;
+      while (!isWord(currentQuestion(state)!)) state = answer(state, true, false);
+      const forms: string[] = [];
+      let hinted = true;
+      while (state.current) {
+        forms.push(currentQuestion(state)!.form!);
+        state = answer(state, true, hinted);
+        hinted = false;
+      }
+      expect(new Set(forms).size, `seed ${seed}: ${forms.join(' ')}`).toBe(forms.length);
+      expect(state.result?.proved, `seed ${seed}`).toBe(true);
+    }
+  });
+
+  // the sweep: every drill that reads words, a Hint on its first word question then rights
+  const READERS = LADDER.filter((i) => i.glyphs || i.parent === 'diphthongs' || i.parent === 'consonant-pairs');
+  it.each(READERS.map((i) => [i.id] as const))('%s: after a Hint on a word, no word is asked again while another fitting word is unasked', (ideaId) => {
+    const JOHN = [1, 2, 3, 4, 5].map((n) => JSON.parse(readFileSync(`public/data/1jn/${n}.json`, 'utf8')) as Chapter);
+    for (const seed of [1, 2, 3]) {
+      let state = start(ideaId, ALL_SOLID, { passage: JOHN, seed, scheme: modern }) as DrillWalk;
+      while (state.current && !isWord(currentQuestion(state)!)) state = answer(state, true, false);
+      if (!state.current) continue;
+      const pool = new Set(state.steps[currentQuestion(state)!.step - 1].questions.filter(isWord).map((q) => q.form!));
+      const forms: string[] = [];
+      let hinted = true;
+      while (state.current && isWord(currentQuestion(state)!)) {
+        const q = currentQuestion(state)!;
+        forms.push(q.form!);
+        const unasked = [...pool].filter((w) => !forms.includes(w));
+        state = answer(state, true, hinted);
+        hinted = false;
+        // a word comes round again only once every word of the step was asked
+        if (state.current && isWord(currentQuestion(state)!) && forms.includes(currentQuestion(state)!.form!)) expect(unasked, `${ideaId} seed ${seed}: ${forms.join(' ')}`).toEqual([]);
+      }
+    }
+  });
+});
