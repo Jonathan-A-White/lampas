@@ -119,7 +119,7 @@ docs/layout/words.md # Layout: Words, Quick test, Review, the schedule, Parsing 
 docs/layout/grammar.md # Layout: grammar terms, the ladder, inference, Drill it, letter drill, idea sheet, placement, Goal, Paradigms
 docs/layout/data.md # Layout: Dexie and its versions, the repositories, books, chapters, parsing codes, the data build
 docs/layout/licence.md # Layout: the licence gate, the one gated mill client, the device key
-docs/layout/share.md # Layout: Share to Lampas, Your requests, Ask for another approach and feedback
+docs/layout/share.md # Layout: Share to Lampas, Your requests, Ask for another approach, Ask for more and feedback
 docs/overview.md # the one-screen overview: read first
 docs/commands.md             # the long notes of the Quick reference: Playwright projects, e2e:live, grind:build, the data tools
 docs/grinds.md               # grinds' examples and the bible-talk / verse-ask instruction parts: how to change one
