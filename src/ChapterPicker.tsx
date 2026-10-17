@@ -6,9 +6,12 @@
 // app (mw-5r3p30.496): a panel under the grid offers Read in Logos (in the Bible he chose in Settings, src/resources/logosBible.ts) and Listen in
 // Audible (The Word of Promise, src/resources/audioBible.ts), each only while its setting is on; the open Lampas chapter does not change. With
 // Logos off in Settings the books still show; picking one says so and turns Logos on in one tap, and with the Audio Bible off too it names that setting.
+// In choose mode (mw-umv8sp.3: the return sheet's Pick it myself, src/plan/WhereDidYouGetTo.tsx) a tap on any chapter, of either testament, hands it to `onChoose` and
+// opens nothing: no Logos panel, no Preface row, no 'Opens in Logos' tag.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { BOOKS, bookOf } from './data/books';
+import type { PlanChapter } from './data/plans';
 import { type BookIndex, loadIndex } from './data/chapter';
 import type { OpenChapter } from './data/readerChapter';
 import { getLogosBible } from './data/repositories';
@@ -78,6 +81,21 @@ function Chapters({ code, current, onPick }: { code: string; current: OpenChapte
           </button>
         );
       })}
+    </div>
+  );
+}
+
+/** The chapter numbers of an Old Testament book in choose mode: the same grid, and a tap hands the chapter over. */
+function ChooseChapters({ code, onPick }: { code: string; onPick: (chapter: number) => void }) {
+  const book = otBookOf(code);
+  if (!book) return null;
+  return (
+    <div role="group" aria-label={`${book.name} chapters`} className="grid grid-cols-4 gap-2 px-1 pt-1">
+      {Array.from({ length: book.chapters }, (_, i) => i + 1).map((n) => (
+        <button key={n} type="button" data-chapter={n} aria-label={`Chapter ${n}`} onClick={() => onPick(n)} className="min-h-12 rounded-xl border border-line bg-surface text-lg font-medium">
+          {n}
+        </button>
+      ))}
     </div>
   );
 }
@@ -174,7 +192,7 @@ function OtChapters({ code }: { code: string }) {
   );
 }
 
-export function ChapterPicker({ current, onClose }: { current: OpenChapter; onClose: () => void }) {
+export function ChapterPicker({ current, onClose, onChoose }: { current: OpenChapter; onClose: () => void; onChoose?: (chapter: PlanChapter) => void }) {
   const [book, setBook] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const { drag, handle } = useSheetDrag(onClose);
@@ -189,10 +207,11 @@ export function ChapterPicker({ current, onClose }: { current: OpenChapter; onCl
   }, [current.book]);
 
   const shown = matching(ITEMS, query);
-  const preface = matching([{ id: 'preface', name: 'Preface' }], query).length > 0;
+  const preface = !onChoose && matching([{ id: 'preface', name: 'Preface' }], query).length > 0;
   const name = book ? (otBookOf(book) ?? bookOf(book))?.name : undefined;
   const pick = (chapter: number) => {
     if (!book) return;
+    if (onChoose) return onChoose({ code: book, chapter });
     // The open chapter again is only a close; another is a new Back step (the picker's own entry stays beneath it and Back skips it).
     if (book === current.book && chapter === current.chapter) onClose();
     else openReader({ book, chapter });
@@ -245,7 +264,11 @@ export function ChapterPicker({ current, onClose }: { current: OpenChapter; onCl
         >
           {book ? (
             otBookOf(book) ? (
-              <OtChapters code={book} />
+              onChoose ? (
+                <ChooseChapters code={book} onPick={pick} />
+              ) : (
+                <OtChapters code={book} />
+              )
             ) : (
               <Chapters code={book} current={current} onPick={pick} />
             )
@@ -279,7 +302,7 @@ export function ChapterPicker({ current, onClose }: { current: OpenChapter; onCl
                         className={`flex min-h-12 w-full items-center justify-between gap-2 border-t border-line px-3 text-left text-lg first:border-t-0 ${b.id === current.book ? 'font-semibold text-accent' : ''}`}
                       >
                         <span data-book-name>{b.name}</span>
-                        {ot ? (
+                        {ot && !onChoose ? (
                           <span data-in-logos className="shrink-0 rounded-md border border-line px-2 text-sm font-medium text-muted">
                             Opens in Logos ↗
                           </span>
