@@ -13,7 +13,7 @@
 // Switch to <this>?' (Switch | Keep <other>). The sheet teaches only its own idea and takes the ideas under it to be solid: when one is not, it says so above the
 // text with a button to go there, and sliding up first asks 'Go to <title> first?'. Learning on The Greek alphabet opens the letter drill at once (src/LetterDrillScreen.tsx).
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { loadChapter, loadIndex, type Chapter, type GreekWord } from './data/chapter';
 import { unmetNeed } from './data/grammar/drillIt';
 import { loadFrequency } from './data/frequency';
@@ -24,12 +24,15 @@ import { teachOf, workedFor, type Teach, type TeachTable } from './data/grammar/
 import { teachTiles } from './data/grammar/teachTiles';
 import { paradigmsOf } from './data/paradigms';
 import { getOpenChapter } from './data/readerChapter';
-import { getGreekPronunciation, getLevel, getSavedGoalText, listLevels, recordDrill, teachIdea, type DrillMode, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
+import { getGrammarBooks, getGreekPronunciation, getLevel, getSavedGoalText, getStudyResources, listLevels, recordDrill, teachIdea, type DrillMode, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
 import { DrillItScreen } from './DrillItScreen';
 import { holdIdea } from './ideaReturn';
 import { LessonWriteIt } from './handwriting/LessonWriteIt';
 import { LetterDrillScreen } from './LetterDrillScreen';
 import { openParadigm } from './nav/route';
+import { GRAMMAR_BOOKS, readMoreFor } from './resources/grammarBooks';
+import { armFallback } from './resources/openApp';
+import type { GrammarBook } from './resources/types';
 import { useAccent } from './speech/accents/useAccent';
 import { chosenPronunciation } from './speech/greek';
 import { pronunciationOf, type Pronunciation } from './speech/pronunciation';
@@ -280,7 +283,57 @@ function Examples({ idea, examples, onWord }: { idea: GrammarIdea; examples: Ide
   );
 }
 
-export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false }: {
+/** How many grammar books Read more draws when the sheet opens; the rest wait under 'More books (N)'. */
+const SHOWN_BOOKS = 3;
+
+/**
+ * Read more (mw-5r3p30.381, PROVISIONAL): with Logos on, one line for each grammar book he ticked (Settings > Study resources > Logos > Grammar books)
+ * that teaches this idea, the book's name over a link to each of its sections; a tap opens Logos there, or the ref.ly page when the phone has no Logos.
+ * Nothing is drawn while the store is read, with Logos off, or when no ticked book teaches the idea. `books` is the list; a test hands it its own.
+ */
+function ReadMore({ ideaId, books }: { ideaId: string; books: readonly GrammarBook[] }) {
+  const [all, setAll] = useState(false);
+  const headingId = useId();
+  const kept = useLiveQuery(async () => ({ logos: (await getStudyResources()).on.includes('logos'), ticked: await getGrammarBooks() }), []);
+  const lines = kept?.logos ? readMoreFor(ideaId, kept.ticked, books) : [];
+  if (!lines.length) return null;
+  const folded = all ? 0 : Math.max(0, lines.length - SHOWN_BOOKS);
+  return (
+    <section aria-labelledby={headingId} className="mt-4">
+      <h3 id={headingId} className="text-lg font-semibold">
+        Read more
+      </h3>
+      <div className="mt-1 space-y-3">
+        {lines.map((line, i) => (
+          <div key={line.book.id} role="group" aria-label={line.book.short} hidden={i >= lines.length - folded}>
+            <p className="text-base font-medium">{line.book.short}</p>
+            <div className="mt-1 flex flex-col gap-2">
+              {line.links.map((link) => (
+                <a
+                  key={link.url}
+                  href={link.url}
+                  data-fallback={link.fallback}
+                  aria-label={link.label}
+                  onClick={() => armFallback(link.fallback)}
+                  className="flex min-h-12 items-center rounded-xl border border-line px-4 py-2 text-left text-base font-medium text-accent active:bg-line"
+                >
+                  {link.tile ?? link.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      {folded ? (
+        <button type="button" onClick={() => setAll(true)} className="mt-1 min-h-11 px-1 text-base font-medium text-accent underline underline-offset-4">
+          More books ({folded})
+        </button>
+      ) : null}
+    </section>
+  );
+}
+
+export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books = GRAMMAR_BOOKS }: {
   idea: GrammarIdea;
   onClose: () => void;
   /** a sheet opened over this one is up: it takes the Escape */
@@ -289,6 +342,8 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false }: {
   onWord: (chapter: Chapter, word: GreekWord) => void;
   /** Ask the tutor, with the idea's first term (its title when it covers none); the button is left out when the screen cannot send it */
   onAsk?: (term: string) => void;
+  /** the grammar books Read more may name (GRAMMAR_BOOKS); a test hands it its own */
+  books?: readonly GrammarBook[];
 }) {
   const { drag, handle } = useSheetDrag(onClose);
   // a tile's own idea sheet opens over this one
@@ -476,6 +531,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false }: {
               ))}
             </div>
           ) : null}
+          <ReadMore ideaId={idea.id} books={books} />
         </div>
         {/* what is read aloud keeps its Pause and Stop in view: this sheet is over the Grammar and word sheets' own bars */}
         <div className="contents short:col-span-2 short:row-start-3 short:block">
@@ -597,7 +653,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false }: {
         />
       ) : null}
       {letterDrill ? <LetterDrillScreen onClose={() => setLetterDrill(false)} /> : null}
-      {opened ? <IdeaSheet idea={opened} onClose={() => setOpened(null)} onWord={onWord} onAsk={onAsk} covered={covered} /> : null}
+      {opened ? <IdeaSheet idea={opened} onClose={() => setOpened(null)} onWord={onWord} onAsk={onAsk} covered={covered} books={books} /> : null}
     </div>
   );
 }
