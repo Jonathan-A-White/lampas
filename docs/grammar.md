@@ -14,7 +14,7 @@ Code: `src/data/grammar/ladder.ts`. It is pure: no store and no screen.
 
 `GrammarIdea` is `{ id, title, tier, rung, terms, text, needs }` and, for a letter, `glyphs` (small, capital). How a letter, a pair or a breathing SOUNDS is not in the ladder: it is the chosen pronunciation's lesson (`Pronunciation.lessons`, keyed by idea id; `src/data/grammar/lessons.ts` `ideaText` / `ideaSound`), so the idea sheet and every question that states a sound follow the scheme he chose (Modern Greek: the breathings are silent, ὁ is 'o'); a scheme with no lesson for an idea gets the ladder's neutral `text`, which names no sound, never another scheme's.
 
-- `tier` is one of `letters`, `sounds`, `marks`, `nouns`, `pronouns`, `prepositions`, `verbs`, `joiners`, in that order.
+- `tier` is one of `letters`, `sounds`, `marks`, `nouns`, `pronouns`, `prepositions`, `verbs`, `joiners`, `sentences`, in that order.
 - `rung` is the idea's place in the ladder, from 1, easy first. Every idea rests (`needs`) only on ideas of a lower rung; a
   test fails on a cycle or a need that points up.
 - `terms` are the grammar words of `src/data/parseCode.ts` (`GRAMMAR_TERMS`) the idea covers. Every term belongs to exactly
@@ -100,6 +100,27 @@ with other patterns', `mi-verbs` in 'Verbs with their own endings'). `formPasses
 Tests: `tests/unit/patterns.test.ts` (1 John 1's words, a walk of every token of the 260 chapter files), `tests/unit/pattern-ideas.test.ts`,
 `features/pattern-ideas.feature`.
 
+## Sentences
+
+The `sentences` tier (mw-br588b.2; ids and names PROVISIONAL, not renamed once shipped) is the one tier that is about more than a word: fifteen ideas, one for
+each use the finder `src/data/grammar/uses.ts` knows, and **each idea's id is that use's id** (`USE_IDS`; a test walks the ids `usesOf` finds and fails on one the
+ladder lacks). `usesOf(verse)` reads the parsing codes and the lemmas of a verse's Greek and finds, in text order, what its words are doing together; a rule that
+cannot be sure finds nothing. Each idea has no `terms`, a text of under 80 words with a New Testament example, a card (`teach/sentences.ts`) and `needs` that
+are the word ideas it is built of, so it sits above them: `agreement` (the article, the adjective, the cases, the numbers, the genders), `article-substantival`,
+`article-position`, `postpositive` (the conjunction, the particle), `clause-hoti`, `clause-hina` (the conjunction, the subjunctive), `participle-adverbial`,
+`genitive-absolute` (the participle, the genitive), `periphrastic` (`eimi`, the participle), `infinitive-articular` (the infinitive, the article, the
+preposition), `infinitive-complement`, `subjunctive-hortatory`, `prohibition`, `ou-me` and `condition` (the conditional, the indicative, the subjunctive).
+
+- **What a passage needs.** `passageNeeds` runs `usesOf` over each verse and counts a sentence idea once for each use, its example the use's head word (its first
+  word when the head is not among its words) with the verse's ref: 1 John 1 needs `clause-hina` three times (1:3, 1:4, 1:9), `condition` five and `clause-hoti` four.
+- **The idea sheet.** `ideaExamples` gives a sentence idea up to three uses, each as the whole verse with the use's words marked (`parts`, a part for each word and
+  each space; the Example row marks them `data-use`), a different verse for each use first, the verse's English for the use's words as the gloss, and the use's
+  words on the speaker. A tap opens the head word's sheet. No Try it is offered (no word's parsing names a sentence idea).
+- **Drill it.** A sentence idea has no form to spot, so Drill it asks what it is (`buildConcept`) until a story makes questions about the verses.
+- **The approaches.** The ladder approach's last level is 'Sentences' (`TIER_TITLES`), a lesson for each idea. BMA Tutor's level 5 lessons name them
+  ('Clauses of condition and purpose': `condition`, `clause-hina`; 'Clauses that say who or which': `agreement`, `article-substantival`; and so on), each after the
+  ideas it needs (`tests/unit/ladder-sentences.test.ts`).
+
 ## What a passage needs
 
 `src/data/goal.ts` and `src/data/grammar/needs.ts` (mw-hqd5bz.2). A goal is `{ book, chapter?, verse? }`: "Read 1 John", "Read 1
@@ -116,7 +137,7 @@ beyond `loadChapter`.
   - `words`: `{ lemma, gloss, count, firstRef }`, the lemma in its dictionary form (NFC), commonest first and then in order of
     first use;
   - `ideas`: `{ id, count, example: { form, code, ref } }`, `ALWAYS_NEEDED` first and then up the ladder by rung (so a
-    passage with no subjunctive lists no subjunctive); `count` is the number of words that need the idea, `example` the first;
+    passage with no subjunctive lists no subjunctive); `count` is the number of words that need the idea, `example` the first (for a sentence idea, 'Sentences' below: the number of uses, the first use's head word);
   - `tokens`: the words of the passage, repeats counted.
   A `ref` is 'book.chapter.verse', as in the answers table ('1jn.1.1').
 - `progressToward(needs, wordStates, levels)`: `{ words, grammar }`, each `{ solid, frontier, notYet, total }`. A solid word is
@@ -516,6 +537,21 @@ tenses, the stress mark, the diaeresis, the parts of speech) and fails on one it
 | 146 | joiners | `crasis` | Two words run together | crasis | `conjunction`, `punctuation` |
 | 147 | joiners | `aramaic` | Aramaic words | Aramaic word | `indeclinable` |
 | 148 | joiners | `hebrew` | Hebrew words | Hebrew word | `indeclinable` |
+| 149 | sentences | `agreement` | Words that agree | – | `article`, `adjective`, `case-nominative`, `case-genitive`, `case-dative`, `case-accusative`, `number-plural`, `gender-masculine`, `gender-feminine`, `gender-neuter` |
+| 150 | sentences | `article-substantival` | The article standing alone | – | `article`, `adjective`, `preposition`, `adverb`, `mood-participle` |
+| 151 | sentences | `article-position` | Where the adjective stands | – | `article`, `adjective`, `agreement` |
+| 152 | sentences | `postpositive` | Words that come second | – | `conjunction`, `particle` |
+| 153 | sentences | `clause-hoti` | A clause with ὅτι | – | `conjunction`, `mood-indicative` |
+| 154 | sentences | `clause-hina` | A clause with ἵνα | – | `conjunction`, `mood-subjunctive` |
+| 155 | sentences | `participle-adverbial` | A participle beside a verb | – | `mood-participle`, `case-nominative` |
+| 156 | sentences | `genitive-absolute` | The genitive absolute | – | `mood-participle`, `case-genitive` |
+| 157 | sentences | `periphrastic` | Being plus a participle | – | `eimi`, `mood-participle` |
+| 158 | sentences | `infinitive-articular` | The infinitive with the article | – | `mood-infinitive`, `article`, `preposition` |
+| 159 | sentences | `infinitive-complement` | An infinitive that finishes a verb | – | `mood-infinitive`, `verb` |
+| 160 | sentences | `subjunctive-hortatory` | Let us: urging with the subjunctive | – | `mood-subjunctive`, `person-1st`, `number-plural` |
+| 161 | sentences | `prohibition` | Do not: the two ways to forbid | – | `mood-imperative`, `mood-subjunctive`, `negative`, `tense-aorist`, `particle` |
+| 162 | sentences | `ou-me` | οὐ μή: a strong no | – | `negative`, `mood-subjunctive`, `tense-future`, `particle` |
+| 163 | sentences | `condition` | If: the three conditions | – | `conditional`, `mood-indicative`, `mood-subjunctive` |
 <!-- ladder:end -->
 
 ## Approaches
@@ -560,7 +596,7 @@ phrases out of `bma-tutor.ts`). Mapping, where the RP codes cannot tell a lesson
 - athematic verbs: `mi-verbs` beside a revisit of `tense-present` and `second-tenses`;
 - root variations: `attic-form`, the ladder's nearest idea for a verb spelt another way;
 - assimilation (letters changing at a joint): `crasis`, the nearest idea for sounds that run together;
-- the periphrastic, clauses and 'reading Paul' lessons, and level 6 (1, 2 and 3 John), name the ideas that passage uses again.
+- the periphrastic, clauses and 'reading Paul' lessons, and level 6 (1, 2 and 3 John), name the ideas that passage uses again, and level 5's clause lessons also name the sentence ideas ('Sentences' above): 'Linking one clause to the next' is not a lesson of its own (a level keeps twelve), so `clause-hoti` sits in 'Long sentences'.
 
 ### Adding an approach (a second path)
 
