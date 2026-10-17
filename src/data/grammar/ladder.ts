@@ -483,15 +483,15 @@ for (const idea of LADDER) {
   if (BY_ID.has(idea.id)) throw new Error(`Grammar idea ${idea.id} is listed twice`);
   BY_ID.set(idea.id, idea);
 }
+/** The ladder as a path (pathGraph.ts): the same graph functions answer for any other path; makePath throws, naming it, on a cycle. */
+export const LADDER_PATH = makePath(LADDER);
+
 for (const idea of LADDER) {
   for (const need of idea.needs) {
     const below = BY_ID.get(need);
     if (!below || below.rung >= idea.rung) throw new Error(`Grammar idea ${idea.id} needs ${need}, which is not an idea of a lower rung`);
   }
 }
-
-/** The ladder as a path (pathGraph.ts): the same graph functions answer for any other path; makePath throws, naming it, on a cycle. */
-export const LADDER_PATH = makePath(LADDER);
 
 const IDEA_OF_TERM = new Map<string, string>();
 for (const idea of LADDER) {

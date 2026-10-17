@@ -40,8 +40,13 @@ npm run check:licence -- <pubkey>  # live testnet licence check, opt-in, not in 
 npx playwright test  # all e2e (use --workers=2; `npm run build` first): projects 'chromium' and 'shots' (docs/commands.md)
 npm run e2e:live     # the live tests against the DEPLOYED app; not in the gate (docs/commands.md)
 npm run grind:build  # after adding a setting to the registry; a second run changes nothing (docs/commands.md)
+npm run ladder:docs  # writes the docs/grammar.md ladder table and the docs/card-audit.md rows from src/data/grammar/ladder.ts (docs/commands.md)
 npm run data:build   # also check:step, greek:edition, ladder: data tools, network or slow, not in the gate (docs/commands.md)
 ```
+
+## Adding a grammar idea
+
+`src/data/grammar/ladder.ts` is the one source: add the entry (its `needs` must be ideas below it, a DAG), add its card in `src/data/grammar/teach/<tier>.ts`, then run `npm run ladder:docs && npm run grind:build` and judge the new row in `docs/card-audit.md`. `tests/unit/ladder-single-source.test.ts` fails, naming the idea and the file, on anything stale.
 
 ## Grinds and their examples
 
