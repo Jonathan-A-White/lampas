@@ -10,7 +10,7 @@ import { Waiting } from './Ask';
 import { addLemmaToLearn, findGreekWord, glossOf } from './data/answerWord';
 import type { GreekWord } from './data/chapter';
 import type { AnswerWord } from './data/db';
-import { addTurnChanges, addWordToLearn, keepStudyWayLine, deleteTurns, listStudyWay, listTurns, markChangeUndone, markQuizGoalChoice, setQuizGoal, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
+import { addTurnChanges, addWordToLearn, keepStudyWayLine, deleteTurns, listStudyWay, listTurns, markChangeUndone, markQuizGoalChoice, markUnopenedOpened, setQuizGoal, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
 import { Markdown } from './markdown/Markdown';
 import { openedByTutor } from './nav/readerRequest';
 import { TutorLinks } from './TutorLinks';
@@ -413,6 +413,7 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
                   onClick={() => {
                     onLeave();
                     openedByTutor(unopened.book, unopened.chapter);
+                    if (turn.id !== undefined) void markUnopenedOpened(turn.id);
                   }}
                   className="mt-1 min-h-11 rounded-lg border border-line px-3 text-base font-medium text-accent active:bg-line"
                 >

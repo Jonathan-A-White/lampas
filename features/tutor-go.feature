@@ -58,6 +58,22 @@ Feature: The tutor takes him to a chapter
     And the Talk sheet is closed
     And the Reader says "Opened Colossians 1"
 
+  Scenario: Once he has tapped Open, the talk says it was opened and offers nothing more
+    Given Lampas is opened on Romans 8 and the tutor holds its answer with go "Colossians" 1
+    And he opens Talk
+    When he sends "can you switch to Colossians 1"
+    And he taps Done on the Talk sheet
+    And the tutor answers
+    And he opens Talk again
+    And he taps "Open Colossians 1" in the sheet
+    Then the Reader is open on "Colossians 1"
+    When he taps the phone's Back
+    Then the Reader is back on "Romans 8"
+    When he opens Talk again
+    Then the answer shows in the sheet
+    And the sheet says "Opened Colossians 1" and has no "Open Colossians 1" button
+    And the sheet does not say "was not opened"
+
   Scenario: A go to the chapter he is already on moves nothing and the talk says so
     Given Lampas is opened on Romans 8 and the tutor answers with go "Romans" 8
     And he opens Talk

@@ -114,6 +114,16 @@ export async function addTurnChanges(turnId: number, added: AppliedChange[]): Pr
   });
 }
 
+/** Records that he tapped Open on a turn's unopened chapter (mw-5r3p30.216): the turn then reads 'Opened John 3' and offers no button. */
+export async function markUnopenedOpened(turnId: number): Promise<void> {
+  await db.transaction('rw', db.talks, async () => {
+    const turn = await db.talks.get(turnId);
+    if (!turn?.unopened) return;
+    const { unopened, ...rest } = turn;
+    await db.talks.put({ ...rest, opened: unopened.title });
+  });
+}
+
 /** Marks the turn's feedback offer as sent, so it reads Sent from then on. */
 export async function markFeedbackSent(turnId: number): Promise<void> {
   await db.talks.update(turnId, { feedbackSent: true });

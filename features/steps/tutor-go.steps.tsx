@@ -175,6 +175,40 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('Once he has tapped Open, the talk says it was opened and offers nothing more', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 and the tutor holds its answer with go {string} {int}', ((_: unknown, book: string, chapter: string) =>
+      open({ book, chapter: Number(chapter) }, true)) as never);
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    And('he taps Done on the Talk sheet', async () => {
+      await user.click(within(sheet()).getByRole('button', { name: 'Done' }));
+      await sheetGone();
+    });
+    And('the tutor answers', async () => {
+      await waitFor(() => expect(fake.received.length).toBe(1));
+      await fake.answer({ status: 'answered', answer: { answer: ANSWER, words: [], go: holding } });
+      await waitFor(async () => expect(await db.talks.count()).toBe(1));
+    });
+    And('he opens Talk again', openTalk);
+    And('he taps {string} in the sheet', async (_, name: string) => {
+      await user.click(within(sheet()).getByRole('button', { name }));
+    });
+    Then('the Reader is open on {string}', onThe);
+    When("he taps the phone's Back", async () => {
+      window.history.back();
+    });
+    Then('the Reader is back on {string}', onThe);
+    When('he opens Talk again', openTalk);
+    Then('the answer shows in the sheet', shows);
+    And('the sheet says {string} and has no {string} button', async (_, line: string, name: string) => {
+      expect(await within(sheet()).findByText(line)).toBeInTheDocument();
+      expect(within(sheet()).queryByRole('button', { name })).toBeNull();
+    });
+    And('the sheet does not say {string}', (_, text: string) => {
+      expect(sheet()).not.toHaveTextContent(text);
+    });
+  });
+
   Scenario('A go to the chapter he is already on moves nothing and the talk says so', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 and the tutor answers with go {string} {int}', goTo as never);
     And('he opens Talk', openTalk);

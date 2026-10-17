@@ -150,5 +150,13 @@ test.describe('at 390 x 844', () => {
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await page.goBack();
     await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+
+    // once opened, the turn no longer says it was not (mw-5r3p30.216)
+    await page.getByRole('button', { name: 'Talk', exact: true }).click();
+    const last = page.getByRole('dialog', { name: 'Talk about Romans 8' });
+    await expect(last.getByText('Opened John 3')).toBeVisible();
+    await expect(last.getByText(/was not opened/)).toHaveCount(0);
+    await expect(last.getByRole('button', { name: 'Open John 3' })).toHaveCount(0);
+    await shot(page, 'go-reopen-after-opened');
   });
 });
