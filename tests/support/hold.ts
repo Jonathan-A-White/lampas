@@ -14,7 +14,7 @@ export interface HoldOptions {
 
 /** Pauses the page clock a moment ahead of the page's now. A loaded host can take longer than the margin between reading the page's
  * time and pausing, and Playwright refuses to pause in the past, so it reads the time again with a wider margin. */
-async function pauseNow(page: Page): Promise<void> {
+export async function pauseNow(page: Page): Promise<void> {
   for (const margin of [50, 250, 1000]) {
     try {
       await page.clock.pauseAt(new Date((await page.evaluate(() => Date.now())) + margin));
