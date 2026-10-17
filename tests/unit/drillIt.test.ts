@@ -543,6 +543,19 @@ describe('a miss on a word question asks the same target with another word', () 
     }
   });
 
+  // mw-i7xe0n.16: steps 1-4 right, a wrong word on step 5, then rights: Psi's other rights outnumbered the one miss and the result said Weak: none
+  it('Psi: a missed word is named weak in the result even when the letter is right everywhere else', () => {
+    for (const seed of [1, 2, 3]) {
+      const q = currentQuestion(atWord('letter-psi', seed, JOHN1))!;
+      let state = answer(atWord('letter-psi', seed, JOHN1), false, false);
+      for (let guard = 0; guard < 20 && !state.result; guard += 1) state = answer(state, true, false);
+      const result = resultOf(state)!;
+      expect(result.answers.some((a) => !a.right && a.key === q.key), `seed ${seed}`).toBe(true);
+      expect(result.weak.map((f) => f.id), `seed ${seed}`).toEqual(['letter-psi']);
+      expect(result.strong.map((f) => f.id), `seed ${seed}`).not.toContain('letter-psi');
+    }
+  });
+
   it('a second miss in a row at that step goes back a step, as before', () => {
     const after = answer(answer(atWord('letter-psi', 1, JOHN1), false, false), false, false);
     expect(currentQuestion(after)!.step).toBeLessThan(5);
