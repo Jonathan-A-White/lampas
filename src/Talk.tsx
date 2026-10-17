@@ -710,7 +710,7 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
           <div data-testid="sheet-handle" {...handle} className="relative flex shrink-0 touch-none flex-col items-center px-4 pt-2">
             <span aria-hidden="true" className="h-1.5 w-10 rounded-full bg-line" />
             <div className="flex min-h-12 w-full items-center gap-2 short:min-h-11">
-              <h2 id={titleId} className="min-w-0 flex-1 truncate text-xl font-semibold">
+              <h2 id={titleId} className="min-w-0 flex-1 text-xl font-semibold text-balance break-words short:truncate">
                 {title}
               </h2>
               {onSkip ? (

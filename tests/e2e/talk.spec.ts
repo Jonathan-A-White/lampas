@@ -177,3 +177,39 @@ test("the tutor's Markdown shows bold and a list in the Talk sheet, with no mark
   await expectFitsPhone(page);
   await shot(page, 'talk-markdown');
 });
+
+// The sheet's title is read whole beside New talk and Done (mw-5r3p30.214): it wraps to a second line rather than end in '…'.
+for (const place of [
+  { name: 'Settings', path: '/#/settings', title: 'Ask the tutor: Settings', open: (page: Page) => page.getByRole('button', { name: 'Ask the tutor about this screen' }).click() },
+  { name: 'the Reader', path: '/', title: 'Talk about Romans 8', open: (page: Page) => page.getByRole('button', { name: 'Talk', exact: true }).click() },
+]) {
+  test(`on ${place.name} at 390x844 the Talk sheet's title is whole beside New talk and Done`, async ({ page }) => {
+    await page.setViewportSize(VIEWPORT);
+    const fake = makeFakePostern();
+    fake.autoReply = { status: 'answered', answer: TALK_ANSWER };
+    await routePostern(page, fake);
+    await openUnlocked(page);
+    await page.goto(place.path);
+    await place.open(page);
+    const sheet = page.getByRole('dialog', { name: place.title });
+    await sheet.getByRole('textbox', { name: 'Your message' }).fill('take me to Psalm 23');
+    await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+    await expect(sheet.locator('[data-turn]')).toContainText(TALK_ANSWER.answer);
+    await expect(sheet.getByRole('button', { name: 'New talk', exact: true })).toBeVisible();
+
+    const heading = sheet.getByRole('heading', { name: place.title, level: 2 });
+    const fit = await heading.evaluate((el) => ({ scrollWidth: el.scrollWidth, clientWidth: el.clientWidth, overflow: getComputedStyle(el).textOverflow, text: el.textContent }));
+    expect(fit.text).toBe(place.title);
+    expect(fit.scrollWidth).toBeLessThanOrEqual(fit.clientWidth);
+    expect(fit.overflow).not.toBe('ellipsis');
+    // two lines at most, inside the window, and Done still a thumb-sized button
+    const headingBox = await heading.boundingBox();
+    expect((headingBox?.x ?? 0) + (headingBox?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
+    const lineHeight = await heading.evaluate((el) => parseFloat(getComputedStyle(el).lineHeight));
+    expect(headingBox?.height ?? 0).toBeLessThanOrEqual(lineHeight * 2 + 1);
+    const done = sheet.getByRole('button', { name: 'Done', exact: true });
+    expect((await done.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
+    await expectFitsPhone(page);
+    await shot(page, `talk-title-${place.name === 'Settings' ? 'settings' : 'reader'}`);
+  });
+}
