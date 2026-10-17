@@ -13,6 +13,7 @@ import { askForMoreItems } from './review/moreItems';
 import { KINDS, kindOf, recordParseStep, type ReviewItem } from './review/kinds';
 import { makeMove, moveQuestion, moveSaid, pendingMove, type PendingMove } from './review/pickerMove';
 import { heldRound, holdRound, releaseRound } from './review/heldRound';
+import { dropRound, keepRound, keptRound } from './review/keptRound';
 import { hasPractise, takePractise } from './review/practise';
 import { drawReviewRound } from './review/round';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -115,8 +116,13 @@ function reviewFacts(round: Round, dueLine: string | undefined): ScreenFact[] {
 export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
   // Items chosen to practise (rusty ones moved back to Frontier, Welcome back's) open their round at once; the rest of Review waits for Start
   // A round he left to see a table (GrammarCard's 'See the table') is taken up again where he stood on Back (mw-svw421.5)
-  const [round, setRound] = useState<Round>(() => heldRound() ?? (hasPractise() ? { status: 'loading' } : { status: 'start' }));
+  const [round, setRound] = useState<Round>(() => heldRound() ?? (hasPractise() ? { status: 'loading' } : (keptRound() ?? { status: 'start' })));
   useEffect(() => releaseRound(), []);
+  // The round in hand is kept in session storage, so a reload carries on at the next question (mw-86e9r1.32); the end card and an empty draw let it go
+  useEffect(() => {
+    if (round.status === 'running') keepRound(round);
+    else if (round.status !== 'loading') dropRound();
+  }, [round]);
   // The answers are written one after the other; the end card waits for the last of them.
   const writing = useRef<Promise<unknown>>(Promise.resolve());
   const due = useLiveQuery(() => Promise.all(KINDS.map((k) => countDue(Date.now(), k.kind))), []);
