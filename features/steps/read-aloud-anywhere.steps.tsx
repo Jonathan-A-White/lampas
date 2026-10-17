@@ -18,6 +18,7 @@ import { IdeaSheet } from '../../src/IdeaSheet';
 import { noVoiceHelp } from '../../src/speech/greek';
 import { ReadAloud } from '../../src/speech/ReadAloud';
 import { stopReading } from '../../src/speech/readAloud';
+import { BarSlot, LampasSpeakingBar } from '../../src/speech/SpeakingBarSlot';
 import { TeachSheet } from '../../src/TeachSheet';
 import { SettingRow } from '../../src/settings/controls/SettingRow';
 import { WhatsNewOnUpdate } from '../../src/whatsNew/WhatsNewOnUpdate';
@@ -110,6 +111,31 @@ describeFeature(feature, ({ Scenario, ScenarioOutline, BeforeEachScenario, After
     And('the explanation of plural is still on screen', () => {
       expect(screen.getByTestId('grammar-explanation')).toHaveTextContent(conceptOf('plural')!.explanation);
       expect(screen.getByTestId('grammar-greek')).toBeVisible();
+    });
+  });
+
+  Scenario('A paused reading keeps its speaker from saying it is still playing, and a tap on it stops the reading', ({ Given, And, When, Then }) => {
+    Given('a phone with an English and a Greek voice', withBoth);
+    And('the Grammar sheet of {string} is open with the speaking bar at its foot', () => {
+      openGrammarPlural();
+      render(<><BarSlot level={3} /><LampasSpeakingBar /></>);
+    });
+    When('he taps Read aloud', () => user.click(readAloud()));
+    Then('the button is named Stop reading', () => {
+      expect(screen.getByRole('button', { name: 'Stop reading', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    });
+    When('he taps Pause on the bar', () => user.click(screen.getByRole('button', { name: 'Pause' })));
+    Then('the bar offers Resume', async () => {
+      expect(await screen.findByRole('button', { name: 'Resume' })).toBeTruthy();
+    });
+    And('the speaker is not named Stop reading', () => {
+      expect(screen.queryByRole('button', { name: 'Stop reading', exact: true })).toBeNull();
+      expect(document.querySelector('[data-read-aloud]')).not.toHaveAttribute('aria-label', 'Stop reading');
+    });
+    When('he taps the paused speaker', () => user.click(document.querySelector('[data-read-aloud]') as HTMLElement));
+    Then('the phone is silent and the button is named Read aloud', () => {
+      expect(engine().speaking).toBe(false);
+      expect(readAloud()).toHaveAttribute('aria-pressed', 'false');
     });
   });
 

@@ -124,7 +124,7 @@ acronyms (NT, BDAG, LSB ...) and a quoted English meaning are left alone. The ma
 ## A speaker on any text he may want heard (mw-5r3p30.238)
 
 Wherever Lampas shows a block of prose a learner may want to hear, a small quiet speaker reads it aloud: `src/speech/ReadAloud.tsx`, ONE component
-(icon only, aria-label 'Read aloud', 'Stop reading' while its text is read; a second tap stops it). It is on the Grammar sheet (title, explanation, 'In Greek'),
+(icon only, aria-label 'Read aloud', 'Stop reading' while its text is read, a speaker named 'Reading paused, tap to stop' while the bar offers Resume; a second tap stops it). It is on the Grammar sheet (title, explanation, 'In Greek'),
 the idea sheet of every idea and letter (title, What it is, How to spot it, How it sounds, the Worked example), a new word's sheet, each tutor answer (in the
 Talk sheet and in the Verse view's Ask; where the 'Hear the answer' play button used to be) and each version in About's What's new and in the sheet shown after an update or opened from the Update ready banner (`DEFAULT_LABELS` kind, then
 the line; the sheet is Lampas's own SpokenWhatsNewSheet, with a speaking bar slot, since bsv-kit's has no place for one) and each Settings row's open More help (at its right). It is the reading engine of 'Pages of prose' and 'The tutor's responses': the text is cut into runs (`pageRuns`, or the answer's `answerRuns` when

@@ -1,6 +1,6 @@
 // src/speech/ReadAloud.tsx — the small speaker beside a block of prose he or a learner may want heard (mw-5r3p30.238): the idea and grammar sheets, a
 // new word's sheet, each tutor answer, a What's new entry. ONE component for them all: icon only, aria-label 'Read aloud', and 'Stop reading' while its
-// text is being read. It hands the text to the one reading engine (readAloud.ts startReading, from the tap itself: docs/pwa-best-practices.md section 12),
+// text is being read ('Reading paused, tap to stop', a speaker not a stop square, while the bar offers Resume). It hands the text to the one reading engine (readAloud.ts startReading, from the tap itself: docs/pwa-best-practices.md section 12),
 // so each stretch of Greek goes to the Greek voice and the rest to the English one, at his speed and in his voices, the package's bar has Pause, Resume and
 // Stop, and a one-letter Greek word is a clip. The words stay on screen: nothing here hides or replaces them. With no Greek voice on the phone the English is
 // read and the Greek is left out, with the one line of help (noVoiceHelp) that SpeakButton shows.
@@ -44,6 +44,8 @@ export function ReadAloud({ id, text, runs, className, auto = false }: {
   const mine = readingIdOf(id);
   const reading = useReading();
   const playing = reading.status !== 'idle' && reading.answer === mine;
+  /** held on the bar (or by leaving the app): the speaker is not a stop square, which would say it is still playing; a tap still stops it */
+  const paused = playing && reading.status === 'paused';
   const [help, setHelp] = useState<string | null>(null);
   /** the browser refused to read this by itself: the button asks for a tap */
   const [refusedFor, setRefusedFor] = useState<number | null>(null);
@@ -115,12 +117,12 @@ export function ReadAloud({ id, text, runs, className, auto = false }: {
       <button
         type="button"
         data-read-aloud
-        aria-label={refused ? 'Tap to listen' : playing ? 'Stop reading' : 'Read aloud'}
+        aria-label={refused ? 'Tap to listen' : paused ? 'Reading paused, tap to stop' : playing ? 'Stop reading' : 'Read aloud'}
         aria-pressed={playing}
         onClick={onTap}
         className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1 rounded-lg text-muted active:bg-line ${playing || refused ? 'text-accent' : ''} ${refused ? 'px-3 motion-safe:animate-pulse' : ''} ${className ?? ''}`}
       >
-        <Icon kind={playing ? 'stop' : 'speaker'} />
+        <Icon kind={playing && !paused ? 'stop' : 'speaker'} />
         {refused ? <span className="text-base font-medium">Tap to listen</span> : null}
       </button>
       {help ? (
