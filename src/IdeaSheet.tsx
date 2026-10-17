@@ -143,6 +143,9 @@ function usePassage(): Loaded {
 /** Greek inside a table: the Greek face at the size of the cell, so four columns fit a phone held upright. */
 const inTable = (text: string) => greekMarked(text, 'font-greek');
 
+/** An idea's title in a line of the sheet (the heading, a button, a question): its Greek, as in 'The preposition περί', at the reading size, as the examples under it (mw-86e9r1.38). */
+const titled = (title: string) => greekMarked(title);
+
 function TableView({ table }: { table: TeachTable }) {
   return (
     <div data-testid="idea-table" className="mt-3">
@@ -467,7 +470,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-1 short:col-start-1 short:row-start-2 short:pb-[calc(0.75rem+var(--lp-end-inset))]">
           <div className="flex items-start justify-between gap-2">
-            <h2 className="min-w-0 break-words text-2xl font-bold">{idea.title}</h2>
+            <h2 className="min-w-0 break-words text-2xl font-bold">{titled(idea.title)}</h2>
             <LessonReadAloud id={`idea:${idea.id}`} text={lesson} ready={loaded !== null} />
           </div>
           {level ? (
@@ -498,9 +501,9 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
           )}
           {need ? (
             <div data-testid="idea-builds-on" className="mt-3 rounded-xl border border-line p-3">
-              <p className="text-base">This builds on {need.title}. Prove it first.</p>
+              <p className="text-base">This builds on {titled(need.title)}. Prove it first.</p>
               <button type="button" onClick={() => setOpened(need)} className="mt-2 min-h-11 rounded-xl border border-line px-4 text-base font-medium text-accent active:bg-line">
-                Go to {need.title}
+                Go to {titled(need.title)}
               </button>
             </div>
           ) : null}
@@ -600,7 +603,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 px-6">
           <div role="alertdialog" aria-modal="true" aria-labelledby="idea-go-first" className="w-full max-w-sm rounded-2xl border border-line bg-surface p-4">
             <p id="idea-go-first" className="text-lg font-medium">
-              Go to {asking.need.title} first?
+              Go to {titled(asking.need.title)} first?
             </p>
             <p className="mt-1 text-base text-muted">This idea builds on it, and it is not solid yet.</p>
             <div className="mt-3 flex gap-2">
@@ -627,9 +630,9 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 px-6">
           <div role="alertdialog" aria-modal="true" aria-labelledby="idea-switch" className="w-full max-w-sm rounded-2xl border border-line bg-surface p-4">
             <p id="idea-switch" className="text-lg font-medium">
-              You are learning {switching.title}. Switch to {idea.title}?
+              You are learning {titled(switching.title)}. Switch to {titled(idea.title)}?
             </p>
-            <p className="mt-1 text-base text-muted">You learn one idea at a time. {switching.title} goes back to Not yet, and what you did on it is kept.</p>
+            <p className="mt-1 text-base text-muted">You learn one idea at a time. {titled(switching.title)} goes back to Not yet, and what you did on it is kept.</p>
             <div className="mt-3 flex flex-col gap-2">
               <button
                 type="button"
@@ -650,7 +653,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
                 }}
                 className={`${BUTTON} border-line text-accent active:bg-line`}
               >
-                Keep {switching.title}
+                Keep {titled(switching.title)}
               </button>
             </div>
           </div>
