@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.286",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.222",
+    "kind": "fixed",
+    "text": "On About, the Preface and Your requests buttons no longer have their small description line pressed against the bottom edge."
+  },
+  {
     "version": "0.1.285",
     "date": "2026-10-17",
     "story": "mw-umv8sp.4",

@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.286
+_2026-10-17_
+- Fixed: On About, the Preface and Your requests buttons no longer have their small description line pressed against the bottom edge.
+
 ## 0.1.285
 _2026-10-17_
 - New: Back from Audible, you can send a screenshot of Audible's playing screen and Lampas reads which chapter you reached; one tap accepts it.
