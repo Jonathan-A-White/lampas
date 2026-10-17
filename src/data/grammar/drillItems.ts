@@ -238,10 +238,11 @@ export function passageWords(passage: readonly Chapter[]): string[] {
     .sort((a, b) => baseLetters(a).length - baseLetters(b).length || count.get(b)! - count.get(a)! || (a < b ? -1 : 1));
 }
 
-/** The words of the passage that hold `text` (a letter or pair) and pass `also`, then the fallback words, none twice. */
+/** The words of the passage that hold `text` (a letter or pair) and pass `also`, then the fallback words only to fill what the passage lacks (VARIANTS words), none twice. */
 const fitting = (ctx: DrillContext, text: string, fallback: readonly string[], also: (word: string) => boolean = () => true): string[] => {
   const base = baseLetters(text);
-  return [...new Set([...passageWords(ctx.passage).filter((w) => baseLetters(w).includes(base)), ...fallback].filter(also))];
+  const own = [...new Set(passageWords(ctx.passage).filter((w) => baseLetters(w).includes(base)).filter(also))];
+  return [...new Set([...own, ...fallback.filter(also)].slice(0, Math.max(own.length, VARIANTS)))];
 };
 
 /** The text (letter or pair) of an item: 'ψ', 'ου'. */
@@ -258,18 +259,24 @@ function needsOf(ctx: DrillContext, items: readonly GrammarIdea[], plain: (item:
   });
 }
 
+/** Words a drill's word step holds in all, shared among its needs (mw-i7xe0n.13): one letter keeps every word that fits, up to this many. */
+const WORD_STEP_MAX = 12;
+
 /**
- * The words to read for each need, VARIANTS at most, a word read once in the whole drill while another that fits exists: the needs with the fewest
- * words choose first, so a rare letter keeps its few. A need whose words are all taken reads its best again, and one with only one word reads it VARIANTS times.
+ * The words to read for each need, a word read once in the whole drill while another that fits exists: the needs with the fewest words choose first, so a rare
+ * letter keeps its few. A need keeps every word that fits, up to WORD_STEP_MAX shared among the needs and at least VARIANTS, so a Hint, which keeps the walk on
+ * the step, never brings a word back while another that fits is unasked (mw-i7xe0n.13). A need whose words are all taken reads its best again, and one with
+ * only one word reads it VARIANTS times.
  */
 function assignWords(needs: readonly WordNeed[], once = VARIANTS): string[][] {
+  const cap = Math.max(once, Math.floor(WORD_STEP_MAX / Math.max(1, needs.length)));
   const taken = new Set<string>();
   const given = needs.map((): string[] => []);
   [...needs.keys()]
     .sort((a, b) => needs[a].fits.length - needs[b].fits.length || a - b)
     .forEach((i) => {
       const { fits } = needs[i];
-      given[i] = fits.filter((w) => !taken.has(w)).slice(0, once);
+      given[i] = fits.filter((w) => !taken.has(w)).slice(0, cap);
       if (given[i].length === 0 && fits.length > 0) given[i] = Array.from({ length: fits.length === 1 ? once : 1 }, () => fits[0]);
       given[i].forEach((w) => taken.add(w));
     });
