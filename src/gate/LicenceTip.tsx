@@ -1,6 +1,7 @@
 // src/gate/LicenceTip.tsx — the one quiet line at the foot of the Reader that tells a free reader what a licence adds (mw-8m9dyu.6). Not a dialog and no
 // other nudge anywhere: it is drawn on a phone with no licence from its third visit (src/gate/licenceTip.ts), once ever. The close and 'Learn more' end it;
-// 'Learn more' opens the Licence page as a Back step, so Back returns to the Reader where he was.
+// 'Learn more' opens the Licence page as a Back step, so Back returns to the Reader where he was. In a short window (a phone held sideways) it is one slim row, the
+// sentence, Learn more and × side by side, with no inset band under it: sideways the phone's bar is at its side (mw-8m9dyu.11).
 import { useEffect, useState } from 'react';
 import { openLicence } from '../nav/route';
 import { useLicence } from './licenceContext';
@@ -31,22 +32,22 @@ export function LicenceTip() {
       role="note"
       aria-label="About a licence"
       data-licence-tip
-      className="flex shrink-0 items-start gap-1 border-t border-line bg-surface pt-1 pl-4 pr-1 pb-[calc(0.25rem+var(--lp-bar-inset))] text-base text-muted"
+      className="flex shrink-0 items-start gap-1 border-t border-line bg-surface pt-1 pl-4 pr-1 pb-[calc(0.25rem+var(--lp-bar-inset))] text-base text-muted short:items-center short:pt-0 short:pb-0 short:text-sm"
     >
-      <div className="min-w-0 flex-1 py-2">
-        <p className="leading-snug">{LICENCE_TIP_TEXT}</p>
+      <div className="min-w-0 flex-1 py-2 short:flex short:items-center short:gap-2 short:py-0">
+        <p className="leading-snug short:min-w-0 short:flex-1">{LICENCE_TIP_TEXT}</p>
         <button
           type="button"
           onClick={(e) => {
             end(e.currentTarget.closest('aside'));
             openLicence('reader');
           }}
-          className="-ml-1 min-h-12 px-1 font-medium text-accent underline"
+          className="-ml-1 min-h-12 px-1 font-medium text-accent underline short:ml-0 short:min-h-11 short:shrink-0 short:whitespace-nowrap"
         >
           Learn more
         </button>
       </div>
-      <button type="button" aria-label="Close" onClick={(e) => end(e.currentTarget.closest('aside'))} className="min-h-12 min-w-12 shrink-0 rounded-lg text-2xl leading-none">
+      <button type="button" aria-label="Close" onClick={(e) => end(e.currentTarget.closest('aside'))} className="min-h-12 min-w-12 shrink-0 rounded-lg text-2xl leading-none short:min-h-11 short:min-w-11">
         <span aria-hidden="true">×</span>
       </button>
     </aside>

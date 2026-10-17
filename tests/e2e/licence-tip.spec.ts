@@ -60,6 +60,32 @@ test('the third visit shows the tip at the foot; Learn more opens the Licence pa
   await expect(tip(page)).toHaveCount(0);
 });
 
+// Sideways (mw-8m9dyu.11): the tip is one slim row, so most of a short window is still the text.
+test.describe('the tip on a phone held sideways', () => {
+  test.use({ viewport: { width: 844, height: 390 } });
+
+  test('is one slim row under a quarter of the window and leaves the reading box taller than itself', async ({ page }) => {
+    await onVisit(page, 3);
+    await page.setViewportSize({ width: 844, height: 390 });
+    await page.goto('/#/?c=8&view=greek');
+    await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+    await expect(tip(page)).toBeVisible();
+    const box = (await tip(page).boundingBox())!;
+    expect(box.height).toBeLessThan(390 * 0.25);
+    expect(box.y + box.height).toBeLessThanOrEqual(390);
+    const reader = (await page.locator('main[data-reader]').boundingBox())!;
+    expect(reader.height).toBeGreaterThan(box.height);
+    // the sentence, Learn more and Close sit side by side, each still a thumb's size
+    const learn = (await tip(page).getByRole('button', { name: 'Learn more' }).boundingBox())!;
+    const close = (await tip(page).getByRole('button', { name: 'Close' }).boundingBox())!;
+    const text = (await tip(page).locator('p').boundingBox())!;
+    for (const b of [learn, close]) expect(Math.min(b.width, b.height)).toBeGreaterThanOrEqual(44);
+    expect(learn.x).toBeGreaterThanOrEqual(text.x + text.width - 1);
+    expect(close.x).toBeGreaterThanOrEqual(learn.x + learn.width - 1);
+    await shot(page, 'licence-tip-sideways');
+  });
+});
+
 test('closing the tip ends it for good', async ({ page }) => {
   await onVisit(page, 3);
   await page.goto('/');
