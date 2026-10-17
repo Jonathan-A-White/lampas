@@ -7,13 +7,19 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
+import { loadChapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
+import { drillSeed } from '../../src/data/grammar/drillSeed';
+import { tryItOn, type TryIt } from '../../src/data/grammar/ideaSheet';
 import { ideaOf, itemsOf } from '../../src/data/grammar/ladder';
 import { teachOf } from '../../src/data/grammar/teach';
 import { IdeaSheet } from '../../src/IdeaSheet';
+import { listOpenedParadigms } from '../../src/data/repositories';
+import { mulberry32 } from '../../src/data/quiz';
+import { gradingOf } from '../../src/review/kinds';
 import { DAY, STEP_DAYS } from '../../src/data/schedule';
 import { clearBus, subscribe, type EventOf } from '../../src/events/bus';
-import { expectPublished } from '../../tests/support/published';
+import { expectLatest, expectPublished } from '../../tests/support/published';
 import { chooseAccent, DEFAULT_ACCENT } from '../../src/speech/accents';
 import { pronunciationOf, registerPronunciation, type Pronunciation } from '../../src/speech/pronunciation';
 import { stopReading } from '../../src/speech/readAloud';
@@ -41,6 +47,8 @@ const PHONE_KEY = '00'.repeat(31) + '02';
 let fake: FakePostern;
 let taught: EventOf<'idea-taught'>[] = [];
 let startedAt = 0;
+/** The seed Try it on a verse draws its questions from (src/data/grammar/drillSeed.ts), so a step knows them. */
+const TRY_SEED = 11;
 /** The phone's fake speech engine, put in place only when a scenario says the phone has a Greek voice. */
 let synth: FakeSynth | undefined;
 /** The Laptop's wall clock steps back by about a second now and then: a bound on a stored time allows for it. */
@@ -73,6 +81,7 @@ async function open(goal: string | undefined, chosen?: string, greekVoice = fals
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
   window.location.hash = '';
   tutorTimings.pollMs = 20;
+  drillSeed.next = () => TRY_SEED;
   fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: GRAMMAR_TERM_ANSWER };
   stubChapterFetch();
@@ -768,6 +777,97 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     When('he opens the idea sheet of {string} from the Goal screen', opensIdeaOfGoal);
     Then('the idea sheet shows no button that starts {string}', (_, start: string) => {
       expect(within(ideaSheet()).queryAllByRole('button').filter((b) => b.textContent?.startsWith(start))).toEqual([]);
+    });
+  });
+
+  // ---- Try it on a verse (mw-emk3xt.4) ----
+  const tryDialog = () => screen.getByRole('dialog', { name: 'Try it' });
+  /** The verse and questions the sheet will ask, worked out as it works them out: before the first answer moves a level. */
+  let expectedTry: TryIt | null = null;
+  let tryIndex = 0;
+  const optionIn = async (dialog: HTMLElement, text: string): Promise<HTMLElement> => {
+    let found: HTMLElement | undefined;
+    await waitFor(() => {
+      found = Array.from(dialog.querySelectorAll<HTMLElement>('[data-option]')).find((o) => o.textContent === text && !(o as HTMLButtonElement).disabled);
+      expect(found, `option ${text}`).toBeDefined();
+    });
+    return found as HTMLElement;
+  };
+  /** Answers the question on screen: right, or wrong (a wrong choice, or a wrong first step of a parsing). */
+  async function answerTry(right: boolean): Promise<void> {
+    const question = expectedTry!.questions[tryIndex];
+    const dialog = tryDialog();
+    if (question.kind === 'parse') {
+      const steps = question.steps!;
+      if (right) for (const step of steps) await user.click(await optionIn(dialog, step.right));
+      else await user.click(await optionIn(dialog, steps[0].options.find((o) => o !== steps[0].right) as string));
+    } else {
+      await user.click(await optionIn(dialog, right ? question.right : (question.options.find((o) => o !== question.right) as string)));
+    }
+    tryIndex += 1;
+    await user.click(await within(dialog).findByTestId('try-it-next'));
+  }
+
+  Scenario('Try it on a verse', ({ Given, And, When, Then }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    And('{string} is the idea he is learning', async (_, id: string) => {
+      await db.grammarLevels.put({ id, level: 'frontier', since: Date.now(), how: 'sheet' });
+    });
+    And(GIVEN_OPEN, opensTheIdea);
+    Then('the idea sheet shows the button {string}', async (_, name: string) => {
+      expect(await within(ideaSheet()).findByRole('button', { name })).toBeInTheDocument();
+    });
+    When('he taps {string} on the idea sheet', async (_, name: string) => {
+      const chapters = [await loadChapter('1jn', 1)];
+      const { graded, passes } = await gradingOf(chapters);
+      expectedTry = tryItOn(ideaOf('case-genitive'), chapters, graded, passes, new Set(await listOpenedParadigms()), mulberry32(TRY_SEED));
+      tryIndex = 0;
+      await user.click(within(ideaSheet()).getByRole('button', { name }));
+    });
+    Then('the sheet {string} opens with a meaning question first', async (_, title: string) => {
+      const dialog = await screen.findByRole('dialog', { name: 'Try it' });
+      expect(await within(dialog).findByTestId('try-it-title')).toHaveTextContent(title);
+      expect(expectedTry?.ref).toBe(title.replace('Try it: ', ''));
+      expect(expectedTry?.questions).toHaveLength(3);
+      expect(expectedTry?.questions[0].kind).toBe('meaning');
+      expect(await within(dialog).findByTestId('grammar-prompt')).toHaveTextContent('What does this say?');
+      expect(within(dialog).getByTestId('try-it-step')).toHaveTextContent('Question 1 of 3');
+    });
+    When('he answers the three questions right, right and wrong', async () => {
+      await answerTry(true);
+      await answerTry(true);
+      await answerTry(false);
+    });
+    Then('the sheet says {string} and offers {string} and {string}', async (_, text: string, read: string, done: string) => {
+      const dialog = tryDialog();
+      expect(await within(dialog).findByTestId('try-it-result')).toHaveTextContent(text);
+      expect(within(dialog).getByRole('button', { name: read })).toBeInTheDocument();
+      expect(within(dialog).getByRole('button', { name: done })).toBeInTheDocument();
+    });
+    And('an idea-tried event for {string} with 2 right of 3 was published', async (_, id: string) => {
+      await expectLatest('idea-tried', (event) => expect(event).toEqual({ kind: 'idea-tried', id, right: 2, total: 3 }));
+    });
+    And('the idea {string} has two right and one wrong review', async (_, id: string) => {
+      await waitFor(async () => expect((await review(id)).recent?.map((r) => r.right)).toEqual([true, true, false]));
+      expect(await review(id)).toMatchObject({ lapses: 1 });
+    });
+    When('he taps {string} on the Try it sheet', async (_, name: string) => {
+      await user.click(within(tryDialog()).getByRole('button', { name }));
+    });
+    Then('the Reader is open on 1 John 1:4 with no sheet open', async () => {
+      const view = await screen.findByRole('region', { name: 'Verse view' });
+      expect(view).toHaveAttribute('data-verse-view', '4');
+      expect(within(view).getByRole('heading', { level: 2 })).toHaveTextContent('1 John 1:4');
+      await waitFor(() => expect(screen.queryAllByRole('dialog')).toEqual([]));
+    });
+  });
+
+  Scenario('An idea of the letters has no verse to try it on', ({ Given, When, Then }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the idea sheet of {string} from the Goal screen', opensIdeaOfGoal);
+    Then('the idea sheet shows the button {string} and no button {string}', (_, has: string, lacks: string) => {
+      expect(within(ideaSheet()).getByRole('button', { name: has })).toBeInTheDocument();
+      expect(within(ideaSheet()).queryByRole('button', { name: lacks })).toBeNull();
     });
   });
 });

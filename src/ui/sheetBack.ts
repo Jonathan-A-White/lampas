@@ -103,6 +103,17 @@ export function pushSheetStep(undo: () => void, ownerLevel: number, closing = fa
   }
 }
 
+/** The close of each sheet mounted now, by its level (what useSheetBack was last given). */
+const closers = new Map<number, { current: () => void }>();
+
+/**
+ * Closes every sheet that is open, the top one first, as Done on each would (a screen that takes him elsewhere, 'Read it' on Try it, leaves none behind). Call it just before
+ * the move that changes the address, in the same handler: the sheets' entries are then left beneath, and Back steps over them (skipStale).
+ */
+export function closeAllSheets(): void {
+  for (const [, close] of [...closers].sort((a, b) => b[0] - a[0])) close.current();
+}
+
 /** The sheets mounted above `level`. */
 export const sheetsAbove = (level: number): number => mounted.filter((at) => at > level).length;
 
@@ -131,6 +142,7 @@ export function useSheetBack(onClose: () => void): () => number {
     if (settleAt !== null) settleAt = level;
     levelRef.current = level;
     mounted.push(level);
+    closers.set(level, close);
     open += 1;
     tellWatchers();
     const onPop = () => {
@@ -141,6 +153,7 @@ export function useSheetBack(onClose: () => void): () => number {
       window.removeEventListener('popstate', onPop);
       open -= 1;
       mounted.splice(mounted.indexOf(level), 1);
+      closers.delete(level);
       tellWatchers();
       if (suspending) return; // closed by a move inside the owner: the entry stays for the Back that brings it back
       if (depthOf() >= level) {

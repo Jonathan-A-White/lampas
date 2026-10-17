@@ -143,6 +143,7 @@ describe('docs/events.md', () => {
       'goal-changed': true,
       'approach-changed': true,
       'idea-taught': true,
+      'idea-tried': true,
       'picker-level-moved': true,
       'frontier-taught': true,
       'placement-done': true,
