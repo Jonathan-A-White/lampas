@@ -45,3 +45,29 @@ test('About credits the data at phone width, reached from Home', async ({ page }
 
   await shot(page, 'about');
 });
+
+test.describe('at 390x844', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('About: the Preface and Your requests buttons hold their description line clear of the bottom border (mw-5r3p30.222)', async ({ page }) => {
+    await openUnlocked(page);
+    await page.goto('/#/about');
+    await expect(page.getByRole('heading', { name: 'About', level: 1 })).toBeVisible();
+    for (const [name, id] of [
+      ['Preface', 'preface-about'],
+      ['Your requests', 'requests-about'],
+    ] as const) {
+      const button = page.getByRole('button', { name, exact: true });
+      await button.scrollIntoViewIfNeeded();
+      const box = await button.boundingBox();
+      const line = await page.locator(`#${id}`).boundingBox();
+      expect(box, name).not.toBeNull();
+      expect(line, name).not.toBeNull();
+      if (!box || !line) return;
+      expect(box.height, `${name} height`).toBeGreaterThanOrEqual(44);
+      // the bottom border is 1 px inside the box; the line ends 8 px or more above it
+      expect(box.y + box.height - 1 - (line.y + line.height), `${name} gap below the description`).toBeGreaterThanOrEqual(8);
+    }
+    await shot(page, 'about-buttons');
+  });
+});
