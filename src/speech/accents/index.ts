@@ -16,6 +16,9 @@ export const ACCENTS: readonly EnglishAccent[] = [AMERICAN, BRITISH, IPA];
 
 export const DEFAULT_ACCENT = AMERICAN.id;
 
+/** The American accent's id, for whoever needs its key words whatever accent is chosen (the IPA course, src/ipa/course.ts, when IPA is the accent). */
+export const AMERICAN_ID = AMERICAN.id;
+
 /** The accent `id` names; the default's when it names none. */
 export const accentOf = (id: unknown): EnglishAccent => ACCENTS.find((a) => a.id === id) ?? AMERICAN;
 
@@ -82,4 +85,14 @@ export function soundWords(scheme: Pronunciation, accent: EnglishAccent = chosen
       return word ? `${symbol} as in ${word}${after(note)}` : `${symbol}${after(note)}`;
     },
   };
+}
+
+/** The key word of a standard sound alone, in the form a card and a quiz choice show it (mw-5r3p30.356, the course 'Learn the IPA sounds'): `card` is 'as in “or”, short',
+ * `choice` the short form of a quiz, 'as in “or”, short' or 'a quick tap of the tongue'; neither carries the symbol the Greek respelling writes. */
+export function soundHint(id: SoundId, accent: EnglishAccent = chosenAccent()): { card: string; choice: string } {
+  const hint = accent.hints[id];
+  if (!hint) throw new Error(`${accent.label} English has no hint for ${id}`);
+  const after = hint.note ? `, ${hint.note}` : '';
+  const card = hint.word ? `as in “${hint.word}”${after}` : (hint.note ?? '');
+  return { card, choice: hint.choice ?? (hint.word ? `as in “${hint.word}”` : (hint.note ?? '')) };
 }

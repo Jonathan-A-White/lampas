@@ -44,3 +44,35 @@ export type SoundId = keyof typeof SOUNDS;
 
 /** Every standard id, in the order above. */
 export const SOUND_IDS = Object.keys(SOUNDS) as readonly SoundId[];
+
+/** The pairs of sounds an English ear takes for each other (mw-5r3p30.356): the course 'Learn the IPA sounds' (src/ipa/) drills a sound with its partners, and offers
+ * them among each other's choices. Each pair is written once; CONFUSABLE gives it both ways. */
+const CONFUSABLE_PAIRS: readonly (readonly [SoundId, SoundId])[] = [
+  ['/x/', '/ç/'],
+  ['/ɣ/', '/ʝ/'],
+  ['/θ/', '/ð/'],
+  ['/v/', '/f/'],
+  ['/z/', '/s/'],
+  ['/b/', '/p/'],
+  ['/d/', '/t/'],
+  ['/ɡ/', '/k/'],
+  ['/e/', '/i/'],
+  ['/o/', '/u/'],
+  ['/ks/', '/ps/'],
+  ['/b/', '/mb/'],
+  ['/d/', '/nd/'],
+  ['/ɡ/', '/ŋɡ/'],
+  ['/ks/', '/ŋks/'],
+  ['/m/', '/n/'],
+  ['/l/', '/ɾ/'],
+];
+
+/** Each sound's confusable partners, by id. */
+export const CONFUSABLE: Readonly<Partial<Record<SoundId, readonly SoundId[]>>> = (() => {
+  const out: Partial<Record<SoundId, SoundId[]>> = {};
+  for (const [a, b] of CONFUSABLE_PAIRS) {
+    (out[a] ??= []).push(b);
+    (out[b] ??= []).push(a);
+  }
+  return out;
+})();

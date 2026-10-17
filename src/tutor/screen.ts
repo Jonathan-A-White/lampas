@@ -53,6 +53,7 @@ export const CREDIT_LINK_MAX = 120;
 export const SCREEN_NAMES: Record<Exclude<Route, 'home' | 'share' | 'unlock'>, string> = {
   goal: 'Goal',
   path: 'The whole path',
+  ipa: 'Learn the IPA sounds',
   words: 'Words',
   review: 'Review',
   test: 'Quick test',
@@ -102,6 +103,7 @@ export const SIMPLEST_VERSE = "What's the simplest verse in the New Testament fo
 
 const SUGGESTIONS: Record<string, string[]> = {
   Goal: [SIMPLEST_VERSE, 'What should I learn next toward my goal, and why?', 'How close am I to being able to read my goal?'],
+  'Learn the IPA sounds': ['What is IPA, and is it worth learning?', 'How do I tell /x/ and /ç/ apart?'],
   'The whole path': ['What should I learn next on this path?', 'Why does this idea come before that one?'],
   Words: ['Which of my words should I work on first?', 'How can I remember the words I keep missing?'],
   Review: ['Why do I keep forgetting words like this?', 'How should I use Review each day?'],

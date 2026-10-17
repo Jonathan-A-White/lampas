@@ -16,6 +16,7 @@ import type { Counts, Level } from './data/grammar/needs';
 import { addWordToLearn, drillPlanCounts, getGrammarApproach, takePronunciationSwitch } from './data/repositories';
 import type { PronunciationSwitch } from './data/repositories/settings';
 import { IdeaSheet } from './IdeaSheet';
+import { OptionalEntry } from './ipa/OptionalEntry';
 import { useAiAllowed } from './gate/licenceContext';
 import { LadderStart } from './ReadingLadder';
 import { pronunciationOf } from './speech/pronunciation';
@@ -119,6 +120,8 @@ function NoGoalBody({ levels }: { levels: ReadonlyMap<string, Level> }) {
           <DrillPlans onOpen={setIdeaId} />
           <ReadingLadderSection />
         </div>
+        <OptionalEntry />
+        <div className="pb-[var(--lp-end-inset)]" />
       </main>
       {ideaId ? (
         <IdeaSheet
@@ -436,6 +439,7 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
             Read it
           </button>
         </section>
+        <OptionalEntry />
         <div className="pb-[var(--lp-end-inset)]" />
       </main>
       {ideaId ? (

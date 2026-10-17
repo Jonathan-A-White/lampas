@@ -124,6 +124,11 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   of the letters, so the order and direction you draw them in do not matter. The same letter shapes are drawn for you to trace and to copy. Only the idea is borrowed: the code and the letter
   shapes are our own. Licence: none needed, it is a published method. Changes: the comparison is the nearest-point distance taken both ways,
   and the writing is also tried turned a little each way.
+- **[IPA](https://www.internationalphoneticassociation.org)**, the International Phonetic Alphabet of the International Phonetic Association. The symbols
+  of the optional course Learn the IPA sounds (under Optional on the Goal screen, and, if you choose IPA in Settings > English accent, in every sound hint): each
+  sound the Greek says is shown by its IPA symbol, drilled both ways with a pass check. Only the symbols, a standard alphabet, are used: the chart itself is not copied. Licence:
+  none needed; a standard (the [chart](https://www.internationalphoneticassociation.org/content/full-ipa-chart) is [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)). Changes: the key words, the Greek letters and the Greek words that go
+  with each sound are our own.
 - **[Claude Code](https://www.anthropic.com/claude-code)** by Anthropic. Writes most of Lampas's code and the files of its lamp icon and
   memory pictures, under Jonathan's direction. Licence: none needed, it is a tool; Anthropic's [terms](https://www.anthropic.com/legal/commercial-terms) apply.
   Changes: none.

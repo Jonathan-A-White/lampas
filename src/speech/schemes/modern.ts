@@ -2,7 +2,7 @@
 // the stressed syllable in capitals ("khree-STO"). Written from Modern Greek's own rules (docs/pronunciation.md lists
 // them); the other schemes (Erasmian next) are further files beside this one, registered in ../pronunciation.ts.
 import type { SoundWords } from '../accents';
-import type { Pronunciation, SoundRule, SoundRuleSide, Spelling } from '../pronunciation';
+import type { Pronunciation, SoundGuide, SoundRule, SoundRuleSide, Spelling } from '../pronunciation';
 import type { SoundId } from '../sounds';
 import { ONSETS } from '../greekSyllables';
 import { modernLessons } from './modernLessons';
@@ -274,6 +274,44 @@ export const MODERN_SOUNDS: Readonly<Record<string, SoundId>> = {
   ks: '/ks/', ps: '/ps/', mb: '/mb/', nd: '/nd/', ng: '/ŋɡ/', nks: '/ŋks/',
 };
 
+/** What the course 'Learn the IPA sounds' teaches of each sound Modern Greek says (mw-5r3p30.356): the Greek letters that make it (a pair where it is a pair; a letter
+ * that says it only in a place says so) and a Greek word the voice says that has it. Each word is held to respellModern's own reading by
+ * tests/unit/ipa-course.test.ts (it has the sound, starts with it where `at` is 'start', and has none of the sound's confusable partners); words not in the New Testament
+ * (μπάλα, ντουλάπι, γκάζι) are for the three sounds the New Testament's Greek has no word to start with (it keeps μπ, ντ and γκ for inside a word). */
+export const MODERN_SOUND_GUIDE: Readonly<Record<SoundId, SoundGuide>> = {
+  '/a/': { letters: ['α'], word: 'ἄρτος', at: 'start' },
+  '/e/': { letters: ['ε', 'αι'], word: 'ἔργον', at: 'start' },
+  '/i/': { letters: ['η', 'ι', 'υ', 'ει', 'οι', 'υι'], word: 'ἵνα', at: 'start' },
+  '/o/': { letters: ['ο', 'ω'], word: 'ὄρος', at: 'start' },
+  '/u/': { letters: ['ου'], word: 'οὖς', at: 'start' },
+  '/v/': { letters: ['β', 'υ in αυ, ευ, ηυ before a vowel or a voiced consonant'], word: 'βίος', at: 'start' },
+  '/f/': { letters: ['φ', 'υ in αυ, ευ, ηυ before a voiceless consonant'], word: 'φῶς', at: 'start' },
+  '/ð/': { letters: ['δ'], word: 'δῶρον', at: 'start' },
+  '/θ/': { letters: ['θ'], word: 'θεός', at: 'start' },
+  '/ɣ/': { letters: ['γ before α, ο, ου, ω or a consonant'], word: 'γάμος', at: 'start' },
+  '/ʝ/': { letters: ['γ before ε, ι, η, υ, αι, ει, οι'], word: 'γῆ', at: 'start' },
+  '/x/': { letters: ['χ before α, ο, ου, ω or a consonant'], word: 'χάρις', at: 'start' },
+  '/ç/': { letters: ['χ before ε, ι, η, υ, αι, ει, οι'], word: 'χείρ', at: 'start' },
+  '/z/': { letters: ['ζ', 'σ before β, γ, δ, ζ, λ, μ, ν, ρ'], word: 'ζωή', at: 'start' },
+  '/s/': { letters: ['σ', 'ς'], word: 'σῶμα', at: 'start' },
+  '/b/': { letters: ['μπ at the start of a word'], word: 'μπάλα', at: 'start' },
+  '/p/': { letters: ['π'], word: 'πατήρ', at: 'start' },
+  '/d/': { letters: ['ντ at the start of a word'], word: 'ντουλάπι', at: 'start' },
+  '/t/': { letters: ['τ'], word: 'τόπος', at: 'start' },
+  '/ɡ/': { letters: ['γκ at the start of a word'], word: 'γκάζι', at: 'start' },
+  '/k/': { letters: ['κ'], word: 'καλός', at: 'start' },
+  '/m/': { letters: ['μ'], word: 'μήτηρ', at: 'start' },
+  '/n/': { letters: ['ν'], word: 'νεκρός', at: 'start' },
+  '/l/': { letters: ['λ'], word: 'λόγος', at: 'start' },
+  '/ɾ/': { letters: ['ρ'], word: 'ῥῆμα', at: 'start' },
+  '/ks/': { letters: ['ξ'], word: 'ξένος', at: 'start' },
+  '/ps/': { letters: ['ψ'], word: 'ψυχή', at: 'start' },
+  '/mb/': { letters: ['μπ inside a word'], word: 'ἄμπελος', at: 'inside' },
+  '/nd/': { letters: ['ντ inside a word'], word: 'πάντοτε', at: 'inside' },
+  '/ŋɡ/': { letters: ['γγ', 'γκ inside a word'], word: 'ἄγγελος', at: 'inside' },
+  '/ŋks/': { letters: ['γξ'], word: 'σάλπιγξ', at: 'inside' },
+};
+
 /** What the Modern Greek voice is handed for a Greek word of ONE letter: the vowel bare, in lower case, doubled ('οο' for ὁ and Ὃ, 'ωω' for ὦ, 'ηη' for ἡ,
  * 'αα' for ἃ). A Greek voice handed the letter alone names it, whatever accent it carries (mw-5r3p30.262 handed it 'ό', and his phone said 'Omicron');
  * handed it doubled, his phone's own Greek voice says the sound: the Governor's pick on the listening trial, 'the best sound for the vowels is actually the
@@ -458,6 +496,7 @@ export const MODERN: Pronunciation = {
   respell: respellModern,
   spellings: spellingsModern,
   sounds: MODERN_SOUNDS,
+  soundGuide: MODERN_SOUND_GUIDE,
   loneLetterForm: loneLetterFormModern,
   loneLetterClip: loneLetterClipModern,
   voiceForm: voiceFormModern,
