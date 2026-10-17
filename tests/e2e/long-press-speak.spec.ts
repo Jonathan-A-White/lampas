@@ -3,10 +3,12 @@ import { honestSpeech, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { asSpoken } from '../support/lone-word';
+import { holdFor } from '../support/hold';
 
 // The engine is bsv-kit's honest fake (tests/support/honest-fakes.ts; headless Chromium has no Greek voice); how a real
 // phone's voice sounds, and its long-press menu, are only a phone check (docs/pwa-best-practices.md section 12).
 async function openReader(page: Page, msPerWord?: number) {
+  await page.clock.install();
   await openUnlocked(page);
   await honestSpeech(page, msPerWord === undefined ? {} : { msPerWord });
   await page.goto('/');
@@ -22,13 +24,7 @@ async function openReader(page: Page, msPerWord?: number) {
 async function hold(page: Page, selector: string, ms: number, drag = 0) {
   const box = await page.locator(selector).boundingBox();
   if (!box) throw new Error(`no ${selector}`);
-  const x = box.x + box.width / 2;
-  const y = box.y + box.height / 2;
-  await page.mouse.move(x, y);
-  await page.mouse.down();
-  if (drag) await page.mouse.move(x + drag, y, { steps: 4 });
-  await page.waitForTimeout(ms); // a real-time hold: with page.clock.install() the Reader's Due chip did not draw on a loaded host (7 of 18 runs, mw-5r3p30.388), so this spec stays on the real clock until that is found
-  await page.mouse.up();
+  await holdFor(page, box, ms, { drag });
 }
 
 test('a long press on an English word says it in English, and opens no sheet', async ({ page }) => {
