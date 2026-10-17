@@ -420,4 +420,31 @@ describeFeature(feature, ({ Scenario }) => {
       await allAnswered();
     });
   });
+
+  Scenario('A tapped setting offer shows its change once, and after Undo only that it was put back', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers to change the Theme to Dark', () => openWith(SETTING_OFFER));
+    When('he taps the Ask the tutor control', taps);
+    And('he sends {string}', sends);
+    And('he taps Change Theme: Dark', async () => {
+      await user.click(await within(sheet()).findByRole('button', { name: 'Change Theme: Dark' }));
+    });
+    Then('the first turn shows the change {string} with an Undo button and no bare "Changed" line', async (_, text: string) => {
+      const change = await waitFor(() => {
+        const found = turn(1).querySelector('[data-talk-change]');
+        if (!found) throw new Error('no change row yet');
+        return found as HTMLElement;
+      });
+      expect(change.textContent).toContain(text);
+      expect(within(change).getByRole('button', { name: /^Undo/ })).toBeInTheDocument();
+      expect(within(turn(1)).queryAllByText('Changed')).toHaveLength(0);
+    });
+    When('he taps Undo on the first turn', async () => {
+      await user.click(await within(turn(1)).findByRole('button', { name: /^Undo/ }));
+    });
+    Then('the first turn shows the change {string} and no bare "Changed" line', async (_, text: string) => {
+      expect(await within(turn(1)).findByText(text)).toBeInTheDocument();
+      expect(within(turn(1)).queryAllByText('Changed')).toHaveLength(0);
+      await allAnswered();
+    });
+  });
 });

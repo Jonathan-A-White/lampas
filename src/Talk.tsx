@@ -323,6 +323,8 @@ function SettingOffer({ turn }: { turn: TalkTurn }) {
   const [problem, setProblem] = useState<string | null>(null);
   const offer = turn.settingOffer ? offeredChange(turn.settingOffer) : undefined;
   if (!offer || turn.id === undefined) return null;
+  // a tap keeps its change on this turn, and its row below says Changed or Put back; a spoken yes keeps it on the next turn, so only then does this line say Changed
+  if (turn.settingChoice === 'taken' && turn.changes?.length) return null;
   const id = turn.id;
   const take = async (): Promise<void> => {
     setBusy(true);
