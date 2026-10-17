@@ -699,6 +699,19 @@ textarea,
   stroke-dashoffset: 1;
   animation: lp-stroke-draw var(--lp-stroke-ms, 700ms) ease-in-out forwards;
 }
+/* The arrowhead on each stroke (mw-86e9r1.56): it shows when the stroke has been drawn as far as it, then stays; the start markers are always there. */
+@keyframes lp-cue-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.glyph-cue[data-animate] {
+  opacity: 0;
+  animation: lp-cue-in 200ms ease-out forwards;
+}
 
 /* The return sheet (mw-umv8sp.3, src/plan/WhereDidYouGetTo.tsx): the backdrop fades in and the sheet slides up from the foot; prefers-reduced-motion above makes both all but instant. */
 @keyframes lp-sheet-in {
