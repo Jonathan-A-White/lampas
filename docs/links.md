@@ -23,7 +23,7 @@ Case does not matter; spaces, dots and colons are all accepted between the parts
 
 The books are the 27 of `public/data/index.json`, named by their OSIS code (`Matt Mark Luke John Acts Rom 1Cor 2Cor Gal Eph Phil Col 1Thess 2Thess 1Tim 2Tim Titus Phlm Heb Jas 1Pet 2Pet 1John 2John 3John Jude Rev`), by their full English name
 (`Romans`, `1 Corinthians`), or by a common short form (`Mt`, `Jn`, `1Jn`, `Phlm`, `Re` …; the list is `src/nav/links.ts`). `view=greek` and `weave=…` may ride along
-(`#/?ref=Rom.8.28&view=greek`).
+(`#/?ref=Rom.8.28&view=greek`). `as=<words>` (`#/?ref=Gen.1.28&as=Gen.%201%3A28`) carries the words the reference was printed in, which Share to Lampas adds when a listed reference is tapped; a notice then names the reference so ("Gen. 1:28"), not by its code.
 
 A reference Lampas does not hold never gives a blank screen. It opens the nearest place it does hold, with a one-line notice (Dismiss closes it) that says what was asked for:
 

@@ -79,7 +79,7 @@ function RefLink({ r }: { r: ListedReference }) {
       onClick={(e) => {
         if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
         e.preventDefault();
-        openHash(href.slice(href.indexOf('#')));
+        openHash(referenceUrl(r.book, r.chapter, r.verse, r.printed).replace(/^[^#]*/, ''));
       }}
       className={LINK_CLASS}
     >
