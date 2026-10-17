@@ -2,9 +2,12 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
 import { AskApproachSheet } from '../../AskApproachSheet';
 import { useAiAllowed } from '../../gate/licenceContext';
-import { APPROACHES, nextLessonOf, type GrammarApproach } from '../../approaches';
+import { APPROACHES, type GrammarApproach } from '../../approaches';
+import { nextLesson } from '../../data/grammar/goalProgress';
+import type { PassageNeeds } from '../../data/grammar/needs';
 import { getGrammarApproach } from '../../data/repositories';
 import { listLevels } from '../../data/repositories/grammarLevels';
+import { useGoalProgress } from '../../useGoalProgress';
 import { writeSetting } from '../registry';
 import { SettingRow } from './SettingRow';
 import type { Control } from './types';
@@ -32,19 +35,22 @@ function CreditLine({ approach }: { approach: GrammarApproach }) {
 }
 
 /** The grammar approach: a choice of the approaches (none is drawn while there is only one path), then the chosen one's credit line, its method
- * and its lessons, with the lesson that holds the earliest idea he has no level for marked Next. Choosing writes only the approach: his levels
- * are not touched. `approaches` is the list; a test hands it a second. */
+ * and its lessons, with the lesson marked Next that the Goal's Learn next opens for `needs`, his goal's (mw-86e9r1.24; with no goal, the lesson that
+ * holds the earliest idea he has no level for). Choosing writes only the approach: his levels are not touched. `approaches` is the list; a test hands
+ * it a second. */
 export function ApproachPicker({
   chosen,
   levels,
+  needs,
   approaches = APPROACHES,
 }: {
   chosen: string;
   levels: ReadonlyMap<string, { level: 'solid' | 'frontier' | 'notYet' }>;
+  needs?: Pick<PassageNeeds, 'ideas'>;
   approaches?: readonly GrammarApproach[];
 }) {
   const approach = approaches.find((a) => a.id === chosen) ?? approaches[0];
-  const next = nextLessonOf(approach, (id) => levels.get(id)?.level);
+  const next = nextLesson(needs, approach, new Map(Array.from(levels, ([id, row]) => [id, row.level])));
   const choice = approaches.length > 1;
   return (
     // with one path there is no radiogroup to name the row, so the row's own content is the group
@@ -120,9 +126,12 @@ function AskApproach() {
 export const ApproachControl: Control = ({ row }) => {
   const approach = useLiveQuery(getGrammarApproach, []);
   const levels = useLiveQuery(listLevels, []);
+  // the goal's needs, so Next is the lesson Learn next opens: the picker waits for them, and a goal whose chapters cannot be fetched marks as no goal
+  const goal = useGoalProgress();
+  const needs = goal.status === 'ready' ? goal.needs : undefined;
   return (
     <SettingRow row={row}>
-      {approach !== undefined && levels !== undefined ? <ApproachPicker chosen={approach} levels={levels} /> : null}
+      {approach !== undefined && levels !== undefined && goal.status !== 'loading' ? <ApproachPicker chosen={approach} levels={levels} needs={needs} /> : null}
       <AskApproach />
     </SettingRow>
   );

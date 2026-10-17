@@ -1,7 +1,7 @@
 // src/data/grammar/goalProgress.ts — what the strip and the Goal screen (mw-hqd5bz.10) work out from a goal's needs and his words and levels:
 // the word states progressToward reads, Learn next, Next words, the lists behind the bars and when he was placed. Pure: no store, no screen.
 import type { GrammarApproach, LessonPlace } from '../../approaches';
-import { lessonOf, orderOf } from '../../approaches';
+import { lessonOf, nextLessonOf, orderOf } from '../../approaches';
 import type { GrammarLevel, WordState } from '../db';
 import { gapsOf, groupIsSolid } from './inference';
 import { groupOfItem, ideaOf, ITEM_GROUPS, LADDER, type GrammarIdea } from './ladder';
@@ -56,6 +56,12 @@ export function learnNext(needs: Pick<PassageNeeds, 'ideas'>, approach: GrammarA
   const grouped = new Set(ITEM_GROUPS);
   const id = orderOf(approach).find((i) => needed.has(i) && (levels.get(i) ?? 'notYet') === 'notYet' && !(grouped.has(i) && groupIsSolid(levels, i)));
   return id === undefined ? undefined : { idea: ideaOf(id), lesson: lessonOf(approach, id) };
+}
+
+/** The lesson Settings > Grammar approach marks Next and the tutor's learner_grammar names (mw-86e9r1.24): with a goal, the lesson Learn next opens, so the
+ *  two screens agree (undefined when Learn next names none); with no goal (or its needs not known), the lesson of the earliest idea with no level or not yet. */
+export function nextLesson(needs: Pick<PassageNeeds, 'ideas'> | undefined, approach: GrammarApproach, levels: ReadonlyMap<string, Level>): LessonPlace | undefined {
+  return needs ? learnNext(needs, approach, levels)?.lesson : nextLessonOf(approach, (id) => levels.get(id));
 }
 
 /** The one idea he is learning now (mw-i7xe0n.6): the lowest idea at the frontier, the letters, pairs and breathings (items of a group) left out; undefined when none. */

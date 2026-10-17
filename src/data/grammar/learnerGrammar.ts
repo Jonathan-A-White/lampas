@@ -3,13 +3,13 @@
 // level (the goal's needs first), whether he has been placed, the move the picker's level should make and the approach with its next
 // lesson, and `weak`, the weak facets of the ideas he drilled (Drill it, mw-i7xe0n.2: idea title -> labels, from each idea's latest run, none once a
 // later run proves it). The grinds' instructions say how to teach from it. At most 900 bytes as JSON.
-import { approachOf, DEFAULT_APPROACH, nextLessonOf } from '../../approaches';
+import { approachOf, DEFAULT_APPROACH } from '../../approaches';
 import { BOOK_INDEX } from '../bookIndex';
 import type { WordState } from '../db';
 import { goalTitle, parseGoal } from '../goal';
 import { getGoal, getGrammarAnswers, getGrammarApproach, getPickerGrammar, listLevels, listWords, weakFacets } from '../repositories';
 import type { PickerGrammar } from './formLevel';
-import { learnNext, levelsOf, placedAt, wordStatesOf } from './goalProgress';
+import { levelsOf, nextLesson, placedAt, wordStatesOf } from './goalProgress';
 import { needsOf } from './goalNeeds';
 import { LADDER } from './ladder';
 import { moveFor, type Move } from './move';
@@ -127,7 +127,7 @@ export async function learnerGrammar(): Promise<LearnerGrammar> {
   const counts = needs ? progressToward(needs, wordStatesOf(words), levels).words : undefined;
   const approach = approachOf(approachId) ?? approachOf(DEFAULT_APPROACH);
   if (!approach) throw new Error(`no grammar approach ${DEFAULT_APPROACH}`);
-  const lesson = needs ? learnNext(needs, approach, levels)?.lesson : nextLessonOf(approach, (id) => levels.get(id));
+  const lesson = nextLesson(needs, approach, levels);
   return learnerGrammarOf({
     goal: goal ? goalTitle(goal, BOOK_INDEX) : null,
     words: counts ?? countStates(words),
