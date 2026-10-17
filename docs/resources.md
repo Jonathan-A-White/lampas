@@ -121,6 +121,36 @@ Word Study guide, that the Logos Android app claims `logosres:` and `logos4:` at
 Accordance `accord://search/<module>?<lemma>` form finds a word in a lexicon module. The https fallback is kept for all of them. If a link does not open the
 entry, the fix is in that resource's file.
 
+## Grammar books in Logos: Read more on an idea sheet (mw-5r3p30.381, PROVISIONAL, Governor to confirm)
+
+With Logos on, Settings > Study resources > Logos shows **Grammar books** under the lexicons: a tick for each book of `GRAMMAR_BOOKS` in
+`src/resources/grammarBooks.ts`, Black ticked until he changes it (the ticked ids are a JSON array in the settings store's `grammarBooks`,
+`src/data/repositories/resources.ts` getGrammarBooks / setGrammarBooks; not in the settings registry, like the lexicons). An idea sheet
+(`src/IdeaSheet.tsx` ReadMore) whose idea a ticked book teaches shows **Read more**, after the tables: one line a book (its `short` name over one
+link per section that teaches the idea, such as `Lesson 4: Nouns of the Second Declension`), at most three books in view and the rest under
+`More books (N)`. Logos off, no ticked book, or no section for the idea: no Read more. A book is a reference inside the learning, never a grammar
+approach: the sheet is the same whichever approach's lesson opened it (the Lampas ladder, or the record of BMA Tutor's order, tests/support/fixture-path.ts).
+
+A link is `logosres:<Resource ID>;ref=<reference>`, its https fallback `https://ref.ly/logosres/<Resource ID, colon encoded>?ref=<reference>`, armed by `openApp.ts` as the lexicon links are.
+
+| book (`id`) | Resource ID | reference | source of the sections |
+| --- | --- | --- | --- |
+| Learn to Read New Testament Greek, David Alan Black (`black`) | `LLS:LRNTOREADNTGRK` (his library list, vault `plans/lampas-logos-library-2026-10-08.csv`, and the product page https://www.logos.com/product/5196, `resourceId`, read 2026-10-17) | `Page.p+<page>`, the printed page a section starts on | the table of contents of the third edition (B&H, 2009, 258 pages) as Google Books lists it with pages (https://books.google.com/books/about/Learn_to_Read_New_Testament_Greek.html?id=41j7siCRS0QC, read 2026-10-17). Google prints the titles without commas; the lesson numbers are the order of the pages (Lessons 1-6 match the 1994 course list at https://saybro.com/aoal/Greek/ntgreekb/contents.html). Google lists twenty lessons to page 142 and then the appendix The Greek Accents (p. 216): the lessons between (pages 142-216) are not mapped |
+
+**UNVERIFIED on a device:** that `ref=Page.p+26` opens the Logos edition at printed page 26 (Logos keeps the print pages as `Page` milestones in most books; no source pairing this form with this book was found). The library list gives the book its own reference type `ltrntg.1-187`, whose numbers are not known here, so it is not used. Which ideas each lesson teaches is read from the lesson's title, not from the book's pages (Lesson 1 maps the alphabet, the pairs of vowels and the breathings; Lesson 4 the noun, its cases, the masculine and neuter, number, stem and ending and the article). If a link opens the wrong place, the fix is that book's entry.
+
+**Adding a book** is one entry in `GRAMMAR_BOOKS` and nothing else: an `id` (kept in the store, never changed), `short`, `name`, the `resource` Logos lists, the `source`, and its `sections` `{title, ref, ideas}` (ladder ids; `tests/unit/grammar-books.test.ts` fails on an id the ladder lacks). For BDF, say:
+
+```ts
+const bdf: GrammarBook = {
+  id: 'bdf', short: 'BDF', name: 'A Greek Grammar of the New Testament (BDF)', resource: 'LLS:BDF', source: '…',
+  sections: [{ title: '§ 5. The aorist', ref: 'Page.p+…', ideas: ['tense-aorist'] }],
+};
+export const GRAMMAR_BOOKS: readonly GrammarBook[] = [black, bdf];
+```
+
+Add its row to the table above with its source.
+
 ## Old Testament chapters in Logos (mw-5r3p30.71)
 
 Lampas holds no Old Testament text, so the Reader's chapter picker (`src/ChapterPicker.tsx`) lists the 39 Old Testament books in canon order before
