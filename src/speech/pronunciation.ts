@@ -57,6 +57,15 @@ export interface SoundRule {
   misread(word: string): string;
 }
 
+/** What a scheme teaches of one standard sound in the optional course 'Learn the IPA sounds' (src/ipa/, mw-5r3p30.356): the Greek letters that make it, and a Greek word
+ * the voice says that has it, at its `start` or `inside` it, so the course can play the sound and ask for it by ear. The word holds no sound of the sound's confusable
+ * partners (sounds.ts CONFUSABLE), so that a choice between the two is a choice by ear alone. */
+export interface SoundGuide {
+  letters: readonly string[];
+  word: string;
+  at: 'start' | 'inside';
+}
+
 export interface Pronunciation {
   id: GreekPronunciation;
   /** what Settings shows */
@@ -76,6 +85,9 @@ export interface Pronunciation {
    * English word: its lessons say a sound through the SoundWords they are handed ('o, as in “or”, short'), which ask the reader's English accent
    * (./accents/), so every accent table must hint every id here (tests/unit/english-accents.test.ts). */
   sounds: Readonly<Record<string, SoundId>>;
+  /** For each standard sound in `sounds`, what the optional course 'Learn the IPA sounds' teaches: its Greek letters and a word that has it. A scheme without it has no
+   * course (src/ipa/course.ts courseSounds names the sound it lacks). */
+  soundGuide?: Readonly<Partial<Record<SoundId, SoundGuide>>>;
   /** What this scheme's voice is handed for a Greek word of ONE letter (ὁ, ἡ, ὦ, Ὃ) so that it says the letter's SOUND: a Greek voice handed the letter
    * alone names it ('omicron'), with or without an accent (mw-5r3p30.347). Modern Greek doubles the bare vowel, 'οο' for ὁ, which the phone's own Greek
    * voice says as the sound (the Governor's pick on the listening trial, mw-5r3p30.421). Null for a letter no form makes the voice say as a sound (a
