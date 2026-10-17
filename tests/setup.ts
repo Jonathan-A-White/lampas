@@ -1,5 +1,6 @@
 import 'fake-indexeddb/auto';
 import '@testing-library/jest-dom/vitest';
+import { afterEach } from 'vitest';
 // Not '@testing-library/react': importing it here would register its auto-unmount before
 // the step files' dont-cleanup-after-each import can switch that off.
 import { configure } from '@testing-library/dom';
@@ -25,3 +26,9 @@ Date.now = (): number => {
 // A new question card ignores taps for SETTLE_MS (src/ui/settle.ts, mw-hqd5bz.21); a step taps the instant a card is drawn, so the moment is 0 here.
 // features/double-tap.feature puts it back.
 settle.ms = 0;
+
+// jsdom keeps session storage from one test to the next in a file; a phone's tab session does not outlive the tab. Review keeps its round there
+// (src/review/keptRound.ts), so a round one scenario left open would be resumed by the next one's Review.
+afterEach(() => {
+  if (typeof sessionStorage !== 'undefined') sessionStorage.clear();
+});
