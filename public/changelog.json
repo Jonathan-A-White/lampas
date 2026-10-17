@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.283",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.214",
+    "kind": "fixed",
+    "text": "the Talk sheet's title is no longer cut short on a phone held upright; it wraps onto a second line instead."
+  },
+  {
+    "version": "0.1.283",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.381",
+    "kind": "new",
+    "text": "with Logos on, an idea sheet's Read more links straight to the lesson that teaches it in Black's Learn to Read New Testament Greek, and Settings lets you tick which grammar books to show."
+  },
+  {
     "version": "0.1.282",
     "date": "2026-10-17",
     "story": "mw-86e9r1.22",

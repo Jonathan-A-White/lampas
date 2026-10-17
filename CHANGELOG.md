@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.283
+_2026-10-17_
+- Fixed: the Talk sheet's title is no longer cut short on a phone held upright; it wraps onto a second line instead.
+- New: with Logos on, an idea sheet's Read more links straight to the lesson that teaches it in Black's Learn to Read New Testament Greek, and Settings lets you tick which grammar books to show.
+
 ## 0.1.282
 _2026-10-17_
 - Fixed: a quick double tap on Back to the goal after a placement no longer opens the Goal screen's ideas list.
