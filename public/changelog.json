@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.299",
+    "date": "2026-10-17",
+    "story": "mw-8m9dyu.12",
+    "kind": "fixed",
+    "text": "The note about a licence no longer makes the free read-aloud sound like a paid extra."
+  },
+  {
+    "version": "0.1.299",
+    "date": "2026-10-17",
+    "story": "mw-br588b.2",
+    "kind": "new",
+    "text": "The Goal screen now lists the sentence patterns a passage uses, such as a clause with ἵνα or the three kinds of \"if\", and each one's sheet shows your verses with those words marked."
+  },
+  {
     "version": "0.1.298",
     "date": "2026-10-17",
     "story": "mw-86e9r1.38",

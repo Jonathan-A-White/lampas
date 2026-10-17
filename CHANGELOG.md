@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.299
+_2026-10-17_
+- Fixed: The note about a licence no longer makes the free read-aloud sound like a paid extra.
+- New: The Goal screen now lists the sentence patterns a passage uses, such as a clause with ἵνα or the three kinds of "if", and each one's sheet shows your verses with those words marked.
+
 ## 0.1.298
 _2026-10-17_
 - Fixed: The Greek word in a lesson's title, such as περί in 'The preposition περί', now shows in the same Greek letters as the rest of the lesson.
