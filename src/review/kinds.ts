@@ -192,10 +192,19 @@ function ideaIfAny(id: string): GrammarIdea | undefined {
   }
 }
 
-/** The verses of the passage graded to him (src/data/grammar/gradedVerses.ts): his grammar levels at the picker's level and the words he has solid or is learning. */
-export async function gradedVersesOf(passage: readonly Chapter[]) {
+/**
+ * The verses of the passage graded to him (src/data/grammar/gradedVerses.ts): his grammar levels at the picker's level and the words he has solid or is learning;
+ * `passes` is the form test they were graded by (Try it on a verse asks whether the word's forms pass it).
+ */
+export async function gradingOf(passage: readonly Chapter[]) {
   const [levels, level, solid, learning] = await Promise.all([listLevels(), getPickerGrammar(), listSolidLemmas(), listLearningLemmas()]);
-  return gradedVerses(passage, pickerPasses(levels, level), new Set([...solid, ...learning]), ideaMetBy(levels, level));
+  const passes = pickerPasses(levels, level);
+  return { passes, graded: gradedVerses(passage, passes, new Set([...solid, ...learning]), ideaMetBy(levels, level)) };
+}
+
+/** The verses of the passage graded to him: see gradingOf. */
+export async function gradedVersesOf(passage: readonly Chapter[]) {
+  return (await gradingOf(passage)).graded;
 }
 
 export const GRAMMAR: ReviewKind = {

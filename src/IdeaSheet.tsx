@@ -8,7 +8,8 @@
 // on its side, and the rest wait under 'Show N more' (mw-5r3p30.369); for an idea of the letters, sounds and marks (the alphabet, a pair of vowels,
 // a breathing ...), the items as tiles above the text, each to hear (TeachTiles). On its side the foot is a column at the right. At the foot
 // the level SLIDER (mw-i7xe0n.3: Not yet · Learning · I know it, resting on the idea's level; Learning is frontier and due tomorrow; I know it opens Drill it
-// to prove it, and only a pass keeps it there), 'Mark known without a drill' (solid, the 30-day step), a Drill it button and Ask the tutor; the level shows as a chip
+// to prove it, and only a pass keeps it there), 'Mark known without a drill' (solid, the 30-day step), a Drill it button, 'Try it on a verse' (mw-emk3xt.4: the easiest verse of the
+// passage at his level that has a form of the idea, three questions on it, then 'Read it'; src/TryItSheet.tsx; left out when no verse has one) and Ask the tutor; the level shows as a chip
 // ('Proved by drill' once a run proved it). He learns one idea at a time (mw-i7xe0n.6): sliding to Learning while another idea is Learning asks 'You are learning <other>.
 // Switch to <this>?' (Switch | Keep <other>). The sheet teaches only its own idea and takes the ideas under it to be solid: when one is not, it says so above the
 // text with a button to go there, and sliding up first asks 'Go to <title> first?'. Learning on The Greek alphabet opens the letter drill at once (src/LetterDrillScreen.tsx).
@@ -17,7 +18,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { loadChapter, loadIndex, type Chapter, type GreekWord } from './data/chapter';
 import { unmetNeed } from './data/grammar/drillIt';
 import { loadFrequency } from './data/frequency';
-import { exampleGloss, exampleNote, ideaExamples, ideaExamplesFor, ideaPassage, isSoundIdea, isSpellingIdea, passageForms, type ExampleRanking, type IdeaExample, type IdeaExamples, type IdeaPassage, type PairCase } from './data/grammar/ideaSheet';
+import { exampleGloss, exampleNote, hasFormOf, ideaExamples, ideaExamplesFor, ideaPassage, isSoundIdea, isSpellingIdea, passageForms, type ExampleRanking, type IdeaExample, type IdeaExamples, type IdeaPassage, type PairCase } from './data/grammar/ideaSheet';
 import { ideaOf, type GrammarIdea } from './data/grammar/ladder';
 import { soundLesson } from './data/grammar/lessons';
 import { stepsOf, teachOf, workedFor, type Teach, type TeachTable } from './data/grammar/teach';
@@ -41,6 +42,7 @@ import { LessonReadAloud } from './speech/ReadAloud';
 import { SpeakButton } from './speech/SpeakButton';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { TeachTiles } from './TeachTiles';
+import { TryItSheet } from './TryItSheet';
 import { focusOnMount } from './ui/focus';
 import { greekMarked } from './ui/GreekMarked';
 import { useSettleAround } from './ui/settle';
@@ -349,7 +351,9 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
   const { drag, handle } = useSheetDrag(onClose);
   // a tile's own idea sheet opens over this one
   const [opened, setOpened] = useState<GrammarIdea | null>(null);
-  useEscapeToClose(onClose, !covered && opened === null);
+  // Try it on a verse (mw-emk3xt.4): offered when a verse of the passage has a form of the idea; it takes the Escape while it is up
+  const [trying, setTrying] = useState(false);
+  useEscapeToClose(onClose, !covered && opened === null && !trying);
   useSheetBack(onClose);
   const loaded = usePassage();
   const level = useLiveQuery(() => getLevel(idea.id), [idea.id]);
@@ -575,10 +579,15 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
               Mark known without a drill
             </button>
           )}
-          <div className="mt-1 flex gap-2">
+          <div className="mt-1 flex flex-wrap gap-2">
             <button type="button" disabled={loaded === null} onClick={() => setDrill('practice')} className={`${BUTTON} border-line text-accent active:bg-line disabled:text-muted`}>
               Drill it
             </button>
+            {passage && hasFormOf(idea.id, passage.chapters, passage.verse) ? (
+              <button type="button" onClick={() => setTrying(true)} className={`${BUTTON} border-line text-accent active:bg-line`}>
+                Try it on a verse
+              </button>
+            ) : null}
             {onAsk ? (
               <button type="button" onClick={() => onAsk(idea.terms[0] ?? idea.title)} className={`${BUTTON} border-line text-accent active:bg-line`}>
                 Ask the tutor
@@ -656,6 +665,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
           onClose={closeDrill}
         />
       ) : null}
+      {trying && passage ? <TryItSheet idea={idea} passage={passage} onClose={() => setTrying(false)} /> : null}
       {letterDrill ? <LetterDrillScreen onClose={() => setLetterDrill(false)} /> : null}
       {opened ? <IdeaSheet idea={opened} onClose={() => setOpened(null)} onWord={onWord} onAsk={onAsk} covered={covered} books={books} /> : null}
     </div>

@@ -6,7 +6,8 @@ Feature: The idea sheet
   that the lesson can explain (one for each lemma, each with its verse, its meaning here and its parsing in the lesson's own
   terms; a speaker on each; a tap opens the word's sheet), a level slider (Not yet, Learning, I know it;
   Learning puts the idea on the frontier and due tomorrow, I know it starts Drill it: features/drill-it.feature), a small
-  text button "Mark known without a drill" (solid, at the 30-day step), a Drill it button and Ask the tutor. It opens from the Learn this idea
+  text button "Mark known without a drill" (solid, at the 30-day step), a Drill it button, a Try it on a verse button (three questions on the
+  easiest verse of the goal at his level that has a form of the idea, then Read it; left out when no verse has one) and Ask the tutor. It opens from the Learn this idea
   button of a Grammar sheet. With no goal the examples come from the chapter that is open. A foundation idea (a letter, the
   alphabet, a pair of vowels or of consonants, the breathings, accents, iota subscript, syllables, punctuation) shows words of the
   passage with the letters it is about marked, and never says that no word has it in its parsing. Taught ideas are announced on
@@ -257,3 +258,24 @@ Feature: The idea sheet
     Given Lampas is opened on Romans 8 with the goal "1 John 1", no idea level and a fake Postern
     When he opens the idea sheet of "alphabet" from the Goal screen
     Then the idea sheet shows no button that starts "Table:"
+
+  # mw-emk3xt.4: the bridge from an idea to a verse he can now read. Three questions on the easiest verse of the goal at his level that has a form of the idea (the meaning of
+  # a chunk with the form, the form, a parsing); each answer is a grammar answer on the idea; Read it opens the verse.
+  Scenario: Try it on a verse
+    Given Lampas is opened on Romans 8 with the goal "1 John 1", no idea level and a fake Postern
+    And "case-genitive" is the idea he is learning
+    And he opens the idea sheet from the Grammar sheet of "genitive" on the word "of the" in verse 2
+    Then the idea sheet shows the button "Try it on a verse"
+    When he taps "Try it on a verse" on the idea sheet
+    Then the sheet "Try it: 1 John 1:4" opens with a meaning question first
+    When he answers the three questions right, right and wrong
+    Then the sheet says "You got 2 of 3" and offers "Read it" and "Done"
+    And an idea-tried event for "case-genitive" with 2 right of 3 was published
+    And the idea "case-genitive" has two right and one wrong review
+    When he taps "Read it" on the Try it sheet
+    Then the Reader is open on 1 John 1:4 with no sheet open
+
+  Scenario: An idea of the letters has no verse to try it on
+    Given Lampas is opened on Romans 8 with the goal "1 John 1", no idea level and a fake Postern
+    When he opens the idea sheet of "alphabet" from the Goal screen
+    Then the idea sheet shows the button "Drill it" and no button "Try it on a verse"

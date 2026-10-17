@@ -13,6 +13,8 @@ export type LearningEvent =
   | { kind: 'grammar-level-changed'; id: string; level: GrammarLevelName }
   /** he told the idea sheet of grammar idea `id` Got it ('got-it': it is on the frontier, due tomorrow) or I know this ('known': solid, the 30-day step) */
   | { kind: 'idea-taught'; id: string; outcome: 'got-it' | 'known' | 'not-yet' }
+  /** he finished Try it on a verse (src/TryItSheet.tsx) for grammar idea `id`: `right` of the `total` questions on the verse were answered right */
+  | { kind: 'idea-tried'; id: string; right: number; total: number }
   /** New words at (Settings > New words, 'pickerGrammar') was moved by how his grammar reviews went: `level` is where it is now, `how` whether he said Yes ('ask') or Move it was Auto (src/review/pickerMove.ts) */
   | { kind: 'picker-level-moved'; level: 'solid' | 'frontier'; how: 'ask' | 'auto' }
   /** he answered the teach sheet (src/TeachSheet.tsx) for the new word `lemma` (NFC): Got it ('got-it': learning, due now), I know this ('known': solid, the 30-day step) or Not now ('not-now': skipped for today only) */

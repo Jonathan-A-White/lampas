@@ -36,7 +36,7 @@ export interface GradeOptions {
 const lemmaOf = (w: GreekWord): string => wordLemma(w).normalize('NFC');
 
 /** The ideas a form needs, as the Weave and the picker count them (ideasOfWord, which throws on a code the ladder cannot read, gives none) and ALWAYS_NEEDED. */
-function needsOfForm(word: GreekWord): string[] {
+export function needsOfForm(word: GreekWord): string[] {
   try {
     return [...ideasOfWord(word), ...ALWAYS_NEEDED];
   } catch {

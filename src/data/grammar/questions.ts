@@ -121,6 +121,19 @@ export const SPOT: Facet = { id: 'spot', label: 'Finding it in a verse' };
 export const ENDING: Facet = { id: 'ending', label: 'Its ending' };
 export const SAYS: Facet = { id: 'says', label: 'What it says' };
 
+/**
+ * The places a passage question tries, in order (mw-emk3xt.4): with `only` (a verse's key, Try it on a verse) the places of that verse, shuffled. With `graded`
+ * (Review, gradedVerses) the places of the easiest third of the verses at his level, then the rest of those at his level, each shuffled; when no verse of
+ * `places` is at his level, any of them. Without either, all of them shuffled (the placement and Drill it test the form alone, from the whole passage).
+ */
+function placesInOrder(places: readonly Place[], random: Random, graded?: readonly GradedVerse[], only?: string): Place[] {
+  if (only !== undefined) return shuffle(places.filter((p) => p.key === only), random);
+  const level = graded ? atLevelPlaces(places, graded) : [];
+  if (level.length === 0) return shuffle(places, random);
+  const third = easiestThird(level);
+  return [...shuffle(third, random), ...shuffle(level.filter((p) => !third.includes(p)), random)];
+}
+
 // ---- Tap the form ----
 
 /** Every choice of `size` items from `items`, in order. */
@@ -182,10 +195,11 @@ function tapPrompt(terms: readonly string[], parts: readonly string[]): string {
 
 /**
  * Tap the form: the Greek words of a verse of the passage, and the one that is, for example, genitive singular. Exactly one word of the
- * verse has everything the prompt names, and its text is not repeated in the verse. Null when the passage has no such verse.
+ * verse has everything the prompt names, and its text is not repeated in the verse. Null when the passage has no such verse. `graded` (gradedVerses) holds it
+ * to the easiest third of the verses at his level (any verse when none is); `only` is one verse's key (placesInOrder).
  */
-export function buildTapForm(idea: GrammarIdea, passage: readonly Chapter[], random: Random): GrammarQuestion | null {
-  const candidates = shuffle(placesOf(passage).filter((p) => needsIdea(p.word.p, idea.id)), random);
+export function buildTapForm(idea: GrammarIdea, passage: readonly Chapter[], random: Random, graded?: readonly GradedVerse[], only?: string): GrammarQuestion | null {
+  const candidates = placesInOrder(placesOf(passage).filter((p) => needsIdea(p.word.p, idea.id)), random, graded, only);
   for (const place of candidates) {
     const terms = describe(idea, place);
     if (!terms) continue;
@@ -237,13 +251,15 @@ interface Spot {
   verse: Verse;
 }
 
-/** The verses that have a form needing the idea in a chunk with English; with `graded`, the easiest third of those at his level (all of them when none is), seeded. */
-function meaningVerse(idea: GrammarIdea, passage: readonly Chapter[], random: Random, graded?: readonly GradedVerse[]): Spot | null {
-  const spots = passage.flatMap((chapter) =>
-    chapter.verses.filter((verse) => verse.g.some((w) => needsIdea(w.p, idea.id) && usable(verse.e[w.e ?? -1]))).map((verse): Spot => ({ chapter, verse })),
-  );
-  if (spots.length === 0) return null;
+/** The verses that have a form needing the idea in a chunk with English; with `graded`, the easiest third of those at his level (all of them when none is), seeded; `only` is one verse's key. */
+function meaningVerse(idea: GrammarIdea, passage: readonly Chapter[], random: Random, graded?: readonly GradedVerse[], only?: string): Spot | null {
   const keyOf = (s: Spot): string => `${s.chapter.code}.${s.chapter.chapter}.${s.verse.n}`;
+  const spots = passage
+    .flatMap((chapter) =>
+      chapter.verses.filter((verse) => verse.g.some((w) => needsIdea(w.p, idea.id) && usable(verse.e[w.e ?? -1]))).map((verse): Spot => ({ chapter, verse })),
+    )
+    .filter((s) => only === undefined || keyOf(s) === only);
+  if (spots.length === 0) return null;
   const ranked = graded ? graded.flatMap((g) => spots.filter((s) => keyOf(s) === g.ref).map((spot) => ({ spot, atLevel: g.atLevel }))) : [];
   if (ranked.length === 0) return pick(spots, random);
   const pool = ranked.some((r) => r.atLevel) ? ranked.filter((r) => r.atLevel) : ranked;
@@ -256,8 +272,8 @@ function meaningVerse(idea: GrammarIdea, passage: readonly Chapter[], random: Ra
  * differently (the passage's commonest English lends when too few). The English is the translators' chunk as written (EnglishChunk.t), never made up.
  * `graded` (gradedVerses) holds it to the easiest third of the verses at his level; without it any verse with a form will do. Null when the passage has none.
  */
-export function buildMeaning(idea: GrammarIdea, passage: readonly Chapter[], random: Random, graded?: readonly GradedVerse[]): GrammarQuestion | null {
-  const spot = meaningVerse(idea, passage, random, graded);
+export function buildMeaning(idea: GrammarIdea, passage: readonly Chapter[], random: Random, graded?: readonly GradedVerse[], only?: string): GrammarQuestion | null {
+  const spot = meaningVerse(idea, passage, random, graded, only);
   if (!spot) return null;
   const { chapter, verse } = spot;
   const word = pick(verse.g.filter((w) => needsIdea(w.p, idea.id) && usable(verse.e[w.e ?? -1])), random);
@@ -328,8 +344,8 @@ function easiestThird(places: readonly Place[]): Place[] {
   return places.filter((p) => keep.has(p.key));
 }
 
-/** Whether a form's code needs the idea; a code the ladder cannot read needs none. */
-function needs(code: string, id: string): boolean {
+/** Whether a form's code needs the idea (the ideas its parsing names: ideasOf); a code the ladder cannot read needs none. The passage questions are about the forms that do. */
+export function needs(code: string, id: string): boolean {
   try {
     return needsIdea(code, id);
   } catch {
@@ -351,9 +367,10 @@ function readCode(code: string): { pos: string; value: Partial<Record<ParseFeatu
  * Parse this word (mw-emk3xt.3, PROVISIONAL): a word of a verse at his level (`graded`) whose forms all pass, so every idea it has is frontier or solid, and that
  * needs the idea, in the easiest third of such verses. It is the Parsing drill's steps as one question (drill.ts buildSteps: the part of speech, then what the code goes on to say, each with
  * four choices), asked one after the other by the card; `right` is the whole parsing in plain words. Null with no graded verses, or when no such word has a feature to parse.
+ * `only` is one verse's key (Try it on a verse hands the verse as the one graded verse).
  */
-export function buildParse(idea: GrammarIdea, passage: readonly Chapter[], random: Random, graded?: readonly GradedVerse[]): GrammarQuestion | null {
-  const found = atLevelPlaces(placesOf(passage), graded).filter((p) => Object.keys(readCode(p.word.p)?.value ?? {}).length > 0 && needs(p.word.p, idea.id));
+export function buildParse(idea: GrammarIdea, passage: readonly Chapter[], random: Random, graded?: readonly GradedVerse[], only?: string): GrammarQuestion | null {
+  const found = atLevelPlaces(placesOf(passage), graded).filter((p) => (only === undefined || p.key === only) && Object.keys(readCode(p.word.p)?.value ?? {}).length > 0 && needs(p.word.p, idea.id));
   for (const place of shuffle(easiestThird(found), random)) {
     let steps: ParseStep[];
     try {
@@ -411,9 +428,9 @@ function rolesOf(verse: Verse): Roles | null {
  * subject, verb or object needs the idea; the prompt is drawn from 'Tap the one who does it' (the subject), 'Tap what is done' (the verb) and, when the verse has one accusative object,
  * 'Tap what it is done to'. For case-nominative, case-accusative, verb and the three persons; null for another idea, with no graded verses or when no verse fits.
  */
-export function buildRoles(idea: GrammarIdea, passage: readonly Chapter[], random: Random, graded?: readonly GradedVerse[]): GrammarQuestion | null {
+export function buildRoles(idea: GrammarIdea, passage: readonly Chapter[], random: Random, graded?: readonly GradedVerse[], only?: string): GrammarQuestion | null {
   if (!ROLE_IDEAS.has(idea.id)) return null;
-  const spots = atLevelPlaces(placesOf(passage), graded).filter((p, i, all) => all.findIndex((q) => q.key === p.key) === i);
+  const spots = atLevelPlaces(placesOf(passage), graded).filter((p, i, all) => (only === undefined || p.key === only) && all.findIndex((q) => q.key === p.key) === i);
   const roles = spots.flatMap((place) => {
     const found = rolesOf(place.verse);
     return found && [found.verb, found.subject, ...(found.object ? [found.object] : [])].some((w) => needs(w.p, idea.id)) ? [{ place, found }] : [];
@@ -507,8 +524,9 @@ function shownEnding(ending: string, pos: string, code: string): { text: string;
  * has too few lends the common endings. Null when the idea has no form in the passage that shares a stem with its dictionary form.
  * A form is asked only once its table is open (mw-svw421.5): `tablesOpen` holds the ids of the tables he has opened (tableFor names a form's), and a form whose table
  * is not among them is left out; the question's `table` is the table to show after the answer. The placement asks with every table open (PROVISIONAL).
+ * `graded` (gradedVerses) holds it to the easiest third of the verses at his level (any verse when none is); `only` is one verse's key (placesInOrder).
  */
-export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], random: Random, tablesOpen: ReadonlySet<string> = EVERY_TABLE): GrammarQuestion | null {
+export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], random: Random, tablesOpen: ReadonlySet<string> = EVERY_TABLE, graded?: readonly GradedVerse[], only?: string): GrammarQuestion | null {
   const places = placesOf(passage).filter((p) => parsedOf(p.word.p).features.length > 0);
   const stems = (p: Place) => stemOf(p.word.l, p.word.t);
   const open = (p: Place) => {
@@ -516,7 +534,7 @@ export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], rand
     return table !== undefined && tablesOpen.has(table.id);
   };
   // only in the terms taught so far, and still one right ending (featuresOf), and only from a table he has opened
-  const candidates = shuffle(places.filter((p) => needsIdea(p.word.p, idea.id) && stems(p) && featuresOf(p.word.p, idea) && open(p)), random);
+  const candidates = placesInOrder(places.filter((p) => needsIdea(p.word.p, idea.id) && stems(p) && featuresOf(p.word.p, idea) && open(p)), random, graded, only);
   const place = candidates[0];
   if (!place) return null;
   const { stem, ending: plainEnding } = stems(place)!;
@@ -1078,8 +1096,8 @@ export function buildIdeaQuestion(
   // idea (a step of SOLID_STEP or more, PROVISIONAL), to parse a whole word; the placement and Drill it test the form alone. The first draw picks where the rotation starts.
   const first = random();
   const order: ((idea: GrammarIdea) => GrammarQuestion | null)[] = [];
-  const ending = (i: GrammarIdea) => buildEnding(i, passage, random, tablesOpen);
-  const tap = (i: GrammarIdea) => buildTapForm(i, passage, random);
+  const ending = (i: GrammarIdea) => buildEnding(i, passage, random, tablesOpen, graded);
+  const tap = (i: GrammarIdea) => buildTapForm(i, passage, random, graded);
   const meaning = (i: GrammarIdea) => buildMeaning(i, passage, random, graded);
   const roles = (i: GrammarIdea) => buildRoles(i, passage, random, graded);
   const parse = (i: GrammarIdea) => buildParse(i, passage, random, graded);
