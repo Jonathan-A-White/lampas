@@ -116,6 +116,20 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('Settings writes the name Audio Bible above the choices', ({ Given, When, Then }) => {
+    Given('Lampas is opened with the Audio Bible Off', () => openWith({}));
+    When('he opens Settings', async () => {
+      await user.click(screen.getByRole('button', { name: 'Settings' }));
+      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+    });
+    Then('the Audio Bible row writes its name {string} in its own text', async (_, name: string) => {
+      await screen.findByRole('group', { name });
+      const row = document.querySelector<HTMLElement>('[data-setting="audioBible"]');
+      // the row's text, not the choices group's accessible name
+      expect(within(row as HTMLElement).getByText(name)).toBeTruthy();
+    });
+  });
+
   Scenario('Choosing The Word of Promise in Settings keeps it', ({ Given, When, And, Then }) => {
     Given('Lampas is opened with the Audio Bible Off', () => openWith({}));
     When('he opens Settings', async () => {
