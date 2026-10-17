@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.300",
+    "date": "2026-10-17",
+    "story": "mw-yrmkdf.8",
+    "kind": "fixed",
+    "text": "The tutor now offers the Greek to a reader whose word list is still just the example words the app came with."
+  },
+  {
+    "version": "0.1.300",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.465",
+    "kind": "fixed",
+    "text": "Settings now writes the name of the Audio Bible, Immersive reader card, Reading plan, Read aloud span, Read lessons to me and English accent choices above them."
+  },
+  {
+    "version": "0.1.300",
+    "date": "2026-10-17",
+    "story": "mw-1vuvq6.8",
+    "kind": "fixed",
+    "text": "Saying yes to 'Take me there' after you have already tapped it once now opens the lesson again."
+  },
+  {
     "version": "0.1.299",
     "date": "2026-10-17",
     "story": "mw-8m9dyu.12",

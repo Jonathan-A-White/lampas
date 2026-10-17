@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.300
+_2026-10-17_
+- Fixed: The tutor now offers the Greek to a reader whose word list is still just the example words the app came with.
+- Fixed: Settings now writes the name of the Audio Bible, Immersive reader card, Reading plan, Read aloud span, Read lessons to me and English accent choices above them.
+- Fixed: Saying yes to 'Take me there' after you have already tapped it once now opens the lesson again.
+
 ## 0.1.299
 _2026-10-17_
 - Fixed: The note about a licence no longer makes the free read-aloud sound like a paid extra.
