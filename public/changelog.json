@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.280",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.220",
+    "kind": "fixed",
+    "text": "Your requests now checks for news as soon as you come back to the app, instead of up to 20 seconds later."
+  },
+  {
+    "version": "0.1.280",
+    "date": "2026-10-17",
+    "story": "mw-86e9r1.29",
+    "kind": "fixed",
+    "text": "the fill-in-the-ending question now shows the movable ν in brackets for ἐστίν and for dative plurals like πᾶσιν, as it already did for -σιν endings."
+  },
+  {
+    "version": "0.1.280",
+    "date": "2026-10-17",
+    "story": "mw-46z0my.13",
+    "kind": "fixed",
+    "text": "the parts of the tutor answer time on About now add up exactly to the total."
+  },
+  {
     "version": "0.1.279",
     "date": "2026-10-17",
     "story": "mw-5r3p30.310",

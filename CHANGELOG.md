@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.280
+_2026-10-17_
+- Fixed: Your requests now checks for news as soon as you come back to the app, instead of up to 20 seconds later.
+- Fixed: the fill-in-the-ending question now shows the movable ν in brackets for ἐστίν and for dative plurals like πᾶσιν, as it already did for -σιν endings.
+- Fixed: the parts of the tutor answer time on About now add up exactly to the total.
+
 ## 0.1.279
 _2026-10-17_
 - New: a Sepia theme in Settings > Appearance, with warm paper and dark brown text for long reading.
