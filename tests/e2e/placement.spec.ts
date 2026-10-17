@@ -226,3 +226,54 @@ test('the end card of a quick round names the gaps', async ({ page }) => {
   await expectFitsPhone(page);
   await shot(page, 'placement-gaps');
 });
+
+// the end card is kept on its own entry (mw-86e9r1.23): a reload, or Back from the Goal, shows it again; Place me opens the intro
+test('the card of Start from the letters comes back after a reload and after Back from the Goal; Place me opens the intro', async ({ page }) => {
+  await openWithGoal(page, '1 John 1:1');
+  await page.goto('/#/goal');
+  await page.getByRole('button', { name: /^Place (me|again)$/ }).click();
+  await page.getByRole('button', { name: 'Start from the letters' }).click();
+  await expect(page.getByTestId('placement-title')).toHaveText('Where you are');
+  const where = page.getByTestId('where');
+  const line = page.getByTestId('from-letters');
+  await expect(line).toHaveText(/^You start with /);
+  const card = { where: await where.textContent(), line: await line.textContent() };
+
+  await page.reload();
+  await expect(page.getByTestId('placement-title')).toHaveText('Where you are');
+  await expect(where).toHaveText(card.where!);
+  await expect(line).toHaveText(card.line!);
+  await expectFitsPhone(page);
+  await shot(page, 'placement-reload-card');
+
+  await page.getByRole('button', { name: 'Back to the goal' }).click();
+  await expect(page.getByRole('heading', { name: 'Goal', level: 1 })).toBeVisible();
+  await page.goBack();
+  await expect(page.getByTestId('placement-title')).toHaveText('Where you are');
+  await expect(where).toHaveText(card.where!);
+  await expect(line).toHaveText(card.line!);
+
+  await page.getByRole('button', { name: 'Back to the goal' }).click();
+  await page.getByRole('button', { name: /^Place (me|again)$/ }).click();
+  await expect(page.getByRole('button', { name: 'Start from the letters' })).toBeVisible();
+  await expect(page.getByTestId('placement-title')).toHaveCount(0);
+});
+
+// a placement kept mid-walk still opens on Go on and Start over, though an end card was kept before it
+test('a placement kept mid-walk still offers Go on and Start over after an end card', async ({ page }) => {
+  await openWithGoal(page, '1 John 1:1');
+  await page.goto('/#/goal');
+  await page.getByRole('button', { name: /^Place (me|again)$/ }).click();
+  await page.getByRole('button', { name: 'Start from the letters' }).click();
+  await expect(page.getByTestId('placement-title')).toHaveText('Where you are');
+  await page.getByRole('button', { name: 'Back to the goal' }).click();
+  await page.getByRole('button', { name: /^Place (me|again)$/ }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
+  await page.locator('[data-option]').first().click();
+  await page.getByTestId('next').click();
+  await expect(page.getByTestId('placement-question')).toHaveText(/^Question 2 · /);
+  await page.reload();
+  await expect(page.getByTestId('placement-kept')).toHaveText('1 question answered so far.');
+  await expect(page.getByRole('button', { name: 'Go on' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Start over' })).toBeVisible();
+});
