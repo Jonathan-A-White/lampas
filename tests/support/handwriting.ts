@@ -3,7 +3,7 @@
 // its own spacing, slants, stretches and wobbles it, draws its strokes in a shuffled order and direction, and puts it
 // somewhere on a pad at some size. The checker resamples and normalises, so it never sees the template's own points.
 import { mulberry32, shuffle, type Random } from '../../src/data/random';
-import { GLYPHS } from '../../src/handwriting/templates';
+import { GLYPHS, type Variant } from '../../src/handwriting/templates';
 import type { InkPoint, InkStroke } from '../../src/handwriting/recognizer';
 
 /** The height of a capital letter on the test pad, in pixels. */
@@ -112,6 +112,22 @@ export function writing(letter: string, writer: Writer, distortion: Distortion =
     return line.map(([x, y]): InkPoint => {
       t += 8;
       return { x, y, t };
+    });
+  });
+}
+
+/**
+ * Strokes drawn straight from a design (the same frame as the templates), placed on the pad as `writing` places a letter with no
+ * distortion, in the order and direction given: for a shape that is no letter's template (a Latin look-alike, mw-86e9r1.57).
+ */
+export function drawing(design: Variant, step = 0.03): InkStroke[] {
+  const scale = CAP_HEIGHT;
+  let t = 1000;
+  return design.map((line) => {
+    t += 180;
+    return densify(line, step).map(([x, y]): InkPoint => {
+      t += 8;
+      return { x: MIDDLE.x + (x - 0.4) * scale, y: MIDDLE.y + (y - 0.5) * scale, t };
     });
   });
 }

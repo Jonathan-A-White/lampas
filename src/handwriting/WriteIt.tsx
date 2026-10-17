@@ -2,13 +2,14 @@
 // cannot yet read or write Greek. It shows the letter's name and sound, then by his stage (progression.ts): Trace, the letter faint under the pad with its
 // strokes drawn first; Copy, the letter beside the pad; From memory, only the name and sound. The letter's sound plays as he starts writing, so hand, eye and
 // ear meet. Clear, Check and Skip are the same size. Check asks the checker on the phone (recognizer.ts, nothing is sent), which judges which letter it is,
-// not neatness, size or slant: Right, or Not quite with the right strokes drawn and Try again, never a score. The first card he ever meets says why he writes.
+// not neatness, size or slant: Right, or Close (a Greek letter drawn as its Latin look-alike, with one line that says where) or Not quite, with the right strokes drawn and Try again, never a score. The first card he ever meets says why he writes.
 // A right check is kept (repositories/handwriting.ts recordWrite); a miss or a skip keeps nothing and costs nothing.
 import { useEffect, useState, type ReactNode } from 'react';
 import type { GrammarIdea } from '../data/grammar/ladder';
 import { ideaChoice } from '../data/grammar/lessons';
 import { getWhySeen, getWriteProgress, markWhySeen, recordWrite } from '../data/repositories';
 import { speakSound } from '../speech/greek';
+import { greekMarked } from '../ui/GreekMarked';
 import { GlyphStrokes } from './GlyphStrokes';
 import { recognize, type InkStroke } from './recognizer';
 import { STAGES, STAGE_NAMES, type WriteProgress, type WriteStage } from './progression';
@@ -54,7 +55,7 @@ export function WriteIt({ idea, onSkip, onRight, afterRight }: {
   const [progress, setProgress] = useState<WriteProgress | null>(null);
   const [first, setFirst] = useState(false);
   const [strokes, setStrokes] = useState<InkStroke[]>([]);
-  const [verdict, setVerdict] = useState<{ right: true; after: WriteProgress } | { right: false } | null>(null);
+  const [verdict, setVerdict] = useState<{ right: true; after: WriteProgress } | { right: false; hint: string } | null>(null);
   // a tap on 'Show the strokes' draws them again
   const [shown, setShown] = useState(0);
 
@@ -76,9 +77,9 @@ export function WriteIt({ idea, onSkip, onRight, afterRight }: {
   const sound = ideaChoice(idea);
 
   const check = (): void => {
-    const right = recognize(strokes, glyph).match;
+    const { match, hint } = recognize(strokes, glyph);
     // a miss changes nothing kept: it is never counted against him
-    if (!right) return setVerdict({ right: false });
+    if (!match) return setVerdict({ right: false, hint });
     void recordWrite(glyph, true)
       .then((after) => {
         setVerdict({ right: true, after });
@@ -134,8 +135,13 @@ export function WriteIt({ idea, onSkip, onRight, afterRight }: {
             Right
           </p>
         ) : verdict ? (
-          <div data-testid="write-verdict" data-right="false" className="mt-2">
-            <p className="text-2xl font-bold">Not quite</p>
+          <div data-testid="write-verdict" data-right="false" data-close={verdict.hint ? 'true' : 'false'} className="mt-2">
+            <p className="text-2xl font-bold">{verdict.hint ? 'Close' : 'Not quite'}</p>
+            {verdict.hint ? (
+              <p data-testid="write-hint" className="text-base">
+                {greekMarked(verdict.hint)}
+              </p>
+            ) : null}
             <p className="text-base text-muted">
               This is how <span lang="grc" className={GREEK}>{glyph}</span> is written. Watch the strokes, then try again.
             </p>

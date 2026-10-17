@@ -1,16 +1,18 @@
 // tests/unit/write-it.test.tsx — Write it (mw-86e9r1.51): how a letter moves through trace, copy and from memory; where the letter drill mixes Write it
 // in; the pad's palm rejection (a touch during or after a pen stroke never draws); and the watch that keeps 'pen seen'.
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ideaOf } from '../../src/data/grammar/ladder';
 import { drawRound, startLetterDrill, withWriting, ROUND_SIZE, WRITE_PER_ROUND } from '../../src/data/grammar/letterDrill';
 import { mulberry32 } from '../../src/data/random';
 import { watchForPen } from '../../src/handwriting/penWatch';
 import { FIRST_PROGRESS, RIGHTS_TO_MOVE, afterWrite, isWrittenFromMemory, parseProgress, progressLine, type WriteProgress } from '../../src/handwriting/progression';
 import { recognize, type InkStroke } from '../../src/handwriting/recognizer';
 import { GLYPHS, LETTERS, type Point, type Variant } from '../../src/handwriting/templates';
+import { WriteIt } from '../../src/handwriting/WriteIt';
 import { WritingPad } from '../../src/handwriting/WritingPad';
-import { WRITERS, padOf, writing } from '../support/handwriting';
+import { WRITERS, drawing, padOf, writing } from '../support/handwriting';
 
 afterEach(cleanup);
 
@@ -123,6 +125,122 @@ describe('the checker over the redrawn templates', () => {
       }
     }
     expect(mistaken).toEqual([]);
+  });
+});
+
+// Latin look-alikes (mw-86e9r1.57). The Governor drew a Latin handwritten y for γ, a u-shaped left arm meeting the right stroke halfway up the x-height with the
+// right stroke running on below the line, and the checker said Right. A Greek letter drawn as its Latin look-alike is a near miss: 'Close', with one line
+// that says where. Every Greek small letter that has a Latin look-alike is either told apart here, or named in INDISTINGUISHABLE with why.
+const ALL_LOOKALIKES = ['γ', 'ν', 'ρ', 'χ', 'ω', 'υ', 'ι', 'κ', 'ο'];
+
+/** The look-alike pairs the checker tells apart: the Greek letter asked for, the Latin shape drawn for it and what the one line says. */
+const TOLD_APART: Record<string, { latin: string; drawn: Variant[]; says: RegExp }> = {
+  γ: {
+    latin: 'y',
+    drawn: [
+      // the u-shaped left arm meets the right stroke halfway up the body (his drawing), which runs on below the line
+      [[[0.05, 0.5], [0.08, 0.62], [0.15, 0.72], [0.27, 0.78], [0.4, 0.76], [0.47, 0.72]], [[0.55, 0.5], [0.35, 1.0], [0.15, 1.48]]],
+      // the two arms drawn as a V that meets halfway up the body
+      [[[0.05, 0.5], [0.3, 0.78]], [[0.58, 0.5], [0.3, 0.78], [0.12, 1.47]]],
+      // a bowl whose bottom is a third of the way down the body, the right stroke through it
+      [[[0.05, 0.5], [0.08, 0.7], [0.18, 0.84], [0.32, 0.86], [0.44, 0.78]], [[0.5, 0.5], [0.35, 1.0], [0.18, 1.48]]],
+    ],
+    says: /arms of γ meet on the line/,
+  },
+  κ: { latin: 'k', drawn: [[[[0.1, 0.0], [0.1, 1.0]], [[0.52, 0.5], [0.1, 0.78], [0.55, 1.0]]]], says: /κ is no taller than the letters beside it/ },
+  χ: { latin: 'x', drawn: [[[[0.05, 0.5], [0.55, 1.0]], [[0.55, 0.5], [0.05, 1.0]]]], says: /χ goes down through the line/ },
+  υ: {
+    latin: 'u',
+    drawn: [[[[0.1, 0.5], [0.1, 0.85], [0.2, 0.98], [0.33, 1.0], [0.46, 0.96], [0.56, 0.85], [0.58, 0.5]], [[0.58, 0.5], [0.58, 1.0]]]],
+    says: /υ is a plain cup/,
+  },
+  ι: { latin: 'i', drawn: [[[[0.1, 0.5], [0.1, 1.0]], [[0.1, 0.2]]]], says: /ι has no dot/ },
+};
+
+/** Look-alike pairs whose Latin letter and Greek letter are the same shape to a hand, so no writing of one is the other: not told apart, on purpose. */
+const INDISTINGUISHABLE: Record<string, { latin: string; drawn: Variant; why: string }> = {
+  ν: { latin: 'v', drawn: [[[0.05, 0.5], [0.32, 1.0], [0.6, 0.5]]], why: 'a handwritten nu is a v: the same two strokes, the same point at the line' },
+  ρ: { latin: 'p', drawn: [[[0.1, 0.5], [0.1, 1.45]], [[0.1, 0.55], [0.35, 0.5], [0.5, 0.73], [0.35, 0.96], [0.1, 0.95]]], why: 'a handwritten rho is a p: a stem below the line and a bowl on it' },
+  ο: { latin: 'o', drawn: [[[0.3, 0.5], [0.05, 0.75], [0.3, 1.0], [0.55, 0.75], [0.3, 0.5]]], why: 'omicron is the Latin o drawn the same way' },
+  ω: { latin: 'w', drawn: [[[0.0, 0.5], [0.15, 1.0], [0.3, 0.6], [0.45, 1.0], [0.6, 0.5]]], why: 'a hand writes omega with pointed or round bottoms alike, and a pointed one is a w: the judge asks which letter, not how round' },
+};
+
+describe('a Greek letter drawn as its Latin look-alike (mw-86e9r1.57)', () => {
+  it('names every Greek small letter with a Latin look-alike once: told apart or indistinguishable by design', () => {
+    expect([...Object.keys(TOLD_APART), ...Object.keys(INDISTINGUISHABLE)].sort()).toEqual([...ALL_LOOKALIKES].sort());
+    for (const [letter, { why }] of Object.entries(INDISTINGUISHABLE)) expect(why.length, letter).toBeGreaterThan(20);
+  });
+
+  it('a Latin y for γ is Close, not Right, and the one line says the arms of γ meet on the line', () => {
+    TOLD_APART.γ.drawn.forEach((design, i) => {
+      const result = recognize(drawing(design), 'γ', padOf());
+      expect(result.match, `y drawing ${i}`).toBe(false);
+      expect(result.hint, `y drawing ${i}`).toMatch(TOLD_APART.γ.says);
+    });
+  });
+
+  it('a well-formed γ, the V on the line and the tail below it, is still Right, in every hand, with nothing said', () => {
+    for (const [variant, writer] of WRITERS.entries()) {
+      const result = recognize(writing('γ', writer, {}), 'γ', padOf());
+      expect(result.match, `hand ${variant}`).toBe(true);
+      expect(result.hint, `hand ${variant}`).toBe('');
+    }
+    // and a hand's own V: the two arms meet on the line, the tail drops from the point
+    const v = recognize(drawing([[[0.05, 0.5], [0.28, 1.0], [0.62, 0.5]], [[0.28, 1.0], [0.27, 1.25], [0.14, 1.47]]]), 'γ', padOf());
+    expect(v.match).toBe(true);
+    expect(v.hint).toBe('');
+  });
+
+  for (const [letter, { latin, drawn, says }] of Object.entries(TOLD_APART)) {
+    it(`${latin} is told from ${letter}: Close with a line, never Right; the Greek letter written properly is Right with no line`, () => {
+      drawn.forEach((design, i) => {
+        const result = recognize(drawing(design), letter, padOf());
+        expect(result.match, `${latin} ${i}`).toBe(false);
+        expect(result.hint, `${latin} ${i}`).toMatch(says);
+      });
+      for (const [variant, writer] of WRITERS.entries()) {
+        const result = recognize(writing(letter, writer, {}), letter, padOf());
+        expect(result.match, `${letter} hand ${variant}`).toBe(true);
+        expect(result.hint, `${letter} hand ${variant}`).toBe('');
+      }
+    });
+  }
+
+  it('holds when the Latin shape is turned a little, leaned over or drawn small: it is still Close, not Right', () => {
+    const middle = { x: 300, y: 400 };
+    const moved = (strokes: InkStroke[], degrees: number, lean: number, size: number): InkStroke[] => {
+      const a = (degrees * Math.PI) / 180;
+      return strokes.map((stroke) =>
+        stroke.map((p) => {
+          const x = (p.x - middle.x + lean * (middle.y - p.y)) * size;
+          const y = (p.y - middle.y) * size;
+          return { x: middle.x + x * Math.cos(a) - y * Math.sin(a), y: middle.y + x * Math.sin(a) + y * Math.cos(a), t: p.t };
+        }),
+      );
+    };
+    const slipped: string[] = [];
+    for (const [letter, { drawn, says }] of Object.entries(TOLD_APART)) {
+      drawn.forEach((design, i) => {
+        for (const [degrees, lean, size] of [[12, 0, 1], [-12, 0, 1], [0, 0.15, 1], [0, -0.15, 1], [0, 0, 0.4], [8, 0.1, 1.8]]) {
+          const result = recognize(moved(drawing(design), degrees, lean, size), letter, padOf());
+          if (result.match || !says.test(result.hint)) slipped.push(`${letter} drawing ${i} turned ${degrees} leaned ${lean} at ${size}: match ${result.match}, hint '${result.hint}'`);
+        }
+      });
+    }
+    expect(slipped).toEqual([]);
+  });
+
+  for (const [letter, { latin, drawn }] of Object.entries(INDISTINGUISHABLE)) {
+    it(`${latin} and ${letter} are the same shape to a hand: the ${latin} is taken for ${letter}, on purpose`, () => {
+      const result = recognize(drawing(drawn), letter, padOf());
+      expect(result.match).toBe(true);
+      expect(result.hint).toBe('');
+    });
+  }
+
+  it('says nothing for a letter that is plainly another letter, or for nothing', () => {
+    expect(recognize(writing('α', WRITERS[0], {}), 'γ', padOf()).hint).toBe('');
+    expect(recognize([], 'γ').hint).toBe('');
   });
 });
 
@@ -239,6 +357,45 @@ describe('the writing pad', () => {
     fireEvent.pointerMove(pad(), ev(1, 'touch', 30, 30));
     fireEvent.pointerUp(pad(), { ...ev(1, 'touch', 30, 30), buttons: 0 });
     expect(pad()).toHaveAttribute('data-strokes', '1');
+  });
+});
+
+describe('the Write it card tells a y from a γ (mw-86e9r1.57)', () => {
+  async function writesAndChecks(strokes: InkStroke[]): Promise<HTMLElement> {
+    render(<WriteIt idea={ideaOf('letter-gamma')} onSkip={() => undefined} afterRight={() => null} />);
+    const writingPad = await screen.findByTestId('writing-pad');
+    let pointerId = 10;
+    for (const stroke of strokes) {
+      pointerId += 1;
+      const at = (i: number) => ({ pointerId, pointerType: 'pen', isPrimary: true, button: 0, buttons: 1, clientX: stroke[i].x, clientY: stroke[i].y });
+      fireEvent.pointerDown(writingPad, at(0));
+      for (let i = 1; i < stroke.length; i += 1) fireEvent.pointerMove(writingPad, at(i));
+      fireEvent.pointerUp(writingPad, { ...at(stroke.length - 1), buttons: 0 });
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'Check' }));
+    return screen.findByTestId('write-verdict');
+  }
+
+  it("says Close, with the line where, for his Latin y, and keeps no right", async () => {
+    const verdict = await writesAndChecks(drawing(TOLD_APART.γ.drawn[0]));
+    expect(verdict).toHaveAttribute('data-right', 'false');
+    expect(verdict).toHaveTextContent('Close');
+    expect(verdict).not.toHaveTextContent('Not quite');
+    expect(screen.getByTestId('write-hint')).toHaveTextContent('The arms of γ meet on the line, in a V, before the tail drops.');
+    expect(screen.getByTestId('write-hint').querySelector('[lang="grc"]')).not.toBeNull();
+  });
+
+  it('says Right for a γ whose V is on the line', async () => {
+    const verdict = await writesAndChecks(writing('γ', WRITERS[0], {}));
+    await waitFor(() => expect(verdict).toHaveAttribute('data-right', 'true'));
+    expect(verdict).toHaveTextContent('Right');
+    expect(screen.queryByTestId('write-hint')).toBeNull();
+  });
+
+  it('keeps Not quite, with no hint line, for ink that is another letter', async () => {
+    const verdict = await writesAndChecks(writing('α', WRITERS[0], {}));
+    expect(verdict).toHaveTextContent('Not quite');
+    expect(screen.queryByTestId('write-hint')).toBeNull();
   });
 });
 

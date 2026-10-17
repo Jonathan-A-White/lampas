@@ -616,7 +616,9 @@ he starts writing. The first card he ever meets says why: 'Writing a letter by h
 A letter is learnt in three stages (`progression.ts`), **two rights at each** (a miss never takes one away): **Trace** (the letter faint under the pad, its
 strokes drawn first, and 'Show the strokes' draws them again), **Copy** (the letter beside the pad) and **From memory** (only its name and sound). Check asks the
 checker on the phone (`recognizer.ts`), which judges which letter it is, not neatness, size or slant (no `capHeight` is given, so a small and a capital of the
-same shape both count); **Right**, or **Not quite** with the right strokes drawn and Try again, never a score. Skip keeps nothing and costs nothing: no stage,
+same shape both count); **Right**, or **Close** (mw-86e9r1.57: a Greek letter drawn as its Latin look-alike, with one line that says where, e.g. 'The arms of γ meet on the line, in a V, before the tail drops.'),
+or **Not quite**, with the right strokes drawn and Try again, never a score. Close is never Right and keeps nothing: the checker (`recognizer.ts`, `Recognition.hint`) holds the look-alike shapes of γ (y), κ (a tall k), χ (x),
+υ (u with a stem) and a dot over ι (templates.ts `LOOKALIKES`), and the writing is Close when it is nearer to one of them than to the letter; ν/v, ρ/p, ο/o and ω/w are the same shape to a hand and are not told apart, on purpose. Skip keeps nothing and costs nothing: no stage,
 no level, no drill score. The progress is kept per small letter in the settings store ('handwritingProgress'); it never moves a grammar level or the inference.
 The strokes drawn are the checker's own templates (their first variant): the order and direction drawn are those the templates were written in, not a taught
 stroke order. features/handwriting-drills.feature, tests/unit/write-it.test.tsx.

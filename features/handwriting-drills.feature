@@ -64,6 +64,15 @@ Feature: Write it: writing a letter by hand, as a memory aid
     When he taps "Try again"
     Then the pad is empty and the card still asks him to trace "ο"
 
+  Scenario: A Greek letter written as its Latin look-alike is close, with the line that says where
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1" and a pen seen
+    When he opens the letter sheet of "gamma" from the alphabet sheet
+    And he taps "Write it" on the letter sheet
+    And he writes a Latin "y" for "γ" with the pen and taps Check
+    Then the card says "Close" and the line "The arms of γ meet on the line, in a V, before the tail drops."
+    And the card draws the strokes of "γ"
+    And Gamma has no right kept
+
   Scenario: Skip costs nothing
     Given Lampas is opened on Romans 8 with the goal "1 John 1:1" and a pen seen
     When he opens the letter sheet of "omicron" from the alphabet sheet
