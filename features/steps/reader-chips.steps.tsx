@@ -75,10 +75,12 @@ async function openSeeded(prepare: () => Promise<void>): Promise<void> {
 }
 
 const row = () => screen.queryByTestId('reader-chips');
-const chipNames = (): string[] => (row() ? [...row()!.querySelectorAll('button')].map((b) => (b.textContent ?? '').trim()) : []);
+const planChip = () => row()?.querySelector('[data-testid="plan-chip"]');
+/** The Greek chips: the Plan chip (features/reading-plan.feature) is always in the row and is left out. */
+const chipNames = (): string[] => (row() ? [...row()!.querySelectorAll('button:not([data-testid="plan-chip"])')].map((b) => (b.textContent ?? '').trim()) : []);
 const chip = async (text: string): Promise<HTMLElement> => {
   const found = await waitFor(() => {
-    const button = [...(row()?.querySelectorAll('button') ?? [])].find((b) => (b.textContent ?? '').trim() === text);
+    const button = [...(row()?.querySelectorAll('button:not([data-testid="plan-chip"])') ?? [])].find((b) => (b.textContent ?? '').trim() === text);
     if (!button) throw new Error(`no chip ${text}; the row has ${chipNames().join(', ')}`);
     return button;
   });
@@ -141,7 +143,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('A chip with nothing to show is not drawn, and with no chips no row is', ({ Given, Then, And }) => {
+  Scenario('A chip with nothing to show is not drawn, and the Plan chip is then alone in the row', ({ Given, Then, And }) => {
     Given('Lampas is opened on Romans 8 with nothing due, no goal and no new words', async () => {
       await openSeeded(async () => {
         const lemmas = new Set(chapter8.verses.flatMap((v) => v.g.map((w) => nfc(w.l))));
@@ -154,8 +156,9 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(screen.queryByTestId('new-words')).toBeNull());
       expect(chipNames()).toEqual([]);
     });
-    And('the row is not drawn', () => {
-      expect(row()).toBeNull();
+    And('the row holds only the Plan chip, {string}', async (_, text: string) => {
+      await waitFor(() => expect(planChip()).not.toBeNull());
+      expect([...row()!.querySelectorAll('button')].map((b) => (b.textContent ?? '').trim())).toEqual([text]);
     });
   });
 

@@ -22,6 +22,8 @@ export interface SendOffTarget {
 export interface SendOff {
   /** The onClick of a Listen in Audible link: offers the sheet for a plan chapter, else stamps the link with the time of the tap and arms the fallback. */
   tap: (e: MouseEvent<HTMLAnchorElement>, target: SendOffTarget) => void;
+  /** Offers the sheet for this chapter without a link (the Plan chip's Continue): the same sheet and the same Go; nothing happens for a chapter outside the plan. */
+  offer: (target: SendOffTarget) => void;
   /** the chapter the sheet is offered for, or null while no sheet is up */
   offered: SendOffTarget | null;
   /** Go: begins the session, then opens Audible */
@@ -56,6 +58,13 @@ export function useSendOff(): SendOff {
     [inPlan],
   );
 
+  const offer = useCallback(
+    (target: SendOffTarget) => {
+      if (inPlan(target.code, target.chapter)) setOffered(target);
+    },
+    [inPlan],
+  );
+
   const close = useCallback(() => setOffered(null), []);
 
   const go = useCallback(async () => {
@@ -68,5 +77,5 @@ export function useSendOff(): SendOff {
     browserEnv.open(listen.href);
   }, [offered]);
 
-  return { tap, offered, go, close };
+  return { tap, offer, offered, go, close };
 }

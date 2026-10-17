@@ -1,6 +1,8 @@
 // src/ReaderChips.tsx — the Reader's one slim row under the header (mw-5r3p30.119): Due, Goal, Tip and New words as compact chips, so the reading
-// text starts high. The row is one line, 40 px, and scrolls sideways if the chips outgrow the phone; a chip with nothing to show is not drawn,
-// and with no chip (and no woven-words count) there is no row. Each chip does what its strip did and keeps the strip's text as its accessible name.
+// text starts high. The row is one line, 40 px, and scrolls sideways if the chips outgrow the phone; a Greek chip with nothing to show is not drawn. Each chip does what its strip did and keeps the strip's text as its accessible name.
+// The Plan chip (src/plan/PlanChip.tsx, mw-umv8sp.5) is always there while the chips are shown: 'Next: Leviticus 4' with the plan on, 'Listen through the Bible' to start one
+// otherwise; it sits after the others, so the row is there whenever the chips are shown, and a reader with no Greek activity has no Due, Goal or Tip chip beside it (the
+// 'New' words chip is the chapter's own and was always drawn).
 // The count of words woven into Greek ('<n> words in Greek', a status, not a control) sits at the row's right end. A chapter being read aloud
 // hides the chips, as it hid the strips; the count stays.
 import { countDue } from './data/repositories';
@@ -8,6 +10,7 @@ import { useLatestLiveQuery } from './data/useLatestLiveQuery';
 import { DueChip } from './DueBadge';
 import { GoalChip } from './GoalStrip';
 import { NewWordsChip } from './NewWordsStrip';
+import { PlanChip } from './plan/PlanChip';
 import { TipChip } from './tips/TipCard';
 import { useOpenTip } from './tips/useOpenTip';
 import { useGoalProgress } from './useGoalProgress';
@@ -31,7 +34,7 @@ export function ReaderChips({
   const due = useLatestLiveQuery(() => countDue());
   const goal = useGoalProgress();
   const tip = useOpenTip();
-  const any = !hidden && (Boolean(due) || goal.status === 'ready' || tip !== undefined || newWords > 0);
+  const any = !hidden;
   if (!any && wovenCount === null) return null;
   return (
     <div
@@ -44,6 +47,7 @@ export function ReaderChips({
           <GoalChip progress={goal} />
           <TipChip tip={tip} open={tipOpen} onToggle={onTip} />
           <NewWordsChip count={newWords} onOpen={onTeach} />
+          <PlanChip />
         </>
       )}
       {wovenCount === null ? null : (

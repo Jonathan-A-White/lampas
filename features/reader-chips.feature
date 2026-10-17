@@ -2,7 +2,7 @@ Feature: The Reader's top is one slim row of chips
   Due, the goal, the tip and New words used to be three or four full-width strips between the header and the text, and the
   reading text started a third of the way down the screen. They are now compact chips in ONE slim row under the header (src/ReaderChips.tsx):
   'Due 9', 'Goal 6/16', 'Tip' and 'New 3'. Each chip does on tap what its strip did, a chip with nothing to show is not drawn, and each keeps
-  an accessible name with the full text. The row is hidden while a chapter is read aloud, as the strips were. The line '<n> words in Greek' sits at its right end.
+  an accessible name with the full text. The Plan chip (features/reading-plan.feature) is always there beside them, so the chips named here are the Greek ones. The row is hidden while a chapter is read aloud, as the strips were. The line '<n> words in Greek' sits at its right end.
 
   Scenario: Each chip opens what its strip opened
     Given Lampas is opened on Romans 8 with 3 words due, the goal "1 John 1:1" and his seed words
@@ -22,10 +22,10 @@ Feature: The Reader's top is one slim row of chips
     And the goal chip is named with the title, the solid words out of 16 and the ideas
     And the chip "New 3" is named "New words: 3"
 
-  Scenario: A chip with nothing to show is not drawn, and with no chips no row is
+  Scenario: A chip with nothing to show is not drawn, and the Plan chip is then alone in the row
     Given Lampas is opened on Romans 8 with nothing due, no goal and no new words
     Then the row under the header has no chip
-    And the row is not drawn
+    And the row holds only the Plan chip, "Listen through the Bible"
 
   Scenario: The row is hidden while a chapter is read aloud
     Given Lampas is opened on Romans 8 with 3 words due, the goal "1 John 1:1" and his seed words
