@@ -488,13 +488,16 @@ const COMMON_ENDINGS: Record<'noun' | 'verb', string[]> = {
 };
 
 /**
- * An ending as it is asked (mw-86e9r1.4): a final ν that comes and goes (-σιν, and a verb's -εν) is shown in brackets, ουσιν as ουσι(ν), and
- * is one ending with or without it. Returns the ending's plain key as well, so two endings that differ only in that ν are the same.
+ * An ending as it is asked (mw-86e9r1.4, mw-86e9r1.29): a final ν that comes and goes (-σιν, -στιν of ἐστίν, a verb's -εν, and the -ιν of a dative plural
+ * such as πᾶσιν) is shown in brackets, ουσιν as ουσι(ν), and is one ending with or without it. Returns the ending's plain key as well, so two endings that
+ * differ only in that ν are the same. `code` is the parsing code of the form the ending is from: a bare -ιν is movable only in a dative plural (πόλιν is not).
  */
-function shownEnding(ending: string, pos: string): { text: string; key: string } {
+function shownEnding(ending: string, pos: string, code: string): { text: string; key: string } {
   const text = nfc(ending);
   const key = keyOf(text);
-  const movable = key.endsWith('σιν') || (pos === 'verb' && key === 'εν');
+  const features = parsedOf(code).features.map((f) => f.value);
+  const dativePlural = features.includes('dative') && features.includes('plural');
+  const movable = key.endsWith('σιν') || key.endsWith('στιν') || (pos === 'verb' && key === 'εν') || (dativePlural && key === 'ιν');
   return movable ? { text: `${text.slice(0, -1)}(ν)`, key: key.slice(0, -1) } : { text, key };
 }
 
@@ -518,13 +521,14 @@ export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], rand
   if (!place) return null;
   const { stem, ending: plainEnding } = stems(place)!;
   const pos = parsedOf(place.word.p).pos;
-  const right = shownEnding(plainEnding, pos);
-  const shownOf = (endings: readonly string[]) => endings.map((e) => shownEnding(e, pos));
+  const right = shownEnding(plainEnding, pos, place.word.p);
+  const shownOf = (endings: readonly string[]) => endings.map((e) => shownEnding(e, pos, place.word.p));
+  const shownFrom = (found: readonly Place[]) => found.flatMap((p) => { const e = stems(p)?.ending; return e === undefined ? [] : [shownEnding(e, pos, p.word.p)]; });
   // the near misses are the same word's other endings in the passage (another case or tense of it), then other words' of its kind, then the common ones
-  const sameWord = shuffle(places.filter((p) => p.word.l === place.word.l && p.word.p !== place.word.p), random).flatMap((p) => stems(p)?.ending ?? []);
-  const sameKind = places.filter((p) => parsedOf(p.word.p).pos === pos).flatMap((p) => stems(p)?.ending ?? []);
+  const sameWord = shownFrom(shuffle(places.filter((p) => p.word.l === place.word.l && p.word.p !== place.word.p), random));
+  const sameKind = shownFrom(places.filter((p) => parsedOf(p.word.p).pos === pos));
   const { options, near } = choicesOf(
-    { right, near: shownOf(sameWord), fillers: shownOf(sameKind), lastResort: shownOf(shuffle(COMMON_ENDINGS[pos === 'verb' ? 'verb' : 'noun'], random)), keyOf: (e) => e.key },
+    { right, near: sameWord, fillers: sameKind, lastResort: shownOf(shuffle(COMMON_ENDINGS[pos === 'verb' ? 'verb' : 'noun'], random)), keyOf: (e) => e.key },
     random,
   );
   return {

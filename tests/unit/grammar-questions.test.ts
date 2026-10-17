@@ -282,3 +282,30 @@ describe('a meaning question: What does this say?', () => {
     expect([...plain].sort()).toEqual(['ending', 'tap-form']);
   });
 });
+
+describe('an ending question and the movable ν of ἐστίν and a dative plural (mw-86e9r1.29)', () => {
+  const PLAIN = (s: string): string => s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const SEEDS = Array.from({ length: 80 }, (_, i) => i + 1);
+  const asked = LADDER.flatMap((idea) => SEEDS.map((seed) => buildEnding(idea, [rom8], mulberry32(seed)))).filter((q): q is GrammarQuestion => q !== null);
+
+  it('brackets the ν of στιν, no choice anywhere a bare στιν or στίν', () => {
+    expect(asked.length).toBeGreaterThan(0);
+    for (const q of asked) for (const o of [q.right, ...q.options]) expect(PLAIN(o), `${q.form} ${o}`).not.toMatch(/στιν$/);
+  });
+
+  it('asks ἔ_ of εἰμί for στι(ν)', () => {
+    const q = asked.find((x) => x.form === 'ἔ_' && x.prompt.endsWith('of εἰμί') && x.code?.startsWith('V-PAI-3S'));
+    expect(q, 'no ἐστίν asked').toBeDefined();
+    expect(q!.right).toBe('στι(ν)');
+    expect(q!.options).toContain('στι(ν)');
+  });
+
+  it('brackets the ν of a dative plural: πᾶσ_ is asked for ι(ν), and no dative plural ending is a bare ιν', () => {
+    const dativePlural = asked.filter((q) => q.prompt.includes('dative plural'));
+    expect(dativePlural.length).toBeGreaterThan(0);
+    for (const q of dativePlural) expect(PLAIN(q.right), `${q.form} ${q.right}`).not.toMatch(/ιν$/);
+    const pas = asked.find((x) => x.form === 'πᾶσ_' && x.code === 'A-DPN');
+    expect(pas, 'no πᾶσιν asked').toBeDefined();
+    expect(pas!.right).toBe('ι(ν)');
+  });
+});
