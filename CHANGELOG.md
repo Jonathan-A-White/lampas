@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.296
+_2026-10-17_
+- Fixed: Open in Logos no longer replaces Lampas with a web page when the Logos app is not on the phone; the web page opens in its own tab.
+- Fixed: In the tutor talk, after you tap an offered setting change while the answer is being read aloud, the 'Changed' line and Copy stay in view above the reading controls.
+
 ## 0.1.295
 _2026-10-17_
 - New: Each grammar idea now has a 'Try it on a verse' button that asks three short questions on the easiest verse you can read with that idea, then opens the verse for you to read; Review's questions about the passage also come from verses at your level.
