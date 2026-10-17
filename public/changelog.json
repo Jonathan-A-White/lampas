@@ -1,5 +1,47 @@
 [
   {
+    "version": "0.1.284",
+    "date": "2026-10-17",
+    "story": "mw-86e9r1.23",
+    "kind": "fixed",
+    "text": "reloading the placement's 'Where you are' card, or going Back to it from the Goal screen, now shows the card again instead of starting over."
+  },
+  {
+    "version": "0.1.284",
+    "date": "2026-10-17",
+    "story": "mw-86e9r1.28",
+    "kind": "fixed",
+    "text": "Review now says it is getting your questions while a round loads on a slow connection, instead of showing a blank screen."
+  },
+  {
+    "version": "0.1.284",
+    "date": "2026-10-17",
+    "story": "mw-86e9r1.57",
+    "kind": "fixed",
+    "text": "Write it no longer says Right when you write a Latin y, k, x, u or dotted i for the Greek letter; it says Close and tells you where it differs."
+  },
+  {
+    "version": "0.1.284",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.221",
+    "kind": "new",
+    "text": "On Your requests, a tap on a long request now shows all of it, and a second tap folds it again."
+  },
+  {
+    "version": "0.1.284",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.544",
+    "kind": "fixed",
+    "text": "A paused reading no longer shows a stop square on its speaker, as if it were still playing."
+  },
+  {
+    "version": "0.1.284",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.518",
+    "kind": "fixed",
+    "text": "the Greek alphabet's worked example now gives each letter's sound as well as its name."
+  },
+  {
     "version": "0.1.283",
     "date": "2026-10-17",
     "story": "mw-5r3p30.214",

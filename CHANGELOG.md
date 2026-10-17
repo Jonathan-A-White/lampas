@@ -1,5 +1,14 @@
 # What's new
 
+## 0.1.284
+_2026-10-17_
+- Fixed: reloading the placement's 'Where you are' card, or going Back to it from the Goal screen, now shows the card again instead of starting over.
+- Fixed: Review now says it is getting your questions while a round loads on a slow connection, instead of showing a blank screen.
+- Fixed: Write it no longer says Right when you write a Latin y, k, x, u or dotted i for the Greek letter; it says Close and tells you where it differs.
+- New: On Your requests, a tap on a long request now shows all of it, and a second tap folds it again.
+- Fixed: A paused reading no longer shows a stop square on its speaker, as if it were still playing.
+- Fixed: the Greek alphabet's worked example now gives each letter's sound as well as its name.
+
 ## 0.1.283
 _2026-10-17_
 - Fixed: the Talk sheet's title is no longer cut short on a phone held upright; it wraps onto a second line instead.
