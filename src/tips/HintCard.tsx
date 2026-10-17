@@ -1,7 +1,7 @@
-// src/tips/HintCard.tsx — draws the tip bsv-kit/tips says is next for an event (src/tips/hints.ts): one quiet line and Got it,
+// src/tips/HintCard.tsx — draws the tip pwa-kit/tips says is next for an event (src/tips/hints.ts): one quiet line and Got it,
 // which dismisses it for good. Nothing at all when there is none, or with the Tips setting Off.
 import { useLiveQuery } from 'dexie-react-hooks';
-import type { tips } from 'bsv-kit/tips';
+import type { tips } from 'pwa-kit/tips';
 import { useEffect, useState } from 'react';
 import { getTips } from '../data/repositories';
 import { hints } from './hints';

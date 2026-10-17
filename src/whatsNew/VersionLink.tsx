@@ -1,6 +1,6 @@
 // src/whatsNew/VersionLink.tsx: the link from About to this version's heading in CHANGELOG.md on GitHub
-// (bsv-kit's versionLink: a public repo only; a private repo has no link and About's own list is the answer).
-import { versionLink } from 'bsv-kit/whats-new';
+// (pwa-kit's versionLink: a public repo only; a private repo has no link and About's own list is the answer).
+import { versionLink } from 'pwa-kit/whats-new';
 import { APP_SEMVER, REPO, REPO_PUBLIC } from '../config';
 
 export function VersionLink({ repo = REPO, isPublic = REPO_PUBLIC, version = APP_SEMVER }: { repo?: string; isPublic?: boolean; version?: string }) {

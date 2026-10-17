@@ -5,7 +5,7 @@ import { act, cleanup, render, screen, waitFor, within } from '@testing-library/
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
-import { fetchChangelog, versionLink } from 'bsv-kit/whats-new';
+import { fetchChangelog, versionLink } from 'pwa-kit/whats-new';
 import { About } from '../../src/About';
 import { APP_SEMVER, LAST_SEEN_VERSION_STORAGE_KEY, REPO, REPO_PUBLIC } from '../../src/config';
 import { startAppUpdates } from '../../src/services/appUpdate';
@@ -163,7 +163,7 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
   Scenario('About lists every version and can check for updates', ({ Given, When, Then, And }) => {
     Given('the changelog lists three versions', () => {
       stubChangelog(fixtureChangelog());
-      // bsv-kit says 'Up to date' only after a service worker registration has checked and the server answered: this phone has one with nothing waiting
+      // pwa-kit says 'Up to date' only after a service worker registration has checked and the server answered: this phone has one with nothing waiting
       Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: { getRegistration: async () => ({ update: async () => undefined, waiting: null, installing: null, active: {} }) } });
     });
     When('he opens About', () => {

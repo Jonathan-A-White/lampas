@@ -66,7 +66,7 @@ PROVISIONAL: once a day, the chip's place in the row under the header, haiku.
 ## One-time tips written in the app (`src/tips/hints.ts`, mw-5r3p30.80)
 
 Some things cannot be found by looking: a long press on a word says it, and nothing on the screen says so. Those tips are written in the app,
-not asked of the grind. The list, "which tip shows now" and "dismissed for good" are bsv-kit's (`bsv-kit/tips`, `tips.createTips`; pinned by
+not asked of the grind. The list, "which tip shows now" and "dismissed for good" are pwa-kit's (`pwa-kit/tips`, `tips.createTips`; pinned by
 commit in `package.json`, the library has no release tag yet); Lampas supplies the list and the storage.
 
 - `HINTS` in `src/tips/hints.ts` is the list, one entry per tip: `{ id, text, event }`. Today one: `long-press-word`, 'Long-press a word to

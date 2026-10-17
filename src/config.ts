@@ -43,5 +43,5 @@ export const APP_SEMVER: string = __APP_SEMVER__;
 export const REPO = 'Jonathan-A-White/lampas';
 export const REPO_PUBLIC = true;
 
-/** Where the last version whose What's new he has seen is remembered (bsv-kit/whats-new's sheet). */
+/** Where the last version whose What's new he has seen is remembered (pwa-kit/whats-new's sheet). */
 export const LAST_SEEN_VERSION_STORAGE_KEY = 'lampas.lastSeenVersion';

@@ -3,7 +3,7 @@
 // the link need: every entry well formed, newest first, and a '## <version>' heading in the markdown for each version.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { compareVersions, parseChangelog } from 'bsv-kit/whats-new';
+import { compareVersions, parseChangelog } from 'pwa-kit/whats-new';
 
 const raw: unknown = JSON.parse(readFileSync('public/changelog.json', 'utf8'));
 const md = readFileSync('CHANGELOG.md', 'utf8');

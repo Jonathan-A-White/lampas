@@ -1,4 +1,4 @@
-// features/steps/word-tip.steps.tsx — runs features/word-tip.feature: the one-time tip on a word's sheet (bsv-kit/tips, kept in localStorage).
+// features/steps/word-tip.steps.tsx — runs features/word-tip.feature: the one-time tip on a word's sheet (pwa-kit/tips, kept in localStorage).
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';

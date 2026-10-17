@@ -12,7 +12,7 @@
 // so the page does not run the old build under the new worker until the next cold start.
 // When the changelog cannot be read the banner shows as usual.
 import { useSyncExternalStore } from 'react';
-import { summarise, type ChangelogEntry } from 'bsv-kit/whats-new';
+import { summarise, type ChangelogEntry } from 'pwa-kit/whats-new';
 
 /** How often a running app asks whether a newer build is up. */
 export const UPDATE_CHECK_EVERY_MS = 30 * 60_000;

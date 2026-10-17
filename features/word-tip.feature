@@ -2,7 +2,7 @@ Feature: A one-time tip says a word can be held to hear it
   A long press on a word says it, but nothing on the screen says so. The first time he taps a word, its sheet carries a tip,
   "Long-press a word to hear it", with one button, Got it. Got it dismisses the tip for good: it is kept on the phone, so it is
   not shown again, not on another word, not when Lampas is opened again. Closing the sheet without Got it keeps the tip for the
-  next tap. The list of tips and the rule "shown until dismissed" are bsv-kit's (bsv-kit/tips); Lampas draws the tip and keeps
+  next tap. The list of tips and the rule "shown until dismissed" are pwa-kit's (pwa-kit/tips); Lampas draws the tip and keeps
   the dismissals in the phone's localStorage.
 
   Scenario: The first tap on a word shows the tip

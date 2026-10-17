@@ -1,8 +1,8 @@
 // src/tips/hints.ts — the one-time tips that sit on a screen where they are needed (mw-5r3p30.80). The list of tips, "which one shows now"
-// and "dismissed for good" are bsv-kit's (bsv-kit/tips); this file is Lampas's list and the storage it keeps the dismissals in (the
+// and "dismissed for good" are pwa-kit's (pwa-kit/tips); this file is Lampas's list and the storage it keeps the dismissals in (the
 // phone's localStorage, key 'lampas.tipsDismissed'). A later tip is one more entry in HINTS. These are not the daily tips of
 // src/tips/offer.ts (asked of the tutor): those come from a grind, these are written here.
-import { tips } from 'bsv-kit/tips';
+import { tips } from 'pwa-kit/tips';
 
 /** The events a tip is tied to (the `event` of an entry). */
 export const WORD_SHEET_OPENED = 'word-sheet-opened';

@@ -71,8 +71,10 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
 - **[Dexie](https://dexie.org/)** (`dexie`, `dexie-react-hooks`) by David Fahlander. Keeps your words, answers and settings on the phone
   (IndexedDB). Licence: [Apache-2.0](https://github.com/dexie/Dexie.js/blob/master/LICENSE). Changes: none.
 - **[bsv-kit](https://github.com/Jonathan-A-White/bsv-kit)** (`bsv-kit`) by Jonathan A. White. The licence gate, the tutor's payments
-  and messages, and What's new (the Update ready banner's line, the sheet after an update, the list of versions in About and its Check for updates button).
+  and messages.
   Licence: [MIT](https://github.com/Jonathan-A-White/bsv-kit/blob/main/LICENSE). Changes: none.
+- **[pwa-kit](https://github.com/Jonathan-A-White/pwa-kit)** (`pwa-kit`) by Jonathan A. White. What's new (the Update ready banner's line, the sheet after an update, the list of versions in About and its Check for updates button, `pwa-kit/whats-new`) and the one-time tips (`pwa-kit/tips`, the line with Got it).
+  Licence: [MIT](https://github.com/Jonathan-A-White/pwa-kit/blob/main/LICENSE). Changes: none.
 - **[voice-kit](https://github.com/Jonathan-A-White/voice-kit)** (`voice-kit`) by Jonathan A. White. Read aloud (the sentence queue, the Pause, Resume, Restart and Stop bar, `voice-kit/speech`), and the way you ask the tutor about a verse (the big Hold to ask bar with your words as you speak, and Type a question beneath it, `voice-kit/composer`, lifted from Postern's message composer), and how Lampas hears you whenever you hold to talk (the Talk bar and sheet, Hold to ask and the letter drill's Say it: the composer's listening, which tries each of the phone's ways of hearing you, on the phone and online, before it says it cannot); in our tests, its honest speech and microphone fakes (`voice-kit/testing`, whose two clips are spoken by
   [eSpeak NG](https://github.com/espeak-ng/espeak-ng)). Licence: [MIT](https://github.com/Jonathan-A-White/voice-kit/blob/main/LICENSE). Changes: none.
 - **[BSV SDK](https://github.com/bsv-blockchain/ts-stack/tree/main/packages/sdk)** (`@bsv/sdk`) by the BSV Association. Keys, signatures
