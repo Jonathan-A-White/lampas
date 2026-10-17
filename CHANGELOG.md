@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.294
+_2026-10-17_
+- Fixed: the notice for a Bible reference that Lampas does not hold now names it the way the page you shared printed it.
+
 ## 0.1.293
 _2026-10-17_
 - Fixed: Tapping a Bible reference twice quickly no longer makes its card vanish; the card stays up.
