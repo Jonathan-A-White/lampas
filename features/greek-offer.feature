@@ -40,3 +40,16 @@ Feature: The tutor offers the Greek gently to a reader who is not learning it
     Then the talk shows the button "Want to read this chapter in Greek?"
     When he says "and what about the next word?"
     Then the talk shows exactly 1 button "Want to read this chapter in Greek?"
+
+  Scenario: A phone that holds only the example words is offered the Greek
+    Given Lampas is opened on Romans 8 in English on a phone that still holds only the 63 example words, behind a fake Postern whose tutor offers the Greek word
+    When he opens the talk and asks "What does love really mean in Romans 8:28?"
+    Then the request told the tutor the Reader shows English
+    And the request told the tutor he has no solid words and is learning none
+    And the talk shows the button "Want to see the Greek word?"
+
+  Scenario: Example words he has answered make him a Greek learner
+    Given Lampas is opened on Romans 8 in English on a phone that still holds only the 63 example words, behind a fake Postern whose tutor offers the Greek word
+    When he opens the talk and asks "What does love really mean in Romans 8:28?"
+    Then the request told the tutor he knows 53 solid words
+

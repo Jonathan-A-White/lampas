@@ -2,7 +2,7 @@
 // solid, the words he is learning (newest first), the ones he put on his list today and how many reviews are due. Both grinds
 // (verse-ask, bible-talk) get it as the request's `learner` field, so a question about a new word is answered in his terms.
 import { countDue } from './repositories/reviews';
-import { listWords } from './repositories/words';
+import { holdsOnlyExampleWords, listWords } from './repositories/words';
 
 /** The line is never longer than this many characters (it shares a grist's 10 KiB record with the verse and the history). */
 export const LEARNER_MAX_CHARS = 600;
@@ -22,10 +22,15 @@ const line = (solid: number, learning: string[], today: string[], due: number): 
 /**
  * 'solid N words; learning: a, b, c; new today: x, y; due now: M'. The learning words are his learning words, the most recently
  * listed first, at most 12; the new today are the learning words listed since midnight, newest first. When the line would pass
- * 600 characters the oldest names are dropped (new today's first, then the learning words'), so the counts always stay.
+ * 600 characters the oldest names are dropped (new today's first, then the learning words'), so the counts always stay. A phone that holds only the 63
+ * example words it was seeded with before a new install started empty (holdsOnlyExampleWords) is told 'solid 0 words; learning: none; ...; due now: 0', like
+ * a new install, so the tutor offers it the Greek (grinds/bible-talk.instructions/130-offering-the-greek.md).
  */
 export async function learnerSummary(now = Date.now()): Promise<string> {
-  const [words, due] = await Promise.all([listWords(), countDue(now)]);
+  const [all, dueAll, examplesOnly] = await Promise.all([listWords(), countDue(now), holdsOnlyExampleWords()]);
+  // a phone that still holds only the example words it was seeded with has told the tutor nothing of him: he is not yet a learner of the Greek (mw-yrmkdf.8)
+  const words = examplesOnly ? [] : all;
+  const due = examplesOnly ? 0 : dueAll;
   const solid = words.filter((w) => w.state === 'solid').length;
   const learning = words.filter((w) => w.state === 'learning').sort((a, b) => b.since - a.since);
   const names = learning.slice(0, LEARNER_MAX_LEARNING).map((w) => w.lemma);

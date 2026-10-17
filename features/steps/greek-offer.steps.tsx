@@ -8,12 +8,14 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
+import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { getIndex } from '../../src/data/repositories/memory';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { seedExampleWords } from '../../tests/support/his-words';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern, type ReceivedGrist } from '../../tests/support/fake-postern';
 
 afterAll(() => {
@@ -32,7 +34,7 @@ const WORD_OFFER = { answer: 'It is the self-giving kind of love.', words: [], g
 const VIEW_OFFER = { answer: 'The Greek is more exact than any one English word.', words: [], greek_offer: { kind: 'view', text: VIEW_BUTTON } };
 let fake: FakePostern;
 
-async function openWith(answer: Record<string, unknown>): Promise<void> {
+async function openWith(answer: Record<string, unknown>, seeded = false): Promise<void> {
   cleanup();
   stopReading();
   clearBus();
@@ -51,6 +53,12 @@ async function openWith(answer: Record<string, unknown>): Promise<void> {
   );
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.reviews.clear(), db.grammarLevels.clear(), db.requests.clear()]);
+  if (seeded) {
+    // a phone that was opened before a new install started empty (mw-5r3p30.385): the 63 example words and their schedule, none of them touched
+    const opened = Date.now() - 3 * 24 * 60 * 60 * 1000;
+    await seedExampleWords(opened);
+    await seedScheduleIfFirstOpen(opened);
+  }
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
@@ -169,6 +177,31 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the talk shows exactly {int} button {string}', (_, count: number, name: string) => {
       expect(offerButtons(name)).toHaveLength(count);
+    });
+  });
+
+  Scenario('A phone that holds only the example words is offered the Greek', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 in English on a phone that still holds only the 63 example words, behind a fake Postern whose tutor offers the Greek word', () => openWith(WORD_OFFER, true));
+    When(WHEN_ASKS, asks);
+    Then('the request told the tutor the Reader shows English', () => {
+      expect((talkGrists()[0].input as { reader_view?: string }).reader_view).toBe('english');
+    });
+    And('the request told the tutor he has no solid words and is learning none', () => {
+      const learner = (talkGrists()[0].input as { learner?: string }).learner ?? '';
+      expect(learner).toMatch(/^solid 0 words; learning: none; /);
+    });
+    And('the talk shows the button {string}', shows);
+  });
+
+  Scenario('Example words he has answered make him a Greek learner', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 in English on a phone that still holds only the 63 example words, behind a fake Postern whose tutor offers the Greek word', async () => {
+      await openWith(WORD_OFFER, true);
+      await db.words.update('ἀγαπάω', { state: 'learning', since: Date.now() });
+    });
+    When(WHEN_ASKS, asks);
+    Then('the request told the tutor he knows 53 solid words', () => {
+      const learner = (talkGrists()[0].input as { learner?: string }).learner ?? '';
+      expect(learner).toMatch(/^solid 53 words; learning: ἀγαπάω/);
     });
   });
 });
