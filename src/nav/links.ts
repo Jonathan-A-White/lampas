@@ -122,13 +122,16 @@ export function inWords(asked: string): string {
   return `${name} ${parsed.chapter}${parsed.verse === undefined ? '' : `:${parsed.verse}`}`;
 }
 
-/** The sentence that says what was asked for and what is shown instead. A reference asked for is named in words (`inWords`). */
-export const notHeld = (asked: string, shown: string): string => `“${inWords(asked)}” is not in Lampas; showing ${shown}.`;
+/** What a notice calls a reference: the words the sheet printed it in ('Gen. 1:28') when the link carries them, else in words (`inWords`). */
+const namedAs = (asked: string, printed?: string): string => printed?.trim() || inWords(asked);
+
+/** The sentence that says what was asked for and what is shown instead. A reference asked for is named as it was printed, when known, else in words (`inWords`). */
+export const notHeld = (asked: string, shown: string, printed?: string): string => `“${namedAs(asked, printed)}” is not in Lampas; showing ${shown}.`;
 
 /** Where `text` opens the reader. A book or number Lampas does not hold opens the nearest it does (the last chapter or verse; chapter 0 and verse 0 the
  * first), a book it does not hold the chapter in `fallback`; either way with a notice. `index` null (the index could not be loaded) leaves the numbers
- * as written. */
-export function resolveReference(text: string, index: BookIndex | null, fallback: OpenChapter): Opened {
+ * as written. `printed` is the words the reference was printed in where it was found (Link.printed); the notice names it so. */
+export function resolveReference(text: string, index: BookIndex | null, fallback: OpenChapter, printed?: string): Opened {
   const asked = text.trim().replace(SCHEME, '');
   const parsed = parseReference(asked);
   const old = parsed ? null : parseCanonReference(asked);
@@ -138,20 +141,20 @@ export function resolveReference(text: string, index: BookIndex | null, fallback
       book: fallback.book,
       chapter: fallback.chapter,
       verse: null,
-      notice: `“${inWords(asked)}” is not in Lampas yet; showing ${fallback.title}.`,
+      notice: `“${namedAs(asked, printed)}” is not in Lampas yet; showing ${fallback.title}.`,
       elsewhere: { book, chapter, ...(verse === undefined ? {} : { verse }) },
     };
   }
   const info = parsed && (index === null ? { chapters: Infinity, verses: [] as number[] } : index.books.find((b) => b.code === parsed.book));
-  if (!parsed || !info) return { book: fallback.book, chapter: fallback.chapter, verse: null, notice: notHeld(asked, fallback.title) };
+  if (!parsed || !info) return { book: fallback.book, chapter: fallback.chapter, verse: null, notice: notHeld(asked, fallback.title, printed) };
   const { book } = parsed;
   const wanted = parsed.chapter ?? 1;
   const chapter = Math.min(Math.max(wanted, 1), info.chapters);
-  if (chapter !== wanted) return { book, chapter, verse: null, notice: notHeld(asked, titleOf(book, chapter)) };
+  if (chapter !== wanted) return { book, chapter, verse: null, notice: notHeld(asked, titleOf(book, chapter), printed) };
   if (parsed.verse === undefined) return { book, chapter, verse: null, notice: null };
   const last = info.verses[chapter - 1];
   const verse = last === undefined ? Math.max(parsed.verse, 1) : Math.min(Math.max(parsed.verse, 1), last);
-  return { book, chapter, verse, notice: verse === parsed.verse ? null : notHeld(asked, `${titleOf(book, chapter)}:${verse}`) };
+  return { book, chapter, verse, notice: verse === parsed.verse ? null : notHeld(asked, `${titleOf(book, chapter)}:${verse}`, printed) };
 }
 
 /** A word as the lexicon has it. */
@@ -193,6 +196,8 @@ export function findWord(text: string, lexicon: LemmaLexicon): FoundWord | undef
 export interface Link {
   kind: 'reference' | 'word';
   text: string;
+  /** a reference's words as the sheet printed them ('Gen. 1:28', `as=`), which a notice names it by */
+  printed?: string;
 }
 
 /** The link an address carries, or null. The browser's web+lampas: form arrives as `ref=web+lampas:Rom.8.28`, and `web+lampas:word:G3551`
@@ -204,7 +209,9 @@ export function linkOf(hash: string): Link | null {
   const ref = params.get('ref')?.trim().replace(SCHEME, '').trim();
   if (ref) {
     const word = /^(?:word|strongs)[:/]\s*(.+)$/i.exec(ref);
-    return word ? { kind: 'word', text: word[1].trim() } : { kind: 'reference', text: ref };
+    if (word) return { kind: 'word', text: word[1].trim() };
+    const printed = params.get('as')?.trim();
+    return printed ? { kind: 'reference', text: ref, printed } : { kind: 'reference', text: ref };
   }
   const word = params.get('word')?.trim();
   return word ? { kind: 'word', text: word } : null;
@@ -213,9 +220,10 @@ export function linkOf(hash: string): Link | null {
 /** A book's OSIS code, from our own code ('1jn' -> '1John', 'psa' -> 'Ps'). */
 export const osisOf = (book: string): string => OSIS[book] ?? OT_OSIS[book] ?? book;
 
-/** The https link of a verse, a chapter (no verse) or a book's chapter, as Copy link gives it. */
-export function referenceUrl(book: string, chapter: number, verse?: number): string {
-  return `${LINK_ORIGIN}/#/?ref=${osisOf(book)}.${chapter}${verse === undefined ? '' : `.${verse}`}`;
+/** The https link of a verse, a chapter (no verse) or a book's chapter, as Copy link gives it. `printed` adds the words it was printed in (`as=`). */
+export function referenceUrl(book: string, chapter: number, verse?: number, printed?: string): string {
+  const as = printed ? `&as=${encodeURIComponent(printed)}` : '';
+  return `${LINK_ORIGIN}/#/?ref=${osisOf(book)}.${chapter}${verse === undefined ? '' : `.${verse}`}${as}`;
 }
 
 /** The https link of a passage, a verse range as Logos writes it: '#/?ref=Rom.8.1-11' (parseReference keeps the first verse, so it opens the reader there). */

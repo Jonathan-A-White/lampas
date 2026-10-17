@@ -20,7 +20,7 @@ async function open(link: Link, hash: string, current: () => boolean): Promise<v
   if (link.kind === 'reference') {
     const index = await loadIndex().catch(() => null);
     if (!current()) return;
-    const opened = resolveReference(link.text, index, there);
+    const opened = resolveReference(link.text, index, there, link.printed);
     announceLink({ book: opened.book, chapter: opened.chapter, verse: opened.verse, notice: opened.notice, word: null, ...(opened.elsewhere ? { elsewhere: opened.elsewhere } : {}) });
     replaceHash(plainAddress(kept, { book: opened.book, chapter: opened.chapter, verse: opened.verse ?? undefined }));
     return;
@@ -35,14 +35,14 @@ async function open(link: Link, hash: string, current: () => boolean): Promise<v
 }
 
 export function LinkOpener({ link }: { link: Link }) {
-  const { kind, text } = link;
+  const { kind, text, printed } = link;
   useEffect(() => {
     let live = true;
-    void open({ kind, text }, window.location.hash, () => live);
+    void open({ kind, text, ...(printed ? { printed } : {}) }, window.location.hash, () => live);
     return () => {
       live = false;
     };
-  }, [kind, text]);
+  }, [kind, text, printed]);
   return (
     <p role="status" className="px-4 pt-6 text-center text-muted">
       Opening the link…

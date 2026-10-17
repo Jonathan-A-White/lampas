@@ -140,6 +140,15 @@ describe('resolveReference', () => {
     expect(resolve('Psalm 23').elsewhere).toEqual({ book: 'psa', chapter: 23 });
   });
 
+  it('names an asked reference as it was printed, Gen. 1:28, when the link carries the words the sheet showed', () => {
+    const opened = resolveReference('Gen.1.28', index, DEFAULT_CHAPTER, 'Gen. 1:28');
+    expect(opened.notice).toBe('“Gen. 1:28” is not in Lampas yet; showing Romans 8.');
+    expect(opened.elsewhere).toEqual({ book: 'gen', chapter: 1, verse: 28 });
+    const last = index.books.find((b) => b.code === 'rom')!.verses[7];
+    expect(resolveReference('Rom.8.99', index, DEFAULT_CHAPTER, 'Rom. 8:99').notice).toBe(`“Rom. 8:99” is not in Lampas; showing Romans 8:${last}.`);
+    expect(resolveReference('Tobit 3:1', index, DEFAULT_CHAPTER, '  ').notice).toBe('“Tobit 3:1” is not in Lampas; showing Romans 8.');
+  });
+
   it('treats a book missing from the index as not held', () => {
     const without: BookIndex = { books: index.books.filter((b) => b.code !== 'jud') };
     const opened = resolveReference('Jude 1:3', without, DEFAULT_CHAPTER);
@@ -190,6 +199,12 @@ describe('linkOf', () => {
     expect(linkOf('#/?ref=Romans%208:28')).toEqual({ kind: 'reference', text: 'Romans 8:28' });
     expect(linkOf('#/?word=G3551')).toEqual({ kind: 'word', text: 'G3551' });
     expect(linkOf('#/?word=%CE%BD%CF%8C%CE%BC%CE%BF%CF%82')).toEqual({ kind: 'word', text: 'νόμος' });
+  });
+
+  it('reads the words a reference was printed in from as=, and writes them with referenceUrl', () => {
+    expect(linkOf('#/?ref=Gen.1.28&as=Gen.%201%3A28')).toEqual({ kind: 'reference', text: 'Gen.1.28', printed: 'Gen. 1:28' });
+    expect(linkOf('#/?ref=Gen.1.28&as=')).toEqual({ kind: 'reference', text: 'Gen.1.28' });
+    expect(referenceUrl('gen', 1, 28, 'Gen. 1:28')).toBe(`${referenceUrl('gen', 1, 28)}&as=Gen.%201%3A28`);
   });
 
   it('reads the web+lampas: form the browser hands over, as a reference or as a word', () => {
