@@ -14,7 +14,7 @@ import { AskForBook } from './askBook';
 import { writeSetting } from '../registry';
 import type { SettingsRow } from '../rows';
 import { useSetting } from '../store';
-import { ON_COLOUR, OnOff, PICKER, SettingRow } from './SettingRow';
+import { ON_COLOUR, OnOff, PICKER, RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
 
 /** The lexicons (or other choices) of a resource, in the shared searchable list; kept as he taps (a JSON array of ids). */
@@ -228,6 +228,7 @@ export const AudioBibleControl: Control = ({ row }) => {
   const choices = [{ value: 'off', label: 'Off' }, ...AUDIO_BIBLES.map((b) => ({ value: b.id, label: b.choice }))];
   return (
     <SettingRow row={row}>
+      <RowName row={row} />
       {audioBible !== undefined ? (
         <div role="group" aria-label={row.label} className="flex flex-col gap-1 rounded-xl border border-line p-0.5">
           {choices.map((c) => (
@@ -253,6 +254,7 @@ export const ReadingPlanControl: Control = ({ row }) => {
   const [starting, setStarting] = useState(false);
   return (
     <SettingRow row={row}>
+      <RowName row={row} />
       {readingPlan ? (
         <>
           <OnOff name={row.label} current={readingPlan} settingKey="readingPlan" />

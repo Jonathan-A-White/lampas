@@ -5,7 +5,7 @@ import { DEPTHS, SCRIPTS, type Depth, type TutorScript } from '../../script/scri
 import { askBySetting, readLessonsSetting, tipsSetting } from '../definitions';
 import { writeSetting } from '../registry';
 import { useSetting } from '../store';
-import { ChipRow, ON_COLOUR, OnOff, SettingRow } from './SettingRow';
+import { ChipRow, ON_COLOUR, OnOff, RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
 
 function ScriptDepthChoice({ script, depth }: { script: TutorScript; depth: Depth }) {
@@ -66,5 +66,10 @@ export const AskByControl: Control = ({ row }) => {
 
 export const ReadLessonsControl: Control = ({ row }) => {
   const readLessons = useSetting(readLessonsSetting);
-  return <SettingRow row={row}>{readLessons ? <OnOff name={row.label} current={readLessons} settingKey="readLessons" /> : null}</SettingRow>;
+  return (
+    <SettingRow row={row}>
+      <RowName row={row} />
+      {readLessons ? <OnOff name={row.label} current={readLessons} settingKey="readLessons" /> : null}
+    </SettingRow>
+  );
 };

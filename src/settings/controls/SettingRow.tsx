@@ -54,6 +54,11 @@ export function SettingRow({ row, children, details, className = 'pb-3' }: { row
   );
 }
 
+/** The row's name, written above its choices, for a row whose control names its group only with aria-label (mw-5r3p30.465). */
+export function RowName({ row }: { row: SettingsRow }) {
+  return <h3 className="pb-1 text-base font-medium">{row.label}</h3>;
+}
+
 /** The three chips of a weave or New words row, on one line (never wrapped); `name` is the setting's label in the registry. */
 export function ChipRow({ name, current, options, settingKey }: { name: string; current: string; options: [string, string][]; settingKey: 'weave' | 'weaveGrammar' | 'weaveOrder' | 'pickerGrammar' | 'grammarMove' | 'newWordsADay' | 'askBy' | 'handwritingDrills' }) {
   return (
