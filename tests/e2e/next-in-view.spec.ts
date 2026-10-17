@@ -55,6 +55,41 @@ async function put(page: Page, store: 'settings' | 'grammarLevels', rows: object
   );
 }
 
+// The Drill it walk opens the idea sheet on The noun with a goal of 1 John 1. `holdChapters` keeps the chapter fetches back until the returned release is called,
+// as a loaded host does (mw-5r3p30.485): the sheet's slider is disabled until its examples have loaded.
+async function openIdeaSheet(page: Page, percent: number, holdChapters = false): Promise<() => void> {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await put(page, 'settings', [{ key: 'goal', value: '1 John 1' }]);
+  await put(page, 'grammarLevels', ['breathings', 'accents', 'iota-subscript'].map((id) => ({ id, level: 'solid', since: Date.now(), how: 'placement' })));
+  await openWithTextSize(page, '#/goal', percent);
+  await expect(page.getByTestId('ideas-bar')).toBeVisible();
+  let release = (): void => {};
+  if (holdChapters) {
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route(/\/data\/.*\.json/, async (route) => {
+      await gate;
+      await route.continue();
+    });
+  }
+  await page.getByTestId('ideas-bar').click();
+  await page.getByTestId('ideas-list').getByRole('button', { name: 'The noun', exact: true }).click();
+  return release;
+}
+
+// The slider is one thumb: End slides it to I know it, which opens Drill it. It is disabled until the sheet has found its examples, and a disabled
+// control takes no focus and no key, so the walk waits for it first (mw-5r3p30.485).
+async function slideToKnowIt(page: Page): Promise<void> {
+  const idea = page.getByRole('dialog', { name: 'Idea' });
+  const slider = idea.getByRole('slider', { name: 'Your level' });
+  await expect(idea.getByTestId('idea-loading')).toHaveCount(0);
+  await expect(slider).toBeEnabled();
+  await slider.focus();
+  await page.keyboard.press('End');
+}
+
 for (const phone of PHONES) {
   for (const percent of [100, 130]) {
     const at = `${phone.name} at ${percent} % text`;
@@ -136,16 +171,8 @@ for (const phone of PHONES) {
       });
 
       test('Drill it (a dialog with a footer of its own): Next is in view after an answer', async ({ page }) => {
-        await page.goto('/');
-        await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-        await put(page, 'settings', [{ key: 'goal', value: '1 John 1' }]);
-        await put(page, 'grammarLevels', ['breathings', 'accents', 'iota-subscript'].map((id) => ({ id, level: 'solid', since: Date.now(), how: 'placement' })));
-        await openWithTextSize(page, '#/goal', percent);
-        await page.getByTestId('ideas-bar').click();
-        await page.getByTestId('ideas-list').getByRole('button', { name: 'The noun', exact: true }).click();
-        const idea = page.getByRole('dialog', { name: 'Idea' });
-        await idea.getByRole('slider', { name: 'Your level' }).focus();
-        await page.keyboard.press('End');
+        await openIdeaSheet(page, percent);
+        await slideToKnowIt(page);
         const drill = page.getByRole('dialog', { name: 'Drill it' });
         await expect(drill.getByTestId('grammar-prompt')).toBeVisible();
         await drill.locator('[data-option]').last().click();
@@ -248,3 +275,16 @@ for (const phone of PHONES) {
     });
   }
 }
+
+test('Drill it opens from the idea sheet even when its examples are slow to load (the slider waits, then End slides it)', async ({ page }) => {
+  await page.setViewportSize(PHONES[0].size);
+  await openUnlocked(page);
+  const release = await openIdeaSheet(page, 100, true);
+  const idea = page.getByRole('dialog', { name: 'Idea' });
+  await expect(idea.getByTestId('idea-loading')).toBeVisible();
+  await expect(idea.getByRole('slider', { name: 'Your level' })).toBeDisabled();
+  setTimeout(release, 1500);
+  await slideToKnowIt(page);
+  const drill = page.getByRole('dialog', { name: 'Drill it' });
+  await expect(drill.getByTestId('grammar-prompt')).toBeVisible();
+});

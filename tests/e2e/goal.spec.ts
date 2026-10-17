@@ -151,6 +151,8 @@ test('the Goal screen: two bars that fit, the lists, Learn next, Next words and 
   await page.getByTestId('learn-next').click();
   const sheet = page.getByRole('dialog', { name: 'Idea' });
   await expect(sheet.getByRole('heading', { name: 'The singular' })).toBeVisible();
+  // the slider is disabled until the sheet has found its examples, and a disabled control takes no focus or key (mw-5r3p30.485)
+  await expect(sheet.getByRole('slider', { name: 'Your level' })).toBeEnabled();
   await sheet.getByRole('slider', { name: 'Your level' }).focus();
   await page.keyboard.press('ArrowRight');
   await expect(sheet.getByTestId('idea-level')).toHaveText('Frontier since today');

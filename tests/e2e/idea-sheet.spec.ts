@@ -49,6 +49,8 @@ test('the idea sheet of the genitive fits the phone, its slider and buttons clea
 
   // The nominative case is not solid yet, so sliding up first asks whether to go there: Stay here goes on
   await expect(idea.getByTestId('idea-builds-on')).toContainText('This builds on The nominative case');
+  // the slider is disabled until the sheet has found its examples, and a disabled control takes no focus or key (mw-5r3p30.485)
+  await expect(idea.getByRole('slider', { name: 'Your level' })).toBeEnabled();
   await idea.getByRole('slider', { name: 'Your level' }).focus();
   await page.keyboard.press('ArrowRight');
   await page.getByRole('button', { name: 'Stay here', exact: true }).click();
