@@ -7,7 +7,9 @@
 // Audible (The Word of Promise, src/resources/audioBible.ts), each only while its setting is on; the open Lampas chapter does not change. With
 // Logos off in Settings the books still show; picking one says so and turns Logos on in one tap, and with the Audio Bible off too it names that setting.
 // In choose mode (mw-umv8sp.3: the return sheet's Pick it myself, src/plan/WhereDidYouGetTo.tsx) a tap on any chapter, of either testament, hands it to `onChoose` and
-// opens nothing: no Logos panel, no Preface row, no 'Opens in Logos' tag.
+// opens nothing: no Logos panel, no Preface row, no 'Opens in Logos' tag. `heading` names the sheet in that mode ('Where are you starting?', src/plan/StartPlan.tsx).
+// With the Reading plan on and a plan started (mw-umv8sp.5) every grid marks the chapters done (a ✓, dimmed, data-done) and the next one (an accent outline, data-next):
+// `marks` is the plan as src/plan/usePlan.ts reads it; `showPlan` false (StartPlan) draws none, as the plan being started has no marks yet.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { BOOKS, bookOf } from './data/books';
@@ -15,10 +17,12 @@ import type { PlanChapter } from './data/plans';
 import { type BookIndex, loadIndex } from './data/chapter';
 import type { OpenChapter } from './data/readerChapter';
 import { getLogosBible } from './data/repositories';
+import { keyOf } from './data/repositories/readingPlan';
 import { OT_BOOKS, otBookOf } from './data/otBooks';
 import { getStudyResources, setResourceOn } from './data/repositories/resources';
 import { navigate, openReader } from './nav/route';
 import { SendOff } from './plan/SendOff';
+import { usePlan, type PlanView } from './plan/usePlan';
 import { useSendOff } from './plan/useSendOff';
 import { type AudioBible, audioBibleOf } from './resources/audioBible';
 import { oldTestamentChoices } from './resources/oldTestamentChoices';
@@ -32,8 +36,43 @@ import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 
 const ITEMS = [...OT_BOOKS, ...BOOKS].map((b) => ({ id: b.code, name: b.name }));
 
+/** How a chapter of the plan is marked: done (dimmed, with a check) or the next one (outlined). Both are also said to a screen reader as the button's description. */
+function markOf(marks: PlanView | undefined, code: string, chapter: number): { attrs: Record<string, string>; check: boolean; ring: string; description?: string } {
+  if (!marks) return { attrs: {}, check: false, ring: '' };
+  const key = keyOf({ code, chapter });
+  if (marks.done.has(key)) return { attrs: { 'data-done': '' }, check: true, ring: 'text-muted opacity-70', description: 'Done' };
+  if (marks.next && keyOf(marks.next) === key) return { attrs: { 'data-next': '' }, check: false, ring: 'ring-2 ring-inset ring-accent', description: 'Next in your plan' };
+  return { attrs: {}, check: false, ring: '' };
+}
+
+/** One chapter number in a grid: 48 px, the chapter he is in filled, the plan's marks on top. */
+function ChapterButton({ code, n, here, pressed, marks, onPick }: { code: string; n: number; here?: boolean; pressed?: boolean; marks: PlanView | undefined; onPick: () => void }) {
+  const mark = markOf(marks, code, n);
+  const filled = here || pressed;
+  return (
+    <button
+      type="button"
+      data-chapter={n}
+      {...mark.attrs}
+      aria-label={`Chapter ${n}`}
+      aria-description={mark.description}
+      aria-current={here ? 'true' : undefined}
+      aria-pressed={pressed === undefined ? undefined : pressed}
+      onClick={onPick}
+      className={`relative min-h-12 rounded-xl border text-lg font-medium ${filled ? 'border-accent bg-accent text-accent-fg' : `border-line bg-surface ${mark.ring}`}`}
+    >
+      {n}
+      {mark.check ? (
+        <span aria-hidden="true" className="absolute right-1.5 top-0.5 text-xs font-semibold">
+          ✓
+        </span>
+      ) : null}
+    </button>
+  );
+}
+
 /** The chapter numbers of one book: a grid of 48 px buttons. */
-function Chapters({ code, current, onPick }: { code: string; current: OpenChapter; onPick: (chapter: number) => void }) {
+function Chapters({ code, current, marks, onPick }: { code: string; current: OpenChapter; marks: PlanView | undefined; onPick: (chapter: number) => void }) {
   const [index, setIndex] = useState<BookIndex | null>(null);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -67,36 +106,21 @@ function Chapters({ code, current, onPick }: { code: string; current: OpenChapte
   }
   return (
     <div role="group" aria-label={`${bookOf(code)?.name} chapters`} className="grid grid-cols-4 gap-2 px-1 pt-1">
-      {Array.from({ length: count }, (_, i) => i + 1).map((n) => {
-        const here = current.book === code && current.chapter === n;
-        return (
-          <button
-            key={n}
-            type="button"
-            data-chapter={n}
-            aria-label={`Chapter ${n}`}
-            aria-current={here ? 'true' : undefined}
-            onClick={() => onPick(n)}
-            className={`min-h-12 rounded-xl border text-lg font-medium ${here ? 'border-accent bg-accent text-accent-fg' : 'border-line bg-surface'}`}
-          >
-            {n}
-          </button>
-        );
-      })}
+      {Array.from({ length: count }, (_, i) => i + 1).map((n) => (
+        <ChapterButton key={n} code={code} n={n} here={current.book === code && current.chapter === n} marks={marks} onPick={() => onPick(n)} />
+      ))}
     </div>
   );
 }
 
 /** The chapter numbers of an Old Testament book in choose mode: the same grid, and a tap hands the chapter over. */
-function ChooseChapters({ code, onPick }: { code: string; onPick: (chapter: number) => void }) {
+function ChooseChapters({ code, marks, onPick }: { code: string; marks: PlanView | undefined; onPick: (chapter: number) => void }) {
   const book = otBookOf(code);
   if (!book) return null;
   return (
     <div role="group" aria-label={`${book.name} chapters`} className="grid grid-cols-4 gap-2 px-1 pt-1">
       {Array.from({ length: book.chapters }, (_, i) => i + 1).map((n) => (
-        <button key={n} type="button" data-chapter={n} aria-label={`Chapter ${n}`} onClick={() => onPick(n)} className="min-h-12 rounded-xl border border-line bg-surface text-lg font-medium">
-          {n}
-        </button>
+        <ChapterButton key={n} code={code} n={n} marks={marks} onPick={() => onPick(n)} />
       ))}
     </div>
   );
@@ -158,7 +182,7 @@ function ChapterChoice({ name, code, chapter, logosOn, bible, audio }: { name: s
 }
 
 /** The chapters of an Old Testament book. A tap on one opens no app: it shows what the chapter offers (Read in Logos, Listen in Audible) under the grid. */
-function OtChapters({ code }: { code: string }) {
+function OtChapters({ code, marks }: { code: string; marks: PlanView | undefined }) {
   const resources = useLiveQuery(getStudyResources, []);
   const bible = useLiveQuery(getLogosBible, []);
   const audioId = useSetting(audioBibleSetting);
@@ -173,17 +197,7 @@ function OtChapters({ code }: { code: string }) {
       {logosOn ? null : <LogosOff name={book.name} audioOff={false} />}
       <div role="group" aria-label={`${book.name} chapters`} className="grid grid-cols-4 gap-2 px-1 pt-1">
         {Array.from({ length: book.chapters }, (_, i) => i + 1).map((n) => (
-          <button
-            key={n}
-            type="button"
-            data-chapter={n}
-            aria-label={`Chapter ${n}`}
-            aria-pressed={chosen === n}
-            onClick={() => setChosen(n)}
-            className={`min-h-12 rounded-xl border text-lg font-medium ${chosen === n ? 'border-accent bg-accent text-accent-fg' : 'border-line bg-surface'}`}
-          >
-            {n}
-          </button>
+          <ChapterButton key={n} code={code} n={n} pressed={chosen === n} marks={marks} onPick={() => setChosen(n)} />
         ))}
       </div>
       {chosen === null ? null : <ChapterChoice name={book.name} code={code} chapter={chosen} logosOn={logosOn} bible={bible} audio={audio} />}
@@ -191,7 +205,21 @@ function OtChapters({ code }: { code: string }) {
   );
 }
 
-export function ChapterPicker({ current, onClose, onChoose }: { current: OpenChapter; onClose: () => void; onChoose?: (chapter: PlanChapter) => void }) {
+export function ChapterPicker({
+  current,
+  onClose,
+  onChoose,
+  heading,
+  showPlan = true,
+}: {
+  current: OpenChapter;
+  onClose: () => void;
+  onChoose?: (chapter: PlanChapter) => void;
+  heading?: string;
+  showPlan?: boolean;
+}) {
+  const plan = usePlan();
+  const marks = showPlan ? plan?.started : undefined;
   const [book, setBook] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const { drag, handle } = useSheetDrag(onClose);
@@ -222,7 +250,7 @@ export function ChapterPicker({ current, onClose, onChoose }: { current: OpenCha
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Choose a chapter"
+        aria-label={heading ?? 'Choose a chapter'}
         style={{ transform: drag ? `translateY(${drag}px)` : undefined }}
         className="relative flex h-[85dvh] flex-col rounded-t-2xl border-t border-line bg-surface"
       >
@@ -234,7 +262,7 @@ export function ChapterPicker({ current, onClose, onChoose }: { current: OpenCha
                 ‹ Books
               </button>
             ) : null}
-            <h2 className="min-w-0 flex-1 truncate text-xl font-semibold">{name ?? 'Choose a book'}</h2>
+            <h2 className="min-w-0 flex-1 truncate text-xl font-semibold">{name ?? heading ?? 'Choose a book'}</h2>
             <button type="button" ref={focusOnMount} onClick={onClose} className="min-h-11 min-w-11 shrink-0 rounded-lg px-3 text-base font-medium text-accent">
               Done
             </button>
@@ -264,12 +292,12 @@ export function ChapterPicker({ current, onClose, onChoose }: { current: OpenCha
           {book ? (
             otBookOf(book) ? (
               onChoose ? (
-                <ChooseChapters code={book} onPick={pick} />
+                <ChooseChapters code={book} marks={marks} onPick={pick} />
               ) : (
-                <OtChapters code={book} />
+                <OtChapters code={book} marks={marks} />
               )
             ) : (
-              <Chapters code={book} current={current} onPick={pick} />
+              <Chapters code={book} current={current} marks={marks} onPick={pick} />
             )
           ) : (
             <>

@@ -28,7 +28,8 @@ export interface ReadingPlanState {
   session?: ListeningSession;
 }
 
-const keyOf = (c: PlanChapter): string => `${c.code}.${c.chapter}`;
+/** The key a done chapter is kept under: 'gen.1'. */
+export const keyOf = (c: PlanChapter): string => `${c.code}.${c.chapter}`;
 
 const isChapter = (v: unknown): v is PlanChapter =>
   typeof v === 'object' && v !== null && typeof (v as PlanChapter).code === 'string' && Number.isInteger((v as PlanChapter).chapter);
