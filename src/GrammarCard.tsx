@@ -1,6 +1,6 @@
 // src/GrammarCard.tsx — one grammar question in Review (mw-hqd5bz.6): what is asked, the Greek form large, Tap to hear for a letter or a word,
 // then the choices. Multiple choice while the idea is weak: four endings, glyphs or syllables to tap, or the words of a verse as buttons
-// (tap the form) that wrap; who does it, what is done, what it is done to (kind 'roles', mw-emk3xt.3): the verse's words, the same buttons; what a chunk or clause says (kind 'meaning'): the Greek large with Tap to hear, four English chunks;
+// (tap the form) that wrap; what a use is doing (kind 'use', mw-br588b.3): the verse with the use's words marked and four titles of sentence ideas, and the word a use hangs on (kind 'tap-use'): the verse's words, the same buttons; who does it, what is done, what it is done to (kind 'roles', mw-emk3xt.3): the verse's words, the same buttons; what a chunk or clause says (kind 'meaning'): the Greek large with Tap to hear, four English chunks;
 // a full parsing (kind 'parse', mw-emk3xt.3): the word large and the Parsing drill's steps one after the other, '2 of 5: tense', right only when every step is, never a flashcard; a flashcard once it is strong: the prompt and the form, Show reveals the answer, then I knew it / Not yet.
 import { useState } from 'react';
 import type { ParseStep } from './data/drill';
@@ -25,7 +25,22 @@ const LOOK = {
 const GREEK = /[Ͱ-Ͽἀ-῿]/;
 
 /** The kinds that show the words of a verse as buttons to tap. */
-const showsVerse = (q: GrammarQuestion): boolean => q.kind === 'tap-form' || q.kind === 'roles';
+const showsVerse = (q: GrammarQuestion): boolean => q.kind === 'tap-form' || q.kind === 'roles' || q.kind === 'tap-use';
+
+/** The verse of a 'use' question as text, the words the use is made of marked (data-marked), so the question can be about them. */
+function UseVerse({ question }: { question: GrammarQuestion }) {
+  if (question.kind !== 'use' || !question.words) return null;
+  const marked = new Set(question.markedAt);
+  return (
+    <p data-testid="use-verse" lang="grc" className="mt-3 min-w-0 break-words font-greek text-3xl">
+      {question.words.map((word, i) => (
+        <span key={i} data-marked={marked.has(i) ? '' : undefined} className={marked.has(i) ? 'rounded bg-accent/20 px-1 font-medium' : 'px-1'}>
+          {word}{' '}
+        </span>
+      ))}
+    </p>
+  );
+}
 
 interface Props {
   question: GrammarQuestion;
@@ -71,6 +86,7 @@ function Heading({ question, mode, hint }: { question: GrammarQuestion; mode: Qu
             {question.form}
           </p>
         ) : null}
+        <UseVerse question={question} />
         <p data-testid="grammar-ref" className="mt-1 min-h-6 text-base text-muted">
           {question.ref ?? ''}
         </p>

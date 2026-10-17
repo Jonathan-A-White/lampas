@@ -142,7 +142,7 @@ export function foundationOf(form: string): string[] {
 }
 
 /** The whole Greek form a question shows: the word of a stress, syllable or breathing question, the right word of a tap-form, the form with its ending put back, the Greek of a meaning question's chunk. */
-export function formOfQuestion(question: Pick<GrammarQuestion, 'kind' | 'form' | 'right'>): string | undefined {
+export function formOfQuestion(question: Pick<GrammarQuestion, 'kind' | 'form' | 'right' | 'words' | 'markedAt'>): string | undefined {
   switch (question.kind) {
     case 'ending':
       return question.form?.replace('_', question.right);
@@ -154,6 +154,12 @@ export function formOfQuestion(question: Pick<GrammarQuestion, 'kind' | 'form' |
     case 'parse':
       // a word parsed right in every step (mw-emk3xt.3)
       return question.form;
+    case 'use':
+      // the words of the verse the question marks (the ἵνα and its verb), credited word by word
+      return question.markedAt?.flatMap((i) => question.words?.[i] ?? []).join(' ');
+    case 'tap-use':
+      // the word tapped as the one a use hangs on
+      return question.right;
     case 'roles':
       // the word tapped as the subject, the verb or the object
       return question.right;
@@ -218,7 +224,7 @@ export interface Inferred {
  * letters, sounds and marks; a miss on a question about a letter or a sound counts against it. A miss on a question about a form (an
  * ending, a tap) says nothing about its letters.
  */
-export function inferFromAnswer(evidence: EvidenceMap, question: Pick<GrammarQuestion, 'kind' | 'ideaId' | 'form' | 'right'>, right: boolean): Inferred {
+export function inferFromAnswer(evidence: EvidenceMap, question: Pick<GrammarQuestion, 'kind' | 'ideaId' | 'form' | 'right' | 'words' | 'markedAt'>, right: boolean): Inferred {
   if (right) {
     const form = formOfQuestion(question);
     if (form) return inferFromForms(evidence, form.split(/\s+/).filter(Boolean));
@@ -234,7 +240,7 @@ export function inferFromAnswer(evidence: EvidenceMap, question: Pick<GrammarQue
  * An answer given in a letter drill sitting (mw-86e9r1.11, PROVISIONAL): what inferFromAnswer shows, except that a right answer never takes a letter's run past DRILL_RUN_CAP, one
  * short of the right uses that make it solid. Solid comes from the spaced reviews, never from one sitting; the first right answer in a Review a day or more later finishes the job.
  */
-export function inferFromDrill(evidence: EvidenceMap, question: Pick<GrammarQuestion, 'kind' | 'ideaId' | 'form' | 'right'>, right: boolean): Inferred {
+export function inferFromDrill(evidence: EvidenceMap, question: Pick<GrammarQuestion, 'kind' | 'ideaId' | 'form' | 'right' | 'words' | 'markedAt'>, right: boolean): Inferred {
   const result = inferFromAnswer(evidence, question, right);
   if (!right) return result;
   const capped = new Map(result.evidence);

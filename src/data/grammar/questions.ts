@@ -10,6 +10,7 @@ import { buildSteps, type ParseStep } from '../drill';
 import { decodeParse, parseSegments, splitParse, type ParseFeatureId, type SplitParse } from '../parseCode';
 import { PARADIGMS, tableFor } from '../paradigms';
 import { shuffle, type Random } from '../quiz';
+import { USE_IDS, usesOf, type Use } from './uses';
 import { chosenPronunciation } from '../../speech/greek';
 import type { Pronunciation } from '../../speech/pronunciation';
 import { LADDER, itemFacet, itemsOf, ideasOf, type Facet, type GrammarIdea } from './ladder';
@@ -22,7 +23,7 @@ import { quickQuestion } from './quickRound';
 import { laterTermsIn, termIsTaught } from './taughtTerms';
 import { teachOf } from './teach';
 
-export type GrammarKind = 'ending' | 'tap-form' | 'letter' | 'sound' | 'say' | 'stress' | 'breathing' | 'syllables' | 'preposition' | 'compound' | 'concept' | 'cell' | 'meaning' | 'parse' | 'roles';
+export type GrammarKind = 'ending' | 'tap-form' | 'letter' | 'sound' | 'say' | 'stress' | 'breathing' | 'syllables' | 'preposition' | 'compound' | 'concept' | 'cell' | 'meaning' | 'parse' | 'roles' | 'use' | 'tap-use';
 
 export interface GrammarQuestion {
   kind: GrammarKind;
@@ -46,6 +47,10 @@ export interface GrammarQuestion {
   facet?: Facet;
   /** the Greek words the question is about, for a 'meaning': the chunk's (or the clause's) words in text order, which the card may mark */
   marked?: string[];
+  /** the verse's Greek words in text order, for a 'use' (mw-br588b.3): the card draws them as text, with the words at `markedAt` marked */
+  words?: string[];
+  /** indices into `words` of the words a 'use' marks: the use's own (ἵνα and its verb) */
+  markedAt?: number[];
   /** the wrong options that are near misses of the point it tests (src/data/choices.ts, mw-i7xe0n.7): a Hint takes the others away first */
   near?: string[];
   /** an ending's table (mw-svw421.5, data/paradigms tableFor): the id of the paradigm that holds the ending, which the card offers to open after the answer */
@@ -1044,6 +1049,129 @@ export function buildConcept(idea: GrammarIdea, random: Random, scheme: Pronunci
   };
 }
 
+// ---- What is this doing, and which word does it hang on (mw-br588b.3) ----
+
+interface UseSpot {
+  place: Place;
+  use: Use;
+}
+
+const isUseIdea = (idea: GrammarIdea): boolean => idea.tier === 'sentences' && (USE_IDS as readonly string[]).includes(idea.id);
+
+/** Every use of the idea in the passage, as the place of its first word. */
+function spotsOfUse(idea: GrammarIdea, passage: readonly Chapter[]): UseSpot[] {
+  if (!isUseIdea(idea)) return [];
+  return passage.flatMap((c) =>
+    c.verses.flatMap((verse) =>
+      usesOf(verse)
+        .filter((use) => use.id === idea.id)
+        .map((use): UseSpot => ({ place: { word: verse.g[use.words[0]], verse, ref: `${c.book} ${c.chapter}:${verse.n}`, key: `${c.code}.${c.chapter}.${verse.n}` }, use })),
+    ),
+  );
+}
+
+/**
+ * The uses to try, seeded: those of the verses at his level (graded) when there are any, else all of them. A passage has few uses of an idea, so the easiest third of the verses
+ * (placesInOrder) would ask the same verse every time: every verse at his level is a candidate.
+ */
+function spotsInOrder(spots: readonly UseSpot[], random: Random, graded?: readonly GradedVerse[], only?: string): UseSpot[] {
+  if (only !== undefined) return shuffle(spots.filter((s) => s.place.key === only), random);
+  const level = new Set(atLevelPlaces(spots.map((s) => s.place), graded));
+  const atLevel = spots.filter((s) => level.has(s.place));
+  return shuffle(atLevel.length > 0 ? atLevel : spots, random);
+}
+
+/** The uses that are named by a word of their own: 'What is ἵνα doing here?'. The others are asked of 'these words'. */
+const KEYWORD_USES = new Set(['clause-hoti', 'clause-hina', 'condition']);
+
+/** Which use the words do: the idea's own title and three other titles of the sentences tier that name no term a later idea teaches. */
+function titlesOfUse(idea: GrammarIdea, random: Random): Pick<GrammarQuestion, 'options' | 'near'> {
+  const others = titlesFor(idea).filter((o) => o.tier === 'sentences');
+  return choicesOf({ right: idea.title, near: shuffle(others, random).map((o) => o.title), fillers: [] }, random);
+}
+
+/**
+ * What is this doing? (mw-br588b.3, PROVISIONAL): a verse of the passage with a use of a sentences-tier idea (uses.ts), its Greek shown with the use's words marked, and four
+ * uses to choose from: the idea's title and three others of the tier. A use that opens with a word of its own (ἵνα, ὅτι, εἰ) is asked 'What is ἵνα doing here?', when the word
+ * stands once in the verse, any other 'What are these words doing?'. Null for an idea that is no use, or when the passage has none or too few titles to choose from.
+ */
+export function buildUse(idea: GrammarIdea, passage: readonly Chapter[], random: Random, graded?: readonly GradedVerse[], only?: string): GrammarQuestion | null {
+  const [spot] = spotsInOrder(spotsOfUse(idea, passage), random, graded, only);
+  if (!spot) return null;
+  const { place, use } = spot;
+  const words = place.verse.g.map((g) => g.t);
+  const keyword = place.word.t;
+  const named = KEYWORD_USES.has(idea.id) && words.filter((w) => w === keyword).length === 1;
+  const { options, near } = titlesOfUse(idea, random);
+  if (options.length < OPTION_COUNT) return null;
+  return {
+    kind: 'use',
+    ideaId: idea.id,
+    prompt: named ? `What is ${keyword} doing here?` : 'What are these words doing?',
+    options,
+    near,
+    right: idea.title,
+    ref: place.ref,
+    words,
+    markedAt: use.words,
+    facet: SPOT,
+  };
+}
+
+interface Ask {
+  /** the word the prompt names */
+  named: number;
+  /** the word to tap */
+  answer: number;
+  prompt: string;
+}
+
+/** The word of a use the question names, and the word it hangs on (or goes with) that is tapped; null when the use has none. */
+function askOf(idea: GrammarIdea, verse: Verse, use: Use, random: Random): Ask | null {
+  const words = verse.g;
+  const posOf = (i: number): string => parsedOf(words[i].p).pos;
+  const head = use.head;
+  if (head === undefined) return null;
+  const other = use.words.filter((i) => i !== head);
+  switch (idea.id) {
+    case 'agreement':
+    case 'article-position': {
+      if (posOf(head) !== 'noun' || other.length === 0) return null;
+      const i = pick(other, random);
+      return { named: i, answer: head, prompt: `Tap the noun that ${words[i].t} ${idea.id === 'agreement' ? 'agrees with' : 'stands beside'}` };
+    }
+    case 'infinitive-complement':
+      return other.length === 0 ? null : { named: other[0], answer: head, prompt: `Tap the verb that ${words[other[0]].t} completes` };
+    case 'periphrastic':
+      return other.length === 0 ? null : { named: head, answer: other[0], prompt: `Tap the participle that goes with ${words[head].t}` };
+    case 'genitive-absolute': {
+      const noun = other.find((i) => ['noun', 'pronoun'].includes(posOf(i)));
+      return noun === undefined ? null : { named: noun, answer: head, prompt: `Tap the participle that goes with ${words[noun].t}` };
+    }
+    case 'clause-hina':
+      return other.length === 0 ? null : { named: other[0], answer: head, prompt: `Tap the verb that ${words[other[0]].t} brings` };
+    default:
+      return null;
+  }
+}
+
+/**
+ * Tap the word a use hangs on (mw-br588b.3, PROVISIONAL): the verse's Greek words as buttons and a prompt naming one word of the use, 'Tap the noun that πιστός agrees with', 'Tap the
+ * verb that ἀγνοεῖν completes', 'Tap the participle that goes with ἐστίν'. Right is the word asked for, asked only when its text and the named word's stand once in the verse, so a tap is
+ * unambiguous. Null for an idea whose use has no such word, or when the passage has none.
+ */
+export function buildTapUse(idea: GrammarIdea, passage: readonly Chapter[], random: Random, graded?: readonly GradedVerse[], only?: string): GrammarQuestion | null {
+  for (const { place, use } of spotsInOrder(spotsOfUse(idea, passage), random, graded, only)) {
+    const ask = askOf(idea, place.verse, use, random);
+    if (!ask) continue;
+    const words = place.verse.g.map((g) => g.t);
+    const once = (i: number): boolean => words.filter((w) => w === words[i]).length === 1;
+    if (!once(ask.named) || !once(ask.answer)) continue;
+    return { kind: 'tap-use', ideaId: idea.id, prompt: ask.prompt, options: words, right: words[ask.answer], ref: place.ref, code: place.verse.g[ask.answer].p, facet: SPOT };
+  }
+  return null;
+}
+
 // ---- Any idea ----
 
 /**
@@ -1091,6 +1219,15 @@ export function buildIdeaQuestion(
       return buildEnclitic(idea, random);
     case 'words-sound-alike':
       return buildSoundAlike(idea, random, scheme);
+  }
+  // a sentence idea is asked on its verses (mw-br588b.3): what the use is, or the word it hangs on; the concept is the last resort
+  if (idea.tier === 'sentences') {
+    const asks = [(i: GrammarIdea) => buildUse(i, passage, random, graded), (i: GrammarIdea) => buildTapUse(i, passage, random, graded)];
+    for (const build of random() < 0.5 ? asks : asks.reverse()) {
+      const question = build(idea);
+      if (question) return question;
+    }
+    return buildConcept(idea, random, scheme);
   }
   // Review hands the graded verses (mw-emk3xt.2): there a word idea is also asked what a chunk says, and (mw-emk3xt.3) who does what to whom for the ideas of a subject, verb and object, and, for a `strong`
   // idea (a step of SOLID_STEP or more, PROVISIONAL), to parse a whole word; the placement and Drill it test the form alone. The first draw picks where the rotation starts.

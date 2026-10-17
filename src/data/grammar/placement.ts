@@ -33,7 +33,7 @@ export interface Asked {
 }
 
 /** What the placement needs to know of the question just answered. */
-export type AnsweredQuestion = Pick<GrammarQuestion, 'kind' | 'ideaId' | 'form' | 'right'>;
+export type AnsweredQuestion = Pick<GrammarQuestion, 'kind' | 'ideaId' | 'form' | 'right' | 'words' | 'markedAt'>;
 
 export type PlacementDone = 'finished' | 'paused';
 

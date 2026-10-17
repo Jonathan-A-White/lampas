@@ -107,12 +107,12 @@ const settle = async (infer: (evidence: EvidenceMap) => Inferred, now: number): 
 };
 
 /** An answer to a grammar question: a right one on a form credits its letters, sounds and marks; a miss on a letter or sound counts against it. */
-export function noteAnswer(question: Pick<GrammarQuestion, 'kind' | 'ideaId' | 'form' | 'right'>, right: boolean, now = Date.now()): Promise<void> {
+export function noteAnswer(question: Pick<GrammarQuestion, 'kind' | 'ideaId' | 'form' | 'right' | 'words' | 'markedAt'>, right: boolean, now = Date.now()): Promise<void> {
   return settle((evidence) => inferFromAnswer(evidence, question, right), now);
 }
 
 /** An answer in the letter drill (mw-86e9r1.11): as noteAnswer, but a drill sitting never makes a letter solid (inferFromDrill). */
-export function noteDrillAnswer(question: Pick<GrammarQuestion, 'kind' | 'ideaId' | 'form' | 'right'>, right: boolean, now = Date.now()): Promise<void> {
+export function noteDrillAnswer(question: Pick<GrammarQuestion, 'kind' | 'ideaId' | 'form' | 'right' | 'words' | 'markedAt'>, right: boolean, now = Date.now()): Promise<void> {
   return settle((evidence) => inferFromDrill(evidence, question, right), now);
 }
 
