@@ -645,8 +645,8 @@ describeFeature(feature, ({ Scenario }) => {
       expect(row?.due).toBeGreaterThanOrEqual(startedAt + DAY - CLOCK_SLACK);
       expect(row?.due).toBeLessThanOrEqual(Date.now() + DAY + CLOCK_SLACK);
     });
-    And('Drill it no longer has a button {string}', (_, name: string) => {
-      expect(within(drillDialog()).queryByRole('button', { name, exact: true })).toBeNull();
+    And('Drill it no longer has a button {string}', async (_, name: string) => {
+      await waitFor(() => expect(within(drillDialog()).queryByRole('button', { name, exact: true })).toBeNull());
     });
   });
 
