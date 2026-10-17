@@ -205,7 +205,11 @@ const readLine = (reading: VerseReading, text: string): string => {
   return `You read ${Math.min((reading.reached ?? -1) + 1, total)} of ${total} words`;
 };
 
-/** The word he stopped at, offered as his next: big, in chunks, with the tip and the speaker (the same as a word to fix). */
+/** A word of one chunk that is the word itself ('work' in chunks 'work'): its chunks would only say it again. */
+const isOneChunk = (fix: FixWord): boolean => fix.chunks.length <= 1 && normalWord(fix.chunks[0] ?? fix.word) === normalWord(fix.word);
+
+/** The word he stopped at, offered as his next: big, in chunks, with the tip and the speaker (the same as a word to fix). A word of one chunk is
+ * drawn once, big, with its tip under it: a second line of the same word would be a repeat (mw-neuq78.13). */
 function NextWord({ fix, view }: { fix: FixWord; view: ReadingView }) {
   const type = typeOf(view);
   return (
@@ -218,7 +222,7 @@ function NextWord({ fix, view }: { fix: FixWord; view: ReadingView }) {
       <p lang={type.lang} className={`break-words text-4xl font-semibold ${type.chunks}`}>
         {fix.word}
       </p>
-      <Fix fix={fix} view={view} speaker={false} />
+      {isOneChunk(fix) ? <p className="break-words text-base text-muted">{plainQuotes(fix.tip)}</p> : <Fix fix={fix} view={view} speaker={false} />}
     </div>
   );
 }
