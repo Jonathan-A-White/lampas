@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.298
+_2026-10-17_
+- Fixed: The Greek word in a lesson's title, such as περί in 'The preposition περί', now shows in the same Greek letters as the rest of the lesson.
+- New: Settings has "Ask for more", where you can ask the tutor (or fill in a short form) for an approach, a study resource, a text or a translation Lampas does not have yet, and it goes to the makers.
+- Fixed: Listen in Audible no longer takes the Lampas tab to audible.com; if no app takes it, the book page opens in a new tab and Lampas stays where it was.
+
 ## 0.1.297
 _2026-10-17_
 - Fixed: Holding the Talk button no longer makes the phone chime at every pause while you speak, and the words after a pause still reach your question.

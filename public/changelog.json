@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.298",
+    "date": "2026-10-17",
+    "story": "mw-86e9r1.38",
+    "kind": "fixed",
+    "text": "The Greek word in a lesson's title, such as περί in 'The preposition περί', now shows in the same Greek letters as the rest of the lesson."
+  },
+  {
+    "version": "0.1.298",
+    "date": "2026-10-17",
+    "story": "mw-hqd5bz.37",
+    "kind": "new",
+    "text": "Settings has \"Ask for more\", where you can ask the tutor (or fill in a short form) for an approach, a study resource, a text or a translation Lampas does not have yet, and it goes to the makers."
+  },
+  {
+    "version": "0.1.298",
+    "date": "2026-10-17",
+    "story": "mw-5r3p30.466",
+    "kind": "fixed",
+    "text": "Listen in Audible no longer takes the Lampas tab to audible.com; if no app takes it, the book page opens in a new tab and Lampas stays where it was."
+  },
+  {
     "version": "0.1.297",
     "date": "2026-10-17",
     "story": "mw-5r3p30.498",
