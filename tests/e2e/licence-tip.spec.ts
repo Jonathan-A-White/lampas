@@ -94,3 +94,63 @@ test('the Licence page’s own back button returns to where it was opened from',
   await page.getByRole('button', { name: '‹ Reader' }).click();
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
 });
+
+// A quick double tap (mw-8m9dyu.10): the first tap on a control that removes itself lets the text slide into its place; the second tap, at the same point,
+// must not land on a word and open its sheet.
+test.describe('a double tap on the tip', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  /**
+   * Scrolls the Reader until a Greek word lies under `name`'s button (the word is there all along, under the tip), and returns a point inside both: the
+   * place his thumb is, and the word that slides under it when the tip goes.
+   */
+  async function pointOverAWord(page: Page, name: string): Promise<{ x: number; y: number }> {
+    const box = (await tip(page).getByRole('button', { name }).boundingBox())!;
+    const found = await page.evaluate(({ left, top, right, bottom }) => {
+      const main = document.querySelector<HTMLElement>('[data-reader]')!;
+      for (let at = 0; at < 900; at += 6) {
+        main.scrollTop = at;
+        for (const word of document.querySelectorAll<HTMLElement>('[data-word]')) {
+          const r = word.getBoundingClientRect();
+          const x1 = Math.max(r.left, left + 4);
+          const x2 = Math.min(r.right, right - 4);
+          const y1 = Math.max(r.top, top + 4);
+          const y2 = Math.min(r.bottom, bottom - 4);
+          if (x2 - x1 >= 4 && y2 - y1 >= 4) return { x: (x1 + x2) / 2, y: (y1 + y2) / 2 };
+        }
+      }
+      return null;
+    }, { left: box.x, top: box.y, right: box.x + box.width, bottom: box.y + box.height });
+    expect(found, `a Greek word can be scrolled under ${name}`).not.toBeNull();
+    return found!;
+  }
+
+  /** Two touch taps at one point inside `name`'s button, a thumb's beat apart (the Tester's were about 100 ms), with a word under that point. */
+  async function tapTwice(page: Page, name: string): Promise<void> {
+    const { x, y } = await pointOverAWord(page, name);
+    await page.touchscreen.tap(x, y);
+    await page.waitForTimeout(100);
+    await page.touchscreen.tap(x, y);
+  }
+
+  test('two quick taps on Close in the Greek view close the tip and open no word sheet', async ({ page }) => {
+    await onVisit(page, 3);
+    await page.goto('/#/?c=8&view=greek');
+    await expect(tip(page)).toBeVisible();
+    await tapTwice(page, 'Close');
+    await expect(tip(page)).toHaveCount(0);
+    await page.waitForTimeout(600);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await shot(page, 'licence-tip-double-tap');
+  });
+
+  test('two quick taps on Learn more open no dialog', async ({ page }) => {
+    await onVisit(page, 3);
+    await page.goto('/#/?c=8&view=greek');
+    await expect(tip(page)).toBeVisible();
+    await tapTwice(page, 'Learn more');
+    await expect(page.getByRole('heading', { name: 'Licence', level: 1 })).toBeVisible();
+    await page.waitForTimeout(600);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+  });
+});

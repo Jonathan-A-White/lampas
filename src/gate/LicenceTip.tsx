@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { openLicence } from '../nav/route';
 import { useLicence } from './licenceContext';
+import { useHeldSpace } from '../ui/heldSpace';
 import { endLicenceTip, licenceTipDue, markLicenceTipShown } from './licenceTip';
 
 export const LICENCE_TIP_TEXT = 'Lampas is free to read. A licence adds a tutor you can ask about any word or verse, and Read it aloud.';
@@ -14,11 +15,14 @@ export function LicenceTip() {
   const [due] = useState(() => licenceTipDue());
   const [closed, setClosed] = useState(false);
   const shown = due && !closed && licence === 'not-licensed';
+  // the tip's place stays empty for a moment after it goes, so a double tap on its × does not land on the Greek that slides into it (mw-8m9dyu.10)
+  const held = useHeldSpace();
   useEffect(() => {
     if (shown) markLicenceTipShown();
   }, [shown]);
-  if (!shown) return null;
-  const end = () => {
+  if (!shown) return held.space;
+  const end = (card: Element | null) => {
+    held.hold(card);
     endLicenceTip();
     setClosed(true);
   };
@@ -33,8 +37,8 @@ export function LicenceTip() {
         <p className="leading-snug">{LICENCE_TIP_TEXT}</p>
         <button
           type="button"
-          onClick={() => {
-            end();
+          onClick={(e) => {
+            end(e.currentTarget.closest('aside'));
             openLicence('reader');
           }}
           className="-ml-1 min-h-12 px-1 font-medium text-accent underline"
@@ -42,7 +46,7 @@ export function LicenceTip() {
           Learn more
         </button>
       </div>
-      <button type="button" aria-label="Close" onClick={end} className="min-h-12 min-w-12 shrink-0 rounded-lg text-2xl leading-none">
+      <button type="button" aria-label="Close" onClick={(e) => end(e.currentTarget.closest('aside'))} className="min-h-12 min-w-12 shrink-0 rounded-lg text-2xl leading-none">
         <span aria-hidden="true">×</span>
       </button>
     </aside>

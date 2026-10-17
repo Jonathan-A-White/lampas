@@ -90,3 +90,21 @@ test('with Immersive reader Off there is no card', async ({ page }) => {
   await page.waitForTimeout(500);
   await expect(card(page)).toHaveCount(0);
 });
+
+// A quick double tap (mw-8m9dyu.10): the card leaves on the first tap and the text slides up into its place; the second tap, at the same point, must not
+// land on a word and open its sheet.
+for (const name of ['Got it', "Don't show this again"]) {
+  test(`two quick taps on ${name} close the card and open no word sheet`, async ({ page }) => {
+    await openReader(page, 'on');
+    await page.goto('/#/?c=8&view=greek');
+    await expect(card(page)).toBeVisible();
+    const box = (await card(page).getByRole('button', { name }).boundingBox())!;
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    await page.touchscreen.tap(x, y);
+    await page.touchscreen.tap(x, y);
+    await expect(card(page)).toHaveCount(0);
+    await page.waitForTimeout(600);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+  });
+}
