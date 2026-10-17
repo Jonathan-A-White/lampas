@@ -126,4 +126,15 @@ describe('browserEnv.open', () => {
     expect(tab.opener).toBeNull();
     open.mockRestore();
   });
+
+  it('opens the address once, with no noopener feature (it makes window.open answer null for a tab that did open), and leaves the page where it is', () => {
+    const before = window.location.href;
+    const tab = { opener: window } as unknown as Window;
+    const open = vi.spyOn(window, 'open').mockReturnValue(tab);
+    browserEnv.open('https://www.audible.com/pd/The-Word-of-Promise');
+    expect(open).toHaveBeenCalledTimes(1);
+    expect(open.mock.calls[0]).toEqual(['https://www.audible.com/pd/The-Word-of-Promise', '_blank']);
+    expect(window.location.href).toBe(before);
+    open.mockRestore();
+  });
 });
