@@ -13,6 +13,7 @@ import { setVerseAction } from './verse/action';
 const NAMES: Record<LadderLang, string> = { el: 'Greek', en: 'English' };
 const VIEWS: Record<LadderLang, ReaderView> = { el: 'greek', en: 'english' };
 const BUTTON = 'min-h-12 w-full rounded-xl border border-line px-3 text-lg font-medium';
+const LOADING = 'Loading the ladder…';
 
 /** Moves the Verse view to a ladder verse: on its own history entry (`here`, as the arrows do) or as a new Back step from another screen. */
 function goTo(ref: string, how: 'here' | 'push'): void {
@@ -22,13 +23,18 @@ function goTo(ref: string, how: 'here' | 'push'): void {
   else openVerseAt(at);
 }
 
-/** The 'Reading ladder' button: opens the verse the list says to read now, on the Read it aloud action. `how` is `here` inside the Verse view, `push` from another screen. */
+/**
+ * The 'Reading ladder' button: opens the verse the list says to read now, on the Read it aloud action. `how` is `here` inside the Verse view, `push` from another screen.
+ * The list is fetched at the first tap and is large (mw-neuq78.17: seconds on a slow connection), so until the verse opens the button reads LOADING and takes no second tap.
+ */
 export function LadderStart({ lang, how, label = 'Reading ladder' }: { lang: LadderLang; how: 'here' | 'push'; label?: string }) {
   const [problem, setProblem] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [loading, setLoading] = useState(false);
   const start = async (): Promise<void> => {
     setProblem(null);
     setDone(false);
+    setLoading(true);
     try {
       const place = await currentLadderPlace(lang);
       if (place === null) {
@@ -43,12 +49,14 @@ export function LadderStart({ lang, how, label = 'Reading ladder' }: { lang: Lad
       goTo(place, how);
     } catch {
       setProblem(navigator.onLine === false ? 'The ladder is not on this phone yet, and you are offline.' : 'Could not load the ladder. Try again.');
+    } finally {
+      setLoading(false);
     }
   };
   return (
     <div className="space-y-1">
-      <button type="button" data-ladder-start={lang} onClick={() => void start()} className={BUTTON}>
-        {label}
+      <button type="button" data-ladder-start={lang} onClick={() => void start()} disabled={loading} aria-busy={loading} className={`${BUTTON} disabled:text-muted`}>
+        {loading ? LOADING : label}
       </button>
       {done ? <p role="status" className="text-base text-muted">Every verse on the {NAMES[lang]} ladder is read well.</p> : null}
       {problem ? <p role="alert" className="text-base text-bad">{problem}</p> : null}
