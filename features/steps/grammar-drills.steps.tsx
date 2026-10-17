@@ -22,7 +22,7 @@ import { seedHisWords } from '../../tests/support/his-words';
 import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { grammarRandom, gradedVersesOf } from '../../src/review/kinds';
+import { GRAMMAR, grammarRandom, gradedVersesOf } from '../../src/review/kinds';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 
 afterAll(() => {
@@ -119,16 +119,28 @@ const rightOne = (): HTMLElement => {
 };
 
 /** The chapter files of the goals the scenarios name. */
-const CHAPTER_FILES: Record<string, string> = { '1 John 1': '1jn/1', 'John 1': 'jhn/1' };
+const CHAPTER_FILES: Record<string, string> = { '1 John 1': '1jn/1', 'John 1': 'jhn/1', 'Romans 8': 'rom/8' };
 
-/** He knows every word of the chapter and every idea of the ladder, so every verse of it is at his level (gradedVerses). */
-async function knowEverything(name: string): Promise<void> {
+/** He knows every word of the chapter. */
+async function knowWordsOf(name: string): Promise<void> {
   const file = CHAPTER_FILES[name];
   if (!file) throw new Error(`no chapter file for ${name}`);
   const now = Date.now();
   const lemmas = new Set(chapter(file).verses.flatMap((v) => v.g.map((w) => w.l.normalize('NFC'))));
   await db.words.bulkPut([...lemmas].map((lemma) => ({ lemma, lemmas: [], gloss: 'a word', lesson: 1, state: 'solid' as const, since: now })));
+}
+
+/** He knows every word of the chapter and every idea of the ladder, so every verse of it is at his level (gradedVerses). */
+async function knowEverything(name: string): Promise<void> {
+  await knowWordsOf(name);
+  const now = Date.now();
   await db.grammarLevels.bulkPut(LADDER.map((idea) => ({ id: storedId(idea.id, 'modern'), level: 'solid' as const, since: now, how: 'marked' as const })));
+}
+
+/** Every idea of the ladder is solid except the verbs' (the tier of verbs), which are not yet: a verse with a verb is not at his level. */
+async function knowAllButVerbs(): Promise<void> {
+  const now = Date.now();
+  await db.grammarLevels.bulkPut(LADDER.map((idea) => ({ id: storedId(idea.id, 'modern'), level: idea.tier === 'verbs' ? ('notYet' as const) : ('solid' as const), since: now, how: 'marked' as const })));
 }
 
 /** The answers written for a word to the Parsing drill's table, oldest first. */
@@ -572,6 +584,33 @@ describeFeature(feature, ({ Scenario }) => {
     And('he starts the review', start);
     Then('the question is about a verse of 1 John 2', () => {
       expect(screen.getByTestId('grammar-ref').textContent).toMatch(/^1 John 2:\d+$/);
+    });
+  });
+
+  Scenario('Review asks from verses at his level', ({ Given, And, Then }) => {
+    Given('his goal is {string}', async (_, goal: string) => {
+      await freshStore();
+      await setGoal(goal);
+    });
+    And("he knows every word of {string} and every idea but the verbs'", async (_, name: string) => {
+      await knowWordsOf(name);
+      await knowAllButVerbs();
+    });
+    And('the idea {string} is due', async (_, id: string) => makeIdeaDue(id));
+    Then('{int} draws of {string} are all about {string}, a verse with a genitive and no verb, though other verses have one', async (_, draws: number, id: string, ref: string) => {
+      const number = Number(ref.split(':')[1]);
+      const romans = chapter('rom/8');
+      const hasGenitive = (n: number) => romans.verses.find((v) => v.n === n)!.g.some((w) => /-\d?G[SP]/.test(w.p));
+      expect(romans.verses.find((v) => v.n === number)!.g.some((w) => w.p.startsWith('V-'))).toBe(false);
+      expect(hasGenitive(number)).toBe(true);
+      expect(romans.verses.filter((v) => v.n !== number && hasGenitive(v.n)).length).toBeGreaterThan(5);
+      const due = [await review(id)];
+      const asked = new Set<string>();
+      for (let s = 1; s <= draws; s += 1) {
+        const [item] = await GRAMMAR.draw(due, mulberry32(s));
+        asked.add(item.kind === 'grammar' ? (item.question.ref ?? item.question.kind) : 'not a grammar item');
+      }
+      expect([...asked]).toEqual([ref]);
     });
   });
 });

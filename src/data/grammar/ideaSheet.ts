@@ -7,12 +7,16 @@ import { chosenPronunciation } from '../../speech/greek';
 import { lessonsOf, type Pronunciation } from '../../speech/pronunciation';
 import { type BookIndex, type Chapter, type GreekWord, ownEnglish, wordGloss } from '../chapter';
 import { goalText, parseGoal } from '../goal';
+import type { FormTest } from '../frontier';
 import { scoreWords } from '../ladderScore';
 import { decodeParse, parseSegments, splitParse } from '../parseCode';
 import { passagesOf } from '../passage';
 import type { OpenChapter } from '../readerChapter';
+import { easiestWith, type GradedVerse } from './gradedVerses';
 import { clustersOf, foundationOf, foundationSpans, isFoundation, LETTER_IDS, letterIdOf, type Span } from './inference';
 import { ideaOfTerm, ideasBelow, ideasOfWord, LADDER, type GrammarIdea } from './ladder';
+import { buildEnding, buildMeaning, buildParse, buildRoles, buildTapForm, needs, type GrammarQuestion } from './questions';
+import type { Random } from '../quiz';
 import { bare, cellOptions, tableHas, teachOf, type TeachTable } from './teach';
 
 /** A book goal looks in its first chapters only: every chapter would be a request each. */
@@ -472,4 +476,67 @@ export async function ideaExamplesFor(id: string, passage: IdeaPassage, load: Ch
     }
   }
   return found;
+}
+
+// ---- Try it on a verse (mw-emk3xt.4, docs/grammar.md 'The idea sheet') ----
+
+/** How many questions Try it asks of the verse: the meaning of a chunk with the form, the form, a parsing of the word. */
+export const TRY_IT_QUESTIONS = 3;
+
+export interface TryIt {
+  /** the verse, as gradedVerses names it ('1jn.1.2') */
+  verse: GradedVerse;
+  /** 'Try it: 1 John 1:2' is titled by this: '1 John 1:2' */
+  ref: string;
+  /** up to TRY_IT_QUESTIONS questions about the verse, in the order they are asked */
+  questions: GrammarQuestion[];
+}
+
+/**
+ * Whether some verse of `chapters` (only `verse` of them when a verse goal names one) has a form whose parsing names the idea (the forms the passage questions are about): when none has,
+ * the sheet offers no Try it. An idea of the letters or sounds, or of a pattern, has no such form.
+ */
+export function hasFormOf(ideaId: string, chapters: readonly Chapter[], verse?: number): boolean {
+  return chapters.some((c) => c.verses.some((v) => (verse === undefined || v.n === verse) && v.g.some((w) => needs(w.p, ideaId))));
+}
+
+/**
+ * Try it on a verse: the easiest verse of `chapters` at his level that has a form needing the idea (`easiestWith` over `graded`, gradedVerses' list; with `verse`, a verse goal,
+ * only that verse), and up to three questions about it asked in turn: what a chunk with the form says (`buildMeaning`), the form (its ending when its table is open in `opened`, else tapping it),
+ * and a parsing of a word (`buildParse`) or, when some form of the verse does not pass `passes` (the verse is not at his level), who does what to whom (`buildRoles`, which the idea may not have;
+ * then a parsing). A question that cannot be made is made up from the others (the other form question, roles, a parsing), a kind once at most; a verse that can be asked fewer
+ * than three gives fewer. Null when no verse has a form of the idea. Seeded: the same `random` gives the same questions.
+ */
+export function tryItOn(idea: GrammarIdea, chapters: readonly Chapter[], graded: readonly GradedVerse[], passes: FormTest, opened: ReadonlySet<string>, random: Random, verse?: number): TryIt | null {
+  const holders = new Set(chapters.flatMap((c) => c.verses.filter((v) => v.g.some((w) => needs(w.p, idea.id))).map((v) => `${c.code}.${c.chapter}.${v.n}`)));
+  const verses = graded.filter((g) => holders.has(g.ref) && (verse === undefined || g.verse === verse));
+  const found = easiestWith(idea.id, verses, chapters);
+  if (!found) return null;
+  const chapter = chapters.find((c) => c.code === found.code && c.chapter === found.chapter);
+  if (!chapter) return null;
+  // the verse alone is graded 'at level' here, so the builders that draw from verses at his level draw from this one
+  const only = [{ ...found, atLevel: true }];
+  const key = found.ref;
+  const kinds: Record<string, () => GrammarQuestion | null> = {
+    meaning: () => buildMeaning(idea, chapters, random, only, key),
+    ending: () => buildEnding(idea, chapters, random, opened, only, key),
+    'tap-form': () => buildTapForm(idea, chapters, random, only, key),
+    roles: () => buildRoles(idea, chapters, random, only, key),
+    parse: () => buildParse(idea, chapters, random, only, key),
+  };
+  const everyFormPasses = chapter.verses.find((v) => v.n === found.verse)?.g.every(passes) ?? false;
+  const slots = [['meaning'], ['ending', 'tap-form'], everyFormPasses ? ['parse', 'roles'] : ['roles', 'parse']];
+  const questions: GrammarQuestion[] = [];
+  const made = new Set<string>();
+  const ask = (kind: string): boolean => {
+    if (made.has(kind)) return false;
+    made.add(kind);
+    const question = kinds[kind]();
+    if (question) questions.push(question);
+    return question !== null;
+  };
+  // each slot in turn, then what is left of the kinds for any slot that gave none
+  for (const slot of slots) slot.some(ask);
+  for (const kind of Object.keys(kinds)) if (questions.length < TRY_IT_QUESTIONS) ask(kind);
+  return questions.length ? { verse: found, ref: `${chapter.book} ${chapter.chapter}:${found.verse}`, questions } : null;
 }

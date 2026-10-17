@@ -170,3 +170,11 @@ Feature: Review asks grammar ideas, and asks them before words
     And he opens Review from Settings
     And he starts the review
     Then the question is about a verse of 1 John 2
+
+  # mw-emk3xt.4: every passage question is drawn from the verses at his level. 1 John 1 has a finite verb in every verse, so with the verbs not yet none is at his level there;
+  # Romans 8:6 has no verb at all and a genitive.
+  Scenario: Review asks from verses at his level
+    Given his goal is "Romans 8"
+    And he knows every word of "Romans 8" and every idea but the verbs'
+    And the idea "case-genitive" is due
+    Then 20 draws of "case-genitive" are all about "Romans 8:6", a verse with a genitive and no verb, though other verses have one
