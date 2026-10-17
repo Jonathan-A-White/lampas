@@ -77,10 +77,17 @@ export async function open(configure: (f: FakePostern) => void = (f) => void (f.
 }
 
 export async function selectVerse28(): Promise<void> {
-  const number = await screen.findByRole('button', { name: 'Verse 28' });
+  // beside verse 28's own line, not through the whole Reader: a role query on `screen` walks every word of the chapter (5 s on a loaded host, mw-5r3p30.555)
+  const verse28 = await waitFor(() => {
+    const found = document.querySelector<HTMLElement>('[data-verse="28"]');
+    if (!found) throw new Error('verse 28 is not drawn yet');
+    return found;
+  });
+  const numberOf = () => within(verse28).getByRole('button', { name: 'Verse 28' });
+  const number = await within(verse28).findByRole('button', { name: 'Verse 28' });
   if (number.getAttribute('aria-pressed') !== 'true') await user.click(number);
   await screen.findByRole('region', { name: 'Verse view' });
-  await waitFor(() => expect(screen.getByRole('button', { name: 'Verse 28' })).toHaveAttribute('aria-pressed', 'true'));
+  await waitFor(() => expect(numberOf()).toHaveAttribute('aria-pressed', 'true'));
 }
 
 /** Opens the Talk sheet: from the Talk bar, or, with a verse's view open, from its Ask the tutor action ('Talk about verse N'). */
