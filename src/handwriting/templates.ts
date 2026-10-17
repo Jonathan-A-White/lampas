@@ -4,7 +4,8 @@
 // y 0 to 1 (the baseline), a small letter's body from 0.5 to 1, an ascender reaches up to 0 and a descender down to 1.5, x is in
 // the same units. Stroke order and direction do not matter to the checker, so they are drawn however is easy here.
 // These are drawn by hand from the letters' usual shapes, not learned from anyone's pen; recorded samples would sharpen them.
-// The FIRST variant of a letter is also the model Write it shows the reader (GlyphStrokes.tsx), so it is written as a pen writes it (mw-86e9r1.55).
+// The FIRST variant of a letter is also the model Write it shows the reader (GlyphStrokes.tsx), so it is written as a pen writes it (mw-86e9r1.55), in the order
+// and direction a good hand writes the letter (mw-86e9r1.56): from the top or the left, an upright downwards, a bar to the right, a round letter anticlockwise.
 
 export type Point = readonly [number, number];
 export type Stroke = readonly Point[];
@@ -98,7 +99,7 @@ const SMALL: Record<string, Variant[]> = {
     [join(line([0.1, 1.0], [0.1, 0.55], [0.1, 0.75]), curve([0.1, 0.75], [0.15, 0.58], [0.3, 0.52], [0.45, 0.6], [0.5, 0.8], [0.5, 1.45]))],
   ],
   θ: [
-    [arc(0.3, 0.5, 0.25, 0.5, -90, 270), line([0.05, 0.5], [0.55, 0.5])],
+    [arc(0.3, 0.5, 0.25, 0.5, -90, -450), line([0.05, 0.5], [0.55, 0.5])],
     [join(arc(0.3, 0.5, 0.25, 0.5, -90, 90), arc(0.3, 0.5, 0.25, 0.5, 90, 270)), line([0.15, 0.52], [0.3, 0.46], [0.45, 0.5])],
   ],
   ι: [[curve([0.1, 0.5], [0.1, 0.88], [0.17, 0.99], [0.28, 0.99])], [line([0.1, 0.5], [0.1, 0.95])]],
@@ -123,7 +124,7 @@ const SMALL: Record<string, Variant[]> = {
     [line([0.6, 0.02], [0.3, 0.0], [0.16, 0.12], [0.28, 0.26], [0.45, 0.3]), line([0.45, 0.3], [0.15, 0.45], [0.1, 0.65], [0.25, 0.82], [0.48, 0.86], [0.2, 1.0], [0.15, 1.2], [0.3, 1.4])],
   ],
   ο: [
-    [arc(0.3, 0.75, 0.28, 0.25, -90, 270)],
+    [arc(0.3, 0.75, 0.28, 0.25, -90, -450)],
     [arc(0.3, 0.75, 0.28, 0.25, -90, 90), arc(0.3, 0.75, 0.28, 0.25, 90, 270)],
   ],
   π: [
@@ -147,7 +148,7 @@ const SMALL: Record<string, Variant[]> = {
     [line([0.08, 0.5], [0.1, 0.85], [0.3, 1.0]), line([0.3, 1.0], [0.5, 0.85], [0.55, 0.5])],
   ],
   φ: [
-    [line([0.35, 0.0], [0.35, 1.45]), arc(0.35, 0.72, 0.28, 0.22, -90, 270)],
+    [line([0.35, 0.0], [0.35, 1.45]), arc(0.35, 0.72, 0.28, 0.22, -90, -450)],
     [line([0.33, 0.05], [0.37, 1.45]), join(arc(0.35, 0.72, 0.28, 0.22, 180, 360), arc(0.35, 0.72, 0.28, 0.22, 0, 180))],
   ],
   χ: [
@@ -175,8 +176,8 @@ const CAPITAL: Record<string, Variant[]> = {
     [join(line([0, 1], [0, 0], [0.45, 0]), arc(0.45, 0.25, 0.27, 0.25, -90, 90), line([0.45, 0.5], [0, 0.5], [0.5, 0.5]), arc(0.5, 0.75, 0.3, 0.25, -90, 90), line([0.5, 1], [0, 1]))],
   ],
   γ: [
-    [line([0, 1], [0, 0], [0.6, 0])],
     [line([0, 0], [0, 1]), line([0, 0], [0.6, 0])],
+    [line([0, 1], [0, 0], [0.6, 0])],
   ],
   δ: [
     [line([0.4, 0], [0, 1], [0.8, 1], [0.4, 0])],
@@ -195,7 +196,7 @@ const CAPITAL: Record<string, Variant[]> = {
     [line([0, 0], [0, 1]), line([0, 0.5], [0.7, 0.5]), line([0.7, 0], [0.7, 1])],
   ],
   θ: [
-    [arc(0.45, 0.5, 0.45, 0.5, -90, 270), line([0.05, 0.5], [0.85, 0.5])],
+    [arc(0.45, 0.5, 0.45, 0.5, -90, -450), line([0.05, 0.5], [0.85, 0.5])],
     [join(arc(0.45, 0.5, 0.45, 0.5, -90, 90), arc(0.45, 0.5, 0.45, 0.5, 90, 270)), line([0.25, 0.5], [0.65, 0.5])],
   ],
   ι: [[line([0, 0], [0, 1])], [line([-0.15, 0], [0.15, 0]), line([0, 0], [0, 1]), line([-0.15, 1], [0.15, 1])]],
@@ -220,7 +221,7 @@ const CAPITAL: Record<string, Variant[]> = {
     [line([0, 0], [0.7, 0]), line([0.1, 0.5], [0.6, 0.5]), line([0, 1], [0.7, 1])],
   ],
   ο: [
-    [arc(0.45, 0.5, 0.42, 0.5, -90, 270)],
+    [arc(0.45, 0.5, 0.42, 0.5, -90, -450)],
     [arc(0.45, 0.5, 0.42, 0.5, -90, 90), arc(0.45, 0.5, 0.42, 0.5, 90, 270)],
   ],
   π: [
@@ -228,8 +229,8 @@ const CAPITAL: Record<string, Variant[]> = {
     [line([0.1, 1], [0.1, 0], [0.75, 0], [0.75, 1])],
   ],
   ρ: [
-    [join(line([0, 1], [0, 0], [0.4, 0]), arc(0.4, 0.25, 0.22, 0.25, -90, 90), line([0.4, 0.5], [0, 0.5]))],
     [line([0, 0], [0, 1]), join(line([0, 0], [0.4, 0]), arc(0.4, 0.25, 0.22, 0.25, -90, 90), line([0.4, 0.5], [0, 0.5]))],
+    [join(line([0, 1], [0, 0], [0.4, 0]), arc(0.4, 0.25, 0.22, 0.25, -90, 90), line([0.4, 0.5], [0, 0.5]))],
   ],
   σ: [
     [line([0.7, 0], [0, 0], [0.55, 0.5], [0, 1], [0.7, 1])],
@@ -244,7 +245,7 @@ const CAPITAL: Record<string, Variant[]> = {
     [line([0, 0], [0.48, 0.57]), line([1, 0], [0.5, 0.55], [0.5, 1])],
   ],
   φ: [
-    [line([0.4, 0], [0.4, 1]), arc(0.4, 0.5, 0.4, 0.3, -90, 270)],
+    [line([0.4, 0], [0.4, 1]), arc(0.4, 0.5, 0.4, 0.3, -90, -450)],
     [line([0.4, 0], [0.4, 1]), join(arc(0.4, 0.5, 0.4, 0.3, 180, 360), arc(0.4, 0.5, 0.4, 0.3, 0, 180))],
   ],
   χ: [
@@ -259,6 +260,39 @@ const CAPITAL: Record<string, Variant[]> = {
     [join(line([0.05, 1], [0.2, 1], [0.26, 0.82]), arc(0.5, 0.45, 0.42, 0.45, 125, 415), line([0.74, 0.82], [0.8, 1], [0.95, 1]))],
     [join(line([0.05, 1], [0.25, 1], [0.26, 0.82]), arc(0.5, 0.45, 0.42, 0.45, 125, 415), line([0.74, 0.82], [0.75, 1], [0.95, 1]))],
   ],
+};
+
+/**
+ * What each stroke of a letter drawn with more than one is, in the order the first variant draws them (a letter with one stroke has no entry), for the line
+ * under Write it's model: 'Two strokes: the top bar first, then the stem.' (tests/unit/write-it-order.test.tsx holds the count to the strokes).
+ */
+export const STROKE_NOTES: Readonly<Record<string, readonly string[]>> = {
+  γ: ['the left arm and tail', 'the right arm'],
+  η: ['the stem', 'the arch and tail'],
+  θ: ['the oval', 'the bar'],
+  κ: ['the stem', 'the upper arm', 'the lower arm'],
+  λ: ['the long slope', 'the short leg'],
+  μ: ['the stem', 'the cup and tail'],
+  π: ['the top bar', 'the left leg', 'the right leg'],
+  τ: ['the top bar', 'the stem'],
+  φ: ['the stem', 'the oval'],
+  χ: ['the first slant', 'the second slant'],
+  ψ: ['the stem', 'the cup'],
+  Α: ['the two sides', 'the bar'],
+  Β: ['the stem', 'the top bowl', 'the bottom bowl'],
+  Γ: ['the stem', 'the bar'],
+  Ε: ['the top, the stem and the bottom', 'the middle bar'],
+  Η: ['the left stem', 'the bar', 'the right stem'],
+  Θ: ['the oval', 'the bar'],
+  Κ: ['the stem', 'the upper arm', 'the lower arm'],
+  Ξ: ['the top bar', 'the middle bar', 'the bottom bar'],
+  Π: ['the top bar', 'the left leg', 'the right leg'],
+  Ρ: ['the stem', 'the bowl'],
+  Τ: ['the top bar', 'the stem'],
+  Υ: ['the V', 'the stem'],
+  Φ: ['the stem', 'the oval'],
+  Χ: ['the first slant', 'the second slant'],
+  Ψ: ['the stem', 'the cup'],
 };
 
 /**
