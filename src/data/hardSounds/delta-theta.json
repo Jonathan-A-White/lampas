@@ -1,0 +1,44 @@
+{
+  "id": "delta-theta",
+  "title": "δ and θ: the two th sounds",
+  "learn": "Learn δ and θ",
+  "scheme": "modern",
+  "for": ["american", "british"],
+  "sounds": ["/ð/", "/θ/"],
+  "letters": ["δ", "θ"],
+  "steps": [
+    {
+      "kind": "why",
+      "text": "You already say both sounds: δ is the th of “this” and θ is the th of “thin”. What trips you up is the eye. English writes both as th, so nothing on the page tells you which is which; and δ looks like the d it is named after, so a reader says δέ as “deh” and ἀδελφός with a d. In Greek as it is spoken today δ is never a d, and θ is never the th of “this”."
+    },
+    {
+      "kind": "from-known",
+      "text": "Put the tip of your tongue lightly between your teeth and blow, with no voice: that is θ, the th of “thin”. Now hum while you do it: that is δ, the th of “this”. With a finger on your throat you feel δ buzz and θ not. Then say “this thin” slowly: δ, then θ."
+    },
+    {
+      "kind": "hear",
+      "text": "Listen for the buzz: θ in θεός and ἀλήθεια has none, δ in ἀδελφός and δίκαιος hums. ἐθεασάμεθα has two θ.",
+      "words": ["θεός", "ἀλήθεια", "ἀδελφός", "δίκαιος", "ἐθεασάμεθα"]
+    },
+    {
+      "kind": "contrast",
+      "text": "Each pair differs only in δ and θ: the hum of “this” against the breath of “thin”. The last two are one word, nothing, which the New Testament spells both ways.",
+      "pairs": [
+        ["ἤδη", "ἤθη"],
+        ["ἔδει", "ἔθει"],
+        ["δῷ", "θῶ"],
+        ["οὐδέν", "οὐθέν"]
+      ]
+    },
+    {
+      "kind": "try",
+      "text": "Say each word after the voice. Never a d for δ: the tongue stays at the teeth and the voice hums. For θ, no voice, only breath.",
+      "words": ["θεός", "ἀδελφός", "ἀλήθεια", "δίκαιος"]
+    },
+    {
+      "kind": "verse",
+      "text": "Here θ comes seven times and δ twice, each marked. Hear it, then say it: breath for every θ, a hum for the δ of οἴδαμεν and δέ.",
+      "ref": "1jn.3.2"
+    }
+  ]
+}

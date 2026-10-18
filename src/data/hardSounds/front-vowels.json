@@ -1,0 +1,43 @@
+{
+  "id": "front-vowels",
+  "title": "κ, γ, χ and λ before e and i",
+  "scheme": "modern",
+  "for": ["american", "british"],
+  "sounds": ["/k/", "/ʝ/", "/ç/", "/l/"],
+  "letters": ["και", "κει", "κοι", "κε", "κη", "κι", "κυ", "γαι", "γει", "γοι", "γε", "γη", "γι", "γυ", "χαι", "χει", "χοι", "χε", "χη", "χι", "χυ", "λια", "λιο"],
+  "steps": [
+    {
+      "kind": "why",
+      "text": "Before an e or i sound (ε, αι, η, ι, υ, ει, οι) Greek moves κ, γ and χ forward, from the back of the mouth to the hard roof behind the gum ridge: κ comes out almost as a k with a y in it, γ is the y of “yes”, χ is the h of “huge” said with a hiss. English does only a little of this, and a reader keeps each letter as it sounds before α or ο. λ goes the same way where an unstressed ι runs on into the next vowel, as in ἥλιος: there λι is one sound, like the lli of “million”."
+    },
+    {
+      "kind": "from-known",
+      "text": "Say “cool”, then “key”, and feel where your tongue touches: further forward for “key”. Greek κ before e and i sits there, and a little further forward still: καί is close to “kyeh”, with no separate y. Then say “yes” and “huge”: those are γ and χ before e and i. For λ, say “million” and hear the lli as one sound."
+    },
+    {
+      "kind": "hear",
+      "text": "Listen to κ in καί and ἐκεῖνος, γ in λέγει and χ in ἔχει: each before an e or i sound, each forward in the mouth. In ἥλιος and χίλια hear λι run on into the vowel after it. Lampas writes that ι as a syllable of its own, as it is said slowly, and that is never wrong.",
+      "words": ["καί", "ἐκεῖνος", "λέγει", "ἔχει", "ἥλιος", "χίλια"]
+    },
+    {
+      "kind": "contrast",
+      "text": "Each pair has the same letter before a back vowel and before a front one. Hear it move forward: κ in κόπος and κῆπος, γ in γάμον and γέμον, χ in χώραν and χήραν, and in ἔχω and ἔχει.",
+      "pairs": [
+        ["κόπος", "κῆπος"],
+        ["γάμον", "γέμον"],
+        ["χώραν", "χήραν"],
+        ["ἔχω", "ἔχει"]
+      ]
+    },
+    {
+      "kind": "try",
+      "text": "Say each word after the voice. Before e and i, let the tongue slide forward for κ, γ and χ; in ἥλιος, say λι as one sound, the lli of “million”.",
+      "words": ["καί", "ἐκεῖνος", "λέγει", "ἔχει", "ἥλιος"]
+    },
+    {
+      "kind": "verse",
+      "text": "Each κ, γ and χ before an e or i sound is marked: nine of them, four in καί alone. Hear it, then say it, with the tongue forward for every one.",
+      "ref": "1jn.1.3"
+    }
+  ]
+}

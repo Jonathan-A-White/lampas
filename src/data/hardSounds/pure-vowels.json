@@ -1,0 +1,50 @@
+{
+  "id": "pure-vowels",
+  "title": "Pure vowels: ε and ο",
+  "learn": "Learn to keep ε and ο pure",
+  "scheme": "modern",
+  "for": ["american", "british"],
+  "sounds": ["/e/", "/o/"],
+  "letters": ["ε", "αι", "ο", "ω"],
+  "steps": [
+    {
+      "kind": "why",
+      "text": {
+        "american": "Greek has five vowel sounds, and each is pure: the mouth holds still from start to end. English slides. Your “day” starts at e and slides up to ee, your “go” starts at o and slides to oo; said that way, ε drifts toward ι and ο toward ου, which are other Greek vowels. And English blurs a vowel that is not stressed to “uh”, like the a of “about”. Greek never does: every vowel keeps its sound, stressed or not.",
+        "british": "Greek has five vowel sounds, and each is pure: the mouth holds still from start to end. English slides. Your “day” starts at e and slides up to ee, and your “go” starts at the uh of “about” and slides to oo; said that way, ε drifts toward ι, and ο loses its round start. And English blurs a vowel that is not stressed to “uh”, like the a of “about”. Greek never does: every vowel keeps its sound, stressed or not."
+      }
+    },
+    {
+      "kind": "from-known",
+      "text": {
+        "american": "Say “pet” and hold the e, with no slide: that is ε, and αι, which sounds the same. For ο, say “or” and stop before the r, short: that is ο, and ω, which sounds the same. Say “day” and “go” in a mirror and watch the jaw move at the end; then say ε and ο with the jaw still.",
+        "british": "Say “pet” and hold the e, with no slide: that is ε, and αι, which sounds the same. For ο, say “lot” with your lips a little rounder: that is ο, and ω, which sounds the same. Say “day” and “go” in a mirror and watch the jaw and lips move at the end; then say ε and ο with them still."
+      }
+    },
+    {
+      "kind": "hear",
+      "text": "Listen to ε and ο held still in every syllable, the unstressed ones too: ὄνομα has three full vowels, and so has ἔχομεν. Not one slides, and not one goes to “uh”.",
+      "words": ["ὄνομα", "ἔχομεν", "λόγος", "θεός", "κόσμος", "ἐγώ"]
+    },
+    {
+      "kind": "contrast",
+      "text": "Each pair differs only in a vowel. If your ε slides toward ee, ἕνα becomes ἵνα and βασιλέα, king, becomes βασιλεία, kingdom; if your ο slides toward oo, ὅσα becomes οὖσα. Hear both words, then say both, holding each vowel still.",
+      "pairs": [
+        ["ἕνα", "ἵνα"],
+        ["ὅτε", "ὅτι"],
+        ["ὅσα", "οὖσα"],
+        ["βασιλέα", "βασιλεία"]
+      ]
+    },
+    {
+      "kind": "try",
+      "text": "Say each word after the voice, with your jaw still on every vowel. Give the vowels that are not stressed their full sound too: ἀγάπη starts with a full a, not “uh”.",
+      "words": ["ἀγάπη", "ὄνομα", "θεός", "ἐγώ", "ἔχομεν"]
+    },
+    {
+      "kind": "verse",
+      "text": "God is love: this verse is full of ε and ο, each ε, αι, ο and ω marked. Hear it, then say it with every vowel held still. Where ε or ο stands in a pair, ει, οι or ου, the pair has its own sound instead, ee, ee or oo.",
+      "ref": "1jn.4.16"
+    }
+  ]
+}

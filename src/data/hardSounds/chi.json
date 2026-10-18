@@ -1,0 +1,50 @@
+{
+  "id": "chi",
+  "title": "The Greek χ",
+  "learn": "Learn to say χ",
+  "scheme": "modern",
+  "for": ["american", "british"],
+  "sounds": ["/x/", "/ç/"],
+  "letters": ["χ"],
+  "steps": [
+    {
+      "kind": "why",
+      "text": {
+        "american": "English has no throaty ch, and it spells a k sound with ch in “Christ”, “chorus” and “character”, so a reader says χ as k. It is never k. Before α, ο, ω, ου or a consonant it is the throaty ch of “chutzpah”: the back of the tongue comes close to the roof of the mouth and the air rubs through. Before an e or i sound (ε, αι, η, ι, υ, ει, οι) it moves forward and softens, to the h of “huge” said with a hiss.",
+        "british": "Standard English has no throaty ch, and it spells a k sound with ch in “Christ”, “chorus” and “character”, so a reader says χ as k. It is never k. Before α, ο, ω, ου or a consonant it is the ch of Scottish “loch”, never “lock”: the back of the tongue comes close to the roof of the mouth and the air rubs through. Before an e or i sound (ε, αι, η, ι, υ, ει, οι) it moves forward and softens, to the h of “huge” said with a hiss."
+      }
+    },
+    {
+      "kind": "from-known",
+      "text": {
+        "american": "Say a k slowly, and stop the back of the tongue just before it touches: let the air rub through the narrow gap, as at the start of “chutzpah”. That is χ. For the soft one, say “huge” and hold the h until it hisses: that is χ before e and i, as in ἔχει.",
+        "british": "Say “loch” the Scottish way and hold the end: the air rubs through a narrow gap at the back of the mouth. That is χ. For the soft one, say “huge” and hold the h until it hisses: that is χ before e and i, as in ἔχει."
+      }
+    },
+    {
+      "kind": "hear",
+      "text": "Listen to the throaty χ before α, ο and ρ in χαρά, ἔχομεν and χριστοῦ, and to the soft one before an e or i sound in ἔχει, χεῖρες and ἀρχῆς. Never a k.",
+      "words": ["χαρά", "ἔχομεν", "χριστοῦ", "ἔχει", "χεῖρες", "ἀρχῆς"]
+    },
+    {
+      "kind": "contrast",
+      "text": "In the first three pairs χ stands against κ, the sound an English reader puts in its place: for χ the tongue comes close and stops there. In the last it stands against nothing at all: do not let the soft χ fade to a breath.",
+      "pairs": [
+        ["οὐχ", "οὐκ"],
+        ["ἤχῳ", "ἥκω"],
+        ["ἔχει", "ἐκεῖ"],
+        ["χήραν", "ἦραν"]
+      ]
+    },
+    {
+      "kind": "try",
+      "text": "Say each word after the voice. If you hear a k, the tongue touched: let it come close and stop there. Before e and i, move it forward, to the hissed h of “huge”.",
+      "words": ["χαρά", "ἔχομεν", "χριστοῦ", "ἔχει", "ἀρχῆς"]
+    },
+    {
+      "kind": "verse",
+      "text": "This verse turns on one word, said four times, each χ marked: the throaty χ of ἔχων and the soft χ of ἔχει. Hear it, then say it, keeping the two apart.",
+      "ref": "1jn.5.12"
+    }
+  ]
+}

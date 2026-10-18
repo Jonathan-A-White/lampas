@@ -1,0 +1,44 @@
+{
+  "id": "clusters",
+  "title": "Two consonants at the start of a word",
+  "learn": "Learn to say both letters",
+  "scheme": "modern",
+  "for": ["american", "british"],
+  "sounds": ["/ps/", "/ks/", "/p/", "/n/", "/ɣ/", "/k/", "/t/", "/m/"],
+  "letters": ["πν", "ψ", "ξ", "γν", "κτ", "πτ", "μν"],
+  "steps": [
+    {
+      "kind": "why",
+      "text": "English lets none of these start a word, and where it took one from Greek it went quiet on the first letter: the p of “psalm” and “pneumonia”, the g of “gnome”, the m of “mnemonic”, the p of “pterodactyl”; and an x at the start of an English word is a z, as in “xylophone”. Greek says every letter, wherever it stands: ψυχή starts with ps, πνεῦμα with pn, ξένος with ks."
+    },
+    {
+      "kind": "from-known",
+      "text": "You say each pair already, inside an English word: ps in “lips”, ks in “box”, pt in “apt”, kt in “act”, mn in “gymnast”, pn in “top note”. Say the word, then the pair alone, then put the Greek vowel after it: “lips”, ps, ψυχή. γν is the soft throaty γ, then n."
+    },
+    {
+      "kind": "hear",
+      "text": "Listen for the first letter: it is always there. πνεῦμα, ψυχή and ψεύστης start with a p, ξύλον and κτίσις with a k, γνῶσις with the soft γ, πτωχός with a p, μνημεῖον with an m.",
+      "words": ["πνεῦμα", "ψυχή", "ψεύστης", "ξύλον", "γνῶσις", "κτίσις", "πτωχός", "μνημεῖον"]
+    },
+    {
+      "kind": "contrast",
+      "text": "In the first two pairs the second word is the first with the cluster's first letter dropped, as English would drop it: say both letters, or you have said another word. In the last two ξ stands against σ and ζ: it is always ks, never s or z.",
+      "pairs": [
+        ["γνούς", "νοῦς"],
+        ["ἕκτη", "ἔτη"],
+        ["ἔξω", "ἔσω"],
+        ["ἔκραξεν", "ἔκραζεν"]
+      ]
+    },
+    {
+      "kind": "try",
+      "text": "Say each word after the voice, with every letter of the start: p and n in πνεῦμα, p and s in ψυχή, k and s in ξύλον. Slip no vowel in between: πνεῦμα has two syllables, not three.",
+      "words": ["πνεῦμα", "ψυχή", "ξύλον", "γνῶσις", "πτωχός"]
+    },
+    {
+      "kind": "verse",
+      "text": "Test the spirits: πνεύματι and πνεύματα, then ψευδοπροφῆται, false prophets, each cluster marked. Hear it, then say it, with the p of every πν and ψ.",
+      "ref": "1jn.4.1"
+    }
+  ]
+}
