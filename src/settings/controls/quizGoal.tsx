@@ -17,7 +17,7 @@ function QuizGoalField({ saved }: { saved: string }) {
       <label htmlFor={fieldId} className="block text-base font-semibold">
         Quiz goal
       </label>
-      <p className="text-base text-muted">{saved === '' ? 'No goal kept' : `Quiz goal: ${saved}`}</p>
+      <p className="text-base text-muted">{saved === '' ? 'No goal kept' : `Kept: ${saved}`}</p>
       <input
         id={fieldId}
         type="text"
