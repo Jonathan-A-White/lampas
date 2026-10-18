@@ -32,3 +32,6 @@ export const lessonById = (id: string | undefined, lessons: readonly HardSoundLe
 
 /** What a step says to a reader of `accent`. */
 export const saidFor = (said: Said, accent: EnglishAccent): string => (typeof said === 'string' ? said : (said[lessonAccent(accent)] ?? ''));
+
+/** What a letter sheet's link to `lesson` says: its own label (mw-5r3p30.359: 'Learn to roll your r'), or 'Learn to say it', then '(optional)'. */
+export const learnLabel = (lesson: HardSoundLesson): string => `${lesson.learn ?? 'Learn to say it'} (optional)`;

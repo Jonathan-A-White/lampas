@@ -1,16 +1,24 @@
 {
   "id": "tapped-r",
-  "title": "The tapped r",
+  "title": "Rolling your r",
+  "learn": "Learn to roll your r",
   "scheme": "modern",
-  "for": ["american", "british"],
-  "sounds": ["/ɾ/"],
-  "letters": ["ρ"],
+  "for": [
+    "american",
+    "british"
+  ],
+  "sounds": [
+    "/ɾ/"
+  ],
+  "letters": [
+    "ρ"
+  ],
   "steps": [
     {
       "kind": "why",
       "text": {
-        "american": "Your English r is made with the tongue pulled back or bunched up, and its tip never touches the roof of your mouth. The Greek ρ is the opposite: the tip of the tongue gives one quick flick against the ridge just behind your top teeth. Said the American way, every ρ sounds wrong to a Greek ear.",
-        "british": "Your English r is made with the tongue touching nothing, and before a consonant or at the end of a word you do not say it at all, as in “car”, “hard” and “father”. The Greek ρ is always said, wherever it stands, and it is one quick flick of the tongue tip against the ridge just behind your top teeth."
+        "american": "Your English r is made with the tongue pulled back or bunched up, and its tip never touches the roof of your mouth. The Greek ρ is the opposite: the tip of the tongue gives one quick flick against the ridge just behind your top teeth. Said the American way, every ρ sounds wrong to a Greek ear. None of this is needed to read Greek, so leave it whenever you like.",
+        "british": "Your English r is made with the tongue touching nothing, and before a consonant or at the end of a word you do not say it at all, as in “car”, “hard” and “father”. The Greek ρ is always said, wherever it stands, and it is one quick flick of the tongue tip against the ridge just behind your top teeth. None of this is needed to read Greek, so leave it whenever you like."
       }
     },
     {
@@ -22,15 +30,35 @@
     },
     {
       "kind": "hear",
-      "text": "Listen for the flick in each word. It is short: one touch, never a long roll and never the English r.",
-      "words": ["ἀρχή", "ὥρα", "πατήρ", "μαρτυρία", "χείρ"]
+      "text": "Listen for the flick in each word: between two vowels in χεῖρες and ὥρα, and before a consonant in ἀρχῆς. It is short: one touch, never a long roll and never the English r.",
+      "words": [
+        "ἀρχῆς",
+        "χεῖρες",
+        "ὥρα",
+        "μαρτυρία",
+        "πατήρ"
+      ]
     },
     {
       "kind": "contrast",
-      "text": "Each pair differs only in ρ and λ. For λ the tongue tip rests on the ridge behind your teeth; for ρ it only flicks it. Hear both words, then say both.",
+      "text": "Each pair differs only in ρ and λ, or in ρ and δ. For λ the tongue tip rests on the ridge behind your teeth; for δ it is the th of “this”; for ρ it only flicks the ridge, once. Hear both words, then say both.",
       "pairs": [
-        ["μέρος", "μέλος"],
-        ["ὄρος", "ὅλος"]
+        [
+          "μέρος",
+          "μέλος"
+        ],
+        [
+          "ὄρος",
+          "ὅλος"
+        ],
+        [
+          "σπόρος",
+          "σποδός"
+        ],
+        [
+          "ὄρος",
+          "ὁδός"
+        ]
       ]
     },
     {
@@ -39,7 +67,23 @@
         "american": "Say each word after the voice. Keep the flick short and light, like the middle of “butter”, and do not curl your tongue back. The ρ at the end of πατήρ is flicked too.",
         "british": "Say each word after the voice. Say every ρ, even at the end of πατήρ, where your English would drop it: one light touch of the tongue tip."
       },
-      "words": ["πατήρ", "ἀρχή", "ὥρα", "μαρτυρία"]
+      "words": [
+        "πατήρ",
+        "ἀρχῆς",
+        "χεῖρες",
+        "ὥρα"
+      ]
+    },
+    {
+      "kind": "stretch",
+      "text": "This one is only a stretch goal, and you can skip it. A Greek speaker may let the flick run on into several light touches in a row, the trill of Italian or Spanish rr. Start from the flick, keep the tongue loose and let the air shake the tip. If it will not come, the single flick is right for Greek.",
+      "words": [
+        "ῥῆμα",
+        "ῥίζα",
+        "ῥύομαι",
+        "τρέχω"
+      ],
+      "ipa": "/r/"
     },
     {
       "kind": "verse",
