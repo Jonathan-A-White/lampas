@@ -152,6 +152,7 @@ Feature: Test me on the grammar, and meet me where I am
     Then the screen offers "Start from the letters"
     When he taps "Start from the letters"
     Then the card says nothing is left for Learn next and does not name The Greek alphabet
+    And the card names three solid ideas and counts the rest
     When he goes back to the goal
     Then the Goal screen has no Learn next
 

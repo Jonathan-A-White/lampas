@@ -358,6 +358,11 @@ describeFeature(feature, ({ Scenario }) => {
       expect(screen.getByTestId('from-letters')).not.toHaveTextContent('The Greek alphabet. Learn next');
       expect(screen.getByTestId('from-letters')).not.toHaveTextContent('opens The Greek alphabet');
     });
+    And('the card names three solid ideas and counts the rest', async () => {
+      const line = screen.getByTestId('from-letters').textContent ?? '';
+      expect(line).toMatch(/^Already solid: [^,]+, [^,]+, [^,.]+ and \d+ more\. /);
+      expect(line.length).toBeLessThan(200);
+    });
     When('he goes back to the goal', async () => user.click(await screen.findByRole('button', { name: 'Back to the goal' })));
     Then('the Goal screen has no Learn next', async () => {
       await screen.findByRole('heading', { name: 'Goal', level: 1 });
