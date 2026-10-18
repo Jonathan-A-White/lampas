@@ -15,6 +15,11 @@ export function GreekOfferButton({ turn }: { turn: TalkTurn }) {
       >
         {turn.greekOffer.text}
       </button>
+      {turn.greekChoice === 'taken' && (
+        <p role="status" aria-label="Greek offer" className="mt-2 text-sm text-muted">
+          {turn.greekOffer.kind === 'view' ? 'The Reader is now in Greek.' : 'Opened the Greek word.'}
+        </p>
+      )}
     </div>
   );
 }

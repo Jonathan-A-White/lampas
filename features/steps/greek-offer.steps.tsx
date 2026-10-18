@@ -132,6 +132,29 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  const confirmation = () => within(sheet()).queryByRole('status', { name: 'Greek offer' });
+  const confirms = async (_: unknown, line: string) => {
+    await waitFor(() => expect(confirmation()?.textContent).toBe(line));
+  };
+
+  Scenario('A tap on the view offer is confirmed in the Talk sheet', ({ Given, When, And, Then }) => {
+    Given(GIVEN_VIEW, () => openWith(VIEW_OFFER));
+    When(WHEN_ASKS, asks);
+    Then('the talk shows the button {string}', shows);
+    And('the talk shows no confirmation', () => {
+      expect(confirmation()).toBeNull();
+    });
+    When('he taps {string}', taps);
+    Then('the talk confirms {string}', confirms);
+  });
+
+  Scenario('A tap on the word offer is confirmed in the Talk sheet', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 in English behind a fake Postern whose tutor offers the Greek word', () => openWith(WORD_OFFER));
+    When(WHEN_ASKS, asks);
+    And('he taps {string}', taps);
+    Then('the talk confirms {string}', confirms);
+  });
+
   Scenario('A no is remembered and nothing more is offered', ({ Given, When, And, Then }) => {
     Given(GIVEN_VIEW, () => openWith(VIEW_OFFER));
     When(WHEN_ASKS, asks);

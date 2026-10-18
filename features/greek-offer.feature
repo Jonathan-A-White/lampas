@@ -1,7 +1,7 @@
 Feature: The tutor offers the Greek gently to a reader who is not learning it
   A reader whose Reader is in English and who is not learning the Greek is answered in English. When his question shows real interest in the original, the tutor may
   leave ONE line offering to show the Greek, `greek_offer` {kind word | view, text}, which the Talk sheet draws as a button (mw-yrmkdf.4). A tap on a word offer opens the
-  Greek word's sheet; a tap on a view offer switches the Reader to Greek. A no, spoken or typed (the tutor's `offer_reply` decline), is written to the memory index as
+  Greek word's sheet; a tap on a view offer switches the Reader to Greek; either way the sheet in front says so (mw-yrmkdf.10). A no, spoken or typed (the tutor's `offer_reply` decline), is written to the memory index as
   "said no to the Greek offer <date>", and nothing more is offered until he asks for Greek himself (`greek_asked`), which clears the line. At most one offer a talk. These
   scenarios run against a fake Postern whose mill answers each talk with the answer the scenario names.
 
@@ -19,6 +19,20 @@ Feature: The tutor offers the Greek gently to a reader who is not learning it
     Then the talk shows the button "Want to read this chapter in Greek?"
     When he taps "Want to read this chapter in Greek?"
     Then the Reader shows the Greek
+
+  Scenario: A tap on the view offer is confirmed in the Talk sheet
+    Given Lampas is opened on Romans 8 in English behind a fake Postern whose tutor offers the Greek view
+    When he opens the talk and asks "What does the original say here?"
+    Then the talk shows the button "Want to read this chapter in Greek?"
+    And the talk shows no confirmation
+    When he taps "Want to read this chapter in Greek?"
+    Then the talk confirms "The Reader is now in Greek."
+
+  Scenario: A tap on the word offer is confirmed in the Talk sheet
+    Given Lampas is opened on Romans 8 in English behind a fake Postern whose tutor offers the Greek word
+    When he opens the talk and asks "What does love really mean here?"
+    And he taps "Want to see the Greek word?"
+    Then the talk confirms "Opened the Greek word."
 
   Scenario: A no is remembered and nothing more is offered
     Given Lampas is opened on Romans 8 in English behind a fake Postern whose tutor offers the Greek view
