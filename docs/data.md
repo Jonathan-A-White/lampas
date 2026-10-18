@@ -147,6 +147,9 @@ starts a paragraph whether or not it has `p`; the reader treats it so.
   the transliteration sits where the Strong's number belongs and the Strong's number is missing. The build reads
   the transliteration from there and takes the Strong's number from the same Greek form and parsing elsewhere in
   the table.
+* MSB: 1 John 2:6 gives "walk" to the aorist περιεπάτησεν and "walked." to the present infinitive περιπατεῖν, and puts
+  οὕτως and αὐτὸς into the chunk "walked.". `scripts/data-build.ts` (`ALIGNMENT_FIXES`) swaps the English of the two
+  verbs and takes the English off οὕτως and αὐτὸς, so "walked." is περιεπάτησεν's alone (mw-5r3p30.334).
 * MSB: Luke 17:36, Acts 8:37, Acts 15:34 and Acts 24:7 have a row in the table and no Greek; they are left out.
 * Every Greek word in all 260 chapters has a lemma and a gloss, and every parsing code decodes
   (`features/data.feature` walks all of them). An unknown code or a Strong's number the lexicon lacks fails the

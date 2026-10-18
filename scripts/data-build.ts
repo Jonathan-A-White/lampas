@@ -94,6 +94,40 @@ const STRONGS_FIXES: Record<string, string> = {
   'διαπαρατριβαὶ': 'G6856',
 };
 
+// Verses where the table pairs an English word with the wrong Greek word. `swap` names two Greek words of the verse that
+// trade their English (its place in the English order, its text and the punctuation after it); `noEnglish` names words
+// whose English is taken away, so the chunk that rendered them renders only the word it is for.
+// 1 John 2:6 "must walk as Jesus walked": the table gives "walk" to the aorist περιεπάτησεν and "walked." to the present
+// infinitive περιπατεῖν, and "walked." also carries the words οὕτως and αὐτὸς (mw-5r3p30.334).
+interface AlignmentFix {
+  ref: string;
+  swap?: [string, string];
+  noEnglish?: string[];
+}
+const ALIGNMENT_FIXES: AlignmentFix[] = [
+  { ref: '1 John 2:6', swap: ['περιεπάτησεν', 'περιπατεῖν'], noEnglish: ['οὕτως', 'αὐτὸς'] },
+];
+
+function fixAlignment(book: string, chapter: number, n: number, words: MsbWord[]): void {
+  for (const fix of ALIGNMENT_FIXES) {
+    if (fix.ref !== `${book} ${chapter}:${n}`) continue;
+    const find = (greek: string): MsbWord => {
+      const word = words.find((w) => w.greek === greek);
+      if (!word) throw new Error(`${fix.ref}: the alignment fix names ${greek}, which the table lacks`);
+      return word;
+    };
+    if (fix.swap) {
+      const [a, b] = fix.swap.map(find);
+      for (const key of ['msbSort', 'english', 'begQ', 'tail'] as const) {
+        const keep = a[key];
+        (a[key] as string | number) = b[key];
+        (b[key] as string | number) = keep;
+      }
+    }
+    for (const greek of fix.noEnglish ?? []) Object.assign(find(greek), { english: '-' });
+  }
+}
+
 const COLUMNS = {
   greekSort: 1,
   msbSort: 2,
@@ -251,6 +285,7 @@ export function parseMsb(tsv: string): MsbVerse[] {
         par: f[COLUMNS.paragraph],
       };
     });
+    fixAlignment(m[1], Number(m[2]), Number(m[3]), words);
     verses.push({ book: m[1], chapter: Number(m[2]), n: Number(m[3]), words, heading });
   }
   return verses;
