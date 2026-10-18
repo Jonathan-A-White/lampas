@@ -1,10 +1,11 @@
 // src/reader/ReaderHeader.tsx — the Reader's header (docs/module-map.md R1, part d): the chapter's title (a button that opens the picker),
-// English | Greek, the Play button of Read aloud and the gear that opens Settings. While a reading the speaking bar does not hold waits for Pause
+// English | Greek, the Play button of Read aloud, the magnifier that opens the settings search (src/settings/SettingsSearch.tsx) and the gear that opens Settings. While a reading the speaking bar does not hold waits for Pause
 // or Play, the header gives its room to those and Stop; the title stays for screen readers.
 import { setReaderView, type ReaderView } from '../data/repositories';
 import { navigate } from '../nav/route';
 import type { ReadingState } from '../speech/readAloud';
 import { ReadFromButton } from '../speech/ReadControls';
+import { SettingsSearchButton } from '../settings/SettingsSearch';
 
 function ViewSwitch({ view }: { view: ReaderView }) {
   const choice = (value: ReaderView, label: string) => (
@@ -101,6 +102,7 @@ export function ReaderHeader({ title, view, chapterReading, reading, from, canRe
       {headerButtons ? <span className="flex-1" /> : null}
       {view ? <ViewSwitch view={view} /> : null}
       {canRead ? <ReadFromButton from={from} reading={reading} onRead={onRead} /> : null}
+      <SettingsSearchButton />
       <button
         type="button"
         aria-label="Settings"
