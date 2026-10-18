@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.315
+_2026-10-18_
+- Fixed: In the English view with the Weave on, each Greek word in a woven phrase like "ὑμῖν γράφω" opens its own word sheet and is read aloud on its own.
+
 ## 0.1.314
 _2026-10-18_
 - Fixed: The Greek alphabet card now shows only words that have the look-alike letters it teaches, instead of unrelated words from the verse.
