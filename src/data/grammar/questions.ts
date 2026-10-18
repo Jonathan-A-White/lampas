@@ -794,6 +794,8 @@ export function buildSoundAlike(idea: GrammarIdea, random: Random, scheme: Pronu
     ...choicesOf({ right: word.word, near: [twin.word], fillers: others }, random),
     right: word.word,
     say: word.word,
+    // a miss says why the ear could not decide: the two sound alike here and the spelling is what tells them apart (mw-86e9r1.44)
+    ...(sameSound ? { rule: `These two words sound alike in ${scheme.label}. Trust the spelling, not the sound: it is what tells them apart.` } : {}),
   };
 }
 
