@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
+import { tapTwice } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
@@ -125,6 +126,7 @@ test('an Old Testament reference links to Settings until Logos is linked, then o
 
 // A second tap on the reference a moment after the first (mw-5r3p30.429): the card's backdrop covers the reference, but that tap is not one outside the card.
 test('a quick second tap on the reference leaves its card on screen', async ({ page }) => {
+  await page.clock.install(); // tapTwice times the two taps on the page's clock (tests/support/gesture.ts)
   await page.setViewportSize(VIEWPORT);
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: { answer: 'The end of the matter is in Ecclesiastes 12:13 and the whole of Psalm 110.', words: [] } };
@@ -140,12 +142,8 @@ test('a quick second tap on the reference leaves its card on screen', async ({ p
 
   const link = sheet.getByRole('link', { name: 'Ecclesiastes 12:13', exact: true });
   const card = page.getByRole('dialog', { name: 'Ecclesiastes 12:13' });
-  await link.click();
-  await expect(card).toBeVisible();
-  await page.waitForTimeout(150);
-  const at = await link.boundingBox();
-  expect(at).toBeTruthy();
-  if (at) await page.mouse.click(at.x + at.width / 2, at.y + at.height / 2);
+  // the second tap, 150 ms of the page's clock after the first, lands on the link again once the card it opened is up
+  await tapTwice(page, link, 150, { between: () => expect(card).toBeVisible() });
   await page.waitForTimeout(300);
   await expect(card).toBeVisible();
   await expect(sheet).toBeVisible();

@@ -6,6 +6,7 @@ import { shot } from './shot';
 import { SETTLE_MS } from '../../src/ui/settle';
 import { openUnlocked } from './unlocked';
 import { chooseAction } from './verse-view';
+import { tapTwice, pageTime } from '../support/gesture';
 import { holdFor } from '../support/hold';
 
 const VIEWPORT = { width: 390, height: 844 };
@@ -30,7 +31,8 @@ async function expectFitsPhone(page: Page) {
 // Well over the reading's one second (SHORT_READING_MS): on the page's clock the hold is exactly this long.
 const HOLD_MS = 2800;
 
-// holdFor (tests/support/hold.ts) times each hold on the page's clock, so it is installed before the page opens.
+// holdFor (tests/support/hold.ts) times each hold, and tapTwice (tests/support/gesture.ts) each double tap, on the page's clock, so it is installed
+// before the page opens.
 test.beforeEach(async ({ page }) => {
   await page.clock.install();
 });
@@ -109,21 +111,16 @@ test('a double tap on Next word skips no word, and one on Finish leaves the end 
   const drill = page.getByRole('dialog', { name: 'Reading drill' });
   // a sheet that opens takes no tap in its first moment (src/ui/settle.ts useSettleAround, mw-i7xe0n.26): he reads it first
   await expect(drill).toBeVisible();
-  await page.waitForTimeout(SETTLE_MS + 100);
+  await pageTime(page, SETTLE_MS + 100);
   await drill.getByRole('button', { name: 'Start the drill', exact: true }).click();
 
   fake.autoReply = { status: 'answered', answer: WELL_READ_ANSWER };
-  const twice = async (name: string) => {
-    const box = (await drill.getByRole('button', { name, exact: true }).boundingBox())!;
-    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-    await page.waitForTimeout(120);
-    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-  };
   for (let i = 0; i < 5; i++) {
     await expect(drill).toContainText(`Word ${i + 1} of 5`);
     await holdFor(page, drill.getByRole('button', { name: /^Hold to read / }), HOLD_MS);
     await expect(drill).toContainText('Well read');
-    await twice(i === 4 ? 'Finish' : 'Next word');
+    // 120 ms apart on the page's clock, inside the new word's settle moment, though this host delivers the second tap 400 ms of real time late
+    await tapTwice(page, drill.getByRole('button', { name: i === 4 ? 'Finish' : 'Next word', exact: true }), 120, { lagMs: 400 });
     if (i < 4) {
       // the next word is up, not skipped: the double tap moved on one word
       await expect(drill).toContainText(`Word ${i + 2} of 5`);

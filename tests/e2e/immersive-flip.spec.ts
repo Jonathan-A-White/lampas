@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { swipe } from '../support/gesture';
 import { honestMic } from '../support/honest-fakes';
 import { openUnlocked } from './unlocked';
 
@@ -6,6 +7,11 @@ import { openUnlocked } from './unlocked';
 // chapter (a two-finger tap still shows them), shown stays shown; with the setting Off the flip shows them as before. The new chapter is a new
 // Reader, so the "away" has to be carried across. A phone-width layout claim: it runs under --project=shots (390x844).
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+// swipe (tests/support/gesture.ts) times the drag on the page's clock, so it is installed before the page opens.
+test.beforeEach(async ({ page }) => {
+  await page.clock.install();
+});
 
 /** Puts settings in the app's store through raw IndexedDB, as the app wrote them. */
 async function keep(page: Page, values: Record<string, string>) {
@@ -153,20 +159,6 @@ async function watchFrames(page: Page, bars: 'away' | 'shown') {
 
 const frames = (page: Page) => page.evaluate(() => (window as unknown as { __frames: string[] }).__frames);
 
-/** A finger drag as touch input to the browser. The app takes a drag as a swipe only if it ends within SWIPE_MAX_MS (600) of its start, so every
- * event is sent at once, without waiting for an answer to one before the next: a loaded host takes tens of ms to answer each, and a drag sent one
- * event at a time then outlasts the limit and is not a swipe (mw-5r3p30.574). */
-async function swipe(page: Page, from: readonly [number, number], to: readonly [number, number]) {
-  const cdp = await page.context().newCDPSession(page);
-  const at = (t: number) => ({ x: from[0] + (to[0] - from[0]) * t, y: from[1] + (to[1] - from[1]) * t });
-  const send = (type: 'touchStart' | 'touchMove' | 'touchEnd', touchPoints: { x: number; y: number }[]) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints });
-  const events = [send('touchStart', [{ x: from[0], y: from[1] }])];
-  for (let i = 1; i <= 8; i++) events.push(send('touchMove', [at(i / 8)]));
-  events.push(send('touchEnd', []));
-  await Promise.all(events);
-  await cdp.detach();
-}
-
 for (const [name, from, to, chapter] of [
   ['left to the next chapter', [330, 500], [90, 500], 3],
   ['right to the previous chapter', [90, 500], [330, 500], 1],
@@ -176,7 +168,7 @@ for (const [name, from, to, chapter] of [
     await scrollText(page, 400);
     await expectAll(page, 'hidden');
     await watchFrames(page, 'away');
-    await swipe(page, from, to);
+    await swipe(page, from, to, { with: 'touch' });
     await expect(page).toHaveURL(new RegExp(`c=${chapter}`));
     await expect(page.locator('[data-place-line]')).toHaveText(new RegExp(`^Ephesians ${chapter} · `));
     await page.waitForTimeout(500);

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { swipe } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -7,6 +8,11 @@ import { openUnlocked } from './unlocked';
 // back and the last does not turn forward (and a swipe there opens no other chapter); the place line under the text says the page. With Scroll
 // nothing changes. A phone-width layout claim: 390x844, with touch.
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+// swipe (tests/support/gesture.ts) times the drag on the page's clock, so it is installed before the page opens.
+test.beforeEach(async ({ page }) => {
+  await page.clock.install();
+});
 
 /** Puts settings in the app's store through raw IndexedDB, as the app wrote them. */
 async function keep(page: Page, values: Record<string, string>) {
@@ -105,23 +111,14 @@ async function tapAt(page: Page, share: number) {
   await page.touchscreen.tap(x, y);
 }
 
-/** A finger drag across the text, as touch input to the browser (pointer events of type touch). */
-async function swipe(page: Page, direction: 'left' | 'right') {
+/** A finger drag across the text, as touch input to the browser (pointer events of type touch), on the page's clock (tests/support/gesture.ts). The finger
+ * comes to rest before it lifts: a swipe lifted at speed starts a fling, and Chrome swallows the next tap, the one that stops it. */
+async function swipeText(page: Page, direction: 'left' | 'right') {
   const b = await box(page);
   const y = (b.top + b.bottom) / 2;
   const from = direction === 'left' ? b.left + b.width * 0.8 : b.left + b.width * 0.2;
   const to = direction === 'left' ? b.left + b.width * 0.2 : b.left + b.width * 0.8;
-  const cdp = await page.context().newCDPSession(page);
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: from, y }] });
-  // quick, so a loaded host stays inside the swipe's 600 ms
-  for (let i = 1; i <= 4; i++) {
-    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: from + ((to - from) * i) / 4, y: y + i * 2 }] });
-  }
-  // the finger comes to rest before it lifts: a swipe lifted at speed starts a fling, and Chrome swallows the next tap, the one that stops it
-  await page.waitForTimeout(80);
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: to, y: y + 8 }] });
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-  await cdp.detach();
+  await swipe(page, [from, y], [to, y + 8], { with: 'touch', steps: 4, restMs: 80 });
 }
 
 test('a tap on the right third and a swipe left turn forward; the left third and a swipe right turn back', async ({ page }) => {
@@ -139,7 +136,7 @@ test('a tap on the right third and a swipe left turn forward; the left third and
   expect(second.length).toBeGreaterThan(0);
   await expect(page.getByTestId('sheet-backdrop')).toHaveCount(0);
 
-  await swipe(page, 'left');
+  await swipeText(page, 'left');
   await expect.poll(() => at(page)).toBe(3);
   expect(Math.min(...(await versesInView(page)))).toBeGreaterThan(Math.min(...second));
 
@@ -147,7 +144,7 @@ test('a tap on the right third and a swipe left turn forward; the left third and
   await expect.poll(() => at(page)).toBe(2);
   expect(await versesInView(page)).toEqual(second);
 
-  await swipe(page, 'right');
+  await swipeText(page, 'right');
   await expect.poll(() => at(page)).toBe(1);
   expect(await versesInView(page)).toContain(1);
   await expect(page.getByTestId('sheet-backdrop')).toHaveCount(0);
@@ -160,7 +157,7 @@ test('the first page does not turn back and the last does not turn forward, and 
   const { of } = await pageOf(page);
 
   await tapAt(page, 0.15);
-  await swipe(page, 'right');
+  await swipeText(page, 'right');
   await page.waitForTimeout(400);
   expect(await at(page)).toBe(1);
   await expect(page.getByRole('heading', { name: 'Mark 12', level: 1 })).toBeVisible();
@@ -174,7 +171,7 @@ test('the first page does not turn back and the last does not turn forward, and 
   await expect(page.getByRole('button', { name: /Mark 13/ })).toBeInViewport();
 
   await tapAt(page, 0.85);
-  await swipe(page, 'left');
+  await swipeText(page, 'left');
   await page.waitForTimeout(400);
   expect(await pageOf(page)).toEqual({ at: of, of });
   await expect(page.getByRole('heading', { name: 'Mark 12', level: 1 })).toBeVisible();
@@ -254,6 +251,6 @@ test('with Scroll nothing changes: the text scrolls, a tap on the right third tu
   await expect(page.getByTestId('sheet-backdrop')).toHaveCount(0);
   expect(await versesInView(page)).toEqual(before);
 
-  await swipe(page, 'left');
+  await swipeText(page, 'left');
   await expect(page.getByRole('heading', { name: 'Mark 13', level: 1 })).toBeVisible();
 });

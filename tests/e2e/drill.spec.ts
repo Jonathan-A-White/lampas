@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { tapTwice } from '../support/gesture';
 import { shot } from './shot';
 import { SETTLE_MS } from '../../src/ui/settle';
 import { openUnlocked } from './unlocked';
@@ -24,6 +25,11 @@ const inReach = async (page: Page, name: string, exact = true, scroll = false) =
   expect(box?.height).toBeGreaterThanOrEqual(44);
   return button;
 };
+
+// tapTwice (tests/support/gesture.ts) times the two taps on the page's clock, so it is installed before the page opens.
+test.beforeEach(async ({ page }) => {
+  await page.clock.install();
+});
 
 test('a Parsing drill question shows the verse, four choices and both links in reach at phone width', async ({ page }) => {
   await openUnlocked(page);
@@ -116,10 +122,12 @@ test('a double tap near the top of Next step stays in the drill, though Ask the 
     const box = (await page.getByTestId('next').boundingBox())!;
     const x = box.x + box.width * (k % 2 === 0 ? 0.25 : 0.75);
     const y = box.y + 2;
-    await page.mouse.click(x, y);
-    await page.waitForTimeout(120);
-    landed += await page.evaluate(([px, py]) => (document.elementFromPoint(px, py)?.closest('button')?.textContent?.match(/^(Ask the tutor|Talk about it)$/) ? 1 : 0), [x, y]);
-    await page.mouse.click(x, y);
+    // 120 ms apart on the page's clock; before the second tap, does it land on the tutor's button that stands where Next was?
+    await tapTwice(page, { x, y }, 120, {
+      between: async () => {
+        landed += await page.evaluate(([px, py]) => (document.elementFromPoint(px, py)?.closest('button')?.textContent?.match(/^(Ask the tutor|Talk about it)$/) ? 1 : 0), [x, y]);
+      },
+    });
     await expect(page.getByTestId('next'), `step ${k + 1}`).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Parsing drill', level: 1 }), `step ${k + 1}`).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Parsing drill', level: 1 }).locator('xpath=..')).not.toHaveText(subtitle ?? '');
