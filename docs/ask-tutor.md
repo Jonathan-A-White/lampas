@@ -366,7 +366,7 @@ choice, `getReaderView`; missing in a talk from a screen). For a reader whose Re
 `memory`, `learner_profile`, `learner` or `learner_grammar` says so: the grind's `## Offering the Greek` decides) the tutor answers in English, with no Greek
 words unless he asks, and on real interest in the original (what a word really means, why translations differ, what the original says) leaves ONE
 `greek_offer` `{kind: 'word' | 'view', text, lemma?}` (a word offer names a lemma of the passage). `src/talk/GreekOfferButton.tsx` draws it as a button under
-the answer; a tap, or a spoken yes (`pending_offer` of kind `greek`), is `takeGreekOffer` (`src/talk/greekOffer.ts`): a view offer calls `setReaderView('greek')`,
+the answer (after a tap the button stays and a `role=status` line under it says 'The Reader is now in Greek.' or 'Opened the Greek word.', mw-yrmkdf.10); a tap, or a spoken yes (`pending_offer` of kind `greek`), is `takeGreekOffer` (`src/talk/greekOffer.ts`): a view offer calls `setReaderView('greek')`,
 a word offer asks the Talk sheet (`requestGreekWord`, watched by `TalkSheet`) to open the Greek word's sheet over the talk. The app keeps to the limits too
 (`greekOfferOf`): the first offer of a talk only (the history shows it), none while the index holds his no, none for a word the text lacks, none in a quiz or
 a talk from a screen. A no (`offer_reply` decline) is `settleOffer`: the turn is marked declined and the app appends `said no to the Greek offer <date>` to the
