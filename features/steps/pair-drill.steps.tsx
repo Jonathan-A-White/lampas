@@ -1,5 +1,5 @@
 // features/steps/pair-drill.steps.tsx — runs features/pair-drill.feature: 'Which did you hear?', the drill under a Hard sounds lesson's contrast step (src/hardSounds/Contrast.tsx,
-// pairDrill.ts). The lesson is the shipped 'The tapped r'; the Greek voice is the honest fake of tests/support/fake-speech.ts, and a step learns which word was said from what
+// pairDrill.ts). The lesson is the shipped 'Rolling your r'; the Greek voice is the honest fake of tests/support/fake-speech.ts, and a step learns which word was said from what
 // the voice was handed, as a listener does. The draw is seeded (pairSeed).
 import '@testing-library/react/dont-cleanup-after-each';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';

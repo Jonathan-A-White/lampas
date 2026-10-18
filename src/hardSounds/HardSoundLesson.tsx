@@ -31,6 +31,7 @@ const STEP_HEADINGS: Record<StepKind, string> = {
   hear: 'Hear it',
   contrast: 'Which did you hear?',
   try: 'Try it',
+  stretch: 'A stretch goal',
   verse: 'Read a verse',
 };
 
@@ -119,6 +120,7 @@ function StepBody({ step, lesson, at }: { step: HardSoundStep; lesson: Lesson; a
     case 'from-known':
       return step.words ? <Words words={step.words} letters={lesson.letters} at={at} /> : null;
     case 'try':
+    case 'stretch':
       return <TryIt words={step.words} renderWord={(word, i) => <Word word={word} letters={lesson.letters} id={`${at}-${i}`} />} />;
     case 'hear':
       return <Words words={step.words} letters={lesson.letters} at={at} />;
@@ -155,7 +157,7 @@ export function LessonSteps({ lesson, step, onStep, onDone }: { lesson: Lesson; 
     <main data-testid="sound-lesson" className="screen min-h-0 flex-1 px-4 pt-4">
       {accent.id === 'ipa' ? (
         <p data-testid="sound-ipa" className="text-base text-muted">
-          The sound: {lesson.sounds.join(' ')}
+          The sound: {shown.kind === 'stretch' && shown.ipa ? shown.ipa : lesson.sounds.join(' ')}
         </p>
       ) : null}
       <p data-testid="sound-step" className="text-sm text-muted">

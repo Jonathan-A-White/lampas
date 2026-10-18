@@ -22,7 +22,7 @@ const user = userEvent.setup();
 const AT = { clientX: 100, clientY: 700 };
 /** The bytes FakeRecorder's clip holds. */
 const CLIP_BYTES = [1, 2, 3, 4, 5, 6, 7, 8];
-/** The tapped r lesson's Try it step is its fifth (from 0: 4). */
+/** The Rolling your r lesson's Try it step is its fifth (from 0: 4). */
 const TRY_STEP = 4;
 
 let synth: FakeSynth;
@@ -61,7 +61,7 @@ const holdsClip = (value: unknown): boolean =>
 
 /** Opens the app on a lesson's step with every store emptied, the recorder faked and, with `denied`, the microphone turned off. */
 async function open(title: string, denied = false): Promise<void> {
-  expect(title).toBe('The tapped r');
+  expect(title).toBe('Rolling your r');
   cleanup();
   stopSpeaking();
   clearBus();
@@ -174,7 +174,7 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(within(lesson()).getByRole('button', { name, exact: true }));
     });
     Then('his try is dropped: its sound stopped and its address let go', async () => {
-      await screen.findByRole('heading', { name: 'Read a verse', level: 2 });
+      await screen.findByRole('heading', { name: 'A stretch goal', level: 2 });
       await waitFor(() => expect(revoked).toEqual([audio.played[0]]));
       expect(audio.playing()).toBeNull();
     });

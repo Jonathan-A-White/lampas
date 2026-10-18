@@ -4,7 +4,7 @@ Feature: Which did you hear? A minimal-pair drill in a Hard sounds lesson
   random order, a score at the end, and the pair of a miss comes back side by side, to hear both. The runs are kept on the device, as Drill it's are.
 
   Scenario: Ten rounds, a miss comes back side by side, and the score shows
-    Given Lampas is opened on the "Which did you hear?" step of the lesson "The tapped r"
+    Given Lampas is opened on the "Which did you hear?" step of the lesson "Rolling your r"
     When he taps "Start the drill"
     Then the drill shows "Round 1 of 10" and the Greek voice says one word of a pair
     When he taps the word that was said
@@ -18,7 +18,7 @@ Feature: Which did you hear? A minimal-pair drill in a Hard sounds lesson
     And it shows the missed pair side by side to hear
 
   Scenario: A perfect run has nothing to replay, and the run is kept on the device
-    Given Lampas is opened on the "Which did you hear?" step of the lesson "The tapped r"
+    Given Lampas is opened on the "Which did you hear?" step of the lesson "Rolling your r"
     When he taps "Start the drill"
     And he answers all ten rounds right
     Then the drill shows the score "You got 10 of 10"
@@ -26,7 +26,7 @@ Feature: Which did you hear? A minimal-pair drill in a Hard sounds lesson
     And the run is kept on the device: the lesson "tapped-r" with a score of 10 of 10
 
   Scenario: Again draws ten new rounds
-    Given Lampas is opened on the "Which did you hear?" step of the lesson "The tapped r"
+    Given Lampas is opened on the "Which did you hear?" step of the lesson "Rolling your r"
     When he taps "Start the drill"
     And he answers all ten rounds right
     And he chooses "Again" on the score

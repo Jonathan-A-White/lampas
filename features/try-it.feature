@@ -5,7 +5,7 @@ Feature: Record yourself on a Hard sounds lesson's Try it step
   step says so and still plays the Greek voice.
 
   Scenario: He holds to say a word, then hears his try and the Greek voice, and Again
-    Given Lampas is opened on the "Try it" step of the lesson "The tapped r"
+    Given Lampas is opened on the "Try it" step of the lesson "Rolling your r"
     When he holds the bar to say "πατήρ" for 2 seconds
     Then he hears his try, a clip that holds the recording
     When his try ends
@@ -15,14 +15,14 @@ Feature: Record yourself on a Hard sounds lesson's Try it step
     Then he hears his try again, then the Greek voice again
 
   Scenario: Nothing leaves the device, and the recording is dropped when the step closes
-    Given Lampas is opened on the "Try it" step of the lesson "The tapped r"
+    Given Lampas is opened on the "Try it" step of the lesson "Rolling your r"
     When he holds the bar to say "πατήρ" for 2 seconds
     Then nothing was sent from the phone and nothing of the recording is kept
     When he taps "Next"
     Then his try is dropped: its sound stopped and its address let go
 
   Scenario: A microphone that is turned off says so, and the Greek voice still plays
-    Given Lampas is opened on the "Try it" step of the lesson "The tapped r" with the microphone turned off
+    Given Lampas is opened on the "Try it" step of the lesson "Rolling your r" with the microphone turned off
     When he holds the bar to say "πατήρ" for 2 seconds
     Then the step says the microphone is turned off
     And the Greek voice is handed "πατήρ" with no try before it
