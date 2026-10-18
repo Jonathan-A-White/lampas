@@ -144,7 +144,7 @@ others for reasons nobody listed; the quiz should begin by talking with him abou
   time** (keeps nothing); the turn then reads 'Kept as your quiz goal' or 'Just this time' (`TalkTurn.quizGoalChoice`). After Just this time the later
   requests of that quiz carry `quiz_goal_once` (the offer's text, found in the quiz's own turns) so the tutor does not ask or offer again.
 * **Where it lives:** the settings store, key `quizGoal`, plain text ('' = none), a registry setting (section My study way, label **Quiz goal**: a visible label, a status line 'Kept: <his goal>' or 'No goal kept' (the words Quiz goal appear once, as the label), and a field with
-  Save (off while the field is empty or only spaces: only Clear drops a kept goal) and Clear, `src/settings/controls/quizGoal.tsx`), so he can change or clear it in Settings and the tutor may change it in a talk outside a quiz. With a
+  Save (off while the field is empty or only spaces: only Clear drops a kept goal) and Clear, `src/settings/controls/quizGoal.tsx`), so he can change or clear it in Settings and the tutor may change it in a talk outside a quiz. Words typed and not saved are kept as a draft (localStorage `lampas.quizGoalDraft`, written 500 ms after the last keystroke and on leaving Settings, `pagehide` or hidden; restored on open, dropped by Save or Clear; pwa-best-practices section 16). With a
   goal kept, Quiz me skips the opening question and every quiz request carries it; 'Change my quiz goal' said in a quiz makes the tutor ask again.
 * **PROVISIONAL, the Governor to confirm:** the names 'Quiz goal', 'Your quiz goal', 'Yes, from now on' / 'Just this time', the 80-character limit, and that
   the goal goes in quiz requests only.

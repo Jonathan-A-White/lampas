@@ -9,6 +9,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
+import { QUIZ_GOAL_DRAFT_KEY } from '../../src/settings/controls/quizGoal';
 import { setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { tutorTimings } from '../../src/services/tutor';
@@ -258,6 +259,69 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(async () => expect(await goalField()).toHaveValue(''));
       expect(goalRow()).toHaveTextContent('No goal kept');
     });
+  });
+
+  const typeDraft = async (_: unknown, text: string) => {
+    const field = await goalField();
+    await user.clear(field);
+    await user.type(field, text);
+  };
+  const backAndAgain = async () => {
+    await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+    await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
+    await openSettings();
+  };
+
+  Scenario('Words typed in the Quiz goal and not saved are still there when he comes back to Settings', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal {string}', openWith);
+    When('he opens Settings', openSettings);
+    And('he types {string} in the Quiz goal', typeDraft);
+    And('he goes back to the Reader and opens Settings again', backAndAgain);
+    Then('Settings shows the Quiz goal {string}', goalShown);
+    And('the Quiz goal Save button is on', () => {
+      expect(within(goalRow()).getByRole('button', { name: 'Save' })).toBeEnabled();
+    });
+    And('Settings shows no Quiz goal kept', () => {
+      expect(goalRow()).toHaveTextContent('No goal kept');
+    });
+    And('no quiz goal is kept on the phone', () => waitFor(async () => expect(await kept()).toBe('')));
+  });
+
+  const noDraft = () => {
+    expect(window.localStorage.getItem(QUIZ_GOAL_DRAFT_KEY)).toBeNull();
+  };
+  const savesGoal = async () => {
+    await user.click(within(goalRow()).getByRole('button', { name: 'Save' }));
+    await waitFor(async () => expect(await kept()).toBe('a draft left unsaved'));
+  };
+  const clearsGoal = async () => {
+    await user.click(within(goalRow()).getByRole('button', { name: 'Clear' }));
+    await waitFor(async () => expect(await kept()).toBe(''));
+  };
+
+  Scenario('After Save the kept draft is gone', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal {string}', openWith);
+    And('the phone was given the quiz goal {string}', given);
+    When('he opens Settings', openSettings);
+    And('he types {string} in the Quiz goal', typeDraft);
+    And('he saves the Quiz goal', savesGoal);
+    And('he goes back to the Reader and opens Settings again', backAndAgain);
+    Then('Settings shows the Quiz goal {string}', goalShown);
+    And('no draft of the Quiz goal is kept', noDraft);
+  });
+
+  Scenario('After Clear the kept draft is gone', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal {string}', openWith);
+    And('the phone was given the quiz goal {string}', given);
+    When('he opens Settings', openSettings);
+    And('he types {string} in the Quiz goal', typeDraft);
+    And('he clears the Quiz goal', clearsGoal);
+    And('he goes back to the Reader and opens Settings again', backAndAgain);
+    Then('Settings shows no Quiz goal kept', async () => {
+      await waitFor(async () => expect(await goalField()).toHaveValue(''));
+      expect(goalRow()).toHaveTextContent('No goal kept');
+    });
+    And('no draft of the Quiz goal is kept', noDraft);
   });
 
   Scenario('The Quiz goal row has a visible label and says which goal is kept without repeating the label', ({ Given, When, Then, And }) => {

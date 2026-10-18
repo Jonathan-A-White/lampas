@@ -49,6 +49,36 @@ Feature: Quiz me asks what he wants from the quiz
     Then no quiz goal is kept on the phone
     And Settings shows no Quiz goal kept
 
+  Scenario: Words typed in the Quiz goal and not saved are still there when he comes back to Settings
+    Given Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal "understanding the passage"
+    When he opens Settings
+    And he types "a draft left unsaved" in the Quiz goal
+    And he goes back to the Reader and opens Settings again
+    Then Settings shows the Quiz goal "a draft left unsaved"
+    And the Quiz goal Save button is on
+    And Settings shows no Quiz goal kept
+    And no quiz goal is kept on the phone
+
+  Scenario: After Save the kept draft is gone
+    Given Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal "understanding the passage"
+    And the phone was given the quiz goal "learning Greek"
+    When he opens Settings
+    And he types "a draft left unsaved" in the Quiz goal
+    And he saves the Quiz goal
+    And he goes back to the Reader and opens Settings again
+    Then Settings shows the Quiz goal "a draft left unsaved"
+    And no draft of the Quiz goal is kept
+
+  Scenario: After Clear the kept draft is gone
+    Given Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal "understanding the passage"
+    And the phone was given the quiz goal "learning Greek"
+    When he opens Settings
+    And he types "a draft left unsaved" in the Quiz goal
+    And he clears the Quiz goal
+    And he goes back to the Reader and opens Settings again
+    Then Settings shows no Quiz goal kept
+    And no draft of the Quiz goal is kept
+
   Scenario: The Quiz goal row has a visible label and says which goal is kept without repeating the label
     Given Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal "understanding the passage"
     And the phone was given the quiz goal "understanding what the passage says"
