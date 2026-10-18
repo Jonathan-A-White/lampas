@@ -73,7 +73,7 @@ verse's words in order), so every action works on it as it works on a verse.
 | Listen | `Play verse 11` | `Play verses 1-11`: reads the passage's verses only, to the passage's end, whatever the Read aloud span says, and stops there |
 | Read it aloud | `Hold to read verse 11` | `Hold to read verses 1-11`: the reading check on the whole passage (`reference` 'Romans 8:1-11', `target_text` every verse's text; the result is kept under `rom.8.1-11`, `rom.8.1-11:el`) |
 | Ask the tutor | `Hold to ask`, `Type a question` | the same; the grist's `reference` is 'Romans 8:1-11' and its `greek` / `english` the whole passage; the answers are kept under `rom.8.1-11` |
-| Copy link | `…/#/?ref=Rom.8.11` | `…/#/?ref=Rom.8.1-11` (a verse range; Lampas opens it at the first verse: a link cannot yet open a passage) |
+| Copy link | `…/#/?ref=Rom.8.11` | `…/#/?ref=Rom.8.1-11` (a verse range; Lampas opens the Verse view on the range, mw-z370x5.2) |
 | Talk about verse N | opens the Bible talk sheet | not offered: the Talk sheet is about a verse or a chapter |
 
 * **Carried over from V:** Listen, Read it aloud, Ask the tutor, Copy link, the one hold bar, the kept chosen action, Back as a step of its own, the
@@ -81,6 +81,10 @@ verse's words in order), so every action works on it as it works on a verse.
 * **PROVISIONAL, the Governor to confirm:** the title (heading over range), the 40% box, and that Listen on a passage always stops at its end.
 * **Limits worth knowing:** the reading check records at most 60 seconds, so a long passage read aloud is scored as a partial reading (graded as far as it went); a grist record is capped at
   10 KiB, so a very long passage asked about may be refused with 'Could not send the question'.
+
+## A lesson's range (mw-z370x5.2)
+
+Any run of verses of a chapter opens the same passage view: `src/data/passage.ts` `rangeOf(verses, from, to, heading)`, the address `#/?b=1jn&c=1&p=1&pt=4` (`pt` the last verse, read only with `p`; `openVerseRange`; `openPassage`, `movePassage` and `openVerse` drop `pt`). The heading is the lesson's title when the range is a passage lesson of the chosen approach, else the heading of the first verse, else the reference; a heading equal to the range is said once ('1 John 1:1-4', not twice). The arrows step from the section passage the range starts in. When the range is exactly a lesson (`lessonForRange`), a **Lesson strip** sits under the heading and its Check passes the lesson: docs/grammar.md 'Passage lessons: the Lesson strip and Check'. Opening the view marks nothing. A link with a range ('Heb 7:1-3', `#/?ref=1John.1.1-4`) opens the Verse view on it (`links.ts` `Reference.to`, `LinkOpener`).
 
 ## Quiz me (mw-5r3p30.74)
 

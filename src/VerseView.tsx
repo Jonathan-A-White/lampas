@@ -14,6 +14,8 @@
 import { type ReactNode, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnswerCards, AskComposer, AskStatus } from './Ask';
+import { CheckSheet, type CheckLesson } from './CheckSheet';
+import { LessonStrip } from './LessonStrip';
 import { ReadCheckPanel, type ReadHold } from './ReadCheck';
 import type { Verse } from './data/chapter';
 import { unitId, unitName, unitReference } from './data/passage';
@@ -74,6 +76,8 @@ export interface VerseViewProps {
   onTalk: () => void;
   /** Quiz me: opens the Talk sheet in quiz mode on this verse or passage (src/Talk.tsx, the bible-talk grind's `mode` quiz); `started` once the quiz has a turn or one on its way */
   quiz: { started: boolean; onOpen: () => void };
+  /** the view shows a passage lesson's range (src/approaches): the Lesson strip draws under the heading and its Check passes the lesson by reading it (src/CheckSheet.tsx) */
+  lesson?: CheckLesson & { title: string };
 }
 
 const ARROW = 'flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-lg text-2xl text-accent active:bg-line disabled:opacity-30';
@@ -87,7 +91,8 @@ function Arrow({ move, name, glyph }: { move: (() => void) | null; name: string;
 }
 
 export function VerseView(props: VerseViewProps) {
-  const { title, book, chapter, verse, view, immersive, text, previous, next, onClose, action, onAction, listen, checks, read, weaveShown, onRetryRead, ask, onAsk, prefill, onTalk, quiz } = props;
+  const { title, book, chapter, verse, view, immersive, text, previous, next, onClose, action, onAction, listen, checks, read, weaveShown, onRetryRead, ask, onAsk, prefill, onTalk, quiz, lesson } = props;
+  const [checking, setChecking] = useState(false);
   // The foot of the view, where the chosen action draws its bar.
   const [slot, setSlot] = useState<HTMLDivElement | null>(null);
   // Read it aloud, Ask the tutor and Quiz me are the AI: not offered, and nothing of theirs drawn, without a licence (mw-8m9dyu.2).
@@ -114,9 +119,10 @@ export function VerseView(props: VerseViewProps) {
         </button>
         {passage ? (
           // the heading on top (two lines at most), the range under it on one line of its own
-          <h2 aria-label={`${verse.h}, ${reference}`} className="chrome-title min-w-0 flex-1 text-center font-semibold leading-tight">
+          // a lesson's range is headed with its own range, which the heading then says once
+          <h2 aria-label={verse.h === reference ? reference : `${verse.h}, ${reference}`} className="chrome-title min-w-0 flex-1 text-center font-semibold leading-tight">
             <span className="line-clamp-2 break-words">{verse.h}</span>
-            <span className="block truncate text-sm font-medium text-muted">{reference}</span>
+            {verse.h === reference ? null : <span className="block truncate text-sm font-medium text-muted">{reference}</span>}
           </h2>
         ) : (
           <h2 className="chrome-title min-w-0 flex-1 truncate text-center font-semibold">{reference}</h2>
@@ -125,6 +131,7 @@ export function VerseView(props: VerseViewProps) {
         <Arrow move={next} name={`Next ${noun}`} glyph="›" />
       </header>
       <div className="screen min-h-0 flex-1 px-3 pt-3">
+        {lesson ? <LessonStrip title={lesson.title} ideas={lesson.ideas} onCheck={() => setChecking(true)} /> : null}
         {/* A passage is long: its text scrolls in a box of its own so the row of actions stays in reach under it. */}
         <div {...(passage ? { 'data-passage-box': '' } : {})} className={passage ? 'max-h-[40dvh] overflow-y-auto overscroll-contain rounded-xl border border-line px-2' : undefined}>
           <p
@@ -205,6 +212,21 @@ export function VerseView(props: VerseViewProps) {
           ) : null}
         </div>
       </div>
+      {lesson && checking ? (
+        <CheckSheet
+          lesson={lesson}
+          onClose={() => setChecking(false)}
+          onQuiz={
+            ai
+              ? () => {
+                  setChecking(false);
+                  onAction('quiz');
+                  quiz.onOpen();
+                }
+              : undefined
+          }
+        />
+      ) : null}
       <BarSlot level={2} />
       <div ref={setSlot} data-verse-bar className="shrink-0 border-t border-line bg-surface px-3 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))] empty:hidden">
         {slot && action === 'listen' && !listen.playing ? (

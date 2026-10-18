@@ -21,10 +21,11 @@ import { LicenceTip } from './gate/LicenceTip';
 import { TalkBar, TalkSheet } from './Talk';
 import { ErrorBoundary } from './ErrorBoundary';
 import type { Verse } from './data/chapter';
-import { getGreekPronunciation, setReaderView, talkRef } from './data/repositories';
+import { getGrammarApproach, getGreekPronunciation, setReaderView, talkRef } from './data/repositories';
 import { chapterOf, getOpenChapter, setOpenChapter, type OpenChapter } from './data/readerChapter';
 import { verseNeighbours } from './data/neighbours';
-import { passageAt, passageVerse, passagesOf, unitId } from './data/passage';
+import { passageAt, passageVerse, passagesOf, rangeOf, unitId, type Passage } from './data/passage';
+import { approachOf, DEFAULT_APPROACH, lessonForRange, passageLabel } from './approaches';
 import { ChapterNav } from './ChapterNav';
 import { ChapterPicker } from './ChapterPicker';
 import { BuildVersion } from './BuildVersion';
@@ -80,6 +81,11 @@ function openFrom(address: string): OpenChapter {
   const named = readerOf(address);
   if (named.book === undefined && named.chapter === undefined) return getOpenChapter();
   return chapterOf(named.book ?? 'rom', named.chapter ?? 1) ?? getOpenChapter();
+}
+
+/** The section passage the Verse view's arrows step from: the range itself when a heading starts it, else the passage its first verse stands in (a lesson's range runs across headings). */
+function arrowsFrom(passages: Passage[], range: Passage): Passage {
+  return passages.find((p) => p.first === range.first) ?? passages.find((p) => p.first <= range.first && range.first <= p.last) ?? range;
 }
 
 export function Reader() {
@@ -207,10 +213,24 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // A heading's passage (the address `p`) opens the same view, with the passage as one Verse; a verse in the address wins.
   const named = readerOf(address);
   const wantedPassage = isHere(named, BOOK, CHAPTER) ? named.passage : undefined;
-  const viewPassage = useMemo(
-    () => (chapter && viewVerse === undefined && wantedPassage !== undefined ? passageAt(chapter.verses, wantedPassage) : undefined),
-    [chapter, viewVerse, wantedPassage],
-  );
+  // Any run of verses (a passage lesson's range, `pt` in the address) opens it too, headed with the lesson's title, else the heading of its first verse, else its reference.
+  const wantedTo = isHere(named, BOOK, CHAPTER) ? named.passageTo : undefined;
+  const approachId = useLiveQuery(getGrammarApproach, []);
+  const approach = approachOf(approachId ?? DEFAULT_APPROACH) ?? approachOf(DEFAULT_APPROACH)!;
+  const viewPassage = useMemo(() => {
+    if (!chapter || viewVerse !== undefined || wantedPassage === undefined) return undefined;
+    if (wantedTo === undefined) return passageAt(chapter.verses, wantedPassage);
+    const lesson = lessonForRange(approach, BOOK, CHAPTER, wantedPassage, wantedTo);
+    const heading = lesson?.lesson.lesson.title ?? chapter.verses.find((v) => v.n === wantedPassage)?.h ?? `${TITLE}:${wantedPassage}-${wantedTo}`;
+    return rangeOf(chapter.verses, wantedPassage, wantedTo, heading);
+  }, [chapter, viewVerse, wantedPassage, wantedTo, approach, BOOK, CHAPTER, TITLE]);
+  // The lesson the view's range reads, when the chosen approach has one for it: the Lesson strip and its Check (src/CheckSheet.tsx).
+  const viewLesson = useMemo(() => {
+    const step = chapter && viewPassage ? lessonForRange(approach, BOOK, CHAPTER, viewPassage.first, viewPassage.last) : undefined;
+    return chapter && viewPassage && step
+      ? { key: step.key, label: passageLabel(step.passage), title: step.lesson.lesson.title, from: viewPassage.first, to: viewPassage.last, ideas: step.lesson.lesson.ideas, chapter }
+      : undefined;
+  }, [chapter, viewPassage, approach, BOOK, CHAPTER]);
   const viewUnit = useMemo(() => viewVerse ?? (viewPassage ? passageVerse(viewPassage) : undefined), [viewVerse, viewPassage]);
   const tutor = useReaderTutor(open, chapter, talk, voice, { request, viewUnit, openTalkRef });
   const { talkScope, talkKey, talkAbout, setTalkAbout, holdTalk } = tutor;
@@ -474,8 +494,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
               <VerseText verse={viewUnit} view={view} woven={woven?.[chapter.verses.indexOf(viewUnit)] ?? null} onLook={setLookup} />
             )
           }
-          previous={viewPassage ? stepOf(BOOK, CHAPTER, passages, viewPassage, -1) : stepOfVerse(verseNeighbours(BOOK, CHAPTER, viewUnit.n).previous)}
-          next={viewPassage ? stepOf(BOOK, CHAPTER, passages, viewPassage, 1) : stepOfVerse(verseNeighbours(BOOK, CHAPTER, viewUnit.n).next)}
+          previous={viewPassage ? stepOf(BOOK, CHAPTER, passages, arrowsFrom(passages, viewPassage), -1) : stepOfVerse(verseNeighbours(BOOK, CHAPTER, viewUnit.n).previous)}
+          next={viewPassage ? stepOf(BOOK, CHAPTER, passages, arrowsFrom(passages, viewPassage), 1) : stepOfVerse(verseNeighbours(BOOK, CHAPTER, viewUnit.n).next)}
           onClose={closeVerse}
           action={action}
           onAction={chooseAction}
@@ -496,6 +516,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           prefill={prefill}
           onTalk={() => setTalkAbout(viewUnit.n)}
           quiz={{ started: tutor.quizStarted, onOpen: tutor.openQuiz }}
+          lesson={viewLesson}
         />
       ) : null}
       {picking ? <ChapterPicker current={open} onClose={closePicker} /> : null}
