@@ -1,12 +1,13 @@
-// src/plan/useSendOff.ts — the one door to 'Listen in Audible' (mw-umv8sp.2). With the Reading plan On and the chapter in the plan he started, the tap does not
+// src/plan/useSendOff.ts — the one door to 'Listen in Audible' (mw-umv8sp.2). With the Reading plan On and the chapter the plan's next one, the tap does not
 // leave the app: it offers the send-off sheet (SendOff.tsx), and Go records the start of the listening session (readingPlan.ts beginSession) BEFORE it opens
-// Audible with the fallback armed. Otherwise (the plan Off, none started, a chapter outside it) the tap is what it always was: the link is stamped with the time
+// Audible with the fallback armed. Only the plan's next chapter (the first not done) goes through the sheet (mw-umv8sp.8: what he listens to outside his plan is not tracked, so it is
+// not asked about). Otherwise (the plan Off, none started, any other chapter) the tap is what it always was: the link is stamped with the time
 // of the tap and the phone follows it. Every Audible entry point (VerseView.tsx, ChapterPicker.tsx) takes its tap from here.
 import { useLiveQuery } from 'dexie-react-hooks';
 import type { MouseEvent } from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { planOf } from '../data/plans';
-import { beginSession, getReadingPlan } from '../data/repositories/readingPlan';
+import { beginSession, getReadingPlan, keyOf } from '../data/repositories/readingPlan';
 import { type AudioBible, audibleListen } from '../resources/audioBible';
 import { armFallback, browserEnv } from '../resources/openApp';
 import { readingPlanSetting } from '../settings/definitions/readingPlan';
@@ -22,7 +23,7 @@ export interface SendOffTarget {
 export interface SendOff {
   /** The onClick of a Listen in Audible link: offers the sheet for a plan chapter, else stamps the link with the time of the tap and arms the fallback. */
   tap: (e: MouseEvent<HTMLAnchorElement>, target: SendOffTarget) => void;
-  /** Offers the sheet for this chapter without a link (the Plan chip's Continue): the same sheet and the same Go; nothing happens for a chapter outside the plan. */
+  /** Offers the sheet for this chapter without a link (the Plan chip's Continue): the same sheet and the same Go; nothing happens for any chapter but the plan's next. */
   offer: (target: SendOffTarget) => void;
   /** the chapter the sheet is offered for, or null while no sheet is up */
   offered: SendOffTarget | null;
@@ -37,11 +38,14 @@ export function useSendOff(): SendOff {
   const state = useLiveQuery(getReadingPlan, []);
   const [offered, setOffered] = useState<SendOffTarget | null>(null);
 
-  const inPlan = useCallback(
-    (code: string, chapter: number): boolean =>
-      on && state !== undefined && (planOf(state.planId)?.chapters().some((c) => c.code === code && c.chapter === chapter) ?? false),
-    [on, state],
-  );
+  /** the plan's next chapter: the first not done (the one the Plan chip says is next) */
+  const next = useMemo(() => {
+    if (!on || state === undefined) return undefined;
+    const done = new Set(state.done);
+    return planOf(state.planId)?.chapters().find((c) => !done.has(keyOf(c)));
+  }, [on, state]);
+
+  const inPlan = useCallback((code: string, chapter: number): boolean => next !== undefined && next.code === code && next.chapter === chapter, [next]);
 
   const tap = useCallback(
     (e: MouseEvent<HTMLAnchorElement>, target: SendOffTarget) => {

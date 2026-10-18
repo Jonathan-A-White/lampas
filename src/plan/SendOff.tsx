@@ -35,7 +35,7 @@ function Sheet({ title, onGo, onClose }: { title: string; onGo: () => void; onCl
   );
 }
 
-/** The sheet, drawn over everything while a Listen in Audible on a plan chapter waits for Go. Put it beside the link. */
+/** The sheet, drawn over everything while a Listen in Audible on the plan's next chapter waits for Go. Put it beside the link. */
 export function SendOff({ send }: { send: SendOffState }) {
   const { offered } = send;
   if (!offered) return null;
