@@ -23,12 +23,12 @@ Feature: See my goal move
     When he opens the Goal screen
     Then the title says "Read 1 John 1:1"
     And the words bar says solid 2, frontier 2 and not yet 12
-    And the ideas bar says solid 8, frontier 1 and not yet 38
+    And the ideas bar says solid 8, frontier 1 and not yet 40
     And the screen says "Solid when both are full"
 
   Scenario: Learn next names the earliest not-yet idea of the ladder with its lesson and opens its sheet
     Given the goal is "1 John 1:1" and he knows no word and no idea
-    And the foundation ideas are solid and "noun" is not yet
+    And the foundation ideas and the marks it uses are solid and "noun" is not yet
     When he opens the Goal screen
     Then Learn next says "The noun"
     When he taps Learn next
@@ -59,11 +59,11 @@ Feature: See my goal move
 
   Scenario: Sliding the idea sheet to Learning moves the ideas bar
     Given the goal is "1 John 1:1" and he knows no word and no idea
-    And the foundation ideas are solid and "noun" is not yet
+    And the foundation ideas and the marks it uses are solid and "noun" is not yet
     When he opens the Goal screen
     And he taps Learn next
     And he slides the level on the idea sheet to Learning
-    Then the ideas bar says solid 8, frontier 1 and not yet 38
+    Then the ideas bar says solid 10, frontier 1 and not yet 38
     When he closes the idea sheet
     Then the Goal screen says "Learning now: The noun" and no Learn next
 
@@ -139,3 +139,16 @@ Feature: See my goal move
     When he opens the Goal screen
     And he closes the app and opens it again
     Then the Goal screen is open
+
+  Scenario: A goal lists the marks that change the word and the enclitics after the foundation (mw-86e9r1.40)
+    Given the goal is "Romans" and he knows no word and no idea
+    When he opens the Goal screen
+    And he taps the ideas bar
+    Then the ideas list shows "Marks that change the word" and then "Enclitics" after "Punctuation and small marks"
+
+  Scenario: Learn next opens Compound verbs once the twelve prepositions are solid (mw-86e9r1.37)
+    Given the goal is "Matthew 7:22" and every idea it needs but "compound-verbs" is solid
+    When he opens the Goal screen
+    Then Learn next says "Compound verbs"
+    When he taps Learn next
+    Then the idea sheet is open on "Compound verbs"

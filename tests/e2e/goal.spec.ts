@@ -69,8 +69,8 @@ async function expectThumbSized(target: Locator) {
   expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390);
 }
 
-/** The ideas openWithGoal makes solid: the letters, sounds and marks and the noun. */
-const SOLID = ['alphabet', 'breathings', 'accents', 'diphthongs', 'consonant-pairs', 'syllables', 'iota-subscript', 'punctuation', 'noun'];
+/** The ideas openWithGoal makes solid: the letters, sounds and marks (the two marks the words of 1 John 1:1 show beyond the foundation, textIdeas.ts) and the noun. */
+const SOLID = ['alphabet', 'breathings', 'accents', 'diphthongs', 'consonant-pairs', 'syllables', 'iota-subscript', 'punctuation', 'movable-letters', 'marks-change-word', 'noun'];
 const solid = Object.fromEntries(SOLID.map((id) => [id, 'solid' as const]));
 
 /** Opens the app once (the first open seeds his words), saves the goal and the levels, and loads the page again. */

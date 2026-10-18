@@ -16,6 +16,7 @@ import { passageNeeds, progressToward, type Level } from '../../src/data/grammar
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { readerOf } from '../../src/nav/route';
+import { parseGoal } from '../../src/data/goal';
 import { setGoal } from '../../src/data/repositories/settings';
 import { markPassed } from '../../src/data/repositories/passageLessons';
 import { parsePassageKey } from '../../src/approaches';
@@ -87,6 +88,9 @@ async function barSays(which: 'words' | 'ideas', solid: number, frontier: number
 }
 
 const nextWords = (): string[] => screen.queryAllByTestId('next-word').map((el) => el.getAttribute('data-lemma') ?? '');
+
+/** The marks ideas the words of 1 John 1:1 show beyond the foundation (ἀπ' moves a letter, Ὃ has a twin that a breathing tells apart): textIdeas.ts. */
+const MARKS_OF_1JN_1_1 = ['movable-letters', 'marks-change-word'];
 
 const feature = await loadFeature('features/goal-progress.feature');
 
@@ -161,8 +165,8 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario("Learn next names the earliest not-yet idea of the ladder with its lesson and opens its sheet", ({ Given, And, When, Then }) => {
     Given(GIVEN_GOAL, givenGoal);
-    And('the foundation ideas are solid and {string} is not yet', async (_, d: string) => {
-      await Promise.all([...ALWAYS_NEEDED.map((id) => putLevel(id, 'solid')), putLevel(d, 'notYet')]);
+    And('the foundation ideas and the marks it uses are solid and {string} is not yet', async (_, d: string) => {
+      await Promise.all([...[...ALWAYS_NEEDED, ...MARKS_OF_1JN_1_1].map((id) => putLevel(id, 'solid')), putLevel(d, 'notYet')]);
     });
     When('he opens the Goal screen', opensGoal);
     Then('Learn next says {string}', async (_, text: string) => {
@@ -233,8 +237,8 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Sliding the idea sheet to Learning moves the ideas bar', ({ Given, And, When, Then }) => {
     Given(GIVEN_GOAL, givenGoal);
-    And('the foundation ideas are solid and {string} is not yet', async (_, d: string) => {
-      await Promise.all([...ALWAYS_NEEDED.map((id) => putLevel(id, 'solid')), putLevel(d, 'notYet')]);
+    And('the foundation ideas and the marks it uses are solid and {string} is not yet', async (_, d: string) => {
+      await Promise.all([...[...ALWAYS_NEEDED, ...MARKS_OF_1JN_1_1].map((id) => putLevel(id, 'solid')), putLevel(d, 'notYet')]);
     });
     When('he opens the Goal screen', opensGoal);
     And('he taps Learn next', async () => {
@@ -417,5 +421,40 @@ describeFeature(feature, ({ Scenario }) => {
       expect(await screen.findByTestId('goal-title')).toHaveTextContent('Read 1 John 1:1');
       expect(window.location.hash).toBe('#/goal');
     });
+  });
+  Scenario('A goal lists the marks that change the word and the enclitics after the foundation (mw-86e9r1.40)', ({ Given, When, And, Then }) => {
+    Given(GIVEN_GOAL, givenGoal);
+    When('he opens the Goal screen', opensGoal);
+    And('he taps the ideas bar', async () => {
+      await user.click(await screen.findByTestId('ideas-bar'));
+    });
+    Then('the ideas list shows {string} and then {string} after {string}', async (_, a: string, b: string, after: string) => {
+      const list = await screen.findByTestId('ideas-list');
+      const titles = within(list).getAllByRole('button').map((el) => el.textContent ?? '');
+      const at = (title: string) => titles.findIndex((t) => t.startsWith(title));
+      expect(at(after), after).toBeGreaterThanOrEqual(0);
+      expect(at(a), a).toBeGreaterThan(at(after));
+      expect(at(b), b).toBeGreaterThan(at(a));
+    });
+  });
+
+  Scenario('Learn next opens Compound verbs once the twelve prepositions are solid (mw-86e9r1.37)', ({ Given, When, Then }) => {
+    Given('the goal is {string} and every idea it needs but {string} is solid', async (_, goal: string, left: string) => {
+      await freshStore(goal, false);
+      const parsed = parseGoal(goal, BOOK_INDEX)!;
+      const needs = await passageNeeds(parsed, async (_, n) => chapterFile(parsed.book, n), BOOK_INDEX);
+      expect(needs.ideas.map((i) => i.id)).toContain(left);
+      await Promise.all(needs.ideas.filter((i) => i.id !== left).map((i) => putLevel(i.id, 'solid')));
+      // the letters, pairs and breathings are items of the foundation: they are solid too, or Learn next names a gap in them first
+      await Promise.all(ALWAYS_NEEDED.flatMap((id) => [id, ...LADDER.filter((i) => i.parent === id).map((i) => i.id)]).map((id) => putLevel(id, 'solid')));
+    });
+    When('he opens the Goal screen', opensGoal);
+    Then('Learn next says {string}', async (_, text: string) => {
+      await waitFor(async () => expect(await screen.findByTestId('learn-next')).toHaveTextContent(`Learn next: ${text}`));
+    });
+    When('he taps Learn next', async () => {
+      await user.click(await screen.findByTestId('learn-next'));
+    });
+    Then('the idea sheet is open on {string}', ideaSheetOn);
   });
 });
