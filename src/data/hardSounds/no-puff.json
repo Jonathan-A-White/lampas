@@ -1,0 +1,50 @@
+{
+  "id": "no-puff",
+  "title": "π, τ and κ without a puff of air",
+  "learn": "Learn π, τ and κ without the puff",
+  "scheme": "modern",
+  "for": ["american", "british"],
+  "sounds": ["/p/", "/t/", "/k/"],
+  "letters": ["π", "τ", "κ"],
+  "steps": [
+    {
+      "kind": "why",
+      "text": {
+        "american": "When an English word starts with p, t or k, a puff of air follows it: hold your hand in front of your mouth and say “pin”, “tin”, “kin”. Greek π, τ and κ never have that puff. And between two vowels an American t goes soft, almost a d, as in “water” and “city”; a Greek τ never does. Long ago the puff was what made φ, θ and χ, so to a Greek ear it is a foreign accent.",
+        "british": "When an English word starts with p, t or k, a puff of air follows it: hold your hand in front of your mouth and say “pin”, “tin”, “kin”. Greek π, τ and κ never have that puff. Nor is a Greek τ ever swallowed into a catch in the throat, as many British speakers say the t of “water” and “bottle”. Long ago the puff was what made φ, θ and χ, so to a Greek ear it is a foreign accent."
+      }
+    },
+    {
+      "kind": "from-known",
+      "text": "You already say them without the puff: after an s. Hold your hand in front of your mouth and say “spin”, “stop” and “skate”: no puff. Say “spin”, then drop the s and keep the p just as it was: that is π. Do the same with “stop” for τ and “skate” for κ."
+    },
+    {
+      "kind": "hear",
+      "text": "Listen: no breath follows π in πατήρ, τ in τέκνα, or κ in κόσμος. To an English ear they can sound a little like b, d and g; they are only clean, short and dry. In ὅτι the τ stays a full t.",
+      "words": ["πατήρ", "τέκνα", "κόσμος", "ποιεῖ", "ὅτι"]
+    },
+    {
+      "kind": "contrast",
+      "text": "Each pair differs only in π and φ, τ and θ, or κ and χ. Today φ is f, θ the th of “thin” and χ the throaty ch; so keep the puff off π, τ and κ, and they never drift toward them. Hear both words, then say both.",
+      "pairs": [
+        ["πῶς", "φῶς"],
+        ["πόνου", "φόνου"],
+        ["ἔτη", "ἔθη"],
+        ["οὐκ", "οὐχ"]
+      ]
+    },
+    {
+      "kind": "try",
+      "text": {
+        "american": "Say each word after the voice, with your hand in front of your mouth: you should feel no puff. In ὅτι keep the τ a real t, not the soft d of “city”.",
+        "british": "Say each word after the voice, with your hand in front of your mouth: you should feel no puff. In ὅτι say the τ right through, with no catch in the throat."
+      },
+      "words": ["πατήρ", "τέκνα", "κόσμος", "ὅτι"]
+    },
+    {
+      "kind": "verse",
+      "text": "This verse is full of π, τ and κ, each marked. Hear it, then say it with your hand in front of your mouth: no puff on any of them, in περιπατεῖ least of all.",
+      "ref": "1jn.2.11"
+    }
+  ]
+}

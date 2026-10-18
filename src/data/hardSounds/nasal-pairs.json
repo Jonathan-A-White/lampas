@@ -1,0 +1,44 @@
+{
+  "id": "nasal-pairs",
+  "title": "μπ, ντ and γκ: b, d and g",
+  "learn": "Learn μπ, ντ and γκ",
+  "scheme": "modern",
+  "for": ["american", "british"],
+  "sounds": ["/mb/", "/nd/", "/ŋɡ/", "/b/", "/d/", "/ɡ/"],
+  "letters": ["μπ", "ντ", "γκ", "γγ"],
+  "steps": [
+    {
+      "kind": "why",
+      "text": "Greek has no letter for b, d or the g of “go”: it writes them with two letters, μπ, ντ and γκ; and γγ is always ng. An English reader sees mp, nt and nk and says them so: πάντα as “panta”. Inside a word Lampas says them mb, nd and ng, as in “number”, “under” and “finger”: πάντα is “panda”. At the start of a word, in Greek as it is spoken today, they are a plain b, d and g; but no word of the New Testament starts with them."
+    },
+    {
+      "kind": "from-known",
+      "text": "Say “number”, “under” and “finger”. The m, the n and the ng run straight into a b, a d or a g, with the voice going all the way through: that is μπ, ντ and γκ inside a word. Now say “panda”, and you have said πάντα."
+    },
+    {
+      "kind": "hear",
+      "text": "Listen to the voice go through each pair: ντ is nd in ἐντολή and πάντα, γγ is ng in ἀγγελία and ἄγγελος, μπ is mb in ἔμπροσθεν. None is a t, a p or a k.",
+      "words": ["ἐντολή", "πάντα", "ἀγγελία", "ἄγγελος", "ἔμπροσθεν"]
+    },
+    {
+      "kind": "contrast",
+      "text": "In each pair one word has τ or ν alone, the other the pair: τ is a clean t and ντ is nd; ν is n, and γκ and γγ are ng. Hear both words, then say both.",
+      "pairs": [
+        ["ὅτι", "ὄντι"],
+        ["δύναται", "δύνανται"],
+        ["ὄνον", "ὄγκον"],
+        ["φθόνος", "φθόγγος"]
+      ]
+    },
+    {
+      "kind": "try",
+      "text": "Say each word after the voice. Let the voice run through the pair with no break and no puff: ἐντολή is “en-do-LEE”, never “en-to-LEE”.",
+      "words": ["ἐντολή", "πάντα", "ἀγγελία", "ἔμπροσθεν"]
+    },
+    {
+      "kind": "verse",
+      "text": "An old commandment: ἐντολή three times, each ντ marked. Hear it, then say it, nd every time.",
+      "ref": "1jn.2.7"
+    }
+  ]
+}

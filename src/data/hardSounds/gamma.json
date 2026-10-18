@@ -1,0 +1,47 @@
+{
+  "id": "gamma",
+  "title": "The Greek γ",
+  "learn": "Learn to say γ",
+  "scheme": "modern",
+  "for": ["american", "british"],
+  "sounds": ["/ɣ/", "/ʝ/"],
+  "letters": ["γ"],
+  "steps": [
+    {
+      "kind": "why",
+      "text": "English has no sound like the Greek γ, and its name, gamma, tempts you to say it as the g of “go”. It is never that hard g. Before α, ο, ω, ου or a consonant it is a soft throaty g: the back of the tongue comes close to the roof of the mouth but never touches it, and the voice hums through the gap. Before an e or i sound (ε, αι, η, ι, υ, ει, οι) it is the y of “yes”, with a little hiss."
+    },
+    {
+      "kind": "from-known",
+      "text": {
+        "american": "Start from the throaty ch of “chutzpah”, or of German “Bach”: the back of the tongue nearly touches the roof of the mouth and the air rubs through. Hold it, then hum while you hold it: the hum turns it into γ. Then say “yes” and lean on the y a little: that is γ before e and i, as in γῆ.",
+        "british": "Start from the ch of Scottish “loch”, said as a Scot says it and not as “lock”: the back of the tongue nearly touches the roof of the mouth and the air rubs through. Hold it, then hum while you hold it: the hum turns it into γ. Then say “yes” and lean on the y a little: that is γ before e and i, as in γῆ."
+      }
+    },
+    {
+      "kind": "hear",
+      "text": "Listen to the soft throaty γ before α and ο in ἀγάπη and λόγος, and before ρ in γράφω; then to the y of γῆ, λέγει and γινώσκομεν, where an e or i sound follows. Neither is ever the g of “go”.",
+      "words": ["ἀγάπη", "λόγος", "γράφω", "γῆ", "λέγει", "γινώσκομεν"]
+    },
+    {
+      "kind": "contrast",
+      "text": "In the first two pairs γ stands against χ: the same place in the mouth, and only the voice humming through γ tells them apart. In the last two γ stands against nothing at all, so listen for it: an English ear lets the soft γ slip by.",
+      "pairs": [
+        ["ἔργου", "ἔρχου"],
+        ["ἀργαί", "ἀρχαί"],
+        ["λέγων", "λέων"],
+        ["γῆν", "ἦν"]
+      ]
+    },
+    {
+      "kind": "try",
+      "text": "Say each word after the voice. Keep the back of the tongue off the roof of the mouth: if you hear the g of “go”, it touched. Before e and i, a firm y.",
+      "words": ["ἀγάπη", "λόγος", "ἐγώ", "γῆ", "λέγει"]
+    },
+    {
+      "kind": "verse",
+      "text": "This verse has both kinds, each γ marked: the soft throaty γ of ἀγάπη and ἀγαπῶμεν, and the y of γεγέννηται and γινώσκει. Hear it, then say it, with no hard g anywhere.",
+      "ref": "1jn.4.7"
+    }
+  ]
+}
