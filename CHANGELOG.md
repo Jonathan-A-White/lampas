@@ -1,5 +1,12 @@
 # What's new
 
+## 0.1.314
+_2026-10-18_
+- Fixed: The Greek alphabet card now shows only words that have the look-alike letters it teaches, instead of unrelated words from the verse.
+- Fixed: Missing a 'Words that sound alike' question now tells you the two words sound the same in Modern Greek and that the spelling is what tells them apart.
+- New: an optional 'Hard sounds' section on Goal, starting with a short lesson on the Greek tapped r, reachable from the Rho card too.
+- Fixed: Searching Settings for 'Audible' or 'Word of Promise' now finds the Audio Bible setting.
+
 ## 0.1.313
 _2026-10-18_
 - Fixed: the augment lesson now quotes a phrase that is really in 1 John 1:1.

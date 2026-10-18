@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.1.314",
+    "date": "2026-10-18",
+    "story": "mw-5r3p30.521",
+    "kind": "fixed",
+    "text": "The Greek alphabet card now shows only words that have the look-alike letters it teaches, instead of unrelated words from the verse."
+  },
+  {
+    "version": "0.1.314",
+    "date": "2026-10-18",
+    "story": "mw-86e9r1.44",
+    "kind": "fixed",
+    "text": "Missing a 'Words that sound alike' question now tells you the two words sound the same in Modern Greek and that the spelling is what tells them apart."
+  },
+  {
+    "version": "0.1.314",
+    "date": "2026-10-18",
+    "story": "mw-5r3p30.361",
+    "kind": "new",
+    "text": "an optional 'Hard sounds' section on Goal, starting with a short lesson on the Greek tapped r, reachable from the Rho card too."
+  },
+  {
+    "version": "0.1.314",
+    "date": "2026-10-18",
+    "story": "mw-5r3p30.467",
+    "kind": "fixed",
+    "text": "Searching Settings for 'Audible' or 'Word of Promise' now finds the Audio Bible setting."
+  },
+  {
     "version": "0.1.313",
     "date": "2026-10-18",
     "story": "mw-svw421.35",
