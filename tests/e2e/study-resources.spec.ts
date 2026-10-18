@@ -89,8 +89,11 @@ test('The Logos lexicons are a compact list at 360 px (860 high, the box ends ab
   expect(size.client).toBeLessThanOrEqual(300);
   expect(size.scroll).toBeGreaterThan(size.client * 2);
 
-  // The setting below the Logos card is one screen away, not 21 rows away.
+  // The setting below the Logos card is one swipe away, not 21 rows away. The card holds the lexicons and, since the Grammar books
+  // group joined it (mw-5r3p30.573), the books too, so it is taller than the screen: from the Logos row at the top, one screen's
+  // scroll brings Accordance in (the earlier check wanted it in view with no scroll at all).
   await logosSwitch.evaluate((el) => el.scrollIntoView({ block: 'start' }));
+  await page.locator('main.screen').evaluate((el) => el.scrollBy(0, el.clientHeight));
   await expect(section.getByRole('switch', { name: 'Accordance', exact: true })).toBeInViewport();
 
   // BDAG (ticked) leads; the last lexicon is out of sight until the box scrolls.
