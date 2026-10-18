@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.305",
+    "date": "2026-10-18",
+    "story": "mw-5r3p30.299",
+    "kind": "new",
+    "text": "a Turn pages choice in Settings > Reading lays a chapter out in pages that you turn with a tap at either side or a swipe, with the page number under the text."
+  },
+  {
+    "version": "0.1.305",
+    "date": "2026-10-18",
+    "story": "mw-86e9r1.39",
+    "kind": "fixed",
+    "text": "Review now asks each preposition with a few different Greek phrases for every case, so a right answer shows you read the case and not just the phrase."
+  },
+  {
     "version": "0.1.304",
     "date": "2026-10-18",
     "story": "mw-5r3p30.579",

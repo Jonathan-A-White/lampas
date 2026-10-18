@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.305
+_2026-10-18_
+- New: a Turn pages choice in Settings > Reading lays a chapter out in pages that you turn with a tap at either side or a swipe, with the page number under the text.
+- Fixed: Review now asks each preposition with a few different Greek phrases for every case, so a right answer shows you read the case and not just the phrase.
+
 ## 0.1.304
 _2026-10-18_
 - Fixed: In Settings, the Quiz goal's Save button now looks plainly off when there is nothing new to save, and Clear no longer shifts sideways when Save turns on.
