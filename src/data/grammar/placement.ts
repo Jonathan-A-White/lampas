@@ -222,10 +222,10 @@ export interface PlacementSummary {
   tiers: TierSummary[];
 }
 
-/** Where he is: the ideas the goal needs, and any other idea that has a level, counted by level, and listed by tier. */
-export function summarize(state: PlacementState): PlacementSummary {
+/** Where he is: the ideas the goal needs, and any other idea that has a level, counted by level, and listed by tier. With `neededOnly` just the ideas the goal needs, as the Goal screen counts them (mw-86e9r1.48). */
+export function summarize(state: PlacementState, neededOnly = false): PlacementSummary {
   const needed = new Set(state.needed);
-  const counted = state.ideas.filter((id) => needed.has(id) || state.levels.has(id));
+  const counted = state.ideas.filter((id) => needed.has(id) || (!neededOnly && state.levels.has(id)));
   const levelOf = (id: string): Level | null => state.levels.get(id) ?? null;
   const count = (level: Level | null) => counted.filter((id) => levelOf(id) === level).length;
   return {
