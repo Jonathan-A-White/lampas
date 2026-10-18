@@ -195,7 +195,8 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
     const [needs, rows, passages] = await Promise.all([goal ? passageNeeds(goal, loadChapter, BOOK_INDEX) : null, listLevels(), listPassageLessons()]);
     const known = levelsOf(rows);
     const state = { ...startPlacement(needs, known, orderOf(session.approach), 0), done: 'finished' as const };
-    const { solid, frontier, notYet, untested } = summarize(state);
+    // the card counts the ideas the goal needs, as the Goal screen does, not the letters, sounds and marks of the walk (mw-86e9r1.48)
+    const { solid, frontier, notYet, untested } = summarize(state, true);
     publish({ kind: 'placement-done', goal: session.goal, approach: session.approach.id, solid, frontier, notYet, untested });
     const next = learnNext(needs ?? { ideas: [] }, session.approach, known, { goal, states: passages });
     const have = state.ideas.filter((id) => state.levels.get(id) === 'solid').map((id) => ideaOf(id).title);
@@ -345,7 +346,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
   }
 
   if (run.status === 'over') {
-    const sum = summarize(run.state);
+    const sum = summarize(run.state, run.fromLetters !== undefined);
     const paused = run.state.done === 'paused';
     return (
       <>

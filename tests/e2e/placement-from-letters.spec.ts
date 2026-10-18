@@ -145,6 +145,32 @@ test('Start from the letters for a total beginner starts at The Greek alphabet, 
   await expect(page.getByTestId('learn-next')).toHaveText(/^Learn next: The Greek alphabet/);
 });
 
+test('Start from the letters counts what the Goal counts when only single letters are solid', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await expect.poll(() => seeded(page)).toBe(true);
+  await put(page, 'settings', [{ key: 'goal', value: '1 John 1:1' }]);
+  const letters = ['letter-alpha', 'letter-beta', 'letter-gamma'];
+  await put(page, 'grammarLevels', letters.map((id) => ({ id: storedId(id, 'modern'), level: 'solid', since: Date.now(), how: 'marked' })));
+  await page.reload();
+  await page.goto('/#/goal');
+  await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
+  const legend = page.getByTestId('ideas-legend');
+  await expect(legend).toHaveText(/^Solid 0 · Frontier 0 · Not yet \d+$/);
+  const goalCounts = countsOf((await legend.textContent()) ?? '');
+
+  await page.getByRole('button', { name: 'Place me' }).click();
+  await page.getByRole('button', { name: 'Start from the letters' }).click();
+
+  const where = page.getByTestId('where');
+  await expect(where).toBeVisible();
+  const [solid, frontier, notYet, untested] = countsOf((await where.textContent()) ?? '');
+  expect([solid, frontier, notYet + untested]).toEqual(goalCounts);
+  await expect(page.getByTestId('from-letters')).toContainText('Already solid: Alpha, Beta, Gamma.');
+  await shot(page, 'placement-from-letters-single-letters');
+});
+
 test('Start from the letters when every idea is solid says nothing is left for Learn next, not The Greek alphabet', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/');

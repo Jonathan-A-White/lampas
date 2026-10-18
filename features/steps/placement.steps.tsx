@@ -342,6 +342,30 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('Start from the letters counts what the Goal counts once single letters are solid', ({ Given, And, When, Then }) => {
+    let card = '';
+    Given('his goal is {string} and he knows nothing yet', given);
+    And('he has marked the letters {string} and {string} as I know this', async (_, first: string, second: string) => {
+      for (const title of [first, second]) await teachIdea(LADDER.find((i) => i.title === title)!.id, 'known');
+    });
+    When('he opens the placement', opened);
+    Then('the screen offers {string}', says);
+    When('he taps {string}', tapped);
+    Then('the end card says {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent(text));
+      card = screen.getByTestId('where').textContent ?? '';
+    });
+    And('the screen says he has {string} solid and Learn next opens {string}', async (_, solid: string, next: string) => {
+      await waitFor(() => expect(screen.getByTestId('from-letters')).toHaveTextContent(`Already solid: ${solid}. Learn next on the Goal screen opens ${next}.`));
+    });
+    When('he goes back to the goal', async () => user.click(await screen.findByRole('button', { name: 'Back to the goal' })));
+    Then('the Goal screen counts the grammar ideas as the card did', async () => {
+      const [solid, frontier, notYet, untested] = (card.match(/\d+/g) ?? []).map(Number);
+      // the Goal screen counts an idea with no level as not yet
+      await waitFor(() => expect(screen.getByTestId('ideas-legend')).toHaveTextContent(`Solid ${solid} · Frontier ${frontier} · Not yet ${notYet + untested}`));
+    });
+  });
+
   Scenario('Start from the letters when every idea is solid says nothing is left for Learn next', ({ Given, And, When, Then }) => {
     Given('his goal is {string} and he knows nothing yet', given);
     And('he has marked every idea as I know this', async () => {

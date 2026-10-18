@@ -144,6 +144,17 @@ Feature: Test me on the grammar, and meet me where I am
     Then Learn next says "Pairs of vowels"
     And the Goal screen counts the grammar ideas as the card did
 
+  Scenario: Start from the letters counts what the Goal counts once single letters are solid
+    Given his goal is "Read 1 John 1:1" and he knows nothing yet
+    And he has marked the letters "Alpha" and "Beta" as I know this
+    When he opens the placement
+    Then the screen offers "Start from the letters"
+    When he taps "Start from the letters"
+    Then the end card says "Where you are: solid 0, frontier 0, not yet 0"
+    And the screen says he has "Alpha, Beta" solid and Learn next opens "γ, δ, ε, ζ, η, θ and 16 more letters"
+    When he goes back to the goal
+    Then the Goal screen counts the grammar ideas as the card did
+
   Scenario: Start from the letters when every idea is solid says nothing is left for Learn next
     Given his goal is "Read 1 John 1:1" and he knows nothing yet
     And he has marked every idea as I know this
