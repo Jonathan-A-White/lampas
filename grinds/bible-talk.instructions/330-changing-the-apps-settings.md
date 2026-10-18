@@ -23,6 +23,7 @@ meet" to that answer.
 
 <!-- settings:begin -->
 - `theme` — Theme. Light, dark, sepia, or the phone's own. The colours: Phone follows the phone's own light or dark setting. Sepia is warm paper with dark brown text, for long reading. Value: "phone" (Phone), "light" (Light), "dark" (Dark), "sepia" (Sepia).
+- `font` — Font. The face of the English text; the Greek and the Hebrew keep theirs. The face of the English text, in the reader, the sheets and the screens; the Greek and the Hebrew keep theirs, and the size is the same. The phone's own: Your phone's usual face; fits everyone and is the default. Literata: A book face for long reading; suits readers who like a serif page. Atkinson Hyperlegible: Very clear, made for low vision; suits weaker eyes and older readers. Lexend: Built for reading ease; suits younger readers and anyone who tires over long lines. Value: "phone" (The phone's own), "literata" (Literata), "atkinson" (Atkinson Hyperlegible), "lexend" (Lexend).
 - `textSize` — Text size. How big the text is, in steps of the phone's own size. Value: "small" (Small), "normal" (Normal), "large" (Large), "largest" (Largest).
 - `layout` — Layout. Verses one per line, or run together in paragraphs. How the verses are set on the page. Verse by verse is one verse per line. Paragraph runs the verses of a paragraph together, with small verse numbers. Value: "verse" (Verse by verse), "paragraph" (Paragraph).
 - `sectionHeadings` — Section headings. The Bible's headings above their verses, shown or not. Value: "on" (On), "off" (Off).
