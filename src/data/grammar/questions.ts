@@ -18,7 +18,7 @@ import type { GradedVerse } from './gradedVerses';
 import { ideaSound, ideaText } from './lessons';
 import { ENCLITIC_USES, MARK_PAIRS, blankWord } from './marks';
 import { SOUND_ALIKE } from './soundAlike';
-import { COMPOUND_VERBS, PREPOSITIONS, type CompoundVerb, type PrepCase, type VerseRef } from './prepositions';
+import { COMPOUND_VERBS, PREPOSITIONS, examplesOf, type CompoundVerb, type PrepCase, type VerseRef } from './prepositions';
 import { quickQuestion } from './quickRound';
 import { laterTermsIn, termIsTaught } from './taughtTerms';
 import { teachOf } from './teach';
@@ -815,7 +815,7 @@ function meaningChoices(right: string, near: readonly string[], others: readonly
 
 /**
  * What a preposition means before the case of a real phrase: 'What does διά mean here?' over διὰ τοὺς λόγους (John 10:19). The meaning of the
- * preposition's other cases is among the choices, so a reader who ignores the case misses it.
+ * preposition's other cases is among the choices, so a reader who ignores the case misses it. A case has several phrases and one is drawn.
  */
 export function buildPreposition(idea: GrammarIdea, random: Random, only?: { case: PrepCase; near: boolean }): GrammarQuestion {
   const prep = PREPOSITIONS.find((p) => idea.id === `preposition-${p.key}`);
@@ -824,15 +824,17 @@ export function buildPreposition(idea: GrammarIdea, random: Random, only?: { cas
   const use = (only && prep.uses.find((u) => u.case === only.case)) || pick(prep.uses, random);
   const near = only && !only.near ? [] : prep.uses.filter((u) => u !== use).map((u) => u.meaning);
   const others = PREPOSITIONS.filter((p) => p !== prep).flatMap((p) => p.uses.map((u) => u.meaning));
+  // one of the case's phrases, not always the lesson's, so he reads the case and does not learn the phrase (mw-86e9r1.39)
+  const example = pick(examplesOf(use), random);
   return {
     kind: 'preposition',
     ideaId: idea.id,
     prompt: `What does ${prep.greek} mean here?`,
     ...meaningChoices(use.meaning, near, others, random),
     right: use.meaning,
-    ref: refText(use.ref),
-    form: use.phrase,
-    say: use.phrase,
+    ref: refText(example.ref),
+    form: example.phrase,
+    say: example.phrase,
     facet: { id: `case-${use.case}`, label: `With the ${use.case}` },
   };
 }
