@@ -39,7 +39,7 @@ Feature: Test me on the grammar, and meet me where I am
     And he answers 2 questions wrong
     Then the question line says "Quick round 1 of"
     When he stops the quick round
-    Then the end card says "Where you are: solid 11, frontier 0, not yet 1; untested 42"
+    Then the end card says "Where you are: solid 10, frontier 0, not yet 1; untested 43"
     And the end card lists "The noun" as "Solid" under Nouns
     And the bus has heard the placement is done
     When he taps "Back to the goal"
@@ -211,8 +211,8 @@ Feature: Test me on the grammar, and meet me where I am
     And he answers 2 questions wrong
     Then the question line says "Quick round 1 of"
     When he stops the quick round
-    Then the end card says "Where you are: solid 11, frontier 0, not yet 1; untested 42"
+    Then the end card says "Where you are: solid 10, frontier 0, not yet 1; untested 43"
     When the page is reloaded
-    Then the end card still says "Where you are: solid 11, frontier 0, not yet 1; untested 42"
+    Then the end card still says "Where you are: solid 10, frontier 0, not yet 1; untested 43"
     And the end card lists "The noun" as "Solid" under Nouns
     And the placement is no longer kept
