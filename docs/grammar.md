@@ -216,7 +216,7 @@ step by step, back off by halves when it is too hard, "kind of like a binary sea
 ## The idea sheet
 
 `src/IdeaSheet.tsx`, data in `src/data/grammar/ideaSheet.ts` (mw-hqd5bz.7). A bottom sheet that teaches one idea; it opens from the
-**Learn this idea** button of a Grammar sheet (the term's idea: `ideaOfTerm(term)`), over the Grammar sheet and the word sheet.
+**Learn this idea** button of a Grammar sheet (the term's idea: `ideaOfTerm(term)`; on 'preposition' of one of the twelve prepositions, that preposition's own idea, `ownIdeaOfWord(word)`, mw-86e9r1.36), over the Grammar sheet and the word sheet.
 
 - **Read more (mw-5r3p30.381, PROVISIONAL).** With Logos on and a ticked grammar book (Settings > Study resources > Logos > Grammar books) that teaches the
   idea, the sheet ends with Read more: one line a book, a link to each of its sections that opens Logos there, three books in view and the rest under

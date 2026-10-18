@@ -64,6 +64,13 @@ Feature: The idea sheet
     When he taps Learn this idea
     Then the idea sheet opens over the Grammar sheet and the word sheet
 
+  Scenario: Learn this idea on the Grammar sheet of preposition opens the tapped preposition's own idea
+    Given Lampas is opened on 1 John 1 in Greek with no goal, no idea level and a fake Postern
+    And he taps "περὶ" in verse 1 and the term "preposition" on the word sheet
+    When he taps Learn this idea
+    Then the idea sheet is headed "The preposition περί"
+    And the idea sheet says "With the genitive it means"
+
   Scenario: Ask the tutor opens the Talk sheet with the term in focus
     Given Lampas is opened on Romans 8 with the goal "1 John 1", no idea level and a fake Postern
     And he opens the idea sheet from the Grammar sheet of "genitive" on the word "of the" in verse 2

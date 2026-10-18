@@ -14,7 +14,7 @@ import { publish, useLatest } from './events/bus';
 import { useAiAllowed } from './gate/licenceContext';
 import { GrammarSheet } from './GrammarSheet';
 import { IdeaSheet } from './IdeaSheet';
-import { ideaOf, ideaOfTerm, type GrammarIdea } from './data/grammar/ladder';
+import { ideaOf, ideaOfTerm, ownIdeaOfWord, type GrammarIdea } from './data/grammar/ladder';
 import { optionOf, RESOURCES, type StudyLink, type StudyRef, type StudyResource } from './resources';
 import { storeUrl } from './resources/appStore';
 import { armFallback } from './resources/openApp';
@@ -459,8 +459,10 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
           }
           onAsk={ask}
           onLearn={(term) => {
+            // the term of the word's own part of speech teaches the word's own idea when it has one (περί: "The preposition περί")
             const id = ideaOfTerm(term);
-            if (id) setIdea(ideaOf(id));
+            const own = ownIdeaOfWord(grammar.word);
+            if (id) setIdea(ideaOf(own && id === 'preposition' ? own : id));
           }}
         />
       ) : null}
