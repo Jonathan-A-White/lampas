@@ -13,7 +13,10 @@ test.use({ viewport: { width: 390, height: 844 } });
 
 const STARTS = (JSON.parse(readFileSync('src/resources/audibleStarts.json', 'utf8')) as { chapters: Record<string, number> }).chapters;
 const TWO_CHAPTERS = STARTS['lev.3'] - STARTS['lev.1'];
-const SET_OFF = Date.UTC(2026, 9, 16, 12, 0, 0);
+// The session's start is the real clock now, never a date written in the spec: openUnlocked remembers the licence as held a minute before the real now, and
+// src/services/licenceCache.ts counts a licence held in the future as not held, so a page clock set before that (a fixed date that has gone by) made the next
+// licence check say 'Needs a licence' and the grist 'No licence' (mw-5r3p30.575).
+const SET_OFF = Date.now();
 const BEFORE_LEVITICUS = OT_BOOKS.slice(0, 2).flatMap((b) => Array.from({ length: b.chapters }, (_, i) => `${b.code}.${i + 1}`));
 const SCREENSHOT = readFileSync('grinds/examples/audible-position/leviticus-3.jpg');
 
