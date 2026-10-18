@@ -32,7 +32,7 @@ function QuizGoalField({ saved }: { saved: string }) {
           type="button"
           disabled={!changed}
           onClick={() => void writeSetting('quizGoal', text).then(() => setDraft(undefined))}
-          className="min-h-12 min-w-16 rounded-lg bg-accent px-4 text-base font-medium text-accent-fg disabled:border disabled:border-line disabled:bg-surface disabled:text-muted"
+          className="min-h-12 min-w-16 rounded-lg border border-transparent bg-accent px-4 text-base font-medium text-accent-fg disabled:border-line disabled:bg-transparent disabled:text-muted"
         >
           Save
         </button>
