@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.317
+_2026-10-18_
+- New: In a Hard sounds lesson's 'Try it' step you can hold a button to say the word, then hear your try followed by the Greek voice.
+- Fixed: the "Which idea is this?" card no longer gives away three answers by leaving the word "or" in the text.
+- Fixed: in Drill it, a right answer after a Hint now says it does not count, so you know why you stay on the same step.
+
 ## 0.1.316
 _2026-10-18_
 - New: In a Hard sounds lesson, "Which did you hear?" plays a Greek word from a close pair, you tap which one it was over ten rounds, and a miss shows the pair side by side to hear again.

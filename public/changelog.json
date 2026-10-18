@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.317",
+    "date": "2026-10-18",
+    "story": "mw-5r3p30.363",
+    "kind": "new",
+    "text": "In a Hard sounds lesson's 'Try it' step you can hold a button to say the word, then hear your try followed by the Greek voice."
+  },
+  {
+    "version": "0.1.317",
+    "date": "2026-10-18",
+    "story": "mw-86e9r1.52",
+    "kind": "fixed",
+    "text": "the \"Which idea is this?\" card no longer gives away three answers by leaving the word \"or\" in the text."
+  },
+  {
+    "version": "0.1.317",
+    "date": "2026-10-18",
+    "story": "mw-5r3p30.431",
+    "kind": "fixed",
+    "text": "in Drill it, a right answer after a Hint now says it does not count, so you know why you stay on the same step."
+  },
+  {
     "version": "0.1.316",
     "date": "2026-10-18",
     "story": "mw-5r3p30.362",
