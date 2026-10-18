@@ -80,7 +80,7 @@ export function Unlock({ locked, publicKeyHex, onCheckAgain, banner = true, page
       {page ? <ScreenHeader title="Licence" back={<HeaderButton onClick={() => closeLicence(origin)}>{origin === 'reader' ? '‹ Reader' : '‹ Settings'}</HeaderButton>} /> : null}
       <main className="screen flex min-h-0 flex-1 flex-col px-6 text-center">
         {/* my-auto centres the content when it fits and, unlike justify-center, lets it scroll from its top when it does not */}
-        <div className={`my-auto flex flex-col items-center ${page ? 'gap-3' : 'gap-4'}`}>
+        <div className={`my-auto flex flex-col items-center ${page ? 'gap-2' : 'gap-4'}`}>
           {page ? null : <img src="/icon.svg" alt="" width={72} height={72} className="rounded-2xl" />}
           {page ? null : <h1 className="text-3xl font-semibold">Unlock</h1>}
           <div role="status" className="flex flex-col gap-1">
@@ -88,7 +88,7 @@ export function Unlock({ locked, publicKeyHex, onCheckAgain, banner = true, page
             {words.hint ? <p className="text-base text-muted">{words.hint}</p> : null}
           </div>
           {canGet ? (
-            <p data-testid="what-a-licence-unlocks" className="max-w-sm text-base">
+            <p data-testid="what-a-licence-unlocks" className="max-w-md text-base">
               {WHAT_A_LICENCE_UNLOCKS}
             </p>
           ) : null}
