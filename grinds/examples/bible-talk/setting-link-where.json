@@ -1,0 +1,18 @@
+{
+  "description": "He asks in words where to find a setting (the text size): the answer says where it is and carries a link of kind setting with the key textSize, and changes nothing.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "question": "Where do I change the text size?",
+    "history": [],
+    "solid_words": [],
+    "settings": { "theme": "light", "textSize": "normal" }
+  },
+  "expect": {
+    "links.0.kind": { "equals": "setting" },
+    "links.0.key": { "equals": "textSize" },
+    "settings_changes": { "present": false }
+  }
+}

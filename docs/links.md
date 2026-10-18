@@ -48,6 +48,12 @@ A notice names what was asked for in words (`“Romans 8:99”`, never the code 
 The sheet is the word as its lemma stands, with its meaning and Strong's number; it has no Parsing (no verse is around it). A word the text never uses opens the reader
 with a notice, as a reference does.
 
+### `setting=` — a setting (Settings)
+
+`https://lampas.allmymind.org/#/settings?setting=<key>` opens Settings at one setting (mw-5r3p30.502). The key is a setting of the registry (`src/settings/registry.ts` SETTINGS: `textSize`, `theme`, `greekRate`, `resource.logos` …); `src/settings/link.ts` `settingLink(key)` writes the address and gives nothing for a key that is not one (so a mistyped or invented key opens plain Settings, nothing marked). Settings scrolls to that row and marks it (`data-highlighted`, an outline and a tint) until his next tap; the row is drawn though the search box would hide it, and when it is a detail of a setting that is off (Bible in Logos while Logos is Off) a line says `“Bible in Logos” is shown once “Logos” is on. Turn “Logos” on first.` and the setting it needs is drawn beside it. Nothing is changed by opening it. `#/settings?section=resources` (a whole section, not marked) works as before.
+
+Where Lampas makes one: the magnifier in the header of every screen (the Reader's, and each screen with a `ScreenHeader`) opens the settings search (`src/settings/SettingsSearch.tsx`), whose results are these links, so Back from Settings is the screen he searched from; and a `{kind: 'setting', key}` link in a tutor answer (docs/ask-tutor.md) is a chip, `Open Text size in Settings`.
+
 ## web+lampas:
 
 The manifest declares `protocol_handlers` for `web+lampas` (url `/#/?ref=%s`). Where the browser supports it (Chrome and Edge on Android and on the desktop, once Lampas is installed),

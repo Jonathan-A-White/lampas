@@ -1,6 +1,6 @@
 // src/TutorLinks.tsx — the links of a Bible talk answer (mw-5r3p30.75), drawn under the answer: for each word or verse the tutor linked, a group of chips
 // that open it in the study resources he switched on in Settings (src/resources/tutorLinks.ts), and, for a verse, in Lampas's own Reader. A link to a resource
-// he has not switched on is not drawn, and a link with no chip at all leaves no group; with nothing to show the whole list is absent. A word's Strong's number
+// he has not switched on is not drawn, a link to a setting (mw-5r3p30.502) is one chip that opens Settings at that row (src/settings/link.ts; a key the registry lacks draws nothing), and a link with no chip at all leaves no group; with nothing to show the whole list is absent. A word's Strong's number
 // comes from the lexicon (src/data/lexicon.ts), never from the tutor.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
@@ -8,6 +8,8 @@ import type { AnswerLink } from './data/db';
 import { lookupLemma } from './data/lexicon';
 import { getLogosBible, getStudyResources, setResourceOn } from './data/repositories';
 import { openReader } from './nav/route';
+import { rowOf } from './settings/rows';
+import { openSetting, settingLink } from './settings/link';
 import { MAX_LINKS } from './services/talk';
 import { armFallback } from './resources/openApp';
 import { placeOf, verseChips, wordChips, type LinkChip } from './resources/tutorLinks';
@@ -41,6 +43,8 @@ interface Group {
   greek: boolean;
   /** the Reader chip of a verse link */
   reader?: { book: string; chapter: number; verse?: number };
+  /** the key of a setting link: its chip opens Settings at that row */
+  setting?: string;
   chips: LinkChip[];
 }
 
@@ -58,12 +62,15 @@ export function TutorLinks({ links, onLeave }: { links: AnswerLink[]; onLeave: (
     if (link.kind === 'word') {
       const lemma = link.lemma.normalize('NFC');
       groups.push({ key: `${i}`, name: lemma, greek: true, chips: wordChips(lemma, strongs[lemma] || undefined, chosen) });
+    } else if (link.kind === 'setting') {
+      const row = settingLink(link.key) ? rowOf(link.key) : undefined;
+      if (row) groups.push({ key: `${i}`, name: row.label, greek: false, setting: row.key, chips: [] });
     } else {
       const place = placeOf(link.reference);
       if (place) groups.push({ key: `${i}`, name: place.name, greek: false, reader: place.reader ? place : undefined, chips: verseChips(place, place.name, chosen, bible) });
     }
   }
-  const drawn = groups.filter((g) => g.reader || g.chips.length > 0);
+  const drawn = groups.filter((g) => g.reader || g.setting || g.chips.length > 0);
   if (drawn.length === 0) return null;
 
   return (
@@ -86,6 +93,19 @@ export function TutorLinks({ links, onLeave }: { links: AnswerLink[]; onLeave: (
                 className={CHIP}
               >
                 Reader
+              </button>
+            ) : null}
+            {group.setting ? (
+              <button
+                type="button"
+                aria-label={`Open ${group.name} in Settings`}
+                onClick={() => {
+                  onLeave();
+                  openSetting(group.setting as string);
+                }}
+                className={CHIP}
+              >
+                Settings
               </button>
             ) : null}
             {group.chips.map((chip) => (
