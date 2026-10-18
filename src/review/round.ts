@@ -3,7 +3,7 @@ import { ROUND_SIZE, type Random } from '../data/quiz';
 import { gapsOf } from '../data/grammar/inference';
 import { IDEA_KIND } from '../data/grammar/ladder';
 import { levelsOf } from '../data/grammar/goalProgress';
-import { listDue, listFetchedIdeas, listLevels, reviewsOf, type ItemRef, type Review } from '../data/repositories';
+import { LESSON_KIND, listDue, listFetchedIdeas, listLevels, reviewsOf, type ItemRef, type Review } from '../data/repositories';
 import { KINDS, fillWords, kindRank, type ReviewItem } from './kinds';
 
 export interface ReviewRound {
@@ -51,7 +51,8 @@ export async function drawReviewRound(random: Random, now = Date.now(), size = R
     if (round.items.length > 0) return round;
   }
   // listDue has them longest overdue first and the sort is stable, so ranking by kind keeps that order within a kind
-  const owed = (await listDue(undefined, now)).filter((r) => kindRank(r.kind) >= 0).sort((a, b) => kindRank(a.kind) - kindRank(b.kind));
+  // a due passage lesson is not asked in a round (Review's start screen opens it, src/review/kinds.ts LESSON)
+  const owed = (await listDue(undefined, now)).filter((r) => kindRank(r.kind) >= 0 && r.kind !== LESSON_KIND).sort((a, b) => kindRank(a.kind) - kindRank(b.kind));
   // the exact gaps of the letters, sounds and marks come first, due or not
   const gaps = await gapRows(now);
   // then the ideas the mill wrote more items for, which he missed in the round before

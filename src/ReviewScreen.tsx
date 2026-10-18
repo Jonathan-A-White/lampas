@@ -3,11 +3,12 @@
 // end card gives the score and says how many come back tomorrow and how many later.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
-import { countDue, recordRound, reviewsOf } from './data/repositories';
+import { countDue, LESSON_KIND, listDue, recordRound, reviewsOf } from './data/repositories';
+import { parsePassageKey, passageLabel } from './approaches';
 import { DAY } from './data/schedule';
 import { type Random } from './data/quiz';
 import { ideaOf } from './data/grammar/ladder';
-import { navigate, openParadigm } from './nav/route';
+import { navigate, openParadigm, openVerseRange } from './nav/route';
 import { ItemCard } from './review/ItemCard';
 import { askForMoreItems } from './review/moreItems';
 import { KINDS, kindOf, recordParseStep, type ReviewItem } from './review/kinds';
@@ -85,6 +86,32 @@ function MoveNote({ card, onChange }: { card: MoveCard; onChange: (card: MoveCar
   );
 }
 
+/** The passage a due lesson row names, with the words he reads it by ('1 John 1:1-4'); none for a key that names no passage. */
+function passageLessonOf(key: string) {
+  const passage = parsePassageKey(key);
+  return passage ? [{ key, passage, label: passageLabel(passage) }] : [];
+}
+
+/** The due lessons on the start screen: a button each, which opens the Verse view on the lesson (its Check passes it). */
+function DueLessons({ lessons }: { lessons: { key: string; passage: { book: string; chapter: number; from: number; to: number }; label: string }[] }) {
+  if (lessons.length === 0) return null;
+  return (
+    <div data-testid="due-lessons" className="mt-6 grid grid-cols-1 gap-3">
+      {lessons.map((l) => (
+        <button
+          key={l.key}
+          type="button"
+          data-lesson={l.key}
+          onClick={() => openVerseRange({ book: l.passage.book, chapter: l.passage.chapter, from: l.passage.from, to: l.passage.to })}
+          className="min-h-12 rounded-xl border border-accent px-3 text-lg font-medium text-accent active:bg-line"
+        >
+          Read {l.label}, then Check
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /** What the Ask the tutor control tells the tutor about Review: the due line, or the item in hand (its answer only once he has answered), or the score. */
 function reviewFacts(round: Round, dueLine: string | undefined): ScreenFact[] {
   if (round.status === 'start') return [{ label: 'Due today', value: dueLine ?? '' }];
@@ -126,7 +153,9 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
   // The answers are written one after the other; the end card waits for the last of them.
   const writing = useRef<Promise<unknown>>(Promise.resolve());
   const due = useLiveQuery(() => Promise.all(KINDS.map((k) => countDue(Date.now(), k.kind))), []);
-  const stillDue = due?.reduce((a, b) => a + b, 0);
+  // a due passage lesson is opened from the start screen, never asked in a round: it is not counted among the items still to ask
+  const stillDue = due?.reduce((a, b, i) => a + (KINDS[i].kind === LESSON_KIND ? 0 : b), 0);
+  const lessons = useLiveQuery(async () => (await listDue(LESSON_KIND, Date.now())).flatMap((r) => passageLessonOf(r.id)), []);
   useReportScreen({ name: 'Review', facts: reviewFacts(round, due ? dueText(due) : undefined) });
 
   const draw = () =>
@@ -173,11 +202,12 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
             Due today: {due ? dueText(due) : '…'}
           </p>
           <p className="mt-2 text-muted">
-            {stillDue === 0 ? 'Nothing is due. Start still asks ten of your words.' : 'The due ones come first, then other words, up to ten.'}
+            {stillDue === 0 ? `${lessons && lessons.length > 0 ? 'No idea or word is due' : 'Nothing is due'}. Start still asks ten of your words.` : 'The due ones come first, then other words, up to ten.'}
           </p>
           <button type="button" onClick={start} className="mt-6 min-h-12 w-full rounded-xl bg-accent text-lg font-medium text-accent-fg">
             Start
           </button>
+          <DueLessons lessons={lessons ?? []} />
           <button type="button" onClick={() => navigate('home')} className="mt-3 min-h-12 w-full rounded-xl border border-line text-lg font-medium">
             Back to reading
           </button>

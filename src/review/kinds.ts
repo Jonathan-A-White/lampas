@@ -29,6 +29,7 @@ import {
   listLevels,
   listOpenedParadigms,
   listSolidLemmas,
+  LESSON_KIND,
   listWords,
   pushGrammarAnswer,
   recordAnswer,
@@ -117,7 +118,8 @@ export interface ParadigmItem {
 export type ReviewItem = GrammarItem | ParadigmItem | PlanDrillItem | SoundItem | WordItem;
 
 export interface ReviewKind {
-  kind: ReviewItem['kind'];
+  /** the kind of the item, or of the schedule rows alone: a passage lesson has rows and no item */
+  kind: ReviewItem['kind'] | typeof LESSON_KIND;
   /** 'N words' */
   count: (n: number) => string;
   /** The items for the due reviews of this kind (an item that no longer exists is left out). */
@@ -336,8 +338,20 @@ export const SOUNDS: ReviewKind = {
   },
 };
 
+/**
+ * A passage lesson he did not pass by reading it, due again (mw-z370x5.2, src/data/repositories/passageLessons.ts tryAgainTomorrow). Review counts it ('Due today: 1 lesson') and its start
+ * screen opens the Verse view on the lesson, where Check asks the questions: a lesson is never an item of a round, so nothing is drawn, answered or recorded here.
+ */
+export const LESSON: ReviewKind = {
+  kind: LESSON_KIND,
+  count: (n) => `${n} ${n === 1 ? 'lesson' : 'lessons'}`,
+  draw: async () => [],
+  isRight: () => false,
+  record: async () => {},
+};
+
 /** Every kind Review knows, in the order its counts are written and its due items asked. */
-export const KINDS: readonly ReviewKind[] = [DRILL_PLAN, GRAMMAR, PARADIGM, SOUNDS, WORDS];
+export const KINDS: readonly ReviewKind[] = [DRILL_PLAN, GRAMMAR, PARADIGM, SOUNDS, WORDS, LESSON];
 
 export const kindOf = (kind: ReviewItem['kind']): ReviewKind => KINDS.find((k) => k.kind === kind) ?? WORDS;
 
