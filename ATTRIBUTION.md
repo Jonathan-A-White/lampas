@@ -63,15 +63,12 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   [SIL Open Font License 1.1](https://openfontlicense.org/open-font-license-official-text/), Copyright 2022 The Noto Project Authors;
   the licence text is in `src/fonts/OFL-noto-serif-hebrew.txt`. The Hebrew subset (letters, points and accents; 400 and 700) is bundled as the
   @fontsource/noto-serif-hebrew 5.3.0 builds. Changes: none.
-- **[Literata](https://github.com/googlefonts/literata)** by The Literata Project Authors, one of the English fonts to choose in Settings (a book face for long reading). Licence:
-  [SIL Open Font License 1.1](https://openfontlicense.org/open-font-license-official-text/), Copyright 2017 The Literata Project Authors;
-  the licence text is in `src/fonts/OFL-literata.txt`. The Latin subset (400 and 700) is bundled as the @fontsource/literata 5.3.0 builds. Changes: none.
-- **[Atkinson Hyperlegible](https://www.brailleinstitute.org/freefont/)** by the Braille Institute of America, one of the English fonts to choose in Settings (very clear, made for low vision). Licence:
-  [SIL Open Font License 1.1](https://openfontlicense.org/open-font-license-official-text/), Copyright 2020 Braille Institute of America, Inc.;
-  the licence text is in `src/fonts/OFL-atkinson-hyperlegible.txt`. The Latin subset (400 and 700) is bundled as the @fontsource/atkinson-hyperlegible 5.3.0 builds. Changes: none.
-- **[Lexend](https://www.lexend.com/)** by The Lexend Project Authors, one of the English fonts to choose in Settings (built for reading ease). Licence:
-  [SIL Open Font License 1.1](https://openfontlicense.org/open-font-license-official-text/), Copyright 2019 The Lexend Project Authors;
-  the licence text is in `src/fonts/OFL-lexend.txt`. The Latin subset (400 and 700) is bundled as the @fontsource/lexend 5.3.0 builds. Changes: none.
+- **[Literata](https://github.com/googlefonts/literata)**, **[Atkinson Hyperlegible](https://www.brailleinstitute.org/freefont/)**, **[Lexend](https://www.lexend.com/)**
+  by The Literata Project Authors, the Braille Institute of America and The Lexend Project Authors, the English fonts to choose in Settings: Literata, a book face for long reading;
+  Atkinson Hyperlegible, very clear, made for low vision; Lexend, built for reading ease. Licence: each is
+  [SIL Open Font License 1.1](https://openfontlicense.org/open-font-license-official-text/), Copyright 2017 The Literata Project Authors, Copyright 2020 Braille Institute of America, Inc.
+  and Copyright 2019 The Lexend Project Authors; the licence texts are in `src/fonts/OFL-literata.txt`, `src/fonts/OFL-atkinson-hyperlegible.txt` and `src/fonts/OFL-lexend.txt`.
+  The Latin subsets (400 and 700) are bundled as the @fontsource/literata, @fontsource/atkinson-hyperlegible and @fontsource/lexend 5.3.0 builds. Changes: none.
 
 ## Libraries the app runs on
 

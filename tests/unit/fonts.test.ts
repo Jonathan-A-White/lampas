@@ -71,12 +71,13 @@ describe('the Font setting', () => {
   it('sets the English font variable only: not the Greek, the Hebrew, the size or the theme', async () => {
     const stop = startAppearanceSync();
     try {
+      await settle();
       root.style.setProperty('--lp-scale', '1.3');
       root.dataset.theme = 'sepia';
       await writeSetting('font', 'atkinson');
       expect(english()).toBe(stackOf('atkinson'));
       expect(english()).toContain('Atkinson Hyperlegible');
-      expect([...root.style].sort()).toEqual([ENGLISH_FONT_VAR, '--lp-scale'].sort());
+      expect(Array.from({ length: root.style.length }, (_, i) => root.style.item(i)).sort()).toEqual([ENGLISH_FONT_VAR, '--lp-scale'].sort());
       expect(root.style.getPropertyValue('--lp-scale')).toBe('1.3');
       expect(root.dataset.theme).toBe('sepia');
       await writeSetting('font', 'phone');
@@ -126,7 +127,7 @@ describe('the bundled English faces', () => {
     const credits = readFileSync('ATTRIBUTION.md', 'utf8');
     for (const [name, licence] of [['Literata', 'OFL-literata.txt'], ['Atkinson Hyperlegible', 'OFL-atkinson-hyperlegible.txt'], ['Lexend', 'OFL-lexend.txt']]) {
       expect(readFileSync(`src/fonts/${licence}`, 'utf8'), licence).toMatch(/SIL Open Font License/);
-      expect(credits, name).toContain(`[${name}]`);
+      expect(credits, name).toContain(`**[${name}]`);
       expect(credits, name).toContain(`src/fonts/${licence}`);
     }
   });

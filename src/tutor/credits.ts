@@ -6,7 +6,7 @@
 import type { ScreenCredit } from './screen';
 
 /** The most the credits weigh as JSON in UTF-8, so the screen, his words and a little history still fit MAX_REQUEST_BYTES (src/services/talk.ts). */
-export const MAX_CREDITS_BYTES = 5200;
+export const MAX_CREDITS_BYTES = 5300;
 
 export const CREDITS: ScreenCredit[] = [
   { name: 'Majority Standard Bible', use: 'The Greek you read, aligned to its English, with Strong\'s and parsing', licence: 'Public domain', link: 'https://majoritybible.com' },
@@ -18,9 +18,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'Biblical Mastery Academy', use: 'Inspired Lampas\'s path and its order; nothing of theirs is copied', licence: 'none taken; nothing copied', link: 'https://biblicalmastery.academy/' },
   { name: 'Gentium Plus', use: 'The Greek type of the reader', licence: 'SIL OFL 1.1', link: 'https://software.sil.org/gentium/' },
   { name: 'Noto Serif Hebrew', use: 'The Hebrew type of answers', licence: 'SIL OFL 1.1', link: 'https://github.com/notofonts/hebrew' },
-  { name: 'Literata', use: 'An English font to choose in Settings: a book face for long reading', licence: 'SIL OFL 1.1', link: 'https://github.com/googlefonts/literata' },
-  { name: 'Atkinson Hyperlegible', use: 'An English font to choose in Settings: very clear, made for low vision', licence: 'SIL OFL 1.1', link: 'https://www.brailleinstitute.org/freefont/' },
-  { name: 'Lexend', use: 'An English font to choose in Settings: built for reading ease', licence: 'SIL OFL 1.1', link: 'https://www.lexend.com/' },
+  { name: 'Literata, Atkinson Hyperlegible, Lexend', use: 'The English fonts to choose in Settings', licence: 'SIL OFL 1.1', link: 'https://github.com/googlefonts/literata' },
   { name: 'React', use: 'The interface library', licence: 'MIT', link: 'https://react.dev/' },
   { name: 'Dexie', use: 'Keeps your words and settings on the phone', licence: 'Apache-2.0', link: 'https://dexie.org/' },
   { name: 'bsv-kit', use: 'The licence gate and tutor messages', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/bsv-kit' },
