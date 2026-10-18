@@ -153,16 +153,17 @@ async function watchFrames(page: Page, bars: 'away' | 'shown') {
 
 const frames = (page: Page) => page.evaluate(() => (window as unknown as { __frames: string[] }).__frames);
 
-/** A finger drag as touch input to the browser. */
+/** A finger drag as touch input to the browser. The app takes a drag as a swipe only if it ends within SWIPE_MAX_MS (600) of its start, so every
+ * event is sent at once, without waiting for an answer to one before the next: a loaded host takes tens of ms to answer each, and a drag sent one
+ * event at a time then outlasts the limit and is not a swipe (mw-5r3p30.574). */
 async function swipe(page: Page, from: readonly [number, number], to: readonly [number, number]) {
   const cdp = await page.context().newCDPSession(page);
   const at = (t: number) => ({ x: from[0] + (to[0] - from[0]) * t, y: from[1] + (to[1] - from[1]) * t });
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: from[0], y: from[1] }] });
-  for (let i = 1; i <= 8; i++) {
-    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: at(i / 8).x, y: at(i / 8).y }] });
-    await page.waitForTimeout(10);
-  }
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  const send = (type: 'touchStart' | 'touchMove' | 'touchEnd', touchPoints: { x: number; y: number }[]) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints });
+  const events = [send('touchStart', [{ x: from[0], y: from[1] }])];
+  for (let i = 1; i <= 8; i++) events.push(send('touchMove', [at(i / 8)]));
+  events.push(send('touchEnd', []));
+  await Promise.all(events);
   await cdp.detach();
 }
 
