@@ -136,7 +136,7 @@ export const GRAMMAR_CONCEPTS: Record<string, GrammarConcept> = Object.fromEntri
   ),
   c(
     'correlative or interrogative pronoun',
-    'Some pronouns can ask a question or match one thing to another, and the sentence decides which. Example: “How many came?” asks; “as many as came” matches.',
+    'Some pronouns can ask a question and can also match one thing to another, and the sentence decides which. Example: “How many came?” asks; “as many as came” matches.',
     'Forms like ποῖος “what kind?” and πόσος “how much?” ask questions. The same shapes can pair with a matching word, so the context tells you which job they do.',
     ['correlative pronoun', 'interrogative pronoun'],
   ),
@@ -348,8 +348,8 @@ export const GRAMMAR_CONCEPTS: Record<string, GrammarConcept> = Object.fromEntri
   ),
   c(
     'middle or passive',
-    'Some forms look the same for the middle and the passive, and the sentence decides which one it is. Example: “was washed” (passive) or “washed himself” (middle).',
-    'In most tenses the middle and the passive share one set of endings: λύομαι is “I am loosed” or “I loose for myself”.',
+    'Some forms look the same for the middle and the passive, and the sentence decides which one it is. Example: “was washed” (passive) against “washed himself” (middle).',
+    'In most tenses the middle and the passive share one set of endings: λύομαι is “I am loosed” and also “I loose for myself”.',
     ['middle', 'passive'],
   ),
   c(
@@ -366,7 +366,7 @@ export const GRAMMAR_CONCEPTS: Record<string, GrammarConcept> = Object.fromEntri
   ),
   c(
     'middle or passive deponent',
-    'A deponent verb has middle or passive forms, but is meant as a plain action. Example: pretend English said “I come-myself” and meant only “I come”.',
+    'A deponent verb has forms that look both middle and passive, but is meant as a plain action. Example: pretend English said “I come-myself” and meant only “I come”.',
     'The form could be read either way, but the verb simply means the action: ἔρχομαι “I come”. Translate it as an ordinary active verb.',
     ['middle deponent', 'passive deponent', 'middle or passive'],
   ),
