@@ -230,6 +230,12 @@ describe('the meaning an example shows (mw-5r3p30.237)', () => {
     expect(exampleMeaning(johnTwo, 1, mh)).toBe('μή: not');
   });
 
+  it('is "walked" for περιεπάτησεν in 1 John 2:6, the aorist, not "walk" (the MSB table gave the two English words to the wrong Greek verbs)', () => {
+    const aorist = wordAt(johnTwo, 6, 'περιεπάτησεν');
+    expect(exampleMeaning(johnTwo, 6, aorist)).toBe('walked');
+    expect(exampleMeaning(johnTwo, 6, wordAt(johnTwo, 6, 'περιπατεῖν'))).toBe('walk');
+  });
+
   it('reads a chapter kept before the supplied-word list (`s: 1`) without throwing', () => {
     const word = wordAt(johnTwo, 1, 'ταῦτα');
     const old: Chapter = { ...johnTwo, verses: johnTwo.verses.map((v) => ({ ...v, e: v.e.map((c) => ({ ...c, s: 1 as unknown as number[] })) })) };
