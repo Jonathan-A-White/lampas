@@ -166,7 +166,7 @@ test('Settings > Quiz goal at phone width: an off Save looks as off as an off Cl
 
   // a goal kept and the field unchanged: Save is off, Clear is on, and the two differ plainly
   await save.click();
-  await expect(group.getByText('Quiz goal: learning to read Romans')).toBeVisible();
+  await expect(group.getByText('Kept: learning to read Romans')).toBeVisible();
   await expect(save).toBeDisabled();
   await expect(clear).toBeEnabled();
   const keptSave = await look(save);
