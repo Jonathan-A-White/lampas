@@ -4,7 +4,7 @@
 // it, on Read it aloud with a licence (the reading check, as today) or on Listen without one. Previous and Next walk the steps, and the step is kept in the
 // address, so Back from the verse comes back to it; Done at the end keeps the lesson Done and goes back. The sound's IPA shows only when his accent is
 // IPA (the standard). Any lesson that passes src/data/hardSounds/schema.ts is drawn here; nothing in this file names one.
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { bookOf } from '../data/books';
 import { loadChapter } from '../data/chapter';
 import type { HardSoundLesson as Lesson, HardSoundStep, StepKind } from '../data/hardSounds/schema';
@@ -18,14 +18,17 @@ import { SpeakButton } from '../speech/SpeakButton';
 import { useReportScreen } from '../tutor/screenContext';
 import { greekMarked } from '../ui/GreekMarked';
 import { setVerseAction } from '../verse/action';
+import { Contrast } from './Contrast';
 import { lessonById, saidFor } from './lessons';
+import { markLetters } from './markLetters';
+import { Word } from './Word';
 
 /** Each kind of step's heading. */
 const STEP_HEADINGS: Record<StepKind, string> = {
   why: 'Why it is hard for you',
   'from-known': 'Start from a sound you know',
   hear: 'Hear it',
-  contrast: 'Tell them apart',
+  contrast: 'Which did you hear?',
   try: 'Try it',
   verse: 'Read a verse',
 };
@@ -38,45 +41,6 @@ function goBack(): void {
   const at = (window.history.state as { i?: number } | null)?.i;
   if (typeof at === 'number' && at > 0) window.history.back();
   else navigate('goal', { replace: true });
-}
-
-const base = (c: string): string => c.normalize('NFD').charAt(0).toLowerCase();
-
-/** `text` with every stretch spelt with one of `letters` marked, breathings, accents and capitals aside. */
-function markLetters(text: string, letters: readonly string[]): ReactNode[] {
-  const chars = [...text];
-  const out: ReactNode[] = [];
-  let plain = '';
-  for (let i = 0; i < chars.length; ) {
-    const hit = letters.find((l) => [...l].every((c, k) => chars[i + k] !== undefined && base(chars[i + k]) === base(c)));
-    if (!hit) {
-      plain += chars[i++];
-      continue;
-    }
-    if (plain) out.push(plain);
-    plain = '';
-    const n = [...hit].length;
-    out.push(
-      <mark key={i} className="rounded-sm bg-accent text-accent-fg">
-        {chars.slice(i, i + n).join('')}
-      </mark>,
-    );
-    i += n;
-  }
-  if (plain) out.push(plain);
-  return out;
-}
-
-/** A Greek word, its letters of the lesson marked, and its speaker. */
-function Word({ word, letters, id }: { word: string; letters: readonly string[]; id: string }) {
-  return (
-    <span className="inline-flex items-center gap-2">
-      <span lang="grc" className="font-greek text-3xl">
-        {markLetters(word, letters)}
-      </span>
-      <SpeakButton text={word} id={id} label={`Hear ${word}`} kind="speaker" />
-    </span>
-  );
 }
 
 function Words({ words, letters, at }: { words: readonly string[]; letters: readonly string[]; at: string }) {
@@ -158,17 +122,20 @@ function StepBody({ step, lesson, at }: { step: HardSoundStep; lesson: Lesson; a
       return <Words words={step.words} letters={lesson.letters} at={at} />;
     case 'contrast':
       return (
-        <ul className="mt-3 space-y-3">
-          {step.pairs.map(([a, b], i) => (
-            <li key={`${a}-${b}`} data-pair className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-line px-3 py-2">
-              <Word word={a} letters={lesson.letters} id={`${at}-${i}-a`} />
-              <span aria-hidden="true" className="text-muted">
-                ·
-              </span>
-              <Word word={b} letters={lesson.letters} id={`${at}-${i}-b`} />
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul className="mt-3 space-y-3">
+            {step.pairs.map(([a, b], i) => (
+              <li key={`${a}-${b}`} data-pair className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-line px-3 py-2">
+                <Word word={a} letters={lesson.letters} id={`${at}-${i}-a`} />
+                <span aria-hidden="true" className="text-muted">
+                  ·
+                </span>
+                <Word word={b} letters={lesson.letters} id={`${at}-${i}-b`} />
+              </li>
+            ))}
+          </ul>
+          <Contrast lessonId={lesson.id} pairs={step.pairs} letters={lesson.letters} at={at} />
+        </>
       );
     case 'verse':
       return <VerseStep reference={step.ref} letters={lesson.letters} at={at} />;
