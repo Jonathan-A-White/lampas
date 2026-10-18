@@ -6,7 +6,7 @@ import { useState } from 'react';
 import type { ParseStep } from './data/drill';
 import type { GrammarQuestion } from './data/grammar/questions';
 import type { QuestionMode } from './data/schedule';
-import { hintLine } from './data/grammar/hint';
+import { HINTED_RIGHT, hintLine } from './data/grammar/hint';
 import { GreekRuns } from './FacetLabel';
 import { KNEW_IT, NOT_PARSED } from './review/kinds';
 import { TapToHear } from './TapToHear';
@@ -48,7 +48,7 @@ interface Props {
   /** what he tapped (an option, or KNEW_IT / NOT_YET on a flashcard), or null while he has not answered */
   picked: string | null;
   onPick: (option: string) => void;
-  /** options (by place) a Hint took away: drawn struck through and faded, not to be tapped, with a line under the question saying how many (Drill it, src/DrillItScreen.tsx) */
+  /** options (by place) a Hint took away: drawn struck through and faded, not to be tapped, with a line under the question saying how many, and a right answer says it does not count (Drill it, src/DrillItScreen.tsx) */
   taken?: ReadonlySet<number>;
   /** in a short window (sideways) the question stands at the left and the answers at the right, with tighter buttons (Drill it) */
   sideBySide?: boolean;
@@ -186,7 +186,7 @@ function Choice({ question, picked, onPick, taken, sideBySide, onSeeTable }: Omi
         <div className={`mt-4 ${sideBySide ? 'short:mt-0' : ''} ${short ? `grid grid-cols-2 ${gap}` : stacked}`}>{buttons}</div>
       )}
       <p data-testid="feedback" role="status" className={`mt-4 text-center text-lg ${sideBySide ? 'min-h-12 short:mt-1 short:min-h-8' : 'min-h-12'}`}>
-        {!answered ? '' : picked === question.right ? 'Right.' : `Not quite. ${tapForm ? 'The word is' : 'It is'} ${answerOf(question)}.`}
+        {!answered ? '' : picked === question.right ? (hint ? HINTED_RIGHT : 'Right.') : `Not quite. ${tapForm ? 'The word is' : 'It is'} ${answerOf(question)}.`}
       </p>
       {answered ? <SeeTable question={question} onSeeTable={onSeeTable} /> : null}
       {answered && picked !== question.right && question.rule ? (
