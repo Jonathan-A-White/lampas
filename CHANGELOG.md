@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.326
+_2026-10-18_
+- Fixed: Read more's book links now open Logos at the lesson.
+
 ## 0.1.325
 _2026-10-18_
 - New: The settings search is now only on Settings, and it stays at the top while you scroll.
