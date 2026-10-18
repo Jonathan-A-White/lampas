@@ -7,7 +7,7 @@ import { loadLexicon } from '../data/lexicon';
 import { getOpenChapter } from '../data/readerChapter';
 import { announceLink } from './linkRequest';
 import { findWord, notHeld, resolveReference, type Link } from './links';
-import { readerHash, readerOf, replaceHash, type ReaderAddress } from './route';
+import { openVerseAt, openVerseRange, readerHash, readerOf, replaceHash, type ReaderAddress } from './route';
 
 /** The address the link opens, keeping the view and weave the link carried. */
 function plainAddress(kept: ReaderAddress, place: Pick<ReaderAddress, 'book' | 'chapter' | 'verse'>): string {
@@ -22,9 +22,13 @@ async function open(link: Link, hash: string, current: () => boolean): Promise<v
     if (!current()) return;
     const opened = resolveReference(link.text, index, there, link.printed);
     announceLink({ book: opened.book, chapter: opened.chapter, verse: opened.verse, notice: opened.notice, word: null, ...(opened.elsewhere ? { elsewhere: opened.elsewhere } : {}) });
-    // a range ('Heb 7:1-3') opens the Verse view on those verses (src/nav/route.ts openVerseRange), not the Reader at the first
-    if (opened.verse !== null && opened.to !== undefined) replaceHash(readerHash({ view: kept.view, weave: kept.weave, book: opened.book, chapter: opened.chapter, passage: opened.verse, passageTo: opened.to }));
-    else replaceHash(plainAddress(kept, { book: opened.book, chapter: opened.chapter, verse: opened.verse ?? undefined }));
+    // a verse or a range ('Heb 7:1-3') opens the Verse view (src/nav/route.ts openVerseAt, openVerseRange) as its own Back step over the chapter's Reader, so Back closes the view
+    // and shows the Reader, not what the link was tapped on (the Share to Lampas sheet)
+    if (opened.verse !== null) {
+      replaceHash(plainAddress(kept, { book: opened.book, chapter: opened.chapter }));
+      if (opened.to !== undefined) openVerseRange({ view: kept.view, weave: kept.weave, book: opened.book, chapter: opened.chapter, from: opened.verse, to: opened.to });
+      else openVerseAt({ view: kept.view, weave: kept.weave, book: opened.book, chapter: opened.chapter, verse: opened.verse });
+    } else replaceHash(plainAddress(kept, { book: opened.book, chapter: opened.chapter }));
     return;
   }
   const lexicon = await loadLexicon().catch(() => null);

@@ -59,5 +59,4 @@ The manifest declares `protocol_handlers` for `web+lampas` (url `/#/?ref=%s`). W
 ## How it is wired
 
 `src/nav/links.ts` is the pure part (parse, resolve against the index, find a word, write the https form). `src/nav/LinkOpener.tsx` shows while a link in the address is resolved, announces the
-result on the bus (`link-opened`, docs/events.md) and replaces the address with the plain reader address (`#/?b=rom&c=8&v=28`), so the link itself is never kept in the trail and
-Back and a reload keep the place. The Reader meets the announcement once, as it opens (`src/nav/linkRequest.ts`).
+result on the bus (`link-opened`, docs/events.md) and replaces the address with the chapter's reader address (`#/?b=rom&c=8`), so the link itself is never kept in the trail, and a verse or range opens the Verse view on top of it as its own Back step (route.ts `openVerseAt`, `openVerseRange`): Back closes the view and shows the Reader, not the screen the link was tapped on (mw-s1dc0n.11); Back and a reload keep the place. The Reader meets the announcement once, as it opens (`src/nav/linkRequest.ts`).
