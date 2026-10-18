@@ -7,5 +7,5 @@ import { Unlock } from './Unlock';
 export function UnlockPage() {
   const detail = useLicenceDetail();
   if (!detail) return null;
-  return <Unlock locked={detail.locked ?? { kind: 'licensed' }} publicKeyHex={detail.publicKeyHex} onCheckAgain={detail.checkAgain} banner={false} page />;
+  return <Unlock locked={detail.locked ?? { kind: 'licensed' }} publicKeyHex={detail.publicKeyHex} onCheckAgain={detail.checkAgain} banner={false} page siteIssued={detail.siteIssued} onRemoved={detail.removed} />;
 }

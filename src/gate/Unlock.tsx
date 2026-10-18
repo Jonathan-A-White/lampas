@@ -2,10 +2,12 @@
 // so far, the phone's key as a QR code (for Postern's scanner) and as hex with a Copy (to issue the licence from Postern's Key screen), Check again.
 // As the Licence page (`page`, #/unlock, mw-8m9dyu.3) it is a screen of the app, opened by the 'Needs a licence' of Settings: headed Licence, with a way back to
 // Settings, and its answer is always 'Licensed' or 'Not licensed' (the reason under it). Not licensed, it says what a licence unlocks and has
-// Get a licence (GetLicence.tsx, mw-cvwm1u.4: an email, a phone and two codes), with the key and its Copy below for a licence issued by hand.
+// Get a licence (GetLicence.tsx, mw-cvwm1u.4: an email, a phone and two codes), with the key and its Copy below for a licence issued by hand. Licensed by the site
+// issuer, it shows My devices (MyDevices.tsx, mw-cvwm1u.5) above the key.
 import { useState } from 'react';
 import { GetLicence } from './GetLicence';
 import { KeyQr } from './KeyQr';
+import { MyDevices } from './MyDevices';
 import { BuildVersion } from '../BuildVersion';
 import { closeLicence, licenceOriginOf, useAddress } from '../nav/route';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
@@ -29,6 +31,10 @@ interface Props {
   banner?: boolean;
   /** The Licence page of the app (not the gate's screen): its own heading, back to Settings and its own words for the answer. */
   page?: boolean;
+  /** The licence is the site issuer's (a person's, with devices): the Licence page then shows My devices (mw-cvwm1u.5). */
+  siteIssued?: boolean;
+  /** This phone itself was removed from My devices: its licence is gone. */
+  onRemoved?: () => void;
 }
 
 const WORDS: Record<UnlockState['kind'], { title: string; hint: string }> = {
@@ -57,7 +63,7 @@ const WHAT_A_LICENCE_UNLOCKS =
 /** A licence issued by hand, in one line beside the key (the Governor issues one from Postern's Key screen). */
 const HOW_TO_LICENCE = 'Or issue one to this key from Postern’s Key screen, then tap Check again.';
 
-export function Unlock({ locked, publicKeyHex, onCheckAgain, banner = true, page = false }: Props) {
+export function Unlock({ locked, publicKeyHex, onCheckAgain, banner = true, page = false, siteIssued = false, onRemoved }: Props) {
   const [copied, setCopied] = useState(false);
   const [getting, setGetting] = useState(false);
   const origin = licenceOriginOf(useAddress());
@@ -92,6 +98,7 @@ export function Unlock({ locked, publicKeyHex, onCheckAgain, banner = true, page
               {WHAT_A_LICENCE_UNLOCKS}
             </p>
           ) : null}
+          {page && locked.kind === 'licensed' && siteIssued && onRemoved ? <MyDevices deviceKey={publicKeyHex} onRemovedThisPhone={onRemoved} /> : null}
           {canGet && !getting ? (
             <button type="button" onClick={() => setGetting(true)} className="min-h-12 w-full max-w-sm rounded-xl bg-accent px-6 text-lg font-medium text-accent-fg">
               Get a licence
