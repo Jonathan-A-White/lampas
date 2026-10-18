@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.319",
+    "date": "2026-10-18",
+    "story": "mw-5r3p30.502",
+    "kind": "new",
+    "text": "Search for any setting from any screen with the magnifier, and the tutor can send you straight to a setting."
+  },
+  {
+    "version": "0.1.319",
+    "date": "2026-10-18",
+    "story": "mw-cvwm1u.4",
+    "kind": "new",
+    "text": "The Licence page now explains what a licence unlocks and lets you get a free one with your email and phone number."
+  },
+  {
     "version": "0.1.318",
     "date": "2026-10-18",
     "story": "mw-svw421.36",

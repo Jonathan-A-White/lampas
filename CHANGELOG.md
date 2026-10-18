@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.319
+_2026-10-18_
+- New: Search for any setting from any screen with the magnifier, and the tutor can send you straight to a setting.
+- New: The Licence page now explains what a licence unlocks and lets you get a free one with your email and phone number.
+
 ## 0.1.318
 _2026-10-18_
 - Fixed: The augment card now says plainly which past verbs have the augment and that only the indicative has it.
