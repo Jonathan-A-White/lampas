@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.324
+_2026-10-18_
+- Fixed: Review no longer asks to tap "the word that is plural singular" or "nominative negative"; each line names one number and one case at most.
+- New: eight more optional Hard sounds lessons, on γ, χ, δ and θ, π τ κ without a puff, pure vowels, κ γ χ λ before e and i, μπ ντ γκ, and two consonants at the start of a word, each with its tip for an American or a British ear, a listening drill and a verse from 1 John.
+
 ## 0.1.323
 _2026-10-18_
 - Fixed: Review no longer asks the endings of third-declension nouns (πατήρ, φῶς, χείρ, σκότος) until The third declension has been opened, and 'See the table' now opens the right table.

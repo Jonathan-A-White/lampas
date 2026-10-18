@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.324",
+    "date": "2026-10-18",
+    "story": "mw-svw421.38",
+    "kind": "fixed",
+    "text": "Review no longer asks to tap \"the word that is plural singular\" or \"nominative negative\"; each line names one number and one case at most."
+  },
+  {
+    "version": "0.1.324",
+    "date": "2026-10-18",
+    "story": "mw-5r3p30.364",
+    "kind": "new",
+    "text": "eight more optional Hard sounds lessons, on γ, χ, δ and θ, π τ κ without a puff, pure vowels, κ γ χ λ before e and i, μπ ντ γκ, and two consonants at the start of a word, each with its tip for an American or a British ear, a listening drill and a verse from 1 John."
+  },
+  {
     "version": "0.1.323",
     "date": "2026-10-18",
     "story": "mw-svw421.37",
