@@ -2,7 +2,7 @@
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterAll, expect, vi } from 'vitest';
+import { afterAll, beforeAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
@@ -11,6 +11,13 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { PREFACE_LINKS } from '../../src/preface';
 import { screenContextNow } from '../../src/tutor/screenContext';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { HOOK_TIMEOUT_MS } from '../../tests/support/timeouts';
+
+// The essay is a lazy chunk (src/Essay.tsx imports its 216 KB JSON when the page opens). The first import is a cold transform that outran
+// the 10 s of a findBy on a loaded host (load ~10 of 16 cores: 11 of 45 steps failed, mw-5r3p30.596), so it is paid here, under a hook's budget.
+beforeAll(async () => {
+  await import('../../src/essay/robinson.json');
+}, HOOK_TIMEOUT_MS);
 
 afterAll(() => {
   cleanup();
@@ -50,6 +57,11 @@ async function openPreface(): Promise<void> {
   await screen.findByRole('heading', { name: 'Preface', level: 1 });
 }
 
+/** The essay's own ready signal: its closing section is drawn only once the lazy text has loaded (src/Essay.tsx). */
+async function essayLoaded(): Promise<void> {
+  await screen.findByRole('region', { name: 'About this copy' });
+}
+
 async function openEssay(): Promise<void> {
   cleanup();
   clearBus();
@@ -62,6 +74,7 @@ async function openEssay(): Promise<void> {
   window.history.replaceState(null, '', '/#/preface/robinson');
   render(<App />);
   await screen.findByRole('heading', { name: 'The Case for Byzantine Priority', level: 1 });
+  await essayLoaded();
   await screen.findByRole('heading', { name: 'Introduction', level: 2 });
 }
 
@@ -190,6 +203,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(window.location.hash).toBe(hash);
     });
     And("the essay's first heading is {string}", async (_, title: string) => {
+      await essayLoaded();
       const first = (await screen.findAllByRole('heading', { level: 2 }))[0];
       expect(first).toHaveTextContent(title);
     });

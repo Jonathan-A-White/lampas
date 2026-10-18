@@ -3,7 +3,7 @@
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterAll, expect, vi } from 'vitest';
+import { afterAll, beforeAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { attribution } from '../../src/attribution';
@@ -12,6 +12,7 @@ import { clearBus } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
+import { HOOK_TIMEOUT_MS } from '../../tests/support/timeouts';
 
 const ADDRESS: Record<string, { hash: string; title: string }> = {
   About: { hash: '#/about', title: 'About' },
@@ -41,9 +42,17 @@ async function open(page: string, canShare: boolean | null): Promise<void> {
   window.history.replaceState(null, '', `/${ADDRESS[page].hash}`);
   render(<App />);
   await screen.findByRole('heading', { name: ADDRESS[page].title, level: 1 });
-  // the essay's text is a lazily loaded chunk
-  if (page === "Robinson's essay") await screen.findByRole('heading', { name: 'Introduction', level: 2 });
+  // the essay's text is a lazily loaded chunk; its closing section is its ready signal (src/Essay.tsx)
+  if (page === "Robinson's essay") {
+    await screen.findByRole('region', { name: 'About this copy' });
+    await screen.findByRole('heading', { name: 'Introduction', level: 2 });
+  }
 }
+
+// The first import of the essay's 216 KB JSON is a cold transform that outran a findBy's 10 s on a loaded host (mw-5r3p30.596): pay it under a hook's budget.
+beforeAll(async () => {
+  await import('../../src/essay/robinson.json');
+}, HOOK_TIMEOUT_MS);
 
 afterAll(() => {
   cleanup();
