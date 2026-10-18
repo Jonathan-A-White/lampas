@@ -1,7 +1,7 @@
 import { licence } from 'bsv-kit/bsv';
 import { describe, expect, it } from 'vitest';
 import { fetchLicenceStatus, LicenceConfigError } from '../../src/services/licenceCheck';
-import { addMint, addRevoke, addTransfer, HOLDER_PUB, ISSUER, ISSUER_PUB, newChain, STRANGER } from '../support/licence-chain';
+import { addMint, addRevoke, addTransfer, HOLDER_PUB, ISSUER, ISSUER_PUB, newChain, SITE_ISSUER, SITE_ISSUER_PUB, STRANGER } from '../support/licence-chain';
 
 const check = (reader: licence.ChainReader) => fetchLicenceStatus(HOLDER_PUB, { issuer: ISSUER_PUB, reader });
 
@@ -56,5 +56,40 @@ describe('fetchLicenceStatus', () => {
   it('refuses to check with no issuer set, or on mainnet', async () => {
     await expect(fetchLicenceStatus(HOLDER_PUB, { issuer: '' })).rejects.toBeInstanceOf(LicenceConfigError);
     await expect(fetchLicenceStatus(HOLDER_PUB, { issuer: ISSUER_PUB, chain: 'mainnet' })).rejects.toBeInstanceOf(LicenceConfigError);
+  });
+
+  describe('with a site issuer (mw-cvwm1u.4)', () => {
+    const withSite = (reader: licence.ChainReader, siteIssuer: string) => fetchLicenceStatus(HOLDER_PUB, { issuer: ISSUER_PUB, siteIssuer, reader });
+
+    it('is held for a mint the site issuer signed', async () => {
+      const reader = newChain();
+      addMint(reader, SITE_ISSUER);
+      const status = await withSite(reader, SITE_ISSUER_PUB);
+      expect(status.state).toBe('held');
+    });
+
+    it('is still held for a mint the Governor’s issuer signed', async () => {
+      const reader = newChain();
+      addMint(reader, ISSUER);
+      expect((await withSite(reader, SITE_ISSUER_PUB)).state).toBe('held');
+    });
+
+    it('is none for a site issuer’s mint when no site issuer is set', async () => {
+      const reader = newChain();
+      addMint(reader, SITE_ISSUER);
+      expect((await withSite(reader, '')).state).toBe('none');
+    });
+
+    it('is none for a stranger’s mint even with a site issuer set', async () => {
+      const reader = newChain();
+      addMint(reader, STRANGER);
+      expect((await withSite(reader, SITE_ISSUER_PUB)).state).toBe('none');
+    });
+
+    it('takes the site issuer’s key in any case', async () => {
+      const reader = newChain();
+      addMint(reader, SITE_ISSUER);
+      expect((await withSite(reader, SITE_ISSUER_PUB.toUpperCase())).state).toBe('held');
+    });
   });
 });

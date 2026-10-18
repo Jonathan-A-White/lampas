@@ -22,3 +22,17 @@ describe('the configured issuer', () => {
     expect((await import('../../src/config')).ISSUER).toBe('02abcd');
   });
 });
+
+describe('the configured site issuer', () => {
+  it('is empty (none) when VITE_LAMPAS_SITE_ISSUER is not set', async () => {
+    vi.stubEnv('VITE_LAMPAS_SITE_ISSUER', '');
+    vi.resetModules();
+    expect((await import('../../src/config')).SITE_ISSUER).toBe('');
+  });
+
+  it('is set for a build, trimmed, in lower case', async () => {
+    vi.stubEnv('VITE_LAMPAS_SITE_ISSUER', ' 02ABCD ');
+    vi.resetModules();
+    expect((await import('../../src/config')).SITE_ISSUER).toBe('02abcd');
+  });
+});

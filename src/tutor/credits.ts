@@ -6,7 +6,7 @@
 import type { ScreenCredit } from './screen';
 
 /** The most the credits weigh as JSON in UTF-8, so the screen, his words and a little history still fit MAX_REQUEST_BYTES (src/services/talk.ts). */
-export const MAX_CREDITS_BYTES = 5300;
+export const MAX_CREDITS_BYTES = 5600;
 
 export const CREDITS: ScreenCredit[] = [
   { name: 'Majority Standard Bible', use: 'The Greek you read, aligned to its English, with Strong\'s and parsing', licence: 'Public domain', link: 'https://majoritybible.com' },
@@ -30,6 +30,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'node-qrcode', use: 'The key as a QR code', licence: 'MIT', link: 'https://github.com/soldair/node-qrcode' },
   { name: 'Workbox', use: 'Lets Lampas open offline', licence: 'MIT', link: 'https://developer.chrome.com/docs/workbox' },
   { name: 'WhatsOnChain', use: 'Checks your key holds a licence', licence: 'none needed; public API', link: 'https://whatsonchain.com' },
+  { name: 'Twilio Verify', use: 'Sends the codes that prove your email and phone for a licence', licence: 'none needed; its terms', link: 'https://www.twilio.com/en-us/user-authentication-identity/verify' },
   { name: 'Postern', use: 'Carries your questions and pictures to the tutor', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/postern' },
   { name: 'Claude', use: 'The model behind the tutor, which reads your pictures', licence: 'none needed; its terms', link: 'https://www.anthropic.com/claude' },
   { name: 'Logos Bible Software', use: 'If switched on: links into your own Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
