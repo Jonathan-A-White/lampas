@@ -7,7 +7,7 @@ import { SETTLE_MS } from '../../src/ui/settle';
 // mw-i7xe0n.26: a fast second tap on a sheet's Done, or on its Drill it, landed on whatever stood under the same spot once the sheet was gone or the
 // drill was drawn. The Learn sheet's Done: the Goal screen's Change opened Settings. The Rho sheet's Done: the Learn sheet's own Done closed it too.
 // The Rho sheet's Drill it: the drill's Hint took two answers away ('Hint used'). A sheet that opens or closes swallows a tap in the settle moment
-// after it (src/ui/sheetBack.ts useSheetBack, src/ui/settle.ts swallowTaps).
+// after it (the app-wide guard, src/ui/tapGuard.ts).
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
 // tapTwice (tests/support/gesture.ts) times the two taps on the page's clock, so it is installed before the page opens.
