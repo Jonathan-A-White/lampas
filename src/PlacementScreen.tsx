@@ -55,10 +55,17 @@ type Run =
 
 type Over = { status: 'over'; state: PlacementState; gaps: GrammarIdea[]; fromLetters?: FromLetters };
 
-/** What the card of 'Start from the letters' says besides the counts: the ideas he already has solid, and the one Learn next opens. */
+/** What the card of 'Start from the letters' says besides the counts: the ideas he already has solid, and the one Learn next opens (null when it opens none: the Goal has no Learn next). */
 interface FromLetters {
   solid: string[];
-  next: string;
+  next: string | null;
+}
+
+/** The card's line: what he has solid and where Learn next goes, or that it goes nowhere. */
+function fromLettersText({ solid, next }: FromLetters): string {
+  const have = solid.length > 0 ? `Already solid: ${solid.join(', ')}. ` : '';
+  if (next === null) return `${have}Nothing is left for Learn next on the Goal screen.`;
+  return solid.length > 0 ? `${have}Learn next on the Goal screen opens ${next}.` : `You start with ${next}. Learn next on the Goal screen opens it.`;
 }
 
 const LEVEL_WORDS: Record<Level, string> = { solid: 'Solid', frontier: 'Frontier', notYet: 'Not yet' };
@@ -175,7 +182,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
     showCard({ status: 'over', state, gaps });
   };
 
-  /** Skips the quiz: nothing is asked or written, so Learn next stays where it is (The Greek alphabet for a total beginner, mw-86e9r1.1). The card tells what he already has (mw-86e9r1.19). */
+  /** Skips the quiz: nothing is asked or written, so Learn next stays where it is (The Greek alphabet for a total beginner, mw-86e9r1.1; none when every idea the goal needs is solid, mw-86e9r1.46). The card tells what he already has (mw-86e9r1.19). */
   const startFromLetters = async (): Promise<void> => {
     setRun({ status: 'starting' });
     clearPlacement();
@@ -187,7 +194,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
     publish({ kind: 'placement-done', goal: session.goal, approach: session.approach.id, solid, frontier, notYet, untested });
     const next = learnNext(needs ?? { ideas: [] }, session.approach, known);
     const have = state.ideas.filter((id) => state.levels.get(id) === 'solid').map((id) => ideaOf(id).title);
-    showCard({ status: 'over', state, gaps: [], fromLetters: { solid: have, next: next ? (next.gaps ? lettersText(next.gaps) : next.idea.title) : ideaOf('alphabet').title } });
+    showCard({ status: 'over', state, gaps: [], fromLetters: { solid: have, next: next ? (next.gaps ? lettersText(next.gaps) : next.idea.title) : null } });
   };
 
   const begin = async (kept: SavedPlacement | null, resume: boolean): Promise<void> => {
@@ -347,9 +354,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
           </p>
           {run.fromLetters ? (
             <p data-testid="from-letters" className="mt-2 text-center text-lg">
-              {run.fromLetters.solid.length > 0
-                ? `Already solid: ${run.fromLetters.solid.join(', ')}. Learn next on the Goal screen opens ${run.fromLetters.next}.`
-                : `You start with ${run.fromLetters.next}. Learn next on the Goal screen opens it.`}
+              {fromLettersText(run.fromLetters)}
             </p>
           ) : null}
           {run.gaps.length > 0 ? (

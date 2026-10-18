@@ -90,7 +90,7 @@ export interface SavedCard extends SavedPlacement {
   /** the ids of the gaps it named */
   gaps: string[];
   /** what the card of Start from the letters says besides the counts */
-  fromLetters?: { solid: string[]; next: string };
+  fromLetters?: { solid: string[]; next: string | null };
 }
 
 export function saveCard(card: SavedCard): void {
@@ -110,11 +110,11 @@ export function readCard(): SavedCard | null {
     const { gaps } = saved;
     if (!Array.isArray(gaps) || !gaps.every(isIdea)) return null;
     const from = saved.fromLetters as { solid?: unknown; next?: unknown } | undefined;
-    if (from !== undefined && !(Array.isArray(from?.solid) && from.solid.every((t) => typeof t === 'string') && typeof from.next === 'string')) return null;
+    if (from !== undefined && !(Array.isArray(from?.solid) && from.solid.every((t) => typeof t === 'string') && (typeof from.next === 'string' || from.next === null))) return null;
     const state = stateOf(saved.state);
     if (!state) return null;
     const card: SavedCard = { stamp: saved.stamp, goal: saved.goal, approach: saved.approach, state, gaps };
-    return from ? { ...card, fromLetters: { solid: from.solid as string[], next: from.next as string } } : card;
+    return from ? { ...card, fromLetters: { solid: from.solid as string[], next: from.next as string | null } } : card;
   } catch {
     return null;
   }

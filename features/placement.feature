@@ -144,6 +144,16 @@ Feature: Test me on the grammar, and meet me where I am
     Then Learn next says "Pairs of vowels"
     And the Goal screen counts the grammar ideas as the card did
 
+  Scenario: Start from the letters when every idea is solid says nothing is left for Learn next
+    Given his goal is "Read 1 John 1:1" and he knows nothing yet
+    And he has marked every idea as I know this
+    When he opens the placement
+    Then the screen offers "Start from the letters"
+    When he taps "Start from the letters"
+    Then the card says nothing is left for Learn next and does not name The Greek alphabet
+    When he goes back to the goal
+    Then the Goal screen has no Learn next
+
   Scenario: A total beginner's placement gives no idea a level, with his word list already on the schedule
     Given his goal is "Read 1 John 1:1" and he knows nothing yet
     And his word list is already on the schedule
