@@ -42,6 +42,7 @@ live. A screen that reports nothing sends its name alone.
 
 A request also carries `resources` (mw-5r3p30.123): the study resources he has switched on, so the tutor links one only when it truly helps (docs/resources.md "The tutor's links").
 A New Testament verse the tutor names in an answer ('Hebrews 7:2') is a link to that verse's Verse view, in the Talk sheet and in the Ask box alike.
+The answer's `links` (at most three, `MAX_LINKS`) take a third kind (mw-5r3p30.502): `{kind: 'setting', key}`, `key` one of the registry's setting keys (the schema's enum is made from the registry by `npm run grind:build`; the instructions' "Links to a setting" say when to use it and list the keys under "Changing the app's settings"). `TutorLinks.tsx` draws it as one chip, `Open <setting's name> in Settings`, which closes the sheet and opens `#/settings?setting=<key>` (docs/links.md); it needs no study resource, and a key the registry lacks draws no chip and no empty group (the phone still takes the answer: `isTalkAnswer` checks the shape only). It changes nothing: a change is still `settings_changes` or `setting_offer`.
 
 ## The tutor knows what bears on its answer (mw-5r3p30.242)
 

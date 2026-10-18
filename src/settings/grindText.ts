@@ -65,9 +65,32 @@ export function settingsChangesSchema(): Json {
   };
 }
 
-/** `schema` with its `settings_changes` property set to the registry's. */
+/** The `links` kind that names a setting (mw-5r3p30.502): its `key` is one of the registry's, so the tutor cannot link a setting that is not there. */
+export function settingLinkSchema(): Json {
+  return {
+    type: 'object',
+    additionalProperties: false,
+    required: ['kind', 'key'],
+    properties: {
+      kind: { const: 'setting' },
+      key: {
+        description: 'The key of the setting, exactly as the instructions list it.',
+        type: 'string',
+        enum: SETTINGS.map((s) => s.key),
+      },
+    },
+  };
+}
+
+/** `schema` with its `settings_changes` property and the setting kind of its `links` set to the registry's. */
 export function withSettingsChanges(schema: Json): Json {
-  const properties = { ...(schema.properties as Json), settings_changes: settingsChangesSchema() };
+  const properties: Json = { ...(schema.properties as Json), settings_changes: settingsChangesSchema() };
+  const links = properties.links as Json | undefined;
+  if (links) {
+    const items = links.items as Json;
+    const others = (items.anyOf as Json[]).filter((v) => ((v.properties as Json).kind as Json).const !== 'setting');
+    properties.links = { ...links, items: { ...items, anyOf: [...others, settingLinkSchema()] } };
+  }
   return { ...schema, properties };
 }
 

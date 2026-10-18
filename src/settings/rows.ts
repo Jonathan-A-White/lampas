@@ -122,9 +122,8 @@ export async function readValues(): Promise<Values> {
 /** Text as the search compares it: no capitals, no accents. */
 export const foldText = (text: string): string => text.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase();
 
-/** The rows to draw: those whose dependency is on and, when `query` is not empty, whose name or hint holds it (ignoring capitals and accents).
- *  A row that matches but is hidden by what it depends on is reached through the row that turns it on, which is shown in its place. */
-export function visibleRows(values: Values, query: string, rows: readonly SettingsRow[] = ROWS): SettingsRow[] {
+/** Whether each row's dependency is on, given the values read (a row with no dependency is always on). */
+function reading(values: Values, rows: readonly SettingsRow[]) {
   const byKey = new Map(rows.map((r) => [r.key, r]));
   const on = (row: SettingsRow): boolean => {
     if (!row.dependsOn) return true;
@@ -132,6 +131,13 @@ export function visibleRows(values: Values, query: string, rows: readonly Settin
     const parent = byKey.get(row.dependsOn.key);
     return value !== undefined && row.dependsOn.shown(value) && (!parent || on(parent));
   };
+  return { byKey, on };
+}
+
+/** The rows to draw: those whose dependency is on and, when `query` is not empty, whose name or hint holds it (ignoring capitals and accents).
+ *  A row that matches but is hidden by what it depends on is reached through the row that turns it on, which is shown in its place. */
+export function visibleRows(values: Values, query: string, rows: readonly SettingsRow[] = ROWS): SettingsRow[] {
+  const { byKey, on } = reading(values, rows);
   const q = foldText(query.trim());
   if (q === '') return rows.filter(on);
   const shown = new Set<string>();
@@ -142,4 +148,33 @@ export function visibleRows(values: Values, query: string, rows: readonly Settin
     if (at) shown.add(at.key);
   }
   return rows.filter((r) => shown.has(r.key));
+}
+
+/** The setting to turn on first for the row `key` to be drawn, when it is a detail of one that is off: the nearest row it depends on that is drawn, whose
+ *  value hides it. Undefined when the row is drawn as it is (or is no row of the list). */
+export function neededFor(values: Values, key: string, rows: readonly SettingsRow[] = ROWS): SettingsRow | undefined {
+  const { byKey, on } = reading(values, rows);
+  let at = byKey.get(key);
+  if (!at || on(at)) return undefined;
+  while (at && !on(at)) at = at.dependsOn ? byKey.get(at.dependsOn.key) : undefined;
+  return at;
+}
+
+/** The rows to draw at a link to the setting `key` (src/settings/link.ts): what visibleRows gives for `query`, and that row though the query or its
+ *  dependency would hide it, with the setting to turn on first (neededFor) beside it. */
+export function rowsAt(values: Values, query: string, key: string | null, rows: readonly SettingsRow[] = ROWS): SettingsRow[] {
+  const drawn = visibleRows(values, query, rows);
+  if (key === null || !rows.some((r) => r.key === key)) return drawn;
+  const keep = new Set([...drawn.map((r) => r.key), key]);
+  const needed = neededFor(values, key, rows);
+  if (needed) keep.add(needed.key);
+  return rows.filter((r) => keep.has(r.key));
+}
+
+/** The settings (the rows with a link, src/settings/link.ts) whose name or hint holds `query`, ignoring capitals and accents, for the search that is
+ *  one tap away from every screen. A detail that is hidden while its setting is off is found too: its link says what to turn on first. Nothing for an empty query. */
+export function searchSettings(query: string, rows: readonly SettingsRow[] = ROWS): SettingsRow[] {
+  const q = foldText(query.trim());
+  if (q === '') return [];
+  return rows.filter((r) => settingOf(r.key) !== undefined && (foldText(r.label).includes(q) || foldText(r.hint).includes(q)));
 }

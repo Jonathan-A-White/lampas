@@ -12,6 +12,12 @@ const offsets = new Map<string, number>();
 /** The address a scroll offset is kept under: the reader without its selected verse (tapping a verse number does not
  * move the text, and the place is the same whichever verse is selected). */
 export function scrollAddress(hash: string): string {
+  // a link to a setting (src/settings/link.ts) has a place of its own: Settings opens at that row, not where he last left it
+  if (pathOf(hash) === '#/settings') {
+    const q = hash.indexOf('?');
+    const setting = new URLSearchParams(q < 0 ? '' : hash.slice(q + 1)).get('setting');
+    return setting ? `#/settings?setting=${setting}` : '#/settings';
+  }
   if (pathOf(hash) !== '#/') return pathOf(hash);
   return readerHash({ ...readerOf(hash), verse: undefined });
 }
@@ -60,6 +66,12 @@ function scrollBoxTo(box: HTMLElement, top: number): void {
 /** Forget every remembered position. */
 export function forgetScrolls(): void {
   offsets.clear();
+}
+
+/** Forget the positions kept for an address, so a box shown there starts at the top (or wherever the screen puts it). */
+export function forgetScrollsAt(hash: string): void {
+  const prefix = `${scrollAddress(hash)}#`;
+  for (const key of [...offsets.keys()]) if (key.startsWith(prefix)) offsets.delete(key);
 }
 
 /** Give the returned ref to a scrolling box. `slot` names the box on its screen. The box's first child holds its

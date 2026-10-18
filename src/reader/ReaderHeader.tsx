@@ -1,10 +1,12 @@
 // src/reader/ReaderHeader.tsx — the Reader's header (docs/module-map.md R1, part d): the chapter's title (a button that opens the picker),
 // English | Greek, the Play button of Read aloud and the gear that opens Settings. While a reading the speaking bar does not hold waits for Pause
-// or Play, the header gives its room to those and Stop; the title stays for screen readers.
+// or Play, the header gives its room to those and Stop; the title stays for screen readers. The settings search (src/settings/SettingsSearch.tsx) is the magnifier at the right end of
+// the chips row (src/ReaderChips.tsx), and here, beside the gear, while that row is hidden by a reading: the header has no room for it beside the title (tests/e2e/tutor-go-details.spec.ts).
 import { setReaderView, type ReaderView } from '../data/repositories';
 import { navigate } from '../nav/route';
 import type { ReadingState } from '../speech/readAloud';
 import { ReadFromButton } from '../speech/ReadControls';
+import { SettingsSearchButton } from '../settings/SettingsSearch';
 
 function ViewSwitch({ view }: { view: ReaderView }) {
   const choice = (value: ReaderView, label: string) => (
@@ -101,6 +103,7 @@ export function ReaderHeader({ title, view, chapterReading, reading, from, canRe
       {headerButtons ? <span className="flex-1" /> : null}
       {view ? <ViewSwitch view={view} /> : null}
       {canRead ? <ReadFromButton from={from} reading={reading} onRead={onRead} /> : null}
+      {headerButtons ? <SettingsSearchButton /> : null}
       <button
         type="button"
         aria-label="Settings"

@@ -594,7 +594,7 @@
       "maxLength": 30
     },
     "links": {
-      "description": "Links the app turns into buttons that open a word or a verse in the reader's own study resources (lexicons, a Bible); he sees only the ones he has switched on. At most three. Leave it out when no lexicon or verse would help him.",
+      "description": "Links the app turns into buttons: a word or a verse opens in the reader's own study resources (lexicons, a Bible), of which he sees only the ones he has switched on, and a setting opens the app's Settings at that setting. At most three. Leave it out when no lexicon, verse or setting would help him.",
       "type": "array",
       "maxItems": 3,
       "items": {
@@ -624,6 +624,56 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 40
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "key"],
+            "properties": {
+              "kind": { "const": "setting" },
+              "key": {
+                "description": "The key of the setting, exactly as the instructions list it.",
+                "type": "string",
+                "enum": [
+                  "theme",
+                  "font",
+                  "textSize",
+                  "layout",
+                  "sectionHeadings",
+                  "readingMode",
+                  "immersiveReader",
+                  "immersiveHint",
+                  "readSpan",
+                  "readLessons",
+                  "readTutor",
+                  "askBy",
+                  "hebrewDepth",
+                  "tips",
+                  "weave",
+                  "weaveGrammar",
+                  "weaveOrder",
+                  "newWordsADay",
+                  "pickerGrammar",
+                  "grammarMove",
+                  "goal",
+                  "grammarApproach",
+                  "handwritingDrills",
+                  "englishVoice",
+                  "greekVoice",
+                  "englishRate",
+                  "greekRate",
+                  "greekPronunciation",
+                  "englishAccent",
+                  "resource.strongs",
+                  "resource.logos",
+                  "resource.accordance",
+                  "audioBible",
+                  "readingPlan",
+                  "logosBible",
+                  "quizGoal"
+                ]
               }
             }
           }

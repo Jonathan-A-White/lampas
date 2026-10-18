@@ -1,7 +1,8 @@
-import { useId, useState, type ReactNode } from 'react';
+import { useContext, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { proseOf } from '../../speech/proseOf';
 import { ReadAloud } from '../../speech/ReadAloud';
 import { writeSetting } from '../registry';
+import { HighlightedSetting } from './highlighted';
 import type { SettingsRow } from '../rows';
 
 export function Section({ id, title, hint, labelled, children }: { id?: string; title: string; hint?: string; labelled?: boolean; children: ReactNode }) {
@@ -42,8 +43,19 @@ export function MoreHelp({ text, id: rowKey }: { text: string; id?: string }) {
 
 /** One row of Settings: its control, then the registry's one-line hint (and its help, on request), then any `details` of the control. */
 export function SettingRow({ row, children, details, className = 'pb-3' }: { row: SettingsRow; children: ReactNode; details?: ReactNode; className?: string }) {
+  const highlighted = useContext(HighlightedSetting) === row.key;
+  const ref = useRef<HTMLDivElement>(null);
+  // the row is drawn after its saved value is read, so it scrolls itself into view when it arrives marked
+  useEffect(() => {
+    if (highlighted) ref.current?.scrollIntoView({ block: 'center' });
+  }, [highlighted]);
   return (
-    <div data-setting={row.key} className={className}>
+    <div
+      ref={ref}
+      data-setting={row.key}
+      data-highlighted={highlighted ? '' : undefined}
+      className={highlighted ? `${className} -mx-2 rounded-lg bg-accent/15 px-2 pt-2 outline-2 outline-accent` : className}
+    >
       {children}
       <div className="pt-1 text-base text-muted">
         {row.hint}
