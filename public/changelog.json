@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.325",
+    "date": "2026-10-18",
+    "story": "mw-5r3p30.617",
+    "kind": "new",
+    "text": "The settings search is now only on Settings, and it stays at the top while you scroll."
+  },
+  {
     "version": "0.1.324",
     "date": "2026-10-18",
     "story": "mw-svw421.38",

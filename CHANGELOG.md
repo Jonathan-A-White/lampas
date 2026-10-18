@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.325
+_2026-10-18_
+- New: The settings search is now only on Settings, and it stays at the top while you scroll.
+
 ## 0.1.324
 _2026-10-18_
 - Fixed: Review no longer asks to tap "the word that is plural singular" or "nominative negative"; each line names one number and one case at most.
