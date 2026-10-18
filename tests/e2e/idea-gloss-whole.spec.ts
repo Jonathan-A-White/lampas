@@ -74,7 +74,7 @@ function expectGlosses(rows: Row[], words: readonly string[]): void {
 const ALPHABET = 'The Greek alphabet';
 
 for (const [goal, words] of [
-  ['1 John 1:1', ['we have heard', 'we have seen', 'we have gazed upon']],
+  ['1 John 1:1', ['we have heard', 'we have seen', 'touched']],
   ['1 John 1:2', ['that was revealed', 'we have seen', 'testified']],
 ] as const) {
   test(`Learn next on ${goal}: the alphabet sheet shows each example's English whole at 390 px`, async ({ page }) => {
