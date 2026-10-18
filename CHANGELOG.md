@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.323
+_2026-10-18_
+- Fixed: Review no longer asks the endings of third-declension nouns (πατήρ, φῶς, χείρ, σκότος) until The third declension has been opened, and 'See the table' now opens the right table.
+- Fixed: Tapping the update banner now always reloads the app within a few seconds, instead of sometimes getting stuck on "Updating…".
+
 ## 0.1.322
 _2026-10-18_
 - Fixed: Settings > Grammar approach now opens any lesson's idea sheet when you tap it, and a goal now teaches compound verbs, marks that change the word, enclitics and words that sound alike when its words show them.
