@@ -108,6 +108,17 @@ async function fitsThePhone(page: Page, dialog: ReturnType<Page['getByRole']>): 
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 }
 
+/** Waits for the sheets' slide-in to end (the Reading dot pulses for ever, so only the animations that end are waited for). */
+const finishedSliding = (page: Page): Promise<unknown> =>
+  page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((a) => a.effect?.getComputedTiming().iterations !== Infinity)
+        .map((a) => a.finished),
+    ),
+  );
+
 test('with a licence: Send a screenshot reads Leviticus 3 from Audible, with time left, and Yes keeps Leviticus 3 next', async ({ page }) => {
   const fake: FakePostern = makeFakePostern();
   // the mill has its answer at once, and the phone's send is held until the test lets it go: the sheet shows 'Reading' meanwhile (an answer made later is not
@@ -134,6 +145,8 @@ test('with a licence: Send a screenshot reads Leviticus 3 from Audible, with tim
   expect(fake.received[0]!.grist.kind).toBe('audible-position');
   expect(fake.received[0]!.input).toEqual({ language: 'en', set_off_from: 'Leviticus 1' });
   expect(fake.received[0]!.attachments).toHaveLength(1);
+  // the slide-in has ended before the sheet is measured: under load boundingBox would read it mid-animation
+  await finishedSliding(page);
   const sheetBox = await readSheet(page).boundingBox();
   await shot(page, 'reading-plan-screenshot-reading');
 
@@ -144,6 +157,7 @@ test('with a licence: Send a screenshot reads Leviticus 3 from Audible, with tim
   await expect(readSheet(page).getByText('I am sure of it.')).toBeVisible();
   await expect(readSheet(page).getByText('You stopped partway in it: the plan stays at Leviticus 3.')).toBeVisible();
   // the answer came in without moving the sheet: it is one height whatever it shows
+  await finishedSliding(page);
   expect(await readSheet(page).boundingBox()).toEqual(sheetBox);
   await fitsThePhone(page, readSheet(page));
   await shot(page, 'reading-plan-screenshot-proposal');
