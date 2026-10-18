@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { pageTime } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -92,9 +93,22 @@ test('The Logos lexicons are a compact list at 360 px (860 high, the box ends ab
   // The setting below the Logos card is one swipe away, not 21 rows away. The card holds the lexicons and, since the Grammar books
   // group joined it (mw-5r3p30.573), the books too, so it is taller than the screen: from the Logos row at the top, one screen's
   // scroll brings Accordance in (the earlier check wanted it in view with no scroll at all).
-  await logosSwitch.evaluate((el) => el.scrollIntoView({ block: 'start' }));
-  await page.locator('main.screen').evaluate((el) => el.scrollBy(0, el.clientHeight));
-  await expect(section.getByRole('switch', { name: 'Accordance', exact: true })).toBeInViewport();
+  // The Grammar books group draws when its own live query answers, and a row that draws after the scroll moves what the scroll was measured
+  // against (a loaded host answers late, mw-5r3p30.577): wait for the card to be whole, and measure the one screen's scroll afresh until the screen
+  // has stopped moving. A card that is really too tall fails every try.
+  await expect(section.getByRole('group', { name: 'Grammar books' }).first()).toBeVisible();
+  const accordanceSwitch = section.getByRole('switch', { name: 'Accordance', exact: true });
+  await expect
+    .poll(async () => {
+      await logosSwitch.evaluate((el) => el.scrollIntoView({ block: 'start' }));
+      await page.locator('main.screen').evaluate((el) => el.scrollBy(0, el.clientHeight));
+      return accordanceSwitch.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return r.bottom > 0 && r.top < window.innerHeight;
+      });
+    })
+    .toBe(true);
+  await expect(accordanceSwitch).toBeInViewport();
 
   // BDAG (ticked) leads; the last lexicon is out of sight until the box scrolls.
   await expect(list.getByRole('checkbox').first()).toHaveAccessibleName('BDAG');
@@ -181,6 +195,7 @@ test('The Study links are equal tiles in two columns at 360 px, and an app that 
 });
 
 test('Settings at 412 px: Accordance On opens nothing, stays On and offers Get Accordance', async ({ page }) => {
+  await page.clock.install(); // pageTime waits on the page's clock, not the host's (tests/support/gesture.ts)
   await page.setViewportSize({ width: 412, height: 915 });
   await openUnlocked(page);
   await page.addInitScript(() => {
@@ -210,7 +225,7 @@ test('Settings at 412 px: Accordance On opens nothing, stays On and offers Get A
   const box = await get.boundingBox();
   expect(box?.height).toBeGreaterThanOrEqual(47.5);
   expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(412);
-  await page.waitForTimeout(3000);
+  await pageTime(page, 3000);
   await expect(accordance).toHaveAttribute('aria-checked', 'true');
   await expect(section.getByText(/Looking for| found/)).toHaveCount(0);
   expect(await page.evaluate(() => (window as unknown as { opened: string[] }).opened)).toEqual([]);
