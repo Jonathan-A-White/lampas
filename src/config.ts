@@ -14,6 +14,12 @@ export const DEFAULT_ISSUER = '035666d4ea414a65801ac092a4e28be6515065adcc7ac58d9
 const env: Record<string, string | undefined> = import.meta.env ?? {};
 export const ISSUER: string = (env.VITE_LAMPAS_ISSUER?.trim() || DEFAULT_ISSUER).toLowerCase();
 
+/**
+ * The site's own issuer key (66 hex chars; mw-cvwm1u.4): the key Postern's backend signs a self-registered licence with. A licence either issuer
+ * minted counts. Empty (the default) means there is none, so only the Governor's licences count. VITE_LAMPAS_SITE_ISSUER sets it for a build.
+ */
+export const SITE_ISSUER: string = (env.VITE_LAMPAS_SITE_ISSUER?.trim() ?? '').toLowerCase();
+
 /** The chain the licence is read from. Testnet until the Governor says mainnet (VITE_LAMPAS_CHAIN=mainnet). */
 export type Chain = 'testnet' | 'mainnet';
 export const CHAIN: Chain = env.VITE_LAMPAS_CHAIN === 'mainnet' ? 'mainnet' : 'testnet';

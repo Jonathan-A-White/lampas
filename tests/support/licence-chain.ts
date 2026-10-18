@@ -9,6 +9,9 @@ export const HOLDER_PUB = HOLDER.toPublicKey().toString();
 export const HOLDER_ADDRESS = HOLDER.toPublicKey().toAddress('testnet');
 export const ISSUER = PrivateKey.fromHex('22'.repeat(32));
 export const ISSUER_PUB = ISSUER.toPublicKey().toString();
+/** The site's own issuer key (VITE_LAMPAS_SITE_ISSUER): the key Postern's backend signs self-registered licences with. */
+export const SITE_ISSUER = PrivateKey.fromHex('44'.repeat(32));
+export const SITE_ISSUER_PUB = SITE_ISSUER.toPublicKey().toString();
 export const STRANGER = PrivateKey.fromHex('33'.repeat(32));
 
 export const MINT_TXID = 'b'.repeat(64);
@@ -53,7 +56,7 @@ function recordTx(recordType: RecordType, payload: object, signer: PrivateKey): 
 /** A reader that already holds the funding transactions of the issuer and the stranger. */
 export function newChain(): licence.FakeChainReader {
   const reader = new licence.FakeChainReader();
-  for (const owner of [ISSUER, STRANGER]) reader.addKnownTransaction(fundingTxid(owner), fundingTransaction(owner));
+  for (const owner of [ISSUER, SITE_ISSUER, STRANGER]) reader.addKnownTransaction(fundingTxid(owner), fundingTransaction(owner));
   return reader;
 }
 

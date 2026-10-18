@@ -32,7 +32,7 @@
   "dependencies": {
     "@bsv/sdk": "^2.8.11",
     "audible-kit": "github:Jonathan-A-White/audible-kit#ac2224ca7dedccae47df7a33f7a71136e688cb2e",
-    "bsv-kit": "github:Jonathan-A-White/bsv-kit#94fbf3163698f077e46f5c81bddee155985cc8c3",
+    "bsv-kit": "github:Jonathan-A-White/bsv-kit#22619754e8f468ece66abbe43339ee98aeab61b7",
     "dexie": "^4.3.0",
     "dexie-react-hooks": "^4.4.0",
     "pwa-kit": "github:Jonathan-A-White/pwa-kit#8c3c1b526a3e5efc72d63393f7f81ab728dbd51c",
@@ -76,7 +76,7 @@
   },
   "allowScripts": {
     "github:Jonathan-A-White/audible-kit#ac2224ca7dedccae47df7a33f7a71136e688cb2e": true,
-    "github:Jonathan-A-White/bsv-kit#94fbf3163698f077e46f5c81bddee155985cc8c3": true,
+    "github:Jonathan-A-White/bsv-kit#22619754e8f468ece66abbe43339ee98aeab61b7": true,
     "github:Jonathan-A-White/pwa-kit#8c3c1b526a3e5efc72d63393f7f81ab728dbd51c": true,
     "github:Jonathan-A-White/voice-kit#a2135a9d7615b2600764d969748e0626d4afe584": true
   }
