@@ -92,7 +92,8 @@ function Arrow({ move, name, glyph }: { move: (() => void) | null; name: string;
 
 export function VerseView(props: VerseViewProps) {
   const { title, book, chapter, verse, view, immersive, text, previous, next, onClose, action, onAction, listen, checks, read, weaveShown, onRetryRead, ask, onAsk, prefill, onTalk, quiz, lesson } = props;
-  const [checking, setChecking] = useState(false);
+  // the key of the lesson whose Check is open: moving to another passage leaves it closed
+  const [checking, setChecking] = useState<string | null>(null);
   // The foot of the view, where the chosen action draws its bar.
   const [slot, setSlot] = useState<HTMLDivElement | null>(null);
   // Read it aloud, Ask the tutor and Quiz me are the AI: not offered, and nothing of theirs drawn, without a licence (mw-8m9dyu.2).
@@ -131,7 +132,7 @@ export function VerseView(props: VerseViewProps) {
         <Arrow move={next} name={`Next ${noun}`} glyph="›" />
       </header>
       <div className="screen min-h-0 flex-1 px-3 pt-3">
-        {lesson ? <LessonStrip title={lesson.title} ideas={lesson.ideas} onCheck={() => setChecking(true)} /> : null}
+        {lesson ? <LessonStrip title={lesson.title} ideas={lesson.ideas} onCheck={() => setChecking(lesson.key)} /> : null}
         {/* A passage is long: its text scrolls in a box of its own so the row of actions stays in reach under it. */}
         <div {...(passage ? { 'data-passage-box': '' } : {})} className={passage ? 'max-h-[40dvh] overflow-y-auto overscroll-contain rounded-xl border border-line px-2' : undefined}>
           <p
@@ -212,14 +213,14 @@ export function VerseView(props: VerseViewProps) {
           ) : null}
         </div>
       </div>
-      {lesson && checking ? (
+      {lesson && checking === lesson.key ? (
         <CheckSheet
           lesson={lesson}
-          onClose={() => setChecking(false)}
+          onClose={() => setChecking(null)}
           onQuiz={
             ai
               ? () => {
-                  setChecking(false);
+                  setChecking(null);
                   onAction('quiz');
                   quiz.onOpen();
                 }
