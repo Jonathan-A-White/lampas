@@ -1,8 +1,10 @@
 // src/gate/Unlock.tsx — the screen the licence gate shows until the phone's key holds a licence: the answer
 // so far, the phone's key as a QR code (for Postern's scanner) and as hex with a Copy (to issue the licence from Postern's Key screen), Check again.
 // As the Licence page (`page`, #/unlock, mw-8m9dyu.3) it is a screen of the app, opened by the 'Needs a licence' of Settings: headed Licence, with a way back to
-// Settings, and its answer is always 'Licensed' or 'Not licensed' (the reason under it).
+// Settings, and its answer is always 'Licensed' or 'Not licensed' (the reason under it). Not licensed, it says what a licence unlocks and has
+// Get a licence (GetLicence.tsx, mw-cvwm1u.4: an email, a phone and two codes), with the key and its Copy below for a licence issued by hand.
 import { useState } from 'react';
+import { GetLicence } from './GetLicence';
 import { KeyQr } from './KeyQr';
 import { BuildVersion } from '../BuildVersion';
 import { closeLicence, licenceOriginOf, useAddress } from '../nav/route';
@@ -46,12 +48,20 @@ const PAGE_WORDS: Record<UnlockState['kind'], { title: string; hint: string }> =
   error: { title: 'Not licensed', hint: 'Can’t reach the chain to check. Check the connection, then tap Check again.' },
 };
 
-/** How a licence is got today, in one line on the Licence page (the Governor issues it from Postern's Key screen; a website for it is a later waypoint, VISION.md). */
-const HOW_TO_LICENCE = 'To get a licence, issue one to this key from Postern’s Key screen, then tap Check again.';
+/** What a licence unlocks, in three plain sentences above Get a licence: the AI tutor, that it is free and what it asks for, and what Lampas keeps (docs/demo-free-ai-licensed.md). */
+const WHAT_A_LICENCE_UNLOCKS =
+  'A licence unlocks the AI tutor: questions on any verse, glosses and your placement. ' +
+  'It is free, and needs an email and a phone, checked by Twilio. ' +
+  'Lampas keeps them only as scrambled fingerprints.';
+
+/** A licence issued by hand, in one line beside the key (the Governor issues one from Postern's Key screen). */
+const HOW_TO_LICENCE = 'Or issue one to this key from Postern’s Key screen, then tap Check again.';
 
 export function Unlock({ locked, publicKeyHex, onCheckAgain, banner = true, page = false }: Props) {
   const [copied, setCopied] = useState(false);
+  const [getting, setGetting] = useState(false);
   const origin = licenceOriginOf(useAddress());
+  const canGet = page && locked.kind !== 'licensed';
   const words = locked.kind === 'error' && locked.setup ? { title: locked.setup, hint: '' } : (page ? PAGE_WORDS : WORDS)[locked.kind];
 
   async function copy(): Promise<void> {
@@ -76,27 +86,39 @@ export function Unlock({ locked, publicKeyHex, onCheckAgain, banner = true, page
           <div role="status" className="flex flex-col gap-1">
             <p className="text-xl font-medium">{words.title}</p>
             {words.hint ? <p className="text-base text-muted">{words.hint}</p> : null}
-            {page ? <p className="text-base text-muted">Lampas is free to read. A licence unlocks the tutor.</p> : null}
           </div>
-          <section aria-label="This phone’s key" className={`flex w-full max-w-sm flex-col ${page ? 'gap-1.5' : 'gap-2'}`}>
-            <p className="text-sm text-muted">This phone’s key</p>
-            <KeyQr text={publicKeyHex} label="This phone’s key as a QR code" />
-            <p data-testid="device-key" className="select-all break-all rounded-xl border border-line bg-surface p-3 font-mono slashed-zero text-base">
-              {publicKeyHex}
+          {canGet ? (
+            <p data-testid="what-a-licence-unlocks" className="max-w-sm text-base">
+              {WHAT_A_LICENCE_UNLOCKS}
             </p>
-            {page && locked.kind !== 'licensed' ? (
-              <p data-testid="how-to-licence" className="text-base">
-                {HOW_TO_LICENCE}
-              </p>
-            ) : null}
-            <button
-              type="button"
-              onClick={() => void copy()}
-              className="min-h-12 rounded-xl bg-accent px-6 text-lg font-medium text-accent-fg"
-            >
-              {copied ? 'Copied' : 'Copy'}
+          ) : null}
+          {canGet && !getting ? (
+            <button type="button" onClick={() => setGetting(true)} className="min-h-12 w-full max-w-sm rounded-xl bg-accent px-6 text-lg font-medium text-accent-fg">
+              Get a licence
             </button>
-          </section>
+          ) : null}
+          {canGet && getting ? <GetLicence deviceKey={publicKeyHex} onCancel={() => setGetting(false)} /> : null}
+          {canGet && getting ? null : (
+            <section aria-label="This phone’s key" className={`flex w-full max-w-sm flex-col ${page ? 'gap-1.5' : 'gap-2'}`}>
+              <p className="text-sm text-muted">This phone’s key</p>
+              <KeyQr text={publicKeyHex} label="This phone’s key as a QR code" />
+              <p data-testid="device-key" className="select-all break-all rounded-xl border border-line bg-surface p-3 font-mono slashed-zero text-base">
+                {publicKeyHex}
+              </p>
+              {page && locked.kind !== 'licensed' ? (
+                <p data-testid="how-to-licence" className="text-base">
+                  {HOW_TO_LICENCE}
+                </p>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => void copy()}
+                className="min-h-12 rounded-xl bg-accent px-6 text-lg font-medium text-accent-fg"
+              >
+                {copied ? 'Copied' : 'Copy'}
+              </button>
+            </section>
+          )}
           <button
             type="button"
             onClick={onCheckAgain}
