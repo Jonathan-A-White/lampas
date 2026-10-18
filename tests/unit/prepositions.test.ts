@@ -6,7 +6,7 @@ import type { BookIndex, Chapter } from '../../src/data/chapter';
 import { bookOf } from '../../src/data/books';
 import { LADDER, ideaOf, ideasBelow } from '../../src/data/grammar/ladder';
 import { passageNeeds } from '../../src/data/grammar/needs';
-import { COMPOUND_VERBS, PREPOSITIONS, type PrepCase } from '../../src/data/grammar/prepositions';
+import { COMPOUND_VERBS, PREPOSITIONS, examplesOf, type PrepCase } from '../../src/data/grammar/prepositions';
 import { buildIdeaQuestion } from '../../src/data/grammar/questions';
 import { mulberry32 } from '../../src/data/quiz';
 
@@ -74,14 +74,27 @@ describe('the twelve prepositions', () => {
     for (const p of PREPOSITIONS) {
       expect(new Set(p.uses.map((u) => u.case)).size, p.key).toBe(p.uses.length);
       for (const use of p.uses) {
-        const label = `${p.greek} ${use.case}: ${use.phrase} (${use.ref.book} ${use.ref.chapter}:${use.ref.verse})`;
-        const found = findPhrase(use.phrase, use.ref);
-        expect(found, `${label} is in its verse`).toBeDefined();
-        const [first, ...object] = found!;
-        expect(first.lemma, label).toBe(nfc(p.greek));
-        expect(first.code, label).toBe('PREP');
-        expect(object.length, label).toBeGreaterThan(0);
-        for (const w of object) expect(w.case, `${label}: ${w.text} ${w.code}`).toBe(CASE_LETTER[use.case]);
+        for (const example of examplesOf(use)) {
+          const label = `${p.greek} ${use.case}: ${example.phrase} (${example.ref.book} ${example.ref.chapter}:${example.ref.verse})`;
+          const found = findPhrase(example.phrase, example.ref);
+          expect(found, `${label} is in its verse`).toBeDefined();
+          const [first, ...object] = found!;
+          expect(first.lemma, label).toBe(nfc(p.greek));
+          expect(first.code, label).toBe('PREP');
+          expect(object.length, label).toBeGreaterThan(0);
+          for (const w of object) expect(w.case, `${label}: ${w.text} ${w.code}`).toBe(CASE_LETTER[use.case]);
+        }
+      }
+    }
+  });
+
+  it('give every case at least two different checked phrases, so the case is read and the phrase is not learned (mw-86e9r1.39)', () => {
+    for (const p of PREPOSITIONS) {
+      for (const use of p.uses) {
+        const examples = examplesOf(use);
+        expect(examples.length, `${p.greek} ${use.case}`).toBeGreaterThanOrEqual(2);
+        expect(new Set(examples.map((e) => e.phrase)).size, `${p.greek} ${use.case} phrases`).toBe(examples.length);
+        expect(examples[0].phrase, `${p.greek} ${use.case}: the lesson shows the first`).toBe(use.phrase);
       }
     }
   });
@@ -90,21 +103,28 @@ describe('the twelve prepositions', () => {
     for (const p of PREPOSITIONS) {
       const idea = ideaOf(`preposition-${p.key}`);
       const asked = new Set<string>();
+      const phrases = new Set<string>();
       for (let seed = 1; seed <= 80; seed += 1) {
         const q = buildIdeaQuestion(idea, [rom8], mulberry32(seed));
         expect(q.ideaId).toBe(idea.id);
         expect(q.options).toHaveLength(4);
         expect(new Set(q.options).size).toBe(4);
         expect(q.prompt).toContain(p.greek);
-        const use = p.uses.find((u) => u.phrase === q.form);
+        const use = p.uses.find((u) => examplesOf(u).some((e) => e.phrase === q.form));
         expect(use, `${idea.id}: ${q.form}`).toBeDefined();
+        const example = examplesOf(use!).find((e) => e.phrase === q.form)!;
         expect(q.right).toBe(use!.meaning);
         expect(q.options.filter((o) => o === q.right)).toHaveLength(1);
-        expect(q.ref).toBe(`${bookOf(use!.ref.book)!.name} ${use!.ref.chapter}:${use!.ref.verse}`);
-        expect(q.say).toBe(use!.phrase);
+        expect(q.ref).toBe(`${bookOf(example.ref.book)!.name} ${example.ref.chapter}:${example.ref.verse}`);
+        expect(q.say).toBe(example.phrase);
         asked.add(use!.case);
+        phrases.add(example.phrase);
       }
       expect([...asked].sort(), `${idea.id} asks every case`).toEqual(p.uses.map((u) => u.case).sort());
+      // each case is asked in more than one phrase, so the same case does not always come as the same words
+      for (const use of p.uses) {
+        expect(examplesOf(use).filter((e) => phrases.has(e.phrase)).length, `${idea.id} ${use.case} is asked with several phrases`).toBeGreaterThanOrEqual(2);
+      }
     }
   });
 
