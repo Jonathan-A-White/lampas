@@ -3,12 +3,12 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
 import { BOOK_INDEX } from './data/bookIndex';
-import type { GrammarLevel } from './data/db';
+import type { GrammarLevel, PassageLessonRow } from './data/db';
 import { parseGoal, type Goal } from './data/goal';
 import { levelsOf, wordStatesOf } from './data/grammar/goalProgress';
 import { forgetGoalNeeds, needsOf } from './data/grammar/goalNeeds';
 import { progressToward, type Level, type PassageNeeds, type Progress } from './data/grammar/needs';
-import { getGoal, listLevels, listWords, type WordState } from './data/repositories';
+import { getGoal, listLevels, listPassageLessons, listWords, type WordState } from './data/repositories';
 
 export type GoalProgress =
   | { status: 'loading' }
@@ -24,6 +24,8 @@ export type GoalProgress =
       levels: Map<string, Level>;
       /** the stored rows, for when he was placed */
       rows: Map<string, GrammarLevel>;
+      /** the passage lessons he has read or passed, by key */
+      passages: Map<string, PassageLessonRow>;
     };
 
 export { forgetGoalNeeds };
@@ -32,7 +34,7 @@ export { forgetGoalNeeds };
 type Loaded = { text: string; attempt: number; needs: PassageNeeds | 'failed' } | null;
 
 export function useGoalProgress(): GoalProgress {
-  const stored = useLiveQuery(async () => ({ text: await getGoal(), words: await listWords(), rows: await listLevels() }), []);
+  const stored = useLiveQuery(async () => ({ text: await getGoal(), words: await listWords(), rows: await listLevels(), passages: await listPassageLessons() }), []);
   const text = stored?.text;
   const goal = text ? parseGoal(text, BOOK_INDEX) : undefined;
   const [loaded, setLoaded] = useState<Loaded>(null);
@@ -58,5 +60,5 @@ export function useGoalProgress(): GoalProgress {
   if (loaded.needs === 'failed') return { status: 'failed', goal, retry: () => setAttempt((n) => n + 1) };
   const states = wordStatesOf(stored.words);
   const levels = levelsOf(stored.rows);
-  return { status: 'ready', goal, needs: loaded.needs, progress: progressToward(loaded.needs, states, levels), states, levels, rows: stored.rows };
+  return { status: 'ready', goal, needs: loaded.needs, progress: progressToward(loaded.needs, states, levels), states, levels, rows: stored.rows, passages: stored.passages };
 }

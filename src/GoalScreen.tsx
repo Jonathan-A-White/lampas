@@ -20,7 +20,7 @@ import { OptionalEntry } from './ipa/OptionalEntry';
 import { useAiAllowed } from './gate/licenceContext';
 import { LadderStart } from './ReadingLadder';
 import { pronunciationOf } from './speech/pronunciation';
-import { navigate, openPlacement, openReader } from './nav/route';
+import { navigate, openPlacement, openReader, openVerseAt } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { useReportScreen } from './tutor/screenContext';
 import { useGoalProgress, type GoalProgress } from './useGoalProgress';
@@ -43,9 +43,12 @@ const SEGMENT: Record<Level, { className: string; style?: CSSProperties }> = {
 /** 'Solid 1 · Frontier 2 · Not yet 27', as the bars' legends write it. */
 const legendText = (c: Counts): string => `Solid ${c.solid} · Frontier ${c.frontier} · Not yet ${c.notYet}`;
 
-/** The idea Learn next names, with its lesson when the approach has one: 'The Greek alphabet · The Greek letters'; or, when only some letters, pairs or breathings are weak, those gaps: 'ξ, ψ and ου · The Greek letters'. */
-/** What Learn next names: the letters he is weak in, else the idea and, when it differs from the idea's own title, its lesson (the ladder's are the same). */
+/** What Learn next names: a passage to read ('Read 1 John 1:1-4 · Reading the letters of John'), else the letters he is weak in, else the idea and, when it differs from the idea's own title, its lesson (the ladder's are the same). */
 const learnNextText = (next: NonNullable<ReturnType<typeof learnNext>>): string => {
+  if (next.passage) {
+    const lesson = next.lesson;
+    return `Read ${next.passage.label} · ${lesson && lesson.lesson.title !== next.passage.label ? lesson.lesson.title : lesson?.level.title}`;
+  }
   if (next.gaps) return lettersText(next.gaps);
   const lesson = next.lesson?.lesson.title;
   return lesson && lesson !== next.idea.title ? `${next.idea.title} · ${lesson}` : next.idea.title;
@@ -285,7 +288,7 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
   const [added, setAdded] = useState<string | null>(null);
   const approachId = useLiveQuery(getGrammarApproach, []);
   const approach = approachOf(approachId ?? DEFAULT_APPROACH) ?? approachOf(DEFAULT_APPROACH)!;
-  const next = learnNext(needs, approach, levels);
+  const next = learnNext(needs, approach, levels, { goal, states: progress.passages });
   const learning = learningNow(levels);
   const words = nextWords(needs, states);
   const placed = placedAt(rows);
@@ -378,8 +381,8 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
 
         <section className="mt-5 space-y-2">
           {learning ? <LearningNowButton idea={learning} onOpen={() => setIdeaId(learning.id)} /> : null}
-          {next && (!learning || next.gaps) ? (
-            <LearnNextButton next={next} onOpen={() => setIdeaId(next.idea.id)} />
+          {next && (!learning || next.gaps || next.passage) ? (
+            <LearnNextButton next={next} onOpen={() => (next.passage ? openVerseAt({ book: next.passage.passage.book, chapter: next.passage.passage.chapter, verse: next.passage.passage.from }) : setIdeaId(next.idea.id))} />
           ) : !learning ? (
             <p data-testid="learn-next-none" className="text-base text-muted">
               Every idea this goal needs is on the frontier or solid.

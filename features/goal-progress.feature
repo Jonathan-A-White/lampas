@@ -34,6 +34,19 @@ Feature: See my goal move
     When he taps Learn next
     Then the idea sheet is open on "The noun"
 
+  Scenario: A passage lesson becomes Learn next
+    Given the goal is "1 John" and he knows no word and no idea
+    And every idea 1 John needs is solid but "tense-aorist", which is frontier
+    When he opens the Goal screen
+    Then Learn next says "Read 1 John 1:1-4 · Reading the letters of John"
+    When he taps Learn next
+    Then the Verse view is open on 1 John 1 at verse 1
+    When he goes back to the Goal screen
+    And he has passed the passage "1 John 1:1-4"
+    Then Learn next now says "Read 1 John 1:5-10 · Reading the letters of John"
+    When the idea "tense-aorist" is solid and the idea "conditional" is not yet
+    Then Learn next then says "The conditional"
+
   Scenario: Next words lists three dictionary forms and Add makes one learning, and the words bar moves
     Given the goal is "1 John 1:1" and he knows no word and no idea
     When he opens the Goal screen
