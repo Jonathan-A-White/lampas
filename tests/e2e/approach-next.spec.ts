@@ -74,15 +74,15 @@ test('the Next badge in Settings > Grammar approach sits on the lesson the Goal 
 
   const learnNext = page.getByTestId('learn-next');
   const named: string[] = [];
-  // Learn next / Mark known without a drill / Done, ten times: the foundations and the noun, then the singular (Got it is now the slider's Learning
+  // Learn next / Mark known without a drill / Done, twelve times: the foundations, the two marks the verse shows and the noun, then the singular (Got it is now the slider's Learning
   // stop, and while an idea is Learning the Goal names it instead of Learn next, mw-i7xe0n.6)
-  for (let step = 0; step < 10; step += 1) {
+  for (let step = 0; step < 12; step += 1) {
     await page.goto('/#/goal');
     await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
     const title = ((await learnNext.textContent()) ?? '').replace(/^Learn next: /, '');
     named.push(title);
     expect(await settingsNext(page), `after ${step} ideas`).toBe(title);
-    if (step === 9) break;
+    if (step === 11) break;
     await page.goto('/#/goal');
     await learnNext.click();
     const sheet = page.getByRole('dialog', { name: 'Idea' });
@@ -92,7 +92,7 @@ test('the Next badge in Settings > Grammar approach sits on the lesson the Goal 
     await sheet.getByRole('button', { name: 'Done' }).click();
   }
   expect(named[0]).toBe('The Greek alphabet');
-  expect(named[9]).toBe('The singular');
+  expect(named[11]).toBe('The singular');
 
   // the shot shows the badge on The singular
   await page.goto('/#/settings');

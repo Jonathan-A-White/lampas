@@ -63,11 +63,11 @@ describe('the Next badge and the Goal\'s Learn next (mw-86e9r1.24)', () => {
   it.each<[string, GrammarLevelName]>([
     ['Got it (frontier)', 'frontier'],
     ['Mark known (solid)', 'solid'],
-  ])('with the goal 1 John 1:1, marks the lesson Learn next opens: with no progress, then after %s on each of the first ten ideas', async (_how, level) => {
+  ])('with the goal 1 John 1:1, marks the lesson Learn next opens: with no progress, then after %s on each of the first twelve ideas', async (_how, level) => {
     const needs = await needsOf1John();
     const levels = new Map<string, GrammarLevelName>();
     const seen: string[] = [];
-    for (let step = 0; step <= 10; step += 1) {
+    for (let step = 0; step <= 12; step += 1) {
       const next = learnNext(needs, ladder, levels);
       cleanup();
       render(<ApproachPicker approaches={[ladder]} chosen="ladder" levels={rowsOf(levels)} needs={needs} />);
@@ -76,14 +76,14 @@ describe('the Next badge and the Goal\'s Learn next (mw-86e9r1.24)', () => {
       seen.push(next.idea.title);
       levels.set(next.idea.id, level);
     }
-    // the walk passes the foundations and the noun and comes to the singular, as the Goal screen does
-    expect(seen.slice(0, 10)).toContain('The noun');
+    // the walk passes the foundations, the two marks the verse shows and the noun and comes to the singular, as the Goal screen does
+    expect(seen.slice(0, 12)).toContain('The noun');
     expect(seen).toContain('The singular');
   });
 
   it('with the foundations and the noun solid, marks The singular, as Learn next names it', async () => {
     const needs = await needsOf1John();
-    const solid = ['alphabet', 'breathings', 'accents', 'diphthongs', 'consonant-pairs', 'syllables', 'iota-subscript', 'punctuation', 'noun'];
+    const solid = ['alphabet', 'breathings', 'accents', 'diphthongs', 'consonant-pairs', 'syllables', 'iota-subscript', 'punctuation', 'movable-letters', 'marks-change-word', 'noun'];
     const levels = new Map(solid.map((id): [string, GrammarLevelName] => [id, 'solid']));
     expect(learnNext(needs, ladder, levels)?.idea.title).toBe('The singular');
     render(<ApproachPicker approaches={[ladder]} chosen="ladder" levels={rowsOf(levels)} needs={needs} />);

@@ -40,6 +40,12 @@ Code: `src/data/grammar/ladder.ts`. It is pure: no store and no screen.
   below, that preposition's own idea (`preposition-dia` for διά), which a parsing code cannot name, and (mw-svw421.1) `patternsOf(word)`, the
   pattern ideas its dictionary form and code show ('Patterns', below). `passageNeeds` and the idea sheet's examples use it, so a passage with
   διά needs `preposition-dia` and one with ἦν needs `eimi` and `augment`; the Weave's grammar dial (`formPasses`) still reads the code alone.
+  And (mw-5r3p30.604, PROVISIONAL) `textIdeasOf(word)` (`src/data/grammar/textIdeas.ts`), the ideas the word's form shows that no code names:
+  `compound-verbs` for a verb `COMPOUND_VERBS` lists (ἐξεβάλομεν, from ἐκβάλλω; a verb the list lacks is not found, so extend the list to extend the idea),
+  `marks-change-word` for either word of a `MARK_PAIRS` pair, `enclitics` for a present εἰμί but εἶ, τις (not τίς) and μου, μοι, με, σου, σοι, σε,
+  `words-sound-alike` for a word of `SOUND_ALIKE`, and `movable-letters` for οὐκ, οὐχ, ἐξ or a word ending in an apostrophe. So a goal's ideas hold them
+  after the foundation, by rung, and Learn next walks them; a goal whose words show none does not need them. A test walks the whole text for the ladder's
+  ideas no word reaches (`dictionary-entry`, `principal-parts` and a few rare ones of the voices and moods have no rule yet).
 
 ## Marks that change the word, and enclitics
 
@@ -583,6 +589,9 @@ Choosing one changes no level: levels belong to the ideas, not to the approach.
 - Settings marks 'Next' the lesson the Goal's Learn next opens (mw-86e9r1.24): `goalProgress.ts nextLesson(needs, approach, levels)`
   is `learnNext`'s lesson for the goal's needs (none marked when Learn next names none), and `nextLessonOf` with no goal or when
   the goal's chapters cannot be fetched. The tutor's `learner_grammar` names the same lesson as `next_lesson`.
+- Settings > Grammar approach lists what a lesson holds (mw-86e9r1.35, .40, .42): a lesson of one idea whose title is the idea's is a button that opens that idea's
+  sheet (`IdeaSheetWithWord`, `src/IdeaSheetWithWord.tsx`, with the word sheet its examples open over it); a lesson of several ideas (BMA Tutor's 'Small words that
+  take a case', if a second path is listed) shows each idea's title under it as such a button (`data-idea-title`). A passage lesson keeps its range for a title.
 
 An approach's order is bound by the ladder's `needs` (mw-86e9r1.2): in `orderOf` of every approach no idea comes before an idea
 it rests on (`tests/unit/ladder-needs.test.ts`). BMA Tutor still teaches the aorist before the genitive, because the aorist does not

@@ -7,6 +7,7 @@ import { GRAMMAR_CONCEPTS } from '../grammar-concepts';
 import { bookOf } from '../books';
 import { GRAMMAR_TERMS, decodeParse, parseSegments, splitParse } from '../parseCode';
 import { patternsOf } from './patterns';
+import { textIdeasOf } from './textIdeas';
 import { belowIn, makePath } from './pathGraph';
 import { PREPOSITIONS, type Preposition } from './prepositions';
 
@@ -677,10 +678,11 @@ export const ownIdeaOfWord = (word: { l: string; p: string }): string | undefine
   word.p === 'PREP' ? PREPOSITION_IDEA_OF_LEMMA.get(word.l.normalize('NFC')) : undefined;
 
 /** ideasOf for a word of the text (mw-86e9r1.5): a preposition of the twelve also needs its own idea, which its parsing code cannot name, and (mw-svw421.1)
- * a word also needs the pattern ideas its dictionary form and code show (patterns.ts patternsOf): its declension, the augment, its tense signs and the rest. */
+ * a word also needs the pattern ideas its dictionary form and code show (patterns.ts patternsOf): its declension, the augment, its tense signs and the rest;
+ * and (mw-5r3p30.604) the text ideas its form shows (textIdeas.ts): a compound verb, a word a mark tells from its twin, an enclitic, a movable letter. */
 export function ideasOfWord(word: { l: string; p: string; t?: string }): string[] {
   const own = ownIdeaOfWord(word);
-  const ids = [...new Set([...ideasOf(word.p), ...patternsOf(word), ...(own ? [own] : [])])];
+  const ids = [...new Set([...ideasOf(word.p), ...patternsOf(word), ...textIdeasOf(word), ...(own ? [own] : [])])];
   return ids.sort((a, b) => ideaOf(a).rung - ideaOf(b).rung);
 }
 
