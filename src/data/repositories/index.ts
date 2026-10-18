@@ -84,7 +84,7 @@ export { getLadderRow, listWellRead, setLadderShowing, skipLadderVerse } from '.
 export type { LadderRow } from './ladder';
 export { latestDrillRunFor, saveDrillRun, weakFacets } from './drillRuns';
 export type { DrillRunRow } from './drillRuns';
-export { listPassageLessons, markPassed, markRead } from './passageLessons';
+export { LESSON_KIND, lessonCheckPassed, listPassageLessons, markPassed, markRead, tryAgainTomorrow } from './passageLessons';
 export type { PassageLessonRow } from './passageLessons';
 export { answerPlanItem, closeDrillPlan, drillPlanCounts, getDrillPlan, listDrillPlans, saveDrillPlan } from './drillPlans';
 export type { PlanAnswer } from './drillPlans';

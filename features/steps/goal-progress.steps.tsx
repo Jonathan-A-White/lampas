@@ -187,8 +187,8 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps Learn next', async () => {
       await user.click(await screen.findByTestId('learn-next'));
     });
-    Then('the Verse view is open on 1 John 1 at verse 1', async () => {
-      await waitFor(() => expect(readerOf(window.location.hash)).toMatchObject({ book: '1jn', chapter: 1, verse: 1 }));
+    Then('the Verse view is open on 1 John 1:1-4', async () => {
+      await waitFor(() => expect(readerOf(window.location.hash)).toMatchObject({ book: '1jn', chapter: 1, passage: 1, passageTo: 4 }));
       expect(await screen.findByRole('heading', { name: '1 John 1', level: 1 })).toBeInTheDocument();
     });
     When('he goes back to the Goal screen', async () => {

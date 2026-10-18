@@ -22,6 +22,8 @@ export interface ReaderAddress {
   verse?: number;
   /** the first verse of the passage under a section heading, when the Verse view shows that passage (src/data/passage.ts) */
   passage?: number;
+  /** the last verse, when the Verse view shows any range of the chapter (a lesson's, src/data/passage.ts rangeOf) rather than the passage under a heading */
+  passageTo?: number;
 }
 
 const listeners = new Set<() => void>();
@@ -94,11 +96,13 @@ export function readerOf(hash: string): ReaderAddress {
   if (verse !== undefined) address.verse = verse;
   const passage = wholeNumber(params.get('p'));
   if (passage !== undefined) address.passage = passage;
+  const passageTo = wholeNumber(params.get('pt'));
+  if (passage !== undefined && passageTo !== undefined && passageTo >= passage) address.passageTo = passageTo;
   return address;
 }
 
 /** The reader's address, always in the same order so the same state is the same string. */
-export function readerHash({ book, chapter, view, weave, verse, passage }: ReaderAddress): string {
+export function readerHash({ book, chapter, view, weave, verse, passage, passageTo }: ReaderAddress): string {
   const params = new URLSearchParams();
   if (book !== undefined) params.set('b', book);
   if (chapter !== undefined) params.set('c', String(chapter));
@@ -106,6 +110,7 @@ export function readerHash({ book, chapter, view, weave, verse, passage }: Reade
   if (weave) params.set('weave', weave);
   if (verse !== undefined) params.set('v', String(verse));
   if (passage !== undefined) params.set('p', String(passage));
+  if (passage !== undefined && passageTo !== undefined) params.set('pt', String(passageTo));
   const query = params.toString();
   return query ? `#/?${query}` : '#/';
 }
@@ -215,6 +220,7 @@ type VerseEntry = { verseView?: boolean } | null;
 export function openVerse(verse: number): void {
   const here = readerOf(window.location.hash);
   delete here.passage;
+  delete here.passageTo;
   window.history.pushState({ verseView: true } satisfies VerseEntry, '', urlFor(readerHash({ ...here, verse })));
   notify();
 }
@@ -230,7 +236,14 @@ export function openVerseAt(place: Pick<ReaderAddress, 'book' | 'chapter' | 'ver
 export function openPassage(first: number): void {
   const here = readerOf(window.location.hash);
   delete here.verse;
+  delete here.passageTo;
   window.history.pushState({ verseView: true } satisfies VerseEntry, '', urlFor(readerHash({ ...here, passage: first })));
+  notify();
+}
+
+/** Opens the same view on any run of verses of a chapter (a passage lesson's range, '1jn.1.1-4'), as a new Back step: the Reader opens that chapter and Back returns to where he was. */
+export function openVerseRange(range: { book: string; chapter: number; from: number; to: number }): void {
+  window.history.pushState({ verseView: true } satisfies VerseEntry, '', urlFor(readerHash({ book: range.book, chapter: range.chapter, passage: range.from, passageTo: range.to })));
   notify();
 }
 
@@ -243,6 +256,7 @@ export function closeVerse(): void {
   const without = readerOf(window.location.hash);
   delete without.verse;
   delete without.passage;
+  delete without.passageTo;
   replaceHash(readerHash(without));
 }
 
@@ -250,6 +264,7 @@ export function closeVerse(): void {
 export function moveVerse(to: { book: string; chapter: number; verse: number }): void {
   const here = readerOf(window.location.hash);
   delete here.passage;
+  delete here.passageTo;
   const sameChapter = (here.book ?? 'rom') === to.book && here.chapter === to.chapter;
   replaceHash(readerHash(sameChapter ? { ...here, verse: to.verse } : { book: to.book, chapter: to.chapter, verse: to.verse }));
 }
@@ -258,6 +273,7 @@ export function moveVerse(to: { book: string; chapter: number; verse: number }):
 export function movePassage(first: number): void {
   const here = readerOf(window.location.hash);
   delete here.verse;
+  delete here.passageTo;
   replaceHash(readerHash({ ...here, passage: first }));
 }
 

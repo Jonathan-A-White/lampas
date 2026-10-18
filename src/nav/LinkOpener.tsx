@@ -22,7 +22,9 @@ async function open(link: Link, hash: string, current: () => boolean): Promise<v
     if (!current()) return;
     const opened = resolveReference(link.text, index, there, link.printed);
     announceLink({ book: opened.book, chapter: opened.chapter, verse: opened.verse, notice: opened.notice, word: null, ...(opened.elsewhere ? { elsewhere: opened.elsewhere } : {}) });
-    replaceHash(plainAddress(kept, { book: opened.book, chapter: opened.chapter, verse: opened.verse ?? undefined }));
+    // a range ('Heb 7:1-3') opens the Verse view on those verses (src/nav/route.ts openVerseRange), not the Reader at the first
+    if (opened.verse !== null && opened.to !== undefined) replaceHash(readerHash({ view: kept.view, weave: kept.weave, book: opened.book, chapter: opened.chapter, passage: opened.verse, passageTo: opened.to }));
+    else replaceHash(plainAddress(kept, { book: opened.book, chapter: opened.chapter, verse: opened.verse ?? undefined }));
     return;
   }
   const lexicon = await loadLexicon().catch(() => null);

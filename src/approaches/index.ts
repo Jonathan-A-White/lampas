@@ -110,3 +110,9 @@ export function nextLessonOf(approach: GrammarApproach, levelOf: (id: string) =>
   });
   return id === undefined ? undefined : lessonOf(approach, id);
 }
+
+/** The passage lesson of `approach` that reads exactly verses `from` to `to` of the chapter (the Verse view's Lesson strip, mw-z370x5.2); undefined when none does. */
+export function lessonForRange(approach: GrammarApproach, book: string, chapter: number, from: number, to: number): Extract<Step, { kind: 'passage' }> | undefined {
+  const key = passageKey({ book, chapter, from, to });
+  return stepsOf(approach).find((s): s is Extract<Step, { kind: 'passage' }> => s.kind === 'passage' && s.key === key);
+}

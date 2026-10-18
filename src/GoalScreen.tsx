@@ -20,7 +20,7 @@ import { OptionalEntry } from './ipa/OptionalEntry';
 import { useAiAllowed } from './gate/licenceContext';
 import { LadderStart } from './ReadingLadder';
 import { pronunciationOf } from './speech/pronunciation';
-import { navigate, openPlacement, openReader, openVerseAt } from './nav/route';
+import { navigate, openPlacement, openReader, openVerseRange } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { useReportScreen } from './tutor/screenContext';
 import { useGoalProgress, type GoalProgress } from './useGoalProgress';
@@ -382,7 +382,7 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
         <section className="mt-5 space-y-2">
           {learning ? <LearningNowButton idea={learning} onOpen={() => setIdeaId(learning.id)} /> : null}
           {next && (!learning || next.gaps || next.passage) ? (
-            <LearnNextButton next={next} onOpen={() => (next.passage ? openVerseAt({ book: next.passage.passage.book, chapter: next.passage.passage.chapter, verse: next.passage.passage.from }) : setIdeaId(next.idea.id))} />
+            <LearnNextButton next={next} onOpen={() => (next.passage ? openVerseRange(next.passage.passage) : setIdeaId(next.idea.id))} />
           ) : !learning ? (
             <p data-testid="learn-next-none" className="text-base text-muted">
               Every idea this goal needs is on the frontier or solid.
