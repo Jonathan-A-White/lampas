@@ -3,16 +3,9 @@
   "title": "Rolling your r",
   "learn": "Learn to roll your r",
   "scheme": "modern",
-  "for": [
-    "american",
-    "british"
-  ],
-  "sounds": [
-    "/ɾ/"
-  ],
-  "letters": [
-    "ρ"
-  ],
+  "for": ["american", "british"],
+  "sounds": ["/ɾ/"],
+  "letters": ["ρ"],
   "steps": [
     {
       "kind": "why",
@@ -31,34 +24,16 @@
     {
       "kind": "hear",
       "text": "Listen for the flick in each word: between two vowels in χεῖρες and ὥρα, and before a consonant in ἀρχῆς. It is short: one touch, never a long roll and never the English r.",
-      "words": [
-        "ἀρχῆς",
-        "χεῖρες",
-        "ὥρα",
-        "μαρτυρία",
-        "πατήρ"
-      ]
+      "words": ["ἀρχῆς", "χεῖρες", "ὥρα", "μαρτυρία", "πατήρ"]
     },
     {
       "kind": "contrast",
       "text": "Each pair differs only in ρ and λ, or in ρ and δ. For λ the tongue tip rests on the ridge behind your teeth; for δ it is the th of “this”; for ρ it only flicks the ridge, once. Hear both words, then say both.",
       "pairs": [
-        [
-          "μέρος",
-          "μέλος"
-        ],
-        [
-          "ὄρος",
-          "ὅλος"
-        ],
-        [
-          "σπόρος",
-          "σποδός"
-        ],
-        [
-          "ὄρος",
-          "ὁδός"
-        ]
+        ["μέρος", "μέλος"],
+        ["ὄρος", "ὅλος"],
+        ["σπόρος", "σποδός"],
+        ["ὄρος", "ὁδός"]
       ]
     },
     {
@@ -67,22 +42,12 @@
         "american": "Say each word after the voice. Keep the flick short and light, like the middle of “butter”, and do not curl your tongue back. The ρ at the end of πατήρ is flicked too.",
         "british": "Say each word after the voice. Say every ρ, even at the end of πατήρ, where your English would drop it: one light touch of the tongue tip."
       },
-      "words": [
-        "πατήρ",
-        "ἀρχῆς",
-        "χεῖρες",
-        "ὥρα"
-      ]
+      "words": ["πατήρ", "ἀρχῆς", "χεῖρες", "ὥρα"]
     },
     {
       "kind": "stretch",
       "text": "This one is only a stretch goal, and you can skip it. A Greek speaker may let the flick run on into several light touches in a row, the trill of Italian or Spanish rr. Start from the flick, keep the tongue loose and let the air shake the tip. If it will not come, the single flick is right for Greek.",
-      "words": [
-        "ῥῆμα",
-        "ῥίζα",
-        "ῥύομαι",
-        "τρέχω"
-      ],
+      "words": ["ῥῆμα", "ῥίζα", "ῥύομαι", "τρέχω"],
       "ipa": "/r/"
     },
     {
