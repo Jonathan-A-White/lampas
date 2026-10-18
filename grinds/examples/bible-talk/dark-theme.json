@@ -13,6 +13,7 @@
   "expect": {
     "settings_changes.0.key": { "equals": "theme" },
     "settings_changes.0.value": { "equals": "dark" },
-    "settings_changes.1": { "present": false }
+    "settings_changes.1": { "present": false },
+    "setting_offer": { "present": false }
   }
 }

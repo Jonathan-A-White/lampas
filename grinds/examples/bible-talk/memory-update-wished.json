@@ -47,6 +47,9 @@
     },
     "wished_notes.0": {
       "present": true
+    },
+    "setting_offer": {
+      "present": false
     }
   }
 }

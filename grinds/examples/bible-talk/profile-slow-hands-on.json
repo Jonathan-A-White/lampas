@@ -60,6 +60,9 @@
     },
     "words.0.lemma": {
       "equals": "ἀγαπάω"
+    },
+    "setting_offer": {
+      "present": false
     }
   }
 }

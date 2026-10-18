@@ -21,6 +21,7 @@
   "expect": {
     "answer": { "matches": "^[^\\n]{10,200}\\?$" },
     "form_ask": { "equals": "approach" },
-    "form_values": { "present": false }
+    "form_values": { "present": false },
+    "setting_offer": { "present": false }
   }
 }

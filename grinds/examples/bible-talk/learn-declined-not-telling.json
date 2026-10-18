@@ -64,6 +64,9 @@
     },
     "profile_question": {
       "present": false
+    },
+    "setting_offer": {
+      "present": false
     }
   }
 }

@@ -18,6 +18,9 @@
     "question": {
       "contains": "let me wake tomorrow ready to walk in your way. Amen.",
       "matches": "Here is my own prayer for context[\\s\\S]*Guard me against envy, pride and anger[\\s\\S]*Give me patience with my family[\\s\\S]*Let me not read it to win an argument[\\s\\S]*Forgive me for the hours I wasted[\\s\\S]*let me wake tomorrow ready to walk in your way\\. Amen\\."
+    },
+    "setting_offer": {
+      "present": false
     }
   }
 }

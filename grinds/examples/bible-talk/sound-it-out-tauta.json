@@ -16,6 +16,7 @@
   "expect": {
     "answer": { "contains": "TAF", "matches": "^(?:[^aA]|[aA]+[^aAwW])*[aA]*$" },
     "syllables.0": { "matches": "^τα[υῦύ]" },
-    "settings_changes": { "present": false }
+    "settings_changes": { "present": false },
+    "setting_offer": { "present": false }
   }
 }

@@ -30,6 +30,9 @@
     },
     "rusty_offer.items.1.id": {
       "equals": "case-genitive"
+    },
+    "setting_offer": {
+      "present": false
     }
   }
 }

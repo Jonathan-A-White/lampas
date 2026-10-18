@@ -30,6 +30,9 @@
     },
     "welcome_done": {
       "present": false
+    },
+    "setting_offer": {
+      "present": false
     }
   }
 }

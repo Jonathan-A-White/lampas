@@ -2,7 +2,7 @@
 // (and so of SpellForge's tutor-turn.json), its instructions carry the one-sentence refusal, and its answer schema agrees
 // with isTalkAnswer, the guard the phone runs.
 import { describe, expect, it } from 'vitest';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { learnerGrammarOf } from '../../src/data/grammar/learnerGrammar';
 import { pronunciationOf } from '../../src/speech/pronunciation';
 import { FEEDBACK_SUMMARY_MAX, NO_SETTING, REFUSAL, isTalkAnswer } from '../../src/services/talk';
@@ -677,5 +677,27 @@ describe('Sound it out speaks the app\'s pronunciation (mw-5r3p30.241)', () => {
     const noAw = new RegExp(example.expect.answer.matches);
     expect(noAw.test('ταῦτα is said TAF-ta: the stress falls on TAF, where αυ is af.')).toBe(true);
     for (const wrong of ['ταῦτα is said TAW-ta.', 'The αυ sounds like aw in saw.', 'It sounds like Aw-ta.']) expect(noAw.test(wrong), wrong).toBe(false);
+  });
+});
+
+// mw-5r3p30.582: Sepia joined the Theme setting, so a request 'Add a sepia theme' that was only filed, sent, building, landed or declined
+// matched a setting and the tutor offered `theme: sepia` nobody asked for; the smoke of request-filed and request-landed failed.
+describe('a setting is offered only when the turn asks for one', () => {
+  const requests = instructionsOf('bible-talk');
+
+  it('says a request offers a setting only at status adopted-as-setting, and never at any other', () => {
+    expect(requests).toContain('Offer a setting only for an idea whose `status` is `adopted-as-setting`');
+    for (const status of ['sent', 'filed', 'building', 'landed', 'declined']) expect(requests).toContain(`\`${status}\``);
+    expect(requests).toMatch(/a setting that has the same name as the idea[^.]*is not an offer/);
+  });
+
+  // The examples that are about a setting: the offer waits and is answered, the offer is made, or he asks for the change in words.
+  const ABOUT_SETTINGS = ['request-adopted-as-setting'];
+  const dir = 'grinds/examples/bible-talk';
+  const aboutNoSetting = readdirSync(dir).filter((f) => f.endsWith('.json') && !ABOUT_SETTINGS.includes(f.replace(/\.json$/, '')));
+
+  it.each(aboutNoSetting)('%s asserts setting_offer absent', (file) => {
+    const example = readJson(`${dir}/${file}`) as { expect: Record<string, unknown> };
+    expect(example.expect.setting_offer, `${file}: add "setting_offer": { "present": false } to its expect`).toEqual({ present: false });
   });
 });

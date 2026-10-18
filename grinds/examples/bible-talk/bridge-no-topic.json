@@ -13,6 +13,9 @@
   "expect": {
     "bridge": {
       "present": false
+    },
+    "setting_offer": {
+      "present": false
     }
   }
 }

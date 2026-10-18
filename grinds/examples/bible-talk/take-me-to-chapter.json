@@ -14,6 +14,7 @@
     "go.book": { "equals": "Colossians" },
     "go.chapter": { "equals": 1 },
     "answer": { "contains": "Colossians" },
-    "settings_changes": { "present": false }
+    "settings_changes": { "present": false },
+    "setting_offer": { "present": false }
   }
 }
