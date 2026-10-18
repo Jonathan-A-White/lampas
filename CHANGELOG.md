@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.322
+_2026-10-18_
+- Fixed: Settings > Grammar approach now opens any lesson's idea sheet when you tap it, and a goal now teaches compound verbs, marks that change the word, enclitics and words that sound alike when its words show them.
+- New: an optional lesson, 'Rolling your r', on the Rho card for English speakers: from the tap in 'butter' to the Greek tapped r, with the trill as a stretch goal.
+
 ## 0.1.321
 _2026-10-18_
 - New: The Licence page now lists the devices on your licence by name and last use, and lets you rename one or remove it to free its place.

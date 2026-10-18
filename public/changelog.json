@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.322",
+    "date": "2026-10-18",
+    "story": "mw-5r3p30.604",
+    "kind": "fixed",
+    "text": "Settings > Grammar approach now opens any lesson's idea sheet when you tap it, and a goal now teaches compound verbs, marks that change the word, enclitics and words that sound alike when its words show them."
+  },
+  {
+    "version": "0.1.322",
+    "date": "2026-10-18",
+    "story": "mw-5r3p30.359",
+    "kind": "new",
+    "text": "an optional lesson, 'Rolling your r', on the Rho card for English speakers: from the tap in 'butter' to the Greek tapped r, with the trill as a stretch goal."
+  },
+  {
     "version": "0.1.321",
     "date": "2026-10-18",
     "story": "mw-cvwm1u.5",
