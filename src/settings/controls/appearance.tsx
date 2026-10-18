@@ -2,11 +2,11 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { TEXT_SIZES } from '../../appearance/textSizes';
 import { THEMES, type Theme } from '../../appearance/themes';
 import { getLayout, getSectionHeadings, getTextSize, type ReadingLayout } from '../../data/repositories';
-import { immersiveHintSetting, immersiveSetting, themeSetting } from '../definitions';
+import { immersiveHintSetting, immersiveSetting, readingModeSetting, themeSetting } from '../definitions';
 import { useSetting } from '../store';
 import { LAYOUTS } from '../../layout/layouts';
 import { writeSetting } from '../registry';
-import { OnOff, RowName, SettingRow } from './SettingRow';
+import { ChipRow, OnOff, RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
 
 function ThemeChoice({ theme }: { theme: Theme }) {
@@ -78,6 +78,25 @@ export const AppearanceControl: Control = ({ row }) => {
 export const LayoutControl: Control = ({ row }) => {
   const layout = useLiveQuery(getLayout, []);
   return <SettingRow row={row}>{layout ? <LayoutChoice layout={layout} /> : null}</SettingRow>;
+};
+
+export const ReadingModeControl: Control = ({ row }) => {
+  const mode = useSetting(readingModeSetting);
+  return (
+    <SettingRow row={row}>
+      {mode ? (
+        <ChipRow
+          name={row.label}
+          current={mode}
+          options={[
+            ['scroll', 'Scroll'],
+            ['pages', 'Turn pages'],
+          ]}
+          settingKey="readingMode"
+        />
+      ) : null}
+    </SettingRow>
+  );
 };
 
 export const ImmersiveControl: Control = ({ row }) => {

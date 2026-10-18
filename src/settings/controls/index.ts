@@ -1,6 +1,6 @@
 import { SCRIPTS } from '../../script/scripts';
 import { ROWS } from '../rows';
-import { AppearanceControl, HeadingsControl, ImmersiveControl, ImmersiveHintControl, LayoutControl } from './appearance';
+import { AppearanceControl, HeadingsControl, ImmersiveControl, ImmersiveHintControl, LayoutControl, ReadingModeControl } from './appearance';
 import { ApproachControl } from './approach';
 import { DeveloperControl } from './developer';
 import { GoalControl } from './goal';
@@ -19,6 +19,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   theme: AppearanceControl,
   textSize: AppearanceControl,
   layout: LayoutControl,
+  readingMode: ReadingModeControl,
   sectionHeadings: HeadingsControl,
   immersiveReader: ImmersiveControl,
   immersiveHint: ImmersiveHintControl,

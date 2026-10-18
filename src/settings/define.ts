@@ -16,6 +16,7 @@ export type Allowed =
 export type SectionId =
   | 'appearance'
   | 'layout'
+  | 'reading'
   | 'headings'
   | 'immersive'
   | 'weave'

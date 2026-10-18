@@ -9,12 +9,13 @@ import { handwritingSetting } from './handwriting';
 import { immersiveSetting } from './immersive';
 import { immersiveHintSetting } from './immersiveHint';
 import { readLessonsSetting } from './readLessons';
+import { readingModeSetting } from './readingMode';
 import { readingPlanSetting } from './readingPlan';
 import { themeSetting } from './theme';
 import { tipsSetting } from './tips';
 import { weaveSetting } from './weave';
 import { weaveOrderSetting } from './weaveOrder';
 
-export { askBySetting, audioBibleSetting, englishAccentSetting, handwritingSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, readingPlanSetting, themeSetting, tipsSetting, weaveOrderSetting, weaveSetting };
+export { askBySetting, audioBibleSetting, englishAccentSetting, handwritingSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, themeSetting, tipsSetting, weaveOrderSetting, weaveSetting };
 
-export const DEFINITIONS: readonly SettingDef<SettingValue>[] = [themeSetting, weaveSetting, tipsSetting, immersiveSetting, immersiveHintSetting, askBySetting, audioBibleSetting, readingPlanSetting, readLessonsSetting, englishAccentSetting, weaveOrderSetting, handwritingSetting];
+export const DEFINITIONS: readonly SettingDef<SettingValue>[] = [themeSetting, weaveSetting, tipsSetting, immersiveSetting, immersiveHintSetting, askBySetting, audioBibleSetting, readingPlanSetting, readLessonsSetting, englishAccentSetting, weaveOrderSetting, handwritingSetting, readingModeSetting];

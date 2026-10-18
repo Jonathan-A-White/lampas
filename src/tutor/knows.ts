@@ -17,6 +17,7 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   theme: 'screen',
   textSize: 'screen',
   layout: 'screen',
+  readingMode: 'screen',
   sectionHeadings: 'screen',
   immersiveReader: 'screen',
   immersiveHint: 'screen',
