@@ -17,6 +17,13 @@ Feature: Grammar approach
     And the alphabet and the genitive are still solid and the aorist is still at the frontier
     And the saved approach is "bma-tutor" in the store and reads as "ladder"
 
+  Scenario: A passage lesson shows its range with Next, and Passed once it is passed
+    Given Settings is open on the goal "1 John" with every idea it needs solid
+    Then the lesson "1 John 1:1-4" is marked "Next"
+    When he has passed the passage "1 John 1:1-4"
+    Then the lesson "1 John 1:1-4" shows the mark "Passed"
+    And the lesson "1 John 1:5-10" now has the mark "Next"
+
   Scenario: The tutor is told the ladder when asked about the approach
     Given Lampas is opened on Romans 8 with a talk behind a fake Postern that answers with the change grammarApproach ladder
     And he opens Talk

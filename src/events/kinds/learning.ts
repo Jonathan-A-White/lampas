@@ -20,4 +20,6 @@ export type LearningEvent =
   /** he answered the teach sheet (src/TeachSheet.tsx) for the new word `lemma` (NFC): Got it ('got-it': learning, due now), I know this ('known': solid, the 30-day step) or Not now ('not-now': skipped for today only) */
   | { kind: 'frontier-taught'; lemma: string; outcome: 'got-it' | 'known' | 'not-now' }
   /** a grammar placement ended (src/PlacementScreen.tsx): what it found, over the ideas the goal needs; `goal` is the saved goal text, '' for none */
+  /** passage lesson `key` (src/approaches passageKey: 'passage:1jn.1.1-4') is now `read` or `passed` (src/data/repositories/passageLessons.ts) */
+  | { kind: 'passage-lesson-changed'; key: string; state: 'read' | 'passed' }
   | { kind: 'placement-done'; goal: string; approach: string; solid: number; frontier: number; notYet: number; untested: number };

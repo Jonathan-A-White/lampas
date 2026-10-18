@@ -2,11 +2,13 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
 import { AskApproachSheet } from '../../AskApproachSheet';
 import { useAiAllowed } from '../../gate/licenceContext';
-import { APPROACHES, type GrammarApproach } from '../../approaches';
+import { APPROACHES, passageKey, passageLabel, type GrammarApproach } from '../../approaches';
+import type { Goal } from '../../data/goal';
 import { nextLesson } from '../../data/grammar/goalProgress';
 import type { PassageNeeds } from '../../data/grammar/needs';
 import { getGrammarApproach } from '../../data/repositories';
 import { listLevels } from '../../data/repositories/grammarLevels';
+import { listPassageLessons } from '../../data/repositories/passageLessons';
 import { useGoalProgress } from '../../useGoalProgress';
 import { writeSetting } from '../registry';
 import { SettingRow } from './SettingRow';
@@ -42,15 +44,21 @@ export function ApproachPicker({
   chosen,
   levels,
   needs,
+  goal,
+  passages = new Map(),
   approaches = APPROACHES,
 }: {
   chosen: string;
   levels: ReadonlyMap<string, { level: 'solid' | 'frontier' | 'notYet' }>;
   needs?: Pick<PassageNeeds, 'ideas'>;
+  /** his goal, which decides the passage lessons Next may name */
+  goal?: Goal;
+  /** the passage lessons he has read or passed, by key: a passed one is marked Passed */
+  passages?: ReadonlyMap<string, { state: 'read' | 'passed' }>;
   approaches?: readonly GrammarApproach[];
 }) {
   const approach = approaches.find((a) => a.id === chosen) ?? approaches[0];
-  const next = nextLesson(needs, approach, new Map(Array.from(levels, ([id, row]) => [id, row.level])));
+  const next = nextLesson(needs, approach, new Map(Array.from(levels, ([id, row]) => [id, row.level])), { goal, states: passages });
   const choice = approaches.length > 1;
   return (
     // with one path there is no radiogroup to name the row, so the row's own content is the group
@@ -86,6 +94,12 @@ export function ApproachPicker({
                   {level.lessons.map((lesson) => (
                     <li key={lesson.title} className={lesson === next?.lesson ? 'font-medium' : undefined}>
                       <span data-lesson-title>{lesson.title}</span>
+                      {lesson.passage && passageLabel(lesson.passage) !== lesson.title ? <span data-passage-range> · {passageLabel(lesson.passage)}</span> : null}
+                      {lesson.passage && passages.get(passageKey(lesson.passage))?.state === 'passed' ? (
+                        <span data-passed className="ml-2 rounded-md border border-line px-2 text-sm text-muted">
+                          Passed
+                        </span>
+                      ) : null}
                       {lesson === next?.lesson ? (
                         <span data-next className="ml-2 rounded-md bg-accent px-2 text-sm text-accent-fg">
                           Next
@@ -127,11 +141,15 @@ export const ApproachControl: Control = ({ row }) => {
   const approach = useLiveQuery(getGrammarApproach, []);
   const levels = useLiveQuery(listLevels, []);
   // the goal's needs, so Next is the lesson Learn next opens: the picker waits for them, and a goal whose chapters cannot be fetched marks as no goal
-  const goal = useGoalProgress();
-  const needs = goal.status === 'ready' ? goal.needs : undefined;
+  const progress = useGoalProgress();
+  const passages = useLiveQuery(listPassageLessons, []);
+  const needs = progress.status === 'ready' ? progress.needs : undefined;
+  const goal = progress.status === 'ready' ? progress.goal : undefined;
   return (
     <SettingRow row={row}>
-      {approach !== undefined && levels !== undefined && goal.status !== 'loading' ? <ApproachPicker chosen={approach} levels={levels} needs={needs} /> : null}
+      {approach !== undefined && levels !== undefined && progress.status !== 'loading' && passages !== undefined ? (
+        <ApproachPicker chosen={approach} levels={levels} needs={needs} goal={goal} passages={passages} />
+      ) : null}
       <AskApproach />
     </SettingRow>
   );

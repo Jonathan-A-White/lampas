@@ -2,14 +2,19 @@
 // Not listed: the record of BMA Tutor's order, read by the gap audit (docs/path-gaps.md). No app code imports this file (mw-foy5mb.1).
 // 'BMA Tutor': the sequence of Biblical Mastery Academy's Greek course, followed with credit. Only the
 // ORDER is theirs; every title, the method and the mapping to our ideas are Lampas's own words, and no course text, picture or exercise
-// is copied (mw-hqd5bz.5). PROVISIONAL, the Governor to confirm. Where the course names a lesson the RP parsing codes cannot tell apart
+// is copied (mw-hqd5bz.5). The passages the lessons read are Lampas's own picks, not the course's (mw-z370x5.1): 'Being plus a participle' reads John 3:24-28, which has three
+// periphrastics by usesOf (src/data/grammar/uses.ts); the opening of a letter, an argument and an appeal read Romans 1:1-7, 8:31-39 and 12:1-2; the two wider stages read John and Romans 8. PROVISIONAL, the Governor to confirm. Where the course names a lesson the RP parsing codes cannot tell apart
 // (root variations, assimilation), the lesson maps to the nearest ideas the ladder has, or revisits ideas taught earlier (docs/grammar.md,
 // 'Approaches'). The third declension and the -μι verbs have ideas of their own (the pattern ideas, mw-svw421.1), each in the earliest lesson after
 // everything it needs.
 import { LADDER } from '../data/grammar/ladder';
-import type { ApproachLesson, GrammarApproach } from './types';
+import { JOHN_LESSONS } from './john-lessons';
+import type { ApproachLesson, GrammarApproach, Passage } from './types';
 
 const lesson = (title: string, ...ideas: string[]): ApproachLesson => ({ title, ideas });
+/** A lesson that has him read a passage once its ideas are at least frontier (stepsOf, index.ts). */
+const reads = (title: string, passage: Passage, ...ideas: string[]): ApproachLesson => ({ title, ideas, passage });
+const at = (book: string, chapter: number, from: number, to: number): Passage => ({ book, chapter, from, to });
 
 /** The alphabet and its 24 letters, which the ladder holds as ideas of the letters tier. */
 const LETTERS = LADDER.filter((i) => i.tier === 'letters').map((i) => i.id);
@@ -106,43 +111,48 @@ export const bmaTutor: GrammarApproach = {
             lesson('The verb as a noun', 'mood-infinitive'),
             lesson('The verb as a describing word', 'mood-participle'),
             lesson('A participle that commands', 'mood-participle-imperative'),
-            lesson('Being plus a participle', 'tense-perfect', 'mood-participle', 'periphrastic'),
+            reads('Being plus a participle', at('jhn', 3, 24, 28), 'tense-perfect', 'mood-participle', 'periphrastic'),
             lesson('Clauses of condition and purpose', 'conditional', 'mood-subjunctive', 'condition', 'clause-hina'),
             lesson('Clauses that say who or which', 'pronoun-relative', 'mood-indicative', 'agreement', 'article-substantival'),
             lesson('Purpose and result with the infinitive', 'mood-infinitive', 'mood-subjunctive', 'infinitive-articular', 'infinitive-complement'),
             lesson('Clauses built on a participle', 'mood-participle', 'case-genitive', 'participle-adverbial', 'genitive-absolute'),
             lesson('Long sentences', 'conjunction', 'particle', 'postpositive', 'article-position', 'clause-hoti'),
-            lesson('Reading Paul: the opening of a letter', 'voice-passive', 'mood-participle'),
-            lesson('Reading Paul: an argument', 'conditional', 'preposition'),
-            lesson('Reading Paul: an appeal', 'mood-imperative', 'negative'),
+            reads('Reading Paul: the opening of a letter', at('rom', 1, 1, 7), 'voice-passive', 'mood-participle'),
+            reads('Reading Paul: an argument', at('rom', 8, 31, 39), 'conditional', 'preposition'),
+            reads('Reading Paul: an appeal', at('rom', 12, 1, 2), 'mood-imperative', 'negative'),
           ],
         },
         {
           title: 'Reading the letters of John',
           lessons: [
-            lesson('1 John 1:1-4', 'pronoun-relative', 'tense-perfect', 'tense-aorist', 'tense-imperfect'),
-            lesson('1 John 1:5-10', 'conditional', 'mood-subjunctive', 'negative', 'attic-form'),
-            lesson('1 John 2:1-11', 'mood-imperative', 'tense-perfect', 'conditional', 'pronoun-indefinite'),
-            lesson('1 John 2:12-17', 'tense-perfect', 'tense-aorist', 'pronoun-demonstrative', 'mood-imperative'),
-            lesson('1 John 2:18-29', 'tense-pluperfect', 'pronoun-relative', 'voice-middle', 'mood-participle'),
-            lesson('1 John 3:1-10', 'pronoun-reflexive', 'mood-subjunctive', 'mood-participle', 'tense-perfect'),
-            lesson('1 John 3:11-24', 'tense-future', 'pronoun-interrogative', 'mood-infinitive', 'comparative'),
-            lesson('1 John 4:1-12', 'mood-imperative', 'pronoun-reciprocal', 'tense-perfect', 'comparative'),
-            lesson('1 John 4:13-21', 'pronoun-indefinite', 'mood-infinitive', 'conditional', 'tense-perfect'),
-            lesson('1 John 5:1-12', 'mood-participle', 'tense-perfect', 'pronoun-demonstrative', 'voice-passive'),
-            lesson('1 John 5:13-21', 'tense-future', 'pronoun-interrogative', 'mood-imperative', 'pronoun-indefinite'),
-            lesson('2 John and 3 John', 'comparative', 'voice-passive-deponent', 'mood-infinitive', 'pronoun-reciprocal'),
+            ...JOHN_LESSONS,
           ],
         },
       ],
     },
     {
       title: 'Wider reading',
-      levels: [{ title: 'Reading', lessons: [lesson('Reading', 'poetic', 'aramaic', 'hebrew')] }],
+      levels: [
+        {
+          title: 'Reading',
+          lessons: [
+            reads('Reading the prologue of John', at('jhn', 1, 1, 18), 'poetic', 'aramaic', 'hebrew'),
+            reads('Reading a night talk in John', at('jhn', 3, 1, 21), 'poetic', 'aramaic', 'hebrew'),
+          ],
+        },
+      ],
     },
     {
       title: 'Fluent reading',
-      levels: [{ title: 'Reading', lessons: [lesson('Reading', 'mood-participle', 'mood-infinitive')] }],
+      levels: [
+        {
+          title: 'Reading',
+          lessons: [
+            reads('Reading Romans 8', at('rom', 8, 1, 39), 'mood-participle', 'mood-infinitive'),
+            reads('Reading the song of love', at('1co', 13, 1, 13), 'mood-participle', 'mood-infinitive'),
+          ],
+        },
+      ],
     },
   ],
 };

@@ -5,7 +5,14 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
+import { readFileSync } from 'node:fs';
 import { App } from '../../src/App';
+import { BOOK_INDEX } from '../../src/data/bookIndex';
+import type { Chapter } from '../../src/data/chapter';
+import { ALWAYS_NEEDED } from '../../src/data/grammar/ladder';
+import { passageNeeds } from '../../src/data/grammar/needs';
+import { markPassed } from '../../src/data/repositories/passageLessons';
+import { setGoal } from '../../src/data/repositories/settings';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { getGrammarApproach } from '../../src/data/repositories';
@@ -32,6 +39,8 @@ afterAll(() => {
 
 const credit = () => document.querySelector<HTMLElement>('[data-approach-credit]');
 const method = () => document.querySelector<HTMLElement>('[data-approach-method]');
+const lessonRow = (title: string) =>
+  Array.from(document.querySelectorAll<HTMLElement>('[data-approach-lessons] li')).find((li) => li.querySelector('[data-lesson-title]')?.textContent?.startsWith(title));
 const nextRows = () => Array.from(document.querySelectorAll<HTMLElement>('[data-approach-lessons] li')).filter((li) => li.querySelector('[data-next]'));
 
 async function openSettings(): Promise<void> {
@@ -127,6 +136,38 @@ describeFeature(feature, ({ Scenario }) => {
     And('the saved approach is {string} in the store and reads as {string}', async (_, saved: string, read: string) => {
       expect((await db.settings.get('grammarApproach'))?.value).toBe(saved);
       expect(await getGrammarApproach()).toBe(read);
+    });
+  });
+
+  Scenario('A passage lesson shows its range with Next, and Passed once it is passed', ({ Given, Then, When, And }) => {
+    Given('Settings is open on the goal {string} with every idea it needs solid', async (_, goal: string) => {
+      cleanup();
+      clearBus();
+      window.location.hash = '#/settings';
+      stubChapterFetch();
+      await db.open();
+      await Promise.all([db.settings.clear(), db.grammarLevels.clear(), db.passageLessons.clear()]);
+      await db.meta.bulkPut([{ key: 'grammarLevelsSeeded', value: '1' }]);
+      await setGoal(goal);
+      const chapter = async (_: string, n: number) => JSON.parse(readFileSync(`public/data/1jn/${n}.json`, 'utf8')) as Chapter;
+      const needs = await passageNeeds({ book: '1jn' }, chapter, BOOK_INDEX);
+      const ids = new Set([...ALWAYS_NEEDED, ...needs.ideas.map((i) => i.id)]);
+      await db.grammarLevels.bulkPut([...ids].map((id) => ({ id, level: 'solid' as const, since: Date.now(), how: 'marked' as const })));
+      render(<SettingsScreen />);
+      await waitFor(() => expect(method()).not.toBeNull());
+    });
+    Then('the lesson {string} is marked {string}', async (_, title: string, mark: string) => {
+      await waitFor(() => expect(lessonRow(title)?.querySelector('[data-next]')).toHaveTextContent(mark));
+    });
+    When('he has passed the passage {string}', async (_, label: string) => {
+      const [, chapter, from, to] = /^1 John (\d+):(\d+)-(\d+)$/.exec(label)!;
+      await markPassed(`passage:1jn.${chapter}.${from}-${to}`, 1);
+    });
+    Then('the lesson {string} shows the mark {string}', async (_, title: string, mark: string) => {
+      await waitFor(() => expect(lessonRow(title)?.querySelector('[data-passed]')).toHaveTextContent(mark));
+    });
+    And('the lesson {string} now has the mark {string}', async (_, title: string, mark: string) => {
+      await waitFor(() => expect(lessonRow(title)?.querySelector('[data-next]')).toHaveTextContent(mark));
     });
   });
 

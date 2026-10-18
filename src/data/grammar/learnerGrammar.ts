@@ -7,9 +7,9 @@ import { approachOf, DEFAULT_APPROACH } from '../../approaches';
 import { BOOK_INDEX } from '../bookIndex';
 import type { WordState } from '../db';
 import { goalTitle, parseGoal } from '../goal';
-import { getGoal, getGrammarAnswers, getGrammarApproach, getPickerGrammar, holdsOnlyExampleWords, listLevels, listWords, weakFacets } from '../repositories';
+import { getGoal, getGrammarAnswers, getGrammarApproach, getPickerGrammar, holdsOnlyExampleWords, listLevels, listPassageLessons, listWords, weakFacets } from '../repositories';
 import type { PickerGrammar } from './formLevel';
-import { levelsOf, nextLesson, placedAt, wordStatesOf } from './goalProgress';
+import { levelsOf, nextLessonTitle, placedAt, wordStatesOf } from './goalProgress';
 import { needsOf } from './goalNeeds';
 import { LADDER } from './ladder';
 import { moveFor, type Move } from './move';
@@ -130,7 +130,7 @@ export async function learnerGrammar(): Promise<LearnerGrammar> {
   const counts = needs ? progressToward(needs, wordStatesOf(words), levels).words : undefined;
   const approach = approachOf(approachId) ?? approachOf(DEFAULT_APPROACH);
   if (!approach) throw new Error(`no grammar approach ${DEFAULT_APPROACH}`);
-  const lesson = nextLesson(needs, approach, levels);
+  const nextLessonName = nextLessonTitle(needs, approach, levels, { goal, states: await listPassageLessons() });
   return learnerGrammarOf({
     goal: goal ? goalTitle(goal, BOOK_INDEX) : null,
     words: counts ?? countStates(words),
@@ -138,7 +138,7 @@ export async function learnerGrammar(): Promise<LearnerGrammar> {
     placed: placedAt(rows) !== undefined,
     move: moveFor(pickerLevel, answers),
     pickerLevel,
-    approach: { name: approach.name, credit: approach.credit?.name ?? null, nextLesson: lesson?.lesson.title ?? null },
+    approach: { name: approach.name, credit: approach.credit?.name ?? null, nextLesson: nextLessonName },
     weak: [...weakByIdea].map(([id, w]) => ({ title: LADDER.find((i) => i.id === id)?.title ?? id, at: w.at, labels: w.labels })),
   });
 }

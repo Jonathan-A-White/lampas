@@ -17,6 +17,8 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { readerOf } from '../../src/nav/route';
 import { setGoal } from '../../src/data/repositories/settings';
+import { markPassed } from '../../src/data/repositories/passageLessons';
+import { parsePassageKey } from '../../src/approaches';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 
@@ -39,7 +41,7 @@ async function freshStore(goal: string | undefined, seed: boolean): Promise<void
   window.history.replaceState(null, '', '/');
   stubChapterFetch();
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.reviews.clear(), db.grammarLevels.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.reviews.clear(), db.grammarLevels.clear(), db.passageLessons.clear()]);
   if (!seed) await db.meta.bulkPut([{ key: 'wordsSeeded', value: '1' }, { key: 'reviewsSeeded', value: '1' }, { key: 'grammarLevelsSeeded', value: '1' }]);
   if (goal !== undefined) await setGoal(goal);
 }
@@ -170,6 +172,44 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(await screen.findByTestId('learn-next'));
     });
     Then('the idea sheet is open on {string}', ideaSheetOn);
+  });
+
+  Scenario('A passage lesson becomes Learn next', ({ Given, And, When, Then }) => {
+    Given(GIVEN_GOAL, givenGoal);
+    And('every idea 1 John needs is solid but {string}, which is frontier', async (_, frontier: string) => {
+      const needs = await passageNeeds({ book: '1jn' }, async (_, n) => chapterFile('1jn', n), BOOK_INDEX);
+      await Promise.all([...new Set([...ALWAYS_NEEDED, ...needs.ideas.map((i) => i.id)])].map((id) => putLevel(id, id === frontier ? 'frontier' : 'solid')));
+    });
+    When('he opens the Goal screen', opensGoal);
+    Then('Learn next says {string}', async (_, text: string) => {
+      await waitFor(async () => expect(await screen.findByTestId('learn-next')).toHaveTextContent(`Learn next: ${text}`));
+    });
+    When('he taps Learn next', async () => {
+      await user.click(await screen.findByTestId('learn-next'));
+    });
+    Then('the Verse view is open on 1 John 1 at verse 1', async () => {
+      await waitFor(() => expect(readerOf(window.location.hash)).toMatchObject({ book: '1jn', chapter: 1, verse: 1 }));
+      expect(await screen.findByRole('heading', { name: '1 John 1', level: 1 })).toBeInTheDocument();
+    });
+    When('he goes back to the Goal screen', async () => {
+      await openGoal();
+    });
+    And('he has passed the passage {string}', async (_, label: string) => {
+      const [, chapter, from, to] = /^1 John (\d+):(\d+)-(\d+)$/.exec(label)!;
+      const key = `passage:1jn.${chapter}.${from}-${to}`;
+      expect(parsePassageKey(key)).toBeDefined();
+      await markPassed(key, 1);
+    });
+    Then('Learn next now says {string}', async (_, text: string) => {
+      await waitFor(async () => expect(await screen.findByTestId('learn-next')).toHaveTextContent(`Learn next: ${text}`));
+    });
+    When('the idea {string} is solid and the idea {string} is not yet', async (_, solid: string, notYet: string) => {
+      // one idea at a time (mw-i7xe0n.6): Learn next gives way to an idea at the frontier, so the frontier idea is finished first
+      await Promise.all([putLevel(solid, 'solid'), putLevel(notYet, 'notYet')]);
+    });
+    Then('Learn next then says {string}', async (_, text: string) => {
+      await waitFor(async () => expect(await screen.findByTestId('learn-next')).toHaveTextContent(`Learn next: ${text}`));
+    });
   });
 
   Scenario('Next words lists three dictionary forms and Add makes one learning, and the words bar moves', ({ Given, When, Then, And }) => {

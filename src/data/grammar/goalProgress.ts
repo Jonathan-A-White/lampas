@@ -1,8 +1,9 @@
 // src/data/grammar/goalProgress.ts — what the strip and the Goal screen (mw-hqd5bz.10) work out from a goal's needs and his words and levels:
 // the word states progressToward reads, Learn next, Next words, the lists behind the bars and when he was placed. Pure: no store, no screen.
-import type { GrammarApproach, LessonPlace } from '../../approaches';
-import { lessonOf, nextLessonOf, orderOf } from '../../approaches';
-import type { GrammarLevel, WordState } from '../db';
+import type { GrammarApproach, LessonPlace, Passage } from '../../approaches';
+import { lessonOf, nextLessonOf, passageLabel, stepsOf } from '../../approaches';
+import type { GrammarLevel, PassageLessonRow, WordState } from '../db';
+import type { Goal } from '../goal';
 import { unmetNeed } from './drillIt';
 import { gapsOf, groupIsSolid } from './inference';
 import { groupOfItem, ideaOf, ITEM_GROUPS, LADDER, type GrammarIdea } from './ladder';
@@ -52,33 +53,59 @@ export function ideaState(id: string, levels: ReadonlyMap<string, Level>): IdeaS
 export const wordLevel = (state: WordState | undefined): Level => (state === 'solid' ? 'solid' : state === 'learning' ? 'frontier' : 'notYet');
 
 export interface LearnNext {
-  /** the idea it opens: the first gap when `gaps` is set */
+  /** the idea it opens: the first gap when `gaps` is set; for a passage, only its lesson's first idea (use `passage`) */
   idea: GrammarIdea;
   /** the lesson of the approach that teaches it; none when the approach has no lesson for it */
   lesson: LessonPlace | undefined;
   /** the exact gaps, when some letters, pairs or breathings are solid and others are not: Learn next names these ('ξ, ψ and ου'), not the whole idea (mw-hqd5bz.17, .18, PROVISIONAL) */
   gaps?: GrammarIdea[];
+  /** a passage lesson to read, when the ideas of its lesson are at least frontier ('Read 1 John 1:1-4', mw-z370x5.1); its lesson is `lesson` */
+  passage?: { key: string; passage: Passage; label: string };
+}
+
+/** What Learn next needs to offer a passage lesson: his goal (a passage is offered only in the goal's book, and in its chapter when the goal names one; no goal, none) and the passage lessons he has read or passed. */
+export interface PassageContext {
+  goal: Goal | undefined;
+  states: ReadonlyMap<string, Pick<PassageLessonRow, 'state'>>;
 }
 
 /**
  * The exact gaps first (mw-hqd5bz.31), the same ones in the same order as the placement's end card and the head of a Review round: the letters, pairs
  * and breathings not solid in every group that is partly known, whatever else the approach's sequence says is earlier (a group none of whose items is
- * solid has no exact gap, it is the whole idea that is missing). With no gaps, the earliest idea in the approach's sequence that the goal needs and
- * that is not yet or untested; undefined when none is left. A group of the foundation is solid when every one of its items is.
+ * solid has no exact gap, it is the whole idea that is missing). With no gaps, the earliest step in the approach's sequence (stepsOf) that is either an idea the
+ * goal needs that is not yet or untested, or (given `passages`) a passage not yet passed whose lesson's ideas are all frontier or solid and that is in the goal's
+ * book and chapter; undefined when none is left. A group of the foundation is solid when every one of its items is.
  */
-export function learnNext(needs: Pick<PassageNeeds, 'ideas'>, approach: GrammarApproach, levels: ReadonlyMap<string, Level>): LearnNext | undefined {
+export function learnNext(needs: Pick<PassageNeeds, 'ideas'>, approach: GrammarApproach, levels: ReadonlyMap<string, Level>, passages?: PassageContext): LearnNext | undefined {
   const gaps = gapsOf(levels);
   if (gaps.length > 0) return { idea: gaps[0], lesson: lessonOf(approach, gaps[0].id), gaps };
   const needed = new Set(needs.ideas.map((i) => i.id));
   const grouped = new Set(ITEM_GROUPS);
-  const id = orderOf(approach).find((i) => needed.has(i) && levelOf(levels, i) === 'notYet' && !(grouped.has(i) && groupIsSolid(levels, i)));
-  return id === undefined ? undefined : { idea: ideaOf(id), lesson: lessonOf(approach, id) };
+  for (const step of stepsOf(approach)) {
+    if (step.kind === 'idea') {
+      if (needed.has(step.id) && levelOf(levels, step.id) === 'notYet' && !(grouped.has(step.id) && groupIsSolid(levels, step.id))) return { idea: ideaOf(step.id), lesson: lessonOf(approach, step.id) };
+      continue;
+    }
+    const goal = passages?.goal;
+    if (!goal || step.passage.book !== goal.book || (goal.chapter !== undefined && step.passage.chapter !== goal.chapter)) continue;
+    if (passages.states.get(step.key)?.state === 'passed') continue;
+    if (!step.lesson.lesson.ideas.every((id) => levelOf(levels, id) !== 'notYet')) continue;
+    return { idea: ideaOf(step.lesson.lesson.ideas[0]), lesson: step.lesson, passage: { key: step.key, passage: step.passage, label: passageLabel(step.passage) } };
+  }
+  return undefined;
 }
 
 /** The lesson Settings > Grammar approach marks Next and the tutor's learner_grammar names (mw-86e9r1.24): with a goal, the lesson Learn next opens, so the
  *  two screens agree (undefined when Learn next names none); with no goal (or its needs not known), the lesson of the earliest idea with no level or not yet. */
-export function nextLesson(needs: Pick<PassageNeeds, 'ideas'> | undefined, approach: GrammarApproach, levels: ReadonlyMap<string, Level>): LessonPlace | undefined {
-  return needs ? learnNext(needs, approach, levels)?.lesson : nextLessonOf(approach, (id) => levels.get(id));
+export function nextLesson(needs: Pick<PassageNeeds, 'ideas'> | undefined, approach: GrammarApproach, levels: ReadonlyMap<string, Level>, passages?: PassageContext): LessonPlace | undefined {
+  return needs ? learnNext(needs, approach, levels, passages)?.lesson : nextLessonOf(approach, (id) => levels.get(id));
+}
+
+/** The words the tutor is told for `nextLesson` (learner_grammar next_lesson): the lesson's title, or 'Read 1 John 1:1-4' when the next step is a passage; null when none. */
+export function nextLessonTitle(needs: Pick<PassageNeeds, 'ideas'> | undefined, approach: GrammarApproach, levels: ReadonlyMap<string, Level>, passages?: PassageContext): string | null {
+  if (!needs) return nextLessonOf(approach, (id) => levels.get(id))?.lesson.title ?? null;
+  const next = learnNext(needs, approach, levels, passages);
+  return next?.passage ? `Read ${next.passage.label}` : (next?.lesson?.lesson.title ?? null);
 }
 
 /** The one idea he is learning now (mw-i7xe0n.6): the lowest idea at the frontier, the letters, pairs and breathings (items of a group) left out; undefined when none. */

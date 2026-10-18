@@ -296,6 +296,19 @@ export interface LadderRow {
 }
 
 /**
+ * Where he stands on a passage lesson of the approach (src/data/repositories/passageLessons.ts, docs/grammar.md 'Approaches'): one row per passage, keyed
+ * 'passage:1jn.1.1-4' (src/approaches passageKey). `read` once he has read it, `passed` once he has shown he followed it; `score` is the share he got right (0 to 1) when he
+ * passed, null when he only read it. A passed row is never taken back to read.
+ */
+export interface PassageLessonRow {
+  key: string;
+  state: 'read' | 'passed';
+  /** when the state was set, ms since the epoch */
+  when: number;
+  score: number | null;
+}
+
+/**
  * One finished run of Drill it on one grammar idea (src/data/repositories/drillRuns.ts, docs/grammar.md 'Drill it, the engine'): the engine's DrillResult
  * (src/data/grammar/drillIt.ts) and the time it was kept. Every run is kept; the latest of an idea says where he stands on it now. The shapes are written out
  * here so db.ts imports no screen or engine (the worker's tsconfig reaches it).
@@ -423,6 +436,7 @@ class LampasDB extends Dexie {
   missTally!: EntityTable<MissCount, 'lang' | 'unit'>;
   ladder!: EntityTable<LadderRow, 'lang'>;
   drillRuns!: EntityTable<DrillRunRow, 'id'>;
+  passageLessons!: EntityTable<PassageLessonRow, 'key'>;
 
   constructor() {
     super('lampas');
@@ -777,6 +791,30 @@ class LampasDB extends Dexie {
             if (typeof word.gloss === 'string') word.gloss = cleanGloss(word.gloss);
           });
       });
+    // v23: a passage lesson of the approach (src/approaches, mw-z370x5.1) {key, state read | passed, when, score}; every other table as it was.
+    this.version(23).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
+      reviews: '[kind+id], due, kind',
+      grammarLevels: 'id, level',
+      usage: 'key, day, name',
+      tips: 'id, status',
+      talkPictures: '++id, turnId',
+      shares: 'id, createdAt',
+      requests: 'txid, sentAt, status',
+      readingHistory: '++id, ref, [lang+at]',
+      missTally: '[lang+unit], lang',
+      ladder: 'lang',
+      drillRuns: '++id, ideaId, at',
+      passageLessons: 'key, state',
+    });
   }
 }
 

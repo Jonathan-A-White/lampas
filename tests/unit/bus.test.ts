@@ -147,6 +147,7 @@ describe('docs/events.md', () => {
       'picker-level-moved': true,
       'frontier-taught': true,
       'placement-done': true,
+      'passage-lesson-changed': true,
       'feedback-sent': true,
     };
     const doc = readFileSync('docs/events.md', 'utf8');
