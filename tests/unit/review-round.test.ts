@@ -75,7 +75,7 @@ describe('a Review round', () => {
   });
 
   it('counts the steps of a drill plan as drills, then grammar ideas as ideas, in the order the counts are written', () => {
-    expect(KINDS.map((k) => k.kind)).toEqual(['drill-plan', 'grammar', 'paradigm', 'sound', 'word']);
+    expect(KINDS.map((k) => k.kind)).toEqual(['drill-plan', 'grammar', 'paradigm', 'sound', 'word', 'lesson']);
     expect(KINDS[0].count(1)).toBe('1 drill');
     expect(KINDS[0].count(2)).toBe('2 drills');
     expect(KINDS[1].count(1)).toBe('1 idea');
@@ -85,6 +85,7 @@ describe('a Review round', () => {
     expect(KINDS[3].count(1)).toBe('1 sound');
     expect(KINDS[3].count(2)).toBe('2 sounds');
     expect(KINDS[4].count(2)).toBe('2 words');
+    expect(KINDS[5].count(1)).toBe('1 lesson');
   });
 
   it('asks a due step of a drill plan after the exact gaps and before a due grammar idea or word (mw-i7xe0n.4)', async () => {
