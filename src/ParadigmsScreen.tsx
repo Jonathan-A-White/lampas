@@ -5,7 +5,7 @@
 // available cell shows its form. One button switches modes; Ask the tutor opens the Reader's Talk sheet on the open chapter with the table's name
 // and the forms shown. Names are PROVISIONAL, the Governor to confirm.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { TIER_TITLES } from './approaches/ladder';
 import { ideaOf, TIERS } from './data/grammar/ladder';
 import {
@@ -20,6 +20,7 @@ import {
   type Paradigm,
   type ParadigmColumn,
 } from './data/paradigms';
+import { blocksOf, columnsThatFit, greekRemOf } from './data/paradigms/layout';
 import { hideAll, revealedOf, toggleRevealed } from './data/paradigms/revealed';
 import { getOpenChapter } from './data/readerChapter';
 import { PARADIGM_KIND } from './data/paradigms/cells';
@@ -103,7 +104,7 @@ function ParadigmList({ levels }: { levels: Levels | undefined }) {
   );
 }
 
-/** The first header row, when some columns share a heading: [{label, span}]; null when none do. */
+/** The first header row of a block, when some columns share a heading: [{label, span}]; null when none do. */
 function groupsOf(columns: ParadigmColumn[]): { label: string; span: number }[] | null {
   if (!columns.some((c) => c.group)) return null;
   const groups: { label: string; span: number }[] = [];
@@ -115,13 +116,31 @@ function groupsOf(columns: ParadigmColumn[]): { label: string; span: number }[] 
   return groups;
 }
 
-// The Greek's size follows the columns the phone has to share (390 px): 6 columns of the article, 4 of the verb endings, 3 of the
-// participle (λελυκότος is 9 letters in a column of 95 px), or 2.
-const formSize = (columns: number): string => (columns >= 6 ? 'text-xl' : columns >= 3 ? 'text-lg' : 'text-2xl');
-// The labels around the cells shrink in the six-column table, where a column is 45 px, and in the three-column ones, whose row labels
-// ('Nominative singular') are long.
-const labelSize = (columns: number): string => (columns >= 6 || columns === 3 ? 'text-xs' : 'text-sm');
+/** How many columns of the table fit the box, in a layout effect so the first paint is already right (all of them where the box has no width: jsdom). */
+function useColumnsThatFit(table: Paradigm, box: RefObject<HTMLDivElement | null>): number {
+  const [fit, setFit] = useState(table.columns.length);
+  useLayoutEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const measure = () => {
+      const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+      setFit(el.clientWidth > 0 && rem > 0 ? columnsThatFit(table, el.clientWidth / rem) : table.columns.length);
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    const watch = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+    watch?.observe(el);
+    return () => {
+      window.removeEventListener('resize', measure);
+      watch?.disconnect();
+    };
+  }, [table, box]);
+  return fit;
+}
 
+// The one cell and label layout of every table (mw-svw421.40): the Greek is text-xl (text-2xl where the table has one or two columns), the
+// labels around the cells text-xs in a 5.5rem column, and a word is never broken inside (no break-words: a label wraps at its spaces). A
+// table whose forms do not all fit the box in one row of cells is drawn as blocks, each with the columns that fit (src/data/paradigms/layout.ts).
 function Table({ table, levels, mode, revealed, onToggle }: {
   table: Paradigm;
   levels: Levels;
@@ -129,95 +148,105 @@ function Table({ table, levels, mode, revealed, onToggle }: {
   revealed: ReadonlySet<string>;
   onToggle: (place: string) => void;
 }) {
-  const groups = groupsOf(table.columns);
-  const size = formSize(table.columns.length);
-  const label = labelSize(table.columns.length);
+  const box = useRef<HTMLDivElement>(null);
+  const fit = useColumnsThatFit(table, box);
+  const size = greekRemOf(table) > 1.25 ? 'text-2xl' : 'text-xl';
+  const label = 'text-xs';
   return (
-    <div className="mt-3 overflow-x-auto rounded-xl border border-line">
-      <table data-testid="paradigm-table" className="w-full table-fixed border-collapse text-center">
-        <caption className="sr-only">{table.name}</caption>
-        <thead>
-          {groups ? (
-            <tr>
-              <td className="w-22" />
-              {groups.map((g, i) => (
-                <th key={i} colSpan={g.span} scope="colgroup" className="border-b border-l border-line px-1 py-1 text-sm font-semibold text-muted">
-                  {g.label}
-                </th>
-              ))}
-            </tr>
-          ) : null}
-          <tr>
-            <td className="w-22" />
-            {table.columns.map((c, i) => (
-              <th key={i} scope="col" className={`border-b border-l border-line px-0.5 py-1 font-semibold text-muted ${label}`} aria-label={c.group ? `${c.group} ${c.label}` : c.label}>
-                {c.short ?? c.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {table.rows.map((row, r) => (
-            <Fragment key={r}>
-              {row.group && row.group !== table.rows[r - 1]?.group ? (
+    <div ref={box} className="mt-3 grid gap-3">
+      {blocksOf(table.columns, fit).map((cols, block) => {
+        const columns = cols.map((c) => table.columns[c]);
+        const groups = groupsOf(columns);
+        return (
+          <div key={block} className="overflow-x-auto rounded-xl border border-line">
+            <table data-testid="paradigm-table" className="w-full table-fixed border-collapse text-center">
+              <caption className="sr-only">{table.name}</caption>
+              <thead>
+                {groups ? (
+                  <tr>
+                    <td className="w-[5.5rem]" />
+                    {groups.map((g, i) => (
+                      <th key={i} colSpan={g.span} scope="colgroup" className="border-b border-l border-line px-1 py-1 text-sm font-semibold text-muted">
+                        {g.label}
+                      </th>
+                    ))}
+                  </tr>
+                ) : null}
                 <tr>
-                  <th colSpan={table.columns.length + 1} scope="rowgroup" className="border-b border-line bg-surface px-2 py-1 text-left text-base font-semibold">
-                    {row.group}
-                  </th>
+                  <td className="w-[5.5rem]" />
+                  {columns.map((c, i) => (
+                    <th key={i} scope="col" className={`border-b border-l border-line px-0.5 py-1 font-semibold text-muted ${label}`} aria-label={c.group ? `${c.group} ${c.label}` : c.label}>
+                      {c.short ?? c.label}
+                    </th>
+                  ))}
                 </tr>
-              ) : null}
-              <tr>
-                <th scope="row" className={`w-22 break-words border-b border-line px-1 py-1 text-left font-medium text-muted ${label}`}>
-                  {row.label}
-                </th>
-                {row.cells.map((cell, c) => {
-                  const place = cellName(table, row, c);
-                  const lang = cell.lang === 'el' ? 'grc' : undefined;
-                  const font = cell.lang === 'el' ? `font-greek ${size}` : 'text-sm';
-                  const frame = 'flex min-h-14 w-full min-w-0 items-center justify-center break-words px-0.5';
-                  const box = `${frame} ${font}`;
-                  if (!isAvailable(cell, levels)) {
-                    const needs = missingIdeas(cell, levels).map((id) => ideaOf(id).title.toLowerCase()).join(', ');
-                    return (
-                      <td key={c} className="border-b border-l border-line p-0.5">
-                        <div data-cell={place} data-state="locked" role="img" aria-label={`${place}: locked. Needs ${needs}`} className={`${box} rounded-lg border border-dashed border-line`}>
-                          <LockIcon />
-                        </div>
-                      </td>
-                    );
-                  }
-                  const shown = mode === 'review' || revealed.has(place);
-                  if (mode === 'review') {
-                    return (
-                      <td key={c} className="border-b border-l border-line p-0.5">
-                        <div data-cell={place} data-state="shown" lang={lang} aria-label={`${place}: ${cell.form}`} className={box}>
-                          {cell.form}
-                        </div>
-                      </td>
-                    );
-                  }
-                  return (
-                    <td key={c} className="border-b border-l border-line p-0.5">
-                      <button
-                        type="button"
-                        data-cell={place}
-                        data-state={shown ? 'shown' : 'hidden'}
-                        aria-pressed={shown}
-                        aria-label={shown ? `${place}: ${cell.form}. Tap to hide` : `Reveal ${place}`}
-                        lang={shown ? lang : undefined}
-                        onClick={() => onToggle(place)}
-                        className={`${shown ? box : `${frame} ${label} font-medium text-accent active:bg-accent/30 bg-accent/15`} rounded-lg`}
-                      >
-                        {shown ? cell.form : 'reveal'}
-                      </button>
-                    </td>
-                  );
-                })}
-              </tr>
-            </Fragment>
-          ))}
-        </tbody>
-      </table>
+              </thead>
+              <tbody>
+                {table.rows.map((row, r) => (
+                  <Fragment key={r}>
+                    {row.group && row.group !== table.rows[r - 1]?.group ? (
+                      <tr>
+                        <th colSpan={cols.length + 1} scope="rowgroup" className="border-b border-line bg-surface px-2 py-1 text-left text-base font-semibold">
+                          {row.group}
+                        </th>
+                      </tr>
+                    ) : null}
+                    <tr>
+                      <th scope="row" className={`w-[5.5rem] border-b border-line px-1 py-1 text-left font-medium text-muted ${label}`}>
+                        {row.label}
+                      </th>
+                      {cols.map((c) => {
+                        const cell = row.cells[c];
+                        const place = cellName(table, row, c);
+                        const lang = cell.lang === 'el' ? 'grc' : undefined;
+                        const font = cell.lang === 'el' ? `font-greek ${size}` : 'text-sm';
+                        const frame = 'flex min-h-14 w-full min-w-0 items-center justify-center px-0.5';
+                        const cellBox = `${frame} ${font}`;
+                        if (!isAvailable(cell, levels)) {
+                          const needs = missingIdeas(cell, levels).map((id) => ideaOf(id).title.toLowerCase()).join(', ');
+                          return (
+                            <td key={c} className="border-b border-l border-line p-0.5">
+                              <div data-cell={place} data-state="locked" role="img" aria-label={`${place}: locked. Needs ${needs}`} className={`${cellBox} rounded-lg border border-dashed border-line`}>
+                                <LockIcon />
+                              </div>
+                            </td>
+                          );
+                        }
+                        const shown = mode === 'review' || revealed.has(place);
+                        if (mode === 'review') {
+                          return (
+                            <td key={c} className="border-b border-l border-line p-0.5">
+                              <div data-cell={place} data-state="shown" lang={lang} aria-label={`${place}: ${cell.form}`} className={cellBox}>
+                                {cell.form}
+                              </div>
+                            </td>
+                          );
+                        }
+                        return (
+                          <td key={c} className="border-b border-l border-line p-0.5">
+                            <button
+                              type="button"
+                              data-cell={place}
+                              data-state={shown ? 'shown' : 'hidden'}
+                              aria-pressed={shown}
+                              aria-label={shown ? `${place}: ${cell.form}. Tap to hide` : `Reveal ${place}`}
+                              lang={shown ? lang : undefined}
+                              onClick={() => onToggle(place)}
+                              className={`${shown ? cellBox : `${frame} ${label} font-medium text-accent active:bg-accent/30 bg-accent/15`} rounded-lg`}
+                            >
+                              {shown ? cell.form : 'reveal'}
+                            </button>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  </Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      })}
     </div>
   );
 }

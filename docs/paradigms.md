@@ -33,7 +33,7 @@ One file each in `src/data/paradigms/`, listed in `index.ts` (`PARADIGMS`); a ne
 
 The four mood tables after `oida` (mw-svw421.4: the subjunctive, imperative, infinitive and participle of λύω, and the moods of εἰμί; names PROVISIONAL, the
 Governor to confirm) write every form whole, with no hyphen, so the form he learns is the form he reads (`λῦσον`, `λυθεῖσα`); each cell names `verb`, its mood, its
-voice and its tense (with `tense-signs` or `reduplication` where it shows one), and a person and number where the mood has them (`persons.ts` `moodIdeas`). Their rows are blocks, one for each tense and voice, so a table never has more than three columns and each Greek form has room on a 390 px phone; a three-column table draws its Greek at `text-lg` (ParadigmsScreen `formSize`), tests/e2e/paradigms.spec.ts proves every form fits its cell.
+voice and its tense (with `tense-signs` or `reduplication` where it shows one), and a person and number where the mood has them (`persons.ts` `moodIdeas`). Their rows are blocks, one for each tense and voice, so a table never has more than three columns and each Greek form has room on a 390 px phone; tests/e2e/paradigms.spec.ts proves every form fits its cell.
 The seven verb tables after `pronouns-interrogative-indefinite` (mw-svw421.3, the Master Verb Chart's indicative; names PROVISIONAL, the
 Governor to confirm) share `persons.ts` (the six persons, and `verbIdeas`: the verb, the mood, the voice, the person and the number, then the
 ideas of the tense). Where a stem and a tense sign are added to an ending the hyphen stands at the joint, and an accent that moves onto the
@@ -110,3 +110,13 @@ with the bible-talk grind's focus `{table, revealed, kind: 'paradigm'}`: `table`
 ## Out of scope
 
 Drills tied to the chapter he reads, the reflexive, possessive and other pronouns, the vocative, and whatever else the Master Verb Chart holds that no table has yet: the optative, the participles beyond the five of the table (future, perfect middle or passive, aorist middle) and the participle's other cases and its plural, the future perfect, the aorist and future of the contract and -μι verbs, the liquid and other irregular stems.
+
+## The cell and label layout (mw-svw421.40)
+
+One layout for every table (`Table` in ParadigmsScreen, the arithmetic in `src/data/paradigms/layout.ts`): the Greek is `text-xl` (`text-2xl` for a
+table of one or two columns), the labels around the cells `text-xs` in a `w-[5.5rem]` column (rem, because tailwind spacing stays in pixels as the
+Text size grows), and a label wraps only at its spaces (never `break-words`). A table whose widest forms do not fit the box in one row of cells is drawn
+as blocks, one under the other, each with the columns that fit (whole headings kept together: Singular, Plural) and the row labels repeated; the box is
+measured in a layout effect, so the first paint is already blocked. Nothing is shrunk and nothing scrolls sideways.
+tests/e2e/paradigms.spec.ts proves it for every table in `PARADIGMS` at Normal, Large and Largest (Greek whole in its own cell, inside the table; no word of a
+label broken or wider than its cell).
