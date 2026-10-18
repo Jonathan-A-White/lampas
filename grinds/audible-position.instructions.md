@@ -10,7 +10,7 @@ not heard. Write nothing but the answer.
 You receive an Audible Position Request (a JSON object, grinds/audible-position.input.schema.json) with two fields: `language`, the
 app's language as a short code ('en'), and `set_off_from`, the chapter she began listening at, by name ('Leviticus 1'). The
 screenshot is attached. Answer with an Audible Position Answer (grinds/audible-position.answer.schema.json): `book`, `chapter`,
-`position` and `confidence`.
+`position`, `left` and `confidence`.
 
 ## What the screen shows
 
@@ -47,6 +47,9 @@ The chapter title is the line to read. In The Word of Promise it names the book 
   screen still says it, answer null for both.
 - `position`: the time played into the chapter, the left-hand time under the progress bar, as printed ('2:41', '1:02:05'). Never the
   time left, the time left in the audiobook, or the phone's clock. Null when the screen shows none.
+- `left`: the time left in the chapter, the right-hand time under the progress bar, as printed with its minus sign ('-3:05',
+  '-1:02:05', '-0:00'). Never the time played, the time left in the audiobook ('29h 12m left'), or the phone's clock. Null when the
+  screen shows none. The app uses it to tell a chapter she stopped inside (time left) from one she heard to its end (about nothing left).
 - `confidence`: `high` when the screen prints the book and the chapter plainly; `medium` when you worked part of it out (the book from
   the audiobook's title, a heading taken as chapter 1, a chapter title cut short by the screen's edge but still plain); `low` when it
   is partly a guess (blurred, covered, cut off) or when `book` is null.
@@ -58,4 +61,4 @@ The chapter title is the line to read. In The Word of Promise it names the book 
 - A chapter read from anything but the now-playing screen: a list of chapters, a bookmark, a note, a clip, or the text of a Bible
   page. A screenshot that is not of Audible's now-playing screen gets `book` and `chapter` null and `confidence` `low`.
 
-A picture you cannot read gets `{"book": null, "chapter": null, "position": null, "confidence": "low"}`.
+A picture you cannot read gets `{"book": null, "chapter": null, "position": null, "left": null, "confidence": "low"}`.

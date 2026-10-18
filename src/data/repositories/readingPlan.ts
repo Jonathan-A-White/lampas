@@ -88,17 +88,29 @@ export async function nextChapter(): Promise<PlanChapter | undefined> {
   return planOf(state.planId)?.chapters().find((c) => !done.has(keyOf(c)));
 }
 
-/** Marks this chapter and every chapter before it in the plan done (never un-marks). Nothing happens without a plan or for a chapter it does not hold. */
-export function markDoneThrough(chapter: PlanChapter): Promise<void> {
+/** What he heard of a chapter: all of it to its end ('finished'), or he stopped inside it ('stopped-in'), so his next listen starts at its beginning. */
+export type Heard = 'stopped-in' | 'finished';
+
+/** Marks the first `count(at)` chapters of the plan done, `at` being the chapter's place in the plan (never un-marks). Nothing happens without a plan or for a chapter it does not hold. */
+function markFirst(chapter: PlanChapter, count: (at: number) => number): Promise<void> {
   return db.transaction('rw', db.settings, async () => {
     const state = await read();
     const chapters = state && planOf(state.planId)?.chapters();
     const at = chapters?.findIndex((c) => c.code === chapter.code && c.chapter === chapter.chapter) ?? -1;
     if (!state || !chapters || at < 0) return;
-    const done = new Set([...state.done, ...chapters.slice(0, at + 1).map(keyOf)]);
+    const done = new Set([...state.done, ...chapters.slice(0, count(at)).map(keyOf)]);
     await write({ ...state, done: chapters.map(keyOf).filter((k) => done.has(k)) });
   });
 }
+
+/** Marks this chapter and every chapter before it in the plan done (never un-marks): he heard it to its end. Nothing happens without a plan or for a chapter it does not hold. */
+export const markDoneThrough = (chapter: PlanChapter): Promise<void> => markFirst(chapter, (at) => at + 1);
+
+/** Marks every chapter before this one done and leaves it next: he stopped inside it, and the next listen starts at its beginning (mw-umv8sp.7). */
+export const markDoneBefore = (chapter: PlanChapter): Promise<void> => markFirst(chapter, (at) => at);
+
+/** The one rule for what an answer about a chapter does to the plan: 'finished' marks it done through the chapter, 'stopped-in' only the chapters before it. The return sheet, the picker and the screenshot read all answer through it. */
+export const markHeard = (chapter: PlanChapter, heard: Heard): Promise<void> => (heard === 'finished' ? markDoneThrough(chapter) : markDoneBefore(chapter));
 
 /** How many chapters are done and how many the plan has; both 0 with no plan. */
 export async function progress(): Promise<{ done: number; total: number }> {

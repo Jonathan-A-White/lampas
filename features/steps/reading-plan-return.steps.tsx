@@ -108,7 +108,7 @@ const proposes = async (_: unknown, name: string): Promise<void> => {
   const dialog = await screen.findByRole('dialog', { name: SHEET });
   const proposal = dialog.querySelectorAll('[data-proposal]');
   expect(proposal).toHaveLength(1);
-  expect(proposal[0]).toHaveAccessibleName(`Got further: ${name}`);
+  expect(proposal[0]).toHaveAccessibleName(`Stopped in: ${name}`);
   expect(proposal[0]).toHaveAttribute('aria-current', 'true');
 };
 const taps = async (_: unknown, name: string): Promise<void> => {
@@ -123,6 +123,13 @@ const nextIs = (_: unknown, name: string, done: number): Promise<void> =>
   });
 const noSession = (): Promise<void> => waitFor(async () => expect(await openSession()).toBeUndefined());
 const aSession = (): Promise<void> => waitFor(async () => expect(await openSession()).toBeDefined());
+
+const chipSays = async (_: unknown, text: string): Promise<void> => {
+  expect(await screen.findByTestId('plan-chip')).toHaveTextContent(text);
+};
+const tapsTheChip = async (): Promise<void> => {
+  await user.click(await screen.findByTestId('plan-chip'));
+};
 
 const feature = await loadFeature('features/reading-plan-return.feature');
 
@@ -155,7 +162,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('no listening session is open', noSession);
   });
 
-  Scenario('Got further marks the plan done through the chapter she taps', ({ Given, And, When, Then }) => {
+  Scenario('Stopped in a chapter marks the plan done through the chapter before it', ({ Given, And, When, Then }) => {
     Given('a plan started at {string} with the Reader open', planAndReader);
     And('a listening session opened at {string}', sessionAt);
     When('she is away for {int} chapters of listening and comes back to Lampas', awayAndBack);
@@ -165,13 +172,25 @@ describeFeature(feature, ({ Scenario }) => {
     And('no listening session is open', noSession);
   });
 
-  Scenario('Pick it myself opens the chapter picker and marks the chapter she chooses', ({ Given, And, When, Then }) => {
+  Scenario('Stopped in the chapter she set off from keeps it next, and the send-off names it', ({ Given, And, When, Then }) => {
+    Given('a plan started at {string} with the Reader open', planAndReader);
+    And('a listening session opened at {string}', sessionAt);
+    When('she is away for {int} chapters of listening and comes back to Lampas', awayAndBack);
+    And('she taps {string}', taps);
+    Then('the sheet is closed', sheetIsClosed);
+    And('the next chapter is {string} with {int} of 1189 done', nextIs);
+    And('the Plan chip says {string}', chipSays);
+    When('she taps the Plan chip', tapsTheChip);
+    Then('the sheet {string} is open', sheetIsOpen);
+  });
+
+  Scenario('Pick it myself opens the chapter picker, and the chapter she chooses is the one she stopped in', ({ Given, And, When, Then }) => {
     Given('a plan started at {string} with the Reader open', planAndReader);
     And('a listening session opened at {string}', sessionAt);
     When('she is away for {int} chapters of listening and comes back to Lampas', awayAndBack);
     And('she taps {string}', taps);
     And('she chooses the book {string} and the chapter {int} in the picker', async (_, book: string, chapter: number) => {
-      const picker = await screen.findByRole('dialog', { name: 'Choose a chapter' });
+      const picker = await screen.findByRole('dialog', { name: 'Which chapter did you stop in?' });
       await user.click(within(picker).getByRole('button', { name: new RegExp(`^${book}`) }));
       await user.click(await within(picker).findByRole('button', { name: `Chapter ${chapter}` }));
     });
@@ -180,7 +199,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('no listening session is open', noSession);
   });
 
-  Scenario('Stopped partway ends the session and marks nothing', ({ Given, And, When, Then }) => {
+  Scenario('Stopped partway with no chapter ends the session and marks nothing', ({ Given, And, When, Then }) => {
     Given('a plan started at {string} with the Reader open', planAndReader);
     And('a listening session opened at {string}', sessionAt);
     When('she is away for {int} chapters of listening and comes back to Lampas', awayAndBack);

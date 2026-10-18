@@ -1,8 +1,10 @@
 // src/plan/audiblePosition.ts — where a screenshot of Audible says she got to (mw-umv8sp.4). The screenshot goes to the mill's audible-position grind
 // (grinds/audible-position.json: sonnet, low effort, one picture), cut down on the phone as a talk's pictures are (src/talk/pictures.ts), with the chapter she set off
 // from. What comes back is {book (OSIS), chapter, position, confidence}. The answer is not believed: its book must be one of the Bible's 66 by its OSIS code and its
-// chapter one the book has, or nothing is proposed.
+// chapter one the book has, or nothing is proposed. The time left under the progress bar says what he heard of it (mw-umv8sp.7): time left means he stopped inside the
+// chapter, so the plan stays on it; the end of the chapter means he finished it.
 import { BOOKS } from '../data/books';
+import type { Heard } from '../data/repositories/readingPlan';
 import { OT_BOOKS } from '../data/otBooks';
 import type { PlanChapter } from '../data/plans';
 import { OSIS, OT_OSIS } from '../nav/links';
@@ -20,14 +22,32 @@ export interface AudiblePositionAnswer {
   book: string | null;
   chapter: number | null;
   position: string | null;
+  /** the time left in the chapter as the screen prints it ('-2:14'), or null; an older mill sends none */
+  left?: string | null;
   confidence: Confidence;
 }
 
-/** What the screenshot was read as: a chapter of the Bible, the time played into it as the screen printed it (or null), and how sure the reading is. */
+/** What the screenshot was read as: a chapter of the Bible, the time played into it as the screen printed it (or null), how sure the reading is, and what he heard of it. */
 export interface ScreenshotReading {
   chapter: PlanChapter;
   position: string | null;
   confidence: Confidence;
+  heard: Heard;
+}
+
+/** A chapter with this many seconds or fewer left was heard to its end: the screen is read a moment after it ran out, or it shows the last second. */
+export const END_SECONDS = 5;
+
+/** The seconds a time printed under the progress bar stands for ('-2:14', '1:02:05', '-0:00'), or null for anything that is not a time. */
+function secondsOf(time: string): number | null {
+  const parts = /^[-\u2212\u2013]?\s*(\d{1,2}(?::\d{2}){1,2})$/.exec(time.trim())?.[1]?.split(':');
+  return parts ? parts.reduce((total, part) => total * 60 + Number(part), 0) : null;
+}
+
+/** The one rule of the screenshot: with the time left in the chapter at its end he finished it; with any time left, or none read, he stopped inside it. */
+export function heardOf(left: string | null | undefined): Heard {
+  const seconds = left ? secondsOf(left) : null;
+  return seconds !== null && seconds <= END_SECONDS ? 'finished' : 'stopped-in';
 }
 
 /** What the grist is sent beside the picture (Audible Position Request 1): the app's language and the chapter she set off from, by name. */
@@ -42,8 +62,8 @@ const nullOr = (value: unknown, kind: 'string' | 'number'): boolean => value ===
 /** The app's own check of an answer, run before it is believed. */
 export function isAudiblePositionAnswer(value: unknown): value is AudiblePositionAnswer {
   if (typeof value !== 'object' || value === null) return false;
-  const { book, chapter, position, confidence } = value as Record<string, unknown>;
-  return nullOr(book, 'string') && nullOr(chapter, 'number') && nullOr(position, 'string') && typeof confidence === 'string' && CONFIDENCES.includes(confidence);
+  const { book, chapter, position, left, confidence } = value as Record<string, unknown>;
+  return nullOr(book, 'string') && nullOr(chapter, 'number') && nullOr(position, 'string') && (left === undefined || nullOr(left, 'string')) && typeof confidence === 'string' && CONFIDENCES.includes(confidence);
 }
 
 /** OSIS code, lower-cased -> the book's code and its number of chapters, for both testaments. */
@@ -57,7 +77,7 @@ export function checkedReading(answer: AudiblePositionAnswer): ScreenshotReading
   const { chapter } = answer;
   if (!book || chapter === null || !Number.isInteger(chapter) || chapter < 1 || chapter > book.chapters) return null;
   const position = answer.position?.trim() || null;
-  return { chapter: { code: book.code, chapter }, position, confidence: answer.confidence };
+  return { chapter: { code: book.code, chapter }, position, confidence: answer.confidence, heard: heardOf(answer.left) };
 }
 
 /** How sure the reading is, in words. */

@@ -98,7 +98,7 @@ async function awayAndBack(page: Page, ms: number): Promise<void> {
 
 const sheet = (page: Page) => page.getByRole('dialog', { name: 'Where did you get to?' });
 
-test('back after two chapters of listening the sheet proposes Leviticus 3, and Got further marks it done', async ({ page }) => {
+test('back after two chapters of listening the sheet proposes Leviticus 3, and Stopped in marks the chapters before it done', async ({ page }) => {
   await listeningSince(page);
   await awayAndBack(page, TWO_CHAPTERS + 5_000);
 
@@ -108,11 +108,11 @@ test('back after two chapters of listening the sheet proposes Leviticus 3, and G
   await expect(page.getByRole('dialog', { name: 'Where did you get to?' })).toHaveCount(1);
   await expect(dialog.getByRole('heading', { name: 'Where did you get to?' })).toBeVisible();
   await expect(dialog.locator('[data-proposal]')).toHaveCount(1);
-  await expect(dialog.locator('[data-proposal]')).toHaveAccessibleName('Got further: Leviticus 3');
+  await expect(dialog.locator('[data-proposal]')).toHaveAccessibleName('Stopped in: Leviticus 3');
   await expect(dialog.getByRole('button', { name: 'Finished Leviticus 1' })).toBeVisible();
   await expect(dialog.getByRole('button', { name: 'Pick it myself' })).toBeVisible();
-  await expect(dialog.getByRole('button', { name: 'Stopped partway' })).toBeVisible();
-  const around = await dialog.getByRole('group', { name: 'Got further' }).getByRole('button').allTextContents();
+  await expect(dialog.getByRole('button', { name: 'Stopped partway, the plan stays at Leviticus 1' })).toBeVisible();
+  const around = await dialog.getByRole('group', { name: 'I stopped in' }).getByRole('button').allTextContents();
   expect(around.map((t) => t.replace('my guess', '').trim())).toEqual(['Leviticus 1', 'Leviticus 2', 'Leviticus 3', 'Leviticus 4', 'Leviticus 5']);
 
   // it fits the phone: every button is 48 px tall and the whole sheet is on the screen
@@ -129,13 +129,14 @@ test('back after two chapters of listening the sheet proposes Leviticus 3, and G
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   await shot(page, 'reading-plan-return');
 
-  await dialog.getByRole('button', { name: 'Got further: Leviticus 3' }).click();
+  await dialog.getByRole('button', { name: 'Stopped in: Leviticus 3' }).click();
   await expect(dialog).toHaveCount(0);
   const state = await readState(page);
   expect(state.session).toBeUndefined();
-  expect(state.done).toHaveLength(93);
-  expect(state.done).toContain('lev.3');
-  expect(state.done).not.toContain('lev.4');
+  // she stopped in Leviticus 3: it is not done, it is next
+  expect(state.done).toHaveLength(92);
+  expect(state.done).toContain('lev.2');
+  expect(state.done).not.toContain('lev.3');
 
   // the session is over: coming back again asks nothing
   await awayAndBack(page, TWO_CHAPTERS * 2);
@@ -155,7 +156,7 @@ test('Finished marks the chapter she began, and Stopped partway marks nothing', 
   // a second session, ended partway
   await putSettings(page, [{ key: 'readingPlanState', value: JSON.stringify({ ...state, session: { code: 'lev', chapter: 2, startedAt: SET_OFF } }) }]);
   await awayAndBack(page, TWO_CHAPTERS);
-  await sheet(page).getByRole('button', { name: 'Stopped partway' }).click();
+  await sheet(page).getByRole('button', { name: 'Stopped partway, the plan stays at Leviticus 2' }).click();
   await expect(sheet(page)).toHaveCount(0);
   state = await readState(page);
   expect(state.session).toBeUndefined();
@@ -163,12 +164,12 @@ test('Finished marks the chapter she began, and Stopped partway marks nothing', 
   await shot(page, 'reading-plan-return-stopped');
 });
 
-test('Pick it myself opens the chapter picker, and the chapter she chooses is marked done', async ({ page }) => {
+test('Pick it myself opens the chapter picker, and the chapter she chooses is the one she stopped in', async ({ page }) => {
   await listeningSince(page);
   await awayAndBack(page, TWO_CHAPTERS + 5_000);
   await sheet(page).getByRole('button', { name: 'Pick it myself' }).click();
 
-  const picker = page.getByRole('dialog', { name: 'Choose a chapter' });
+  const picker = page.getByRole('dialog', { name: 'Which chapter did you stop in?' });
   await expect(picker).toBeVisible();
   await expect(picker.getByRole('button', { name: 'Preface' })).toHaveCount(0);
   await expect(picker.locator('[data-in-logos]')).toHaveCount(0);
@@ -189,9 +190,9 @@ test('Pick it myself opens the chapter picker, and the chapter she chooses is ma
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   const state = await readState(page);
   expect(state.session).toBeUndefined();
-  expect(state.done).toContain('num.2');
+  expect(state.done).toContain('num.1');
   expect(state.done).toContain('lev.27');
-  expect(state.done).not.toContain('num.3');
+  expect(state.done).not.toContain('num.2');
 });
 
 test('Not now leaves the session open and the next return asks again; a reload with the session open asks at once', async ({ page }) => {

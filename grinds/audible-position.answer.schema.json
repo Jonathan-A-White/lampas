@@ -3,7 +3,7 @@
   "title": "Audible Position Answer 1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["book", "chapter", "position", "confidence"],
+  "required": ["book", "chapter", "position", "left", "confidence"],
   "properties": {
     "book": {
       "description": "The Bible book of the chapter now playing, as its OSIS code ('Gen', 'Lev', 'Ps', 'Matt', 'Rom', 'Rev'), or null when the picture shows no chapter of the Bible you can name.",
@@ -15,6 +15,10 @@
     },
     "position": {
       "description": "The time played into the chapter as the screen prints it ('2:41', '1:02:05'), or null when the screen shows none.",
+      "anyOf": [{ "type": "null" }, { "type": "string", "minLength": 1, "maxLength": 12 }]
+    },
+    "left": {
+      "description": "The time left in the chapter as the screen prints it, the right-hand time under the progress bar, with its minus sign ('-2:14', '-1:02:05'), or null when the screen shows none. The app reads what she heard from it: a chapter with time left was stopped in, one at '-0:00' was heard to its end.",
       "anyOf": [{ "type": "null" }, { "type": "string", "minLength": 1, "maxLength": 12 }]
     },
     "confidence": {

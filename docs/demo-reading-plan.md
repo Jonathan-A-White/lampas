@@ -20,8 +20,11 @@ says "Update ready, tap to reload").
 3. Tap the chip. **Off to Audible: Leviticus 1** says "When you are back, tell me where you got to." with one big **Go**. Tap
    **Go**: Audible opens at Leviticus 1.
 4. Listen for a while, then come back to Lampas. **Where did you get to?** says how long ago you set off and "I think you
-   got to" a chapter. Under **Got further** are the chapters around the guess (the guess is marked **my guess**), and below
-   them **Pick it myself**, **Stopped partway** and **Send a screenshot** (or **Needs a licence** with no licence).
-5. Tap **Got further: Leviticus 3**. The sheet closes and the chip reads **Next: Leviticus 4** with **93 of 1,189**.
-6. Tap the chapter title at the top of the Reader to open the picker, then **Leviticus**: chapters **1**, **2** and **3** are
-   marked done and **4** is marked next. He says "Looks good".
+   got to" a chapter. Under **I stopped in** are the chapters around the guess (the guess is marked **my guess**), and below
+   them **Pick it myself**, **Send a screenshot** (or **Needs a licence** with no licence) and **Stopped partway, the plan stays
+   at Leviticus 1**.
+5. Tap **Stopped in: Leviticus 3**. The sheet closes and the chip reads **Next: Leviticus 3** with **92 of 1,189**: a chapter
+   you stopped in is not done, and your next listen starts at its beginning. (**Finished Leviticus 1** is the way to say you
+   heard a chapter to its end.)
+6. Tap the chapter title at the top of the Reader to open the picker, then **Leviticus**: chapters **1** and **2** are
+   marked done and **3** is marked next. He says "Looks good".
