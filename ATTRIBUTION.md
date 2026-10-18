@@ -117,7 +117,7 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
 - **[Blue Letter Bible](https://www.blueletterbible.org)** and **[STEPBible](https://www.stepbible.org)**. Links from a word to its Strong's
   entry, if you switch Strong's on. Links only: nothing is copied. Their own terms apply.
 - **[Web Speech API](https://developer.mozilla.org/docs/Web/API/Web_Speech_API)**. Your phone's own voices speak the Greek and English and its
-  recogniser hears you (in the letter drill's Say it, it writes down the name or sound of a letter you say, and Lampas checks it; Lampas keeps no recording); Lampas ships no voice. With Read lessons to me on in Settings, a lesson is read aloud by it as soon as it opens. The API is a web standard; the voices are your phone's and its maker's.
+  recogniser hears you (in the letter drill's Say it, it writes down the name or sound of a letter you say, and Lampas checks it; Lampas keeps no recording); Lampas ships no voice. In a Hard sounds lesson's Try it step the phone's microphone records you saying a word, held in memory on the phone only, so you hear your try and then the Greek voice; it is sent nowhere and dropped when the step closes. With Read lessons to me on in Settings, a lesson is read aloud by it as soon as it opens. The API is a web standard; the voices are your phone's and its maker's.
 
 ## Ideas and tools we borrowed
 
