@@ -127,6 +127,10 @@ const sendsAScreenshot = async (): Promise<void> => {
   if (!input) throw new Error('no picker of pictures on the return sheet');
   await user.upload(input, new File([new Uint8Array([1, 2, 3])], 'Screenshot_20261016.png', { type: 'image/png' }));
 };
+const millAnswersWithLeft = async (_: unknown, book: string, chapter: number, position: string, left: string, confidence: string): Promise<void> => {
+  await waitFor(() => expect(fake.received).toHaveLength(1));
+  await fake.answer({ status: 'answered' as const, answer: { book, chapter, position: position || null, left: left || null, confidence } });
+};
 const millAnswers = async (_: unknown, book: string, chapter: number, position: string, confidence: string): Promise<void> => {
   await waitFor(() => expect(fake.received).toHaveLength(1));
   await fake.answer(answered(book, chapter, position || null, confidence));
@@ -165,15 +169,16 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('A screenshot read as Leviticus 3 is proposed, and Yes marks the plan done through it', ({ Given, When, Then, And }) => {
+  Scenario('A screenshot read as Leviticus 3 with time left is proposed, and Yes keeps Leviticus 3 next', ({ Given, When, Then, And }) => {
     Given('a licensed phone back from Audible after listening from {string}', licensedBack);
     When('she sends a screenshot', sendsAScreenshot);
     Then('the sheet {string} says {string}', async (_, name: string, text: string) => {
       expect(await within(await screen.findByRole('dialog', { name })).findByText(text)).toBeInTheDocument();
     });
-    When('the mill answers the book {string}, the chapter {int}, the position {string} and the confidence {string}', millAnswers);
+    When('the mill answers the book {string}, the chapter {int}, the position {string}, the time left {string} and the confidence {string}', millAnswersWithLeft);
     Then('the sheet {string} proposes {string} at {string}', (_, __: string, name: string, position: string) => proposes(_, name, position));
     And('it says {string}', itSays);
+    And('the proposal also says {string}', itSays);
     When('she taps {string}', tapsInRead);
     Then('both sheets are closed', async () => {
       await waitFor(() => expect(screen.queryByRole('dialog', { name: READ })).toBeNull());
@@ -195,7 +200,27 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('A guess says so in words', ({ Given, When, Then, And }) => {
+  Scenario('A screenshot at the end of Leviticus 3 is proposed as finished, and Yes moves the plan on', ({ Given, When, Then, And }) => {
+    Given('a licensed phone back from Audible after listening from {string}', licensedBack);
+    When('she sends a screenshot', sendsAScreenshot);
+    And('the mill answers the book {string}, the chapter {int}, the position {string}, the time left {string} and the confidence {string}', millAnswersWithLeft);
+    Then('the sheet {string} proposes {string} at {string}', (_, __: string, name: string, position: string) => proposes(_, name, position));
+    And('the proposal also says {string}', itSays);
+    When('she taps {string}', tapsInRead);
+    Then('both sheets are closed', async () => {
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: READ })).toBeNull());
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: RETURN })).toBeNull());
+    });
+    And('the next chapter is {string} with {int} of 1189 done', async (_, name: string, done: number) => {
+      await waitFor(async () => {
+        expect(await nextChapter()).toEqual(chapterNamed(name));
+        expect((await progress()).done).toBe(done);
+      });
+    });
+    And('no listening session is open', () => waitFor(async () => expect(await openSession()).toBeUndefined()));
+  });
+
+Scenario('A guess says so in words', ({ Given, When, Then, And }) => {
     Given('a licensed phone back from Audible after listening from {string}', licensedBack);
     When('she sends a screenshot', sendsAScreenshot);
     And('the mill answers the book {string}, the chapter {int}, the position {string} and the confidence {string}', millAnswers);

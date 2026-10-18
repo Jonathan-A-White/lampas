@@ -9,10 +9,17 @@ import { osisOf } from '../../src/nav/links';
 import { buildAudiblePositionRequest, checkedReading, CONFIDENCE_WORDS, isAudiblePositionAnswer, type AudiblePositionAnswer } from '../../src/plan/audiblePosition';
 import { validate, type Schema } from '../support/schema-validate';
 
-const answer = (book: string | null, chapter: number | null, position: string | null = null, confidence: AudiblePositionAnswer['confidence'] = 'high'): AudiblePositionAnswer => ({
+const answer = (
+  book: string | null,
+  chapter: number | null,
+  position: string | null = null,
+  confidence: AudiblePositionAnswer['confidence'] = 'high',
+  left: string | null = null,
+): AudiblePositionAnswer => ({
   book,
   chapter,
   position,
+  left,
   confidence,
 });
 
@@ -20,8 +27,8 @@ const schema = (name: string): Schema => JSON.parse(readFileSync(`grinds/audible
 
 describe('the audible-position answer', () => {
   it('places a book of either testament by its OSIS code, any case', () => {
-    expect(checkedReading(answer('Lev', 3, '2:41'))).toEqual({ chapter: { code: 'lev', chapter: 3 }, position: '2:41', confidence: 'high' });
-    expect(checkedReading(answer('rom', 8, null, 'medium'))).toEqual({ chapter: { code: 'rom', chapter: 8 }, position: null, confidence: 'medium' });
+    expect(checkedReading(answer('Lev', 3, '2:41'))).toEqual({ chapter: { code: 'lev', chapter: 3 }, position: '2:41', confidence: 'high', heard: 'stopped-in' });
+    expect(checkedReading(answer('rom', 8, null, 'medium'))).toEqual({ chapter: { code: 'rom', chapter: 8 }, position: null, confidence: 'medium', heard: 'stopped-in' });
     expect(checkedReading(answer('Ps', 150))?.chapter).toEqual({ code: 'psa', chapter: 150 });
     expect(checkedReading(answer('Jude', 1))?.chapter).toEqual({ code: 'jud', chapter: 1 });
   });
@@ -45,6 +52,29 @@ describe('the audible-position answer', () => {
     expect(checkedReading(answer('Gen', 2.5))).toBeNull();
   });
 
+  it('reads a picture with time left in its chapter as stopped in it, and one at the chapter\'s end as finished (mw-umv8sp.7)', () => {
+    // his screenshot: Matthew 4 at 01:40 with -02:14 left
+    expect(checkedReading(answer('Matt', 4, '01:40', 'high', '-02:14'))).toEqual({
+      chapter: { code: 'mat', chapter: 4 },
+      position: '01:40',
+      confidence: 'high',
+      heard: 'stopped-in',
+    });
+    for (const left of ['-0:00', '-00:00', '0:00', '-0:03', '-0:05']) expect(checkedReading(answer('Matt', 4, '3:50', 'high', left))?.heard, left).toBe('finished');
+    for (const left of ['-0:06', '-0:30', '-2:14', '-1:02:05', '-12:00']) expect(checkedReading(answer('Matt', 4, '1:40', 'high', left))?.heard, left).toBe('stopped-in');
+  });
+
+  it('reads a picture that shows no time left (or one it cannot parse) as stopped in the chapter, so the chapter stays next', () => {
+    expect(checkedReading(answer('Matt', 4, '1:40', 'high', null))?.heard).toBe('stopped-in');
+    expect(checkedReading(answer('Matt', 4, null, 'high', null))?.heard).toBe('stopped-in');
+    expect(checkedReading(answer('Matt', 4, '1:40', 'high', 'soon'))?.heard).toBe('stopped-in');
+    // an older mill that sends no `left` at all
+    const old: Partial<AudiblePositionAnswer> = answer('Matt', 4, '1:40');
+    delete old.left;
+    expect(isAudiblePositionAnswer(old)).toBe(true);
+    expect(checkedReading(old as AudiblePositionAnswer)?.heard).toBe('stopped-in');
+  });
+
   it('drops a blank position', () => {
     expect(checkedReading(answer('Gen', 1, '  '))?.position).toBeNull();
   });
@@ -55,8 +85,9 @@ describe('the audible-position answer', () => {
     expect(isAudiblePositionAnswer({ book: 'Lev', chapter: '3', position: null, confidence: 'high' })).toBe(false);
     expect(isAudiblePositionAnswer({ book: 'Lev', chapter: 3, position: null, confidence: 'certain' })).toBe(false);
     expect(isAudiblePositionAnswer({ book: 'Lev', chapter: 3, confidence: 'high' })).toBe(false);
+    expect(isAudiblePositionAnswer({ book: 'Lev', chapter: 3, position: null, left: 214, confidence: 'high' })).toBe(false);
     expect(isAudiblePositionAnswer(null)).toBe(false);
-    for (const valid of [answer('Lev', 3, '2:41'), answer(null, null, null, 'low')]) expect(validate(valid, schema('answer'))).toEqual([]);
+    for (const valid of [answer('Lev', 3, '2:41', 'high', '-2:14'), answer(null, null, null, 'low')]) expect(validate(valid, schema('answer'))).toEqual([]);
   });
 
   it('sends the app language and the chapter she set off from, by name, as the input schema allows', () => {

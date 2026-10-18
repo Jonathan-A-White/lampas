@@ -108,11 +108,11 @@ async function fitsThePhone(page: Page, dialog: ReturnType<Page['getByRole']>): 
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 }
 
-test('with a licence: Send a screenshot reads Leviticus 3 from Audible, and Yes marks the plan done through it', async ({ page }) => {
+test('with a licence: Send a screenshot reads Leviticus 3 from Audible, with time left, and Yes keeps Leviticus 3 next', async ({ page }) => {
   const fake: FakePostern = makeFakePostern();
   // the mill has its answer at once, and the phone's send is held until the test lets it go: the sheet shows 'Reading' meanwhile (an answer made later is not
   // read under the page's fixed clock)
-  fake.kindReplies['audible-position'] = { status: 'answered', answer: { book: 'Lev', chapter: 3, position: '2:41', confidence: 'high' } };
+  fake.kindReplies['audible-position'] = { status: 'answered', answer: { book: 'Lev', chapter: 3, position: '2:41', left: '-3:05', confidence: 'high' } };
   let release = (): void => undefined;
   fake.holds['audible-position'] = new Promise<void>((resolve) => {
     release = resolve;
@@ -142,6 +142,7 @@ test('with a licence: Send a screenshot reads Leviticus 3 from Audible, and Yes 
   await expect(yes).toBeVisible();
   await expect(readSheet(page).getByTestId('screenshot-proposal')).toHaveText('Leviticus 3, 2:41 in');
   await expect(readSheet(page).getByText('I am sure of it.')).toBeVisible();
+  await expect(readSheet(page).getByText('You stopped partway in it: the plan stays at Leviticus 3.')).toBeVisible();
   // the answer came in without moving the sheet: it is one height whatever it shows
   expect(await readSheet(page).boundingBox()).toEqual(sheetBox);
   await fitsThePhone(page, readSheet(page));
@@ -150,6 +151,25 @@ test('with a licence: Send a screenshot reads Leviticus 3 from Audible, and Yes 
   await yes.click();
   await expect(readSheet(page)).toHaveCount(0);
   await expect(returnSheet(page)).toHaveCount(0);
+  const state = await readState(page);
+  expect(state.session).toBeUndefined();
+  // time left in Leviticus 3: he stopped in it, so Leviticus 1 and 2 are done and Leviticus 3 is next
+  expect(state.done).toHaveLength(92);
+  expect(state.done).toContain('lev.2');
+  expect(state.done).not.toContain('lev.3');
+});
+
+test('with a licence: a screenshot at the end of Leviticus 3 is finished, and Yes marks it done', async ({ page }) => {
+  const fake: FakePostern = makeFakePostern();
+  fake.kindReplies['audible-position'] = { status: 'answered', answer: { book: 'Lev', chapter: 3, position: '9:30', left: '-0:00', confidence: 'high' } };
+  await routePostern(page, fake);
+  await openUnlocked(page);
+  await backFromAudible(page);
+
+  await returnSheet(page).getByLabel('Screenshot file').setInputFiles({ name: 'Screenshot_end.jpg', mimeType: 'image/jpeg', buffer: SCREENSHOT });
+  await expect(readSheet(page).getByText('You heard it to the end: the plan moves on.')).toBeVisible();
+  await readSheet(page).getByRole('button', { name: 'Yes, that is where I am' }).click();
+  await expect(readSheet(page)).toHaveCount(0);
   const state = await readState(page);
   expect(state.session).toBeUndefined();
   expect(state.done).toHaveLength(93);

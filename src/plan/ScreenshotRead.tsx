@@ -1,10 +1,12 @@
 // src/plan/ScreenshotRead.tsx — the sheet 'Your screenshot' (mw-umv8sp.4), over the return sheet once she has picked a screenshot of Audible with 'Send a screenshot'.
 // It sends the picture to the audible-position grist (src/plan/audiblePosition.ts) and says 'Reading your screenshot...' meanwhile; then it proposes the chapter read,
-// with the time played and how sure the reading is in words, and 'Yes, that is where I am' answers the return sheet with that chapter (marked done through, the session
-// ended). 'Back to the choices', Back, Escape, a swipe down or a tap outside leave the return sheet as it was. A screenshot with no chapter Lampas can place says so,
+// with the time played, what he heard of it (time left in the chapter: 'You stopped partway in it: the plan stays at <chapter>.'; at its end: 'You heard it to the end:
+// the plan moves on.', mw-umv8sp.7) and how sure the reading is in words, and 'Yes, that is where I am' answers the return sheet with that chapter and what he heard (markHeard), the session
+// ended. 'Back to the choices', Back, Escape, a swipe down or a tap outside leave the return sheet as it was. A screenshot with no chapter Lampas can place says so,
 // and a grist that fails says so with 'Try again'. The sheet is one height whatever it shows, so a control never moves under her thumb as the answer comes in.
 import { useEffect, useState } from 'react';
 import type { PlanChapter } from '../data/plans';
+import type { Heard } from '../data/repositories/readingPlan';
 import { TutorError } from '../services/tutor';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
@@ -20,6 +22,10 @@ const READING: Read = { status: 'reading' };
 export const READING_LINE = 'Reading your screenshot...';
 export const FAILED_LINE = 'Could not read the screenshot.';
 export const NO_CHAPTER_LINE = 'I could not find a chapter in that screenshot.';
+
+/** What the plan will do with the reading, in words. */
+const heardWords = ({ chapter, heard }: ScreenshotReading): string =>
+  heard === 'finished' ? 'You heard it to the end: the plan moves on.' : `You stopped partway in it: the plan stays at ${chapterName(chapter)}.`;
 
 const buttonClass = 'flex min-h-12 w-full items-center justify-center rounded-xl border px-4 text-lg font-medium';
 
@@ -51,7 +57,7 @@ export function ScreenshotRead({
   picture: File;
   /** the chapter the listening session began at: sent as a hint, never proposed for it */
   setOffFrom: PlanChapter;
-  onAccept: (chapter: PlanChapter) => void;
+  onAccept: (chapter: PlanChapter, heard: Heard) => void;
   onClose: () => void;
 }) {
   const { read, retry } = useScreenshotRead(picture, setOffFrom);
@@ -115,11 +121,12 @@ export function ScreenshotRead({
                   {read.reading.position ? <span className="text-lg font-medium text-fg">{`, ${read.reading.position} in`}</span> : null}
                 </p>
                 <p className="pt-2 text-lg">{CONFIDENCE_WORDS[read.reading.confidence]}</p>
+                <p className="pt-2 text-lg">{heardWords(read.reading)}</p>
               </div>
               <div className="flex flex-col gap-2">
                 <button
                   type="button"
-                  onClick={() => onAccept(read.reading!.chapter)}
+                  onClick={() => onAccept(read.reading!.chapter, read.reading!.heard)}
                   className={`${buttonClass} border-accent bg-accent text-accent-fg`}
                 >
                   Yes, that is where I am
