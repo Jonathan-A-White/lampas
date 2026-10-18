@@ -61,9 +61,14 @@ interface FromLetters {
   next: string | null;
 }
 
-/** The card's line: what he has solid and where Learn next goes, or that it goes nowhere. */
+/** How many solid ideas the card names; the rest are counted, or sixty names would fill a phone and push Back to the goal off it (mw-86e9r1.47). */
+const NAMED_SOLID = 3;
+
+/** The card's line: what he has solid (the first few by name, the rest counted) and where Learn next goes, or that it goes nowhere. */
 function fromLettersText({ solid, next }: FromLetters): string {
-  const have = solid.length > 0 ? `Already solid: ${solid.join(', ')}. ` : '';
+  const more = solid.length - NAMED_SOLID;
+  const names = more > 1 ? `${solid.slice(0, NAMED_SOLID).join(', ')} and ${more} more` : solid.join(', ');
+  const have = solid.length > 0 ? `Already solid: ${names}. ` : '';
   if (next === null) return `${have}Nothing is left for Learn next on the Goal screen.`;
   return solid.length > 0 ? `${have}Learn next on the Goal screen opens ${next}.` : `You start with ${next}. Learn next on the Goal screen opens it.`;
 }

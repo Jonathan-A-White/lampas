@@ -173,6 +173,11 @@ test('Start from the letters when every idea is solid says nothing is left for L
   await expect(fromLetters).toContainText('Nothing is left for Learn next on the Goal screen.');
   await expect(fromLetters).not.toContainText('opens The Greek alphabet');
   await expect(fromLetters).not.toContainText('You start with');
+  // the note names a few ideas and counts the rest, so Back to the goal is on the first screen of a phone (mw-86e9r1.47)
+  await expect(fromLetters).toHaveText(/^Already solid: [^,]+, [^,]+, [^,.]+ and \d+ more\. Nothing is left/);
+  const back = await page.getByRole('button', { name: 'Back to the goal' }).boundingBox();
+  expect(back).not.toBeNull();
+  expect(back!.y + back!.height).toBeLessThanOrEqual(844);
   await shot(page, 'placement-from-letters-all-solid');
 
   await page.getByRole('button', { name: 'Back to the goal' }).click();
