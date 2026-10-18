@@ -147,12 +147,23 @@ Feature: Test me on the grammar, and meet me where I am
   Scenario: Start from the letters when every idea is solid says nothing is left for Learn next
     Given his goal is "Read 1 John 1:1" and he knows nothing yet
     And he has marked every idea as I know this
+    And he has passed every passage lesson
     When he opens the placement
     Then the screen offers "Start from the letters"
     When he taps "Start from the letters"
     Then the card says nothing is left for Learn next and does not name The Greek alphabet
     When he goes back to the goal
     Then the Goal screen has no Learn next
+
+  Scenario: Start from the letters when every idea is solid and a passage lesson is not passed opens the passage
+    Given his goal is "Read 1 John 1:1" and he knows nothing yet
+    And he has marked every idea as I know this
+    When he opens the placement
+    Then the screen offers "Start from the letters"
+    When he taps "Start from the letters"
+    Then the card says Learn next opens "Read 1 John 1:1-4"
+    When he goes back to the goal
+    Then Learn next says "Read 1 John 1:1-4"
 
   Scenario: A total beginner's placement gives no idea a level, with his word list already on the schedule
     Given his goal is "Read 1 John 1:1" and he knows nothing yet

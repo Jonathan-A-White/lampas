@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
-import { approachOf, orderOf } from '../../src/approaches';
+import { approachOf, orderOf, stepsOf } from '../../src/approaches';
 import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { LADDER } from '../../src/data/grammar/ladder';
@@ -16,6 +16,7 @@ import type { GrammarQuestion } from '../../src/data/grammar/questions';
 import { readPlacement } from '../../src/data/placementKeep';
 import { mulberry32 } from '../../src/data/quiz';
 import { teachIdea } from '../../src/data/repositories/grammarLevels';
+import { markPassed } from '../../src/data/repositories/passageLessons';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { setGoal } from '../../src/data/repositories/settings';
 import { seedHisWords } from '../../tests/support/his-words';
@@ -46,7 +47,7 @@ async function freshStore(goal: string): Promise<void> {
   stubChapterFetch();
   previous = null;
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.reviews.clear(), db.grammarLevels.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.reviews.clear(), db.grammarLevels.clear(), db.passageLessons.clear()]);
   await db.meta.put({ key: 'grammarLevelsSeeded', value: '1' });
   await setGoal(goal);
 }
@@ -346,6 +347,9 @@ describeFeature(feature, ({ Scenario }) => {
     And('he has marked every idea as I know this', async () => {
       for (const idea of LADDER) await teachIdea(idea.id, 'known');
     });
+    And('he has passed every passage lesson', async () => {
+      for (const step of stepsOf(approachOf('ladder')!)) if (step.kind === 'passage') await markPassed(step.key, 1);
+    });
     When('he opens the placement', opened);
     Then('the screen offers {string}', says);
     When('he taps {string}', tapped);
@@ -359,6 +363,23 @@ describeFeature(feature, ({ Scenario }) => {
       await screen.findByRole('heading', { name: 'Goal', level: 1 });
       await screen.findByTestId('learn-next-none');
       expect(screen.queryByTestId('learn-next')).toBeNull();
+    });
+  });
+
+  Scenario('Start from the letters when every idea is solid and a passage lesson is not passed opens the passage', ({ Given, And, When, Then }) => {
+    Given('his goal is {string} and he knows nothing yet', given);
+    And('he has marked every idea as I know this', async () => {
+      for (const idea of LADDER) await teachIdea(idea.id, 'known');
+    });
+    When('he opens the placement', opened);
+    Then('the screen offers {string}', says);
+    When('he taps {string}', tapped);
+    Then('the card says Learn next opens {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('from-letters')).toHaveTextContent(`Learn next on the Goal screen opens ${text}.`));
+    });
+    When('he goes back to the goal', async () => user.click(await screen.findByRole('button', { name: 'Back to the goal' })));
+    Then('Learn next says {string}', async (_, text: string) => {
+      await waitFor(async () => expect(await screen.findByTestId('learn-next')).toHaveTextContent(`Learn next: ${text}`));
     });
   });
 

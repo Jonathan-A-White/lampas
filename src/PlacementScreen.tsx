@@ -26,7 +26,7 @@ import { questionFor } from './data/grammar/placementQuestion';
 import type { GrammarQuestion } from './data/grammar/questions';
 import { clearPlacement, readCard, readPlacement, saveCard, savePlacement, type SavedPlacement } from './data/placementKeep';
 import { mulberry32, type Random } from './data/quiz';
-import { getEvidence, getGoal, getGrammarApproach, listLevels } from './data/repositories';
+import { getEvidence, getGoal, getGrammarApproach, listLevels, listPassageLessons } from './data/repositories';
 import { publish } from './events/bus';
 import { navigate, placementCardOf, placementOriginOf, showPlacementCard, useAddress } from './nav/route';
 import { swallowTaps, useSettled } from './ui/settle';
@@ -187,14 +187,14 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
     setRun({ status: 'starting' });
     clearPlacement();
     const goal = parseGoal(session.goal, BOOK_INDEX);
-    const [needs, rows] = await Promise.all([goal ? passageNeeds(goal, loadChapter, BOOK_INDEX) : null, listLevels()]);
+    const [needs, rows, passages] = await Promise.all([goal ? passageNeeds(goal, loadChapter, BOOK_INDEX) : null, listLevels(), listPassageLessons()]);
     const known = levelsOf(rows);
     const state = { ...startPlacement(needs, known, orderOf(session.approach), 0), done: 'finished' as const };
     const { solid, frontier, notYet, untested } = summarize(state);
     publish({ kind: 'placement-done', goal: session.goal, approach: session.approach.id, solid, frontier, notYet, untested });
-    const next = learnNext(needs ?? { ideas: [] }, session.approach, known);
+    const next = learnNext(needs ?? { ideas: [] }, session.approach, known, { goal, states: passages });
     const have = state.ideas.filter((id) => state.levels.get(id) === 'solid').map((id) => ideaOf(id).title);
-    showCard({ status: 'over', state, gaps: [], fromLetters: { solid: have, next: next ? (next.gaps ? lettersText(next.gaps) : next.idea.title) : null } });
+    showCard({ status: 'over', state, gaps: [], fromLetters: { solid: have, next: next ? (next.gaps ? lettersText(next.gaps) : next.passage ? `Read ${next.passage.label}` : next.idea.title) : null } });
   };
 
   const begin = async (kept: SavedPlacement | null, resume: boolean): Promise<void> => {
