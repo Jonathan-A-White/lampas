@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.321",
+    "date": "2026-10-18",
+    "story": "mw-cvwm1u.5",
+    "kind": "new",
+    "text": "The Licence page now lists the devices on your licence by name and last use, and lets you rename one or remove it to free its place."
+  },
+  {
     "version": "0.1.319",
     "date": "2026-10-18",
     "story": "mw-5r3p30.502",

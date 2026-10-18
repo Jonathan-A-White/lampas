@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.321
+_2026-10-18_
+- New: The Licence page now lists the devices on your licence by name and last use, and lets you rename one or remove it to free its place.
+
 ## 0.1.319
 _2026-10-18_
 - New: Search for any setting from any screen with the magnifier, and the tutor can send you straight to a setting.
