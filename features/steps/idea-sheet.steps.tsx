@@ -597,6 +597,23 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
   });
 
+  Scenario('The augment sheet says which past forms have the augment and that only the indicative has it', ({ Given, When, Then }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the idea sheet of {string} from the Goal screen', opensIdeaOfGoal);
+    Then(
+      'How to spot it names the imperfect, the aorist and the form of {string} {string} as having the augment, and only in the indicative, and never says {string}',
+      (_, word: string, gloss: string, phrase: string) => {
+        const spot = within(ideaSheet()).getByTestId('idea-spot').textContent ?? '';
+        expect(spot).toMatch(/imperfect/);
+        expect(spot).toMatch(/aorist/);
+        expect(spot).toContain(word);
+        expect(spot).toContain(`“${gloss}”`);
+        expect(spot).toMatch(/only (?:in )?the indicative/i);
+        expect(spot).not.toContain(phrase);
+      },
+    );
+  });
+
   Scenario('Xi has no word in the goal verse, so its examples come from further out and say where', ({ Given, When, Then, And }) => {
     Given(GIVEN_GOAL, opensWithGoal);
     When('he opens the letter sheet of {string} from the alphabet sheet', openLetterSheet);

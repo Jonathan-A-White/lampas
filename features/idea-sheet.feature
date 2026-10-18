@@ -169,6 +169,12 @@ Feature: The idea sheet
     And How to spot it has a table of the case endings, with "-ος", "-ου" and "-ῳ" in its cells
     And the worked example takes "λόγου" of "1 John 1:1" apart in steps, with the respelling the pronunciation gives it
 
+  # mw-svw421.36: the augment's How to spot it says which past forms take the augment and that only the indicative has it, in words a total beginner can use.
+  Scenario: The augment sheet says which past forms have the augment and that only the indicative has it
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
+    When he opens the idea sheet of "augment" from the Goal screen
+    Then How to spot it names the imperfect, the aorist and the form of "ἐλελύκειν" "I had loosed" as having the augment, and only in the indicative, and never says "plain statement"
+
   Scenario: Xi has no word in the goal verse, so its examples come from further out and say where
     Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
     When he opens the letter sheet of "xi" from the alphabet sheet

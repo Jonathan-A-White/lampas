@@ -544,7 +544,7 @@ export const VERBS: Record<string, Teach> = {
   augment: {
     whatItIs: 'The augment is a small marker in front of a Greek verb that says the action is past, as English puts “-ed” at the end of “walked”. It is a short ἐ- before the stem.',
     howToSpot:
-      'Look at the start of the verb. A stem that begins with a consonant gets ἐ- in front: λύω gives ἔλυσα “I loosed”. A stem that begins with a vowel lengthens it: α becomes η (ἀγαπάω, ἠγάπησα), ε becomes η, ο becomes ω. The imperfect and the aorist have it, and only in the indicative: an aorist that is not a plain statement has none. A few other past forms have it too.',
+      'Look at the start of the verb. A stem that begins with a consonant gets ἐ- in front: λύω gives ἔλυσα “I loosed”. A stem that begins with a vowel lengthens it: α becomes η (ἀγαπάω, ἠγάπησα), ε becomes η, ο becomes ω. Three kinds of past verb have it: the imperfect (ἔλεγον “I was saying”), the aorist (ἔλυσα “I loosed”) and a rare form that says “I had” done it (ἐλελύκειν “I had loosed”). Only the indicative, the form that simply tells what happened, has it: a verb that gives a command or a wish, or is an aorist outside the indicative, has none.',
     worked: [
       {
         word: 'ἐθεασάμεθα',
