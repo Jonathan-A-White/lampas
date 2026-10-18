@@ -119,4 +119,15 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(section(name)).toBeNull());
     });
   });
+
+  Scenario("A choice's name finds its setting", ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Settings with nothing chosen', openNothing);
+    When('he types {string} in the Settings search', typed);
+    Then('Settings shows the group {string}', async (_, name: string) => {
+      expect(await screen.findByRole('group', { name })).toBeInTheDocument();
+    });
+    And('Settings has no section {string}', async (_, name: string) => {
+      await waitFor(() => expect(section(name)).toBeNull());
+    });
+  });
 });

@@ -37,3 +37,9 @@ Feature: Settings has a search field and one registry behind every row
     When he types "bible in logos" in the Settings search
     Then Settings shows the switch "Logos"
     And Settings has no section "Bible in Logos"
+
+  Scenario: A choice's name finds its setting
+    Given Lampas is opened on Settings with nothing chosen
+    When he types "Audible" in the Settings search
+    Then Settings shows the group "Audio Bible"
+    And Settings has no section "Appearance"

@@ -12,6 +12,6 @@ export const audioBibleSetting = defineSetting<string>({
   },
   section: 'resources',
   label: 'Audio Bible',
-  hint: 'Listen in an audio Bible you own: the Verse view links to it.',
+  hint: 'The Word of Promise in Audible: the Verse view links to it.',
   help: 'Off, or The Word of Promise (NKJV), which you own in Audible. On: the Verse view\'s Listen has a "Listen in Audible" link that opens the Audible app and plays from the start of the chapter you are in, and a line naming that chapter in the Audible list, such as Chapters > Luke 15. It needs the Audible app and the book in your Audible library. Only the chapter is timed, not the verse. Off by default.',
 });
