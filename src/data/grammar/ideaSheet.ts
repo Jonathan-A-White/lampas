@@ -90,7 +90,8 @@ export function exampleMeaning(chapter: Chapter, verse: number, word: GreekWord)
   const own = wordEnglish(chapter, verse, word);
   if (own) return own;
   const gloss = wordGloss(chapter, word);
-  return gloss ? `${word.l}: ${gloss}` : word.l;
+  // the one colon is the label's: a colon inside the gloss would read as a second label ('τηρέω: to keep: observe')
+  return gloss ? `${word.l}: ${gloss.replace(/\s*:\s*/g, ', ')}` : word.l;
 }
 
 /** True for an idea of the sentences tier (mw-br588b.2): it is a use of several words (uses.ts), shown as a verse with the use's words marked, never as one word. */
