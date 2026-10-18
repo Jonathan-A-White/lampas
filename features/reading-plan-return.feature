@@ -1,8 +1,10 @@
 Feature: Back from Audible, the return sheet asks where she got to
   She listens in Audible with a listening session open (the plan records when it began). When Lampas is in front again the return sheet opens once,
   asks "Where did you get to?" and proposes the chapter the time away most likely reached, walking forward from the chapter she began at by how long each
-  chapter plays. She answers in a tap or two: she finished the chapter she began, got further (the chapters around the estimate), picks the chapter herself,
-  or stopped partway. Each answer but the last marks the plan done through that chapter; every answer ends the session, so the sheet never reopens for it.
+  chapter plays. She answers in a tap or two: she finished the chapter she began, stopped in one of the chapters around the estimate, picks the chapter she
+  stopped in herself, or stopped partway (no chapter). A chapter she stopped in is not done: the plan is marked done through the chapter before it, so Next and
+  the send-off sheet name the chapter she stopped in and her next listen starts at its beginning. Finished marks the plan done through that chapter. Every answer
+  ends the session, so the sheet never reopens for it.
 
   Scenario: Back after two chapters of listening, the sheet proposes the chapter two on
     Given a plan started at "Leviticus 1" with the Reader open
@@ -10,8 +12,8 @@ Feature: Back from Audible, the return sheet asks where she got to
     When she is away for 2 chapters of listening and comes back to Lampas
     Then the sheet "Where did you get to?" is open
     And the sheet proposes "Leviticus 3"
-    And the sheet offers "Finished Leviticus 1", "Pick it myself" and "Stopped partway"
-    And the sheet offers "Got further" for the 5 chapters from "Leviticus 1" to "Leviticus 5"
+    And the sheet offers "Finished Leviticus 1", "Pick it myself" and "Stopped partway, the plan stays at Leviticus 1"
+    And the sheet offers "I stopped in" for the 5 chapters from "Leviticus 1" to "Leviticus 5"
 
   Scenario: Finished the chapter she began marks it done
     Given a plan started at "Leviticus 1" with the Reader open
@@ -22,30 +24,41 @@ Feature: Back from Audible, the return sheet asks where she got to
     And the next chapter is "Leviticus 2" with 91 of 1189 done
     And no listening session is open
 
-  Scenario: Got further marks the plan done through the chapter she taps
+  Scenario: Stopped in a chapter marks the plan done through the chapter before it
     Given a plan started at "Leviticus 1" with the Reader open
     And a listening session opened at "Leviticus 1"
     When she is away for 2 chapters of listening and comes back to Lampas
-    And she taps "Got further: Leviticus 3"
+    And she taps "Stopped in: Leviticus 3"
     Then the sheet is closed
-    And the next chapter is "Leviticus 4" with 93 of 1189 done
+    And the next chapter is "Leviticus 3" with 92 of 1189 done
     And no listening session is open
 
-  Scenario: Pick it myself opens the chapter picker and marks the chapter she chooses
+  Scenario: Stopped in the chapter she set off from keeps it next, and the send-off names it
+    Given a plan started at "Matthew 4" with the Reader open
+    And a listening session opened at "Matthew 4"
+    When she is away for 0 chapters of listening and comes back to Lampas
+    And she taps "Stopped in: Matthew 4"
+    Then the sheet is closed
+    And the next chapter is "Matthew 4" with 932 of 1189 done
+    And the Plan chip says "Next: Matthew 4"
+    When she taps the Plan chip
+    Then the sheet "Off to Audible: Matthew 4" is open
+
+  Scenario: Pick it myself opens the chapter picker, and the chapter she chooses is the one she stopped in
     Given a plan started at "Leviticus 1" with the Reader open
     And a listening session opened at "Leviticus 1"
     When she is away for 2 chapters of listening and comes back to Lampas
     And she taps "Pick it myself"
     And she chooses the book "Numbers" and the chapter 2 in the picker
     Then the sheet is closed
-    And the next chapter is "Numbers 3" with 119 of 1189 done
+    And the next chapter is "Numbers 2" with 118 of 1189 done
     And no listening session is open
 
-  Scenario: Stopped partway ends the session and marks nothing
+  Scenario: Stopped partway with no chapter ends the session and marks nothing
     Given a plan started at "Leviticus 1" with the Reader open
     And a listening session opened at "Leviticus 1"
     When she is away for 2 chapters of listening and comes back to Lampas
-    And she taps "Stopped partway"
+    And she taps "Stopped partway, the plan stays at Leviticus 1"
     Then the sheet is closed
     And the next chapter is "Leviticus 1" with 90 of 1189 done
     And no listening session is open
@@ -54,7 +67,7 @@ Feature: Back from Audible, the return sheet asks where she got to
     Given a plan started at "Leviticus 1" with the Reader open
     And a listening session opened at "Leviticus 1"
     When she is away for 2 chapters of listening and comes back to Lampas
-    And she taps "Stopped partway"
+    And she taps "Stopped partway, the plan stays at Leviticus 1"
     And she is away again for 3 chapters of listening and comes back to Lampas
     Then the sheet is closed
 
