@@ -2,68 +2,106 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
+// The settings search lives on Settings alone (mw-5r3p30.617): no header and not the Reader's chip row has a magnifier, and Settings keeps its field pinned at the top.
 test.use({ viewport: { width: 390, height: 844 } });
 
-/** One tap on the search entry, the words typed, and the first result tapped. */
-async function searchFor(page: Page, words: string, result: string | RegExp): Promise<void> {
-  await page.getByRole('button', { name: 'Find a setting' }).click();
-  const box = page.getByRole('dialog', { name: 'Find a setting' }).getByRole('searchbox', { name: 'Search settings' });
-  await expect(box).toBeFocused();
-  await box.fill(words);
-  await page.getByRole('dialog', { name: 'Find a setting' }).getByRole('button', { name: result }).first().click();
-}
-
-test('from the Reader one tap opens the settings search, and the result lands on Settings at the highlighted row', async ({ page }) => {
-  await openUnlocked(page);
-  await page.goto('/#/?b=rom&c=8');
-  await expect(page.getByRole('button', { name: 'Find a setting' })).toBeVisible();
-  const entry = await page.getByRole('button', { name: 'Find a setting' }).boundingBox();
-  expect(entry?.width).toBeGreaterThanOrEqual(44);
-  // as tall as the Due chip beside it (tests/e2e/review.spec.ts)
-  expect(entry?.height).toBeGreaterThanOrEqual(38);
-
-  await searchFor(page, 'text size', /^Text size/);
-  await expect(page).toHaveURL(/#\/settings\?setting=textSize$/);
-  const row = page.locator('[data-setting="textSize"]');
-  await expect(row).toHaveAttribute('data-highlighted', '');
-  await expect(row).toBeInViewport();
-  await expect(page.getByRole('dialog', { name: 'Find a setting' })).toHaveCount(0);
-  await shot(page, 'settings-search-from-reader');
-
-  // a tap anywhere clears the mark
-  await page.getByRole('heading', { name: 'Settings', level: 1 }).click();
-  await expect(row).not.toHaveAttribute('data-highlighted', '');
-
-  // Back is the Reader he started from
-  await page.goBack();
-  await expect(page).toHaveURL(/#\/\?b=rom&c=8/);
-  await expect(page.getByRole('button', { name: 'Find a setting' })).toBeVisible();
-});
+const finder = (page: Page) => page.getByRole('button', { name: 'Find a setting' });
 
 for (const [name, path] of [
-  ['Review', '/#/review'],
+  ['the Reader', '/#/?b=rom&c=8'],
+  ['Home', '/#/'],
   ['Words', '/#/words'],
+  ['Review', '/#/review'],
   ['Goal', '/#/goal'],
 ] as const) {
-  test(`from ${name} one tap opens the settings search, and Back from Settings returns to ${name}`, async ({ page }) => {
+  test(`${name} has no Find a setting control`, async ({ page }) => {
     await openUnlocked(page);
     await page.goto(path);
-    await searchFor(page, 'text size', /^Text size/);
-    await expect(page).toHaveURL(/#\/settings\?setting=textSize$/);
-    await expect(page.locator('[data-setting="textSize"]')).toHaveAttribute('data-highlighted', '');
-    await expect(page.locator('[data-setting="textSize"]')).toBeInViewport();
-    await page.goBack();
-    await expect(page).toHaveURL(new RegExp(`${path.slice(1).replace('/', '\\/')}$`));
-    await expect(page.getByRole('button', { name: 'Find a setting' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
+    await expect(finder(page)).toHaveCount(0);
+    await expect(page.locator('[data-settings-search]')).toHaveCount(0);
   });
 }
 
-test('a result whose setting is hidden by one that is off lands on Settings saying what to turn on first', async ({ page }) => {
+test('on Settings the search field stays in view at the last section, and typing a setting filters the rows', async ({ page }) => {
   await openUnlocked(page);
-  await page.goto('/#/words');
-  await searchFor(page, 'bible in logos', /^Bible in Logos/);
-  await expect(page).toHaveURL(/#\/settings\?setting=logosBible$/);
-  await expect(page.locator('[data-setting-needs]')).toContainText('Turn “Logos” on first');
-  await expect(page.locator('[data-setting="resource.logos"]')).toBeVisible();
-  await expect(page.locator('[data-setting="logosBible"]')).toHaveAttribute('data-highlighted', '');
+  await page.goto('/#/settings');
+  const search = page.getByRole('searchbox', { name: 'Search settings' });
+  await expect(search).toBeInViewport();
+  const main = page.locator('main.screen');
+  await main.evaluate((el) => el.scrollTo(0, el.scrollHeight));
+  await expect.poll(() => main.evaluate((el) => el.scrollTop)).toBeGreaterThan(500);
+  await expect(search).toBeInViewport();
+  // pinned just under the header
+  const header = await page.locator('header').first().boundingBox();
+  const box = await search.boundingBox();
+  expect(box && header && box.y >= header.y + header.height - 1 && box.y <= header.y + header.height + 24).toBe(true);
+  await shot(page, 'settings-search-pinned');
+
+  await search.fill('text size');
+  await expect(page.locator('[data-setting="textSize"]')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Greek pronunciation', level: 2 })).toHaveCount(0);
+  await expect(search).toBeInViewport();
 });
+
+for (const size of [
+  { width: 360, height: 780 },
+  { width: 390, height: 844 },
+]) {
+  test(`every chip in the Reader's row draws its whole label at ${size.width}x${size.height}`, async ({ page }) => {
+    await page.setViewportSize(size);
+    await openUnlocked(page);
+    await page.goto('/#/?b=rom&c=8');
+    await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve, reject) => {
+          const done = (): string[] => [
+            ...Array.from({ length: 50 }, (_, i) => `gen.${i + 1}`),
+            ...Array.from({ length: 40 }, (_, i) => `exo.${i + 1}`),
+            'lev.1',
+            'lev.2',
+            'lev.3',
+          ];
+          const open = indexedDB.open('lampas');
+          open.onerror = () => reject(open.error);
+          open.onsuccess = () => {
+            const tx = open.result.transaction('settings', 'readwrite');
+            const rows = [
+              { key: 'audioBible', value: 'word-of-promise' },
+              { key: 'readingPlan', value: 'on' },
+              { key: 'goal', value: '1 John 1:1' },
+              { key: 'weave', value: 'solid+learning' },
+              // a plan started at Leviticus 4, with Genesis to Leviticus 3 done: the Plan chip reads 'Next: Leviticus 4' and the count
+              { key: 'readingPlanState', value: JSON.stringify({ planId: 'whole-bible', start: { code: 'lev', chapter: 4 }, done: done() }) },
+            ];
+            for (const row of rows) tx.objectStore('settings').put(row);
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+          };
+        }),
+    );
+    await page.reload();
+    const row = page.getByTestId('reader-chips');
+    await expect(row).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Due: \d+$/ })).toBeVisible();
+    await expect(page.getByTestId('goal-strip')).toBeVisible();
+    await expect(page.getByTestId('weave-count')).toBeVisible();
+    await expect(page.getByTestId('plan-chip')).toContainText('Next: Leviticus 4');
+    const measured = await row.locator('button, [data-testid="weave-count"]').evaluateAll((els) =>
+      els.map((el) => {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const style = getComputedStyle(el);
+        const inner = (el as HTMLElement).clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+        return { name: el.getAttribute('aria-label') ?? el.textContent, scrollWidth: el.scrollWidth, clientWidth: el.clientWidth, text: range.getBoundingClientRect().width, inner };
+      }),
+    );
+    expect(measured.length).toBeGreaterThanOrEqual(3);
+    for (const chip of measured) {
+      expect(chip.scrollWidth, `${chip.name} is clipped`).toBeLessThanOrEqual(chip.clientWidth);
+      expect(chip.clientWidth, `${chip.name} is narrower than its text`).toBeGreaterThanOrEqual(chip.text - 0.5);
+    }
+    await shot(page, `reader-chips-whole-${size.width}x${size.height}`);
+  });
+}

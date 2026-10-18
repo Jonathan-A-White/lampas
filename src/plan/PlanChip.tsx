@@ -2,10 +2,10 @@
 // 'Next: Leviticus 4' and 'N of 1,189' with a thin bar of how far she is; a tap is Continue and opens the send-off sheet for that chapter (src/plan/SendOff.tsx), which records the
 // start before Audible opens. With the plan Off, or On but not started, it reads 'Listen through the Bible' and opens Start a listening plan (StartPlan.tsx). With every chapter done it
 // says so and a tap starts a plan again. With no audio Bible chosen (switched Off since) the tap opens Settings, where it is chosen. Not drawn until the plan has been read.
-// When the row is tight the count gives way first (it wraps out of sight; then the name gets an ellipsis, the bar and the aria-label stay): the row fits at 360 px beside Due, Goal and New words.
+// The chip never shrinks below its text (mw-5r3p30.617): name and count are drawn whole and the row scrolls sideways when the chips outgrow the phone.
 import { useState, type ReactNode } from 'react';
 import { navigate } from '../nav/route';
-import { CHIP, CHIP_ACCENT, CHIP_PLAIN, CHIP_SHRINKS } from '../chipStyle';
+import { CHIP, CHIP_ACCENT, CHIP_PLAIN } from '../chipStyle';
 import { audioBibleOf } from '../resources/audioBible';
 import { audioBibleSetting } from '../settings/definitions';
 import { useSetting } from '../settings/store';
@@ -66,11 +66,10 @@ export function PlanChip() {
         data-testid="plan-chip"
         aria-label={`Next: ${name}, ${n(count)} of ${n(total)} chapters done`}
         onClick={onTap}
-        className={`${CHIP_SHRINKS} ${CHIP_ACCENT} relative overflow-hidden`}
+        className={`${CHIP} ${CHIP_ACCENT} relative overflow-hidden`}
       >
-        {/* a line that wraps and clips: the name has the room first (an ellipsis when even it does not fit), the count is there when there is room for it too */}
-        <span className="flex h-5 min-w-0 flex-wrap gap-x-1.5 overflow-hidden">
-          <span className="max-w-full truncate">{`Next: ${name}`}</span>
+        <span className="flex h-5 gap-x-1.5">
+          <span>{`Next: ${name}`}</span>
           <span className="font-normal text-muted">{`${n(count)} of ${n(total)}`}</span>
         </span>
         <span aria-hidden="true" className="absolute inset-x-3 bottom-1 h-0.5 rounded-full bg-accent/20">

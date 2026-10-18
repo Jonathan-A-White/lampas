@@ -52,7 +52,7 @@ with a notice, as a reference does.
 
 `https://lampas.allmymind.org/#/settings?setting=<key>` opens Settings at one setting (mw-5r3p30.502). The key is a setting of the registry (`src/settings/registry.ts` SETTINGS: `textSize`, `theme`, `greekRate`, `resource.logos` …); `src/settings/link.ts` `settingLink(key)` writes the address and gives nothing for a key that is not one (so a mistyped or invented key opens plain Settings, nothing marked). Settings scrolls to that row and marks it (`data-highlighted`, an outline and a tint) until his next tap; the row is drawn though the search box would hide it, and when it is a detail of a setting that is off (Bible in Logos while Logos is Off) a line says `“Bible in Logos” is shown once “Logos” is on. Turn “Logos” on first.` and the setting it needs is drawn beside it. Nothing is changed by opening it. `#/settings?section=resources` (a whole section, not marked) works as before.
 
-Where Lampas makes one: the magnifier named `Find a setting` (in the header of each screen with a `ScreenHeader`, and at the right end of the Reader's chips row, beside the gear while a reading hides the chips) opens the settings search (`src/settings/SettingsSearch.tsx`), whose results are these links, so Back from Settings is the screen he searched from; and a `{kind: 'setting', key}` link in a tutor answer (docs/ask-tutor.md) is a chip, `Open Text size in Settings`.
+Where Lampas makes one: a `{kind: 'setting', key}` link in a tutor answer (docs/ask-tutor.md) is a chip, `Open Text size in Settings`. The settings-search sheet that once made these (a magnifier in each header, mw-5r3p30.502) is gone (mw-5r3p30.617): Settings keeps its own search field, pinned at the top.
 
 ## web+lampas:
 

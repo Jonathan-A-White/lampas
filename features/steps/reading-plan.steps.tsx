@@ -62,7 +62,7 @@ async function openWith({ start, off, due }: { start?: Start; off?: boolean; due
 
 const row = () => screen.getByTestId('reader-chips');
 const planChip = (): Promise<HTMLElement> => screen.findByTestId('plan-chip');
-const chipButtons = (): HTMLElement[] => [...row().querySelectorAll<HTMLElement>('button:not([data-settings-search])')];
+const chipButtons = (): HTMLElement[] => [...row().querySelectorAll<HTMLElement>('button')];
 
 async function openPicker(): Promise<HTMLElement> {
   await user.click(screen.getByRole('heading', { name: 'Romans 8', level: 1 }).querySelector('button') as HTMLElement);

@@ -2,7 +2,7 @@
 // English and Greek aloud, how fast each is read, and how Greek is pronounced. Each choice is saved in the settings store (src/data/repositories)
 // and told to the bus (src/events/bus.ts); the Study resources (src/resources/) are switched on here; Words and About open from here too.
 // The rows are not written here: src/settings/rows.ts lists every row (name, hint, help, section, what it depends on) and this file draws
-// them, section by section, each with the control CONTROLS (src/settings/controls/, one file per section) names for its key. The search field at the top filters that list (visibleRows),
+// them, section by section, each with the control CONTROLS (src/settings/controls/, one file per section) names for its key. The search field at the top, pinned there while he scrolls (it is the only settings search: no header has a magnifier, mw-5r3p30.617), filters that list (visibleRows),
 // and a row that depends on a setting that is off is not drawn. An address '#/settings?section=resources' opens Settings scrolled to that section (a link from elsewhere, such as
 // the reference card's 'Link Logos in Settings'). An address '#/settings?setting=textSize' (src/settings/link.ts, docs/links.md) opens it at one row: the row is drawn whatever the search or its
 // dependency would hide (rowsAt), scrolled to and marked until his next tap, and a row that depends on a setting that is off says to turn that on first.
@@ -21,10 +21,10 @@ import { settingsForTutor } from './settings/tutorSettings';
 import { useReportScreen } from './tutor/screenContext';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 
-/** The search field at the top: it filters the rows by name and hint as he types. */
+/** The search field at the top: it filters the rows by name and hint as he types. It is pinned under the header (sticky), so it is in view however far he scrolls (mw-5r3p30.617). */
 function SettingsSearch({ query, onChange }: { query: string; onChange: (query: string) => void }) {
   return (
-    <div className="pt-3">
+    <div className="sticky top-0 z-10 -mx-4 bg-canvas px-4 pb-2 pt-3">
       <input
         type="search"
         value={query}
@@ -95,7 +95,7 @@ export function SettingsScreen() {
   }, [wanted, drawn]);
   return (
     <>
-      <ScreenHeader title="Settings" search={false} back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />
+      <ScreenHeader title="Settings" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />
       <main ref={scrollRef} className="screen min-h-0 flex-1 px-4">
         <div ref={contentRef}>
           <SettingsSearch query={query} onChange={setQuery} />

@@ -77,10 +77,10 @@ async function openSeeded(prepare: () => Promise<void>): Promise<void> {
 const row = () => screen.queryByTestId('reader-chips');
 const planChip = () => row()?.querySelector('[data-testid="plan-chip"]');
 /** The Greek chips: the Plan chip (features/reading-plan.feature) is always in the row and is left out. */
-const chipNames = (): string[] => (row() ? [...row()!.querySelectorAll('button:not([data-testid="plan-chip"]):not([data-settings-search])')].map((b) => (b.textContent ?? '').trim()) : []);
+const chipNames = (): string[] => (row() ? [...row()!.querySelectorAll('button:not([data-testid="plan-chip"])')].map((b) => (b.textContent ?? '').trim()) : []);
 const chip = async (text: string): Promise<HTMLElement> => {
   const found = await waitFor(() => {
-    const button = [...(row()?.querySelectorAll('button:not([data-testid="plan-chip"]):not([data-settings-search])') ?? [])].find((b) => (b.textContent ?? '').trim() === text);
+    const button = [...(row()?.querySelectorAll('button:not([data-testid="plan-chip"])') ?? [])].find((b) => (b.textContent ?? '').trim() === text);
     if (!button) throw new Error(`no chip ${text}; the row has ${chipNames().join(', ')}`);
     return button;
   });
@@ -159,7 +159,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the row holds only the Plan chip, {string}', async (_, text: string) => {
       await waitFor(() => expect(planChip()).not.toBeNull());
-      expect([...row()!.querySelectorAll('button:not([data-settings-search])')].map((b) => (b.textContent ?? '').trim())).toEqual([text]);
+      expect([...row()!.querySelectorAll('button')].map((b) => (b.textContent ?? '').trim())).toEqual([text]);
     });
   });
 

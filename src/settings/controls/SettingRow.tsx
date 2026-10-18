@@ -7,7 +7,7 @@ import type { SettingsRow } from '../rows';
 
 export function Section({ id, title, hint, labelled, children }: { id?: string; title: string; hint?: string; labelled?: boolean; children: ReactNode }) {
   return (
-    <section data-section={id} aria-label={labelled ? title : undefined} className="border-b border-line py-4">
+    <section data-section={id} aria-label={labelled ? title : undefined} className="scroll-mt-20 border-b border-line py-4">
       <h2 className="text-lg font-semibold">{title}</h2>
       {hint ? <p className="pb-2 text-base text-muted">{hint}</p> : null}
       {children}

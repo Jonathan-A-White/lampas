@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { SettingsSearchButton } from './settings/SettingsSearch';
 
 interface Props {
   title: string;
@@ -9,12 +8,10 @@ interface Props {
   back: ReactNode;
   /** An action on the right. */
   action?: ReactNode;
-  /** The settings search (src/settings/SettingsSearch.tsx), a magnifier at the right of every screen's header; false on Settings, which has its own field. */
-  search?: boolean;
 }
 
-/** The bar at the top of a screen: back on the left, the title, an action on the right, then the settings search. */
-export function ScreenHeader({ title, subtitle, back, action, search = true }: Props) {
+/** The bar at the top of a screen: back on the left, the title, an action on the right. */
+export function ScreenHeader({ title, subtitle, back, action }: Props) {
   return (
     <header className="flex shrink-0 items-center gap-2 border-b border-line px-2 py-2">
       <div className="shrink-0">{back}</div>
@@ -24,7 +21,6 @@ export function ScreenHeader({ title, subtitle, back, action, search = true }: P
       </div>
       <div className="flex min-w-20 shrink-0 justify-end">
         {action}
-        {search ? <SettingsSearchButton /> : null}
       </div>
     </header>
   );

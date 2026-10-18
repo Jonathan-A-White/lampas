@@ -201,7 +201,7 @@ for (const size of [
   { width: 360, height: 780 },
   { width: 390, height: 844 },
 ]) {
-  test(`every chip has an accessible name and the row fits at ${size.width}x${size.height}`, async ({ page }) => {
+  test(`every chip has an accessible name and none is cut off at ${size.width}x${size.height}`, async ({ page }) => {
     await page.setViewportSize(size);
     await openWith(page, [...START_LEV_4, { key: 'goal', value: '1 John 1:1' }]);
     await expect(page.getByRole('button', { name: /^Due: \d+$/ })).toBeVisible();
@@ -210,11 +210,8 @@ for (const size of [
     const chips = row.getByRole('button');
     expect(await chips.count()).toBeGreaterThanOrEqual(3);
     for (const handle of await chips.elementHandles()) expect(((await handle.getAttribute('aria-label')) ?? '').length).toBeGreaterThan(0);
-    // the chips fit the row at this width: nothing to scroll to, nothing cut off at the right
-    const { scrollWidth, clientWidth } = await row.evaluate((el) => ({ scrollWidth: el.scrollWidth, clientWidth: el.clientWidth }));
-    expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 1);
-    const rowBox = await row.boundingBox();
-    for (const box of await chips.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().right))) expect(box).toBeLessThanOrEqual((rowBox?.x ?? 0) + (rowBox?.width ?? 0) + 0.5);
+    // no chip is cut: the row scrolls sideways when the chips outgrow the phone (mw-5r3p30.617), and the page never does
+    for (const clipped of await chips.evaluateAll((els) => els.filter((el) => el.scrollWidth > el.clientWidth).map((el) => el.getAttribute('aria-label')))) expect(clipped).toBeNull();
     const page_ = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth }));
     expect(page_.scrollWidth).toBeLessThanOrEqual(page_.clientWidth);
     await shot(page, `reading-plan-chips-${size.width}x${size.height}`);
