@@ -1,9 +1,8 @@
 // features/steps/sound-alike-miss.steps.tsx — runs features/sound-alike-miss.feature: the card of a 'Words that sound alike' question (src/GrammarCard.tsx)
 // says, after a miss, that the two words sound alike and the spelling tells them apart (mw-86e9r1.44).
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, type RenderResult } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useState } from 'react';
 import { afterAll, expect } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { GrammarCard } from '../../src/GrammarCard';
@@ -18,10 +17,8 @@ afterAll(() => cleanup());
 const user = userEvent.setup();
 let question: GrammarQuestion;
 
-function Card({ q }: { q: GrammarQuestion }) {
-  const [picked, setPicked] = useState<string | null>(null);
-  return <GrammarCard question={q} mode="choice" picked={picked} onPick={setPicked} />;
-}
+let view: RenderResult;
+const show = (picked: string | null) => <GrammarCard question={question} mode="choice" picked={picked} onPick={(o) => view.rerender(show(o))} />;
 
 const feature = await loadFeature('features/sound-alike-miss.feature');
 
@@ -29,7 +26,7 @@ describeFeature(feature, ({ Scenario }) => {
   const opens = () => {
     cleanup();
     question = buildSoundAlike(ideaOf('words-sound-alike'), mulberry32(1), pronunciationOf('modern'));
-    render(<Card q={question} />);
+    view = render(show(null));
     expect(screen.getByTestId('grammar-prompt').textContent).toMatch(/^This word sounds just like another\./);
   };
   const tap = (text: string) => user.click(screen.getAllByRole('button').find((b) => b.textContent === text)!);
