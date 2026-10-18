@@ -82,8 +82,9 @@ export function SettingsSearchSheet({ onClose }: { onClose: () => void }) {
   );
 }
 
-/** The magnifier that opens the search, 48 px square; it is drawn in a header and keeps its own sheet. */
-export function SettingsSearchButton() {
+/** The magnifier that opens the search, 48 px square in a header; it keeps its own sheet. `inRow` is the Reader's chips row (src/ReaderChips.tsx), whose chips are 40 px: the
+ * magnifier is 44 wide and 40 tall there and stays at the row's right end (sticky) while the chips scroll under it. */
+export function SettingsSearchButton({ inRow = false }: { inRow?: boolean }) {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -92,7 +93,7 @@ export function SettingsSearchButton() {
         aria-label="Find a setting"
         aria-haspopup="dialog"
         onClick={() => setOpen(true)}
-        className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-lg text-accent active:bg-line"
+        className={`flex shrink-0 items-center justify-center rounded-lg text-accent active:bg-line ${inRow ? 'sticky right-0 min-w-11 bg-canvas' : 'min-h-12 min-w-12'}`}
       >
         <SearchIcon />
       </button>

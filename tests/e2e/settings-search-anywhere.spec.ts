@@ -19,7 +19,8 @@ test('from the Reader one tap opens the settings search, and the result lands on
   await expect(page.getByRole('button', { name: 'Find a setting' })).toBeVisible();
   const entry = await page.getByRole('button', { name: 'Find a setting' }).boundingBox();
   expect(entry?.width).toBeGreaterThanOrEqual(44);
-  expect(entry?.height).toBeGreaterThanOrEqual(44);
+  // as tall as the Due chip beside it (tests/e2e/review.spec.ts)
+  expect(entry?.height).toBeGreaterThanOrEqual(38);
 
   await searchFor(page, 'text size', /^Text size/);
   await expect(page).toHaveURL(/#\/settings\?setting=textSize$/);

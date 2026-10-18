@@ -3,6 +3,7 @@
 // The Plan chip (src/plan/PlanChip.tsx, mw-umv8sp.5) is always there while the chips are shown: 'Next: Leviticus 4' with the plan on, 'Listen through the Bible' to start one
 // otherwise; it sits after the others, so the row is there whenever the chips are shown, and a reader with no Greek activity has no Due, Goal or Tip chip beside it (the
 // 'New' words chip is the chapter's own and was always drawn).
+// The settings search is a magnifier at the row's right end, which stays there while the chips scroll under it (the header has no room for it beside the title, mw-5r3p30.502).
 // The count of words woven into Greek ('<n> words in Greek', a status, not a control) sits at the row's right end. A chapter being read aloud
 // hides the chips, as it hid the strips; the count stays.
 import { countDue } from './data/repositories';
@@ -11,6 +12,7 @@ import { DueChip } from './DueBadge';
 import { GoalChip } from './GoalStrip';
 import { NewWordsChip } from './NewWordsStrip';
 import { PlanChip } from './plan/PlanChip';
+import { SettingsSearchButton } from './settings/SettingsSearch';
 import { TipChip } from './tips/TipCard';
 import { useOpenTip } from './tips/useOpenTip';
 import { useGoalProgress } from './useGoalProgress';
@@ -55,6 +57,8 @@ export function ReaderChips({
           {wovenCount} {wovenCount === 1 ? 'word' : 'words'} in Greek
         </p>
       )}
+      {/* the settings search (src/settings/SettingsSearch.tsx): at the row's right end whatever scrolls; while a reading hides the chips it is in the header */}
+      {hidden ? null : <SettingsSearchButton inRow />}
     </div>
   );
 }
