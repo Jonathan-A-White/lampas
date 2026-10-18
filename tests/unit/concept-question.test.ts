@@ -2,7 +2,7 @@
 // answer is not in the prompt; a reader who has never met the idea cannot read it off.
 import { describe, expect, it } from 'vitest';
 import { LADDER } from '../../src/data/grammar/ladder';
-import { blankedText, buildConcept, buildIdeaQuestion } from '../../src/data/grammar/questions';
+import { blankedText, buildConcept, buildIdeaQuestion, conceptText, PLAIN_NAME_WORDS } from '../../src/data/grammar/questions';
 import { mulberry32 } from '../../src/data/quiz';
 
 /** The pronunciation hints an idea's text carries: '(say AIR-ist)' gives '(say AIR-ist)' and 'AIR-ist'. */
@@ -45,6 +45,20 @@ describe('the concept question', () => {
     }
     expect(blankedText(LADDER.find((i) => i.id === 'hebrew')!)).toContain('took straight from ___');
     expect(blankedText(LADDER.find((i) => i.id === 'voice-middle-or-passive')!)).toMatch(/look the same for the ___ and the ___,/);
+  });
+
+  // mw-86e9r1.52: the joining 'or' of a name ('middle or passive') is under four letters, so it stayed in the text, and the right option was then the
+  // only one with an 'or' in it. The articles and the plain words may stay; a joining word of the name may not. ('and' is left out: four names that
+  // carry it (accents, punctuation, stem-and-ending, second tenses) still say 'and' in the plain run of their text, which needs those cards reworded: filed apart.)
+  const ARTICLES = new Set(['the', 'a', 'an']);
+  const JOINING = new Set(['or']);
+  it.each(LADDER.map((i) => [i.id, i] as const))('keeps no joining word of the name in the text of %s', (_id, idea) => {
+    const names = [...new Set([idea.title, ...idea.terms].flatMap((t) => t.toLowerCase().match(/\p{L}+/gu) ?? []))];
+    const joining = names.filter((w) => JOINING.has(w) && !ARTICLES.has(w) && !PLAIN_NAME_WORDS.has(w));
+    for (const text of [blankedText(idea), conceptText(idea), buildConcept(idea, mulberry32(2)).prompt]) {
+      const kept = new Set(text.toLowerCase().match(/\p{L}+/gu) ?? []);
+      for (const word of joining) expect(kept.has(word), `"${word}" in: ${text}`).toBe(false);
+    }
   });
 
   // mw-86e9r1.26: 'A verb with no voice' read 'A few ___ forms have ___ at all' once blanked, and its second line still said 'does not name a voice':

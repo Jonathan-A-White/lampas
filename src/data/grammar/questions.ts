@@ -981,7 +981,7 @@ export function buildBreathing(idea: GrammarIdea, passage: readonly Chapter[], r
 
 const BLANK = '___';
 /** Words of a title or term that say nothing of the idea, so they stay in the text. */
-const PLAIN_NAME_WORDS = new Set(['greek', 'word', 'words', 'form', 'forms', 'letter', 'letters', 'under', 'never', 'change', 'small', 'with', 'from', 'that']);
+export const PLAIN_NAME_WORDS = new Set(['greek', 'word', 'words', 'form', 'forms', 'letter', 'letters', 'under', 'never', 'change', 'small', 'with', 'from', 'that']);
 const escapeRegExp = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** The stem of a content word of an idea's name: 'participles' and 'spellings' give 'participle' and 'spell', so every wording of the word is found. */
