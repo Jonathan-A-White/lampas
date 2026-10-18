@@ -356,6 +356,26 @@ textarea,
   opacity: 0.7;
   user-select: none;
 }
+/* Turn pages (Settings > Reading, src/reader/usePages.ts, mw-5r3p30.299): the Reader's text is set in columns one reading box wide and one box high, so
+ * the browser breaks it between lines into pages; the box clips them and shows one at a time (its scrollLeft, set by the hook). Nothing scrolls down,
+ * and the box keeps only a little room at its foot: the place line under it says the page. The type is untouched. */
+[data-reader][data-paging='pages'] {
+  overflow: hidden;
+  padding-bottom: 0.5rem;
+}
+[data-reader][data-paging='pages'] > [data-pages] {
+  height: 100%;
+  column-count: 1;
+  column-gap: 2rem;
+  column-fill: auto;
+}
+/* The box can scroll only as far as the last page's text reaches, which stops short of a whole page by the box's right padding: this empty line,
+ * a little wider than a page, reaches past it, so the last page sits where every other page does. */
+[data-reader][data-paging='pages'] > [data-pages]::after {
+  content: '';
+  display: block;
+  width: calc(100% + 1rem);
+}
 [data-ask-tutor][data-slides] {
   transition: transform 200ms ease, visibility 0s;
 }

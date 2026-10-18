@@ -1,4 +1,4 @@
-// src/SettingsScreen.tsx — what he can set, so the reader's front screen stays clear: the Theme and Text size, the layout (verse by verse | paragraph), the section headings, the weave, the voices that read
+// src/SettingsScreen.tsx — what he can set, so the reader's front screen stays clear: the Theme and Text size, the layout (verse by verse | paragraph), Reading (Scroll | Turn pages, src/reader/usePages.ts), the section headings, the weave, the voices that read
 // English and Greek aloud, how fast each is read, and how Greek is pronounced. Each choice is saved in the settings store (src/data/repositories)
 // and told to the bus (src/events/bus.ts); the Study resources (src/resources/) are switched on here; Words and About open from here too.
 // The rows are not written here: src/settings/rows.ts lists every row (name, hint, help, section, what it depends on) and this file draws

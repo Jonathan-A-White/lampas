@@ -20,6 +20,7 @@ export interface SettingsSection {
 export const SECTIONS: readonly SettingsSection[] = [
   { id: 'appearance', title: 'Appearance' },
   { id: 'layout', title: 'Layout' },
+  { id: 'reading', title: 'Reading' },
   { id: 'headings', title: 'Section headings' },
   { id: 'immersive', title: 'Immersive reader' },
   { id: 'weave', title: 'Weave' },
