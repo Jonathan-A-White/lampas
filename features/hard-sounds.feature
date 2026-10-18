@@ -22,8 +22,8 @@ Feature: Hard sounds, optional lessons on the sounds his English makes hard
     And the lesson says why in American words
     And the lesson shows no IPA
     When he taps "Next" until the last step
-    Then each step showed its heading in turn: "Start from a sound you know", "Hear it", "Tell them apart", "Try it", "Read a verse"
-    When he goes back to "Tell them apart" and taps "Hear μέρος"
+    Then each step showed its heading in turn: "Start from a sound you know", "Hear it", "Which did you hear?", "Try it", "Read a verse"
+    When he goes back to "Which did you hear?" and taps "Hear μέρος"
     Then the Greek voice is handed "μέρος"
     When he goes on to the end and taps "Done"
     Then the Goal screen shows again

@@ -125,7 +125,7 @@ describe('the lessons for his accent', () => {
 
 describe('the screen draws any lesson', () => {
   const lesson: HardSoundLesson = parseLesson(MADE_UP);
-  const HEADINGS = ['Why it is hard for you', 'Start from a sound you know', 'Hear it', 'Tell them apart', 'Try it', 'Read a verse'];
+  const HEADINGS = ['Why it is hard for you', 'Start from a sound you know', 'Hear it', 'Which did you hear?', 'Try it', 'Read a verse'];
 
   /** Draws the lesson in `accent` and walks it to the end with Next, returning what each step showed. */
   function walk(accent: string): string[] {
