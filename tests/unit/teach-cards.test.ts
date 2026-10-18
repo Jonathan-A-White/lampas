@@ -124,6 +124,36 @@ describe('a worked example that names its verse', () => {
   });
 });
 
+describe('the augment card, whose worked example quotes a sentence', () => {
+  // mw-svw421.35: it gave ἐθεασάμεθα τὴν δόξαν αὐτοῦ under 1 John 1:1, but that phrase is John 1:14. Other cards quote past their verse too; they are not this story.
+  it('quotes it from the verse it names, or names the verse it is from', async () => {
+    stubChapterFetch();
+    const index = await loadIndex();
+    const strip = (w: string) => w.normalize('NFC').toLowerCase().replace(/[^\p{L}]/gu, '');
+    const wrong: string[] = [];
+    for (const idea of LADDER.filter((i) => i.id === 'augment')) {
+      for (const worked of teachOf(idea.id).worked) {
+        if (!worked.ref) continue;
+        const [, name, chapter, verse] = /^(.+) (\d+):(\d+)$/.exec(worked.ref) ?? [];
+        const book = index.books.find((b) => b.name === name);
+        expect(book, worked.ref).toBeDefined();
+        if (!book) continue;
+        const words = ((await loadChapter(book.code, Number(chapter))).verses.find((v) => v.n === Number(verse))?.g ?? []).map((w) => strip(w.t));
+        for (const step of worked.steps) {
+          // a run of two or more Greek words in a row is a quoted sentence; a step that names another verse (“John 1:14”) is quoting that one
+          if (/\b[1-3]? ?[A-Z][a-z]+ \d+:\d+/.test(step)) continue;
+          for (const run of step.match(/(?:[\p{Script=Greek}'’]+[,.·;]?\s+)+[\p{Script=Greek}'’]+/gu) ?? []) {
+            const quoted = run.split(/\s+/).map(strip);
+            const at = words.findIndex((_, i) => quoted.every((q, j) => words[i + j] === q));
+            if (at < 0) wrong.push(`${idea.id}: “${run}” is not in ${worked.ref}`);
+          }
+        }
+      }
+    }
+    expect(wrong).toEqual([]);
+  });
+});
+
 describe('no term before it is taught', () => {
   it('maps every term to the idea that teaches it', () => {
     for (const [term, , teachers] of TERMS) {

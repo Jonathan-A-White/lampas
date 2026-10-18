@@ -550,7 +550,7 @@ export const VERBS: Record<string, Teach> = {
         word: 'ἐθεασάμεθα',
         ref: '1 John 1:1',
         gloss: 'we beheld',
-        steps: ['ἐ- in front of the stem θεα-: the augment, so the action is past.', 'θεα- is the stem of θεάομαι, “look at”; then σα, then -μεθα, which means “we”.', 'So “we beheld”: ἐθεασάμεθα τὴν δόξαν αὐτοῦ.'],
+        steps: ['ἐ- in front of the stem θεα-: the augment, so the action is past.', 'θεα- is the stem of θεάομαι, “look at”; then σα, then -μεθα, which means “we”.', 'So “we beheld”: ὃ ἐθεασάμεθα, “what we beheld”.'],
       },
       {
         word: 'ἠγάπησεν',
