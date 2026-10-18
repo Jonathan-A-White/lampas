@@ -55,6 +55,51 @@
   src: url("./fonts/noto-serif-hebrew-hebrew-700-normal.woff2") format("woff2");
 }
 
+/* The English font choices (Settings > Appearance > Font, src/appearance/fonts.ts), all SIL Open Font License, each licence beside its files in src/fonts:
+ * Literata, Atkinson Hyperlegible and Lexend, the Latin subset at 400 and 700. They face the English text only; --lp-font-english on <html> names the one chosen. */
+@font-face {
+  font-family: "Literata";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/literata-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Literata";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./fonts/literata-latin-700-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/atkinson-hyperlegible-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./fonts/atkinson-hyperlegible-latin-700-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Lexend";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/lexend-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Lexend";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./fonts/lexend-latin-700-normal.woff2") format("woff2");
+}
+
 /* Design tokens: every colour the app uses is one of these (dark by default). Three palettes, picked by html[data-theme]
  * (src/appearance/appearanceSync.ts): 'dark', 'light' and 'sepia' are chosen; 'phone' (and no attribute yet) follows the phone's
  * own scheme, live. The light palette is written twice, once for each way into it: tests/unit/themes.test.ts holds
@@ -70,9 +115,11 @@
   --color-good: var(--lp-good);
   --color-bad: var(--lp-bad);
 
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* The English faces follow the Font setting (--lp-font-english on <html>, set by src/appearance/appearanceSync.ts); unset, they are the phone's own
+   * sans and the book serif. The Greek and the Hebrew below never read it. */
+  --font-sans: var(--lp-font-english, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
   --font-greek: "Gentium Plus", "Noto Serif", "Cardo", "Times New Roman", serif;
-  --font-book: Georgia, "Noto Serif", "Times New Roman", serif;
+  --font-book: var(--lp-font-english, Georgia, "Noto Serif", "Times New Roman", serif);
   --font-hebrew: "Noto Serif Hebrew", "SBL Hebrew", "Ezra SIL", "Times New Roman", serif;
 }
 

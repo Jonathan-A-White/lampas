@@ -15,6 +15,7 @@ export type Bearing = 'speech' | 'language' | 'level' | 'quizGoal' | 'studyWay' 
 /** Every setting of the registry by key, and what it bears on. */
 export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   theme: 'screen',
+  font: 'screen',
   textSize: 'screen',
   layout: 'screen',
   readingMode: 'screen',

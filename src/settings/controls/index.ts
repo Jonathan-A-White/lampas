@@ -1,6 +1,6 @@
 import { SCRIPTS } from '../../script/scripts';
 import { ROWS } from '../rows';
-import { AppearanceControl, HeadingsControl, ImmersiveControl, ImmersiveHintControl, LayoutControl, ReadingModeControl } from './appearance';
+import { AppearanceControl, FontControl, HeadingsControl, ImmersiveControl, ImmersiveHintControl, LayoutControl, ReadingModeControl } from './appearance';
 import { ApproachControl } from './approach';
 import { DeveloperControl } from './developer';
 import { GoalControl } from './goal';
@@ -17,6 +17,7 @@ import { WeaveControl } from './weave';
 /** The control of each row, by the row's key (src/settings/rows.ts): a row with no control here is a test failure. */
 export const CONTROLS: Readonly<Record<string, Control>> = {
   theme: AppearanceControl,
+  font: FontControl,
   textSize: AppearanceControl,
   layout: LayoutControl,
   readingMode: ReadingModeControl,

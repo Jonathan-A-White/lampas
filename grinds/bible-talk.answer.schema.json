@@ -688,6 +688,12 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
+            "properties": { "key": { "const": "font" }, "value": { "type": "string", "enum": ["phone", "literata", "atkinson", "lexend"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
             "properties": { "key": { "const": "textSize" }, "value": { "type": "string", "enum": ["small", "normal", "large", "largest"] } }
           },
           {

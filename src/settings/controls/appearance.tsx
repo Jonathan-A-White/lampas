@@ -1,8 +1,9 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { TEXT_SIZES } from '../../appearance/textSizes';
+import { FONTS, type FontId } from '../../appearance/fonts';
 import { THEMES, type Theme } from '../../appearance/themes';
 import { getLayout, getSectionHeadings, getTextSize, type ReadingLayout } from '../../data/repositories';
-import { immersiveHintSetting, immersiveSetting, readingModeSetting, themeSetting } from '../definitions';
+import { fontSetting, immersiveHintSetting, immersiveSetting, readingModeSetting, themeSetting } from '../definitions';
 import { useSetting } from '../store';
 import { LAYOUTS } from '../../layout/layouts';
 import { writeSetting } from '../registry';
@@ -45,6 +46,26 @@ function TextSizeChoice({ percent }: { percent: number }) {
   );
 }
 
+/** The fonts, one per line: its name drawn in its own face, then the plain line of who it suits. */
+function FontChoice({ font }: { font: FontId }) {
+  return (
+    <div role="group" aria-label="Font" className="flex flex-col gap-1 rounded-xl border border-line p-0.5">
+      {FONTS.map((f) => (
+        <button
+          key={f.id}
+          type="button"
+          aria-pressed={font === f.id}
+          onClick={() => void writeSetting('font', f.id)}
+          className={`min-h-12 rounded-lg px-4 py-2 text-left ${font === f.id ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+        >
+          <span className="block text-base font-medium" style={f.stack ? { fontFamily: f.stack } : undefined}>{f.label}</span>
+          <span className="block text-base">{f.line}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function LayoutChoice({ layout }: { layout: ReadingLayout }) {
   return (
     <div role="group" aria-label="Layout" className="inline-flex flex-wrap rounded-xl border border-line p-0.5">
@@ -71,6 +92,16 @@ export const AppearanceControl: Control = ({ row }) => {
     <SettingRow row={row}>
       <h3 className="pb-1 text-base font-medium">{row.label}</h3>
       {isTheme ? (theme ? <ThemeChoice theme={theme} /> : null) : textSize !== undefined ? <TextSizeChoice percent={textSize} /> : null}
+    </SettingRow>
+  );
+};
+
+export const FontControl: Control = ({ row }) => {
+  const font = useSetting(fontSetting);
+  return (
+    <SettingRow row={row}>
+      <RowName row={row} />
+      {font ? <FontChoice font={font} /> : null}
     </SettingRow>
   );
 };
