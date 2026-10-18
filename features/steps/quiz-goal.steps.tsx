@@ -260,7 +260,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('The Quiz goal row has a visible label and says which goal is kept', ({ Given, When, Then, And }) => {
+  Scenario('The Quiz goal row has a visible label and says which goal is kept without repeating the label', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal {string}', openWith);
     And('the phone was given the quiz goal {string}', given);
     When('he opens Settings', openSettings);
@@ -271,6 +271,11 @@ describeFeature(feature, ({ Scenario }) => {
     And('the Quiz goal row says {string}', async (_, text: string) => {
       await goalField();
       expect(within(goalRow()).getByText(text, { exact: true })).toBeVisible();
+    });
+    And('the words {string} appear once in the Quiz goal group', async (_, words: string) => {
+      await goalField();
+      const group = within(goalRow()).getByRole('group', { name: 'Quiz goal' });
+      expect(squash(group.textContent).split(words).length - 1).toBe(1);
     });
   });
 

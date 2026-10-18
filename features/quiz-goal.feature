@@ -49,12 +49,13 @@ Feature: Quiz me asks what he wants from the quiz
     Then no quiz goal is kept on the phone
     And Settings shows no Quiz goal kept
 
-  Scenario: The Quiz goal row has a visible label and says which goal is kept
+  Scenario: The Quiz goal row has a visible label and says which goal is kept without repeating the label
     Given Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal "understanding the passage"
     And the phone was given the quiz goal "understanding what the passage says"
     When he opens Settings
     Then the Quiz goal row shows the visible text "Quiz goal"
-    And the Quiz goal row says "Quiz goal: understanding what the passage says"
+    And the Quiz goal row says "Kept: understanding what the passage says"
+    And the words "Quiz goal" appear once in the Quiz goal group
 
   Scenario: Save is off for a field of only spaces and Clear still clears
     Given Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal "understanding the passage"
