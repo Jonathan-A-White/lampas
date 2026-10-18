@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.312",
+    "date": "2026-10-18",
+    "story": "mw-svw421.34",
+    "kind": "fixed",
+    "text": "the augment sheet now gives the same English for a word in its worked example and in its examples."
+  },
+  {
+    "version": "0.1.312",
+    "date": "2026-10-18",
+    "story": "mw-umv8sp.7",
+    "kind": "fixed",
+    "text": "Stopping partway through a chapter in Audible no longer counts that chapter as done, so your next listen starts at the beginning of the chapter you stopped in."
+  },
+  {
     "version": "0.1.311",
     "date": "2026-10-18",
     "story": "mw-5r3p30.311",

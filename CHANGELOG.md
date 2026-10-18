@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.312
+_2026-10-18_
+- Fixed: the augment sheet now gives the same English for a word in its worked example and in its examples.
+- Fixed: Stopping partway through a chapter in Audible no longer counts that chapter as done, so your next listen starts at the beginning of the chapter you stopped in.
+
 ## 0.1.311
 _2026-10-18_
 - New: You can now choose the typeface of the English text in Settings (Literata, Atkinson Hyperlegible, Lexend, or your phone's own), and the Greek and Hebrew stay as they are.
