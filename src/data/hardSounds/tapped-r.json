@@ -1,0 +1,50 @@
+{
+  "id": "tapped-r",
+  "title": "The tapped r",
+  "scheme": "modern",
+  "for": ["american", "british"],
+  "sounds": ["/ɾ/"],
+  "letters": ["ρ"],
+  "steps": [
+    {
+      "kind": "why",
+      "text": {
+        "american": "Your English r is made with the tongue pulled back or bunched up, and its tip never touches the roof of your mouth. The Greek ρ is the opposite: the tip of the tongue gives one quick flick against the ridge just behind your top teeth. Said the American way, every ρ sounds wrong to a Greek ear.",
+        "british": "Your English r is made with the tongue touching nothing, and before a consonant or at the end of a word you do not say it at all, as in “car”, “hard” and “father”. The Greek ρ is always said, wherever it stands, and it is one quick flick of the tongue tip against the ridge just behind your top teeth."
+      }
+    },
+    {
+      "kind": "from-known",
+      "text": {
+        "american": "You already make this sound. Say “butter”, “water” or “ladder” fast, the way you always do: the sound in the middle is not a real t or d, the tongue tip just flicks the ridge behind your teeth once. That flick is the Greek ρ. Now say “otter”, then “o-ro” with the same flick in the middle.",
+        "british": "You can find it in a word you know. Say “ladder”, then say it again as fast as you can, so the dd is the lightest touch of the tongue. Or say “very” the old-fashioned way, as a Scot would. That one light touch is the Greek ρ: the tongue tip strikes the ridge behind your top teeth once and comes straight off."
+      }
+    },
+    {
+      "kind": "hear",
+      "text": "Listen for the flick in each word. It is short: one touch, never a long roll and never the English r.",
+      "words": ["ἀρχή", "ὥρα", "πατήρ", "μαρτυρία", "χείρ"]
+    },
+    {
+      "kind": "contrast",
+      "text": "Each pair differs only in ρ and λ. For λ the tongue tip rests on the ridge behind your teeth; for ρ it only flicks it. Hear both words, then say both.",
+      "pairs": [
+        ["μέρος", "μέλος"],
+        ["ὄρος", "ὅλος"]
+      ]
+    },
+    {
+      "kind": "try",
+      "text": {
+        "american": "Say each word after the voice. Keep the flick short and light, like the middle of “butter”, and do not curl your tongue back. The ρ at the end of πατήρ is flicked too.",
+        "british": "Say each word after the voice. Say every ρ, even at the end of πατήρ, where your English would drop it: one light touch of the tongue tip."
+      },
+      "words": ["πατήρ", "ἀρχή", "ὥρα", "μαρτυρία"]
+    },
+    {
+      "kind": "verse",
+      "text": "This verse has seven of them, each one marked. Hear it, then say it, giving every ρ the same quick flick, the two in μαρτυροῦμεν too.",
+      "ref": "1jn.1.2"
+    }
+  ]
+}

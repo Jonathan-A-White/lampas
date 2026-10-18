@@ -3,6 +3,7 @@
 export { addImportedWords, addWordToLearn, holdsOnlyExampleWords, wordIsListed, listDroppedLemmas, listLearningLemmas, listSolidHeadwords, listSolidLemmas, listWords, setWordState, teachWord } from './words';
 export type { Word, WordOutcome, WordState } from './words';
 export { getIpaProgress, learnIpaSound, noteIpaAnswer, passIpaCheck, startIpaCourse } from './ipaCourse';
+export { getHardSoundsDone, markHardSoundDone } from './hardSounds';
 export {
   clearGrammarAnswers,
   getGoal,
