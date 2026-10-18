@@ -198,7 +198,7 @@ export interface TalkRequest {
   learner_grammar?: LearnerGrammar;
   /** who he is as a student (src/data/learnerProfile.ts, Settings > About you): missing when he has filled in nothing; fitHistory never cuts it */
   learner_profile?: LearnerProfile;
-  /** what Lampas remembers of him (src/data/learnerMemory.ts, Settings > Memory): the index and the notes the app chose by name for this place, word and screen; missing when nothing is kept; fitHistory cuts the notes only after the history, the word list and his requests */
+  /** what Lampas remembers of him (src/data/learnerMemory.ts, Settings > Memory): the index and the notes the app chose by name for this place, word and screen; missing when nothing is kept; fitHistory cuts the notes only after the older turns, the word list and his requests, and before the newest turn */
   memory?: MemoryField;
   /** quiz (the Verse view's Quiz me, mw-5r3p30.74): the grind runs the read, quiz, map method on `greek` and `english`; welcome (mw-yrmkdf.3): the grind runs the welcome interview, from a screen named Welcome, with no text */
   mode?: 'quiz' | 'welcome';
@@ -448,8 +448,10 @@ const sizeOf = (request: TalkRequest): number => new TextEncoder().encode(JSON.s
  * Makes the request fit a grist: while it is too big the oldest long answer in the history is cut short; when none is left to cut
  * the words of the text (greek_words) are cut from their end, and when none is left the oldest turn is dropped. The newest turn is
  * the last to be touched (a quiz is nothing without its earlier turns, so they outlast the tail of a long passage's word list).
- * With the history gone, the oldest of his requests (the last in the list, newest first) go one at a time. The pronunciation's guide
- * goes before the words and the turns (mw-5r3p30.268: a quiz on a long passage needs them more than the sound rules), except on a sound question.
+ * The oldest turns go until the newest alone is left; then the oldest of his requests (the last in the list, newest first) go one at a time, then
+ * his memory notes, and only then the newest turn (mw-5r3p30.615: a talk from Settings, whose screen weighs most of the record, forgot the question
+ * it was answering). The pronunciation's guide goes before the words and the turns (mw-5r3p30.268: a quiz on a long passage needs them more than
+ * the sound rules), except on a sound question.
  */
 export function fitHistory(request: TalkRequest): TalkRequest {
   let history = request.history.map((t) => ({ ...t }));
@@ -466,11 +468,13 @@ export function fitHistory(request: TalkRequest): TalkRequest {
   }
   if (tooBig() && request.focus?.kind !== 'sound') guide = undefined;
   while (greekWords && greekWords.length > 0 && tooBig() && history.length > 0) greekWords = greekWords.slice(0, -1);
-  while (history.length > 0 && tooBig()) history = history.slice(1);
+  // the newest turn is what he is answering ("Here are the others"): the older turns go first, then the lesser fields, and the newest turn last (mw-5r3p30.615)
+  while (history.length > 1 && tooBig()) history = history.slice(1);
   while (greekWords && greekWords.length > 0 && tooBig()) greekWords = greekWords.slice(0, -1);
   while (requests && requests.length > 0 && tooBig()) requests = requests.slice(0, -1);
-  // his notes are the last to go, from the end of the list (the notes come in name order: book, topic, word); the index always stays
+  // his notes are the next to go, from the end of the list (the notes come in name order: book, topic, word); the index always stays
   while (memoryNotes && memoryNotes.length > 0 && tooBig()) memoryNotes = memoryNotes.slice(0, -1);
+  while (history.length > 0 && tooBig()) history = history.slice(1);
   return fitted();
 }
 
