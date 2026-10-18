@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.301
+_2026-10-18_
+- Fixed: Learn this idea on a preposition's Grammar sheet now opens that preposition's own lesson, such as περί, instead of the general lesson on prepositions.
+- Fixed: the one-time licence tip now slides in and ignores taps for its first half second, so a late tip no longer catches a tap meant for the page.
+- New: Review now asks the sentence ideas on real verses, marking the words and asking what they are doing or which word they belong to.
+
 ## 0.1.300
 _2026-10-17_
 - Fixed: The tutor now offers the Greek to a reader whose word list is still just the example words the app came with.

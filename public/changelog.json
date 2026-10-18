@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.301",
+    "date": "2026-10-18",
+    "story": "mw-86e9r1.36",
+    "kind": "fixed",
+    "text": "Learn this idea on a preposition's Grammar sheet now opens that preposition's own lesson, such as περί, instead of the general lesson on prepositions."
+  },
+  {
+    "version": "0.1.301",
+    "date": "2026-10-18",
+    "story": "mw-8m9dyu.13",
+    "kind": "fixed",
+    "text": "the one-time licence tip now slides in and ignores taps for its first half second, so a late tip no longer catches a tap meant for the page."
+  },
+  {
+    "version": "0.1.301",
+    "date": "2026-10-18",
+    "story": "mw-br588b.3",
+    "kind": "new",
+    "text": "Review now asks the sentence ideas on real verses, marking the words and asking what they are doing or which word they belong to."
+  },
+  {
     "version": "0.1.300",
     "date": "2026-10-17",
     "story": "mw-yrmkdf.8",
