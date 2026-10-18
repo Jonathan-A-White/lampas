@@ -153,7 +153,11 @@ test.describe('Settings rows', () => {
   test('mw-5r3p30.453: a double tap on the About row opens About, not the Preface', async ({ page }) => {
     // a taller phone, so About's Preface is in view the moment About is drawn (at 844 it is below the fold, and a scroll outlasts the moment)
     await page.setViewportSize({ width: 390, height: 1400 });
-    await open(page, '#/settings', {}, () => page.getByRole('heading', { name: 'Settings', level: 1 }).first().waitFor());
+    // About has been open once, as on his phone, so its first draw (its credits) does not outlast the moment on a loaded host
+    await open(page, '#/about', {}, () => page.locator('button[aria-label="Preface"]').waitFor());
+    // a new hash on the same page: the app moves to Settings without a reload
+    await page.goto('/#/settings');
+    await page.getByRole('heading', { name: 'Settings', level: 1 }).waitFor();
     const row = page.getByRole('button', { name: 'About', exact: true });
     await row.scrollIntoViewIfNeeded();
     await reads(page);
