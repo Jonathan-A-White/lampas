@@ -13,7 +13,9 @@ const STARTS = (JSON.parse(readFileSync('src/resources/audibleStarts.json', 'utf
 const start = (key: string): number => STARTS[key];
 /** two chapters of listening from Leviticus 1: the time to the start of Leviticus 3 */
 const TWO_CHAPTERS = start('lev.3') - start('lev.1');
-const SET_OFF = Date.UTC(2026, 9, 16, 12, 0, 0);
+// The session's start is the real clock now, never a date written in the spec: openUnlocked remembers the licence as held a minute before the real now, and a page clock set
+// before that counts it as not held (src/services/licenceCache.ts; mw-5r3p30.575, mw-5r3p30.606).
+const SET_OFF = Date.now();
 
 /** the keys of every chapter before Leviticus 1: 'gen.1' to 'exo.40', 90 in all */
 const BEFORE_LEVITICUS = OT_BOOKS.slice(0, 2).flatMap((b) => Array.from({ length: b.chapters }, (_, i) => `${b.code}.${i + 1}`));
