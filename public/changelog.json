@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.304",
+    "date": "2026-10-18",
+    "story": "mw-5r3p30.579",
+    "kind": "fixed",
+    "text": "In Settings, the Quiz goal's Save button now looks plainly off when there is nothing new to save, and Clear no longer shifts sideways when Save turns on."
+  },
+  {
     "version": "0.1.303",
     "date": "2026-10-18",
     "story": "mw-5r3p30.548",

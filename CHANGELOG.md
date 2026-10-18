@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.304
+_2026-10-18_
+- Fixed: In Settings, the Quiz goal's Save button now looks plainly off when there is nothing new to save, and Clear no longer shifts sideways when Save turns on.
+
 ## 0.1.303
 _2026-10-18_
 - Fixed: The Greek in the 'In Greek' paragraph of a Grammar sheet now shows in the Greek typeface like the rest of the Greek.
