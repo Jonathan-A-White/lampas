@@ -90,7 +90,9 @@ const termCache = new Map<string, string[]>();
 function termsOf(code: string): string[] {
   let terms = termCache.get(code);
   if (!terms) {
-    terms = [...new Set(parseSegments(decodeParse(code)).flatMap((s) => (s.term ? [s.term] : [])))];
+    // a possessive pronoun's possessor ('2nd person plural possessor') is only 'possessor': its number and person are not the word's own (mw-svw421.38)
+    const decoded = decodeParse(code).split(', ').map((item) => (item.endsWith(' possessor') ? 'possessor' : item)).join(', ');
+    terms = [...new Set(parseSegments(decoded).flatMap((s) => (s.term ? [s.term] : [])))];
     termCache.set(code, terms);
   }
   return terms;
@@ -175,7 +177,9 @@ function describe(idea: GrammarIdea, place: Place): string[] | null {
     if (!part) return null;
     seed.push(part);
   }
-  const features = terms.filter((t) => !parts.includes(t) && !seed.includes(t) && termIsTaught(t, idea));
+  // only the word's own case, number, gender, person, tense, voice and mood are added to the idea's own terms, never a suffix such as 'negative' (mw-svw421.38)
+  const own = parsedOf(place.word.p).features.map((f) => f.value);
+  const features = terms.filter((t) => own.includes(t) && !parts.includes(t) && !seed.includes(t) && termIsTaught(t, idea));
   const extras = [...features, ...(part && !seed.some((t) => parts.includes(t)) ? [part] : [])];
   for (let size = 0; size <= extras.length; size += 1) {
     for (const added of combinations(extras, size)) {

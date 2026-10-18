@@ -180,7 +180,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the bus has heard the placement is done', async () => {
       await expectLatest('placement-done', (heard) => {
-        expect(heard).toMatchObject({ goal: '1 John 1:1', approach: 'ladder', solid: 11, frontier: 0, notYet: 1 });
+        expect(heard).toMatchObject({ goal: '1 John 1:1', approach: 'ladder', solid: 10, frontier: 0, notYet: 1 });
         expect(heard?.untested).toBeGreaterThan(10);
       });
     });

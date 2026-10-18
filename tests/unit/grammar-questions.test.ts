@@ -1,13 +1,13 @@
 // The pure grammar questions (src/data/grammar/questions.ts): a paradigm ending, tap the form, a letter, its sound, the stressed syllable.
 import '@testing-library/react/dont-cleanup-after-each';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { cleanup, render } from '@testing-library/react';
 import { createElement } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { GrammarCard } from '../../src/GrammarCard';
 import type { Chapter } from '../../src/data/chapter';
 import { gradedVerses } from '../../src/data/grammar/gradedVerses';
-import { LADDER, ideaOf, ideasOf } from '../../src/data/grammar/ladder';
+import { LADDER, ideaOf, ideasOf, type GrammarIdea } from '../../src/data/grammar/ladder';
 import {
   buildEnding,
   buildIdeaQuestion,
@@ -42,7 +42,9 @@ function seedWhere(make: (seed: number) => GrammarQuestion | null, wanted: (q: G
 
 // 'pronoun' names any kind of pronoun: the pronoun is taught before its kinds (mw-5r3p30.379)
 const termsOf = (code: string) => {
-  const terms = new Set(parseSegments(decodeParse(code)).flatMap((s) => (s.term ? [s.term] : [])));
+  // the possessor's person and number are not the possessive pronoun's own (mw-svw421.38)
+  const decoded = decodeParse(code).split(', ').map((item) => (item.endsWith(' possessor') ? 'possessor' : item)).join(', ');
+  const terms = new Set(parseSegments(decoded).flatMap((s) => (s.term ? [s.term] : [])));
   if ([...terms].some((t) => t.endsWith(' pronoun'))) terms.add('pronoun');
   return terms;
 };
@@ -121,6 +123,78 @@ describe('a tap-the-form question', () => {
     expect(q!.prompt).toContain('aorist');
     expect(termsOf(rom8.verses.flatMap((v) => v.g).find((g) => g.t === q!.right)!.p).has('aorist')).toBe(true);
   });
+});
+
+// mw-svw421.38: a tap-form prompt names the word's own features, never the possessor's number of ἡμέτερος or a parsing suffix such as 'negative'
+const FEATURE_VALUES: Record<string, string[]> = {
+  number: ['singular', 'plural'],
+  case: ['nominative', 'genitive', 'dative', 'accusative', 'vocative'],
+  gender: ['masculine', 'feminine', 'neuter'],
+  person: ['1st person', '2nd person', '3rd person'],
+  tense: ['present', 'imperfect', 'future', 'aorist', 'perfect', 'pluperfect'],
+  voice: ['active', 'middle', 'passive', 'middle or passive', 'middle deponent', 'passive deponent', 'middle or passive deponent', 'impersonal active', 'no voice'],
+  mood: ['indicative', 'imperative', 'subjunctive', 'optative', 'infinitive', 'participle', 'imperative-sense participle'],
+};
+
+/** The grammar terms a tap-form prompt names, and its part of speech when it names one ('Tap the dative noun'; 'Tap the word that is ...' has none). */
+function promptTerms(prompt: string): { features: string[]; pos: string | null } {
+  const words = prompt.startsWith('Tap the word that is ') ? prompt.slice('Tap the word that is '.length) : prompt.slice('Tap the '.length);
+  const terms = parseSegments(words).flatMap((s) => (s.term ? [s.term] : []));
+  if (prompt.startsWith('Tap the word that is ')) return { features: terms, pos: null };
+  return { features: terms.slice(0, -1), pos: terms[terms.length - 1] ?? null };
+}
+
+function badPrompt(prompt: string, idea: GrammarIdea): string | null {
+  const { features } = promptTerms(prompt);
+  for (const [feature, values] of Object.entries(FEATURE_VALUES)) {
+    const named = features.filter((t) => values.includes(t));
+    if (named.length > 1) return `names two values of ${feature}`;
+  }
+  const known = Object.values(FEATURE_VALUES).flat();
+  // the idea's own terms are asked as they are: 'Tap the word that is negative', 'Tap the possessor possessive pronoun'
+  const stray = features.filter((t) => !known.includes(t) && !idea.terms.includes(t));
+  return stray.length > 0 ? `names ${stray.join(', ')}, which is no case, number, gender, person, tense, voice or mood` : null;
+}
+
+describe('a tap-the-form prompt names one value of each feature (mw-svw421.38)', () => {
+  it('never holds both singular and plural, two cases or the word negative over 1 John 1, for the number, case and gender ideas', () => {
+    for (const id of ['number-plural', 'number-singular', 'case-nominative', 'case-genitive', 'gender-feminine']) {
+      for (let seed = 1; seed <= 60; seed += 1) {
+        const q = buildTapForm(ideaOf(id), [jn1], mulberry32(seed));
+        if (!q) continue;
+        expect(q.prompt, `${id} seed ${seed}`).not.toMatch(/singular.*plural|plural.*singular|negative/);
+        const cases = FEATURE_VALUES.case.filter((c) => q.prompt.includes(c));
+        expect(cases.length, `${id} seed ${seed}: ${q.prompt}`).toBeLessThanOrEqual(1);
+        expect(badPrompt(q.prompt, ideaOf(id)), q.prompt).toBeNull();
+      }
+    }
+  });
+
+  it('does not ask ἡμετέρα of 1 John 1:3 (S-1PNSF, a singular word with a plural possessor) as the plural', () => {
+    for (let seed = 1; seed <= 200; seed += 1) {
+      const q = buildTapForm(ideaOf('number-plural'), [jn1], mulberry32(seed));
+      if (q?.ref === '1 John 1:3') expect(q.right, q.prompt).not.toBe('ἡμετέρα');
+    }
+  });
+
+  it('holds over every chapter of the data and every idea of the ladder', () => {
+    const bad: string[] = [];
+    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory())) {
+      for (const file of readdirSync(`public/data/${book.name}`)) {
+        if (!file.endsWith('.json')) continue;
+        const chapter = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Chapter;
+        if (!Array.isArray(chapter.verses)) continue;
+        for (const idea of LADDER) {
+          for (const seed of [1, 2]) {
+            const q = buildTapForm(idea, [chapter], mulberry32(seed));
+            const why = q && badPrompt(q.prompt, idea);
+            if (why) bad.push(`${idea.id} ${q.ref}: ${q.prompt} (${why})`);
+          }
+        }
+      }
+    }
+    expect(bad.slice(0, 20)).toEqual([]);
+  }, 600_000);
 });
 
 describe('a letter, its sound and the stress', () => {
