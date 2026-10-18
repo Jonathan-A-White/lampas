@@ -4,7 +4,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadChapter, loadIndex, type BookIndex, type Chapter } from '../../src/data/chapter';
-import { exampleMeaning, ideaExamples, ideaExamplesFor, ideaPassage, isSoundIdea } from '../../src/data/grammar/ideaSheet';
+import { exampleMeaning, ideaExamples, ideaExamplesFor, ideaPassage, isSoundIdea, wordEnglish } from '../../src/data/grammar/ideaSheet';
 import { ideaOfTerm, ideasOf, LADDER } from '../../src/data/grammar/ladder';
 import { decodeParse, parseSegments } from '../../src/data/parseCode';
 import { DEFAULT_CHAPTER } from '../../src/data/readerChapter';
@@ -234,6 +234,15 @@ describe('the meaning an example shows (mw-5r3p30.237)', () => {
     const aorist = wordAt(johnTwo, 6, 'περιεπάτησεν');
     expect(exampleMeaning(johnTwo, 6, aorist)).toBe('walked');
     expect(exampleMeaning(johnTwo, 6, wordAt(johnTwo, 6, 'περιπατεῖν'))).toBe('walk');
+  });
+
+  it('has one colon only when the lexicon gloss holds a colon: τηρῇ in 1 John 2:5 is "τηρέω: to keep, observe", not "τηρέω: to keep: observe" (mw-5r3p30.335)', () => {
+    const word = wordAt(johnTwo, 5, 'τηρῇ');
+    expect(wordEnglish(johnTwo, 5, word)).toBe('');
+    const coloned: Chapter = { ...johnTwo, lex: { ...johnTwo.lex, [word.s]: { ...johnTwo.lex[word.s], g: 'to keep: observe' } } };
+    const meaning = exampleMeaning(coloned, 5, word);
+    expect(meaning.split(':')).toHaveLength(2);
+    expect(meaning).toBe('τηρέω: to keep, observe');
   });
 
   it('reads a chapter kept before the supplied-word list (`s: 1`) without throwing', () => {
