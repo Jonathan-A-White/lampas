@@ -7,7 +7,8 @@ import { orderOf } from '../../src/approaches';
 import { ladder } from '../../src/approaches/ladder';
 import type { Chapter } from '../../src/data/chapter';
 import { ALWAYS_NEEDED, LADDER, ideaOf, ideasBelow } from '../../src/data/grammar/ladder';
-import { ideaExamples } from '../../src/data/grammar/ideaSheet';
+import { exampleGloss, ideaExamples } from '../../src/data/grammar/ideaSheet';
+import { teachOf } from '../../src/data/grammar/teach';
 import { passageNeeds } from '../../src/data/grammar/needs';
 import { BOOK_INDEX } from '../../src/data/bookIndex';
 import { PATTERN_IDEAS } from '../../src/data/grammar/patterns';
@@ -77,6 +78,22 @@ describe('the pattern ideas', () => {
       expect(found.length, id).toBeLessThanOrEqual(3);
     }
     expect(ideaExamples('eimi', [john1]).map((e) => e.word.l)).toEqual(['εἰμί']);
+  });
+
+  it('give a form one English gloss: the worked example and the example rows say the same', () => {
+    let compared = 0;
+    for (const id of PATTERNS) {
+      const worked = new Map(teachOf(id).worked.map((w) => [(w.say ?? w.word).normalize('NFC'), w.gloss]));
+      const rows = john1.verses.flatMap((v) => ideaExamples(id, [john1], v.n));
+      for (const row of rows) {
+        const gloss = worked.get(row.word.t.normalize('NFC'));
+        if (gloss === undefined) continue;
+        compared++;
+        expect(exampleGloss(ideaOf(id), row), `${id}: ${row.word.t}`).toBe(gloss);
+      }
+    }
+    // ἐθεασάμεθα (augment, tense-signs) is the form the Governor saw glossed two ways
+    expect(compared).toBeGreaterThan(0);
   });
 
   it('are counted in what a passage needs, with a count and a first example', async () => {
