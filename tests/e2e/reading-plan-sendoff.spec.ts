@@ -1,12 +1,20 @@
 import { expect, test, type Page } from '@playwright/test';
+import { planOf, type PlanChapter } from '../../src/data/plans';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
-// The Audible send-off (mw-umv8sp.2): at the phone's width, Listen in Audible on a plan chapter comes up as a sheet with one big Go; Go records the start
+// The Audible send-off (mw-umv8sp.2): at the phone's width, Listen in Audible on the plan's next chapter comes up as a sheet with one big Go; Go records the start
 // time in the settings store and only then opens Audible (window.open is stubbed here and notes what the store held the moment it was called).
 test.use({ viewport: { width: 390, height: 844 } });
 
 const STATE = 'readingPlanState';
+
+/** The keys of every chapter of the whole-Bible plan before `next`, as the app keeps its done chapters. */
+const doneBefore = (next: PlanChapter): string[] => {
+  const chapters = planOf('whole-bible')?.chapters() ?? [];
+  const at = chapters.findIndex((c) => c.code === next.code && c.chapter === next.chapter);
+  return chapters.slice(0, at).map((c) => `${c.code}.${c.chapter}`);
+};
 
 /** Puts rows in the app's own settings store through raw IndexedDB, as the app wrote them. */
 async function putSettings(page: Page, rows: { key: string; value: string }[]) {
@@ -81,8 +89,8 @@ const opens = (page: Page) =>
     return Promise.all(w.__opens.map(async (o) => ({ url: o.url, session: (await o.session) as { code: string; chapter: number; startedAt: number } | undefined })));
   });
 
-/** A phone with the plan on, started at Genesis 1 (or off), and the Audio Bible on, opened at `address`. */
-async function openAt(page: Page, address: string, plan: 'on' | 'off') {
+/** A phone with the plan on and `next` its next chapter (every chapter before it done) or off, and the Audio Bible on, opened at `address`. */
+async function openAt(page: Page, address: string, plan: 'on' | 'off', next: PlanChapter = { code: 'luk', chapter: 15 }) {
   await openUnlocked(page);
   await stubOpen(page);
   await page.goto('/');
@@ -92,7 +100,7 @@ async function openAt(page: Page, address: string, plan: 'on' | 'off') {
     ...(plan === 'on'
       ? [
           { key: 'readingPlan', value: 'on' },
-          { key: STATE, value: JSON.stringify({ planId: 'whole-bible', start: { code: 'gen', chapter: 1 }, done: [] }) },
+          { key: STATE, value: JSON.stringify({ planId: 'whole-bible', start: next, done: doneBefore(next) }) },
         ]
       : []),
   ]);
@@ -132,7 +140,7 @@ test('Go on the send-off sheet records the start time, then opens Audible', asyn
 });
 
 test('an Old Testament chapter in the picker goes through the same sheet', async ({ page }) => {
-  await openAt(page, '/', 'on');
+  await openAt(page, '/', 'on', { code: 'lev', chapter: 3 });
   await page.getByRole('heading', { name: 'Romans 8', level: 1 }).getByRole('button').click();
   const picker = page.getByRole('dialog', { name: 'Choose a chapter' });
   await picker.getByRole('button', { name: /^Leviticus/ }).click();
@@ -164,6 +172,26 @@ test('Back or a tap outside closes the sheet and begins no session', async ({ pa
 
   expect(await opens(page)).toEqual([]);
   expect((await storedState(page))?.session).toBeUndefined();
+});
+
+test('a chapter that is not the plan\'s next one opens Audible at once, with no sheet and nothing recorded', async ({ page }) => {
+  await openAt(page, '/#/?b=1pe&c=1&v=1', 'on', { code: 'mat', chapter: 5 });
+  const link = listenLink(page);
+  await expect(link).toBeVisible();
+  const before = await storedState(page);
+  await link.click();
+  await expect(page.getByRole('dialog', { name: /^Off to Audible/ })).toHaveCount(0);
+  expect(new URL((await link.getAttribute('href')) ?? '').searchParams.get('annotation_time_utc')).toMatch(/^\d+$/);
+  // coming back from Audible asks nothing and the plan is as it was
+  await page.evaluate(() => {
+    for (const state of ['hidden', 'visible']) {
+      Object.defineProperty(document, 'visibilityState', { value: state, configurable: true });
+      document.dispatchEvent(new Event('visibilitychange'));
+    }
+  });
+  await expect(page.getByRole('dialog', { name: 'Where did you get to?' })).toHaveCount(0);
+  expect(await storedState(page)).toEqual(before);
+  expect(before?.session).toBeUndefined();
 });
 
 test('with the Reading plan off Listen in Audible opens Audible at once, with no sheet', async ({ page }) => {

@@ -1,9 +1,10 @@
 Feature: The Audible send-off
-  With the Reading plan on and a plan started, Listen in Audible on a chapter of the plan (the Verse view of a New Testament chapter, and an Old
+  With the Reading plan on and a plan started, Listen in Audible on the plan's next chapter (the Verse view of a New Testament chapter, and an Old
   Testament chapter in the chapter picker) does not fire and forget. A short sheet comes up first: "Off to Audible: Luke 15", one line of what
   happens next, and one big Go. Go records the start time of the listening session (src/data/repositories/readingPlan.ts beginSession) and only then
   opens Audible, with the fallback armed. Back, Escape or a tap outside closes the sheet and begins nothing. With the Reading plan off, or on with no
-  plan started, Listen in Audible opens Audible at once as it always did, with no sheet.
+  plan started, or on a chapter that is not the plan's next one (mw-umv8sp.8: tracking what he listens to outside the plan is no use to him),
+  Listen in Audible opens Audible at once as it always did, with no sheet, no return sheet and nothing recorded against the plan.
 
   Scenario: On a plan chapter Listen in Audible asks first
     Given Lampas is opened with a reading plan started at Luke 15
@@ -35,7 +36,7 @@ Feature: The Audible send-off
     And no listening session is open
 
   Scenario: An Old Testament chapter in the picker goes through the same sheet
-    Given Lampas is opened with a reading plan started at Genesis 1
+    Given Lampas is opened with a reading plan started at Leviticus 3
     When he chooses Leviticus 3 in the chapter picker
     And he taps the Listen in Audible link
     Then the send-off sheet "Off to Audible: Leviticus 3" is shown
@@ -54,3 +55,32 @@ Feature: The Audible send-off
     When he opens the Verse view of Luke 15:11
     And he taps the Listen in Audible link
     Then there is no send-off sheet
+
+  Scenario: A chapter that is not the plan's next one opens Audible at once
+    Given Lampas is opened with a reading plan started at Matthew 5
+    When he opens the Verse view of 1 Peter 1:1
+    And he taps the Listen in Audible link
+    Then there is no send-off sheet
+    And Audible's link was followed
+    And no listening session is open
+    When he comes back to Lampas
+    Then there is no return sheet
+    And the plan's progress is unchanged
+
+  Scenario: The plan's next chapter still asks first and the return sheet still comes
+    Given Lampas is opened with a reading plan started at Matthew 5
+    When he opens the Verse view of Matthew 5:1
+    And he taps the Listen in Audible link
+    Then the send-off sheet "Off to Audible: Matthew 5" is shown
+    When he taps Go
+    And he comes back to Lampas
+    Then the return sheet "Where did you get to?" is shown
+
+  Scenario: With no plan at all Audible opens at once and nothing is recorded
+    Given Lampas is opened with the Reading plan on but no plan started
+    When he opens the Verse view of 1 Peter 1:1
+    And he taps the Listen in Audible link
+    Then there is no send-off sheet
+    And Audible's link was followed
+    When he comes back to Lampas
+    Then there is no return sheet
