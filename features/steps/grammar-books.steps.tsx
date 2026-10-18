@@ -41,7 +41,7 @@ const testBook = (id: string): GrammarBook => ({
   name: `The book called ${id}`,
   resource: `LLS:TEST${id.toUpperCase()}`,
   source: 'the test',
-  sections: [{ title: `Chapter ${id}`, ref: 'Page.p+1', ideas: ['noun'] }],
+  sections: [{ title: `Chapter ${id}`, ref: 'Page.p_1', ideas: ['noun'] }],
 });
 const FOUR = ['one', 'two', 'three', 'four'].map(testBook);
 

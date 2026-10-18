@@ -54,7 +54,9 @@ describe('grammar books', () => {
       for (const section of book.sections) {
         const link = bookLink(book, section);
         expect(link.url).toBe(`logosres:${book.resource};ref=${section.ref}`);
-        expect(link.fallback).toBe(`https://ref.ly/logosres/${encodeURIComponent(book.resource)}?ref=${section.ref}`);
+        // the https address writes a space as '+' (a query string), where the scheme writes it '_'; ref.ly turns the one into the other (docs/resources.md)
+        expect(link.fallback).toBe(`https://ref.ly/logosres/${encodeURIComponent(book.resource)}?ref=${section.ref.replace(/_/g, '+')}`);
+        expect(link.url, `${book.id}: ${section.title}`).not.toContain('+');
       }
   });
 
@@ -64,13 +66,15 @@ describe('grammar books', () => {
     expect(line.links[0]).toEqual({
       label: `Open in Logos: ${black!.short}, Lesson 4: Nouns of the Second Declension`,
       tile: 'Lesson 4: Nouns of the Second Declension',
-      url: 'logosres:LLS:LRNTOREADNTGRK;ref=Page.p+26',
+      // Source of the form: Logos' own copied locations, which write the space of a page reference as '_' in the logosres: scheme
+      // (logosres:jbl103;ref=Page.p_256, Logos Community forum, docs/resources.md) and ref.ly, which rewrites ?ref=Page.p+26 to ref%3DPage.p_26 (curl, 2026-10-18).
+      url: 'logosres:LLS:LRNTOREADNTGRK;ref=Page.p_26',
       fallback: 'https://ref.ly/logosres/LLS%3ALRNTOREADNTGRK?ref=Page.p+26',
     });
   });
 
   it('gives one line a ticked book that maps the idea, in the books’ order, and none for an unticked book or an unmapped idea', () => {
-    const book = (id: string, ideas: string[]): GrammarBook => ({ id, short: id.toUpperCase(), name: id, resource: `LLS:${id.toUpperCase()}`, source: 'test', sections: [{ title: 'One', ref: 'Page.p+1', ideas }] });
+    const book = (id: string, ideas: string[]): GrammarBook => ({ id, short: id.toUpperCase(), name: id, resource: `LLS:${id.toUpperCase()}`, source: 'test', sections: [{ title: 'One', ref: 'Page.p_1', ideas }] });
     const books = [book('a', ['noun']), book('b', ['verb']), book('c', ['noun'])];
     expect(readMoreFor('noun', ['c', 'a', 'b'], books).map((l) => l.book.id)).toEqual(['a', 'c']);
     expect(readMoreFor('noun', ['b'], books)).toEqual([]);

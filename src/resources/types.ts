@@ -80,7 +80,7 @@ export interface StudyResource {
 export interface BookSection {
   /** as the book's table of contents names it: 'Lesson 4: Nouns of the Second Declension' */
   title: string;
-  /** where Logos opens it: a reference of a data type the book is indexed by, 'Page.p+26' (docs/resources.md says which are UNVERIFIED) */
+  /** where Logos opens it: a reference of a data type the book is indexed by, 'Page.p_26' (the scheme's space is '_') (docs/resources.md says which are UNVERIFIED) */
   ref: string;
   /** the ids of the ladder ideas (src/data/grammar/ladder.ts) it teaches */
   ideas: string[];

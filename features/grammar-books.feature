@@ -10,7 +10,7 @@ Feature: Grammar books in Logos on the idea sheet
     Given Lampas has Logos on and the grammar books "black" ticked
     When he opens the idea sheet of "noun"
     Then the idea sheet shows Read more with 1 book line
-    And the line of "Black, Learn to Read NT Greek" links "Lesson 4: Nouns of the Second Declension" to "logosres:LLS:LRNTOREADNTGRK;ref=Page.p+26"
+    And the line of "Black, Learn to Read NT Greek" links "Lesson 4: Nouns of the Second Declension" to "logosres:LLS:LRNTOREADNTGRK;ref=Page.p_26"
     And that link falls back to "https://ref.ly/logosres/LLS%3ALRNTOREADNTGRK?ref=Page.p+26"
 
   Scenario: With four books ticked and mapped, three lines show and More books unfolds the fourth

@@ -12,42 +12,42 @@ const black: GrammarBook = {
   resource: 'LLS:LRNTOREADNTGRK',
   startsTicked: true,
   source: 'The third edition (B&H, 2009) as Google Books lists its contents, with the page each starts on; the lessons are numbered in page order.',
-  // Page.p+N: the printed page a section starts on (the Logos edition is the 2009 print edition). The ideas follow each lesson's title.
+  // Page.p_N: the printed page a section starts on (the scheme writes a space as '_', never '+'; docs/resources.md) (the Logos edition is the 2009 print edition). The ideas follow each lesson's title.
   sections: [
-    { title: 'Lesson 1: The Letters and Sounds of Greek', ref: 'Page.p+1', ideas: ['alphabet', 'diphthongs', 'breathings'] },
-    { title: 'Lesson 2: The Greek Verb System', ref: 'Page.p+10', ideas: ['verb'] },
-    { title: 'Lesson 3: Present and Future Active Indicative', ref: 'Page.p+17', ideas: ['tense-present', 'tense-future', 'voice-active', 'mood-indicative', 'person-1st', 'person-2nd', 'person-3rd'] },
+    { title: 'Lesson 1: The Letters and Sounds of Greek', ref: 'Page.p_1', ideas: ['alphabet', 'diphthongs', 'breathings'] },
+    { title: 'Lesson 2: The Greek Verb System', ref: 'Page.p_10', ideas: ['verb'] },
+    { title: 'Lesson 3: Present and Future Active Indicative', ref: 'Page.p_17', ideas: ['tense-present', 'tense-future', 'voice-active', 'mood-indicative', 'person-1st', 'person-2nd', 'person-3rd'] },
     {
       title: 'Lesson 4: Nouns of the Second Declension',
-      ref: 'Page.p+26',
+      ref: 'Page.p_26',
       ideas: ['noun', 'declension-2', 'case-nominative', 'case-genitive', 'case-dative', 'case-accusative', 'case-vocative', 'gender-masculine', 'gender-neuter', 'number-singular', 'number-plural', 'stem-and-ending', 'article'],
     },
-    { title: 'Lesson 5: Nouns of the First Declension', ref: 'Page.p+35', ideas: ['declension-1', 'gender-feminine'] },
-    { title: 'Lesson 6: Adjectives of the First and Second Declensions', ref: 'Page.p+42', ideas: ['adjective'] },
-    { title: 'Lesson 7: Imperfect and Aorist Active Indicative', ref: 'Page.p+49', ideas: ['tense-imperfect', 'tense-aorist', 'augment'] },
+    { title: 'Lesson 5: Nouns of the First Declension', ref: 'Page.p_35', ideas: ['declension-1', 'gender-feminine'] },
+    { title: 'Lesson 6: Adjectives of the First and Second Declensions', ref: 'Page.p_42', ideas: ['adjective'] },
+    { title: 'Lesson 7: Imperfect and Aorist Active Indicative', ref: 'Page.p_49', ideas: ['tense-imperfect', 'tense-aorist', 'augment'] },
     {
       title: 'Lesson 8: Additional Prepositions',
-      ref: 'Page.p+58',
+      ref: 'Page.p_58',
       ideas: ['preposition', 'preposition-eis', 'preposition-en', 'preposition-ek', 'preposition-apo', 'preposition-pros', 'preposition-dia', 'preposition-kata', 'preposition-meta', 'preposition-peri', 'preposition-hypo', 'preposition-para', 'preposition-epi'],
     },
-    { title: 'Lesson 9: Personal Pronouns', ref: 'Page.p+65', ideas: ['pronoun', 'pronoun-personal', 'person-1st', 'person-2nd', 'person-3rd'] },
-    { title: 'Lesson 10: Perfect and Pluperfect Active Indicative', ref: 'Page.p+73', ideas: ['tense-perfect', 'tense-pluperfect', 'reduplication'] },
-    { title: 'Lesson 11: Demonstrative Pronouns', ref: 'Page.p+80', ideas: ['pronoun-demonstrative'] },
-    { title: 'Lesson 12: Present Middle and Passive Indicative', ref: 'Page.p+86', ideas: ['voice-middle', 'voice-passive', 'voice-middle-or-passive', 'tense-present'] },
-    { title: 'Lesson 13: Perfect Middle and Passive, Future Middle Indicative', ref: 'Page.p+92', ideas: ['tense-perfect', 'tense-future', 'voice-middle', 'voice-passive', 'voice-middle-or-passive'] },
+    { title: 'Lesson 9: Personal Pronouns', ref: 'Page.p_65', ideas: ['pronoun', 'pronoun-personal', 'person-1st', 'person-2nd', 'person-3rd'] },
+    { title: 'Lesson 10: Perfect and Pluperfect Active Indicative', ref: 'Page.p_73', ideas: ['tense-perfect', 'tense-pluperfect', 'reduplication'] },
+    { title: 'Lesson 11: Demonstrative Pronouns', ref: 'Page.p_80', ideas: ['pronoun-demonstrative'] },
+    { title: 'Lesson 12: Present Middle and Passive Indicative', ref: 'Page.p_86', ideas: ['voice-middle', 'voice-passive', 'voice-middle-or-passive', 'tense-present'] },
+    { title: 'Lesson 13: Perfect Middle and Passive, Future Middle Indicative', ref: 'Page.p_92', ideas: ['tense-perfect', 'tense-future', 'voice-middle', 'voice-passive', 'voice-middle-or-passive'] },
     {
       title: 'Lesson 14: Imperfect Middle and Passive, Aorist Middle, and Pluperfect Middle and Passive Indicative',
-      ref: 'Page.p+97',
+      ref: 'Page.p_97',
       ideas: ['tense-imperfect', 'tense-aorist', 'tense-pluperfect', 'voice-middle', 'voice-passive', 'voice-middle-or-passive'],
     },
-    { title: 'Lesson 15: Aorist and Future Passive Indicative', ref: 'Page.p+102', ideas: ['tense-aorist', 'tense-future', 'voice-passive'] },
-    { title: 'Lesson 16: Review of the Indicative Mood', ref: 'Page.p+107', ideas: ['mood-indicative'] },
-    { title: 'Lesson 17: Nouns of the Third Declension', ref: 'Page.p+116', ideas: ['declension-3'] },
-    { title: 'Lesson 18: Adjectives, Pronouns, and Numerals of the First and Third Declensions', ref: 'Page.p+124', ideas: ['adjective', 'pronoun', 'numeral', 'declension-3'] },
-    { title: 'Lesson 19: Contract and Liquid Verbs', ref: 'Page.p+133', ideas: ['contract-verbs'] },
-    { title: 'Lesson 20: Participles (Verbal Adjectives)', ref: 'Page.p+142', ideas: ['mood-participle'] },
-    { title: 'The Greek Accents', ref: 'Page.p+216', ideas: ['accents'] },
-    { title: 'Principal Parts of Selected Verbs', ref: 'Page.p+244', ideas: ['principal-parts'] },
+    { title: 'Lesson 15: Aorist and Future Passive Indicative', ref: 'Page.p_102', ideas: ['tense-aorist', 'tense-future', 'voice-passive'] },
+    { title: 'Lesson 16: Review of the Indicative Mood', ref: 'Page.p_107', ideas: ['mood-indicative'] },
+    { title: 'Lesson 17: Nouns of the Third Declension', ref: 'Page.p_116', ideas: ['declension-3'] },
+    { title: 'Lesson 18: Adjectives, Pronouns, and Numerals of the First and Third Declensions', ref: 'Page.p_124', ideas: ['adjective', 'pronoun', 'numeral', 'declension-3'] },
+    { title: 'Lesson 19: Contract and Liquid Verbs', ref: 'Page.p_133', ideas: ['contract-verbs'] },
+    { title: 'Lesson 20: Participles (Verbal Adjectives)', ref: 'Page.p_142', ideas: ['mood-participle'] },
+    { title: 'The Greek Accents', ref: 'Page.p_216', ideas: ['accents'] },
+    { title: 'Principal Parts of Selected Verbs', ref: 'Page.p_244', ideas: ['principal-parts'] },
   ],
 };
 
@@ -60,12 +60,14 @@ export const DEFAULT_GRAMMAR_BOOKS: readonly string[] = GRAMMAR_BOOKS.filter((b)
 /** The sections of `book` that teach the idea `ideaId`, in the book's order. */
 export const sectionsFor = (book: GrammarBook, ideaId: string): BookSection[] => book.sections.filter((s) => s.ideas.includes(ideaId));
 
-/** The link that opens `section` in Logos: the logosres: scheme, with its ref.ly address as the fallback (the colon of the Resource ID encoded, as logos.ts does). */
+/** The link that opens `section` in Logos: the logosres: scheme, with its ref.ly address as the fallback (the colon of the Resource ID encoded, as logos.ts does).
+ *  The scheme writes the space of a page reference '_' (`Page.p_26`); a '+' there is read as a plus and the app stays on his open tab (mw-5r3p30.618). The https
+ *  query writes the space '+', which ref.ly turns into the '_'. */
 export const bookLink = (book: GrammarBook, section: BookSection): StudyLink => ({
   label: `Open in Logos: ${book.short}, ${section.title}`,
   tile: section.title,
   url: `logosres:${book.resource};ref=${section.ref}`,
-  fallback: `https://ref.ly/logosres/${encodeURIComponent(book.resource)}?ref=${section.ref}`,
+  fallback: `https://ref.ly/logosres/${encodeURIComponent(book.resource)}?ref=${section.ref.replace(/_/g, '+')}`,
 });
 
 export interface ReadMoreLine {
