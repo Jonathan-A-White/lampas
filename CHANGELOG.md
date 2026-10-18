@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.302
+_2026-10-18_
+- Fixed: In 1 John 2:6 the idea sheet for the aorist now shows "walked" for περιεπάτησεν instead of "walk".
+
 ## 0.1.301
 _2026-10-18_
 - Fixed: Learn this idea on a preposition's Grammar sheet now opens that preposition's own lesson, such as περί, instead of the general lesson on prepositions.
