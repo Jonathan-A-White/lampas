@@ -2,7 +2,7 @@
   "name": "lampas",
   "private": true,
   "license": "MIT",
-  "version": "0.1.310",
+  "version": "0.1.311",
   "type": "module",
   "scripts": {
     "dev": "vite",

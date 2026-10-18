@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.311",
+    "date": "2026-10-18",
+    "story": "mw-5r3p30.311",
+    "kind": "new",
+    "text": "You can now choose the typeface of the English text in Settings (Literata, Atkinson Hyperlegible, Lexend, or your phone's own), and the Greek and Hebrew stay as they are."
+  },
+  {
+    "version": "0.1.311",
+    "date": "2026-10-18",
+    "story": "mw-yrmkdf.10",
+    "kind": "fixed",
+    "text": "Tapping the tutor's offer of the Greek now says in the Talk sheet that it worked."
+  },
+  {
+    "version": "0.1.311",
+    "date": "2026-10-18",
+    "story": "mw-86e9r1.47",
+    "kind": "fixed",
+    "text": "On Placement, 'Start from the letters' now names a few of the ideas you already have solid and counts the rest, so 'Back to the goal' stays on the phone's first screen."
+  },
+  {
     "version": "0.1.309",
     "date": "2026-10-18",
     "story": "mw-svw421.40",

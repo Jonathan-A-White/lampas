@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.311
+_2026-10-18_
+- New: You can now choose the typeface of the English text in Settings (Literata, Atkinson Hyperlegible, Lexend, or your phone's own), and the Greek and Hebrew stay as they are.
+- Fixed: Tapping the tutor's offer of the Greek now says in the Talk sheet that it worked.
+- Fixed: On Placement, 'Start from the letters' now names a few of the ideas you already have solid and counts the rest, so 'Back to the goal' stays on the phone's first screen.
+
 ## 0.1.309
 _2026-10-18_
 - Fixed: the paradigm tables now show every Greek form whole, in its own cell and with readable row labels, at every text size.
