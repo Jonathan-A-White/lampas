@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.309",
+    "date": "2026-10-18",
+    "story": "mw-svw421.40",
+    "kind": "fixed",
+    "text": "the paradigm tables now show every Greek form whole, in its own cell and with readable row labels, at every text size."
+  },
+  {
     "version": "0.1.308",
     "date": "2026-10-18",
     "story": "mw-s1dc0n.11",

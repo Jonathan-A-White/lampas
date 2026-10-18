@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.309
+_2026-10-18_
+- Fixed: the paradigm tables now show every Greek form whole, in its own cell and with readable row labels, at every text size.
+
 ## 0.1.308
 _2026-10-18_
 - Fixed: Going Back from a verse opened from a shared Bible reference now returns to the Reader instead of the Share to Lampas sheet.
