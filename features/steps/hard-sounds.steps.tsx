@@ -23,7 +23,7 @@ import { asSpoken } from '../../tests/support/spoken-word';
 
 const user = userEvent.setup();
 const SECTION = 'Hard sounds (optional)';
-const HEADINGS = ['Why it is hard for you', 'Start from a sound you know', 'Hear it', 'Which did you hear?', 'Try it', 'Read a verse'];
+const HEADINGS = ['Why it is hard for you', 'Start from a sound you know', 'Hear it', 'Which did you hear?', 'Try it', 'A stretch goal', 'Read a verse'];
 
 let synth: FakeSynth;
 
@@ -155,7 +155,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps {string} until the last step', async () => {
       seen = await stepsToEnd();
     });
-    Then('each step showed its heading in turn: {string}, {string}, {string}, {string}, {string}', (_, ...rest: string[]) => {
+    Then('each step showed its heading in turn: {string}, {string}, {string}, {string}, {string}, {string}', (_, ...rest: string[]) => {
       expect(seen).toEqual([HEADINGS[0], ...rest]);
       expect(seen).toEqual(HEADINGS);
     });
