@@ -13,3 +13,6 @@ export function hintTakes(options: readonly string[], right: string, near: reado
 
 /** The line under the question once a Hint has been taken: 'Hint: 2 wrong answers taken away'. */
 export const hintLine = (count: number): string => `Hint: ${count} wrong ${count === 1 ? 'answer' : 'answers'} taken away`;
+
+/** The feedback on a right answer after a Hint: a hinted right does not count (drillIt.ts answer), so the walk stays on its step and the card says why (mw-5r3p30.431). */
+export const HINTED_RIGHT = 'Right. With a Hint it does not count, so you stay on this step.';

@@ -1,10 +1,11 @@
 // A Hint on a grammar question (Drill it, mw-5r3p30.349): the wrong answers it takes away are plainly gone from play (struck through and faded,
 // not just muted), a line under the question says how many, and the same card draws them the same way wherever it is used (Review's too).
+// A right answer after a Hint says on the card that it does not count (mw-5r3p30.431).
 import '@testing-library/react/dont-cleanup-after-each';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { GrammarCard } from '../../src/GrammarCard';
-import { hintLine, hintTakes } from '../../src/data/grammar/hint';
+import { HINTED_RIGHT, hintLine, hintTakes } from '../../src/data/grammar/hint';
 import type { GrammarQuestion } from '../../src/data/grammar/questions';
 
 afterEach(cleanup);
@@ -68,5 +69,27 @@ describe('a card with answers taken away', () => {
   it('keeps the taken look after the question is answered', () => {
     render(<GrammarCard question={question} mode="choice" picked="DHO-ksa" onPick={() => {}} taken={new Set([0, 1])} />);
     expect(document.querySelectorAll('[data-taken]')).toHaveLength(2);
+  });
+});
+
+// A hinted right does not count (drillIt.ts answer(walk, right, hinted)): the walk stays on its step, so the card says why (mw-5r3p30.431).
+describe('a hinted answer', () => {
+  const answer = (picked: string, taken?: ReadonlySet<number>) =>
+    render(<GrammarCard question={question} mode="choice" picked={picked} onPick={() => {}} taken={taken} />);
+
+  it('says on a right that a hinted answer does not count', () => {
+    answer('DHO-ksa', new Set([0, 1]));
+    expect(HINTED_RIGHT).toBe('Right. With a Hint it does not count, so you stay on this step.');
+    expect(screen.getByTestId('feedback').textContent).toBe(HINTED_RIGHT);
+  });
+
+  it('says only Right on an unhinted right', () => {
+    answer('DHO-ksa');
+    expect(screen.getByTestId('feedback').textContent).toBe('Right.');
+  });
+
+  it('gives the right answer on a hinted miss, as on any miss', () => {
+    answer('the-OS', new Set([0, 1]));
+    expect(screen.getByTestId('feedback').textContent).toBe('Not quite. It is δόξα.');
   });
 });
