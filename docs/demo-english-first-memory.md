@@ -66,5 +66,7 @@ tap to reload"), a licence (the AI is part of what is checked) and a connection 
 1. Open **Settings > About** and scroll under the credits. When the tutor has named a note that would have helped it
    answer (a `book:`, `word:` or `topic:` name) and Lampas did not have it, a line says **Notes the tutor wished he had: N**
    with the names under it. With no such note nothing is drawn: the count is not shown at **0**.
-2. To see one, ask the tutor a question about a book or word it would want a note on (for example "Remember what I told you about
-   Romans?" when no `book:Romans` note exists) and come back to **About**. The Governor says "Looks good".
+2. The tutor names a wished-for note only when it judges one would have helped, so it may not happen in a short demo. To give
+   it the chance, ask a few questions that lean on what you told it (for example "Remember what I told you about this book?"
+   in a book with no `book:` note) and come back to **About**. If no count has appeared, the step is "nothing drawn at 0";
+   that is right, and the Governor says "Looks good" on the rest.
