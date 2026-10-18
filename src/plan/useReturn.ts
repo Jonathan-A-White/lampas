@@ -5,7 +5,7 @@
 // Nothing is asked with the Reading plan setting Off.
 import { useCallback, useEffect, useState } from 'react';
 import { planOf, type PlanChapter } from '../data/plans';
-import { endSession, getReadingPlan, markDoneThrough, type ListeningSession } from '../data/repositories/readingPlan';
+import { endSession, getReadingPlan, markHeard, type Heard, type ListeningSession } from '../data/repositories/readingPlan';
 import { readingPlanSetting } from '../settings/definitions/readingPlan';
 import { getSetting } from '../settings/store';
 import { estimateReached, type Estimate } from './estimate';
@@ -28,8 +28,8 @@ async function propose(): Promise<ReturnProposal | undefined> {
   return estimate ? { session, elapsedMs, estimate } : undefined;
 }
 
-/** The return sheet's state: `proposal` while it is open, `close` to put it away unanswered, `answer(chapter)` to mark the plan done through that chapter (none for Stopped partway) and end the session. */
-export function useReturn(): { proposal: ReturnProposal | null; close: () => void; answer: (chosen: PlanChapter | null) => Promise<void> } {
+/** The return sheet's state: `proposal` while it is open, `close` to put it away unanswered, `answer(chapter, heard)` to mark the plan by what he heard of that chapter (markHeard: done through it when finished, done before it when he stopped inside it; no chapter for Stopped partway marks nothing) and end the session. */
+export function useReturn(): { proposal: ReturnProposal | null; close: () => void; answer: (chosen: PlanChapter | null, heard: Heard) => Promise<void> } {
   const [proposal, setProposal] = useState<ReturnProposal | null>(null);
   useEffect(() => {
     let live = true;
@@ -71,9 +71,9 @@ export function useReturn(): { proposal: ReturnProposal | null; close: () => voi
     };
   }, []);
   const close = useCallback(() => setProposal(null), []);
-  const answer = useCallback(async (chosen: PlanChapter | null): Promise<void> => {
+  const answer = useCallback(async (chosen: PlanChapter | null, heard: Heard): Promise<void> => {
     setProposal(null);
-    if (chosen) await markDoneThrough(chosen);
+    if (chosen) await markHeard(chosen, heard);
     await endSession(Date.now());
   }, []);
   return { proposal, close, answer };

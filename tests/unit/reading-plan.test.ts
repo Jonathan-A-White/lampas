@@ -10,7 +10,9 @@ import {
   beginSession,
   endSession,
   getReadingPlan,
+  markDoneBefore,
   markDoneThrough,
+  markHeard,
   nextChapter,
   openSession,
   progress,
@@ -109,6 +111,27 @@ describe('the reading plan repository', () => {
     await markDoneThrough({ code: 'exo', chapter: 2 });
     expect(await progress()).toEqual({ done: 52, total: 1189 });
     expect(await nextChapter()).toEqual({ code: 'exo', chapter: 3 });
+  });
+
+  it('marks the chapters before a chapter done, and leaves that chapter next: the chapter he stopped in is not done (mw-umv8sp.7)', async () => {
+    await startPlan('whole-bible', { code: 'gen', chapter: 1 });
+    await markDoneBefore({ code: 'gen', chapter: 3 });
+    expect(await progress()).toEqual({ done: 2, total: 1189 });
+    expect(await nextChapter()).toEqual({ code: 'gen', chapter: 3 });
+    await markDoneBefore({ code: 'exo', chapter: 1 });
+    expect(await progress()).toEqual({ done: 50, total: 1189 });
+    expect(await nextChapter()).toEqual({ code: 'exo', chapter: 1 });
+    // never un-marks, and the first chapter of the plan has nothing before it
+    await markDoneBefore({ code: 'gen', chapter: 2 });
+    expect(await progress()).toEqual({ done: 50, total: 1189 });
+  });
+
+  it('answers stopped-in and finished with one rule: stopped in leaves the chapter next, finished moves past it', async () => {
+    await startPlan('whole-bible', { code: 'mat', chapter: 4 });
+    await markHeard({ code: 'mat', chapter: 4 }, 'stopped-in');
+    expect(await nextChapter()).toEqual({ code: 'mat', chapter: 4 });
+    await markHeard({ code: 'mat', chapter: 4 }, 'finished');
+    expect(await nextChapter()).toEqual({ code: 'mat', chapter: 5 });
   });
 
   it('never un-marks: marking an earlier chapter changes nothing', async () => {
