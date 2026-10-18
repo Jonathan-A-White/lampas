@@ -12,11 +12,21 @@ export interface ApproachCredit {
   line: string;
 }
 
+/** A run of verses in one chapter that a lesson has him read: `book` is a code of src/data/books.ts ('1jn'), `to` may be the chapter's last verse. */
+export interface Passage {
+  book: string;
+  chapter: number;
+  from: number;
+  to: number;
+}
+
 export interface ApproachLesson {
   /** in our own words */
   title: string;
   /** ids of the ladder's ideas (src/data/grammar/ladder.ts) this lesson teaches; an idea named again is a revisit and is taught where it is first named */
   ideas: string[];
+  /** the passage the lesson has him read once its ideas are at least frontier (a step of its own after them: stepsOf in index.ts, docs/grammar.md 'Approaches') */
+  passage?: Passage;
 }
 
 export interface ApproachLevel {
