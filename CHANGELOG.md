@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.303
+_2026-10-18_
+- Fixed: The Greek in the 'In Greek' paragraph of a Grammar sheet now shows in the Greek typeface like the rest of the Greek.
+- Fixed: Start from the letters no longer tells you Learn next opens the Greek alphabet when you already know everything your goal needs.
+- New: Once you have the grammar a passage needs, the Goal screen now offers to read it ("Read 1 John 1:1-4") and Settings lists those reading lessons at the end of the grammar path.
+
 ## 0.1.302
 _2026-10-18_
 - Fixed: In 1 John 2:6 the idea sheet for the aorist now shows "walked" for περιεπάτησεν instead of "walk".

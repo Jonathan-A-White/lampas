@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.303",
+    "date": "2026-10-18",
+    "story": "mw-5r3p30.548",
+    "kind": "fixed",
+    "text": "The Greek in the 'In Greek' paragraph of a Grammar sheet now shows in the Greek typeface like the rest of the Greek."
+  },
+  {
+    "version": "0.1.303",
+    "date": "2026-10-18",
+    "story": "mw-86e9r1.46",
+    "kind": "fixed",
+    "text": "Start from the letters no longer tells you Learn next opens the Greek alphabet when you already know everything your goal needs."
+  },
+  {
+    "version": "0.1.303",
+    "date": "2026-10-18",
+    "story": "mw-z370x5.1",
+    "kind": "new",
+    "text": "Once you have the grammar a passage needs, the Goal screen now offers to read it (\"Read 1 John 1:1-4\") and Settings lists those reading lessons at the end of the grammar path."
+  },
+  {
     "version": "0.1.302",
     "date": "2026-10-18",
     "story": "mw-5r3p30.334",
