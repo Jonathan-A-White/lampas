@@ -10,6 +10,7 @@ import { proseOf } from './speech/proseOf';
 import { LessonReadAloud } from './speech/ReadAloud';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { focusOnMount } from './ui/focus';
+import { greekMarked } from './ui/GreekMarked';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { markTermKnown } from './useKnownTerms';
@@ -102,7 +103,7 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onT
             <>
               <p className="mt-3 text-sm text-muted">In Greek</p>
               <p data-testid="grammar-greek" className="text-lg">
-                {concept.greek}
+                {greekMarked(concept.greek, 'font-greek')}
               </p>
               {concept.related.length ? (
                 <div role="group" aria-label="Related terms" className="mt-3">
