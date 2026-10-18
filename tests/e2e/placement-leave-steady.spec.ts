@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { tapTwice } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { SETTLE_MS } from '../../src/ui/settle';
@@ -6,6 +7,11 @@ import { SETTLE_MS } from '../../src/ui/settle';
 // mw-86e9r1.22: a fast double tap on the placement end card's 'Back to the goal' lands its second tap on the Goal screen, where the Grammar ideas bar
 // now sits under the same spot; it opened the ideas list ('Not yet (35)'). Leaving the placement swallows a tap in the settle moment after it.
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+// tapTwice (tests/support/gesture.ts) times the two taps on the page's clock, so it is installed before the page opens.
+test.beforeEach(async ({ page }) => {
+  await page.clock.install();
+});
 
 // Puts the goal in the app's own settings store through raw IndexedDB, as the app wrote it.
 async function putGoal(page: Page, goal: string) {
@@ -56,15 +62,15 @@ test('a double tap on Back to the goal shows the Goal and leaves its ideas list 
   const { x, y } = await centre(page, 'Back to the goal');
   const bar = page.getByTestId('ideas-bar');
 
-  const first = Date.now();
-  await page.touchscreen.tap(x, y);
-  await expect(bar).toBeVisible();
-  // the second tap of the pair: the Goal is drawn and the Grammar ideas bar is under the spot, still inside the settle moment
-  const gap = 120 - (Date.now() - first);
-  if (gap > 0) await page.waitForTimeout(gap);
-  expect(Date.now() - first).toBeLessThan(SETTLE_MS);
-  expect(await page.evaluate(([px, py]) => document.elementFromPoint(px, py)?.closest('[data-testid="ideas-bar"]') !== null, [x, y])).toBe(true);
-  await page.touchscreen.tap(x, y);
+  // 120 ms apart on the page's clock, inside the settle moment (SETTLE_MS), however slowly the host delivers the taps
+  await tapTwice(page, { x, y }, 120, {
+    touch: true,
+    between: async () => {
+      // the second tap of the pair: the Goal is drawn and the Grammar ideas bar is under the spot
+      await expect(bar).toBeVisible();
+      expect(await page.evaluate(([px, py]) => document.elementFromPoint(px, py)?.closest('[data-testid="ideas-bar"]') !== null, [x, y])).toBe(true);
+    },
+  });
 
   await page.waitForTimeout(SETTLE_MS);
   await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');

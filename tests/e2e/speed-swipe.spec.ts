@@ -3,6 +3,7 @@
 // it knows the touch is a scroll) and saved it; with the right thumb that is the right end, 1.5. Real touch events through the
 // DevTools protocol, at 390x844.
 import { expect, test, type Page } from '@playwright/test';
+import { swipe } from '../support/gesture';
 import { openUnlocked } from './unlocked';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
@@ -22,16 +23,16 @@ const saved = (page: Page): Promise<Record<string, string>> =>
       }),
   );
 
+/** A finger drag as touch input to the browser, on the page's clock (tests/support/gesture.ts), then a moment for the browser to settle. */
 async function touch(page: Page, from: { x: number; y: number }, to: { x: number; y: number }, steps: number): Promise<void> {
-  const cdp = await page.context().newCDPSession(page);
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [from] });
-  for (let i = 1; i <= steps; i++) {
-    const at = { x: from.x + ((to.x - from.x) * i) / steps, y: from.y + ((to.y - from.y) * i) / steps };
-    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [at] });
-  }
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await swipe(page, [from.x, from.y], [to.x, to.y], { with: 'touch', steps });
   await page.waitForTimeout(400);
 }
+
+// swipe times the drag on the page's clock, so it is installed before the page opens.
+test.beforeEach(async ({ page }) => {
+  await page.clock.install();
+});
 
 test('scrolling Settings with a thumb that starts on the Greek speed slider leaves the speed where it was, after a reload too', async ({ page }) => {
   await openUnlocked(page);

@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { tapTwice } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { SETTLE_MS } from '../../src/ui/settle';
@@ -8,6 +9,11 @@ import { SETTLE_MS } from '../../src/ui/settle';
 // The Rho sheet's Drill it: the drill's Hint took two answers away ('Hint used'). A sheet that opens or closes swallows a tap in the settle moment
 // after it (src/ui/sheetBack.ts useSheetBack, src/ui/settle.ts swallowTaps).
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+// tapTwice (tests/support/gesture.ts) times the two taps on the page's clock, so it is installed before the page opens.
+test.beforeEach(async ({ page }) => {
+  await page.clock.install();
+});
 
 // Puts the goal in the app's own settings store through raw IndexedDB, as the app wrote it.
 async function putGoal(page: Page, goal: string) {
@@ -72,27 +78,27 @@ const centre = async (target: Locator) => {
  * A thumb's double tap on `target`, 120 ms apart: the first tap, then `drawn` (what the first tap brings is on screen and `under` stands at the spot),
  * then the second tap on the same spot while the settle moment still runs.
  */
-async function doubleTap(page: Page, target: Locator, drawn: () => Promise<void>, under: { name: string; inside: string }) {
+async function thumbDoubleTap(page: Page, target: Locator, drawn: () => Promise<void>, under: { name: string; inside: string }) {
   const { x, y } = await centre(target);
-  const first = Date.now();
-  await page.touchscreen.tap(x, y);
-  await drawn();
-  const gap = 120 - (Date.now() - first);
-  if (gap > 0) await page.waitForTimeout(gap);
-  expect(Date.now() - first).toBeLessThan(SETTLE_MS);
-  // the second tap lands on the control the Tester's did
-  const hit = await page.evaluate(([px, py, inside]) => {
-    const button = document.elementFromPoint(px, py)?.closest('button');
-    return button?.closest(inside) ? button.textContent?.trim() : null;
-  }, [x, y, under.inside] as const);
-  expect(hit).toBe(under.name);
-  await page.touchscreen.tap(x, y);
+  // 120 ms apart on the page's clock, inside the settle moment (SETTLE_MS), however slowly the host delivers the taps
+  await tapTwice(page, { x, y }, 120, {
+    touch: true,
+    between: async () => {
+      await drawn();
+      // the second tap lands on the control the Tester's did
+      const hit = await page.evaluate(([px, py, inside]) => {
+        const button = document.elementFromPoint(px, py)?.closest('button');
+        return button?.closest(inside) ? button.textContent?.trim() : null;
+      }, [x, y, under.inside] as const);
+      expect(hit).toBe(under.name);
+    },
+  });
   await page.waitForTimeout(SETTLE_MS);
 }
 
 test('a double tap on the Learn sheet\'s Done closes it and leaves Settings shut', async ({ page }) => {
   const learn = await openLearnSheet(page);
-  await doubleTap(page, learn.getByRole('button', { name: 'Done', exact: true }), () => expect(ideas(page)).toHaveCount(0), { name: 'Change', inside: 'main' });
+  await thumbDoubleTap(page, learn.getByRole('button', { name: 'Done', exact: true }), () => expect(ideas(page)).toHaveCount(0), { name: 'Change', inside: 'main' });
 
   await expect(page).toHaveURL(/#\/goal$/);
   await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1');
@@ -101,7 +107,7 @@ test('a double tap on the Learn sheet\'s Done closes it and leaves Settings shut
 
 test('a double tap on the Rho sheet\'s Done closes Rho and leaves the Learn sheet open', async ({ page }) => {
   const rho = await openRho(page, await openLearnSheet(page));
-  await doubleTap(page, rho.getByRole('button', { name: 'Done', exact: true }), () => expect(ideas(page)).toHaveCount(1), { name: 'Done', inside: '[role="dialog"][aria-label="Idea"]' });
+  await thumbDoubleTap(page, rho.getByRole('button', { name: 'Done', exact: true }), () => expect(ideas(page)).toHaveCount(1), { name: 'Done', inside: '[role="dialog"][aria-label="Idea"]' });
 
   await expect(ideas(page)).toHaveCount(1);
   await expect(ideas(page).getByRole('heading', { name: 'The Greek alphabet' })).toBeVisible();
@@ -111,7 +117,7 @@ test('a double tap on the Rho sheet\'s Done closes Rho and leaves the Learn shee
 test('a double tap on the Rho sheet\'s Drill it opens the drill with its Hint unspent', async ({ page }) => {
   const rho = await openRho(page, await openLearnSheet(page));
   const drill = page.getByRole('dialog', { name: 'Drill it' });
-  await doubleTap(page, rho.getByRole('button', { name: 'Drill it', exact: true }), () => expect(drill.getByTestId('grammar-prompt')).toBeVisible(), { name: 'Hint', inside: '[role="dialog"][aria-label="Drill it"]' });
+  await thumbDoubleTap(page, rho.getByRole('button', { name: 'Drill it', exact: true }), () => expect(drill.getByTestId('grammar-prompt')).toBeVisible(), { name: 'Hint', inside: '[role="dialog"][aria-label="Drill it"]' });
 
   await expect(drill.getByTestId('grammar-prompt')).toBeVisible();
   await expect(drill.getByTestId('hint-line')).toHaveCount(0);

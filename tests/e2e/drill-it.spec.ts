@@ -1,9 +1,15 @@
 import { expect, test, type Page } from '@playwright/test';
+import { tapTwice } from '../support/gesture';
 import { shot } from './shot';
 import { SETTLE_MS } from '../../src/ui/settle';
 import { openUnlocked } from './unlocked';
 
 // Drill it on the idea sheet (mw-i7xe0n.3): the level slider, the question and its answers all stand inside the screen, upright (390x844) and sideways (844x390).
+// tapTwice (tests/support/gesture.ts) times the two taps on the page's clock, so it is installed before the page opens.
+test.beforeEach(async ({ page }) => {
+  await page.clock.install();
+});
+
 const VIEWPORTS = [
   { name: 'upright', size: { width: 390, height: 844 } },
   { name: 'sideways', size: { width: 844, height: 390 } },
@@ -142,15 +148,6 @@ async function answerOne(page: Page, drill: ReturnType<Page['locator']>) {
   await expect(drill.getByTestId('drill-next')).toBeVisible();
 }
 
-/** Two taps on the same spot `gap` ms apart, as a thumb's double tap: the second lands on whatever now stands there. */
-async function doubleTap(page: Page, target: ReturnType<Page['locator']>, gap: number) {
-  const box = (await target.boundingBox())!;
-  const x = box.x + box.width / 2;
-  const y = box.y + box.height / 2;
-  await page.mouse.click(x, y);
-  await page.waitForTimeout(gap);
-  await page.mouse.click(x, y);
-}
 
 // The Tester (mw-5r3p30.430): a double tap on Next gave the next question a Hint he never tapped, because Hint stands where Next was.
 // Each gap is a new walk, so a miss can never end it before the next question: one answer at step 1 always leads to a second question.
@@ -160,7 +157,8 @@ test('a double tap on Next takes no answers away from the next question', async 
   for (const gap of [80, 120, 200]) {
     const drill = await startDrill(page, idea);
     await answerOne(page, drill);
-    await doubleTap(page, drill.getByTestId('drill-next'), gap);
+    // two taps on the same spot `gap` ms apart on the page's clock, as a thumb's double tap: the second lands on whatever now stands there
+    await tapTwice(page, drill.getByTestId('drill-next'), gap);
     await expect(drill.getByTestId('drill-next'), `${gap} ms`).toHaveCount(0);
     await expect(drill.getByTestId('drill-result'), `${gap} ms`).toHaveCount(0);
     // the next question is up, unanswered, with nothing taken away
@@ -185,7 +183,7 @@ test('a double tap on Next takes no answers away from the next question', async 
 test('a double tap on Finish leaves the result of Drill it on screen', async ({ page }) => {
   const drill = await startDrill(page, await openIdea(page));
   await answerToFinish(page, drill);
-  await doubleTap(page, drill.getByTestId('drill-next'), 120);
+  await tapTwice(page, drill.getByTestId('drill-next'), 120);
   await expect(drill.getByTestId('drill-result')).toBeVisible();
   await expect(drill.getByRole('button', { name: 'Done', exact: true })).toBeVisible();
   // a Done he taps after reading it closes the screen
@@ -227,7 +225,7 @@ test('a double tap on Finish leaves the result of a short drill on screen', asyn
     if ((await short.getByTestId('plan-drill-next').textContent()) === 'Finish') break;
     await short.getByTestId('plan-drill-next').click();
   }
-  await doubleTap(page, short.getByTestId('plan-drill-next'), 120);
+  await tapTwice(page, short.getByTestId('plan-drill-next'), 120);
   await expect(short.getByTestId('plan-drill-result')).toBeVisible();
   await page.waitForTimeout(SETTLE_MS + 100);
   await short.getByTestId('plan-drill-done').click();
@@ -254,7 +252,7 @@ test('a double tap on Finish the round leaves the round result of the letter dri
     if ((await drill.getByTestId('letter-next').textContent()) === 'Finish the round') break;
     await drill.getByTestId('letter-next').click();
   }
-  await doubleTap(page, drill.getByTestId('letter-next'), 120);
+  await tapTwice(page, drill.getByTestId('letter-next'), 120);
   await expect(drill.getByTestId('letter-round-result')).toBeVisible();
   await expect(drill.getByTestId('letter-drill-step')).toHaveText('Round 1 done');
   // after reading it, Another round starts the next

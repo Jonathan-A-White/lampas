@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { GRAMMAR_HELP_ANSWER, makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestSpeech, spoken } from '../support/honest-fakes';
+import { touchHoldFor } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { asSpoken } from '../support/lone-word';
@@ -11,6 +12,11 @@ const VIEWPORT = { width: 390, height: 844 };
 // A finger on a word of the reader, as a phone has it: touch points, not the mouse. The engine is voice-kit's honest fake
 // (tests/support/honest-fakes.ts; headless Chromium has no Greek voice).
 test.use({ hasTouch: true, viewport: VIEWPORT });
+
+// touchHoldFor (tests/support/gesture.ts) times the hold on the page's clock, so it is installed before the page opens.
+test.beforeEach(async ({ page }) => {
+  await page.clock.install();
+});
 
 async function openReader(page: Page) {
   await openUnlocked(page);
@@ -25,24 +31,13 @@ async function openReader(page: Page) {
 }
 
 
-/** A touch that stays on `selector` for `ms`, through the browser's own touch input (CDP), then lifts. */
-async function touchHold(page: Page, selector: string, ms: number) {
-  const box = await page.locator(selector).boundingBox();
-  if (!box) throw new Error(`no ${selector}`);
-  const point = [{ x: box.x + box.width / 2, y: box.y + box.height / 2 }];
-  const cdp = await page.context().newCDPSession(page);
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: point });
-  await page.waitForTimeout(ms);
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-  await cdp.detach();
-}
-
 test('a touch long-press on a word says it, selects no text and raises no menu of the browser', async ({ page }) => {
   await openReader(page);
   await page.getByRole('button', { name: 'Greek', exact: true }).click();
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'greek');
   const word = '[data-verse="1"] [data-word="0"]';
-  await touchHold(page, word, 900);
+  // a finger held 900 ms of the page's clock, then lifted
+  await touchHoldFor(page, page.locator(word), 900);
   await expect.poll(() => spoken(page)).toMatchObject([{ text: asSpoken('οὐδὲν'), lang: 'el-GR' }]);
   await expect(page.getByRole('dialog')).toHaveCount(0);
   const selection = await page.evaluate(() => ({ text: window.getSelection()?.toString() ?? '', collapsed: window.getSelection()?.isCollapsed ?? true }));

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { tapTwice } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlicensed } from './unlocked';
 
@@ -130,6 +131,11 @@ test('the Licence page’s own back button returns to where it was opened from',
 test.describe('a double tap on the tip', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
+  // tapTwice (tests/support/gesture.ts) times the two taps on the page's clock, so it is installed before the page opens.
+  test.beforeEach(async ({ page }) => {
+    await page.clock.install();
+  });
+
   /**
    * Scrolls the Reader until a Greek word lies under `name`'s button (the word is there all along, under the tip), and returns a point inside both: the
    * place his thumb is, and the word that slides under it when the tip goes.
@@ -156,18 +162,15 @@ test.describe('a double tap on the tip', () => {
   }
 
   /** Two touch taps at one point inside `name`'s button, a thumb's beat apart (the Tester's were about 100 ms), with a word under that point. */
-  async function tapTwice(page: Page, name: string): Promise<void> {
-    const { x, y } = await pointOverAWord(page, name);
-    await page.touchscreen.tap(x, y);
-    await page.waitForTimeout(100);
-    await page.touchscreen.tap(x, y);
+  async function tapOverAWordTwice(page: Page, name: string): Promise<void> {
+    await tapTwice(page, await pointOverAWord(page, name), 100, { touch: true });
   }
 
   test('two quick taps on Close in the Greek view close the tip and open no word sheet', async ({ page }) => {
     await onVisit(page, 3);
     await page.goto('/#/?c=8&view=greek');
     await expect(tip(page)).toBeVisible();
-    await tapTwice(page, 'Close');
+    await tapOverAWordTwice(page, 'Close');
     await expect(tip(page)).toHaveCount(0);
     await page.waitForTimeout(600);
     await expect(page.getByRole('dialog')).toHaveCount(0);
@@ -178,7 +181,7 @@ test.describe('a double tap on the tip', () => {
     await onVisit(page, 3);
     await page.goto('/#/?c=8&view=greek');
     await expect(tip(page)).toBeVisible();
-    await tapTwice(page, 'Learn more');
+    await tapOverAWordTwice(page, 'Learn more');
     await expect(page.getByRole('heading', { name: 'Licence', level: 1 })).toBeVisible();
     await page.waitForTimeout(600);
     await expect(page.getByRole('dialog')).toHaveCount(0);
