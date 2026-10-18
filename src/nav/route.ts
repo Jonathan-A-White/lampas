@@ -227,7 +227,7 @@ export function openVerse(verse: number): void {
 
 /** Opens the Verse view on a verse of any New Testament chapter (a verse the tutor named, mw-5r3p30.123), as a new Back step: the Reader opens that chapter at the verse and
  * Back returns to where he was. */
-export function openVerseAt(place: Pick<ReaderAddress, 'book' | 'chapter' | 'verse'>): void {
+export function openVerseAt(place: Pick<ReaderAddress, 'book' | 'chapter' | 'verse' | 'view' | 'weave'>): void {
   window.history.pushState({ verseView: true } satisfies VerseEntry, '', urlFor(readerHash(place)));
   notify();
 }
@@ -242,8 +242,8 @@ export function openPassage(first: number): void {
 }
 
 /** Opens the same view on any run of verses of a chapter (a passage lesson's range, '1jn.1.1-4'), as a new Back step: the Reader opens that chapter and Back returns to where he was. */
-export function openVerseRange(range: { book: string; chapter: number; from: number; to: number }): void {
-  window.history.pushState({ verseView: true } satisfies VerseEntry, '', urlFor(readerHash({ book: range.book, chapter: range.chapter, passage: range.from, passageTo: range.to })));
+export function openVerseRange(range: { book: string; chapter: number; from: number; to: number } & Pick<ReaderAddress, 'view' | 'weave'>): void {
+  window.history.pushState({ verseView: true } satisfies VerseEntry, '', urlFor(readerHash({ view: range.view, weave: range.weave, book: range.book, chapter: range.chapter, passage: range.from, passageTo: range.to })));
   notify();
 }
 
