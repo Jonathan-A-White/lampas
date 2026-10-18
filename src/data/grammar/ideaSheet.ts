@@ -235,10 +235,16 @@ function spellingSpans(form: string, scheme: Pronunciation): Map<string, Span[]>
   return kept;
 }
 
-/** The spans of a form an idea of spelling is about, or undefined when the form is not spelt with it; 'alphabet' (any form) has none to mark. */
+/** The letters the alphabet card names in its "How to spot it" as looking like English ones (η ν ρ χ ω): the only letters it teaches by a word of the verse (mw-5r3p30.521). */
+export const LOOKALIKE_LETTERS: readonly string[] = ['η', 'ν', 'ρ', 'χ', 'ω'];
+
+/** The spans of a form an idea of spelling is about, or undefined when the form is not spelt with it; 'alphabet' holds the look-alike letters of the form. */
 function spellingOf(id: string, form: string, scheme: Pronunciation): Span[] | undefined {
   const spans = spellingSpans(form, scheme);
-  if (id === 'alphabet') return clustersOf(form).some((c) => c.letter) ? [] : undefined;
+  if (id === 'alphabet') {
+    const spans = clustersOf(form).flatMap((c, k) => (c.letter && LOOKALIKE_LETTERS.includes(c.base) ? [{ start: k, end: k + 1 }] : []));
+    return spans.length ? spans : undefined;
+  }
   const found = spans.get(id);
   // a word of one syllable has nothing to cut
   if (id === 'syllables') return found && found.length >= 2 ? found : undefined;
@@ -344,7 +350,7 @@ const firstSense = (gloss: string): string => gloss.split(/[/;:,]/)[0].trim();
 export function exampleGloss(idea: GrammarIdea, example: IdeaExample): string {
   const { word, chapter, verse } = example;
   if (example.english !== undefined) return example.english;
-  if (idea.id === 'article' && word.p.startsWith('T-')) return 'the';
+  if (word.p.startsWith('T-') && (idea.id === 'article' || idea.id === 'alphabet')) return 'the';
   if (!isSpellingIdea(idea.id)) {
     const form = word.t.normalize('NFC');
     const worked = teachOf(idea.id).worked.find((w) => (w.say ?? w.word).normalize('NFC') === form);

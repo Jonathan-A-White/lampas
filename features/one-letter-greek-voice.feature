@@ -8,12 +8,12 @@ Feature: A one-letter Greek word is said by the phone's own Greek voice, handed 
   no Greek voice. The voice here is honest about it: like his phone's, it names a letter it is handed alone and says a
   doubled vowel as its sound. A sound drill says a vowel's sound the same way; a consonant has no such form and is named.
 
-  Scenario: The speaker beside Ὃ on The Greek alphabet says o, not omicron
-    Given Lampas is opened on a phone with a Greek voice and the goal "1 John 1:1"
+  Scenario: The speaker beside ἡ on The Greek alphabet says ee, not eta
+    Given Lampas is opened on a phone with a Greek voice and the goal "1 John 1:2"
     When he opens the lesson "alphabet" from the Goal screen
-    And he taps the speaker "Hear Ὃ" beside its example
-    Then he hears "o", not "omicron"
-    And the phone's Greek voice is handed "οο" and no clip plays
+    And he taps the speaker "Hear ἡ" beside its example
+    Then he hears "ee", not "eta"
+    And the phone's Greek voice is handed "ηη" and no clip plays
 
   Scenario Outline: Holding a one-letter word in the reader says its sound
     Given Lampas is opened on a phone with a Greek voice
