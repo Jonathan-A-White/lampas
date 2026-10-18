@@ -1,6 +1,6 @@
 // src/hardSounds/lessons.ts — the Hard sounds lessons (mw-5r3p30.361): every data file of src/data/hardSounds/, checked by its schema, and the accessors the
 // Goal screen's section, a letter sheet and the lesson screen read them through. A lesson is written for one or more English accents; IPA reads the American
-// ones, as the course 'Learn the IPA sounds' does (src/ipa/course.ts courseAccent). A file that fails the check is left out and named in the console (the
+// ones, as src/ipa/course.ts courseAccent does. A file that fails the check is left out and named in the console (the
 // unit test tests/unit/hard-sounds-engine.test.tsx fails on it first).
 import { lessonProblems, type HardSoundLesson, type Said } from '../data/hardSounds/schema';
 import { AMERICAN_ID, type EnglishAccent } from '../speech/accents';
