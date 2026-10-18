@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.308",
+    "date": "2026-10-18",
+    "story": "mw-s1dc0n.11",
+    "kind": "fixed",
+    "text": "Going Back from a verse opened from a shared Bible reference now returns to the Reader instead of the Share to Lampas sheet."
+  },
+  {
+    "version": "0.1.308",
+    "date": "2026-10-18",
+    "story": "mw-5r3p30.581",
+    "kind": "fixed",
+    "text": "Words you type in the Quiz goal box in Settings and do not save are no longer lost when you leave Settings and come back."
+  },
+  {
     "version": "0.1.307",
     "date": "2026-10-18",
     "story": "mw-5r3p30.580",

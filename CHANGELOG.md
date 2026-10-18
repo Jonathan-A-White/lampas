@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.308
+_2026-10-18_
+- Fixed: Going Back from a verse opened from a shared Bible reference now returns to the Reader instead of the Share to Lampas sheet.
+- Fixed: Words you type in the Quiz goal box in Settings and do not save are no longer lost when you leave Settings and come back.
+
 ## 0.1.307
 _2026-10-18_
 - Fixed: In Settings, the Quiz goal no longer says 'Quiz goal' twice in a row; the line under the label now starts 'Kept:'.
