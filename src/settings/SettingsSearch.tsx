@@ -91,6 +91,7 @@ export function SettingsSearchButton({ inRow = false }: { inRow?: boolean }) {
       <button
         type="button"
         aria-label="Find a setting"
+        data-settings-search
         aria-haspopup="dialog"
         onClick={() => setOpen(true)}
         className={`flex shrink-0 items-center justify-center rounded-lg text-accent active:bg-line ${inRow ? 'sticky right-0 min-w-11 bg-canvas' : 'min-h-12 min-w-12'}`}
