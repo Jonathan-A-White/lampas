@@ -154,7 +154,8 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the row under the header has no chip', async () => {
       await waitFor(() => expect(screen.queryByTestId('new-words')).toBeNull());
-      expect(chipNames()).toEqual([]);
+      // The Due chip is counted from the database after the seed is changed, so it can still read the old count for a moment.
+      await waitFor(() => expect(chipNames()).toEqual([]));
     });
     And('the row holds only the Plan chip, {string}', async (_, text: string) => {
       await waitFor(() => expect(planChip()).not.toBeNull());
