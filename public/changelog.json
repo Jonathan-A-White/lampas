@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.318",
+    "date": "2026-10-18",
+    "story": "mw-svw421.36",
+    "kind": "fixed",
+    "text": "The augment card now says plainly which past verbs have the augment and that only the indicative has it."
+  },
+  {
     "version": "0.1.317",
     "date": "2026-10-18",
     "story": "mw-5r3p30.363",

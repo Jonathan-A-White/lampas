@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.318
+_2026-10-18_
+- Fixed: The augment card now says plainly which past verbs have the augment and that only the indicative has it.
+
 ## 0.1.317
 _2026-10-18_
 - New: In a Hard sounds lesson's 'Try it' step you can hold a button to say the word, then hear your try followed by the Greek voice.
