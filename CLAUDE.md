@@ -100,7 +100,7 @@ VISION.md 'The tutor': the tutor is told, on every ask, each app setting and eac
 - Raw text downloads (`data/raw`) stay out of git; the generated JSON per chapter is committed.
   `ATTRIBUTION.md` names every text and licence.
 - Credit everything we build on (mw-vtjxh4.1): `ATTRIBUTION.md` is the About screen's source and the README's Credits point at it; a new dependency, text, font, icon, service or borrowed idea gets an entry in the same commit (`[Name](url)` as the link text, never a raw URL; use, licence with a link, `Changes:`); `tests/unit/credits.test.ts` fails on a `package.json` dependency with no entry naming its package in backticks, on a package named in backticks in the Libraries section that is no longer a dependency (credits follow removals), and on a font file (`src/fonts`) or data file (`public/data`, `public/pictures`) with no credit; a new bundled dir needs a rule in `tests/support/credits.ts`.
-- Credit everything we build on (mw-vtjxh4.1): `ATTRIBUTION.md` is the About screen's source and the README's Credits point at it; a new dependency, text, font, icon, service or borrowed idea gets an entry in the same commit (`[Name](url)` as the link text, never a raw URL; use, licence with a link, `Changes:`); `tests/unit/credits.test.ts` fails on a `package.json` dependency with no entry naming its package in backticks. The tutor on About is told each credit as a short `{name, use, licence, link}` (`src/tutor/credits.ts` CREDITS, docs/ask-tutor.md): a new bullet needs its credit there too, and `tests/unit/credits-for-tutor.test.tsx` fails until it has one.
+- The tutor on About is told each credit as a short `{name, use, licence, link}` (`src/tutor/credits.ts` CREDITS, docs/ask-tutor.md): a new bullet needs its credit there too, and `tests/unit/credits-for-tutor.test.tsx` fails until it has one.
 
 ## Read by need
 
@@ -152,6 +152,7 @@ docs/demo-module-splits.md # demo: the Reader and Settings splits (mw-lwvndc.6)
 docs/demo-shared-composer.md # demo: Postern's composer shared with Lampas (mw-jtzpw0.6)
 docs/demo-shared-speech.md # demo: one read-aloud bar in Postern, Lampas and SpellForge (mw-m7v5kc.5)
 docs/demo-reading-plan.md # demo: the listening plan in the Bible view (mw-umv8sp.6)
+docs/demo-english-first-memory.md # demo: English first, the welcome, the Greek offer, Memory notes (mw-yrmkdf.6)
 docs/research/audible-addon-seek.md      # research: an add-on that seeks his Audible Bible to the passage
 docs/research/greek-speech-libraries.md  # research: open-source libraries for Greek sound
 docs/research/kjv-tr.md                  # research: the KJV and the Greek behind it as a text pair
