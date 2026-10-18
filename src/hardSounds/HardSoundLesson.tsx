@@ -22,6 +22,7 @@ import { Contrast } from './Contrast';
 import { lessonById, saidFor } from './lessons';
 import { markLetters } from './markLetters';
 import { Word } from './Word';
+import { TryIt } from './TryIt';
 
 /** Each kind of step's heading. */
 const STEP_HEADINGS: Record<StepKind, string> = {
@@ -117,8 +118,9 @@ function StepBody({ step, lesson, at }: { step: HardSoundStep; lesson: Lesson; a
       return null;
     case 'from-known':
       return step.words ? <Words words={step.words} letters={lesson.letters} at={at} /> : null;
-    case 'hear':
     case 'try':
+      return <TryIt words={step.words} renderWord={(word, i) => <Word word={word} letters={lesson.letters} id={`${at}-${i}`} />} />;
+    case 'hear':
       return <Words words={step.words} letters={lesson.letters} at={at} />;
     case 'contrast':
       return (
