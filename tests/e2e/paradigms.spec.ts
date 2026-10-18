@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { LADDER } from '../../src/data/grammar/ladder';
+import { PARADIGMS } from '../../src/data/paradigms';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -38,11 +39,11 @@ async function expectFitsPhone(page: Page) {
     w: document.documentElement.scrollWidth,
     c: document.documentElement.clientWidth,
     top: document.documentElement.scrollTop,
-    // the table itself needs no sideways scrolling at 390 px
-    table: (() => {
-      const box = document.querySelector('[data-testid="paradigm-table"]')?.parentElement;
-      return box ? box.scrollWidth - box.clientWidth : 0;
-    })(),
+    // no table needs sideways scrolling at 390 px
+    table: Math.max(
+      0,
+      ...Array.from(document.querySelectorAll('[data-testid="paradigm-table"]')).map((t) => (t.parentElement?.scrollWidth ?? 0) - (t.parentElement?.clientWidth ?? 0)),
+    ),
   }));
   expect(fits.w).toBeLessThanOrEqual(fits.c);
   expect(fits.top).toBe(0);
@@ -143,4 +144,115 @@ test('Paradigms: every form of the mood tables fits its cell at phone width, wit
     expect(cut, id).toEqual([]);
     await shot(page, `paradigms-${id}-open`);
   }
+});
+
+const SIZES = { Normal: 1, Large: 1.3, Largest: 1.6 } as const;
+
+/** Every table of the page, measured as it is drawn: what runs out of its cell, over its neighbour or off the table's edge. Empty when all fits. */
+async function misfits(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const bad: string[] = [];
+    const lines = (el: Element): number => {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      return new Set(Array.from(range.getClientRects()).map((r) => Math.round(r.top))).size;
+    };
+    for (const table of Array.from(document.querySelectorAll('[data-testid="paradigm-table"]'))) {
+      const box = table.parentElement as HTMLElement;
+      const edge = box.getBoundingClientRect();
+      if (box.scrollWidth > box.clientWidth) bad.push(`table scrolls sideways by ${box.scrollWidth - box.clientWidth}px`);
+      if (edge.right > document.documentElement.clientWidth + 0.5) bad.push('table runs off the screen');
+      if (document.documentElement.scrollWidth > document.documentElement.clientWidth) bad.push('the page scrolls sideways');
+      // a Greek form: whole in one line, inside its own cell (so it cannot lie over the next one) and inside the table
+      for (const cell of Array.from(table.querySelectorAll<HTMLElement>('[data-cell][data-state="shown"][lang="grc"]'))) {
+        const td = cell.closest('td') as HTMLElement;
+        const range = document.createRange();
+        range.selectNodeContents(cell);
+        const text = range.getBoundingClientRect();
+        const own = td.getBoundingClientRect();
+        const name = `${cell.dataset.cell} (${cell.textContent})`;
+        if (cell.scrollWidth > cell.clientWidth) bad.push(`${name} runs out of its cell`);
+        if (text.left < own.left - 0.5 || text.right > own.right + 0.5) bad.push(`${name} lies outside its cell`);
+        if (text.right > edge.right + 0.5 || text.left < edge.left - 0.5) bad.push(`${name} is cut at the table edge`);
+        if (lines(cell) > 1) bad.push(`${name} wraps`);
+      }
+      // a heading or a row label: no word broken inside and nothing wider than its box
+      for (const label of Array.from(table.querySelectorAll<HTMLElement>('th'))) {
+        const words = (label.textContent ?? '').trim().split(/\s+/).filter(Boolean).length;
+        if (label.scrollWidth > label.clientWidth) bad.push(`label '${label.textContent}' is wider than its cell`);
+        if (lines(label) > words) bad.push(`label '${label.textContent}' breaks inside a word`);
+        // the phone's font is not this machine's: the longest word has to fit with room to spare, not by a hair
+        const style = getComputedStyle(label);
+        const room = label.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+        const widest = Math.max(
+          0,
+          ...(label.textContent ?? '').split(/\s+/).filter(Boolean).map((word) => {
+            const probe = document.createElement('span');
+            probe.style.cssText = `position:absolute;visibility:hidden;white-space:nowrap;font:${style.font}`;
+            probe.textContent = word;
+            document.body.appendChild(probe);
+            const width = probe.getBoundingClientRect().width;
+            probe.remove();
+            return width;
+          }),
+        );
+        if (widest > room - 4) bad.push(`label '${label.textContent}' has a word of ${widest.toFixed(0)}px in ${room.toFixed(0)}px`);
+      }
+    }
+    return bad;
+  });
+}
+
+async function openAllSolid(page: Page) {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await putLevels(page, Object.fromEntries(LADDER.map((idea) => [idea.id, 'solid' as const])));
+  await page.reload();
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+}
+
+/** Opens each table in Review mode at a Text size and reports what does not fit, as 'table: what'. */
+async function sweep(page: Page, ids: string[], size: keyof typeof SIZES): Promise<string[]> {
+  const found: string[] = [];
+  for (const id of ids) {
+    await page.goto(`/#/paradigms?t=${id}&mode=review`);
+    await page.evaluate((scale) => document.documentElement.style.setProperty('--lp-scale', String(scale)), SIZES[size]);
+    await expect(page.locator('[data-cell][data-state="shown"]').first()).toBeVisible();
+    for (const problem of await misfits(page)) found.push(`${id} at ${size}: ${problem}`);
+  }
+  return found;
+}
+
+const ALL = PARADIGMS.map((table) => table.id);
+
+test('mw-svw421.15: a six-column table prints no Greek over the next column at 390 px', async ({ page }) => {
+  await openAllSolid(page);
+  const sixColumns = PARADIGMS.filter((table) => table.columns.length >= 6).map((table) => table.id);
+  expect(sixColumns).toEqual(expect.arrayContaining(['article', 'adjective-endings', 'pronouns-demonstrative-relative']));
+  expect(await sweep(page, sixColumns, 'Normal')).toEqual([]);
+  await page.goto('/#/paradigms?t=adjective-endings&mode=review');
+  await shot(page, 'paradigms-adjective-fits');
+});
+
+test('mw-svw421.26: at Large and Largest no form runs out of its cell, overlaps or is cut at the table edge', async ({ page }) => {
+  await openAllSolid(page);
+  expect(await sweep(page, ALL, 'Large')).toEqual([]);
+  expect(await sweep(page, ALL, 'Largest')).toEqual([]);
+  await page.goto('/#/paradigms?t=participle&mode=review');
+  await shot(page, 'paradigms-participle-largest');
+});
+
+test("mw-svw421.27: εἰμί's Participle row labels never break mid-word at Normal", async ({ page }) => {
+  await openAllSolid(page);
+  expect(await sweep(page, ['eimi'], 'Normal')).toEqual([]);
+  const participle = page.locator('th[scope="row"]', { hasText: 'Nominative' });
+  await expect(participle).toHaveCount(3);
+  await participle.last().scrollIntoViewIfNeeded();
+  await shot(page, 'paradigms-eimi-participle');
+});
+
+test('Paradigms sweep: every table fits at Small and Normal with every idea solid', async ({ page }) => {
+  await openAllSolid(page);
+  expect(await sweep(page, ALL, 'Normal')).toEqual([]);
 });
