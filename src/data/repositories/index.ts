@@ -4,6 +4,7 @@ export { addImportedWords, addWordToLearn, holdsOnlyExampleWords, wordIsListed, 
 export type { Word, WordOutcome, WordState } from './words';
 export { getIpaProgress, learnIpaSound, noteIpaAnswer, passIpaCheck, startIpaCourse } from './ipaCourse';
 export { getHardSoundsDone, markHardSoundDone } from './hardSounds';
+export { getPairRuns, recordPairRun, savePairRun } from './pairDrills';
 export {
   clearGrammarAnswers,
   getGoal,
