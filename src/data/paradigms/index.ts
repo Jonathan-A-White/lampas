@@ -1,6 +1,7 @@
 // src/data/paradigms/index.ts — the paradigm tables, in the order the Paradigms list shows them (docs/paradigms.md), and what his
 // grammar levels make of them. Pure: the levels come in as a lookup (listLevels' rows, or a fixture).
 import { ideasOf } from '../grammar/ladder';
+import { patternsOf } from '../grammar/patterns';
 import type { Level } from '../grammar/needs';
 import { ADJECTIVE_ENDINGS } from './adjectiveEndings';
 import { AORIST_AND_FUTURE_PASSIVE } from './aoristAndFuturePassive';
@@ -88,29 +89,47 @@ export const paradigmsOf = (ideaId: string): Paradigm[] => PARADIGMS.filter((p) 
 /**
  * The one table that holds the ending of a form with this RP code (mw-svw421.5): the table with a cell whose ideas share the most with the ideas the code names
  * (ladder.ts ideasOf); the earlier table in the list when two share as many; undefined when none shares any (a preposition, a conjunction). A code the ladder does
- * not know has none.
+ * not know has none. A code names no declension and no contract or -μι verb, so a word given as `word` (its lemma, and its form for an adjective) also wants the
+ * declension its lemma has (patterns.ts patternsOf), against the cell's ideas and the table's: a form of πατήρ is in The third declension, not Noun endings
+ * (mw-svw421.37). Without the word only the code is weighed.
  */
-export function tableFor(code: string): Paradigm | undefined {
-  // kept per code (mw-5r3p30.422): a drill asks it of every word of the passage on each of its tries, and the answer depends on the code alone
-  if (tableCache.has(code)) return tableCache.get(code);
-  const table = findTable(code);
-  tableCache.set(code, table);
+export function tableFor(code: string, word?: { l: string; t?: string }): Paradigm | undefined {
+  // kept per code and lemma (mw-5r3p30.422): a drill asks it of every word of the passage on each of its tries
+  const key = word ? `${code}|${word.l}|${word.t ?? ''}` : code;
+  if (tableCache.has(key)) return tableCache.get(key);
+  const table = findTable(code, word);
+  tableCache.set(key, table);
   return table;
 }
 
+/** The ideas a code names, kept per code, however many lemmas carry it (drill-work.test.ts); undefined for a code the ladder does not know. */
+function ideasOfCode(code: string): string[] | undefined {
+  if (!wantedCache.has(code)) {
+    try {
+      wantedCache.set(code, ideasOf(code));
+    } catch {
+      wantedCache.set(code, undefined);
+    }
+  }
+  return wantedCache.get(code);
+}
+
+const wantedCache = new Map<string, string[] | undefined>();
+// only the declensions weigh: the other patterns (contract, -μι, the augment) belong to a verb whose other tenses, moods and voices are in the tables of those
+const DECLENSIONS = ['declension-1', 'declension-2', 'declension-3'];
 const tableCache = new Map<string, Paradigm | undefined>();
 
-function findTable(code: string): Paradigm | undefined {
-  let wanted: string[];
-  try {
-    wanted = ideasOf(code);
-  } catch {
-    return undefined;
-  }
+function findTable(code: string, word?: { l: string; t?: string }): Paradigm | undefined {
+  const wanted = ideasOfCode(code);
+  if (!wanted) return undefined;
+  const patterns: string[] = word ? patternsOf({ l: word.l, p: code, t: word.t }).filter((id) => DECLENSIONS.includes(id)) : [];
+  // the patterns a table's cells carry (a third-declension cell names declension-3); a table that names a pattern in its own `ideas` holds it whole
+  const sharedWith = (ideas: readonly string[]): number => ideas.filter((id) => wanted.includes(id) || patterns.includes(id)).length;
   let best: Paradigm | undefined;
   let bestShared = 0;
   for (const table of PARADIGMS) {
-    const shared = Math.max(0, ...cellsOf(table).map((cell) => cell.ideas.filter((id) => wanted.includes(id)).length));
+    const own = table.ideas.filter((id) => patterns.includes(id));
+    const shared = Math.max(0, ...cellsOf(table).map((cell) => sharedWith([...new Set([...cell.ideas, ...own])])));
     if (shared > bestShared) [best, bestShared] = [table, shared];
   }
   return best;

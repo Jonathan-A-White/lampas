@@ -66,9 +66,9 @@ A table is never a dead end, and an ending is never asked before the table that 
 - **The list** is grouped by the table's `tier`, under the tier's title (`TIER_TITLES`, src/approaches/ladder.ts): Nouns, Pronouns, Verbs; a tier with no table is left out.
 - **Opening a table is kept**: ParadigmsScreen writes the table's id to the settings store key `paradigmsOpened` (a JSON list, oldest first;
   `src/data/repositories/paradigmsOpened.ts` `markParadigmOpened` / `listOpenedParadigms`; no Dexie version, outside the settings registry).
-- **`tableFor(code)`** names the one table that holds the ending of a form with this RP code: the table with a cell sharing the most ideas with `ideasOf(code)`, the earlier table
+- **`tableFor(code, word?)`** names the one table that holds the ending of a form with this RP code: the table with a cell sharing the most ideas with `ideasOf(code)`, the earlier table
   in the list on a tie, none for a word that has no endings to learn (`PREP`, `CONJ`). `tableFor('N-GSF')` is `noun-endings`, `tableFor('V-API-3S')` is
-  `aorist-and-future-passive`.
+  `aorist-and-future-passive`. A code names no declension, so given the word (`{ l, t? }`) it also weighs the declension its lemma has (`patternsOf`): `tableFor('N-GSM', πατήρ)` is `third-declension`, not `noun-endings` (mw-svw421.37; tests/unit/paradigm-links.test.ts sweeps every word of the text).
 - **An ending is asked once its table is open**: see 'Ending questions' in docs/grammar.md.
 
 ## What unlocks a form

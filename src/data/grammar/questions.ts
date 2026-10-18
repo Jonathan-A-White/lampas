@@ -535,7 +535,7 @@ export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], rand
   const places = placesOf(passage).filter((p) => parsedOf(p.word.p).features.length > 0);
   const stems = (p: Place) => stemOf(p.word.l, p.word.t);
   const open = (p: Place) => {
-    const table = tableFor(p.word.p);
+    const table = tableFor(p.word.p, p.word);
     return table !== undefined && tablesOpen.has(table.id);
   };
   // only in the terms taught so far, and still one right ending (featuresOf), and only from a table he has opened
@@ -564,7 +564,7 @@ export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], rand
     ref: place.ref,
     form: `${stem}_`,
     code: place.word.p,
-    table: tableFor(place.word.p)?.id,
+    table: tableFor(place.word.p, place.word)?.id,
     facet: ENDING,
   };
 }
