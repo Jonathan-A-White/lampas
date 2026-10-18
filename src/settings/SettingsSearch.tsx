@@ -1,4 +1,5 @@
-// src/settings/SettingsSearch.tsx — the settings search from every screen (mw-5r3p30.502): a magnifier in the screen's header (src/ScreenHeader.tsx, the Reader's
+// src/settings/SettingsSearch.tsx — the settings search from every screen (mw-5r3p30.502): a magnifier named 'Find a setting' (not 'Search settings', which a role-and-name
+// match on 'Settings', the gear, would also find) in the screen's header (src/ScreenHeader.tsx, the Reader's
 // header) opens a sheet with a search field; typing lists the settings whose name or hint holds the words (searchSettings, src/settings/rows.ts), and a tap on one
 // opens Settings at that row, marked (src/settings/link.ts openSetting). The sheet is left first (closeAllSheets), so Back from Settings is the screen he
 // started from. The Settings page has its own search field at the top and draws no magnifier.
@@ -29,7 +30,7 @@ export function SettingsSearchSheet({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-30 flex flex-col">
       <div aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-black/60" />
-      <div role="dialog" aria-modal="true" aria-label="Search settings" className="relative flex max-h-[85dvh] flex-col rounded-b-2xl border-b border-line bg-surface">
+      <div role="dialog" aria-modal="true" aria-label="Find a setting" className="relative flex max-h-[85dvh] flex-col rounded-b-2xl border-b border-line bg-surface">
         <div className="flex items-center gap-2 px-3 pt-3">
           <input
             ref={focusOnMount}
@@ -88,7 +89,7 @@ export function SettingsSearchButton() {
     <>
       <button
         type="button"
-        aria-label="Search settings"
+        aria-label="Find a setting"
         aria-haspopup="dialog"
         onClick={() => setOpen(true)}
         className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-lg text-accent active:bg-line"
