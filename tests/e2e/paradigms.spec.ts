@@ -146,7 +146,7 @@ test('Paradigms: every form of the mood tables fits its cell at phone width, wit
   }
 });
 
-const SIZES = { Normal: 1, Large: 1.3, Largest: 1.6 } as const;
+const SIZES = { Small: 0.85, Normal: 1, Large: 1.3, Largest: 1.6 } as const;
 
 /** Every table of the page, measured as it is drawn: what runs out of its cell, over its neighbour or off the table's edge. Empty when all fits. */
 async function misfits(page: Page): Promise<string[]> {
@@ -254,5 +254,6 @@ test("mw-svw421.27: εἰμί's Participle row labels never break mid-word at No
 
 test('Paradigms sweep: every table fits at Small and Normal with every idea solid', async ({ page }) => {
   await openAllSolid(page);
+  expect(await sweep(page, ALL, 'Small')).toEqual([]);
   expect(await sweep(page, ALL, 'Normal')).toEqual([]);
 });
