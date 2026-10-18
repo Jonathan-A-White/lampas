@@ -33,6 +33,15 @@ export function passagesOf(verses: Verse[]): Passage[] {
 /** The passage that starts at verse `first`, or undefined when no heading starts there. */
 export const passageAt = (verses: Verse[], first: number): Passage | undefined => passagesOf(verses).find((p) => p.first === first);
 
+/**
+ * Any run of verses of the chapter, from verse `from` to verse `to` (a lesson's range, src/approaches: '1 John 1:1-4'), as a Passage under `heading`; a verse the chapter
+ * does not have is left out and `to` is cut to the chapter's last. Undefined when the range holds no verse.
+ */
+export function rangeOf(verses: Verse[], from: number, to: number, heading: string): Passage | undefined {
+  const held = verses.filter((v) => v.n >= from && v.n <= to);
+  return held.length === 0 || to < from ? undefined : { heading, first: held[0].n, last: held[held.length - 1].n, verses: held };
+}
+
 /** The passage as one Verse: `n` the first verse, `to` the last, `h` the heading, and the Greek words and English chunks of every verse in order. */
 export function passageVerse(passage: Passage): Verse {
   return {

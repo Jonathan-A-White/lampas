@@ -10,14 +10,14 @@ this form. A phone that refuses the clipboard shows the link in a box to copy by
 
 ### `ref=` — a verse, a chapter or a book
 
-Case does not matter; spaces, dots and colons are all accepted between the parts; a verse range keeps its first verse.
+Case does not matter; spaces, dots and colons are all accepted between the parts; a verse range ("Heb 7:1-3", "1John.1.1-4") opens the Verse view on those verses (mw-z370x5.2); a one-verse range is the verse.
 
 | Written | Opens |
 | --- | --- |
 | `#/?ref=Rom.8.28` (OSIS) | Romans 8, verse 28 selected |
 | `#/?ref=Rom 8:28`, `#/?ref=Romans%208:28`, `#/?ref=romans+8:28` | the same |
 | `#/?ref=1John.1.9`, `#/?ref=1Jn.1.9`, `#/?ref=1 John 1:9` | 1 John 1, verse 9 selected |
-| `#/?ref=Rom.8.28-30` | Romans 8, verse 28 selected |
+| `#/?ref=Rom.8.28-30` | the Verse view on Romans 8:28-30 |
 | `#/?ref=Rom 8`, `#/?ref=Rom.8` | Romans 8, no verse selected |
 | `#/?ref=Jude` | Jude 1 |
 

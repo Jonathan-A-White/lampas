@@ -45,13 +45,15 @@ export interface Reference {
   book: string;
   chapter?: number;
   verse?: number;
+  /** the last verse of a range ('Heb 7:1-3'), when it is after `verse` */
+  to?: number;
 }
 
 /** The scheme the browser puts in front of a web+lampas: link it hands over. */
 const SCHEME = /^web[+ ]lampas:\/*/i;
 
 /** A reference as people write it ('Rom.8.28', 'Rom 8:28', 'Romans 8:28', '1 John 1:9', '1Jn.1.9', 'Rom 8', 'Romans'), or null when it names no
- * book Lampas could hold. A verse range keeps its first verse. */
+ * book Lampas could hold. A verse range keeps its first verse in `verse` and its last in `to`. */
 export function parseReference(text: string): Reference | null {
   const named = /^([1-3]?)\s*([a-z]+)\.?\s*(.*)$/i.exec(text.trim().replace(SCHEME, '').replace(/\+/g, ' '));
   if (!named) return null;
@@ -60,13 +62,14 @@ export function parseReference(text: string): Reference | null {
   return numbersOf(book, named[3].trim());
 }
 
-/** The chapter and verse that follow a book's name ('' for none, '8:28', '8 28', '8.28', '8:28-30' keeps the first verse), or null for anything else. */
+/** The chapter and verse that follow a book's name ('' for none, '8:28', '8 28', '8.28', '8:28-30' keeps the first verse and the last in `to`), or null for anything else. */
 function numbersOf(book: string, rest: string): Reference | null {
   if (rest === '') return { book };
-  const numbers = /^(\d+)(?:(?:\s*[.:]\s*|\s+)(\d+))?(?:\s*[-–]\s*\d+)?$/.exec(rest);
+  const numbers = /^(\d+)(?:(?:\s*[.:]\s*|\s+)(\d+))?(?:\s*[-–]\s*(\d+))?$/.exec(rest);
   if (!numbers) return null;
   const reference: Reference = { book, chapter: Number(numbers[1]) };
   if (numbers[2] !== undefined) reference.verse = Number(numbers[2]);
+  if (reference.verse !== undefined && numbers[3] !== undefined && Number(numbers[3]) > reference.verse) reference.to = Number(numbers[3]);
   return reference;
 }
 
@@ -107,6 +110,8 @@ export interface Opened {
   chapter: number;
   /** the verse to select, or null for none */
   verse: number | null;
+  /** the last verse of a range the link named ('Heb 7:1-3'): the Verse view opens on verses `verse` to `to` */
+  to?: number;
   notice: string | null;
   /** set for a place in the Old Testament, which Lampas does not hold yet: where a Bible app can open it (the notice then offers that) */
   elsewhere?: { book: string; chapter: number; verse?: number };
@@ -154,7 +159,9 @@ export function resolveReference(text: string, index: BookIndex | null, fallback
   if (parsed.verse === undefined) return { book, chapter, verse: null, notice: null };
   const last = info.verses[chapter - 1];
   const verse = last === undefined ? Math.max(parsed.verse, 1) : Math.min(Math.max(parsed.verse, 1), last);
-  return { book, chapter, verse, notice: verse === parsed.verse ? null : notHeld(asked, `${titleOf(book, chapter)}:${verse}`, printed) };
+  if (verse !== parsed.verse) return { book, chapter, verse, notice: notHeld(asked, `${titleOf(book, chapter)}:${verse}`, printed) };
+  const to = parsed.to === undefined ? undefined : Math.min(parsed.to, last ?? parsed.to);
+  return { book, chapter, verse, ...(to !== undefined && to > verse ? { to } : {}), notice: null };
 }
 
 /** A word as the lexicon has it. */
