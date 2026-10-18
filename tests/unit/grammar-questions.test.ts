@@ -1,12 +1,17 @@
 // The pure grammar questions (src/data/grammar/questions.ts): a paradigm ending, tap the form, a letter, its sound, the stressed syllable.
+import '@testing-library/react/dont-cleanup-after-each';
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { cleanup, render } from '@testing-library/react';
+import { createElement } from 'react';
+import { afterEach, describe, expect, it } from 'vitest';
+import { GrammarCard } from '../../src/GrammarCard';
 import type { Chapter } from '../../src/data/chapter';
 import { gradedVerses } from '../../src/data/grammar/gradedVerses';
 import { LADDER, ideaOf, ideasOf } from '../../src/data/grammar/ladder';
 import {
   buildEnding,
   buildIdeaQuestion,
+  buildConcept,
   buildLetter,
   buildMeaning,
   buildSound,
@@ -401,5 +406,30 @@ describe('a sentence idea drilled on its verses (mw-br588b.3)', () => {
     expect(formOfQuestion(q)).toBe(forms);
     const t = buildTapUse(agreement, [rom8], mulberry32(1))!;
     expect(formOfQuestion(t)).toBe(t.right);
+  });
+});
+
+// mw-86e9r1.53: the Greek in a question's prompt is drawn in the Greek face like the Greek on the answer buttons, not in the UI sans around it.
+describe('the Greek in a concept card\'s prompt', () => {
+  afterEach(cleanup);
+  const GREEK = /\p{Script=Greek}+/gu;
+  const greekPrompts = LADDER.map((idea) => buildConcept(idea, mulberry32(1))).filter((q) => /\p{Script=Greek}/u.test(q.prompt));
+
+  it('is there to check: some concept card has Greek in its prompt', () => {
+    expect(greekPrompts.length).toBeGreaterThan(0);
+  });
+
+  it('sits in lang grc elements in the Greek face (font-greek), the English around it outside them', () => {
+    for (const question of greekPrompts) {
+      const view = render(createElement(GrammarCard, { question, mode: 'choice', picked: null, onPick: () => {} }));
+      const prompt = view.getByTestId('grammar-prompt');
+      const inGreekFace = Array.from(prompt.querySelectorAll('[lang="grc"].font-greek'));
+      const drawn = inGreekFace.map((el) => el.textContent ?? '').join(' ');
+      // every Greek word of the prompt is inside a Greek-face run, and no run holds a word of English
+      expect(drawn.match(GREEK)?.join(' '), question.ideaId).toBe(question.prompt.match(GREEK)?.join(' '));
+      for (const el of inGreekFace) expect(el.textContent, question.ideaId).not.toMatch(/[A-Za-z]/);
+      expect(prompt.className, question.ideaId).not.toContain('font-greek');
+      view.unmount();
+    }
   });
 });
