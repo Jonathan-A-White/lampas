@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { DEVICE_KEY_STORAGE_KEY, LICENCE_GRACE_MS } from '../../src/config';
 import { getOrCreateDeviceKey } from '../../src/services/deviceKey';
-import { forgetHeld, heldWithinGrace, rememberHeld } from '../../src/services/licenceCache';
+import { forgetHeld, heldIssuer, heldWithinGrace, rememberHeld } from '../../src/services/licenceCache';
 
 beforeEach(() => window.localStorage.clear());
 
@@ -34,6 +34,16 @@ describe('the held-licence memory', () => {
     rememberHeld('pub', NOW);
     expect(heldWithinGrace('pub', NOW + LICENCE_GRACE_MS)).toBe(true);
     expect(heldWithinGrace('pub', NOW + LICENCE_GRACE_MS + 1)).toBe(false);
+  });
+
+  it('remembers who signed the licence, for this key only (mw-cvwm1u.5: a site issuer’s licence has devices to list)', () => {
+    rememberHeld('pub', NOW, undefined, 'abc');
+    expect(heldIssuer('pub')).toBe('abc');
+    expect(heldIssuer('other')).toBeUndefined();
+    rememberHeld('pub', NOW);
+    expect(heldIssuer('pub')).toBeUndefined();
+    forgetHeld();
+    expect(heldIssuer('pub')).toBeUndefined();
   });
 
   it('does not carry over to another key, a clock gone backwards, or after forgetting', () => {

@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react';
 import { ISSUER } from '../config';
 import { getOrCreateDeviceKey } from '../services/deviceKey';
-import { forgetHeld, heldWithinGrace, rememberHeld } from '../services/licenceCache';
+import { forgetHeld, heldIssuer, heldWithinGrace, rememberHeld } from '../services/licenceCache';
 import { LicenceConfigError, fetchLicenceStatus, type LicenceStatus } from '../services/licenceCheck';
 import type { Locked } from './Unlock';
 
@@ -20,19 +20,22 @@ export interface LicenceCheckOptions {
   retryMs?: number;
 }
 
-export type CheckState = { kind: 'open' } | Locked;
+/** `issuer` is the key that signed the licence's mint, when known. */
+export type CheckState = { kind: 'open'; issuer?: string } | Locked;
 
 export interface LicenceCheck {
   state: CheckState;
   publicKeyHex: string;
   /** Goes back to 'checking' and asks the chain again. */
   checkAgain: () => void;
+  /** This phone's licence was taken back by the person removing it (My devices): not licensed at once, without waiting for the chain. */
+  removed: () => void;
 }
 
 export function useLicenceCheck({ issuer = ISSUER, check, now = Date.now, retryMs = 15_000 }: LicenceCheckOptions): LicenceCheck {
   const [{ publicKeyHex }] = useState(() => getOrCreateDeviceKey());
   // A held answer still inside the grace is open at once; the check below then confirms or locks it.
-  const [state, setState] = useState<CheckState>(() => (heldWithinGrace(publicKeyHex, now()) ? { kind: 'open' } : { kind: 'checking' }));
+  const [state, setState] = useState<CheckState>(() => (heldWithinGrace(publicKeyHex, now()) ? { kind: 'open', issuer: heldIssuer(publicKeyHex) } : { kind: 'checking' }));
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
@@ -48,14 +51,14 @@ export function useLicenceCheck({ issuer = ISSUER, check, now = Date.now, retryM
         status = await (check ? check(publicKeyHex) : fetchLicenceStatus(publicKeyHex, { issuer }));
       } catch (error) {
         if (!live || mine !== seq) return;
-        if (heldWithinGrace(publicKeyHex, now())) setState({ kind: 'open' });
+        if (heldWithinGrace(publicKeyHex, now())) setState({ kind: 'open', issuer: heldIssuer(publicKeyHex) });
         else setState({ kind: 'error', setup: error instanceof LicenceConfigError ? error.message : undefined });
         return;
       }
       if (!live || mine !== seq) return;
       if (status.state === 'held') {
-        rememberHeld(publicKeyHex, now());
-        setState({ kind: 'open' });
+        rememberHeld(publicKeyHex, now(), undefined, status.issuer);
+        setState({ kind: 'open', issuer: status.issuer?.toLowerCase() });
       } else if (status.state === 'indexing') {
         setState({ kind: 'checking' });
         timer = window.setTimeout(() => void run(), retryMs);
@@ -83,6 +86,10 @@ export function useLicenceCheck({ issuer = ISSUER, check, now = Date.now, retryM
     checkAgain: () => {
       setState({ kind: 'checking' });
       setAttempt((n) => n + 1);
+    },
+    removed: () => {
+      forgetHeld();
+      setState({ kind: 'revoked' });
     },
   };
 }

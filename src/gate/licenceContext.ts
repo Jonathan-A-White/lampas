@@ -12,6 +12,10 @@ export interface LicenceDetail {
   locked: Locked | null;
   publicKeyHex: string;
   checkAgain: () => void;
+  /** True when the licence was minted by an issuer that is not the Governor's own: the site issuer, whose licences belong to a person with devices (My devices). */
+  siteIssued: boolean;
+  /** This phone's licence was removed from My devices: it is not licensed at once. */
+  removed: () => void;
 }
 
 export const LicenceContext = createContext<LicenceDetail | null>(null);
