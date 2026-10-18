@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.313
+_2026-10-18_
+- Fixed: the augment lesson now quotes a phrase that is really in 1 John 1:1.
+- Fixed: Ask the tutor on Settings now remembers what you asked earlier in the talk, so a follow-up like "Here are the others" is answered in context.
+
 ## 0.1.312
 _2026-10-18_
 - Fixed: the augment sheet now gives the same English for a word in its worked example and in its examples.

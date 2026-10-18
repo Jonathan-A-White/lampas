@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.313",
+    "date": "2026-10-18",
+    "story": "mw-svw421.35",
+    "kind": "fixed",
+    "text": "the augment lesson now quotes a phrase that is really in 1 John 1:1."
+  },
+  {
+    "version": "0.1.313",
+    "date": "2026-10-18",
+    "story": "mw-5r3p30.615",
+    "kind": "fixed",
+    "text": "Ask the tutor on Settings now remembers what you asked earlier in the talk, so a follow-up like \"Here are the others\" is answered in context."
+  },
+  {
     "version": "0.1.312",
     "date": "2026-10-18",
     "story": "mw-svw421.34",
