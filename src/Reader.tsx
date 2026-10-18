@@ -42,6 +42,9 @@ import { stepOf, stepOfVerse } from './reader/steps';
 import { LinkNotice } from './reader/LinkNotice';
 import { SwipeNote } from './reader/SwipeNote';
 import { type SwipeEnd, useChapterSwipe } from './reader/useChapterSwipe';
+import { usePages } from './reader/usePages';
+import { useSetting } from './settings/store';
+import { readingModeSetting } from './settings/definitions';
 import { useSheetOpen } from './ui/sheetBack';
 import { BOOKS } from './data/books';
 import { ChapterFailed } from './reader/ChapterFailed';
@@ -165,7 +168,12 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const inner = useRef<HTMLDivElement | null>(null);
   const [swipeEnd, setSwipeEnd] = useState<SwipeEnd | null>(null);
   const dismissSwipeNote = useCallback(() => setSwipeEnd(null), []);
-  useChapterSwipe(main, inner, BOOK, CHAPTER, sheetOpen, setSwipeEnd);
+  // Turn pages (Settings > Reading, src/reader/usePages.ts): the chapter in pages, turned by a tap on the outer thirds or a swipe, which then never
+  // changes the chapter.
+  const paging = useSetting(readingModeSetting) === 'pages';
+  useChapterSwipe(main, inner, BOOK, CHAPTER, sheetOpen || paging, setSwipeEnd);
+  const pages = usePages(paging && chapter !== null && !failed, main, inner, sheetOpen);
+  const showPage = pages.show;
   const [linked, setLinked] = useState(() => (link?.word ? lemmaSheet(link.word) : null));
   const [prefill, setPrefill] = useState(() => (request?.action === 'ask' ? { verse: request.verse, text: request.question } : null));
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
@@ -235,8 +243,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const showVerse = useCallback((n: number) => {
     const box = main.current;
     const el = box?.querySelector<HTMLElement>(`[data-verse="${n}"]`);
-    if (box && el) box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
-  }, []);
+    if (box && el && paging) showPage(el);
+    else if (box && el) box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
+  }, [paging, showPage]);
   const closeTeach = useCallback(() => setTeaching(false), []);
   const verseTalk: VerseTalk = { onHold: holdTalk, onRelease: () => void voice.release(), onDrop: voice.abort };
   const woven = useWoven(chapter, settings);
@@ -313,11 +322,15 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     const box = main.current;
     const el = readingVerse === null ? null : box?.querySelector<HTMLElement>(`[data-verse="${readingVerse}"]`);
     if (!box || !el) return;
+    if (paging) {
+      showPage(el);
+      return;
+    }
     const margin = 16;
     const bar = box.getBoundingClientRect();
     const rect = el.getBoundingClientRect();
     if (rect.top < bar.top + margin || rect.bottom > bar.bottom - margin) box.scrollTop += rect.top - bar.top - margin;
-  }, [readingVerse]);
+  }, [readingVerse, paging, showPage]);
 
   return (
     <>
@@ -349,8 +362,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       {swipeEnd ? <SwipeNote end={swipeEnd} lastBook={BOOKS[BOOKS.length - 1].name} onDismiss={dismissSwipeNote} /> : null}
       <ReadingBar reading={reading} />
       {chapter && !failed ? <ImmersiveHint enabled={immersive} /> : null}
-      <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} data-immersive={immersive ? 'on' : 'off'} style={chapter ? { marginBottom: away || !ai ? 0 : `calc(${ASK_BUTTON_ROOM})`, marginRight: ai ? ASK_BUTTON_GUTTER : undefined, transition: immersive ? 'margin-bottom 200ms ease' : undefined } : undefined} className="screen min-h-0 flex-1 touch-pan-y px-1 pt-2">
-        <div ref={inner}>
+      <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} data-immersive={immersive ? 'on' : 'off'} data-paging={paging ? 'pages' : 'scroll'} style={chapter ? { marginBottom: away || !ai ? 0 : `calc(${ASK_BUTTON_ROOM})`, marginRight: ai ? ASK_BUTTON_GUTTER : undefined, transition: immersive ? 'margin-bottom 200ms ease' : undefined } : undefined} className="screen min-h-0 flex-1 touch-pan-y px-1 pt-2">
+        <div ref={inner} data-pages={paging ? '' : undefined}>
         {failed ? (
           <ChapterFailed title={TITLE} onRetry={retry} onPick={() => setPicking(true)} />
         ) : chapter && view && layout && headings ? (
@@ -402,6 +415,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         )}
         </div>
       </main>
+      {paging && chapter && !failed && !viewUnit ? <PlaceLine title={TITLE} at={`Page ${pages.page} of ${pages.count}`} /> : null}
       <BarSlot level={1} />
       {chapter && !failed && !viewUnit ? <LicenceTip /> : null}
       {chapter && !viewUnit && ai ? (
@@ -417,7 +431,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           />
         </Away>
       ) : null}
-      {immersive && away && chapter && !failed && !viewUnit ? <PlaceLine title={TITLE} percent={percent} /> : null}
+      {!paging && immersive && away && chapter && !failed && !viewUnit ? <PlaceLine title={TITLE} at={`${percent}%`} /> : null}
       {chapter && !viewUnit ? (
         <AskTutorButton
           away={immersive ? away : undefined}
