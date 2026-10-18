@@ -11,8 +11,10 @@ import { App } from '../../src/App';
 import { type Chapter, type GreekWord, type Verse, wordLemma } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { LADDER } from '../../src/data/grammar/ladder';
-import { getWeave, getWeaveGrammar, recordAnswer, setLevel } from '../../src/data/repositories';
+import { getWeave, getWeaveGrammar, recordAnswer, setLevel, setWeave as saveWeave } from '../../src/data/repositories';
 import { SETTINGS } from '../../src/settings/registry';
+import { stubSpeech, GREEK_VOICE, ENGLISH_VOICE, type FakeSynth } from '../../tests/support/fake-speech';
+import { asSpoken } from '../../tests/support/lone-word';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 
@@ -131,6 +133,37 @@ function chunkOfLemma18(lemma: string): number {
 const hintOf = (el: HTMLElement): HTMLElement | null => el.querySelector<HTMLElement>('[data-hint]');
 
 const countLine = (): HTMLElement | null => screen.queryByTestId('weave-count');
+
+
+/** 2 Peter 3:1 puts ὑμῖν γράφω in one English chunk, "to you." (mw-5r3p30.614). */
+async function openSecondPeter(solid: string[]): Promise<void> {
+  cleanup();
+  stubChapterFetch();
+  await db.open();
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.grammarLevels.clear()]);
+  window.localStorage.clear();
+  await seedHisWords();
+  await Promise.all(solid.map((lemma) => db.words.update(lemma, { state: 'solid' })));
+  await saveWeave('solid');
+  window.history.replaceState(null, '', '/#/?b=2pe&c=3');
+  render(<App />);
+  await screen.findByRole('heading', { name: '2 Peter 3', level: 1 });
+  await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
+  await waitFor(() => expect(verseEl(1).querySelectorAll('[data-woven]').length).toBeGreaterThan(0));
+}
+
+/** What a finger on the woven Greek word `form` of verse 1 lands on: the innermost button of a woven chunk whose text holds it. */
+const wovenWord = (form: string): HTMLElement => {
+  const hits = [...verseEl(1).querySelectorAll<HTMLElement>('[data-woven][role="button"], [data-woven] [role="button"]')].filter((el) => squash(el.textContent).split(' ').includes(form));
+  const hit = hits[hits.length - 1];
+  if (!hit) throw new Error(`no woven button for ${form}`);
+  return hit;
+};
+const sheetWords = (): string[] => within(screen.getByRole('dialog')).getAllByTestId('sheet-word').map((e) => e.textContent ?? '');
+
+let synth: FakeSynth;
+/** past the app's 500 ms hold */
+const HOLD_MS = 650;
 
 const feature = await loadFeature('features/weave.feature');
 
@@ -526,5 +559,39 @@ describeFeature(feature, ({ Scenario }) => {
       await waitForReader();
     });
     Then('verse 1 still begins {string}', async (_, start: string) => beginsWith(1, start));
+  });
+  Scenario('Tapping one Greek word of a two-word woven chunk shows only that word', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on 2 Peter 3 with the Weave on and the words {string} and {string} solid', async (_, a: string, b: string) => openSecondPeter([a, b]));
+    When('he taps the woven Greek word {string} in verse {int}', async (_, form: string) => user.click(wovenWord(form)));
+    Then('the word sheet shows only the Greek word {string}', async (_, form: string) => {
+      await screen.findByRole('dialog');
+      expect(sheetWords()).toEqual([form]);
+    });
+    When('he closes the word sheet', async () => {
+      await user.keyboard('{Escape}');
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    });
+    And('he taps the other woven Greek word {string} in verse {int}', async (_, form: string) => user.click(wovenWord(form)));
+    Then('the word sheet then shows only the Greek word {string}', async (_, form: string) => {
+      await screen.findByRole('dialog');
+      expect(sheetWords()).toEqual([form]);
+    });
+  });
+
+  Scenario('A long press on one Greek word of a two-word woven chunk speaks only that word', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on 2 Peter 3 with the Weave on and the words {string} and {string} solid', async (_, a: string, b: string) => openSecondPeter([a, b]));
+    And('the phone has a Greek voice', () => {
+      synth = stubSpeech([ENGLISH_VOICE, GREEK_VOICE]);
+    });
+    When('he long presses the woven Greek word {string} in verse {int}', async (_, form: string) => {
+      const el = wovenWord(form);
+      await user.pointer({ keys: '[MouseLeft>]', target: el, coords: { clientX: 100, clientY: 100 } });
+      await new Promise<void>((resolve) => setTimeout(resolve, HOLD_MS));
+      await user.pointer({ keys: '[/MouseLeft]', target: el, coords: { clientX: 100, clientY: 100 } });
+    });
+    Then('the phone is told to speak only {string}', (_, form: string) => {
+      expect(synth.spoken.map((u) => u.text)).toEqual([asSpoken(form)]);
+    });
+    And('no word sheet is open', () => expect(screen.queryByRole('dialog')).toBeNull());
   });
 });

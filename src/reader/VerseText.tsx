@@ -50,6 +50,7 @@ function Tap({ onTap, onLongPress, lang, className, children, ...data }: {
   'data-woven'?: string;
   'data-learning'?: string;
   'data-word'?: string;
+  'data-hint'?: string;
 }) {
   const press = useLongPress(onTap, onLongPress);
   return (
@@ -124,6 +125,7 @@ export interface VerseProps {
 export function VerseText({ verse, view, woven, onLook }: Pick<VerseProps, 'verse' | 'view' | 'woven' | 'onLook'>) {
   const lookGreek = (w: GreekWord) =>
     onLook({ words: [w], english: w.e === undefined ? undefined : verse.e[w.e]?.t, fromEnglish: false });
+  const lookWord = (w: GreekWord, c: EnglishChunk) => onLook({ words: [w], english: c.t, fromEnglish: false });
   const lookEnglish = (c: EnglishChunk) => onLook({ words: c.g.map((i) => verse.g[i]), english: c.t, fromEnglish: true });
   // A long press says the word alone, in its own language, straight from the press (docs/pwa-best-practices.md section 12).
   // A reading under way is paused by the word (speech/greek.ts speakBeside): a Listen goes on by itself when the word is over.
@@ -141,6 +143,28 @@ export function VerseText({ verse, view, woven, onLook }: Pick<VerseProps, 'vers
         : drawnOrder(verse, woven).map((i) => {
             const c = verse.e[i];
             const weft = woven?.[i];
+            if (weft && weft.words.length > 1) {
+              // Two Greek words behind one English chunk ("to you." is ὑμῖν γράφω): the wrapper only holds the chunk's marks, each word is its own target (mw-5r3p30.614).
+              const words = weft.words.map((w, k) => (
+                <Tap key={k} className={TAP_PAD} onTap={() => lookWord(w, c)} onLongPress={() => say(w.t, 'greek')}>
+                  {w.t}
+                </Tap>
+              ));
+              return (
+                <span key={i} data-chunk={String(i)} data-woven="" data-learning={weft.learning ? '' : undefined} lang="grc" className="font-greek text-[length:var(--lp-greek-size)] text-accent">
+                  {weft.learning ? (
+                    <span className="inline-flex flex-col items-center align-top leading-tight">
+                      <span data-greek>{words}</span>
+                      <Tap data-hint="" lang="en" className="whitespace-nowrap font-sans text-sm font-normal text-muted" onTap={() => lookEnglish(c)} onLongPress={() => say(c.t, 'english')}>
+                        {c.t}
+                      </Tap>
+                    </span>
+                  ) : (
+                    words
+                  )}
+                </span>
+              );
+            }
             return weft ? (
               <Tap
                 key={i}
