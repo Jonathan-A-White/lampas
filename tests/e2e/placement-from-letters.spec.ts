@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { approachOf, stepsOf } from '../../src/approaches';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { storedId } from '../../src/data/grammar/soundScope';
 import { shot } from './shot';
@@ -8,7 +9,7 @@ import { openUnlocked } from './unlocked';
 test.use({ viewport: { width: 390, height: 844 } });
 
 // Puts rows in the app's own store through raw IndexedDB, as the app wrote them.
-async function put(page: Page, store: 'settings' | 'grammarLevels', rows: object[]) {
+async function put(page: Page, store: 'settings' | 'grammarLevels' | 'passageLessons', rows: object[]) {
   await page.evaluate(
     ([name, list]) =>
       new Promise<void>((resolve, reject) => {
@@ -152,6 +153,12 @@ test('Start from the letters when every idea is solid says nothing is left for L
   const now = Date.now();
   await put(page, 'settings', [{ key: 'goal', value: '1 John 1:1' }]);
   await put(page, 'grammarLevels', LADDER.map((idea) => ({ id: storedId(idea.id, 'modern'), level: 'solid', since: now, how: 'marked' })));
+  // Learn next also offers the earliest passage lesson not passed (mw-z370x5.1, 0bb3a52f), so every one is passed too: only then is nothing left.
+  await put(
+    page,
+    'passageLessons',
+    stepsOf(approachOf('ladder')!).flatMap((step) => (step.kind === 'passage' ? [{ key: step.key, state: 'passed', when: now, score: 1 }] : [])),
+  );
   await page.reload();
   await page.goto('/#/goal');
   await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
