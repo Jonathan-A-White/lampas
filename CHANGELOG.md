@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.307
+_2026-10-18_
+- Fixed: In Settings, the Quiz goal no longer says 'Quiz goal' twice in a row; the line under the label now starts 'Kept:'.
+
 ## 0.1.306
 _2026-10-18_
 - New: A passage lesson now opens its verses with a short Lesson strip, and Check asks eight questions to pass it by reading, with Try again tomorrow in Review and the tutor's Quiz me if you miss.

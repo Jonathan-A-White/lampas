@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.307",
+    "date": "2026-10-18",
+    "story": "mw-5r3p30.580",
+    "kind": "fixed",
+    "text": "In Settings, the Quiz goal no longer says 'Quiz goal' twice in a row; the line under the label now starts 'Kept:'."
+  },
+  {
     "version": "0.1.306",
     "date": "2026-10-18",
     "story": "mw-z370x5.2",
