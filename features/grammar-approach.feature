@@ -30,3 +30,20 @@ Feature: Grammar approach
     When he sends "Teach me in the Lampas order"
     Then the sheet shows "Changed: Grammar approach: Lampas ladder" with an Undo button
     And the saved approach is "ladder"
+
+  Scenario: A lesson that holds several ideas lists them by title under it (mw-86e9r1.35, mw-86e9r1.40)
+    Given Settings > Grammar approach shows the path "BMA Tutor" beside the ladder
+    Then under "Small words that take a case" it lists "The preposition περί" and "Compound verbs"
+    And under "Marks over the letters" it lists "Marks that change the word", "Enclitics" and "Words that sound alike"
+
+  Scenario: A tap on an idea under a lesson opens its idea sheet (mw-86e9r1.42)
+    Given Settings > Grammar approach shows the path "BMA Tutor" beside the ladder
+    When he taps "Compound verbs" under "Small words that take a case"
+    Then the idea sheet "Compound verbs" opens and it says "a verb with a preposition joined to its front"
+
+  Scenario: The ladder's lessons open their idea sheet, and Marks lists the ideas the goal's words show (mw-86e9r1.42, mw-86e9r1.40)
+    Given Settings is open on a fresh phone
+    Then the lesson "Marks that change the word" is listed under "Marks"
+    When he taps the lesson "Words that sound alike"
+    Then the idea sheet "Words that sound alike" opens and it says "trust the spelling"
+

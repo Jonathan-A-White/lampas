@@ -36,6 +36,19 @@ test('Settings > Grammar approach at phone width: the one path, the ladder, with
   expect(box?.height).toBeGreaterThanOrEqual(47.5);
   expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390);
 
+  // a lesson's title is a button that opens its idea sheet (mw-86e9r1.42): the lesson of the marks, 48 px tall and inside the window
+  const alike = page.locator('[data-approach-lessons] [data-lesson-title]', { hasText: 'Words that sound alike' });
+  await alike.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  const alikeBox = await alike.boundingBox();
+  expect(alikeBox?.height).toBeGreaterThanOrEqual(47.5);
+  expect((alikeBox?.x ?? 0) + (alikeBox?.width ?? 0)).toBeLessThanOrEqual(390);
+  await alike.click();
+  const sheet = page.getByRole('dialog', { name: 'Idea' });
+  await expect(sheet.getByRole('heading', { name: 'Words that sound alike' })).toBeVisible();
+  await expect(sheet).toContainText(/trust the spelling/i);
+  await sheet.getByRole('button', { name: 'Done' }).click();
+  await expect(sheet).toHaveCount(0);
+
   // the screen scrolls in its own box: bring the section to the top so the shot shows it
   await page.getByRole('heading', { name: 'Grammar approach', level: 2 }).evaluate((el) => el.scrollIntoView({ block: 'start' }));
   await shot(page, 'grammar-approach');

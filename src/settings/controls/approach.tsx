@@ -1,10 +1,12 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
+import { IdeaSheetWithWord } from '../../IdeaSheetWithWord';
 import { AskApproachSheet } from '../../AskApproachSheet';
 import { useAiAllowed } from '../../gate/licenceContext';
-import { APPROACHES, passageKey, passageLabel, type GrammarApproach } from '../../approaches';
+import { APPROACHES, passageKey, passageLabel, type ApproachLesson, type GrammarApproach } from '../../approaches';
 import type { Goal } from '../../data/goal';
 import { nextLesson } from '../../data/grammar/goalProgress';
+import { ideaOf } from '../../data/grammar/ladder';
 import type { PassageNeeds } from '../../data/grammar/needs';
 import { getGrammarApproach } from '../../data/repositories';
 import { listLevels } from '../../data/repositories/grammarLevels';
@@ -36,6 +38,39 @@ function CreditLine({ approach }: { approach: GrammarApproach }) {
   );
 }
 
+/** A tap on a title opens the idea sheet of that idea. */
+const TITLE = 'min-h-12 text-left align-middle text-base text-accent underline decoration-dotted underline-offset-4';
+
+/**
+ * The title of a lesson and the ideas it holds (mw-86e9r1.35, .40, .42): a lesson of one idea whose title is the idea's is a button that opens that idea's sheet;
+ * a lesson of several lists each idea by title under it, each a button that opens its sheet. A passage lesson keeps its range for a title: its ideas are revisits.
+ */
+function LessonTitle({ lesson, onOpen }: { lesson: ApproachLesson; onOpen: (ideaId: string) => void }) {
+  const [only] = lesson.ideas;
+  if (lesson.passage || lesson.ideas.length === 0) return <span data-lesson-title>{lesson.title}</span>;
+  if (lesson.ideas.length === 1 && ideaOf(only).title === lesson.title) {
+    return (
+      <button type="button" data-lesson-title data-idea={only} onClick={() => onOpen(only)} className={TITLE}>
+        {lesson.title}
+      </button>
+    );
+  }
+  return (
+    <>
+      <span data-lesson-title>{lesson.title}</span>
+      <ul data-lesson-ideas className="ml-5 list-disc text-base">
+        {lesson.ideas.map((id) => (
+          <li key={id}>
+            <button type="button" data-idea-title data-idea={id} onClick={() => onOpen(id)} className={TITLE}>
+              {ideaOf(id).title}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
 /** The grammar approach: a choice of the approaches (none is drawn while there is only one path), then the chosen one's credit line, its method
  * and its lessons, with the lesson marked Next that the Goal's Learn next opens for `needs`, his goal's (mw-86e9r1.24; with no goal, the lesson that
  * holds the earliest idea he has no level for). Choosing writes only the approach: his levels are not touched. `approaches` is the list; a test hands
@@ -58,6 +93,7 @@ export function ApproachPicker({
   approaches?: readonly GrammarApproach[];
 }) {
   const approach = approaches.find((a) => a.id === chosen) ?? approaches[0];
+  const [ideaId, setIdeaId] = useState<string | null>(null);
   const next = nextLesson(needs, approach, new Map(Array.from(levels, ([id, row]) => [id, row.level])), { goal, states: passages });
   const choice = approaches.length > 1;
   return (
@@ -93,7 +129,7 @@ export function ApproachPicker({
                 <ol className="list-inside list-decimal text-base">
                   {level.lessons.map((lesson) => (
                     <li key={lesson.title} className={lesson === next?.lesson ? 'font-medium' : undefined}>
-                      <span data-lesson-title>{lesson.title}</span>
+                      <LessonTitle lesson={lesson} onOpen={setIdeaId} />
                       {lesson.passage && passageLabel(lesson.passage) !== lesson.title ? <span data-passage-range> · {passageLabel(lesson.passage)}</span> : null}
                       {lesson.passage && passages.get(passageKey(lesson.passage))?.state === 'passed' ? (
                         <span data-passed className="ml-2 rounded-md border border-line px-2 text-sm text-muted">
@@ -113,6 +149,7 @@ export function ApproachPicker({
           </div>
         ))}
       </div>
+      {ideaId ? <IdeaSheetWithWord ideaId={ideaId} onClose={() => setIdeaId(null)} /> : null}
     </div>
   );
 }

@@ -19,6 +19,9 @@ import { getGrammarApproach } from '../../src/data/repositories';
 import { getLevel, setLevel } from '../../src/data/repositories/grammarLevels';
 import { clearBus } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
+import { bmaTutor } from '../../src/approaches/bma-tutor';
+import { ladder } from '../../src/approaches/ladder';
+import { ApproachPicker } from '../../src/settings/controls/approach';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -79,6 +82,27 @@ async function openTalkApp(changes: { key: string; value: unknown }[]): Promise<
 
 const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
 const changeRows = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-talk-change]'));
+
+/** The idea titles listed under the lesson `lesson`. */
+const ideasUnder = (lesson: string): string[] => Array.from(lessonRow(lesson)?.querySelectorAll('[data-idea-title]') ?? []).map((el) => el.textContent ?? '');
+
+/** The approach list with the ladder and the BMA Tutor path (a test hands the picker a second path), the BMA Tutor chosen. */
+async function showPathBesideLadder(_: unknown, name: string): Promise<void> {
+  expect(name).toBe('BMA Tutor');
+  cleanup();
+  clearBus();
+  window.location.hash = '#/settings';
+  await db.open();
+  await Promise.all([db.settings.clear(), db.grammarLevels.clear()]);
+  render(<ApproachPicker approaches={[ladder, bmaTutor]} chosen="bma-tutor" levels={new Map()} />);
+  await waitFor(() => expect(method()).not.toBeNull());
+}
+
+async function ideaSheetSays(_: unknown, title: string, text: string): Promise<void> {
+  const dialog = await screen.findByRole('dialog', { name: 'Idea' });
+  expect(await within(dialog).findByRole('heading', { name: title })).toBeInTheDocument();
+  await waitFor(() => expect(dialog.textContent?.toLowerCase()).toContain(text.toLowerCase()));
+}
 
 const feature = await loadFeature('features/grammar-approach.feature');
 
@@ -191,5 +215,36 @@ describeFeature(feature, ({ Scenario }) => {
     And('the saved approach is {string}', async (_, id: string) => {
       expect(await getGrammarApproach()).toBe(id);
     });
+  });
+  Scenario('A lesson that holds several ideas lists them by title under it (mw-86e9r1.35, mw-86e9r1.40)', ({ Given, Then, And }) => {
+    Given('Settings > Grammar approach shows the path {string} beside the ladder', showPathBesideLadder);
+    Then('under {string} it lists {string} and {string}', (_, lesson: string, a: string, b: string) => expect(ideasUnder(lesson)).toEqual(expect.arrayContaining([a, b])));
+    And('under {string} it lists {string}, {string} and {string}', (_, lesson: string, a: string, b: string, c: string) =>
+      expect(ideasUnder(lesson)).toEqual(expect.arrayContaining([a, b, c])),
+    );
+  });
+
+  Scenario('A tap on an idea under a lesson opens its idea sheet (mw-86e9r1.42)', ({ Given, When, Then }) => {
+    Given('Settings > Grammar approach shows the path {string} beside the ladder', showPathBesideLadder);
+    When('he taps {string} under {string}', async (_, idea: string, lesson: string) => {
+      const button = Array.from(lessonRow(lesson)?.querySelectorAll<HTMLElement>('[data-idea-title]') ?? []).find((el) => el.textContent === idea);
+      expect(button, `${idea} under ${lesson}`).toBeDefined();
+      await user.click(button!);
+    });
+    Then('the idea sheet {string} opens and it says {string}', ideaSheetSays);
+  });
+
+  Scenario("The ladder's lessons open their idea sheet, and Marks lists the ideas the goal's words show (mw-86e9r1.42, mw-86e9r1.40)", ({ Given, Then, When }) => {
+    Given('Settings is open on a fresh phone', openSettings);
+    Then('the lesson {string} is listed under {string}', (_, lesson: string, level: string) => {
+      const heading = Array.from(document.querySelectorAll<HTMLElement>('[data-approach-lessons] h4')).find((h) => h.textContent === level);
+      expect(heading, level).toBeDefined();
+      const titles = Array.from(heading!.nextElementSibling?.querySelectorAll('[data-lesson-title]') ?? []).map((el) => el.textContent);
+      expect(titles).toContain(lesson);
+    });
+    When('he taps the lesson {string}', async (_, lesson: string) => {
+      await user.click(lessonRow(lesson)!.querySelector<HTMLElement>('[data-lesson-title]')!);
+    });
+    Then('the idea sheet {string} opens and it says {string}', ideaSheetSays);
   });
 });
