@@ -1,4 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
+import { LADDER } from '../../src/data/grammar/ladder';
+import { storedId } from '../../src/data/grammar/soundScope';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -6,7 +8,7 @@ import { openUnlocked } from './unlocked';
 test.use({ viewport: { width: 390, height: 844 } });
 
 // Puts rows in the app's own store through raw IndexedDB, as the app wrote them.
-async function put(page: Page, store: 'settings', rows: object[]) {
+async function put(page: Page, store: 'settings' | 'grammarLevels', rows: object[]) {
   await page.evaluate(
     ([name, list]) =>
       new Promise<void>((resolve, reject) => {
@@ -54,6 +56,32 @@ async function openGoal(page: Page) {
   await page.goto('/#/goal');
   await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
 }
+
+// Whether the first open has finished seeding (the last seed leaves its flag in the meta store).
+const seeded = (page: Page) =>
+  page.evaluate(
+    () =>
+      new Promise<boolean>((resolve) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => resolve(false);
+        open.onsuccess = () => {
+          const idb = open.result;
+          if (!idb.objectStoreNames.contains('meta')) {
+            idb.close();
+            return resolve(false);
+          }
+          const get = idb.transaction('meta').objectStore('meta').get('grammarLevelsSeeded');
+          get.onsuccess = () => {
+            idb.close();
+            resolve(get.result !== undefined);
+          };
+          get.onerror = () => {
+            idb.close();
+            resolve(false);
+          };
+        };
+      }),
+  );
 
 /** The counts a legend line reads: 'Solid 1 · Frontier 0 · Not yet 34'. */
 const countsOf = (text: string): number[] => (text.match(/\d+/g) ?? []).map(Number);
@@ -114,4 +142,32 @@ test('Start from the letters for a total beginner starts at The Greek alphabet, 
 
   await page.getByRole('button', { name: 'Back to the goal' }).click();
   await expect(page.getByTestId('learn-next')).toHaveText(/^Learn next: The Greek alphabet/);
+});
+
+test('Start from the letters when every idea is solid says nothing is left for Learn next, not The Greek alphabet', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await expect.poll(() => seeded(page)).toBe(true);
+  const now = Date.now();
+  await put(page, 'settings', [{ key: 'goal', value: '1 John 1:1' }]);
+  await put(page, 'grammarLevels', LADDER.map((idea) => ({ id: storedId(idea.id, 'modern'), level: 'solid', since: now, how: 'marked' })));
+  await page.reload();
+  await page.goto('/#/goal');
+  await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
+  await expect(page.getByTestId('ideas-legend')).toHaveText(/^Solid \d+ · Frontier 0 · Not yet 0$/);
+  await expect(page.getByTestId('learn-next-none')).toHaveText('Every idea this goal needs is on the frontier or solid.');
+
+  await page.getByRole('button', { name: 'Place me' }).click();
+  await page.getByRole('button', { name: 'Start from the letters' }).click();
+
+  const fromLetters = page.getByTestId('from-letters');
+  await expect(fromLetters).toBeVisible();
+  await expect(fromLetters).toContainText('Nothing is left for Learn next on the Goal screen.');
+  await expect(fromLetters).not.toContainText('opens The Greek alphabet');
+  await expect(fromLetters).not.toContainText('You start with');
+  await shot(page, 'placement-from-letters-all-solid');
+
+  await page.getByRole('button', { name: 'Back to the goal' }).click();
+  await expect(page.getByTestId('learn-next-none')).toBeVisible();
 });

@@ -341,6 +341,27 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('Start from the letters when every idea is solid says nothing is left for Learn next', ({ Given, And, When, Then }) => {
+    Given('his goal is {string} and he knows nothing yet', given);
+    And('he has marked every idea as I know this', async () => {
+      for (const idea of LADDER) await teachIdea(idea.id, 'known');
+    });
+    When('he opens the placement', opened);
+    Then('the screen offers {string}', says);
+    When('he taps {string}', tapped);
+    Then('the card says nothing is left for Learn next and does not name The Greek alphabet', async () => {
+      await waitFor(() => expect(screen.getByTestId('from-letters')).toHaveTextContent('Nothing is left for Learn next on the Goal screen.'));
+      expect(screen.getByTestId('from-letters')).not.toHaveTextContent('The Greek alphabet. Learn next');
+      expect(screen.getByTestId('from-letters')).not.toHaveTextContent('opens The Greek alphabet');
+    });
+    When('he goes back to the goal', async () => user.click(await screen.findByRole('button', { name: 'Back to the goal' })));
+    Then('the Goal screen has no Learn next', async () => {
+      await screen.findByRole('heading', { name: 'Goal', level: 1 });
+      await screen.findByTestId('learn-next-none');
+      expect(screen.queryByTestId('learn-next')).toBeNull();
+    });
+  });
+
   // The App seeds the word list and puts its words on the schedule in the background, whenever that finishes, and a loaded host lets it win. Here the seed is
   // done before the check; 'A total beginner starts from the letters' leaves it to race. Both must pass.
   Scenario("A total beginner's placement gives no idea a level, with his word list already on the schedule", ({ Given, And, When, Then }) => {
