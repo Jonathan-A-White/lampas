@@ -1,5 +1,5 @@
 // features/steps/sheet-double-tap.steps.tsx — runs features/sheet-double-tap.feature: a second tap that lands, within the settle moment, on what lies
-// under a sheet that just closed (or in a sheet or card that just opened) does nothing; a tap after the moment works (src/ui/settle.ts useSettleAround).
+// under a sheet that just closed (or in a sheet or card that just opened) does nothing; a tap after the moment works (src/ui/tapGuard.ts).
 import '@testing-library/react/dont-cleanup-after-each';
 import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';

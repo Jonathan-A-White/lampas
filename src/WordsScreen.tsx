@@ -11,7 +11,6 @@ import { useReportScreen } from './tutor/screenContext';
 import { SpeakButton } from './speech/SpeakButton';
 import { NO_SELECT, useLongPress } from './ui/longPress';
 import { focusOnMount } from './ui/focus';
-import { useSettleAround } from './ui/settle';
 import { WordPicture } from './WordPicture';
 import { GREEK_LANG } from './script/greekLang';
 
@@ -76,8 +75,6 @@ function countLine(words: Word[]): string {
 export function WordsScreen() {
   const words = useLiveQuery(listWords, []);
   const [confirming, setConfirming] = useState<string | null>(null);
-  // Drop and Keep sit at the foot, over the list: neither takes the second tap of a double tap on a row, nor a row that of one on them (mw-i7xe0n.26)
-  useSettleAround(confirming !== null);
   const scrollRef = useScrollMemory('words');
   useReportScreen({ name: 'Words', facts: words ? [{ label: 'His words', value: countLine(words) }] : [] });
 

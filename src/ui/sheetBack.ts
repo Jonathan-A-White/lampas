@@ -15,11 +15,9 @@
 // Focus goes with the sheet (mw-cwf538.3, for TalkBack and a keyboard): when a sheet opens, focus moves to its heading (a dialog's first h1 to h3), and when it
 // closes, back to what was focused when it opened (what he tapped), unless he has moved on and focus is somewhere else.
 //
-// A sheet that opens or closes swallows taps for the settle moment (src/ui/settle.ts useSettleAround, mw-i7xe0n.26): the second tap of a double
-// tap on Done would land on what lies under it (the Goal's Change, the sheet beneath's own Done), and the second of one on Drill it in the drill.
+// A sheet that opens or closes swallows taps for the settle moment (mw-i7xe0n.26): the app-wide guard sees it come and go (src/ui/tapGuard.ts), not this.
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { focusQuietly } from './focus';
-import { useSettleAround } from './settle';
 
 type SheetState = { sheet?: number } | null;
 
@@ -134,7 +132,6 @@ function focusHeading(): void {
 /** Back closes this sheet (calls `onClose`); closing it by other means removes its history entry. Call once in every sheet. Gives
  * a function that reads the sheet's level, for pushSheetStep. */
 export function useSheetBack(onClose: () => void): () => number {
-  useSettleAround();
   const close = useRef(onClose);
   const levelRef = useRef(0);
   // what had focus when the sheet was drawn for the first time: the tap that opened it (read while rendering, before the sheet's own focus moves)

@@ -29,7 +29,8 @@ export interface ReaderAddress {
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((l) => l());
 
-function subscribe(listener: () => void): () => void {
+/** Calls `listener` on every change of the address: a move of the app's own (navigate, openVerse, replaceHash) and the phone's Back or Forward. */
+export function watchAddress(listener: () => void): () => void {
   listeners.add(listener);
   window.addEventListener('hashchange', listener);
   window.addEventListener('popstate', listener);
@@ -356,7 +357,7 @@ export function replaceHash(hash: string): void {
 
 /** The whole address, reactive: the reader's state changes it without changing the screen. */
 export function useAddress(): string {
-  return useSyncExternalStore(subscribe, () => window.location.hash);
+  return useSyncExternalStore(watchAddress, () => window.location.hash);
 }
 
 export function useRoute(): Route {

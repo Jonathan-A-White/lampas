@@ -39,6 +39,7 @@ import { LiveRegion } from './ui/LiveRegion';
 import { startSpeechSettingsSync } from './speech/settingsSync';
 import { startUsageLog } from './tips/usageLog';
 import { HearAnyWord } from './ui/HearAnyWord';
+import { useTapGuard } from './ui/tapGuard';
 import { TutorWaitingBar } from './speech/TutorWaitingBar';
 import { UpdateBanner } from './UpdateBanner';
 import { Welcome } from './Welcome';
@@ -54,6 +55,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
   useEffect(() => saveLastRoute(address), [address]);
   // A layout effect: it listens before the Reader's own effects (children's first) tell the bus the verse, view and weave.
   useLayoutEffect(() => startReaderAddressSync(), []);
+  // After any screen change and any sheet that opens or closes, taps are swallowed for a moment: a double tap's second tap does nothing (src/ui/tapGuard.ts).
+  useTapGuard();
   // The saved Theme and Text size reach the page, and the browser's bar follows the phone's scheme.
   useEffect(() => startAppearanceSync(), []);
   // The saved voices and pronunciation reach the speaker before the first tap on a speaker button.
