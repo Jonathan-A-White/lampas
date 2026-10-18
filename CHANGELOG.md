@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.306
+_2026-10-18_
+- New: A passage lesson now opens its verses with a short Lesson strip, and Check asks eight questions to pass it by reading, with Try again tomorrow in Review and the tutor's Quiz me if you miss.
+
 ## 0.1.305
 _2026-10-18_
 - New: a Turn pages choice in Settings > Reading lays a chapter out in pages that you turn with a tap at either side or a swipe, with the page number under the text.
