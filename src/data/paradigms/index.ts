@@ -102,17 +102,26 @@ export function tableFor(code: string, word?: { l: string; t?: string }): Paradi
   return table;
 }
 
+/** The ideas a code names, kept per code, however many lemmas carry it (drill-work.test.ts); undefined for a code the ladder does not know. */
+function ideasOfCode(code: string): string[] | undefined {
+  if (!wantedCache.has(code)) {
+    try {
+      wantedCache.set(code, ideasOf(code));
+    } catch {
+      wantedCache.set(code, undefined);
+    }
+  }
+  return wantedCache.get(code);
+}
+
+const wantedCache = new Map<string, string[] | undefined>();
+// only the declensions weigh: the other patterns (contract, -μι, the augment) belong to a verb whose other tenses, moods and voices are in the tables of those
 const DECLENSIONS = ['declension-1', 'declension-2', 'declension-3'];
 const tableCache = new Map<string, Paradigm | undefined>();
 
 function findTable(code: string, word?: { l: string; t?: string }): Paradigm | undefined {
-  let wanted: string[];
-  try {
-    wanted = ideasOf(code);
-  } catch {
-    return undefined;
-  }
-  // only the declensions: the other patterns (contract, -μι, the augment) belong to a verb whose other tenses, moods and voices are in the tables of those
+  const wanted = ideasOfCode(code);
+  if (!wanted) return undefined;
   const patterns: string[] = word ? patternsOf({ l: word.l, p: code, t: word.t }).filter((id) => DECLENSIONS.includes(id)) : [];
   // the patterns a table's cells carry (a third-declension cell names declension-3); a table that names a pattern in its own `ideas` holds it whole
   const sharedWith = (ideas: readonly string[]): number => ideas.filter((id) => wanted.includes(id) || patterns.includes(id)).length;
