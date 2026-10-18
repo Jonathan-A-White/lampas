@@ -338,16 +338,18 @@ const firstSense = (gloss: string): string => gloss.split(/[/;:,]/)[0].trim();
 
 /**
  * What an example means here, in one sense (mw-5r3p30.234): the article is always 'the'; any other word its own English in the verse, when a chunk
- * renders it alone, else the first sense of its dictionary gloss ('the/this/who' would teach three words at once). A form the card works through
+ * renders it alone, else the first sense of its dictionary gloss ('the/this/who' would teach three words at once). A form the card of a grammar idea (not a spelling one) works through
  * is glossed as the card glosses it, so the Worked example and the rows under it never give one form two meanings (mw-svw421.34).
  */
 export function exampleGloss(idea: GrammarIdea, example: IdeaExample): string {
   const { word, chapter, verse } = example;
   if (example.english !== undefined) return example.english;
   if (idea.id === 'article' && word.p.startsWith('T-')) return 'the';
-  const form = word.t.normalize('NFC');
-  const worked = teachOf(idea.id).worked.find((w) => (w.say ?? w.word).normalize('NFC') === form);
-  if (worked) return worked.gloss;
+  if (!isSpellingIdea(idea.id)) {
+    const form = word.t.normalize('NFC');
+    const worked = teachOf(idea.id).worked.find((w) => (w.say ?? w.word).normalize('NFC') === form);
+    if (worked) return worked.gloss;
+  }
   const own = wordEnglish(chapter, verse, word);
   if (own) return own;
   return firstSense(wordGloss(chapter, word) ?? '') || word.l;
