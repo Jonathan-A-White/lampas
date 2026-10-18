@@ -183,7 +183,7 @@ function drill(id: string): void {
 const feature = await loadFeature('features/one-letter-greek-voice.feature');
 
 describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
-  Scenario('The speaker beside Ὃ on The Greek alphabet says o, not omicron', ({ Given, When, And, Then }) => {
+  Scenario('The speaker beside ἡ on The Greek alphabet says ee, not eta', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on a phone with a Greek voice and the goal {string}', (_, goal: string) => open(goal));
     When('he opens the lesson {string} from the Goal screen', async (_, id: string) => {
       window.location.hash = '#/goal';

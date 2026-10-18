@@ -75,3 +75,48 @@ describe('a case card shows only the words it can explain', () => {
     expect(exampleNote(genitive, first)).toBe('genitive singular');
   });
 });
+
+describe('The Greek alphabet on 1 John 1:1 and John 1:1 (mw-5r3p30.521)', () => {
+  // the look-alike letters the alphabet card names in its "How to spot it": the only letters it teaches by a word in the verse
+  const LOOKALIKES = ['η', 'ν', 'ρ', 'χ', 'ω'];
+
+  for (const [name, chapter] of [
+    ['1 John 1:1', () => firstJohn],
+    ['John 1:1', () => john],
+  ] as const) {
+    it(`${name}: shows only words that carry a letter the card teaches, with that letter marked`, () => {
+      const alphabet = ideaOf('alphabet');
+      for (const letter of LOOKALIKES) expect(teachOf('alphabet').howToSpot).toContain(letter);
+      const examples = ideaExamples('alphabet', [chapter()], 1);
+      expect(examples.length).toBeGreaterThan(0);
+      const wrong: string[] = [];
+      for (const example of examples) {
+        const marked = example.parts.filter((part) => part.marked).map((part) => part.text.normalize('NFD').replace(/[^\p{L}]/gu, '').toLowerCase());
+        if (!marked.length || !marked.every((text) => LOOKALIKES.includes(text))) wrong.push(`${example.word.t}: marks ${JSON.stringify(marked)}`);
+        if (!exampleGloss(alphabet, example)) wrong.push(`${example.word.t}: no gloss`);
+      }
+      expect(wrong).toEqual([]);
+    });
+
+    it(`${name}: a word another card glosses one way (the article: “the”) is glossed the same way here`, () => {
+      const alphabet = ideaOf('alphabet');
+      const wrong: string[] = [];
+      for (const example of ideaExamples('alphabet', [chapter()], 1)) {
+        const form = example.word.t.normalize('NFC');
+        const here = exampleGloss(alphabet, example);
+        if (example.word.p.startsWith('T-') && here !== 'the') wrong.push(`${form}: “${here}” here, “the” on article`);
+      }
+      expect(wrong).toEqual([]);
+    });
+  }
+
+  it('leaves out 1 John 1:1 words its card cannot explain: Ὃ, ἀπ’ and καὶ (no look-alike letter), and glosses τοῖς as the', () => {
+    const examples = ideaExamples('alphabet', [firstJohn], 1);
+    const forms = examples.map((e) => e.word.t);
+    expect(forms).not.toContain('Ὃ');
+    expect(forms).not.toContain('ἀπ’');
+    expect(forms).not.toContain('καὶ');
+    const tois = examples.find((e) => e.word.t === 'τοῖς');
+    if (tois) expect(exampleGloss(ideaOf('alphabet'), tois)).toBe('the');
+  });
+});
