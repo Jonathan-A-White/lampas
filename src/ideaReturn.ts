@@ -50,7 +50,7 @@ export function useReturnedIdea(): string | null {
   return null;
 }
 
-/** Whether the hold still has a reason to stay: he is at the table or at the address it was over. */
+/** Whether the hold still has a reason to stay: he is at the table, at a Hard sounds lesson the sheet opened (mw-5r3p30.361), or at the address it was over. */
 export function holdStillWanted(): boolean {
-  return held === undefined || window.location.hash === held.hash || window.location.hash.startsWith('#/paradigms');
+  return held === undefined || window.location.hash === held.hash || window.location.hash.startsWith('#/paradigms') || window.location.hash.startsWith('#/sounds');
 }

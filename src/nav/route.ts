@@ -10,7 +10,7 @@ import { bookOf } from '../data/books';
 import { paradigmById } from '../data/paradigms';
 import type { ReaderView, Weave } from '../data/repositories';
 
-export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'askmore' | 'about' | 'preface' | 'essay' | 'settings' | 'share' | 'unlock';
+export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'sounds' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'askmore' | 'about' | 'preface' | 'essay' | 'settings' | 'share' | 'unlock';
 
 /** What the address says about the reader; a key is missing when the address does not say. */
 export interface ReaderAddress {
@@ -58,6 +58,7 @@ export function routeOf(hash: string): Route {
   if (path === '#/goal') return 'goal';
   if (path === '#/path') return 'path';
   if (path === '#/ipa') return 'ipa';
+  if (path === '#/sounds') return 'sounds';
   if (path === '#/studyway') return 'studyway';
   if (path === '#/aboutyou') return 'aboutyou';
   if (path === '#/memory') return 'memory';
@@ -309,6 +310,33 @@ export function showPlacementCard(card: string): void {
 export function openPlacement(from: PlacementOrigin): void {
   window.history.pushState(null, '', urlFor(from === 'goal' ? '#/placement?from=goal' : '#/placement'));
   notify();
+}
+
+/** Where a Hard sounds lesson is (src/hardSounds/, mw-5r3p30.361): its id and the step on screen, from 0: '#/sounds?l=tapped-r&s=2'. */
+export interface SoundLessonAddress {
+  lesson?: string;
+  step: number;
+}
+
+export function soundLessonOf(hash: string): SoundLessonAddress {
+  const q = hash.indexOf('?');
+  const params = new URLSearchParams(q < 0 ? '' : hash.slice(q + 1));
+  const step = params.get('s');
+  return { lesson: params.get('l') ?? undefined, step: step !== null && /^\d{1,2}$/.test(step) ? Number(step) : 0 };
+}
+
+const soundLessonHash = ({ lesson, step }: SoundLessonAddress): string => `#/sounds?${new URLSearchParams({ l: lesson ?? '', s: String(step) }).toString()}`;
+
+/** Opens a Hard sounds lesson at its first step, as a new Back step. */
+export function openSoundLesson(lesson: string): void {
+  window.history.pushState(null, '', urlFor(soundLessonHash({ lesson, step: 0 })));
+  notify();
+}
+
+/** The lesson moved to step `step`: the entry he is on says so, with no new Back step, so Back from a verse it opened comes back to the step. */
+export function showSoundStep(step: number): void {
+  const here = window.location.hash;
+  if (routeOf(here) === 'sounds') replaceHash(soundLessonHash({ lesson: soundLessonOf(here).lesson, step }));
 }
 
 /** Opens a Paradigms table (or the list, with none) as a new Back step. */

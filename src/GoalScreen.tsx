@@ -1,7 +1,8 @@
 // src/GoalScreen.tsx — the Goal screen (mw-hqd5bz.10, #/goal): where he stands on 'Read 1 John 1:1' and the two buttons that move it, "frontier to solid"
 // (Learn next, a lesson to take) and "the next low hanging fruit to frontier" (Next words, three words to add). Two bars, words and grammar ideas, each cut
 // into solid, frontier and not yet with the counts written in them; a tap on a bar opens the list behind it. Place me opens the placement, Read it the Reader
-// on the goal. The numbers are progressToward's (src/data/grammar/needs.ts), worked out in src/useGoalProgress.ts.
+// on the goal. The numbers are progressToward's (src/data/grammar/needs.ts), worked out in src/useGoalProgress.ts. Below the main path, the optional
+// 'Hard sounds (optional)' (src/hardSounds/HardSoundsSection.tsx) and 'Learn the IPA sounds' (src/ipa/OptionalEntry.tsx).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { approachOf, DEFAULT_APPROACH } from './approaches';
@@ -16,6 +17,7 @@ import type { Counts, Level } from './data/grammar/needs';
 import { addWordToLearn, drillPlanCounts, getGrammarApproach, takePronunciationSwitch } from './data/repositories';
 import type { PronunciationSwitch } from './data/repositories/settings';
 import { IdeaSheet } from './IdeaSheet';
+import { HardSoundsSection } from './hardSounds/HardSoundsSection';
 import { OptionalEntry } from './ipa/OptionalEntry';
 import { useAiAllowed } from './gate/licenceContext';
 import { LadderStart } from './ReadingLadder';
@@ -123,6 +125,7 @@ function NoGoalBody({ levels }: { levels: ReadonlyMap<string, Level> }) {
           <DrillPlans onOpen={setIdeaId} />
           <ReadingLadderSection />
         </div>
+        <HardSoundsSection />
         <OptionalEntry />
         <div className="pb-[var(--lp-end-inset)]" />
       </main>
@@ -442,6 +445,7 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
             Read it
           </button>
         </section>
+        <HardSoundsSection />
         <OptionalEntry />
         <div className="pb-[var(--lp-end-inset)]" />
       </main>

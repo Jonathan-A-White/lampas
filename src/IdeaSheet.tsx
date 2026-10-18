@@ -13,6 +13,7 @@
 // ('Proved by drill' once a run proved it). He learns one idea at a time (mw-i7xe0n.6): sliding to Learning while another idea is Learning asks 'You are learning <other>.
 // Switch to <this>?' (Switch | Keep <other>). The sheet teaches only its own idea and takes the ideas under it to be solid: when one is not, it says so above the
 // text with a button to go there, and sliding up first asks 'Go to <title> first?'. Learning on The Greek alphabet opens the letter drill at once (src/LetterDrillScreen.tsx).
+// A letter or pair with a Hard sounds lesson for his accent (src/hardSounds/, mw-5r3p30.361) has 'Learn to say it (optional)' under How it sounds; Back from it brings the sheet back.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { loadChapter, loadIndex, type Chapter, type GreekWord } from './data/chapter';
@@ -30,7 +31,8 @@ import { DrillItScreen } from './DrillItScreen';
 import { holdIdea } from './ideaReturn';
 import { LessonWriteIt } from './handwriting/LessonWriteIt';
 import { LetterDrillScreen } from './LetterDrillScreen';
-import { openParadigm } from './nav/route';
+import { lessonsForLetter } from './hardSounds/lessons';
+import { openParadigm, openSoundLesson } from './nav/route';
 import { GRAMMAR_BOOKS, readMoreFor } from './resources/grammarBooks';
 import { armFallback } from './resources/openApp';
 import type { GrammarBook } from './resources/types';
@@ -368,7 +370,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
   const scheme = chosen === undefined ? chosenPronunciation() : pronunciationOf(chosen);
   // the writes follow one another: a second move made while the first is being written waits for it, and is not lost
   const writing = useRef<Promise<unknown>>(Promise.resolve());
-  useAccent(); // the hints below are said in the chosen English accent: draw again when it is chosen
+  const accent = useAccent(); // the hints below are said in the chosen English accent: draw again when it is chosen
   const tiles = teachTiles(idea, scheme);
   const card = teachOf(idea.id);
   const sounds = soundLesson(idea, scheme);
@@ -454,6 +456,13 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
     holdIdea(idea.id);
     openParadigm({ table });
   };
+  // the Hard sounds lessons on this letter or pair for his accent (mw-5r3p30.361): optional, a tap opens one, and Back brings this sheet back as from a table
+  const letter = idea.glyphs?.[0] ?? idea.pair;
+  const soundLessons = letter ? lessonsForLetter(letter, scheme.id, accent) : [];
+  const learnToSay = (lesson: string): void => {
+    holdIdea(idea.id);
+    openSoundLesson(lesson);
+  };
 
   return (
     <div className="fixed inset-0 z-30 flex flex-col justify-end">
@@ -528,6 +537,17 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
               </p>
             </>
           ) : null}
+          {soundLessons.map((lesson) => (
+            <button
+              key={lesson.id}
+              type="button"
+              data-sound-lesson={lesson.id}
+              onClick={() => learnToSay(lesson.id)}
+              className="mt-3 min-h-12 w-full rounded-xl border border-line px-4 text-left text-lg font-medium text-accent active:bg-line"
+            >
+              {soundLessons.length > 1 ? `Learn to say it (optional): ${lesson.title}` : 'Learn to say it (optional)'}
+            </button>
+          ))}
           {idea.glyphs ? <LessonWriteIt idea={idea} /> : null}
           <Worked teach={card} passage={passage} scheme={scheme} />
           {tables.length ? (
