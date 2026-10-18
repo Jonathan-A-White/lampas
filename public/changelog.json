@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.316",
+    "date": "2026-10-18",
+    "story": "mw-5r3p30.362",
+    "kind": "new",
+    "text": "In a Hard sounds lesson, \"Which did you hear?\" plays a Greek word from a close pair, you tap which one it was over ten rounds, and a miss shows the pair side by side to hear again."
+  },
+  {
+    "version": "0.1.316",
+    "date": "2026-10-18",
+    "story": "mw-86e9r1.48",
+    "kind": "fixed",
+    "text": "the card after 'Start from the letters' now shows the same solid, frontier and not-yet numbers as the Goal screen when some single letters are already solid."
+  },
+  {
+    "version": "0.1.316",
+    "date": "2026-10-18",
+    "story": "mw-umv8sp.8",
+    "kind": "fixed",
+    "text": "Listening to a chapter outside your reading plan now opens Audible straight away, with no \"tell me where you got to\" prompts."
+  },
+  {
     "version": "0.1.315",
     "date": "2026-10-18",
     "story": "mw-5r3p30.614",

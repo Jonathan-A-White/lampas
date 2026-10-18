@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.316
+_2026-10-18_
+- New: In a Hard sounds lesson, "Which did you hear?" plays a Greek word from a close pair, you tap which one it was over ten rounds, and a miss shows the pair side by side to hear again.
+- Fixed: the card after 'Start from the letters' now shows the same solid, frontier and not-yet numbers as the Goal screen when some single letters are already solid.
+- Fixed: Listening to a chapter outside your reading plan now opens Audible straight away, with no "tell me where you got to" prompts.
+
 ## 0.1.315
 _2026-10-18_
 - Fixed: In the English view with the Weave on, each Greek word in a woven phrase like "ὑμῖν γράφω" opens its own word sheet and is read aloud on its own.
