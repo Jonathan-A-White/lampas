@@ -35,7 +35,7 @@
     "bsv-kit": "github:Jonathan-A-White/bsv-kit#22619754e8f468ece66abbe43339ee98aeab61b7",
     "dexie": "^4.3.0",
     "dexie-react-hooks": "^4.4.0",
-    "pwa-kit": "github:Jonathan-A-White/pwa-kit#8c3c1b526a3e5efc72d63393f7f81ab728dbd51c",
+    "pwa-kit": "github:Jonathan-A-White/pwa-kit#1bcc9e9f14b4c3e28d7e3221080b9b29672c6fff",
     "qrcode": "^1.5.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -77,7 +77,7 @@
   "allowScripts": {
     "github:Jonathan-A-White/audible-kit#ac2224ca7dedccae47df7a33f7a71136e688cb2e": true,
     "github:Jonathan-A-White/bsv-kit#22619754e8f468ece66abbe43339ee98aeab61b7": true,
-    "github:Jonathan-A-White/pwa-kit#8c3c1b526a3e5efc72d63393f7f81ab728dbd51c": true,
+    "github:Jonathan-A-White/pwa-kit#1bcc9e9f14b4c3e28d7e3221080b9b29672c6fff": true,
     "github:Jonathan-A-White/voice-kit#a2135a9d7615b2600764d969748e0626d4afe584": true
   }
 }

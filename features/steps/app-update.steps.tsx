@@ -6,8 +6,9 @@ import { afterAll, expect, vi } from 'vitest';
 import type { ChangelogEntry } from 'pwa-kit/whats-new';
 import { APP_SEMVER } from '../../src/config';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
-import { startAppUpdates, UPDATE_CHECK_EVERY_MS } from '../../src/services/appUpdate';
+import { startAppUpdates, UPDATE_CHECK_EVERY_MS } from 'pwa-kit/app-update';
 import { UpdateBanner } from '../../src/UpdateBanner';
+import { hasNewsSince } from '../../src/whatsNew/hasNewsSince';
 import { fakeSetup, fakeWorker, type FakeSetup, type FakeWorker } from '../../tests/support/fake-registration';
 
 const feature = await loadFeature('features/app-update.feature');
@@ -21,7 +22,10 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
     cleanup();
     waiting = withWaiting ? fakeWorker() : undefined;
     setup = fakeSetup({ waiting });
-    stop = startAppUpdates({ container: setup.container, registration: setup.registration, reload: setup.reload, changelog, version: APP_SEMVER }).stop;
+    stop = startAppUpdates(
+      { container: setup.container, registration: setup.registration, reload: setup.reload },
+      changelog ? { version: APP_SEMVER, hasNewsSince: hasNewsSince(changelog) } : {},
+    ).stop;
     render(<UpdateBanner />);
   }
 

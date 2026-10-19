@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { UpdateBanner } from '../../src/UpdateBanner';
-import { startAppUpdates, type AppUpdates } from '../../src/services/appUpdate';
+import { startAppUpdates, type AppUpdates } from 'pwa-kit/app-update';
 import { fakeSetup, fakeWorker, type FakeSetup, type FakeWorker } from '../../tests/support/fake-registration';
 import { HOOK_TIMEOUT_MS } from '../../tests/support/timeouts';
 
