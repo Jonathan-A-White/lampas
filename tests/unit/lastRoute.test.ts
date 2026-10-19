@@ -47,6 +47,7 @@ describe('the trail of places he visited', () => {
     expect(savedTrail()).toEqual(['#/words']);
     expect(isKeptHash('#/settings')).toBe(true);
     expect(isKeptHash('#/review')).toBe(true);
+    expect(isKeptHash('#/today')).toBe(true);
     expect(isKeptHash('#/placement')).toBe(true);
     expect(isKeptHash('#/goal')).toBe(true);
     // the Share screen and the talk a share was placed in (mw-y3qno5.2): a reopen finds him in it
