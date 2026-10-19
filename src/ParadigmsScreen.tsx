@@ -18,6 +18,7 @@ import {
   PARADIGMS,
   type Levels,
   type Paradigm,
+  type ParadigmCell,
   type ParadigmColumn,
 } from './data/paradigms';
 import { blocksOf, columnsThatFit, greekRemOf } from './data/paradigms/layout';
@@ -139,6 +140,13 @@ function useColumnsThatFit(table: Paradigm, box: RefObject<HTMLDivElement | null
   return fit;
 }
 
+/** What a locked form needs, in words: 'Needs the plural', 'Needs the plural and the genitive case'. */
+function needsText(cell: ParadigmCell, levels: Levels): string {
+  const titles = missingIdeas(cell, levels).map((id) => ideaOf(id).title.toLowerCase());
+  const last = titles.pop();
+  return `Needs ${titles.length > 0 ? `${titles.join(', ')} and ${last}` : last}`;
+}
+
 // The one cell and label layout of every table (mw-svw421.40): the Greek is text-xl (text-2xl where the table has one or two columns), the
 // labels around the cells text-xs in a 5.5rem column, and a word is never broken inside (no break-words: a label wraps at its spaces). A
 // table whose forms do not all fit the box in one row of cells is drawn as blocks, each with the columns that fit (src/data/paradigms/layout.ts).
@@ -151,6 +159,8 @@ function Table({ table, levels, mode, revealed, onToggle }: {
 }) {
   const box = useRef<HTMLDivElement>(null);
   const fit = useColumnsThatFit(table, box);
+  // the locked form he tapped: the line saying what it needs is drawn under its row (mw-svw421.18)
+  const [asked, setAsked] = useState<string | null>(null);
   const size = greekRemOf(table) > 1.25 ? 'text-2xl' : 'text-xl';
   const label = 'text-xs';
   return (
@@ -183,66 +193,83 @@ function Table({ table, levels, mode, revealed, onToggle }: {
                 </tr>
               </thead>
               <tbody>
-                {table.rows.map((row, r) => (
-                  <Fragment key={r}>
-                    {row.group && row.group !== table.rows[r - 1]?.group ? (
+                {table.rows.map((row, r) => {
+                  const askedCol = asked === null ? undefined : cols.find((c) => cellName(table, row, c) === asked && !isAvailable(row.cells[c], levels));
+                  return (
+                    <Fragment key={r}>
+                      {row.group && row.group !== table.rows[r - 1]?.group ? (
+                        <tr>
+                          <th colSpan={cols.length + 1} scope="rowgroup" className="border-b border-line bg-surface px-2 py-1 text-left text-base font-semibold">
+                            {row.group}
+                          </th>
+                        </tr>
+                      ) : null}
                       <tr>
-                        <th colSpan={cols.length + 1} scope="rowgroup" className="border-b border-line bg-surface px-2 py-1 text-left text-base font-semibold">
-                          {row.group}
+                        <th scope="row" className={`w-[5.5rem] border-b border-line px-1 py-1 text-left font-medium text-muted ${label}`}>
+                          {row.label}
                         </th>
+                        {cols.map((c) => {
+                          const cell = row.cells[c];
+                          const place = cellName(table, row, c);
+                          const lang = greekLang(cell.lang === 'el');
+                          const font = cell.lang === 'el' ? `font-greek ${size}` : 'text-sm';
+                          const frame = 'flex min-h-14 w-full min-w-0 items-center justify-center px-0.5';
+                          const cellBox = `${frame} ${font}`;
+                          if (!isAvailable(cell, levels)) {
+                            return (
+                              <td key={c} className="border-b border-l border-line p-0.5">
+                                <button
+                                  type="button"
+                                  data-cell={place}
+                                  data-state="locked"
+                                  aria-expanded={asked === place}
+                                  aria-label={`${place}: locked. ${needsText(cell, levels)}`}
+                                  onClick={() => setAsked(asked === place ? null : place)}
+                                  className={`${cellBox} rounded-lg border border-dashed border-line active:bg-line`}
+                                >
+                                  <LockIcon />
+                                </button>
+                              </td>
+                            );
+                          }
+                          const shown = mode === 'review' || revealed.has(place);
+                          if (mode === 'review') {
+                            return (
+                              <td key={c} className="border-b border-l border-line p-0.5">
+                                <div data-cell={place} data-state="shown" {...lang} aria-label={`${place}: ${cell.form}`} className={cellBox}>
+                                  {cell.form}
+                                </div>
+                              </td>
+                            );
+                          }
+                          return (
+                            <td key={c} className="border-b border-l border-line p-0.5">
+                              <button
+                                type="button"
+                                data-cell={place}
+                                data-state={shown ? 'shown' : 'hidden'}
+                                aria-pressed={shown}
+                                aria-label={shown ? `${place}: ${cell.form}. Tap to hide` : `Reveal ${place}`}
+                                {...(shown ? lang : {})}
+                                onClick={() => onToggle(place)}
+                                className={`${shown ? cellBox : `${frame} ${label} font-medium text-accent active:bg-accent/30 bg-accent/15`} rounded-lg`}
+                              >
+                                {shown ? cell.form : 'reveal'}
+                              </button>
+                            </td>
+                          );
+                        })}
                       </tr>
-                    ) : null}
-                    <tr>
-                      <th scope="row" className={`w-[5.5rem] border-b border-line px-1 py-1 text-left font-medium text-muted ${label}`}>
-                        {row.label}
-                      </th>
-                      {cols.map((c) => {
-                        const cell = row.cells[c];
-                        const place = cellName(table, row, c);
-                        const lang = greekLang(cell.lang === 'el');
-                        const font = cell.lang === 'el' ? `font-greek ${size}` : 'text-sm';
-                        const frame = 'flex min-h-14 w-full min-w-0 items-center justify-center px-0.5';
-                        const cellBox = `${frame} ${font}`;
-                        if (!isAvailable(cell, levels)) {
-                          const needs = missingIdeas(cell, levels).map((id) => ideaOf(id).title.toLowerCase()).join(', ');
-                          return (
-                            <td key={c} className="border-b border-l border-line p-0.5">
-                              <div data-cell={place} data-state="locked" role="img" aria-label={`${place}: locked. Needs ${needs}`} className={`${cellBox} rounded-lg border border-dashed border-line`}>
-                                <LockIcon />
-                              </div>
-                            </td>
-                          );
-                        }
-                        const shown = mode === 'review' || revealed.has(place);
-                        if (mode === 'review') {
-                          return (
-                            <td key={c} className="border-b border-l border-line p-0.5">
-                              <div data-cell={place} data-state="shown" {...lang} aria-label={`${place}: ${cell.form}`} className={cellBox}>
-                                {cell.form}
-                              </div>
-                            </td>
-                          );
-                        }
-                        return (
-                          <td key={c} className="border-b border-l border-line p-0.5">
-                            <button
-                              type="button"
-                              data-cell={place}
-                              data-state={shown ? 'shown' : 'hidden'}
-                              aria-pressed={shown}
-                              aria-label={shown ? `${place}: ${cell.form}. Tap to hide` : `Reveal ${place}`}
-                              {...(shown ? lang : {})}
-                              onClick={() => onToggle(place)}
-                              className={`${shown ? cellBox : `${frame} ${label} font-medium text-accent active:bg-accent/30 bg-accent/15`} rounded-lg`}
-                            >
-                              {shown ? cell.form : 'reveal'}
-                            </button>
+                      {askedCol !== undefined ? (
+                        <tr>
+                          <td colSpan={cols.length + 1} data-testid="lock-needs" role="status" className="border-b border-line bg-surface px-2 py-2 text-left text-base">
+                            {needsText(row.cells[askedCol], levels)}
                           </td>
-                        );
-                      })}
-                    </tr>
-                  </Fragment>
-                ))}
+                        </tr>
+                      ) : null}
+                    </Fragment>
+                  );
+                })}
               </tbody>
             </table>
           </div>

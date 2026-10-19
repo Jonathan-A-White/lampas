@@ -257,3 +257,42 @@ test('Paradigms sweep: every table fits at Small and Normal with every idea soli
   expect(await sweep(page, ALL, 'Small')).toEqual([]);
   expect(await sweep(page, ALL, 'Normal')).toEqual([]);
 });
+
+test('mw-svw421.18: a tap on a locked form says in words what it needs, and nothing else changes', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  // every idea solid but the plural, so the plural is all that σάρξ in the plural needs
+  await putLevels(page, Object.fromEntries(LADDER.filter((idea) => idea.id !== 'number-plural').map((idea) => [idea.id, 'solid' as const])));
+  await page.reload();
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await page.getByRole('button', { name: /^Paradigms/ }).click();
+  await page.locator('[data-paradigm="third-declension"]').click();
+  await expect(page.getByRole('heading', { name: 'The third declension', level: 1 })).toBeVisible();
+
+  const lock = page.locator('[data-cell="σάρξ, feminine Nominative Plural"]');
+  await expect(lock).toHaveAttribute('data-state', 'locked');
+  const before = await page.locator('[data-cell]').evaluateAll((cells) => cells.map((el) => `${el.getAttribute('data-cell')}|${el.getAttribute('data-state')}`));
+  await expect(page.getByTestId('lock-needs')).toHaveCount(0);
+  await lock.scrollIntoViewIfNeeded();
+  await lock.click();
+  // the line is in words, in view beside the lock he tapped, and at least a finger tall
+  const line = page.getByTestId('lock-needs');
+  await expect(line).toHaveCount(1);
+  await expect(line).toHaveText('Needs the plural');
+  await expect(line).toBeInViewport();
+  const tapped = await lock.boundingBox();
+  const said = await line.boundingBox();
+  expect(Math.abs((said?.y ?? 0) - (tapped?.y ?? 0))).toBeLessThan(120);
+  // nothing else changed: the same cells in the same states, no form given away
+  expect(await page.locator('[data-cell]').evaluateAll((cells) => cells.map((el) => `${el.getAttribute('data-cell')}|${el.getAttribute('data-state')}`))).toEqual(before);
+  await expect(lock).toHaveAttribute('data-state', 'locked');
+  await expectFitsPhone(page);
+  await shot(page, 'paradigms-lock-needs');
+
+  // a tap on the same lock again puts the line away
+  await lock.click();
+  await expect(page.getByTestId('lock-needs')).toHaveCount(0);
+});
