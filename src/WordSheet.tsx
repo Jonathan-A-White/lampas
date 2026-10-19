@@ -370,7 +370,8 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
       : undefined;
 
   return (
-    <div className="fixed inset-0 z-10 flex flex-col justify-end">
+    // z-35: above every sheet it opens over (idea z-30, grammar/teach/Hebrew/pictures z-20, the rest z-10), below the full-screen dialogs (z-40) and the shell bars (z-60)
+    <div className="fixed inset-0 z-35 flex flex-col justify-end">
       <div data-testid="sheet-backdrop" aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-black/60" />
       <div
         role="dialog"

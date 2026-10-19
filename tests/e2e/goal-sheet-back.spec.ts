@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -23,6 +23,14 @@ async function put(page: Page, store: 'settings' | 'grammarLevels', rows: object
     [store, rows] as const,
   );
 }
+
+// Whether the topmost element at the top centre of the dialog is inside it (toBeVisible does not look at what is on top).
+const onTop = (dialog: Locator) =>
+  dialog.evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    const hit = document.elementFromPoint(box.left + box.width / 2, box.top + 4);
+    return hit !== null && el.contains(hit);
+  });
 
 // Whether the first open has finished seeding (the last seed leaves its flag in the meta store).
 const seeded = (page: Page) =>
@@ -105,6 +113,7 @@ test('Back pops one sheet at a time down a stack of idea sheet, a tile\'s letter
   await expect(ideas).toHaveCount(2);
   await ideas.nth(1).getByTestId('idea-example').first().click();
   await expect(word).toBeVisible();
+  await expect.poll(() => onTop(word)).toBe(true);
 
   await page.goBack();
   await expect(word).toBeHidden();
@@ -117,3 +126,39 @@ test('Back pops one sheet at a time down a stack of idea sheet, a tile\'s letter
   await expect(page).toHaveURL(/#\/goal/);
 });
 
+
+test('The word sheet opened from the Xi letter sheet is the topmost thing on the screen, before and after the Back that leaves Xi open (mw-5r3p30.566)', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await expect.poll(() => seeded(page)).toBe(true);
+  const now = Date.now();
+  const letters = 'alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu omicron pi rho sigma tau upsilon phi chi omega'.split(' ');
+  await put(page, 'settings', [{ key: 'goal', value: '1 John 1:1' }]);
+  await put(page, 'grammarLevels', [
+    ...letters.map((name) => ({ id: `letter-${name}`, level: 'solid', since: now, how: 'inferred' })),
+    { id: 'breathings', level: 'solid', since: now, how: 'marked' },
+    { id: 'accents', level: 'solid', since: now, how: 'marked' },
+  ]);
+  await page.reload();
+  await page.goto('/#/goal');
+  await page.getByTestId('learn-next').click();
+  const idea = page.getByRole('dialog', { name: 'Idea' });
+  const word = page.getByRole('dialog', { name: 'Word' });
+  await expect(idea.getByRole('heading', { name: 'Xi' })).toBeVisible();
+
+  await idea.getByTestId('idea-example').first().click();
+  await expect(word).toBeVisible();
+  await expect.poll(() => onTop(word)).toBe(true);
+
+  // Back closes the word sheet and leaves Xi; Xi is then the topmost sheet
+  await page.goBack();
+  await expect(word).toBeHidden();
+  await expect.poll(() => onTop(idea)).toBe(true);
+
+  // tapping the same example again still puts its word sheet on top
+  await idea.getByTestId('idea-example').first().click();
+  await expect(word).toBeVisible();
+  await expect.poll(() => onTop(word)).toBe(true);
+  await shot(page, 'goal-letter-word-on-top');
+});
