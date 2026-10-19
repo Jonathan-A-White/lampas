@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.338
+_2026-10-19_
+- Fixed: a quick double tap no longer acts twice; the second tap does nothing on the screen or sheet the first one opened, anywhere in the app.
+- New: Today's reading plan now lists the chapters you read today with a tick each, and a tick box beside the next chapter marks it read.
+
 ## 0.1.337
 _2026-10-19_
 - Fixed: With the Immersive reader on in the Dark theme, the phone's top bar and the band behind the Talk button are now pure black like the page instead of dark blue.

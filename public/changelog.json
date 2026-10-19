@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.338",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.597",
+    "kind": "fixed",
+    "text": "a quick double tap no longer acts twice; the second tap does nothing on the screen or sheet the first one opened, anywhere in the app."
+  },
+  {
+    "version": "0.1.338",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.630",
+    "kind": "new",
+    "text": "Today's reading plan now lists the chapters you read today with a tick each, and a tick box beside the next chapter marks it read."
+  },
+  {
     "version": "0.1.337",
     "date": "2026-10-19",
     "story": "mw-5r3p30.595",
