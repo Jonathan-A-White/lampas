@@ -1,5 +1,47 @@
 [
   {
+    "version": "0.1.343",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.480",
+    "kind": "fixed",
+    "text": "With the Immersive reader on, reading aloud no longer slides the bars away by itself; only your own scrolling or a two-finger tap changes them."
+  },
+  {
+    "version": "0.1.343",
+    "date": "2026-10-19",
+    "story": "mw-i7xe0n.19",
+    "kind": "fixed",
+    "text": "Marking The Greek alphabet known now moves \"Learning now\" on to the next idea instead of leaving none."
+  },
+  {
+    "version": "0.1.343",
+    "date": "2026-10-19",
+    "story": "mw-cwf538.10",
+    "kind": "fixed",
+    "text": "At the largest text size, the titles and word meanings in the drills, the Check and Try it sheets, the Goal screen, the Hebrew guide and Ask for another approach are written out in full instead of ending in an ellipsis."
+  },
+  {
+    "version": "0.1.343",
+    "date": "2026-10-19",
+    "story": "mw-svw421.41",
+    "kind": "fixed",
+    "text": "A quick double tap on Paradigms' Review mode, Hide all or a reveal cell, and on a tick box or switch elsewhere, now counts as one tap instead of undoing itself."
+  },
+  {
+    "version": "0.1.343",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.505",
+    "kind": "fixed",
+    "text": "after Lampas reloads with a word card or grammar card open, the first Back press now leaves the page instead of doing nothing for each card that was open."
+  },
+  {
+    "version": "0.1.343",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.632",
+    "kind": "fixed",
+    "text": "'Update ready, tap to reload' and the Welcome back strip can now be tapped when a verse or a sheet is open."
+  },
+  {
     "version": "0.1.342",
     "date": "2026-10-19",
     "story": "mw-5r3p30.600",

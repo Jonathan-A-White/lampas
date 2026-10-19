@@ -1,5 +1,14 @@
 # What's new
 
+## 0.1.343
+_2026-10-19_
+- Fixed: With the Immersive reader on, reading aloud no longer slides the bars away by itself; only your own scrolling or a two-finger tap changes them.
+- Fixed: Marking The Greek alphabet known now moves "Learning now" on to the next idea instead of leaving none.
+- Fixed: At the largest text size, the titles and word meanings in the drills, the Check and Try it sheets, the Goal screen, the Hebrew guide and Ask for another approach are written out in full instead of ending in an ellipsis.
+- Fixed: A quick double tap on Paradigms' Review mode, Hide all or a reveal cell, and on a tick box or switch elsewhere, now counts as one tap instead of undoing itself.
+- Fixed: after Lampas reloads with a word card or grammar card open, the first Back press now leaves the page instead of doing nothing for each card that was open.
+- Fixed: 'Update ready, tap to reload' and the Welcome back strip can now be tapped when a verse or a sheet is open.
+
 ## 0.1.342
 _2026-10-19_
 - Fixed: The Talk sheet now keeps a failed message, the Take me there button and the start of the answer on screen, also when the phone is turned, and a spoken question shows your own words under the tutor's tidied version.
