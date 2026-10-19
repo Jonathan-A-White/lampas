@@ -18,6 +18,7 @@ import { ideaOf } from '../../src/data/grammar/ladder';
 import { quickQuestion } from '../../src/data/grammar/quickRound';
 import { mulberry32 } from '../../src/data/quiz';
 import { clearBus } from '../../src/events/bus';
+import { SpeakButton } from '../../src/speech/SpeakButton';
 import { stopSpeaking } from '../../src/speech/greek';
 import { getReading, startReading, stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -50,16 +51,29 @@ let audio: FakeAudio;
 /** the clips played, each with how many utterances the voice had been handed before it */
 let clips: { at: number; path: string }[] = [];
 
-/** What he hears, in order: each utterance as the phone's voice says it (a lone Greek letter by its name, a doubled vowel by its sound) and each clip by
- * its sound (its file's name). */
-function heardOf(): string[] {
-  const said = synth.spoken.map((u) => (isOneGreekLetter(u.text) ? LETTER_NAMES[bareLetters(u.text)] : (DOUBLED_SOUNDS[u.text] ?? u.text)));
+/** A Greek word of one letter inside `text`, as a word of its own (Ὃ ἦν, ὃ ἀκηκόαμεν), or null. */
+const loneWordIn = (text: string): string | null => text.split(/\s+/).find((w) => isOneGreekLetter(w)) ?? null;
+
+/** How the phone's voice says one utterance: a doubled vowel by its sound, and a Greek word of one letter by its name, alone or inside a sentence (a voice
+ * handed 'Ὃ ἦν ἀπ' ἀρχῆς' names the letter as it does the letter alone: mw-5r3p30.448). */
+const sayingOf = (text: string): string =>
+  DOUBLED_SOUNDS[text] ??
+  text
+    .split(' ')
+    .map((w) => (isOneGreekLetter(w) ? LETTER_NAMES[bareLetters(w)] : w))
+    .join(' ');
+
+/** What he hears, in order: each utterance as the phone's voice says it (sayingOf) and each clip by its sound (its file's name); only the first `upTo`
+ * utterances and the clips played before the next, when given. */
+function heardOf(upTo?: { spoken: number; clips: number }): string[] {
+  const said = synth.spoken.slice(0, upTo?.spoken).map((u) => sayingOf(u.text));
+  const played = clips.slice(0, upTo?.clips);
   const out: string[] = [];
   said.forEach((text, i) => {
-    clips.filter((c) => c.at === i).forEach((c) => out.push(c.path.replace(/^.*\/|\.mp3$/g, '')));
+    played.filter((c) => c.at === i).forEach((c) => out.push(c.path.replace(/^.*\/|\.mp3$/g, '')));
     out.push(text);
   });
-  clips.filter((c) => c.at >= said.length).forEach((c) => out.push(c.path.replace(/^.*\/|\.mp3$/g, '')));
+  played.filter((c) => c.at >= said.length).forEach((c) => out.push(c.path.replace(/^.*\/|\.mp3$/g, '')));
   return out;
 }
 
@@ -86,9 +100,9 @@ function fresh(voices = [ENGLISH_VOICE, GREEK_VOICE]): void {
   audio.onPlay = (path) => clips.push({ at: synth.spoken.length, path });
 }
 
-/** Opens the app on Romans 8 with both voices, every store emptied, and `goal` saved as the goal when there is one. */
-async function open(goal?: string): Promise<void> {
-  fresh();
+/** Opens the app on Romans 8 with both voices (or only `voices`), every store emptied, and `goal` saved as the goal when there is one. */
+async function open(goal?: string, voices?: typeof GREEK_VOICE[]): Promise<void> {
+  fresh(voices);
   stubChapterFetch();
   window.localStorage.clear();
   window.location.hash = '';
@@ -170,6 +184,27 @@ async function readToEnd(): Promise<void> {
     });
   }
   await waitFor(() => expect(getReading().status).toBe('idle'));
+}
+
+/** What verse 1 of a reading handed the voice and played: what was heard by the time the reading went on past it. */
+let verseOne = { spoken: 0, clips: 0 };
+
+/** Taps Read from the top and reads verse 1 to its end, each clip ending by itself and the voice reading what it was handed; the reading is stopped as it
+ * goes on to verse 2. */
+async function readFirstVerse(): Promise<void> {
+  await user.click(screen.getByRole('button', { name: 'Read from the top' }));
+  await waitFor(() => expect(getReading().verse).toBe(1));
+  for (let guard = 0; guard < 40 && getReading().verse === 1; guard++) {
+    await waitFor(() => expect(audio.playing() !== null || synth.speaking).toBe(true));
+    verseOne = { spoken: synth.spoken.length, clips: clips.length };
+    act(() => {
+      if (audio.playing()) audio.end();
+      else synth.finish();
+    });
+    await waitFor(() => expect(audio.playing() !== null || synth.speaking || getReading().verse !== 1).toBe(true));
+  }
+  expect(getReading().verse).not.toBe(1);
+  act(() => stopReading());
 }
 
 /** A sound question ('Tap to hear a letter, then tap it') on the ladder idea `id`, on its card. */
@@ -258,6 +293,64 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     And('the clip {string} was played for it', (_, path: string) => {
       expect(audio.played).toEqual([path]);
       expect(synth.spoken.filter((u) => isOneGreekLetter(u.text))).toEqual([]);
+    });
+  });
+
+  Scenario('Read from the top in the Greek view hands the voice no one-letter word and plays their clips', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened in the reader on a phone with no Greek voice', () => open(undefined, [ENGLISH_VOICE]));
+    And('he opens {string} in Greek', (_, chapter: string) => openChapterInGreek(chapter, 1));
+    When('he taps "Read from the top" and verse 1 is read to its end', () => readFirstVerse());
+    Then('the clip {string} played for each of the {number} one-letter words of verse 1', (_, path: string, count: number) => {
+      expect(clips.slice(0, verseOne.clips).map((c) => c.path)).toEqual(Array<string>(count).fill(path));
+    });
+    And("no utterance handed to the phone's voice holds a one-letter Greek word", () => {
+      expect(synth.spoken.map((u) => u.text).filter((text) => loneWordIn(text) !== null)).toEqual([]);
+    });
+    And('he hears {string} first, not {string}', (_, sound: string, name: string) => {
+      expect(heardOf(verseOne)[0]).toBe(sound);
+      expect(heardOf(verseOne).join(' ')).not.toContain(name);
+    });
+  });
+
+  Scenario('Read from the top on a phone with a Greek voice says each one-letter word of the verse as its sound', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened in the reader on a phone with a Greek voice', () => open());
+    And('he opens {string} in Greek', (_, chapter: string) => openChapterInGreek(chapter, 1));
+    When('he taps "Read from the top" and verse 1 is read to its end', () => readFirstVerse());
+    Then(
+      "the phone's Greek voice is handed {string} as an utterance of its own for each of the {number} one-letter words of verse 1",
+      (_, form: string, count: number) => {
+        const verse = synth.spoken.slice(0, verseOne.spoken);
+        expect(verse.filter((u) => u.text === form)).toHaveLength(count);
+        expect(verse[0].text).toBe(form);
+        expect(audio.played).toEqual([]);
+      },
+    );
+    And("no utterance handed to the phone's voice holds a one-letter Greek word", () => {
+      expect(synth.spoken.map((u) => u.text).filter((text) => loneWordIn(text) !== null)).toEqual([]);
+    });
+    And('he hears {string} first, not {string}', (_, sound: string, name: string) => {
+      expect(heardOf(verseOne)[0]).toBe(sound);
+      expect(heardOf(verseOne).join(' ')).not.toContain(name);
+    });
+  });
+
+  Scenario('The speaker on a word list entry that ends in ὁ says its sound, not omicron', ({ Given, When, Then, And }) => {
+    Given('a speaker {string} for the entry {string} on a phone with a Greek voice', (_, label: string, entry: string) => {
+      fresh();
+      render(<SpeakButton text={entry} id={`word:${entry}`} label={label} kind="speaker" />);
+    });
+    When('he taps {string} and the voice says all it was handed', async (_, name: string) => {
+      await user.click(screen.getByRole('button', { name }));
+      for (let guard = 0; guard < 10 && synth.speaking; guard++) act(() => synth.finishAll());
+      await waitFor(() => expect(synth.speaking).toBe(false));
+    });
+    Then("no utterance handed to the phone's voice holds a one-letter Greek word", () => {
+      expect(synth.spoken.length).toBeGreaterThan(0);
+      expect(synth.spoken.map((u) => u.text).filter((text) => loneWordIn(text) !== null)).toEqual([]);
+    });
+    And('he hears {string} last, not {string}', (_, sound: string, name: string) => {
+      expect(heardOf().at(-1)).toBe(sound);
+      expect(heardOf().join(' ')).not.toContain(name);
     });
   });
 

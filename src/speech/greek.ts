@@ -319,6 +319,29 @@ export function loneLetterSpeech(text: string): { text: string } | { clip: strin
   return clip ? { clip } : null;
 }
 
+/** Greek `text` cut at each word of ONE letter that loneLetterSpeech says (1 John 1:1's Ὃ ἦν … ὃ ἀκηκόαμεν: Ὃ | ἦν … | ὃ | ἀκηκόαμεν), each such word
+ * as its loneLetterSpeech (`lone`) and each stretch between them as it is: a voice handed the word inside a sentence names it as it does the word alone
+ * (mw-5r3p30.448). A word with no sound of its own (an elided δ') stays in its stretch. */
+export function loneLetterCuts(text: string): ({ text: string; lone: boolean } | { clip: string })[] {
+  const cuts: ({ text: string; lone: boolean } | { clip: string })[] = [];
+  let stretch: string[] = [];
+  const flush = () => {
+    if (stretch.length > 0) cuts.push({ text: stretch.join(' '), lone: false });
+    stretch = [];
+  };
+  for (const word of text.split(/\s+/).filter(Boolean)) {
+    const lone = loneLetterSpeech(word.replace(/^\p{P}+|\p{P}+$/gu, ''));
+    if (!lone) {
+      stretch.push(word);
+      continue;
+    }
+    flush();
+    cuts.push('clip' in lone ? lone : { text: lone.text, lone: true });
+  }
+  flush();
+  return cuts;
+}
+
 /** The bundled clip of the sound of `text` when it is ONE Greek letter (ὁ, ἡ, ὦ, Ὃ), or null for any other text: the chosen pronunciation's, played when
  * the phone has no Greek voice to say the letter's loneLetterForm (loneLetterSpeech). */
 export function loneLetterClip(text: string): string | null {
@@ -444,7 +467,19 @@ export function speakSound(text: string): boolean {
 }
 
 const wordSpeech = (text: string, language: SpeechLanguage): { text: string; language: SpeechLanguage } =>
-  language === 'greek' ? greekWordSpeech(text) : { text, language };
+  language === 'greek' ? { text: greekPhraseSpeech(text), language } : { text, language };
+
+/** What the Greek voice is handed for a word or a few (a word list's 'ἄγγελος, -ου, ὁ'): each word of one letter in it on a line of its own as its
+ * loneLetterForm, and each stretch between as greekWordSpeech hands it ('ἄγγελος, -ου!' then 'οο'), so the voice never names the letter (mw-5r3p30.448). A
+ * phone with no Greek voice, whose word would be a clip, is handed the text as it is: the default voice reads it, as it reads any Greek. */
+function greekPhraseSpeech(text: string): string {
+  const lines: string[] = [];
+  for (const cut of loneLetterCuts(text)) {
+    if ('clip' in cut) return greekWordSpeech(text).text;
+    lines.push(cut.lone ? cut.text : greekWordSpeech(cut.text).text);
+  }
+  return lines.length < 2 ? greekWordSpeech(text).text : lines.join('\n');
+}
 
 /** Whether a word said by speakWord / speakLetter is being said now (the page's tap-to-hear bars toggle on it). */
 export const isWordSaid = (): boolean => beside?.key === WORD_KEY || isSpeaking(WORD_KEY);

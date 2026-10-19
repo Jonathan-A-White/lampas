@@ -304,10 +304,17 @@ describe('a reading with a run that is one Greek letter', () => {
     }
   });
 
-  it('leaves a Greek run of two letters or more to the voice as it was', () => {
-    readThrough(readRuns([{ text: 'ὁ λόγος', language: 'greek' }]));
-    expect(said()).toEqual(['ὁ λόγος']);
+  it('leaves a Greek run with no word of one letter to the voice as it was', () => {
+    readThrough(readRuns([{ text: 'τὸν λόγον', language: 'greek' }]));
+    expect(said()).toEqual(['τὸν λόγον']);
     expect(audio.played).toEqual([]);
+  });
+
+  it('cuts a Greek run at a word of one letter inside it, which is its form on a line of its own (mw-5r3p30.448)', () => {
+    readThrough(readRuns([{ text: 'ὁ λόγος', language: 'greek' }]));
+    expect(said()).toEqual(['οο', 'λόγος']);
+    expect(audio.played).toEqual([]);
+    noLoneLetterSpoken();
   });
 
   describe('on a phone with no Greek voice', () => {

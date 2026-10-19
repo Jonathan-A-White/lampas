@@ -6,7 +6,9 @@ Feature: A one-letter Greek word is said by the phone's own Greek voice, handed 
   itself' (mw-5r3p30.395, mw-5r3p30.421). So the voice is handed the chosen pronunciation's form (for Modern Greek the
   bare vowel doubled: οο for ὁ and Ὃ, ωω for ὦ, ηη for ἡ), and the bundled clip of the sound plays only on a phone with
   no Greek voice. The voice here is honest about it: like his phone's, it names a letter it is handed alone and says a
-  doubled vowel as its sound. A sound drill says a vowel's sound the same way; a consonant has no such form and is named.
+  doubled vowel as its sound, and names a one-letter word inside a sentence as it does alone, so a verse or a word list entry is cut at each one
+  (mw-5r3p30.448: 1 John 1:1 went to the voice as one line, Ὃ and ὃ in it). A sound drill says a vowel's sound the same way; a consonant has no such
+  form and is named.
 
   Scenario: The speaker beside ἡ on The Greek alphabet says ee, not eta
     Given Lampas is opened on a phone with a Greek voice and the goal "1 John 1:2"
@@ -54,6 +56,28 @@ Feature: A one-letter Greek word is said by the phone's own Greek voice, handed 
     When a reading of "Ὃ" and then "That which was from the beginning" starts
     Then he hears "o", then "That which was from the beginning"
     And the clip "/sounds/modern/o.mp3" was played for it
+
+  Scenario: Read from the top in the Greek view hands the voice no one-letter word and plays their clips
+    Given Lampas is opened in the reader on a phone with no Greek voice
+    And he opens "1jn.1" in Greek
+    When he taps "Read from the top" and verse 1 is read to its end
+    Then the clip "/sounds/modern/o.mp3" played for each of the 4 one-letter words of verse 1
+    And no utterance handed to the phone's voice holds a one-letter Greek word
+    And he hears "o" first, not "omicron"
+
+  Scenario: Read from the top on a phone with a Greek voice says each one-letter word of the verse as its sound
+    Given Lampas is opened in the reader on a phone with a Greek voice
+    And he opens "1jn.1" in Greek
+    When he taps "Read from the top" and verse 1 is read to its end
+    Then the phone's Greek voice is handed "οο" as an utterance of its own for each of the 4 one-letter words of verse 1
+    And no utterance handed to the phone's voice holds a one-letter Greek word
+    And he hears "o" first, not "omicron"
+
+  Scenario: The speaker on a word list entry that ends in ὁ says its sound, not omicron
+    Given a speaker "Hear it" for the entry "ἄγγελος, -ου, ὁ" on a phone with a Greek voice
+    When he taps "Hear it" and the voice says all it was handed
+    Then no utterance handed to the phone's voice holds a one-letter Greek word
+    And he hears "o" last, not "omicron"
 
   Scenario: A sound drill on a vowel says its sound
     Given a letter drill asks him to hear the letter "letter-omicron" and tap it
