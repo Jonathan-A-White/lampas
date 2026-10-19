@@ -225,7 +225,7 @@ function Table({ table, levels, mode, revealed, onToggle }: {
                                   data-state="locked"
                                   aria-expanded={asked === place}
                                   aria-label={`${place}: locked. ${needsText(cell, levels)}`}
-                                  onClick={() => setAsked(asked === place ? null : place)}
+                                  onClick={() => oneTap(`paradigms:${place}`, () => setAsked(asked === place ? null : place))}
                                   className={`${cellBox} rounded-lg border border-dashed border-line active:bg-line`}
                                 >
                                   <LockIcon />
