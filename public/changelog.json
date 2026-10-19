@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.348",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.609",
+    "kind": "fixed",
+    "text": "with Turn pages, a tap on the left edge of the text always turns back, even on a verse number, instead of opening that verse."
+  },
+  {
+    "version": "0.1.348",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.528",
+    "kind": "fixed",
+    "text": "Tapping the middle of the 'Your level' slider no longer changes the level; only sliding it does."
+  },
+  {
     "version": "0.1.347",
     "date": "2026-10-19",
     "story": "mw-5r3p30.601",

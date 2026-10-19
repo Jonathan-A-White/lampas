@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.348
+_2026-10-19_
+- Fixed: with Turn pages, a tap on the left edge of the text always turns back, even on a verse number, instead of opening that verse.
+- Fixed: Tapping the middle of the 'Your level' slider no longer changes the level; only sliding it does.
+
 ## 0.1.347
 _2026-10-19_
 - Fixed: A short box that cannot take all of what you paste now tells you how much was cut off; a question to the makers can be as long as a question to the tutor, and a server error shows 'The tutor is offline right now' instead of technical words.
