@@ -179,6 +179,47 @@ test('a double tap on Next takes no answers away from the next question', async 
   }
 });
 
+// The Tester (mw-i7xe0n.15): a double tap on Drill it in the idea sheet landed its second tap on the Hint that stands under the thumb in the screen it opens,
+// and the drill's first question began with 'Hint used' and two answers struck through. A hinted right does not count toward proof.
+test('a double tap on Drill it leaves the drill\'s first question with its Hint unused', async ({ page }) => {
+  const idea = await openIdea(page);
+  for (const gap of [80, 120, 200]) {
+    await page.waitForTimeout(SETTLE_MS + 100);
+    await tapTwice(page, idea.getByRole('button', { name: 'Drill it', exact: true }), gap);
+    const drill = page.getByRole('dialog', { name: 'Drill it' });
+    await expect(drill.getByTestId('grammar-prompt'), `${gap} ms`).toBeVisible();
+    await expect(drill.getByTestId('hint-line'), `${gap} ms`).toHaveCount(0);
+    await expect(drill.locator('[data-option][data-taken]'), `${gap} ms`).toHaveCount(0);
+    await expect(drill.getByRole('button', { name: 'Hint', exact: true }), `${gap} ms`).toBeEnabled();
+    // a sheet that opens or closes swallows taps for its moment (src/ui/tapGuard.ts): he taps Stop after it
+    await page.waitForTimeout(SETTLE_MS + 100);
+    await drill.getByRole('button', { name: 'Stop', exact: true }).click();
+    await expect(drill).toHaveCount(0);
+  }
+});
+
+// The same, the Tester's way: The Greek alphabet, About psi (a sheet over the sheet), then Drill it twice.
+test('a double tap on Drill it on a letter\'s sheet leaves the drill\'s first question with its Hint unused', async ({ page }) => {
+  const alphabet = await openIdea(page, 'The Greek alphabet');
+  await expect(alphabet.getByRole('slider', { name: 'Your level' })).toBeEnabled();
+  await page.waitForTimeout(SETTLE_MS + 100);
+  await alphabet.getByRole('button', { name: 'About psi', exact: true }).click();
+  const psi = page.getByRole('dialog', { name: 'Idea' }).last();
+  await expect(psi.getByRole('button', { name: 'Drill it', exact: true })).toBeEnabled();
+  for (const gap of [80, 120, 200]) {
+    await page.waitForTimeout(SETTLE_MS + 100);
+    await tapTwice(page, psi.getByRole('button', { name: 'Drill it', exact: true }), gap);
+    const drill = page.getByRole('dialog', { name: 'Drill it' });
+    await expect(drill.getByTestId('grammar-prompt'), `${gap} ms`).toBeVisible();
+    await expect(drill.getByTestId('hint-line'), `${gap} ms`).toHaveCount(0);
+    await expect(drill.locator('[data-option][data-taken]'), `${gap} ms`).toHaveCount(0);
+    await expect(drill.getByRole('button', { name: 'Hint', exact: true }), `${gap} ms`).toBeEnabled();
+    await page.waitForTimeout(SETTLE_MS + 100);
+    await drill.getByRole('button', { name: 'Stop', exact: true }).click();
+    await expect(drill).toHaveCount(0);
+  }
+});
+
 // The sweep (mw-5r3p30.430): Done stands where Finish was, so a double tap on Finish closed the result before he could read it.
 test('a double tap on Finish leaves the result of Drill it on screen', async ({ page }) => {
   const drill = await startDrill(page, await openIdea(page));
