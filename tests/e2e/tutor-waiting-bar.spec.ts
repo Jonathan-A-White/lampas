@@ -95,7 +95,7 @@ test('the phone\'s Back out of the Verse view keeps the bar over the Reader, and
   const view = await chooseAction(page, 28, 'Ask the tutor');
   await typeQuestion(page, 'What does συνεργεῖ mean here?');
   await awayAndBack(page, fake, SYNERGEI_ANSWER);
-  // the bar covers the Verse view's own '‹ Reader' (its header is under the bar's top 48 px), so Back is how he leaves
+  // the phone's Back is one way out of the Verse view (its '‹ Reader' is below the bar since mw-5r3p30.636)
   await page.goBack();
   await expect(view).toHaveCount(0);
   await expectBarOnTop(page);

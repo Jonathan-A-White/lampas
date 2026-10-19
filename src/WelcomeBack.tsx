@@ -1,7 +1,7 @@
 // src/WelcomeBack.tsx — 'Welcome back' (mw-1vuvq6.6, docs/ask-tutor.md 'Rust'): opening the app after a break of BREAK_DAYS or more offers a short refresher of the solid words and
 // ideas most overdue. Refresh opens a Review round of just those (src/review/practise.ts); Not now puts the card away for the day. A strip above the screen, drawn once the check is done;
-// nothing is asked of him unless he taps. It stays in the shell's flow, and `relative z-60` (the layer of src/speech/TutorWaitingBar.tsx) lifts it above the
-// Verse view and the sheets that would cover it (mw-5r3p30.632). The break is read from the usage log: the latest day before today that has any use.
+// nothing is asked of him unless he taps. It stays in the shell's flow (src/ShellBars.tsx), above the Verse view and the sheets (mw-5r3p30.632),
+// and those start below it, so it covers no header (mw-5r3p30.636). The break is read from the usage log: the latest day before today that has any use.
 import { useEffect, useState } from 'react';
 import { overdueNow } from './data/learnerRusty';
 import { dayOf, lastUsageDayBefore } from './data/repositories';
@@ -45,7 +45,7 @@ export function WelcomeBack({ hidden = false }: { hidden?: boolean }) {
     setCard(null);
   };
   return (
-    <section aria-label="Welcome back" data-welcome-back className="relative z-60 shrink-0 border-b border-line bg-surface px-4 py-3">
+    <section aria-label="Welcome back" data-welcome-back className="border-b border-line bg-surface px-4 py-3">
       <h2 className="text-lg font-semibold">Welcome back</h2>
       <p className="text-base text-muted">It has been {card.away} days. A short refresher of what you knew well, most overdue first:</p>
       <ul className="my-1 flex flex-wrap items-baseline gap-x-4 text-lg">

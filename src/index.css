@@ -337,6 +337,16 @@ html {
   padding-right: env(safe-area-inset-right);
 }
 
+/* Every full-screen layer (the Verse view, the sheets and their backdrops) starts below the shell's bars, which src/ShellBars.tsx lifts above them, so a bar never
+ * covers a layer's own header or controls (mw-5r3p30.636). --lp-bars-h is the foot of the bars, 0 while none shows. Unlayered, so these win over the utilities. */
+.fixed.inset-0 {
+  top: var(--lp-bars-h, 0px);
+}
+/* A bottom sheet's panel (h-[85dvh], max-h-[92dvh], short:h-dvh) is as tall as the room that is left, no taller, so its top does not slide under the bars. */
+.fixed.inset-0 > [role='dialog'] {
+  max-height: 100%;
+}
+
 .screen {
   overflow-y: auto;
   overscroll-behavior: contain;
