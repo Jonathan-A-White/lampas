@@ -672,6 +672,13 @@
                   "audioBible",
                   "readingPlan",
                   "logosBible",
+                  "dailyReview",
+                  "dailyPlan",
+                  "dailyPsalms",
+                  "dailyDevotional",
+                  "devotional",
+                  "devotionalDraw",
+                  "dailyTicks",
                   "quizGoal"
                 ]
               }
@@ -937,6 +944,93 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "logosBible" }, "value": { "type": "string", "maxLength": 80 } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "dailyReview" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "dailyPlan" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "dailyPsalms" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "dailyDevotional" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": {
+              "key": { "const": "devotional" },
+              "value": {
+                "type": "string",
+                "enum": [
+                  "random",
+                  "LLS:HLINSSDYBYDY",
+                  "LLS:MANFAMDEVBCP",
+                  "LLS:HEARTOFPRAISE",
+                  "LLS:36.0.3",
+                  "LLS:365CALVIN",
+                  "LLS:365SPURGEON1",
+                  "LLS:365SPURGEON2",
+                  "LLS:365SPURGEON3",
+                  "LLS:365SPURGEON4",
+                  "LLS:365SPURGEON5",
+                  "LLS:365SPURGEON6",
+                  "LLS:40DAYSCROSS",
+                  "LLS:9780736971270",
+                  "LLS:FSBDEVOTIONAL",
+                  "LLS:DLYDCLRTNSSWRFR",
+                  "LLS:DYSHVNLVNGTRTHS",
+                  "LLS:20.10.8",
+                  "LLS:FRESHSTDEV",
+                  "LLS:GDSFTHFL",
+                  "LLS:9781434705846",
+                  "LLS:MKEYECNTCTGD",
+                  "LLS:MMNTGDDVBBLCLBK",
+                  "LLS:20.10.1",
+                  "LLS:20.10.2",
+                  "LLS:STRMSDSRT",
+                  "LLS:BTSTN10TNNVRSRY",
+                  "LLS:SPURGINTERP",
+                  "LLS:VOICELRD",
+                  "LLS:20.10.14",
+                  "LLS:TICHDD",
+                  "LLS:TICHDQ",
+                  "LLS:TICHDS",
+                  "LLS:9781496400536",
+                  "LLS:12MOSUNA",
+                  "LLS:12MOSUNB",
+                  "LLS:12MOSUNC",
+                  "LLS:WMNSDLYSPRTWRFR"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "devotionalDraw" }, "value": { "type": "string", "maxLength": 80 } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "dailyTicks" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",

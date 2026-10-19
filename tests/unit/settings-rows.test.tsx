@@ -22,7 +22,7 @@ beforeEach(async () => {
 });
 
 const keys = (rows: readonly { key: string }[]) => rows.map((r) => r.key);
-const ALL_ON: Values = { weave: 'solid', immersiveReader: 'on', newWordsADay: '3', 'resource.logos': 'on', developerMode: 'on' };
+const ALL_ON: Values = { weave: 'solid', immersiveReader: 'on', newWordsADay: '3', 'resource.logos': 'on', devotional: 'random', developerMode: 'on' };
 /** Values a row may read that are not rows of their own: Developer mode is found on About, it is not a setting of the list. */
 const NOT_ROWS = ['developerMode'];
 
@@ -111,6 +111,7 @@ describe('the Settings screen', () => {
       { key: 'weave', value: 'solid' },
       { key: 'immersiveReader', value: 'on' },
       { key: 'resource.logos', value: 'on' },
+      { key: 'devotional', value: 'random' },
       { key: 'developerMode', value: 'on' },
     ]);
     render(<SettingsScreen />);

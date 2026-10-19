@@ -28,6 +28,7 @@ describe('the names Settings draws', () => {
       { key: 'weave', value: 'solid' },
       { key: 'immersiveReader', value: 'on' },
       { key: 'resource.logos', value: 'on' },
+      { key: 'devotional', value: 'random' },
       { key: 'developerMode', value: 'on' },
     ]);
     render(<SettingsScreen />);

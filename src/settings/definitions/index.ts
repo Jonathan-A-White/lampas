@@ -4,6 +4,7 @@
 import type { SettingDef, SettingValue } from '../define';
 import { askBySetting } from './askBy';
 import { audioBibleSetting } from './audioBible';
+import { dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting } from './daily';
 import { englishAccentSetting } from './englishAccent';
 import { fontSetting } from './font';
 import { handwritingSetting } from './handwriting';
@@ -17,6 +18,6 @@ import { tipsSetting } from './tips';
 import { weaveSetting } from './weave';
 import { weaveOrderSetting } from './weaveOrder';
 
-export { askBySetting, audioBibleSetting, englishAccentSetting, fontSetting, handwritingSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, themeSetting, tipsSetting, weaveOrderSetting, weaveSetting };
+export { askBySetting, audioBibleSetting, dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, fontSetting, handwritingSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, themeSetting, tipsSetting, weaveOrderSetting, weaveSetting };
 
-export const DEFINITIONS: readonly SettingDef<SettingValue>[] = [themeSetting, weaveSetting, tipsSetting, immersiveSetting, immersiveHintSetting, askBySetting, audioBibleSetting, readingPlanSetting, readLessonsSetting, englishAccentSetting, weaveOrderSetting, handwritingSetting, readingModeSetting, fontSetting];
+export const DEFINITIONS: readonly SettingDef<SettingValue>[] = [themeSetting, weaveSetting, tipsSetting, immersiveSetting, immersiveHintSetting, askBySetting, audioBibleSetting, readingPlanSetting, readLessonsSetting, englishAccentSetting, weaveOrderSetting, handwritingSetting, readingModeSetting, fontSetting, dailyReviewSetting, dailyPlanSetting, dailyPsalmsSetting, dailyDevotionalSetting, devotionalSetting, devotionalDrawSetting, dailyTicksSetting];

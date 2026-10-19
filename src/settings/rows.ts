@@ -37,6 +37,7 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'pronunciation', title: 'Greek pronunciation' },
   { id: 'resources', title: 'Study resources', hint: 'Links from a word to the tools you own. Only links are added; no lexicon text is kept in Lampas. All start off.' },
   { id: 'logos', title: 'Bible in Logos' },
+  { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.' },
   { id: 'tips', title: 'Tips' },
   { id: 'developer', title: 'Developer' },
   { id: 'aboutYou', title: 'About you' },

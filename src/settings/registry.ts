@@ -68,7 +68,7 @@ import { chooseAccent } from '../speech/accents';
 import { PRONUNCIATIONS } from '../speech/pronunciation';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS, type Depth } from '../script/scripts';
 import type { Allowed, Dependency, SectionId, SettingDef, SettingValue } from './define';
-import { askBySetting, audioBibleSetting, englishAccentSetting, fontSetting, handwritingSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, themeSetting, tipsSetting, weaveOrderSetting, weaveSetting } from './definitions';
+import { askBySetting, audioBibleSetting, dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, fontSetting, handwritingSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, themeSetting, tipsSetting, weaveOrderSetting, weaveSetting } from './definitions';
 import type { Immersive } from './definitions/immersive';
 import type { Tips } from './definitions/tips';
 import type { Weave } from './definitions/weave';
@@ -498,6 +498,13 @@ export const SETTINGS: readonly SettingEntry[] = [
   fromDefinition(audioBibleSetting),
   fromDefinition(readingPlanSetting),
   logosBibleEntry,
+  fromDefinition(dailyReviewSetting),
+  fromDefinition(dailyPlanSetting),
+  fromDefinition(dailyPsalmsSetting),
+  fromDefinition(dailyDevotionalSetting),
+  fromDefinition(devotionalSetting),
+  fromDefinition(devotionalDrawSetting),
+  fromDefinition(dailyTicksSetting),
   quizGoalEntry,
 ];
 
