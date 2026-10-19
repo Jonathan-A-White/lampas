@@ -303,6 +303,17 @@ test('with Turn pages, Settings and back by ‹ Reader or by Back keeps the page
   await shot(page, 'turn-pages-back-from-settings');
 });
 
+// mw-5r3p30.638: the page is kept on the phone too, so a reload or the app opened again from the home screen opens the chapter on the page he was reading.
+test('with Turn pages, a reload opens the chapter on the page he was reading', async ({ page }) => {
+  await openMark12(page, 'pages');
+  const verses = await turnTo(page, 6);
+
+  await page.reload();
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-paging', 'pages');
+  await backOnPage(page, 6, verses);
+  await shot(page, 'turn-pages-after-reload');
+});
+
 /** The screens the Reader gives way to (it unmounts for each), opened as the app opens a screen (a new history entry), and how each shows it is there. */
 const AWAY: { name: string; hash: string; ready: (page: Page) => Locator }[] = [
   { name: 'Words', hash: '#/words', ready: (p) => p.getByRole('heading', { name: 'Words', level: 1 }) },
