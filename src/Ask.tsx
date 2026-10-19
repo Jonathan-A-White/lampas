@@ -23,6 +23,7 @@ import { openBridgeIdea } from './talk/offers';
 import { PendingQuestion } from './ui/PendingQuestion';
 import { revealTop } from './ui/reveal';
 import { useElapsed } from './ui/useElapsed';
+import { GREEK_LANG } from './script/greekLang';
 
 export function Waiting({ state }: { state: Extract<AskState, { phase: 'sending' | 'waiting' }> }) {
   const seconds = useElapsed(state.startedAt);
@@ -94,11 +95,11 @@ function AnswerCard({ answer }: { answer: TutorAnswer }) {
         <dl className="mt-2 space-y-1 border-t border-line pt-2">
           {answer.words.map((w, i) => (
             <div key={i} className="flex gap-3">
-              <dt lang="grc" className="min-w-0 shrink-0 break-words font-greek text-2xl">
+              <dt {...GREEK_LANG} className="min-w-0 shrink-0 break-words font-greek text-2xl">
                 {w.greek}
               </dt>
               <dd className="min-w-0 flex-1 break-words text-base">
-                <span lang="grc" className="font-greek text-lg">
+                <span {...GREEK_LANG} className="font-greek text-lg">
                   {w.lemma}
                 </span>
                 <span className="text-muted"> — {w.note}</span>

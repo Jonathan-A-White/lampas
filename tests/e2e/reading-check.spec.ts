@@ -142,7 +142,7 @@ test('holding the bar of Read it aloud in the Greek view sends the Greek, marks 
   expect((await word.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
   await word.click();
   await expect(panel.locator('[data-fix-detail] [data-chunks]')).toHaveText('συν · ερ · γεῖ');
-  await expect(panel.locator('[data-fix-detail] [data-chunks]')).toHaveAttribute('lang', 'grc');
+  await expect(panel.locator('[data-fix-detail] [data-chunks]')).toHaveAttribute('lang', 'el');
   await expect(panel.locator('[data-fix-detail]').getByRole('button', { name: 'Hear it', exact: true })).toBeVisible();
   await expectFitsPhone(page);
   await panel.locator('[data-fix-detail]').scrollIntoViewIfNeeded();

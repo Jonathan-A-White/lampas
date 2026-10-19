@@ -27,6 +27,7 @@ import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { useReportScreen } from './tutor/screenContext';
 import { useGoalProgress, type GoalProgress } from './useGoalProgress';
 import { WordSheet, type Lookup } from './WordSheet';
+import { GREEK_LANG } from './script/greekLang';
 
 const BUTTON = 'min-h-12 rounded-xl px-4 text-lg font-medium';
 const LEVEL_TITLES: Record<Level, string> = { solid: 'Solid', frontier: 'Frontier', notYet: 'Not yet' };
@@ -338,7 +339,7 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
               <ListGroup key={level} level={level} count={wordGroups[level].length}>
                 {wordGroups[level].map((w) => (
                   <li key={w.lemma} data-lemma={w.lemma} className="flex min-h-12 items-center justify-between gap-3 px-3 py-2">
-                    <span lang="grc" className="font-greek text-xl">
+                    <span {...GREEK_LANG} className="font-greek text-xl">
                       {w.lemma}
                     </span>
                     <span className="min-w-0 truncate text-base text-muted">{w.gloss}</span>
@@ -411,7 +412,7 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
                     onClick={() => void add(w.lemma, w.gloss)}
                     className="flex min-h-12 w-full items-center gap-3 rounded-xl border border-line px-3 py-1 text-left active:bg-line"
                   >
-                    <span lang="grc" className="font-greek text-2xl">
+                    <span {...GREEK_LANG} className="font-greek text-2xl">
                       {w.lemma}
                     </span>
                     <span className="min-w-0 flex-1 truncate text-base text-muted">{w.gloss}</span>

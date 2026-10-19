@@ -20,6 +20,7 @@ import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { useElapsed } from './ui/useElapsed';
 import { useReadChecks, type ReadState } from './useReadChecks';
+import { GREEK_LANG, langOf } from './script/greekLang';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium';
 const PRIMARY = 'min-h-12 w-full rounded-xl bg-accent px-5 text-lg font-medium text-accent-fg';
@@ -94,7 +95,7 @@ function WordResult({ answer, view }: { answer: VerseReadAnswer; view: ReadingVi
       <p className="break-words text-base">{plainQuotes(answer.note)}</p>
       {answer.focus_words.map((fix, i) => (
         <div key={i} className="space-y-1">
-          <p lang={greek ? 'grc' : 'en'} className={`break-words text-2xl font-semibold tracking-wide ${greek ? 'font-greek' : ''}`}>
+          <p {...langOf(greek)} className={`break-words text-2xl font-semibold tracking-wide ${greek ? 'font-greek' : ''}`}>
             {fix.chunks.join(' · ')}
           </p>
           <p className="break-words text-base text-muted">{plainQuotes(fix.tip)}</p>
@@ -139,7 +140,7 @@ export function ReadingDrill({ offer, pronunciation, onClose }: { offer: DrillOf
   // the next word's Skip this word is the button Next word was, in the same place: a second tap of a double tap on Next word waits for the new word to
   // settle (src/ui/settle.ts, mw-5r3p30.430)
   const settled = useSettled(at);
-  const lang = view === 'greek' ? 'grc' : 'en';
+  const lang = langOf(view === 'greek');
   const idea = offer.kind === 'sound' ? ideaOfSound(offer.unit) : undefined;
   const title = offer.kind === 'sound' ? `Drill: ${offer.glyphs}` : 'Drill: words you keep missing';
 
@@ -169,7 +170,7 @@ export function ReadingDrill({ offer, pronunciation, onClose }: { offer: DrillOf
               {offer.kind === 'sound' && idea ? (
                 <>
                   <p data-drill-rule className="text-2xl">
-                    <span lang="grc" className="font-greek text-3xl">{idea.pair}</span> says {ideaSound(idea)}
+                    <span {...GREEK_LANG} className="font-greek text-3xl">{idea.pair}</span> says {ideaSound(idea)}
                   </p>
                   <SpeakButton text={idea.pair ?? ''} id={`drill-rule-${offer.unit}`} label={`Hear ${idea.pair}`} kind="speaker" />
                   <p className="text-base text-muted">{drillWhy(offer)} You will read {words.length} short words with it, easiest first.</p>
@@ -195,7 +196,7 @@ export function ReadingDrill({ offer, pronunciation, onClose }: { offer: DrillOf
               <p className="text-sm text-muted">
                 Word {at + 1} of {words.length}
               </p>
-              <p data-drill-word lang={lang} className={`break-words text-5xl ${view === 'greek' ? 'font-greek' : 'font-semibold'}`}>
+              <p data-drill-word {...lang} className={`break-words text-5xl ${view === 'greek' ? 'font-greek' : 'font-semibold'}`}>
                 {word}
               </p>
               <SpeakButton text={word} id={`drill-word-${word}`} label={`Hear ${word}`} kind="speaker" language={view === 'greek' ? 'greek' : 'english'} />

@@ -47,7 +47,7 @@ test('a Greek form on a Review table question draws at 28 px or more', async ({ 
   await page.goto('/#/review');
   await page.getByRole('button', { name: 'Start' }).click();
 
-  const choices = page.locator('[data-option][lang="grc"]');
+  const choices = page.locator('[data-option][lang="el"]');
   await expect(choices.first()).toBeVisible();
   expect(await choices.count()).toBeGreaterThan(1);
   for (const choice of await choices.all()) {

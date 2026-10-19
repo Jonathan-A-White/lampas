@@ -37,7 +37,7 @@ test('a Greek choice on a Review multiple-choice card draws at 30 px', async ({ 
   await page.getByRole('button', { name: 'Start' }).click();
 
   await expect(page.getByTestId('grammar-prompt')).toHaveAttribute('data-idea', 'words-sound-alike');
-  const choices = page.locator('[data-option][lang="grc"]');
+  const choices = page.locator('[data-option][lang="el"]');
   expect(await choices.count()).toBeGreaterThan(1);
   for (const choice of await choices.all()) {
     expect(await choice.evaluate((el) => getComputedStyle(el).fontSize)).toBe('30px');

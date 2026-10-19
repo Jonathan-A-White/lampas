@@ -164,7 +164,7 @@ async function misfits(page: Page): Promise<string[]> {
       if (edge.right > document.documentElement.clientWidth + 0.5) bad.push('table runs off the screen');
       if (document.documentElement.scrollWidth > document.documentElement.clientWidth) bad.push('the page scrolls sideways');
       // a Greek form: whole in one line, inside its own cell (so it cannot lie over the next one) and inside the table
-      for (const cell of Array.from(table.querySelectorAll<HTMLElement>('[data-cell][data-state="shown"][lang="grc"]'))) {
+      for (const cell of Array.from(table.querySelectorAll<HTMLElement>('[data-cell][data-state="shown"][lang="el"]'))) {
         const td = cell.closest('td') as HTMLElement;
         const range = document.createRange();
         range.selectNodeContents(cell);

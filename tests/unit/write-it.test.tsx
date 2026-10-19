@@ -382,7 +382,7 @@ describe('the Write it card tells a y from a γ (mw-86e9r1.57)', () => {
     expect(verdict).toHaveTextContent('Close');
     expect(verdict).not.toHaveTextContent('Not quite');
     expect(screen.getByTestId('write-hint')).toHaveTextContent('The arms of γ meet on the line, in a V, before the tail drops.');
-    expect(screen.getByTestId('write-hint').querySelector('[lang="grc"]')).not.toBeNull();
+    expect(screen.getByTestId('write-hint').querySelector('[lang="el"]')).not.toBeNull();
   });
 
   it('says Right for a γ whose V is on the line', async () => {

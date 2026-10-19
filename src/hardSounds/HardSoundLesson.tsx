@@ -23,6 +23,7 @@ import { lessonById, saidFor } from './lessons';
 import { markLetters } from './markLetters';
 import { Word } from './Word';
 import { TryIt } from './TryIt';
+import { GREEK_LANG } from '../script/greekLang';
 
 /** Each kind of step's heading. */
 const STEP_HEADINGS: Record<StepKind, string> = {
@@ -99,7 +100,7 @@ function VerseStep({ reference, letters, at }: { reference: string; letters: rea
         </p>
       ) : (
         <>
-          <p data-testid="sound-verse" lang="grc" className="font-greek text-[length:var(--lp-greek-size)] leading-relaxed">
+          <p data-testid="sound-verse" {...GREEK_LANG} className="font-greek text-[length:var(--lp-greek-size)] leading-relaxed">
             {markLetters(loaded.greek, letters)}
           </p>
           <SpeakButton text={loaded.greek} id={`${at}-verse`} label="Hear the verse" kind="speaker" />

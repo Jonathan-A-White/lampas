@@ -25,7 +25,7 @@ const explaining = (f: FakePostern): void => {
 const adding = (...lemmas: string[]) => (f: FakePostern): void =>
   void (f.autoReply = { status: 'answered', answer: { answer: 'Adding.', words: [], words_to_add: lemmas } });
 const wordRow = (lemma: string): HTMLElement => {
-  const row = Array.from(sheet().querySelectorAll<HTMLElement>('[data-talk-words] > div')).find((r) => r.querySelector('dd [lang="grc"]')?.textContent === lemma);
+  const row = Array.from(sheet().querySelectorAll<HTMLElement>('[data-talk-words] > div')).find((r) => r.querySelector('dd [lang="el"]')?.textContent === lemma);
   if (!row) throw new Error(`no answer word ${lemma}`);
   return row;
 };

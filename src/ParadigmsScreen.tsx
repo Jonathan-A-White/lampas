@@ -30,6 +30,7 @@ import { askAboutParadigm } from './nav/readerRequest';
 import { navigate, openParadigm, paradigmHash, paradigmOf, replaceHash, useAddress } from './nav/route';
 import { MAX_REVEALED } from './services/talk';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { greekLang } from './script/greekLang';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border border-line px-4 text-lg font-medium';
 
@@ -83,7 +84,7 @@ function ParadigmList({ levels }: { levels: Levels | undefined }) {
                         onClick={() => openParadigm({ table: table.id })}
                         className="block min-h-16 w-full rounded-xl border border-line px-4 py-3 text-left active:bg-line"
                       >
-                        <span data-testid="paradigm-name" lang={table.id === 'eimi' || table.id === 'oida' ? 'grc' : undefined} className="block text-xl font-semibold">
+                        <span data-testid="paradigm-name" {...greekLang(table.id === 'eimi' || table.id === 'oida')} className="block text-xl font-semibold">
                           {table.name}
                         </span>
                         <span className="block text-base text-muted">{table.about}</span>
@@ -198,7 +199,7 @@ function Table({ table, levels, mode, revealed, onToggle }: {
                       {cols.map((c) => {
                         const cell = row.cells[c];
                         const place = cellName(table, row, c);
-                        const lang = cell.lang === 'el' ? 'grc' : undefined;
+                        const lang = greekLang(cell.lang === 'el');
                         const font = cell.lang === 'el' ? `font-greek ${size}` : 'text-sm';
                         const frame = 'flex min-h-14 w-full min-w-0 items-center justify-center px-0.5';
                         const cellBox = `${frame} ${font}`;
@@ -216,7 +217,7 @@ function Table({ table, levels, mode, revealed, onToggle }: {
                         if (mode === 'review') {
                           return (
                             <td key={c} className="border-b border-l border-line p-0.5">
-                              <div data-cell={place} data-state="shown" lang={lang} aria-label={`${place}: ${cell.form}`} className={cellBox}>
+                              <div data-cell={place} data-state="shown" {...lang} aria-label={`${place}: ${cell.form}`} className={cellBox}>
                                 {cell.form}
                               </div>
                             </td>
@@ -230,7 +231,7 @@ function Table({ table, levels, mode, revealed, onToggle }: {
                               data-state={shown ? 'shown' : 'hidden'}
                               aria-pressed={shown}
                               aria-label={shown ? `${place}: ${cell.form}. Tap to hide` : `Reveal ${place}`}
-                              lang={shown ? lang : undefined}
+                              {...(shown ? lang : {})}
                               onClick={() => onToggle(place)}
                               className={`${shown ? cellBox : `${frame} ${label} font-medium text-accent active:bg-accent/30 bg-accent/15`} rounded-lg`}
                             >

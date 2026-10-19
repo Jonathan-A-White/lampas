@@ -19,6 +19,7 @@ import { focusOnMount } from './ui/focus';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { WordPicture } from './WordPicture';
+import { GREEK_LANG } from './script/greekLang';
 
 const BUTTON = 'min-h-12 min-w-0 rounded-xl border px-3 text-base font-medium disabled:opacity-50';
 
@@ -104,7 +105,7 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
           <div className="flex items-start gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <p data-testid="teach-lemma" lang="grc" className="min-w-0 break-words font-greek text-5xl font-bold">
+                <p data-testid="teach-lemma" {...GREEK_LANG} className="min-w-0 break-words font-greek text-5xl font-bold">
                   {current.lemma}
                 </p>
                 <SpeakButton text={current.lemma} id={`teach:${current.lemma}`} label="Hear it" kind="speaker" className="min-h-12 min-w-12 shrink-0" />
@@ -143,14 +144,14 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
                 if (!weft) return <span key={i} data-plain>{chunk.t}{' '}</span>;
                 const greek = weft.words.map((w) => w.t).join(' ');
                 return weft.learning ? (
-                  <span key={i} data-new lang="grc" className="mr-1 inline-flex flex-col items-center align-top font-greek text-[length:var(--lp-greek-size)] leading-tight text-accent">
+                  <span key={i} data-new {...GREEK_LANG} className="mr-1 inline-flex flex-col items-center align-top font-greek text-[length:var(--lp-greek-size)] leading-tight text-accent">
                     <span data-greek className="font-bold">{greek}</span>
                     <span data-hint lang="en" className="whitespace-nowrap font-sans text-sm font-normal text-muted">
                       {chunk.t}
                     </span>
                   </span>
                 ) : (
-                  <span key={i} lang="grc" className="mr-1 font-greek text-[length:var(--lp-greek-size)] text-accent">
+                  <span key={i} {...GREEK_LANG} className="mr-1 font-greek text-[length:var(--lp-greek-size)] text-accent">
                     {greek}
                   </span>
                 );
@@ -158,7 +159,7 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
             </p>
             {marked ? null : (
               <p className="mt-2 text-base text-muted">
-                In this verse: <span lang="grc" className="font-greek text-xl">{forms.join(', ')}</span>
+                In this verse: <span {...GREEK_LANG} className="font-greek text-xl">{forms.join(', ')}</span>
               </p>
             )}
           </div>

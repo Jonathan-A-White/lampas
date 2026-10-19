@@ -12,6 +12,7 @@ import { KNEW_IT, NOT_PARSED } from './review/kinds';
 import { TapToHear } from './TapToHear';
 import { useSettled } from './ui/settle';
 import { SelfGrade } from './ui/SelfGrade';
+import { GREEK_LANG, greekLang } from './script/greekLang';
 
 const LOOK = {
   idle: 'border-line bg-surface',
@@ -32,7 +33,7 @@ function UseVerse({ question }: { question: GrammarQuestion }) {
   if (question.kind !== 'use' || !question.words) return null;
   const marked = new Set(question.markedAt);
   return (
-    <p data-testid="use-verse" lang="grc" className="mt-3 min-w-0 break-words font-greek text-3xl">
+    <p data-testid="use-verse" {...GREEK_LANG} className="mt-3 min-w-0 break-words font-greek text-3xl">
       {question.words.map((word, i) => (
         <span key={i} data-marked={marked.has(i) ? '' : undefined} className={marked.has(i) ? 'rounded bg-accent/20 px-1 font-medium' : 'px-1'}>
           {word}{' '}
@@ -82,7 +83,7 @@ function Heading({ question, mode, hint }: { question: GrammarQuestion; mode: Qu
           <GreekRuns text={question.prompt} size="text-3xl" />
         </p>
         {question.form ? (
-          <p data-testid="grammar-form" lang="grc" className={`mt-3 min-w-0 break-words font-greek ${question.kind === 'meaning' && question.form.length > 16 ? 'text-4xl' : 'text-5xl'}`}>
+          <p data-testid="grammar-form" {...GREEK_LANG} className={`mt-3 min-w-0 break-words font-greek ${question.kind === 'meaning' && question.form.length > 16 ? 'text-4xl' : 'text-5xl'}`}>
             {question.form}
           </p>
         ) : null}
@@ -112,7 +113,7 @@ function Flash({ question, picked, onPick, onSeeTable }: Omit<Props, 'mode'>) {
     <>
       <Heading question={question} mode="flashcard" />
       {showsVerse(question) ? (
-        <p data-testid="verse-words" lang="grc" className="mt-4 text-center font-greek text-2xl">
+        <p data-testid="verse-words" {...GREEK_LANG} className="mt-4 text-center font-greek text-2xl">
           {question.options.map((word, i) => (
             <span key={i} className={shown && word === question.right ? 'rounded bg-good/20 px-1 font-medium' : 'px-1'}>
               {word}{' '}
@@ -120,7 +121,7 @@ function Flash({ question, picked, onPick, onSeeTable }: Omit<Props, 'mode'>) {
           ))}
         </p>
       ) : null}
-      <p data-testid="grammar-answer" lang={GREEK.test(question.right) ? 'grc' : undefined} className="mt-3 min-h-10 text-center font-greek text-3xl">
+      <p data-testid="grammar-answer" {...greekLang(GREEK.test(question.right))} className="mt-3 min-h-10 text-center font-greek text-3xl">
         {shown ? answerOf(question) : ''}
       </p>
       <SelfGrade shown={shown} onShow={() => setShown(true)} picked={picked} onPick={onPick} />
@@ -156,7 +157,7 @@ function Choice({ question, picked, onPick, taken, sideBySide, onSeeTable }: Omi
         data-option
         data-taken={look === 'taken' ? '' : undefined}
         data-result={look === 'right' || look === 'wrong' ? look : undefined}
-        lang={greek ? 'grc' : undefined}
+        {...greekLang(greek)}
         disabled={answered || taken?.has(i)}
         onClick={() => {
           if (!settled()) return;

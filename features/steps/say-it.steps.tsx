@@ -169,7 +169,7 @@ describeFeature(feature, ({ Scenario }) => {
     const card = await within(drillDialog()).findByTestId('say-card');
     await waitFor(() => expect(within(drillDialog()).getByTestId('letter-drill-step')).toHaveTextContent(`Question ${SAY_AT + 1} of 8`));
     expect(within(card).getByTestId('say-letter')).toHaveTextContent(glyph);
-    expect(within(card).getByTestId('say-letter')).toHaveAttribute('lang', 'grc');
+    expect(within(card).getByTestId('say-letter')).toHaveAttribute('lang', 'el');
     expect(sayBar()).toBeInTheDocument();
   };
   const holdsUntilHeard = async () => holdsBar(mic!.honest.clip.durationMs + 1000);

@@ -16,7 +16,7 @@ async function checkView(page: Page, view: 'greek' | 'english', name: string): P
   await expect(screen.getByRole('heading', { name: 'Romans 8:22' })).toBeVisible();
   const verse = screen.locator('[data-sheet-verse]');
   await expect(verse).toBeVisible();
-  await expect(verse).toHaveAttribute('lang', view === 'greek' ? 'grc' : 'en');
+  await expect(verse).toHaveAttribute('lang', view === 'greek' ? 'el' : 'en');
   expect(((await verse.textContent()) ?? '').length).toBeGreaterThan(30);
   // big: set larger than the Reader's own line
   expect(await verse.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThan(lineSize);

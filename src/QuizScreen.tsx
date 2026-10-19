@@ -17,6 +17,7 @@ import { WordQuestion } from './WordQuestion';
 import { focusOnMount } from './ui/focus';
 import { NextBar } from './ui/NextBar';
 import { useSettled } from './ui/settle';
+import { GREEK_LANG } from './script/greekLang';
 
 type Round = { status: 'loading' } | { status: 'offer' } | { status: 'ready'; questions: Question[] };
 
@@ -194,7 +195,7 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
               <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
                 {missed.map((q) => (
                   <li key={q.lemma} data-missed={q.lemma} className="px-3 py-2">
-                    <span lang="grc" className="block break-words font-greek text-2xl">{q.lemma}</span>
+                    <span {...GREEK_LANG} className="block break-words font-greek text-2xl">{q.lemma}</span>
                     <span className="block break-words text-sm text-muted">{q.gloss}</span>
                   </li>
                 ))}

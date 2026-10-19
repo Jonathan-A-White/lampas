@@ -7,6 +7,7 @@ import { shortSound } from './data/grammar/quickRound';
 import type { TeachTile } from './data/grammar/teachTiles';
 import { hasGreekVoice, isWordSaid, noVoiceHelp, speakLetter, speakWord, stopSpeaking, warmVoices } from './speech/greek';
 import { SpeakButton } from './speech/SpeakButton';
+import { GREEK_LANG } from './script/greekLang';
 
 const HELP_MS = 7000;
 const GREEK = 'font-greek';
@@ -17,7 +18,7 @@ const hearLabel = (tile: TeachTile): string => `Hear ${tile.say?.as === 'letter'
 function Face({ tile }: { tile: TeachTile }) {
   return (
     <>
-      <span lang="grc" className={`${GREEK} block ${[...tile.form].length === 1 ? 'text-4xl' : 'text-2xl'} leading-tight`}>
+      <span {...GREEK_LANG} className={`${GREEK} block ${[...tile.form].length === 1 ? 'text-4xl' : 'text-2xl'} leading-tight`}>
         {tile.form}
       </span>
       {tile.vowel ? <span className="block text-xs font-medium text-accent">vowel</span> : null}
@@ -53,7 +54,7 @@ function Tile({ tile, onOpen, onSay }: { tile: TeachTile; onOpen: (ideaId: strin
       {example ? (
         <div className="flex items-center justify-center gap-1 px-1">
           <span className="min-w-0 text-center text-sm">
-            <span lang="grc" className={`${GREEK} text-lg`}>
+            <span {...GREEK_LANG} className={`${GREEK} text-lg`}>
               {example.word}
             </span>
             <span className="block text-xs text-muted">{example.gloss}</span>

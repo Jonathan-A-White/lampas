@@ -190,7 +190,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the pairs shown include one told apart by ρ and λ and one by ρ and δ', async () => {
       const base = (c: string): string => c.normalize('NFD').charAt(0).toLowerCase();
       const told = [...(await lesson()).querySelectorAll('[data-pair]')].map((li) => {
-        const [a, b] = [...li.querySelectorAll('[lang="grc"]')].map((w) => [...(w.textContent ?? '')].map(base));
+        const [a, b] = [...li.querySelectorAll('[lang="el"]')].map((w) => [...(w.textContent ?? '')].map(base));
         const at = a.findIndex((c, i) => c !== b[i]);
         return a.length === b.length && at >= 0 ? [a[at], b[at]].sort().join('') : '';
       });

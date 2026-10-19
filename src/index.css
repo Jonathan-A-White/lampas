@@ -453,7 +453,7 @@ textarea,
   font-family: var(--font-book);
   --lp-book-line: var(--lp-book-english);
 }
-:is([data-reader], [data-verse-view])[data-immersive='on'] :is([data-verse], [data-paragraph], [data-passage-text])[lang='grc'] {
+:is([data-reader], [data-verse-view])[data-immersive='on'] :is([data-verse], [data-paragraph], [data-passage-text])[lang='el'] {
   --lp-book-line: var(--lp-book-greek);
 }
 :is([data-reader], [data-verse-view])[data-immersive='on'] :is([data-verse], [data-paragraph], [data-passage-text]):not(:has([data-hint])) {

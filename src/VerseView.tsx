@@ -34,6 +34,7 @@ import { SendOff } from './plan/SendOff';
 import { useSendOff } from './plan/useSendOff';
 import { audioBibleSetting } from './settings/definitions';
 import { useSetting } from './settings/store';
+import { langOf } from './script/greekLang';
 
 /** Listen is a player: Play reads the verse or passage on to its end by itself. */
 export interface ListenPlayer {
@@ -138,7 +139,7 @@ export function VerseView(props: VerseViewProps) {
           <p
             data-sheet-verse
             {...(passage ? { 'data-passage-text': '' } : { 'data-size': 'big' })}
-            lang={view === 'greek' ? 'grc' : 'en'}
+            {...langOf(view === 'greek')}
             className={`break-words ${typeClass}`}
           >
             {text}

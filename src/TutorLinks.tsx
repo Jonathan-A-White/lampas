@@ -15,6 +15,7 @@ import { armFallback } from './resources/openApp';
 import { placeOf, verseChips, wordChips, type LinkChip } from './resources/tutorLinks';
 import type { StudyResource } from './resources';
 import { AppMissingSheet } from './WordSheet';
+import { greekLang } from './script/greekLang';
 
 /** The Strong's number of each linked lemma, from the lexicon; '' for a lemma it lacks or when it cannot be loaded. Undefined until they are looked up. */
 function useStrongs(lemmas: string[]): Record<string, string> | undefined {
@@ -78,7 +79,7 @@ export function TutorLinks({ links, onLeave }: { links: AnswerLink[]; onLeave: (
       <ul data-tutor-links aria-label="Study links" className="mt-2 space-y-2 border-t border-line pt-2">
         {drawn.map((group) => (
           <li key={group.key} data-tutor-link role="group" aria-label={group.name} className="flex flex-wrap items-center gap-2">
-            <span lang={group.greek ? 'grc' : undefined} className={`mr-1 break-words ${group.greek ? 'font-greek text-2xl' : 'text-base font-medium'}`}>
+            <span {...greekLang(group.greek)} className={`mr-1 break-words ${group.greek ? 'font-greek text-2xl' : 'text-base font-medium'}`}>
               {group.name}
             </span>
             {group.reader ? (

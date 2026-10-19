@@ -7,6 +7,7 @@ import { greekWordSpeech, speakText, speakWord, stopSpeaking } from '../speech/g
 import { Icon } from '../speech/SpeakButton';
 import { answerRound, drawRounds, missesOf, pairSeed, ROUNDS, type PairAnswer, type Round } from './pairDrill';
 import { Word } from './Word';
+import { GREEK_LANG } from '../script/greekLang';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border border-line px-4 text-lg font-medium text-accent active:bg-line';
 const PRIMARY = 'min-h-12 w-full rounded-xl bg-accent px-4 text-lg font-medium text-accent-fg active:opacity-80';
@@ -130,7 +131,7 @@ export function Contrast({ lessonId, pairs, letters, at }: { lessonId: string; p
           <button
             key={word}
             type="button"
-            lang="grc"
+            {...GREEK_LANG}
             disabled={picked !== null}
             aria-label={`Choose ${word}`}
             onClick={() => pick(word)}

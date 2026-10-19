@@ -5,6 +5,7 @@ import { addImportedWords, listWords } from './data/repositories';
 import { parseImport } from './data/importWords';
 import { navigate } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { GREEK_LANG } from './script/greekLang';
 
 export function ImportScreen() {
   const [text, setText] = useState('');
@@ -37,7 +38,7 @@ export function ImportScreen() {
       <ScreenHeader title="Import" back={<HeaderButton onClick={() => navigate('words')}>‹ Words</HeaderButton>} />
       <main className="screen min-h-0 flex-1 px-3 pt-4">
         <label htmlFor="import-text" className="block text-base">
-          One word per line, like <span lang="grc" className="font-greek text-lg">ἀνάστασις — resurrection</span>
+          One word per line, like <span {...GREEK_LANG} className="font-greek text-lg">ἀνάστασις — resurrection</span>
         </label>
         <textarea
           id="import-text"
@@ -55,7 +56,7 @@ export function ImportScreen() {
               <li key={i} className="min-w-0 px-3 py-2">
                 {line.ok ? (
                   <>
-                    <span lang="grc" className="block break-words font-greek text-2xl">{line.headword}</span>
+                    <span {...GREEK_LANG} className="block break-words font-greek text-2xl">{line.headword}</span>
                     <span className="block break-words text-sm text-muted">
                       {line.gloss || 'no gloss'}
                       {fresh ? '' : ' · already in your list'}

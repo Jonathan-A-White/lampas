@@ -1,5 +1,5 @@
 // tests/e2e/idea-greek-face.spec.ts — the Greek of a lesson is drawn in the Greek face (Gentium Plus), not the UI sans (mw-86e9r1.38): in the idea sheet
-// of "The preposition περί", opened by the Goal's Learn next, the heading and the lesson's phrases (περὶ τοῦ υἱοῦ ...) are lang grc in font-greek.
+// of "The preposition περί", opened by the Goal's Learn next, the heading and the lesson's phrases (περὶ τοῦ υἱοῦ ...) are lang el in font-greek.
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { neededIdeas } from './needed-ideas';
 import { shot } from './shot';
@@ -74,17 +74,17 @@ test('the Greek of the περί lesson, its heading and its phrases, is set in G
   const idea = page.getByRole('dialog', { name: 'Idea' });
   const heading = idea.getByRole('heading', { level: 2 });
   await expect(heading).toContainText('The preposition περί');
-  const greekInHeading = heading.locator('[lang="grc"]');
+  const greekInHeading = heading.locator('[lang="el"]');
   await expect(greekInHeading).toHaveText('περί');
   expect(await family(greekInHeading)).toContain('Gentium Plus');
 
   // the lesson's phrases, in What it is, How to spot it and the table
   for (const [part, testId] of [['What it is', 'idea-what'], ['How to spot it', 'idea-spot']] as const) {
-    const spans = idea.getByTestId(testId).locator('[lang="grc"]');
+    const spans = idea.getByTestId(testId).locator('[lang="el"]');
     expect(await spans.count(), part).toBeGreaterThan(0);
     for (const span of await spans.all()) expect(await family(span), `${part}: ${await span.textContent()}`).toContain('Gentium Plus');
   }
-  const phrase = idea.getByTestId('idea-spot').locator('[lang="grc"]', { hasText: 'περὶ τοῦ υἱοῦ' });
+  const phrase = idea.getByTestId('idea-spot').locator('[lang="el"]', { hasText: 'περὶ τοῦ υἱοῦ' });
   await expect(phrase).toHaveCount(1);
   expect(await family(phrase)).toContain('Gentium Plus');
 
@@ -95,7 +95,7 @@ test('the Greek of the περί lesson, its heading and its phrases, is set in G
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     for (let node = walker.nextNode(); node; node = walker.nextNode()) {
       const el = node.parentElement;
-      if (!el || !greek.test(node.textContent ?? '') || el.closest('[lang="grc"]') || el.closest('[aria-label]')) continue;
+      if (!el || !greek.test(node.textContent ?? '') || el.closest('[lang="el"]') || el.closest('[aria-label]')) continue;
       found.push(`${el.tagName}: ${(node.textContent ?? '').trim()}`);
     }
     return found;

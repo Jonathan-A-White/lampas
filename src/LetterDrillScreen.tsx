@@ -26,6 +26,7 @@ import { focusOnMount } from './ui/focus';
 import { FootBar } from './ui/NextBar';
 import { useSettled } from './ui/settle';
 import { useSheetBack } from './ui/sheetBack';
+import { GREEK_LANG } from './script/greekLang';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border text-lg font-medium';
 const PRIMARY = `${BUTTON} border-accent bg-accent text-accent-fg`;
@@ -240,7 +241,7 @@ function SayCard({ item, heard }: { item: RoundItem; heard: string | null }) {
       <p data-testid="grammar-prompt" data-kind="say" className="text-xl font-medium">
         {item.question.prompt}
       </p>
-      <p data-testid="say-letter" lang="grc" className="mt-3 font-greek text-7xl">
+      <p data-testid="say-letter" {...GREEK_LANG} className="mt-3 font-greek text-7xl">
         {glyph}
       </p>
       {answered ? (
@@ -252,7 +253,7 @@ function SayCard({ item, heard }: { item: RoundItem; heard: string | null }) {
             You said “{heard}”
           </p>
           <p data-testid="say-answer" className="mt-1 text-lg">
-            <span lang="grc" className="font-greek text-[length:var(--lp-greek-size)]">
+            <span {...GREEK_LANG} className="font-greek text-[length:var(--lp-greek-size)]">
               {glyph}
             </span>{' '}
             is {letter.title}

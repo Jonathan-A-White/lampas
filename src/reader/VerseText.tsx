@@ -10,6 +10,7 @@ import { NO_SELECT, useLongPress } from '../ui/longPress';
 import { speakWord } from '../speech/greek';
 import type { SpeechLanguage } from '../speech/languages';
 import type { Lookup } from '../WordSheet';
+import { GREEK_LANG } from '../script/greekLang';
 // 44 px (--lp-tap) minus 1 em, halved, top and bottom. Every face's content area is taller than 1 em (Gentium Plus
 // about 1.11 em, a phone's sans about 1.1 em), so an inline word is never under 44 px whatever the font, and the line
 // box stays --lp-tap tall, so the spare pixels cost no layout.
@@ -44,6 +45,7 @@ function Tap({ onTap, onLongPress, lang, className, children, ...data }: {
   onTap: () => void;
   onLongPress: () => void;
   lang?: string;
+  'data-lang'?: string;
   className?: string;
   children: ReactNode;
   'data-chunk'?: string;
@@ -151,7 +153,7 @@ export function VerseText({ verse, view, woven, onLook }: Pick<VerseProps, 'vers
                 </Tap>
               ));
               return (
-                <span key={i} data-chunk={String(i)} data-woven="" data-learning={weft.learning ? '' : undefined} lang="grc" className="font-greek text-[length:var(--lp-greek-size)] text-accent">
+                <span key={i} data-chunk={String(i)} data-woven="" data-learning={weft.learning ? '' : undefined} {...GREEK_LANG} className="font-greek text-[length:var(--lp-greek-size)] text-accent">
                   {weft.learning ? (
                     <span className="inline-flex flex-col items-center align-top leading-tight">
                       <span data-greek>{words}</span>
@@ -171,7 +173,7 @@ export function VerseText({ verse, view, woven, onLook }: Pick<VerseProps, 'vers
                 data-chunk={String(i)}
                 data-woven=""
                 data-learning={weft.learning ? '' : undefined}
-                lang="grc"
+                {...GREEK_LANG}
                 className={`font-greek text-[length:var(--lp-greek-size)] text-accent ${TAP_PAD}`}
                 onTap={() => lookEnglish(c)}
                 onLongPress={() => say(weft.words.map((w) => w.t).join(' '), 'greek')}

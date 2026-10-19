@@ -85,7 +85,7 @@ test('Greek words in the essay use the app\'s Greek type, in Gentium Plus', asyn
   await openUnlocked(page);
   await page.goto('/#/preface/robinson');
   await expect(page.getByRole('heading', { name: 'Introduction', level: 2 })).toBeVisible();
-  const greek = page.locator('main [data-essay-paragraph] [lang="grc"]');
+  const greek = page.locator('main [data-essay-paragraph] [lang="el"]');
   expect(await greek.count()).toBeGreaterThan(0);
   const target = page.locator('main [data-essay-paragraph]', { hasText: 'ευθυς' }).first();
   await target.scrollIntoViewIfNeeded();
