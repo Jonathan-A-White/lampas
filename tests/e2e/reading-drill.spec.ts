@@ -5,7 +5,7 @@ import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { SETTLE_MS } from '../../src/ui/settle';
 import { openUnlocked } from './unlocked';
-import { chooseAction } from './verse-view';
+import { chooseAction, openVerseView } from './verse-view';
 import { tapTwice, pageTime } from '../support/gesture';
 import { holdFor } from '../support/hold';
 
@@ -101,7 +101,10 @@ test('a double tap on Next word skips no word, and one on Finish leaves the end 
   await page.addInitScript((ms) => window.localStorage.setItem('lampas.settleMs', ms), String(SETTLE_MS));
   await page.goto('/');
   await page.getByRole('button', { name: 'Greek', exact: true }).click();
-  await chooseAction(page, 28, 'Read it aloud');
+  // the Verse view is a screen of its own: it takes no tap in its first moment (src/ui/tapGuard.ts), so he reads it first
+  const view = await openVerseView(page, 28);
+  await pageTime(page, SETTLE_MS + 100);
+  await view.getByRole('button', { name: 'Read it aloud', exact: true }).click();
   const panel = page.getByRole('region', { name: 'Reading check' });
   const bar = page.getByRole('button', { name: 'Hold to read verse 28', exact: true });
   await holdFor(page, bar, HOLD_MS);
@@ -109,7 +112,7 @@ test('a double tap on Next word skips no word, and one on Finish leaves the end 
   await holdFor(page, bar, HOLD_MS);
   await panel.getByRole('button', { name: 'Drill this sound', exact: true }).click();
   const drill = page.getByRole('dialog', { name: 'Reading drill' });
-  // a sheet that opens takes no tap in its first moment (src/ui/settle.ts useSettleAround, mw-i7xe0n.26): he reads it first
+  // a sheet that opens takes no tap in its first moment (src/ui/tapGuard.ts, mw-i7xe0n.26): he reads it first
   await expect(drill).toBeVisible();
   await pageTime(page, SETTLE_MS + 100);
   await drill.getByRole('button', { name: 'Start the drill', exact: true }).click();

@@ -63,8 +63,9 @@ export interface TapTwiceOptions {
   /** Real time to wait between the taps, after the page's `gapMs`: a host that delivers the second tap late. The page's clock does not move. */
   lagMs?: number;
   /** Runs after the first tap and the gap, just before the second tap, with the page's clock still paused: wait here for what the first tap brings to be
-   * on screen, or look at what stands under the second tap. */
-  between?: () => Promise<void>;
+   * on screen, or look at what stands under the second tap. When it gives a point, the second tap goes there instead of the same spot (what the first
+   * tap brought up drew the control a thumb's second tap hit somewhere else at this size). */
+  between?: () => Promise<void | Point>;
 }
 
 /** Taps the middle of `target` twice, `gapMs` apart on the page's clock (not the host's), as a thumb's double tap. */
@@ -73,14 +74,14 @@ export async function tapTwice(page: Page, target: Locator | PressAt, gapMs: num
   if (!box) throw new Error('the tap target is not on the page');
   const x = box.x + (box.width ?? 0) / 2;
   const y = box.y + (box.height ?? 0) / 2;
-  const tap = () => (touch ? page.touchscreen.tap(x, y) : page.mouse.click(x, y));
+  const tap = ([at, to]: Point) => (touch ? page.touchscreen.tap(at, to) : page.mouse.click(at, to));
   await pauseNow(page);
   try {
-    await tap();
+    await tap([x, y]);
     await page.clock.runFor(gapMs);
-    if (between) await between();
+    const second = (between && (await between())) || ([x, y] as const);
     if (lagMs) await page.waitForTimeout(lagMs); // a real-time hold: the host's lateness, not the page's
-    await tap();
+    await tap(second);
   } finally {
     await page.clock.resume();
   }

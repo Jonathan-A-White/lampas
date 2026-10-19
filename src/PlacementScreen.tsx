@@ -29,7 +29,7 @@ import { mulberry32, type Random } from './data/quiz';
 import { getEvidence, getGoal, getGrammarApproach, listLevels, listPassageLessons } from './data/repositories';
 import { publish } from './events/bus';
 import { navigate, placementCardOf, placementOriginOf, showPlacementCard, useAddress } from './nav/route';
-import { swallowTaps, useSettled } from './ui/settle';
+import { useSettled } from './ui/settle';
 import { ItemCard } from './review/ItemCard';
 import { GRAMMAR, loadPassage, type GrammarItem } from './review/kinds';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -91,13 +91,10 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
   // they take none in the moment after the intro is drawn, nor after Start over turns into its question (mw-hqd5bz.27). The end card's buttons sit where
   // Next or Finish sat, so they take none in the moment after it is drawn (mw-86e9r1.22).
   const settled = useSettled(run.status === 'quick' ? run.round.at : confirming ? 'confirm' : run.status);
-  // where Place me was tapped: the Goal screen or Settings; the ways out return there, and a second tap of a double tap on one lands nowhere: on the
-  // Goal screen the Grammar ideas bar sits under the end card's Back to the goal (mw-86e9r1.22)
+  // where Place me was tapped: the Goal screen or Settings; the ways out return there, and a second tap of a double tap on one lands nowhere (the screen
+  // change settles, src/ui/tapGuard.ts): on the Goal screen the Grammar ideas bar sits under the end card's Back to the goal (mw-86e9r1.22)
   const origin = placementOriginOf(useAddress());
-  const leaveFor = (to: typeof origin) => {
-    swallowTaps();
-    navigate(to);
-  };
+  const leaveFor = (to: typeof origin) => navigate(to);
   const leave = () => leaveFor(origin);
   // The answers are written one after the other; the next question waits for the last of them.
   const writing = useRef<Promise<unknown>>(Promise.resolve());

@@ -44,6 +44,8 @@ async function openEndCard(page: Page) {
   await putGoal(page, '1 John 1:1');
   await page.goto('/#/goal');
   await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
+  // a new screen takes no tap in its first moment (src/ui/tapGuard.ts): he reads it first
+  await page.waitForTimeout(SETTLE_MS + 100);
   await page.getByRole('button', { name: 'Place me' }).click();
   await page.waitForTimeout(SETTLE_MS + 100);
   await page.getByRole('button', { name: 'Start from the letters' }).click();

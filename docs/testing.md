@@ -57,10 +57,14 @@ A question card (the placement's, Review's, the Quick test's) ignores taps for `
 so the second tap of a double tap on Next chooses nothing. Tests tap the instant a card is drawn, so `tests/setup.ts` sets `settle.ms` to 0
 and `openUnlocked(page)` plants `lampas.settleMs` = `0`; `features/double-tap.feature` and `tests/unit/settle.test.tsx` put the moment back.
 
-Every sheet, drill screen and confirm card swallows taps for the same moment as it opens and as it closes (`useSettleAround`, which `useSheetBack`
-calls; mw-i7xe0n.26), so the second tap of a double tap on Done or Drill it reaches nothing. A spec that puts the moment back must wait it out
-(`SETTLE_MS + 100`) before its first tap on a sheet that just opened, and before a tap beneath one that just closed; `features/sheet-double-tap.feature`,
-`tests/unit/sheet-settle.test.tsx` (which fails on a modal in `src/` that calls neither hook) and `tests/e2e/sheet-leave-steady.spec.ts` hold the proof.
+One guard in the shell (`src/ui/tapGuard.ts`, started once by App; mw-5r3p30.597) swallows taps for the same moment after any screen change (what
+`screenOf` reads in the address: the route, the Verse view, a Paradigms table) and after any element of role `dialog` or `alertdialog` (every sheet,
+drill screen and confirm card) is put in or taken out of the page, so the second tap of a double tap reaches nothing; no screen or sheet has code of
+its own for it. A spec or step that puts the moment back must wait it out (`SETTLE_MS + 100`) before its first tap on a screen or sheet that just
+opened, and before a tap beneath one that just closed; `features/tap-guard.feature`, `features/sheet-double-tap.feature`, `tests/unit/tap-guard.test.tsx`
+(which fails on a modal in `src/` without a dialog role, and on a file that asks for its own moment) and `tests/e2e/double-tap-guard.spec.ts` hold the proof.
+That spec double-taps on the page's clock (`tapTwice`, whose `between` may give the second tap another point when this size draws the Tester's control
+elsewhere) and waits for a new screen with `pageTime`; a screen that waits on its data is drawn in real time, so a target is measured once it is still.
 
 ## The tutor's tests
 
