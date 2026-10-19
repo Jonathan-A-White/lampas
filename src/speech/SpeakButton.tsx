@@ -69,7 +69,7 @@ export function SpeakButton({ text, id, label, kind, language, className }: {
       {help ? (
         <p
           role="status"
-          className="pointer-events-none fixed inset-x-3 top-[calc(0.75rem+env(safe-area-inset-top))] z-20 rounded-xl border border-line bg-surface px-4 py-3 text-base text-fg shadow-lg"
+          className="pointer-events-none fixed inset-x-3 toast-top z-20 rounded-xl border border-line bg-surface px-4 py-3 text-base text-fg shadow-lg"
         >
           {help}
         </p>

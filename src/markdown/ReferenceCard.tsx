@@ -85,17 +85,18 @@ interface Spot {
   maxHeight: number;
 }
 
-/** Where the card goes: below the reference when it fits, else above it, else on the roomier side with its text scrolling. */
-function spotFor(anchor: DOMRect, natural: number): Spot {
+/** Where the card goes: below the reference when it fits, else above it, else on the roomier side with its text scrolling. `floor` is the top of the layer it is placed in
+ * (the foot of the shell's bars, mw-5r3p30.644): the card does not go above it, and its `top` is counted from it. */
+function spotFor(anchor: DOMRect, natural: number, floor: number): Spot {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const width = Math.min(WIDTH, vw - 2 * MARGIN);
   const left = Math.min(Math.max(anchor.left, MARGIN), vw - width - MARGIN);
   const below = vh - anchor.bottom - GAP - MARGIN;
-  const above = anchor.top - GAP - MARGIN;
-  if (natural <= below || (natural > above && below >= above)) return { top: anchor.bottom + GAP, left, width, maxHeight: Math.max(below, 0) };
+  const above = anchor.top - floor - GAP - MARGIN;
+  if (natural <= below || (natural > above && below >= above)) return { top: anchor.bottom + GAP - floor, left, width, maxHeight: Math.max(below, 0) };
   const height = Math.min(natural, above);
-  return { top: anchor.top - GAP - height, left, width, maxHeight: Math.max(above, 0) };
+  return { top: anchor.top - GAP - height - floor, left, width, maxHeight: Math.max(above, 0) };
 }
 
 /** True when a tap at (x, y) is on the reference that opened the card: the backdrop covers it, but a second tap there is not one outside the card. */
@@ -108,6 +109,7 @@ function ReferenceCardView({ card, place, anchor, onClose, onOpen, onSettings }:
   const { held } = card;
   const [passage, setPassage] = useState<Passage>(null);
   const box = useRef<HTMLDivElement>(null);
+  const layer = useRef<HTMLDivElement>(null);
   const [spot, setSpot] = useState<Spot | null>(null);
 
   useEffect(() => {
@@ -133,15 +135,21 @@ function ReferenceCardView({ card, place, anchor, onClose, onOpen, onSettings }:
   // Placed once drawn, and again when its text arrives or the screen turns (the card's own height is read from its content).
   useLayoutEffect(() => {
     const place = (): void => {
-      if (anchor.current && box.current) setSpot(spotFor(anchor.current.getBoundingClientRect(), box.current.scrollHeight));
+      if (anchor.current && box.current && layer.current) setSpot(spotFor(anchor.current.getBoundingClientRect(), box.current.scrollHeight, layer.current.getBoundingClientRect().top));
     };
     place();
     window.addEventListener('resize', place);
-    return () => window.removeEventListener('resize', place);
+    // the layer starts below the bars: it is resized when a bar comes or goes
+    const watch = typeof ResizeObserver === 'undefined' || !layer.current ? undefined : new ResizeObserver(place);
+    if (watch && layer.current) watch.observe(layer.current);
+    return () => {
+      window.removeEventListener('resize', place);
+      watch?.disconnect();
+    };
   }, [anchor, passage]);
 
   return createPortal(
-    <div data-reference-backdrop className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); if (!onReference(anchor.current, e.clientX, e.clientY)) onClose(); }}>
+    <div ref={layer} data-reference-backdrop className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); if (!onReference(anchor.current, e.clientX, e.clientY)) onClose(); }}>
       <div
         ref={box}
         role="dialog"
