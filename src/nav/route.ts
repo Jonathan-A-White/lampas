@@ -9,6 +9,7 @@ import { useSyncExternalStore } from 'react';
 import { bookOf } from '../data/books';
 import { paradigmById } from '../data/paradigms';
 import type { ReaderView, Weave } from '../data/repositories';
+import { previousAddress } from './lastRoute';
 
 export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'today' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'sounds' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'askmore' | 'about' | 'preface' | 'essay' | 'settings' | 'share' | 'unlock';
 
@@ -155,6 +156,19 @@ export function navigate(route: Route, options: { replace?: boolean } = {}): voi
     window.history.pushState(null, '', urlFor(hashFor(route)));
     notify();
   }
+}
+
+/** A header back button's way to `route`: a step Back when the entry behind this one is that screen (the phone's Back after it then leaves this screen's
+ * parent rather than returning to the screen he has just left, mw-5r3p30.458), else (a reload or a link left nothing behind) that screen opened afresh.
+ * The Reader counts only as the plain Reader: behind an open verse or passage is a Verse view, which Back would reopen. */
+export function backTo(route: Route): void {
+  const behind = previousAddress();
+  const plainReader = behind !== null && readerOf(behind).verse === undefined && readerOf(behind).passage === undefined;
+  if (behind !== null && routeOf(behind) === route && (route !== 'home' || plainReader)) {
+    window.history.back();
+    return;
+  }
+  navigate(route);
 }
 
 /** The screen Your requests was opened from, which its back button returns to: About says so in the address ('#/requests?from=about'); Settings is the rest. */

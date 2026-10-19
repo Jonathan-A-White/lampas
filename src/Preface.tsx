@@ -1,6 +1,6 @@
 // src/Preface.tsx — a short page about the text Lampas reads (mw-5r3p30.125): why the Byzantine (Majority) text, and where to read more.
 // Reached from the top of the chapter picker and from About. The words and links are in src/preface.ts; each link opens in a new tab.
-import { navigate } from './nav/route';
+import { backTo, navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { ESSAY_ORIGINAL, ESSAY_ORIGINAL_NOTE, PREFACE_FREE, PREFACE_LINKS, PREFACE_PARAGRAPHS } from './preface';
 import { usePageActions } from './PageActions';
@@ -19,7 +19,7 @@ export function Preface() {
   const { buttons, notice } = usePageActions('#/preface', 'Preface');
   return (
     <>
-      <ScreenHeader title="Preface" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} action={buttons} />
+      <ScreenHeader title="Preface" back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} action={buttons} />
       {notice}
       <main ref={scrollRef} className="screen min-h-0 flex-1 px-4">
         <div className="pb-4">

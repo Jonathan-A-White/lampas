@@ -12,7 +12,7 @@ import { getOpenChapter } from './data/readerChapter';
 import { listWords, recordDrillStep } from './data/repositories';
 import { useAiAllowed } from './gate/licenceContext';
 import { askInReader, talkInReader } from './nav/readerRequest';
-import { navigate } from './nav/route';
+import { backTo, navigate } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { focusOnMount } from './ui/focus';
 import { NextBar } from './ui/NextBar';
@@ -151,7 +151,7 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
     <ScreenHeader
       title="Parsing drill"
       subtitle={s.status === 'ready' && question ? `Word ${s.question + 1} of ${total} · step ${s.step + 1} of ${question.steps.length}` : reader.title}
-      back={<HeaderButton onClick={() => navigate('test')}>‹ Test</HeaderButton>}
+      back={<HeaderButton onClick={() => backTo('test')}>‹ Test</HeaderButton>}
     />
   );
 

@@ -22,7 +22,7 @@ import { OptionalEntry } from './ipa/OptionalEntry';
 import { useAiAllowed } from './gate/licenceContext';
 import { LadderStart } from './ReadingLadder';
 import { pronunciationOf } from './speech/pronunciation';
-import { navigate, openPlacement, openReader, openVerseRange } from './nav/route';
+import { backTo, navigate, openPlacement, openReader, openVerseRange } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { useReportScreen } from './tutor/screenContext';
 import { useGoalProgress, type GoalProgress } from './useGoalProgress';
@@ -261,7 +261,7 @@ export function GoalScreen() {
   const progress = useGoalProgress();
   const header = (
     <>
-      <ScreenHeader title="Goal" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />
+      <ScreenHeader title="Goal" back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} />
       <SwitchNote />
     </>
   );

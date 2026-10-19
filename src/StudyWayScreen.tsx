@@ -4,7 +4,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
 import { deleteStudyWayLine, editStudyWayLine, listStudyWay, STUDY_WAY_LINE_MAX, STUDY_WAY_MAX } from './data/repositories';
-import { navigate } from './nav/route';
+import { backTo } from './nav/route';
 import { usePageActions } from './PageActions';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 
@@ -77,7 +77,7 @@ export function StudyWayScreen() {
   const { buttons, notice } = usePageActions('#/studyway', 'My study way');
   return (
     <>
-      <ScreenHeader title="My study way" back={<HeaderButton onClick={() => navigate('settings')}>‹ Settings</HeaderButton>} action={buttons} />
+      <ScreenHeader title="My study way" back={<HeaderButton onClick={() => backTo('settings')}>‹ Settings</HeaderButton>} action={buttons} />
       {notice}
       <main className="screen min-h-0 flex-1 px-4">
         <div>

@@ -11,7 +11,7 @@ import { ideaOf, LADDER_PATH } from './data/grammar/ladder';
 import { layoutPath, NODE_H, type LaidOutNode } from './data/grammar/pathGraph';
 import { listLevels } from './data/repositories';
 import { IdeaSheet } from './IdeaSheet';
-import { navigate } from './nav/route';
+import { backTo } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { useReportScreen } from './tutor/screenContext';
 import { WordSheet, type Lookup } from './WordSheet';
@@ -219,7 +219,7 @@ export function LadderGraph() {
 
   return (
     <>
-      <ScreenHeader title="The whole path" back={<HeaderButton onClick={() => navigate('goal')}>‹ Goal</HeaderButton>} />
+      <ScreenHeader title="The whole path" back={<HeaderButton onClick={() => backTo('goal')}>‹ Goal</HeaderButton>} />
       <ul aria-label="Colours" data-testid="graph-legend" className="flex shrink-0 flex-wrap gap-x-4 gap-y-1 border-b border-line px-4 py-2 text-base">
         {counts.map(({ state, n }) => (
           <li key={state} className="flex items-center gap-1.5">

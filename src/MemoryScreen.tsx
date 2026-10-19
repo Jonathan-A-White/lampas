@@ -20,7 +20,7 @@ import {
   type MemoryFile,
   type MemoryNote,
 } from './data/repositories/memory';
-import { navigate } from './nav/route';
+import { backTo } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 
 const BUTTON = 'min-h-12 min-w-12 rounded-lg px-3 text-base font-medium text-accent active:bg-line';
@@ -250,7 +250,7 @@ export function MemoryScreen() {
   const [replaced, setReplaced] = useState(0);
   return (
     <>
-      <ScreenHeader title="Memory" back={<HeaderButton onClick={() => navigate('settings')}>‹ Settings</HeaderButton>} />
+      <ScreenHeader title="Memory" back={<HeaderButton onClick={() => backTo('settings')}>‹ Settings</HeaderButton>} />
       <main className="screen min-h-0 flex-1 px-4">
         <p className="py-4 text-base text-muted">
           What Lampas keeps about you, on this phone only: an index, and notes about a book, a word or a subject. You can change or delete any of it.

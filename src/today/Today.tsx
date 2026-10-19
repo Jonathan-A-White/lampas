@@ -12,7 +12,7 @@ import { dailyReadings } from '../data/daily/psalmsProverbs';
 import { countDue, getLogosBible, getStudyResources, markChapterRead, unmarkChaptersRead } from '../data/repositories';
 import { useLatestLiveQuery } from '../data/useLatestLiveQuery';
 import { bookOf } from '../data/books';
-import { navigate, openReader } from '../nav/route';
+import { backTo, navigate, openReader } from '../nav/route';
 import { useScrollMemory } from '../nav/scrollMemory';
 import { chapterName } from '../plan/chapterName';
 import { PlacePicker } from '../plan/PlacePicker';
@@ -347,7 +347,7 @@ export function Today() {
   const ticks: Ticks = { on: tickBoxes === 'on', ticked: day?.ticked ?? [], date };
   return (
     <>
-      <ScreenHeader title="Today" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} action={<HeaderButton onClick={() => openSetting('dailyReview')}>Settings</HeaderButton>} />
+      <ScreenHeader title="Today" back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} action={<HeaderButton onClick={() => openSetting('dailyReview')}>Settings</HeaderButton>} />
       <main ref={scrollRef} className="screen min-h-0 flex-1 px-3">
         <div>
           {!ready ? null : none ? <Nothing /> : null}

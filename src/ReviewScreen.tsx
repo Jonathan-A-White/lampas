@@ -8,7 +8,7 @@ import { parsePassageKey, passageLabel } from './approaches';
 import { DAY } from './data/schedule';
 import { type Random } from './data/quiz';
 import { ideaOf } from './data/grammar/ladder';
-import { navigate, openParadigm, openVerseRange } from './nav/route';
+import { backTo, navigate, openParadigm, openVerseRange } from './nav/route';
 import { ItemCard } from './review/ItemCard';
 import { askForMoreItems } from './review/moreItems';
 import { KINDS, kindOf, recordParseStep, type ReviewItem } from './review/kinds';
@@ -177,7 +177,7 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
   }, []);
 
   const header = (subtitle?: string) => (
-    <ScreenHeader title="Review" subtitle={subtitle} back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />
+    <ScreenHeader title="Review" subtitle={subtitle} back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} />
   );
 
   if (round.status === 'loading') {
