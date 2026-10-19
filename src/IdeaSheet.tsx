@@ -46,6 +46,7 @@ import { BarSlot } from './speech/SpeakingBarSlot';
 import { TeachTiles } from './TeachTiles';
 import { TryItSheet } from './TryItSheet';
 import { focusOnMount } from './ui/focus';
+import { justTapped, oneTap } from './ui/settle';
 import { useShort } from './ui/useShort';
 import { greekMarked } from './ui/GreekMarked';
 import { useSheetBack } from './ui/sheetBack';
@@ -264,7 +265,8 @@ function Example({ idea, example, onWord, hidden }: { idea: GrammarIdea; example
         data-testid="idea-example"
         data-form={word.t}
         data-lemma={word.l}
-        onClick={() => onWord(chapter, word)}
+        // the second tap of a double tap on 'Show N more' lands on the row that has taken the button's place (mw-5r3p30.558)
+        onClick={() => (justTapped(SHOW_MORE) ? undefined : onWord(chapter, word))}
         className="flex min-h-12 min-w-0 flex-1 flex-wrap items-center justify-between gap-x-3 rounded-xl border border-line px-3 py-1 text-left active:bg-line"
       >
         <span {...GREEK_LANG} className={sentence ? 'font-greek text-[length:var(--lp-greek-size)] basis-full' : 'font-greek text-2xl'}>
@@ -293,6 +295,11 @@ function Example({ idea, example, onWord, hidden }: { idea: GrammarIdea; example
   );
 }
 
+/** The oneTap key of Mark known without a drill, which the level slider heeds while its moment runs. */
+const MARK_KNOWN = 'idea-mark-known';
+/** The oneTap key of Show N more, which the example rows heed while its moment runs. */
+const SHOW_MORE = 'idea-show-more';
+
 /** How many examples are drawn when the sheet opens: three fit above the slider on a phone held upright or on its side (mw-5r3p30.369). */
 const SHOWN_EXAMPLES = 3;
 
@@ -308,7 +315,7 @@ function Examples({ idea, examples, onWord }: { idea: GrammarIdea; examples: Ide
         ))}
       </ul>
       {folded ? (
-        <button type="button" onClick={() => setAll(true)} className="mt-1 min-h-11 px-1 text-base font-medium text-accent underline underline-offset-4">
+        <button type="button" onClick={() => oneTap(SHOW_MORE, () => setAll(true))} className="mt-1 min-h-11 px-1 text-base font-medium text-accent underline underline-offset-4">
           Show {folded} more
         </button>
       ) : null}
@@ -455,6 +462,8 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
     else setDrill('prove');
   };
   const slideTo = (to: number): void => {
+    // the second tap of a double tap on Mark known lands on the slider that has moved into the button's place: it sets nothing (mw-5r3p30.558)
+    if (justTapped(MARK_KNOWN)) return setMoved(null);
     if (to === rest) return setMoved(null);
     setMoved({ to, from: rest });
     if (to > 0 && need) setAsking({ to, need });
@@ -476,7 +485,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
     setDrill(null);
     setMoved(null);
   };
-  const markKnown = (): void => teach('known');
+  const markKnown = (): void => oneTap(MARK_KNOWN, () => teach('known'));
   // the tables that teach this idea (mw-svw421.5): a tap opens one in Study mode, and Back brings this sheet back (src/ideaReturn.ts)
   const tables = paradigmsOf(idea.id);
   const seeTable = (table: string): void => {
@@ -627,6 +636,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
               disabled={loaded === null}
               onChange={(e) => {
                 // the browser jumps the thumb to a tap on the track; until the pointer has moved that is not chosen, and the controlled value puts the thumb back
+                if (justTapped(MARK_KNOWN)) return;
                 if (!dragging.current) slideTo(Number(e.target.value));
                 else if (pressedAt.current === null) setDragged(Number(e.target.value));
               }}
