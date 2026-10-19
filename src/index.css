@@ -546,7 +546,9 @@ textarea,
 :is([data-reader], [data-verse-view])[data-immersive='on'] :is([data-verse], [data-paragraph], [data-passage-text])[lang='el'] {
   --lp-book-line: var(--lp-book-greek);
 }
-:is([data-reader], [data-verse-view])[data-immersive='on'] :is([data-verse], [data-paragraph], [data-passage-text]):not(:has([data-hint])) {
+/* A verse inside a paragraph is a span with its own line height (1.4 where no hint sits in it): the passage's verse spans are set so too (mw-5r3p30.499), so a
+ * verse's computed line height is the same in the Reader and in the passage view; the lines are as roomy as the block's strut, the same on both. */
+:is([data-reader], [data-verse-view])[data-immersive='on'] :is([data-verse], [data-paragraph], [data-passage-text], [data-passage-verse]):not(:has([data-hint])) {
   line-height: 1.4;
 }
 [data-reader][data-immersive='on'] :is([data-verse], [data-paragraph]):not(:has([data-hint])) :is([data-verse-number], [data-verse-play]) {
@@ -580,14 +582,21 @@ textarea,
   container-type: inline-size;
 }
 @container (max-width: 20rem) {
-  [data-reader][data-immersive='on'] :is([data-verse], [data-paragraph])[lang='en'] {
+  [data-reader][data-immersive='on'] :is([data-verse], [data-paragraph])[lang='en'],
+  [data-verse-view][data-immersive='on'] [data-passage-text][lang='en'] {
     text-align: start;
   }
 }
 @container (max-width: 30rem) {
-  [data-reader][data-immersive='on'] :is([data-verse], [data-paragraph])[lang='el'] {
+  [data-reader][data-immersive='on'] :is([data-verse], [data-paragraph])[lang='el'],
+  [data-verse-view][data-immersive='on'] [data-passage-text][lang='el'] {
     text-align: start;
   }
+}
+/* The passage view sets its text by the same rule (mw-5r3p30.499): its column is the box the passage scrolls in, [data-passage-box], and a verse shown big is not
+ * a container and stays justified. */
+[data-verse-view][data-immersive='on'] [data-passage-box] {
+  container-type: inline-size;
 }
 /* Sepia's muted brown is already the dim of its page: faded further it would fall under 4.5:1 on the paper (mw-5r3p30.310); High contrast keeps 7:1. */
 :root:is([data-theme='sepia'], [data-theme='contrast']) [data-reader][data-immersive='on'] [data-verse-play]:not([aria-pressed='true']),

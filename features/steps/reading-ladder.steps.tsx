@@ -150,7 +150,7 @@ describeFeature(feature, ({ Scenario }) => {
     await openReadCheck();
     await user.click(await within(panel()).findByRole('button', { name, exact: true }));
     // the ladder moves the Verse view to its verse a moment after the tap: the bar of verse 28 is replaced by the ladder verse's
-    await waitFor(() => expect(panel()).toHaveTextContent(/Verse \d+ of \d+/));
+    await waitFor(() => expect(panel()).toHaveTextContent(/Number \d+ of \d+/));
   };
   const panelSays = async (_: unknown, text: string) => {
     await waitFor(() => expect(panel()).toHaveTextContent(text));
@@ -162,6 +162,10 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Verse view is on the first verse of the Greek list', sayVerseView('first', 'Greek'));
     And('the reading panel says {string} and the number of verses on the Greek list', async (_, text: string) => {
       await waitFor(() => expect(panel()).toHaveTextContent(`${text} ${ladders.el.length}`));
+    });
+    And('the reading panel does not call the rank {string}, as it is not the verse\'s number in its chapter', async (_, text: string) => {
+      await waitFor(() => expect(panel()).toHaveTextContent(`Number 1 of ${ladders.el.length}`));
+      expect(panel()).not.toHaveTextContent(text);
     });
     And('the reading panel offers {string} and neither {string} nor {string}', async (_, offered: string, a: string, b: string) => {
       await wanted([offered])();

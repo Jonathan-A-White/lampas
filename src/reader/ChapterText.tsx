@@ -5,6 +5,7 @@ import type { Verse } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
 import type { Passage } from '../data/passage';
 import type { WovenVerse } from '../data/weave';
+import { blocksOf, type ReadingLayout } from '../layout/layouts';
 import { VersePlay } from '../speech/ReadControls';
 import type { Lookup } from '../WordSheet';
 import { READING_CLASS, textClass } from './textClass';
@@ -87,16 +88,19 @@ export function SectionHeading({ text, onOpen }: { text: string; onOpen: () => v
   );
 }
 
-/** The verses of a passage for the Verse view, one after another with a small number before each, the one being read highlighted; the reading is
- * followed down the box the view scrolls the passage in (data-passage-box), by moving that box and nothing else. Each verse is the Reader's own VerseText, so the weave and the tappable words follow it. */
-export function PassageText({ passage, view, wovenOf, reading, onLook }: {
+/** The verses of a passage for the Verse view, set in the Reader's own blocks (mw-5r3p30.499): under his Layout a paragraph of the MSB's own to a block, or a verse to a
+ * block, each a [data-passage-text] with the Reader's face, size and leading, so src/index.css sets the book look and the weave's roomy lines block by block as it
+ * does in the Reader. Each verse has a small number before it and the one being read is highlighted; the reading is followed down the box the view scrolls the
+ * passage in (data-passage-box), by moving that box and nothing else. Each verse is the Reader's own VerseText, so the weave and the tappable words follow it. */
+export function PassageText({ passage, view, layout, wovenOf, reading, onLook }: {
   passage: Passage;
   view: ReaderView;
+  layout: ReadingLayout;
   wovenOf: (verse: Verse) => WovenVerse | null;
   reading: number | null;
   onLook: (lookup: Lookup) => void;
 }) {
-  const box = useRef<HTMLSpanElement>(null);
+  const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = reading === null ? null : box.current?.querySelector<HTMLElement>(`[data-passage-verse="${reading}"]`);
     const scroller = el?.closest<HTMLElement>('[data-passage-box]');
@@ -106,13 +110,17 @@ export function PassageText({ passage, view, wovenOf, reading, onLook }: {
     if (inner.top < outer.top || inner.bottom > outer.bottom) scroller.scrollTop += inner.top - outer.top - 8;
   }, [reading]);
   return (
-    <span ref={box} data-passage={passage.first}>
-      {passage.verses.map((verse) => (
-        <span key={verse.n} data-passage-verse={verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${reading === verse.n ? READING_CLASS : ''}`}>
-          <sup data-passage-number className="mr-1 font-sans text-xs font-semibold leading-[0] text-muted">{verse.n}</sup>
-          <VerseText verse={verse} view={view} woven={wovenOf(verse)} onLook={onLook} />
-        </span>
+    <div ref={box} data-passage={passage.first}>
+      {blocksOf(passage.verses, layout).map((block) => (
+        <p key={block[0].n} data-passage-text {...langOf(view === 'greek')} className={`break-words leading-(--lp-leading) ${layout === 'paragraph' ? 'mb-2' : 'mb-1'} ${textClass(view)}`}>
+          {block.map((verse) => (
+            <span key={verse.n} data-passage-verse={verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${reading === verse.n ? READING_CLASS : ''}`}>
+              <sup data-passage-number className="mr-1 font-sans text-xs font-semibold leading-[0] text-muted">{verse.n}</sup>
+              <VerseText verse={verse} view={view} woven={wovenOf(verse)} onLook={onLook} />
+            </span>
+          ))}
+        </p>
       ))}
-    </span>
+    </div>
   );
 }

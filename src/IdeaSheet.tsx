@@ -46,6 +46,7 @@ import { BarSlot } from './speech/SpeakingBarSlot';
 import { TeachTiles } from './TeachTiles';
 import { TryItSheet } from './TryItSheet';
 import { focusOnMount } from './ui/focus';
+import { useShort } from './ui/useShort';
 import { greekMarked } from './ui/GreekMarked';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
@@ -187,7 +188,7 @@ function TableView({ table }: { table: TeachTable }) {
 }
 
 /** A heading of the card's teaching: What it is, How to spot it, How it sounds, Worked example. */
-const Part = ({ children }: { children: string }) => <h3 className="mt-4 text-lg font-semibold">{children}</h3>;
+const Part = ({ children, className = 'mt-4' }: { children: string; className?: string }) => <h3 className={`${className} text-lg font-semibold`}>{children}</h3>;
 
 function Worked({ teach, passage, scheme }: { teach: Teach; passage: IdeaPassage | undefined; scheme: Pronunciation }) {
   const { worked, inPassage } = workedFor(teach, passage ? passageForms(passage) : new Set());
@@ -461,6 +462,18 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
     openSoundLesson(lesson);
   };
 
+  // Sideways the sound is above the slider in the column at the right, where it is in view without a drag whatever the examples and the card above take of the
+  // text's box (mw-5r3p30.483); upright it is in the text after the card. One element, put where the window's shape says (useShort).
+  const short = useShort();
+  const soundBlock = sounds ? (
+    <div data-testid="idea-sounds" className={short ? 'pb-1' : undefined}>
+      <Part className={short ? 'mt-1' : 'mt-4'}>How it sounds</Part>
+      <p data-testid="idea-text" className="mt-1 text-lg">
+        {greekMarked(sounds)}
+      </p>
+    </div>
+  ) : null;
+
   return (
     <div className="fixed inset-0 z-30 flex flex-col justify-end">
       <div data-testid="idea-backdrop" aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-black/60" />
@@ -526,14 +539,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
             {greekMarked(card.howToSpot)}
           </p>
           {card.table ? <TableView table={card.table} /> : null}
-          {sounds ? (
-            <>
-              <Part>How it sounds</Part>
-              <p data-testid="idea-text" className="mt-1 text-lg">
-                {greekMarked(sounds)}
-              </p>
-            </>
-          ) : null}
+          {short ? null : soundBlock}
           {soundLessons.map((lesson) => (
             <button
               key={lesson.id}
@@ -570,6 +576,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
         </div>
         {/* on its side (a short window) the slider and buttons are a column at the right, so the examples keep the height (mw-5r3p30.369) */}
         <div className="shrink-0 border-t border-line px-4 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))] short:col-start-2 short:row-start-2 short:overflow-y-auto short:overscroll-contain short:border-t-0 short:border-l">
+          {short ? soundBlock : null}
           <div data-testid="level-slider">
             <input
               type="range"

@@ -54,7 +54,7 @@ export function refParts(ref: string): { book: string; chapter: number; verse: n
   return match ? { book: match[1], chapter: Number(match[2]), verse: Number(match[3]) } : undefined;
 }
 
-/** Where a verse stands on the list, counting from 1 (the N of 'Verse N of M'); 0 when it is not on the list. */
+/** Where a verse stands on the list, counting from 1 (the N of 'Number N of M on the ladder'); 0 when it is not on the list. */
 export function positionOf(list: readonly LadderEntry[], ref: string): number {
   return list.findIndex((entry) => entry.ref === ref) + 1;
 }

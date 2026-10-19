@@ -289,7 +289,7 @@ export interface MissCount {
 export interface LadderRow {
   /** the language of the list and of the readings: 'el' (public/data/ladder/el.json) or 'en' */
   lang: string;
-  /** the ref of the verse the ladder last opened for him, whose panel says 'Verse N of M'; null when he is not on the ladder */
+  /** the ref of the verse the ladder last opened for him, whose panel says 'Number N of M on the ladder'; null when he is not on the ladder */
   showing: string | null;
   /** the verses he chose to skip for now, each with the time of the skip; they come back after he reads others well (src/data/readingLadder.ts SKIP_GAP) */
   skipped: { ref: string; at: number }[];

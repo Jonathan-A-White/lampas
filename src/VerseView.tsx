@@ -20,7 +20,7 @@ import { ReadCheckPanel, type ReadHold } from './ReadCheck';
 import type { Verse } from './data/chapter';
 import { unitId, unitName, unitReference } from './data/passage';
 import { passageUrl, referenceUrl } from './nav/links';
-import { textClass } from './reader/textClass';
+import { SHORT_BAR } from './ui/barClass';
 import { focusOnMount } from './ui/focus';
 import { Icon as PlayIcon } from './speech/ReadControls';
 import { LinkActions } from './ui/LinkActions';
@@ -107,11 +107,11 @@ export function VerseView(props: VerseViewProps) {
   const name = unitName(verse);
   const noun = passage ? 'passage' : 'verse';
   const canShare = typeof navigator.share === 'function';
-  // A verse is shown big; a passage is set as the Reader sets its text (the face and size of textClass, the Reader's leading, and with Immersive
-  // on the book look of src/index.css, which [data-passage-text] shares with the Reader's verses), under his own size settings.
+  // A verse is shown big; a passage is set as the Reader sets its text, in the Reader's blocks (PassageText: the face and size of textClass, the Reader's leading,
+  // and with Immersive on the book look of src/index.css, which [data-passage-text] shares with the Reader's verses), under his own size settings.
   const big = view === 'greek' ? 'font-greek [--lp-greek-size:2.25rem]' : 'font-sans [--lp-english-size:1.75rem] [--lp-greek-size:2.25rem]';
   const size = view === 'greek' ? 'text-[length:var(--lp-greek-size)]' : 'text-[length:var(--lp-english-size)]';
-  const typeClass = passage ? `leading-(--lp-leading) ${textClass(view)}` : `leading-(--lp-leading) ${big} ${size}`;
+  const typeClass = `leading-(--lp-leading) ${big} ${size}`;
   return (
     <section aria-label="Verse view" data-verse-view={unitId(verse)} data-immersive={immersive ? 'on' : 'off'} className="fixed inset-0 z-5 flex flex-col bg-canvas pt-[env(safe-area-inset-top)]">
       {/* At 20 rem or less of the phone's own text (390 px at 200%) the title takes a row of its own under ‹ Reader and the arrows, so a passage's heading has the whole width and is not clamped (mw-cwf538.9). */}
@@ -129,7 +129,8 @@ export function VerseView(props: VerseViewProps) {
             {verse.h === reference ? null : <span className="block break-words text-sm font-medium text-muted">{reference}</span>}
           </h2>
         ) : (
-          <h2 className="chrome-title min-w-0 flex-1 truncate text-center font-semibold @max-[20rem]:order-last @max-[20rem]:basis-full">{reference}</h2>
+          // the whole reference, wrapped (two lines at most) rather than cut: on the ladder the book changes at every verse, so '1 Thessalonians 5:16' is the only place that says where he is (mw-neuq78.19)
+          <h2 className="chrome-title min-w-0 flex-1 line-clamp-2 break-words text-center font-semibold leading-tight @max-[20rem]:order-last @max-[20rem]:basis-full">{reference}</h2>
         )}
         <Arrow move={previous} name={`Previous ${noun}`} glyph="‹" />
         <Arrow move={next} name={`Next ${noun}`} glyph="›" />
@@ -137,16 +138,16 @@ export function VerseView(props: VerseViewProps) {
       </div>
       <div className="screen min-h-0 flex-1 px-3 pt-3">
         {lesson ? <LessonStrip title={lesson.title} ideas={lesson.ideas} onCheck={() => setChecking(lesson.key)} /> : null}
-        {/* A passage is long: its text scrolls in a box of its own so the row of actions stays in reach under it. */}
+        {/* A passage is long: its text scrolls in a box of its own so the row of actions stays in reach under it. Its blocks (PassageText) are the Reader's own,
+            each a [data-passage-text] with the type of its own; a verse is one big [data-size='big'] paragraph. */}
         <div {...(passage ? { 'data-passage-box': '' } : {})} className={passage ? 'max-h-[40dvh] overflow-y-auto overscroll-contain rounded-xl border border-line px-2' : undefined}>
-          <p
-            data-sheet-verse
-            {...(passage ? { 'data-passage-text': '' } : { 'data-size': 'big' })}
-            {...langOf(view === 'greek')}
-            className={`break-words ${typeClass}`}
-          >
-            {text}
-          </p>
+          {passage ? (
+            <div data-sheet-verse>{text}</div>
+          ) : (
+            <p data-sheet-verse data-size="big" {...langOf(view === 'greek')} className={`break-words ${typeClass}`}>
+              {text}
+            </p>
+          )}
         </div>
         {/* One line while every label has room for two lines of its own (a container query in rem, so a larger text size wraps sooner), else
             three to a row over two rows; a phone with Share draws a sixth button, which needs more room. */}
@@ -177,7 +178,8 @@ export function VerseView(props: VerseViewProps) {
         </div>
         <div className="mt-3">
           {action === 'listen' ? (
-            <p data-action-help className="px-1 text-sm text-muted">
+            // sideways the Play bar says it, and the line's room goes to the Audio Bible row under it (mw-5r3p30.468)
+            <p data-action-help className={`px-1 text-sm text-muted ${audioBible && audibleChapter ? 'short:hidden' : ''}`}>
               Tap Play to hear {name}.
             </p>
           ) : null}
@@ -240,7 +242,7 @@ export function VerseView(props: VerseViewProps) {
             <button
               type="button"
               onClick={listen.onPlay}
-              className="mx-auto flex h-24 w-full max-w-xl select-none flex-col items-center justify-center gap-1 rounded-3xl bg-accent chrome-text font-semibold text-accent-fg"
+              className={`mx-auto flex h-24 w-full max-w-xl select-none flex-col items-center justify-center gap-1 rounded-3xl bg-accent chrome-text font-semibold text-accent-fg ${SHORT_BAR}`}
             >
               <PlayIcon kind="play" />
               <span>{listen.again ? 'Play again' : `Play ${name}`}</span>
@@ -261,7 +263,7 @@ export function VerseView(props: VerseViewProps) {
             <button
               type="button"
               onClick={quiz.onOpen}
-              className="mx-auto flex h-24 w-full max-w-xl select-none items-center justify-center rounded-3xl bg-accent chrome-text font-semibold text-accent-fg"
+              className={`mx-auto flex h-24 w-full max-w-xl select-none items-center justify-center rounded-3xl bg-accent chrome-text font-semibold text-accent-fg ${SHORT_BAR}`}
             >
               {quiz.started ? 'Continue the quiz' : 'Start the quiz'}
             </button>,

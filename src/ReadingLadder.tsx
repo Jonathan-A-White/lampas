@@ -1,5 +1,5 @@
 // src/ReadingLadder.tsx — the reading ladder on screen (mw-neuq78.4, docs/reading-ladder.md): the 'Reading ladder' button that starts it (in the Verse view's Read it
-// aloud panel, and two on the Goal screen, one per language), the line 'Verse N of M' while he is on it, and what to do after a reading: 'Next verse' after a good one,
+// aloud panel, and two on the Goal screen, one per language), the line 'Number N of M on the ladder' while he is on it, and what to do after a reading: 'Next verse' after a good one,
 // 'Try again' and 'Skip for now' after one with words to fix or only part of the verse. The place is worked out from his readings (src/data/readingLadder.ts); this
 // file keeps which verse the ladder has on screen and moves the Verse view to the next one. Greek and English each have a list and a place.
 import { useRef, useState } from 'react';
@@ -65,12 +65,12 @@ export function LadderStart({ lang, how, label = 'Reading ladder' }: { lang: Lad
   );
 }
 
-/** 'Verse N of M': where the verse stands on the list, with the ladder's name. */
+/** 'Number N of M on the ladder': where the verse stands on the list, with the ladder's name. It never says 'verse' for the rank: the verse's own number in its chapter is on the Hold bar beneath (mw-neuq78.19). */
 export function LadderPosition({ lang, here }: { lang: LadderLang; here: LadderHere }) {
   return (
     <p data-ladder-position className="text-base font-semibold text-accent">
       <span className="text-muted font-medium">Reading ladder, {NAMES[lang]}: </span>
-      {here.m > 0 ? `Verse ${here.n} of ${here.m}` : 'Verse…'}
+      {here.m > 0 ? `Number ${here.n} of ${here.m} on the ladder` : 'Number…'}
     </p>
   );
 }

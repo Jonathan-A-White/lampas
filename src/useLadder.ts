@@ -7,7 +7,7 @@ import { getLadderRow, listWellRead } from './data/repositories';
 /** What the ladder is doing for a verse of the Verse view: whether it has this verse on screen, and where that is on the list. */
 export interface LadderHere {
   onLadder: boolean;
-  /** the N of 'Verse N of M', and M; 0 until the list has loaded */
+  /** the N of 'Number N of M on the ladder', and M; 0 until the list has loaded */
   n: number;
   m: number;
   /** the verse to read now (the one 'Next verse' opens), null when every verse is read well */

@@ -55,7 +55,7 @@ test('Listen: the heading and range at the top, the passage big, the row of acti
   const range = title.getByText('Romans 8:1-11', { exact: true });
   expect(await range.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
 
-  const text = view.locator('[data-sheet-verse]');
+  const text = view.locator('[data-sheet-verse] [data-passage-text]').first();
   expect(await text.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(20);
   await expect(view.locator('[data-passage-verse]')).toHaveCount(11);
 
