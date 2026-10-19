@@ -18,6 +18,7 @@ import { chapterLength } from '../../src/plan/estimate';
 import { readingPlanSetting } from '../../src/settings/definitions/readingPlan';
 import { setSetting } from '../../src/settings/store';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { sheetEntriesGone } from '../../tests/support/sheet-history';
 
 afterAll(() => {
   setVisibility('visible');
@@ -53,7 +54,7 @@ function setVisibility(state: 'hidden' | 'visible'): void {
 async function openFresh(): Promise<void> {
   cleanup();
   // Unmounting the last scenario's open sheet steps history back (useSheetBack); jsdom lands that popstate a moment later, and it must land before this one.
-  await new Promise((resolve) => setTimeout(resolve, 30));
+  await sheetEntriesGone();
   clearBus();
   forgetTrail();
   vi.unstubAllGlobals();
