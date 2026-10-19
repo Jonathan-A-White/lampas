@@ -7,7 +7,8 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
-import { ideaOf } from '../../src/data/grammar/ladder';
+import { unmetNeed } from '../../src/data/grammar/drillIt';
+import { ideaOf, LADDER } from '../../src/data/grammar/ladder';
 import { setGoal } from '../../src/data/repositories/settings';
 import { setLevel, teachIdea } from '../../src/data/repositories/grammarLevels';
 import { clearBus } from '../../src/events/bus';
@@ -142,6 +143,30 @@ describeFeature(feature, ({ Scenario }) => {
     And('after he closes the idea sheet the Goal screen says {string} in one place', async (_, text: string) => {
       await user.click(within(ideaSheet()).getByRole('button', { name: 'Done' }));
       await goalSays(null, text);
+    });
+  });
+
+  Scenario('Marking the alphabet known while it is Learning leaves one idea Learning, and none builds on a letter', ({ Given, And, When, Then }) => {
+    Given(GIVEN_LEARNING, learning);
+    And(GIVEN_SHEET, opensSheetFromGoal);
+    When('he taps Mark known without a drill on the idea sheet', async () => {
+      await user.click(within(ideaSheet()).getByRole('button', { name: 'Mark known without a drill' }));
+    });
+    Then('exactly one idea is at the frontier and it is not {string}', async (_, id: string) => {
+      await waitFor(async () => {
+        const there = await atFrontier();
+        expect(there).toHaveLength(1);
+        expect(there).not.toContain(id);
+      });
+    });
+    And('after he closes the idea sheet the Goal screen says {string} in one place', async (_, text: string) => {
+      await user.click(within(ideaSheet()).getByRole('button', { name: 'Done' }));
+      await goalSays(null, text);
+    });
+    And('no idea sheet says it builds on a letter of the alphabet', async () => {
+      const levels = new Map((await db.grammarLevels.toArray()).map((row): [string, typeof row.level] => [row.id.replace(/^modern:/, ''), row.level]));
+      const unmet = LADDER.map((idea) => unmetNeed(idea.id, levels)).filter((id) => id !== null && ideaOf(id).glyphs);
+      expect(unmet).toEqual([]);
     });
   });
 });

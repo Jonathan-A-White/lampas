@@ -116,11 +116,15 @@ export function drillSteps(ideaId: string, options: DrillOptions = {}): DrillSte
 
 // ---- The foundation ----
 
-/** The lowest prerequisite of the idea that is not solid, or null: the idea an item belongs to is not a prerequisite of it, and a missing level is not solid. */
+/**
+ * The lowest prerequisite of the idea that is not solid, or null: the idea an item belongs to is not a prerequisite of it, and a missing level is not solid.
+ * An item of a group he has made solid (the alphabet marked known on its sheet, whose letters are not each solid) counts as solid (mw-i7xe0n.19).
+ */
 export function unmetNeed(ideaId: string, levels: ReadonlyMap<string, Level>): string | null {
   const idea = ideaOf(ideaId);
   const group = groupOfItem(idea);
-  const unmet = idea.needs.filter((id) => id !== group && levels.get(id) !== 'solid').map(ideaOf);
+  const solid = (id: string) => levels.get(id) === 'solid' || levels.get(groupOfItem(ideaOf(id)) ?? '') === 'solid';
+  const unmet = idea.needs.filter((id) => id !== group && !solid(id)).map(ideaOf);
   return unmet.length === 0 ? null : unmet.sort((a, b) => a.rung - b.rung)[0].id;
 }
 
