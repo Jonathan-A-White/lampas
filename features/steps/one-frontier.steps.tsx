@@ -102,6 +102,23 @@ describeFeature(feature, ({ Scenario }) => {
     And('{string} is still the only idea at the frontier', onlyFrontier);
   });
 
+  Scenario('When the idea builds on one that is not solid, Go to is asked first and the switch question only after Stay here', ({ Given, And, When, Then }) => {
+    Given(GIVEN_LEARNING, learning);
+    And(GIVEN_SHEET, opensSheetFromGoal);
+    When('he slides the level to {string}', slides);
+    Then('he is asked {string}', async (_, question: string) => {
+      expect(await screen.findByRole('alertdialog')).toHaveTextContent(question);
+    });
+    And('{string} is still the only idea at the frontier', onlyFrontier);
+    When('he taps {string}', async (_, name: string) => {
+      await user.click(await screen.findByRole('button', { name }));
+    });
+    Then('he is then asked {string}', async (_, question: string) => {
+      await waitFor(() => expect(screen.getByRole('alertdialog')).toHaveTextContent(question));
+    });
+    And('{string} still holds the frontier', onlyFrontier);
+  });
+
   Scenario('Keeping the idea he is learning changes nothing', ({ Given, And, When, Then }) => {
     Given(GIVEN_LEARNING, learning);
     And(GIVEN_SHEET, opensSheetFromGoal);
