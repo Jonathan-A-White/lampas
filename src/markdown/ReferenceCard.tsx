@@ -9,7 +9,8 @@ import { createPortal } from 'react-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { loadChapter, type Chapter } from '../data/chapter';
 import { getLogosBible, getStudyResources } from '../data/repositories';
-import { openHash, openVerseAt } from '../nav/route';
+import { openVerseAt } from '../nav/route';
+import { openSettingsSection } from '../settings/link';
 import { verseLink } from '../resources/logosBible';
 import { armFallback } from '../resources/openApp';
 import { useSheetBack } from '../ui/sheetBack';
@@ -228,7 +229,7 @@ export function ReferenceLink({ written, onLeave, old, className, href, data, ch
           onSettings={() => {
             onLeave?.();
             setOpen(false);
-            openHash(LINK_LOGOS_HASH);
+            openSettingsSection('resources');
           }}
         />
       ) : null}
