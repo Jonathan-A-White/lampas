@@ -133,12 +133,16 @@ async function open(options: { immersive: 'on' | 'off'; recogniser?: boolean; sp
 const reader = () => document.querySelector<HTMLElement>('[data-reader]') as HTMLElement;
 const talkButton = () => screen.getByRole('button', { name: 'Talk', exact: true });
 
-/** jsdom has no layout: the box is 700 px of a 5000 px text, and `top` is where it is scrolled to. */
+/** jsdom has no layout: the box is 700 px of a 5000 px text, and `top` is where it is scrolled to. The last verse ends where the text does (the percent is of
+ * the text up to the end of its last verse, mw-5r3p30.479), so its bottom sits at 5000 - top below the box's top. */
 function scrollTo(top: number): void {
   const box = reader();
   Object.defineProperty(box, 'clientHeight', { configurable: true, value: CLIENT_HEIGHT });
   Object.defineProperty(box, 'scrollHeight', { configurable: true, value: SCROLL_HEIGHT });
   Object.defineProperty(box, 'scrollTop', { configurable: true, writable: true, value: top });
+  const verses = box.querySelectorAll('[data-verse]');
+  const last = verses[verses.length - 1];
+  if (last) last.getBoundingClientRect = () => ({ top: 0, bottom: SCROLL_HEIGHT - top, left: 0, right: 0, width: 0, height: 0, x: 0, y: 0, toJSON: () => ({}) });
   fireEvent.scroll(box);
 }
 let at = 0;
