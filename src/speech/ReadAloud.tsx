@@ -13,6 +13,7 @@ import { useSetting } from '../settings/store';
 import { hasGreekVoice, hasVoice, noVoiceHelp, onSpeechRefused, warmVoices } from './greek';
 import { pageRuns } from './pageRuns';
 import { getReading, startReading, stopAnswer, stopAnswerSpeech, useReading, type Run } from './readAloud';
+import { oneTap } from '../ui/settle';
 import { Icon } from './SpeakButton';
 
 const HELP_MS = 7000;
@@ -119,7 +120,7 @@ export function ReadAloud({ id, text, runs, className, auto = false }: {
         data-read-aloud
         aria-label={refused ? 'Tap to listen' : paused ? 'Reading paused, tap to stop' : playing ? 'Stop reading' : 'Read aloud'}
         aria-pressed={playing}
-        onClick={onTap}
+        onClick={() => oneTap(`read-aloud:${mine}`, onTap)}
         className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1 rounded-lg text-muted active:bg-line ${playing || refused ? 'text-accent' : ''} ${refused ? 'px-3 motion-safe:animate-pulse' : ''} ${className ?? ''}`}
       >
         <Icon kind={playing && !paused ? 'stop' : 'speaker'} />

@@ -1,6 +1,7 @@
 // src/speech/ReadControls.tsx — the read-aloud buttons: Read from the top / Read from here in the reader's header, the play
 // button on a verse, and the line shown while a reading is going. The header's button is Play while nothing is read; while
 // the chapter is read it is Pause and Stop, and while paused Play and Stop. The state is src/speech/readAloud.ts's.
+import { oneTap } from '../ui/settle';
 import { pauseReading, resumeReading, stopReading, type ReadingState } from './readAloud';
 
 const ICON_PATHS = {
@@ -25,7 +26,7 @@ export function VersePlay({ playing, onPlay, className }: { playing: boolean; on
       data-verse-play
       aria-label="Hear the verse"
       aria-pressed={playing}
-      onClick={() => (playing ? stopReading() : onPlay())}
+      onClick={() => oneTap('verse-play', () => (playing ? stopReading() : onPlay()))}
       className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-accent active:bg-line ${className ?? ''}`}
     >
       <Icon kind={playing ? 'stop' : 'play'} />
@@ -42,7 +43,7 @@ const HEADER_BUTTON = 'flex min-h-11 min-w-11 shrink-0 items-center justify-cent
 export function ReadFromButton({ from, reading, onRead }: { from: number | null; reading: ReadingState; onRead: () => void }) {
   if (reading.status === 'idle' || reading.answer !== null) {
     return (
-      <button type="button" aria-label={from === null ? 'Read from the top' : 'Read from here'} onClick={onRead} className={HEADER_BUTTON}>
+      <button type="button" aria-label={from === null ? 'Read from the top' : 'Read from here'} onClick={() => oneTap('read-from', onRead)} className={HEADER_BUTTON}>
         <Icon kind="play" />
       </button>
     );
@@ -51,10 +52,10 @@ export function ReadFromButton({ from, reading, onRead }: { from: number | null;
   const paused = reading.status === 'paused';
   return (
     <>
-      <button type="button" aria-label={paused ? 'Play' : 'Pause'} onClick={paused ? resumeReading : pauseReading} className={HEADER_BUTTON}>
+      <button type="button" aria-label={paused ? 'Play' : 'Pause'} onClick={() => oneTap('read-from', paused ? resumeReading : pauseReading)} className={HEADER_BUTTON}>
         <Icon kind={paused ? 'play' : 'pause'} />
       </button>
-      <button type="button" aria-label="Stop" onClick={stopReading} className={HEADER_BUTTON}>
+      <button type="button" aria-label="Stop" onClick={() => oneTap('read-from', stopReading)} className={HEADER_BUTTON}>
         <Icon kind="stop" />
       </button>
     </>

@@ -15,6 +15,7 @@ import { getDeveloper, getGreekPronunciation, getMissTally, getVerseReading, ver
 import { markWords, normalWord, plainQuotes, readingLang, readingText, RESULT_HEADINGS, sayOf, wordsOfText, type ReadingView } from './services/reading';
 import { GREEK_LANG } from './script/greekLang';
 import { announce } from './ui/live';
+import { oneTap } from './ui/settle';
 import { FAILURE_TITLES } from './services/tutor';
 import { pronunciationOf } from './speech/pronunciation';
 import { drillButtonLabel, drillOffer, drillWhy, type DrillOffer } from './data/readingDrill';
@@ -160,7 +161,7 @@ function MarkedVerse({ text, view, passage, marks, open, onOpen, player, reached
         type="button"
         data-fix={normalWord(fix.word)}
         aria-pressed={open === key}
-        onClick={() => onOpen(open === key ? null : key)}
+        onClick={() => oneTap(`fix-open:${key}`, () => onOpen(open === key ? null : key))}
         className="inline-block min-h-11 rounded-lg bg-bad/15 px-1 font-semibold text-bad underline decoration-2 underline-offset-4"
       >
         {label}
@@ -275,7 +276,7 @@ function MyReading({ clip, fileName, player }: { clip: Clip; fileName: string; p
   const button = 'min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium';
   return (
     <div className="space-y-2">
-      <button type="button" onClick={() => player.toggleVoice(ALL)} className={button}>
+      <button type="button" onClick={() => oneTap('play-my-reading', () => player.toggleVoice(ALL))} className={button}>
         {playing === ALL ? 'Stop my reading' : 'Play my reading'}
       </button>
       {developer === 'on' ? (
@@ -302,7 +303,7 @@ function MeButton({ fix, word, id, player, className }: { fix: FixWord; word: st
       data-me
       aria-label={on ? `Stop hearing me say ${word}` : `Hear me say ${word}`}
       aria-pressed={on}
-      onClick={() => player.toggle(id, time.start, time.end)}
+      onClick={() => oneTap(`me:${id}`, () => player.toggle(id, time.start, time.end))}
       className={`inline-block min-h-11 min-w-11 rounded-lg border border-line px-2 text-base font-medium ${className ?? ''}`}
     >
       {on ? 'Stop' : 'Me'}

@@ -3,6 +3,7 @@
 // line of help at the top of the screen.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { SpeechLanguage } from './languages';
+import { oneTap } from '../ui/settle';
 import { noVoiceHelp, speak, stopIfSpeaking, useSpeakingKey, warmVoices } from './greek';
 
 const HELP_MS = 7000;
@@ -55,10 +56,12 @@ export function SpeakButton({ text, id, label, kind, language, className }: {
         type="button"
         aria-label={label}
         aria-pressed={playing}
-        onClick={() => {
-          setHelp(null);
-          if (speak(text, id, language) === 'no-voice') showHelp();
-        }}
+        onClick={() =>
+          oneTap(`speak:${id}`, () => {
+            setHelp(null);
+            if (speak(text, id, language) === 'no-voice') showHelp();
+          })
+        }
         className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-accent active:bg-line ${className ?? ''}`}
       >
         <Icon kind={playing ? 'stop' : kind} />

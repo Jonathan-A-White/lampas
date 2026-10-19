@@ -8,6 +8,7 @@ import { LINK_ORIGIN } from './config';
 import { pageRuns } from './speech/pageRuns';
 import { getReading, startReading, stopReading, useReading, type PlanVerse } from './speech/readAloud';
 import { copy } from './ui/clipboard';
+import { oneTap } from './ui/settle';
 
 /** The id a page's reading goes under (reading.answer): far below any stored answer's, so no Talk turn or verdict is taken for it. */
 const PAGE_READING_ID = -2_000_000_000;
@@ -105,7 +106,7 @@ export function usePageActions(hash: string, title: string): { buttons: ReactNod
 
   const buttons = (
     <div className="flex items-center gap-1">
-      <button type="button" aria-label="Read aloud" aria-pressed={mine} onClick={readAloud} className={BUTTON}>
+      <button type="button" aria-label="Read aloud" aria-pressed={mine} onClick={() => oneTap('page-read-aloud', readAloud)} className={BUTTON}>
         {icon(SPEAKER)}
       </button>
       <button type="button" aria-label="Share" onClick={share} className={BUTTON}>
