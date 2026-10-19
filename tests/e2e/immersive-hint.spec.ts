@@ -108,3 +108,62 @@ for (const name of ['Got it', "Don't show this again"]) {
     await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 }
+
+// With the bars away the card is out of the way (mw-5r3p30.331): it slides away with them, so it does not sit over a quarter of the screen (nearly half sideways)
+// while he reads. It comes back with the bars, and 'Got it' still closes it for good.
+const scrollText = (page: Page, by: number) =>
+  page.evaluate((px) => {
+    (document.querySelector('[data-reader]') as HTMLElement).scrollTop += px;
+  }, by);
+
+/** The height of the card as it is on screen: its box cut by every ancestor that clips it. */
+const coveredHeight = (page: Page) =>
+  card(page).evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    let top = Math.max(0, box.top);
+    let bottom = Math.min(window.innerHeight, box.bottom);
+    for (let up = el.parentElement; up; up = up.parentElement) {
+      if (getComputedStyle(up).overflowY === 'visible') continue;
+      const r = up.getBoundingClientRect();
+      top = Math.max(top, r.top);
+      bottom = Math.min(bottom, r.bottom);
+    }
+    return { covered: Math.max(0, bottom - top), screen: window.innerHeight };
+  });
+
+for (const size of [
+  { name: '390x844', width: 390, height: 844 },
+  { name: '844x390', width: 844, height: 390 },
+]) {
+  test(`with the bars away the card covers under 10 percent of the screen height at ${size.name}`, async ({ page }) => {
+    await page.setViewportSize({ width: size.width, height: size.height });
+    await openReader(page, 'on');
+    await expect(card(page)).toBeVisible();
+    const shown = await coveredHeight(page);
+    expect(shown.covered / shown.screen).toBeGreaterThan(0.1);
+
+    await scrollText(page, 400);
+    await expect(page.locator('header').first()).toBeHidden();
+    await expect(card(page)).toBeHidden();
+    const away = await coveredHeight(page);
+    expect(away.covered / away.screen).toBeLessThan(0.1);
+    await shot(page, `immersive-hint-away-${size.name}`);
+  });
+}
+
+test('the card comes back with the bars, and Got it then closes it', async ({ page }) => {
+  await openReader(page, 'on');
+  await scrollText(page, 400);
+  await expect(card(page)).toBeHidden();
+  const cdp = await page.context().newCDPSession(page);
+  const points = [
+    { x: 150, y: 450, id: 1 },
+    { x: 240, y: 460, id: 2 },
+  ];
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points });
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await cdp.detach();
+  await expect(card(page)).toBeVisible();
+  await card(page).getByRole('button', { name: 'Got it' }).click();
+  await expect(card(page)).toHaveCount(0);
+});

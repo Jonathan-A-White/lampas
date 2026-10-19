@@ -103,9 +103,9 @@ test('scrolling down slides the bars away, scrolling up leaves them away', async
   await expect(page.getByRole('button', { name: 'Settings' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Talk', exact: true })).toHaveCount(0);
   expect(await textHeight(page)).toBeGreaterThan(before + 150);
-  // the text has the whole screen: its box ends at the bottom of the window
+  // the text has the whole screen: its box ends in the foot's last 100 px of the window, above the place line and the phone's 48 px floor under it (mw-5r3p30.473)
   const box = await page.locator('[data-reader]').boundingBox();
-  expect((box?.y ?? 1) + (box?.height ?? 0)).toBeGreaterThan(915 - 100);
+  expect((box?.y ?? 1) + (box?.height ?? 0)).toBeGreaterThan(844 - 100);
   await shot(page, 'immersive-hidden');
 
   await scrollText(page, -200);

@@ -402,6 +402,12 @@ textarea,
   border-radius: 6px;
 }
 
+/* The Reader's text stays where it is when the bars come and go (mw-5r3p30.472): the box changes size and the browser's scroll anchoring would otherwise
+ * move the text to keep an anchor word still while it does. */
+[data-reader] {
+  overflow-anchor: none;
+}
+
 /* The Immersive reader (src/Away.tsx, src/immersive.ts): a bar collapses to nothing and its box, hidden once it is shut, leaves the tab order.
  * The round Ask button (src/AskTutor.tsx) slides down instead. With reduced motion there is no slide: it shows or hides at once. */
 .away-box {
@@ -419,6 +425,30 @@ textarea,
   min-height: 0;
   overflow: hidden;
 }
+/* The place line's row slides with the bars (src/PlaceLine.tsx), as `.away-box` does for them: shut it is no height and not in the tab order. */
+.place-box {
+  display: grid;
+  grid-template-rows: 1fr;
+  flex-shrink: 0;
+  transition: grid-template-rows 200ms ease, visibility 0s;
+}
+.place-box[data-closed] {
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition: grid-template-rows 200ms ease, visibility 0s 200ms;
+}
+.place-box[data-slides]:not([data-closed]) {
+  animation: place-in 200ms ease;
+}
+@keyframes place-in {
+  from {
+    grid-template-rows: 0fr;
+  }
+}
+.place-inner {
+  min-height: 0;
+  overflow: hidden;
+}
 /* The Immersive reader's place line (src/PlaceLine.tsx): a quiet row under the text's box, smaller and dimmer than the text. */
 .place-line {
   flex-shrink: 0;
@@ -429,8 +459,13 @@ textarea,
   line-height: 1rem;
   font-variant-numeric: tabular-nums;
   color: var(--lp-muted, currentColor);
-  opacity: 0.7;
+  /* 4.5:1 or more on every theme's page, for text this small (WCAG AA, mw-5r3p30.477; tests/unit/place-line-contrast.test.ts). */
+  opacity: 0.9;
   user-select: none;
+}
+/* The lowest row on the screen keeps the floor of a three-button navigation bar under it (mw-5r3p30.473, --lp-bar-inset). */
+.place-line[data-floor] {
+  padding-bottom: calc(0.25rem + var(--lp-bar-inset));
 }
 /* The Reader's controls for what is otherwise a gesture (src/ReaderControls.tsx): laid out as a row at the top of the screen but clipped to one pixel of height
  * until focus is inside, so the buttons keep their real size and place (a screen reader finds them; nothing is squeezed) and only the clip hides them. */
@@ -531,7 +566,31 @@ textarea,
 [data-verse-view][data-immersive='on'] [data-passage-number] {
   opacity: 0.75;
 }
+/* The play button at each verse end is dimmed like the verse number (mw-5r3p30.590): bright accent orange down the right of a black page outshines the
+ * text, and a book has nothing there. It keeps its 44 px tap box, and while its verse is read (aria-pressed, the stop icon) it shows in full. */
+[data-reader][data-immersive='on'] [data-verse-play]:not([aria-pressed='true']) {
+  color: var(--lp-muted);
+  opacity: 0.75;
+}
+/* Even edges need words enough on a line (mw-5r3p30.585): at Large and Largest type a line holds three to five English words, and Chrome does not hyphenate
+ * Greek, so justifying opens holes as wide as a word. Where the text's column is narrower than that, in the units of the phone's own text size (the root's rem,
+ * so it follows Text size and the phone's font size), the lines are set ragged right as Off sets them. The column is [data-reader-text], the box inside the
+ * Reader's. */
+[data-reader][data-immersive='on'] > [data-reader-text] {
+  container-type: inline-size;
+}
+@container (max-width: 20rem) {
+  [data-reader][data-immersive='on'] :is([data-verse], [data-paragraph])[lang='en'] {
+    text-align: start;
+  }
+}
+@container (max-width: 30rem) {
+  [data-reader][data-immersive='on'] :is([data-verse], [data-paragraph])[lang='el'] {
+    text-align: start;
+  }
+}
 /* Sepia's muted brown is already the dim of its page: faded further it would fall under 4.5:1 on the paper (mw-5r3p30.310); High contrast keeps 7:1. */
+:root:is([data-theme='sepia'], [data-theme='contrast']) [data-reader][data-immersive='on'] [data-verse-play]:not([aria-pressed='true']),
 :root:is([data-theme='sepia'], [data-theme='contrast']) [data-reader][data-immersive='on'] [data-verse-number],
 :root:is([data-theme='sepia'], [data-theme='contrast']) [data-verse-view][data-immersive='on'] [data-passage-number] {
   opacity: 1;
@@ -550,6 +609,8 @@ textarea,
 @media (prefers-reduced-motion: reduce) {
   .away-box,
   .away-box[data-away],
+  .place-box,
+  .place-box[data-closed],
   [data-ask-tutor][data-slides],
   [data-ask-tutor][data-away] {
     transition: none !important;

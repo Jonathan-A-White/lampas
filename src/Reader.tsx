@@ -69,6 +69,7 @@ import { usePace } from './usePace';
 import { TipCard } from './tips/TipCard';
 import { ReadingBar } from './speech/ReadControls';
 import { BarSlot } from './speech/SpeakingBarSlot';
+import { useBarShown } from './speech/barShown';
 import { warmVoices } from './speech/greek';
 import { WordSheet, type Lookup } from './WordSheet';
 import { PassageText, ParagraphView, SectionHeading, VerseLine } from './reader/ChapterText';
@@ -287,6 +288,11 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // The bars change only on a two-finger tap (src/immersive.ts); a sheet closing or reading aloud stopping does not bring them back. They stay out
   // of view only while the header holds no reading control.
   const away = bars.away && !headerButtons;
+  // The foot of the screen keeps the phone's bottom floor on its lowest row (mw-5r3p30.473): the Talk bar, when it is drawn, and otherwise the place line of
+  // the Immersive reader (under everything), else the speaking bar's slot or the Turn pages line above it.
+  const barUp = useBarShown();
+  const footBare = !ai || away;
+  const percentLine = !paging && immersive && chapter && !failed && !viewUnit;
   const passages = useMemo(() => (chapter ? passagesOf(chapter.verses) : []), [chapter]);
   const blocks = useMemo(() => (chapter && layout ? blocksOf(chapter.verses, layout) : []), [chapter, layout]);
   const wovenCount = woven ? woven.reduce((n, w) => n + w.filter(Boolean).length, 0) : 0;
@@ -390,9 +396,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       {notice ? <LinkNotice text={notice} elsewhere={link?.elsewhere} onDismiss={() => setNotice(null)} /> : null}
       {swipeEnd ? <SwipeNote end={swipeEnd} lastBook={BOOKS[BOOKS.length - 1].name} onDismiss={dismissSwipeNote} /> : null}
       <ReadingBar reading={reading} />
-      {chapter && !failed ? <ImmersiveHint enabled={immersive} /> : null}
+      {chapter && !failed ? <ImmersiveHint enabled={immersive} away={away} /> : null}
       <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} data-immersive={immersive ? 'on' : 'off'} data-paging={paging ? 'pages' : 'scroll'} style={chapter ? { marginBottom: away || !ai ? 0 : `calc(${ASK_BUTTON_ROOM})`, marginRight: ai ? ASK_BUTTON_GUTTER : undefined, transition: immersive ? 'margin-bottom 200ms ease' : undefined } : undefined} className="screen min-h-0 flex-1 touch-pan-y px-1 pt-2">
-        <div ref={inner} data-pages={paging ? '' : undefined}>
+        <div ref={inner} data-reader-text data-pages={paging ? '' : undefined}>
         {failed ? (
           <ChapterFailed title={TITLE} onRetry={retry} onPick={() => setPicking(true)} />
         ) : chapter && view && layout && headings ? (
@@ -440,8 +446,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         )}
         </div>
       </main>
-      {paging && chapter && !failed && !viewUnit ? <PlaceLine title={TITLE} at={`Page ${pages.page} of ${pages.count}`} /> : null}
-      <BarSlot level={1} />
+      {paging && chapter && !failed && !viewUnit ? <PlaceLine title={TITLE} at={`Page ${pages.page} of ${pages.count}`} floor={footBare && !barUp} /> : null}
+      <BarSlot level={1} inset={footBare && !(percentLine && away)} />
       {chapter && !failed && !viewUnit ? <LicenceTip /> : null}
       {chapter && !viewUnit && ai ? (
         <Away enabled={immersive} away={away}>
@@ -456,7 +462,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           />
         </Away>
       ) : null}
-      {!paging && immersive && away && chapter && !failed && !viewUnit ? <PlaceLine title={TITLE} at={`${percent}%`} /> : null}
+      {percentLine ? <PlaceLine title={TITLE} at={`${percent}%`} visible={away} floor /> : null}
       {chapter && !viewUnit ? (
         <AskTutorButton
           away={immersive ? away : undefined}

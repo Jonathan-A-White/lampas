@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
+import { honestSpeech } from '../support/honest-fakes';
 import { shot } from './shot';
-import { openUnlocked } from './unlocked';
+import { openUnlicensed, openUnlocked } from './unlocked';
 
 // With Immersive reader On and the bars away, one quiet line at the foot says where he is: the book and chapter and how far through the chapter's
 // text he has scrolled, like a Kindle's "Page 9 of 187 · 12%" (mw-5r3p30.298). It is not there with the setting Off or with the bars brought
@@ -55,11 +56,11 @@ const percentOf = async (page: Page) => {
 };
 
 /** Two fingers on the text at once, lifted together: a two-finger tap. */
-async function twoFingerTap(page: Page) {
+async function twoFingerTap(page: Page, y = 450) {
   const cdp = await page.context().newCDPSession(page);
   const points = [
-    { x: 150, y: 450, id: 1 },
-    { x: 240, y: 460, id: 2 },
+    { x: 150, y, id: 1 },
+    { x: 240, y: y + 10, id: 2 },
   ];
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points });
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
@@ -111,6 +112,8 @@ test('it is small and dim, and covers none of the text', async ({ page }) => {
   await openMark12(page, 'on');
   await scrollText(page, 600);
   await expect(place(page)).toBeVisible();
+  // the row slides in with the bars going: measured once it has
+  await page.waitForTimeout(400);
 
   const look = await page.evaluate(() => {
     const line = document.querySelector('[data-place-line]') as HTMLElement;
@@ -134,3 +137,116 @@ test('it is small and dim, and covers none of the text', async ({ page }) => {
   expect(look.lineBottom).toBeLessThanOrEqual(look.windowHeight + 0.5);
   await shot(page, 'immersive-place');
 });
+
+// The foot of the Reader with the bars away (mw-5r3p30.473): the place line, the reading bar (Pause, Restart, Stop) and the round Ask button all keep the floor
+// of a three-button bar (48 px, src/index.css --lp-bar-inset), because Android Chrome does not always report the navigation bar. Upright and sideways,
+// with the Talk bar drawn (a licensed phone) and without it.
+const FLOOR = 48;
+const VIEWPORTS = [
+  { name: '390x844', width: 390, height: 844 },
+  { name: '844x390', width: 844, height: 390 },
+];
+for (const licensed of [true, false]) {
+  for (const size of VIEWPORTS) {
+    test(`reading aloud with the bars away, ${licensed ? 'licensed' : 'free'} at ${size.name}, every row at the foot ends ${FLOOR} px above the bottom`, async ({ page }) => {
+      await page.setViewportSize({ width: size.width, height: size.height });
+      await honestSpeech(page, { msPerWord: 400 });
+      await (licensed ? openUnlocked(page) : openUnlicensed(page));
+      await page.goto('/');
+      await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+      await keep(page, { immersiveReader: 'on', immersiveHint: 'off' });
+      await page.goto('/#/?b=mrk&c=12');
+      await page.reload();
+      await expect(page.getByRole('heading', { name: 'Mark 12', level: 1 })).toBeVisible();
+      await expect(page.locator('[data-verse="1"]')).toBeVisible();
+      await page.getByRole('button', { name: 'Read from the top', exact: true }).click();
+      await expect(page.locator('[data-speaking-slot] button').first()).toBeVisible();
+      await scrollText(page, 300);
+      await expect(place(page)).toBeVisible();
+      await expect(page.locator('header').first()).toBeHidden();
+      await page.waitForTimeout(400);
+
+      const rows = await page.evaluate(() => {
+        const out: Array<{ name: string; bottom: number }> = [];
+        for (const el of document.querySelectorAll<HTMLElement>('[data-speaking-slot] button')) {
+          out.push({ name: `bar button ${el.getAttribute('aria-label') ?? el.textContent}`, bottom: el.getBoundingClientRect().bottom });
+        }
+        // the place line's text, not its box: the box holds the floor as padding
+        const line = document.querySelector<HTMLElement>('[data-place-line]');
+        if (line) {
+          const range = document.createRange();
+          range.selectNodeContents(line);
+          out.push({ name: 'the place line', bottom: range.getBoundingClientRect().bottom });
+        }
+        // the round Ask button slides off the screen with the bars: it is a row at the foot only while they are shown
+        const ask = document.querySelector<HTMLElement>('[data-ask-tutor]:not([data-away])');
+        if (ask) out.push({ name: 'the Ask button', bottom: ask.getBoundingClientRect().bottom });
+        return { rows: out, height: window.innerHeight };
+      });
+      expect(rows.rows.length).toBeGreaterThanOrEqual(4);
+      for (const row of rows.rows) expect(rows.height - row.bottom, row.name).toBeGreaterThanOrEqual(FLOOR - 0.5);
+      if (licensed) await expect(page.locator('[data-ask-tutor]')).toHaveAttribute('data-away', '');
+      await shot(page, `immersive-place-floor-${licensed ? 'licensed' : 'free'}-${size.name}`);
+
+      // the bars back: the speaking bar, the Talk bar's round Ask button and the rows under them keep the floor too. Upright only: sideways, with the bars
+      // shown and a chapter read, the stack of rows is taller than the window (the box is squeezed to 136 px, mw-5r3p30.212) and the Talk bar ends 12 px short of it.
+      if (size.height < size.width) return;
+      await twoFingerTap(page, size.height / 2);
+      await expect(place(page)).toHaveCount(0);
+      await page.waitForTimeout(400);
+      const shown = await page.evaluate(() => {
+        const out: Array<{ name: string; bottom: number }> = [];
+        for (const el of document.querySelectorAll<HTMLElement>('[data-speaking-slot] button, [data-ask-tutor], [data-talk-bar] button')) {
+          if (el.closest('[data-away]') || el.hasAttribute('data-away')) continue;
+          out.push({ name: `shown ${el.getAttribute('aria-label') ?? el.textContent}`, bottom: el.getBoundingClientRect().bottom });
+        }
+        return { rows: out, height: window.innerHeight };
+      });
+      expect(shown.rows.length).toBeGreaterThanOrEqual(3);
+      for (const row of shown.rows) expect(shown.height - row.bottom, row.name).toBeGreaterThanOrEqual(FLOOR - 0.5);
+    });
+  }
+}
+
+// A two-finger cycle must not move the text (mw-5r3p30.472): the box changes size when the bars come and go, and the text stays where it is, so the end of
+// the chapter still reads 100% (it read 99% after a cycle, 22 px short). At the top, the middle and the end of Mark 12, with the Talk bar drawn and without.
+for (const licensed of [true, false]) {
+  test(`two two-finger cycles leave the text where it was and the end of Mark 12 at 100%, ${licensed ? 'with' : 'without'} the Talk bar`, async ({ page }) => {
+    await (licensed ? openUnlocked(page) : openUnlicensed(page));
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+    await keep(page, { immersiveReader: 'on', immersiveHint: 'off' });
+    await page.goto('/#/?b=mrk&c=12');
+    await page.reload();
+    await expect(page.getByRole('heading', { name: 'Mark 12', level: 1 })).toBeVisible();
+    await expect(page.locator('[data-verse="1"]')).toBeVisible();
+    const top = () => page.evaluate(() => (document.querySelector('[data-reader]') as HTMLElement).scrollTop);
+    const settle = () => page.waitForTimeout(700);
+
+    // the end first: it is where the bug was seen
+    await scrollText(page, 300);
+    await expect(place(page)).toBeVisible();
+    // the bars have finished sliding away before he goes on to the end
+    await settle();
+    await scrollText(page, 100000);
+    await expect.poll(() => percentOf(page)).toBe(100);
+    for (const where of ['end', 'middle', 'top']) {
+      if (where === 'middle') await page.evaluate(() => { const b = document.querySelector('[data-reader]') as HTMLElement; b.scrollTop = (b.scrollHeight - b.clientHeight) / 2; });
+      if (where === 'top') await page.evaluate(() => { (document.querySelector('[data-reader]') as HTMLElement).scrollTop = 40; });
+      await settle();
+      await expect(place(page)).toBeVisible();
+      const before = await top();
+      for (let cycle = 0; cycle < 2; cycle++) {
+        await twoFingerTap(page);
+        await expect(place(page)).toHaveCount(0);
+        await settle();
+        expect(await top(), `${where}: the bars shown, cycle ${cycle + 1}`).toBe(before);
+        await twoFingerTap(page);
+        await expect(place(page)).toBeVisible();
+        await settle();
+        expect(await top(), `${where}: the bars away again, cycle ${cycle + 1}`).toBe(before);
+      }
+      if (where === 'end') expect(await percentOf(page)).toBe(100);
+    }
+  });
+}
