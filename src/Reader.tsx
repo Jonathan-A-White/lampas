@@ -180,10 +180,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const [swipeEnd, setSwipeEnd] = useState<SwipeEnd | null>(null);
   const dismissSwipeNote = useCallback(() => setSwipeEnd(null), []);
   // Turn pages (Settings > Reading, src/reader/usePages.ts): the chapter in pages, turned by a tap on the outer thirds or a swipe, which then never
-  // changes the chapter.
+  // changes the chapter. The page he is on is kept per chapter, so he comes back to it from any screen the Reader gives way to (mw-5r3p30.608).
   const paging = useSetting(readingModeSetting) === 'pages';
   useChapterSwipe(main, inner, BOOK, CHAPTER, sheetOpen || paging, setSwipeEnd);
-  const pages = usePages(paging && chapter !== null && !failed, main, inner, sheetOpen);
+  const pages = usePages(paging && chapter !== null && !failed, main, inner, sheetOpen, `${BOOK}/${CHAPTER}`);
   const showPage = pages.show;
   const [linked, setLinked] = useState(() => (link?.word ? lemmaSheet(link.word) : null));
   const [prefill, setPrefill] = useState(() => (request?.action === 'ask' ? { verse: request.verse, text: request.question } : null));
