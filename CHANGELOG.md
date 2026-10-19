@@ -1,5 +1,14 @@
 # What's new
 
+## 0.1.347
+_2026-10-19_
+- Fixed: A short box that cannot take all of what you paste now tells you how much was cut off; a question to the makers can be as long as a question to the tutor, and a server error shows 'The tutor is offline right now' instead of technical words.
+- Fixed: reading aloud in Greek no longer says "omicron" for a one-letter word such as ὃ in the middle of a verse or a word list entry; it says the vowel's sound.
+- Fixed: A paradigm table in Study mode no longer tells you to tap a cell when every cell is still locked; it says to mark the grammar ideas that open them.
+- Fixed: A quick double tap on Read aloud, on 'Me' after a reading check, or on a marked word no longer undoes itself.
+- Fixed: After you mark the Greek alphabet as known, Learn next and the list of gaps no longer name its letters.
+- Fixed: With Turn pages on, closing Lampas or reloading it now opens the chapter on the page you were reading, not page 1.
+
 ## 0.1.346
 _2026-10-19_
 - Fixed: An idea you put back to Not yet by switching now shows when it is next due and when you last answered it.

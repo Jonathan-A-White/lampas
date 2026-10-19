@@ -1,5 +1,47 @@
 [
   {
+    "version": "0.1.347",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.601",
+    "kind": "fixed",
+    "text": "A short box that cannot take all of what you paste now tells you how much was cut off; a question to the makers can be as long as a question to the tutor, and a server error shows 'The tutor is offline right now' instead of technical words."
+  },
+  {
+    "version": "0.1.347",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.448",
+    "kind": "fixed",
+    "text": "reading aloud in Greek no longer says \"omicron\" for a one-letter word such as ὃ in the middle of a verse or a word list entry; it says the vowel's sound."
+  },
+  {
+    "version": "0.1.347",
+    "date": "2026-10-19",
+    "story": "mw-svw421.23",
+    "kind": "fixed",
+    "text": "A paradigm table in Study mode no longer tells you to tap a cell when every cell is still locked; it says to mark the grammar ideas that open them."
+  },
+  {
+    "version": "0.1.347",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.637",
+    "kind": "fixed",
+    "text": "A quick double tap on Read aloud, on 'Me' after a reading check, or on a marked word no longer undoes itself."
+  },
+  {
+    "version": "0.1.347",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.635",
+    "kind": "fixed",
+    "text": "After you mark the Greek alphabet as known, Learn next and the list of gaps no longer name its letters."
+  },
+  {
+    "version": "0.1.347",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.638",
+    "kind": "fixed",
+    "text": "With Turn pages on, closing Lampas or reloading it now opens the chapter on the page you were reading, not page 1."
+  },
+  {
     "version": "0.1.346",
     "date": "2026-10-19",
     "story": "mw-i7xe0n.22",
