@@ -9,7 +9,8 @@
 // buttons, mw-86e9r1.22). Review and the placement's walk have none. A change of screen, and a sheet or confirm card as it opens and as it closes,
 // swallow every tap for the same moment (`swallowTaps`), called by the one app-wide guard (src/ui/tapGuard.ts, mw-5r3p30.597), not by any screen.
 // A control that flips a state inside one screen (Paradigms' Study | Review mode, Hide all and a reveal cell) takes one tap per moment (`oneTap`,
-// mw-svw421.41): the second tap of a double tap would flip it back, or land on the control that took its place. So does a play / stop button (Read aloud,
+// mw-svw421.41): the second tap of a double tap would flip it back, or land on the control that took its place. A control that a tap makes go away and
+// whose place another control takes (the idea sheet's Mark known without a drill, the level slider) asks `justTapped` of the one that takes its place (mw-5r3p30.558). So does a play / stop button (Read aloud,
 // Read from here, a verse's play, the speaker, ReadCheck's Me and Play my reading) and ReadCheck's open / closed word (mw-5r3p30.637).
 import { useCallback, useEffect, useRef } from 'react';
 
@@ -57,6 +58,15 @@ export function oneTap(key: string, act: () => void): void {
   if (lastTap && lastTap.key === key && now - lastTap.at < settle.ms) return;
   lastTap = { key, at: now };
   act();
+}
+
+/**
+ * True while the last act run through `oneTap` had this `key` and began less than `settle.ms` ago. A control that a tap makes go away (Mark known
+ * without a drill) leaves another control under the thumb for the second tap of a double tap (the level slider moves into its place); that control asks
+ * this and does nothing in the moment, so a double tap ends where one tap does (mw-5r3p30.558).
+ */
+export function justTapped(key: string): boolean {
+  return lastTap !== null && lastTap.key === key && performance.now() - lastTap.at < settle.ms;
 }
 
 /** What a swallowed tap never reaches the app as: its click, and the press that starts it (a hold bar begins on the press, src/ui/holdPress.ts). */
