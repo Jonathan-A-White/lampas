@@ -4,17 +4,20 @@ import { holdAwake, keepAwake, letSleep, releaseAwake } from '../../src/speech/w
 
 let requests: number;
 let released: number;
+/** the release listener of each lock handed out: the browser dropping a lock fires it */
+let dropped: Array<() => void>;
 
 beforeEach(() => {
   requests = 0;
   released = 0;
+  dropped = [];
   Object.defineProperty(navigator, 'wakeLock', {
     configurable: true,
     value: {
       request: vi.fn(async () => {
         requests += 1;
         return {
-          addEventListener: () => {},
+          addEventListener: (_: string, listener: () => void) => dropped.push(listener),
           release: async () => {
             released += 1;
           },
@@ -71,6 +74,21 @@ describe('wake lock holders', () => {
     releaseAwake('immersive');
     await settle();
     expect(released).toBe(1);
+  });
+
+  it('asks again when the browser drops the lock while a holder still wants it', async () => {
+    holdAwake('immersive');
+    await settle();
+    expect(requests).toBe(1);
+    dropped[0]();
+    await settle();
+    expect(requests).toBe(2);
+
+    // let go by its holder: no lock is asked for after it
+    releaseAwake('immersive');
+    await settle();
+    expect(released).toBe(1);
+    expect(requests).toBe(2);
   });
 
   it('does nothing, and does not throw, where the phone has no wake lock', async () => {

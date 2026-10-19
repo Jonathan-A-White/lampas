@@ -260,7 +260,26 @@ test('after the phone leaves full screen by itself, the next tap asks for it aga
   expect((await counts(page)).requests).toBe(2);
 });
 
-test('after the phone leaves full screen by itself, the next scroll asks for it again', async ({ page }) => {
+test('after the browser leaves full screen by itself, a two-finger tap asks for it again, once', async ({ page }) => {
+  await openReader(page, 'on');
+  await scrollText(page, 400);
+  await expect.poll(() => counts(page)).toEqual({ requests: 1, exits: 0 });
+  await leaveByItself(page);
+  expect(await fullScreen(page)).toBe(false);
+
+  await twoFingerTap(page);
+  await expect.poll(() => counts(page)).toEqual({ requests: 2, exits: 0 });
+  expect(await fullScreen(page)).toBe(true);
+
+  // full screen again: more two-finger taps change only Lampas's bars and ask no more
+  await twoFingerTap(page);
+  await twoFingerTap(page);
+  await page.waitForTimeout(500);
+  expect(await counts(page)).toEqual({ requests: 2, exits: 0 });
+  expect(await fullScreen(page)).toBe(true);
+});
+
+test('after the phone leaves full screen by itself, the next scroll asks for it again',async ({ page }) => {
   await openReader(page, 'on');
   await scrollText(page, 400);
   await expect.poll(() => counts(page)).toEqual({ requests: 1, exits: 0 });

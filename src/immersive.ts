@@ -14,7 +14,8 @@
 // bring the notice back each time. A two-finger tap changes only Lampas's own bars. Full screen is left when he leaves the Reader and when the
 // setting goes Off. Where the API is missing or refuses, nothing else changes and the next gesture asks again. When the phone ends full screen by its
 // own doing (Android Back, the swipe Chrome's notice offers) while the Reader is open, the next gesture asks again too (mw-5r3p30.330): the page hears
-// it as `fullscreenchange` with no fullscreen element.
+// it as `fullscreenchange` with no fullscreen element. A two-finger tap is such a gesture (mw-5r3p30.578): in full screen it changes only the bars, out of it
+// it asks again as well.
 //
 // Awake (mw-5r3p30.309): with it On the screen stays on while the Reader is open (src/speech/wakeLock.ts, holder 'immersive', beside reading aloud's own
 // hold: the lock is let go with the last holder). Leaving the Reader or switching Off lets it go; the page hiding does so by itself and the lock is asked
@@ -227,6 +228,8 @@ export function useImmersive(
       if (performance.now() - at > TAP_MS) return;
       guardUntil = performance.now() + CLICK_GUARD_MS;
       toggle();
+      // a two-finger tap is a gesture too: if the browser has left full screen since (mw-5r3p30.578), this asks again; in full screen it asks nothing
+      enter(false);
     };
     const onTouchCancel = () => {
       tap = null;

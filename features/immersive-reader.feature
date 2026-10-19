@@ -122,6 +122,16 @@ Feature: Immersive reader
     Then the header, the chips, the Talk bar and the Ask button are all out of view
     And the page has kept the one full screen it asked for
 
+  Scenario: After the browser leaves full screen by itself, a two-finger tap asks for it again
+    Given Lampas is opened on Romans 8 with Immersive reader On and a phone that can go full screen
+    When he scrolls the text down 200 px
+    Then the page has asked for full screen once
+    When the browser leaves full screen by itself
+    And he taps the text with two fingers
+    Then the page has asked for full screen twice
+    When he taps the text with two fingers again
+    Then the page has still asked for full screen twice
+
   Scenario: Leaving the Reader leaves full screen
     Given Lampas is opened on Romans 8 with Immersive reader On and a phone that can go full screen
     When he taps the text with one finger
