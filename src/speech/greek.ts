@@ -21,6 +21,7 @@ import {
 } from 'voice-kit/speech';
 import { useSpeech } from 'voice-kit/speech/react';
 import { ClipPlayer } from '../audio/clipPlayer';
+import { withoutElision } from './elision';
 import { DEFAULT_RATE, DEFAULT_RATES, HEBREW_LANG, LANGUAGES, normaliseRate, type SettableLanguage, type SpeechLanguage, type SpeechRates } from './languages';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation, type Pronunciation } from './pronunciation';
 
@@ -312,13 +313,15 @@ export function speakWord(text: string, language: SpeechLanguage, slowly = false
   return speakText(said.text, WORD_KEY, { slowly, language: said.language });
 }
 
-/** Whether `text` is ONE Greek letter, whatever marks it carries (ὁ, Ὃ, ἡ, ᾧ). */
+/** Whether `text` is ONE Greek letter, whatever marks it carries (ὁ, Ὃ, ἡ, ᾧ), and with a mark of a dropped vowel after it (δ', which a voice names
+ * 'Delta': mw-5r3p30.449). */
 const isOneGreekLetter = (text: string): boolean => {
-  const letters = [...text.trim().normalize('NFD').replace(/\p{M}/gu, '')];
+  const letters = [...withoutElision(text.trim()).normalize('NFD').replace(/\p{M}/gu, '')];
   return letters.length === 1 && /\p{Script=Greek}/u.test(letters[0]);
 };
 
 /** How a word of ONE Greek letter is said, or null for any other text (and for a letter neither form nor clip says as a sound: a consonant, which is named).
+ * An elided word of one consonant (δ') has no form, and its clip plays on every phone (mw-5r3p30.449).
  * A Greek voice handed one letter says its name ('omicron'), whatever accent it carries: mw-5r3p30.226, .256 and .262 each handed a voice another form of
  * it, and his phone still said 'Omicron'. Handed the vowel doubled ('οο'), his phone's own Greek voice says the sound, which he chose on the listening trial
  * over every clip (mw-5r3p30.421): so the voice is handed the chosen pronunciation's loneLetterForm, `text`. On a phone that says it has no Greek voice the
@@ -342,7 +345,8 @@ export function loneLetterCuts(text: string): ({ text: string; lone: boolean } |
     stretch = [];
   };
   for (const word of text.split(/\s+/).filter(Boolean)) {
-    const lone = loneLetterSpeech(word.replace(/^\p{P}+|\p{P}+$/gu, ''));
+    // an elided δ' comes without its apostrophe (a koronis too, which is not punctuation): a consonant alone, it stays in its stretch
+    const lone = loneLetterSpeech(withoutElision(word.replace(/^\p{P}+|\p{P}+$/gu, '')));
     if (!lone) {
       stretch.push(word);
       continue;
