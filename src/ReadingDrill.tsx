@@ -237,6 +237,7 @@ export function ReadingDrill({ offer, pronunciation, onClose }: { offer: DrillOf
               listening={recording}
               disabled={sent}
               compactWhenShort
+              keys
             />
           </div>
         ) : null}
