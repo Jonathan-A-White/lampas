@@ -2,9 +2,11 @@
 // Kindle. The text (`inner`, [data-pages]) is set in CSS columns one box wide and one box high (src/index.css 'Turn pages'), so the browser breaks it
 // between lines, never through one; the reading box (`box`) clips them and shows one column at a time by its scrollLeft. A tap on the right third of
 // the text or a swipe to the left turns forward a page, the left third or a swipe to the right turns back; the first page does not turn back, the last
-// does not turn forward, and no swipe opens another chapter (the chapter buttons end the last page). A tap on a button or link (a verse number, its play
-// button, the chapter buttons) does what it does; a section heading, whose button spans the text's width, is text: its outer thirds turn the page. A tap
-// in the middle third still opens the word or heading; so does a long press (the word's own click guard drops its click). The swipe's numbers are the chapter swipe's (src/reader/useChapterSwipe.ts), which is off while pages are on.
+// does not turn forward, and no swipe opens another chapter (the chapter buttons end the last page). A tap on a button or link outside the verses (the
+// chapter buttons) does what it does; a verse's number and play button and a section heading's button are text: their outer thirds turn the page, as a
+// Kindle's edges always do (mw-5r3p30.609: the number is a 44 px button at the left edge, where a thumb taps to turn back). A tap in the middle third
+// still opens the word, verse or heading; so does a long press (the word's own click guard drops its click; a held number talks, or with no licence opens
+// its verse), and so does Enter on a focused number (a click with no short press before it). The swipe's numbers are the chapter swipe's (src/reader/useChapterSwipe.ts), which is off while pages are on.
 // When the box changes size (text size, the hint card closed, the bars brought back) the pages are cut afresh and the page shown is the one where the
 // first verse that was in view begins, so no text is skipped.
 // The page he is on is kept per chapter (src/nav/scrollMemory.ts keepPage, mw-5r3p30.608): a Reader opened on the chapter again (back from Settings or any
@@ -217,9 +219,10 @@ export function usePages(enabled: boolean, box: RefObject<HTMLElement | null>, i
       // a click with no short press before it (a long press, Enter on a button) is not a page tap
       if (!tapped) return;
       tapped = false;
-      // a heading's button is the whole width of the text: it is text here, opened from the middle third like a word
+      // a verse's own buttons (its number, its play button) and a heading's are text here, opened from the middle third like a word: the number sits
+      // at the left edge, right where a thumb taps to turn back (mw-5r3p30.609); the chapter buttons keep their taps
       const control = e.target instanceof Element ? e.target.closest('a, button, input, select, textarea, label, summary') : null;
-      if (control && !control.closest('[data-heading]')) return;
+      if (control && !control.closest('[data-heading], [data-verse]')) return;
       const r = el.getBoundingClientRect();
       const x = e.clientX - r.left;
       const by = x < r.width / 3 ? -1 : x > (r.width * 2) / 3 ? 1 : 0;
