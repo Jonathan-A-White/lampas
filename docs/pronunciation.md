@@ -35,7 +35,11 @@ letter (`speakLetter`) are named.
 from mw-5r3p30.347 to mw-5r3p30.421 it played on every phone). Modern Greek's clips are `public/sounds/modern/<sound>.mp3`, one per vowel sound its
 respelling writes (`a`, `e`, `ee`, `o`: ὁ and ὦ play `o`, ἡ plays `ee`), made by `scripts/sounds-build.sh` with eSpeak NG's phoneme input
 (`[[o]]`), which says a sound and cannot spell a letter; they are precached (`playLetterClip`; `readAloud.ts` `piecesOf` plays them between the
-voice's pieces). A new scheme (Erasmian) gives its own form and its own clips, from its own vowel sounds, in `public/sounds/<id>/`, and the build
+voice's pieces). An elided word of one consonant, δ' (δέ before a vowel, Luke 9:24), is a word of one letter too: a voice handed it names it
+('Delta'), and no form makes a voice say a consonant alone, so it plays its clip on EVERY phone, `dh.mp3` (the th of 'this', `[[D:D:]]` made louder;
+`src/speech/elision.ts` names the marks of a dropped vowel, ' ’ ʼ ᾽ ᾿; mw-5r3p30.449). Held or tapped alone only: inside a verse read aloud δ' stays with
+the words around it (`loneLetterCuts`). `tests/unit/lone-letter-clip.test.ts` holds every elided form in the text and the lexicon to its clip or the whole
+word. A new scheme (Erasmian) gives its own form and its own clips, from its own vowel sounds, in `public/sounds/<id>/`, and the build
 script a line for them.
 
 `voiceForm(text)` (mw-5r3p30.264) is what the scheme's voice is handed for any other Greek text (a held word, a speaker, a verse read
