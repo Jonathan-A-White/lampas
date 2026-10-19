@@ -241,7 +241,9 @@ step by step, back off by halves when it is too hard, "kind of like a binary sea
 - **When the goal has none (mw-5r3p30.350).** `ideaExamplesFor(id, passage, load)`: the goal's own examples first; with none, a verse goal's
   pericope (the heading's verses, labelled '1 John 1:1-4'), then its chapter ('1 John 1'), then its book ('1 John', PROVISIONAL: he named the
   pericope or the chapter, the Governor is to confirm the book); the sheet says 'Examples from <that place>', and only when nothing is found
-  anywhere does it say 'No word of <goal> ...'.
+  anywhere does it say 'No word of <goal> ...'. When a chapter beyond the goal's cannot be loaded (offline) the result carries `unreached`, and the
+  sheet says 'Examples beyond <goal> could not be looked for: you may be offline.' (`idea-unreached`) in place of the 'No word of' line (mw-5r3p30.556);
+  examples found before the load that failed still show.
 - **A letter's or a sound's examples make its sound (mw-5r3p30.351).** His words about the Omicron, Upsilon and Phi sheets on 1 John 1:1: the examples
   must match what the card teaches, and a different sound is shown on purpose. `isSoundIdea(id)` (the 24 letters, each vowel pair and consonant pair,
   their two groups) holds its examples to the chosen pronunciation's own reading, `Pronunciation.spellings(word)`: units `{from, to, sound}`, a letter

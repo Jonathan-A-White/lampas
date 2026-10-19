@@ -323,6 +323,18 @@ describe('the examples of an idea when the goal verse has none (mw-5r3p30.350)',
     expect(found.examples.every((e) => e.chapter.chapter > 1)).toBe(true);
   });
 
+  it('say the search stopped short, not that none was found, when a chapter beyond the goal\'s cannot be loaded (mw-5r3p30.556)', async () => {
+    const passage = await goalOne();
+    const offline = (book: string, n: number) => (n === 1 ? loadChapter(book, n) : Promise.reject(new Error('offline')));
+    for (const idea of ['letter-xi', 'tense-future']) {
+      const found = await ideaExamplesFor(idea, passage, offline);
+      expect(found.unreached, idea).toBe(true);
+      expect(found.examples, idea).toEqual([]);
+    }
+    // a search that finds its examples before the load that fails is not stopped short
+    expect((await ideaExamplesFor('case-genitive', passage, offline)).unreached).toBeUndefined();
+  });
+
   it('are none, under the goal\'s own name, when nothing in the book has the idea', async () => {
     const found = await ideaExamplesFor('case-vocative', await ideaPassage('Jude', DEFAULT_CHAPTER, loadChapter, index), loadChapter);
     expect(found.examples).toEqual([]);

@@ -129,8 +129,8 @@ function useWiderExamples(id: string, passage: IdeaPassage | undefined, scheme: 
     let alive = true;
     ideaExamplesFor(id, passage, loadChapter, ranking, scheme).then(
       (value) => alive && setFound({ key, value }),
-      // offline: the goal's own line, as before
-      () => alive && setFound({ key, value: { title: passage.title, examples: [] } }),
+      // not even the goal's own place could be read: the search never ran, which the sheet says (mw-5r3p30.556)
+      () => alive && setFound({ key, value: { title: passage.title, examples: [], unreached: true } }),
     );
     return () => {
       alive = false;
@@ -545,6 +545,10 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
               <p className="text-sm text-muted">Examples from {exampleTitle}</p>
               {examples.length ? (
                 <Examples idea={idea} examples={examples} onWord={onWord} />
+              ) : wider?.unreached ? (
+                <p data-testid="idea-unreached" className="pt-1 text-base text-muted">
+                  Examples beyond {loaded.passage.title} could not be looked for: you may be offline.
+                </p>
               ) : (
                 <p className="pt-1 text-base text-muted">
                   {isSpellingIdea(idea.id)

@@ -439,6 +439,8 @@ export interface IdeaExamples {
   examples: IdeaExample[];
   /** a letter only: a word where it is read inside a pair, to show on purpose under the examples (a letter sheet only; none when no word in range has one) */
   pairCase?: PairCase;
+  /** a chapter beyond the goal's could not be loaded (offline), so the search stopped short: `examples` is what it found before, and none is not 'none found' (mw-5r3p30.556) */
+  unreached?: boolean;
 }
 
 /** What the ranking of a sound's examples may know of him (mw-5r3p30.351): the letters he has met or is learning, and how often each word is used. */
@@ -504,45 +506,56 @@ async function soundExamplesFor(id: string, passage: IdeaPassage, load: ChapterL
   const seen = new Set<string>();
   let pairCase: PairCase | undefined;
   let level = 0;
-  for await (const place of placesOf(passage, load)) {
-    titles.push(place.title);
-    const examples = ideaExamples(id, place.chapters, place.verse, Number.MAX_SAFE_INTEGER, scheme).map((e) => (place.whole ? { ...e, chapter: place.whole } : e));
-    pairCase ??= pairCaseOf(id, place.chapters, place.verse, scheme);
-    for (const example of examples) {
-      const key = bare(example.word.t);
-      if (seen.has(key)) continue;
-      seen.add(key);
-      const score = scoreWords([example.word.t]).score;
-      const unmet = ranking.known ? foundationOf(example.word.t).filter((f) => LETTER_IDS.includes(f) && !ranking.known?.has(f)).length : 0;
-      candidates.push({ example, level, easy: score <= EASY_SCORE, score, unmet, uses: ranking.frequency?.get(example.word.l.normalize('NFC')) ?? 0, order: candidates.length });
+  let unreached = false;
+  try {
+    for await (const place of placesOf(passage, load)) {
+      titles.push(place.title);
+      const examples = ideaExamples(id, place.chapters, place.verse, Number.MAX_SAFE_INTEGER, scheme).map((e) => (place.whole ? { ...e, chapter: place.whole } : e));
+      pairCase ??= pairCaseOf(id, place.chapters, place.verse, scheme);
+      for (const example of examples) {
+        const key = bare(example.word.t);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const score = scoreWords([example.word.t]).score;
+        const unmet = ranking.known ? foundationOf(example.word.t).filter((f) => LETTER_IDS.includes(f) && !ranking.known?.has(f)).length : 0;
+        candidates.push({ example, level, easy: score <= EASY_SCORE, score, unmet, uses: ranking.frequency?.get(example.word.l.normalize('NFC')) ?? 0, order: candidates.length });
+      }
+      level++;
+      if (candidates.filter((c) => c.easy).length >= SOUND_EXAMPLES) break;
     }
-    level++;
-    if (candidates.filter((c) => c.easy).length >= SOUND_EXAMPLES) break;
+  } catch {
+    // a chapter did not load (offline): what was found stands, and the result says the search stopped short
+    unreached = true;
   }
   const ranked = candidates.sort(
     (a, b) => Number(b.easy) - Number(a.easy) || a.unmet - b.unmet || a.level - b.level || b.uses - a.uses || a.score - b.score || a.order - b.order,
   );
   const chosen = ranked.slice(0, SOUND_EXAMPLES);
   const widest = chosen.reduce((n, c) => Math.max(n, c.level), 0);
-  return { title: chosen.length ? titles[widest] : passage.title, examples: chosen.map((c) => c.example), pairCase };
+  return { title: chosen.length ? titles[widest] : passage.title, examples: chosen.map((c) => c.example), pairCase, ...(unreached ? { unreached } : {}) };
 }
 
 /**
  * The examples of an idea for a passage, looking further out when the goal has none (mw-5r3p30.350, his words: "If there's an example in the goal can you
  * look outside of it, in the pericope or in the chapter"). The order is the goal itself, then (for a verse goal) its pericope, the heading's verses, then
  * its chapter, then its book. The book step is PROVISIONAL: he named the pericope or the chapter, the Governor is to confirm the whole book.
- * `title` names the place the examples came from ('1 John 1:1-4'); with none found it is the passage's own title and `examples` is empty.
+ * `title` names the place the examples came from ('1 John 1:1-4'); with none found it is the passage's own title and `examples` is empty; `unreached` is set when a chapter could not be loaded, so none is not 'none found'.
  * A letter or a sound (isSoundIdea) widens until it has SOUND_EXAMPLES easy examples and ranks them (soundExamplesFor, mw-5r3p30.351).
  */
 export async function ideaExamplesFor(id: string, passage: IdeaPassage, load: ChapterLoader, ranking: ExampleRanking = {}, scheme: Pronunciation = chosenPronunciation()): Promise<IdeaExamples> {
   if (isSoundIdea(id)) return soundExamplesFor(id, passage, load, ranking, scheme);
   let found: IdeaExamples = { title: passage.title, examples: [] };
-  for await (const place of placesOf(passage, load)) {
-    const examples = ideaExamples(id, place.chapters, place.verse, undefined, scheme).map((e) => (place.whole ? { ...e, chapter: place.whole } : e));
-    if (examples.length) {
-      found = { title: place.title, examples };
-      break;
+  try {
+    for await (const place of placesOf(passage, load)) {
+      const examples = ideaExamples(id, place.chapters, place.verse, undefined, scheme).map((e) => (place.whole ? { ...e, chapter: place.whole } : e));
+      if (examples.length) {
+        found = { title: place.title, examples };
+        break;
+      }
     }
+  } catch {
+    // a chapter did not load (offline): the search stopped short, which is not the same as finding none
+    found = { ...found, unreached: true };
   }
   return found;
 }
