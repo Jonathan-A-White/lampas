@@ -13,6 +13,7 @@ import {
   type DrillWalk,
 } from '../../src/data/grammar/drillIt';
 import { PAIR_WORD_OF, baseLetters, wordsWith } from '../../src/data/grammar/drillItems';
+import { HINTED_RIGHT } from '../../src/data/grammar/hint';
 import { LADDER, ideaOf, itemsOf } from '../../src/data/grammar/ladder';
 import type { Level } from '../../src/data/grammar/needs';
 import { pronunciationOf, soundRulesOf } from '../../src/speech/pronunciation';
@@ -383,6 +384,27 @@ describe('a sound that changes by the next letter', () => {
     const sides = new Set(result.answers.filter((a) => a.right && !a.hinted).map((a) => a.facet.id));
     expect(sides).toContain('letter-chi:hard');
     expect(sides).toContain('letter-chi:soft');
+  });
+
+  // His Chi drill (mw-i7xe0n.23): a Hint on χάρις at Step 5, then KHA-rees, said only 'Right.' and the next question was another kh word, with no word of why.
+  it('after a Hint, a right answer says it does not count toward Proved, and the walk asks that side again', () => {
+    expect(HINTED_RIGHT).toMatch(/^Right\. /);
+    expect(HINTED_RIGHT).toContain('does not count toward Proved');
+    // right, unhinted, up to the top step, where a side of the rule is asked
+    let walk = begin('letter-chi', 3, []);
+    const top = walk.steps.length;
+    for (let guard = 0; guard < 10 && walk.step < top; guard += 1) walk = answer(walk, true, false);
+    expect(walk.step).toBe(top);
+    const sideAt = (id: string) => walk.steps[top - 1].questions.find((q) => q.facet.id === id)!;
+    for (const side of ['letter-chi:soft', 'letter-chi:hard']) {
+      // whichever side he was asked, neither yet answered right unhinted
+      const at: DrillWalk = { ...walk, current: sideAt(side) };
+      const after = answer(at, true, true);
+      expect(after.result, side).toBeNull();
+      expect(after.step, side).toBe(top);
+      expect(after.current!.facet.id, side).toBe(side);
+      expect(after.current!.key, side).not.toBe(at.current!.key);
+    }
   });
 
   it.each(soundRulesOf(modern).map((r) => [r.ideaId, r] as const))('%s: both sides drilled, the word misread by the rule offered', (ideaId, rule) => {

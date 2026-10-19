@@ -79,7 +79,7 @@ describe('a hinted answer', () => {
 
   it('says on a right that a hinted answer does not count', () => {
     answer('DHO-ksa', new Set([0, 1]));
-    expect(HINTED_RIGHT).toBe('Right. With a Hint it does not count, so you stay on this step.');
+    expect(HINTED_RIGHT).toBe('Right. With a Hint it does not count toward Proved, so you stay on this step.');
     expect(screen.getByTestId('feedback').textContent).toBe(HINTED_RIGHT);
   });
 
