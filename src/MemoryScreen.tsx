@@ -22,6 +22,7 @@ import {
 } from './data/repositories/memory';
 import { backTo } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { LimitedTextarea } from './ui/LimitedField';
 
 const BUTTON = 'min-h-12 min-w-12 rounded-lg px-3 text-base font-medium text-accent active:bg-line';
 const PRIMARY = 'min-h-12 min-w-12 rounded-xl bg-accent px-5 text-base font-medium text-accent-fg';
@@ -57,7 +58,7 @@ function Note({ note }: { note: MemoryNote }) {
         <p data-note-name className="break-words text-lg font-medium">
           {note.name}
         </p>
-        <textarea aria-label={`Note: ${note.name}`} rows={4} maxLength={MEMORY_NOTE_MAX} value={text} onChange={(e) => setText(e.target.value)} className={FIELD} />
+        <LimitedTextarea aria-label={`Note: ${note.name}`} rows={4} maxLength={MEMORY_NOTE_MAX} value={text} onChange={(e) => setText(e.target.value)} className={FIELD} />
         {problem ? (
           <p role="alert" className="pt-1 text-base text-bad">
             {problem}
@@ -119,7 +120,7 @@ function Index({ body, notes, when, by }: { body: string; notes: string; when?: 
       <label htmlFor="memory-index" className="block pb-1 text-lg font-medium">
         Index
       </label>
-      <textarea
+      <LimitedTextarea
         id="memory-index"
         rows={6}
         maxLength={MEMORY_INDEX_BODY_MAX}

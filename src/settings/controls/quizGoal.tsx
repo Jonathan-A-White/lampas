@@ -4,6 +4,7 @@ import { getQuizGoal, QUIZ_GOAL_MAX } from '../../data/repositories';
 import { writeSetting } from '../registry';
 import { SettingRow } from './SettingRow';
 import type { Control } from './types';
+import { LimitedInput } from '../../ui/LimitedField';
 
 /** localStorage key of the words typed in the field and not yet saved (docs/pwa-best-practices.md section 16: keep the draft). */
 export const QUIZ_GOAL_DRAFT_KEY = 'lampas.quizGoalDraft';
@@ -73,7 +74,7 @@ function QuizGoalField({ saved }: { saved: string }) {
         Quiz goal
       </label>
       <p className="text-base text-muted">{saved === '' ? 'No goal kept' : `Kept: ${saved}`}</p>
-      <input
+      <LimitedInput
         id={fieldId}
         type="text"
         value={text}

@@ -7,6 +7,7 @@ import { isTooLong } from '../../ui/lengthLimit';
 import { LengthNote } from '../../ui/LengthNote';
 import { SettingRow } from './SettingRow';
 import type { Control } from './types';
+import { LimitedInput } from '../../ui/LimitedField';
 
 type Phase = { name: 'editing' } | { name: 'sending' } | { name: 'sent' } | { name: 'failed'; failure: TutorFailure; detail: string };
 
@@ -72,7 +73,7 @@ export const RequestDevotionalControl: Control = ({ row }) => {
               <p id={hint} className="pb-1 text-sm text-muted">
                 The title of a devotional in your Logos library, and its author if you know it. The factory weighs each one.
               </p>
-              <input
+              <LimitedInput
                 id={field}
                 type="text"
                 value={title}

@@ -37,7 +37,7 @@
           "type": "string",
           "enum": ["tutor-ask"]
         },
-        "text": { "description": "What he asked the tutor, in his words.", "type": "string", "minLength": 1, "maxLength": 1200 },
+        "text": { "description": "What he asked the tutor, in his words: at most 4000 characters, as long as a question to the tutor may be.", "type": "string", "minLength": 1, "maxLength": 4000 },
         "summary": { "description": "The tutor's one-line summary of the ask.", "type": "string", "minLength": 1, "maxLength": 200 },
         "screen": { "description": "The screen he asked from: its name, or Reader for a talk about the text.", "type": "string", "minLength": 1, "maxLength": 40 },
         "reference": { "description": "What the talk was about: the screen's name, or the chapter or verse (Romans 8:28).", "type": "string", "minLength": 1, "maxLength": 80 },

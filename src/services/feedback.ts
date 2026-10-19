@@ -9,6 +9,7 @@ import { keepRequest } from '../data/repositories/requests';
 import { getDeviceKeyBytes } from './deviceKey';
 import { MILL_MAX_FILES, type MillFile } from './mill';
 import { askGrind, TutorError, type AskOptions } from './tutor';
+import { MAX_QUESTION_CHARS } from './requestBudget';
 
 export const FEEDBACK_KIND = 'feedback';
 
@@ -23,6 +24,8 @@ export const MAX_PICTURES = MILL_MAX_FILES;
 /** The limits of a tutor-ask request (the input schema's second branch): the tutor's summary, the screen's name, the talk's reference. */
 export const MAX_SUMMARY = 200;
 export const MAX_SCREEN_NAME = 40;
+/** What he asked the tutor, sent whole by Send this to the makers: as long as a question may be (src/services/requestBudget.ts), so a long pasted question is never refused here. */
+export const MAX_ASKED_CHARS = MAX_QUESTION_CHARS;
 export const MAX_REFERENCE = 80;
 
 /** What the grind is sent when he asks for another grammar approach (Feedback Request 1). */

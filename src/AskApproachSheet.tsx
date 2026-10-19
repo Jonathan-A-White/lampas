@@ -13,6 +13,7 @@ import { isTooLong } from './ui/lengthLimit';
 import { LengthNote } from './ui/LengthNote';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
+import { LimitedInput } from './ui/LimitedField';
 
 export const SENT_LINE = 'Sent: the factory has it';
 
@@ -231,7 +232,7 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
                 <label htmlFor={ids.name} className="block pb-1 text-base font-medium">
                   Who to credit
                 </label>
-                <input
+                <LimitedInput
                   id={ids.name}
                   type="text"
                   maxLength={MAX_CREDIT_NAME}
@@ -251,7 +252,7 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
                 <label htmlFor={ids.link} className="block pb-1 text-base font-medium">
                   Link
                 </label>
-                <input
+                <LimitedInput
                   id={ids.link}
                   type="text"
                   inputMode="url"

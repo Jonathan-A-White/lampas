@@ -7,6 +7,7 @@ import { deleteStudyWayLine, editStudyWayLine, listStudyWay, STUDY_WAY_LINE_MAX,
 import { backTo } from './nav/route';
 import { usePageActions } from './PageActions';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { LimitedTextarea } from './ui/LimitedField';
 
 const BUTTON = 'min-h-12 min-w-12 rounded-lg px-3 text-base font-medium text-accent active:bg-line';
 
@@ -31,7 +32,7 @@ function Line({ line }: { line: string }) {
   if (editing) {
     return (
       <li data-study-way-line className="border-b border-line py-3">
-        <textarea
+        <LimitedTextarea
           aria-label="Study way line"
           rows={2}
           maxLength={STUDY_WAY_LINE_MAX}

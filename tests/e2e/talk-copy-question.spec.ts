@@ -3,6 +3,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { honestSpeech } from '../support/honest-fakes';
+import { longQuestion } from '../support/long-text';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
@@ -52,6 +53,26 @@ test('a sent question has a Copy under it that copies his words', async ({ page,
   await expect(turn).toContainText(TALK_ANSWER.answer);
   await turn.getByRole('button', { name: 'Copy my question' }).click();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('What does συνεργεῖ mean here?');
+});
+
+test('1,000 characters pasted into Your message are all kept and Send sends what the box holds, with no silent cut (mw-5r3p30.440)', async ({ page }) => {
+  const PASTED = longQuestion(1000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: TALK_ANSWER };
+  await routePostern(page, fake);
+  await openUnlocked(page);
+  await page.goto('/');
+  await openTalkAbout(page, 28);
+  const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
+  const box = sheet.getByRole('textbox', { name: 'Your message' });
+  await box.fill(PASTED);
+  expect(await box.inputValue()).toHaveLength(1000);
+  await expect(box).toHaveValue(PASTED);
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+  await expect(sheet.locator('[data-turn]')).toContainText(TALK_ANSWER.answer);
+  expect(fake.received).toHaveLength(1);
+  expect(fake.received[0].input.question).toBe(PASTED);
 });
 
 /** An answered question about verse `n` of the chapter at `url`, the sheet open with the licence on; returns the sheet. */
