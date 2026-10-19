@@ -1,5 +1,12 @@
 # What's new
 
+## 0.1.345
+_2026-10-19_
+- Fixed: In Turn pages, coming back to the Reader from Settings or another screen now opens the page you were reading, not page 1.
+- Fixed: Done on the Grammar sheet or the idea sheet now closes every sheet open over the page, the word card too, instead of leaving the card behind.
+- Fixed: When the tutor fails while your phone is sideways, the error message and its Retry button now stay on the screen in every sheet.
+- Fixed: Lampas at 200% text: the Greek alphabet's letter tiles, the 'Read Romans 8' heading, Drill it's 'Add πνεῦμα to my words' button and the Share screen spill or cut (left by mw-cwf538.10)
+
 ## 0.1.344
 _2026-10-19_
 - Fixed: after the phone leaves full screen by itself in the Immersive reader, a two-finger tap on the text puts it full screen again.

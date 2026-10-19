@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.1.345",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.608",
+    "kind": "fixed",
+    "text": "In Turn pages, coming back to the Reader from Settings or another screen now opens the page you were reading, not page 1."
+  },
+  {
+    "version": "0.1.345",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.514",
+    "kind": "fixed",
+    "text": "Done on the Grammar sheet or the idea sheet now closes every sheet open over the page, the word card too, instead of leaving the card behind."
+  },
+  {
+    "version": "0.1.345",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.633",
+    "kind": "fixed",
+    "text": "When the tutor fails while your phone is sideways, the error message and its Retry button now stay on the screen in every sheet."
+  },
+  {
+    "version": "0.1.345",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.634",
+    "kind": "fixed",
+    "text": "Lampas at 200% text: the Greek alphabet's letter tiles, the 'Read Romans 8' heading, Drill it's 'Add πνεῦμα to my words' button and the Share screen spill or cut (left by mw-cwf538.10)"
+  },
+  {
     "version": "0.1.344",
     "date": "2026-10-19",
     "story": "mw-5r3p30.578",
