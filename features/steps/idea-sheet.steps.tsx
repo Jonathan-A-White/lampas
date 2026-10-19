@@ -771,7 +771,8 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Then('the address is {string} and the table {string} is open in Study mode', async (_, hash: string, name: string) => {
       expect(window.location.hash).toBe(hash);
       expect(await screen.findByRole('heading', { name, level: 1 })).toBeInTheDocument();
-      expect(screen.getByTestId('mode-help')).toHaveTextContent('Study mode');
+      // in Study mode the one switch button names the mode it goes to; the line under the title may say the cells are locked (mw-svw421.23)
+      expect(screen.getByRole('button', { name: 'Review mode' })).toBeInTheDocument();
     });
     When('he goes Back', async () => {
       window.history.back();

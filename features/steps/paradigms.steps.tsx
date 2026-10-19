@@ -342,6 +342,19 @@ describeFeature(feature, ({ Background, Scenario }) => {
     });
   });
 
+  Scenario('With every cell locked, the Study line does not tell him to tap a cell', ({ Given, Then, And }) => {
+    Given('the table {string} is open in Study mode', (_, id: string) => openAt(`#/paradigms?t=${id}&mode=study`));
+    Then('the table says {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('table-available')).toHaveTextContent(text));
+    });
+    And('the Study line does not say {string}', (_, text: string) => {
+      expect(screen.getByTestId('mode-help')).not.toHaveTextContent(text);
+    });
+    And('the Study line says {string}', (_, text: string) => {
+      expect(screen.getByTestId('mode-help')).toHaveTextContent(text);
+    });
+  });
+
   Scenario('The table says how many of its forms are available', ({ Given, Then }) => {
     Given('the table {string} is open in Study mode', (_, id: string) => openAt(`#/paradigms?t=${id}&mode=study`));
     Then('the table says {string}', async (_, text: string) => {
