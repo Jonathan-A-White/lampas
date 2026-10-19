@@ -3,7 +3,7 @@
 // long' at the tutor's deadline (mw-5r3p30.208). The mill is the fake Postern behind a fetch whose answers the test delays or fails, on fake time.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PrivateKey, Utils } from '@bsv/sdk';
-import { CONTACT_LOST_MS, TUTOR_OFFLINE_MESSAGE, TutorError, askGrind, tutorTimings } from '../../src/services/tutor';
+import { CONTACT_LOST_MS, OFFLINE_MESSAGE, TUTOR_OFFLINE_MESSAGE, TutorError, askGrind, tutorTimings } from '../../src/services/tutor';
 import { makeFakePostern, type FakePostern } from '../support/fake-postern';
 
 const key = Uint8Array.from(Utils.toArray('00'.repeat(31) + '09', 'hex'));
@@ -362,5 +362,42 @@ describe('where the wait starts reading (mw-5r3p30.275)', () => {
     expect(postern.sinces.filter((since) => since === 0)).toHaveLength(1);
     expect(postern.sinces[0]).toBe(5_000);
     expect(postern.sinces.length).toBeLessThanOrEqual(4);
+  });
+});
+
+// mw-5r3p30.434 and mw-5r3p30.602: the phone loses its network while the question waits: the wait ends at once with 'You are offline', not at the 90 s of lost contact, and the failure
+// names the grist that went (`sent`), so a Retry (or the page after a reload, src/pending/pendingAsks.ts) waits for that grist's answer and sends no second one.
+describe('the phone going offline while the tutor thinks', () => {
+  it('ends the wait at once as You are offline, carrying the grist that went; resuming it finds the answer with one grist on the mill', async () => {
+    const sentAs: { txid: string; seq: number }[] = [];
+    const wait = outcome(askGrind('verse-read', { reference: 'Romans 8:28' }, isAnswer, { key, onSent: (txid, seq) => sentAs.push({ txid, seq }) }));
+    await vi.advanceTimersByTimeAsync(4_000);
+    expect(sentAs).toHaveLength(1);
+    // airplane mode: the browser says so, and every call fails to connect
+    const online = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    behave = () => ({ unreachable: true });
+    window.dispatchEvent(new Event('offline'));
+    await vi.advanceTimersByTimeAsync(100);
+    const result = (await wait) as { error: TutorError };
+    expect(result.error).toBeInstanceOf(TutorError);
+    expect(result.error.message).toBe(OFFLINE_MESSAGE);
+    expect(result.error.sent).toEqual(sentAs[0]);
+
+    // back online: the grist that went is waited for, nothing is sent
+    online.mockRestore();
+    behave = () => undefined;
+    const again = outcome(askGrind('verse-read', { reference: 'Romans 8:28' }, isAnswer, { key, resume: result.error.sent }));
+    setTimeout(() => void postern.answer(ANSWER), 5_000);
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(await again).toEqual({ answer: { verdict: 'well-read' } });
+    expect(postern.received).toHaveLength(1);
+  });
+
+  it('is not ended by a blip that the browser does not call offline: the wait goes on to the answer', async () => {
+    const wait = outcome(askGrind('verse-read', { reference: 'Romans 8:28' }, isAnswer, { key }));
+    await vi.advanceTimersByTimeAsync(4_000);
+    setTimeout(() => void postern.answer(ANSWER), 10_000);
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(await wait).toEqual({ answer: { verdict: 'well-read' } });
   });
 });
