@@ -9,7 +9,9 @@
 // Fullscreen API needs a gesture), so the phone's status and navigation bars go away too, and it STAYS: Chrome shows its own "To exit full screen"
 // notice every time a page enters full screen (no page can hide it or learn it was swiped away), so entering again after every two-finger tap would
 // bring the notice back each time. A two-finger tap changes only Lampas's own bars. Full screen is left when he leaves the Reader and when the
-// setting goes Off. Where the API is missing or refuses, nothing else changes and the next gesture asks again.
+// setting goes Off. Where the API is missing or refuses, nothing else changes and the next gesture asks again. When the phone ends full screen by its
+// own doing (Android Back, the swipe Chrome's notice offers) while the Reader is open, the next gesture asks again too (mw-5r3p30.330): the page hears
+// it as `fullscreenchange` with no fullscreen element.
 //
 // Awake (mw-5r3p30.309): with it On the screen stays on while the Reader is open (src/speech/wakeLock.ts, holder 'immersive', beside reading aloud's own
 // hold: the lock is let go with the last holder). Leaving the Reader or switching Off lets it go; the page hiding does so by itself and the lock is asked
@@ -134,6 +136,12 @@ export function useImmersive(
         if (ok && stopped) leaveFullScreen();
       });
     };
+    // the phone took the screen back by itself: the next tap asks again, and a scroll gets its one try again
+    const onFullScreenChange = () => {
+      if (document.fullscreenElement) return;
+      entered = false;
+      scrollTried = false;
+    };
     // two fingers have been down since the last time all were up
     let multi = false;
     const toggle = () => {
@@ -214,6 +222,7 @@ export function useImmersive(
     el.addEventListener('touchend', onTouchEnd, { passive: true });
     el.addEventListener('touchcancel', onTouchCancel, { passive: true });
     el.addEventListener('click', onClick, true);
+    document.addEventListener('fullscreenchange', onFullScreenChange);
     return () => {
       // switched Off (or the box gone): the bars are shown again if he switches it back On. A Reader that replaces this one at once reads awayNow
       // before this runs, and keeps it; with none, it is forgotten when the full-screen exit fires.
@@ -232,6 +241,7 @@ export function useImmersive(
       el.removeEventListener('touchend', onTouchEnd);
       el.removeEventListener('touchcancel', onTouchCancel);
       el.removeEventListener('click', onClick, true);
+      document.removeEventListener('fullscreenchange', onFullScreenChange);
     };
   }, [enabled, box, set]);
 

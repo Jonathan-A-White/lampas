@@ -115,7 +115,9 @@ test('On sets the English as a book: lines near 1.4, a serif, justified and hyph
   }
 });
 
-test('On sets the Greek tight, justified and hyphenated for Greek', async ({ page }) => {
+test('On sets the Greek tight, justified and hyphenated for Greek where the lines are long enough', async ({ page }) => {
+  // a column narrower than 30rem is set ragged right (mw-5r3p30.585, below); a wide window keeps the even edges
+  await page.setViewportSize({ width: 900, height: 700 });
   await openReader(page, 'on', { hash: '#/?b=rom&c=8&view=greek' });
   const g = await look(verse(page, 1));
   expect(g.lang).toBe('el');
@@ -227,4 +229,94 @@ test('Mark 12 with Immersive reader On, in the dark theme', async ({ page }) => 
   }));
   expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
   await shot(page, 'immersive-book');
+});
+
+/** The widest gap between neighbouring words that stand on the same line of verse `n`, from a Range around each word (the verse number and play button are not words). */
+const widestGap = (page: Page, n: number) =>
+  page.evaluate((verseNumber) => {
+    const root = document.querySelector(`[data-reader] [data-verse="${verseNumber}"]`)!;
+    const words: DOMRect[][] = [];
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if ((node.parentElement as HTMLElement).closest('[data-verse-number], [data-verse-play]')) continue;
+      const text = node.textContent ?? '';
+      for (const match of text.matchAll(/\S+/g)) {
+        const range = document.createRange();
+        range.setStart(node, match.index!);
+        range.setEnd(node, match.index! + match[0].length);
+        words.push(Array.from(range.getClientRects()).filter((r) => r.width > 0));
+      }
+    }
+    let widest = 0;
+    let pairs = 0;
+    for (let i = 1; i < words.length; i++) {
+      const before = words[i - 1].at(-1);
+      const after = words[i][0];
+      if (!before || !after) continue;
+      // the same line: the two boxes overlap in height
+      if (Math.min(before.bottom, after.bottom) - Math.max(before.top, after.top) < Math.min(before.height, after.height) / 2) continue;
+      pairs += 1;
+      widest = Math.max(widest, after.left - before.right);
+    }
+    return { widest, pairs };
+  }, n);
+
+// Justified lines hold too few words to justify well at Large and Largest type, and Greek has no hyphenation in Chrome (mw-5r3p30.585): there the book look
+// keeps even edges only where a line is wide enough, and sets the text ragged right, as Off does, where it is not. Gaps are measured against the widest gap
+// of the same verse with Immersive reader Off.
+const WIDE = 2.5;
+const SCENARIOS: Array<{ name: string; settings: Record<string, string>; hash: string }> = [
+  { name: 'English at Text size Largest', settings: { textSize: '160' }, hash: '#/?b=mrk&c=12' },
+  { name: 'English at Text size Large', settings: { textSize: '130' }, hash: '#/?b=mrk&c=12' },
+  { name: 'Greek at Text size Normal', settings: {}, hash: '#/?b=mrk&c=12&view=greek' },
+];
+for (const scenario of SCENARIOS) {
+  test(`${scenario.name}: no gap between words is wider than ${WIDE} times the widest with Immersive reader Off`, async ({ page }) => {
+    const options = { hash: scenario.hash, heading: 'Mark 12', settings: { theme: 'dark', ...scenario.settings } };
+    await openReader(page, 'off', options);
+    await verse(page, 28).scrollIntoViewIfNeeded();
+    const off = await widestGap(page, 28);
+    expect(off.pairs).toBeGreaterThan(5);
+
+    await keep(page, { immersiveReader: 'on' });
+    await page.reload();
+    await expect(page.locator('[data-reader]')).toHaveAttribute('data-immersive', 'on');
+    await verse(page, 28).scrollIntoViewIfNeeded();
+    const on = await widestGap(page, 28);
+    expect(on.pairs).toBeGreaterThan(5);
+    expect(on.widest, `widest gap On ${on.widest}px, Off ${off.widest}px`).toBeLessThanOrEqual(WIDE * off.widest);
+    await shot(page, `immersive-gaps-${scenario.name.replace(/\W+/g, '-').toLowerCase()}`);
+  });
+}
+
+test('English at Text size Normal is still justified and hyphenated', async ({ page }) => {
+  await openReader(page, 'on', { hash: '#/?b=mrk&c=12', heading: 'Mark 12', settings: { theme: 'dark' } });
+  await verse(page, 28).scrollIntoViewIfNeeded();
+  const l = await look(verse(page, 28));
+  expect(l.textAlign).toBe('justify');
+  expect(l.hyphens).toBe('auto');
+});
+
+// The play button at each verse end is dimmed like the verse number (mw-5r3p30.590): in a book it is nothing like the brightest thing on a black page.
+test('On dims the play button to the verse number and keeps its tap box; Off leaves it bright', async ({ page }) => {
+  const opacities = (n: number) =>
+    verse(page, n).evaluate((el) => {
+      const number = el.querySelector('[data-verse-number]')!;
+      const play = el.querySelector('[data-verse-play]')!;
+      const box = play.getBoundingClientRect();
+      return { number: parseFloat(getComputedStyle(number).opacity), play: parseFloat(getComputedStyle(play).opacity), width: box.width, height: box.height };
+    });
+  await openReader(page, 'on', { hash: '#/?b=mrk&c=12', heading: 'Mark 12', settings: { theme: 'dark' } });
+  await verse(page, 28).scrollIntoViewIfNeeded();
+  const on = await opacities(28);
+  expect(on.play).toBeLessThanOrEqual(on.number);
+  expect(on.play).toBeLessThan(1);
+  expect(on.width).toBeGreaterThanOrEqual(43.5);
+  expect(on.height).toBeGreaterThanOrEqual(43.5);
+
+  await keep(page, { immersiveReader: 'off' });
+  await page.reload();
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-immersive', 'off');
+  await verse(page, 28).scrollIntoViewIfNeeded();
+  expect((await opacities(28)).play).toBe(1);
 });
