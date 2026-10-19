@@ -154,5 +154,7 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   **[Tailwind CSS](https://tailwindcss.com)** ([MIT](https://github.com/tailwindlabs/tailwindcss/blob/main/LICENSE)) and
   **[TypeScript](https://www.typescriptlang.org/)** ([Apache-2.0](https://github.com/microsoft/TypeScript/blob/main/LICENSE.txt)) build the
   app you are holding, and **[Vitest](https://vitest.dev)** ([MIT](https://github.com/vitest-dev/vitest/blob/main/LICENSE)) and
-  **[Playwright](https://playwright.dev)** ([Apache-2.0](https://github.com/microsoft/playwright/blob/main/LICENSE)) test it.
+  **[Playwright](https://playwright.dev)** ([Apache-2.0](https://github.com/microsoft/playwright/blob/main/LICENSE)) test it;
+  **[axe-core](https://github.com/dequelabs/axe-core)** (`@axe-core/playwright`, [MPL-2.0](https://github.com/dequelabs/axe-core/blob/develop/LICENSE)) checks every main screen for
+  accessibility (names, roles, contrast).
   Changes: none.

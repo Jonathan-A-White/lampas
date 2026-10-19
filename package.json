@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:bdd": "vitest run features/steps",
+    "test:e2e": "playwright test",
     "typecheck": "tsc -b --noEmit",
     "lint": "eslint .",
     "shots": "playwright test --project=shots",
@@ -48,6 +49,7 @@
   },
   "devDependencies": {
     "@amiceli/vitest-cucumber": "7.0.0",
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^9.39.1",
     "@playwright/test": "1.63.0",
     "@tailwindcss/vite": "^4.2.1",

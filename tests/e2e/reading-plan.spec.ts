@@ -186,7 +186,7 @@ test('a reader with no Greek activity sees the Plan chip alone', async ({ page }
   await expect(page.getByTestId('goal-strip')).toHaveCount(0);
   // the only other chip a new install can have is the 'New 3' of the chapter's unmet words, which the Reader always showed (src/NewWordsStrip.tsx); the plan adds none
   const names = await page.getByTestId('reader-chips').getByRole('button').evaluateAll((els) => els.map((el) => el.getAttribute('aria-label')));
-  expect(names.filter((name) => !name?.startsWith('New words') && !name?.startsWith('Next: Leviticus 4'))).toEqual([]);
+  expect(names.filter((name) => !name?.match(/^New \d+ words$/) && !name?.startsWith('Next: Leviticus 4'))).toEqual([]);
 });
 
 test('a reader with Greek activity sees the Greek chips and the Plan chip', async ({ page }) => {

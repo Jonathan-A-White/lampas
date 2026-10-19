@@ -38,7 +38,7 @@ npm run shots        # Playwright at 390x844 against `vite preview` of dist/ (ru
 npm run icons        # re-render public/icon-192.png and icon-512.png from public/icon.svg
 npm run seed:build   # rebuild src/data/seed-words.ts from docs/example-words.md (plain node, 22.18+)
 npm run check:licence -- <pubkey>  # live testnet licence check, opt-in, not in the gate
-npx playwright test  # all e2e (use --workers=2; `npm run build` first): projects 'chromium' and 'shots' (docs/commands.md)
+npx playwright test  # (npm run test:e2e) all e2e (use --workers=2; `npm run build` first): projects 'chromium' and 'shots' (docs/commands.md)
 npm run e2e:live     # the live tests against the DEPLOYED app; not in the gate (docs/commands.md)
 npm run grind:build  # after adding a setting to the registry; a second run changes nothing (docs/commands.md)
 npm run ladder:docs  # writes the docs/grammar.md ladder table and the docs/card-audit.md rows from src/data/grammar/ladder.ts (docs/commands.md)
@@ -121,6 +121,7 @@ docs/layout/data.md # Layout: Dexie and its versions, the repositories, books, c
 docs/layout/licence.md # Layout: the licence gate, the one gated mill client, the device key
 docs/layout/share.md # Layout: Share to Lampas, Your requests, Ask for another approach, Ask for more and feedback
 docs/overview.md # the one-screen overview: read first
+docs/accessibility.md        # the axe check over the eight main screens, what a screen must meet, the rules left out and why
 docs/commands.md             # the long notes of the Quick reference: Playwright projects, e2e:live, grind:build, the data tools
 docs/grinds.md               # grinds' examples and the bible-talk / verse-ask instruction parts: how to change one
 docs/pwa-best-practices.md   # copied verbatim from the vault; the law for every screen
