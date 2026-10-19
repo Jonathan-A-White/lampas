@@ -184,8 +184,8 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('he closes the Grammar sheet and the word sheet', async () => {
       await user.click(within(grammarSheet()).getByRole('button', { name: 'Done' }));
+      // Done on the Grammar sheet closes the word sheet under it too (mw-5r3p30.514)
       await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Grammar' })).toBeNull());
-      await user.click(within(wordSheet()).getByRole('button', { name: 'Done' }));
       await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Word' })).toBeNull());
     });
     And('he then opens the word sheet of {string} in verse {int}', (_, text: string, verse: number) => tapsWord(text, verse));

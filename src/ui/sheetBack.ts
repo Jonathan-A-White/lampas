@@ -7,6 +7,9 @@
 // not swallowed. Sheets that close in one commit are taken off with one history.go; a sheet that opens in the commit another
 // closes in (Help with this word: the word sheet closes, the Talk sheet opens) keeps the entry instead of popping and pushing.
 //
+// Back steps back one sheet, but Done, a swipe down, a tap outside and Escape on the Grammar or idea sheet over a word card close the whole
+// stack, the card too (mw-5r3p30.514): the word sheet gives those two sheets its own onClose as onDismiss, and its one commit takes every entry off.
+//
 // A move inside a sheet (a Related term on the Grammar sheet, an example word that swaps the word sheet's content) is one Back
 // step too (mw-5r3p30.239): pushSheetStep pushes one more entry, deeper than every sheet's, and keeps the way back to the content
 // the sheet showed. Back to the entry before runs that undo. A move that closes the sheets above its owner (an example word tapped

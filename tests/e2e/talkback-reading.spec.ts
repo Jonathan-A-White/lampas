@@ -129,19 +129,21 @@ test('a sheet takes focus to its heading when it opens and gives it back to what
   await genitive.click();
   const grammar = page.getByRole('dialog', { name: 'Grammar' });
   await expect(grammar.getByRole('heading', { name: 'genitive' })).toBeFocused();
-  await grammar.getByRole('button', { name: 'Done' }).click();
+  // Back closes only the Grammar sheet, and focus goes back to the term he tapped
+  await page.goBack();
+  await expect(grammar).toHaveCount(0);
   await expect(genitive).toBeFocused();
   // the idea sheet, over the Grammar sheet
   await genitive.click();
   await grammar.getByRole('button', { name: 'Learn this idea' }).click();
   const idea = page.getByRole('dialog', { name: 'Idea' });
   await expect(idea.getByRole('heading', { name: 'The genitive case' })).toBeFocused();
-  await idea.getByRole('button', { name: 'Done' }).click();
+  await page.goBack();
   await expect(idea).toHaveCount(0);
   await expect(grammar.getByRole('button', { name: 'Learn this idea' })).toBeFocused();
+  // Done on the Grammar sheet closes it and the word sheet under it (mw-5r3p30.514), and focus goes back to the word he tapped
   await grammar.getByRole('button', { name: 'Done' }).click();
-  await expect(genitive).toBeFocused();
-  await word.getByRole('button', { name: 'Done' }).click();
+  await expect(grammar).toHaveCount(0);
   await expect(word).toHaveCount(0);
   await expect(opener).toBeFocused();
   // the Talk sheet

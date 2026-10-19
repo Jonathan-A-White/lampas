@@ -90,6 +90,41 @@ test('an example word tapped on the idea sheet is one Back step: Back brings the
   await expect(word).toBeHidden();
 });
 
+test('Done on the Grammar sheet or the idea sheet closes the whole stack, the word card too, and leaves no entry (mw-5r3p30.514)', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  await openUnlocked(page);
+  await page.goto('/#/words');
+  await page.goto('/#/?b=1jn&c=2&view=greek');
+  const word = page.getByRole('dialog', { name: 'Word' });
+  const grammar = page.getByRole('dialog', { name: 'Grammar' });
+  const idea = page.getByRole('dialog', { name: 'Idea' });
+  const open = async (): Promise<void> => {
+    await page.locator('[data-verse="1"]').getByRole('button', { name: 'Τεκνία', exact: true }).click();
+    await word.getByTestId('sheet-parse').getByRole('button', { name: 'plural', exact: true }).click();
+    await expect(grammar.getByRole('heading', { name: 'plural' })).toBeVisible();
+  };
+
+  await open();
+  await grammar.getByRole('button', { name: 'Done' }).click();
+  await expect(grammar).toBeHidden();
+  await expect(word).toBeHidden();
+  await expect(page.getByRole('heading', { name: '1 John 2' })).toBeVisible();
+  await shot(page, 'sheet-done-all');
+  await page.goBack();
+  await expect(page).toHaveURL(/#\/words$/);
+
+  await page.goForward();
+  await open();
+  await grammar.getByRole('button', { name: 'Learn this idea' }).click();
+  await expect(idea).toBeVisible();
+  await idea.getByRole('button', { name: 'Done' }).click();
+  await expect(idea).toBeHidden();
+  await expect(grammar).toBeHidden();
+  await expect(word).toBeHidden();
+  await page.goBack();
+  await expect(page).toHaveURL(/#\/words$/);
+});
+
 test('after a reload with the word card, plural and singular open, the first Back leaves 1 John 2 at once, for the screen before it (mw-5r3p30.505)', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
   await openUnlocked(page);
