@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.336",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.623",
+    "kind": "new",
+    "text": "On the reading plan you can now say where you are, by tapping the plan's next chapter on Today and choosing the chapter you are reading or any place you pick or type, with Undo for a few seconds."
+  },
+  {
+    "version": "0.1.336",
+    "date": "2026-10-19",
+    "story": "mw-1fwagb.8",
+    "kind": "new",
+    "text": "Settings > Daily has a \"Request a devotional\" box where you can type the title of a devotional you own and send it to the makers."
+  },
+  {
+    "version": "0.1.336",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.598",
+    "kind": "fixed",
+    "text": "The immersive reader's place line is easier to read and clears the phone's bottom bar, the text no longer jumps when the bars come back, the how-it-works card gets out of the way while you read, large type no longer opens wide gaps in the lines, the verse play buttons are dim, and full screen returns after the phone leaves it."
+  },
+  {
     "version": "0.1.335",
     "date": "2026-10-19",
     "story": "mw-cwf538.8",

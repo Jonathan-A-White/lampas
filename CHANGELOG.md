@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.336
+_2026-10-19_
+- New: On the reading plan you can now say where you are, by tapping the plan's next chapter on Today and choosing the chapter you are reading or any place you pick or type, with Undo for a few seconds.
+- New: Settings > Daily has a "Request a devotional" box where you can type the title of a devotional you own and send it to the makers.
+- Fixed: The immersive reader's place line is easier to read and clears the phone's bottom bar, the text no longer jumps when the bars come back, the how-it-works card gets out of the way while you read, large type no longer opens wide gaps in the lines, the verse play buttons are dim, and full screen returns after the phone leaves it.
+
 ## 0.1.335
 _2026-10-19_
 - New: The whole path now has arrow buttons that move the graph, and tabbing to an idea brings it into view.
