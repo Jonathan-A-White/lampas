@@ -1,4 +1,4 @@
-// features/steps/reading-plan.steps.tsx — runs features/reading-plan.feature: the listening plan in the Bible view (src/plan/PlanChip.tsx in the chips row, src/plan/StartPlan.tsx,
+// features/steps/reading-plan.steps.tsx — runs features/reading-plan.feature: the listening plan in the Bible view (the reading plan piece of Today, src/today/Today.tsx, opened by the Today chip in the chips row; src/plan/StartPlan.tsx,
 // the marks in the chapter picker). Layout (the row at 360 px, the picker's grids at 390 px) is proven by tests/e2e/reading-plan.spec.ts.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
@@ -61,7 +61,17 @@ async function openWith({ start, off, due }: { start?: Start; off?: boolean; due
 }
 
 const row = () => screen.getByTestId('reader-chips');
-const planChip = (): Promise<HTMLElement> => screen.findByTestId('plan-chip');
+const todayChip = (): Promise<HTMLElement> => screen.findByTestId('today-chip');
+const planPiece = (): Promise<HTMLElement> => screen.findByRole('region', { name: 'Reading plan', exact: true });
+
+async function openToday(): Promise<void> {
+  await user.click(await todayChip());
+  await screen.findByRole('heading', { name: 'Today', level: 1 });
+}
+
+async function planPieceSays(...texts: string[]): Promise<void> {
+  for (const text of texts) await waitFor(async () => expect(await planPiece()).toHaveTextContent(text));
+}
 const chipButtons = (): HTMLElement[] => [...row().querySelectorAll<HTMLElement>('button')];
 
 async function openPicker(): Promise<HTMLElement> {
@@ -75,33 +85,26 @@ describeFeature(feature, ({ Scenario }) => {
   const lev4 = () => openWith({ start: START['Leviticus 4'] });
   const luke15 = () => openWith({ start: START['Luke 15'] });
 
-  Scenario('The chip names the next chapter and how far she is', ({ Given, Then, And }) => {
+  Scenario('Today names the next chapter and how far she is', ({ Given, When, Then }) => {
     Given('Lampas is opened with a reading plan started at Leviticus 4', lev4);
-    Then('the Plan chip says {string} and {string}', async (_, next: string, count: string) => {
-      const chip = await planChip();
-      await waitFor(() => expect(chip.textContent).toContain(next));
-      expect(chip.textContent).toContain(count);
-    });
-    And('the Plan chip is named {string}', async (_, name: string) => {
-      expect(await planChip()).toHaveAccessibleName(name);
-    });
+    When('he opens Today from the Reader', openToday);
+    Then('the Reading plan piece says {string} and {string}', async (_, next: string, count: string) => planPieceSays(next, count));
   });
 
-  Scenario("Tapping the chip opens the next chapter's send-off sheet", ({ Given, When, Then }) => {
+  Scenario("Listen in Audible opens the next chapter's send-off sheet", ({ Given, When, And, Then }) => {
     Given('Lampas is opened with a reading plan started at Leviticus 4', lev4);
-    When('he taps the Plan chip', async () => user.click(await planChip()));
+    When('he opens Today from the Reader', openToday);
+    And('he taps Listen in Audible on Today', async () => user.click(await within(await planPiece()).findByRole('link', { name: /^Listen in Audible/ })));
     Then('the send-off sheet {string} is shown', async (_, title: string) => {
       expect(await screen.findByRole('dialog', { name: title })).toBeTruthy();
     });
   });
 
-  Scenario('With the plan off the chip invites her to start one', ({ Given, Then, When }) => {
+  Scenario('With the plan off Today invites her to start one', ({ Given, Then, When }) => {
     Given('Lampas is opened with the Reading plan off', () => openWith({ off: true }));
-    Then('the Plan chip says {string}', async (_, text: string) => {
-      const chip = await planChip();
-      await waitFor(() => expect(chip.textContent?.trim()).toBe(text));
-    });
-    When('he taps the Plan chip', async () => user.click(await planChip()));
+    When('he opens Today from the Reader', openToday);
+    Then('the Reading plan piece says {string}', async (_, text: string) => planPieceSays(text));
+    When('he taps Start a plan on Today', async () => user.click(await within(await planPiece()).findByRole('button', { name: 'Start a plan' })));
     Then('the sheet {string} is shown with the plan {string}', async (_, title: string, plan: string) => {
       const sheet = await screen.findByRole('dialog', { name: title });
       expect(within(sheet).getByRole('button', { name: plan })).toBeTruthy();
@@ -110,7 +113,8 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Starting the plan at a chapter marks everything before it done', ({ Given, When, And, Then }) => {
     Given('Lampas is opened with the Reading plan off', () => openWith({ off: true }));
-    When('he taps the Plan chip', async () => user.click(await planChip()));
+    When('he opens Today from the Reader', openToday);
+    And('he taps Start a plan on Today', async () => user.click(await within(await planPiece()).findByRole('button', { name: 'Start a plan' })));
     And('he picks the plan {string}', async (_, plan: string) => {
       const sheet = await screen.findByRole('dialog', { name: 'Start a listening plan' });
       await user.click(within(sheet).getByRole('button', { name: plan }));
@@ -123,13 +127,12 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(await within(picker).findByRole('button', { name: /^Leviticus/ }));
       await user.click(await within(picker).findByRole('button', { name: 'Chapter 1' }));
     });
-    Then('the Plan chip says {string} and {string}', async (_, next: string, count: string) => {
-      await waitFor(async () => expect((await planChip()).textContent).toContain(next));
-      expect((await planChip()).textContent).toContain(count);
-    });
+    Then('the Reading plan piece says {string} and {string}', async (_, next: string, count: string) => planPieceSays(next, count));
     And('the Reading plan setting is On', async () => {
       await waitFor(async () => expect((await db.settings.get('readingPlan'))?.value).toBe('on'));
       expect(screen.queryByRole('dialog', { name: 'Where are you starting?' })).toBeNull();
+      // the sheets closed by going Back, which jsdom lands a turn later: Today is under them, and the next scenario must not see the traversal arrive after it set its address
+      await waitFor(() => expect(window.location.hash).toBe('#/today'));
     });
   });
 
@@ -149,7 +152,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('The chapter picker marks the chapters done and the next', ({ Given, When, Then }) => {
     Given('Lampas is opened with a reading plan started at Luke 15', luke15);
     When('he opens the chapter picker at Matthew', async () => {
-      await planChip();
+      await todayChip();
       const picker = await openPicker();
       await user.click(await within(picker).findByRole('button', { name: /^Matthew/ }));
     });
@@ -183,28 +186,29 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('A reader with no Greek activity sees the Plan chip alone', ({ Given, Then }) => {
+  Scenario('A reader with no Greek activity sees the Today chip alone', ({ Given, Then }) => {
     Given('Lampas is opened with a reading plan started at Leviticus 4 and no Greek activity', () => openWith({ start: START['Leviticus 4'] }));
-    Then('the row has no Due chip, no Goal chip and no Tip chip, and the Plan chip', async () => {
-      await planChip();
+    Then('the row has no Goal chip and no Tip chip, and the Today chip', async () => {
+      await todayChip();
       // the chapter's New words chip may come as the chapter's words are read; it is the Reader's own, the plan adds nothing else
-      await waitFor(() => expect(chipButtons().map((b) => b.dataset.testid).filter((id) => id !== 'new-words')).toEqual(['plan-chip']));
+      await waitFor(() => expect(chipButtons().map((b) => b.dataset.testid).filter((id) => id !== 'new-words')).toEqual(['today-chip']));
     });
   });
 
-  Scenario('A reader with Greek activity sees both', ({ Given, Then }) => {
+  Scenario('A reader with words due sees no Due or Plan chip, only Today', ({ Given, Then }) => {
     Given('Lampas is opened with a reading plan started at Leviticus 4 and 3 words due', () => openWith({ start: START['Leviticus 4'], due: 3 }));
-    Then('the row holds the chips {string} and the Plan chip', async (_, due: string) => {
-      await planChip();
-      await waitFor(() => expect(chipButtons().map((b) => (b.textContent ?? '').trim())).toContain(due));
-      expect(chipButtons().some((b) => b.dataset.testid === 'plan-chip')).toBe(true);
+    Then('the row holds the Today chip and no Due chip and no Plan chip', async () => {
+      await todayChip();
+      await waitFor(() => expect(chipButtons().some((b) => b.dataset.testid === 'today-chip')).toBe(true));
+      // the 3 words due are Today's to count now, not a chip's
+      expect(chipButtons().some((b) => /^Due/.test(b.getAttribute('aria-label') ?? '') || b.dataset.testid === 'plan-chip')).toBe(false);
     });
   });
 
   Scenario('Every chip has an accessible name', ({ Given, Then }) => {
     Given('Lampas is opened with a reading plan started at Leviticus 4 and 3 words due', () => openWith({ start: START['Leviticus 4'], due: 3 }));
     Then('every chip in the row is named', async () => {
-      await planChip();
+      await todayChip();
       await waitFor(() => expect(chipButtons().length).toBeGreaterThan(1));
       for (const chip of chipButtons()) expect(chip.getAttribute('aria-label') ?? '').not.toBe('');
     });

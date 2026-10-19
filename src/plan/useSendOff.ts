@@ -23,7 +23,7 @@ export interface SendOffTarget {
 export interface SendOff {
   /** The onClick of a Listen in Audible link: offers the sheet for a plan chapter, else stamps the link with the time of the tap and arms the fallback. */
   tap: (e: MouseEvent<HTMLAnchorElement>, target: SendOffTarget) => void;
-  /** Offers the sheet for this chapter without a link (the Plan chip's Continue): the same sheet and the same Go; nothing happens for any chapter but the plan's next. */
+  /** Offers the sheet for this chapter without a link (the Plan chip's Continue, which Today's Listen in Audible replaced in mw-1fwagb.6): the same sheet and the same Go; nothing happens for any chapter but the plan's next. */
   offer: (target: SendOffTarget) => void;
   /** the chapter the sheet is offered for, or null while no sheet is up */
   offered: SendOffTarget | null;
@@ -38,7 +38,7 @@ export function useSendOff(): SendOff {
   const state = useLiveQuery(getReadingPlan, []);
   const [offered, setOffered] = useState<SendOffTarget | null>(null);
 
-  /** the plan's next chapter: the first not done (the one the Plan chip says is next) */
+  /** the plan's next chapter: the first not done (the one Today's reading plan piece says is next) */
   const next = useMemo(() => {
     if (!on || state === undefined) return undefined;
     const done = new Set(state.done);

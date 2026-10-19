@@ -13,10 +13,10 @@ async function openReader(page: Page, msPerWord?: number) {
   await honestSpeech(page, msPerWord === undefined ? {} : { msPerWord });
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  // The Due and New words strips draw once the words have been read from the store, and each pushes the text down
-  // 24 px. A press aimed at where a word was before they came lands on a strip instead (the full-run failure), so
+  // The Today and New words chips draw once the settings and the words have been read from the store, and the row
+  // pushes the text down. A press aimed at where a word was before it came lands on the row instead (the full-run failure), so
   // measure only once the page has stopped moving.
-  await expect(page.getByRole('button', { name: /^Due: \d+$/ })).toBeVisible();
+  await expect(page.getByTestId('today-chip')).toBeVisible();
   await expect(page.getByTestId('new-words')).toBeVisible();
 }
 

@@ -28,25 +28,11 @@ import { dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyRevi
 import { openSetting } from '../settings/link';
 import { useSetting } from '../settings/store';
 import { useReportScreen } from '../tutor/screenContext';
+import { useToday } from './useToday';
 
 const LINK = 'flex min-h-12 min-w-0 flex-1 flex-col justify-center rounded-lg px-3 py-2 text-left active:bg-line';
 const ACTION = 'flex min-h-12 items-center rounded-lg bg-surface px-3 text-base font-medium text-accent active:bg-line';
 const HEADING = 'px-1 pb-1 pt-5 text-sm font-semibold uppercase tracking-wide text-muted';
-
-/** The local date, read again when the app comes back to the front (a day may have turned over). */
-function useToday(): Date {
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const again = (): void => setNow((was) => (localDate(was) === localDate(new Date()) ? was : new Date()));
-    document.addEventListener('visibilitychange', again);
-    window.addEventListener('focus', again);
-    return () => {
-      document.removeEventListener('visibilitychange', again);
-      window.removeEventListener('focus', again);
-    };
-  }, []);
-  return now;
-}
 
 interface Ticks {
   /** whether the pieces have a box at all (Tick boxes On) */

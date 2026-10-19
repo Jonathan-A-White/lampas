@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { waitForDue } from './today-chip';
 
 // The Greek words in a question's sentence ('Which fits? ___ ἦν ἐκεῖνος τὸ φῶς', mw-86e9r1.31) are marked Greek and drawn in the Greek face at the size of the choices,
 // the English around them in the normal type.
@@ -30,7 +31,7 @@ async function put(page: Page, store: 'reviews' | 'settings', rows: object[]) {
 test('the Greek words of a Movable letters prompt are lang grc, in the Greek face, at the size of the choices', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/');
-  await expect(page.getByRole('button', { name: /^Due: \d+$/ })).toBeVisible();
+  await waitForDue(page);
   await put(page, 'settings', [{ key: 'goal', value: '1 John 1' }]);
   await put(page, 'reviews', [{ kind: 'grammar', id: 'movable-letters', step: 0, rights: 0, due: Date.now() - 60_000, lastWhen: Date.now() - 3 * 86_400_000, lapses: 0 }]);
   await page.goto('/#/review');

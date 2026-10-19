@@ -10,7 +10,7 @@ src/data/repositories/  # the only way UI reaches Dexie (words.ts: list, set sta
 src/data/books.ts    # the 27 books (code, name) in canonical order, bookOf, titleOf; tests/unit/books.test.ts holds it equal to public/data/index.json
 src/data/chapter.ts  # chapter types, loadChapter(book, n), wordLemma/wordGloss/wordParse: screens never read the raw keys
 src/data/parseCode.ts # RP parsing code -> plain words (decodeParse, shared by the data build and the app) and -> a part of speech + features (splitParse, for the drill)
-src/data/useLatestLiveQuery.ts # useLiveQuery that drops an older answer delivered after a newer one (Dexie can deliver a query asked before a write after one asked once it landed; mw-5r3p30.492): use it for a value a first-open write changes, as the Reader's Due chip
+src/data/useLatestLiveQuery.ts # useLiveQuery that drops an older answer delivered after a newer one (Dexie can deliver a query asked before a write after one asked once it landed; mw-5r3p30.492): use it for a value a first-open write changes, as Today's Review count (the Reader's Due chip before mw-1fwagb.6)
 scripts/data-build.ts # the New Testament data build (npx tsx); tests/fixtures/data/ holds small source slices
 public/data/         # generated NT JSON, committed (~30 MB); only index.json, lexicon.json, frequency.json and rom/8.json are precached
 ```

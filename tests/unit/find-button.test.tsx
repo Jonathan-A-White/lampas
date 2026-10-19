@@ -1,9 +1,9 @@
-// mw-5r3p30.86: the review feature's 'the Reader shows "Due: N"' timed out on a loaded Laptop although the strip was on
+// mw-5r3p30.86: the review feature's 'the Reader shows "Due: N"' (now the Today chip) timed out on a loaded Laptop although the strip was on
 // the screen 0.4 s after the render. The wait was in the lookup: findByRole('button', { name }) works out the accessible name of
 // every button of the Reader, which reads the computed style of ~800 elements in jsdom (about 2.5 s here at load 27, and the
 // wait repeats it on every change of the page). Counting those style reads is the same fact with no clock and no load.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import { afterAll, expect, it, vi } from 'vitest';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
@@ -23,7 +23,7 @@ afterAll(async () => {
 });
 
 
-it('finds the Due chip on the Reader without reading the style of the whole page', async () => {
+it('finds the Today chip on the Reader without reading the style of the whole page', async () => {
   stubChapterFetch();
   await db.open();
   await seedHisWords();
@@ -34,11 +34,11 @@ it('finds the Due chip on the Reader without reading the style of the whole page
   window.history.replaceState(null, '', '/');
   render(<App />);
   await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
-  await screen.findByText('Due 3');
-  expect(document.querySelectorAll('*').length).toBeGreaterThan(500); // the Reader is heavy: that is the point
+  await screen.findByText(/^Today · 0 of \d+$/);
+  await waitFor(() => expect(document.querySelectorAll('*').length).toBeGreaterThan(500)); // the Reader is heavy: that is the point
 
   const reads = vi.spyOn(window, 'getComputedStyle');
-  const chip = await findButton('Due: 3');
+  const chip = await findButton(/^Today · 0 of \d+$/);
   const used = reads.mock.calls.length;
   reads.mockRestore();
   expect(chip).toBeVisible();

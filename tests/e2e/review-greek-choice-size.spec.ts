@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { waitForDue } from './today-chip';
 
 // The Greek spellings on a multiple-choice grammar card ('Words that sound alike', mw-86e9r1.43) draw in the large Greek type (text-3xl, 30 px),
 // since the question is to tell two spellings apart by one letter or breathing.
@@ -30,7 +31,7 @@ async function put(page: Page, store: 'reviews' | 'settings', rows: object[]) {
 test('a Greek choice on a Review multiple-choice card draws at 30 px', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/');
-  await expect(page.getByRole('button', { name: /^Due: \d+$/ })).toBeVisible();
+  await waitForDue(page);
   await put(page, 'settings', [{ key: 'goal', value: '1 John 1' }]);
   await put(page, 'reviews', [{ kind: 'grammar', id: 'words-sound-alike', step: 0, rights: 0, due: Date.now() - 60_000, lastWhen: Date.now() - 3 * 86_400_000, lapses: 0 }]);
   await page.goto('/#/review');

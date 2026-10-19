@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { waitForDue } from './today-chip';
 
 // These specs measure a 390 px phone screen, so they pin it themselves: run under the 'chromium' project (a bare
 // `npx playwright test <file>`) they would otherwise get Desktop Chrome's 1280 px and fail every width check.
@@ -67,7 +68,7 @@ test('Settings > New words: New words at and Move it are one line of 48 px chips
 test('after a strong round at Solid grammar with Ask, the end card offers the move to Frontier grammar', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/');
-  await expect(page.getByRole('button', { name: /^Due: \d+$/ })).toBeVisible();
+  await waitForDue(page);
   // 19 right answers behind him, New words at Solid grammar, Move it Ask (the default); one idea is due as a flashcard
   await put(page, 'settings', [
     { key: 'pickerGrammar', value: 'solid' },

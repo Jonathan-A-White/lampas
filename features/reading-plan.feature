@@ -1,33 +1,36 @@
 Feature: The listening plan lives in the Bible view
-  A Plan chip sits in the Reader's row of chips (src/plan/PlanChip.tsx), beside Due and Goal. With the Reading plan on and a plan started it says
-  "Next: Leviticus 4" and how far she is ("93 of 1,189"); a tap is Continue and opens that chapter's send-off sheet. With the plan off, or on but not
-  started, it reads "Listen through the Bible" and opens "Start a listening plan": pick the plan, then "Where are you starting?" (the chapter picker in
+  The plan's next chapter is a piece of Today (src/today/Today.tsx, opened by the Reader's Today chip, features/reader-chips.feature). With the Reading plan on and a plan started
+  it says "Next: Leviticus 4" and how far she is ("93 of 1,189 chapters done"), with Listen in Audible, whose tap opens that chapter's send-off sheet. With the plan off, or on but not
+  started, it says no plan is started and has "Start a plan", which opens "Start a listening plan": pick the plan, then "Where are you starting?" (the chapter picker in
   choose mode), and everything before that chapter is done. Settings > Study resources has the same entry. The chapter picker marks the chapters done and
-  the next one. A reader who is not learning Greek is shown the Plan chip alone: the Greek chips are only drawn when they have something to show.
+  the next one. A reader who is not learning Greek is shown the Today chip alone: the Greek chips are only drawn when they have something to show.
 
-  Scenario: The chip names the next chapter and how far she is
+  Scenario: Today names the next chapter and how far she is
     Given Lampas is opened with a reading plan started at Leviticus 4
-    Then the Plan chip says "Next: Leviticus 4" and "93 of 1,189"
-    And the Plan chip is named "Next: Leviticus 4, 93 of 1,189 chapters done"
+    When he opens Today from the Reader
+    Then the Reading plan piece says "Next: Leviticus 4" and "93 of 1,189 chapters done"
 
-  Scenario: Tapping the chip opens the next chapter's send-off sheet
+  Scenario: Listen in Audible opens the next chapter's send-off sheet
     Given Lampas is opened with a reading plan started at Leviticus 4
-    When he taps the Plan chip
+    When he opens Today from the Reader
+    And he taps Listen in Audible on Today
     Then the send-off sheet "Off to Audible: Leviticus 4" is shown
 
-  Scenario: With the plan off the chip invites her to start one
+  Scenario: With the plan off Today invites her to start one
     Given Lampas is opened with the Reading plan off
-    Then the Plan chip says "Listen through the Bible"
-    When he taps the Plan chip
+    When he opens Today from the Reader
+    Then the Reading plan piece says "No reading plan is started."
+    When he taps Start a plan on Today
     Then the sheet "Start a listening plan" is shown with the plan "The whole Bible"
 
   Scenario: Starting the plan at a chapter marks everything before it done
     Given Lampas is opened with the Reading plan off
-    When he taps the Plan chip
+    When he opens Today from the Reader
+    And he taps Start a plan on Today
     And he picks the plan "The whole Bible"
     Then the chapter picker "Where are you starting?" is shown
     When he chooses Leviticus 1 there
-    Then the Plan chip says "Next: Leviticus 1" and "90 of 1,189"
+    Then the Reading plan piece says "Next: Leviticus 1" and "90 of 1,189 chapters done"
     And the Reading plan setting is On
 
   Scenario: Settings has the same entry
@@ -45,13 +48,13 @@ Feature: The listening plan lives in the Bible view
     When he goes back to the books and opens Leviticus
     Then every Leviticus chapter is marked done
 
-  Scenario: A reader with no Greek activity sees the Plan chip alone
+  Scenario: A reader with no Greek activity sees the Today chip alone
     Given Lampas is opened with a reading plan started at Leviticus 4 and no Greek activity
-    Then the row has no Due chip, no Goal chip and no Tip chip, and the Plan chip
+    Then the row has no Goal chip and no Tip chip, and the Today chip
 
-  Scenario: A reader with Greek activity sees both
+  Scenario: A reader with words due sees no Due or Plan chip, only Today
     Given Lampas is opened with a reading plan started at Leviticus 4 and 3 words due
-    Then the row holds the chips "Due 3" and the Plan chip
+    Then the row holds the Today chip and no Due chip and no Plan chip
 
   Scenario: Every chip has an accessible name
     Given Lampas is opened with a reading plan started at Leviticus 4 and 3 words due

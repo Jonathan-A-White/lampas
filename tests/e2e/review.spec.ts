@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { dueOnToday, reviewPiece, todayChip, waitForDue } from './today-chip';
 
 // The page never scrolls and never grows wider than the window.
 async function expectFitsPhone(page: Page) {
@@ -13,18 +14,19 @@ async function expectFitsPhone(page: Page) {
   expect(scrollTop).toBe(0);
 }
 
-test('the Reader shows the Due N chip, which opens Review; a round ends with what comes back tomorrow', async ({ page }) => {
+test('the Reader shows the Today chip, Today shows Review with N due and opens it; a round ends with what comes back tomorrow', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/');
-  // his learning words are due on the first open
-  const badge = page.getByRole('button', { name: /^Due: \d+$/ });
+  const badge = todayChip(page);
   await expect(badge).toBeVisible();
   expect((await badge.boundingBox())?.height).toBeGreaterThanOrEqual(38);
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Due: / })).toHaveCount(0);
   await expectFitsPhone(page);
-  const due = Number((await badge.innerText()).replace('Due ', ''));
 
-  await badge.click();
+  // his learning words are due on the first open
+  const due = await dueOnToday(page);
+  await reviewPiece(page).getByRole('button', { name: new RegExp(`^${due} due`) }).click();
   await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible();
   await expect(page.getByTestId('due-today')).toHaveText(`Due today: ${due} ${due === 1 ? 'word' : 'words'}`);
   const start = page.getByRole('button', { name: 'Start' });
@@ -55,12 +57,12 @@ test('the Reader shows the Due N chip, which opens Review; a round ends with wha
   await shot(page, 'review');
 });
 
-test('the Due N chip fits the Reader at 360 px and leaves the header as it was', async ({ browser }) => {
+test('the Today chip fits the Reader at 360 px and leaves the header as it was', async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 360, height: 740 } });
   const page = await context.newPage();
   await openUnlocked(page);
   await page.goto('/');
-  const badge = page.getByRole('button', { name: /^Due: \d+$/ });
+  const badge = todayChip(page);
   await expect(badge).toBeVisible();
   const box = await badge.boundingBox();
   expect(box && box.x + box.width).toBeLessThanOrEqual(360);
@@ -85,7 +87,7 @@ test('Review is reached from Settings and a reload keeps him on it', async ({ pa
 // Every due word on step 3 or higher is asked as a flashcard: seed the schedule through raw IndexedDB, as the app wrote it.
 async function makeAllDueStrong(page: Page) {
   await page.goto('/');
-  await expect(page.getByRole('button', { name: /^Due: \d+$/ })).toBeVisible();
+  await waitForDue(page);
   await page.evaluate(
     () =>
       new Promise<void>((resolve, reject) => {
