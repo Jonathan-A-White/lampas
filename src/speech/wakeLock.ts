@@ -20,7 +20,10 @@ async function acquire(): Promise<void> {
     }
     sentinel = lock;
     lock.addEventListener('release', () => {
-      if (sentinel === lock) sentinel = null;
+      if (sentinel !== lock) return;
+      sentinel = null;
+      // the browser dropped it with a holder still wanting it and the page showing (a hidden page asks again when it is visible: visibilitychange)
+      void acquire();
     });
   } catch {
     // refused (low battery, not allowed): the reading goes on with the screen free to sleep

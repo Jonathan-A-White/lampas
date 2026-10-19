@@ -41,10 +41,16 @@ const CLIENT_HEIGHT = 700;
 
 /** The Fullscreen API, which jsdom lacks, stood in for by hand: it counts the calls and keeps document.fullscreenElement as a browser does. */
 const fs = { requests: 0, exits: 0 };
+/** The browser ends full screen by its own doing (Android Back, another app): the element goes and `fullscreenchange` fires, with no call of the page's. */
+let browserLeavesFullScreen = () => {};
 function fakeFullscreen(mode: 'works' | 'refuses'): void {
   fs.requests = 0;
   fs.exits = 0;
   let element: Element | null = null;
+  browserLeavesFullScreen = () => {
+    element = null;
+    document.dispatchEvent(new Event('fullscreenchange'));
+  };
   Object.defineProperty(document, 'fullscreenElement', { configurable: true, get: () => element });
   Object.defineProperty(Element.prototype, 'requestFullscreen', {
     configurable: true,
@@ -476,6 +482,30 @@ describeFeature(feature, ({ Scenario }) => {
     And('the page has kept the one full screen it asked for', async () => {
       await sleep(400);
       expect(fs).toEqual({ requests: 1, exits: 0 });
+      expect(document.fullscreenElement).not.toBeNull();
+    });
+  });
+
+  Scenario('After the browser leaves full screen by itself, a two-finger tap asks for it again', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader On and a phone that can go full screen', () => open({ immersive: 'on', fullscreen: 'works' }));
+    When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
+    Then('the page has asked for full screen once', async () => {
+      await sleep(50);
+      expect(fs).toEqual({ requests: 1, exits: 0 });
+    });
+    When('the browser leaves full screen by itself', () => {
+      act(() => browserLeavesFullScreen());
+      expect(document.fullscreenElement).toBeNull();
+    });
+    And('he taps the text with two fingers', twoFingerTap);
+    Then('the page has asked for full screen twice', async () => {
+      await waitFor(() => expect(fs).toEqual({ requests: 2, exits: 0 }));
+      expect(document.fullscreenElement).not.toBeNull();
+    });
+    When('he taps the text with two fingers again', twoFingerTap);
+    Then('the page has still asked for full screen twice', async () => {
+      await sleep(400);
+      expect(fs).toEqual({ requests: 2, exits: 0 });
       expect(document.fullscreenElement).not.toBeNull();
     });
   });
