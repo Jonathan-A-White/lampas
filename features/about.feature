@@ -1,9 +1,10 @@
 Feature: About and credits
-  Lampas shows the credit its data requires. The About screen, opened from Home, is built from
+  Lampas shows the credit its data requires. The About screen, opened from Settings, is built from
   ATTRIBUTION.md, so the credit on the screen and the credit in the repository cannot differ.
 
   Scenario: About credits the lexicon and the Bible text
     Given Lampas is opened on Home
+    And he opens Settings
     When he taps "About"
     Then the screen is headed "About"
     And it credits STEPBible and Tyndale House for the lexicon
@@ -13,6 +14,7 @@ Feature: About and credits
 
   Scenario: About opens with Newton and credits by name
     Given Lampas is opened on Home
+    And he opens Settings
     When he taps "About"
     Then the screen is headed "About"
     And it opens with "If I have seen further it is by standing on the shoulders of Giants."
@@ -21,6 +23,7 @@ Feature: About and credits
 
   Scenario Outline: About credits what the app runs on, with a licence link
     Given Lampas is opened on Home
+    And he opens Settings
     When he taps "About"
     Then it credits <name> with a link and its licence link
 
@@ -34,6 +37,7 @@ Feature: About and credits
 
   Scenario: Back returns Home
     Given Lampas is opened on Home
+    And he opens Settings
     And he taps "About"
     When he taps "‹ Reader"
     Then Home is shown again

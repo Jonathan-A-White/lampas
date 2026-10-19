@@ -17,6 +17,7 @@ Feature: A Preface about the text
 
   Scenario: About links to the Preface and Back returns
     Given Lampas is opened with nothing saved
+    And he opens Settings
     And he taps "About"
     When he taps "Preface"
     Then the screen is headed "Preface"

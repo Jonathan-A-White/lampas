@@ -38,7 +38,7 @@ test.describe('with a service worker', () => {
     await serveChangelog(page);
     await openUnlocked(page);
     await page.goto('/');
-    await expect(page.getByTestId('build-version')).toBeAttached();
+    await expect(page.locator('[data-verse="1"]')).toBeVisible();
     await page.evaluate(async () => {
       await navigator.serviceWorker.ready;
     });

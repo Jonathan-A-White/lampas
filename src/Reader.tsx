@@ -29,14 +29,13 @@ import { passageAt, passageVerse, passagesOf, rangeOf, unitId, type Passage } fr
 import { approachOf, DEFAULT_APPROACH, lessonForRange, passageLabel } from './approaches';
 import { ChapterNav } from './ChapterNav';
 import { ChapterPicker } from './ChapterPicker';
-import { BuildVersion } from './BuildVersion';
 import { latest, publish, useLatest } from './events/bus';
 import { blocksOf } from './layout/layouts';
 import { LinkOpener } from './nav/LinkOpener';
 import { pendingLink, takeLink } from './nav/linkRequest';
 import { lemmaSheet, linkOf } from './nav/links';
 import { openedByTutor, pendingRequest, takeRequest } from './nav/readerRequest';
-import { closeVerse, navigate, openPassage, openVerse, readerOf, routeOf, useAddress } from './nav/route';
+import { closeVerse, openPassage, openVerse, readerOf, routeOf, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
 import { useReadChecks } from './useReadChecks';
@@ -60,7 +59,6 @@ import { useReaderTutor } from './reader/useReaderTutor';
 import { READER_SUGGESTIONS } from './tutor/screen';
 import { useTalk } from './useTalk';
 import { useVoice } from './useVoice';
-import { HeaderButton } from './ScreenHeader';
 import { speakTutor, startAnswerWhenSeen } from './speech/tutorVoice';
 import { continueReading, getReading, isReadingOf, pauseReading, stopReading, updatePlan, useReading } from './speech/readAloud';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
@@ -434,10 +432,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
               );
             })}
             <ChapterNav book={BOOK} chapter={CHAPTER} />
-            <BuildVersion className="px-3 pt-6" />
-            <div className="flex justify-center pb-4">
-              <HeaderButton onClick={() => navigate('about')}>About</HeaderButton>
-            </div>
           </>
         ) : (
           <p role="status" className="px-4 pt-6 text-center text-muted">

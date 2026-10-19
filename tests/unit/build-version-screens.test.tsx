@@ -1,4 +1,4 @@
-// Home (the Reader) and the Unlock screen both show the build's version as 'v<version> · <date> · <commit>'.
+// The Unlock screen and About show the build's version as 'v<version> · <date> · <commit>'.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { Unlock } from '../../src/gate/Unlock';
@@ -12,7 +12,7 @@ describe('the version on screen', () => {
     expect(screen.getByTestId('build-version')).toHaveTextContent(`v${__APP_VERSION__}`);
   });
 
-  it('BuildVersion, which Home shows under the chapter, is v and the build’s version', () => {
+  it('BuildVersion, which Unlock and About show, is v and the build’s version', () => {
     render(<BuildVersion />);
     expect(screen.getByTestId('build-version').textContent).toBe(`v${__APP_VERSION__}`);
   });

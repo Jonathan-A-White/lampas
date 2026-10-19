@@ -1,4 +1,4 @@
-// features/steps/about.steps.tsx — runs features/about.feature: the About screen opened from Home.
+// features/steps/about.steps.tsx — runs features/about.feature: the About screen opened from Settings.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -27,6 +27,11 @@ async function openHome(): Promise<void> {
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
 
+async function openSettings(): Promise<void> {
+  await user.click(screen.getByRole('button', { name: 'Settings', exact: true }));
+  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+}
+
 const credit = (name: string): HTMLElement => screen.getByText(new RegExp(name)).closest('li') as HTMLElement;
 
 const feature = await loadFeature('features/about.feature');
@@ -34,6 +39,7 @@ const feature = await loadFeature('features/about.feature');
 describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   Scenario('About credits the lexicon and the Bible text', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Home', openHome);
+    And('he opens Settings', openSettings);
     When('he taps {string}', async (_, label: string) => {
       await user.click(screen.getByRole('button', { name: label, exact: true }));
     });
@@ -59,6 +65,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
 
   Scenario('About opens with Newton and credits by name', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Home', openHome);
+    And('he opens Settings', openSettings);
     When('he taps {string}', async (_, label: string) => {
       await user.click(screen.getByRole('button', { name: label, exact: true }));
     });
@@ -81,8 +88,9 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
   });
 
-  ScenarioOutline('About credits what the app runs on, with a licence link', ({ Given, When, Then }, row) => {
+  ScenarioOutline('About credits what the app runs on, with a licence link', ({ Given, And, When, Then }, row) => {
     Given('Lampas is opened on Home', openHome);
+    And('he opens Settings', openSettings);
     When('he taps {string}', async (_, label: string) => {
       await user.click(screen.getByRole('button', { name: label, exact: true }));
       await screen.findByRole('heading', { name: 'About', level: 1 });
@@ -100,6 +108,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
 
   Scenario('Back returns Home', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Home', openHome);
+    And('he opens Settings', openSettings);
     And('he taps {string}', async (_, label: string) => {
       await user.click(screen.getByRole('button', { name: label, exact: true }));
       await screen.findByRole('heading', { name: 'About', level: 1 });

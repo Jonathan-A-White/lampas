@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { afterLastVerse } from './reader-foot';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -36,9 +37,23 @@ test('Romans 8 opens in English at phone width, words with a 44 px tap target', 
   const switchBox = await page.getByRole('button', { name: 'Greek', exact: true }).boundingBox();
   expect(switchBox?.height).toBeGreaterThanOrEqual(43.5);
 
-  await expect(page.getByTestId('build-version')).toHaveText(/^v\d+\.\d+\.\d+ · \d{4}-\d{2}-\d{2} \d{2}:\d{2}Z · [0-9a-f]{7,}$/);
   await expectFitsPhone(page);
   await shot(page, 'reader-english');
+});
+
+test('the foot of a chapter in Scroll is the chapter links and nothing else: no About, no build version', async ({ page }) => {
+  await openReader(page);
+  await page.locator('[data-reader]').evaluate((el) => {
+    el.scrollTop = el.scrollHeight;
+  });
+  await expect(page.getByRole('navigation', { name: 'Chapters' })).toBeInViewport();
+  expect(await afterLastVerse(page)).toEqual(['nav:Chapters']);
+  await expect(page.locator('[data-reader]').getByRole('button', { name: 'About', exact: true })).toHaveCount(0);
+  await expect(page.locator('[data-reader]').getByTestId('build-version')).toHaveCount(0);
+  await expect(page.getByTestId('build-version')).toHaveCount(0);
+  await page.goto('/#/settings');
+  await page.getByRole('button', { name: 'About', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'About', level: 1 })).toBeVisible();
 });
 
 test('the Greek view sets verse 1 in Gentium Plus with polytonic accents', async ({ page }) => {
