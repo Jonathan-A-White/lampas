@@ -187,6 +187,22 @@ https://community.logos.com/kb/articles/846, which answers 403 to a script): Ge,
 `esv` (the Resource IDs of the short list were read from the library listing, vault `plans/lampas-logos-library-2026-10-08.csv`; the LSB id is the Governor's own), and that every
 abbreviation above is read by the Logos app's link handler as it is by its list. If a Bible does not open, its entry in `COMMON_BIBLES`, or the typed ID, is the thing to change.
 
+## Devotionals: a Logos devotional at a date (mw-1fwagb.2, PROVISIONAL, Governor to confirm)
+
+The Governor: "The Daily Devotional would open up to that logos resource for the current day". `devotionalLink(resourceId, date)` in `src/resources/logosDevotional.ts`
+builds the link in the same two forms as the lexicon links, the Resource ID raw in the scheme and URI-encoded in the https path (no UI uses it yet):
+
+| | form | example (`iv-tdg`, Oct 19) |
+| --- | --- | --- |
+| scheme, first | `logosres:<id>;ref=DayOfYear.<Mon>_<D>` | `logosres:iv-tdg;ref=DayOfYear.Oct_19` |
+| https, fallback | `https://ref.ly/logosres/<id>?ref=DayOfYear.<Mon>+<D>` | `https://ref.ly/logosres/iv-tdg?ref=DayOfYear.Oct+19` |
+
+`<Mon>` is the three-letter English month (Jan ... Dec) and `<D>` the day with no leading zero, both of the local date: Logos has no "today" keyword for a devotional, so Lampas
+computes the date. The space of Logos' `DayOfYear.Nov 3` is `_` in the scheme and `+` in the https address, as for the page form above. Which devotional he owns is still being asked, so the id is a parameter.
+
+**Not verified on a device.** Unverified: that the Logos app opens a calendar devotional at a day from `logosres:<id>;ref=DayOfYear.Oct_19` (the data type `DayOfYear` and the
+`https://ref.ly/logosres/iv-tdg?ref=DayOfYear.Nov+3` form are the Mayor's, from mw-6ww.126), and that the https fallback is turned into the scheme form as the page link's is. This stays UNVERIFIED until the Governor taps one on his phone.
+
 ## Bible Word Study's lemma
 
 Logos names a Greek lemma `lbs/el/<lemma>` (Hebrew `lbs/he/…`, English `lbs/en/…`), and in a link its slashes must be escaped as `%2F`
