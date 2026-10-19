@@ -6,6 +6,8 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction } from './verse-view';
 import { holdFor } from '../support/hold';
+import { pageTime, tapTwice } from '../support/gesture';
+import { SETTLE_MS } from '../../src/ui/settle';
 
 const VIEWPORT = { width: 390, height: 844 };
 
@@ -73,4 +75,65 @@ test('the Goal screen has a Reading ladder entry for each language that opens it
   await expect(view.getByRole('heading', { level: 2 })).toHaveText('John 11:35');
   await expect(view.getByRole('button', { name: 'Read it aloud', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('region', { name: 'Reading check' })).toContainText('Verse 1 of');
+});
+
+// A double tap on the ladder's bar (mw-neuq78.16): the bar stands where it stood, so the second tap of a quick pair lands on the NEXT verse's own button and
+// skipped a verse he never saw (this host delivers the second tap 400 ms of real time late, so the first has moved the verse). The bar waits for the new verse to settle (src/ui/settle.ts). 60 ms apart on the page's clock, as a thumb's, by touch.
+test.describe('a double tap on the ladder bar moves one verse only', () => {
+  test.use({ viewport: VIEWPORT, hasTouch: true });
+
+  async function openLadder(page: Page, answer?: object) {
+    const fake = makeFakePostern();
+    if (answer) fake.autoReply = { status: 'answered', answer };
+    await routePostern(page, fake);
+    await honestMic(page);
+    await openUnlocked(page);
+    await page.addInitScript((ms) => window.localStorage.setItem('lampas.settleMs', ms), String(SETTLE_MS));
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Greek', exact: true }).click();
+    const view = await chooseAction(page, 28, 'Read it aloud');
+    const panel = page.getByRole('region', { name: 'Reading check' });
+    await panel.getByRole('button', { name: 'Reading ladder', exact: true }).tap();
+    await expect(panel).toContainText('Verse 1 of');
+    // the verse that opens takes no tap in its first moment: he reads it first
+    await pageTime(page, SETTLE_MS + 100);
+    return { fake, view, panel };
+  }
+
+  test('two quick taps on Skip for now skip one verse', async ({ page }) => {
+    const { view, panel } = await openLadder(page);
+    await tapTwice(page, panel.getByRole('button', { name: 'Skip for now', exact: true }), 60, { touch: true, lagMs: 400 });
+    await expect(panel).toContainText('Verse 2 of');
+    await expect(view.getByRole('heading', { level: 2 })).toHaveText('1 Thessalonians 5:19');
+    // it stays on Verse 2: nothing is still to land
+    await page.clock.runFor(1000);
+    await expect(panel).toContainText('Verse 2 of');
+    await shot(page, 'reading-ladder-double-skip');
+  });
+
+  test('two quick taps on Next verse open the next verse and skip none', async ({ page }) => {
+    const { view, panel } = await openLadder(page, WELL_READ_ANSWER);
+    await holdFor(page, page.getByRole('button', { name: 'Hold to read verse 16', exact: true }), 1500);
+    await expect(panel).toContainText('Well read');
+    await pageTime(page, SETTLE_MS + 100);
+    await tapTwice(page, panel.getByRole('button', { name: 'Next verse', exact: true }), 60, { touch: true, lagMs: 400 });
+    await expect(view.getByRole('heading', { level: 2 })).toHaveText('1 Thessalonians 5:19');
+    await page.clock.runFor(1000);
+    await expect(panel).toContainText('Verse 2 of');
+  });
+
+  test('two quick taps on Try again set the reading aside and skip nothing', async ({ page }) => {
+    const { view, panel } = await openLadder(page, {
+      verdict: 'some-to-fix',
+      focus_words: [{ word: 'οὐρανοῦ', index: 0, chunks: ['οὐ', 'ρα', 'νοῦ'], tip: 'The ου is one sound, oo.' }],
+      note: 'Nearly there: one word to say again.',
+    });
+    await holdFor(page, page.getByRole('button', { name: 'Hold to read verse 16', exact: true }), 1500);
+    await expect(panel).toContainText('Words to fix');
+    await pageTime(page, SETTLE_MS + 100);
+    await tapTwice(page, panel.getByRole('button', { name: 'Try again', exact: true }), 60, { touch: true, lagMs: 400 });
+    await page.clock.runFor(1000);
+    await expect(panel).toContainText('Verse 1 of');
+    await expect(view.getByRole('heading', { level: 2 })).toHaveText('1 Thessalonians 5:16');
+  });
 });

@@ -2,11 +2,12 @@
 // aloud panel, and two on the Goal screen, one per language), the line 'Verse N of M' while he is on it, and what to do after a reading: 'Next verse' after a good one,
 // 'Try again' and 'Skip for now' after one with words to fix or only part of the verse. The place is worked out from his readings (src/data/readingLadder.ts); this
 // file keeps which verse the ladder has on screen and moves the Verse view to the next one. Greek and English each have a list and a place.
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { currentLadderPlace, refParts, type LadderLang } from './data/readingLadder';
 import { setLadderShowing, setReaderView, skipLadderVerse, type ReaderView, type VerseReading } from './data/repositories';
 import { moveVerse, openVerseAt } from './nav/route';
 import { NextBar } from './ui/NextBar';
+import { useSettled } from './ui/settle';
 import type { LadderHere } from './useLadder';
 import { setVerseAction } from './verse/action';
 
@@ -77,13 +78,23 @@ export function LadderPosition({ lang, here }: { lang: LadderLang; here: LadderH
 /**
  * What to do next on the ladder: after a good reading 'Next verse'; after one with words to fix or only part of the verse 'Try again' and 'Skip for now'; with no
  * result (a verse not yet read, or Try again) 'Skip for now'. The place moves by itself when a reading is well read, so Next verse only opens it.
+ * The bar stands where it stood when the verse moves, so the second tap of a double tap would land on the new verse's own Skip for now and skip a verse he never
+ * saw (mw-neuq78.16): a new verse, or a new result for it, takes no tap for a moment (src/ui/settle.ts), and a tap while a move is under way is dropped.
  */
 export function LadderActions({ lang, here, verseKey, verdict, onTryAgain }: { lang: LadderLang; here: LadderHere; verseKey: string; verdict: VerseReading['verdict'] | undefined; onTryAgain: () => void }) {
+  const settled = useSettled(`${verseKey}:${verdict ?? ''}`);
+  const moving = useRef(false);
   const move = async (skip: boolean): Promise<void> => {
-    if (skip) await skipLadderVerse(lang, verseKey);
-    const place = await currentLadderPlace(lang);
-    await setLadderShowing(lang, place);
-    if (place) goTo(place, 'here');
+    if (moving.current || !settled()) return;
+    moving.current = true;
+    try {
+      if (skip) await skipLadderVerse(lang, verseKey);
+      const place = await currentLadderPlace(lang);
+      await setLadderShowing(lang, place);
+      if (place) goTo(place, 'here');
+    } finally {
+      moving.current = false;
+    }
   };
   // until the list has loaded the ladder cannot say whether a verse is left
   if (here.m === 0) return null;
@@ -103,7 +114,7 @@ export function LadderActions({ lang, here, verseKey, verdict, onTryAgain }: { l
       {/* side by side: the bar stands over the foot of the text, and two rows of it would hide the Next word card of a partial reading */}
       <div className="grid grid-cols-2 gap-2 has-[:only-child]:grid-cols-1">
         {verdict ? (
-          <button type="button" onClick={onTryAgain} className={BUTTON}>
+          <button type="button" onClick={() => settled() && onTryAgain()} className={BUTTON}>
             Try again
           </button>
         ) : null}
