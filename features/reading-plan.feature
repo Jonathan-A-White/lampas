@@ -3,7 +3,8 @@ Feature: The listening plan lives in the Bible view
   it says "Next: Leviticus 4" and how far she is ("93 of 1,189 chapters done"), with Listen in Audible, whose tap opens that chapter's send-off sheet. With the plan off, or on but not
   started, it says no plan is started and has "Start a plan", which opens "Start a listening plan": pick the plan, then "Where are you starting?" (the chapter picker in
   choose mode), and everything before that chapter is done. Settings > Study resources has the same entry. The chapter picker marks the chapters done and
-  the next one. A reader who is not learning Greek is shown the Today chip alone: the Greek chips are only drawn when they have something to show.
+  the next one. A tap on the plan's place on Today opens "Where are you?" (mw-5r3p30.623): "I'm at <the Reader's chapter>" counts that chapter done, "Pick a place" is the picker in choose
+  mode (a typed "Ps 23" too) and Set here moves the plan; days done stay done and Undo puts the place back for a few seconds. A reader who is not learning Greek is shown the Today chip alone: the Greek chips are only drawn when they have something to show.
 
   Scenario: Today names the next chapter and how far she is
     Given Lampas is opened with a reading plan started at Leviticus 4
@@ -69,3 +70,33 @@ Feature: The listening plan lives in the Bible view
     And he picks the plan "The whole Bible"
     And he chooses Leviticus 1 there
     Then the Reading plan setting is On and the plan starts at Leviticus 1
+
+  Scenario: He says he is at the chapter open in the Reader, and Undo puts the place back
+    Given Lampas is opened with a reading plan started at Leviticus 4
+    When he opens Today from the Reader
+    And he taps the plan's place on Today
+    And he chooses "I'm at Romans 8" on the sheet
+    Then the Reading plan piece says "Next: Romans 9" and "Change where you are"
+    When he taps Undo on Today
+    Then the Reading plan piece again says "Next: Leviticus 4" and "93 of 1,189 chapters done"
+
+  Scenario: He picks a place, book then chapter, and Set here moves the plan to it
+    Given Lampas is opened with a reading plan started at Leviticus 4
+    When he opens Today from the Reader
+    And he taps the plan's place on Today
+    And he chooses "Pick a place" on the sheet
+    And he picks Psalms chapter 23 in the place picker
+    Then the sheet "Set your place" names "Psalms 23"
+    When he taps Set here
+    Then the Reading plan piece says "Next: Psalms 23" and "Change where you are"
+    And the plan keeps its place in the store at Psalms 23
+
+  Scenario: The place picker takes a typed reference
+    Given Lampas is opened with a reading plan started at Leviticus 4
+    When he opens Today from the Reader
+    And he taps the plan's place on Today
+    And he chooses "Pick a place" on the sheet
+    And he types "Ps 23" in the place picker and takes the Go to row
+    Then the sheet "Set your place" names "Psalms 23"
+    When he taps Set here
+    Then the Reading plan piece says "Next: Psalms 23" and "Change where you are"

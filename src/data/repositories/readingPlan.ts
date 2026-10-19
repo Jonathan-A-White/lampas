@@ -112,6 +112,34 @@ export const markDoneBefore = (chapter: PlanChapter): Promise<void> => markFirst
 /** The one rule for what an answer about a chapter does to the plan: 'finished' marks it done through the chapter, 'stopped-in' only the chapters before it. The return sheet, the picker and the screenshot read all answer through it. */
 export const markHeard = (chapter: PlanChapter, heard: Heard): Promise<void> => (heard === 'finished' ? markDoneThrough(chapter) : markDoneBefore(chapter));
 
+/**
+ * Moves his place (mw-5r3p30.623): the chapter at `at` of the plan becomes the next one (at `chapters.length`, the plan is finished). Everything before it is done and what was
+ * done stays done, except the chapter itself, so a place behind what he has done is next again while the chapters done beyond it are not forgotten. The open session is kept.
+ * Returns the state it replaced (for restorePlan, Undo), or undefined, changing nothing, without a plan or for a chapter the plan does not hold.
+ */
+function moveTo(chapter: PlanChapter, after: boolean): Promise<ReadingPlanState | undefined> {
+  return db.transaction('rw', db.settings, async () => {
+    const state = await read();
+    const chapters = state && planOf(state.planId)?.chapters();
+    const found = chapters?.findIndex((c) => c.code === chapter.code && c.chapter === chapter.chapter) ?? -1;
+    if (!state || !chapters || found < 0) return undefined;
+    const at = after ? found + 1 : found;
+    const done = new Set([...state.done, ...chapters.slice(0, at).map(keyOf)]);
+    if (at < chapters.length) done.delete(keyOf(chapters[at]!));
+    await write({ ...state, done: chapters.map(keyOf).filter((k) => done.has(k)) });
+    return state;
+  });
+}
+
+/** He is about to read this chapter: it is the plan's next, the chapters before it are done. Returns the state it replaced, to hand restorePlan. */
+export const setPlace = (chapter: PlanChapter): Promise<ReadingPlanState | undefined> => moveTo(chapter, false);
+
+/** "I'm at 1 John 2": he is in this chapter now, so it counts as done and the next is the chapter after it (the plan is finished after its last). Returns the state it replaced. */
+export const setPlaceAfter = (chapter: PlanChapter): Promise<ReadingPlanState | undefined> => moveTo(chapter, true);
+
+/** Undo: puts back the state setPlace or setPlaceAfter returned, the place, the done list and the open session exactly as they were. */
+export const restorePlan = (previous: ReadingPlanState): Promise<unknown> => write(previous);
+
 /** How many chapters are done and how many the plan has; both 0 with no plan. */
 export async function progress(): Promise<{ done: number; total: number }> {
   const state = await read();
