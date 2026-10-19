@@ -40,7 +40,7 @@ export function HebrewGuide({ word, noVoice, onClose }: { word: string; noVoice:
         <div data-testid="sheet-handle" {...handle} className="relative flex shrink-0 touch-none flex-col items-center px-4 pt-2">
           <span aria-hidden="true" className="h-1.5 w-10 rounded-full bg-line" />
           <div className="flex min-h-12 w-full items-center gap-2">
-            <h2 id={titleId} className="min-w-0 flex-1 truncate text-xl font-semibold">
+            <h2 id={titleId} className="flex-1 title-wrap text-xl font-semibold">
               How to say it
             </h2>
             <button type="button" ref={focusOnMount} onClick={onClose} className="min-h-11 min-w-11 shrink-0 rounded-lg px-3 text-base font-medium text-accent">

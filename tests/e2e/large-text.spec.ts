@@ -11,6 +11,18 @@ import { browserEnv } from '../support/browser-env';
 import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestSpeech } from '../support/honest-fakes';
+import {
+  openAskApproach,
+  openCheck,
+  openDrillIt,
+  openGoalLists,
+  openHebrewGuide,
+  openLessonStrip,
+  openLetterDrill,
+  openShortDrill,
+  openTryIt,
+  openWriteIt,
+} from './large-text-titles';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -46,6 +58,8 @@ interface Screen {
   /** the shot's name under shots/ */
   shot: string;
   open: (page: Page) => Promise<void>;
+  /** the screen is a sheet over another: only the sheet on top is checked for a clipped control, as what lies under it is that screen's own check (its text is still checked for an ellipsis) */
+  top?: true;
 }
 
 const SCREENS: readonly Screen[] = [
@@ -193,12 +207,23 @@ const MORE_SCREENS: readonly Screen[] = [
       await expect(sheet).toContainText(TALK_ANSWER.answer);
     },
   },
+  // mw-cwf538.10: the screens whose title or line of words was ended with an ellipsis, none of them opened by the sweep before
+  { name: 'Drill it', top: true, shot: 'large-text-drill-it', open: async (page) => void (await openDrillIt(page, 'The second declension')) },
+  { name: 'Letter drill', top: true, shot: 'large-text-letter-drill', open: async (page) => void (await openLetterDrill(page)) },
+  { name: 'Short drill', top: true, shot: 'large-text-short-drill', open: async (page) => void (await openShortDrill(page)) },
+  { name: 'Write it', top: true, shot: 'large-text-write-it', open: async (page) => void (await openWriteIt(page)) },
+  { name: 'Check sheet', top: true, shot: 'large-text-check', open: async (page) => void (await openCheck(page)) },
+  { name: 'Try it sheet', top: true, shot: 'large-text-try-it', open: async (page) => void (await openTryIt(page)) },
+  { name: 'Lesson strip', shot: 'large-text-lesson-strip', open: async (page) => void (await openLessonStrip(page)) },
+  { name: 'Goal screen', shot: 'large-text-goal', open: openGoalLists },
+  { name: 'Hebrew guide', top: true, shot: 'large-text-hebrew-guide', open: async (page) => void (await openHebrewGuide(page)) },
+  { name: 'Ask for another approach', top: true, shot: 'large-text-ask-approach', open: async (page) => void (await openAskApproach(page)) },
 ];
 
 /** Every control, heading and label on the open screen whose text is cut off, squeezed out or which sticks out of the window, one line each. A row that scrolls sideways
  * on purpose (the Reader's chips) may hold what is past its edge, but each thing in it is still whole. */
-async function clipped(page: Page): Promise<string[]> {
-  return page.evaluate((viewportWidth) => {
+async function clipped(page: Page, top = false): Promise<string[]> {
+  return page.evaluate(([viewportWidth, onTop]) => {
     const SELECTOR = 'button, a[href], input, select, textarea, summary, [role="button"], [role="tab"], [role="slider"], [role="switch"], h1, h2, h3, h4, label, legend, th';
     const named = (el: Element): string => {
       const text = (el.getAttribute('aria-label') ?? el.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 40);
@@ -212,9 +237,13 @@ async function clipped(page: Page): Promise<string[]> {
       return false;
     };
     const found: string[] = [];
-    for (const el of Array.from(document.querySelectorAll(SELECTOR))) {
+    const dialogs = document.querySelectorAll('[role="dialog"]');
+    const root: ParentNode = onTop && dialogs.length > 0 ? dialogs[dialogs.length - 1] : document;
+    for (const el of Array.from(root.querySelectorAll(SELECTOR))) {
       // the whole path is a picture panned under a finger: most of its nodes are past the window's edge on purpose, and its labels have a check of their own
       if (el.closest('svg')) continue;
+      // a file input is a one-pixel box (visually hidden); its label, the button the finger meets, is checked
+      if (el.matches('input[type="file"]')) continue;
       if (el.getClientRects().length === 0 || getComputedStyle(el).visibility === 'hidden') continue;
       const box = el.getBoundingClientRect();
       if ((box.width === 0 || box.height === 0) && el.textContent?.trim()) {
@@ -244,7 +273,24 @@ async function clipped(page: Page): Promise<string[]> {
     }
     if (document.documentElement.scrollWidth > document.documentElement.clientWidth) found.push('the page itself scrolls sideways');
     return [...new Set(found)];
-  }, VIEWPORT.width);
+  }, [VIEWPORT.width, top] as const);
+}
+
+/** Every piece of text on the open screen that ends in an ellipsis because it did not fit, one line each: a title or a line of words is wrapped at large text, never cut
+ * short (mw-cwf538.10). An element that is cut off by `text-overflow: ellipsis` or by a line clamp and has more behind the cut. */
+async function ellipsised(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const found: string[] = [];
+    for (const el of Array.from(document.querySelectorAll('body *'))) {
+      if (el.getClientRects().length === 0 || el.matches('input[type="file"]')) continue;
+      const style = getComputedStyle(el);
+      const text = (el.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 40);
+      const name = `<${el.tagName.toLowerCase()}> "${text}"`;
+      if (style.textOverflow === 'ellipsis' && el.scrollWidth > el.clientWidth + 1) found.push(`${name} ends in an ellipsis: scrollWidth ${el.scrollWidth} > clientWidth ${el.clientWidth}`);
+      if (style.webkitLineClamp !== 'none' && el.scrollHeight > el.clientHeight + 1) found.push(`${name} is clamped to ${style.webkitLineClamp} lines: scrollHeight ${el.scrollHeight} > clientHeight ${el.clientHeight}`);
+    }
+    return [...new Set(found)];
+  });
 }
 
 for (const screen of [...SCREENS, ...MORE_SCREENS]) {
@@ -254,7 +300,8 @@ for (const screen of [...SCREENS, ...MORE_SCREENS]) {
     expect(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe(`${TEXT_PX}px`);
     await shot(page, screen.shot);
     await test.info().attach(screen.shot, { path: `shots/${screen.shot}.png`, contentType: 'image/png' });
-    expect(await clipped(page)).toEqual([]);
+    expect(await clipped(page, screen.top)).toEqual([]);
+    expect(await ellipsised(page)).toEqual([]);
   });
 }
 
@@ -314,6 +361,16 @@ test('the screens are the ones the stories name', () => {
     'Grammar sheet',
     'Chapter picker',
     'Talk sheet after a reply',
+    'Drill it',
+    'Letter drill',
+    'Short drill',
+    'Write it',
+    'Check sheet',
+    'Try it sheet',
+    'Lesson strip',
+    'Goal screen',
+    'Hebrew guide',
+    'Ask for another approach',
   ]);
 });
 

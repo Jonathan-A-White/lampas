@@ -291,6 +291,12 @@ html {
   font-size: calc(1rem / var(--lp-scale));
   line-height: 1.5;
 }
+/* A title, or a line of words, that wraps at large text instead of ending in an ellipsis: the phone's own Font size at 200% leaves a header's column about
+ * 15 characters, and a title cut off there is not read (mw-cwf538.10). It holds a long word too, and takes the room a flex row leaves it (min-width 0). */
+@utility title-wrap {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 @utility chrome-small {
   font-size: calc(0.875rem / var(--lp-scale));
   line-height: 1.4;

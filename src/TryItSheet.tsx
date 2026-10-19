@@ -101,11 +101,11 @@ export function TryItSheet({ idea, passage, onClose }: { idea: GrammarIdea; pass
     <div role="dialog" aria-modal="true" aria-label="Try it" className="fixed inset-0 z-40 flex flex-col bg-surface">
       <header className="flex shrink-0 items-center gap-3 border-b border-line px-4 py-1">
         <div className="min-w-0 flex-1">
-          <h2 data-testid="try-it-title" className="truncate text-lg font-bold">
+          <h2 data-testid="try-it-title" className="title-wrap text-lg font-bold">
             {tried ? `Try it: ${tried.ref}` : `Try it: ${idea.title}`}
           </h2>
           {tried && !over ? (
-            <p data-testid="try-it-step" className="truncate text-sm text-muted">
+            <p data-testid="try-it-step" className="title-wrap text-sm text-muted">
               Question {index + 1} of {total} · {idea.title}
             </p>
           ) : null}

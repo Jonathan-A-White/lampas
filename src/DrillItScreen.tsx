@@ -159,7 +159,7 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
     <div role="dialog" aria-modal="true" aria-label="Drill it" className="fixed inset-0 z-40 flex flex-col bg-surface">
       <header className="flex shrink-0 items-center gap-3 border-b border-line px-4 py-1">
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-lg font-bold">{idea.title}</h2>
+          <h2 className="title-wrap text-lg font-bold">{idea.title}</h2>
           {walk && !result ? (
             <p data-testid="drill-step" className="text-sm text-muted">
               Step {walk.step} of {walk.steps.length}

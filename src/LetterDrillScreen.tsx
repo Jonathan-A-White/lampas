@@ -68,7 +68,7 @@ export function LetterDrillScreen({ onClose }: { onClose: () => void }) {
     return (
       <div role="dialog" aria-modal="true" aria-label="Letter drill" className="fixed inset-0 z-40 flex flex-col bg-surface">
         <header className="flex shrink-0 items-center gap-3 border-b border-line px-4 py-1">
-          <h2 className="min-w-0 flex-1 truncate text-lg font-bold">{idea.title}</h2>
+          <h2 className="flex-1 title-wrap text-lg font-bold">{idea.title}</h2>
           <button type="button" onClick={onClose} className="min-h-11 min-w-11 shrink-0 rounded-lg px-3 text-base font-medium text-accent">
             Stop
           </button>
@@ -115,7 +115,7 @@ export function LetterDrillScreen({ onClose }: { onClose: () => void }) {
     <div role="dialog" aria-modal="true" aria-label="Letter drill" className="fixed inset-0 z-40 flex flex-col bg-surface">
       <header className="flex shrink-0 items-center gap-3 border-b border-line px-4 py-1">
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-lg font-bold">{idea.title}</h2>
+          <h2 className="title-wrap text-lg font-bold">{idea.title}</h2>
           <p data-testid="letter-drill-step" className="text-sm text-muted">
             {over ? `Round ${sitting.number} done` : `Round ${sitting.number} · Question ${at + 1} of ${round.length}`}
           </p>

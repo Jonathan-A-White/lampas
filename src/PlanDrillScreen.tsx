@@ -48,8 +48,8 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions, onFinish, onClo
     <div role="dialog" aria-modal="true" aria-label="Short drill" className="fixed inset-0 z-40 flex flex-col bg-surface">
       <header className="flex shrink-0 items-center gap-3 border-b border-line px-4 py-1">
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-lg font-bold">{ideaOf(ideaId).title}</h2>
-          <p data-testid="plan-drill-step" className="truncate text-sm text-muted">
+          <h2 className="title-wrap text-lg font-bold">{ideaOf(ideaId).title}</h2>
+          <p data-testid="plan-drill-step" className="title-wrap text-sm text-muted">
             {over ? 'Short drill: ' : `Question ${index + 1} of ${questions.length} · `}
             <FacetLabel label={facetLabel} />
           </p>

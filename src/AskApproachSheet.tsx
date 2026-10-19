@@ -210,7 +210,7 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
                     {pictures.map((p, i) => (
                       <li key={p.id} data-picture className="flex items-center gap-3">
                         {p.url ? <img src={p.url} alt="" className="h-12 w-12 shrink-0 rounded-lg border border-line object-cover" /> : <span className="h-12 w-12 shrink-0 rounded-lg border border-line" />}
-                        <span className="min-w-0 flex-1 truncate text-base">
+                        <span className="flex-1 title-wrap text-base">
                           Picture {i + 1} · {kilobytes(p.blob.size)}
                         </span>
                         <button
