@@ -42,7 +42,7 @@ export function Welcome() {
   const sayAbout = useRef<(message: string) => void>(() => {});
   const voice = useVoice((message) => sayAbout.current(message));
   const open = useRef(false);
-  const { states, say } = useTalk('', 0, (_ref, id, answer) => {
+  const { states, say, resume } = useTalk('', 0, (_ref, id, answer) => {
     if (!open.current || voice.listening) return;
     speakTutor(id, answerRuns(answer), () => open.current);
   });
@@ -77,6 +77,7 @@ export function Welcome() {
       state={state}
       voice={voice}
       onSay={(message, focus, pictures) => say(WELCOME_SCOPE, message, focus, pictures)}
+      onResume={() => resume(WELCOME_SCOPE)}
       onHelp={() => {}}
       onAskTerm={() => {}}
       onSkip={pending ? skip : undefined}

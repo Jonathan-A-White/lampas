@@ -31,7 +31,7 @@ function fakeVoice(): Voice {
 
 function fakeTalk(states: UseTalk['states'] = {}) {
   const say = vi.fn<UseTalk['say']>();
-  return { states, say };
+  return { states, say, resume: vi.fn<UseTalk['resume']>() };
 }
 
 function setup(talk = fakeTalk(), voice = fakeVoice(), request?: Parameters<typeof useReaderTutor>[4]['request']) {

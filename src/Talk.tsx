@@ -50,7 +50,7 @@ import { YouSaid } from './ui/YouSaid';
 import type { SharedContent } from './share/shared';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
-import type { AskState } from './useAsks';
+import { setPending, talkKey, type AskState } from './pending/pendingAsks';
 import type { Voice } from './useVoice';
 import { WordSheet, type Lookup, type TermAsk, type WordHelp } from './WordSheet';
 import { GREEK_LANG } from './script/greekLang';
@@ -503,7 +503,7 @@ function Suggestions({ questions, onAsk, label }: { questions: string[]; onAsk: 
 }
 
 /** The sheet: the conversation `scope` names, the field, Send, and what the last message is doing. */
-export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, suggestions, shared, onSay, onHelp, onAskTerm, onSkip, onClose }: {
+export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, shared, onSay, onResume, onHelp, onAskTerm, onSkip, onClose }: {
   scope: TalkScope;
   /** the key the conversation is kept under (src/data/repositories/talks.ts talkRef) */
   talkRef: string;
@@ -516,6 +516,8 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
   /** what came in through Share > Lampas (mw-y3qno5.2): its pictures wait in the composer and its words in the field, as he opened the sheet, NOT sent */
   shared?: SharedContent;
   onSay: (message: string, focus?: TalkFocus, pictures?: OutgoingPicture[]) => void;
+  /** a message that a page or screen that went away left waiting is waited for again once its sheet is open (src/pending/pendingAsks.ts) */
+  onResume?: () => void;
   /** a word of an answer was opened and he asked for Grammar or Sound it out on it */
   onHelp: (help: WordHelp) => void;
   /** a word of an answer was opened, a grammar word of its Parsing too, and he asked the tutor about it */
@@ -529,9 +531,12 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
   const countId = useId();
   const turns = useLiveQuery(() => listTurns(ref), [ref]);
   const [text, setText] = useState(shared?.text ?? '');
-  // A failure he cleared with New talk is not shown again (the state itself belongs to useTalk).
-  const [cleared, setCleared] = useState<AskState | undefined>(undefined);
-  const state = liveState === cleared ? undefined : liveState;
+  // What the message is doing is kept apart from this sheet (src/pending/pendingAsks.ts): opened on a message that was left waiting, the sheet waits for it again.
+  const resumeRef = useRef(onResume);
+  useEffect(() => {
+    resumeRef.current = onResume;
+  });
+  useEffect(() => resumeRef.current?.(), [ref]);
   const [lookup, setLookup] = useState<Lookup | null>(null);
   const closeWord = useCallback(() => setLookup(null), []);
   // The Greek word the tutor's offer asked to open, by a tap or a spoken yes (src/talk/greekOffer.ts): opened here, over this sheet
@@ -783,7 +788,8 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
                   type="button"
                   onClick={() => {
                     stopAnswer();
-                    setCleared(liveState);
+                    // a failure he clears with New talk is not shown again, nor after a reload
+                    setPending(talkKey(ref), undefined);
                     void deleteTurns(ref);
                   }}
                   className="min-h-11 shrink-0 rounded-lg px-3 text-base font-medium text-accent"

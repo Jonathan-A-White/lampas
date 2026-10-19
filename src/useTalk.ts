@@ -1,7 +1,8 @@
 // src/useTalk.ts — the Bible talk's messages in flight, by conversation. A message keeps waiting when he closes the sheet; its
 // answer is kept when it comes and `onAnswered` is told, so a sheet still open can read it aloud. They all stop when the
-// reader goes away.
-import { useCallback, useEffect, useRef, useState } from 'react';
+// reader goes away, but what each message was doing is kept (src/pending/pendingAsks.ts): a message that had gone is waited for again, never sent a second time, when its sheet
+// is opened on the page that is back (`resume`), and a failure stays with its Retry.
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { addLemmaToLearn } from './data/answerWord';
 import { missingFoundations, resolveBridge } from './data/grammar/bridge';
 import { levelsOf } from './data/grammar/goalProgress';
@@ -30,7 +31,7 @@ import { filesOf, type OutgoingPicture } from './talk/pictures';
 import { answerDrawn } from './services/clientTiming';
 import { askTalk, buildTalkRequest, MAX_LINKS, scopeRef, scopeTitle, type TalkAnswer, type TalkFocus, type TalkScope } from './services/talk';
 import type { HebrewSounds } from './data/db';
-import type { AskState } from './useAsks';
+import { isOrphan, pendingOf, setPending, startRunning, talkKey, usePendingAsks, type AskState, type SentRef } from './pending/pendingAsks';
 
 type Talks = Record<string, AskState | undefined>;
 
@@ -40,6 +41,8 @@ export interface UseTalk {
   /** says `message` in the conversation `scope` names; `focus` is the word the message asks help with; `pictures` go with it as the grist's
    * attachments and are kept with the turn. A message sent again unchanged (Retry) keeps the focus and the pictures it was first sent with. */
   say: (scope: TalkScope, message: string, focus?: TalkFocus, pictures?: OutgoingPicture[]) => void;
+  /** Waits again for the message of `scope`'s conversation that a page or screen that went away left waiting (its grist is not sent a second time); none left: nothing happens. */
+  resume: (scope: TalkScope) => void;
 }
 
 /** What `onAnswered` is told besides the answer's text: the focus the message had and the syllables the answer lists. */
@@ -100,7 +103,8 @@ export function useTalk(
   onAnswered: (ref: string, turnId: number, answer: string, info: AnswerInfo) => void,
   goTo?: GoTo,
 ): UseTalk {
-  const [states, setStates] = useState<Talks>({});
+  const table = usePendingAsks();
+  const states = useMemo<Talks>(() => Object.fromEntries(Object.entries(table).filter(([key]) => key.startsWith('talk:')).map(([key, state]) => [key.slice('talk:'.length), state])), [table]);
   const live = useRef<AbortController>(new AbortController());
   const answered = useRef(onAnswered);
   const going = useRef(goTo);
@@ -122,24 +126,19 @@ export function useTalk(
     };
   }, []);
 
-  const say = useCallback(
-    (scope: TalkScope, message: string, focusOf?: TalkFocus, picturesOf?: OutgoingPicture[]) => {
-      const text = message.trim();
-      if (!text) return;
+  /** Sends `text` in `scope`'s conversation, or, with `resume` (the grist of this very message that went), waits for the answer to that one; `startedAt` is when it was first said. */
+  const run = useCallback(
+    (scope: TalkScope, text: string, focus: TalkFocus | undefined, pictures: OutgoingPicture[], resume?: SentRef, startedAt = Date.now()) => {
       const ref = scopeRef(book, chapter, scope);
-      const kept = focused.current[ref];
-      const focus = focusOf ?? (kept?.text === text ? kept.focus : undefined);
-      focused.current[ref] = focus ? { text, focus } : undefined;
-      const pictures = picturesOf?.length ? picturesOf : pictured.current[ref]?.text === text ? pictured.current[ref].pictures : [];
-      pictured.current[ref] = pictures.length ? { text, pictures } : undefined;
-      // a new message ends the speech of the last response
-      stopAnswer();
+      const key = talkKey(ref);
       const signal = live.current.signal;
+      const stopRunning = startRunning(key);
+      // a screen that went away stops writing what the message is doing: what was kept stays, to be waited for again
       const set = (state: AskState | undefined): void => {
-        if (!signal.aborted) setStates((all) => ({ ...all, [ref]: state }));
+        if (!signal.aborted) setPending(key, state);
       };
-      const startedAt = Date.now();
-      set({ phase: 'sending', question: text, startedAt });
+      const withFocus = focus ? { focus } : {};
+      set(resume ? { phase: 'waiting', question: text, startedAt, sent: resume, ...withFocus } : { phase: 'sending', question: text, startedAt, ...withFocus });
       void (async () => {
         try {
           const [turns, solid, settings, learner, grammar, way, chosen, goal, requests, profile, pronunciation, memory, levels, readerView, rusty] = await Promise.all([
@@ -174,9 +173,10 @@ export function useTalk(
             files: pictures.length ? filesOf(pictures) : undefined,
             signal,
             tapAt: startedAt,
-            onSent: (txid) => {
+            resume,
+            onSent: (txid, seq) => {
               sentAs = txid;
-              set({ phase: 'waiting', question: text, startedAt });
+              set({ phase: 'waiting', question: text, startedAt, sent: { txid, seq }, ...withFocus });
             },
           });
           // The settings he asked for are applied at once (the registry checks each), then kept with the turn for its Undo.
@@ -206,7 +206,8 @@ export function useTalk(
           if (go && !place && !stayed && !unopened) refused.push(`Could not open ${go.ok ? go.place.title : go.title}`);
           const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { opened: place?.title, stayed, unopened, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? answer.quiz_goal_offer : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, settingOffer: settingOfferOf(answer), bridge: answer.bridge ? resolveBridge(answer.bridge, missing) : undefined, greekOffer, rustyOffer, cleanQ: answer.question, spoken, pictures });
           pictured.current[ref] = undefined;
-          set(undefined);
+          // the answer is kept: the message is done, even if the screen went away as it came
+          setPending(key, undefined);
           void answerDrawn(sentAs);
           if (signal.aborted) return;
           if (place) going.current?.open(place);
@@ -214,12 +215,45 @@ export function useTalk(
         } catch (err) {
           if (signal.aborted) return;
           const failure = err instanceof TutorError ? err.failure : 'unreachable';
-          set({ phase: 'failed', question: text, failure, detail: err instanceof Error ? err.message : 'Something went wrong.' });
+          set({ phase: 'failed', question: text, failure, detail: err instanceof Error ? err.message : 'Something went wrong.', ...(err instanceof TutorError && err.sent ? { sent: err.sent } : {}), ...withFocus });
+        } finally {
+          stopRunning();
         }
       })();
     },
     [book, chapter],
   );
 
-  return { states, say };
+  const say = useCallback(
+    (scope: TalkScope, message: string, focusOf?: TalkFocus, picturesOf?: OutgoingPicture[]) => {
+      const text = message.trim();
+      if (!text) return;
+      const ref = scopeRef(book, chapter, scope);
+      const kept = focused.current[ref];
+      const failed = pendingOf(talkKey(ref));
+      // Retry (the same text again) sends the focus and the pictures it was first sent with, and, when its grist went and the link failed after, waits for that grist's answer
+      const same = failed?.phase === 'failed' && failed.question === text ? failed : undefined;
+      const focus = focusOf ?? (kept?.text === text ? kept.focus : same?.focus);
+      focused.current[ref] = focus ? { text, focus } : undefined;
+      const pictures = picturesOf?.length ? picturesOf : pictured.current[ref]?.text === text ? pictured.current[ref].pictures : [];
+      pictured.current[ref] = pictures.length ? { text, pictures } : undefined;
+      // a new message ends the speech of the last response
+      stopAnswer();
+      run(scope, text, focus, pictures, same?.sent);
+    },
+    [book, chapter, run],
+  );
+
+  const resume = useCallback(
+    (scope: TalkScope) => {
+      const key = talkKey(scopeRef(book, chapter, scope));
+      const kept = pendingOf(key);
+      if (!kept || kept.phase === 'failed' || !isOrphan(key)) return;
+      if (kept.sent) run(scope, kept.question, kept.focus, [], kept.sent, kept.startedAt);
+      else setPending(key, { phase: 'failed', question: kept.question, failure: 'unreachable', detail: 'The page was closed before the message went. Nothing was lost: send it again.', ...(kept.focus ? { focus: kept.focus } : {}) });
+    },
+    [book, chapter, run],
+  );
+
+  return { states, say, resume };
 }

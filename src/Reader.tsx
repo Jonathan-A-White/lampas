@@ -158,7 +158,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const [tipOpen, setTipOpen] = useState(false);
   const pace = usePace();
   const newWords = useNewWords(chapter, solid, learning, pace?.count);
-  const { asks, ask } = useAsks(BOOK, CHAPTER, TITLE);
+  const { asks, ask, resume: resumeAsk } = useAsks(BOOK, CHAPTER, TITLE);
   // A request from another screen (the Parsing drill's links) is met once, as the Reader opens: the Talk sheet on that verse,
   // or the Ask box on it holding the question.
   const [request] = useState(() => {
@@ -245,6 +245,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       : undefined;
   }, [chapter, viewPassage, approach, BOOK, CHAPTER]);
   const viewUnit = useMemo(() => viewVerse ?? (viewPassage ? passageVerse(viewPassage) : undefined), [viewVerse, viewPassage]);
+  // A question that went and was left waiting (the page was reloaded, or this screen went away) is waited for again when its verse is opened (src/pending/pendingAsks.ts)
+  useEffect(() => {
+    if (viewUnit) resumeAsk(viewUnit);
+  }, [viewUnit, resumeAsk]);
   const tutor = useReaderTutor(open, chapter, talk, voice, { request, viewUnit, openTalkRef });
   const { talkScope, talkKey, talkAbout, setTalkAbout, holdTalk } = tutor;
   // The tutor (the Talk bar and sheet, the round Ask button, Teach's Ask the tutor) is the AI: not drawn without a licence (mw-8m9dyu.2).
@@ -487,6 +491,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           state={talk.states[talkKey ?? talkRef(BOOK, CHAPTER, talkAbout)]}
           voice={voice}
           onSay={(message, focus, pictures) => talk.say(talkScope, message, focus, pictures)}
+          onResume={() => talk.resume(talkScope)}
           onHelp={tutor.helpWithWord}
           onAskTerm={tutor.askAboutTerm}
           onClose={() => closeTalk.current()}

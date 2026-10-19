@@ -21,7 +21,7 @@ export function TalkHost({ scope, talkRef, book, chapter, shared, onClose }: { s
   const sayAbout = useRef<(message: string) => void>(() => {});
   const voice = useVoice((message) => sayAbout.current(message));
   const openRef = useRef<string | null>(talkRef);
-  const { states, say } = useTalk(book, chapter, (ref, id, answer) => {
+  const { states, say, resume } = useTalk(book, chapter, (ref, id, answer) => {
     if (openRef.current !== ref || voice.listening) return;
     speakTutor(id, answerRuns(answer), () => openRef.current === ref);
   });
@@ -56,6 +56,7 @@ export function TalkHost({ scope, talkRef, book, chapter, shared, onClose }: { s
       suggestions={suggestions}
       shared={shared}
       onSay={(message, focus, pictures) => say(scope, message, focus, pictures)}
+      onResume={() => resume(scope)}
       onHelp={help}
       onAskTerm={askTerm}
       onClose={close}
