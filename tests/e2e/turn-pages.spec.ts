@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { swipe } from '../support/gesture';
+import { afterLastVerse } from './reader-foot';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -176,6 +177,19 @@ test('the first page does not turn back and the last does not turn forward, and 
   expect(await pageOf(page)).toEqual({ at: of, of });
   await expect(page.getByRole('heading', { name: 'Mark 12', level: 1 })).toBeVisible();
   await shot(page, 'turn-pages-last');
+});
+
+test('the last page of a chapter in Turn pages ends with the chapter links: no About, no build version', async ({ page }) => {
+  await openMark12(page, 'pages');
+  const { of } = await pageOf(page);
+  for (let n = 2; n <= of; n++) {
+    await tapAt(page, 0.85);
+    await expect.poll(() => at(page)).toBe(n);
+  }
+  await expect(page.getByRole('navigation', { name: 'Chapters' })).toBeInViewport();
+  expect(await afterLastVerse(page)).toEqual(['nav:Chapters']);
+  await expect(page.locator('[data-reader]').getByRole('button', { name: 'About', exact: true })).toHaveCount(0);
+  await expect(page.getByTestId('build-version')).toHaveCount(0);
 });
 
 test('the place line says the page, under the text; the type is the size it is with Scroll and nothing scrolls', async ({ page }) => {

@@ -4,10 +4,10 @@ import { openUnlocked } from './unlocked';
 
 test.use({ viewport: { width: 412, height: 915 } });
 
-test('About credits the data at phone width, reached from Home', async ({ page }) => {
+test('About credits the data at phone width, reached from Settings', async ({ page }) => {
   await openUnlocked(page);
-  await page.goto('/');
-  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await page.goto('/#/settings');
+  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
   const about = page.getByRole('button', { name: 'About', exact: true });
   await about.scrollIntoViewIfNeeded();
   const tap = await about.boundingBox();

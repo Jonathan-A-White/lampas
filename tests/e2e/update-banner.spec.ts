@@ -37,7 +37,7 @@ test('a newer build waits, the banner shows, one tap loads it and the page reloa
 
   await openUnlocked(page);
   await page.goto('/');
-  await expect(page.getByTestId('build-version')).toBeAttached();
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready;
   });
@@ -80,7 +80,7 @@ test('a newer build with nothing to show gets no banner, and takes over by itsel
 
   await openUnlocked(page);
   await page.goto('/');
-  await expect(page.getByTestId('build-version')).toBeAttached();
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready;
   });

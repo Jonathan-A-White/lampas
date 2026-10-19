@@ -122,6 +122,10 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('About links to the Preface and Back returns', ({ Given, And, When, Then }) => {
     Given('Lampas is opened with nothing saved', openFresh);
+    And('he opens Settings', async () => {
+      await user.click(screen.getByRole('button', { name: 'Settings', exact: true }));
+      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+    });
     And('he taps {string}', async (_, label: string) => {
       await user.click(screen.getByRole('button', { name: label, exact: true }));
       await screen.findByRole('heading', { name: 'About', level: 1 });
