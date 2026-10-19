@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { honestMic } from '../support/honest-fakes';
+import { honestMic, honestSpeech } from '../support/honest-fakes';
 import { makeFakePostern, WELL_READ_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
@@ -135,5 +135,100 @@ test.describe('a double tap on the ladder bar moves one verse only', () => {
     await page.clock.runFor(1000);
     await expect(panel).toContainText('Verse 1 of');
     await expect(view.getByRole('heading', { level: 2 })).toHaveText('1 Thessalonians 5:16');
+  });
+});
+
+// Try again and Skip for now stay in reach (mw-neuq78.18): after a reading with words to fix, with the speaking bar up over the verse's foot while the verdict is
+// read aloud, the ladder's two buttons are whole on the screen, not behind the bar, and the panel needs no scroll to reach them.
+test('Try again and Skip for now are inside the viewport and clear of the speaking bar while the verdict is read, at phone width', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  const fake = makeFakePostern();
+  fake.autoReply = {
+    status: 'answered',
+    answer: {
+      verdict: 'some-to-fix',
+      focus_words: [
+        { word: 'οὐρανοῦ', index: 0, chunks: ['οὐ', 'ρα', 'νοῦ'], tip: 'The ου is one sound, oo.' },
+        { word: 'ἀδιαλείπτως', index: 1, chunks: ['ἀ', 'δι', 'α', 'λείπ', 'τως'], tip: 'Say the αλ as ah-lee.' },
+        { word: 'προσεύχεσθε', index: 2, chunks: ['προσ', 'εύ', 'χε', 'σθε'], tip: 'The ευ is eff or ev.' },
+      ],
+      note: 'Nearly there: three words to say again. Take them slowly, one chunk at a time, and then read the whole verse once more.',
+    },
+  };
+  await routePostern(page, fake);
+  await honestSpeech(page, { msPerWord: 600 });
+  await honestMic(page);
+  await openUnlocked(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Greek', exact: true }).click();
+  await chooseAction(page, 28, 'Read it aloud');
+  const panel = page.getByRole('region', { name: 'Reading check' });
+  await panel.getByRole('button', { name: 'Reading ladder', exact: true }).click();
+  await expect(panel).toContainText('Verse 1 of');
+  await pageTime(page, SETTLE_MS + 100);
+  await holdFor(page, page.getByRole('button', { name: 'Hold to read verse 16', exact: true }), 3000);
+  await expect(panel).toContainText('Words to fix');
+  // the verdict is being read: the speaking bar is up
+  const speaking = page.getByRole('region', { name: 'Speaking', exact: true });
+  await expect(speaking.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
+
+  const viewport = page.viewportSize();
+  const height = viewport ? viewport.height : VIEWPORT.height;
+  const bar = await speaking.boundingBox();
+  for (const name of ['Try again', 'Skip for now']) {
+    const button = panel.getByRole('button', { name, exact: true });
+    await expect(button).toBeInViewport({ ratio: 1 });
+    const box = await button.boundingBox();
+    expect(box).not.toBeNull();
+    if (!box || !bar) continue;
+    // whole on the screen, and above the speaking bar
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.y + box.height).toBeLessThanOrEqual(height);
+    expect(box.y + box.height).toBeLessThanOrEqual(bar.y + 0.5);
+  }
+  await expectFitsPhone(page);
+  await shot(page, 'reading-ladder-words-to-fix');
+});
+
+// Sideways (844x390) the panel shows little, so the ladder's choice is the thing that must not need a scroll: Try again and Skip for now with the speaking bar up,
+// and Next verse after a Well read.
+test.describe('sideways, the ladder buttons are on the screen without a scroll', () => {
+  const SIDEWAYS = { width: 844, height: 390 };
+  const FIX = {
+    verdict: 'some-to-fix',
+    focus_words: [{ word: 'οὐρανοῦ', index: 0, chunks: ['οὐ', 'ρα', 'νοῦ'], tip: 'The ου is one sound, oo.' }],
+    note: 'Nearly there: one word to say again.',
+  };
+
+  async function read(page: Page, answer: object, heading: string) {
+    await page.setViewportSize(SIDEWAYS);
+    const fake = makeFakePostern();
+    fake.autoReply = { status: 'answered', answer };
+    await routePostern(page, fake);
+    await honestSpeech(page, { msPerWord: 600 });
+    await honestMic(page);
+    await openUnlocked(page);
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Greek', exact: true }).click();
+    await chooseAction(page, 28, 'Read it aloud');
+    const panel = page.getByRole('region', { name: 'Reading check' });
+    await panel.getByRole('button', { name: 'Reading ladder', exact: true }).click();
+    await expect(panel).toContainText('Verse 1 of');
+    await pageTime(page, SETTLE_MS + 100);
+    await holdFor(page, page.getByRole('button', { name: 'Hold to read verse 16', exact: true }), 3000);
+    await expect(panel).toContainText(heading);
+    return panel;
+  }
+
+  test('Try again and Skip for now with the speaking bar up', async ({ page }) => {
+    const panel = await read(page, FIX, 'Words to fix');
+    await expect(page.getByRole('region', { name: 'Speaking', exact: true }).getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
+    for (const name of ['Try again', 'Skip for now']) await expect(panel.getByRole('button', { name, exact: true })).toBeInViewport({ ratio: 1 });
+    await shot(page, 'reading-ladder-words-to-fix-sideways');
+  });
+
+  test('Next verse after a Well read', async ({ page }) => {
+    const panel = await read(page, WELL_READ_ANSWER, 'Well read');
+    await expect(panel.getByRole('button', { name: 'Next verse', exact: true })).toBeInViewport({ ratio: 1 });
   });
 });
