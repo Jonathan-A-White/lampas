@@ -48,3 +48,13 @@ Feature: One frontier idea at a time
     Then exactly one idea is at the frontier and it is not "alphabet"
     And after he closes the idea sheet the Goal screen says "Learning now:" in one place
     And no idea sheet says it builds on a letter of the alphabet
+
+  Scenario: When the idea builds on one that is not solid, Go to is asked first and the switch question only after Stay here
+    Given the goal is "1 John 1:1" and he is learning "alphabet"
+    And he opens the idea sheet of "noun" from the Goal screen
+    When he slides the level to "Learning"
+    Then he is asked "Go to Breathing marks first?"
+    And "alphabet" is still the only idea at the frontier
+    When he taps "Stay here"
+    Then he is then asked "You are learning The Greek alphabet. Switch to The noun?"
+    And "alphabet" still holds the frontier
