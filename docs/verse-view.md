@@ -1,7 +1,8 @@
 # The Verse view (mw-5r3p30.79)
 
 The Governor, Postern general: "I just don't like the uix of how these two elements come together. It should maybe be its own view for the
-verse?" His answer: a Verse view. Tapping a verse number opens the verse on a full screen; Back returns to the Reader.
+verse?" His answer: a Verse view. Tapping a verse number opens the verse on a full screen; Back returns to the Reader. (With Turn pages a tap in the text's outer thirds turns the page,
+number or not, mw-5r3p30.609: a number opens its verse there only from the middle third (Paragraph), by Enter, or with no licence by a long press.)
 
 ```
 ‹ Reader     Romans 8:11            ‹   ›      header: close, the reference, the verse before and after
