@@ -6,7 +6,7 @@ import { clearBus } from '../../src/events/bus';
 import { db, type GrammarLevel, type GrammarLevelHow, type GrammarLevelName } from '../../src/data/db';
 import { learningNow } from '../../src/data/grammar/goalProgress';
 import { LETTER_IDS } from '../../src/data/grammar/inference';
-import { LADDER, groupOfItem } from '../../src/data/grammar/ladder';
+import { LADDER, ITEM_GROUPS, groupOfItem } from '../../src/data/grammar/ladder';
 import { isItemId } from '../../src/data/grammar/soundScope';
 import { DAY } from '../../src/data/schedule';
 import { noteAnswer } from '../../src/data/repositories/inference';
@@ -19,7 +19,7 @@ import {
   setLevel,
   teachIdea,
 } from '../../src/data/repositories/grammarLevels';
-import type { DrillResult } from '../../src/data/grammar/drillIt';
+import { unmetNeed, type DrillResult } from '../../src/data/grammar/drillIt';
 
 const NOW = Date.UTC(2026, 9, 12, 9, 0, 0);
 
@@ -126,10 +126,10 @@ describe('proving the frontier', () => {
     expect(await db.reviews.get(['grammar', 'modern:diphthongs'])).toMatchObject({ step: 0, due: NOW + DAY });
   });
 
-  it('skips an idea whose prerequisites are not all solid', async () => {
+  it('counts the letters solid once the alphabet is, whatever a letter\'s own row says (mw-i7xe0n.19)', async () => {
     await put('letter-omicron', 'notYet');
     await teachIdea('alphabet', 'known', NOW);
-    expect(await frontier()).toEqual(['consonant-pairs']);
+    expect(await frontier()).toEqual(['diphthongs']);
   });
 
   it('works when the review of the frontier takes it to solid', async () => {
@@ -245,5 +245,19 @@ describe('the upgrade from version 20', () => {
     expect(after.get('modern:letter-xi')).toMatchObject({ level: 'frontier' });
     expect(after.get('noun')).toMatchObject({ level: 'solid' });
     expect((await db.reviews.toArray()).sort((a, b) => a.id.localeCompare(b.id))).toEqual([...reviews].sort((a, b) => a.id.localeCompare(b.id)));
+  });
+});
+
+describe('marking a group idea known while it is Learning (mw-i7xe0n.19)', () => {
+  it.each(ITEM_GROUPS)('%s: leaves exactly one idea Learning, and no idea waits on one of its items', async (group) => {
+    await teachIdea(group, 'got-it', NOW);
+    await teachIdea(group, 'known', NOW);
+    const learning = await frontier();
+    expect(learning).toHaveLength(1);
+    expect(learning).not.toContain(group);
+    const levels = new Map([...(await listLevels())].map(([id, row]) => [id, row.level]));
+    const items = new Set(LADDER.filter((idea) => groupOfItem(idea) === group).map((idea) => idea.id));
+    const waiting = LADDER.map((idea) => unmetNeed(idea.id, levels)).filter((id) => id !== null && items.has(id));
+    expect(waiting).toEqual([]);
   });
 });

@@ -40,3 +40,11 @@ Feature: One frontier idea at a time
     When he taps Mark known without a drill on the idea sheet
     Then "alphabet" is the only idea at the frontier
     And after he closes the idea sheet the Goal screen says "Learning now: The Greek alphabet" in one place
+
+  Scenario: Marking the alphabet known while it is Learning leaves one idea Learning, and none builds on a letter
+    Given the goal is "1 John 1:1" and he is learning "alphabet"
+    And he opens the idea sheet of "alphabet" from the Goal screen
+    When he taps Mark known without a drill on the idea sheet
+    Then exactly one idea is at the frontier and it is not "alphabet"
+    And after he closes the idea sheet the Goal screen says "Learning now:" in one place
+    And no idea sheet says it builds on a letter of the alphabet
