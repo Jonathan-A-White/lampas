@@ -11,6 +11,7 @@ import { LessonReadAloud } from './speech/ReadAloud';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { greekMarked } from './ui/GreekMarked';
 import { useSheetBack } from './ui/sheetBack';
+import { oneTap } from './ui/settle';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { markTermKnown } from './useKnownTerms';
 import { GREEK_LANG } from './script/greekLang';
@@ -143,7 +144,7 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onT
           <button
             type="button"
             aria-pressed={known}
-            onClick={() => void markTermKnown(term, !known)}
+            onClick={() => oneTap(`known:${term}`, () => void markTermKnown(term, !known))}
             className={`${BUTTON} ${known ? 'border-accent bg-accent text-accent-fg' : 'border-line text-accent active:bg-line'}`}
           >
             {known ? <span aria-hidden="true">✓ </span> : null}I know this

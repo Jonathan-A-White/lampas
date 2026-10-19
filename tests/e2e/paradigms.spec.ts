@@ -3,6 +3,8 @@ import { LADDER } from '../../src/data/grammar/ladder';
 import { PARADIGMS } from '../../src/data/paradigms';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { SETTLE_MS } from '../../src/ui/settle';
+import { pageTime, tapTwice } from '../support/gesture';
 
 const IDEAS: Record<string, 'solid' | 'frontier'> = {
   article: 'solid', noun: 'solid', verb: 'solid', 'mood-indicative': 'solid', 'tense-present': 'solid', 'tense-imperfect': 'solid',
@@ -295,4 +297,67 @@ test('mw-svw421.18: a tap on a locked form says in words what it needs, and noth
   // a tap on the same lock again puts the line away
   await lock.click();
   await expect(page.getByTestId('lock-needs')).toHaveCount(0);
+});
+
+// A two-state toggle takes one tap per settle moment (src/ui/settle.ts oneTap): a thumb's double tap lands both taps on the control (or, once
+// the first has changed the row, on the one that took its place), so it must end where one tap does. The moment is as on his phone (SETTLE_MS) and
+// both taps run on the page's clock (tests/support/gesture.ts).
+async function openArticle(page: Page, mode: 'study' | 'review' = 'study') {
+  await page.clock.install();
+  await openUnlocked(page);
+  // init scripts run in order: this one puts the moment back after openUnlocked's '0'
+  await page.addInitScript((ms) => window.localStorage.setItem('lampas.settleMs', ms), String(SETTLE_MS));
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await putLevels(page);
+  await page.goto(`/#/paradigms?t=article&mode=${mode}`);
+  // a write behind Dexie's back is not seen by its live queries: the app starts afresh
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'The article', level: 1 })).toBeVisible();
+  await expect(page.getByTestId('table-available')).toHaveText('Available forms: 12 of 24');
+  await pageTime(page, SETTLE_MS + 100);
+}
+
+test.describe('a double tap on a two-state toggle', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  test('mw-svw421.16: a double tap on Review mode ends in Review mode', async ({ page }) => {
+    await openArticle(page);
+    await tapTwice(page, page.getByRole('button', { name: 'Review mode', exact: true }), 120, { touch: true });
+    await pageTime(page, SETTLE_MS + 100);
+    expect(page.url()).toContain('mode=review');
+    await expect(page.getByRole('button', { name: 'Study mode', exact: true })).toBeVisible();
+    await expect(page.locator('[data-cell][data-state="shown"]')).toHaveCount(12);
+    // a tap after the moment has passed is his next, and switches back
+    await page.getByRole('button', { name: 'Study mode', exact: true }).tap();
+    await expect(page.getByRole('button', { name: 'Review mode', exact: true })).toBeVisible();
+  });
+
+  test('mw-svw421.17: a double tap on Hide all ends in Hide all, still in Study mode', async ({ page }) => {
+    await openArticle(page);
+    await page.locator('[data-cell="Nominative Singular Masculine"]').tap();
+    await pageTime(page, SETTLE_MS + 100);
+    const hideAll = page.getByRole('button', { name: 'Hide all', exact: true });
+    await expect(hideAll).toBeVisible();
+    await tapTwice(page, hideAll, 120, { touch: true });
+    await pageTime(page, SETTLE_MS + 100);
+    expect(page.url()).not.toContain('mode=review');
+    await expect(page.getByTestId('mode-help')).toHaveText('Study mode: tap a cell to reveal it.');
+    await expect(page.locator('[data-cell][data-state="hidden"]')).toHaveCount(12);
+    await expect(page.locator('[data-cell][data-state="shown"]')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Hide all', exact: true })).toHaveCount(0);
+  });
+
+  test('mw-svw421.21: a double tap on a reveal cell leaves the form shown', async ({ page }) => {
+    await openArticle(page);
+    const cell = page.locator('[data-cell="Nominative Singular Masculine"]');
+    await tapTwice(page, cell, 80, { touch: true });
+    await pageTime(page, SETTLE_MS + 100);
+    await expect(cell).toHaveAttribute('data-state', 'shown');
+    await expect(cell).toHaveText('ὁ');
+    await shot(page, 'paradigms-double-tap-reveal');
+    // a tap after the moment has passed is his next, and hides it
+    await cell.tap();
+    await expect(cell).toHaveAttribute('data-state', 'hidden');
+  });
 });

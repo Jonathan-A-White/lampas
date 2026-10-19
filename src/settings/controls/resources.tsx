@@ -8,6 +8,7 @@ import { AUDIO_BIBLES } from '../../resources/audioBible';
 import { GRAMMAR_BOOKS } from '../../resources/grammarBooks';
 import { logos } from '../../resources/logos';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../../resources/logosBible';
+import { oneTap } from '../../ui/settle';
 import { SearchableList } from '../../ui/SearchableList';
 import { audioBibleSetting, readingPlanSetting } from '../definitions';
 import { AskForBook } from './askBook';
@@ -63,7 +64,7 @@ function GrammarBooks() {
                 type="button"
                 role="checkbox"
                 aria-checked={on}
-                onClick={() => toggle(book.id)}
+                onClick={() => oneTap(`grammar-books:${book.id}`, () => toggle(book.id))}
                 className="flex min-h-12 w-full items-center gap-3 border-t border-line px-3 text-left text-base first:border-t-0"
               >
                 <span aria-hidden="true" className={`flex h-6 w-6 shrink-0 items-center justify-center rounded border border-line ${on ? 'bg-accent text-accent-fg' : ''}`}>
@@ -87,9 +88,7 @@ function GrammarBooks() {
 function ResourceRow({ row, resource, on, typed }: { row: SettingsRow; resource: StudyResource; on: boolean; typed: string }) {
   const [value, setValue] = useState(typed);
   const option = resource.option;
-  const flip = (): void => {
-    void setResourceOn(resource.id, !on);
-  };
+  const flip = (): void => oneTap(`resource-switch:${resource.id}`, () => void setResourceOn(resource.id, !on));
   return (
     <SettingRow
       row={row}

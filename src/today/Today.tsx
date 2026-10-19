@@ -13,6 +13,7 @@ import { countDue, getLogosBible, getStudyResources, markChapterRead, unmarkChap
 import { useLatestLiveQuery } from '../data/useLatestLiveQuery';
 import { bookOf } from '../data/books';
 import { backTo, navigate, openReader } from '../nav/route';
+import { oneTap } from '../ui/settle';
 import { useScrollMemory } from '../nav/scrollMemory';
 import { chapterName } from '../plan/chapterName';
 import { PlacePicker } from '../plan/PlacePicker';
@@ -56,7 +57,7 @@ function Piece({ id, label, ticks, children }: { id: string; label: string; tick
           role="checkbox"
           aria-checked={done}
           aria-label={`Done: ${label}`}
-          onClick={() => void setTicked(ticks.date, id, !done)}
+          onClick={() => oneTap(`tick:${id}`, () => void setTicked(ticks.date, id, !done))}
           className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-lg active:bg-line"
         >
           <span aria-hidden="true" className={`flex h-7 w-7 items-center justify-center rounded-md border-2 text-base ${done ? 'border-accent bg-accent text-accent-fg' : 'border-line'}`}>
@@ -72,7 +73,7 @@ function Piece({ id, label, ticks, children }: { id: string; label: string; tick
 /** A small tick box: Read today's (ticked, an untick un-marks the run) and Next's (a tick marks the chapter read). */
 function TickBox({ label, checked, onToggle }: { label: string; checked: boolean; onToggle: () => void }) {
   return (
-    <button type="button" role="checkbox" aria-checked={checked} aria-label={label} onClick={onToggle} className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-lg active:bg-line">
+    <button type="button" role="checkbox" aria-checked={checked} aria-label={label} onClick={() => oneTap('plan-tick', onToggle)} className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-lg active:bg-line">
       <span aria-hidden="true" className={`flex h-7 w-7 items-center justify-center rounded-md border-2 text-base ${checked ? 'border-accent bg-accent text-accent-fg' : 'border-line'}`}>
         {checked ? '✓' : ''}
       </span>

@@ -8,6 +8,8 @@
 // Another round, the Parsing drill's Ask the tutor | Talk about it and the reading drill's Skip this word; mw-5r3p30.430; the placement end card's
 // buttons, mw-86e9r1.22). Review and the placement's walk have none. A change of screen, and a sheet or confirm card as it opens and as it closes,
 // swallow every tap for the same moment (`swallowTaps`), called by the one app-wide guard (src/ui/tapGuard.ts, mw-5r3p30.597), not by any screen.
+// A control that flips a state inside one screen (Paradigms' Study | Review mode, Hide all and a reveal cell) takes one tap per moment (`oneTap`,
+// mw-svw421.41): the second tap of a double tap would flip it back, or land on the control that took its place.
 import { useCallback, useEffect, useRef } from 'react';
 
 /** How long a new card ignores taps. The Tester's double taps were 120 ms apart; reading a question takes longer than this. PROVISIONAL */
@@ -37,6 +39,23 @@ export function useSettled(key: unknown = 0): () => boolean {
     since.current = performance.now();
   }, [key]);
   return useCallback(() => performance.now() - since.current >= settle.ms, []);
+}
+
+/** The last act `oneTap` ran. One for the page, not one per control: a control that flips is often put in again by the flip (a tick box that becomes
+ * another, Hide all giving way to Review mode), and a hook in the control would start afresh with the second tap. */
+let lastTap: { key: string; at: number } | null = null;
+
+/**
+ * Runs `act` unless the last act run through `oneTap` had the same `key` and began less than `settle.ms` ago. A control that flips a state in place
+ * (a mode button, a reveal cell, a tick box, a switch) goes through it, so a double tap ends where one tap does. Controls that take each other's place
+ * (Hide all goes and Review mode grows over it) share a key; controls that do not (two reveal cells) have their own, so a quick tap on another one is
+ * his next. The moment is judged by performance.now(), as useSettled is.
+ */
+export function oneTap(key: string, act: () => void): void {
+  const now = performance.now();
+  if (lastTap && lastTap.key === key && now - lastTap.at < settle.ms) return;
+  lastTap = { key, at: now };
+  act();
 }
 
 /** What a swallowed tap never reaches the app as: its click, and the press that starts it (a hold bar begins on the press, src/ui/holdPress.ts). */
