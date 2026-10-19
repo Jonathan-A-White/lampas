@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.337
+_2026-10-19_
+- Fixed: With the Immersive reader on in the Dark theme, the phone's top bar and the band behind the Talk button are now pure black like the page instead of dark blue.
+- Fixed: Coming back to the Reader from Settings no longer hides the top and bottom bars when you have not scrolled.
+
 ## 0.1.336
 _2026-10-19_
 - New: On the reading plan you can now say where you are, by tapping the plan's next chapter on Today and choosing the chapter you are reading or any place you pick or type, with Undo for a few seconds.

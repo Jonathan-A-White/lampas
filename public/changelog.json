@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.337",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.595",
+    "kind": "fixed",
+    "text": "With the Immersive reader on in the Dark theme, the phone's top bar and the band behind the Talk button are now pure black like the page instead of dark blue."
+  },
+  {
+    "version": "0.1.337",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.471",
+    "kind": "fixed",
+    "text": "Coming back to the Reader from Settings no longer hides the top and bottom bars when you have not scrolled."
+  },
+  {
     "version": "0.1.336",
     "date": "2026-10-19",
     "story": "mw-5r3p30.623",
