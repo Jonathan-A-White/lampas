@@ -27,28 +27,28 @@ export function ImmersiveHint({ enabled, away }: { enabled: boolean; away: boole
   };
   return (
     <Away enabled away={away}>
-    <aside role="note" aria-label="How the immersive reader works" data-immersive-hint className="mx-2 mt-2 shrink-0 rounded-2xl border border-line bg-surface p-3">
-      {IMMERSIVE_HINT_LINES.map((line) => (
-        <p key={line} className="py-0.5 text-lg leading-snug">
-          {line}
-        </p>
-      ))}
-      <div className="mt-2 flex flex-wrap gap-2">
-        <button type="button" onClick={(e) => close(e.currentTarget.closest('aside'))} className="min-h-12 flex-1 rounded-xl bg-accent px-4 text-base font-semibold text-accent-fg">
-          Got it
-        </button>
-        <button
-          type="button"
-          onClick={(e) => {
-            close(e.currentTarget.closest('aside'));
-            void setSetting(immersiveHintSetting, 'off');
-          }}
-          className="min-h-12 flex-1 rounded-xl border border-line px-4 text-base font-medium"
-        >
-          Don&apos;t show this again
-        </button>
-      </div>
-    </aside>
+      <aside role="note" aria-label="How the immersive reader works" data-immersive-hint className="mx-2 mt-2 shrink-0 rounded-2xl border border-line bg-surface p-3">
+        {IMMERSIVE_HINT_LINES.map((line) => (
+          <p key={line} className="py-0.5 text-lg leading-snug">
+            {line}
+          </p>
+        ))}
+        <div className="mt-2 flex flex-wrap gap-2">
+          <button type="button" onClick={(e) => close(e.currentTarget.closest('aside'))} className="min-h-12 flex-1 rounded-xl bg-accent px-4 text-base font-semibold text-accent-fg">
+            Got it
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              close(e.currentTarget.closest('aside'));
+              void setSetting(immersiveHintSetting, 'off');
+            }}
+            className="min-h-12 flex-1 rounded-xl border border-line px-4 text-base font-medium"
+          >
+            Don&apos;t show this again
+          </button>
+        </div>
+      </aside>
     </Away>
   );
 }

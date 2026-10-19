@@ -3,7 +3,7 @@
 // Turn pages (Settings > Reading, mw-5r3p30.299) it is always there, right under the text, and says the page ('Mark 12 · Page 2 of 7'). It is a row
 // of its own under the text's box, so it covers no text; small and dim. The CSS is `.place-line` in src/index.css.
 //
-// The row slides in and out with the bars, in the same 200 ms (src/Away.tsx): it must not vanish at once when the bars come back, or the text's box grows by
+// The row slides in and out with the bars, in the same 200 ms (the bars' own, src/Away.tsx): it must not vanish at once when the bars come back, or the text's box grows by
 // the row for a moment before the bars shrink it, and a text scrolled to its end is clamped back by the row's height (mw-5r3p30.472). It is drawn from
 // the moment it is wanted until it has slid out, and then it is not in the page at all.
 //
