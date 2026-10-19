@@ -67,6 +67,15 @@ function scrollBoxTo(box: HTMLElement, top: number): void {
   box.scrollTop = top;
 }
 
+/** The boxes whose saved place is being put back now. */
+const restoringBoxes = new WeakSet<HTMLElement>();
+
+/** Whether `box` is having its saved place put back (mw-5r3p30.471). The scroll events that come of it are the app moving the text, not him: a listener
+ * that reads scrolling as his hand (src/immersive.ts) leaves them out. His own hand on the box ends the restore. */
+export function isRestoringScroll(box: HTMLElement): boolean {
+  return restoringBoxes.has(box);
+}
+
 /** Forget every remembered position. */
 export function forgetScrolls(): void {
   offsets.clear();
@@ -92,12 +101,14 @@ export function useScrollMemory(slot: string): (el: HTMLElement | null) => void 
     // Until the box reaches the remembered offset (its content may still be arriving), its own
     // scroll events are not him moving it, so they are not remembered.
     let restoring = target !== undefined;
+    if (restoring) restoringBoxes.add(box);
     let observer: ResizeObserver | undefined;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let quiet: ReturnType<typeof setTimeout> | undefined;
 
     const settle = () => {
       restoring = false;
+      restoringBoxes.delete(box);
       observer?.disconnect();
       clearTimeout(timer);
       clearTimeout(quiet);

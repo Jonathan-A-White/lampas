@@ -1,5 +1,5 @@
 // src/immersive.ts — the Immersive reader (Settings > Immersive reader, mw-5r3p30.120). With it On, the Reader's header, row of chips, Talk bar and
-// round Ask button slide away while he scrolls the text down, as a browser's address bar does. After that the bars change ONLY on a two-finger tap
+// round Ask button slide away while he scrolls the text down, as a browser's address bar does (not when the Reader puts his saved place back). After that the bars change ONLY on a two-finger tap
 // on the text: shown if away, away if shown (mw-5r3p30.255, his words: "2 fingers on, 2 fingers off"). Nothing else brings them back: not
 // scrolling up (mw-5r3p30.227), not the end of the chapter or scrolling past it, not a sheet closing, not reading aloud stopping. A three-finger tap
 // does nothing. No gesture from a screen's edge: Android's gesture navigation owns the edges. The hook only decides `away`; src/Away.tsx draws the
@@ -19,6 +19,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { getImmersive } from './data/repositories';
+import { isRestoringScroll } from './nav/scrollMemory';
 import { holdAwake, releaseAwake } from './speech/wakeLock';
 
 /** Scrolling down this far hides them. */
@@ -151,6 +152,11 @@ export function useImmersive(
       const top = el.scrollTop;
       const delta = top - last;
       last = top;
+      // the Reader putting his saved place back (a return from Settings, a reload) is not him scrolling down: the bars stay as they were (mw-5r3p30.471)
+      if (isRestoringScroll(el)) {
+        down = 0;
+        return;
+      }
       if (delta === 0) return;
       const toEnd = el.scrollHeight - top - el.clientHeight;
       if (delta > 0) {

@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { honestMic } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { openVerseView } from './verse-view';
 
 // The Immersive reader (mw-5r3p30.120) at 390x844: scrolling the text down slides the header, the chips, the Talk bar and the Ask button away;
 // scrolling up, the chapter's end and scrolling past it leave them away; only a two-finger tap shows them and a second one puts them away
@@ -217,4 +218,100 @@ test('the setting is kept across a reload', async ({ page }) => {
   await group.getByRole('button', { name: 'On' }).click();
   await page.reload();
   await expect(page.getByRole('group', { name: 'Immersive reader', exact: true }).getByRole('button', { name: 'On' })).toHaveAttribute('aria-pressed', 'true');
+});
+
+// Every return to the Reader at a scrolled place keeps the bars as he left them (mw-5r3p30.471): the Reader puts the saved place back, and that
+// move is not him scrolling down. With them shown (a two-finger tap after the scroll) they stay shown; with them away they stay away.
+async function shownAtAScrolledPlace(page: Page): Promise<number> {
+  await openReader(page, 'on');
+  await scrollText(page, 1000);
+  await expectAll(page, 'hidden');
+  // the bars have finished sliding away
+  await settledHeight(page);
+  await twoFingerTap(page);
+  await expectAll(page, 'visible');
+  await settledHeight(page);
+  const at = await scrollTop(page);
+  expect(at).toBeGreaterThan(500);
+  return at;
+}
+
+/** After a return the saved place is put back and the page is given time to react to it (the restore waits 400 ms for the text to stay still). */
+async function expectStillShown(page: Page, at: number, what: string) {
+  await expect.poll(() => scrollTop(page), { message: `${what}: the saved place comes back` }).toBeGreaterThan(at - 50);
+  await page.waitForTimeout(900);
+  await expectAll(page, 'visible');
+  await expect(page.locator('[data-place-line]'), `${what}: no place line`).toHaveCount(0);
+}
+
+test('with the bars shown, Settings and then ‹ Reader leaves them shown', async ({ page }) => {
+  const at = await shownAtAScrolledPlace(page);
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await page.getByRole('button', { name: '‹ Reader' }).click();
+  await expectStillShown(page, at, 'Settings');
+});
+
+test('with the bars shown, Immersive reader Off and On again in Settings and then ‹ Reader leaves them shown', async ({ page }) => {
+  const at = await shownAtAScrolledPlace(page);
+  await page.getByRole('button', { name: 'Settings' }).click();
+  const group = page.getByRole('group', { name: 'Immersive reader', exact: true });
+  await group.getByRole('button', { name: 'Off' }).click();
+  await expect(group.getByRole('button', { name: 'Off' })).toHaveAttribute('aria-pressed', 'true');
+  await group.getByRole('button', { name: 'On' }).click();
+  await expect(group.getByRole('button', { name: 'On' })).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: '‹ Reader' }).click();
+  await expectStillShown(page, at, 'Off then On');
+});
+
+test('with the bars shown, the chapter picker opened and closed leaves them shown', async ({ page }) => {
+  const at = await shownAtAScrolledPlace(page);
+  await page.getByRole('heading', { name: 'Romans 8', level: 1 }).getByRole('button').click();
+  const picker = page.getByRole('dialog', { name: 'Choose a chapter' });
+  await expect(picker).toBeVisible();
+  await page.goBack();
+  await expect(picker).toHaveCount(0);
+  await expectStillShown(page, at, 'the picker');
+});
+
+test('with the bars shown, a Verse view closed leaves them shown', async ({ page }) => {
+  await shownAtAScrolledPlace(page);
+  // a verse number already in view, so the tap scrolls nothing (a scroll down would take the bars away for a reason of its own)
+  const inView = await page.evaluate(() => {
+    const box = (document.querySelector('[data-reader]') as HTMLElement).getBoundingClientRect();
+    for (const el of document.querySelectorAll<HTMLElement>('button[data-verse-number][aria-label^="Verse "]')) {
+      const r = el.getBoundingClientRect();
+      if (r.top > box.top + 4 && r.bottom < box.bottom - 4) return el.getAttribute('aria-label')?.replace('Verse ', '') ?? null;
+    }
+    return null;
+  });
+  if (inView === null) throw new Error('no verse number in view');
+  const left = await scrollTop(page);
+  const view = await openVerseView(page, Number(inView));
+  expect(await scrollTop(page)).toBe(left);
+  await view.getByRole('button', { name: '‹ Reader' }).click();
+  await expect(view).toBeHidden();
+  await expectStillShown(page, left, 'the Verse view');
+});
+
+test('with the bars shown, a reload keeps them shown at the saved place', async ({ page }) => {
+  const at = await shownAtAScrolledPlace(page);
+  // the place is written to the phone 250 ms after the last scroll
+  await page.waitForTimeout(600);
+  await page.reload();
+  await expectStillShown(page, at, 'a reload');
+});
+
+test('with the bars shown, the next chapter opens shown, and Back to this one keeps them shown', async ({ page }) => {
+  const at = await shownAtAScrolledPlace(page);
+  // the end of the chapter: scrolling there with the bars shown does not take them away
+  await scrollText(page, 100000);
+  await page.waitForTimeout(600);
+  await expectAll(page, 'visible');
+  await page.getByRole('navigation', { name: 'Chapters' }).getByRole('button', { name: /Romans 9/ }).click();
+  await expect(page.getByRole('heading', { name: 'Romans 9', level: 1 })).toBeVisible();
+  await page.waitForTimeout(900);
+  await expectAll(page, 'visible');
+  await page.goBack();
+  await expectStillShown(page, at, 'Back from the next chapter');
 });

@@ -250,3 +250,51 @@ for (const licensed of [true, false]) {
     }
   });
 }
+
+// Coming back to the Reader at a scrolled place keeps the bars as he left them (mw-5r3p30.471): the Reader puts the saved place back, and that is not
+// him scrolling down, so with the bars shown (a two-finger tap) Settings and then '‹ Reader' leaves them shown and draws no place line; the same
+// place after a reload keeps them shown. Licensed (with the Talk bar) and not.
+for (const licensed of [true, false]) {
+  test(`with the bars shown on a scrolled Mark 12, Settings and then ‹ Reader and a reload keep them shown, ${licensed ? 'licensed' : 'free'}`, async ({ page }) => {
+    await (licensed ? openUnlocked(page) : openUnlicensed(page));
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+    await keep(page, { immersiveReader: 'on', immersiveHint: 'off' });
+    await page.goto('/#/?b=mrk&c=12');
+    await page.reload();
+    await expect(page.getByRole('heading', { name: 'Mark 12', level: 1 })).toBeVisible();
+    await expect(page.locator('[data-verse="1"]')).toBeVisible();
+    const top = () => page.evaluate(() => (document.querySelector('[data-reader]') as HTMLElement).scrollTop);
+    const shown = async (what: string) => {
+      await expect(place(page), `${what}: no place line`).toHaveCount(0);
+      await expect(page.locator('header').first(), `${what}: the header`).toBeVisible();
+      await expect(page.getByTestId('reader-chips'), `${what}: the chips`).toBeVisible();
+      if (licensed) await expect(page.locator('[data-talk-bar]'), `${what}: the Talk bar`).toBeVisible();
+    };
+
+    await scrollText(page, 1000);
+    await expect(place(page)).toBeVisible();
+    await page.waitForTimeout(700);
+    await twoFingerTap(page);
+    await shown('after the tap');
+    await page.waitForTimeout(700);
+    const at = await top();
+    expect(at).toBeGreaterThan(500);
+
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+    await page.getByRole('button', { name: '‹ Reader' }).click();
+    await expect.poll(top).toBeGreaterThan(at - 50);
+    // the saved place is back; the restore waits for the text to stay still before it lets go
+    await page.waitForTimeout(900);
+    await shown('after Settings');
+    await shot(page, `immersive-return-${licensed ? 'licensed' : 'free'}`);
+
+    // the place is written to the phone 250 ms after the last scroll
+    await page.waitForTimeout(600);
+    await page.reload();
+    await expect.poll(top).toBeGreaterThan(at - 50);
+    await page.waitForTimeout(900);
+    await shown('after a reload');
+  });
+}
