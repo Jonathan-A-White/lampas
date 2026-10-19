@@ -653,6 +653,11 @@ textarea,
   --bk-speech-font-size: calc(1rem / var(--lp-scale));
 }
 
+/* At the phone's largest text the three buttons do not fit one row: they wrap to a second (mw-cwf538.7), where the package's bar keeps one row and pushes Pause and Stop off the screen. */
+.bk-speech {
+  flex-wrap: wrap;
+}
+
 /* Where the bar is drawn (src/speech/SpeakingBarSlot.tsx): nothing at all while no bar is in it; the one at the foot of the shell pads with the phone's bar inset. */
 .speaking-slot:empty {
   display: none;

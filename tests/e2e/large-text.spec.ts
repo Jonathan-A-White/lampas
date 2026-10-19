@@ -1,7 +1,8 @@
 // tests/e2e/large-text.spec.ts — Lampas honours the phone's own text size (mw-cwf538.5, the epic 'Lampas for every age and every ability'): the
 // browser's default font size is set to 200% (32 px for 16, the way Android's Font size does it, through a Chromium profile's preferences) and the
-// five main screens, Reader, Quick test, Talk, Settings and Placement, are opened at 390x844. On each, no control, heading or label is clipped (its
-// scrollWidth within its clientWidth) or pushed off the screen, and a shot of the screen is attached.
+// five main screens, Reader, Quick test, Talk, Settings and Placement, are opened at 390x844, and so are Quick test after an answer, the Verse view, Words,
+// the whole path, and the word, Grammar and Talk sheets (mw-cwf538.7). On each, no control, heading or label is clipped (its scrollWidth within its
+// clientWidth) or pushed off the screen, and a shot of the screen is attached. The whole path's SVG labels are drawn at twice their 100% size.
 import { chromium, expect, test as base, type Page } from '@playwright/test';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -100,6 +101,88 @@ const SCREENS: readonly Screen[] = [
   },
 ];
 
+/** The screens and sheets the story mw-cwf538.7 adds: the ones the first five left unchecked. */
+const MORE_SCREENS: readonly Screen[] = [
+  {
+    name: 'Quick test after an answer',
+    shot: 'large-text-quick-test-answered',
+    open: async (page) => {
+      await openUnlocked(page);
+      await page.goto('/#/test');
+      await expect(page.locator('[data-option]')).toHaveCount(4);
+      await page.locator('[data-option]').first().click();
+      await expect(page.locator('[data-option][data-result="right"]')).toHaveCount(1);
+    },
+  },
+  {
+    name: 'Verse view',
+    shot: 'large-text-verse-view',
+    open: async (page) => {
+      await openUnlocked(page);
+      await page.goto('/#/?c=8&view=english&weave=solid');
+      await page.locator('[data-heading]', { hasText: 'Walking by the Spirit' }).getByRole('button').click();
+      await expect(page.getByRole('region', { name: 'Verse view' })).toBeVisible();
+    },
+  },
+  {
+    name: 'Words',
+    shot: 'large-text-words',
+    open: async (page) => {
+      await openUnlocked(page);
+      await page.goto('/#/words');
+      await expect(page.getByRole('heading', { name: 'Words', level: 1 })).toBeAttached();
+      await expect(page.locator('[data-lemma]').first()).toBeAttached();
+    },
+  },
+  {
+    name: 'The whole path',
+    shot: 'large-text-path',
+    open: async (page) => {
+      await openUnlocked(page);
+      await page.goto('/#/path');
+      await expect(page.getByRole('heading', { name: 'The whole path', level: 1 })).toBeAttached();
+      await expect(page.getByTestId('graph-world')).toBeAttached();
+    },
+  },
+  {
+    name: 'Word sheet',
+    shot: 'large-text-word-sheet',
+    open: async (page) => {
+      await openUnlocked(page);
+      await page.goto('/#/?c=8&view=greek');
+      await page.locator('[data-verse="1"] [data-word="1"]').click();
+      await expect(page.getByRole('dialog', { name: 'Word' })).toBeVisible();
+    },
+  },
+  {
+    name: 'Grammar sheet',
+    shot: 'large-text-grammar-sheet',
+    open: async (page) => {
+      await openUnlocked(page);
+      await page.goto('/');
+      await page.locator('[data-verse="2"]').getByRole('button', { name: 'For', exact: true }).click();
+      await page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-parse').getByRole('button', { name: 'conjunction', exact: true }).click();
+      await expect(page.getByRole('dialog', { name: 'Grammar' }).getByRole('heading', { name: 'conjunction' })).toBeVisible();
+    },
+  },
+  {
+    name: 'Talk sheet after a reply',
+    shot: 'large-text-talk-reply',
+    open: async (page) => {
+      const fake = makeFakePostern();
+      fake.autoReply = { status: 'answered', answer: TALK_ANSWER };
+      await routePostern(page, fake);
+      await openUnlocked(page);
+      await page.goto('/');
+      await page.getByRole('button', { name: 'Talk', exact: true }).click();
+      const sheet = page.getByRole('dialog');
+      await sheet.getByRole('textbox', { name: 'Your message' }).fill('What does συνεργεῖ mean here?');
+      await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+      await expect(sheet).toContainText(TALK_ANSWER.answer);
+    },
+  },
+];
+
 /** Every control, heading and label on the open screen whose text is cut off, squeezed out or which sticks out of the window, one line each. A row that scrolls sideways
  * on purpose (the Reader's chips) may hold what is past its edge, but each thing in it is still whole. */
 async function clipped(page: Page): Promise<string[]> {
@@ -118,6 +201,8 @@ async function clipped(page: Page): Promise<string[]> {
     };
     const found: string[] = [];
     for (const el of Array.from(document.querySelectorAll(SELECTOR))) {
+      // the whole path is a picture panned under a finger: most of its nodes are past the window's edge on purpose, and its labels have a check of their own
+      if (el.closest('svg')) continue;
       if (el.getClientRects().length === 0 || getComputedStyle(el).visibility === 'hidden') continue;
       const box = el.getBoundingClientRect();
       if ((box.width === 0 || box.height === 0) && el.textContent?.trim()) {
@@ -150,7 +235,7 @@ async function clipped(page: Page): Promise<string[]> {
   }, VIEWPORT.width);
 }
 
-for (const screen of SCREENS) {
+for (const screen of [...SCREENS, ...MORE_SCREENS]) {
   test(`${screen.name} at 200% text: nothing is clipped or off the screen`, async ({ page }) => {
     await screen.open(page);
     // the phone's text size is really 200%: html's own size is twice the usual
@@ -161,8 +246,43 @@ for (const screen of SCREENS) {
   });
 }
 
-test('the five main screens are the ones the story names', () => {
+test('the screens are the ones the stories name', () => {
   expect(SCREENS.map((s) => s.name)).toEqual(['Reader', 'Quick test', 'Talk', 'Settings', 'Placement']);
+  expect(MORE_SCREENS.map((s) => s.name)).toEqual([
+    'Quick test after an answer',
+    'Verse view',
+    'Words',
+    'The whole path',
+    'Word sheet',
+    'Grammar sheet',
+    'Talk sheet after a reply',
+  ]);
+});
+
+// The whole path's labels are SVG text, drawn in the graph's own units and scaled with the picture: their size on the screen must still follow the phone's Font
+// size (a fixed 14 stayed 14 at 200%, mw-cwf538.7), and each label stays inside its node.
+test('the whole path: its labels are twice their 100% size and inside their nodes', async ({ page }) => {
+  await MORE_SCREENS[3].open(page);
+  const labels = await page.evaluate(() => {
+    const zoom = Number(document.querySelector('[data-testid="graph-world"]')?.getAttribute('data-scale'));
+    return Array.from(document.querySelectorAll('[data-idea]')).flatMap((node) => {
+      const rect = node.querySelector('rect')!.getBoundingClientRect();
+      return Array.from(node.querySelectorAll('text')).map((text) => {
+        const box = text.getBoundingClientRect();
+        return {
+          label: text.textContent ?? '',
+          // the size the eye sees: the font size in the graph's units times the picture's scale on the screen, over the zoom the reader chose
+          onScreen: (parseFloat(getComputedStyle(text).fontSize) * text.getScreenCTM()!.a) / zoom,
+          inside: box.left >= rect.left - 1 && box.right <= rect.right + 1 && box.top >= rect.top - 1 && box.bottom <= rect.bottom + 1,
+        };
+      });
+    });
+  });
+  expect(labels.length).toBeGreaterThan(0);
+  for (const { label, onScreen, inside } of labels) {
+    expect(onScreen, `"${label}" is drawn at twice 14 px`).toBeCloseTo(14 * (TEXT_PX / 16), 1);
+    expect(inside, `"${label}" is inside its node`).toBe(true);
+  }
 });
 
 // The canary: the check must see a label that is cut off, or it checks nothing.

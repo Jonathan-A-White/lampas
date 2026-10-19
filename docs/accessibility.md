@@ -44,6 +44,6 @@ An axe rule left out is listed here with its reason, and by id in `tests/support
 ## Large text (mw-cwf538.5)
 
 `tests/e2e/large-text.spec.ts` sets the browser's default font size to 200% (a Chromium profile with `default_font_size` 32, the preference a phone's Font size changes) and opens
-the Reader, Quick test, the Talk sheet, Settings and Placement at 390x844: no control, heading or label may be cut off, squeezed to nothing or off the screen, and a shot of each
+the Reader, Quick test (and after an answer), the Talk sheet (and after a reply), Settings, Placement, the Verse view, Words, the whole path, and the word and Grammar sheets at 390x844: no control, heading or label may be cut off, squeezed to nothing or off the screen, and a shot of each
 is attached (`shots/large-text-*.png`). Type is in rem (the Text size setting and the phone's own size both scale it); spacing and the 44 px tap height are px. A row that cannot hold
-its items at 200% wraps to a second line rather than clipping.
+its items at 200% wraps to a second line rather than clipping. The whole path's labels are SVG text: LadderGraph.tsx draws the picture at the root font size over 16 px (`useTextScale`) so a label and its node follow the phone's size, and the spec checks a label is twice its 100% size and inside its node.
