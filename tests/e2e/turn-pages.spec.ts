@@ -220,7 +220,7 @@ test('the place line says the page, under the text; the type is the size it is w
   await shot(page, 'turn-pages');
 });
 
-test('with Turn pages a tap in the middle third opens the word, and a verse number in the left third opens its verse', async ({ page }) => {
+test('with Turn pages a tap in the middle third opens the word, and a verse number in the left third is the page edge', async ({ page }) => {
   await openMark12(page, 'pages');
   const b = await box(page);
   // a word of verse 1 that stands wholly in the middle third
@@ -242,11 +242,78 @@ test('with Turn pages a tap in the middle third opens the word, and a verse numb
   const numberBox = await number.boundingBox();
   if (!numberBox) throw new Error('no verse number');
   expect(numberBox.x).toBeLessThan(b.left + b.width / 3);
+  // mw-5r3p30.609: the left third turns back, number or not; on the first page there is no page before, and no verse opens either
   await page.touchscreen.tap(numberBox.x + numberBox.width / 2, numberBox.y + numberBox.height / 2);
-  await expect(page).toHaveURL(/v=2/);
-  await page.goBack();
-  await expect(page).not.toHaveURL(/v=2/);
-  await expect.poll(() => at(page)).toBe(1);
+  await page.waitForTimeout(300);
+  expect(page.url()).not.toMatch(/[?&]v=/);
+  expect(await at(page)).toBe(1);
+});
+
+/** Whether a verse screen or a sheet is open: a tap on the outer thirds opens neither. */
+const opened = async (page: Page) => /[?&]v=/.test(page.url()) || (await page.getByTestId('sheet-backdrop').count()) > 0;
+
+/** Taps (x, y) and waits for the page to be `to`; fails, naming the point and what it landed on, when a verse or sheet opened instead. */
+async function tapTurns(page: Page, x: number, y: number, to: number) {
+  const hit = await page.evaluate(({ x, y }) => {
+    const el = document.elementFromPoint(x, y);
+    return el ? `${el.tagName.toLowerCase()}${el.closest('[data-verse-number]') ? ' (verse number)' : el.closest('[data-verse-play]') ? ' (play)' : ''}` : 'nothing';
+  }, { x, y });
+  await page.touchscreen.tap(x, y);
+  await expect.poll(() => at(page), `a tap at (${Math.round(x)}, ${Math.round(y)}) on ${hit} turns to page ${to}`).toBe(to);
+  expect(await opened(page), `a tap at (${Math.round(x)}, ${Math.round(y)}) on ${hit} opens nothing`).toBe(false);
+}
+
+// mw-5r3p30.609: the verse number is a 44 px button at the left edge of its verse, right where a thumb taps to turn back; like a Kindle's, the left
+// edge always turns back.
+test('with Turn pages a tap on any verse number in the left third turns back, and no verse opens', async ({ page }) => {
+  await openMark12(page, 'pages');
+  await turnTo(page, 3);
+  const b = await box(page);
+  const numbers = await page.evaluate(({ left, right }) =>
+    Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-verse-number]'))
+      .map((n) => n.getBoundingClientRect())
+      .filter((r) => r.width > 0 && r.left >= left - 1 && r.right <= right + 1)
+      .map((r) => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 })),
+  { left: b.left, right: b.right });
+  expect(numbers.length).toBeGreaterThan(2);
+  for (const n of numbers) {
+    expect(n.x).toBeLessThan(b.left + b.width / 3);
+    await tapTurns(page, n.x, n.y, 2);
+    await tapAt(page, 0.85);
+    await expect.poll(() => at(page)).toBe(3);
+  }
+  await shot(page, 'turn-pages-verse-numbers');
+});
+
+// mw-5r3p30.609: every point of the outer thirds turns the page, whatever is under it (a word, a verse number, a play button, a gap); only the middle
+// third keeps a word's tap. Pages 2 to 4 of Mark 12: none is the first or the last, whose chapter buttons keep their taps.
+test('with Turn pages every point of the left and right thirds turns the page, on three pages', async ({ page }) => {
+  test.setTimeout(240_000);
+  await openMark12(page, 'pages');
+  expect((await pageOf(page)).of).toBeGreaterThanOrEqual(5);
+  const b = await box(page);
+  const rows: number[] = [];
+  // rows closer than a verse number is tall, so every number on the page is under some row
+  for (let y = b.top + 10; y < b.bottom - 4; y += 24) rows.push(y);
+  const columns = (from: number, to: number) => [0, 1, 2].map((i) => b.left + b.width * (from + ((to - from) * i) / 2));
+  const left = columns(0.04, 0.3);
+  const right = columns(0.7, 0.96);
+  await turnTo(page, 2);
+  for (const on of [2, 3, 4]) {
+    if (on > 2) {
+      await tapAt(page, 0.85);
+      await expect.poll(() => at(page)).toBe(on);
+    }
+    // each point is tapped on page `on` in both thirds, and the page it turns to is turned home by the same point of the other third
+    for (const y of rows) {
+      for (let i = 0; i < left.length; i++) {
+        await tapTurns(page, left[i], y, on - 1);
+        await tapTurns(page, right[i], y, on);
+        await tapTurns(page, right[i], y, on + 1);
+        await tapTurns(page, left[i], y, on);
+      }
+    }
+  }
 });
 
 test('with Scroll nothing changes: the text scrolls, a tap on the right third turns no page, a swipe opens the next chapter', async ({ page }) => {
