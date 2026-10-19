@@ -106,3 +106,75 @@ test('a bare open reads the chapter last open, and a chapter fetched once reads 
   expect(await page.locator('[data-reader]').evaluate((el) => el.scrollTop)).toBe(0);
   await context.setOffline(false);
 });
+
+test.describe('a reference typed in Choose a book (390x844)', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  async function openPicker(page: Page) {
+    await openUnlocked(page);
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+    await page.getByRole('heading', { name: 'Romans 8', level: 1 }).getByRole('button').click();
+    const picker = page.getByRole('dialog', { name: 'Choose a chapter' });
+    await expect(picker).toBeVisible();
+    return picker;
+  }
+
+  test('John 18:36 opens John 18 at verse 36', async ({ page }) => {
+    const picker = await openPicker(page);
+    const search = picker.getByRole('searchbox', { name: 'Search books' });
+    await search.fill('John 18:36');
+    await expect(picker.getByText('No book matches')).toHaveCount(0);
+    await search.press('Enter');
+    await expect(picker).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'John 18', level: 1 })).toBeVisible();
+    await expect(page.locator('[data-verse="36"]')).toBeVisible();
+    expect(page.url()).toContain('v=36');
+    await shot(page, 'chapter-picker-reference-390x844');
+  });
+
+  test('a chapter past the book end says how many it has, and a book name alone still filters', async ({ page }) => {
+    const picker = await openPicker(page);
+    const search = picker.getByRole('searchbox', { name: 'Search books' });
+    await search.fill('John 99');
+    await expect(picker.getByText('John has 21 chapters')).toBeVisible();
+    await search.press('Enter');
+    await expect(picker).toBeVisible();
+    await expect(picker.getByText('John has 21 chapters')).toBeVisible();
+
+    await search.fill('John');
+    await expect(picker.getByText('John has 21 chapters')).toHaveCount(0);
+    await expect(picker.locator('[data-book]')).toHaveCount(4);
+    await search.press('Enter');
+    await expect(picker).toBeVisible();
+  });
+
+  test('jn18, 1 Jn 2:1 and Ps 23 open their chapters', async ({ page }) => {
+    const picker = await openPicker(page);
+    const search = picker.getByRole('searchbox', { name: 'Search books' });
+    await search.fill('Ps 23');
+    await search.press('Enter');
+    await expect(picker.getByRole('heading', { name: 'Psalms' })).toBeVisible();
+
+    await picker.getByRole('button', { name: '‹ Books' }).click();
+    await picker.getByRole('searchbox', { name: 'Search books' }).fill('1 Jn 2:1');
+    await picker.getByRole('searchbox', { name: 'Search books' }).press('Enter');
+    await expect(page.getByRole('heading', { name: '1 John 2', level: 1 })).toBeVisible();
+    await expect(picker).toHaveCount(0);
+  });
+
+  test('jn18 opens John 18, and a verse of the chapter he is in opens that verse', async ({ page }) => {
+    const picker = await openPicker(page);
+    await picker.getByRole('searchbox', { name: 'Search books' }).fill('jn18');
+    await picker.getByRole('button', { name: 'Go to John 18' }).click();
+    await expect(page.getByRole('heading', { name: 'John 18', level: 1 })).toBeVisible();
+    await expect(picker).toHaveCount(0);
+
+    await page.getByRole('heading', { name: 'John 18', level: 1 }).getByRole('button').click();
+    const again = page.getByRole('dialog', { name: 'Choose a chapter' });
+    await again.getByRole('searchbox', { name: 'Search books' }).fill('John 18:36');
+    await again.getByRole('searchbox', { name: 'Search books' }).press('Enter');
+    await expect(again).toHaveCount(0);
+    expect(page.url()).toContain('v=36');
+  });
+});
