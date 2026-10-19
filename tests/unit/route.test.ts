@@ -27,6 +27,7 @@ describe('the address', () => {
     expect(routeOf('#/test')).toBe('test');
     expect(routeOf('#/drill')).toBe('drill');
     expect(routeOf('#/review')).toBe('review');
+    expect(routeOf('#/today')).toBe('today');
     expect(routeOf('#/placement')).toBe('placement');
     expect(routeOf('#/paradigms')).toBe('paradigms');
     expect(routeOf('#/paradigms?t=article&mode=review')).toBe('paradigms');

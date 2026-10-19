@@ -1,4 +1,6 @@
 import { useEffect, useLayoutEffect } from 'react';
+import { noteDailyChange } from './data/daily/dailyStore';
+import { subscribe } from './events/bus';
 import { seedLevelsIfFirstOpen, seedScheduleIfFirstOpen } from './data/repositories';
 import { About } from './About';
 import { Essay } from './Essay';
@@ -30,6 +32,7 @@ import { PlacementScreen } from './PlacementScreen';
 import { QuizScreen } from './QuizScreen';
 import { ShareScreen } from './share/ShareScreen';
 import { ReviewScreen } from './ReviewScreen';
+import { Today } from './today/Today';
 import { SettingsScreen } from './SettingsScreen';
 import { BarSlot, LampasSpeakingBar } from './speech/SpeakingBarSlot';
 import { startSpeechSettingsSync } from './speech/settingsSync';
@@ -61,6 +64,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
     const stop = startUsageLog();
     return () => void stop();
   }, []);
+  // A change to a Settings > Daily row answers Today's explanation of what it could hold, so it is not shown again (src/data/daily/dailyStore.ts).
+  useEffect(() => subscribe('setting-changed', (event) => void noteDailyChange(event.key)), []);
   // A new install starts empty (mw-5r3p30.385): nothing is put in the word list, on the schedule or on the grammar ladder at the first open.
   // These two are the upgrade paths of a phone that already has data: a store from before v10 that has words but no schedule gets them scheduled, and
   // a store from before v11 has the terms he marked I know this make their ideas solid. Each does nothing without his own rows to work from, and
@@ -92,6 +97,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <DrillScreen newRandom={newRandom} />
       ) : route === 'review' ? (
         <ReviewScreen newRandom={newRandom} />
+      ) : route === 'today' ? (
+        <Today />
       ) : route === 'paradigms' ? (
         <ParadigmsScreen />
       ) : route === 'placement' ? (
