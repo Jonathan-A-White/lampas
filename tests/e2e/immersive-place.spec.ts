@@ -108,6 +108,35 @@ test('it reads the book and chapter and a percent that rises as the text is scro
   expect(second).toBeLessThan(100);
 });
 
+// 100% means the last verse is read (mw-5r3p30.479): with the last verse's bottom at the foot of the box the line reads 100%, though the chapter's
+// links sit under it and the box could scroll further; it was 93% there, and 100% came only at the page's end.
+test('with the last verse of Mark 12 scrolled to the foot the line reads 100%, though the box scrolls further', async ({ page }) => {
+  await openMark12(page, 'on');
+  await scrollText(page, 300);
+  await expect(place(page)).toBeVisible();
+  await page.waitForTimeout(700);
+  // the last verse's bottom to the box's bottom
+  const left = await page.evaluate(() => {
+    const box = document.querySelector('[data-reader]') as HTMLElement;
+    const verses = box.querySelectorAll('[data-verse]');
+    const last = verses[verses.length - 1] as HTMLElement;
+    box.scrollTop += last.getBoundingClientRect().bottom - box.getBoundingClientRect().bottom;
+    return box.scrollHeight - box.clientHeight - box.scrollTop;
+  });
+  // text is still to come under the last verse
+  expect(left).toBeGreaterThan(20);
+  await expect.poll(() => percentOf(page)).toBe(100);
+
+  // a verse earlier is not the end
+  await page.evaluate(() => {
+    const box = document.querySelector('[data-reader]') as HTMLElement;
+    const verses = box.querySelectorAll('[data-verse]');
+    const before = verses[verses.length - 2] as HTMLElement;
+    box.scrollTop += before.getBoundingClientRect().bottom - box.getBoundingClientRect().bottom;
+  });
+  await expect.poll(() => percentOf(page)).toBeLessThan(100);
+});
+
 test('it is small and dim, and covers none of the text', async ({ page }) => {
   await openMark12(page, 'on');
   await scrollText(page, 600);

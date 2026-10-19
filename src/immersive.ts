@@ -254,20 +254,30 @@ export function useImmersive(
   return { away: enabled && away, toggle };
 }
 
-/** How far through the text of `box` he has scrolled, 0 to 100 (a text that fits is all of it: 100). */
+/** Where the chapter's text ends in `box`'s own scrolling: the bottom of its last verse, not the chapter links under it (so the line reads 100% with the last
+ * verse at the foot, mw-5r3p30.479); the whole scroll height where no verse is drawn (a chapter still loading, a failed one). */
+export function textEnd(box: HTMLElement): number {
+  const verses = box.querySelectorAll('[data-verse]');
+  const last = verses[verses.length - 1];
+  if (!last) return box.scrollHeight;
+  const end = last.getBoundingClientRect().bottom - box.getBoundingClientRect().top + box.scrollTop;
+  return Math.min(box.scrollHeight, Math.max(end, box.clientHeight));
+}
+
+/** How far through the text of `box` he has scrolled, 0 to 100 (a text that fits is all of it: 100). `scrollHeight` is where the text ends (textEnd). */
 export function scrolledPercent(top: number, scrollHeight: number, clientHeight: number): number {
   const range = scrollHeight - clientHeight;
   if (range <= 0) return 100;
   return Math.max(0, Math.min(100, Math.floor((top / range) * 100)));
 }
 
-/** The percent of `box` scrolled through, kept current while `enabled` (it follows the scrolling and any change of size of the box or its text). */
+/** The percent of `box` scrolled through, up to the end of its last verse, kept current while `enabled` (it follows the scrolling and any change of size of the box or its text). */
 export function useScrolledPercent(enabled: boolean, box: RefObject<HTMLElement | null>): number {
   const [percent, setPercent] = useState(0);
   useEffect(() => {
     const el = box.current;
     if (!enabled || !el) return;
-    const read = () => setPercent(scrolledPercent(el.scrollTop, el.scrollHeight, el.clientHeight));
+    const read = () => setPercent(scrolledPercent(el.scrollTop, textEnd(el), el.clientHeight));
     read();
     el.addEventListener('scroll', read, { passive: true });
     // the text arrives after the box, and the box grows when the bars go: the percent is of what is there now
