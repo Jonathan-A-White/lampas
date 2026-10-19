@@ -9,7 +9,7 @@
     "greek": { "description": "The Greek of the verse or of the passage under a heading (the whole passage), or of the chapter's first three verses. Missing in a talk from a screen (`screen` is present), which is not about a text.", "type": "string", "minLength": 1 },
     "english": { "description": "The same text in English (the Majority Standard Bible), of the same verses. Words the translators supplied are between asterisks (*was* king): they are in italics in his reader. Missing in a talk from a screen.", "type": "string", "minLength": 1 },
     "greek_words": {
-      "description": "Optional. The words of `greek`, in text order, each with its form as it stands in the text, its lemma (the dictionary form), the lexicon's gloss and its parsing in plain words, from the app's own chapter data; a word the text repeats with the same lemma and parsing is listed once. For a long passage the list may stop part-way. Missing in a talk from a screen.",
+      "description": "Optional. The words of `greek`, in text order, each with its form as it stands in the text, its lemma (the dictionary form), the lexicon's gloss and its parsing in plain words, from the app's own chapter data, and the app's respelling, syllables and stress of the form; a word the text repeats with the same lemma and parsing is listed once. For a long passage the list may stop part-way. Missing in a talk from a screen.",
       "type": "array",
       "items": {
         "type": "object",
@@ -19,7 +19,10 @@
           "form": { "type": "string", "minLength": 1 },
           "lemma": { "type": "string", "minLength": 1 },
           "gloss": { "type": "string" },
-          "parse": { "type": "string" }
+          "parse": { "type": "string" },
+          "respelling": { "description": "The word as the app's pronunciation respells it, the stressed syllable in capitals.", "type": "string", "minLength": 1 },
+          "syllables": { "description": "The word cut into syllables by the app, in order, in Greek letters. Use these exactly for a question about how to say the word; never count or cut the word yourself.", "type": "array", "minItems": 1, "maxItems": 20, "items": { "type": "string", "minLength": 1, "maxLength": 80 } },
+          "stress": { "description": "Only with syllables: the 0-based index of the stressed syllable in syllables (0 is the first). Absent when the word carries no accent.", "type": "number", "minimum": 0, "maximum": 19 }
         }
       }
     },

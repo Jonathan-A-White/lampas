@@ -8,3 +8,7 @@ what takes him from the dictionary form to a form of the text, name the lemma fr
 When a word he names is not in `greek_words` (a word of another verse, or past the point where a long list stops), say that you are going from
 your own knowledge and do not claim the app's data for it. If `focus` is present its `lemma` and `parse` are the app's too, and agree with
 this list.
+
+A word of `greek_words` also carries the app's `respelling`, `syllables` and `stress`. When he asks how to say a word of the text in his own words
+(typed or spoken, so there is no `focus`: "how do I say σβέννυτε?"), find it in `greek_words` by its `form` and answer from them as "Help with a word" says
+for a sound question.
