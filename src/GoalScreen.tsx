@@ -323,8 +323,8 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
   return (
     <>
       <main className="screen min-h-0 flex-1 px-4 pt-4">
-        <div className="flex items-center gap-3">
-          <h2 data-testid="goal-title" className="min-w-0 flex-1 text-2xl font-semibold">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <h2 data-testid="goal-title" className="flex-1 basis-48 title-wrap text-2xl font-semibold">
             {title}
           </h2>
           <button type="button" onClick={() => navigate('settings')} className="min-h-12 shrink-0 rounded-xl border border-line px-4 text-base font-medium text-accent">
@@ -410,12 +410,12 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
                     data-lemma={w.lemma}
                     aria-label={`Add ${w.lemma} to my words`}
                     onClick={() => void add(w.lemma, w.gloss)}
-                    className="flex min-h-12 w-full items-center gap-3 rounded-xl border border-line px-3 py-1 text-left active:bg-line"
+                    className="flex min-h-12 w-full flex-wrap items-center gap-x-3 rounded-xl border border-line px-3 py-1 text-left active:bg-line"
                   >
                     <span {...GREEK_LANG} className="font-greek text-2xl">
                       {w.lemma}
                     </span>
-                    <span className="flex-1 title-wrap text-base text-muted">{w.gloss}</span>
+                    <span className="flex-1 basis-32 title-wrap text-base text-muted">{w.gloss}</span>
                     <span aria-hidden="true" className="shrink-0 text-base font-medium text-accent">
                       Add
                     </span>

@@ -15,10 +15,13 @@ import {
   openAskApproach,
   openCheck,
   openDrillIt,
+  openGoal,
   openGoalLists,
+  openIdea,
   openHebrewGuide,
   openLessonStrip,
   openLetterDrill,
+  openShare,
   openShortDrill,
   openTryIt,
   openWriteIt,
@@ -218,6 +221,16 @@ const MORE_SCREENS: readonly Screen[] = [
   { name: 'Goal screen', shot: 'large-text-goal', open: openGoalLists },
   { name: 'Hebrew guide', top: true, shot: 'large-text-hebrew-guide', open: async (page) => void (await openHebrewGuide(page)) },
   { name: 'Ask for another approach', top: true, shot: 'large-text-ask-approach', open: async (page) => void (await openAskApproach(page)) },
+  // mw-5r3p30.634: what the sheets above left unchecked under them (the sheet on top is the only dialog checked with `top`), and the Share screen
+  { name: 'Greek alphabet letter tiles', shot: 'large-text-alphabet', open: async (page) => void (await openIdea(page, '1 John 1', 'The Greek alphabet')) },
+  { name: 'Goal screen, Read Romans 8', shot: 'large-text-goal-romans', open: async (page) => {
+      await openGoal(page, 'Romans 8');
+      await expect(page.getByRole('button', { name: 'Add πνεῦμα to my words' })).toBeAttached();
+      await page.getByRole('button', { name: 'Add πνεῦμα to my words' }).scrollIntoViewIfNeeded();
+    },
+  },
+  { name: 'Drill it with the Goal screen under it', shot: 'large-text-drill-it-goal', open: async (page) => void (await openDrillIt(page, 'The second declension')) },
+  { name: 'Share to Lampas', shot: 'large-text-share', open: async (page) => void (await openShare(page)) },
 ];
 
 /** Every control, heading and label on the open screen whose text is cut off, squeezed out or which sticks out of the window, one line each. A row that scrolls sideways
@@ -371,6 +384,10 @@ test('the screens are the ones the stories name', () => {
     'Goal screen',
     'Hebrew guide',
     'Ask for another approach',
+    'Greek alphabet letter tiles',
+    'Goal screen, Read Romans 8',
+    'Drill it with the Goal screen under it',
+    'Share to Lampas',
   ]);
 });
 

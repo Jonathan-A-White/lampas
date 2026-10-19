@@ -208,3 +208,38 @@ export async function openAskApproach(page: Page): Promise<Locator> {
   await expect(sheet.locator('[data-picture]')).toHaveCount(2);
   return sheet;
 }
+
+/** The Share to Lampas sheet on shared words, with three past talks to place them in and the list Choose a talk open. */
+export async function openShare(page: Page): Promise<Locator> {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse]').first()).toBeVisible();
+  const now = Date.now();
+  await page.evaluate(
+    ([at]) =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const idb = open.result;
+          const tx = idb.transaction(['shares', 'talks'], 'readwrite');
+          tx.objectStore('shares').add({ id: 'wide', createdAt: at, text: 'Paul writes in Rom 8:28-30 and 1 John 1:1', files: [] });
+          for (let i = 1; i <= 3; i += 1) {
+            tx.objectStore('talks').add({ ref: `rom.8.${i}`, q: `What does the word in verse ${i} mean for someone who has only just begun to read?`, a: 'An answer.', words: [], when: at - i * 3_600_000 });
+          }
+          tx.oncomplete = () => {
+            idb.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+    [now] as const,
+  );
+  await page.goto('/#/share?s=wide');
+  const sheet = page.getByRole('dialog', { name: 'Share to Lampas' });
+  await expect(sheet).toBeVisible();
+  await sheet.getByRole('button', { name: 'Choose a talk' }).click();
+  await expect(sheet.getByRole('list', { name: 'Recent talks' })).toBeVisible();
+  return sheet;
+}
