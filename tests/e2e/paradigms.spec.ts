@@ -360,4 +360,17 @@ test.describe('a double tap on a two-state toggle', () => {
     await cell.tap();
     await expect(cell).toHaveAttribute('data-state', 'hidden');
   });
+
+  // the sweep of mw-svw421.16: a locked form opens and puts away the line saying what it needs, a two-state control too
+  test('mw-svw421.16 sweep: a double tap on a locked form leaves the line saying what it needs open', async ({ page }) => {
+    await openArticle(page);
+    const lock = page.locator('[data-cell][data-state="locked"]').first();
+    await lock.scrollIntoViewIfNeeded();
+    await tapTwice(page, lock, 120, { touch: true });
+    await pageTime(page, SETTLE_MS + 100);
+    await expect(page.getByTestId('lock-needs')).toHaveCount(1);
+    // a tap after the moment has passed is his next, and puts the line away
+    await lock.tap();
+    await expect(page.getByTestId('lock-needs')).toHaveCount(0);
+  });
 });
