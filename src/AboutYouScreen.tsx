@@ -33,6 +33,7 @@ import {
 } from './data/repositories/profile';
 import { backTo } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { LimitedInput, LimitedTextarea } from './ui/LimitedField';
 
 const BUTTON = 'min-h-12 min-w-12 rounded-lg px-3 text-base font-medium text-accent active:bg-line';
 const FIELD = 'block min-h-12 w-full rounded-lg border border-line bg-canvas px-3 py-2 text-lg';
@@ -65,7 +66,7 @@ function Note({ note }: { note: ProfileNote }) {
   if (editing) {
     return (
       <li data-profile-note className="border-b border-line py-3">
-        <textarea aria-label="Note" rows={2} maxLength={PROFILE_NOTE_MAX} value={text} onChange={(e) => setText(e.target.value)} className={`${FIELD} resize-none`} />
+        <LimitedTextarea aria-label="Note" rows={2} maxLength={PROFILE_NOTE_MAX} value={text} onChange={(e) => setText(e.target.value)} className={`${FIELD} resize-none`} />
         {problem ? (
           <p role="alert" className="pt-1 text-base text-bad">
             {problem}
@@ -120,7 +121,7 @@ function LearnedRow({ item, suggestion }: { item: Learned; suggestion: boolean }
         <label htmlFor={`learned-${item.field}`} className="block pb-1 text-base text-muted">
           {label}
         </label>
-        <input id={`learned-${item.field}`} type="text" aria-label="Learned value" maxLength={LEARNED_VALUE_MAX} value={value} onChange={(e) => setValue(e.target.value)} className={FIELD} />
+        <LimitedInput id={`learned-${item.field}`} type="text" aria-label="Learned value" maxLength={LEARNED_VALUE_MAX} value={value} onChange={(e) => setValue(e.target.value)} className={FIELD} />
         {problem ? (
           <p role="alert" className="pt-1 text-base text-bad">
             {problem}
@@ -204,7 +205,7 @@ function Form({ profile }: { profile: Profile }) {
         <label htmlFor="about-age" className="block pb-1 text-lg font-medium">
           Age
         </label>
-        <input
+        <LimitedInput
           id="about-age"
           type="text"
           autoComplete="off"
@@ -256,7 +257,7 @@ function Form({ profile }: { profile: Profile }) {
         <label htmlFor="about-background" className="block pb-1 text-lg font-medium">
           Background
         </label>
-        <textarea
+        <LimitedTextarea
           id="about-background"
           rows={3}
           maxLength={PROFILE_BACKGROUND_MAX}
@@ -273,7 +274,7 @@ function Form({ profile }: { profile: Profile }) {
         <label htmlFor="about-why" className="block pb-1 text-lg font-medium">
           Why
         </label>
-        <textarea
+        <LimitedTextarea
           id="about-why"
           rows={3}
           maxLength={PROFILE_WHY_MAX}

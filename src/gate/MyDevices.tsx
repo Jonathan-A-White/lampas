@@ -7,6 +7,7 @@ import { listDevices, removeDevice, renameDevice, type RegisterDevice } from '..
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose } from '../ui/sheetDrag';
+import { LimitedInput } from '../ui/LimitedField';
 
 const FIELD = 'min-h-12 w-full rounded-lg border border-line bg-surface px-3 text-base text-fg';
 const SMALL = 'min-h-12 rounded-xl border border-line px-4 text-base font-medium disabled:opacity-60';
@@ -143,7 +144,7 @@ export function MyDevices({ deviceKey, onRemovedThisPhone }: Props) {
                     <label htmlFor="device-name" className="text-base font-medium">
                       Device name
                     </label>
-                    <input
+                    <LimitedInput
                       id="device-name"
                       ref={focusOnMount}
                       type="text"

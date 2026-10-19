@@ -19,6 +19,7 @@ import { fitScreen, SCREEN_NAMES, type ScreenFact } from '../tutor/screen';
 import { useReportScreen } from '../tutor/screenContext';
 import { isTooLong } from '../ui/lengthLimit';
 import { LengthNote } from '../ui/LengthNote';
+import { LimitedInput } from '../ui/LimitedField';
 
 /** What the talk opens with in its composer: he finishes the sentence. */
 export const ASK_BEGUN = "I'd like Lampas to have ";
@@ -113,7 +114,7 @@ function MoreForm({ kind }: { kind: MoreKind }) {
             <label htmlFor={ids.name} className="block pb-1 text-base font-medium">
               {form.what}
             </label>
-            <input
+            <LimitedInput
               id={ids.name}
               type="text"
               maxLength={MAX_MORE_NAME}
@@ -153,7 +154,7 @@ function MoreForm({ kind }: { kind: MoreKind }) {
             <label htmlFor={ids.link} className="block pb-1 text-base font-medium">
               Link
             </label>
-            <input
+            <LimitedInput
               id={ids.link}
               type="text"
               inputMode="url"

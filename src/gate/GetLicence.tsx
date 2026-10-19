@@ -4,6 +4,7 @@
 // only, and are dropped once the licence is issued; nothing is stored.
 import { useId, useState } from 'react';
 import { confirmRegistration, RegisterError, startRegistration } from '../services/register';
+import { LimitedInput } from '../ui/LimitedField';
 
 type Step = 'details' | 'codes' | 'done';
 
@@ -106,13 +107,13 @@ export function GetLicence({ deviceKey, onCancel }: Props) {
         <Field
           label="Email code"
           input={(field) => (
-            <input {...field} type="text" inputMode="numeric" autoComplete="off" maxLength={12} value={emailCode} onChange={(e) => setEmailCode(e.target.value)} className={FIELD} />
+            <LimitedInput {...field} type="text" inputMode="numeric" autoComplete="off" maxLength={12} value={emailCode} onChange={(e) => setEmailCode(e.target.value)} className={FIELD} />
           )}
         />
         <Field
           label="Phone code"
           input={(field) => (
-            <input {...field} type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={12} value={phoneCode} onChange={(e) => setPhoneCode(e.target.value)} className={FIELD} />
+            <LimitedInput {...field} type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={12} value={phoneCode} onChange={(e) => setPhoneCode(e.target.value)} className={FIELD} />
           )}
         />
         {alert}
