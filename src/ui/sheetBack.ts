@@ -12,6 +12,11 @@
 // the sheet showed. Back to the entry before runs that undo. A move that closes the sheets above its owner (an example word tapped
 // on the Grammar or idea sheet) keeps their entries; the undo brings them back and they take their entries again instead of pushing.
 //
+// A reload (or the phone bringing a discarded page back) keeps the entries but not the sheets: the page comes up on an entry
+// marked with a sheet depth and no sheet open. leaveStaleSheets (main.tsx, before the first render) goes back over those entries
+// once, to the entry beneath them at the same address, so the first Back leaves the screen instead of stepping over each one
+// (mw-5r3p30.505).
+//
 // Focus goes with the sheet (mw-cwf538.3, for TalkBack and a keyboard): when a sheet opens, focus moves to its heading (a dialog's first h1 to h3), and when it
 // closes, back to what was focused when it opened (what he tapped), unless he has moved on and focus is somewhere else.
 //
@@ -64,6 +69,23 @@ function settle(): void {
 function skipStale(): void {
   const depth = depthOf();
   if (depth > open && !steps.has(depth) && !steps.has(depth + 1)) window.history.back();
+}
+
+/**
+ * On a load that finds a sheet mark in history.state, no sheet is open (a reload drops them): go back over the entries they left,
+ * to the one beneath at the same address. When the browser kept no entries beneath (go has nowhere to land), the mark is taken off
+ * the entry instead, so a later sheet counts from 0.
+ */
+export function leaveStaleSheets(): void {
+  const stale = depthOf();
+  if (stale <= 0) return;
+  window.history.go(-stale);
+  setTimeout(() => {
+    if (open > 0 || depthOf() === 0) return;
+    const rest = { ...(window.history.state as Record<string, unknown> | null) };
+    delete rest.sheet;
+    window.history.replaceState(rest, '', window.location.href);
+  }, 1000);
 }
 
 /** Back over a move made inside a sheet: put the content back as it was before the move. */

@@ -89,3 +89,47 @@ test('an example word tapped on the idea sheet is one Back step: Back brings the
   await word.getByRole('button', { name: 'Done' }).click();
   await expect(word).toBeHidden();
 });
+
+test('after a reload with the word card, plural and singular open, the first Back leaves 1 John 2 at once, for the screen before it (mw-5r3p30.505)', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  await openUnlocked(page);
+  await page.goto('/#/words');
+  await page.goto('/#/?b=1jn&c=2&view=greek');
+  await page.locator('[data-verse="1"]').getByRole('button', { name: 'Τεκνία', exact: true }).click();
+  const word = page.getByRole('dialog', { name: 'Word' });
+  const grammar = page.getByRole('dialog', { name: 'Grammar' });
+  await word.getByTestId('sheet-parse').getByRole('button', { name: 'plural', exact: true }).click();
+  await grammar.getByRole('group', { name: 'Related terms' }).getByRole('button', { name: 'singular', exact: true }).click();
+  await expect(grammar.getByRole('heading', { name: 'singular' })).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '1 John 2' })).toBeVisible();
+  await expect(word).toBeHidden();
+  await expect(grammar).toBeHidden();
+  // the entries the sheets left are behind him: nothing is drawn over the address, and he stands on the Reader's own entry
+  await expect.poll(() => page.evaluate(() => (history.state as { sheet?: number } | null)?.sheet ?? 0)).toBe(0);
+
+  await page.goBack();
+  await expect(page).toHaveURL(/#\/words$/);
+  await shot(page, 'sheet-back-reload');
+});
+
+for (const moves of [0, 1]) {
+  test(`after a reload with the word card${moves ? ', then plural,' : ''} open, the first Back leaves 1 John 2 (mw-5r3p30.505)`, async ({ page }) => {
+    await page.setViewportSize(VIEWPORT);
+    await openUnlocked(page);
+    await page.goto('/#/words');
+    await page.goto('/#/?b=1jn&c=2&view=greek');
+    await page.locator('[data-verse="1"]').getByRole('button', { name: 'Τεκνία', exact: true }).click();
+    const word = page.getByRole('dialog', { name: 'Word' });
+    await expect(word).toBeVisible();
+    if (moves) await word.getByTestId('sheet-parse').getByRole('button', { name: 'plural', exact: true }).click();
+    if (moves) await expect(page.getByRole('dialog', { name: 'Grammar' })).toBeVisible();
+
+    await page.reload();
+    await expect(page.getByRole('heading', { name: '1 John 2' })).toBeVisible();
+    await expect.poll(() => page.evaluate(() => (history.state as { sheet?: number } | null)?.sheet ?? 0)).toBe(0);
+    await page.goBack();
+    await expect(page).toHaveURL(/#\/words$/);
+  });
+}

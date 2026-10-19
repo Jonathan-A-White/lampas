@@ -19,8 +19,11 @@ import { startBookRequests } from './services/bookRequests';
 import { LicensedTips } from './tips/LicensedTips';
 import { hasNewsSince } from './whatsNew/hasNewsSince';
 import { installScrollGuard } from './ui/scrollGuard';
+import { leaveStaleSheets } from './ui/sheetBack';
 
 installScrollGuard();
+// A reload drops the open sheets but keeps their history entries: step back over them, so the first Back leaves the screen.
+leaveStaleSheets();
 // The last Theme and Text size, painted before the first render.
 restoreAppearance();
 // Reopen where he left it: the address and the scroll offsets, before the first render reads them.
