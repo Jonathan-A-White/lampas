@@ -1,5 +1,5 @@
 // features/steps/reader-chips.steps.tsx — runs features/reader-chips.feature: the Reader's one slim row of chips under the header
-// (src/ReaderChips.tsx): Due, Goal, Tip and New words. Layout (the 40 px row, where the text starts) is proven by tests/e2e/reader-top.spec.ts.
+// (src/ReaderChips.tsx): Today, Goal, Tip and New words. Layout (the 40 px row, where the text starts) is proven by tests/e2e/reader-top.spec.ts.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -11,6 +11,7 @@ import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { forgetFrequency } from '../../src/data/frequency';
 import { keepTip, setGoal } from '../../src/data/repositories';
+import { todayPieces } from '../../src/today/pieces';
 import { DAY } from '../../src/data/schedule';
 import { forgetSkipped } from '../../src/data/skipped';
 import { clearBus } from '../../src/events/bus';
@@ -75,12 +76,13 @@ async function openSeeded(prepare: () => Promise<void>): Promise<void> {
 }
 
 const row = () => screen.queryByTestId('reader-chips');
-const planChip = () => row()?.querySelector('[data-testid="plan-chip"]');
-/** The Greek chips: the Plan chip (features/reading-plan.feature) is always in the row and is left out. */
-const chipNames = (): string[] => (row() ? [...row()!.querySelectorAll('button:not([data-testid="plan-chip"])')].map((b) => (b.textContent ?? '').trim()) : []);
+/** A chip's text; the Today chip's count ('Today · 1 of 7' changes with the day of the month) is left out, its own scenarios read it. */
+const labelOf = (b: Element): string => (b.textContent ?? '').trim().replace(/^Today · \d+ of \d+$/, 'Today');
+const chipNames = (): string[] => (row() ? [...row()!.querySelectorAll('button')].map(labelOf) : []);
+const todayChip = () => screen.findByTestId('today-chip');
 const chip = async (text: string): Promise<HTMLElement> => {
   const found = await waitFor(() => {
-    const button = [...(row()?.querySelectorAll('button:not([data-testid="plan-chip"])') ?? [])].find((b) => (b.textContent ?? '').trim() === text);
+    const button = [...(row()?.querySelectorAll('button') ?? [])].find((b) => labelOf(b) === text);
     if (!button) throw new Error(`no chip ${text}; the row has ${chipNames().join(', ')}`);
     return button;
   });
@@ -105,15 +107,15 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Each chip opens what its strip opened', ({ Given, When, Then, And }) => {
     Given(WITH_EVERYTHING, withEverything);
-    Then('the row under the header has the chips {string}, {string} and {string}', async (_, due: string, goal: string, news: string) => {
-      await chip(due);
+    Then('the row under the header has the chips {string}, {string} and {string}', async (_, today: string, goal: string, news: string) => {
+      await chip(today);
       await goalChip();
       await chip(news);
-      expect(chipNames()).toEqual([due, expect.stringMatching(new RegExp(`^${goal} \\d+/\\d+$`)), news]);
+      expect(chipNames()).toEqual([today, expect.stringMatching(new RegExp(`^${goal} \\d+/\\d+$`)), news]);
     });
     When('he taps the chip {string}', async (_, text: string) => user.click(await chip(text)));
-    Then('the Review screen is shown', async () => {
-      await screen.findByTestId('due-today');
+    Then('the Today screen is shown', async () => {
+      await screen.findByRole('heading', { name: 'Today', level: 1 });
     });
     When('he goes back to the Reader', backToReader);
     And('he taps the goal chip', async () => user.click(await goalChip()));
@@ -129,8 +131,10 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('The chips keep the full text as their accessible names', ({ Given, Then, And }) => {
     Given(WITH_EVERYTHING, withEverything);
-    Then('the chip {string} is named {string}', async (_, text: string, name: string) => {
-      expect(await chip(text)).toHaveAccessibleName(name);
+    Then('the Today chip is named like its text', async () => {
+      const today = await todayChip();
+      expect(today).toHaveAccessibleName(today.textContent ?? '');
+      expect(today.textContent).toMatch(/^Today · 0 of \d+$/);
     });
     And('the goal chip is named with the title, the solid words out of 16 and the ideas', async () => {
       const goal = await goalChip();
@@ -143,7 +147,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('A chip with nothing to show is not drawn, and the Plan chip is then alone in the row', ({ Given, Then, And }) => {
+  Scenario('A chip with nothing to show is not drawn, and the Today chip is then alone in the row', ({ Given, Then }) => {
     Given('Lampas is opened on Romans 8 with nothing due, no goal and no new words', async () => {
       await openSeeded(async () => {
         const lemmas = new Set(chapter8.verses.flatMap((v) => v.g.map((w) => nfc(w.l))));
@@ -152,21 +156,53 @@ describeFeature(feature, ({ Scenario }) => {
         await db.reviews.clear();
       });
     });
-    Then('the row under the header has no chip', async () => {
+    Then('the row under the header holds only the chip {string}', async (_, text: string) => {
       await waitFor(() => expect(screen.queryByTestId('new-words')).toBeNull());
-      // The Due chip is counted from the database after the seed is changed, so it can still read the old count for a moment.
-      await waitFor(() => expect(chipNames()).toEqual([]));
+      await waitFor(() => expect(chipNames()).toEqual([text]));
     });
-    And('the row holds only the Plan chip, {string}', async (_, text: string) => {
-      await waitFor(() => expect(planChip()).not.toBeNull());
-      expect([...row()!.querySelectorAll('button')].map((b) => (b.textContent ?? '').trim())).toEqual([text]);
+  });
+
+  /** What Today holds on the day with every Daily piece On (the settings' defaults), the day's Psalms and Proverbs counted one by one. */
+  const holds = (): number => todayPieces({ review: 'on', plan: 'on', psalms: 'on', devotional: 'on' }, new Date()).length;
+  const countRead = (ticked: number) => async () => {
+    await waitFor(async () => expect((await todayChip()).textContent).toBe(`Today · ${ticked} of ${holds()}`));
+  };
+
+  Scenario('The Today chip counts the pieces Today holds and those he has ticked', ({ Given, When, And, Then }) => {
+    Given(WITH_EVERYTHING, withEverything);
+    Then('the Today chip counts every piece Today holds, none ticked', countRead(0));
+    When('he taps the chip {string}', async (_, text: string) => user.click(await chip(text)));
+    And('he ticks the box {string} on Today', async (_, name: string) => user.click(await screen.findByRole('checkbox', { name })));
+    And('he goes back to the Reader', backToReader);
+    Then('the Today chip counts one piece ticked', countRead(1));
+  });
+
+  Scenario('With Tick boxes off the chip says just Today', ({ Given, When, Then }) => {
+    Given(WITH_EVERYTHING, withEverything);
+    When('he turns Tick boxes off', async () => {
+      await db.settings.put({ key: 'dailyTicks', value: 'off' });
+    });
+    Then('the Today chip reads exactly {string}', async (_, text: string) => {
+      await waitFor(async () => expect((await todayChip()).textContent).toBe(text));
+    });
+  });
+
+  Scenario('With every Daily piece off the Reader has no Today chip', ({ Given, When, Then }) => {
+    Given(WITH_EVERYTHING, withEverything);
+    When('he turns every Daily piece off', async () => {
+      await todayChip();
+      await db.settings.bulkPut(['dailyReview', 'dailyPlan', 'dailyPsalms', 'dailyDevotional'].map((key) => ({ key, value: 'off' })));
+    });
+    Then('the row under the header has no Today chip', async () => {
+      await waitFor(() => expect(screen.queryByTestId('today-chip')).toBeNull());
+      await chip('New 3');
     });
   });
 
   Scenario('The row is hidden while a chapter is read aloud', ({ Given, When, Then }) => {
     Given(WITH_EVERYTHING, withEverything);
     When('he taps Read from the top', async () => {
-      await chip('Due 3');
+      await chip('Today');
       await goalChip();
       await chip('New 3');
       await user.click(screen.getByRole('button', { name: 'Read from the top' }));
@@ -179,8 +215,8 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps Stop', async () => {
       await user.click(await screen.findByRole('button', { name: 'Stop' }));
     });
-    Then('the row under the header has the chips {string}, {string} and {string}', async (_, due: string, goal: string, news: string) => {
-      await chip(due);
+    Then('the row under the header has the chips {string}, {string} and {string}', async (_, today: string, goal: string, news: string) => {
+      await chip(today);
       await goalChip();
       await chip(news);
       expect(chipNames()).toHaveLength(3);

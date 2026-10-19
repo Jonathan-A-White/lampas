@@ -1,21 +1,23 @@
 Feature: Review brings back the words that are due
-  The words he has met come back on the back-off schedule. The Reader shows how many are due, Review asks
+  The words he has met come back on the back-off schedule. Today (opened by the Reader's Today chip) shows how many are due, Review asks
   them first (then other words, up to ten), each answer moves the word along the schedule, and the end card
   says how many come back tomorrow and how many later.
 
-  Scenario: The reader shows Due: N when words are due
+  Scenario: Today shows how many are due and opens Review
     Given 3 of his words are due
     When Lampas is opened on the Reader
-    Then the Reader shows "Due: 3"
-    When he taps "Due: 3"
+    And he opens Today from the Reader
+    Then Today shows "3 due"
+    When he taps "3 due" on Today
     Then the Review screen says "Due today: 3 words"
 
   Scenario: A word he drops is no longer counted or asked
     Given 2 of his words are due
     When Lampas is opened on the Reader
+    And he opens Today from the Reader
     And he drops the word "εἰμί"
-    Then the Reader shows "Due: 1"
-    When he taps "Due: 1"
+    Then Today shows "1 due"
+    When he taps "1 due" on Today
     Then the Review screen says "Due today: 1 word"
     When he starts the review
     Then the first question is "λέγω" and "εἰμί" is never asked
@@ -24,15 +26,17 @@ Feature: Review brings back the words that are due
     Given the word "λέγω" is due on step 3
     And the word "εἰμί" is also due on step 3
     When Lampas is opened on the Reader
+    And he opens Today from the Reader
     And he drops the word "εἰμί"
-    Then the Reader shows "Due: 1"
+    Then Today shows "1 due"
     When he takes up the word "εἰμί" again
-    Then the Reader is back to "Due: 2"
+    Then Today is back to "2 due"
 
-  Scenario: The Reader shows no count when nothing is due
+  Scenario: Today shows no count when nothing is due
     Given none of his words is due
     When Lampas is opened on the Reader
-    Then the Reader shows no Due count
+    And he opens Today from the Reader
+    Then Today shows "Nothing due"
 
   Scenario: Review draws due words before others
     Given 3 of his words are due
@@ -79,9 +83,10 @@ Feature: Review brings back the words that are due
   Scenario: A phone Back in the middle of a round keeps the round
     Given 4 words are due, 2 of them on step 3
     When Lampas is opened on the Reader
-    And he taps "Due: 4"
+    And he opens Today from the Reader
+    And he taps "4 due" on Today
     And he starts the review
-    And he answers the first question, goes on to "2 of 10", then goes Back to the Reader and Forward
+    And he answers the first question, goes on to "2 of 10", then goes Back to Today and Forward
     Then the counter reads "2 of 10"
     And the first question's answer is kept on the schedule
 

@@ -40,8 +40,9 @@ Feature: Back from Audible, the return sheet asks where she got to
     And she taps "Stopped in: Matthew 4"
     Then the sheet is closed
     And the next chapter is "Matthew 4" with 932 of 1189 done
-    And the Plan chip says "Next: Matthew 4"
-    When she taps the Plan chip
+    When she opens Today from the Reader
+    Then the Reading plan piece says "Next: Matthew 4"
+    When she taps Listen in Audible on Today
     Then the sheet "Off to Audible: Matthew 4" is open
 
   Scenario: Pick it myself opens the chapter picker, and the chapter she chooses is the one she stopped in

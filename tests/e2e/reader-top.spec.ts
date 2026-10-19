@@ -59,18 +59,19 @@ async function openWithEverything(page: Page) {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await expect.poll(() => seeded(page)).toBe(true);
-  // the first open leaves his nine learning words due: the screenshot's Due 9
+  // the first open leaves his nine learning words due (Today's Review piece says 9 due)
   await put(page, 'settings', [{ key: 'goal', value: '1 John 1:1' }]);
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
 }
 
-test('with Due 9, a goal and new words the chips are one slim row and the text starts high', async ({ page }) => {
+test('with the Today chip, a goal and new words the chips are one slim row and the text starts high', async ({ page }) => {
   await openWithEverything(page);
-  const due = page.getByRole('button', { name: 'Due: 9' });
+  const today = page.getByTestId('today-chip');
   const goal = page.getByTestId('goal-strip');
   const news = page.getByTestId('new-words');
-  await expect(due).toHaveText('Due 9');
+  await expect(today).toHaveText(/^Today · 0 of \d+$/);
+  await expect(today).toHaveAccessibleName(/^Today · 0 of \d+$/);
   await expect(goal).toHaveText(/^Goal \d+\/16$/);
   const ideas = (await neededIdeas('1 John 1:1')).length;
   await expect(goal).toHaveAccessibleName(new RegExp(`^Goal: 1 John 1:1, \\d+ of 16 words, \\d+ of ${ideas} ideas$`));
@@ -81,7 +82,7 @@ test('with Due 9, a goal and new words the chips are one slim row and the text s
   const rowBox = await row.boundingBox();
   expect(rowBox?.height).toBeLessThanOrEqual(40);
   // the three chips share the one row
-  for (const chip of [due, goal, news]) {
+  for (const chip of [today, goal, news]) {
     const box = await chip.boundingBox();
     expect(box && rowBox && box.y >= rowBox.y - 0.5 && box.y + box.height <= rowBox.y + rowBox.height + 0.5).toBe(true);
   }

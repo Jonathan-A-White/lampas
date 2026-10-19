@@ -1,7 +1,7 @@
-// features/steps/review.steps.tsx — runs features/review.feature: the Reader's Due: N badge, the Review screen that
+// features/steps/review.steps.tsx — runs features/review.feature: the Today chip and Today's Review piece (n due), the Review screen that
 // asks due words first, and the schedule and the end card after the answers.
 import '@testing-library/react/dont-cleanup-after-each';
-import { act, render, screen, cleanup, waitFor } from '@testing-library/react';
+import { act, render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -17,7 +17,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { usageWritesSettled } from '../../src/tips/usageLog';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { findButton, queryButton } from '../../tests/support/find-button';
+import { findButton } from '../../tests/support/find-button';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { asSpoken } from '../../tests/support/lone-word';
 
@@ -71,6 +71,25 @@ async function openReviewFromSettings(): Promise<void> {
   await screen.findByRole('heading', { name: 'Review', level: 1 });
 }
 
+/** The Reader's Today chip (src/today/TodayChip.tsx) opens Today, whose Review piece says how many are due. */
+async function openToday(): Promise<void> {
+  await user.click(await findButton(/^Today/));
+  await screen.findByRole('heading', { name: 'Today', level: 1 });
+}
+
+const reviewPiece = () => screen.findByRole('region', { name: 'Review', exact: true });
+
+async function todayShows(text: string): Promise<void> {
+  await waitFor(async () => expect(await reviewPiece()).toHaveTextContent(text));
+}
+
+async function tapsOnToday(text: string): Promise<void> {
+  const piece = await reviewPiece();
+  await waitFor(() => expect(piece).toHaveTextContent(text));
+  await user.click(within(piece).getByRole('button'));
+  await screen.findByRole('heading', { name: 'Review', level: 1 });
+}
+
 const dueToday = () => screen.findByTestId('due-today');
 const promptLemma = () => screen.getByTestId('prompt').getAttribute('data-lemma') ?? '';
 const options = (): HTMLElement[] => [...document.querySelectorAll<HTMLElement>('[data-option]')];
@@ -112,16 +131,15 @@ let synth: FakeSynth;
 const feature = await loadFeature('features/review.feature');
 
 describeFeature(feature, ({ Scenario }) => {
-  Scenario('The reader shows Due: N when words are due', ({ Given, When, Then }) => {
+  Scenario('Today shows how many are due and opens Review', ({ Given, When, And, Then }) => {
     Given('{int} of his words are due', async (_, n: number) => {
       await freshStore();
       await makeDue(DUE.slice(0, n));
     });
     When('Lampas is opened on the Reader', openReader);
-    Then('the Reader shows {string}', async (_, text: string) => {
-      expect(await findButton(text)).toBeVisible();
-    });
-    When('he taps {string}', async (_, text: string) => user.click(await findButton(text)));
+    And('he opens Today from the Reader', openToday);
+    Then('Today shows {string}', async (_, text: string) => todayShows(text));
+    When('he taps {string} on Today', async (_, text: string) => tapsOnToday(text));
     Then('the Review screen says {string}', async (_, text: string) => {
       await dueToday();
       await waitFor(() => expect(screen.getByTestId('due-today')).toHaveTextContent(text));
@@ -134,14 +152,13 @@ describeFeature(feature, ({ Scenario }) => {
       await makeDue(DUE.slice(0, n));
     });
     When('Lampas is opened on the Reader', openReader);
+    And('he opens Today from the Reader', openToday);
     And('he drops the word {string}', async (_, lemma: string) => {
-      await findButton(/^Due: 2/);
+      await todayShows('2 due');
       await setWordState(lemma, 'dropped');
     });
-    Then('the Reader shows {string}', async (_, text: string) => {
-      expect(await findButton(text)).toBeVisible();
-    });
-    When('he taps {string}', async (_, text: string) => user.click(await findButton(text)));
+    Then('Today shows {string}', async (_, text: string) => todayShows(text));
+    When('he taps {string} on Today', async (_, text: string) => tapsOnToday(text));
     Then('the Review screen says {string}', async (_, text: string) => {
       await dueToday();
       await waitFor(() => expect(screen.getByTestId('due-today')).toHaveTextContent(text));
@@ -172,28 +189,23 @@ describeFeature(feature, ({ Scenario }) => {
       await db.reviews.put({ kind: 'word', id: lemma, step, rights: 0, due: now - 30_000, lastWhen: now - 3 * DAY, lapses: 0 });
     });
     When('Lampas is opened on the Reader', openReader);
+    And('he opens Today from the Reader', openToday);
     And('he drops the word {string}', async (_, lemma: string) => {
-      await findButton(/^Due: 2/);
+      await todayShows('2 due');
       await setWordState(lemma, 'dropped');
     });
-    Then('the Reader shows {string}', async (_, text: string) => {
-      expect(await findButton(text)).toBeVisible();
-    });
+    Then('Today shows {string}', async (_, text: string) => todayShows(text));
     When('he takes up the word {string} again', async (_, lemma: string) => {
       await setWordState(lemma, 'learning');
     });
-    Then('the Reader is back to {string}', async (_, text: string) => {
-      expect(await findButton(text)).toBeVisible();
-    });
+    Then('Today is back to {string}', async (_, text: string) => todayShows(text));
   });
 
-  Scenario('The Reader shows no count when nothing is due', ({ Given, When, Then }) => {
+  Scenario('Today shows no count when nothing is due', ({ Given, When, And, Then }) => {
     Given('none of his words is due', freshStore);
     When('Lampas is opened on the Reader', openReader);
-    Then('the Reader shows no Due count', async () => {
-      expect(await findButton('Settings')).toBeVisible();
-      expect(queryButton(/^Due:/)).toBeNull();
-    });
+    And('he opens Today from the Reader', openToday);
+    Then('Today shows {string}', async (_, text: string) => todayShows(text));
   });
 
   Scenario('Review draws due words before others', ({ Given, When, And, Then }) => {
@@ -324,18 +336,16 @@ describeFeature(feature, ({ Scenario }) => {
       await makeDue(DUE.slice(0, n), (_, i) => ({ step: i >= n - onStep ? 3 : 0, rights: 0 }));
     });
     When('Lampas is opened on the Reader', openReader);
-    And('he taps {string}', async (_, text: string) => {
-      await user.click(await findButton(text));
-      await screen.findByRole('heading', { name: 'Review', level: 1 });
-    });
+    And('he opens Today from the Reader', openToday);
+    And('he taps {string} on Today', async (_, text: string) => tapsOnToday(text));
     And('he starts the review', start);
     // one step: tests/setup.ts clears session storage after every step (each step is a test), and the kept round lives there
-    And('he answers the first question, goes on to {string}, then goes Back to the Reader and Forward', async (_, text: string) => {
+    And('he answers the first question, goes on to {string}, then goes Back to Today and Forward', async (_, text: string) => {
       first = await answerCurrent(true);
       await goOn();
       expect(await screen.findByText(/^\d+ of \d+$/)).toHaveTextContent(text);
       act(() => window.history.back());
-      await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
+      await screen.findByRole('heading', { name: 'Today', level: 1 });
       act(() => window.history.forward());
       await screen.findByRole('heading', { name: 'Review', level: 1 });
     });

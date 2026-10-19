@@ -124,11 +124,17 @@ const nextIs = (_: unknown, name: string, done: number): Promise<void> =>
 const noSession = (): Promise<void> => waitFor(async () => expect(await openSession()).toBeUndefined());
 const aSession = (): Promise<void> => waitFor(async () => expect(await openSession()).toBeDefined());
 
-const chipSays = async (_: unknown, text: string): Promise<void> => {
-  expect(await screen.findByTestId('plan-chip')).toHaveTextContent(text);
+const opensToday = async (): Promise<void> => {
+  await user.click(await screen.findByTestId('today-chip'));
+  await screen.findByRole('heading', { name: 'Today', level: 1 });
 };
-const tapsTheChip = async (): Promise<void> => {
-  await user.click(await screen.findByTestId('plan-chip'));
+const pieceSays = async (_: unknown, text: string): Promise<void> => {
+  const piece = await screen.findByRole('region', { name: 'Reading plan', exact: true });
+  await waitFor(() => expect(piece).toHaveTextContent(text));
+};
+const tapsListen = async (): Promise<void> => {
+  const piece = await screen.findByRole('region', { name: 'Reading plan', exact: true });
+  await user.click(await within(piece).findByRole('link', { name: /^Listen in Audible/ }));
 };
 
 const feature = await loadFeature('features/reading-plan-return.feature');
@@ -179,8 +185,9 @@ describeFeature(feature, ({ Scenario }) => {
     And('she taps {string}', taps);
     Then('the sheet is closed', sheetIsClosed);
     And('the next chapter is {string} with {int} of 1189 done', nextIs);
-    And('the Plan chip says {string}', chipSays);
-    When('she taps the Plan chip', tapsTheChip);
+    When('she opens Today from the Reader', opensToday);
+    Then('the Reading plan piece says {string}', pieceSays);
+    When('she taps Listen in Audible on Today', tapsListen);
     Then('the sheet {string} is open', sheetIsOpen);
   });
 

@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { MOVABLE } from '../../src/data/grammar/questions';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { waitForDue } from './today-chip';
 
 // A miss on a Movable letters card in Review says why (mw-86e9r1.30): 'Not quite. It is οὐκ.' and, under it, the one-line reason; a right answer has no such line.
 
@@ -31,7 +32,7 @@ async function put(page: Page, store: 'reviews' | 'settings', rows: object[]) {
 async function answerFirstCard(page: Page, right: boolean) {
   await openUnlocked(page);
   await page.goto('/');
-  await expect(page.getByRole('button', { name: /^Due: \d+$/ })).toBeVisible();
+  await waitForDue(page);
   await put(page, 'settings', [{ key: 'goal', value: '1 John 1' }]);
   await put(page, 'reviews', [{ kind: 'grammar', id: 'movable-letters', step: 0, rights: 0, due: Date.now() - 60_000, lastWhen: Date.now() - 3 * 86_400_000, lapses: 0 }]);
   await page.goto('/#/review');

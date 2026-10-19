@@ -1,8 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { openToday, todayChip } from './today-chip';
 
-// The listening plan in the Bible view (mw-umv8sp.5): the Plan chip in the Reader's row, Start a listening plan from the chip and from Settings, and the marks in the chapter picker.
+// The listening plan in the Bible view (mw-umv8sp.5): the reading plan piece of Today (opened by the Reader's Today chip, which replaced the Plan chip in mw-1fwagb.6), Start a listening plan from Today and from Settings, and the marks in the chapter picker.
 test.use({ viewport: { width: 390, height: 844 } });
 
 const STATE = 'readingPlanState';
@@ -59,29 +60,40 @@ const START_LEV_4 = [
   planState({ code: 'lev', chapter: 4 }, doneBeforeLeviticus(['lev.1', 'lev.2', 'lev.3'])),
 ];
 
-const chip = (page: Page) => page.getByTestId('plan-chip');
+/** Today's reading plan piece (the Reader's Today chip opens Today). */
+const plan = (page: Page) => page.getByRole('region', { name: 'Reading plan', exact: true });
+const startPlan = (page: Page) => plan(page).getByRole('button', { name: 'Start a plan' });
+const backToReader = async (page: Page) => {
+  await page.getByRole('button', { name: '‹ Reader' }).click();
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+};
 
-test('with the plan on the chip says what is next and how far, and a tap opens the send-off sheet', async ({ page }) => {
+test('with the plan on Today says what is next and how far, and Listen in Audible opens the send-off sheet', async ({ page }) => {
   await openWith(page, START_LEV_4);
-  await expect(chip(page)).toContainText('Next: Leviticus 4');
-  await expect(chip(page)).toContainText('93 of 1,189');
-  await expect(chip(page)).toHaveAccessibleName('Next: Leviticus 4, 93 of 1,189 chapters done');
-  const box = await chip(page).boundingBox();
+  // the Reader has one Today chip in its slim row, and no Plan chip
+  const today = todayChip(page);
+  await expect(today).toBeVisible();
+  await expect(page.getByTestId('plan-chip')).toHaveCount(0);
+  const box = await today.boundingBox();
   const row = await page.getByTestId('reader-chips').boundingBox();
   expect(row?.height).toBeLessThanOrEqual(40);
   expect(box && row && box.y >= row.y - 0.5 && box.y + box.height <= row.y + row.height + 0.5).toBe(true);
   await shot(page, 'reading-plan-chip-390x844');
 
-  await chip(page).click();
+  await openToday(page);
+  await expect(plan(page)).toContainText('Next: Leviticus 4');
+  await expect(plan(page)).toContainText('93 of 1,189 chapters done');
+  await plan(page).getByRole('link', { name: /^Listen in Audible/ }).click();
   const sheet = page.getByRole('dialog', { name: 'Off to Audible: Leviticus 4' });
   await expect(sheet).toBeVisible();
   await expect(sheet.getByRole('button', { name: 'Go' })).toBeVisible();
 });
 
-test('with the plan off the chip invites her to start one, and so does Settings', async ({ page }) => {
+test('with the plan off Today invites her to start one, and so does Settings', async ({ page }) => {
   await openWith(page, []);
-  await expect(chip(page)).toHaveText('Listen through the Bible');
-  await chip(page).click();
+  await openToday(page);
+  await expect(plan(page)).toContainText('No reading plan is started.');
+  await startPlan(page).click();
   const sheet = page.getByRole('dialog', { name: 'Start a listening plan' });
   await expect(sheet).toBeVisible();
   await expect(sheet.getByRole('button', { name: 'The whole Bible' })).toBeVisible();
@@ -89,6 +101,7 @@ test('with the plan off the chip invites her to start one, and so does Settings'
   await sheet.getByRole('button', { name: 'Not now' }).click();
   await expect(sheet).toHaveCount(0);
 
+  await backToReader(page);
   await page.getByRole('button', { name: 'Settings' }).click();
   await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
   const entry = page.getByRole('button', { name: 'Start a listening plan' });
@@ -99,7 +112,8 @@ test('with the plan off the chip invites her to start one, and so does Settings'
 
 test('starting at Leviticus 1 counts Genesis and Exodus as done', async ({ page }) => {
   await openWith(page, []);
-  await chip(page).click();
+  await openToday(page);
+  await startPlan(page).click();
   await page.getByRole('dialog', { name: 'Start a listening plan' }).getByRole('button', { name: 'The whole Bible' }).click();
   const picker = page.getByRole('dialog', { name: 'Where are you starting?' });
   await expect(picker).toBeVisible();
@@ -107,8 +121,8 @@ test('starting at Leviticus 1 counts Genesis and Exodus as done', async ({ page 
   await picker.getByRole('button', { name: 'Chapter 1', exact: true }).click();
   await expect(picker).toHaveCount(0);
   await expect(page.getByRole('dialog', { name: 'Start a listening plan' })).toHaveCount(0);
-  await expect(chip(page)).toContainText('Next: Leviticus 1');
-  await expect(chip(page)).toContainText('90 of 1,189');
+  await expect(plan(page)).toContainText('Next: Leviticus 1');
+  await expect(plan(page)).toContainText('90 of 1,189 chapters done');
 });
 
 test('the chapter picker marks done chapters and the next, in both testaments', async ({ page }) => {
@@ -144,7 +158,9 @@ test('the chapter picker marks done chapters and the next, in both testaments', 
 
 test('the Developer row resets the plan, and Start a listening plan runs again', async ({ page }) => {
   await openWith(page, [...START_LEV_4, { key: 'developerMode', value: 'on' }]);
-  await expect(chip(page)).toContainText('Next: Leviticus 4');
+  await openToday(page);
+  await expect(plan(page)).toContainText('Next: Leviticus 4');
+  await backToReader(page);
 
   await page.getByRole('button', { name: 'Settings' }).click();
   await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
@@ -156,14 +172,15 @@ test('the Developer row resets the plan, and Start a listening plan runs again',
 
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-  await expect(chip(page)).toHaveText('Listen through the Bible');
-  await chip(page).click();
+  await openToday(page);
+  await expect(plan(page)).toContainText('No reading plan is started.');
+  await startPlan(page).click();
   await page.getByRole('dialog', { name: 'Start a listening plan' }).getByRole('button', { name: 'The whole Bible' }).click();
   const picker = page.getByRole('dialog', { name: 'Where are you starting?' });
   await picker.getByRole('button', { name: /^Leviticus/ }).click();
   await picker.getByRole('button', { name: 'Chapter 1', exact: true }).click();
-  await expect(chip(page)).toContainText('Next: Leviticus 1');
-  await expect(chip(page)).toContainText('90 of 1,189');
+  await expect(plan(page)).toContainText('Next: Leviticus 1');
+  await expect(plan(page)).toContainText('90 of 1,189 chapters done');
 });
 
 /** Every chapter key from Leviticus 1 to Luke 14 (the rest of the Old Testament, Matthew, Mark and Luke 1-14), for a plan started at Luke 15. */
@@ -178,23 +195,25 @@ function allBefore(): string[] {
   return keys;
 }
 
-test('a reader with no Greek activity sees the Plan chip alone', async ({ page }) => {
+test('a reader with no Greek activity sees the Today chip alone', async ({ page }) => {
   // a new install: no words, nothing due, no goal (mw-5r3p30.385)
   await openWith(page, START_LEV_4, { empty: true });
-  await expect(chip(page)).toBeVisible();
+  await expect(todayChip(page)).toBeVisible();
   await expect(page.getByRole('button', { name: /^Due:/ })).toHaveCount(0);
+  await expect(page.getByTestId('plan-chip')).toHaveCount(0);
   await expect(page.getByTestId('goal-strip')).toHaveCount(0);
-  // the only other chip a new install can have is the 'New 3' of the chapter's unmet words, which the Reader always showed (src/NewWordsStrip.tsx); the plan adds none
+  // the only other chip a new install can have is the 'New 3' of the chapter's unmet words, which the Reader always showed (src/NewWordsStrip.tsx); Today adds none
   const names = await page.getByTestId('reader-chips').getByRole('button').evaluateAll((els) => els.map((el) => el.getAttribute('aria-label')));
-  expect(names.filter((name) => !name?.match(/^New \d+ words$/) && !name?.startsWith('Next: Leviticus 4'))).toEqual([]);
+  expect(names.filter((name) => !name?.match(/^New \d+ words$/) && !name?.startsWith('Today'))).toEqual([]);
 });
 
-test('a reader with Greek activity sees the Greek chips and the Plan chip', async ({ page }) => {
+test('a reader with Greek activity sees the Greek chips and the Today chip, and no Due or Plan chip', async ({ page }) => {
   // his word list (nine words due, new words) and a goal
   await openWith(page, [...START_LEV_4, { key: 'goal', value: '1 John 1:1' }]);
-  await expect(page.getByRole('button', { name: /^Due: \d+$/ })).toBeVisible();
+  await expect(todayChip(page)).toBeVisible();
   await expect(page.getByTestId('goal-strip')).toBeVisible();
-  await expect(chip(page)).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Due:/ })).toHaveCount(0);
+  await expect(page.getByTestId('plan-chip')).toHaveCount(0);
 });
 
 for (const size of [
@@ -204,11 +223,11 @@ for (const size of [
   test(`every chip has an accessible name and none is cut off at ${size.width}x${size.height}`, async ({ page }) => {
     await page.setViewportSize(size);
     await openWith(page, [...START_LEV_4, { key: 'goal', value: '1 John 1:1' }]);
-    await expect(page.getByRole('button', { name: /^Due: \d+$/ })).toBeVisible();
+    await expect(todayChip(page)).toBeVisible();
     await expect(page.getByTestId('goal-strip')).toBeVisible();
     const row = page.getByTestId('reader-chips');
     const chips = row.getByRole('button');
-    expect(await chips.count()).toBeGreaterThanOrEqual(3);
+    expect(await chips.count()).toBeGreaterThanOrEqual(2);
     for (const handle of await chips.elementHandles()) expect(((await handle.getAttribute('aria-label')) ?? '').length).toBeGreaterThan(0);
     // no chip is cut: the row scrolls sideways when the chips outgrow the phone (mw-5r3p30.617), and the page never does
     for (const clipped of await chips.evaluateAll((els) => els.filter((el) => el.scrollWidth > el.clientWidth).map((el) => el.getAttribute('aria-label')))) expect(clipped).toBeNull();

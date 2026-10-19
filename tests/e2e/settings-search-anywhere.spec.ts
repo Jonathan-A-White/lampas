@@ -72,7 +72,7 @@ for (const size of [
               { key: 'readingPlan', value: 'on' },
               { key: 'goal', value: '1 John 1:1' },
               { key: 'weave', value: 'solid+learning' },
-              // a plan started at Leviticus 4, with Genesis to Leviticus 3 done: the Plan chip reads 'Next: Leviticus 4' and the count
+              // a plan started at Leviticus 4, with Genesis to Leviticus 3 done: the Today chip leads the row (Today holds the plan's 'Next: Leviticus 4')
               { key: 'readingPlanState', value: JSON.stringify({ planId: 'whole-bible', start: { code: 'lev', chapter: 4 }, done: done() }) },
             ];
             for (const row of rows) tx.objectStore('settings').put(row);
@@ -84,10 +84,9 @@ for (const size of [
     await page.reload();
     const row = page.getByTestId('reader-chips');
     await expect(row).toBeVisible();
-    await expect(page.getByRole('button', { name: /^Due: \d+$/ })).toBeVisible();
+    await expect(page.getByTestId('today-chip')).toBeVisible();
     await expect(page.getByTestId('goal-strip')).toBeVisible();
     await expect(page.getByTestId('weave-count')).toBeVisible();
-    await expect(page.getByTestId('plan-chip')).toContainText('Next: Leviticus 4');
     const measured = await row.locator('button, [data-testid="weave-count"]').evaluateAll((els) =>
       els.map((el) => {
         const range = document.createRange();

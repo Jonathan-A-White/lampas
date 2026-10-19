@@ -87,7 +87,7 @@ async function openWithGoal(page: Page, goal: string) {
   await page.reload();
 }
 
-test('the Goal chip under the Reader header is on one row with Due and opens the Goal screen', async ({ page }) => {
+test('the Goal chip under the Reader header is on one row with Today and opens the Goal screen', async ({ page }) => {
   await openWithGoal(page, '1 John 1:1');
   const strip = page.getByTestId('goal-strip');
   await expect(strip).toHaveText(/^Goal \d+\/16$/);
@@ -98,12 +98,12 @@ test('the Goal chip under the Reader header is on one row with Due and opens the
   expect(box?.height).toBeLessThanOrEqual(40);
   // the whole chip shows: it is not cut short
   expect(await strip.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
-  // beside Due: the two chips share the one row under the header
-  const due = page.getByRole('button', { name: /^Due: \d+$/ });
-  await expect(due).toBeVisible();
-  const dueBox = await due.boundingBox();
-  expect(Math.abs((dueBox?.y ?? 0) - (box?.y ?? 0))).toBeLessThanOrEqual(1);
-  expect((dueBox?.x ?? 0) + (dueBox?.width ?? 0)).toBeLessThanOrEqual(box?.x ?? 0);
+  // beside Today: the two chips share the one row under the header
+  const today = page.getByTestId('today-chip');
+  await expect(today).toBeVisible();
+  const todayBox = await today.boundingBox();
+  expect(Math.abs((todayBox?.y ?? 0) - (box?.y ?? 0))).toBeLessThanOrEqual(1);
+  expect((todayBox?.x ?? 0) + (todayBox?.width ?? 0)).toBeLessThanOrEqual(box?.x ?? 0);
   await expectFitsPhone(page);
   await shot(page, 'goal-strip');
 

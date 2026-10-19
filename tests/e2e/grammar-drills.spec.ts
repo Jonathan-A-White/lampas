@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { waitForDue } from './today-chip';
 
 // Puts rows in the app's own store through raw IndexedDB, as the app wrote them.
 async function put(page: Page, store: 'reviews' | 'settings', rows: object[]) {
@@ -32,7 +33,7 @@ test('a due grammar idea is asked first, as tap the form: the verse words are bu
     Math.random = () => 0.25;
   });
   await page.goto('/');
-  await expect(page.getByRole('button', { name: /^Due: \d+$/ })).toBeVisible();
+  await waitForDue(page);
   // the goal is 1 John 1; the preposition can only be asked as a form to tap
   await put(page, 'settings', [{ key: 'goal', value: '1 John 1' }]);
   await put(page, 'reviews', [{ kind: 'grammar', id: 'preposition', step: 0, rights: 0, due: Date.now() - 60_000, lastWhen: Date.now() - 3 * 86_400_000, lapses: 0 }]);
