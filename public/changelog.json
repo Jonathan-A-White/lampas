@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.339",
+    "date": "2026-10-19",
+    "story": "mw-cwf538.9",
+    "kind": "fixed",
+    "text": "At the largest text size the reading bar is one row of icons, a passage's heading shows whole, and the book list no longer cuts off its title."
+  },
+  {
     "version": "0.1.338",
     "date": "2026-10-19",
     "story": "mw-5r3p30.597",

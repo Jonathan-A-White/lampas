@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.339
+_2026-10-19_
+- Fixed: At the largest text size the reading bar is one row of icons, a passage's heading shows whole, and the book list no longer cuts off its title.
+
 ## 0.1.338
 _2026-10-19_
 - Fixed: a quick double tap no longer acts twice; the second tap does nothing on the screen or sheet the first one opened, anywhere in the app.
