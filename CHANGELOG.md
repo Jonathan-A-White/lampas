@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.346
+_2026-10-19_
+- Fixed: An idea you put back to Not yet by switching now shows when it is next due and when you last answered it.
+
 ## 0.1.345
 _2026-10-19_
 - Fixed: In Turn pages, coming back to the Reader from Settings or another screen now opens the page you were reading, not page 1.
