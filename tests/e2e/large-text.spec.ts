@@ -10,6 +10,7 @@ import { join } from 'node:path';
 import { browserEnv } from '../support/browser-env';
 import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
+import { honestSpeech } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -166,6 +167,17 @@ const MORE_SCREENS: readonly Screen[] = [
     },
   },
   {
+    name: 'Chapter picker',
+    shot: 'large-text-chapter-picker',
+    open: async (page) => {
+      await openUnlocked(page);
+      await page.goto('/');
+      await expect(page.locator('[data-verse="1"]')).toBeAttached();
+      await page.getByRole('button', { name: /Romans 8/ }).first().click();
+      await expect(page.getByRole('heading', { name: 'Choose a book' })).toBeVisible();
+    },
+  },
+  {
     name: 'Talk sheet after a reply',
     shot: 'large-text-talk-reply',
     open: async (page) => {
@@ -246,6 +258,51 @@ for (const screen of [...SCREENS, ...MORE_SCREENS]) {
   });
 }
 
+// mw-cwf538.9: two things the first 200% pass left poor. While the tutor's answer is read aloud the Talk sheet's speaking bar (three buttons) must leave the
+// conversation a usable height, and the Verse view's passage heading must be shown whole, not ended with an ellipsis.
+test('the Talk sheet while the speaking bar is up keeps the conversation at least 40% of its height', async ({ page }) => {
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: TALK_ANSWER };
+  await routePostern(page, fake);
+  await honestSpeech(page, { msPerWord: 2000 });
+  await openUnlocked(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  const sheet = page.getByRole('dialog');
+  await sheet.getByRole('textbox', { name: 'Your message' }).fill('What does συνεργεῖ mean here?');
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+  await expect(sheet).toContainText(TALK_ANSWER.answer);
+  await expect(sheet.locator('[data-speaking-slot] button').first()).toBeVisible();
+  const { list, whole, bar, tops } = await page.evaluate(() => {
+    const sheetBox = document.querySelector('[role="dialog"]')!.getBoundingClientRect();
+    const slot = document.querySelector('[role="dialog"] [data-speaking-slot]')!.getBoundingClientRect();
+    const buttons = Array.from(document.querySelectorAll('[role="dialog"] [data-speaking-slot] button'));
+    return {
+      list: document.querySelector('[data-talk-list]')!.getBoundingClientRect().height,
+      whole: sheetBox.height,
+      bar: slot.height,
+      tops: buttons.map((b) => Math.round(b.getBoundingClientRect().top)),
+    };
+  });
+  await shot(page, 'large-text-talk-speaking');
+  // the criterion: the conversation is 40% of the sheet, or the bar is one row (its buttons side by side)
+  const oneRow = tops.length === 3 && new Set(tops).size === 1;
+  expect(oneRow || list >= 0.4 * whole, `the conversation is ${list} px of a ${whole} px sheet, the speaking bar ${bar} px, its buttons at ${tops.join(', ')}`).toBe(true);
+  expect(oneRow, `the bar is one row, its buttons at ${tops.join(', ')}`).toBe(true);
+  expect(await clipped(page)).toEqual([]);
+});
+
+test('the Verse view heading of a passage is whole: no ellipsis', async ({ page }) => {
+  await MORE_SCREENS[1].open(page);
+  const heading = await page.evaluate(() => {
+    const span = Array.from(document.querySelectorAll('[data-verse-view] h2 span')).find((s) => s.textContent === 'Walking by the Spirit') as HTMLElement | undefined;
+    if (!span) return null;
+    return { scrollHeight: span.scrollHeight, clientHeight: span.clientHeight, display: getComputedStyle(span).display };
+  });
+  expect(heading, 'the heading Walking by the Spirit is on the view').not.toBeNull();
+  expect(heading!.scrollHeight, JSON.stringify(heading)).toBeLessThanOrEqual(heading!.clientHeight);
+});
+
 test('the screens are the ones the stories name', () => {
   expect(SCREENS.map((s) => s.name)).toEqual(['Reader', 'Quick test', 'Talk', 'Settings', 'Placement']);
   expect(MORE_SCREENS.map((s) => s.name)).toEqual([
@@ -255,6 +312,7 @@ test('the screens are the ones the stories name', () => {
     'The whole path',
     'Word sheet',
     'Grammar sheet',
+    'Chapter picker',
     'Talk sheet after a reply',
   ]);
 });

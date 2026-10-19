@@ -114,24 +114,27 @@ export function VerseView(props: VerseViewProps) {
   const typeClass = passage ? `leading-(--lp-leading) ${textClass(view)}` : `leading-(--lp-leading) ${big} ${size}`;
   return (
     <section aria-label="Verse view" data-verse-view={unitId(verse)} data-immersive={immersive ? 'on' : 'off'} className="fixed inset-0 z-5 flex flex-col bg-canvas pt-[env(safe-area-inset-top)]">
-      <header className="flex shrink-0 items-center gap-1 border-b border-line px-2 py-2">
+      {/* At 20 rem or less of the phone's own text (390 px at 200%) the title takes a row of its own under ‹ Reader and the arrows, so a passage's heading has the whole width and is not clamped (mw-cwf538.9). */}
+      <div className="@container shrink-0 border-b border-line">
+      <header className="flex flex-wrap items-center gap-1 px-2 py-2">
         {/* The Reader beneath is inert, so focus starts here and a keyboard or screen reader finds the view first. */}
-        <button type="button" ref={focusOnMount} onClick={onClose} className="min-h-12 shrink-0 rounded-lg px-2 chrome-text font-medium text-accent active:bg-line">
+        <button type="button" ref={focusOnMount} onClick={onClose} className="min-h-12 shrink-0 rounded-lg px-2 chrome-text font-medium text-accent active:bg-line @max-[20rem]:mr-auto">
           ‹ Reader
         </button>
         {passage ? (
           // the heading on top (two lines at most), the range under it on one line of its own
           // a lesson's range is headed with its own range, which the heading then says once
-          <h2 aria-label={verse.h === reference ? reference : `${verse.h}, ${reference}`} className="chrome-title min-w-0 flex-1 text-center font-semibold leading-tight">
+          <h2 aria-label={verse.h === reference ? reference : `${verse.h}, ${reference}`} className="chrome-title min-w-0 flex-1 text-center font-semibold leading-tight @max-[20rem]:order-last @max-[20rem]:basis-full">
             <span className="line-clamp-2 break-words">{verse.h}</span>
             {verse.h === reference ? null : <span className="block break-words text-sm font-medium text-muted">{reference}</span>}
           </h2>
         ) : (
-          <h2 className="chrome-title min-w-0 flex-1 truncate text-center font-semibold">{reference}</h2>
+          <h2 className="chrome-title min-w-0 flex-1 truncate text-center font-semibold @max-[20rem]:order-last @max-[20rem]:basis-full">{reference}</h2>
         )}
         <Arrow move={previous} name={`Previous ${noun}`} glyph="‹" />
         <Arrow move={next} name={`Next ${noun}`} glyph="›" />
       </header>
+      </div>
       <div className="screen min-h-0 flex-1 px-3 pt-3">
         {lesson ? <LessonStrip title={lesson.title} ideas={lesson.ideas} onCheck={() => setChecking(lesson.key)} /> : null}
         {/* A passage is long: its text scrolls in a box of its own so the row of actions stays in reach under it. */}
