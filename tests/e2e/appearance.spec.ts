@@ -11,6 +11,8 @@ const TAP_WITH_MARGIN = 45;
 const DARK_CANVAS = 'rgb(10, 14, 23)';
 const LIGHT_CANVAS = 'rgb(243, 245, 249)';
 const SEPIA_CANVAS = 'rgb(244, 236, 216)';
+const BLACK = 'rgb(0, 0, 0)';
+const WHITE = 'rgb(255, 255, 255)';
 
 const canvasOf = (page: Page) => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
 const themeOf = (page: Page) => page.evaluate(() => document.documentElement.dataset.theme);
@@ -107,6 +109,39 @@ test('Theme Sepia gives warm paper and dark brown text on a dark phone, and Ligh
   await expect.poll(() => themeOf(page)).toBe('dark');
   await expect.poll(() => canvasOf(page)).toBe(DARK_CANVAS);
   expect(await barOf(page)).toBe('#0a0e17');
+});
+
+test('Theme High contrast gives pure white on black with a thick focus ring on a light phone, and Light comes back', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await openReader(page);
+  await openSettings(page);
+  await choose(page, 'Theme', 'High contrast');
+  await expect.poll(() => themeOf(page)).toBe('contrast');
+  await expect(page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: 'High contrast', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(() => canvasOf(page)).toBe(BLACK);
+  expect(await barOf(page)).toBe('#000000');
+  await expectFitsPhone(page);
+  // the choice buttons have a ring round them, and a focused one a thick outline
+  const choice = page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: 'Dark', exact: true });
+  expect(await choice.evaluate((el) => getComputedStyle(el).boxShadow)).toContain('inset');
+  await page.keyboard.press('Tab');
+  const ring = await page.evaluate(() => {
+    const style = getComputedStyle(document.activeElement as Element);
+    return { width: style.outlineWidth, style: style.outlineStyle };
+  });
+  expect(ring).toEqual({ width: '4px', style: 'solid' });
+  await shot(page, 'settings-high-contrast');
+
+  await backToReader(page);
+  expect(await canvasOf(page)).toBe(BLACK);
+  expect(await page.locator('[data-verse="1"]').evaluate((el) => getComputedStyle(el).color)).toBe(WHITE);
+  await shot(page, 'reader-high-contrast');
+
+  await openSettings(page);
+  await choose(page, 'Theme', 'Light');
+  await expect.poll(() => themeOf(page)).toBe('light');
+  await expect.poll(() => canvasOf(page)).toBe(LIGHT_CANVAS);
+  expect(await barOf(page)).toBe('#f3f5f9');
 });
 
 test('Text size Large makes the verse text larger and every tap target stays at least 44 px tall', async ({ page }) => {

@@ -739,7 +739,7 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
-            "properties": { "key": { "const": "theme" }, "value": { "type": "string", "enum": ["phone", "light", "dark", "sepia"] } }
+            "properties": { "key": { "const": "theme" }, "value": { "type": "string", "enum": ["phone", "light", "dark", "sepia", "contrast"] } }
           },
           {
             "type": "object",

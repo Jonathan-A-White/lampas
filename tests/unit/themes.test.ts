@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { THEME_COLORS, THEMES, paletteOf } from '../../src/appearance/themes';
+import { THEME_COLORS, THEMES, isTheme, paletteOf } from '../../src/appearance/themes';
 import { TEXT_SIZES, normaliseTextPercent } from '../../src/appearance/textSizes';
 import { THEME_COLOR } from '../../pwa-manifest';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, normaliseRate } from '../../src/speech/languages';
@@ -15,9 +15,11 @@ const variablesOf = (selector: string): string[] => {
 };
 
 describe('the themes', () => {
-  it('are Phone (the default), Light, Dark and Sepia', () => {
-    expect(THEMES.map((t) => t.id)).toEqual(['phone', 'light', 'dark', 'sepia']);
+  it('are Phone (the default), Light, Dark, Sepia and High contrast', () => {
+    expect(THEMES.map((t) => t.id)).toEqual(['phone', 'light', 'dark', 'sepia', 'contrast']);
     expect(THEMES.find((t) => t.id === 'sepia')?.label).toBe('Sepia');
+    expect(THEMES.find((t) => t.id === 'contrast')?.label).toBe('High contrast');
+    expect(isTheme('contrast')).toBe(true);
   });
 
   it("follow the phone's scheme only for Phone", () => {
@@ -27,6 +29,8 @@ describe('the themes', () => {
     expect(paletteOf('light', true)).toBe('light');
     expect(paletteOf('sepia', true)).toBe('sepia');
     expect(paletteOf('sepia', false)).toBe('sepia');
+    expect(paletteOf('contrast', true)).toBe('contrast');
+    expect(paletteOf('contrast', false)).toBe('contrast');
   });
 
   it("have a browser bar colour that is the palette's canvas, and dark's is the manifest's", () => {
@@ -34,6 +38,7 @@ describe('the themes', () => {
     expect(variablesOf(':root {')).toContain(`--lp-canvas: ${THEME_COLORS.dark};`);
     expect(variablesOf(':root[data-theme="light"]')).toContain(`--lp-canvas: ${THEME_COLORS.light};`);
     expect(variablesOf(':root[data-theme="sepia"]')).toContain(`--lp-canvas: ${THEME_COLORS.sepia};`);
+    expect(variablesOf(':root[data-theme="contrast"]')).toContain(`--lp-canvas: ${THEME_COLORS.contrast};`);
   });
 
   it('write the light palette the same way into it from the phone as from the choice', () => {
@@ -42,10 +47,15 @@ describe('the themes', () => {
     expect(variablesOf(':root:not([data-theme="dark"])')).toEqual(chosen);
   });
 
-  it('give the dark and sepia palettes every variable the light one has', () => {
+  it('give the dark, sepia and high contrast palettes every variable the light one has', () => {
     const names = (lines: string[]) => lines.map((l) => l.split(':')[0]).sort();
     expect(names(variablesOf(':root {'))).toEqual(names(variablesOf(':root[data-theme="light"]')));
     expect(names(variablesOf(':root[data-theme="sepia"]'))).toEqual(names(variablesOf(':root[data-theme="light"]')));
+    expect(names(variablesOf(':root[data-theme="contrast"]'))).toEqual(names(variablesOf(':root[data-theme="light"]')));
+  });
+
+  it("keep the phone's own light palette out of the way of every chosen theme", () => {
+    expect(css).toContain(':root:not([data-theme="dark"]):not([data-theme="sepia"]):not([data-theme="contrast"])');
   });
 });
 
@@ -96,6 +106,35 @@ describe('the Sepia palette', () => {
     const accent = colourOf(sepia, 'accent');
     expect(contrast(accent, canvas)).toBeGreaterThanOrEqual(4.5);
     expect(contrast(colourOf(sepia, 'accent-fg'), accent)).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe('the High contrast palette (mw-cwf538.5)', () => {
+  const high = ':root[data-theme="contrast"]';
+  const canvas = colourOf(high, 'canvas');
+  const surface = colourOf(high, 'surface');
+
+  it('is pure white on pure black', () => {
+    expect(canvas).toBe('#000000');
+    expect(surface).toBe('#000000');
+    expect(colourOf(high, 'fg')).toBe('#ffffff');
+    expect(colourOf(high, 'line')).toBe('#ffffff');
+  });
+
+  it('gives every text colour at least 7:1 (WCAG AAA) on the page and on a card', () => {
+    for (const name of ['fg', 'muted', 'accent', 'good', 'bad']) {
+      expect(contrast(colourOf(high, name), canvas), name).toBeGreaterThanOrEqual(7);
+      expect(contrast(colourOf(high, name), surface), name).toBeGreaterThanOrEqual(7);
+    }
+  });
+
+  it('gives the text on an accent button at least 7:1', () => {
+    expect(contrast(colourOf(high, 'accent-fg'), colourOf(high, 'accent'))).toBeGreaterThanOrEqual(7);
+  });
+
+  it('draws a thick focus ring and a ring around every control', () => {
+    expect(css).toMatch(/:root\[data-theme="contrast"\][^{]*:focus-visible\s*\{[^}]*outline:\s*4px solid/);
+    expect(css).toMatch(/:root\[data-theme="contrast"\][^{]*\bbutton\b[^{]*\{[^}]*box-shadow:\s*inset 0 0 0 2px/);
   });
 });
 

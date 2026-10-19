@@ -1,6 +1,6 @@
 Feature: Appearance and speech speed in Settings
-  Settings has Theme (Phone | Light | Dark | Sepia, default Phone: the phone's own colour scheme, followed live; Sepia is warm
-  paper and dark brown text for long reading, whatever the phone says), Text size
+  Settings has Theme (Phone | Light | Dark | Sepia | High contrast, default Phone: the phone's own colour scheme, followed live; Sepia is warm
+  paper and dark brown text for long reading, High contrast is pure white on black with thick outlines, whatever the phone says), Text size
   (Small | Normal | Large | Largest, default Normal: the phone's own text size, 85% to 160%) and, beside the reading
   voices, a speed for English and a speed for Greek, each from 0.5 to 1.5, each set on its own and each starting at
   normal (1.0). The speed of a language is given to every utterance in that language. Every choice is kept in the
@@ -38,6 +38,16 @@ Feature: Appearance and speech speed in Settings
     When he sets Theme to Dark in Settings
     Then the page is dark
     And the browser bar colour is the dark one
+
+  Scenario: Theme High contrast gives pure white on black whatever the phone says, and Light still comes back
+    Given Lampas is opened on a phone whose colour scheme is light, with nothing saved
+    When he sets Theme to High contrast in Settings
+    Then the bus has heard the theme is contrast
+    And the page is high contrast
+    And the browser bar colour is the high contrast one
+    When he sets Theme to Light in Settings
+    Then the page is light
+    And the browser bar colour is the light one
 
   Scenario: Theme and Text size can be set on a loaded phone whose Settings draws its controls late
     Given Lampas is opened on a phone whose colour scheme is light, with nothing saved, and Settings is slow to draw its controls

@@ -176,6 +176,11 @@ for (const screen of SCREENS) {
     // the Theme setting follows the phone: the same screen in the phone's dark theme
     await page.emulateMedia({ colorScheme: 'dark' });
     expect(await violationsOn(page)).toEqual([]);
+    // and in High contrast (mw-cwf538.5), whose text is held to the same rules (the palette's 7:1 is proven in tests/unit/themes.test.ts)
+    await page.evaluate(() => {
+      document.documentElement.dataset.theme = 'contrast';
+    });
+    expect(await violationsOn(page)).toEqual([]);
   });
 }
 

@@ -8,6 +8,6 @@ export const themeSetting = defineSetting<Theme>({
   allowed: { kind: 'choice', values: THEMES.map((t) => ({ value: t.id, label: t.label })) },
   section: 'appearance',
   label: 'Theme',
-  hint: "Light, dark, sepia, or the phone's own.",
-  help: "The colours: Phone follows the phone's own light or dark setting. Sepia is warm paper with dark brown text, for long reading.",
+  hint: "Light, dark, sepia, high contrast, or the phone's own.",
+  help: "The colours: Phone follows the phone's own light or dark setting. Sepia is warm paper with dark brown text, for long reading. High contrast is pure white on black with thick outlines, for low vision.",
 });

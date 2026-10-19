@@ -210,6 +210,17 @@ describeFeature(feature, ({ Scenario }) => {
     And('the browser bar colour is the dark one', () => waitFor(() => expect(barColour()).toBe(THEME_COLORS.dark)));
   });
 
+  Scenario('Theme High contrast gives pure white on black whatever the phone says, and Light still comes back', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on a phone whose colour scheme is light, with nothing saved', () => openOnPhone(false));
+    When('he sets Theme to High contrast in Settings', () => pickChoice('Theme', 'High contrast'));
+    Then('the bus has heard the theme is contrast', () => waitFor(() => expect(latest('theme-changed')?.theme).toBe('contrast')));
+    And('the page is high contrast', () => waitFor(() => expect(pageTheme()).toBe('contrast')));
+    And('the browser bar colour is the high contrast one', () => waitFor(() => expect(barColour()).toBe(THEME_COLORS.contrast)));
+    When('he sets Theme to Light in Settings', () => pickChoice('Theme', 'Light'));
+    Then('the page is light', () => waitFor(() => expect(pageTheme()).toBe('light')));
+    And('the browser bar colour is the light one', () => waitFor(() => expect(barColour()).toBe(THEME_COLORS.light)));
+  });
+
   Scenario('Theme and Text size can be set on a loaded phone whose Settings draws its controls late', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone whose colour scheme is light, with nothing saved, and Settings is slow to draw its controls', () =>
       openOnPhone(false, 400),
