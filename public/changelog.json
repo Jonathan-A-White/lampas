@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.335",
+    "date": "2026-10-19",
+    "story": "mw-cwf538.8",
+    "kind": "new",
+    "text": "The whole path now has arrow buttons that move the graph, and tabbing to an idea brings it into view."
+  },
+  {
     "version": "0.1.334",
     "date": "2026-10-19",
     "story": "mw-5r3p30.619",

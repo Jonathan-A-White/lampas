@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.335
+_2026-10-19_
+- New: The whole path now has arrow buttons that move the graph, and tabbing to an idea brings it into view.
+
 ## 0.1.334
 _2026-10-19_
 - Fixed: The About button and version line no longer sit at the bottom of every chapter; About is in Settings.
