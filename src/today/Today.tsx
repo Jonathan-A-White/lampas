@@ -17,7 +17,7 @@ import { useScrollMemory } from '../nav/scrollMemory';
 import { chapterName } from '../plan/chapterName';
 import { SendOff } from '../plan/SendOff';
 import { StartPlan } from '../plan/StartPlan';
-import { usePlan } from '../plan/usePlan';
+import { readPlan, usePlan } from '../plan/usePlan';
 import { useSendOff } from '../plan/useSendOff';
 import { devotionalLink } from '../resources/logosDevotional';
 import { chapterLink, verseLink } from '../resources/logosBible';
@@ -28,6 +28,7 @@ import { dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyRevi
 import { openSetting } from '../settings/link';
 import { useSetting } from '../settings/store';
 import { useReportScreen } from '../tutor/screenContext';
+import { openedTitles, passageName, todayFacts } from './tutorFacts';
 import { useToday } from './useToday';
 
 const LINK = 'flex min-h-12 min-w-0 flex-1 flex-col justify-center rounded-lg px-3 py-2 text-left active:bg-line';
@@ -166,8 +167,6 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
   );
 }
 
-const passageName = (code: string, chapter: number): string => `${code === 'psa' ? 'Psalm' : 'Proverbs'} ${chapter}`;
-
 function PsalmsPiece({ ticks, today }: { ticks: Ticks; today: Date }) {
   const bible = useLiveQuery(getLogosBible, []);
   if (bible === undefined) return null;
@@ -275,7 +274,28 @@ export function Today() {
   const shown = [review, plan, psalms, devotional];
   const ready = !shown.includes(undefined) && tickBoxes !== undefined && day !== undefined;
   const none = ready && shown.every((s) => s === 'off');
-  useReportScreen({ name: 'Today', facts: ready ? [{ label: 'On Today', value: COULD_HOLD.filter((_, i) => shown[i] === 'on').map((p) => p.name).join(', ') || 'nothing' }] : [] });
+  // what the tutor is told: the date, what is On and the pieces he opened today by name (this date's list only), so it can open by naming what he read
+  // the plan's chapter is read once, and only when he has opened the plan's link today (the name is not in the id)
+  const planOpened = day?.opened.includes('plan') ?? false;
+  const [planName, setPlanName] = useState<string | undefined>();
+  useEffect(() => {
+    if (!planOpened) return undefined;
+    let live = true;
+    void readPlan().then(({ started }) => live && setPlanName(started?.next ? chapterName(started.next) : undefined));
+    return () => {
+      live = false;
+    };
+  }, [planOpened]);
+  const devotionalChoice = useSetting(devotionalSetting);
+  const devotionalDraw = useSetting(devotionalDrawSetting);
+  const names = {
+    plan: planName,
+    devotional: devotionalChoice === undefined || devotionalDraw === undefined ? undefined : devotionalForDay(devotionalChoice, tickedDevotionals(devotionalDraw), today).title,
+  };
+  useReportScreen({
+    name: 'Today',
+    facts: ready ? todayFacts({ date, on: COULD_HOLD.filter((_, i) => shown[i] === 'on').map((p) => p.name), opened: openedTitles(day.opened, names) }) : [],
+  });
   const ticks: Ticks = { on: tickBoxes === 'on', ticked: day?.ticked ?? [], date };
   return (
     <>

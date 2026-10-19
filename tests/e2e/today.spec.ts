@@ -1,4 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
+import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
+import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -241,4 +243,35 @@ test('with everything off Today explains what it could hold, with a link to each
   await page.reload();
   await expect(page.getByTestId('today-empty')).toBeVisible();
   await expect(page.getByTestId('today-explained')).toHaveCount(0);
+});
+
+test('the tutor from Today knows the psalm he opened, and a screenshot is one tap away', async ({ page }) => {
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: TALK_ANSWER };
+  await routePostern(page, fake);
+  await openToday(page);
+  await piece(page, 'Psalms and Proverbs').getByRole('link', { name: startsWith(`Psalm ${TODAY.day}`) }).click();
+  expect(await opened(page)).toHaveLength(1);
+
+  await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
+  const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Today' });
+  await expect(sheet).toBeVisible();
+  // the picture buttons are there from the first turn, and the suggestions offer to talk about the reading and to send a screenshot
+  await expect(sheet.getByRole('button', { name: 'Attach a picture' })).toBeVisible();
+  await expect(sheet.getByRole('button', { name: 'Take a photo' })).toBeVisible();
+  await expect(sheet.locator('[data-suggestion]').filter({ hasText: 'Talk about what I read' })).toBeVisible();
+
+  // "Send a screenshot" opens the phone's picker at once and sends nothing
+  const chooser = page.waitForEvent('filechooser');
+  await sheet.locator('[data-suggestion]').filter({ hasText: 'Send a screenshot' }).click();
+  await chooser;
+  expect(fake.received).toHaveLength(0);
+  await shot(page, 'today-ask-tutor');
+
+  await sheet.locator('[data-suggestion]').filter({ hasText: 'Talk about what I read' }).click();
+  await expect(sheet.locator('[data-turn]')).toHaveCount(1);
+  expect(fake.received).toHaveLength(1);
+  const screen = fake.received[0].input.screen as { name: string; facts: { label: string; value: string }[] };
+  expect(screen.name).toBe('Today');
+  expect(screen.facts).toContainEqual({ label: 'Opened today', value: `Psalm ${TODAY.day}` });
 });

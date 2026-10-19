@@ -59,6 +59,11 @@ The Greek pronunciation (`pronunciation`, its id) reaches bible-talk, verse-ask 
 `suggestionsFor(name)` (`src/tutor/screen.ts`): two or three per screen, shown by the sheet as buttons while the talk has no turn and nothing is
 on its way (`TalkSheet`'s `suggestions`, `[data-suggestion]`); a tap sends one. Goal's first is the Governor's own: "What's the simplest verse in the
 New Testament for me to learn first, given where I am?" The Reader's chapter talk has `READER_SUGGESTIONS`.
+Today (mw-1fwagb.7, the grilling mw-6ww.126 Q5) reports the local date, what is On and `Opened today`, the pieces whose link he tapped on that date, by name
+(`src/today/tutorFacts.ts` `openedTitles`, `todayFacts`; dailyStore.ts keeps the opened list per date, so yesterday's never comes); the bible-talk instructions
+('Talk from Today') say to open by naming them and to invite a screenshot. Its suggestions are 'Talk about what I read' and `SEND_A_SCREENSHOT`: the second
+sends no words, it opens the picture picker (`TalkSheet` `ask`, `PictureControls` `registerPicker`); the attach and camera buttons are on the composer from the first turn.
+`suggestionsFor` also finds a screen by its lower-case name ('today').
 Once the talk has a turn (or the first question failed) the ones not yet asked stay under the last answer, headed 'Ask something else'
 (mw-vtjxh4.43). 'New talk' in the sheet's header (shown with a turn and nothing in flight) forgets the kept talk (`deleteTurns`, with its
 pictures) and brings the empty state with all of them back, also after a reload.

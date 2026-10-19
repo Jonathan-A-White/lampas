@@ -34,6 +34,7 @@ import { PictureThumbs, TurnPictures } from './talk/TurnPictures';
 import { usePictureBox, type BoxPicture } from './talk/usePictureBox';
 import { stopAnswer } from './speech/readAloud';
 import { stopOnTap } from './speech/tutorVoice';
+import { SEND_A_SCREENSHOT } from './tutor/screen';
 import { ReadAloud } from './speech/ReadAloud';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { answerRuns } from './speech/answerRuns';
@@ -706,6 +707,11 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
     addToBox(sharedFiles);
   }, [sharedFiles, addToBox]);
   const hasPictures = box.pictures.length > 0;
+  // 'Send a screenshot' (a suggestion) opens the picker where the composer's attach button would, and sends no words
+  const openPicker = useRef<(() => void) | null>(null);
+  const registerPicker = useCallback((open: (() => void) | null) => {
+    openPicker.current = open;
+  }, []);
   // words or pictures waiting to go: Send is on screen and, in a short window, the hold bar gives way to a round mic button
   const composing = text.length > 0 || hasPictures;
   // a question past the cap stays in the box, never cut; Send is off and the count says why (src/services/requestBudget.ts MAX_QUESTION_CHARS)
@@ -715,6 +721,10 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
     // a message of pictures alone asks what the pictures say
     onSay(message.trim() || PICTURE_ONLY_QUESTION, undefined, takeWaiting());
     setText('');
+  };
+  const ask = (question: string): void => {
+    if (question === SEND_A_SCREENSHOT) openPicker.current?.();
+    else send(question);
   };
   // A Hebrew word of an answer, in its guide, asks how it is said: a sound question with the word as its focus (mw-5r3p30.98).
   const hebrew = useMemo(
@@ -785,7 +795,7 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
                 {scope.welcome ? 'The tutor is about to say hello.' : scope.quiz ? 'Nothing said yet. Say “Quiz me” to begin.' : scope.screen && !scope.free ? 'Nothing said yet. Ask about this screen or about where you are.' : 'Nothing said yet. Ask about a word, a verse or what is on your mind.'}
               </p>
             ) : null}
-            {turns?.length === 0 && !state && suggestions?.length ? <Suggestions questions={suggestions} onAsk={send} /> : null}
+            {turns?.length === 0 && !state && suggestions?.length ? <Suggestions questions={suggestions} onAsk={ask} /> : null}
             <HebrewAskContext.Provider value={hebrew}>
               {turns?.map((turn) => (
                 <Turn key={turn.id} turn={turn} scope={scope} onLook={setLookup} onLeave={onClose} />
@@ -821,7 +831,7 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
                 )}
               </div>
             ) : null}
-            {turns && !busy && (turns.length > 0 || state) && more.length > 0 ? <Suggestions questions={more} onAsk={send} label="Ask something else" /> : null}
+            {turns && !busy && (turns.length > 0 || state) && more.length > 0 ? <Suggestions questions={more} onAsk={ask} label="Ask something else" /> : null}
           </div>
           <BarSlot level={3} />
           <div data-composer className="shrink-0 space-y-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+var(--lp-bar-inset))] short:flex short:flex-wrap short:items-end short:gap-x-2 short:space-y-0 short:gap-y-2">
@@ -836,7 +846,7 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
                 {voice.notice.message}
               </p>
             ) : null}
-            <PictureControls box={box} disabled={busy} />
+            <PictureControls box={box} disabled={busy} registerPicker={registerPicker} />
             <LengthNote id={countId} text={text} max={MAX_TALK_CHARS} what="question" className="short:basis-full" />
             {/* One row for the words: the box, Send and the mic. In a short window (the keyboard up, a phone sideways) the mic is the bar beside the box, a round
                 button once there are words, and the row is at least 20 rem so the pictures and the two buttons go on a line above it, never beside a squeezed box. */}

@@ -17,7 +17,8 @@ export interface PlanView {
   total: number;
 }
 
-async function read(): Promise<{ started: PlanView | undefined }> {
+/** The plan as it stands now, read once (usePlan keeps it live). */
+export async function readPlan(): Promise<{ started: PlanView | undefined }> {
   const [on, state] = await Promise.all([getSetting(readingPlanSetting), getReadingPlan()]);
   const chapters = on === 'on' && state ? planOf(state.planId)?.chapters() : undefined;
   if (!state || !chapters) return { started: undefined };
@@ -27,5 +28,5 @@ async function read(): Promise<{ started: PlanView | undefined }> {
 
 /** The plan to draw: `{ started }` once read (started undefined when the setting is Off or none is started), or undefined while reading. */
 export function usePlan(): { started: PlanView | undefined } | undefined {
-  return useLatestLiveQuery(read);
+  return useLatestLiveQuery(readPlan);
 }

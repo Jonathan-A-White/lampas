@@ -1,0 +1,25 @@
+{
+  "description": "A talk from Today after he opened Psalm 19 and the devotional: the tutor opens by naming Psalm 19, invites a screenshot of what he read, and does not name a piece he did not open.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Today",
+    "question": "Talk about what I read",
+    "history": [],
+    "solid_words": [],
+    "settings": {},
+    "screen": {
+      "name": "Today",
+      "facts": [
+        { "label": "Date", "value": "2026-10-19" },
+        { "label": "On Today", "value": "Review, Reading plan, Psalms and Proverbs, Devotional" },
+        { "label": "Opened today", "value": "Psalm 19, Morning and Evening" }
+      ]
+    }
+  },
+  "expect": {
+    "answer": { "matches": "Psalm 19" },
+    "words": { "equals": [] },
+    "settings_changes": { "present": false },
+    "setting_offer": { "present": false }
+  }
+}
