@@ -5,7 +5,7 @@
 import { getStudyResources } from '../data/repositories';
 import type { ScreenSetting } from '../tutor/screen';
 import { settingOf } from './registry';
-import { ROWS } from './rows';
+import { isTalkable, ROWS } from './rows';
 
 /** The value as the screen shows it: 'Dark', '0.8x', 'Off', without the setting's name that `show` starts with. */
 function shown(label: string, text: string): string {
@@ -16,7 +16,7 @@ function shown(label: string, text: string): string {
 /** Every setting and study resource of Settings, in the screen's order, as the tutor reads it. */
 export async function settingsForTutor(): Promise<ScreenSetting[]> {
   const resources = await getStudyResources();
-  const rows = ROWS.filter((r) => !r.key.startsWith('link.') && r.key !== 'developer');
+  const rows = ROWS.filter((r) => isTalkable(r.key));
   return Promise.all(
     rows.map(async (row): Promise<ScreenSetting> => {
       const entry = settingOf(row.key);

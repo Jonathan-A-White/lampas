@@ -1,6 +1,6 @@
 // src/services/feedback.ts — feedback to the factory: a grist of the kind 'feedback' (grinds/feedback.json) with the app's version,
 // his words and, for a grammar approach, who to credit and up to four pictures attached; or, for an ask the tutor could not meet, the
-// tutor's one-line summary and the screen he asked from; or, for a grammar book of his Logos library, the title he typed; or, for an ask of Settings >
+// tutor's one-line summary and the screen he asked from; or, for a grammar book of his Logos library, the title he typed; or, for a devotional (Settings > Daily > Request a devotional), its title; or, for an ask of Settings >
 // Ask for more (an approach or programme, a study resource, a text, a translation), what he wants, why and a link. This is the ONE sender:
 // Ask for another approach, Ask for another book, the Ask for more forms and the tutor's 'Send this to the makers' all call submitFeedback (tests/unit/feedback-shared.test.ts keeps it so). The wire work is src/services/tutor.ts's askGrind. The grind forwards
 // ("forward": "mayor"): no model reads it, the mill mails it to the Mayor with the pictures and answers {"status":"sent"}.
@@ -77,7 +77,16 @@ export interface MoreRequest {
   app_version: string;
 }
 
-export type FeedbackRequest = GrammarApproachRequest | TutorAskRequest | GrammarBookRequest | MoreRequest;
+/** What the grind is sent when he asks for a devotional of his Logos library (Settings > Daily > Request a devotional): its title as he typed it. The Mayor adds
+ * it to src/data/daily/devotionals.ts when he finds its Logos id. It is the fourth branch's shape, so the title is the name's limit. */
+export interface DevotionalRequest {
+  kind: 'devotional';
+  name: string;
+  text?: undefined;
+  app_version: string;
+}
+
+export type FeedbackRequest = GrammarApproachRequest | TutorAskRequest | GrammarBookRequest | MoreRequest | DevotionalRequest;
 
 /** The kinds of feedback; the bus announces one when the mill has it. */
 export type FeedbackKind = FeedbackRequest['kind'];
@@ -107,6 +116,11 @@ export function buildFeedbackRequest(text: string, creditName: string, creditUrl
 /** The request for a grammar book: the title as he typed it, with the author if he gave one. */
 export function buildBookRequest(title: string): GrammarBookRequest {
   return { kind: 'grammar-book', text: title.trim(), app_version: __APP_VERSION__ };
+}
+
+/** The request for a devotional: the title as he typed it, trimmed. */
+export function buildDevotionalRequest(title: string): DevotionalRequest {
+  return { kind: 'devotional', name: title.trim(), app_version: __APP_VERSION__ };
 }
 
 /** The request of an Ask for more form: the name trimmed; why and the link only when he wrote them (https:// put in front of a bare link). */

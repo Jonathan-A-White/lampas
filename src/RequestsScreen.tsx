@@ -15,6 +15,7 @@ const KIND_NAMES: Record<string, string> = {
   'grammar-approach': 'Grammar approach',
   'tutor-ask': 'Asked the tutor',
   'grammar-book': 'Grammar book',
+  devotional: 'Devotional',
   // the four forms of Settings > Ask for more
   approach: 'Approach or programme',
   'study-resource': 'Study resource',

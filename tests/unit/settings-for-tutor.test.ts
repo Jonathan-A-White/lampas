@@ -5,7 +5,7 @@ import { db } from '../../src/data/db';
 import { NO_CHAPTER } from '../../src/data/chapter';
 import { setResourceOn } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
-import { ROWS } from '../../src/settings/rows';
+import { isTalkable, ROWS } from '../../src/settings/rows';
 import { settingsForTutor } from '../../src/settings/tutorSettings';
 import { buildTalkRequest, fitHistory, MAX_REQUEST_BYTES, type TalkRequest, type TalkScope } from '../../src/services/talk';
 import { fitScreen, MAX_SETTINGS, SETTING_HELP_MAX, SETTING_NAME_MAX, SETTING_VALUE_MAX, suggestionsFor } from '../../src/tutor/screen';
@@ -20,7 +20,7 @@ beforeEach(async () => {
 describe('settingsForTutor', () => {
   it('names every setting and study resource of Settings with its value and its hint, and no link', async () => {
     const got = await settingsForTutor();
-    const wanted = ROWS.filter((r) => !r.key.startsWith('link.') && r.key !== 'developer');
+    const wanted = ROWS.filter((r) => isTalkable(r.key));
     expect(got.map((s) => s.name)).toEqual(wanted.map((r) => r.label));
     for (const row of wanted) expect(got.find((s) => s.name === row.label)?.help, row.key).toBe(row.hint);
     for (const s of got) expect(s.value, s.name).not.toBe('');

@@ -9,6 +9,7 @@ import { HandwritingControl } from './handwriting';
 import { LinkControl } from './links';
 import { NewWordsControl } from './newWords';
 import { QuizGoalControl } from './quizGoal';
+import { RequestDevotionalControl } from './requestDevotional';
 import { AudioBibleControl, LogosBibleControl, ReadingPlanControl, ResourceControl } from './resources';
 import { AskByControl, ReadLessonsControl, ReadTutorControl, ScriptDepthControl, TipsControl } from './tutor';
 import type { Control } from './types';
@@ -51,6 +52,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   devotional: DevotionalControl,
   devotionalDraw: DevotionalDrawControl,
   dailyTicks: DailyTicksControl,
+  'request.devotional': RequestDevotionalControl,
   tips: TipsControl,
   readTutor: ReadTutorControl,
   readLessons: ReadLessonsControl,
