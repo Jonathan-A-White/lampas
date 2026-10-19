@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { waitForDue } from './today-chip';
 
 // The settings search lives on Settings alone (mw-5r3p30.617): no header and not the Reader's chip row has a magnifier, and Settings keeps its field pinned at the top.
 test.use({ viewport: { width: 390, height: 844 } });
@@ -84,7 +85,8 @@ for (const size of [
     await page.reload();
     const row = page.getByTestId('reader-chips');
     await expect(row).toBeVisible();
-    await expect(page.getByTestId('today-chip')).toBeVisible();
+    // the first open's seed (his words and their schedule) is what the goal and the woven count are drawn from: Today's Review count says it is in
+    await waitForDue(page);
     await expect(page.getByTestId('goal-strip')).toBeVisible();
     await expect(page.getByTestId('weave-count')).toBeVisible();
     const measured = await row.locator('button, [data-testid="weave-count"]').evaluateAll((els) =>
