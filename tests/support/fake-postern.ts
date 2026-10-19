@@ -59,6 +59,8 @@ export interface FakePostern {
   down: boolean;
   /** Every call is answered with this HTTP status and no work done, as the VPS's proxy does while the factory's home is off (502, 503 or 504); undefined = a working backend. */
   gateway: number | undefined;
+  /** The backend works but refuses to take a grist: the send (POST /api/messages) is answered with this status and error, in Postern's own words, as a 500 from its code does. */
+  sendRefusal: { status: number; error: string } | undefined;
   /** Answer the oldest grist not yet answered. The app sends its grist a moment after the tap that asks (on a loaded host, later than
    * the next step): with none waiting it waits up to `answerWaitMs` for the next one to arrive, and fails only then. Always await it. */
   answer(reply: Reply): Promise<void>;
@@ -230,6 +232,7 @@ export function makeFakePostern(): FakePostern {
     licensed: true,
     down: false,
     gateway: undefined,
+    sendRefusal: undefined,
     sinces: [],
     events: false,
     eventsRefused: false,
@@ -345,6 +348,7 @@ export function makeFakePostern(): FakePostern {
       return json(201, blob);
     }
     if (url.pathname === '/api/messages' && method === 'POST') {
+      if (fake.sendRefusal) return json(fake.sendRefusal.status, { error: fake.sendRefusal.error });
       const slow = fake.slowSendMs;
       fake.slowSendMs = undefined;
       if (slow !== undefined) await new Promise((resolve) => setTimeout(resolve, slow));

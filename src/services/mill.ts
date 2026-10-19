@@ -149,12 +149,14 @@ export class SendUnknownError extends Error {
   }
 }
 
+/** Whether the backend's answer says the tutor's side is down, not that it refused him: a gateway error from the VPS's proxy (502, 503, 504) or any 5xx from
+ * Postern itself (a 500 carries its own words, 'sql: database is locked', which mean nothing to him; mw-5r3p30.438). The one test for the send and the upload. */
+const backendFailed = (status: number): boolean => status >= 500;
+
 /** POST /api/messages with a record's script. */
 async function postRecord(d: TimedDoor, scriptHex: string): Promise<SentGrist> {
   const response = await d.fetch('/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ scriptHex }) });
-  if (response.status === 502 || response.status === 503 || response.status === 504) {
-    throw new door.BackendUnreachableError(await refusal(response, 'The backend refused the grist.'));
-  }
+  if (backendFailed(response.status)) throw new door.BackendUnreachableError(await refusal(response, 'The backend refused the grist.'));
   if (!response.ok) throw new door.RefusedError(await refusal(response, 'The backend refused the grist.'), response.status);
   const body = (await door.withTimeout(response.json(), true)) as { txid?: unknown; seq?: unknown };
   if (typeof body.txid !== 'string') throw new Error('The backend took the grist but named no id.');
@@ -179,6 +181,7 @@ export async function sendTimedGrist(p: SendParams): Promise<SentGrist & { resen
   for (const file of files) {
     const sealed = grist.sealBytes(file.bytes, p.key, p.mill);
     const response = await p.door.fetch('/blobs', { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: sealed.buffer.slice(sealed.byteOffset, sealed.byteOffset + sealed.byteLength) as ArrayBuffer });
+    if (backendFailed(response.status)) throw new door.BackendUnreachableError(await refusal(response, 'The image upload failed.'));
     if (!response.ok) throw new door.RefusedError(await refusal(response, 'The image upload failed.'), response.status);
     // The upload has not sent the grist: a timeout here means nothing has gone.
     const body = (await door.withTimeout(response.json(), false)) as { hash?: unknown; size?: unknown };

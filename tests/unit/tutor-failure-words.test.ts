@@ -67,6 +67,23 @@ describe('the backend answers but the tutor does not', () => {
   });
 });
 
+// mw-5r3p30.438: a 500 on the send is Postern's own code failing, and its words ('sql: database is locked') are no help to him: it reads as the tutor being offline
+describe('the backend takes the call and fails it with a 500', () => {
+  it('a 500 on the send says the tutor is offline, not Postern\'s own words', async () => {
+    postern.sendRefusal = { status: 500, error: 'sql: database is locked' };
+    const error = await failure(ask());
+    expect(error?.failure).toBe('unreachable');
+    expect(error?.message).toBe('The tutor is offline right now. This is not your connection; try again later.');
+    expect(error?.message).toBe(TUTOR_OFFLINE_MESSAGE);
+  });
+
+  it('a refusal that is his to fix still says Postern\'s words (a 403 for a key that is not the mill\'s)', async () => {
+    postern.sendRefusal = { status: 403, error: 'not to the mill from you' };
+    const error = await failure(ask());
+    expect(error?.message).toBe('not to the mill from you');
+  });
+});
+
 describe('one source for the words', () => {
   it('no other file under src writes them: every surface shows TutorError.message', () => {
     const files = readdirSync('src', { recursive: true, encoding: 'utf8' }).filter((f) => /\.tsx?$/.test(f) && f !== join('services', 'tutor.ts'));
