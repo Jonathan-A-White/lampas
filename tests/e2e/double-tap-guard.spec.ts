@@ -26,8 +26,14 @@ import { honestMic } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { SETTLE_MS } from '../../src/ui/settle';
+import { pageTime, tapTwice } from '../support/gesture';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+// tapTwice (tests/support/gesture.ts) times the two taps, and the guard its moment, on the page's clock, so it is installed before the page opens.
+test.beforeEach(async ({ page }) => {
+  await page.clock.install();
+});
 
 /** Puts rows in the app's own stores through raw IndexedDB, as the app wrote them. */
 async function put(page: Page, rows: Partial<Record<'settings' | 'grammarLevels' | 'shares', object[]>>): Promise<void> {
@@ -64,60 +70,91 @@ async function open(page: Page, hash: string, rows: Parameters<typeof put>[1] = 
   // a write behind Dexie's back is not seen by its live queries: the app starts afresh
   await page.reload();
   await ready?.();
-  await page.waitForTimeout(SETTLE_MS + 100);
+  await pageTime(page, SETTLE_MS + 100);
 }
 
 /** He reads what is on screen before his next tap. */
-const reads = (page: Page) => page.waitForTimeout(SETTLE_MS + 100);
+const reads = (page: Page) => pageTime(page, SETTLE_MS + 100);
 
+/** The middle of `target` once it has stopped moving: a screen's rows come from the database in real time, not on the page's clock, and a row drawn
+ * late above it moves it down. */
 const centre = async (target: Locator) => {
   await expect(target).toBeVisible();
-  const box = await target.boundingBox();
-  expect(box).not.toBeNull();
+  let box = await target.boundingBox();
+  await expect
+    .poll(async () => {
+      const was = box;
+      box = await target.boundingBox();
+      return JSON.stringify(box) === JSON.stringify(was) && box !== null;
+    })
+    .toBe(true);
   return { x: box!.x + box!.width / 2, y: box!.y + box!.height / 2 };
 };
 
 /** The control the second tap goes to, when it is not under the first: the first (or `last`) element matching `selector` whose label or text holds `text`. */
 type Second = { selector: string; text?: string; last?: boolean };
 
+/** The page time a screen may take to be drawn between the taps: the first tap's 120 ms and this stay inside the settle moment. */
+const DRAW_BUDGET_MS = SETTLE_MS - 120 - 40;
+
 /**
- * A thumb's double tap on `target`: the first tap, then `drawn` (what it brings up is on screen), then the second tap on the same spot (or on
- * `under.second`'s centre), 120 ms after the first, inside the settle moment. Before the second tap, the element at the spot is checked to be inside
- * `under.selector` (and not inside `outside` when given): the second tap lands where the Tester's did. The spot is found and checked in one call
- * in the page, so the second tap still comes inside the moment.
+ * Waits for `drawn` with the page's clock paused, letting it run a few ms at a time while what the first tap brought up is not yet on screen: React
+ * reveals a screen that waited on its code or data on a timer, which a clock held still never fires. It stays inside DRAW_BUDGET_MS of page time.
  */
-async function doubleTap(page: Page, target: Locator, drawn: () => Promise<unknown>, under: { selector: string; outside?: string; second?: Second }): Promise<void> {
+async function drawnOnPageClock(page: Page, drawn: () => Promise<unknown>): Promise<void> {
+  let done = false;
+  const waiting = drawn().then(() => {
+    done = true;
+  });
+  for (let ran = 0; !done; ran += 10) {
+    await Promise.race([waiting, new Promise((resolve) => setTimeout(resolve, 100))]);
+    if (done) break;
+    expect(ran, 'what the first tap brings up is drawn inside the settle moment').toBeLessThan(DRAW_BUDGET_MS);
+    await page.clock.runFor(10);
+  }
+  await waiting;
+}
+
+/**
+ * A thumb's double tap on `target`, 120 ms apart on the page's clock (tests/support/gesture.ts tapTwice), inside the settle moment however slowly the host
+ * delivers it: the first tap, then `drawn` (what it brings up is on screen), then the second tap on the same spot (or on `under.second`'s centre).
+ * Before the second tap, the element at the spot is checked to be inside `under.selector` (and not inside `outside` when given): the second tap lands
+ * where the Tester's did.
+ */
+async function thumbDoubleTap(page: Page, target: Locator, drawn: () => Promise<unknown>, under: { selector: string; outside?: string; second?: Second }): Promise<void> {
   const at = await centre(target);
-  const first = Date.now();
-  await page.touchscreen.tap(at.x, at.y);
-  await drawn();
-  const spot = await page.evaluate(
-    ([ax, ay, selector, outside, second]) => {
-      let x = ax;
-      let y = ay;
-      if (second) {
-        const named = (el: Element) => !second.text || `${el.getAttribute('aria-label') ?? ''} ${el.textContent ?? ''}`.includes(second.text);
-        const all = [...document.querySelectorAll(second.selector)].filter(named);
-        const el = second.last ? all[all.length - 1] : all[0];
-        if (!el) return { x, y, hit: `no ${second.selector} ${second.text ?? ''}` };
-        el.scrollIntoView({ block: 'nearest' });
-        const box = el.getBoundingClientRect();
-        x = box.x + box.width / 2;
-        y = box.y + box.height / 2;
-      }
-      const there = document.elementFromPoint(x, y);
-      if (!there?.closest(selector)) return { x, y, hit: `nothing in ${selector}: ${there?.outerHTML.slice(0, 120)}` };
-      if (outside && there.closest(outside)) return { x, y, hit: `inside ${outside}` };
-      return { x, y, hit: 'hit' };
+  // the first tap lands on the control itself
+  expect(await target.evaluate((el, [x, y]) => el.contains(document.elementFromPoint(x, y)), [at.x, at.y] as const)).toBe(true);
+  await tapTwice(page, at, 120, {
+    touch: true,
+    between: async () => {
+      await drawnOnPageClock(page, drawn);
+      const spot = await page.evaluate(
+        ([ax, ay, selector, outside, second]) => {
+          let x = ax;
+          let y = ay;
+          if (second) {
+            const named = (el: Element) => !second.text || `${el.getAttribute('aria-label') ?? ''} ${el.textContent ?? ''}`.includes(second.text);
+            const all = [...document.querySelectorAll(second.selector)].filter(named);
+            const el = second.last ? all[all.length - 1] : all[0];
+            if (!el) return { x, y, hit: `no ${second.selector} ${second.text ?? ''}` };
+            el.scrollIntoView({ block: 'nearest' });
+            const box = el.getBoundingClientRect();
+            x = box.x + box.width / 2;
+            y = box.y + box.height / 2;
+          }
+          const there = document.elementFromPoint(x, y);
+          if (!there?.closest(selector)) return { x, y, hit: `nothing in ${selector}: ${there?.outerHTML.slice(0, 120)}` };
+          if (outside && there.closest(outside)) return { x, y, hit: `inside ${outside}` };
+          return { x, y, hit: 'hit' };
+        },
+        [at.x, at.y, under.selector, under.outside ?? '', under.second ?? null] as const,
+      );
+      expect(spot.hit).toBe('hit');
+      return [spot.x, spot.y] as const;
     },
-    [at.x, at.y, under.selector, under.outside ?? '', under.second ?? null] as const,
-  );
-  expect(spot.hit).toBe('hit');
-  const gap = 120 - (Date.now() - first);
-  if (gap > 0) await page.waitForTimeout(gap);
-  expect(Date.now() - first).toBeLessThan(SETTLE_MS);
-  await page.touchscreen.tap(spot.x, spot.y);
-  await page.waitForTimeout(SETTLE_MS);
+  });
+  await pageTime(page, SETTLE_MS);
 }
 
 const IDEAS = '[role="dialog"][aria-label="Idea"]';
@@ -151,8 +188,6 @@ async function openIdea(page: Page, name: string): Promise<Locator> {
 
 test.describe('Settings rows', () => {
   test('mw-5r3p30.453: a double tap on the About row opens About, not the Preface', async ({ page }) => {
-    // a taller phone, so About's Preface is in view the moment About is drawn (at 844 it is below the fold, and a scroll outlasts the moment)
-    await page.setViewportSize({ width: 390, height: 1400 });
     // About has been open once, as on his phone, so its first draw (its credits) does not outlast the moment on a loaded host
     await open(page, '#/about', {}, () => page.locator('button[aria-label="Preface"]').waitFor());
     // a new hash on the same page: the app moves to Settings without a reload
@@ -161,7 +196,8 @@ test.describe('Settings rows', () => {
     const row = page.getByRole('button', { name: 'About', exact: true });
     await row.scrollIntoViewIfNeeded();
     await reads(page);
-    await doubleTap(page, row, () => page.getByRole('heading', { name: 'About', level: 1 }).first().waitFor(), {
+    // About's Preface is below the fold at this size: the second tap goes to it, scrolled into view on the page's clock held still
+    await thumbDoubleTap(page, row, () => page.getByRole('heading', { name: 'About', level: 1 }).first().waitFor(), {
       selector: 'button[aria-label="Preface"]',
       second: { selector: 'button[aria-label="Preface"]' },
     });
@@ -174,7 +210,7 @@ test.describe('Settings rows', () => {
     const row = page.getByRole('button', { name: /^Paradigms/ });
     await row.scrollIntoViewIfNeeded();
     await reads(page);
-    await doubleTap(page, row, () => page.getByRole('heading', { name: 'Paradigms', level: 1 }).first().waitFor(), { selector: '[data-paradigm]' });
+    await thumbDoubleTap(page, row, () => page.getByRole('heading', { name: 'Paradigms', level: 1 }).first().waitFor(), { selector: '[data-paradigm]' });
     await expect(page).toHaveURL(/#\/paradigms$/);
   });
 
@@ -183,7 +219,7 @@ test.describe('Settings rows', () => {
     const row = page.getByRole('button', { name: 'About you', exact: true });
     await row.scrollIntoViewIfNeeded();
     await reads(page);
-    await doubleTap(page, row, () => page.getByRole('button', { name: 'Slow', exact: true }).first().waitFor(), { selector: 'button[aria-pressed]' });
+    await thumbDoubleTap(page, row, () => page.getByRole('button', { name: 'Slow', exact: true }).first().waitFor(), { selector: 'button[aria-pressed]' });
     await expect(page).toHaveURL(/#\/aboutyou$/);
     for (const pace of ['Quick', 'Steady', 'Slow']) await expect(page.getByRole('button', { name: pace, exact: true })).toHaveAttribute('aria-pressed', 'false');
   });
@@ -196,7 +232,7 @@ test.describe('back to the Reader', () => {
   ] as const) {
     test(`${bug}: a double tap on ${heading}'s ‹ Reader opens the Reader with no chapter picker over it`, async ({ page }) => {
       await open(page, from, {}, () => page.getByRole('heading', { name: heading, level: 1 }).first().waitFor());
-      await doubleTap(page, page.getByRole('button', { name: '‹ Reader', exact: true }), () => chapterName(page).first().waitFor(), { selector: 'header h1 button' });
+      await thumbDoubleTap(page, page.getByRole('button', { name: '‹ Reader', exact: true }), () => chapterName(page).first().waitFor(), { selector: 'header h1 button' });
       await expect(chapterName(page)).toBeVisible();
       await expect(anyDialog(page)).toHaveCount(0);
       // one tap after the moment opens the picker as it always did
@@ -207,7 +243,7 @@ test.describe('back to the Reader', () => {
 
   test("mw-5r3p30.446: a double tap on the Verse view's ‹ Reader opens the Reader with no chapter picker over it", async ({ page }) => {
     await open(page, '#/?b=rom&c=8&v=28', {}, () => page.getByRole('button', { name: '‹ Reader', exact: true }).first().waitFor());
-    await doubleTap(page, page.getByRole('button', { name: '‹ Reader', exact: true }), () => chapterName(page).first().waitFor(), { selector: 'header h1 button' });
+    await thumbDoubleTap(page, page.getByRole('button', { name: '‹ Reader', exact: true }), () => chapterName(page).first().waitFor(), { selector: 'header h1 button' });
     await expect(page.getByRole('button', { name: '‹ Reader', exact: true })).toHaveCount(0);
     await expect(anyDialog(page)).toHaveCount(0);
     await shot(page, 'double-tap-guard-verse-back');
@@ -217,7 +253,7 @@ test.describe('back to the Reader', () => {
 test.describe('the Reader', () => {
   test("mw-5r3p30.470: a double tap on the chapter's name opens the picker and leaves it open", async ({ page }) => {
     await open(page, '#/', {}, () => chapterName(page).first().waitFor());
-    await doubleTap(page, chapterName(page), () => picker(page).first().waitFor(), { selector: '[data-testid="sheet-backdrop"]' });
+    await thumbDoubleTap(page, chapterName(page), () => picker(page).first().waitFor(), { selector: '[data-testid="sheet-backdrop"]' });
     await expect(picker(page)).toBeVisible();
     await shot(page, 'double-tap-guard-chapter-name');
   });
@@ -227,7 +263,7 @@ test.describe('the Reader', () => {
     const heading = page.getByRole('button', { name: 'Wives and Husbands' });
     await heading.scrollIntoViewIfNeeded();
     await reads(page);
-    await doubleTap(page, heading, () => page.waitForFunction(() => /p=\d+/.test(location.hash), null, { polling: 'raf' }).then(() => {}), { selector: '[data-word]' });
+    await thumbDoubleTap(page, heading, () => page.waitForFunction(() => /p=\d+/.test(location.hash), null, { polling: 'raf' }).then(() => {}), { selector: '[data-word]' });
     await expect(page).toHaveURL(/p=\d+/);
     await expect(page.getByRole('dialog', { name: 'Word' })).toHaveCount(0);
   });
@@ -243,7 +279,7 @@ test.describe('the Goal screen and its idea sheets', () => {
       await eta.waitFor();
       await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
     };
-    await doubleTap(page, row, settled, { selector: `${IDEAS} button`, second: { selector: `${IDEAS} button`, text: 'About eta' } });
+    await thumbDoubleTap(page, row, settled, { selector: `${IDEAS} button`, second: { selector: `${IDEAS} button`, text: 'About eta' } });
     await expect(ideas(page)).toHaveCount(1);
     await expect(ideas(page).getByRole('heading', { name: 'The Greek alphabet' })).toBeVisible();
     await shot(page, 'double-tap-guard-alphabet');
@@ -251,7 +287,7 @@ test.describe('the Goal screen and its idea sheets', () => {
 
   test('mw-5r3p30.447, mw-5r3p30.527, mw-svw421.32, mw-i7xe0n.20: a double tap on an idea sheet\'s Done opens nothing beneath', async ({ page }) => {
     const idea = await openIdea(page, 'The noun');
-    await doubleTap(page, idea.getByRole('button', { name: 'Done', exact: true }), () => ideas(page).first().waitFor({ state: 'detached' }), { selector: 'button', outside: '[role="dialog"]' });
+    await thumbDoubleTap(page, idea.getByRole('button', { name: 'Done', exact: true }), () => ideas(page).first().waitFor({ state: 'detached' }), { selector: 'button', outside: '[role="dialog"]' });
     await expect(ideas(page)).toHaveCount(0);
     await expect(page).toHaveURL(/#\/goal$/);
   });
@@ -261,7 +297,7 @@ test.describe('the Goal screen and its idea sheets', () => {
     const goTo = idea.getByRole('button', { name: /^Go to / }).first();
     const to = ((await goTo.textContent()) ?? '').replace(/^Go to /, '').trim();
     const next = ideas(page).nth(1).getByRole('button', { name: /^Go to / }).first();
-    await doubleTap(page, goTo, () => next.first().waitFor(), { selector: `${IDEAS} button`, second: { selector: `${IDEAS} button`, text: 'Go to', last: true } });
+    await thumbDoubleTap(page, goTo, () => next.first().waitFor(), { selector: `${IDEAS} button`, second: { selector: `${IDEAS} button`, text: 'Go to', last: true } });
     await expect(ideas(page)).toHaveCount(2);
     await expect(ideas(page).last().getByRole('heading', { name: new RegExp(to, 'i') })).toBeVisible();
   });
@@ -274,7 +310,7 @@ test.describe('the Goal screen and its idea sheets', () => {
     await expect(xi.getByRole('heading', { name: 'Xi' })).toBeVisible();
     await expect(xi.getByTestId('idea-loading')).toHaveCount(0);
     await reads(page);
-    await doubleTap(page, xi.getByRole('button', { name: 'Done', exact: true }), () => ideas(page).nth(1).waitFor({ state: 'detached' }), { selector: `${IDEAS} button` });
+    await thumbDoubleTap(page, xi.getByRole('button', { name: 'Done', exact: true }), () => ideas(page).nth(1).waitFor({ state: 'detached' }), { selector: `${IDEAS} button` });
     await expect(ideas(page)).toHaveCount(1);
     await expect(ideas(page).getByRole('heading', { name: 'The Greek alphabet' })).toBeVisible();
   });
@@ -288,8 +324,8 @@ test('mw-svw421.19: a double tap on a Paradigms row opens its table and reveals 
   const row = page.locator('[data-paradigm="article"]');
   await reads(page);
   const hidden = page.locator('[data-cell][data-state="hidden"]').first();
-  await doubleTap(page, row, () => hidden.first().waitFor(), { selector: '[data-cell][data-state="hidden"]', second: { selector: '[data-cell][data-state="hidden"]' } });
-  await expect(page.getByTestId('paradigm-table')).toBeVisible();
+  await thumbDoubleTap(page, row, () => hidden.first().waitFor(), { selector: '[data-cell][data-state="hidden"]', second: { selector: '[data-cell][data-state="hidden"]' } });
+  await expect(page.getByTestId('paradigm-table').first()).toBeVisible();
   await expect(page.locator('[data-cell][data-state="shown"]')).toHaveCount(0);
 });
 
@@ -315,7 +351,7 @@ test('mw-1vuvq6.10: a double tap on the bridge idea sheet\'s Done leaves the tal
   await expect(idea.getByRole('heading', { name: 'The Greek alphabet' })).toBeVisible();
   await expect(idea.getByTestId('idea-loading')).toHaveCount(0);
   await reads(page);
-  await doubleTap(page, idea.getByRole('button', { name: 'Done', exact: true }), () => idea.first().waitFor({ state: 'detached' }), { selector: '[data-testid="sheet-backdrop"]' });
+  await thumbDoubleTap(page, idea.getByRole('button', { name: 'Done', exact: true }), () => idea.first().waitFor({ state: 'detached' }), { selector: '[data-testid="sheet-backdrop"]' });
   await expect(talk).toBeVisible();
   await expect(talk.getByRole('button', { name: 'Take me there: The Greek alphabet' })).toBeVisible();
 });
@@ -327,9 +363,9 @@ test.describe('sideways', () => {
     await honestMic(page);
     await open(page, '#/about', {}, () => page.getByRole('heading', { name: 'About', level: 1 }).first().waitFor());
     const talk = page.getByRole('dialog', { name: /^Ask the tutor/ });
-    await doubleTap(page, page.getByRole('button', { name: 'Ask the tutor about this screen' }), () => talk.first().waitFor(), { selector: '[name="Hold to talk"], button' });
+    await thumbDoubleTap(page, page.getByRole('button', { name: 'Ask the tutor about this screen' }), () => talk.first().waitFor(), { selector: '[name="Hold to talk"], button' });
     await expect(talk).toBeVisible();
-    await page.waitForTimeout(1000);
+    await pageTime(page, 1000);
     await expect(talk.getByText(/No speech was heard|speech service failed/)).toHaveCount(0);
     await expect(talk.getByText(/Release to send|Starting the mic/)).toHaveCount(0);
   });
@@ -348,7 +384,7 @@ test.describe('Share to Lampas', () => {
   // the Tester's Gen. 1:28 now opens the 'Not in Lampas yet' card in the list (no Old Testament); a New Testament reference leaves the share for the Reader
   test('mw-s1dc0n.8: a double tap on a reference opens it with no sheet over the Reader', async ({ page }) => {
     const sheet = await openShare(page);
-    await doubleTap(page, sheet.getByRole('link', { name: /Rom 8:28/ }), () => page.locator('[data-chunk], [data-word]').first().waitFor(), {
+    await thumbDoubleTap(page, sheet.getByRole('link', { name: /Rom 8:28/ }), () => page.locator('[data-chunk], [data-word]').first().waitFor(), {
       selector: '[data-chunk], [data-word]',
       second: { selector: '[data-chunk], [data-word]' },
     });
@@ -358,7 +394,7 @@ test.describe('Share to Lampas', () => {
 
   test('mw-s1dc0n.8: a double tap on Cancel closes the share with no sheet over the Reader', async ({ page }) => {
     const sheet = await openShare(page);
-    await doubleTap(page, sheet.getByRole('button', { name: 'Cancel', exact: true }), () => page.locator('[data-chunk], [data-word]').first().waitFor(), {
+    await thumbDoubleTap(page, sheet.getByRole('button', { name: 'Cancel', exact: true }), () => page.locator('[data-chunk], [data-word]').first().waitFor(), {
       selector: '[data-chunk], [data-word]',
       second: { selector: '[data-chunk], [data-word]' },
     });
