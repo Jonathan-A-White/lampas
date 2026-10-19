@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { THEME_COLORS, THEMES, isTheme, paletteOf } from '../../src/appearance/themes';
+import { THEME_COLORS, THEMES, barColourOf, isTheme, paletteOf } from '../../src/appearance/themes';
 import { TEXT_SIZES, normaliseTextPercent } from '../../src/appearance/textSizes';
 import { THEME_COLOR } from '../../pwa-manifest';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, normaliseRate } from '../../src/speech/languages';
@@ -20,6 +20,14 @@ describe('the themes', () => {
     expect(THEMES.find((t) => t.id === 'sepia')?.label).toBe('Sepia');
     expect(THEMES.find((t) => t.id === 'contrast')?.label).toBe('High contrast');
     expect(isTheme('contrast')).toBe(true);
+  });
+
+  it('make the bar pure black only in the dark palette under an open Immersive reader', () => {
+    expect(barColourOf('dark', true, true)).toBe('#000000');
+    expect(barColourOf('phone', true, true)).toBe('#000000');
+    expect(barColourOf('dark', true, false)).toBe(THEME_COLORS.dark);
+    expect(barColourOf('light', true, true)).toBe(THEME_COLORS.light);
+    expect(barColourOf('sepia', true, true)).toBe(THEME_COLORS.sepia);
   });
 
   it("follow the phone's scheme only for Phone", () => {

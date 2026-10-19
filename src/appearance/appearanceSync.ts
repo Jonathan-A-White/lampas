@@ -10,7 +10,7 @@ import { fontSetting, themeSetting } from '../settings/definitions';
 import { announceSetting, getSetting, onSetting } from '../settings/store';
 import { DEFAULT_FONT, ENGLISH_FONT_VAR, isFont, stackOf, type FontId } from './fonts';
 import { DEFAULT_TEXT_PERCENT, normaliseTextPercent } from './textSizes';
-import { DEFAULT_THEME, THEME_COLORS, isTheme, paletteOf, type Theme } from './themes';
+import { DEFAULT_THEME, barColourOf, isTheme, type Theme } from './themes';
 
 const THEME_STORE = 'lampas.theme';
 const TEXT_STORE = 'lampas.textSize';
@@ -18,6 +18,8 @@ const FONT_STORE = 'lampas.font';
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 
 let theme: Theme = DEFAULT_THEME;
+/** Whether a Reader with the Immersive reader On is on screen: in the dark palette its page is pure black, and so is the bar. */
+let immersiveReader = false;
 
 /** Whether the phone is in its dark scheme; dark (the app's own default) where the browser cannot say. */
 const phoneIsDark = (): boolean => (typeof window.matchMedia === 'function' ? window.matchMedia(DARK_QUERY).matches : true);
@@ -29,7 +31,7 @@ function paintBar(): void {
     meta.name = 'theme-color';
     document.head.appendChild(meta);
   }
-  meta.content = THEME_COLORS[paletteOf(theme, phoneIsDark())];
+  meta.content = barColourOf(theme, phoneIsDark(), immersiveReader);
 }
 
 function remember(key: string, value: string): void {
@@ -44,6 +46,12 @@ export function applyTheme(next: Theme): void {
   theme = next;
   document.documentElement.dataset.theme = next;
   remember(THEME_STORE, next);
+  paintBar();
+}
+
+/** The Reader says whether it is on screen with the Immersive reader On (false when it goes away), so the bar follows the page. */
+export function setImmersiveReader(on: boolean): void {
+  immersiveReader = on;
   paintBar();
 }
 
