@@ -5,7 +5,7 @@ import { attribution } from './attribution';
 import { BuildVersion } from './BuildVersion';
 import { setDeveloper } from './data/repositories';
 import { getWishedNotes } from './data/repositories/memory';
-import { navigate, openRequests } from './nav/route';
+import { backTo, navigate, openRequests } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { usePageActions } from './PageActions';
 import { lastAnswerLine } from './services/clientTiming';
@@ -60,7 +60,7 @@ export function About() {
   };
   return (
     <>
-      <ScreenHeader title="About" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} action={buttons} />
+      <ScreenHeader title="About" back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} action={buttons} />
       {notice}
       <main ref={scrollRef} className="screen min-h-0 flex-1 px-4">
         <div>

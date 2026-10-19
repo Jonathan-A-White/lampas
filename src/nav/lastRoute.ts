@@ -122,6 +122,12 @@ function recordEntry(hash: string): void {
   persistTrail();
 }
 
+/** The address of the entry just behind the one he is on, when the trail has it (the entry he came from by the app's own move), else null. */
+export function previousAddress(): string | null {
+  const at = cursor - 1 - base;
+  return at >= 0 && at < trail.length ? trail[at] : null;
+}
+
 /** Starts the trail again (a test's fresh page life). */
 export function forgetTrail(): void {
   trail = [];

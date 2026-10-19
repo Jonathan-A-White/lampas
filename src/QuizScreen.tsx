@@ -7,7 +7,7 @@ import { listWords, recordAnswer } from './data/repositories';
 import { clearRound, readRound, saveRound } from './data/roundKeep';
 import { askAbout, buildQuestion, drawWords, seedDistractors, type Question, type Random } from './data/quiz';
 import { useAiAllowed } from './gate/licenceContext';
-import { navigate } from './nav/route';
+import { backTo, navigate } from './nav/route';
 import { askAboutWord } from './nav/readerRequest';
 import { MAX_QUIZ_ANSWERS, quizQuestion, type QuizAnswer, type QuizFocus } from './services/talk';
 import { speakWord } from './speech/greek';
@@ -138,7 +138,7 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
     <ScreenHeader
       title="Quick test"
       subtitle={subtitle}
-      back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>}
+      back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>}
     />
   );
 

@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo, useState } from 'react';
 import { addImportedWords, listWords } from './data/repositories';
 import { parseImport } from './data/importWords';
-import { navigate } from './nav/route';
+import { backTo, navigate } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { GREEK_LANG } from './script/greekLang';
 
@@ -35,7 +35,7 @@ export function ImportScreen() {
 
   return (
     <>
-      <ScreenHeader title="Import" back={<HeaderButton onClick={() => navigate('words')}>‹ Words</HeaderButton>} />
+      <ScreenHeader title="Import" back={<HeaderButton onClick={() => backTo('words')}>‹ Words</HeaderButton>} />
       <main className="screen min-h-0 flex-1 px-3 pt-4">
         <label htmlFor="import-text" className="block text-base">
           One word per line, like <span {...GREEK_LANG} className="font-greek text-lg">ἀνάστασις — resurrection</span>

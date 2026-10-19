@@ -9,7 +9,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { useAiAllowed } from './gate/licenceContext';
-import { navigate, useAddress } from './nav/route';
+import { backTo, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { CONTROLS } from './settings/controls';
 import { NeedsLicenceRow } from './settings/controls/NeedsLicence';
@@ -95,7 +95,7 @@ export function SettingsScreen() {
   }, [wanted, drawn]);
   return (
     <>
-      <ScreenHeader title="Settings" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />
+      <ScreenHeader title="Settings" back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} />
       <main ref={scrollRef} className="screen min-h-0 flex-1 px-4">
         <div ref={contentRef}>
           <SettingsSearch query={query} onChange={setQuery} />

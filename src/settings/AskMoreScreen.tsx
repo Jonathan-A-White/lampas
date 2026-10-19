@@ -7,7 +7,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { NO_CHAPTER } from '../data/chapter';
 import { useAiAllowed } from '../gate/licenceContext';
-import { navigate, openLicence } from '../nav/route';
+import { backTo, openLicence } from '../nav/route';
 import { ScreenHeader, HeaderButton } from '../ScreenHeader';
 import { SENT_LINE } from '../AskApproachSheet';
 import { buildMoreRequest, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_MORE_NAME, MORE_KINDS, submitFeedback, type MoreKind } from '../services/feedback';
@@ -206,7 +206,7 @@ export function AskMoreScreen() {
   const shared = useMemo(() => ({ files: [], text: ASK_BEGUN }), []);
   return (
     <>
-      <ScreenHeader title={NAME} back={<HeaderButton onClick={() => navigate('settings')}>‹ Settings</HeaderButton>} />
+      <ScreenHeader title={NAME} back={<HeaderButton onClick={() => backTo('settings')}>‹ Settings</HeaderButton>} />
       <main className="screen min-h-0 flex-1 px-4 pb-[var(--lp-end-inset)]">
         <p className="pt-4 text-base">
           Something Lampas does not have yet? An approach or programme for learning Greek, a study resource, a text or a translation: the makers want to

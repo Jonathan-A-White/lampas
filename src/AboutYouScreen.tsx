@@ -31,7 +31,7 @@ import {
   type ProfileNote,
   type Way,
 } from './data/repositories/profile';
-import { navigate } from './nav/route';
+import { backTo } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 
 const BUTTON = 'min-h-12 min-w-12 rounded-lg px-3 text-base font-medium text-accent active:bg-line';
@@ -330,7 +330,7 @@ export function AboutYouScreen() {
   const profile = useLiveQuery(getProfile, []);
   return (
     <>
-      <ScreenHeader title="About you" back={<HeaderButton onClick={() => navigate('settings')}>‹ Settings</HeaderButton>} />
+      <ScreenHeader title="About you" back={<HeaderButton onClick={() => backTo('settings')}>‹ Settings</HeaderButton>} />
       <main className="screen min-h-0 flex-1 px-4">
         <p className="py-4 text-base text-muted">
           Tell the tutor about you, so its answers meet you where you are. Everything here is optional. It stays on this phone and goes only to the tutor, in

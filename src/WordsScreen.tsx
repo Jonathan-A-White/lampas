@@ -3,7 +3,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
 import { listWords, setWordState, type Word, type WordState } from './data/repositories';
-import { navigate, openPlacement } from './nav/route';
+import { backTo, navigate, openPlacement } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { speakWord } from './speech/greek';
@@ -90,7 +90,7 @@ export function WordsScreen() {
       <ScreenHeader
         title="Words"
         subtitle={words ? <span data-testid="word-counts">{countLine(words)}</span> : null}
-        back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>}
+        back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>}
         action={
           <>
             <HeaderButton onClick={() => navigate('test')}>Test</HeaderButton>

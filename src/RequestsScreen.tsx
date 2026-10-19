@@ -6,7 +6,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { listRequests, type RequestRow } from './data/repositories/requests';
-import { navigate, requestsOf, useAddress } from './nav/route';
+import { backTo, requestsOf, useAddress } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { pullStatuses, requestTimings } from './services/requestStatus';
@@ -150,7 +150,7 @@ export function RequestsScreen() {
   const back = from === 'about' ? 'About' : 'Settings';
   return (
     <>
-      <ScreenHeader title="Your requests" back={<HeaderButton onClick={() => navigate(from)}>‹ {back}</HeaderButton>} />
+      <ScreenHeader title="Your requests" back={<HeaderButton onClick={() => backTo(from)}>‹ {back}</HeaderButton>} />
       <main className="screen min-h-0 flex-1 px-4">
         <div>
           <p className="py-4 text-base text-muted">What became of the things you asked for. The factory tells this phone as each one is filed, built, or answered.</p>

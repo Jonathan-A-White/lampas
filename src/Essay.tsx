@@ -5,7 +5,7 @@
 import { Fragment, useEffect, useState, type ReactNode } from 'react';
 import { greekMarked } from './ui/GreekMarked';
 import type { Block, Essay as EssayData, Run } from './essay/types';
-import { navigate } from './nav/route';
+import { backTo } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { usePageActions } from './PageActions';
 import { ESSAY_CREDIT, ESSAY_ORIGINAL, ESSAY_ORIGINAL_NOTE, ESSAY_RELEASE, ESSAY_SOURCE, ESSAY_TITLE } from './preface';
@@ -113,7 +113,7 @@ export function Essay() {
     });
   return (
     <>
-      <ScreenHeader title={ESSAY_TITLE} back={<HeaderButton onClick={() => navigate('preface')}>‹ Preface</HeaderButton>} action={buttons} />
+      <ScreenHeader title={ESSAY_TITLE} back={<HeaderButton onClick={() => backTo('preface')}>‹ Preface</HeaderButton>} action={buttons} />
       {notice}
       <main ref={scrollRef} className="screen min-h-0 flex-1 px-4">
         <div className="pb-6">

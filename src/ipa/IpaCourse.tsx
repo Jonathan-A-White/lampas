@@ -5,7 +5,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
 import { getIpaProgress, learnIpaSound, passIpaCheck, startIpaCourse } from '../data/repositories';
-import { navigate } from '../nav/route';
+import { backTo, navigate } from '../nav/route';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
 import { englishAccentSetting } from '../settings/definitions/englishAccent';
 import { setSetting } from '../settings/store';
@@ -54,7 +54,7 @@ export function IpaCourse() {
 
   const back =
     current?.kind === 'home' || current?.kind === 'why' || current === null ? (
-      <HeaderButton onClick={() => navigate('goal')}>‹ Goal</HeaderButton>
+      <HeaderButton onClick={() => backTo('goal')}>‹ Goal</HeaderButton>
     ) : (
       <HeaderButton onClick={() => setView({ kind: 'home' })}>‹ Sounds</HeaderButton>
     );

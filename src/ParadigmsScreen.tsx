@@ -28,7 +28,7 @@ import { PARADIGM_KIND } from './data/paradigms/cells';
 import { ensureScheduled, listLevels, markParadigmOpened, reviewsOf } from './data/repositories';
 import { useAiAllowed } from './gate/licenceContext';
 import { askAboutParadigm } from './nav/readerRequest';
-import { navigate, openParadigm, paradigmHash, paradigmOf, replaceHash, useAddress } from './nav/route';
+import { backTo, openParadigm, paradigmHash, paradigmOf, replaceHash, useAddress } from './nav/route';
 import { MAX_REVEALED } from './services/talk';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { greekLang } from './script/greekLang';
@@ -63,7 +63,7 @@ function Bar({ available, total }: { available: number; total: number }) {
 function ParadigmList({ levels }: { levels: Levels | undefined }) {
   return (
     <>
-      <ScreenHeader title="Paradigms" back={<HeaderButton onClick={() => navigate('home')}>‹ Reader</HeaderButton>} />
+      <ScreenHeader title="Paradigms" back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} />
       <main className="screen min-h-0 flex-1 px-4 pt-4">
         <p className="text-base text-muted">Tables to learn by heart. A form unlocks when you have the grammar it needs.</p>
         {TIERS.map((tier) => {
