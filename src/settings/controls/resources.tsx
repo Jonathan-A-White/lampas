@@ -248,7 +248,7 @@ export const AudioBibleControl: Control = ({ row }) => {
   );
 };
 
-/** Reading plan: On | Off (src/data/repositories/readingPlan.ts startPlan turns it On), and Start a listening plan, the same sheet as the Reader's Plan chip (src/plan/StartPlan.tsx). */
+/** Reading plan: On | Off (src/data/repositories/readingPlan.ts startPlan turns it On), and Start a listening plan, the same sheet as Today's 'Start a plan' (src/plan/StartPlan.tsx). */
 export const ReadingPlanControl: Control = ({ row }) => {
   const readingPlan = useSetting(readingPlanSetting);
   const [starting, setStarting] = useState(false);

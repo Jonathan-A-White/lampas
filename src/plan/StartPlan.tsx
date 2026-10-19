@@ -1,6 +1,6 @@
 // src/plan/StartPlan.tsx — 'Start a listening plan' (mw-umv8sp.5): first the plan (listPlans(), one today: The whole Bible), then 'Where are you starting?': the chapter
 // picker in choose mode, and a tap on a chapter starts the plan there (readingPlan.ts startPlan: everything before it is done, the Reading plan setting and the Audio Bible go
-// On). The Plan chip's empty state and Settings > Study resources both open it. Back, Escape, Not now or a tap outside close it and start nothing.
+// On). Today's reading plan piece ('Start a plan') and Settings > Study resources both open it. Back, Escape, Not now or a tap outside close it and start nothing.
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChapterPicker } from '../ChapterPicker';
