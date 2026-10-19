@@ -51,7 +51,8 @@ Postern's and SpellForge's; its colours are Lampas's (`--bk-speech-*` in `src/in
   Tap to hear, a one-letter syllable of Sound it out, a lone woven word, a lone ὁ in a tutor's answer) is never handed to a voice as it is: the voice is handed
   the chosen pronunciation's `loneLetterForm`, for Modern Greek the vowel doubled (`οο`), which his phone's Greek voice says as the sound (mw-5r3p30.421, his
   pick on the listening trial; `docs/pronunciation.md`; mw-5r3p30.256 and .262 had handed a voice a respelling and a stressed vowel, and he heard 'Omicron'). In
-  a reading it is a line of its own in the verse's speech. On a phone with no Greek voice the scheme's clip of the sound plays instead (mw-5r3p30.347): said
+  a reading the Greek is cut at every such word, inside a run as well as alone (`greek.ts` `loneLetterCuts`, mw-5r3p30.448: 1 John 1:1's Ὃ and ὃ had gone to
+  the voice inside the verse's one line), and it is a line of its own in the verse's speech. On a phone with no Greek voice the scheme's clip of the sound plays instead (mw-5r3p30.347): said
   alone it is a word beside the reading (`greek.ts` `playLoneLetter`: a reading is paused, a Listen goes on after it); in a reading the verse is played in
   pieces (`readAloud.ts` `piecesOf`): the voice up to it, the clip, the voice after it; Pause during the clip waits, and Resume reads the verse from its start.
   A sound question says a vowel's sound the same way and names a consonant (`speakSound`); a teach tile names its letter (`speakLetter`). Words of two letters

@@ -26,8 +26,9 @@ passed its tests, and his phone (and espeak-ng's `el`: 'omikron tonos') still sa
 says the sound: on the listening trial (public/sounds-trial.html, docs/research/letter-sounds.md) the Governor chose it over every clip ('the best
 sound for the vowels is actually the double ones from the phone itself', 2026-10-15). So Modern Greek's form is the bare vowel in lower case,
 doubled: `οο` for ὁ and Ὃ, `ωω` for ὦ, `ηη` for ἡ, `αα` for ἃ; a consonant has none (null: there is no bare v to double). A held word, a speaker,
-Tap to hear, a one-letter run of a reading (a line of its own) and a sound question's vowel ('Tap to hear a letter, then tap it', `speakSound`)
-all hand the voice the form (`src/speech/greek.ts` `loneLetterSpeech`; `readAloud.ts` `piecesOf`); a sound question's consonant and a teach tile's
+Tap to hear, a one-letter word anywhere in a reading's Greek (the Ὃ and ὃ inside 1 John 1:1, each a line of its own, mw-5r3p30.448) or in a word list
+entry ('ἄγγελος, -ου, ὁ') and a sound question's vowel ('Tap to hear a letter, then tap it', `speakSound`) all hand the voice the form
+(`src/speech/greek.ts` `loneLetterSpeech` and `loneLetterCuts`; `readAloud.ts` `piecesOf`); a sound question's consonant and a teach tile's
 letter (`speakLetter`) are named.
 
 `loneLetterClip(word)` is the bundled clip of the same sound, played only on a phone that says it has no Greek voice (`hasGreekVoice() === false`;
