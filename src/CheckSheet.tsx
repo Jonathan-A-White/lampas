@@ -118,11 +118,11 @@ export function CheckSheet({ lesson, onClose, onQuiz }: { lesson: CheckLesson; o
     <div role="dialog" aria-modal="true" aria-label="Check" className="fixed inset-0 z-40 flex flex-col bg-surface">
       <header className="flex shrink-0 items-center gap-3 border-b border-line px-4 py-1">
         <div className="min-w-0 flex-1">
-          <h2 data-testid="check-title" className="truncate text-lg font-bold">
+          <h2 data-testid="check-title" className="title-wrap text-lg font-bold">
             Check: {lesson.label}
           </h2>
           {questions && !over ? (
-            <p data-testid="check-step" className="truncate text-sm text-muted">
+            <p data-testid="check-step" className="title-wrap text-sm text-muted">
               Question {index + 1} of {total}
             </p>
           ) : null}

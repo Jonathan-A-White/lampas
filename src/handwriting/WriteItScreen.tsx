@@ -21,7 +21,7 @@ export function WriteItScreen({ idea, onClose }: { idea: GrammarIdea; onClose: (
   return (
     <div role="dialog" aria-modal="true" aria-label="Write it" className="fixed inset-0 z-40 flex flex-col bg-surface">
       <header className="flex shrink-0 items-center gap-3 border-b border-line px-4 py-1">
-        <h2 className="min-w-0 flex-1 truncate text-lg font-bold">Write it: {idea.title}</h2>
+        <h2 className="flex-1 title-wrap text-lg font-bold">Write it: {idea.title}</h2>
         <button type="button" onClick={onClose} className="min-h-11 min-w-11 shrink-0 rounded-lg px-3 text-base font-medium text-accent">
           Done
         </button>

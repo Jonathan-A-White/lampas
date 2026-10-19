@@ -14,7 +14,7 @@ export function LessonStrip({ title, ideas, onCheck }: { title: string; ideas: r
       <section aria-label="Lesson strip" data-lesson-strip className="mb-3 rounded-xl border border-line bg-surface p-3">
         <div className="flex items-center gap-3">
           <div className="min-w-0 flex-1">
-            <p className="truncate text-base font-semibold leading-tight">{title}</p>
+            <p className="title-wrap text-base font-semibold leading-tight">{title}</p>
             <p className="text-sm text-muted">Read it, then Check</p>
           </div>
           <button type="button" onClick={onCheck} className="min-h-12 shrink-0 rounded-xl bg-accent px-6 text-lg font-medium text-accent-fg">

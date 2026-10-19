@@ -158,7 +158,7 @@ function DrillPlans({ onOpen }: { onOpen: (ideaId: string) => void }) {
         {[...counts].map(([ideaId, toGo]) => (
           <li key={ideaId} data-idea={ideaId}>
             <button type="button" onClick={() => onOpen(ideaId)} className="flex min-h-12 w-full items-center justify-between gap-3 px-3 py-2 text-left text-base active:bg-line">
-              <span className="min-w-0 flex-1 truncate">{ideaOf(ideaId).title}</span>
+              <span className="flex-1 title-wrap">{ideaOf(ideaId).title}</span>
               <span data-testid="drill-plan-line" className="shrink-0 font-medium text-accent">
                 Drill plan: {toGo} to go
               </span>
@@ -342,7 +342,7 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
                     <span {...GREEK_LANG} className="font-greek text-xl">
                       {w.lemma}
                     </span>
-                    <span className="min-w-0 truncate text-base text-muted">{w.gloss}</span>
+                    <span className="title-wrap text-base text-muted">{w.gloss}</span>
                   </li>
                 ))}
               </ListGroup>
@@ -415,7 +415,7 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
                     <span {...GREEK_LANG} className="font-greek text-2xl">
                       {w.lemma}
                     </span>
-                    <span className="min-w-0 flex-1 truncate text-base text-muted">{w.gloss}</span>
+                    <span className="flex-1 title-wrap text-base text-muted">{w.gloss}</span>
                     <span aria-hidden="true" className="shrink-0 text-base font-medium text-accent">
                       Add
                     </span>
