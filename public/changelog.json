@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.330",
+    "date": "2026-10-19",
+    "story": "mw-1fwagb.5",
+    "kind": "new",
+    "text": "A Today page gathers your due review, your reading plan's chapter, the day's Psalms and Proverbs and a devotional, each a tap away, with boxes you tick yourself. (Not yet reachable by a button.)"
+  },
+  {
+    "version": "0.1.330",
+    "date": "2026-10-19",
+    "story": "mw-cwf538.2",
+    "kind": "fixed",
+    "text": "Text and buttons in the light and dark themes are a little easier to read, and the New words chip now reads \"New 3 words\" aloud."
+  },
+  {
     "version": "0.1.329",
     "date": "2026-10-19",
     "story": "mw-5r3p30.622",

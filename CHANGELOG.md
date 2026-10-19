@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.330
+_2026-10-19_
+- New: A Today page gathers your due review, your reading plan's chapter, the day's Psalms and Proverbs and a devotional, each a tap away, with boxes you tick yourself. (Not yet reachable by a button.)
+- Fixed: Text and buttons in the light and dark themes are a little easier to read, and the New words chip now reads "New 3 words" aloud.
+
 ## 0.1.329
 _2026-10-19_
 - Fixed: typing a place such as John 18:36 in Choose a book now opens that chapter at that verse instead of saying no book matches.
