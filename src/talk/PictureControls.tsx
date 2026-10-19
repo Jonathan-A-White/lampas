@@ -1,7 +1,7 @@
 // src/talk/PictureControls.tsx — the picture part of the Talk sheet's composer (mw-y3qno5.1): the attach and camera buttons (the labels of voice-kit's
 // Composer, which the Verse view's Ask uses) and the pictures waiting to go, each a thumbnail with a remove x. A paste anywhere in the sheet is
 // pastedPictures' business (pictures.ts). The state is src/talk/usePictureBox.ts.
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { TALK_PICTURE_MIMES } from './pictures';
 import type { PictureBox } from './usePictureBox';
 
@@ -26,13 +26,18 @@ function Camera() {
 
 const BUTTON = 'flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-xl border border-line text-accent active:bg-line disabled:opacity-40';
 
-export function PictureControls({ box, disabled }: { box: PictureBox; disabled: boolean }) {
+/** `registerPicker` hands the sheet the function that opens the phone's picture picker, so a suggestion ('Send a screenshot', src/tutor/screen.ts) can open it in one tap. */
+export function PictureControls({ box, disabled, registerPicker }: { box: PictureBox; disabled: boolean; registerPicker?: (open: (() => void) | null) => void }) {
   const picker = useRef<HTMLInputElement>(null);
   const shutter = useRef<HTMLInputElement>(null);
   const onFiles = (list: FileList | null, input: HTMLInputElement): void => {
     if (list) box.add(Array.from(list));
     input.value = '';
   };
+  useEffect(() => {
+    registerPicker?.(() => picker.current?.click());
+    return () => registerPicker?.(null);
+  }, [registerPicker]);
   return (
     <div data-talk-pictures className="space-y-2">
       <div className="flex items-center gap-2">

@@ -104,6 +104,9 @@ export const slugOf = (name: string): string => name.toLowerCase().replace(/[^a-
 /** What the Goal screen suggests first (the Governor's own question, 2026-10-09). */
 export const SIMPLEST_VERSE = "What's the simplest verse in the New Testament for me to learn first, given where I am?";
 
+/** The suggestion that opens the phone's picture picker instead of sending words (the Talk sheet, mw-1fwagb.7): a screenshot of what he read, one tap. */
+export const SEND_A_SCREENSHOT = 'Send a screenshot';
+
 const SUGGESTIONS: Record<string, string[]> = {
   Goal: [SIMPLEST_VERSE, 'What should I learn next toward my goal, and why?', 'How close am I to being able to read my goal?'],
   'Learn the IPA sounds': ['What is IPA, and is it worth learning?', 'How do I tell /x/ and /ç/ apart?'],
@@ -111,7 +114,7 @@ const SUGGESTIONS: Record<string, string[]> = {
   'The whole path': ['What should I learn next on this path?', 'Why does this idea come before that one?'],
   Words: ['Which of my words should I work on first?', 'How can I remember the words I keep missing?'],
   Review: ['Why do I keep forgetting words like this?', 'How should I use Review each day?'],
-  Today: ['What should I do first today?', 'How do I choose what Today shows?'],
+  Today: ['Talk about what I read', SEND_A_SCREENSHOT, 'How do I choose what Today shows?'],
   'Quick test': ['How can I get better at the Quick test?', 'Which words should I learn next?'],
   'Parsing drill': ['How do I read a Greek verb form?', 'What should I know before I try this drill?'],
   Paradigms: ['How do I learn a paradigm table?', 'Which table should I learn first?'],
@@ -129,7 +132,7 @@ const SUGGESTIONS: Record<string, string[]> = {
 };
 
 /** The two or three questions the sheet opens with on the screen `name`; none for a name it does not know. */
-export const suggestionsFor = (name: string): string[] => SUGGESTIONS[name] ?? [];
+export const suggestionsFor = (name: string): string[] => SUGGESTIONS[name] ?? SUGGESTIONS[Object.values(SCREEN_NAMES).find((n) => n.toLowerCase() === name) ?? ''] ?? [];
 
 /** The questions for the Reader's chapter talk (the Reader's own button and Talk bar). */
 export const READER_SUGGESTIONS: string[] = [

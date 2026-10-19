@@ -28,6 +28,7 @@ import { dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyRevi
 import { openSetting } from '../settings/link';
 import { useSetting } from '../settings/store';
 import { useReportScreen } from '../tutor/screenContext';
+import { openedTitles, passageName, todayFacts } from './tutorFacts';
 import { useToday } from './useToday';
 
 const LINK = 'flex min-h-12 min-w-0 flex-1 flex-col justify-center rounded-lg px-3 py-2 text-left active:bg-line';
@@ -166,8 +167,6 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
   );
 }
 
-const passageName = (code: string, chapter: number): string => `${code === 'psa' ? 'Psalm' : 'Proverbs'} ${chapter}`;
-
 function PsalmsPiece({ ticks, today }: { ticks: Ticks; today: Date }) {
   const bible = useLiveQuery(getLogosBible, []);
   if (bible === undefined) return null;
@@ -275,7 +274,19 @@ export function Today() {
   const shown = [review, plan, psalms, devotional];
   const ready = !shown.includes(undefined) && tickBoxes !== undefined && day !== undefined;
   const none = ready && shown.every((s) => s === 'off');
-  useReportScreen({ name: 'Today', facts: ready ? [{ label: 'On Today', value: COULD_HOLD.filter((_, i) => shown[i] === 'on').map((p) => p.name).join(', ') || 'nothing' }] : [] });
+  // what the tutor is told: the date, what is On and the pieces he opened today by name (this date's list only), so it can open by naming what he read
+  const planView = usePlan();
+  const devotionalChoice = useSetting(devotionalSetting);
+  const devotionalDraw = useSetting(devotionalDrawSetting);
+  const planNext = planView?.started?.next;
+  const names = {
+    plan: planNext ? chapterName(planNext) : undefined,
+    devotional: devotionalChoice === undefined || devotionalDraw === undefined ? undefined : devotionalForDay(devotionalChoice, tickedDevotionals(devotionalDraw), today).title,
+  };
+  useReportScreen({
+    name: 'Today',
+    facts: ready ? todayFacts({ date, on: COULD_HOLD.filter((_, i) => shown[i] === 'on').map((p) => p.name), opened: openedTitles(day.opened, names) }) : [],
+  });
   const ticks: Ticks = { on: tickBoxes === 'on', ticked: day?.ticked ?? [], date };
   return (
     <>
