@@ -233,8 +233,7 @@ step by step, back off by halves when it is too hard, "kind of like a binary sea
   'This builds on', the tiles and the teaching; three are drawn and any more wait under one 'Show N more' (`SHOWN_EXAMPLES`), so all of them are in
   view when the sheet opens, upright and on its side. On its side (a short window, `short:`) the slider, Mark known and the buttons are a column
   at the right of the sheet, which then takes the whole height, so the examples keep it; the Grammar sheet does the same, and draws its three
-  examples straight under the explanation. `tests/e2e/sheet-rows-in-view.spec.ts` holds every row in view at 390x844 and 844x390. Sideways the scroll box is a grid and 'How it sounds' (`data-testid="idea-sounds"`) is drawn under the title
-  and level chip, before the examples (CSS `order`, mw-5r3p30.483): a letter's sound is what the sheet is for. `tests/e2e/idea-sheet-landscape.spec.ts` holds it, and
+  examples straight under the explanation. `tests/e2e/sheet-rows-in-view.spec.ts` holds every row in view at 390x844 and 844x390. Sideways 'How it sounds' (`data-testid="idea-sounds"`) is drawn at the top of the right column, above the slider (one element, moved by `useShort`, `src/ui/useShort.ts`; mw-5r3p30.483): a letter's sound is what the sheet is for, and the text's box keeps its examples. `tests/e2e/idea-sheet-landscape.spec.ts` holds it, and
   `tests/e2e/sheets-landscape.spec.ts` holds that the word, Grammar, Talk and chapter picker sheets keep their scrolling text over half their height at 844x390.
 - **Where the examples come from.** `ideaPassage(goalText, openChapter, loadChapter, index)`: the saved goal (the `goal` row of
   the settings store, any text `parseGoal` reads): its chapter, its one verse, or the first five chapters of a book goal; with no

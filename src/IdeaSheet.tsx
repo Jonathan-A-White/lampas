@@ -46,6 +46,7 @@ import { BarSlot } from './speech/SpeakingBarSlot';
 import { TeachTiles } from './TeachTiles';
 import { TryItSheet } from './TryItSheet';
 import { focusOnMount } from './ui/focus';
+import { useShort } from './ui/useShort';
 import { greekMarked } from './ui/GreekMarked';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
@@ -187,7 +188,7 @@ function TableView({ table }: { table: TeachTable }) {
 }
 
 /** A heading of the card's teaching: What it is, How to spot it, How it sounds, Worked example. */
-const Part = ({ children }: { children: string }) => <h3 className="mt-4 text-lg font-semibold">{children}</h3>;
+const Part = ({ children, className = 'mt-4' }: { children: string; className?: string }) => <h3 className={`${className} text-lg font-semibold`}>{children}</h3>;
 
 function Worked({ teach, passage, scheme }: { teach: Teach; passage: IdeaPassage | undefined; scheme: Pronunciation }) {
   const { worked, inPassage } = workedFor(teach, passage ? passageForms(passage) : new Set());
@@ -461,6 +462,18 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
     openSoundLesson(lesson);
   };
 
+  // Sideways the sound is above the slider in the column at the right, where it is in view without a drag whatever the examples and the card above take of the
+  // text's box (mw-5r3p30.483); upright it is in the text after the card. One element, put where the window's shape says (useShort).
+  const short = useShort();
+  const soundBlock = sounds ? (
+    <div data-testid="idea-sounds" className={short ? 'pb-1' : undefined}>
+      <Part className={short ? 'mt-1' : 'mt-4'}>How it sounds</Part>
+      <p data-testid="idea-text" className="mt-1 text-lg">
+        {greekMarked(sounds)}
+      </p>
+    </div>
+  ) : null;
+
   return (
     <div className="fixed inset-0 z-30 flex flex-col justify-end">
       <div data-testid="idea-backdrop" aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-black/60" />
@@ -477,15 +490,13 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
             Done
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-1 short:col-start-1 short:row-start-2 short:grid short:grid-cols-[minmax(0,1fr)] short:content-start short:pb-[calc(0.75rem+var(--lp-end-inset))]">
-          {/* Sideways the box is a grid so 'How it sounds' (below) rises under the title: a letter's sound is what the sheet is for, and the examples, the card and the
-              tiles above it took the whole short box before it (mw-5r3p30.483); the title and the level keep the first place. */}
-          <div className="flex items-start justify-between gap-2 short:order-[-2]">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-1 short:col-start-1 short:row-start-2 short:pb-[calc(0.75rem+var(--lp-end-inset))]">
+          <div className="flex items-start justify-between gap-2">
             <h2 className="min-w-0 break-words text-2xl font-bold">{titled(idea.title)}</h2>
             <LessonReadAloud id={`idea:${idea.id}`} text={lesson} ready={loaded !== null} />
           </div>
           {level ? (
-            <p data-testid="idea-level" className="mt-1 inline-block rounded-full border border-line px-3 py-1 text-sm text-muted short:order-[-2] short:w-fit">
+            <p data-testid="idea-level" className="mt-1 inline-block rounded-full border border-line px-3 py-1 text-sm text-muted">
               {level.level === 'solid' && level.how === 'drill' ? 'Proved by drill' : `${LEVEL_NAMES[level.level]} since`} {sinceText(level.since)}
             </p>
           ) : null}
@@ -528,14 +539,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
             {greekMarked(card.howToSpot)}
           </p>
           {card.table ? <TableView table={card.table} /> : null}
-          {sounds ? (
-            <div data-testid="idea-sounds" className="short:order-[-1]">
-              <Part>How it sounds</Part>
-              <p data-testid="idea-text" className="mt-1 text-lg">
-                {greekMarked(sounds)}
-              </p>
-            </div>
-          ) : null}
+          {short ? null : soundBlock}
           {soundLessons.map((lesson) => (
             <button
               key={lesson.id}
@@ -572,6 +576,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
         </div>
         {/* on its side (a short window) the slider and buttons are a column at the right, so the examples keep the height (mw-5r3p30.369) */}
         <div className="shrink-0 border-t border-line px-4 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))] short:col-start-2 short:row-start-2 short:overflow-y-auto short:overscroll-contain short:border-t-0 short:border-l">
+          {short ? soundBlock : null}
           <div data-testid="level-slider">
             <input
               type="range"

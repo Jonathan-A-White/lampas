@@ -1,5 +1,5 @@
 // tests/e2e/idea-sheet-landscape.spec.ts — the idea sheet turned sideways, 844x390 (mw-5r3p30.450, mw-5r3p30.483): its main content keeps at least half the
-// sheet's height, the first Examples row and its speaker show without a drag, and the omicron sheet's 'How it sounds' line is in view beside the slider.
+// sheet's height, the first Examples row and its speaker show without a drag, and the omicron sheet's 'How it sounds' line is in view above the slider.
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
@@ -59,7 +59,7 @@ test('the alphabet sheet sideways shows its first Examples row and its speaker w
   await shot(page, 'idea-sheet-landscape');
 });
 
-test('the omicron sheet sideways shows the sound beside the slider', async ({ page }) => {
+test('the omicron sheet sideways shows the sound above the slider', async ({ page }) => {
   const sheet = await openAlphabet(page);
   await sheet.getByRole('button', { name: 'About omicron' }).click();
   // the omicron sheet opens over the alphabet's: the topmost Idea dialog is the one he reads
@@ -72,9 +72,8 @@ test('the omicron sheet sideways shows the sound beside the slider', async ({ pa
   await expect(sound).toBeInViewport({ ratio: 1 });
   const slider = await top.getByRole('slider', { name: 'Your level' }).boundingBox();
   const line = await sound.boundingBox();
-  // sideways the slider has a column of its own at the right: the line is above it or beside it, and the two never overlap
-  const apart = (line?.y ?? 0) + (line?.height ?? 0) <= (slider?.y ?? 0) || (line?.x ?? 0) + (line?.width ?? 0) <= (slider?.x ?? 0);
-  expect(apart).toBe(true);
+  // sideways the sound stands at the top of the column at the right, above the slider (mw-5r3p30.483)
+  expect((line?.y ?? 0) + (line?.height ?? 0)).toBeLessThanOrEqual((slider?.y ?? 0) + 0.5);
   const dialog = await top.boundingBox();
   const text = await textBox(top).boundingBox();
   expect((text?.height ?? 0) / (dialog?.height ?? 1)).toBeGreaterThanOrEqual(0.5);
