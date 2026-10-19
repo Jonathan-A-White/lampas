@@ -33,6 +33,7 @@ export type SectionId =
   | 'pronunciation'
   | 'resources'
   | 'logos'
+  | 'daily'
   | 'tips'
   | 'developer'
   | 'aboutYou'
