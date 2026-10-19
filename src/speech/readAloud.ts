@@ -19,7 +19,7 @@ import type { ReaderView } from '../data/repositories';
 import { drawnOrder, type WovenVerse } from '../data/weave';
 import { publish } from '../events/bus';
 import { openReader } from '../nav/route';
-import { besideNow, greekVoiceForm, hasGreekVoice, loneLetterCuts, playLetterClip, READ_KEY, speakText, stopLetterClip, subscribeBeside } from './greek';
+import { besideNow, greekVoiceForm, hasGreekVoice, loneLetterCuts, playInTurn, playLetterClip, READ_KEY, speakText, stopLetterClip, subscribeBeside, type Piece } from './greek';
 import type { SpeechLanguage } from './languages';
 import type { ReadSpan } from './readSpan';
 import { dropWaiting } from './tutorWaiting';
@@ -236,9 +236,6 @@ function afterVerse(at: number, my: number): void {
  * goes in its pronunciation's voice form, so the voice says what the respelling writes (mw-5r3p30.264). */
 const textOf = (runs: Run[]): string => runs.map((r) => (r.language === 'greek' ? greekVoiceForm(r.text) : r.text)).join('\n');
 
-/** A stretch of a verse: text for the voice, or the clip of a one-letter word. */
-type Piece = { text: string } | { clip: string };
-
 /** A verse's runs as what is played in turn. A Greek word of one letter (a lone ὁ, a one-letter syllable, the Ὃ and ὃ inside 1 John 1:1) is never handed to
  * the voice as it is, which would name the letter ('omicron'): the run is cut at it (loneLetterCuts, mw-5r3p30.448) and it is handed its pronunciation's
  * loneLetterForm ('οο', a line of its own, which his phone's Greek voice says as the sound; mw-5r3p30.421), or, on a phone with no Greek voice, its clip
@@ -265,27 +262,25 @@ function piecesOf(runs: Run[]): Piece[] {
 /** Plays a verse's pieces in turn, then `done`. A clip cut off by another speech (a word he holds) leaves the reading waiting at its verse, as a word
  * that takes the voice does; one paused meanwhile waits for Resume, which reads the verse from its start. */
 function playPieces(pieces: Piece[], my: number, done: () => void, slowly: boolean): void {
-  if (my !== epoch) return;
-  const [piece, ...rest] = pieces;
-  if (!piece) return done();
-  const next = () => playPieces(rest, my, done, slowly);
-  if ('text' in piece) {
-    if (!speakText(piece.text, READ_KEY, { onEnd: next, slowly })) finish(my);
-    return;
-  }
-  clipping = true;
-  const played = playLetterClip(piece.clip, (cut) => {
-    clipping = false;
-    if (my !== epoch || state.status !== 'reading') return;
-    if (!cut) return next();
-    if (state.answer !== null) return finish(my);
-    letSleep();
-    set({ ...state, status: 'paused', onBar: false });
+  playInTurn(pieces, {
+    alive: () => my === epoch,
+    done,
+    failed: () => finish(my),
+    text: (text, next) => speakText(text, READ_KEY, { onEnd: next, slowly }),
+    clip: (url, next) => {
+      clipping = true;
+      const played = playLetterClip(url, (cut) => {
+        clipping = false;
+        if (my !== epoch || state.status !== 'reading') return;
+        if (!cut) return next();
+        if (state.answer !== null) return finish(my);
+        letSleep();
+        set({ ...state, status: 'paused', onBar: false });
+      });
+      if (!played) clipping = false;
+      return played;
+    },
   });
-  if (!played) {
-    clipping = false;
-    next();
-  }
 }
 
 function readVerse(verse: number, my: number): void {

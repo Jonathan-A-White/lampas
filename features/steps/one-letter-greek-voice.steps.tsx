@@ -19,7 +19,7 @@ import { quickQuestion } from '../../src/data/grammar/quickRound';
 import { mulberry32 } from '../../src/data/quiz';
 import { clearBus } from '../../src/events/bus';
 import { SpeakButton } from '../../src/speech/SpeakButton';
-import { stopSpeaking } from '../../src/speech/greek';
+import { greekWordSpeech, stopSpeaking } from '../../src/speech/greek';
 import { getReading, startReading, stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
@@ -347,6 +347,31 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Then("no utterance handed to the phone's voice holds a one-letter Greek word", () => {
       expect(synth.spoken.length).toBeGreaterThan(0);
       expect(synth.spoken.map((u) => u.text).filter((text) => loneWordIn(text) !== null)).toEqual([]);
+    });
+    And('he hears {string} last, not {string}', (_, sound: string, name: string) => {
+      expect(heardOf().at(-1)).toBe(sound);
+      expect(heardOf().join(' ')).not.toContain(name);
+    });
+  });
+
+  Scenario('The speaker on a word list entry that ends in ὁ plays its clip on a phone with no Greek voice', ({ Given, When, Then, And }) => {
+    Given('a speaker {string} for the entry {string} on a phone with no Greek voice', (_, label: string, entry: string) => {
+      fresh([ENGLISH_VOICE]);
+      render(<SpeakButton text={entry} id={`word:${entry}`} label={label} kind="speaker" />);
+    });
+    When('he taps {string} and the voice and then the clip say all they were handed', async (_, name: string) => {
+      await user.click(screen.getByRole('button', { name }));
+      await waitFor(() => expect(synth.speaking).toBe(true));
+      act(() => synth.finishAll());
+      await waitFor(() => expect(audio.playing()).not.toBeNull());
+      act(() => audio.end());
+    });
+    Then('the voice was handed {string} and nothing else', (_, said: string) => {
+      expect(synth.spoken.map((u) => u.text)).toEqual([greekWordSpeech(said).text]);
+      expect(synth.spoken.map((u) => u.text).filter((text) => loneWordIn(text) !== null)).toEqual([]);
+    });
+    And('the clip {string} played after it', (_, path: string) => {
+      expect(clips).toEqual([{ at: 1, path }]);
     });
     And('he hears {string} last, not {string}', (_, sound: string, name: string) => {
       expect(heardOf().at(-1)).toBe(sound);

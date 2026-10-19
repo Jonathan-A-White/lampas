@@ -234,7 +234,7 @@ export function speakText(text: string, key: string, options: { onEnd?: () => vo
   slow = options.slowly ?? false;
   forced = options.language ? langOf(options.language) : null;
   // anything that is not a reading, said while a reading is under way (playing or paused), interrupts it instead of replacing it
-  if (key !== READ_KEY && getSpeech().key === READ_KEY) return speakBeside(synth, text, key);
+  if (key !== READ_KEY && getSpeech().key === READ_KEY) return speakBeside(synth, text, key, options.onEnd);
   if (beside) {
     besideEpoch++;
     setBeside(null);
@@ -243,8 +243,9 @@ export function speakText(text: string, key: string, options: { onEnd?: () => vo
   return true;
 }
 
-/** Says `text` beside the reading the package holds: the reading is paused (or already is) and keeps its sentence, the text goes to the phone itself. */
-function speakBeside(synth: SpeechSynthesis, text: string, key: string): boolean {
+/** Says `text` beside the reading the package holds: the reading is paused (or already is) and keeps its sentence, the text goes to the phone itself.
+ * `onEnd` is called when it ends by itself (not when it is stopped or fails); what it starts next takes the word's place beside the reading. */
+function speakBeside(synth: SpeechSynthesis, text: string, key: string, onEnd?: () => void): boolean {
   const mine = ++besideEpoch;
   const interrupted = getSpeech().key === READ_KEY && getSpeech().status === 'playing';
   // pause() cancels the phone's queue; with the reading already paused only a word still being said needs cancelling
@@ -265,7 +266,13 @@ function speakBeside(synth: SpeechSynthesis, text: string, key: string): boolean
     const voice = preferredVoice(voices, utterance.lang);
     if (voice) utterance.voice = voice;
     utterance.onerror = over;
-    if (i === parts.length - 1) utterance.onend = over;
+    if (i === parts.length - 1) {
+      utterance.onend = () => {
+        if (mine !== besideEpoch) return;
+        onEnd?.();
+        over();
+      };
+    }
     synth.speak(utterance);
   });
   return true;
@@ -279,12 +286,15 @@ export function speak(text: string, key: string, language: SpeechLanguage = 'gre
   // a one-letter word with no Greek voice to say it is a clip, and needs no voice
   const lone = language === 'greek' ? loneLetterSpeech(text) : null;
   const clip = lone && 'clip' in lone ? lone.clip : null;
-  if (!clip && (!synth || ((language === 'greek' || language === 'hebrew') && hasVoice(language) === false))) return 'no-voice';
+  // a phrase with such a word in it is played in turn: the text, the clip, the text after it
+  const phrase = language === 'greek' && !lone ? clipPieces(text) : null;
+  if (!clip && !phrase && (!synth || ((language === 'greek' || language === 'hebrew') && hasVoice(language) === false))) return 'no-voice';
   if (beside?.key === key || isSpeaking(key)) {
     stopIfSpeaking(key);
     return 'stopped';
   }
   if (clip) return playLoneLetter(clip, key) ? 'speaking' : 'no-voice';
+  if (phrase) return playWordPieces(phrase, key, false) ? 'speaking' : 'no-voice';
   const said = lone && 'text' in lone ? { text: lone.text, language: 'greek' as const } : wordSpeech(text, language);
   return speakText(said.text, key, { language: said.language }) ? 'speaking' : 'no-voice';
 }
@@ -296,6 +306,8 @@ export function speakWord(text: string, language: SpeechLanguage, slowly = false
   setWordText(text);
   const lone = language === 'greek' ? loneLetterSpeech(text) : null;
   if (lone && 'clip' in lone) return playLoneLetter(lone.clip, WORD_KEY);
+  const phrase = language === 'greek' && !lone ? clipPieces(text) : null;
+  if (phrase) return playWordPieces(phrase, WORD_KEY, slowly);
   const said = lone ? { text: lone.text, language: 'greek' as const } : wordSpeech(text, language);
   return speakText(said.text, WORD_KEY, { slowly, language: said.language });
 }
@@ -394,8 +406,9 @@ export function playLetterClip(url: string, over: (cut: boolean) => void): boole
 }
 
 /** Plays a one-letter word's clip under `key`, as a word said alone: a reading under way is paused (keeping its sentence) and a Listen goes on after it, as
- * after a word said beside it (speakBeside); whatever else speaks is stopped. */
-function playLoneLetter(url: string, key: string): boolean {
+ * after a word said beside it (speakBeside); whatever else speaks is stopped. `after` is called when the clip is over: `cut` when something else stopped it;
+ * what it starts next takes the clip's place. */
+function playLoneLetter(url: string, key: string, after?: (cut: boolean) => void): boolean {
   if (!clipPlayer()) return false;
   const mine = ++besideEpoch;
   const reading = getSpeech().key === READ_KEY;
@@ -405,9 +418,61 @@ function playLoneLetter(url: string, key: string): boolean {
   else if (getSpeech().status !== 'idle') stopEngine();
   else synthesis()?.cancel();
   setBeside({ key, interrupted: interrupted || (beside?.interrupted ?? false) });
-  return playLetterClip(url, () => {
+  return playLetterClip(url, (cut) => {
+    if (mine !== besideEpoch) return;
+    after?.(cut);
     if (mine === besideEpoch) setBeside(null);
   });
+}
+
+/** A stretch of speech: text for the voice, or the clip of a one-letter word. */
+export type Piece = { text: string } | { clip: string };
+
+/** Plays `pieces` in turn, then `play.done`: the one sequence of a reading's verse (readAloud.ts) and of a phrase said by a word speaker (playWordPieces).
+ * `play.text` says a text and calls `next` when it ends by itself, `play.clip` plays a clip and calls `next` when it ends; either returns false when it could
+ * not start: a text then ends the sequence (`play.failed`), a clip is passed over. `play.alive`, when given, is checked before each piece. */
+export function playInTurn(
+  pieces: Piece[],
+  play: {
+    text: (text: string, next: () => void) => boolean;
+    clip: (url: string, next: () => void) => boolean;
+    failed: () => void;
+    done: () => void;
+    alive?: () => boolean;
+  },
+): void {
+  if (play.alive && !play.alive()) return;
+  const [piece, ...rest] = pieces;
+  if (!piece) return play.done();
+  const next = () => playInTurn(rest, play);
+  if ('text' in piece) {
+    if (!play.text(piece.text, next)) play.failed();
+    return;
+  }
+  if (!play.clip(piece.clip, next)) next();
+}
+
+/** `text` as pieces when a word of one letter in it plays a clip (a phone with no Greek voice), else null: each such word is its clip, and each stretch
+ * between is what the voice is handed for a word (greekWordSpeech). */
+function clipPieces(text: string): Piece[] | null {
+  const cuts = loneLetterCuts(text);
+  if (!cuts.some((cut) => 'clip' in cut)) return null;
+  return cuts.map((cut) => ('clip' in cut ? cut : { text: cut.lone ? cut.text : greekWordSpeech(cut.text).text }));
+}
+
+/** Says `pieces` as a word said alone under `key`: the voice for a text, the clip for a one-letter word, one after the other. False when the first text cannot
+ * be said (the phone cannot speak at all). */
+function playWordPieces(pieces: Piece[], key: string, slowly: boolean): boolean {
+  let started = true;
+  playInTurn(pieces, {
+    text: (text, next) => speakText(text, key, { onEnd: next, slowly, language: 'greek' }),
+    clip: (url, next) => playLoneLetter(url, key, (cut) => !cut && next()),
+    failed: () => {
+      started = false;
+    },
+    done: () => {},
+  });
+  return started;
 }
 
 /** What the Greek voice is handed for Greek text that is not one letter: the chosen pronunciation's voiceForm, so the voice says what the respelling
@@ -471,7 +536,7 @@ const wordSpeech = (text: string, language: SpeechLanguage): { text: string; lan
 
 /** What the Greek voice is handed for a word or a few (a word list's 'ἄγγελος, -ου, ὁ'): each word of one letter in it on a line of its own as its
  * loneLetterForm, and each stretch between as greekWordSpeech hands it ('ἄγγελος, -ου!' then 'οο'), so the voice never names the letter (mw-5r3p30.448). A
- * phone with no Greek voice, whose word would be a clip, is handed the text as it is: the default voice reads it, as it reads any Greek. */
+ * phone with no Greek voice, whose word would be a clip, never comes here: its phrase is played in turn (clipPieces, playWordPieces). */
 function greekPhraseSpeech(text: string): string {
   const lines: string[] = [];
   for (const cut of loneLetterCuts(text)) {

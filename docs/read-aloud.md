@@ -55,6 +55,7 @@ Postern's and SpellForge's; its colours are Lampas's (`--bk-speech-*` in `src/in
   the voice inside the verse's one line), and it is a line of its own in the verse's speech. On a phone with no Greek voice the scheme's clip of the sound plays instead (mw-5r3p30.347): said
   alone it is a word beside the reading (`greek.ts` `playLoneLetter`: a reading is paused, a Listen goes on after it); in a reading the verse is played in
   pieces (`readAloud.ts` `piecesOf`): the voice up to it, the clip, the voice after it; Pause during the clip waits, and Resume reads the verse from its start.
+  A word speaker's phrase with such a word in it ('ἄγγελος, -ου, ὁ', `speak` and `speakWord`) is played in the same turns (`greek.ts` `playInTurn`, shared with `playPieces`; mw-5r3p30.640).
   A sound question says a vowel's sound the same way and names a consonant (`speakSound`); a teach tile names its letter (`speakLetter`). Words of two letters
   or more go to the Greek voice in lower case (mw-5r3p30.226).
 - **Listen is a Listen** (mw-5r3p30.130, `docs/verse-view.md` 'Listen is a player'): a reading started with `listen: <key>` is paused by an in-app interruption and goes on by itself when it ends

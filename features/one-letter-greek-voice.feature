@@ -79,6 +79,13 @@ Feature: A one-letter Greek word is said by the phone's own Greek voice, handed 
     Then no utterance handed to the phone's voice holds a one-letter Greek word
     And he hears "o" last, not "omicron"
 
+  Scenario: The speaker on a word list entry that ends in ὁ plays its clip on a phone with no Greek voice
+    Given a speaker "Hear it" for the entry "ἄγγελος, -ου, ὁ" on a phone with no Greek voice
+    When he taps "Hear it" and the voice and then the clip say all they were handed
+    Then the voice was handed "ἄγγελος, -ου" and nothing else
+    And the clip "/sounds/modern/o.mp3" played after it
+    And he hears "o" last, not "omicron"
+
   Scenario: A sound drill on a vowel says its sound
     Given a letter drill asks him to hear the letter "letter-omicron" and tap it
     When he taps "Tap to hear"
