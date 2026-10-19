@@ -314,7 +314,7 @@ function ParadigmTable({ table, mode, levels }: { table: Paradigm; mode: 'study'
   };
   return (
     <>
-      <ScreenHeader title={table.name} back={<HeaderButton onClick={() => openParadigm({})}>‹ Paradigms</HeaderButton>} />
+      <ScreenHeader title={table.name} back={<HeaderButton onClick={() => backTo('paradigms')}>‹ Paradigms</HeaderButton>} />
       <main className="screen min-h-0 flex-1 px-4 pt-3">
         <p data-testid="table-available" className="text-lg font-semibold">
           {levels ? availableText(availableCount(table, levels)) : '…'}
