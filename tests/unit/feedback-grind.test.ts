@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { PrivateKey, Utils } from '@bsv/sdk';
 import { grist } from 'bsv-kit/grist';
-import { MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, MAX_ASK_BYTES, MAX_BOOK_CHARS, MAX_MORE_NAME, MAX_REFERENCE, MAX_SCREEN_NAME, MAX_SUMMARY, MORE_KINDS, buildBookRequest, buildDevotionalRequest, buildFeedbackRequest, buildMoreRequest, buildTutorAskRequest, isFeedbackAnswer } from '../../src/services/feedback';
+import { MAX_ASKED_CHARS, MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, MAX_ASK_BYTES, MAX_BOOK_CHARS, MAX_MORE_NAME, MAX_REFERENCE, MAX_SCREEN_NAME, MAX_SUMMARY, MORE_KINDS, buildBookRequest, buildDevotionalRequest, buildFeedbackRequest, buildMoreRequest, buildTutorAskRequest, isFeedbackAnswer } from '../../src/services/feedback';
 import { MILL_PUBLIC_KEY } from '../support/fake-postern';
 import { validate, type Schema } from '../support/schema-validate';
 
@@ -112,7 +112,8 @@ describe('the tutor-ask kind and buildTutorAskRequest', () => {
 
   it('has limits in the schema that are the constants', () => {
     const props = branch('tutor-ask').properties as unknown as Record<string, { maxLength: number }>;
-    expect(props.text.maxLength).toBe(MAX_FEEDBACK_CHARS);
+    // what he asked the tutor goes whole, as long as a question may be (mw-5r3p30.601), not as long as an approach
+    expect(props.text.maxLength).toBe(MAX_ASKED_CHARS);
     expect(props.summary.maxLength).toBe(MAX_SUMMARY);
     expect(props.screen.maxLength).toBe(MAX_SCREEN_NAME);
     expect(props.reference.maxLength).toBe(MAX_REFERENCE);
