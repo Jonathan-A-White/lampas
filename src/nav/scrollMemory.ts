@@ -4,7 +4,7 @@
 // addresses are also written to the phone (src/nav/lastRoute.ts), 250 ms after the last scroll and when the page is
 // hidden, so closing the app and opening it again puts him back at the same place.
 import { useEffect, useState } from 'react';
-import { readAllScrolls, saveScrolls } from './lastRoute';
+import { readAllPages, readAllScrolls, savePage, saveScrolls } from './lastRoute';
 import { pathOf, readerHash, readerOf, useAddress } from './route';
 
 const offsets = new Map<string, number>();
@@ -54,6 +54,7 @@ if (typeof document !== 'undefined') {
 /** Called once before the first render: the offsets kept for the addresses he was at, the one the app opens at last. */
 export function restoreScrolls(): void {
   for (const [key, top] of readAllScrolls(scrollAddress(window.location.hash))) offsets.set(key, top);
+  for (const [chapter, kept] of readAllPages()) pages.set(chapter, kept);
 }
 
 /** How long a restore keeps waiting for the content behind it to arrive. */
@@ -84,7 +85,8 @@ export function forgetScrolls(): void {
 
 /** With Turn pages (src/reader/usePages.ts) the place is a page, not an offset (mw-5r3p30.608): the page he was on in a chapter, how many pages it had then,
  * and the verse that began on it (else the one that ran across it), so a Reader opened on that chapter again (back from Settings or any screen the Reader
- * gives way to) shows that page; when the pages are cut otherwise (another text size), the page of that verse. Kept per chapter for the page's life. */
+ * gives way to) shows that page; when the pages are cut otherwise (another text size), the page of that verse. Kept per chapter, and on the phone beside the
+ * scroll offsets (lastRoute.ts savePage, mw-5r3p30.638), so a reload or a reopened app shows it too; a page past the chapter's end shows the last. */
 export interface KeptPage {
   /** the page, from 0 */
   page: number;
@@ -97,6 +99,7 @@ const pages = new Map<string, KeptPage>();
 /** Keeps the page he is on in `chapter` (a key the Reader names it by). */
 export function keepPage(chapter: string, kept: KeptPage): void {
   pages.set(chapter, kept);
+  savePage(chapter, kept);
 }
 
 /** The page he was last on in `chapter`, if he has read it in pages. */

@@ -211,6 +211,45 @@ function numbers(offsets: Record<string, number> | undefined): [string, number][
   return Object.entries(offsets ?? {}).filter((entry): entry is [string, number] => Number.isFinite(entry[1]));
 }
 
+/** The page he was on in each chapter he read in pages (Turn pages, src/reader/usePages.ts), by the chapter's key, least recently written first. */
+export interface StoredPage {
+  page: number;
+  count: number;
+  verse: string | null;
+}
+
+const PAGES_KEY = 'lampas.pages';
+
+function readPageStore(): Record<string, StoredPage> {
+  try {
+    const stored = JSON.parse(store()?.getItem(PAGES_KEY) ?? 'null') as unknown;
+    return stored && typeof stored === 'object' && !Array.isArray(stored) ? (stored as Record<string, StoredPage>) : {};
+  } catch {
+    return {};
+  }
+}
+
+/** Keeps the page he is on in `chapter`; the last 20 chapters keep theirs. */
+export function savePage(chapter: string, kept: StoredPage): void {
+  const all = readPageStore();
+  delete all[chapter];
+  all[chapter] = kept;
+  for (const old of Object.keys(all).slice(0, -KEPT_ADDRESSES)) delete all[old];
+  try {
+    store()?.setItem(PAGES_KEY, JSON.stringify(all));
+  } catch {
+    // As above.
+  }
+}
+
+/** Every page kept, a damaged entry left out (a phone that holds none, or one from before the pages were kept, gives none). */
+export function readAllPages(): [string, StoredPage][] {
+  return Object.entries(readPageStore()).filter(
+    (entry): entry is [string, StoredPage] =>
+      Number.isInteger(entry[1]?.page) && entry[1].page >= 0 && Number.isInteger(entry[1].count) && entry[1].count >= 1 && (entry[1].verse === null || typeof entry[1].verse === 'string'),
+  );
+}
+
 /** The offsets saved for `hash`. */
 export function readScrolls(hash: string): [string, number][] {
   return numbers(readScrollStore()[hash]);

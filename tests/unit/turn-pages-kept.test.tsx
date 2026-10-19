@@ -12,7 +12,7 @@ import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { ESSAY_PATH, type Route } from '../../src/nav/route';
-import { forgetScrolls } from '../../src/nav/scrollMemory';
+import { forgetScrolls, restoreScrolls } from '../../src/nav/scrollMemory';
 import { stubChapterFetch } from '../support/chapter-fetch';
 
 /** Every route but the Reader's ('home'), with its address. */
@@ -123,3 +123,52 @@ it('every screen the Reader gives way to brings him back to the page he was on i
   await waitFor(async () => expect(await db.meta.get('grammarLevelsSeeded')).toBeDefined());
   // each of the 23 screens is drawn in full: about 20 s on a quiet host, more on a loaded one
 }, 120_000);
+
+/** Opens the app afresh on Mark 12 in Turn pages, as a reload does: the memory is emptied and what the phone holds is read back (src/main.tsx). */
+async function reopen() {
+  cleanup();
+  clearBus();
+  forgetTrail();
+  forgetScrolls();
+  restoreScrolls();
+  window.history.replaceState(null, '', '/#/?b=mrk&c=12');
+  render(<App />);
+  await waitFor(() => expect(placeLine()).toHaveTextContent(/^Mark 12 · Page \d+ of \d+$/));
+}
+
+// mw-5r3p30.638: the page is on the phone too, so a reload or a reopened app shows it
+it('a reload opens the chapter on the page he was reading', async () => {
+  versesAPage = 4;
+  localStorage.removeItem('lampas.pages');
+  await reopen();
+  await waitFor(() => expect(placeLine()).toHaveTextContent(/^Mark 12 · Page 1 of \d+$/));
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Next page' }));
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Next page' }));
+  await waitFor(() => expect(placeLine()).toHaveTextContent(/^Mark 12 · Page 3 of \d+$/));
+  expect(JSON.parse(localStorage.getItem('lampas.pages') ?? '{}')['mrk/12']).toMatchObject({ page: 2 });
+
+  await reopen();
+  await waitFor(() => expect(placeLine()).toHaveTextContent(/^Mark 12 · Page 3 of \d+$/));
+});
+
+it('a stored page past the chapter\'s last page opens the last page, never a blank one', async () => {
+  versesAPage = 4;
+  localStorage.setItem('lampas.pages', JSON.stringify({ 'mrk/12': { page: 40, count: 60, verse: null } }));
+  await reopen();
+  await waitFor(() => {
+    const [, at, of] = placeLine()?.textContent?.match(/Page (\d+) of (\d+)$/) ?? [];
+    expect(Number(of)).toBeGreaterThanOrEqual(4);
+    expect(at).toBe(of);
+  });
+});
+
+it('a phone that holds no page, or a damaged one, opens page 1 with no error', async () => {
+  versesAPage = 4;
+  for (const held of [null, '{nope', JSON.stringify({ 'mrk/12': { page: 'x' } }), JSON.stringify([1])]) {
+    if (held === null) localStorage.removeItem('lampas.pages');
+    else localStorage.setItem('lampas.pages', held);
+    await reopen();
+    await waitFor(() => expect(placeLine()).toHaveTextContent(/^Mark 12 · Page 1 of \d+$/));
+  }
+  await waitFor(async () => expect(await db.meta.get('grammarLevelsSeeded')).toBeDefined());
+}, 60_000);
