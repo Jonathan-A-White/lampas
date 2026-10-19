@@ -289,7 +289,7 @@ export function ChapterPicker({
                 ‹ Books
               </button>
             ) : null}
-            <h2 className="min-w-0 flex-1 truncate text-xl font-semibold">{name ?? heading ?? 'Choose a book'}</h2>
+            <h2 className="min-w-0 flex-1 break-words text-xl font-semibold">{name ?? heading ?? 'Choose a book'}</h2>
             <button type="button" ref={focusOnMount} onClick={onClose} className="min-h-11 min-w-11 shrink-0 rounded-lg px-3 text-base font-medium text-accent">
               Done
             </button>
@@ -374,7 +374,7 @@ export function ChapterPicker({
                         {...(ot ? { 'data-ot-book': b.id } : { 'data-book': b.id })}
                         aria-current={b.id === current.book ? 'true' : undefined}
                         onClick={() => (setTypedChapter(null), setBook(b.id))}
-                        className={`flex min-h-12 w-full items-center justify-between gap-2 border-t border-line px-3 text-left text-lg first:border-t-0 ${b.id === current.book ? 'font-semibold text-accent' : ''}`}
+                        className={`flex min-h-12 w-full flex-wrap items-center justify-between gap-x-2 py-1 border-t border-line px-3 text-left text-lg first:border-t-0 ${b.id === current.book ? 'font-semibold text-accent' : ''}`}
                       >
                         <span data-book-name>{b.name}</span>
                         {ot && !onChoose ? (
