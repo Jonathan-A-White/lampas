@@ -82,7 +82,7 @@ const REQUESTS: readonly SettingsRow[] = [
   {
     key: 'request.devotional',
     label: 'Request a devotional',
-    hint: 'Ask for a devotional of your Logos library to be added to Which devotional.',
+    hint: 'Ask for another devotional to be added to Which devotional.',
     help: 'Type the title of a devotional in your Logos library and Send. The makers add it to the list when they find its Logos id; Your requests follows it. It goes to the factory through the tutor\'s mill, so it needs a licence.',
     section: 'daily',
   },
