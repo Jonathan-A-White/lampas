@@ -51,6 +51,8 @@ export interface TutorAnswer {
   question: string;
   /** the same question as the tutor cleaned it up (punctuation, capitals, no ums); shown in its place when present */
   cleanQuestion?: string;
+  /** the question was spoken (src/speech/spoken.ts): the cleaned question is shown with his own words under it */
+  spoken?: boolean;
   answer: string;
   words: AnswerWord[];
   /** when it arrived (ms since the epoch) */
@@ -134,6 +136,8 @@ export interface TalkTurn {
   q: string;
   /** the same question as the tutor cleaned it up (punctuation, capitals, no ums); shown in its place when present */
   cleanQ?: string;
+  /** the question was spoken (src/speech/spoken.ts): the tutor's cleaned question is shown with his own words under it */
+  spoken?: boolean;
   a: string;
   words: AnswerWord[];
   /** when the answer arrived (ms since the epoch) */

@@ -64,7 +64,8 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
           const [solid, learner, grammar, settings, requests, profile, pronunciation, memory, levels, rusty] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined), settingsSentTo('verse-ask'), requestsForTutor().catch(() => []), learnerProfile().catch(() => undefined), getGreekPronunciation(), learnerMemory(unitReference(title, verse)).catch(() => undefined), listLevels().catch(() => undefined), rustyNow().catch(() => undefined)]);
           // What he lacks under the topic his words name (mw-1vuvq6.5), worked out here so the tutor picks from it and never guesses
           const missing = levels ? missingFoundations(text, levelsOf(levels)) : undefined;
-          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, settings, requests, profile, wasSpoken(text), pronunciation, memory, missing, rusty);
+          const spoken = wasSpoken(text);
+          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, settings, requests, profile, spoken, pronunciation, memory, missing, rusty);
           let sentAs: string | undefined;
           const answer = await askTutor(request, {
             key: getDeviceKeyBytes(),
@@ -77,7 +78,7 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
           });
           // The one setting this tutor may switch is Ask by; the registry checks it like any talked change.
           const { applied } = await applyChanges(askByChange(answer), { skipUnchanged: true });
-          await addAnswer(verseRef(book, chapter, unitId(verse)), text, answer.answer, answer.words, Date.now(), answer.question && withoutFillers(answer.question), applied, answer.bridge ? resolveBridge(answer.bridge, missing) : undefined);
+          await addAnswer(verseRef(book, chapter, unitId(verse)), text, answer.answer, answer.words, Date.now(), answer.question && withoutFillers(answer.question), applied, answer.bridge ? resolveBridge(answer.bridge, missing) : undefined, spoken);
           set(undefined);
           void answerDrawn(sentAs);
         } catch (err) {

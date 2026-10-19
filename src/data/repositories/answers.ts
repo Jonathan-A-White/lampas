@@ -8,8 +8,8 @@ export type { AnswerWord, TutorAnswer };
 export const verseRef = (book: string, chapter: number, verse: number | string): string => `${book}.${chapter}.${verse}`;
 
 /** Keeps an answer with the question as he said it and, when the tutor gave one, the question cleaned up (shown in its place). */
-export async function addAnswer(ref: string, question: string, answer: string, words: AnswerWord[], now = Date.now(), cleanQuestion?: string, changes?: AppliedChange[], bridge?: Bridge): Promise<void> {
-  await db.answers.add({ ref, question, ...(cleanQuestion ? { cleanQuestion } : {}), answer, words, when: now, ...(changes?.length ? { changes } : {}), ...(bridge ? { bridge } : {}) });
+export async function addAnswer(ref: string, question: string, answer: string, words: AnswerWord[], now = Date.now(), cleanQuestion?: string, changes?: AppliedChange[], bridge?: Bridge, spoken = false): Promise<void> {
+  await db.answers.add({ ref, question, ...(cleanQuestion ? { cleanQuestion } : {}), answer, words, when: now, ...(changes?.length ? { changes } : {}), ...(bridge ? { bridge } : {}), ...(spoken ? { spoken } : {}) });
 }
 
 /** One verse's answers, the oldest first. */
