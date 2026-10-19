@@ -12,7 +12,8 @@
 //   The result: {ideaId, proved, edgeStep, topStep, strong, weak, answers}; a facet is weak when missed at least once and right fewer than twice, or when a word
 //   was missed at a step of words to read (mw-i7xe0n.16: the letter's other rights do not hide a word he could not say).
 //   An idea whose sound the scheme changes by the next letter (mw-i7xe0n.7: χ is kh before α, hy before ε) is proved only when a word of each side of its
-//   rule was answered right, unhinted: the walk keeps asking the side still missing at the top step (DrillWalk.sides).
+//   rule was answered right, unhinted: the walk keeps asking the side still missing at the top step (DrillWalk.sides), and after a hinted right on a side, that side
+//   again (mw-i7xe0n.23; the card says a hinted right does not count toward Proved, hint.ts HINTED_RIGHT).
 // A drill's facets are its own idea's. Its prerequisites (ladder.ts `needs`) are assumed SOLID, never tested and never scaffolded: start() takes the learner's
 // levels and, when a prerequisite is not solid, returns {needs: <the lowest>} instead of a walk (the Governor: one solid at a time, then one frontier).
 // The ideas of the letters, sounds and marks tiers are built from their items (drillItems.ts); a noun-like idea is asked by what it is, by spotting it in a verse
@@ -283,7 +284,8 @@ export function answer(walk: DrillWalk, right: boolean, hinted: boolean): DrillW
     // an easier step asks the facet just missed again; step 1 asks another
     retry = step < q.step || walk.steps[q.step - 1]?.words ? q.facet.id : null;
   }
-  // at the top, a side of the sound rule not yet answered right is asked first
+  // a hinted right on a side of the sound rule still missing asks that side again (mw-i7xe0n.23); else, at the top, a side not yet answered right is asked first
+  if (right && hinted && missing.includes(q.facet.id)) retry = q.facet.id;
   if (retry === null && step === top) retry = missing[0] ?? null;
   return { ...walk, step, asked, current: nextAt(walk.steps, step, asked, retry), streak };
 }
