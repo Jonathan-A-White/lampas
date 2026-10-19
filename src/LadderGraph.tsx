@@ -4,7 +4,7 @@
 // colour is never the only sign. SVG, panned with one finger and zoomed with two (or the buttons); a tap on a node opens that idea's sheet. Nothing
 // heavier until a path passes about 150 nodes (the ladder has 133).
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import type { Chapter, GreekWord } from './data/chapter';
 import { ideaState, levelsOf, STATE_NAMES, type IdeaState } from './data/grammar/goalProgress';
 import { ideaOf, LADDER_PATH } from './data/grammar/ladder';
@@ -51,6 +51,23 @@ function titleLines(title: string, max = 16): string[] {
   return lines.length <= 2 ? lines : [lines[0], lines.slice(1).join(' ').slice(0, max - 1) + '…'];
 }
 
+/** The phone's text size as a multiple of the usual 16 px (2 at 200%): the root font size is what its Font size changes. The picture is drawn at this much more, so a
+ * label, which is SVG text in the picture's own units, follows the phone's size as every rem does, and its node grows with it (mw-cwf538.7). */
+const rootScale = (): number => {
+  const px = parseFloat(getComputedStyle(document.documentElement).fontSize);
+  return px > 0 ? px / 16 : 1;
+};
+
+function useTextScale(): number {
+  const [scale, setScale] = useState(rootScale);
+  useEffect(() => {
+    const measure = () => setScale(rootScale());
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+  return scale;
+}
+
 const curve = (from: LaidOutNode, to: LaidOutNode): string => {
   const x1 = from.x + from.width / 2;
   const y1 = from.y + NODE_H;
@@ -68,6 +85,7 @@ export function LadderGraph() {
   const states = useMemo(() => new Map(layout.nodes.map((n) => [n.id, ideaState(n.id, levels)])), [layout, levels]);
   const counts = ORDER.map((state) => ({ state, n: layout.nodes.filter((n) => states.get(n.id) === state).length }));
 
+  const text = useTextScale();
   const frame = useRef<HTMLDivElement>(null);
   const [view, setView] = useState<View | null>(null);
   const [ideaId, setIdeaId] = useState<string | null>(null);
@@ -86,7 +104,7 @@ export function LadderGraph() {
   const centreOn = (id: string, k: number): View => {
     const box = frame.current!.getBoundingClientRect();
     const node = byId.get(id)!;
-    return { k, x: box.width / 2 - (MARGIN + node.x + node.width / 2) * k, y: box.height / 2 - (MARGIN + node.y + NODE_H / 2) * k };
+    return { k, x: box.width / 2 - (MARGIN + node.x + node.width / 2) * k * text, y: box.height / 2 - (MARGIN + node.y + NODE_H / 2) * k * text };
   };
   /** The idea he is on: the one he is learning, else the first one that is next, else the top. */
   const placeToLook = (): string => {
@@ -199,7 +217,7 @@ export function LadderGraph() {
       >
         {view ? (
           <svg role="group" aria-label="The grammar ladder as a graph: each idea with the ideas it needs above it" width="100%" height="100%" className="block">
-            <g data-testid="graph-world" data-scale={view.k.toFixed(3)} transform={`translate(${view.x} ${view.y}) scale(${view.k}) translate(${MARGIN} ${MARGIN})`}>
+            <g data-testid="graph-world" data-scale={view.k.toFixed(3)} transform={`translate(${view.x} ${view.y}) scale(${view.k * text}) translate(${MARGIN} ${MARGIN})`}>
               <g fill="none" stroke="var(--lp-muted)" strokeOpacity="0.45" strokeWidth="1.5">
                 {layout.edges.map((e) => (
                   <path key={`${e.from}>${e.to}`} data-edge={`${e.from}>${e.to}`} d={curve(byId.get(e.from)!, byId.get(e.to)!)} />

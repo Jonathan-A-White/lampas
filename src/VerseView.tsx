@@ -124,7 +124,7 @@ export function VerseView(props: VerseViewProps) {
           // a lesson's range is headed with its own range, which the heading then says once
           <h2 aria-label={verse.h === reference ? reference : `${verse.h}, ${reference}`} className="chrome-title min-w-0 flex-1 text-center font-semibold leading-tight">
             <span className="line-clamp-2 break-words">{verse.h}</span>
-            {verse.h === reference ? null : <span className="block truncate text-sm font-medium text-muted">{reference}</span>}
+            {verse.h === reference ? null : <span className="block break-words text-sm font-medium text-muted">{reference}</span>}
           </h2>
         ) : (
           <h2 className="chrome-title min-w-0 flex-1 truncate text-center font-semibold">{reference}</h2>
