@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
+import { clips, honestMic } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
@@ -213,3 +214,56 @@ for (const place of [
     await shot(page, `talk-title-${place.name === 'Settings' ? 'settings' : 'reader'}`);
   });
 }
+
+const SIDEWAYS = { width: 844, height: 390 };
+const SPOKEN = 'what does called mean';
+const TIDIED = 'What does κέκληται mean?';
+
+/** Opens the Talk sheet about Romans 8:28 on a phone held sideways, the tutor tidying whatever is asked into TIDIED. */
+async function openTalkSideways(page: Page, spoken: boolean) {
+  await page.setViewportSize(SIDEWAYS);
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: { ...TALK_ANSWER, question: TIDIED } };
+  await routePostern(page, fake);
+  if (spoken) await honestMic(page, { clip: { ...clips.english, transcript: SPOKEN } });
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="28"]')).toBeAttached();
+  await openTalkAbout(page, 28);
+  const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
+  await expect(sheet).toBeVisible();
+  return sheet;
+}
+
+test('a spoken turn shows the tidied question with his own words under it as a muted "You said" line, sideways (mw-5r3p30.633)', async ({ page }) => {
+  const sheet = await openTalkSideways(page, true);
+  const hold = await sheet.getByRole('button', { name: 'Hold to talk' }).boundingBox();
+  if (!hold) throw new Error('no Hold to talk button');
+  await page.mouse.move(hold.x + hold.width / 2, hold.y + hold.height / 2);
+  await page.mouse.down();
+  await expect(sheet.locator('[data-talk-live]')).toContainText(SPOKEN, { timeout: 15_000 });
+  await page.mouse.up();
+
+  const turn = sheet.locator('[data-turn]');
+  await expect(turn).toHaveCount(1);
+  const question = turn.locator('[data-talk-q]');
+  await expect(question).toHaveText(TIDIED);
+  const said = turn.locator('[data-you-said]');
+  await expect(said).toHaveText(`You said: ${SPOKEN}`);
+  await expect(said).toHaveClass(/text-muted/);
+  // the line is under the question and above the answer, and inside the conversation box
+  const [q, s, a, list] = await Promise.all([question, said, turn.locator('[data-talk-a]'), sheet.locator('[data-talk-list]')].map((l) => l.boundingBox()));
+  expect(s!.y).toBeGreaterThanOrEqual(q!.y + q!.height - 0.5);
+  expect(s!.y + s!.height).toBeLessThanOrEqual(a!.y + 0.5);
+  expect(s!.y).toBeGreaterThanOrEqual(list!.y - 0.5);
+  await shot(page, 'talk-you-said');
+});
+
+test('a typed turn shows the tidied question and no "You said" line, even sideways (mw-5r3p30.633)', async ({ page }) => {
+  const sheet = await openTalkSideways(page, false);
+  await sheet.getByRole('textbox', { name: 'Your message' }).fill('what does called mean');
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+  const turn = sheet.locator('[data-turn]');
+  await expect(turn.locator('[data-talk-q]')).toHaveText(TIDIED);
+  await expect(turn.locator('[data-you-said]')).toHaveCount(0);
+});
