@@ -14,6 +14,7 @@ import { getReading, stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, type FakeVoice, stubSpeech } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
+import { queryStatusLine, statusLine } from '../../tests/support/status';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
@@ -269,7 +270,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(lastSpoken().text).toBe(greekOf(n));
       expect(lastSpoken().lang).toBe(lang);
     });
-    And('the reading bar shows the line {string}', (_, line: string) => expect(screen.getByRole('status')).toHaveTextContent(line));
+    And('the reading bar shows the line {string}', (_, line: string) => expect(statusLine()).toHaveTextContent(line));
   });
 
   Scenario('English alone shows no such line', ({ Given, When, Then }) => {
@@ -277,7 +278,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the play button of verse {int}', (_, n: number) => tapPlay(n));
     Then('the reading bar shows no voice line', () => {
       expect(bar()).not.toBeNull();
-      expect(screen.queryByRole('status')).toBeNull();
+      expect(queryStatusLine()).toBeNull();
     });
   });
 });

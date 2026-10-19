@@ -13,6 +13,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
 import { asSpoken } from '../../tests/support/lone-word';
+import { queryStatusLine, statusLine } from '../../tests/support/status';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verseGreek = (n: number): string => {
@@ -77,7 +78,7 @@ const expectSpoken = (text: string, lang: string) => {
   expect(last?.text).toBe(text);
   expect(last?.lang).toBe(lang);
 };
-const helpLine = () => screen.getByRole('status');
+const helpLine = () => statusLine();
 const expectNothingSpoken = () => expect(synth.spoken).toHaveLength(0);
 
 async function switchToGreek(): Promise<void> {
@@ -176,7 +177,7 @@ describeFeature(feature, ({ Scenario }) => {
       waitFor(() => expectSpoken(verseGreek(n), lang)),
     );
     And('no help line shows', () => {
-      expect(screen.queryByRole('status')).toBeNull();
+      expect(queryStatusLine()).toBeNull();
     });
   });
 });

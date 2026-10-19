@@ -17,6 +17,7 @@ import { fetchLicenceStatus } from '../../src/services/licenceCheck';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { LicenceProbe } from '../../tests/support/licence-probe';
 import { addMint, HOLDER, HOLDER_PUB, ISSUER_PUB, newChain } from '../../tests/support/licence-chain';
+import { statusLine } from '../../tests/support/status';
 
 afterAll(() => {
   cleanup();
@@ -112,7 +113,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the Licence page says {string}', async (_, words: string) => {
       await screen.findByRole('heading', { name: 'Licence', level: 1 });
-      await waitFor(() => expect(within(screen.getByRole('status')).getByText(words)).toBeInTheDocument());
+      await waitFor(() => expect(within(statusLine()).getByText(words)).toBeInTheDocument());
     });
     And("the Licence page shows this phone's key as a QR code and as text", async () => {
       expect(await screen.findByRole('img', { name: 'This phone’s key as a QR code' })).toBeInTheDocument();
@@ -134,7 +135,7 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(screen.getByRole('button', { name: 'Check again' }));
     });
     Then('the Licence page says {string}', async (_, words: string) => {
-      await waitFor(() => expect(within(screen.getByRole('status')).getByText(words)).toBeInTheDocument());
+      await waitFor(() => expect(within(statusLine()).getByText(words)).toBeInTheDocument());
     });
     When('he goes back to Settings', async () => {
       await user.click(screen.getByRole('button', { name: '‹ Settings' }));
@@ -164,7 +165,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the Licence page says {string}', async (_, words: string) => {
       await screen.findByRole('heading', { name: 'Licence', level: 1 });
-      await waitFor(() => expect(within(screen.getByRole('status')).getByText(words)).toBeInTheDocument());
+      await waitFor(() => expect(within(statusLine()).getByText(words)).toBeInTheDocument());
     });
   });
 });

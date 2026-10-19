@@ -21,7 +21,7 @@ for (const { name, width, height } of SIZES) {
 
     await page.locator('main.screen').evaluate((el) => el.scrollTo(0, 0));
     const title = await heading.boundingBox();
-    const status = await page.getByRole('status').boundingBox();
+    const status = await page.locator('[role="status"]:not([data-live-region])').boundingBox();
     expect(title!.y).toBeGreaterThanOrEqual(0);
     expect(status!.y).toBeGreaterThanOrEqual(0);
 

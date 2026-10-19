@@ -13,6 +13,8 @@ import type { Verse } from './data/chapter';
 import { unitId, unitName } from './data/passage';
 import { getDeveloper, getGreekPronunciation, getMissTally, getVerseReading, verseRef, type FixWord, type VerseReading } from './data/repositories';
 import { markWords, normalWord, plainQuotes, readingLang, readingText, RESULT_HEADINGS, sayOf, wordsOfText, type ReadingView } from './services/reading';
+import { GREEK_LANG } from './script/greekLang';
+import { announce } from './ui/live';
 import { FAILURE_TITLES } from './services/tutor';
 import { pronunciationOf } from './speech/pronunciation';
 import { drillButtonLabel, drillOffer, drillWhy, type DrillOffer } from './data/readingDrill';
@@ -99,11 +101,11 @@ function Waiting({ state }: { state: Extract<ReadState, { phase: 'sending' | 'wa
   );
 }
 
-/** What the verse and its words are set in: English in the sans face, Greek (lang grc) in the Greek one at its own size. */
+/** What the verse and its words are set in: English in the sans face, Greek (lang el, data-lang grc) in the Greek one at its own size. */
 const typeOf = (view: ReadingView) =>
   view === 'greek'
-    ? { lang: 'grc', face: 'font-greek text-[length:var(--lp-greek-size)]', chunks: 'font-greek' }
-    : { lang: 'en', face: 'font-sans text-[length:var(--lp-english-size)]', chunks: '' };
+    ? { attrs: GREEK_LANG, face: 'font-greek text-[length:var(--lp-greek-size)]', chunks: 'font-greek' }
+    : { attrs: { lang: 'en' }, face: 'font-sans text-[length:var(--lp-english-size)]', chunks: '' };
 
 /** A passage's text in the reading check is set as the passage view sets it, which is the Reader's (src/index.css shares the rules by this attribute). */
 const passageText = (passage?: boolean) => (passage ? { 'data-passage-text': '' } : {});
@@ -128,7 +130,7 @@ function Fix({ fix, view, large, player, speaker = true }: { fix: FixWord; view:
   const type = typeOf(view);
   return (
     <div className="space-y-1">
-      <p data-chunks lang={type.lang} className={`${large ? 'text-3xl' : 'text-2xl'} ${type.chunks} font-semibold tracking-wide`}>
+      <p data-chunks {...type.attrs} className={`${large ? 'text-3xl' : 'text-2xl'} ${type.chunks} font-semibold tracking-wide`}>
         {chunksLine(fix.chunks)}
       </p>
       <p className="break-words text-base text-muted">{plainQuotes(fix.tip)}</p>
@@ -169,7 +171,7 @@ function MarkedVerse({ text, view, passage, marks, open, onOpen, player, reached
   );
   return (
     <>
-      <p data-reading-verse {...passageText(passage)} lang={type.lang} className={`break-words ${type.face} leading-(--lp-leading)`}>
+      <p data-reading-verse {...passageText(passage)} {...type.attrs} className={`break-words ${type.face} leading-(--lp-leading)`}>
         {tokens.map((token, i) => {
           const [, before, core, after] = WORD_PARTS.exec(token) ?? ['', '', token, ''];
           const mark = marks.marked.get(i);
@@ -239,7 +241,7 @@ const NextWord = forwardRef<HTMLDivElement, { fix: FixWord; view: ReadingView }>
         <h4 className="text-sm font-semibold text-muted">Next word</h4>
         <SayWord fix={fix} view={view} id={`fix-${view}-${fix.word}`} label="Hear it" className="align-middle" />
       </div>
-      <p lang={type.lang} className={`break-words text-4xl font-semibold ${type.chunks}`}>
+      <p {...type.attrs} className={`break-words text-4xl font-semibold ${type.chunks}`}>
         {fix.word}
       </p>
       {isOneChunk(fix) ? <p className="break-words text-base text-muted">{plainQuotes(fix.tip)}</p> : <Fix fix={fix} view={view} speaker={false} />}
@@ -367,7 +369,7 @@ function Walk({ words, text, view, passage, step, onStep, onDone }: { words: Fix
     <div role="group" aria-label="Read these again" data-walk className="space-y-3">
       {last || !word ? (
         <>
-          <p data-walk-verse {...passageText(passage)} lang={type.lang} className={`break-words ${type.face} leading-(--lp-leading)`}>
+          <p data-walk-verse {...passageText(passage)} {...type.attrs} className={`break-words ${type.face} leading-(--lp-leading)`}>
             {text}
           </p>
           <p className="text-sm text-muted">Hold the bar below while you read the whole verse. Let go to send.</p>
@@ -377,7 +379,7 @@ function Walk({ words, text, view, passage, step, onStep, onDone }: { words: Fix
           <p className="text-sm text-muted">
             Word {step + 1} of {words.length}
           </p>
-          <p data-walk-word lang={type.lang} className={`break-words text-4xl font-semibold ${type.chunks}`}>
+          <p data-walk-word {...type.attrs} className={`break-words text-4xl font-semibold ${type.chunks}`}>
             {word.word}
           </p>
           <Fix fix={word} view={view} large />
@@ -477,6 +479,9 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, weave
     heard.current = reading.when;
     if (awaiting.current !== lang) return;
     awaiting.current = null;
+    // the verdict and the words to fix are said to a screen reader too, once, through the app's one live region (src/ui/live.ts)
+    const marked = reading.words.map((w) => w.word);
+    announce(`${RESULT_HEADINGS[reading.verdict]}. ${plainQuotes(reading.note)}${marked.length > 0 ? ` Marked: ${marked.join(', ')}.` : ''}`);
     speakTutor(VERDICT_ID, verdictRuns(RESULT_HEADINGS[reading.verdict], reading.note, walkWordsOf(reading)), () => mounted.current);
   }, [reading, sent, lang]);
   return (

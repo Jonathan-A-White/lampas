@@ -17,6 +17,7 @@ import { usageWritesSettled } from '../../src/tips/usageLog';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { LicenceProbe } from '../../tests/support/licence-probe';
 import { addMint, HOLDER, HOLDER_PUB, ISSUER, ISSUER_PUB, newChain, SITE_ISSUER, SITE_ISSUER_PUB } from '../../tests/support/licence-chain';
+import { statusLine } from '../../tests/support/status';
 
 afterAll(async () => {
   cleanup();
@@ -173,7 +174,7 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario }) => {
       expect(asked.removed).toEqual([{ deviceKey: name === 'Old tablet' ? OTHER_KEY : HOLDER_PUB, personId: 'p1' }]);
     });
     And('the Licence page says {string}', async (_, words: string) => {
-      expect(within(screen.getByRole('status')).getByText(words)).toBeInTheDocument();
+      expect(within(statusLine()).getByText(words)).toBeInTheDocument();
       expect(screen.getByTestId('licence-state').textContent).toBe('licensed');
     });
   });
@@ -200,7 +201,7 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario }) => {
       await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Remove' }));
     });
     Then('the Licence page says {string}', async (_, words: string) => {
-      await waitFor(() => expect(within(screen.getByRole('status')).getByText(words)).toBeInTheDocument());
+      await waitFor(() => expect(within(statusLine()).getByText(words)).toBeInTheDocument());
       expect(screen.getByTestId('licence-state').textContent).toBe('not-licensed');
     });
     And('there is no My devices', () => expect(screen.queryByRole('region', { name: 'My devices' })).toBeNull());

@@ -85,7 +85,7 @@ test("without a Greek voice a word's speaker still shows and a tap puts one line
   await honestSpeech(page, { langs: ['en-US'] });
   await page.goto('/#/words');
   await page.getByRole('button', { name: 'Hear it', exact: true }).first().click();
-  const help = page.getByRole('status');
+  const help = page.locator('[role="status"]:not([data-live-region])');
   await expect(help).toContainText('No Greek voice on this');
   const box = await help.boundingBox();
   expect(box && box.x >= 0 && box.x + box.width <= 390).toBe(true);
