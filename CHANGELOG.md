@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.342
+_2026-10-19_
+- Fixed: The Talk sheet now keeps a failed message, the Take me there button and the start of the answer on screen, also when the phone is turned, and a spoken question shows your own words under the tutor's tidied version.
+
 ## 0.1.341
 _2026-10-19_
 - Fixed: A section heading's passage keeps the Reader's paragraphs and spacing; sideways the Audible link and the omicron sound are in view, the tutor-answered bar can be tapped, and the reading ladder says "Number N of M".
