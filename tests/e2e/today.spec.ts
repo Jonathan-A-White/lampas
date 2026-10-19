@@ -5,9 +5,22 @@ import { openUnlocked } from './unlocked';
 // Today (#/today, mw-1fwagb.5): the day's pieces in one list, each a tap into the drill or Logos, with a box he ticks himself, and every piece shown only while the settings it rests on are On.
 test.use({ viewport: { width: 390, height: 844 } });
 
-/** 5 October 2026, noon on the phone's clock: day 5 of the month, so Psalms 5, 35, 65, 95, 125 and Proverbs 5. */
-const FIXED = new Date(2026, 9, 5, 12, 0, 0).getTime();
-const TODAY = '2026-10-05';
+// The page clock starts at the real now and is held there (a date written in a spec goes stale, tests/unit/e2e-clock-is-now.test.ts); what the day should hold is worked out here from its day of the month.
+const FIXED = Date.now();
+const DAY_MS = 86_400_000;
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const two = (n: number) => String(n).padStart(2, '0');
+const dateOf = (at: number) => {
+  const d = new Date(at);
+  return { day: d.getDate(), month: MONTHS[d.getMonth()], iso: `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}` };
+};
+const TODAY = dateOf(FIXED);
+/** The month of Psalms and Proverbs: on day N, Psalms N, N+30, N+60, N+90 and N+120 (those up to 150), then Proverbs N. */
+const readingsOn = (day: number): string[] => [
+  ...[0, 30, 60, 90, 120].map((n) => day + n).filter((n) => n <= 150).map((n) => `Psalm ${n}`),
+  ...(day <= 31 ? [`Proverbs ${day}`] : []),
+];
+const startsWith = (name: string) => new RegExp(`^${name}(?!\\d)`);
 
 /** Puts rows in the app's own settings store through raw IndexedDB, as the app wrote them. */
 async function putSettings(page: Page, rows: { key: string; value: string }[]) {
@@ -99,12 +112,12 @@ test('Today lists the four pieces by default, and the Psalms and Proverbs are th
   for (const name of ['Review', 'Reading plan', 'Psalms and Proverbs', 'Devotional']) await expect(piece(page, name)).toBeVisible();
 
   const psalms = piece(page, 'Psalms and Proverbs');
-  await expect(psalms.locator('[data-piece]')).toHaveText(['Psalm 5Open in Logos', 'Psalm 35Open in Logos', 'Psalm 65Open in Logos', 'Psalm 95Open in Logos', 'Psalm 125Open in Logos', 'Proverbs 5Open in Logos']);
+  await expect(psalms.locator('[data-piece]')).toHaveText(readingsOn(TODAY.day).map((name) => `${name}Open in Logos`));
   await expect(piece(page, 'Reading plan').getByRole('button', { name: 'Start a plan' })).toBeVisible();
   await expect(piece(page, 'Devotional')).toContainText('Morning and Evening');
   await expect(piece(page, 'Review')).toContainText(/\d+ due|Nothing due/);
-  // a box for each piece: Review, plan, six passages, devotional
-  await expect(boxes(page)).toHaveCount(9);
+  // a box for each piece: Review, plan, the passages, devotional
+  await expect(boxes(page)).toHaveCount(3 + readingsOn(TODAY.day).length);
   for (const box of await boxes(page).all()) {
     const size = await box.boundingBox();
     expect(size?.height).toBeGreaterThanOrEqual(43.5);
@@ -115,32 +128,33 @@ test('Today lists the four pieces by default, and the Psalms and Proverbs are th
 
 test('a tick is his alone: opening a link does not tick, and a tick survives a reload and stays on its date', async ({ page }) => {
   await openToday(page);
-  const first = piece(page, 'Psalms and Proverbs').getByRole('checkbox', { name: 'Done: Psalm 5', exact: true });
+  const first = piece(page, 'Psalms and Proverbs').getByRole('checkbox', { name: `Done: Psalm ${TODAY.day}`, exact: true });
   await expect(first).toHaveAttribute('aria-checked', 'false');
 
-  await piece(page, 'Psalms and Proverbs').getByRole('link', { name: /^Psalm 5(?!\d)/ }).click();
+  await piece(page, 'Psalms and Proverbs').getByRole('link', { name: startsWith(`Psalm ${TODAY.day}`) }).click();
   await expect(first).toHaveAttribute('aria-checked', 'false');
-  expect(await kept(page, 'dailyDone')).toEqual({ [TODAY]: { ticked: [], opened: ['psa.5'] } });
+  expect(await kept(page, 'dailyDone')).toEqual({ [TODAY.iso]: { ticked: [], opened: [`psa.${TODAY.day}`] } });
 
   await first.click();
   await expect(first).toHaveAttribute('aria-checked', 'true');
   await page.reload();
-  await expect(piece(page, 'Psalms and Proverbs').getByRole('checkbox', { name: 'Done: Psalm 5', exact: true })).toHaveAttribute('aria-checked', 'true');
-  expect(await kept(page, 'dailyDone')).toEqual({ [TODAY]: { ticked: ['psa.5'], opened: ['psa.5'] } });
+  await expect(first).toHaveAttribute('aria-checked', 'true');
+  expect(await kept(page, 'dailyDone')).toEqual({ [TODAY.iso]: { ticked: [`psa.${TODAY.day}`], opened: [`psa.${TODAY.day}`] } });
 
   // the next local day starts with nothing ticked
-  await page.clock.setFixedTime(new Date(2026, 9, 6, 12, 0, 0).getTime());
+  await page.clock.setFixedTime(FIXED + DAY_MS);
   await page.reload();
-  await expect(piece(page, 'Psalms and Proverbs').getByRole('checkbox', { name: 'Done: Psalm 6', exact: true })).toHaveAttribute('aria-checked', 'false');
+  const tomorrow = readingsOn(dateOf(FIXED + DAY_MS).day)[0];
+  await expect(piece(page, 'Psalms and Proverbs').getByRole('checkbox', { name: `Done: ${tomorrow}`, exact: true })).toHaveAttribute('aria-checked', 'false');
   await expect(piece(page, 'Psalms and Proverbs').getByRole('checkbox', { checked: true })).toHaveCount(0);
 });
 
 test('a tap on a passage hands Logos a logosres: link', async ({ page }) => {
   await openToday(page);
-  await piece(page, 'Psalms and Proverbs').getByRole('link', { name: /^Proverbs 5(?!\d)/ }).click();
+  await piece(page, 'Psalms and Proverbs').getByRole('link', { name: startsWith(`Proverbs ${TODAY.day}`) }).click();
   await piece(page, 'Devotional').getByRole('link', { name: /Morning and Evening/ }).click();
-  expect(await opened(page)).toEqual(['logosres:lgcystndrdbblsb;ref=Bible.Pr5', 'logosres:LLS:20.10.1;ref=DayOfYear.Oct_5']);
-  expect(await kept(page, 'dailyDone')).toEqual({ [TODAY]: { ticked: [], opened: ['pro.5', 'devotional'] } });
+  expect(await opened(page)).toEqual([`logosres:lgcystndrdbblsb;ref=Bible.Pr${TODAY.day}`, `logosres:LLS:20.10.1;ref=DayOfYear.${TODAY.month}_${TODAY.day}`]);
+  expect(await kept(page, 'dailyDone')).toEqual({ [TODAY.iso]: { ticked: [], opened: [`pro.${TODAY.day}`, 'devotional'] } });
 });
 
 test('Review opens Review', async ({ page }) => {
@@ -164,7 +178,7 @@ test('with Tick boxes off Today has no boxes, only a plain list of links', async
   await openToday(page, [{ key: 'dailyTicks', value: 'off' }]);
   await expect(piece(page, 'Psalms and Proverbs')).toBeVisible();
   await expect(boxes(page)).toHaveCount(0);
-  await expect(piece(page, 'Psalms and Proverbs').getByRole('link')).toHaveCount(6);
+  await expect(piece(page, 'Psalms and Proverbs').getByRole('link')).toHaveCount(readingsOn(TODAY.day).length);
 });
 
 test('each piece rests on its own switch: Devotional off and Review off take them away', async ({ page }) => {
