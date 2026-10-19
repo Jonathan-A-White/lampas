@@ -309,3 +309,64 @@ describe('the worked example and the tile words of a sound card make the sound i
     expect(wrong).toEqual([]);
   });
 });
+
+// ---- An example is a whole word the voice can say as a word (mw-5r3p30.583: Delta's first example was δ', which the phone says as the letter's name) ----
+
+/** A form the voice says as a word: it has a vowel and is no elided fragment (δ', ἀλλ', δι'); a lone consonant or a cut-off form is read as a letter name. */
+const sayable = (form: string): boolean => !/['’ʼ᾽]$/.test(form) && clustersOf(form).some((c) => c.letter && 'αεηιουω'.includes(c.base));
+
+describe('the Delta sheet over 1 John 1:1 hands the voice a word, never the elided δ\' (mw-5r3p30.583)', () => {
+  it('lists no example that ends in an elision mark and none that is a lone consonant, and the first has a vowel after the δ', async () => {
+    const found = forms((await sheet('letter-delta')).examples);
+    expect(found.length).toBeGreaterThan(0);
+    for (const form of found) {
+      expect(form, form).not.toMatch(/['’]$/);
+      expect(sayable(form), form).toBe(true);
+    }
+    expect(found).not.toContain("δ'");
+    expect(found).not.toContain("δι'");
+    const first = clustersOf(found[0]).filter((c) => c.letter);
+    expect(first.some((c) => 'αεηιουω'.includes(c.base))).toBe(true);
+    expect(clustersOf(found[0]).some((c) => c.base === 'δ')).toBe(true);
+  });
+
+  it('the guard can fail: δ\' and a lone consonant are not sayable, δὲ is', () => {
+    expect(sayable("δ'")).toBe(false);
+    expect(sayable("ἀλλ'")).toBe(false);
+    expect(sayable('δ')).toBe(false);
+    expect(sayable('δὲ')).toBe(true);
+  });
+});
+
+describe('no example of any letter or sound sheet is an elided or vowel-less form, over every chapter Lampas holds (mw-5r3p30.583)', () => {
+  const plainMemo = new Map<number, Promise<{ shown: number; wrong: string[] }>>();
+  function plain(slice: number) {
+    let done = plainMemo.get(slice);
+    if (!done) {
+      done = (async () => {
+        const wrong: string[] = [];
+        let shown = 0;
+        for (const [code, n] of sliceOf(slice)) {
+          const chapter = await loadChapter(code, n);
+          const passage = { title: `${code} ${n}`, chapters: [chapter] };
+          for (const id of SOUND_SHEETS.filter((s) => s !== 'syllables')) {
+            for (const example of (await ideaExamplesFor(id, passage, loadChapter)).examples) {
+              shown++;
+              if (!sayable(example.word.t)) wrong.push(`${id}: ${code} ${n}: ${example.word.t}`);
+            }
+          }
+        }
+        return { shown, wrong };
+      })();
+      plainMemo.set(slice, done);
+    }
+    return done;
+  }
+
+  for (let slice = 0; slice < SLICES; slice++)
+    it(`shows only whole words with a vowel, chapters ${slice + 1} of ${SLICES}`, async () => {
+      const { shown, wrong } = await plain(slice);
+      expect(shown).toBeGreaterThan(1000);
+      expect(wrong).toEqual([]);
+    }, 300_000);
+});
