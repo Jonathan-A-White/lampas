@@ -15,8 +15,12 @@ export function scrollAddress(hash: string): string {
   // a link to a setting (src/settings/link.ts) has a place of its own: Settings opens at that row, not where he last left it
   if (pathOf(hash) === '#/settings') {
     const q = hash.indexOf('?');
-    const setting = new URLSearchParams(q < 0 ? '' : hash.slice(q + 1)).get('setting');
-    return setting ? `#/settings?setting=${setting}` : '#/settings';
+    const params = new URLSearchParams(q < 0 ? '' : hash.slice(q + 1));
+    const setting = params.get('setting');
+    if (setting) return `#/settings?setting=${setting}`;
+    // so is a link to a section (mw-5r3p30.427): the section scroll is its place, and it does not share (or overwrite) the offset of Settings opened by the gear
+    const section = params.get('section');
+    return section ? `#/settings?section=${section}` : '#/settings';
   }
   if (pathOf(hash) !== '#/') return pathOf(hash);
   return readerHash({ ...readerOf(hash), verse: undefined });

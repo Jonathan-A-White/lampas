@@ -124,6 +124,40 @@ test('an Old Testament reference links to Settings until Logos is linked, then o
   await shot(page, 'reference-card-open-in-logos');
 });
 
+// Settings left scrolled to its bottom (mw-5r3p30.427): the card's Link Logos in Settings still opens it at Study resources, not at the remembered place.
+test('Link Logos in Settings opens Settings at Study resources after Settings was left scrolled to its bottom', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: { answer: 'The end of the matter is in Ecclesiastes 12:13.', words: [] } };
+  await routePostern(page, fake);
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  const box = page.locator('main.screen');
+  await expect(page.getByRole('switch', { name: 'Logos', exact: true })).toHaveCount(1);
+  await box.evaluate((el) => { el.scrollTop = el.scrollHeight; });
+  await expect.poll(() => box.evaluate((el) => el.scrollHeight - el.clientHeight - el.scrollTop)).toBeLessThan(2);
+  await page.getByRole('button', { name: '‹ Reader' }).click();
+
+  await openTalkAbout(page, 28);
+  const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
+  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Where does Ecclesiastes end?');
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+  await sheet.getByRole('link', { name: 'Ecclesiastes 12:13', exact: true }).click();
+  const card = page.getByRole('dialog', { name: 'Ecclesiastes 12:13' });
+  await card.getByRole('link', { name: 'Link Logos in Settings', exact: true }).click();
+  expect(page.url()).toContain('#/settings?section=resources');
+
+  const logos = page.getByRole('switch', { name: 'Logos', exact: true });
+  await expect(logos).toBeInViewport();
+  // the restore of the old place must have ended too (it holds for up to 2.5 s): the Logos switch is still on screen after it
+  await page.waitForTimeout(3000);
+  await expect(logos).toBeInViewport();
+  await shot(page, 'reference-card-link-logos-after-scrolled-settings');
+});
+
 // A second tap on the reference a moment after the first (mw-5r3p30.429): the card's backdrop covers the reference, but that tap is not one outside the card.
 test('a quick second tap on the reference leaves its card on screen', async ({ page }) => {
   await page.clock.install(); // tapTwice times the two taps on the page's clock (tests/support/gesture.ts)

@@ -25,3 +25,10 @@ export function openSetting(key: string): void {
   forgetScrollsAt(link);
   openHash(link);
 }
+
+/** Opens Settings scrolled to the section `id` ('resources': Study resources) as a new Back step; it starts at the section, not where he last left Settings (mw-5r3p30.427). */
+export function openSettingsSection(id: string): void {
+  const link = `#/settings?section=${encodeURIComponent(id)}`;
+  forgetScrollsAt(link);
+  openHash(link);
+}
