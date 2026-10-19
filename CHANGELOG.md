@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.349
+_2026-10-19_
+- Fixed: Offline, the sheet for a letter such as xi now says the examples could not be looked for, instead of saying no word is spelt with it.
+- Fixed: on a small phone with larger text, the next word to practise is no longer hidden behind the Try again and Skip for now buttons.
+- Fixed: Back from Placement's and a Paradigms table's top-left button now leaves the screen properly, so the phone's Back no longer returns to the screen you just left.
+
 ## 0.1.348
 _2026-10-19_
 - Fixed: with Turn pages, a tap on the left edge of the text always turns back, even on a verse number, instead of opening that verse.
