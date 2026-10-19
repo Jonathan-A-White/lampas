@@ -104,6 +104,12 @@ Feature: Paradigms
     And the cell "Nominative Singular Masculine" still says reveal and shows no form
     And the cell "Dative Singular Masculine" is locked and shows no form
 
+  Scenario: With every cell locked, the Study line does not tell him to tap a cell
+    Given the table "participle" is open in Study mode
+    Then the table says "Available forms: 0 of 30"
+    And the Study line does not say "tap a cell to reveal it"
+    And the Study line says "Every form is locked. Mark the grammar ideas a form needs to open it."
+
   Scenario: Review mode shows an available cell
     Given the table "article" is open in Study mode
     When he taps the button to switch to Review mode

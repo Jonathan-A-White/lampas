@@ -84,6 +84,7 @@ The address says the table and the mode: `#/paradigms` (the list), `#/paradigms?
 - Study mode: an available cell says `reveal`; a tap shows the form, a tap on a shown form hides it. Hide all hides them all. What is
   revealed is kept in memory while the page lives (`revealed.ts`), so coming Back from the Reader finds the table as he left it.
 - Review mode: every available cell shows its form.
+- The line under the title says 'Study mode: tap a cell to reveal it.' only while some cell is available; with every cell locked it says 'Every form is locked. Mark the grammar ideas a form needs to open it.' (a tap on a locked cell names the ideas it needs).
 
 One button switches (it names the mode it goes to).
 

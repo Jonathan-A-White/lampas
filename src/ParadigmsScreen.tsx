@@ -289,6 +289,13 @@ function shownForms(table: Paradigm, levels: Levels, mode: 'study' | 'review', r
     .slice(0, MAX_REVEALED);
 }
 
+/** The line under the title: Study says to tap a cell only while a cell is open to tap; with every cell locked it says what opens them (mw-svw421.23). */
+function modeHelp(mode: 'study' | 'review', available: number | undefined): string {
+  if (mode === 'review') return 'Review mode: every available form is shown.';
+  if (available === undefined) return '…';
+  return available > 0 ? 'Study mode: tap a cell to reveal it.' : 'Every form is locked. Mark the grammar ideas a form needs to open it.';
+}
+
 function ParadigmTable({ table, mode, levels }: { table: Paradigm; mode: 'study' | 'review'; levels: Levels | undefined }) {
   const [revealed, setRevealed] = useState<ReadonlySet<string>>(() => revealedOf(table.id));
   const switchTo = mode === 'study' ? 'review' : 'study';
@@ -313,7 +320,7 @@ function ParadigmTable({ table, mode, levels }: { table: Paradigm; mode: 'study'
           {levels ? availableText(availableCount(table, levels)) : '…'}
         </p>
         <p data-testid="mode-help" className="text-base text-muted">
-          {mode === 'study' ? 'Study mode: tap a cell to reveal it.' : 'Review mode: every available form is shown.'}
+          {modeHelp(mode, levels ? availableCount(table, levels).available : undefined)}
         </p>
         <div className="mt-3 flex gap-2">
           <button type="button" onClick={() => oneTap('paradigms:header', () => replaceHash(paradigmHash({ table: table.id, mode: switchTo })))} className={BUTTON}>
