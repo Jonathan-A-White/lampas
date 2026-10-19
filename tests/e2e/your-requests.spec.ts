@@ -7,6 +7,8 @@ import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked, SEED_PUBLIC_KEY } from './unlocked';
+import { SETTLE_MS } from '../../src/ui/settle';
+import { pageTime, tapTwice } from '../support/gesture';
 
 const VIEWPORTS = [
   { name: 'portrait', width: 390, height: 844 },
@@ -166,4 +168,38 @@ test('from About the back button reads ‹ About and returns there; a double tap
   await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
   await expect(page).toHaveURL(/#\/settings$/);
   await shot(page, 'your-requests-back-from-settings');
+});
+
+// A thumb's double tap on the Adopted link opens one GitHub tab, not two (mw-5r3p30.457): the second tap of a double tap falls inside the settle
+// moment (src/ui/tapGuard.ts swallows taps after a link that leaves the app is tapped), put back here as on his phone (openUnlocked starts it at 0).
+test('a double tap on the Adopted link opens one tab', async ({ page, context }) => {
+  await page.clock.install();
+  await page.setViewportSize({ width: 390, height: 844 });
+  const fake = makeFakePostern();
+  await routePostern(page, fake);
+  await openUnlocked(page);
+  await page.addInitScript((ms) => window.localStorage.setItem('lampas.settleMs', ms), String(SETTLE_MS)); // after openUnlocked's '0'
+  await page.goto('/#/requests');
+  await expect(page.getByRole('heading', { name: 'Your requests', level: 1 })).toBeVisible();
+  await seed(page);
+  fake.sendStatus(SEED_PUBLIC_KEY, status(3, { status: 'landed', version: '0.1.86', commit: '0123456789abcdef0123456789abcdef01234567', url: COMMIT_URL }));
+  await page.reload();
+  const link = page.getByRole('link', { name: 'Adopted in 0.1.86' });
+  await expect(link).toHaveAttribute('href', COMMIT_URL);
+  await link.scrollIntoViewIfNeeded();
+  await pageTime(page, SETTLE_MS + 100);
+
+  // GitHub is not reached from the test: its tab is answered with nothing
+  await context.route('https://github.com/**', (route) => route.fulfill({ status: 200, contentType: 'text/html', body: '' }));
+  const opened: string[] = [];
+  context.on('page', (tab) => opened.push(tab.url()));
+  await tapTwice(page, link, 120);
+  await expect.poll(() => opened.length).toBeGreaterThan(0);
+  await pageTime(page, SETTLE_MS + 100);
+  await page.waitForTimeout(500); // a second tab, if any, has opened by now
+  expect(opened).toHaveLength(1);
+
+  // two taps further apart than the moment are two taps, so the guard holds back no deliberate one
+  await tapTwice(page, link, SETTLE_MS + 100);
+  await expect.poll(() => opened.length).toBe(3);
 });

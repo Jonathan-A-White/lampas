@@ -59,7 +59,8 @@ and `openUnlocked(page)` plants `lampas.settleMs` = `0`; `features/double-tap.fe
 
 One guard in the shell (`src/ui/tapGuard.ts`, started once by App; mw-5r3p30.597) swallows taps for the same moment after any screen change (what
 `screenOf` reads in the address: the route, the Verse view, a Paradigms table) and after any element of role `dialog` or `alertdialog` (every sheet,
-drill screen and confirm card) is put in or taken out of the page, so the second tap of a double tap reaches nothing; no screen or sheet has code of
+drill screen and confirm card) is put in or taken out of the page, and after a tap on a link that leaves the app (`target="_blank"` or another origin or
+scheme: Adopted in <version>, a study resource, Listen in Audible; mw-5r3p30.457, `tests/e2e/your-requests.spec.ts` counts the tabs), so the second tap of a double tap reaches nothing; no screen or sheet has code of
 its own for it. A spec or step that puts the moment back must wait it out (`SETTLE_MS + 100`) before its first tap on a screen or sheet that just
 opened, and before a tap beneath one that just closed; `features/tap-guard.feature`, `features/sheet-double-tap.feature`, `tests/unit/tap-guard.test.tsx`
 (which fails on a modal in `src/` without a dialog role, and on a file that asks for its own moment) and `tests/e2e/double-tap-guard.spec.ts` hold the proof.
