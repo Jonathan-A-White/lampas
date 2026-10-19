@@ -79,6 +79,29 @@ export function isRestoringScroll(box: HTMLElement): boolean {
 /** Forget every remembered position. */
 export function forgetScrolls(): void {
   offsets.clear();
+  pages.clear();
+}
+
+/** With Turn pages (src/reader/usePages.ts) the place is a page, not an offset (mw-5r3p30.608): the page he was on in a chapter, how many pages it had then,
+ * and the verse that began on it (else the one that ran across it), so a Reader opened on that chapter again (back from Settings or any screen the Reader
+ * gives way to) shows that page; when the pages are cut otherwise (another text size), the page of that verse. Kept per chapter for the page's life. */
+export interface KeptPage {
+  /** the page, from 0 */
+  page: number;
+  count: number;
+  verse: string | null;
+}
+
+const pages = new Map<string, KeptPage>();
+
+/** Keeps the page he is on in `chapter` (a key the Reader names it by). */
+export function keepPage(chapter: string, kept: KeptPage): void {
+  pages.set(chapter, kept);
+}
+
+/** The page he was last on in `chapter`, if he has read it in pages. */
+export function keptPage(chapter: string): KeptPage | undefined {
+  return pages.get(chapter);
 }
 
 /** Forget the positions kept for an address, so a box shown there starts at the top (or wherever the screen puts it). */

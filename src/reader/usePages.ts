@@ -7,7 +7,10 @@
 // in the middle third still opens the word or heading; so does a long press (the word's own click guard drops its click). The swipe's numbers are the chapter swipe's (src/reader/useChapterSwipe.ts), which is off while pages are on.
 // When the box changes size (text size, the hint card closed, the bars brought back) the pages are cut afresh and the page shown is the one where the
 // first verse that was in view begins, so no text is skipped.
+// The page he is on is kept per chapter (src/nav/scrollMemory.ts keepPage, mw-5r3p30.608): a Reader opened on the chapter again (back from Settings or any
+// screen it gave way to) cuts the pages and shows that page, or, cut otherwise (another text size), the page of the verse that began it, until he turns one.
 import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { keepPage, keptPage } from '../nav/scrollMemory';
 import { EDGE_PX, SWIPE_MAX_MS, SWIPE_MIN_PX } from './useChapterSwipe';
 
 /** A press longer than this, or one that wandered farther than TAP_SLOP_PX, is not a tap (the word's own long press is 500 ms and 10 px). */
@@ -35,8 +38,8 @@ interface Turner {
   show(el: Element): void;
 }
 
-/** Lays out the text of `box` in pages while `enabled`, and turns them by tap and swipe unless `blocked` (a sheet is open). */
-export function usePages(enabled: boolean, box: RefObject<HTMLElement | null>, inner: RefObject<HTMLElement | null>, blocked: boolean): Pages {
+/** Lays out the text of `box` in pages while `enabled`, and turns them by tap and swipe unless `blocked` (a sheet is open); the page is kept under `chapter`. */
+export function usePages(enabled: boolean, box: RefObject<HTMLElement | null>, inner: RefObject<HTMLElement | null>, blocked: boolean, chapter: string): Pages {
   const [place, setPlace] = useState({ page: 0, count: 1 });
   const turner = useRef<Turner | null>(null);
 
@@ -53,6 +56,8 @@ export function usePages(enabled: boolean, box: RefObject<HTMLElement | null>, i
     let step = 0;
     /** the first verse that began on the page shown: the page is found again by it when the pages are cut afresh */
     let anchor: Element | null = null;
+    /** the page kept from when he was last in this chapter: shown at each cut until he turns a page (or one is shown for him) */
+    let kept = keptPage(chapter);
 
     /** The page an x on screen falls on. */
     const pageAt = (x: number): number => (step <= 0 ? 0 : Math.max(0, Math.floor((x - content.getBoundingClientRect().left + 1) / step)));
@@ -75,6 +80,19 @@ export function usePages(enabled: boolean, box: RefObject<HTMLElement | null>, i
         null;
     };
 
+    /** Shows `to` and keeps it as his place, unless the kept page is still being put back. */
+    const move = (to: number, keepAnchor = false) => {
+      go(to, keepAnchor);
+      if (!kept) keepPage(chapter, { page, count, verse: anchor instanceof HTMLElement ? (anchor.dataset.verse ?? null) : null });
+    };
+
+    /** Shows the kept page: the same page when the pages are cut as they were, else the one its verse begins on. */
+    const putBack = (k: { page: number; count: number; verse: string | null }) => {
+      const verse = k.count === count || k.verse === null ? null : content.querySelector(`[data-verse="${k.verse}"]`);
+      const first = verse?.getClientRects()[0];
+      go(first ? pageAt(first.left) : k.page);
+    };
+
     /** Cuts the pages afresh: how wide one is, how many there are, and which one shows the anchor. */
     const measure = () => {
       const width = content.clientWidth;
@@ -84,24 +102,32 @@ export function usePages(enabled: boolean, box: RefObject<HTMLElement | null>, i
       const last = content.lastElementChild;
       const rects = last ? last.getClientRects() : null;
       count = rects && rects.length > 0 ? pageAt(rects[rects.length - 1].left) + 1 : 1;
+      if (kept) {
+        putBack(kept);
+        return;
+      }
       // nothing moved between pages: the page shown stays
       if (step === before.step && count === before.count) {
-        go(page, true);
+        move(page, true);
         return;
       }
       const first = anchor?.isConnected ? anchor.getClientRects()[0] : undefined;
-      if (first) go(pageAt(first.left), true);
-      else go(page);
+      if (first) move(pageAt(first.left), true);
+      else move(page);
     };
 
     turner.current = {
       turn: (by) => {
         const to = page + by;
-        if (to >= 0 && to < count) go(to);
+        if (to < 0 || to >= count) return;
+        kept = undefined;
+        move(to);
       },
       show: (target) => {
         const first = target.getClientRects()[0];
-        if (first) go(pageAt(first.left));
+        if (!first) return;
+        kept = undefined;
+        move(pageAt(first.left));
       },
     };
     measure();
@@ -114,9 +140,9 @@ export function usePages(enabled: boolean, box: RefObject<HTMLElement | null>, i
     void document.fonts?.ready.then(() => live && measure());
     // the box scrolled by something else (focus moved to a word on another page): the page follows it
     const onScroll = () => {
-      if (step <= 0) return;
+      if (step <= 0 || kept) return;
       const shown = Math.round(el.scrollLeft / step);
-      if (shown !== page) go(shown);
+      if (shown !== page) move(shown);
     };
     el.addEventListener('scroll', onScroll, { passive: true });
     return () => {
@@ -128,7 +154,7 @@ export function usePages(enabled: boolean, box: RefObject<HTMLElement | null>, i
       el.scrollLeft = 0;
       setPlace({ page: 0, count: 1 });
     };
-  }, [enabled, box, inner]);
+  }, [enabled, box, inner, chapter]);
 
   // taps on the thirds and swipes
   useEffect(() => {
