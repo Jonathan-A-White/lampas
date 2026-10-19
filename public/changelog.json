@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.351",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.558",
+    "kind": "fixed",
+    "text": "A quick double tap on \"Mark known without a drill\" (or on \"Show more\" examples) on a grammar idea no longer lands on the control that moved into its place."
+  },
+  {
+    "version": "0.1.351",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.583",
+    "kind": "fixed",
+    "text": "The letter sheets no longer offer cut-off words like δ' as examples, so the speaker says a real word instead of the letter's name."
+  },
+  {
     "version": "0.1.350",
     "date": "2026-10-19",
     "story": "mw-5r3p30.568",

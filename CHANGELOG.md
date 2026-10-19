@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.351
+_2026-10-19_
+- Fixed: A quick double tap on "Mark known without a drill" (or on "Show more" examples) on a grammar idea no longer lands on the control that moved into its place.
+- Fixed: The letter sheets no longer offer cut-off words like δ' as examples, so the speaker says a real word instead of the letter's name.
+
 ## 0.1.350
 _2026-10-19_
 - Fixed: When you ask the tutor in your own words how to say a Greek word, it now uses the app's own syllables and stress instead of guessing.
