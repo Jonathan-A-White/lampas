@@ -17,7 +17,7 @@ import { useScrollMemory } from '../nav/scrollMemory';
 import { chapterName } from '../plan/chapterName';
 import { SendOff } from '../plan/SendOff';
 import { StartPlan } from '../plan/StartPlan';
-import { usePlan } from '../plan/usePlan';
+import { readPlan, usePlan } from '../plan/usePlan';
 import { useSendOff } from '../plan/useSendOff';
 import { devotionalLink } from '../resources/logosDevotional';
 import { chapterLink, verseLink } from '../resources/logosBible';
@@ -275,12 +275,21 @@ export function Today() {
   const ready = !shown.includes(undefined) && tickBoxes !== undefined && day !== undefined;
   const none = ready && shown.every((s) => s === 'off');
   // what the tutor is told: the date, what is On and the pieces he opened today by name (this date's list only), so it can open by naming what he read
-  const planView = usePlan();
+  // the plan's chapter is read once, and only when he has opened the plan's link today (the name is not in the id)
+  const planOpened = day?.opened.includes('plan') ?? false;
+  const [planName, setPlanName] = useState<string | undefined>();
+  useEffect(() => {
+    if (!planOpened) return undefined;
+    let live = true;
+    void readPlan().then(({ started }) => live && setPlanName(started?.next ? chapterName(started.next) : undefined));
+    return () => {
+      live = false;
+    };
+  }, [planOpened]);
   const devotionalChoice = useSetting(devotionalSetting);
   const devotionalDraw = useSetting(devotionalDrawSetting);
-  const planNext = planView?.started?.next;
   const names = {
-    plan: planNext ? chapterName(planNext) : undefined,
+    plan: planName,
     devotional: devotionalChoice === undefined || devotionalDraw === undefined ? undefined : devotionalForDay(devotionalChoice, tickedDevotionals(devotionalDraw), today).title,
   };
   useReportScreen({
