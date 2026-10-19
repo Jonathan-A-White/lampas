@@ -12,7 +12,7 @@ test('Licence page at 390x844: room above the status, fits without scrolling, ce
 
   const main = page.locator('main.screen');
   const box = (await main.boundingBox())!;
-  const status = (await page.locator('[role="status"]:not([data-live-region])').boundingBox())!;
+  const status = (await page.getByRole('status').boundingBox())!;
   const version = (await page.getByTestId('build-version').boundingBox())!;
 
   // the root pads the phone's own safe-area top, which is 0 here, so the box's top is the safe-area top
