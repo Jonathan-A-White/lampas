@@ -1,7 +1,7 @@
 // src/TeachTiles.tsx — the tiles at the top of an idea sheet of the letters, sounds and marks tiers (mw-5r3p30.232, src/data/grammar/teachTiles.ts): each item
 // as a tile you can look at and hear. A letter is one tap that says it (its capital and small, the sound in the chosen pronunciation, the vowels marked) and its
 // name opens the item's own sheet; a pair or a mark shows the form, its sound or what it is, and a New Testament word with its own play button. Four across for
-// the alphabet (a long sound shows as the quick round shows it, up to the first semicolon; the tiles stay 44 px or more at 390 px, held upright or sideways), two for tiles with a word to carry.
+// the alphabet when the window is 22 rem wide, two across at a phone's 200% text, where a tile has no room for a letter's name (mw-5r3p30.634) (a long sound shows as the quick round shows it, up to the first semicolon; the tiles stay 44 px or more at 390 px, held upright or sideways), two for tiles with a word to carry.
 import { useEffect, useRef, useState } from 'react';
 import { shortSound } from './data/grammar/quickRound';
 import type { TeachTile } from './data/grammar/teachTiles';
@@ -23,7 +23,7 @@ function Face({ tile }: { tile: TeachTile }) {
       </span>
       {tile.vowel ? <span className="block text-xs font-medium text-accent">vowel</span> : null}
       {tile.sound ? (
-        <span data-sound className="block text-xs leading-snug text-muted">
+        <span data-sound className="block title-wrap text-xs leading-snug text-muted">
           {shortSound(tile.sound)}
         </span>
       ) : null}
@@ -63,11 +63,11 @@ function Tile({ tile, onOpen, onSay }: { tile: TeachTile; onOpen: (ideaId: strin
         </div>
       ) : null}
       {name && ideaId ? (
-        <button type="button" aria-label={`About ${name}`} onClick={() => onOpen(ideaId)} className="min-h-11 rounded-b-xl px-1 text-center text-sm text-accent underline decoration-1 underline-offset-2 active:bg-line">
+        <button type="button" aria-label={`About ${name}`} onClick={() => onOpen(ideaId)} className="min-h-11 rounded-b-xl px-1 text-center title-wrap text-sm text-accent underline decoration-1 underline-offset-2 active:bg-line">
           {name}
         </button>
       ) : name ? (
-        <p className="px-1 pb-1 text-center text-sm">{name}</p>
+        <p className="px-1 pb-1 text-center title-wrap text-sm">{name}</p>
       ) : null}
     </li>
   );
@@ -101,7 +101,7 @@ export function TeachTiles({ tiles, onOpen }: { tiles: TeachTile[]; onOpen: (ide
 
   return (
     <>
-      <ul data-testid="teach-tiles" className={`mt-3 grid gap-2 ${narrow ? 'grid-cols-4' : 'grid-cols-2 min-[640px]:grid-cols-4'}`}>
+      <ul data-testid="teach-tiles" className={`mt-3 grid gap-2 ${narrow ? 'grid-cols-2 min-[22rem]:grid-cols-4' : 'grid-cols-2 min-[640px]:grid-cols-4'}`}>
         {tiles.map((tile) => (
           <Tile key={tile.id} tile={tile} onOpen={onOpen} onSay={say} />
         ))}

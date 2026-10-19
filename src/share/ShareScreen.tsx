@@ -54,7 +54,7 @@ function ShareChooser({ row, talks, onPick, onCancel }: { row: ShareRow; talks: 
         <div data-testid="sheet-handle" {...handle} className="relative flex shrink-0 touch-none flex-col items-center px-4 pt-2">
           <span aria-hidden="true" className="h-1.5 w-10 rounded-full bg-line" />
           <div className="flex min-h-12 w-full items-center gap-2">
-            <h2 id={titleId} className="min-w-0 flex-1 truncate text-xl font-semibold">
+            <h2 id={titleId} className="flex-1 title-wrap text-xl font-semibold">
               Share to Lampas
             </h2>
           </div>
@@ -84,10 +84,10 @@ function ShareChooser({ row, talks, onPick, onCancel }: { row: ShareRow; talks: 
                   <li key={talk.ref}>
                     <button type="button" data-recent-talk={talk.ref} onClick={() => onPick(talk.ref)} className={`${ACTION} border-line bg-surface`}>
                       <span className="flex items-baseline justify-between gap-2">
-                        <span className="min-w-0 truncate text-lg font-medium">{talkLabel(talk.ref)}</span>{' '}
+                        <span className="title-wrap text-lg font-medium">{talkLabel(talk.ref)}</span>{' '}
                         <span className="shrink-0 text-sm text-muted">{dateText(talk.lastWhen)}</span>
                       </span>{' '}
-                      <span className="line-clamp-2 break-words text-base text-muted">{talk.firstQuestion}</span>
+                      <span className="title-wrap text-base text-muted">{talk.firstQuestion}</span>
                     </button>
                   </li>
                 ))}
