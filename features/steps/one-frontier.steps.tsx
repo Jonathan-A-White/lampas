@@ -150,6 +150,27 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('After Switch, the idea put back to Not yet shows on its sheet what was kept about it', ({ Given, And, When, Then }) => {
+    Given(GIVEN_LEARNING, learning);
+    And(GIVEN_SHEET, opensSheetFromGoal);
+    And('he slides the level to {string}', slides);
+    And('he taps {string}', async (_, name: string) => {
+      await user.click(await screen.findByRole('button', { name }));
+    });
+    And('he closes the idea sheet', async () => {
+      await waitFor(async () => expect(await atFrontier()).toEqual(['alphabet']));
+      await user.click(within(ideaSheet()).getByRole('button', { name: 'Done' }));
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Idea' })).toBeNull());
+    });
+    When('he opens the idea sheet of {string} again from the Goal screen', opensSheetFromGoal);
+    Then('the idea sheet says {string}', async (_, text: string) => {
+      await waitFor(() => expect(within(ideaSheet()).getByTestId('idea-level')).toHaveTextContent(text));
+    });
+    And('the idea sheet says what was kept: {string}', async (_, text: string) => {
+      await waitFor(() => expect(within(ideaSheet()).getByTestId('idea-kept')).toHaveTextContent(text));
+    });
+  });
+
   Scenario('Proving the idea he is learning makes the next idea the frontier', ({ Given, And, When, Then }) => {
     Given(GIVEN_LEARNING, learning);
     And(GIVEN_SHEET, opensSheetFromGoal);

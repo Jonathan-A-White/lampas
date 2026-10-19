@@ -34,6 +34,16 @@ Feature: One frontier idea at a time
     And "case-genitive" is Not yet and its review is as it was
     And after he closes the idea sheet the Goal screen says "Learning now: The Greek alphabet" in one place
 
+  Scenario: After Switch, the idea put back to Not yet shows on its sheet what was kept about it
+    Given the goal is "1 John 1:1" and he is learning "case-genitive"
+    And he opens the idea sheet of "alphabet" from the Goal screen
+    And he slides the level to "Learning"
+    And he taps "Switch"
+    And he closes the idea sheet
+    When he opens the idea sheet of "case-genitive" again from the Goal screen
+    Then the idea sheet says "Not yet since today"
+    And the idea sheet says what was kept: "Kept: next due tomorrow, last answered today, 1 missed"
+
   Scenario: Proving the idea he is learning makes the next idea the frontier
     Given the goal is "1 John 1:1" and he is learning "case-genitive"
     And he opens the idea sheet of "case-genitive" from the Goal screen

@@ -20,13 +20,13 @@ import { loadChapter, loadIndex, type Chapter, type GreekWord } from './data/cha
 import { unmetNeed } from './data/grammar/drillIt';
 import { loadFrequency } from './data/frequency';
 import { exampleGloss, exampleNote, hasFormOf, ideaExamples, ideaExamplesFor, ideaPassage, isSentenceIdea, isSoundIdea, isSpellingIdea, passageForms, type ExampleRanking, type IdeaExample, type IdeaExamples, type IdeaPassage, type PairCase } from './data/grammar/ideaSheet';
-import { ideaOf, type GrammarIdea } from './data/grammar/ladder';
+import { IDEA_KIND, ideaOf, type GrammarIdea } from './data/grammar/ladder';
 import { soundLesson } from './data/grammar/lessons';
 import { stepsOf, teachOf, workedFor, type Teach, type TeachTable } from './data/grammar/teach';
 import { teachTiles } from './data/grammar/teachTiles';
 import { paradigmsOf } from './data/paradigms';
 import { getOpenChapter } from './data/readerChapter';
-import { getGrammarBooks, getGreekPronunciation, getLevel, getSavedGoalText, getStudyResources, listLevels, recordDrill, teachIdea, type DrillMode, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
+import { getGrammarBooks, getGreekPronunciation, getLevel, getSavedGoalText, getStudyResources, listLevels, recordDrill, reviewsOf, teachIdea, type DrillMode, type Review, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
 import { DrillItScreen } from './DrillItScreen';
 import { holdIdea } from './ideaReturn';
 import { LessonWriteIt } from './handwriting/LessonWriteIt';
@@ -72,6 +72,25 @@ function sinceText(since: number, now = Date.now()): string {
   const days = Math.round((Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - Date.UTC(then.getFullYear(), then.getMonth(), then.getDate())) / DAY_MS);
   if (days <= 0) return 'today';
   return days < 7 ? WEEKDAYS[then.getDay()] : `${then.getDate()} ${MONTHS[then.getMonth()]}`;
+}
+
+/** 'today' (or already past), 'tomorrow', a weekday within the next six days, else '3 Nov'. */
+function dueText(due: number, now = Date.now()): string {
+  const [then, today] = [new Date(due), new Date(now)];
+  const days = Math.round((Date.UTC(then.getFullYear(), then.getMonth(), then.getDate()) - Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())) / DAY_MS);
+  if (days <= 0) return 'today';
+  if (days === 1) return 'tomorrow';
+  return days < 7 ? WEEKDAYS[then.getDay()] : `${then.getDate()} ${MONTHS[then.getMonth()]}`;
+}
+
+/** What a Not yet idea kept on the schedule when it was put back (Switch keeps its row): when it is next due, when it was last answered, how often it was missed, and the last answer if it is known. */
+function keptText(row: Review): string {
+  const last = row.recent?.at(-1);
+  return [
+    `Kept: next due ${dueText(row.due)}`,
+    `last answered ${sinceText(row.lastWhen)}${last ? ` (${last.right ? 'right' : 'wrong'})` : ''}`,
+    ...(row.lapses > 0 ? [`${row.lapses} missed`] : []),
+  ].join(', ');
 }
 
 /**
@@ -369,6 +388,8 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
   useSheetBack(onClose);
   const loaded = usePassage();
   const level = useLiveQuery(() => getLevel(idea.id), [idea.id]);
+  // what Switch kept on an idea it put back to Not yet (its schedule row); an idea that never had a row, or whose row was removed, shows nothing
+  const kept = useLiveQuery(async () => (await reviewsOf([{ kind: IDEA_KIND, id: idea.id }]))[0] ?? null, [idea.id]);
   // the lesson of a sound is the chosen pronunciation's (mw-5r3p30.229); until the saved choice is read, the one the speaker already holds
   const chosen = useLiveQuery(getGreekPronunciation, []);
   const scheme = chosen === undefined ? chosenPronunciation() : pronunciationOf(chosen);
@@ -501,6 +522,11 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
           {level ? (
             <p data-testid="idea-level" className="mt-1 inline-block rounded-full border border-line px-3 py-1 text-sm text-muted">
               {level.level === 'solid' && level.how === 'drill' ? 'Proved by drill' : `${LEVEL_NAMES[level.level]} since`} {sinceText(level.since)}
+            </p>
+          ) : null}
+          {level?.level === 'notYet' && kept ? (
+            <p data-testid="idea-kept" className="mt-1 text-base text-muted">
+              {keptText(kept)}
             </p>
           ) : null}
           {loaded === null || (!own.length && !wider && passage) ? (
