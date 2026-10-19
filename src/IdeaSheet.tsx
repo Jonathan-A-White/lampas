@@ -55,6 +55,8 @@ import { GREEK_LANG } from './script/greekLang';
 // Each button is as wide as its label and shares the rest, so neither wraps at 390 px.
 const BUTTON = 'min-h-12 flex-auto whitespace-nowrap rounded-xl border px-2 text-base font-medium';
 const LEVEL_NAMES: Record<GrammarLevelName, string> = { solid: 'Solid', frontier: 'Frontier', notYet: 'Not yet' };
+/** How far (px) a press on the level slider must travel to be a drag: a finger's tap shakes a few px. */
+const DRAG_PX = 8;
 /** The slider's three stops, left to right: the level each is and what it is called (PROVISIONAL names). */
 const STOPS: { level: GrammarLevelName; label: string }[] = [
   { level: 'notYet', label: 'Not yet' },
@@ -427,6 +429,8 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
   // while the thumb is being dragged the stops it passes are not chosen: only where it is let go is
   const [dragged, setDragged] = useState<number | null>(null);
   const dragging = useRef(false);
+  // where the press began, until the pointer has moved DRAG_PX from it: a press that never does is a tap (on the track or the thumb), and a tap sets nothing (mw-5r3p30.528)
+  const pressedAt = useRef<number | null>(null);
   const shown = dragged ?? (moved && moved.from === rest ? moved.to : rest);
   const [drill, setDrill] = useState<DrillMode | null>(null);
   // Got it on The Greek alphabet starts the letter drill at once (mw-86e9r1.11)
@@ -464,6 +468,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
   };
   const letGo = (): void => {
     dragging.current = false;
+    pressedAt.current = null;
     if (dragged !== null) slideTo(dragged);
     setDragged(null);
   };
@@ -616,10 +621,18 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
               step={1}
               value={shown}
               disabled={loaded === null}
-              onChange={(e) => (dragging.current ? setDragged(Number(e.target.value)) : slideTo(Number(e.target.value)))}
+              onChange={(e) => {
+                // the browser jumps the thumb to a tap on the track; until the pointer has moved that is not chosen, and the controlled value puts the thumb back
+                if (!dragging.current) slideTo(Number(e.target.value));
+                else if (pressedAt.current === null) setDragged(Number(e.target.value));
+              }}
               onKeyDown={stepBy}
-              onPointerDown={() => {
+              onPointerDown={(e) => {
                 dragging.current = true;
+                pressedAt.current = e.clientX;
+              }}
+              onPointerMove={(e) => {
+                if (pressedAt.current !== null && Math.abs(e.clientX - pressedAt.current) >= DRAG_PX) pressedAt.current = null;
               }}
               onPointerUp={letGo}
               onPointerCancel={letGo}
