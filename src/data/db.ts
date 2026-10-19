@@ -86,11 +86,11 @@ export interface ShareRow {
 export interface RequestRow {
   /** the grist's transaction id: the key */
   txid: string;
-  /** 'grammar-approach', 'tutor-ask' or 'grammar-book' (src/services/feedback.ts FeedbackKind) */
+  /** 'grammar-approach', 'tutor-ask', 'grammar-book', 'devotional' or one of the Ask for more kinds (src/services/feedback.ts FeedbackKind) */
   kind: string;
   /** the tutor's one-line summary of the ask (tutor-ask) */
   summary?: string;
-  /** his words (grammar-approach: the approach he described; grammar-book: the title he typed) */
+  /** his words (grammar-approach: the approach he described; grammar-book: the title he typed; devotional: its title) */
   text?: string;
   /** the build that sent it (config __APP_VERSION__) */
   app_version: string;

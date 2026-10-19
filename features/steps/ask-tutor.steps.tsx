@@ -19,7 +19,7 @@ import { passageNeeds, progressToward, type Level } from '../../src/data/grammar
 import { setGoal } from '../../src/data/repositories/settings';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { ROWS } from '../../src/settings/rows';
+import { isTalkable, ROWS } from '../../src/settings/rows';
 import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -368,7 +368,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     });
     And("the grist's screen settings name every setting and study resource with its value now and its help", () => {
       const got = (sent(0).screen as { settings: { name: string; value: string; help: string }[] }).settings;
-      const wanted = ROWS.filter((r) => !r.key.startsWith('link.') && r.key !== 'developer');
+      const wanted = ROWS.filter((r) => isTalkable(r.key));
       expect(got.map((s) => s.name)).toEqual(wanted.map((r) => r.label));
       for (const s of got) {
         expect(s.value, s.name).not.toBe('');

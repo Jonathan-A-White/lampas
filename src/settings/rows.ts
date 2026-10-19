@@ -77,6 +77,17 @@ const LINKS: readonly SettingsRow[] = [
   { key: 'link.about', label: 'About', hint: 'Where the text comes from, and its licences.', section: 'more' },
 ];
 
+/** The rows that send a request to the factory (Request a devotional): a box, not a setting, so the tutor does not read or change them. */
+const REQUESTS: readonly SettingsRow[] = [
+  {
+    key: 'request.devotional',
+    label: 'Request a devotional',
+    hint: 'Ask for another devotional to be added to Which devotional.',
+    help: 'Type the title of a devotional in your Logos library and Send. The makers add it to the list when they find its Logos id; Your requests follows it. It goes to the factory through the tutor\'s mill, so it needs a licence.',
+    section: 'daily',
+  },
+];
+
 /** Developer mode is found, not set (seven taps on About's version number): its switch is drawn only once it is no longer 'hidden'. */
 const DEVELOPER: SettingsRow = {
   key: 'developer',
@@ -97,10 +108,13 @@ const rowOfSetting = (s: (typeof SETTINGS)[number]): SettingsRow => ({
   ai: AI_KEYS.has(s.key) || undefined,
 });
 
-const unordered: readonly SettingsRow[] = [...SETTINGS.map(rowOfSetting), DEVELOPER, ...LINKS];
+const unordered: readonly SettingsRow[] = [...SETTINGS.map(rowOfSetting), ...REQUESTS, DEVELOPER, ...LINKS];
 
 /** Every row of Settings, section by section in the screen's order (within a section, in the order they are listed above). */
 export const ROWS: readonly SettingsRow[] = SECTIONS.flatMap((section) => unordered.filter((r) => r.section === section.id));
+
+/** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box or Developer mode. */
+export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer';
 
 export const rowOf = (key: string): SettingsRow | undefined => ROWS.find((r) => r.key === key);
 

@@ -105,6 +105,11 @@ failure title and **Try again**); it goes by itself on the window's `online` eve
 one send at a time and in the order asked. A request is forgotten when its grist is out (`onSent`), so a receipt that never comes does not send it twice. Note that Talk
 and Ask for another approach do NOT wait offline (they show the failure and Retry); only this one queues. `features/ask-book.feature`, `tests/e2e/ask-book.spec.ts`.
 
+### Request a devotional (mw-1fwagb.8, PROVISIONAL)
+
+Settings > Daily ends with **Request a devotional** (`src/settings/controls/requestDevotional.tsx`, the row `request.devotional` in `src/settings/rows.ts`; not a setting, so the tutor neither reads nor changes it, `isTalkable`), a button that opens the box in place: a 'Devotional title' (at most `MAX_MORE_NAME` 120, counted not cut) and **Send**. It is the same one sender: `submitFeedback` with a
+`devotional` request `{kind, name, app_version}` (`buildDevotionalRequest`; the input schema's fourth branch, `grinds/examples/feedback/request-devotional.json`), kept in `requests` with the title as `text` (Your requests names it 'Devotional'). It does not queue offline (a failure shows with **Retry**); with no licence the box says it needs one. The row then says **Sent: the factory has it**. Nothing is added to the app until the Mayor finds its Logos id and adds it to `src/data/daily/devotionals.ts`. `tests/e2e/request-devotional.spec.ts`.
+
 ### Your requests
 
 `#/requests` (route `requests`, kept; Settings > More > Your requests and a button on About) lists the rows of `requests`, newest first, each with its summary

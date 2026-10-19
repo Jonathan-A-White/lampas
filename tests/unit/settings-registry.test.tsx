@@ -8,7 +8,7 @@ import { getGreekPronunciation, getLayout, getLogosBible, getSectionHeadings, ge
 import { clearBus, latest } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { getStudyResources } from '../../src/data/repositories';
-import { ROWS } from '../../src/settings/rows';
+import { isTalkable, ROWS } from '../../src/settings/rows';
 import { SETTINGS, applyChanges, currentSettings, settingOf, undoChange } from '../../src/settings/registry';
 
 afterAll(() => {
@@ -52,8 +52,8 @@ describe('the registry lists every Settings row', () => {
     await screen.findByRole('group', { name: "Read the tutor's responses aloud" });
     await screen.findByRole('group', { name: 'Hebrew in the tutor' });
     const drawn = [
-      // Logos' ticked lists of lexicons and of grammar books (mw-5r3p30.381) and the line that asks for another book (mw-5r3p30.382) belong to the Logos switch, a study resource kept outside the registry
-      ...screen.getAllByRole('group').filter((el) => !['Logos lexicons', 'Grammar books', 'Ask for another book'].includes(el.getAttribute('aria-label') ?? '')),
+      // Logos' ticked lists of lexicons and of grammar books (mw-5r3p30.381) and the line that asks for another book (mw-5r3p30.382) belong to the Logos switch, a study resource kept outside the registry; Request a devotional is a request box, not a setting
+      ...screen.getAllByRole('group').filter((el) => !['Logos lexicons', 'Grammar books', 'Ask for another book', 'Request a devotional'].includes(el.getAttribute('aria-label') ?? '')),
       ...screen.getAllByRole('radiogroup'),
       // the Goal group's own Book, Chapter and Verse pickers, and Bible in Logos' own Bible list, are parts of those one settings
       ...screen.getAllByRole('combobox').filter((el) => !el.closest('[role="group"][aria-label="Goal"], [role="group"][aria-label="Bible in Logos"]')),
@@ -78,12 +78,12 @@ describe('the registry lists every Settings row', () => {
   });
 });
 
-/** The rows that are not settings the tutor may change: links to other screens, and Developer mode, which is found on About
+/** The rows that are not settings the tutor may change: links to other screens, the request boxes, and Developer mode, which is found on About
  * and kept outside the registry on purpose. */
-const NOT_TALKABLE = (key: string): boolean => key.startsWith('link.') || key === 'developer';
+const NOT_TALKABLE = (key: string): boolean => !isTalkable(key);
 
 describe('the allow-list is the Settings screen\'s own list (mw-5r3p30.100)', () => {
-  it('holds every row of the Settings screen but the links and Developer mode, with the same name', () => {
+  it('holds every row of the Settings screen but the links, the request boxes and Developer mode, with the same name', () => {
     const talkable = ROWS.filter((r) => !NOT_TALKABLE(r.key));
     expect(talkable.length).toBeGreaterThan(20);
     for (const row of talkable) {
@@ -95,9 +95,9 @@ describe('the allow-list is the Settings screen\'s own list (mw-5r3p30.100)', ()
   });
 
   it('refuses the rows that are left out', async () => {
-    const { applied, refused } = await applyChanges([{ key: 'developer', value: 'on' }, { key: 'link.words', value: 'on' }, { key: 'developerMode', value: 'on' }]);
+    const { applied, refused } = await applyChanges([{ key: 'developer', value: 'on' }, { key: 'link.words', value: 'on' }, { key: 'request.devotional', value: 'on' }, { key: 'developerMode', value: 'on' }]);
     expect(applied).toEqual([]);
-    expect(refused).toHaveLength(3);
+    expect(refused).toHaveLength(4);
     expect(await db.settings.get('developerMode')).toBeUndefined();
   });
 

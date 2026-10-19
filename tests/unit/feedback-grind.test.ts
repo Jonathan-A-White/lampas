@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { PrivateKey, Utils } from '@bsv/sdk';
 import { grist } from 'bsv-kit/grist';
-import { MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, MAX_ASK_BYTES, MAX_BOOK_CHARS, MAX_MORE_NAME, MAX_REFERENCE, MAX_SCREEN_NAME, MAX_SUMMARY, MORE_KINDS, buildBookRequest, buildFeedbackRequest, buildMoreRequest, buildTutorAskRequest, isFeedbackAnswer } from '../../src/services/feedback';
+import { MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, MAX_ASK_BYTES, MAX_BOOK_CHARS, MAX_MORE_NAME, MAX_REFERENCE, MAX_SCREEN_NAME, MAX_SUMMARY, MORE_KINDS, buildBookRequest, buildDevotionalRequest, buildFeedbackRequest, buildMoreRequest, buildTutorAskRequest, isFeedbackAnswer } from '../../src/services/feedback';
 import { MILL_PUBLIC_KEY } from '../support/fake-postern';
 import { validate, type Schema } from '../support/schema-validate';
 
@@ -196,6 +196,23 @@ describe('the four kinds of Ask for more and buildMoreRequest', () => {
     ['an empty reason', { kind: 'text', name: 'x', text: '', app_version: 'v' }],
     ['a credit on a translation', { kind: 'translation', name: 'x', credit: { name: 'y' }, app_version: 'v' }],
     ['a name on a grammar book', { kind: 'grammar-book', text: 'x', name: 'y', app_version: 'v' }],
+  ])('refuses %s', (_, value) => {
+    expect(validate(value, input as Schema)).not.toEqual([]);
+  });
+});
+
+describe('the devotional kind and buildDevotionalRequest', () => {
+  it('builds a request the schema accepts: his title, trimmed, the kind named and the build', () => {
+    const request = buildDevotionalRequest("  Spurgeon, Faith's Checkbook ");
+    expect(request).toEqual({ kind: 'devotional', name: "Spurgeon, Faith's Checkbook", app_version: __APP_VERSION__ });
+    expect(validate(request, input as Schema)).toEqual([]);
+    expect(validate(buildDevotionalRequest('x'.repeat(MAX_MORE_NAME)), input as Schema)).toEqual([]);
+    expect(validate(buildDevotionalRequest('x'.repeat(MAX_MORE_NAME + 1)), input as Schema)).not.toEqual([]);
+  });
+
+  it.each<[string, unknown]>([
+    ['no name', { kind: 'devotional', app_version: 'v' }],
+    ['an empty name', { kind: 'devotional', name: '', app_version: 'v' }],
   ])('refuses %s', (_, value) => {
     expect(validate(value, input as Schema)).not.toEqual([]);
   });
