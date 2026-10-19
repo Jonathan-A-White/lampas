@@ -135,8 +135,20 @@ const SCREENS: readonly Screen[] = [
   },
 ];
 
+/** Lets every finite transition and animation finish: axe reads the colours as drawn, and a theme change fades them over a moment. */
+const settled = (page: Page) =>
+  page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((a) => a.effect?.getComputedTiming().iterations !== Infinity)
+        .map((a) => a.finished.catch(() => undefined)),
+    ),
+  );
+
 /** What axe finds on the open screen, one line each: the rule, how bad, and the first nodes it names. */
 async function violationsOn(page: Page): Promise<string[]> {
+  await settled(page);
   const result = await new AxeBuilder({ page }).withTags(WCAG_TAGS).disableRules([...EXCLUDED_RULES]).analyze();
   return result.violations.map((v) => {
     const targets = v.nodes.slice(0, 4).map((n) => `${n.target.join(' ')} [${(n.any[0]?.message ?? n.failureSummary ?? '').replace(/^Element has insufficient color contrast of /, '')}]`);
