@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.350
+_2026-10-19_
+- Fixed: When you ask the tutor in your own words how to say a Greek word, it now uses the app's own syllables and stress instead of guessing.
+- Fixed: The Welcome back strip and the update bar no longer hide the top buttons of the verse screen or sit on top of the tutor's play bar.
+- Fixed: On a phone with no Greek voice, a word list entry ending in ὁ now plays the sound of ὁ instead of naming the letter.
+
 ## 0.1.349
 _2026-10-19_
 - Fixed: Offline, the sheet for a letter such as xi now says the examples could not be looked for, instead of saying no word is spelt with it.

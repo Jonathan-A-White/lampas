@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.350",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.568",
+    "kind": "fixed",
+    "text": "When you ask the tutor in your own words how to say a Greek word, it now uses the app's own syllables and stress instead of guessing."
+  },
+  {
+    "version": "0.1.350",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.636",
+    "kind": "fixed",
+    "text": "The Welcome back strip and the update bar no longer hide the top buttons of the verse screen or sit on top of the tutor's play bar."
+  },
+  {
+    "version": "0.1.350",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.640",
+    "kind": "fixed",
+    "text": "On a phone with no Greek voice, a word list entry ending in ὁ now plays the sound of ὁ instead of naming the letter."
+  },
+  {
     "version": "0.1.349",
     "date": "2026-10-19",
     "story": "mw-5r3p30.556",
