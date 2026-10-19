@@ -29,6 +29,7 @@ import { ensureScheduled, listLevels, markParadigmOpened, reviewsOf } from './da
 import { useAiAllowed } from './gate/licenceContext';
 import { askAboutParadigm } from './nav/readerRequest';
 import { backTo, openParadigm, paradigmHash, paradigmOf, replaceHash, useAddress } from './nav/route';
+import { oneTap } from './ui/settle';
 import { MAX_REVEALED } from './services/talk';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { greekLang } from './script/greekLang';
@@ -291,6 +292,7 @@ function shownForms(table: Paradigm, levels: Levels, mode: 'study' | 'review', r
 function ParadigmTable({ table, mode, levels }: { table: Paradigm; mode: 'study' | 'review'; levels: Levels | undefined }) {
   const [revealed, setRevealed] = useState<ReadonlySet<string>>(() => revealedOf(table.id));
   const switchTo = mode === 'study' ? 'review' : 'study';
+  // the mode button and Hide all take the place of each other as the first tap lands, so they share a key; a cell has its own (mw-svw421.41)
   const ai = useAiAllowed();
   // whether the table is on the back-off schedule: 'Drill this table' puts it there (mw-svw421.6), and it reads 'In Review' once it is
   const inReview = useLiveQuery(async () => (await reviewsOf([{ kind: PARADIGM_KIND, id: table.id }])).length > 0, [table.id]);
@@ -314,16 +316,18 @@ function ParadigmTable({ table, mode, levels }: { table: Paradigm; mode: 'study'
           {mode === 'study' ? 'Study mode: tap a cell to reveal it.' : 'Review mode: every available form is shown.'}
         </p>
         <div className="mt-3 flex gap-2">
-          <button type="button" onClick={() => replaceHash(paradigmHash({ table: table.id, mode: switchTo }))} className={BUTTON}>
+          <button type="button" onClick={() => oneTap('paradigms:header', () => replaceHash(paradigmHash({ table: table.id, mode: switchTo })))} className={BUTTON}>
             {switchTo === 'review' ? 'Review mode' : 'Study mode'}
           </button>
           {mode === 'study' && revealed.size > 0 ? (
             <button
               type="button"
-              onClick={() => {
-                hideAll(table.id);
-                setRevealed(new Set());
-              }}
+              onClick={() =>
+                oneTap('paradigms:header', () => {
+                  hideAll(table.id);
+                  setRevealed(new Set());
+                })
+              }
               className={BUTTON}
             >
               Hide all
@@ -331,7 +335,7 @@ function ParadigmTable({ table, mode, levels }: { table: Paradigm; mode: 'study'
           ) : null}
         </div>
         {levels ? (
-          <Table table={table} levels={levels} mode={mode} revealed={revealed} onToggle={(place) => setRevealed(toggleRevealed(table.id, place))} />
+          <Table table={table} levels={levels} mode={mode} revealed={revealed} onToggle={(place) => oneTap(`paradigms:${place}`, () => setRevealed(toggleRevealed(table.id, place)))} />
         ) : null}
         <div className="mt-4 flex gap-2">
           <button

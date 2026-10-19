@@ -2,6 +2,7 @@
 // filters as he types, the ticked items first, and a bounded box that scrolls on its own, so the rest of the screen stays in reach.
 // The vault's rule: 'A long list is a widget, not a page of rows' (pwa-best-practices 08). Use it for any list longer than about seven.
 import { useState } from 'react';
+import { oneTap } from './settle';
 import { matching, tickedFirst, type ListItem } from './listFilter';
 
 type Props = {
@@ -60,7 +61,7 @@ export function SearchableList({ label, hint, noun, items, ticked, onToggle }: P
               type="button"
               role="checkbox"
               aria-checked={on}
-              onClick={() => onToggle(item.id)}
+              onClick={() => oneTap(`${label}:${item.id}`, () => onToggle(item.id))}
               className="flex min-h-12 w-full items-center gap-3 border-t border-line px-3 text-left text-base first:border-t-0"
             >
               <span
