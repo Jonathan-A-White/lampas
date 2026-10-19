@@ -63,6 +63,8 @@ drill screen and confirm card) is put in or taken out of the page, so the second
 its own for it. A spec or step that puts the moment back must wait it out (`SETTLE_MS + 100`) before its first tap on a screen or sheet that just
 opened, and before a tap beneath one that just closed; `features/tap-guard.feature`, `features/sheet-double-tap.feature`, `tests/unit/tap-guard.test.tsx`
 (which fails on a modal in `src/` without a dialog role, and on a file that asks for its own moment) and `tests/e2e/double-tap-guard.spec.ts` hold the proof.
+That spec double-taps on the page's clock (`tapTwice`, whose `between` may give the second tap another point when this size draws the Tester's control
+elsewhere) and waits for a new screen with `pageTime`; a screen that waits on its data is drawn in real time, so a target is measured once it is still.
 
 ## The tutor's tests
 
