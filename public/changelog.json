@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.1.344",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.578",
+    "kind": "fixed",
+    "text": "after the phone leaves full screen by itself in the Immersive reader, a two-finger tap on the text puts it full screen again."
+  },
+  {
+    "version": "0.1.344",
+    "date": "2026-10-19",
+    "story": "mw-svw421.16",
+    "kind": "fixed",
+    "text": "In the Paradigms tables, a quick double tap on a padlocked form now keeps the explanation open instead of closing it again."
+  },
+  {
+    "version": "0.1.344",
+    "date": "2026-10-19",
+    "story": "mw-i7xe0n.23",
+    "kind": "fixed",
+    "text": "In Drill it, a right answer after a Hint now says it does not count toward Proved, and the next question asks the same kind of word again."
+  },
+  {
+    "version": "0.1.344",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.323",
+    "kind": "fixed",
+    "text": "leaving the tutor's screen no longer loses an answer that was waiting for you; the \"tap to play\" bar stays until you play it."
+  },
+  {
     "version": "0.1.343",
     "date": "2026-10-19",
     "story": "mw-5r3p30.480",

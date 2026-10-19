@@ -1,5 +1,12 @@
 # What's new
 
+## 0.1.344
+_2026-10-19_
+- Fixed: after the phone leaves full screen by itself in the Immersive reader, a two-finger tap on the text puts it full screen again.
+- Fixed: In the Paradigms tables, a quick double tap on a padlocked form now keeps the explanation open instead of closing it again.
+- Fixed: In Drill it, a right answer after a Hint now says it does not count toward Proved, and the next question asks the same kind of word again.
+- Fixed: leaving the tutor's screen no longer loses an answer that was waiting for you; the "tap to play" bar stays until you play it.
+
 ## 0.1.343
 _2026-10-19_
 - Fixed: With the Immersive reader on, reading aloud no longer slides the bars away by itself; only your own scrolling or a two-finger tap changes them.
