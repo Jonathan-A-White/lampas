@@ -31,7 +31,7 @@ import { approachOf, DEFAULT_APPROACH, lessonForRange, passageLabel } from './ap
 import { ChapterNav } from './ChapterNav';
 import { ChapterPicker } from './ChapterPicker';
 import { latest, publish, useLatest } from './events/bus';
-import { blocksOf } from './layout/layouts';
+import { blocksOf, DEFAULT_LAYOUT } from './layout/layouts';
 import { LinkOpener } from './nav/LinkOpener';
 import { pendingLink, takeLink } from './nav/linkRequest';
 import { lemmaSheet, linkOf } from './nav/links';
@@ -516,6 +516,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
               <PassageText
                 passage={viewPassage}
                 view={view}
+                layout={layout ?? DEFAULT_LAYOUT}
                 wovenOf={(v) => woven?.[chapter.verses.indexOf(v)] ?? null}
                 reading={readingVerse}
                 onLook={setLookup}

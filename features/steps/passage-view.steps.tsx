@@ -198,7 +198,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 in the Greek view with the weave {string}', () => open({ hash: '#/?c=8&view=greek&weave=off' }));
     When('he taps the heading {string}', tapHeading);
     Then("the passage text carries the Reader's own face, size and line spacing and is not the big single-verse text", () => {
-      const text = viewEl().querySelector<HTMLElement>('[data-sheet-verse]') as HTMLElement;
+      const text = viewEl().querySelector<HTMLElement>('[data-sheet-verse] [data-passage-text]') as HTMLElement;
       const readerVerse = document.querySelector<HTMLElement>('[data-reader] [data-verse="1"]') as HTMLElement;
       // the Reader's own classes (src/reader/textClass.ts, the verse's leading) and the attribute src/index.css shares its book look by
       expect(text).toHaveAttribute('data-passage-text');
