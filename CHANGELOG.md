@@ -1,5 +1,12 @@
 # What's new
 
+## 0.1.340
+_2026-10-19_
+- Fixed: the back buttons at the top of a screen now step back, so the phone's Back leaves the screen instead of returning you to the one you just left.
+- Fixed: A quick double tap on a link that opens another tab or app, such as 'Adopted in' under Your requests, now opens it once.
+- Fixed: Tapping a locked form in the Paradigms tables now says what you need to learn first.
+- Fixed: In the Immersive reader the place line now reads 100% when you reach the last verse, not only after the chapter buttons below it.
+
 ## 0.1.339
 _2026-10-19_
 - Fixed: At the largest text size the reading bar is one row of icons, a passage's heading shows whole, and the book list no longer cuts off its title.

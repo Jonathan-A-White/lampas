@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.1.340",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.458",
+    "kind": "fixed",
+    "text": "the back buttons at the top of a screen now step back, so the phone's Back leaves the screen instead of returning you to the one you just left."
+  },
+  {
+    "version": "0.1.340",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.457",
+    "kind": "fixed",
+    "text": "A quick double tap on a link that opens another tab or app, such as 'Adopted in' under Your requests, now opens it once."
+  },
+  {
+    "version": "0.1.340",
+    "date": "2026-10-19",
+    "story": "mw-svw421.18",
+    "kind": "fixed",
+    "text": "Tapping a locked form in the Paradigms tables now says what you need to learn first."
+  },
+  {
+    "version": "0.1.340",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.479",
+    "kind": "fixed",
+    "text": "In the Immersive reader the place line now reads 100% when you reach the last verse, not only after the chapter buttons below it."
+  },
+  {
     "version": "0.1.339",
     "date": "2026-10-19",
     "story": "mw-cwf538.9",
