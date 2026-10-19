@@ -483,6 +483,14 @@ async function* placesOf(passage: IdeaPassage, load: ChapterLoader): AsyncGenera
   }
 }
 
+/**
+ * Whether the voice can say `form` as a word (mw-5r3p30.583): it has a vowel and is no elided fragment. An elided δ' or ἀλλ' is cut off, and a lone
+ * consonant is named by the phone's voice (δ' is "delta", not dh), so neither is a plain example of a letter or a sound.
+ */
+export function isWholeWord(form: string): boolean {
+  return !/['’ʼ᾽]$/.test(form) && clustersOf(form).some((c) => c.letter && 'αεηιουω'.includes(c.base));
+}
+
 interface Candidate {
   example: IdeaExample;
   level: number;
@@ -514,7 +522,7 @@ async function soundExamplesFor(id: string, passage: IdeaPassage, load: ChapterL
       pairCase ??= pairCaseOf(id, place.chapters, place.verse, scheme);
       for (const example of examples) {
         const key = bare(example.word.t);
-        if (seen.has(key)) continue;
+        if (seen.has(key) || !isWholeWord(example.word.t)) continue;
         seen.add(key);
         const score = scoreWords([example.word.t]).score;
         const unmet = ranking.known ? foundationOf(example.word.t).filter((f) => LETTER_IDS.includes(f) && !ranking.known?.has(f)).length : 0;
