@@ -22,3 +22,23 @@ export function revealLines(box: HTMLElement, text: HTMLElement, lines: number):
   const want = Math.min(lines * lineHeight, at.height);
   if (shown < want) box.scrollTop += Math.min(want - shown, at.top - room.top);
 }
+
+/** Puts a thing in place with `place()` (one of the moves above) and keeps it there while the screen settles around it: the box or something in `watch` changes size (the speaking bar comes up, the phone is
+ * turned, a font loads). It stops when `ms` pass or he touches or wheels the box, since his scroll is his. Call the returned function to stop. The Verse view's Ask box uses it (src/Ask.tsx). */
+export function keepPlaced(box: HTMLElement, place: () => void, watch: HTMLElement[] = [], ms = 1500): () => void {
+  place();
+  if (typeof ResizeObserver === 'undefined') return () => undefined;
+  const settle = new ResizeObserver(place);
+  settle.observe(box);
+  for (const el of watch) settle.observe(el);
+  const stop = (): void => {
+    settle.disconnect();
+    window.clearTimeout(timer);
+    box.removeEventListener('wheel', stop);
+    box.removeEventListener('touchstart', stop);
+  };
+  const timer = window.setTimeout(stop, ms);
+  box.addEventListener('wheel', stop, { once: true, passive: true });
+  box.addEventListener('touchstart', stop, { once: true, passive: true });
+  return stop;
+}

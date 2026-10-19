@@ -21,6 +21,7 @@ import { askAnswerId, speakTutor, stopOnTap } from './speech/tutorVoice';
 import { BridgeIdeaHost, BridgeOffer } from './talk/BridgeOffer';
 import { openBridgeIdea } from './talk/offers';
 import { PendingQuestion } from './ui/PendingQuestion';
+import { keepPlaced, revealFoot, revealLines } from './ui/keepInView';
 import { revealTop } from './ui/reveal';
 import { YouSaid } from './ui/YouSaid';
 import { useElapsed } from './ui/useElapsed';
@@ -64,8 +65,16 @@ export function AnswerCards({ verse, book, chapter }: { verse: number | string; 
     const newest = fresh[fresh.length - 1];
     if (newest) {
       speakTutor(askAnswerId(newest.id), answerRuns(newest.answer), () => mounted.current);
-      // the answer comes under a long passage: bring its first lines into view, clear of the composer and the speaking bar (mw-5r3p30.170)
-      revealTop(cards.current?.querySelector<HTMLElement>('[data-answer]:last-of-type') ?? null);
+      // the answer comes under a long passage: bring its first lines into view, clear of the composer and the speaking bar (mw-5r3p30.170); and under a long question
+      // of his own, the first lines of the answer, not the top of his question (mw-5r3p30.493)
+      const card = cards.current?.querySelector<HTMLElement>('[data-answer]:last-of-type') ?? null;
+      const box = card?.closest<HTMLElement>('.screen');
+      const text = card?.querySelector<HTMLElement>('[data-answer-text]');
+      if (card && box && text) keepPlaced(box, () => {
+        revealTop(card);
+        revealLines(box, text, 3);
+      }, [card]);
+      else revealTop(card);
     }
   }, [answers, ref]);
   if (!answers?.length) return null;
@@ -85,7 +94,7 @@ function AnswerCard({ answer }: { answer: TutorAnswer }) {
     <article data-answer onClick={stopOnTap} className="rounded-xl border border-line bg-surface p-3">
       <p data-answer-question className="break-words text-sm text-muted">{answer.cleanQuestion ?? answer.question}</p>
       <YouSaid spoken={answer.spoken} said={answer.question} shown={answer.cleanQuestion} />
-      <div className="mt-1 break-words text-lg leading-snug">
+      <div data-answer-text className="mt-1 break-words text-lg leading-snug">
         <Markdown text={answer.answer} />
       </div>
       {answer.changes?.map((change) => (
@@ -122,6 +131,17 @@ function AnswerCard({ answer }: { answer: TutorAnswer }) {
 /** What the question for `verse` (or a passage) is doing: its failure, with Retry, and the question shown above Waiting until the answer comes. */
 export function AskStatus({ verse, state, onAsk }: { verse: Verse; state: AskState | undefined; onAsk: (verse: Verse, question: string) => void }) {
   const busy = state?.phase === 'sending' || state?.phase === 'waiting';
+  const pending = useRef<HTMLDivElement>(null);
+  const sentAt = state?.phase === 'sending' || state?.phase === 'waiting' ? state.startedAt : undefined;
+  // after Send his question and the wait stand in view of the verse box, above the composer, however short the window (a phone held sideways, mw-5r3p30.437): the foot of the
+  // block is brought in, no further than the wait's own line at the box's top
+  useEffect(() => {
+    const block = pending.current;
+    const box = block?.closest<HTMLElement>('.screen');
+    const wait = block?.querySelector<HTMLElement>('[role="status"]');
+    if (!block || !box || !wait) return;
+    return keepPlaced(box, () => revealFoot(box, block, wait), [block]);
+  }, [sentAt]);
   if (state?.phase === 'failed') {
     return (
       <div role="alert" data-ask-failed={unitId(verse)} className="mb-3 space-y-2 px-1">
@@ -138,7 +158,7 @@ export function AskStatus({ verse, state, onAsk }: { verse: Verse; state: AskSta
   if (!busy) return null;
   // his question stays shown, as in the Talk sheet, until the answer card arrives
   return (
-    <div data-ask-pending className="mb-3 space-y-2 px-1">
+    <div ref={pending} data-ask-pending className="mb-3 space-y-2 px-1">
       <PendingQuestion text={state.question} />
       <Waiting state={state} />
     </div>
