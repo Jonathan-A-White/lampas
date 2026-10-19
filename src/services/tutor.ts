@@ -394,7 +394,11 @@ export async function askGrind<Answer>(kind: GristKind, request: object, isAnswe
   // the grist that went, once it has: the failure carries it so that a Retry waits for its answer
   let went = options.resume;
   // the phone loses its network while the question waits: the wait ends then, not at the deadline (mw-5r3p30.434); only navigator.onLine says so
-  const onOffline = (): void => deadline.abort();
+  let offline = false;
+  const onOffline = (): void => {
+    offline = true;
+    deadline.abort();
+  };
   if (typeof window !== 'undefined') window.addEventListener('offline', onOffline);
   try {
     const { mill, events } = await meOf(d, deadline.signal);
@@ -426,8 +430,8 @@ export async function askGrind<Answer>(kind: GristKind, request: object, isAnswe
     return reply.answer;
   } catch (err) {
     if (report && !sent) releaseReport(report.txid);
-    // the wait ended with no answer: the deadline, or the phone's network going; the grist that went is for a Retry to find, not to send a second
-    if (err instanceof AwaitAbortedError && !options.signal?.aborted) throw new TutorError('no-answer', phoneIsOffline() ? OFFLINE_MESSAGE : TUTOR_OFFLINE_MESSAGE, resend, went);
+    // the wait ended with no answer: the phone's network going (the grist that went is for a Retry to find, not to send a second), or the deadline (a Retry asks again)
+    if (err instanceof AwaitAbortedError && !options.signal?.aborted) throw new TutorError('no-answer', phoneIsOffline() ? OFFLINE_MESSAGE : TUTOR_OFFLINE_MESSAGE, offline ? resend : undefined, offline ? went : undefined);
     const failure = explain(err);
     // the grist went (or may have) and the link failed: the backend may hold it, and Retry is to find it, not to send a second
     if (resend && sent && lostOnTheWay(err)) throw new TutorError(failure.failure, failure.message, resend, went);

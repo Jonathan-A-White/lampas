@@ -222,6 +222,8 @@ describe('an answer that never comes', () => {
     expect(result.error).toBeInstanceOf(TutorError);
     expect(result.error.failure).toBe('no-answer');
     expect(result.error.message).toBe(TUTOR_OFFLINE_MESSAGE);
+    // a Retry after the deadline asks again: it does not wait on a grist that never answered
+    expect(result.error.sent).toBeUndefined();
   });
 });
 
