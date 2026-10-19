@@ -22,6 +22,7 @@ import { fetchLicenceStatus } from '../../src/services/licenceCheck';
 import { tutorTimings } from '../../src/services/tutor';
 import { chapterLength } from '../../src/plan/estimate';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { LicenceProbe } from '../../tests/support/licence-probe';
 import { HOLDER, ISSUER_PUB, newChain } from '../../tests/support/licence-chain';
@@ -64,7 +65,7 @@ function setVisibility(state: 'hidden' | 'visible'): void {
 async function backFromAudible(name: string, licensed: boolean, failing = false): Promise<void> {
   cleanup();
   // Unmounting the last scenario's open sheets steps history back (useSheetBack); jsdom lands that popstate a moment later, and it must land before this one.
-  await new Promise((resolve) => setTimeout(resolve, 30));
+  await sheetEntriesGone();
   clearBus();
   forgetTrail();
   vi.unstubAllGlobals();

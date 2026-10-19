@@ -14,14 +14,21 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { seedHisWords } from '../../tests/support/his-words';
 
 const user = userEvent.setup();
 
 const real = { ...browserEnv };
 
+// A loaded host lands a closed sheet's history traversal late; jsdom lands it at once, which hides a step that does not wait for it. Every traversal the app asks for lands this late here.
+const realGo = window.history.go.bind(window.history);
+const LATE_TRAVERSAL_MS = 150;
+window.history.go = (delta?: number): void => void setTimeout(() => realGo(delta), LATE_TRAVERSAL_MS);
+
 afterAll(() => {
   Object.assign(browserEnv, real);
+  window.history.go = realGo;
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
@@ -34,6 +41,8 @@ const START: Record<string, Start> = { 'Leviticus 4': { code: 'lev', chapter: 4 
 /** Opens the app on Romans 8 with the plan started at `start` (or none), `due` words due (his seed words) or no Greek at all. */
 async function openWith({ start, off, due }: { start?: Start; off?: boolean; due?: number }): Promise<void> {
   cleanup();
+  // the last scenario's open sheets step history back as they unmount (useSheetBack); that traversal must land before this scenario sets its address, or the app opens on Today
+  await sheetEntriesGone();
   clearBus();
   forgetTrail();
   localStorage.clear();
@@ -131,8 +140,9 @@ describeFeature(feature, ({ Scenario }) => {
     And('the Reading plan setting is On', async () => {
       await waitFor(async () => expect((await db.settings.get('readingPlan'))?.value).toBe('on'));
       expect(screen.queryByRole('dialog', { name: 'Where are you starting?' })).toBeNull();
-      // the sheets closed by going Back, which jsdom lands a turn later: Today is under them, and the next scenario must not see the traversal arrive after it set its address
-      await waitFor(() => expect(window.location.hash).toBe('#/today'));
+      // the sheets closed by going Back, which jsdom lands a turn later: Today is under them (at the same address), and the next scenario must not see the traversal arrive after it set its address
+      await sheetEntriesGone();
+      expect(window.location.hash).toBe('#/today');
     });
   });
 
