@@ -12,7 +12,7 @@ export async function getLadderRow(lang: string): Promise<LadderRow> {
   return (await db.ladder.get(lang)) ?? emptyRow(lang);
 }
 
-/** The verse the ladder has opened (its panel says 'Verse N of M'), or null when he leaves the ladder. */
+/** The verse the ladder has opened (its panel says 'Number N of M on the ladder'), or null when he leaves the ladder. */
 export async function setLadderShowing(lang: string, ref: string | null): Promise<void> {
   await db.transaction('rw', db.ladder, async () => {
     const row = await getLadderRow(lang);

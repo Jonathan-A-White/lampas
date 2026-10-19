@@ -445,7 +445,7 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, weave
 
   // The walk stays while its last step is held to record (it would lose the let-go if it went), and ends when the clip is sent.
   const walking = reading !== undefined && walkFor === reading.when && !sent;
-  // The reading ladder (src/ReadingLadder.tsx): on a verse of its own list the panel says 'Verse N of M' and offers what comes next; 'Try again' sets the result aside.
+  // The reading ladder (src/ReadingLadder.tsx): on a verse of its own list the panel says 'Number N of M on the ladder' and offers what comes next; 'Try again' sets the result aside.
   const ladderLang = isLadderLang(lang) && verse.to === undefined ? lang : undefined;
   const ladder = useLadder(ladderLang, ref);
   const [triedAt, setTriedAt] = useState<number | null>(null);

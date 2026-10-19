@@ -27,7 +27,7 @@ test.beforeEach(async ({ page }) => {
   await page.clock.install();
 });
 
-test('the Reading ladder in Greek opens the easiest verse, says Verse 1 of M, and offers Next verse after a good reading, at phone width', async ({ page }) => {
+test('the Reading ladder in Greek opens the easiest verse, says Number 1 of M, and offers Next verse after a good reading, at phone width', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: WELL_READ_ANSWER };
@@ -45,7 +45,11 @@ test('the Reading ladder in Greek opens the easiest verse, says Verse 1 of M, an
 
   // the easiest verse to say in Greek is the first of public/data/ladder/el.json: 1 Thessalonians 5:16
   await expect(view.getByRole('heading', { level: 2 })).toHaveText('1 Thessalonians 5:16');
-  await expect(panel).toContainText('Verse 1 of');
+  // the header says the whole reference: its text is not cut off by an ellipsis (mw-neuq78.19)
+  const cut = await view.getByRole('heading', { level: 2 }).evaluate((h) => h.scrollWidth > h.clientWidth || h.scrollHeight > h.clientHeight + 1 || getComputedStyle(h).textOverflow === 'ellipsis');
+  expect(cut).toBe(false);
+  await expect(panel).toContainText('Number 1 of');
+  await expect(panel).not.toContainText('Verse 1 of');
   await expect(panel.getByRole('button', { name: 'Skip for now', exact: true })).toBeVisible();
   await expect(panel).toBeInViewport();
   await expectFitsPhone(page);
@@ -58,7 +62,7 @@ test('the Reading ladder in Greek opens the easiest verse, says Verse 1 of M, an
   expect((await next.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
   await next.click();
   await expect(view.getByRole('heading', { level: 2 })).toHaveText('1 Thessalonians 5:19');
-  await expect(panel).toContainText('Verse 2 of');
+  await expect(panel).toContainText('Number 2 of');
   await expectFitsPhone(page);
 });
 
@@ -74,7 +78,7 @@ test('the Goal screen has a Reading ladder entry for each language that opens it
   const view = page.getByRole('region', { name: 'Verse view' });
   await expect(view.getByRole('heading', { level: 2 })).toHaveText('John 11:35');
   await expect(view.getByRole('button', { name: 'Read it aloud', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByRole('region', { name: 'Reading check' })).toContainText('Verse 1 of');
+  await expect(page.getByRole('region', { name: 'Reading check' })).toContainText('Number 1 of');
 });
 
 // A double tap on the ladder's bar (mw-neuq78.16): the bar stands where it stood, so the second tap of a quick pair lands on the NEXT verse's own button and
@@ -97,7 +101,7 @@ test.describe('a double tap on the ladder bar moves one verse only', () => {
     await view.getByRole('button', { name: 'Read it aloud', exact: true }).click();
     const panel = page.getByRole('region', { name: 'Reading check' });
     await panel.getByRole('button', { name: 'Reading ladder', exact: true }).tap();
-    await expect(panel).toContainText('Verse 1 of');
+    await expect(panel).toContainText('Number 1 of');
     // the verse that opens takes no tap in its first moment: he reads it first
     await pageTime(page, SETTLE_MS + 100);
     return { fake, view, panel };
@@ -106,11 +110,11 @@ test.describe('a double tap on the ladder bar moves one verse only', () => {
   test('two quick taps on Skip for now skip one verse', async ({ page }) => {
     const { view, panel } = await openLadder(page);
     await tapTwice(page, panel.getByRole('button', { name: 'Skip for now', exact: true }), 60, { touch: true, lagMs: 400 });
-    await expect(panel).toContainText('Verse 2 of');
+    await expect(panel).toContainText('Number 2 of');
     await expect(view.getByRole('heading', { level: 2 })).toHaveText('1 Thessalonians 5:19');
     // it stays on Verse 2: nothing is still to land
     await page.clock.runFor(1000);
-    await expect(panel).toContainText('Verse 2 of');
+    await expect(panel).toContainText('Number 2 of');
     await shot(page, 'reading-ladder-double-skip');
   });
 
@@ -122,7 +126,7 @@ test.describe('a double tap on the ladder bar moves one verse only', () => {
     await tapTwice(page, panel.getByRole('button', { name: 'Next verse', exact: true }), 60, { touch: true, lagMs: 400 });
     await expect(view.getByRole('heading', { level: 2 })).toHaveText('1 Thessalonians 5:19');
     await page.clock.runFor(1000);
-    await expect(panel).toContainText('Verse 2 of');
+    await expect(panel).toContainText('Number 2 of');
   });
 
   test('two quick taps on Try again set the reading aside and skip nothing', async ({ page }) => {
@@ -136,7 +140,7 @@ test.describe('a double tap on the ladder bar moves one verse only', () => {
     await pageTime(page, SETTLE_MS + 100);
     await tapTwice(page, panel.getByRole('button', { name: 'Try again', exact: true }), 60, { touch: true, lagMs: 400 });
     await page.clock.runFor(1000);
-    await expect(panel).toContainText('Verse 1 of');
+    await expect(panel).toContainText('Number 1 of');
     await expect(view.getByRole('heading', { level: 2 })).toHaveText('1 Thessalonians 5:16');
   });
 });
@@ -167,7 +171,7 @@ test('Try again and Skip for now are inside the viewport and clear of the speaki
   await chooseAction(page, 28, 'Read it aloud');
   const panel = page.getByRole('region', { name: 'Reading check' });
   await panel.getByRole('button', { name: 'Reading ladder', exact: true }).click();
-  await expect(panel).toContainText('Verse 1 of');
+  await expect(panel).toContainText('Number 1 of');
   await pageTime(page, SETTLE_MS + 100);
   await holdFor(page, page.getByRole('button', { name: 'Hold to read verse 16', exact: true }), 3000);
   await expect(panel).toContainText('Words to fix');
@@ -216,7 +220,7 @@ test.describe('sideways, the ladder buttons are on the screen without a scroll',
     await chooseAction(page, 28, 'Read it aloud');
     const panel = page.getByRole('region', { name: 'Reading check' });
     await panel.getByRole('button', { name: 'Reading ladder', exact: true }).click();
-    await expect(panel).toContainText('Verse 1 of');
+    await expect(panel).toContainText('Number 1 of');
     await pageTime(page, SETTLE_MS + 100);
     await holdFor(page, page.getByRole('button', { name: 'Hold to read verse 16', exact: true }), 3000);
     await expect(panel).toContainText(heading);
