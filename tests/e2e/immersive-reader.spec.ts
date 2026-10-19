@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { honestMic } from '../support/honest-fakes';
+import { honestMic, honestSpeech } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openVerseView } from './verse-view';
@@ -314,4 +314,45 @@ test('with the bars shown, the next chapter opens shown, and Back to this one ke
   await expectAll(page, 'visible');
   await page.goBack();
   await expectStillShown(page, at, 'Back from the next chapter');
+});
+
+test('with the bars shown, Read from the top moves the text to follow the voice and leaves the bars shown', async ({ page }) => {
+  // a slow reader and the page's clock: the voice is on its way down Mark 12 without a finger on the text (mw-5r3p30.480)
+  await honestSpeech(page, { msPerWord: 300 });
+  await openUnlocked(page);
+  await page.clock.install();
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await keepImmersive(page, 'on');
+  await page.goto('/#/?b=mrk&c=12');
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Mark 12', level: 1 })).toBeVisible();
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-immersive', 'on');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await expectAll(page, 'visible');
+  expect(await scrollTop(page)).toBe(0);
+
+  await page.getByRole('button', { name: 'Read from the top', exact: true }).click();
+  await expect(page.locator('[data-reading-bar]')).toContainText('Reading verse 1');
+  // the reading goes on, a second of the page's time at a time, until the text has moved to keep the voice in view
+  await expect
+    .poll(
+      async () => {
+        await page.clock.runFor(1000);
+        return scrollTop(page);
+      },
+      { timeout: 30_000, intervals: [20] },
+    )
+    .toBeGreaterThan(200);
+  // and well past the 1.5 s the bars used to take to go
+  await page.clock.runFor(2000);
+  await page.waitForTimeout(400);
+  await expect(page.locator('[data-verse][data-reading="true"]')).toHaveCount(1);
+  // the chips row is not drawn while a chapter is read aloud (ReaderChips hidden), so it is the other three that stay
+  for (const el of [header(page), talkBar(page), askButton(page)]) await expect(el).toBeVisible();
+  await shot(page, 'immersive-reading-aloud-shown');
+
+  // his own scrolling down still slides them away
+  await scrollText(page, 300);
+  for (const el of [header(page), talkBar(page), askButton(page)]) await expect(el).toBeHidden();
 });
