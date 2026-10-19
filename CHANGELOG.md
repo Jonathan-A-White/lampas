@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.331
+_2026-10-19_
+- New: Lampas now reads Greek in a Greek voice under TalkBack, says out loud the tutor's answers, quiz results and reading marks, and moves TalkBack into a sheet when it opens and back when it closes.
+- New: The Reader's top row has a Today chip that shows how much of your day you have done and opens Today, replacing the separate Due and reading plan chips.
+- New: High contrast theme (white on black with thick outlines), and Lampas follows the phone's own text size up to 200% without cutting labels off.
+
 ## 0.1.330
 _2026-10-19_
 - New: A Today page gathers your due review, your reading plan's chapter, the day's Psalms and Proverbs and a devotional, each a tap away, with boxes you tick yourself. (Not yet reachable by a button.)

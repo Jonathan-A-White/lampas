@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.331",
+    "date": "2026-10-19",
+    "story": "mw-cwf538.3",
+    "kind": "new",
+    "text": "Lampas now reads Greek in a Greek voice under TalkBack, says out loud the tutor's answers, quiz results and reading marks, and moves TalkBack into a sheet when it opens and back when it closes."
+  },
+  {
+    "version": "0.1.331",
+    "date": "2026-10-19",
+    "story": "mw-1fwagb.6",
+    "kind": "new",
+    "text": "The Reader's top row has a Today chip that shows how much of your day you have done and opens Today, replacing the separate Due and reading plan chips."
+  },
+  {
+    "version": "0.1.331",
+    "date": "2026-10-19",
+    "story": "mw-cwf538.5",
+    "kind": "new",
+    "text": "High contrast theme (white on black with thick outlines), and Lampas follows the phone's own text size up to 200% without cutting labels off."
+  },
+  {
     "version": "0.1.330",
     "date": "2026-10-19",
     "story": "mw-1fwagb.5",
