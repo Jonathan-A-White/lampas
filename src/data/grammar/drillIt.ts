@@ -22,6 +22,7 @@ import type { Chapter } from '../chapter';
 import { chosenPronunciation } from '../../speech/greek';
 import { soundRuleOf, type Pronunciation } from '../../speech/pronunciation';
 import { mulberry32, shuffle } from '../quiz';
+import { isSolid } from './inference';
 import { collect, itemSteps, perFacet, questionKey, rng, sideFacet, type DrillContext, type RawStep } from './drillItems';
 import { groupOfItem, ideaOf, type Facet } from './ladder';
 import type { Level } from './needs';
@@ -124,8 +125,7 @@ export function drillSteps(ideaId: string, options: DrillOptions = {}): DrillSte
 export function unmetNeed(ideaId: string, levels: ReadonlyMap<string, Level>): string | null {
   const idea = ideaOf(ideaId);
   const group = groupOfItem(idea);
-  const solid = (id: string) => levels.get(id) === 'solid' || levels.get(groupOfItem(ideaOf(id)) ?? '') === 'solid';
-  const unmet = idea.needs.filter((id) => id !== group && !solid(id)).map(ideaOf);
+    const unmet = idea.needs.filter((id) => id !== group && !isSolid(levels, id)).map(ideaOf);
   return unmet.length === 0 ? null : unmet.sort((a, b) => a.rung - b.rung)[0].id;
 }
 

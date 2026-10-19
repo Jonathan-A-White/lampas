@@ -8,7 +8,11 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { unmetNeed } from '../../src/data/grammar/drillIt';
-import { ideaOf, LADDER } from '../../src/data/grammar/ladder';
+import { learnNext } from '../../src/data/grammar/goalProgress';
+import { gapsOf } from '../../src/data/grammar/inference';
+import type { Level } from '../../src/data/grammar/needs';
+import { fixturePath } from '../../tests/support/fixture-path';
+import { ideaOf, itemsOf, LADDER } from '../../src/data/grammar/ladder';
 import { setGoal } from '../../src/data/repositories/settings';
 import { setLevel, teachIdea } from '../../src/data/repositories/grammarLevels';
 import { clearBus } from '../../src/events/bus';
@@ -205,6 +209,24 @@ describeFeature(feature, ({ Scenario }) => {
       const levels = new Map((await db.grammarLevels.toArray()).map((row): [string, typeof row.level] => [row.id.replace(/^modern:/, ''), row.level]));
       const unmet = LADDER.map((idea) => unmetNeed(idea.id, levels)).filter((id) => id !== null && ideaOf(id).glyphs);
       expect(unmet).toEqual([]);
+    });
+  });
+  Scenario('The Greek alphabet marked known by hand while omicron is still Not yet leaves no letter for Learn next or the gaps list', ({ Given, When, Then, And }) => {
+    let levels = new Map<string, Level>();
+    Given('he marked {string} known by hand while {string} is still Not yet and the other letters are solid', (_, group: string, item: string) => {
+      levels = new Map<string, Level>([[group, 'solid'], ...itemsOf(group).map((letter): [string, Level] => [letter.id, letter.id === item ? 'notYet' : 'solid'])]);
+    });
+    When('Learn next and the gaps list are read', () => {
+      expect(levels.get('letter-omicron')).toBe('notYet');
+    });
+    Then('the gaps list names no letter of the alphabet', () => {
+      expect(gapsOf(levels).map((i) => i.id)).toEqual([]);
+    });
+    And('Learn next names no letter of the alphabet', () => {
+      const needs = { ideas: [{ id: 'alphabet', count: 1, example: { form: '', code: '', ref: '' } }] };
+      const next = learnNext(needs, fixturePath, levels);
+      expect(next?.gaps).toBeUndefined();
+      expect(next?.idea.glyphs).toBeUndefined();
     });
   });
 });

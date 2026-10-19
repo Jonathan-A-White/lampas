@@ -270,9 +270,20 @@ function inferFromForms(evidence: EvidenceMap, words: readonly string[]): Inferr
   return all;
 }
 
+/**
+ * True when the idea `id` counts as solid: its own level is solid, or it is an item (a letter, vowel pair, consonant pair or breathing) of a group he has made
+ * solid (the alphabet marked known on its sheet, whose letters are not each solid). His verdict on a group counts for each of its items, so every reader of an
+ * item's level goes through here (mw-5r3p30.635).
+ */
+export function isSolid(levels: ReadonlyMap<string, Level>, id: string): boolean {
+  if (levels.get(id) === 'solid') return true;
+  const group = groupOf(id);
+  return group !== undefined && levels.get(group) === 'solid';
+}
+
 /** The letters that are not solid, in alphabet order. */
 export function weakLetters(levels: ReadonlyMap<string, Level>): GrammarIdea[] {
-  return LETTERS.filter((l) => levels.get(l.id) !== 'solid');
+  return LETTERS.filter((l) => !isSolid(levels, l.id));
 }
 
 /** True when all 24 letters are solid: then 'alphabet' is solid. */
@@ -293,7 +304,7 @@ export function lettersText(items: readonly GrammarIdea[], shown = 6): string {
 // ---- The items of the quick round (mw-hqd5bz.18, PROVISIONAL) ----
 
 /** The items of one group that are not solid, in the ladder's order. */
-export const weakItems = (levels: ReadonlyMap<string, Level>, group: string): GrammarIdea[] => itemsOf(group).filter((i) => levels.get(i.id) !== 'solid');
+export const weakItems = (levels: ReadonlyMap<string, Level>, group: string): GrammarIdea[] => itemsOf(group).filter((i) => !isSolid(levels, i.id));
 
 /** True when every item of the group is solid: then the group's idea ('diphthongs') is solid too. */
 export const groupIsSolid = (levels: ReadonlyMap<string, Level>, group: string): boolean => weakItems(levels, group).length === 0;
