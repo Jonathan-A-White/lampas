@@ -2,11 +2,17 @@
 // (a fixed full-screen view, z-5) or a sheet (fixed, with a backdrop) is open (mw-5r3p30.632, the fault of mw-5r3p30.322 in two more bars): each is on the screen,
 // is the thing under its own centre, and a tap on it works. With nothing fixed open each stays in the page flow, so it never covers the Reader's header.
 // At 390x844 and sideways (844x390).
+// And the bars do not cover what is under them (mw-5r3p30.636): the Verse view (and every full-screen layer) starts below the bars, so its '‹ Reader', arrows and
+// actions can be tapped while Welcome back shows, and the three bars (Update ready, the tutor's waiting bar, Welcome back) stack in the flow without overlapping.
 import { readFileSync } from 'node:fs';
 import { expect, test, type BrowserContext, type Locator, type Page, type Request } from '@playwright/test';
+import { makeFakePostern, SYNERGEI_ANSWER, type FakePostern } from '../support/fake-postern';
+import { honestMic, honestSpeech } from '../support/honest-fakes';
+import { routePostern } from '../support/playwright-postern';
+import { typeQuestion } from './ask-composer';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
-import { openVerseView } from './verse-view';
+import { chooseAction, openVerseView } from './verse-view';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, serviceWorkers: 'allow' });
 
@@ -183,5 +189,88 @@ for (const size of SIZES) {
     const strip = await openAfterABreak(page);
     expect(await strip.evaluate((el) => getComputedStyle(el).position)).not.toBe('fixed');
     await expectHeaderBelow(page, strip);
+  });
+}
+
+// ---- the bars do not cover what is under them (mw-5r3p30.636)
+
+/** The control is on the screen and is what a tap at its centre lands on (or something inside it). */
+async function expectTappable(control: Locator): Promise<void> {
+  await expect(control).toBeInViewport({ ratio: 1 });
+  const hit = await control.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    const at = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+    return at !== null && el.contains(at);
+  });
+  expect(hit).toBe(true);
+}
+
+for (const size of SIZES) {
+  test(`with 'Welcome back' showing, the Verse view's header buttons are on top and tappable and the strip still is, at ${size.width}x${size.height}`, async ({ page }) => {
+    await page.setViewportSize(size);
+    const strip = await openAfterABreak(page);
+    const view = await openVerseView(page, 28);
+    for (const name of ['‹ Reader', 'Previous verse', 'Next verse']) await expectTappable(view.getByRole('button', { name, exact: true }));
+    await expectTappable(strip.getByRole('button', { name: 'Refresh' }));
+    await expectTappable(strip.getByRole('button', { name: 'Not now' }));
+    await shot(page, `shell-welcome-back-header-${size.width}`);
+    // the Verse view's Back is a real tap: it closes the view, and the strip is still there
+    await view.getByRole('button', { name: '‹ Reader', exact: true }).tap();
+    await expect(view).toHaveCount(0);
+    await strip.getByRole('button', { name: 'Not now' }).tap();
+    await expect(page.getByRole('region', { name: 'Welcome back' })).toHaveCount(0);
+  });
+
+  test(`'Update ready' and the tutor's waiting bar do not overlap and both are tappable, at ${size.width}x${size.height}`, async ({ page, context }) => {
+    await page.setViewportSize(size);
+    const fake: FakePostern = makeFakePostern();
+    await routePostern(page, fake);
+    await honestMic(page);
+    await honestSpeech(page);
+    const { banner } = await openWithUpdateWaiting(page, context);
+    const view = await chooseAction(page, 28, 'Ask the tutor');
+    await typeQuestion(page, 'What does συνεργεῖ mean here?');
+    await expect.poll(() => fake.received.length).toBe(1);
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+      Object.defineProperty(document, 'hidden', { value: true, configurable: true });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    fake.endAll({ status: 'answered', answer: SYNERGEI_ANSWER });
+    await expect(page.locator('[data-tutor-waiting]')).toHaveCount(1);
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+      Object.defineProperty(document, 'hidden', { value: false, configurable: true });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    const waiting = page.getByRole('button', { name: 'The tutor answered: tap to play', exact: true });
+    await expect(waiting).toBeVisible();
+    await expect(banner).toBeVisible();
+    const a = await page.locator('[data-update-banner]').boundingBox();
+    const b = await page.locator('[data-tutor-waiting]').boundingBox();
+    expect(a).not.toBeNull();
+    expect(b).not.toBeNull();
+    const apart = a!.y + a!.height <= b!.y + 0.5 || b!.y + b!.height <= a!.y + 0.5;
+    expect(apart).toBe(true);
+    await expectTappable(banner);
+    await expectTappable(waiting);
+    // the Verse view begins under both
+    const top = (await view.boundingBox())!.y;
+    expect(top).toBeGreaterThanOrEqual(Math.max(a!.y + a!.height, b!.y + b!.height) - 0.5);
+    await expectTappable(view.getByRole('button', { name: '‹ Reader', exact: true }));
+    await shot(page, `shell-update-and-waiting-${size.width}`);
+  });
+}
+
+for (const size of SIZES) {
+  test(`with 'Welcome back' showing, a sheet starts below the strip and the strip is still tappable, at ${size.width}x${size.height}`, async ({ page }) => {
+    await page.setViewportSize(size);
+    const strip = await openAfterABreak(page);
+    await cover(page, 'a sheet');
+    const sheet = page.getByRole('dialog', { name: 'Choose a chapter' });
+    const stripBox = (await strip.boundingBox())!;
+    const sheetBox = (await sheet.boundingBox())!;
+    expect(sheetBox.y).toBeGreaterThanOrEqual(stripBox.y + stripBox.height - 0.5);
+    await expectTappable(strip.getByRole('button', { name: 'Not now' }));
   });
 }

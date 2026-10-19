@@ -105,8 +105,8 @@ A new question or message (`useAsks`, `useTalk`), leaving the panel or the cards
 at once; a tapped word, a speaker or a hold to talk only pause it (above). Off, nothing is spoken by itself; the speaker on an answer ('Read aloud') still reads it.
 
 A response that comes while the page is hidden (he is in another app, `document.visibilityState` 'hidden') is not spoken (mw-5r3p30.270): `tutorVoice.ts`
-`startAnswerWhenSeen` keeps it in `src/speech/tutorWaiting.ts`, and when he is back a bar at the top of the app (`TutorWaitingBar.tsx`, a portal to the body, fixed and above every screen, sheet and backdrop
-so the Verse view and the Talk sheet he asked from do not cover it: mw-5r3p30.322; `tests/e2e/tutor-waiting-bar.spec.ts`) says **The tutor answered: tap to play**; his tap starts it (a tap is what lets the page speak). A new question, a tap on the response or a newer response drops it; leaving the panel (`stopAnswerSpeech`, which stops the speech and keeps the response that waits, mw-5r3p30.323) does not: the bar stays over the Reader and plays it on his tap; nothing is sent outside the app, no notification. With the page in front the whole time, nothing changes.
+`startAnswerWhenSeen` keeps it in `src/speech/tutorWaiting.ts`, and when he is back a bar at the top of the app (`TutorWaitingBar.tsx`, in the shell's flow inside `ShellBars.tsx`, above every screen, sheet and backdrop, which start below it,
+so the Verse view and the Talk sheet he asked from do not cover it and it does not overlap 'Update ready': mw-5r3p30.322, mw-5r3p30.636; `tests/e2e/tutor-waiting-bar.spec.ts`) says **The tutor answered: tap to play**; his tap starts it (a tap is what lets the page speak). A new question, a tap on the response or a newer response drops it; leaving the panel (`stopAnswerSpeech`, which stops the speech and keeps the response that waits, mw-5r3p30.323) does not: the bar stays over the Reader and plays it on his tap; nothing is sent outside the app, no notification. With the page in front the whole time, nothing changes.
 
 ## Hebrew in the tutor's text (mw-5r3p30.97)
 
