@@ -4,7 +4,7 @@ import { makeFakePostern, WELL_READ_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
-import { chooseAction } from './verse-view';
+import { chooseAction, openVerseView } from './verse-view';
 import { holdFor } from '../support/hold';
 import { pageTime, tapTwice } from '../support/gesture';
 import { SETTLE_MS } from '../../src/ui/settle';
@@ -91,7 +91,10 @@ test.describe('a double tap on the ladder bar moves one verse only', () => {
     await page.addInitScript((ms) => window.localStorage.setItem('lampas.settleMs', ms), String(SETTLE_MS));
     await page.goto('/');
     await page.getByRole('button', { name: 'Greek', exact: true }).click();
-    const view = await chooseAction(page, 28, 'Read it aloud');
+    // the Verse view is a screen of its own: it takes no tap in its first moment (src/ui/tapGuard.ts), so he reads it first
+    const view = await openVerseView(page, 28);
+    await pageTime(page, SETTLE_MS + 100);
+    await view.getByRole('button', { name: 'Read it aloud', exact: true }).click();
     const panel = page.getByRole('region', { name: 'Reading check' });
     await panel.getByRole('button', { name: 'Reading ladder', exact: true }).tap();
     await expect(panel).toContainText('Verse 1 of');

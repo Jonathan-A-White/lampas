@@ -103,7 +103,7 @@ test('a double tap on Next word skips no word, and one on Finish leaves the end 
   await page.getByRole('button', { name: 'Greek', exact: true }).click();
   // the Verse view is a screen of its own: it takes no tap in its first moment (src/ui/tapGuard.ts), so he reads it first
   const view = await openVerseView(page, 28);
-  await page.waitForTimeout(SETTLE_MS + 100);
+  await pageTime(page, SETTLE_MS + 100);
   await view.getByRole('button', { name: 'Read it aloud', exact: true }).click();
   const panel = page.getByRole('region', { name: 'Reading check' });
   const bar = page.getByRole('button', { name: 'Hold to read verse 28', exact: true });
