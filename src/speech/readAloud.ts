@@ -496,8 +496,14 @@ export function isReadingOf(book: string, chapter: number): boolean {
   return state.status !== 'idle' && state.answer === null && chapterNumber === chapter && planBook === book;
 }
 
-/** Stops the Bible talk answer being read, and only that: the chapter's own reading is left alone. */
+/** Stops the speech of the Bible talk answer being read, and only that: the chapter's own reading is left alone. A response that waits
+ * for his return (tutorWaiting.ts) is kept: this is for a screen that closes, and the bar over the Reader still offers it (mw-5r3p30.323). */
+export function stopAnswerSpeech(): void {
+  if (state.answer !== null) stopReading();
+}
+
+/** Ends the answer for good: its speech, and the response that waits (a new question, a tap on the response, New talk). */
 export function stopAnswer(): void {
   dropWaiting();
-  if (state.answer !== null) stopReading();
+  stopAnswerSpeech();
 }

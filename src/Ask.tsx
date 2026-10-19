@@ -16,7 +16,7 @@ import { CopyExchange } from './share/CopyExchange';
 import { answerRuns } from './speech/answerRuns';
 import { ReadAloud } from './speech/ReadAloud';
 import { askTranscriber } from './speech/askTranscriber';
-import { stopAnswer } from './speech/readAloud';
+import { stopAnswerSpeech } from './speech/readAloud';
 import { askAnswerId, speakTutor, stopOnTap } from './speech/tutorVoice';
 import { BridgeIdeaHost, BridgeOffer } from './talk/BridgeOffer';
 import { openBridgeIdea } from './talk/offers';
@@ -48,7 +48,7 @@ export function AnswerCards({ verse, book, chapter }: { verse: number | string; 
     mounted.current = true;
     return () => {
       mounted.current = false;
-      stopAnswer();
+      stopAnswerSpeech();
     };
   }, []);
   useEffect(() => {

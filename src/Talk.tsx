@@ -33,7 +33,7 @@ import { pastedPictures, PICTURE_ONLY_QUESTION, type OutgoingPicture } from './t
 import { PictureControls } from './talk/PictureControls';
 import { PictureThumbs, TurnPictures } from './talk/TurnPictures';
 import { usePictureBox, type BoxPicture } from './talk/usePictureBox';
-import { stopAnswer } from './speech/readAloud';
+import { stopAnswer, stopAnswerSpeech } from './speech/readAloud';
 import { stopOnTap } from './speech/tutorVoice';
 import { SEND_A_SCREENSHOT } from './tutor/screen';
 import { ReadAloud } from './speech/ReadAloud';
@@ -676,8 +676,8 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
     const room = box.getBoundingClientRect();
     box.scrollTop += Math.min(Math.max(0, card.getBoundingClientRect().bottom - room.bottom + 8), line.getBoundingClientRect().top - room.top - 8);
   }, [turns]);
-  // Closing the sheet takes its answer's speech with it.
-  useEffect(() => () => stopAnswer(), []);
+  // Closing the sheet takes its answer's speech with it; an answer that waits for his return keeps its bar (mw-5r3p30.323).
+  useEffect(() => () => stopAnswerSpeech(), []);
   // A phone with no recogniser sends a hold to the typed field.
   const field = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {

@@ -29,7 +29,7 @@ export function holdAnswer(id: number, runs: Run[]): void {
 /** The response that waits, or null. */
 export const waitingAnswer = (): WaitingAnswer | null => waiting;
 
-/** Drops the waiting response (a new question, leaving the screen, a tap on the bar). */
+/** Drops the waiting response (a new question, a tap on the response or on the bar). Leaving the screen does not: the bar stays over the Reader. */
 export function dropWaiting(): void {
   if (waiting === null) return;
   waiting = null;
