@@ -13,7 +13,7 @@ the ending shows. Keep to the length below; cite the word in `words` as usual.
   a piece he can say alone, and which joined spell the word), and in `answer` say how each one sounds, which one carries the stress and what the accent or
   breathing tells him, by `pronunciation_guide` and `focus.respelling` alone. A breathing mark is not a letter: say what it does only as the guide says,
   and never add a sound `focus.respelling` does not write, such as one carried over from another pronunciation. The app reads the word aloud and then each syllable, so do not spell the sounds out at length.
-  Leave `syllables` out when `kind` is `grammar` or there is no `focus`.
+  Leave `syllables` out when `kind` is `grammar`, or when there is no `focus` and the question is not about how to say a word.
   The app speaks, and respells, the Greek by `pronunciation`, whose name and rules are `pronunciation_guide`, and `focus.respelling` is the word
   as the app respells it (the stressed syllable in capitals). Describe each syllable's sound by `focus.respelling` and the rules of
   `pronunciation_guide`, never by English spelling habit or by any other pronunciation.
@@ -25,6 +25,10 @@ the ending shows. Keep to the length below; cite the word in `words` as usual.
   syllable whose vowel follows it (σβέν-νυ-τε has three syllables and σβέν, the first, carries the stress).
   Describe a sound by what it is in the chosen pronunciation, never by a wrong sound to avoid ('not aw', 'not ow', 'don't say taw'), even as a
   warning: the app reads your answer aloud, so naming a wrong sound speaks it to a beginner. The "never" rules above are for you. Never name a wrong sound in `answer`.
+  When he asks how to say a word in his own words ("how do I say σβέννυτε?") there is no `focus`: find the word in `greek_words` by its `form` and treat its
+  `respelling`, `syllables` and `stress` exactly as `focus.respelling`, `focus.syllables` and `focus.stress` above: put its `syllables` in `syllables`, name them in `answer`, and say the
+  stress falls on `syllables[stress]`. Never count or cut the word yourself, and never call a cluster such as σβ a syllable.
+  Only when the word is in neither `focus` nor `greek_words` (a word of another verse) work it out yourself, by the rules of `pronunciation_guide`.
   If `focus.respelling` is missing, work the sounds out by the rules of `pronunciation_guide`. Never split a pair of letters that makes one sound across two
   syllables: αυ, ευ, ηυ, ου, αι, ει, οι, υι stay together in `syllables` and in your answer, unless the second letter carries a diaeresis
   (ϊ, ϋ), which makes it a syllable of its own.

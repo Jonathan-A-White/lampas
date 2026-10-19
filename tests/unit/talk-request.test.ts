@@ -3,10 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { type Chapter, NO_CHAPTER, markSupplied } from '../../src/data/chapter';
 import { learnerGrammarOf, type LearnerGrammar } from '../../src/data/grammar/learnerGrammar';
+import { greekSyllables, stressedSyllable } from '../../src/speech/greekSyllables';
+import { pronunciationOf, DEFAULT_PRONUNCIATION } from '../../src/speech/pronunciation';
 import { MAX_HISTORY_TURNS, MAX_REQUEST_BYTES, GREEK_WORDS_BYTES, MAX_TALK_CHARS, buildTalkRequest, fitHistory, scopeRef, termQuestion, type TalkRequest } from '../../src/services/talk';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const john = JSON.parse(readFileSync('public/data/1jn/2.json', 'utf8')) as Chapter;
+const thess = JSON.parse(readFileSync('public/data/1th/5.json', 'utf8')) as Chapter;
 const turn = (i: number, a = `Answer ${i}`) => ({ q: `Question ${i}`, a });
 const size = (r: TalkRequest) => new TextEncoder().encode(JSON.stringify(r)).length;
 
@@ -59,7 +62,7 @@ describe('buildTalkRequest', () => {
     if (!verse) throw new Error('no verse 1');
     const r = buildTalkRequest({ title: '1 John 2', chapter: john, verse }, 'What paradigm takes me from the dictionary form to Τεκνία?', [], []);
     expect(r.greek_words).toHaveLength(verse.g.length);
-    expect(r.greek_words?.[0]).toEqual({ form: 'Τεκνία', lemma: 'τεκνίον', gloss: 'children', parse: 'noun, vocative plural neuter' });
+    expect(r.greek_words?.[0]).toMatchObject({ form: 'Τεκνία', lemma: 'τεκνίον', gloss: 'children', parse: 'noun, vocative plural neuter' });
     expect(JSON.stringify(r.greek_words)).not.toContain('τέκνον');
     expect(r.greek_words?.map((w) => w.form)).toEqual(verse.g.map((w) => w.t));
   });
@@ -136,6 +139,59 @@ describe('buildTalkRequest', () => {
     expect(focus).toMatchObject({ respelling: 'ZVE-nee-te', syllables: ['σβέν', 'νυ', 'τε'], stress: 0 });
     const request = buildTalkRequest(scope, 'Help', [], [], {}, { ...sound, form: 'προσεύχεσθε' });
     expect(request.focus).toMatchObject({ syllables: ['προ', 'σεύ', 'χε', 'σθε'], stress: 1 });
+  });
+
+  // mw-5r3p30.568: typed or spoken ("how do I say σβέννυτε?") the request has no focus, and the tutor counted σβ as a syllable again; every word of the text now carries the app's syllables
+  it('hands the tutor σβέννυτε\'s syllables, stress and respelling in greek_words when he types "how do I say σβέννυτε?" with no focus', () => {
+    const verse = thess.verses.find((v) => v.n === 19);
+    if (!verse) throw new Error('no verse 19');
+    const r = buildTalkRequest({ title: '1 Thessalonians 5', chapter: thess, verse }, 'how do I say σβέννυτε?', [], []);
+    expect('focus' in r).toBe(false);
+    expect(r.greek_words?.find((w) => w.form === 'σβέννυτε')).toEqual({
+      form: 'σβέννυτε',
+      lemma: 'σβέννυμι',
+      gloss: expect.any(String),
+      parse: 'verb, present active imperative, 2nd person plural',
+      respelling: 'ZVE-nee-te',
+      syllables: ['σβέν', 'νυ', 'τε'],
+      stress: 0,
+    });
+  });
+
+  it('keeps a word the question names in the list even when the list stops before it, and the list stays in text order', () => {
+    const last = thess.verses[thess.verses.length - 1];
+    const passage = { ...last, g: thess.verses.flatMap((v) => v.g) };
+    const word = passage.g[passage.g.length - 2].t;
+    const plain = buildTalkRequest({ title: '1 Thessalonians 5', chapter: thess, verse: passage }, 'Why?', [], []);
+    expect(plain.greek_words?.some((w) => w.form === word)).toBe(false);
+    const asked = buildTalkRequest({ title: '1 Thessalonians 5', chapter: thess, verse: passage }, `how do I say ${word.normalize('NFD')}?`, [], []);
+    const entry = asked.greek_words?.find((w) => w.form === word);
+    expect(entry?.syllables).toEqual(greekSyllables(word));
+    const order = (asked.greek_words ?? []).map((w) => passage.g.findIndex((g) => g.t === w.form));
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+    expect(size(asked)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
+  });
+
+  // the sweep: every word of 1 Thessalonians 5 the tutor can be asked about without a focus reaches it with the app's own syllables, stress and respelling
+  it('every word of a verse of 1 Thessalonians 5 reaches the tutor with the app\'s syllables, stress and respelling', () => {
+    const pron = pronunciationOf(DEFAULT_PRONUNCIATION);
+    let checked = 0;
+    for (const verse of thess.verses) {
+      const r = buildTalkRequest({ title: '1 Thessalonians 5', chapter: thess, verse }, 'how do I say this?', [], []);
+      const forms = new Set(verse.g.map((w) => w.t));
+      expect(r.greek_words?.length, `verse ${verse.n}`).toBeGreaterThan(0);
+      for (const w of r.greek_words ?? []) {
+        const syllables = greekSyllables(w.form);
+        const stress = stressedSyllable(syllables);
+        expect(forms.has(w.form)).toBe(true);
+        expect(w.syllables, w.form).toEqual(syllables);
+        expect(w.respelling, w.form).toBe(pron.respell(w.form));
+        if (stress >= 0) expect(w.stress, w.form).toBe(stress);
+        else expect('stress' in w, w.form).toBe(false);
+        checked += 1;
+      }
+    }
+    expect(checked).toBeGreaterThan(150);
   });
 
   it('gives no syllables to a grammar, word or Hebrew focus, and no stress to an unaccented word', () => {

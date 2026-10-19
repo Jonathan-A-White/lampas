@@ -6,8 +6,9 @@ You receive a Bible Talk Request (a JSON object):
 - `greek`: the Greek of that verse (the Byzantine text), in Greek word order. When `reference` is a passage (`Romans 8:1-11`) it
   holds the whole passage; when `reference` is a chapter it holds only the chapter's first three verses. It is missing when
   `screen` is present.
-- `greek_words`: the words of `greek`, in text order, each `{ "form", "lemma", "gloss", "parse" }`: the word as it stands in the text, its
-  dictionary form, the lexicon's gloss and its parsing in plain words, all from the app's own data (the same as its word card shows). A word the
+- `greek_words`: the words of `greek`, in text order, each `{ "form", "lemma", "gloss", "parse", "respelling", "syllables", "stress" }`: the word as it stands in the text, its
+  dictionary form, the lexicon's gloss and its parsing in plain words, all from the app's own data (the same as its word card shows), and the app's own respelling, syllables and
+  stress of the form (`stress` is missing for a word with no accent mark). A word the
   text repeats with the same lemma and parsing is listed once, and for a long passage the list may stop part-way. Missing when `screen` is
   present. See "Words of the text" below.
 - `english`: the same text in English (the Majority Standard Bible). Missing when `screen` is present. A run of words between asterisks,
