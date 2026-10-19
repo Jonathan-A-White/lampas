@@ -2,8 +2,10 @@
 // questions can be seen and tapped, and an answer shows at least three lines without scrolling the sheet. The same checks at 390x844 (portrait).
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
+import { honestSpeech } from '../support/honest-fakes';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
+import { expectInList } from './talk-list';
 import { openUnlocked } from './unlocked';
 
 const LONG_ANSWER = {
@@ -80,3 +82,93 @@ for (const size of SIZES) {
     await shot(page, `talk-${size.name}-answered`);
   });
 }
+
+const SIDEWAYS = { width: 844, height: 390 };
+
+test('a two-line question sideways leaves three lines of the answer in view while it is read aloud (mw-5r3p30.488)', async ({ page }) => {
+  await page.setViewportSize(SIDEWAYS);
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: LONG_ANSWER };
+  await routePostern(page, fake);
+  await honestSpeech(page, { msPerWord: 400 });
+  const sheet = await openAbout(page);
+  const question = 'Why do you credit every one of these libraries and texts, and what would happen to Lampas if one of them changed?';
+  expect(question.length).toBeGreaterThan(105);
+  await sheet.getByRole('textbox', { name: 'Your message' }).fill(`${question} Tell me all of it please.`);
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+  const answer = sheet.locator('[data-turn] [data-answer-text]');
+  await expect(answer).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Speaking', exact: true })).toBeVisible();
+
+  const lineHeight = await answer.evaluate((el) => parseFloat(getComputedStyle(el).lineHeight));
+  await expect
+    .poll(async () => {
+      const text = await rectOf(answer);
+      const box = await rectOf(sheet.locator('[data-talk-list]'));
+      return Math.min(text.y + text.height, box.y + box.height) - Math.max(text.y, box.y);
+    }, { message: 'less than three lines of the answer are in the box while it is read aloud' })
+    .toBeGreaterThanOrEqual(3 * lineHeight - 0.5);
+  await shot(page, 'talk-landscape-long-question-speaking');
+});
+
+test('sideways, his question and its Copy are on one line while the answer is coming, and Copy does not move when the answer lands (mw-5r3p30.489)', async ({ page }) => {
+  await page.setViewportSize(SIDEWAYS);
+  const fake = makeFakePostern();
+  await routePostern(page, fake);
+  const sheet = await openAbout(page);
+  const first = sheet.locator('[data-suggestion]').first();
+  const said = ((await first.textContent()) ?? '').trim();
+  await first.click();
+
+  const pending = sheet.locator('[data-talk-pending]');
+  const copy = pending.getByRole('button', { name: 'Copy my question' });
+  await expect(copy).toBeVisible();
+  // a fake Postern that answers 1.5 s after the call
+  await page.waitForTimeout(1500);
+  const asked = await rectOf(pending.getByText(said, { exact: true }));
+  const before = await rectOf(copy);
+  expect(before.y < asked.y + asked.height && asked.y < before.y + before.height, 'Copy is under the pending question, not beside it').toBe(true);
+  await shot(page, 'talk-landscape-pending');
+
+  await fake.answer({ status: 'answered', answer: LONG_ANSWER });
+  await expect(sheet.locator('[data-turn]')).toHaveCount(1);
+  const after = await rectOf(sheet.locator('[data-turn]').getByRole('button', { name: 'Copy my question' }));
+  expect(Math.abs(after.y - before.y), 'Copy moved when the answer landed').toBeLessThan(1);
+});
+
+test('a failed send sideways has its red message and Copy in the box, and again turned back upright (mw-5r3p30.443)', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: LONG_ANSWER };
+  await routePostern(page, fake);
+  const sheet = await openAbout(page);
+  await sheet.locator('[data-suggestion]').first().click();
+  await expect(sheet.locator('[data-turn]')).toHaveCount(1);
+  fake.licensed = false;
+  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Why do you credit all these?');
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+  const alert = sheet.getByRole('alert');
+  await expect(alert).toContainText('No licence');
+
+  for (const size of [SIDEWAYS, { width: 390, height: 844 }]) {
+    await page.setViewportSize(size);
+    await expectInList(sheet, alert.locator('p.text-bad'), `the red message at ${size.width}x${size.height}`);
+    await expectInList(sheet, alert.getByRole('button', { name: 'Copy my question' }), `the Copy at ${size.width}x${size.height}`);
+  }
+  await shot(page, 'talk-landscape-failed');
+});
+
+test('sideways, the Hold to talk label ends well inside its button (mw-5r3p30.490)', async ({ page }) => {
+  await page.setViewportSize(SIDEWAYS);
+  await routePostern(page, makeFakePostern());
+  const sheet = await openAbout(page);
+  const hold = sheet.getByRole('button', { name: 'Hold to talk' });
+  await expect(hold).toBeVisible();
+  const gap = await hold.evaluate((el) => {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const text = Array.from(range.getClientRects()).reduce((right, r) => Math.max(right, r.right), 0);
+    return el.getBoundingClientRect().right - text;
+  });
+  expect(gap, 'the label ends too close to the right edge of the button').toBeGreaterThanOrEqual(12);
+});

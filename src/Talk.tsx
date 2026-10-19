@@ -16,6 +16,7 @@ import { openedByTutor } from './nav/readerRequest';
 import { TutorLinks } from './TutorLinks';
 import { offeredChange, settingOf, undoChange, type AppliedChange } from './settings/registry';
 import { BridgeIdeaHost, BridgeOffer } from './talk/BridgeOffer';
+import { revealFoot, revealLines } from './ui/keepInView';
 import { GreekOfferButton } from './talk/GreekOfferButton';
 import { RustyOffer } from './talk/RustyOffer';
 import { registerTalkLeave } from './talk/rustyOffer';
@@ -44,6 +45,8 @@ import { PendingQuestion } from './ui/PendingQuestion';
 import type { HoldHandlers } from './ui/holdPress';
 import { CopyExchange } from './share/CopyExchange';
 import { CopyText } from './share/CopyText';
+import { QuestionRow } from './talk/QuestionRow';
+import { YouSaid } from './ui/YouSaid';
 import type { SharedContent } from './share/shared';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
@@ -376,16 +379,9 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
   return (
     <article data-turn data-turn-id={turn.id} className="space-y-2">
       <TurnPictures turnId={turn.id} />
-      {/* what he said, word for word (not the tidied line above), so a question can be handed on whole; sideways it sits beside the question, not under it,
-          so the answer keeps its room (tests/e2e/talk-landscape.spec.ts) */}
-      <div className="space-y-2 short:flex short:items-start short:justify-end short:gap-2 short:space-y-0">
-        <p data-talk-q className="ml-auto w-fit max-w-[88%] break-words rounded-2xl bg-accent/15 px-3 py-2 text-lg short:ml-0 short:min-w-0">
-          {turn.cleanQ ?? turn.q}
-        </p>
-        <div className="short:shrink-0">
-          <CopyText text={turn.q} label="Copy my question" />
-        </div>
-      </div>
+      {/* what he said, word for word (not the tidied line above), so a question can be handed on whole */}
+      <QuestionRow shown={turn.cleanQ ?? turn.q} copyText={turn.q} />
+      <YouSaid spoken={turn.spoken} said={turn.q} shown={turn.cleanQ} />
       <div data-talk-a onClick={stopOnTap} className="rounded-2xl border border-line px-3 py-2">
         <div data-answer-text className="break-words text-lg leading-snug">
           <Markdown text={turn.a} onOpen={onLeave} />
@@ -590,15 +586,19 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
     const box = list.current;
     if (!box) return;
     const newest = waiting ? null : Array.from(box.querySelectorAll<HTMLElement>('[data-turn]')).pop();
-    if (!newest) {
+    // a failed send: its red message and Copy are what he needs, not the end of the box (suggestions may stand under them)
+    const failed = waiting ? box.querySelector<HTMLElement>('[data-talk-failed]') : null;
+    const followed = newest ?? failed;
+    if (!followed) {
       box.scrollTop = box.scrollHeight;
       return;
     }
     const settledIds = (keptTurns.current ?? []).filter((t) => t.id !== undefined && offersOpen.current.has(t.id) && (t.feedbackSent || t.feedbackWithdrawn)).map((t) => t.id);
     // His question stays in view too: the mark is shown only when it and the start of the newest turn fit the box together.
     const showSettled = () => {
+      if (!newest) return;
       const room = box.getBoundingClientRect();
-      for (const id of settledIds.reverse()) {
+      for (const id of [...settledIds].reverse()) {
         const mark = box.querySelector<HTMLElement>(`[data-turn-id="${id}"] [data-offer-settled]`);
         if (!mark) continue;
         const gap = newest.getBoundingClientRect().top - mark.getBoundingClientRect().top;
@@ -607,36 +607,47 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
         return;
       }
     };
-    // An answer with the goal offer waiting shows the question and both buttons: the box moves on until the offer's foot is in view, and no
-    // further than the question's top (mw-5r3p30.196). The quiz question after it may sit below.
+    // The control an answer is for, which he must not have to scroll to find: the goal offer's buttons (mw-5r3p30.196, no further than the question's top, the quiz
+    // question after it may sit below) or the bridge's Take me there (mw-1vuvq6.9, no further than the offer's top).
+    const MUST = '[data-quiz-goal-buttons], [data-bridge-take]';
+    const keeping = newest ? newest.querySelector(MUST) !== null : failed !== null;
     const align = () => {
-      box.scrollTop += newest.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
-      const offer = newest.querySelector<HTMLElement>('[data-quiz-goal-buttons]');
-      if (!offer) return;
-      const room = box.getBoundingClientRect();
-      const question = (newest.querySelector<HTMLElement>('[data-quiz-goal-question]') ?? offer).getBoundingClientRect().top;
-      box.scrollTop += Math.max(0, Math.min(offer.getBoundingClientRect().bottom - room.bottom + 8, question - room.top - 8));
+      if (!newest) {
+        if (failed) revealFoot(box, failed, failed, true);
+        return;
+      }
+      // the newest turn's top at the box's padding edge, where the first turn of a talk stands: nothing moves when its answer lands (mw-5r3p30.489)
+      box.scrollTop += newest.getBoundingClientRect().top - box.getBoundingClientRect().top - box.clientTop - (parseFloat(getComputedStyle(box).paddingTop) || 8);
+      // sideways a two-line question and the speaking bar leave an answer under two lines: it is read from its first three (mw-5r3p30.488)
+      const text = newest.querySelector<HTMLElement>('[data-answer-text]');
+      if (text) revealLines(box, text, 3);
+      const must = newest.querySelector<HTMLElement>(MUST);
+      if (!must) return;
+      revealFoot(box, must, newest.querySelector<HTMLElement>('[data-quiz-goal-question], [data-bridge-offer]') ?? must);
     };
-    align();
-    showSettled();
-    if (!newest.querySelector('[data-quiz-goal-buttons]') || typeof ResizeObserver === 'undefined') return;
-    // The sheet and the answer settle for a moment after they draw: keep the offer in view until they have, or until he scrolls himself.
-    const settle = new ResizeObserver(align);
+    const place = () => {
+      align();
+      showSettled();
+    };
+    place();
+    if (typeof ResizeObserver === 'undefined') return;
+    // The sheet and the answer settle for a moment after they draw (the speaking bar comes up under the box as the answer is read): keep it in view until they have, or until he scrolls himself.
+    const settle = new ResizeObserver(place);
     settle.observe(box);
-    settle.observe(newest);
+    settle.observe(followed);
     const stopSettling = () => settle.disconnect();
     const timer = window.setTimeout(stopSettling, 1500);
     box.addEventListener('wheel', stopSettling, { once: true });
     box.addEventListener('touchstart', stopSettling, { once: true });
-    // For as long as the offer waits for his choice, a change in the box's height (the phone turned, the keyboard, the microphone line) brings it
-    // back into view (mw-5r3p30.211). Only the box's own height: the answer growing under his reading must not take the scroll from him.
+    // For as long as an offer waits for his choice or a failure for his Retry, a change in the box's height (the phone turned, the keyboard, the microphone line) brings it
+    // back into view (mw-5r3p30.211, mw-5r3p30.443). Only the box's own height: the answer growing under his reading must not take the scroll from him.
     let height = box.clientHeight;
     const follow = new ResizeObserver(() => {
       if (box.clientHeight === height) return;
       height = box.clientHeight;
-      if (newest.querySelector('[data-quiz-goal-buttons]')) align();
+      place();
     });
-    follow.observe(box);
+    if (keeping) follow.observe(box);
     return () => {
       window.clearTimeout(timer);
       box.removeEventListener('wheel', stopSettling);
@@ -804,9 +815,13 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
             {state ? (
               <div data-talk-pending className="space-y-2">
                 {inFlight.length > 0 ? <PictureThumbs pictures={inFlight.map((p) => ({ key: p.id, url: p.url }))} /> : null}
-                <PendingQuestion text={state.question} />
                 {state.phase === 'failed' ? (
-                  <div role="alert" className="space-y-2">
+                  <PendingQuestion text={state.question} />
+                ) : (
+                  <QuestionRow shown={state.question} copyText={state.question} />
+                )}
+                {state.phase === 'failed' ? (
+                  <div role="alert" data-talk-failed className="space-y-2">
                     <p className="text-base font-semibold text-bad">{FAILURE_TITLES[state.failure]}</p>
                     <p className="break-words text-sm text-muted">{state.detail}</p>
                     {/* beside Retry, at the foot, not under a question too long to scroll past */}
@@ -824,10 +839,7 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
                     </div>
                   </div>
                 ) : (
-                  <>
-                    <CopyText text={state.question} label="Copy my question" />
-                    <Waiting state={state} />
-                  </>
+                  <Waiting state={state} />
                 )}
               </div>
             ) : null}
@@ -870,7 +882,7 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
               >
                 Send
               </button>
-              <div className={`w-full short:order-2 short:shrink-0 ${composing ? 'short:w-14' : 'short:w-36'}`}>
+              <div className={`w-full short:order-2 short:shrink-0 ${composing ? 'short:w-14' : 'short:w-42'}`}>
                 <HoldToTalk voice={voice} disabled={busy} round={composing} />
               </div>
             </div>
