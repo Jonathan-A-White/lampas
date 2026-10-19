@@ -59,8 +59,11 @@ export interface ReaderHeaderProps {
   onRead(): void;
 }
 
-const TITLE_MIN_PX = 11;
-const TITLE_MAX_PX = 18;
+// In rem, so the title follows the phone's own text size (at 200% it is twice as large, mw-cwf538.5), and the room it needs does too.
+const TITLE_MIN_REM = 0.6875;
+const TITLE_MAX_REM = 1.125;
+/** A letter of a semibold name, in em, at the most (the phone's own wide sans, DejaVu, measures 0.75 on 'Romans'): a name's room is its length times this. */
+const LETTER_EM = 0.8;
 
 /** The title as its two halves: the book's name ('1 Thessalonians', never broken) and the chapter ('5'), which may drop to a second line. */
 function partsOf(title: string): { name: string; chapter: string } {
@@ -68,18 +71,23 @@ function partsOf(title: string): { name: string; chapter: string } {
   return at < 0 ? { name: title, chapter: '' } : { name: title.slice(0, at), chapter: title.slice(at + 1) };
 }
 
-/** The title's type size in px: the largest the header holds, smaller only as far as the book's name needs to stand whole on a line in the room the
- * title has (`100cqw` is the title box's width; a name's letters average up to about 0.68 em in semibold). The chapter is never cut. */
+/** The title's type size: the largest the header holds, smaller only as far as the book's name needs to stand whole on a line in the room the
+ * title has (`100cqw` is the title box's width; a name's letters average up to about 0.8 em in semibold). The chapter is never cut. */
 function titleSize(name: string): string {
-  return `clamp(${TITLE_MIN_PX}px, calc(100cqw / ${(name.length * 0.68).toFixed(2)}), ${TITLE_MAX_PX}px)`;
+  return `clamp(${TITLE_MIN_REM}rem, calc(100cqw / ${(name.length * LETTER_EM).toFixed(2)}), ${TITLE_MAX_REM}rem)`;
+}
+
+/** The least room the title box is given: the book's name at the smallest size, whole. A row that cannot hold it wraps, so the name is never cut. */
+function titleRoom(name: string): string {
+  return `${(name.length * LETTER_EM * TITLE_MIN_REM).toFixed(2)}rem`;
 }
 
 export function ReaderHeader({ title, view, chapterReading, reading, from, canRead, inert, onPick, onRead }: ReaderHeaderProps) {
   const headerButtons = chapterReading && !reading.onBar;
   const { name, chapter } = partsOf(title);
   return (
-    <header inert={inert} className="flex shrink-0 items-center gap-1 border-b border-line px-1">
-      <h1 className={`min-w-0 font-semibold leading-tight [container-type:inline-size] ${headerButtons ? 'sr-only' : 'flex-1'}`}>
+    <header inert={inert} className="flex shrink-0 flex-wrap items-center gap-1 border-b border-line px-1">
+      <h1 style={headerButtons ? undefined : { minWidth: titleRoom(name) }} className={`font-semibold leading-tight [container-type:inline-size] ${headerButtons ? 'sr-only' : 'flex-1'}`}>
         <button
           type="button"
           aria-haspopup="dialog"

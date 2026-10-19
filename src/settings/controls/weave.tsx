@@ -21,7 +21,7 @@ export function WeaveControl({ row }: { row: SettingsRow }) {
   const current = useLiveQuery(read, [key]);
   return (
     <SettingRow row={row}>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span className="w-16 shrink-0 text-sm font-medium text-muted">{label}</span>
         {current ? <ChipRow name={row.label} current={current} options={options} settingKey={key} /> : null}
       </div>

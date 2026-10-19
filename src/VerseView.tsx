@@ -236,7 +236,7 @@ export function VerseView(props: VerseViewProps) {
             <button
               type="button"
               onClick={listen.onPlay}
-              className="mx-auto flex h-24 w-full max-w-xl select-none flex-col items-center justify-center gap-1 rounded-3xl bg-accent text-[16px] font-semibold text-accent-fg"
+              className="mx-auto flex h-24 w-full max-w-xl select-none flex-col items-center justify-center gap-1 rounded-3xl bg-accent chrome-text font-semibold text-accent-fg"
             >
               <PlayIcon kind="play" />
               <span>{listen.again ? 'Play again' : `Play ${name}`}</span>
@@ -257,7 +257,7 @@ export function VerseView(props: VerseViewProps) {
             <button
               type="button"
               onClick={quiz.onOpen}
-              className="mx-auto flex h-24 w-full max-w-xl select-none items-center justify-center rounded-3xl bg-accent text-[16px] font-semibold text-accent-fg"
+              className="mx-auto flex h-24 w-full max-w-xl select-none items-center justify-center rounded-3xl bg-accent chrome-text font-semibold text-accent-fg"
             >
               {quiz.started ? 'Continue the quiz' : 'Start the quiz'}
             </button>,

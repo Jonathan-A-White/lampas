@@ -56,7 +56,7 @@ function GoalPickers({ saved }: { saved: string }) {
         options={[['', 'Whole chapter'], ...range(info && goal?.chapter ? (info.verses[goal.chapter - 1] ?? 0) : 0).map((n): [string, string] => [String(n), String(n)])]}
         onChange={(n) => goal?.chapter !== undefined && write(n === '' ? { book: goal.book, chapter: goal.chapter } : { ...goal, verse: Number(n) })}
       />
-      <div className="mt-3 flex gap-3">
+      <div className="mt-3 flex flex-wrap gap-3">
         <button
           type="button"
           disabled={!goal}

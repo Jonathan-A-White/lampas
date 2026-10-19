@@ -71,17 +71,17 @@ export function RowName({ row }: { row: SettingsRow }) {
   return <h3 className="pb-1 text-base font-medium">{row.label}</h3>;
 }
 
-/** The three chips of a weave or New words row, on one line (never wrapped); `name` is the setting's label in the registry. */
+/** The three chips of a weave or New words row, on one line while they fit (at the phone's largest text they wrap to the next); `name` is the setting's label in the registry. */
 export function ChipRow({ name, current, options, settingKey }: { name: string; current: string; options: [string, string][]; settingKey: 'weave' | 'weaveGrammar' | 'weaveOrder' | 'pickerGrammar' | 'grammarMove' | 'newWordsADay' | 'askBy' | 'handwritingDrills' | 'readingMode' }) {
   return (
-    <div role="group" aria-label={name} className="inline-flex max-w-full min-w-0 flex-nowrap rounded-xl border border-line p-0.5">
+    <div role="group" aria-label={name} className="inline-flex max-w-full min-w-0 flex-wrap rounded-xl border border-line p-0.5">
       {options.map(([value, text]) => (
         <button
           key={value}
           type="button"
           aria-pressed={current === value}
           onClick={() => void writeSetting(settingKey, value)}
-          className={`min-h-12 min-w-12 whitespace-nowrap rounded-lg px-3 text-base font-medium ${current === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+          className={`min-h-12 min-w-12 rounded-lg px-3 text-base font-medium ${current === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
         >
           {text}
         </button>

@@ -136,15 +136,17 @@
   --lp-bad: #ef6a6a;
 
   /* Text size (Settings): 1 is the phone's own. It scales the root font size, so every rem (type, and the reader's
-   * sizes below) follows; spacing and the tap height are divided by it again, so they stay what they were in pixels:
-   * a thumb is the same size at every text size. */
+   * sizes below) follows it, and so does the phone's own Font size, which is the size of 100% (mw-cwf538.5): the type is
+   * in rem and honours both. Spacing and the tap height are in px, so they stay what they were: a thumb is the same size
+   * at every text size, and at 200% text the type grows into a 390 px window and the room around it does not (spacing
+   * in rem doubled with the phone's font size, and the header squeezed its title to nothing). */
   --lp-scale: 1;
-  --spacing: calc(0.25rem / var(--lp-scale));
+  --spacing: 4px;
 
   /* Reading size and the smallest thing a thumb is asked to hit (44 px at the phone's own text size). */
   --lp-greek-size: 1.75rem;
   --lp-english-size: 1.25rem;
-  --lp-tap: calc(2.75rem / var(--lp-scale));
+  --lp-tap: 44px;
   /* A line of reading text: 44 px so a tapped word is a thumb tall, or 1.4 lines of larger type when that is taller.
    * Written with em, so it is worked out on the element that uses it. */
   --lp-leading: max(var(--lp-tap), 1.4em);
@@ -206,7 +208,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]):not([data-theme="sepia"]) {
+  :root:not([data-theme="dark"]):not([data-theme="sepia"]):not([data-theme="contrast"]) {
     color-scheme: light;
     --lp-canvas: #f3f5f9;
     --lp-surface: #ffffff;

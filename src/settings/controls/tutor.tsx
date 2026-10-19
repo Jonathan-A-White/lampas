@@ -17,7 +17,7 @@ function ScriptDepthChoice({ script, depth }: { script: TutorScript; depth: Dept
           type="button"
           aria-pressed={depth === d.id}
           onClick={() => void writeSetting(script.settingKey, d.id)}
-          className={`flex min-h-12 items-center justify-between gap-3 rounded-lg px-4 text-left text-base font-medium ${depth === d.id ? ON_COLOUR : 'text-fg'}`}
+          className={`flex min-h-12 flex-wrap items-center justify-between gap-x-3 rounded-lg px-4 text-left text-base font-medium ${depth === d.id ? ON_COLOUR : 'text-fg'}`}
         >
           <span>{d.label}</span>
           <span className="text-base font-normal opacity-80" aria-hidden="true">
