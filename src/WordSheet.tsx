@@ -450,6 +450,7 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
           known={known.has(grammar.term)}
           covered={idea !== null}
           onClose={() => setGrammar(null)}
+          onDismiss={onClose}
           onTerm={(term) => move(() => openTerm(term, grammar.word, grammar.verse))}
           onWord={(word) =>
             move(() => {
@@ -470,6 +471,7 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
         <IdeaSheet
           idea={idea}
           onClose={() => setIdea(null)}
+          onDismiss={onClose}
           onWord={(from, word) =>
             move(() => {
               setShown({ base: opened, lookup: { words: [word], fromEnglish: false }, chapter: from === chapter ? undefined : from });

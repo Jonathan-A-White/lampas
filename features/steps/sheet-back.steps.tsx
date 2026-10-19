@@ -1,7 +1,7 @@
 // features/steps/sheet-back.steps.tsx — runs features/sheet-back.feature: the phone's Back on an open bottom sheet (word, Grammar,
 // Talk) closes the sheet and stays on the screen beneath; Done, Escape and a tap outside leave no stray history entry.
 import '@testing-library/react/dont-cleanup-after-each';
-import { act, render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { act, render, screen, cleanup, fireEvent, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -75,11 +75,30 @@ async function tapsWord(text: string, verse: number): Promise<void> {
   await screen.findByRole('dialog', { name: 'Word' });
 }
 
+/** Closes the open sheet `which` the way `way` says: Done, a swipe down its handle, a tap on its backdrop, or Escape; then lets the page settle. */
+async function dismiss(which: 'grammar' | 'idea', way: string): Promise<void> {
+  const sheet = (which === 'grammar' ? grammarSheet() : ideaSheet()) as HTMLElement;
+  if (way === 'Done') await user.click(within(sheet).getByRole('button', { name: 'Done' }));
+  else if (way === 'a swipe down') {
+    const handle = screen.getByTestId(`${which}-handle`);
+    fireEvent.touchStart(handle, { touches: [{ clientY: 100 }] });
+    fireEvent.touchMove(handle, { touches: [{ clientY: 300 }] });
+    fireEvent.touchEnd(handle);
+  } else if (way === 'a tap outside') await user.click(screen.getByTestId(`${which}-backdrop`));
+  else if (way === 'Escape') await user.keyboard('{Escape}');
+  else throw new Error(`no way called ${way}`);
+  await act(() => new Promise((resolve) => setTimeout(resolve, 30)));
+}
+
+const noSheetOpen = (): void => {
+  expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(0);
+};
+
 let wordBeforeExample = '';
 
 const feature = await loadFeature('features/sheet-back.feature');
 
-describeFeature(feature, ({ Scenario }) => {
+describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   Scenario('Back on the word sheet closes it and the Reader still shows Romans 8 at the same verse', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 with verse 2 selected', () => open('', false));
     And('he taps "For" in verse 2', () => tapsWord('For', 2));
@@ -243,11 +262,6 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(grammarSheet()).toBeNull());
       await act(() => new Promise((resolve) => setTimeout(resolve, 30)));
     });
-    And('he taps Done on the word sheet', async () => {
-      await user.click(within(wordSheet() as HTMLElement).getByRole('button', { name: 'Done' }));
-      await waitFor(() => expect(wordSheet()).toBeNull());
-      await act(() => new Promise((resolve) => setTimeout(resolve, 30)));
-    });
     When('he goes back', back);
     Then('the Settings screen is open', async () => {
       await screen.findByRole('heading', { name: 'Settings' });
@@ -360,6 +374,75 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Settings screen is open', async () => {
       await screen.findByRole('heading', { name: 'Settings' });
     });
+  });
+
+  ScenarioOutline('<way> on the Grammar sheet closes the Grammar sheet and the word card with it', ({ Given, And, When, Then }, row) => {
+    Given('Lampas is opened on 1 John 2 in Greek', () => open('#/?b=1jn&c=2&view=greek', false, false));
+    And('he taps "Τεκνία" in verse 1', () => tapsWord('Τεκνία', 1));
+    And('he taps the term "plural" on the word sheet', async () => {
+      await user.click(screen.getByRole('button', { name: 'plural', exact: true }));
+      await screen.findByRole('dialog', { name: 'Grammar' });
+    });
+    When('he dismisses the Grammar sheet with <way>', () => dismiss('grammar', row.way));
+    Then('no sheet is open', () => waitFor(noSheetOpen));
+    And('the Reader shows 1 John 2', () => {
+      expect(screen.getByRole('heading', { level: 1, name: /1 John 2/ })).toBeTruthy();
+    });
+  });
+
+  ScenarioOutline('<way> on the idea sheet closes the idea sheet, the Grammar sheet and the word card', ({ Given, And, When, Then }, row) => {
+    Given('Lampas is opened on Romans 8 with verse 2 selected', () => open('', false));
+    And('he taps "of the" in verse 2', () => tapsWord('of the', 2));
+    And('he taps the term "genitive" on the word sheet', async () => {
+      await user.click(screen.getByRole('button', { name: 'genitive', exact: true }));
+      await screen.findByRole('dialog', { name: 'Grammar' });
+    });
+    And('he taps Learn this idea on the Grammar sheet', async () => {
+      await user.click(screen.getByRole('button', { name: 'Learn this idea' }));
+      await screen.findByRole('dialog', { name: 'Idea' });
+    });
+    When('he dismisses the idea sheet with <way>', () => dismiss('idea', row.way));
+    Then('no sheet is open', () => waitFor(noSheetOpen));
+    And('the Reader shows Romans 8 at verse 2', () => {
+      expect(screen.getByRole('heading', { level: 1, name: /Romans 8/ })).toBeTruthy();
+      expect(window.location.hash).toContain('v=2');
+    });
+  });
+
+  Scenario('Done on the Grammar sheet over the word card takes every entry off, so Back does not reopen a sheet', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Settings and then on Romans 8', () => open('#/settings', true, false));
+    And('he taps "For" in verse 2', () => tapsWord('For', 2));
+    And('he taps the term "conjunction" on the word sheet', async () => {
+      await user.click(screen.getByRole('button', { name: 'conjunction', exact: true }));
+      await screen.findByRole('dialog', { name: 'Grammar' });
+    });
+    And('he taps Done on the Grammar sheet', () => dismiss('grammar', 'Done'));
+    When('he goes back', back);
+    Then('the Settings screen is open', async () => {
+      await screen.findByRole('heading', { name: 'Settings' });
+      expect(window.location.hash).toBe('#/settings');
+    });
+    And('no sheet is open', noSheetOpen);
+  });
+
+  Scenario('Done on the idea sheet over the Grammar sheet and the word card takes every entry off', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Settings and then on Romans 8', () => open('#/settings', true, false));
+    And('he taps "of the" in verse 2', () => tapsWord('of the', 2));
+    And('he taps the term "genitive" on the word sheet', async () => {
+      await user.click(screen.getByRole('button', { name: 'genitive', exact: true }));
+      await screen.findByRole('dialog', { name: 'Grammar' });
+    });
+    And('he taps Learn this idea on the Grammar sheet', async () => {
+      await user.click(screen.getByRole('button', { name: 'Learn this idea' }));
+      await screen.findByRole('dialog', { name: 'Idea' });
+    });
+    And('he taps Done on the idea sheet', () => dismiss('idea', 'Done'));
+    When('he goes back', back);
+    Then('the Settings screen is open', async () => {
+      await screen.findByRole('heading', { name: 'Settings' });
+      expect(window.location.hash).toBe('#/settings');
+    });
+    And('no sheet is open', noSheetOpen);
   });
 
   Scenario('Every sheet in the app uses the shared hook', ({ Then }) => {

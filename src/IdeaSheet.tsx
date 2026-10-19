@@ -345,9 +345,11 @@ function ReadMore({ ideaId, books }: { ideaId: string; books: readonly GrammarBo
   );
 }
 
-export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books = GRAMMAR_BOOKS }: {
+export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = false, books = GRAMMAR_BOOKS }: {
   idea: GrammarIdea;
   onClose: () => void;
+  /** Done, a swipe down, a tap outside and Escape (Back stays onClose): the sheets under this one close with it. Defaults to onClose. */
+  onDismiss?: () => void;
   /** a sheet opened over this one is up: it takes the Escape */
   covered?: boolean;
   /** an example was tapped: its chapter, so the word's parsing and meaning can be read */
@@ -357,12 +359,13 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
   /** the grammar books Read more may name (GRAMMAR_BOOKS); a test hands it its own */
   books?: readonly GrammarBook[];
 }) {
-  const { drag, handle } = useSheetDrag(onClose);
+  const dismiss = onDismiss ?? onClose;
+  const { drag, handle } = useSheetDrag(dismiss);
   // a tile's own idea sheet opens over this one
   const [opened, setOpened] = useState<GrammarIdea | null>(null);
   // Try it on a verse (mw-emk3xt.4): offered when a verse of the passage has a form of the idea; it takes the Escape while it is up
   const [trying, setTrying] = useState(false);
-  useEscapeToClose(onClose, !covered && opened === null && !trying);
+  useEscapeToClose(dismiss, !covered && opened === null && !trying);
   useSheetBack(onClose);
   const loaded = usePassage();
   const level = useLiveQuery(() => getLevel(idea.id), [idea.id]);
@@ -476,7 +479,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
 
   return (
     <div className="fixed inset-0 z-30 flex flex-col justify-end">
-      <div data-testid="idea-backdrop" aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-black/60" />
+      <div data-testid="idea-backdrop" aria-hidden="true" onClick={dismiss} className="absolute inset-0 bg-black/60" />
       <div
         role="dialog"
         aria-modal="true"
@@ -486,7 +489,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
       >
         <div data-testid="idea-handle" {...handle} className="flex min-h-12 shrink-0 touch-none items-center justify-between gap-3 px-4 pt-2 short:col-span-2">
           <span aria-hidden="true" className="mx-auto h-1.5 w-10 rounded-full bg-line" />
-          <button type="button" onClick={onClose} className="absolute right-2 top-1 min-h-11 min-w-11 rounded-lg px-3 text-base font-medium text-accent">
+          <button type="button" onClick={dismiss} className="absolute right-2 top-1 min-h-11 min-w-11 rounded-lg px-3 text-base font-medium text-accent">
             Done
           </button>
         </div>
@@ -697,7 +700,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
       ) : null}
       {trying && passage ? <TryItSheet idea={idea} passage={passage} onClose={() => setTrying(false)} /> : null}
       {letterDrill ? <LetterDrillScreen onClose={() => setLetterDrill(false)} /> : null}
-      {opened ? <IdeaSheet idea={opened} onClose={() => setOpened(null)} onWord={onWord} onAsk={onAsk} covered={covered} books={books} /> : null}
+      {opened ? <IdeaSheet idea={opened} onClose={() => setOpened(null)} onDismiss={onDismiss} onWord={onWord} onAsk={onAsk} covered={covered} books={books} /> : null}
     </div>
   );
 }

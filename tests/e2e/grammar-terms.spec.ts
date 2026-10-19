@@ -39,8 +39,9 @@ test('every grammar word of the Parsing is a thumb-sized link; conjunction opens
 
   await know.click();
   await expect(know).toHaveAttribute('aria-pressed', 'true');
+  // Done on the Grammar sheet closes the word sheet under it too (mw-5r3p30.514)
   await grammar.getByRole('button', { name: 'Done' }).click();
-  await word.getByRole('button', { name: 'Done' }).click();
+  await expect(word).toBeHidden();
 
   await page.reload();
   await page.locator('[data-verse="2"]').getByRole('button', { name: 'For', exact: true }).click();

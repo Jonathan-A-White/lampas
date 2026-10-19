@@ -18,7 +18,7 @@ import { GREEK_LANG } from './script/greekLang';
 
 const BUTTON = 'min-h-12 min-w-0 flex-1 rounded-xl border px-3 text-base font-medium short:flex-none';
 
-export function GrammarSheet({ chapter, term, word, known, covered, onClose, onTerm, onWord, onAsk, onLearn }: {
+export function GrammarSheet({ chapter, term, word, known, covered, onClose, onDismiss, onTerm, onWord, onAsk, onLearn }: {
   chapter: Chapter;
   term: string;
   /** the word whose sheet the term was tapped on: it is left out of the examples */
@@ -28,6 +28,8 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onT
   /** a sheet is open over this one (the idea sheet): it takes the Escape */
   covered?: boolean;
   onClose: () => void;
+  /** Done, a swipe down, a tap outside and Escape (Back stays onClose): the sheet under this one closes with it. Defaults to onClose, for a sheet over no other. */
+  onDismiss?: () => void;
   /** a related term was tapped */
   onTerm: (term: string) => void;
   /** an example was tapped */
@@ -37,8 +39,9 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onT
   /** Learn this idea: the idea sheet of the term's idea; the button is left out when the screen has none */
   onLearn?: (term: string) => void;
 }) {
-  const { drag, handle } = useSheetDrag(onClose);
-  useEscapeToClose(onClose, !covered);
+  const dismiss = onDismiss ?? onClose;
+  const { drag, handle } = useSheetDrag(dismiss);
+  useEscapeToClose(dismiss, !covered);
   useSheetBack(onClose);
   const concept = conceptOf(term);
   const examples = grammarExamples(chapter, term, word);
@@ -46,7 +49,7 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onT
 
   return (
     <div className="fixed inset-0 z-20 flex flex-col justify-end">
-      <div data-testid="grammar-backdrop" aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-black/60" />
+      <div data-testid="grammar-backdrop" aria-hidden="true" onClick={dismiss} className="absolute inset-0 bg-black/60" />
       <div
         role="dialog"
         aria-modal="true"
@@ -56,7 +59,7 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onT
       >
         <div data-testid="grammar-handle" {...handle} className="flex min-h-12 shrink-0 touch-none items-center justify-between gap-3 px-4 pt-2 short:col-span-2">
           <span aria-hidden="true" className="mx-auto h-1.5 w-10 rounded-full bg-line" />
-          <button type="button" onClick={onClose} className="absolute right-2 top-1 min-h-11 min-w-11 rounded-lg px-3 text-base font-medium text-accent">
+          <button type="button" onClick={dismiss} className="absolute right-2 top-1 min-h-11 min-w-11 rounded-lg px-3 text-base font-medium text-accent">
             Done
           </button>
         </div>
