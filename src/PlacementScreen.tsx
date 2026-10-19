@@ -28,7 +28,7 @@ import { clearPlacement, readCard, readPlacement, saveCard, savePlacement, type 
 import { mulberry32, type Random } from './data/quiz';
 import { getEvidence, getGoal, getGrammarApproach, listLevels, listPassageLessons } from './data/repositories';
 import { publish } from './events/bus';
-import { navigate, placementCardOf, placementOriginOf, showPlacementCard, useAddress } from './nav/route';
+import { backTo, navigate, placementCardOf, placementOriginOf, showPlacementCard, useAddress } from './nav/route';
 import { useSettled } from './ui/settle';
 import { ItemCard } from './review/ItemCard';
 import { GRAMMAR, loadPassage, type GrammarItem } from './review/kinds';
@@ -91,7 +91,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
   // they take none in the moment after the intro is drawn, nor after Start over turns into its question (mw-hqd5bz.27). The end card's buttons sit where
   // Next or Finish sat, so they take none in the moment after it is drawn (mw-86e9r1.22).
   const settled = useSettled(run.status === 'quick' ? run.round.at : confirming ? 'confirm' : run.status);
-  // where Place me was tapped: the Goal screen or Settings; the ways out return there, and a second tap of a double tap on one lands nowhere (the screen
+  // where Place me was tapped: the Goal screen or Settings; the ways out return there (the header's button steps Back when that screen is behind, backTo, mw-5r3p30.631; the end card's buttons go forward to it, so Back returns to the card, mw-86e9r1.23), and a second tap of a double tap on one lands nowhere (the screen
   // change settles, src/ui/tapGuard.ts): on the Goal screen the Grammar ideas bar sits under the end card's Back to the goal (mw-86e9r1.22)
   const origin = placementOriginOf(useAddress());
   const leaveFor = (to: typeof origin) => navigate(to);
@@ -124,7 +124,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
   }, []);
 
   const header = (
-    <ScreenHeader title="Placement" back={<HeaderButton onClick={leave}>{origin === 'goal' ? '‹ Goal' : '‹ Settings'}</HeaderButton>} />
+    <ScreenHeader title="Placement" back={<HeaderButton onClick={() => backTo(origin)}>{origin === 'goal' ? '‹ Goal' : '‹ Settings'}</HeaderButton>} />
   );
 
   /** Shows the question the state asks, or the end when it asks none. */
