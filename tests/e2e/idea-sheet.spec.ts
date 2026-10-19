@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { swipe } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -63,4 +64,37 @@ test('the idea sheet of the genitive fits the phone, its slider and buttons clea
   await page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true }).click();
   await page.getByRole('dialog', { name: 'Grammar' }).getByRole('button', { name: 'Learn this idea' }).click();
   await expect(page.getByRole('dialog', { name: 'Idea' }).getByTestId('idea-level')).toHaveText('Frontier since today');
+});
+
+test('a tap on the middle of the "Your level" track leaves the level where it was, and a drag sets it', async ({ page }) => {
+  await page.clock.install();
+  await page.setViewportSize(VIEWPORT);
+  await openUnlocked(page);
+  await page.goto('/');
+  await page.locator('[data-verse="2"]').getByRole('button', { name: 'of the', exact: true }).click();
+  await page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true }).click();
+  await page.getByRole('dialog', { name: 'Grammar' }).getByRole('button', { name: 'Learn this idea' }).click();
+  const idea = page.getByRole('dialog', { name: 'Idea' });
+  const slider = idea.getByRole('slider', { name: 'Your level' });
+  await expect(slider).toBeEnabled();
+  await expect(slider).toHaveAttribute('aria-valuetext', 'Not yet');
+  const box = await slider.boundingBox();
+  if (!box) throw new Error('the slider has no box');
+  const middle = [box.x + box.width / 2, box.y + box.height / 2] as const;
+  const stay = page.getByRole('button', { name: 'Stay here', exact: true });
+
+  // a tap on the middle of the track (with a mouse, then a finger) moves nothing and asks nothing
+  await page.mouse.click(middle[0], middle[1]);
+  await swipe(page, middle, middle, { with: 'touch', steps: 1 });
+  await expect(slider).toHaveAttribute('aria-valuetext', 'Not yet');
+  await expect(stay).toHaveCount(0);
+  await expect(idea.getByTestId('idea-level')).toHaveCount(0);
+
+  // a drag of the thumb to the middle sets the level and asks
+  await swipe(page, [box.x + 22, middle[1]], [middle[0], middle[1]]);
+  await expect(stay).toBeVisible();
+  await expect(slider).toHaveAttribute('aria-valuetext', 'Learning');
+  await stay.click();
+  await expect(idea.getByTestId('idea-level')).toHaveText('Frontier since today');
+  await shot(page, 'idea-sheet-track-tap');
 });
