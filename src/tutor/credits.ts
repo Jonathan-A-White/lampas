@@ -48,6 +48,5 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'Tailwind CSS', use: 'The styling', licence: 'MIT', link: 'https://tailwindcss.com' },
   { name: 'TypeScript', use: 'The language it is written in', licence: 'Apache-2.0', link: 'https://www.typescriptlang.org/' },
   { name: 'Vitest', use: 'Tests it', licence: 'MIT', link: 'https://vitest.dev' },
-  { name: 'Playwright', use: 'Tests it on a phone screen', licence: 'Apache-2.0', link: 'https://playwright.dev' },
-  { name: 'axe-core', use: 'Checks every main screen for accessibility', licence: 'MPL-2.0', link: 'https://github.com/dequelabs/axe-core' },
+  { name: 'Playwright', use: 'Tests it on a phone screen, with axe-core (MPL-2.0) for accessibility', licence: 'Apache-2.0', link: 'https://playwright.dev' },
 ];
