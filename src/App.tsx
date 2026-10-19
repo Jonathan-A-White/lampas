@@ -39,6 +39,7 @@ import { LiveRegion } from './ui/LiveRegion';
 import { startSpeechSettingsSync } from './speech/settingsSync';
 import { startUsageLog } from './tips/usageLog';
 import { HearAnyWord } from './ui/HearAnyWord';
+import { useAlertsInView } from './ui/alertInView';
 import { useTapGuard } from './ui/tapGuard';
 import { TutorWaitingBar } from './speech/TutorWaitingBar';
 import { UpdateBanner } from './UpdateBanner';
@@ -57,6 +58,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
   useLayoutEffect(() => startReaderAddressSync(), []);
   // After any screen change and any sheet that opens or closes, taps are swallowed for a moment: a double tap's second tap does nothing (src/ui/tapGuard.ts).
   useTapGuard();
+  // A failure message that appears in a scrolling list or sheet is brought into view of it (src/ui/alertInView.ts).
+  useAlertsInView();
   // The saved Theme and Text size reach the page, and the browser's bar follows the phone's scheme.
   useEffect(() => startAppearanceSync(), []);
   // The saved voices and pronunciation reach the speaker before the first tap on a speaker button.
