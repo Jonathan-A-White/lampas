@@ -239,6 +239,65 @@ describe('a one-letter Greek word on a phone with no Greek voice', () => {
     }
   });
 
+  it('a phrase with ὁ at its end (speakWord) says the rest, then plays the clip, and the voice is never handed ὁ', () => {
+    act(() => void speakWord('ἄγγελος, -ου, ὁ', 'greek'));
+    expect(said()).toEqual(['άγγελος, -ου!']);
+    expect(audio.played).toEqual([]);
+    act(() => synth.finishAll());
+    expect(audio.played).toEqual(['/sounds/modern/o.mp3']);
+    expect(isWordSaid()).toBe(true);
+    act(() => audio.end());
+    expect(isWordSaid()).toBe(false);
+    noLoneLetterSpoken();
+  });
+
+  it('a phrase with ὁ in its middle says the text on each side of the clip, and a stop during the clip ends it there', () => {
+    act(() => void speakWord('ὁ λόγος', 'greek'));
+    expect(audio.played).toEqual(['/sounds/modern/o.mp3']);
+    act(() => audio.end());
+    expect(said()).toEqual(['λόγος!']);
+    act(() => void speakWord('λόγος ὁ ἄγγελος', 'greek'));
+    act(() => synth.finishAll());
+    act(() => stopSpeaking());
+    act(() => synth.finishAll());
+    expect(audio.playing()).toBeNull();
+    expect(said()).toEqual(['λόγος!', 'λόγος!']);
+    expect(besideNow()).toBeNull();
+  });
+
+  it('a speaker (speak) on a phrase with ὁ speaks it in turn, and a second tap stops it', () => {
+    let outcome = '';
+    act(() => void (outcome = speak('ἄγγελος, -ου, ὁ', 'word:x', 'greek')));
+    expect(outcome).toBe('speaking');
+    act(() => void (outcome = speak('ἄγγελος, -ου, ὁ', 'word:x', 'greek')));
+    expect(outcome).toBe('stopped');
+    act(() => synth.finishAll());
+    expect(audio.played).toEqual([]);
+    act(() => void speak('ἄγγελος, -ου, ὁ', 'word:x', 'greek'));
+    act(() => synth.finishAll());
+    expect(audio.played).toEqual(['/sounds/modern/o.mp3']);
+    noLoneLetterSpoken();
+  });
+
+  it('a phrase without a one-letter word is still refused by a speaker for want of a Greek voice', () => {
+    let outcome = '';
+    act(() => void (outcome = speak('ἄγγελος, -ου', 'word:y', 'greek')));
+    expect(outcome).toBe('no-voice');
+    expect(synth.spoken).toEqual([]);
+  });
+
+  it('a phrase said beside a reading paused it, says the text, plays the clip and leaves the reading paused', () => {
+    act(() => startReading({ chapter: 1, plan: [{ n: 1, runs: [{ text: 'λόγος', language: 'greek' }] }], from: 1, continuous: false }));
+    act(() => void speakWord('ἄγγελος, -ου, ὁ', 'greek'));
+    act(() => synth.finishAll());
+    expect(audio.played).toEqual(['/sounds/modern/o.mp3']);
+    expect(besideNow()?.interrupted).toBe(true);
+    act(() => audio.end());
+    expect(besideNow()).toBeNull();
+    expect(getReading().status).toBe('paused');
+    noLoneLetterSpoken();
+  });
+
   it('a word said next cuts the clip off', () => {
     act(() => void speakWord('ὁ', 'greek'));
     act(() => void speakWord('λόγος', 'greek'));
