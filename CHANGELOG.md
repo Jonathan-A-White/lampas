@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.334
+_2026-10-19_
+- Fixed: The About button and version line no longer sit at the bottom of every chapter; About is in Settings.
+- Fixed: At the largest phone text size, the whole-path graph's labels now grow with the text, and the Talk screen and the passage view no longer cut off their titles and buttons.
+- New: Ask the tutor from Today and it knows which of the day's links you opened, and sending a screenshot of what you read is one tap.
+
 ## 0.1.333
 _2026-10-19_
 - New: The Reader has buttons, found with a keyboard or TalkBack, for what used to be gestures only: bring back or put away the bars, leave or start immersive reading, and turn a page.

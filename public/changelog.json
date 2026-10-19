@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.334",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.619",
+    "kind": "fixed",
+    "text": "The About button and version line no longer sit at the bottom of every chapter; About is in Settings."
+  },
+  {
+    "version": "0.1.334",
+    "date": "2026-10-19",
+    "story": "mw-cwf538.7",
+    "kind": "fixed",
+    "text": "At the largest phone text size, the whole-path graph's labels now grow with the text, and the Talk screen and the passage view no longer cut off their titles and buttons."
+  },
+  {
+    "version": "0.1.334",
+    "date": "2026-10-19",
+    "story": "mw-1fwagb.7",
+    "kind": "new",
+    "text": "Ask the tutor from Today and it knows which of the day's links you opened, and sending a screenshot of what you read is one tap."
+  },
+  {
     "version": "0.1.333",
     "date": "2026-10-19",
     "story": "mw-cwf538.4",
