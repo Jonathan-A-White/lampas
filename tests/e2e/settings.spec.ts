@@ -180,3 +180,41 @@ test('Settings > Quiz goal at phone width: an off Save looks as off as an off Cl
   await group.scrollIntoViewIfNeeded();
   await shot(page, 'settings-quiz-goal-kept');
 });
+
+test('Settings > Daily: a switch per piece, the devotional picker and Tick boxes; a change survives a reload', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/settings');
+  const daily = page.locator('section[data-section="daily"]');
+  await expect(daily.getByRole('heading', { name: 'Daily', level: 2 })).toBeVisible();
+
+  // all four pieces and Tick boxes start On, and each switch is a 44 px target
+  for (const name of ['Review', 'Plan chapter', 'Psalms and Proverbs', 'Devotional', 'Tick boxes']) {
+    const group = daily.getByRole('group', { name, exact: true });
+    await expect(group.getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    const box = await group.getByRole('button', { name: 'Off', exact: true }).boundingBox();
+    expect(box?.height).toBeGreaterThanOrEqual(43.5);
+  }
+
+  // the devotional starts at Morning and Evening; the draw shows only while Random is chosen
+  const picker = daily.getByRole('combobox', { name: 'Which devotional' });
+  await expect(picker).toHaveValue('LLS:20.10.1');
+  expect(await picker.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
+  await expect(daily.getByRole('group', { name: 'In the draw' })).toHaveCount(0);
+  await picker.selectOption('random');
+  await expect(daily.getByRole('group', { name: 'In the draw' })).toBeVisible();
+  await expect(daily.getByText('37 ticked')).toBeVisible();
+
+  await daily.getByRole('group', { name: 'Review', exact: true }).getByRole('button', { name: 'Off', exact: true }).click();
+  await daily.getByRole('group', { name: 'Tick boxes', exact: true }).getByRole('button', { name: 'Off', exact: true }).click();
+  await daily.getByRole('group', { name: 'In the draw' }).getByRole('checkbox', { name: 'Morning and Evening', exact: true }).click();
+  await expect(daily.getByText('36 ticked')).toBeVisible();
+
+  await page.reload();
+  await expect(daily.getByRole('group', { name: 'Review', exact: true }).getByRole('button', { name: 'Off', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(daily.getByRole('group', { name: 'Tick boxes', exact: true }).getByRole('button', { name: 'Off', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(daily.getByRole('group', { name: 'Plan chapter', exact: true }).getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(daily.getByRole('combobox', { name: 'Which devotional' })).toHaveValue('random');
+  await expect(daily.getByText('36 ticked')).toBeVisible();
+  await daily.scrollIntoViewIfNeeded();
+  await shot(page, 'settings-daily');
+});
