@@ -19,6 +19,8 @@ export interface Pages {
   page: number;
   /** how many pages the chapter has (1 until it is laid out) */
   count: number;
+  /** turns a page forward (1) or back (-1), as a tap on the outer thirds or a swipe does: for the Previous and Next page buttons (src/ReaderControls.tsx) */
+  turn(by: 1 | -1): void;
   /** turns to the page an element (a verse) begins on: for the verse read aloud, or the teach sheet's verse number */
   show(el: Element): void;
 }
@@ -210,6 +212,7 @@ export function usePages(enabled: boolean, box: RefObject<HTMLElement | null>, i
   }, [enabled, blocked, box]);
 
   const show = useCallback((el: Element) => turner.current?.show(el), []);
+  const turn = useCallback((by: 1 | -1) => turner.current?.turn(by), []);
 
-  return { page: place.page + 1, count: place.count, show };
+  return { page: place.page + 1, count: place.count, show, turn };
 }

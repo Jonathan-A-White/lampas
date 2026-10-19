@@ -432,6 +432,32 @@ textarea,
   opacity: 0.7;
   user-select: none;
 }
+/* The Reader's controls for what is otherwise a gesture (src/ReaderControls.tsx): laid out as a row at the top of the screen but clipped to one pixel of height
+ * until focus is inside, so the buttons keep their real size and place (a screen reader finds them; nothing is squeezed) and only the clip hides them. */
+.reveal-on-focus {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  right: 0.5rem;
+  z-index: 60;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.reveal-on-focus:focus-within {
+  right: auto;
+  max-width: calc(100% - 1rem);
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+  padding: 0.5rem;
+  border: 1px solid var(--lp-line);
+  border-radius: 1rem;
+  background: var(--lp-surface);
+}
 /* Turn pages (Settings > Reading, src/reader/usePages.ts, mw-5r3p30.299): the Reader's text is set in columns one reading box wide and one box high, so
  * the browser breaks it between lines into pages; the box clips them and shows one at a time (its scrollLeft, set by the hook). Nothing scrolls down,
  * and the box keeps only a little room at its foot: the place line under it says the page. The type is untouched. */
