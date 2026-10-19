@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs';
 import { App } from '../../src/App';
 import { type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
+import { chosenPronunciation } from '../../src/speech/greek';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
@@ -145,7 +146,17 @@ describeFeature(feature, ({ Scenario }) => {
     And('he taps the play button of verse {int}', (_, n: number) => tapPlay(n));
     When('he taps the play button of verse {int}', (_, n: number) => tapPlay(n));
     Then('the phone is told to stop before it speaks the Greek of verse {int}', (_, n: number) => {
-      expect(synth.calls.slice(-2)).toEqual(['cancel', `speak ${verseGreek(n)}`]);
+      // a word of one letter (Romans 8:2's first, ὁ) is a line of its own, its doubled vowel (mw-5r3p30.448), so the verse is one utterance or more
+      const at = synth.calls.lastIndexOf('cancel');
+      expect(at).toBeGreaterThan(-1);
+      const after = synth.calls.slice(at + 1);
+      expect(after.every((c) => c.startsWith('speak '))).toBe(true);
+      expect(after.map((c) => c.slice('speak '.length)).join(' ')).toBe(
+        verseGreek(n)
+          .split(' ')
+          .map((w) => chosenPronunciation().loneLetterForm(w) ?? w)
+          .join(' '),
+      );
     });
     And('the play button of verse {int} shows it is not playing', (_, n: number) => {
       expect(playButton(n)).toHaveAttribute('aria-pressed', 'false');

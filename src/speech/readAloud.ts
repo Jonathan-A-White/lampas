@@ -19,7 +19,7 @@ import type { ReaderView } from '../data/repositories';
 import { drawnOrder, type WovenVerse } from '../data/weave';
 import { publish } from '../events/bus';
 import { openReader } from '../nav/route';
-import { besideNow, greekVoiceForm, hasGreekVoice, loneLetterSpeech, playLetterClip, READ_KEY, speakText, stopLetterClip, subscribeBeside } from './greek';
+import { besideNow, greekVoiceForm, hasGreekVoice, loneLetterCuts, playLetterClip, READ_KEY, speakText, stopLetterClip, subscribeBeside } from './greek';
 import type { SpeechLanguage } from './languages';
 import type { ReadSpan } from './readSpan';
 import { dropWaiting } from './tutorWaiting';
@@ -239,9 +239,10 @@ const textOf = (runs: Run[]): string => runs.map((r) => (r.language === 'greek' 
 /** A stretch of a verse: text for the voice, or the clip of a one-letter word. */
 type Piece = { text: string } | { clip: string };
 
-/** A verse's runs as what is played in turn. A Greek run of one letter (a lone ὁ, a one-letter syllable) is never handed to the voice as it is, which would
- * name the letter ('omicron'): it is handed its pronunciation's loneLetterForm ('οο', a line of its own, which his phone's Greek voice says as the sound;
- * mw-5r3p30.421), or, on a phone with no Greek voice, its clip plays there (mw-5r3p30.347) and the runs on each side of it are a speech each. */
+/** A verse's runs as what is played in turn. A Greek word of one letter (a lone ὁ, a one-letter syllable, the Ὃ and ὃ inside 1 John 1:1) is never handed to
+ * the voice as it is, which would name the letter ('omicron'): the run is cut at it (loneLetterCuts, mw-5r3p30.448) and it is handed its pronunciation's
+ * loneLetterForm ('οο', a line of its own, which his phone's Greek voice says as the sound; mw-5r3p30.421), or, on a phone with no Greek voice, its clip
+ * plays there (mw-5r3p30.347) and the text on each side of it is a speech each. */
 function piecesOf(runs: Run[]): Piece[] {
   const pieces: Piece[] = [];
   let lines: Run[] = [];
@@ -250,11 +251,12 @@ function piecesOf(runs: Run[]): Piece[] {
     lines = [];
   };
   for (const run of runs) {
-    const lone = run.language === 'greek' ? loneLetterSpeech(run.text) : null;
-    if (lone && 'clip' in lone) {
-      flush();
-      pieces.push({ clip: lone.clip });
-    } else lines.push(lone ? { ...run, text: lone.text } : run);
+    for (const cut of run.language === 'greek' ? loneLetterCuts(run.text) : [run]) {
+      if ('clip' in cut) {
+        flush();
+        pieces.push(cut);
+      } else lines.push({ ...run, text: cut.text });
+    }
   }
   flush();
   return pieces;
