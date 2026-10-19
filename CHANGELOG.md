@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.329
+_2026-10-19_
+- Fixed: typing a place such as John 18:36 in Choose a book now opens that chapter at that verse instead of saying no book matches.
+- New: Settings has a Daily section to choose what your daily list holds, which devotional it shows (or a random one), and whether it has tick boxes.
+- Fixed: A quick double tap on 'Skip for now' in the Reading ladder no longer skips a verse you have not seen.
+
 ## 0.1.326
 _2026-10-18_
 - Fixed: Read more's book links now open Logos at the lesson.
