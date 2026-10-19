@@ -121,4 +121,5 @@ it('every screen the Reader gives way to brings him back to the page he was on i
   await waitFor(() => expect(placeLine()).toHaveTextContent(/^Mark 12 · Page 5 of \d+$/));
   // the first open seeds the grammar levels: let it finish before the database closes
   await waitFor(async () => expect(await db.meta.get('grammarLevelsSeeded')).toBeDefined());
-});
+  // each of the 23 screens is drawn in full: about 20 s on a quiet host, more on a loaded one
+}, 120_000);
