@@ -10,6 +10,8 @@
 // opens nothing: no Logos panel, no Preface row, no 'Opens in Logos' tag. `heading` names the sheet in that mode ('Where are you starting?', src/plan/StartPlan.tsx).
 // With the Reading plan on and a plan started (mw-umv8sp.5) every grid marks the chapters done (a ✓, dimmed, data-done) and the next one (an accent outline, data-next):
 // `marks` is the plan as src/plan/usePlan.ts reads it; `showPlan` false (StartPlan) draws none, as the plan being started has no marks yet.
+// The search takes a reference as well as a name (mw-5r3p30.622, src/nav/parseReference.ts readPlace, the one reader of a typed place): 'John 18:36' (Enter, or the Go to row)
+// opens John 18 with verse 36 selected, 'Ps 23' opens Psalms with chapter 23 chosen, 'John 99' says 'John has 21 chapters'; a book's name alone still filters the list.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { BOOKS, bookOf } from './data/books';
@@ -20,7 +22,8 @@ import { getLogosBible } from './data/repositories';
 import { keyOf } from './data/repositories/readingPlan';
 import { OT_BOOKS, otBookOf } from './data/otBooks';
 import { getStudyResources, setResourceOn } from './data/repositories/resources';
-import { navigate, openReader } from './nav/route';
+import { readPlace, type PlaceRead } from './nav/parseReference';
+import { navigate, openReader, openVerseAt, openVerseRange } from './nav/route';
 import { SendOff } from './plan/SendOff';
 import { usePlan, type PlanView } from './plan/usePlan';
 import { useSendOff } from './plan/useSendOff';
@@ -182,11 +185,11 @@ function ChapterChoice({ name, code, chapter, logosOn, bible, audio }: { name: s
 }
 
 /** The chapters of an Old Testament book. A tap on one opens no app: it shows what the chapter offers (Read in Logos, Listen in Audible) under the grid. */
-function OtChapters({ code, marks }: { code: string; marks: PlanView | undefined }) {
+function OtChapters({ code, marks, first = null }: { code: string; marks: PlanView | undefined; first?: number | null }) {
   const resources = useLiveQuery(getStudyResources, []);
   const bible = useLiveQuery(getLogosBible, []);
   const audioId = useSetting(audioBibleSetting);
-  const [chosen, setChosen] = useState<number | null>(null);
+  const [chosen, setChosen] = useState<number | null>(first);
   const book = otBookOf(code);
   if (!book || !resources || bible === undefined || audioId === undefined) return null;
   const logosOn = resources.on.includes('logos');
@@ -221,6 +224,8 @@ export function ChapterPicker({
   const plan = usePlan();
   const marks = showPlan ? plan?.started : undefined;
   const [book, setBook] = useState<string | null>(null);
+  // the Old Testament chapter a typed reference chose ('Ps 23'), shown chosen when its book opens
+  const [typedChapter, setTypedChapter] = useState<number | null>(null);
   const [query, setQuery] = useState('');
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
@@ -234,6 +239,7 @@ export function ChapterPicker({
   }, [current.book]);
 
   const shown = matching(ITEMS, query);
+  const typed = readPlace(query);
   const preface = !onChoose && matching([{ id: 'preface', name: 'Preface' }], query).length > 0;
   const name = book ? (otBookOf(book) ?? bookOf(book))?.name : undefined;
   const pick = (chapter: number) => {
@@ -242,6 +248,27 @@ export function ChapterPicker({
     // The open chapter again is only a close; another is a new Back step (the picker's own entry stays beneath it and Back skips it).
     if (book === current.book && chapter === current.chapter) onClose();
     else openReader({ book, chapter });
+  };
+  // What he typed is a place: a chapter of the New Testament opens in the Reader (a verse, or a range, selected as a link to it does, src/nav/LinkOpener.tsx), one of the Old
+  // opens its book with the chapter chosen; in choose mode the chapter is handed over.
+  const goTo = (place: Extract<PlaceRead, { kind: 'place' }>) => {
+    if (onChoose) return onChoose({ code: place.book, chapter: place.chapter });
+    if (place.testament === 'ot') {
+      setTypedChapter(place.chapter);
+      return setBook(place.book);
+    }
+    const { book: code, chapter, verse, to } = place;
+    const here = code === current.book && chapter === current.chapter;
+    if (verse === undefined) return here ? onClose() : openReader({ book: code, chapter });
+    // the chapter he is in is not opened again, so the picker is closed by hand
+    if (here) onClose();
+    else openReader({ book: code, chapter });
+    if (to !== undefined && to > verse) openVerseRange({ book: code, chapter, from: verse, to });
+    else openVerseAt({ book: code, chapter, verse });
+  };
+  const placeName = (place: Extract<PlaceRead, { kind: 'place' }>): string => {
+    const named = (place.testament === 'ot' ? otBookOf(place.book) : bookOf(place.book))?.name ?? place.book;
+    return `${named} ${place.chapter}${place.verse === undefined ? '' : `:${place.verse}`}`;
   };
 
   return (
@@ -258,7 +285,7 @@ export function ChapterPicker({
           <span aria-hidden="true" className="h-1.5 w-10 rounded-full bg-line" />
           <div className="flex min-h-12 w-full items-center gap-2">
             {book ? (
-              <button type="button" onClick={() => setBook(null)} className="min-h-11 shrink-0 rounded-lg pr-2 text-base font-medium text-accent">
+              <button type="button" onClick={() => (setTypedChapter(null), setBook(null))} className="min-h-11 shrink-0 rounded-lg pr-2 text-base font-medium text-accent">
                 ‹ Books
               </button>
             ) : null}
@@ -269,11 +296,17 @@ export function ChapterPicker({
           </div>
         </div>
         {book ? null : (
-          <div className="shrink-0 border-t border-line px-4 pt-2">
+          <form
+            className="shrink-0 border-t border-line px-4 pt-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (typed.kind === 'place') goTo(typed);
+            }}
+          >
             <input
               type="search"
               value={query}
-              placeholder="Search 66 books"
+              placeholder="Search 66 books or type John 18:36"
               aria-label="Search books"
               autoCapitalize="none"
               autoCorrect="off"
@@ -282,7 +315,7 @@ export function ChapterPicker({
               onChange={(e) => setQuery(e.target.value)}
               className="min-h-12 w-full rounded-lg border border-line bg-surface px-3 text-base text-fg"
             />
-          </div>
+          </form>
         )}
         <div
           ref={box}
@@ -294,7 +327,7 @@ export function ChapterPicker({
               onChoose ? (
                 <ChooseChapters code={book} marks={marks} onPick={pick} />
               ) : (
-                <OtChapters code={book} marks={marks} />
+                <OtChapters code={book} marks={marks} first={typedChapter} />
               )
             ) : (
               <Chapters code={book} current={current} marks={marks} onPick={pick} />
@@ -313,8 +346,23 @@ export function ChapterPicker({
                   <span className="shrink-0 text-sm font-medium text-muted">About the text</span>
                 </button>
               ) : null}
+              {typed.kind === 'place' ? (
+                <button
+                  type="button"
+                  data-go-to
+                  onClick={() => goTo(typed)}
+                  className="mb-3 flex min-h-12 w-full items-center justify-between gap-2 rounded-lg border border-accent px-3 text-left text-lg font-medium text-accent"
+                >
+                  <span>{`Go to ${placeName(typed)}`}</span>
+                </button>
+              ) : null}
+              {typed.kind === 'bad' ? (
+                <p role="status" className="px-1 py-3 text-base">
+                  {typed.message}
+                </p>
+              ) : null}
               {shown.length === 0 ? (
-                preface ? null : <p className="px-1 py-3 text-base text-muted">No book matches</p>
+                preface || typed.kind !== 'none' ? null : <p className="px-1 py-3 text-base text-muted">No book matches</p>
               ) : (
                 <div role="group" aria-label="Books" className="rounded-lg border border-line">
                   {shown.map((b) => {
@@ -325,7 +373,7 @@ export function ChapterPicker({
                         type="button"
                         {...(ot ? { 'data-ot-book': b.id } : { 'data-book': b.id })}
                         aria-current={b.id === current.book ? 'true' : undefined}
-                        onClick={() => setBook(b.id)}
+                        onClick={() => (setTypedChapter(null), setBook(b.id))}
                         className={`flex min-h-12 w-full items-center justify-between gap-2 border-t border-line px-3 text-left text-lg first:border-t-0 ${b.id === current.book ? 'font-semibold text-accent' : ''}`}
                       >
                         <span data-book-name>{b.name}</span>
