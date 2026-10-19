@@ -30,6 +30,7 @@ import { useKnownTerms } from './useKnownTerms';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { HintCard } from './tips/HintCard';
 import { WORD_SHEET_OPENED } from './tips/hints';
+import { GREEK_LANG, greekLang } from './script/greekLang';
 
 /** What was tapped: Greek words, and the English they stand for. `english` is the tapped chunk, or a Greek word's own chunk. */
 export interface Lookup {
@@ -56,11 +57,11 @@ export interface TermAsk {
   verse: number;
 }
 
-function Fact({ label, children, testId, lang }: { label: string; children: ReactNode; testId: string; lang?: string }) {
+function Fact({ label, children, testId, greek }: { label: string; children: ReactNode; testId: string; greek?: boolean }) {
   return (
     <div className="flex gap-3 py-1">
       <dt className="w-20 shrink-0 text-sm text-muted">{label}</dt>
-      <dd data-testid={testId} lang={lang} className={`min-w-0 break-words ${lang ? 'font-greek text-xl' : 'text-base'}`}>
+      <dd data-testid={testId} {...greekLang(greek === true)} className={`min-w-0 break-words ${greek ? 'font-greek text-xl' : 'text-base'}`}>
         {children}
       </dd>
     </div>
@@ -251,9 +252,9 @@ function WordCard({ chapter, word, english, pronunciation, known, study, onHelp,
   return (
     <section className="border-t border-line py-3 first:border-t-0 first:pt-0">
       <div className="flex items-start justify-between gap-2">
-        <p data-testid="sheet-word" lang="grc" className="min-w-0 break-words font-greek text-4xl font-bold">
+        <h2 data-testid="sheet-word" {...GREEK_LANG} className="min-w-0 break-words font-greek text-4xl font-bold">
           {word.t}
-        </p>
+        </h2>
         <SpeakButton text={word.t} id={`word:${word.t}`} label="Hear it" kind="speaker" className="shrink-0" />
       </div>
       <div className="flex flex-wrap items-center justify-between gap-x-2">
@@ -263,7 +264,7 @@ function WordCard({ chapter, word, english, pronunciation, known, study, onHelp,
         <LinkActions url={wordUrl(word.s)} title={wordLemma(word)} className="-mr-3" />
       </div>
       <dl className="mt-2">
-        <Fact label="Lemma" testId="sheet-lemma" lang="grc">
+        <Fact label="Lemma" testId="sheet-lemma" greek>
           {wordLemma(word)}
         </Fact>
         {wordParse(chapter, word) ? (
@@ -386,7 +387,6 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
           <span aria-hidden="true" className="mx-auto h-1.5 w-10 rounded-full bg-line" />
           <button
             type="button"
-            ref={focusOnMount}
             onClick={onClose}
             className="absolute right-2 top-1 min-h-11 min-w-11 rounded-lg px-3 text-base font-medium text-accent"
           >
@@ -399,9 +399,9 @@ export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm 
         <BarSlot level={4} />
         {/* the English he tapped is a heading of its own under the tip, outside the scrolling facts: it never slides half under the tip's edge */}
         {heading ? (
-          <p data-testid="sheet-heading" className="pl-4 pr-14 pt-3 text-lg text-muted">
+          <h2 data-testid="sheet-heading" className="pl-4 pr-14 pt-3 text-lg font-normal text-muted">
             <span className="sr-only">English: </span>“{bareEnglish(heading)}”
-          </p>
+          </h2>
         ) : null}
         <div className="relative">
           <div

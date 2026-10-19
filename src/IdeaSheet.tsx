@@ -50,6 +50,7 @@ import { greekMarked } from './ui/GreekMarked';
 import { useSettleAround } from './ui/settle';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
+import { GREEK_LANG } from './script/greekLang';
 
 // Each button is as wide as its label and shares the rest, so neither wraps at 390 px.
 const BUTTON = 'min-h-12 flex-auto whitespace-nowrap rounded-xl border px-2 text-base font-medium';
@@ -196,7 +197,7 @@ function Worked({ teach, passage, scheme }: { teach: Teach; passage: IdeaPassage
     <section data-testid="idea-worked">
       <Part>Worked example</Part>
       <div className="mt-1 flex items-center gap-2">
-        <span data-testid="worked-word" lang="grc" className="font-greek text-3xl">
+        <span data-testid="worked-word" {...GREEK_LANG} className="font-greek text-3xl">
           {worked.word}
         </span>
         <SpeakButton text={said} id={`worked:${said}`} label={`Hear ${worked.word}`} kind="speaker" className="shrink-0" />
@@ -222,9 +223,9 @@ function PairLine({ pairCase, onOpen }: { pairCase: PairCase; onOpen: () => void
     <p data-testid="pair-line" className="pt-3 text-base text-muted">
       In a pair it sounds different:{' '}
       <button type="button" data-testid="pair-word" onClick={onOpen} className="min-h-11 px-1 text-accent underline underline-offset-4">
-        <span lang="grc" className="font-greek text-[length:var(--lp-greek-size)]">{pairCase.word.t}</span>
+        <span {...GREEK_LANG} className="font-greek text-[length:var(--lp-greek-size)]">{pairCase.word.t}</span>
       </button>
-      , <span lang="grc" className="font-greek text-[length:var(--lp-greek-size)]">{pairCase.pair}</span> = {pairCase.sound}
+      , <span {...GREEK_LANG} className="font-greek text-[length:var(--lp-greek-size)]">{pairCase.pair}</span> = {pairCase.sound}
     </p>
   );
 }
@@ -245,7 +246,7 @@ function Example({ idea, example, onWord, hidden }: { idea: GrammarIdea; example
         onClick={() => onWord(chapter, word)}
         className="flex min-h-12 min-w-0 flex-1 flex-wrap items-center justify-between gap-x-3 rounded-xl border border-line px-3 py-1 text-left active:bg-line"
       >
-        <span lang="grc" className={sentence ? 'font-greek text-[length:var(--lp-greek-size)] basis-full' : 'font-greek text-2xl'}>
+        <span {...GREEK_LANG} className={sentence ? 'font-greek text-[length:var(--lp-greek-size)] basis-full' : 'font-greek text-2xl'}>
           {example.parts.map((part, i) =>
             part.marked ? (
               <span key={i} data-marked data-use={sentence ? '' : undefined} className="font-bold text-accent underline decoration-2 underline-offset-4">
@@ -476,7 +477,7 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
       >
         <div data-testid="idea-handle" {...handle} className="flex min-h-12 shrink-0 touch-none items-center justify-between gap-3 px-4 pt-2 short:col-span-2">
           <span aria-hidden="true" className="mx-auto h-1.5 w-10 rounded-full bg-line" />
-          <button type="button" ref={focusOnMount} onClick={onClose} className="absolute right-2 top-1 min-h-11 min-w-11 rounded-lg px-3 text-base font-medium text-accent">
+          <button type="button" onClick={onClose} className="absolute right-2 top-1 min-h-11 min-w-11 rounded-lg px-3 text-base font-medium text-accent">
             Done
           </button>
         </div>
