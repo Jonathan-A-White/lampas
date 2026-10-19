@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { swipe } from '../support/gesture';
 import { afterLastVerse } from './reader-foot';
 import { shot } from './shot';
@@ -267,4 +267,68 @@ test('with Scroll nothing changes: the text scrolls, a tap on the right third tu
 
   await swipeText(page, 'left');
   await expect(page.getByRole('heading', { name: 'Mark 13', level: 1 })).toBeVisible();
+});
+
+/** Turns forward from page 1 to page `to` by taps on the right third, and gives back the verses then in view. */
+async function turnTo(page: Page, to: number): Promise<number[]> {
+  await expect.poll(() => at(page)).toBe(1);
+  for (let n = 2; n <= to; n++) {
+    await tapAt(page, 0.85);
+    await expect.poll(() => at(page)).toBe(n);
+  }
+  return versesInView(page);
+}
+
+/** The Reader is back on Mark 12, on page `to`, with `verses` in view. */
+async function backOnPage(page: Page, to: number, verses: number[]) {
+  await expect(page.getByRole('heading', { name: 'Mark 12', level: 1 })).toBeVisible();
+  await expect(place(page)).toHaveText(new RegExp(`^Mark 12 · Page ${to} of \\d+$`));
+  await expect.poll(() => versesInView(page)).toEqual(verses);
+}
+
+// mw-5r3p30.608: reading in pages, he goes to Settings for the theme or the text size and comes back to the page he was on, not page 1.
+test('with Turn pages, Settings and back by ‹ Reader or by Back keeps the page he was on', async ({ page }) => {
+  await openMark12(page, 'pages');
+  const verses = await turnTo(page, 6);
+
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
+  await backOnPage(page, 6, verses);
+
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await page.goBack();
+  await backOnPage(page, 6, verses);
+  await shot(page, 'turn-pages-back-from-settings');
+});
+
+/** The screens the Reader gives way to (it unmounts for each), opened as the app opens a screen (a new history entry), and how each shows it is there. */
+const AWAY: { name: string; hash: string; ready: (page: Page) => Locator }[] = [
+  { name: 'Words', hash: '#/words', ready: (p) => p.getByRole('heading', { name: 'Words', level: 1 }) },
+  { name: 'Review', hash: '#/review', ready: (p) => p.getByRole('heading', { name: 'Review', level: 1 }) },
+  { name: 'Paradigms', hash: '#/paradigms', ready: (p) => p.getByRole('heading', { name: 'Paradigms', level: 1 }) },
+  { name: 'About', hash: '#/about', ready: (p) => p.getByRole('heading', { name: 'About', level: 1 }) },
+];
+
+test('with Turn pages, Words, Review, Paradigms, About and the Talk sheet each keep the page when he comes back', async ({ page }) => {
+  await openMark12(page, 'pages');
+  const verses = await turnTo(page, 6);
+
+  for (const away of AWAY) {
+    await page.evaluate((hash) => {
+      window.location.hash = hash;
+    }, away.hash);
+    await expect(away.ready(page), away.name).toBeVisible();
+    await expect(page.locator('[data-reader]'), away.name).toHaveCount(0);
+    await page.goBack();
+    await backOnPage(page, 6, verses);
+  }
+
+  await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  const sheet = page.getByRole('dialog', { name: 'Talk about Mark 12' });
+  await expect(sheet).toBeVisible();
+  await sheet.getByRole('button', { name: 'Done', exact: true }).click();
+  await expect(sheet).toHaveCount(0);
+  await backOnPage(page, 6, verses);
 });
