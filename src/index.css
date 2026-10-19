@@ -749,6 +749,26 @@ textarea,
 .bk-speech {
   flex-wrap: wrap;
 }
+/* Past that, in a slot narrower than 20 rem of the phone's own text (390 px at 200%; the same rem measure as the Immersive column), the bar is one row of three icons
+ * (mw-cwf538.9): the labels stacked to three rows left the Talk sheet's conversation a few lines tall. Each button's label is still its name (font-size 0 keeps the text in the
+ * accessibility tree), and each is still a full-height tap. */
+@container speaking (max-width: 20rem) {
+  .bk-speech {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .bk-speech__button {
+    flex: 1 1 0;
+    min-width: var(--lp-tap);
+    min-height: calc(1.25rem + 16px);
+    padding: 0;
+    font-size: 0;
+  }
+  .bk-speech__icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
 
 /* Where the bar is drawn (src/speech/SpeakingBarSlot.tsx): nothing at all while no bar is in it; the one at the foot of the shell pads with the phone's bar inset. */
 .speaking-slot:empty {
@@ -756,6 +776,7 @@ textarea,
 }
 .speaking-slot {
   flex-shrink: 0;
+  container: speaking / inline-size;
 }
 .speaking-inset:not(:empty) {
   background: var(--lp-surface);
