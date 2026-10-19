@@ -24,7 +24,7 @@ import { LadderActions, LadderPosition, LadderStart } from './ReadingLadder';
 import { NextBar } from './ui/NextBar';
 import { useLadder } from './useLadder';
 import { stopSpeaking } from './speech/greek';
-import { stopAnswer, stopReading } from './speech/readAloud';
+import { stopAnswer, stopAnswerSpeech, stopReading } from './speech/readAloud';
 import { speakTutor, stopOnTap, verdictRuns, VERDICT_ID } from './speech/tutorVoice';
 import { SpeakButton } from './speech/SpeakButton';
 import { HoldBar } from './ui/HoldBar';
@@ -468,7 +468,7 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, weave
     mounted.current = true;
     return () => {
       mounted.current = false;
-      stopAnswer();
+      stopAnswerSpeech();
     };
   }, []);
   useEffect(() => {

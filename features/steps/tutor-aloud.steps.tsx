@@ -329,6 +329,40 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the bar at the top is gone', barIsGone);
   });
 
+  Scenario('Closing the Verse view while the answer waits leaves the bar for the Reader, and a tap plays it', ({ Given, And, When, Then }) => {
+    Given(readOn, () => open({ aloud: true, reply: 'answer' }));
+    And('he is in another app', () => setVisibility('hidden'));
+    And(askFirst, askIt);
+    And('the answer is shown and nothing is spoken', answerShownSilent);
+    And('he comes back to Lampas', () => setVisibility('visible'));
+    And('the bar at the top says {string}', barSays);
+    When('he closes the Verse view', async () => {
+      await user.click(within(viewEl()).getByRole('button', { name: '‹ Reader' }));
+      await waitFor(() => expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull());
+    });
+    Then('the bar at the top says {string}', barSays);
+    And('nothing is spoken yet', () => expect(synth.spoken).toHaveLength(0));
+    When('he taps the bar at the top', async () => {
+      await user.click(await screen.findByRole('button', { name: WAITING_BAR, exact: true }));
+    });
+    Then("the phone says the answer's English in the English voice and {string} in the Greek voice", sayAnswer);
+    And('the bar at the top is gone', barIsGone);
+  });
+
+  Scenario("The phone's Back out of the Verse view while the answer waits leaves the bar too", ({ Given, And, When, Then }) => {
+    Given(readOn, () => open({ aloud: true, reply: 'answer' }));
+    And('he is in another app', () => setVisibility('hidden'));
+    And(askFirst, askIt);
+    And('the answer is shown and nothing is spoken', answerShownSilent);
+    And('he comes back to Lampas', () => setVisibility('visible'));
+    When("he presses the phone's Back", async () => {
+      act(() => window.history.back());
+      await waitFor(() => expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull());
+    });
+    Then('the bar at the top says {string}', barSays);
+    And('nothing is spoken yet', () => expect(synth.spoken).toHaveLength(0));
+  });
+
   Scenario('With the page in front the whole time there is no bar and the answer is read at once', ({ Given, And, Then }) => {
     Given(readOn, () => open({ aloud: true, reply: 'answer' }));
     And(askFirst, askIt);

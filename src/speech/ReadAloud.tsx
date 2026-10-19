@@ -12,7 +12,7 @@ import { readLessonsSetting } from '../settings/definitions';
 import { useSetting } from '../settings/store';
 import { hasGreekVoice, hasVoice, noVoiceHelp, onSpeechRefused, warmVoices } from './greek';
 import { pageRuns } from './pageRuns';
-import { getReading, startReading, stopAnswer, useReading, type Run } from './readAloud';
+import { getReading, startReading, stopAnswer, stopAnswerSpeech, useReading, type Run } from './readAloud';
 import { Icon } from './SpeakButton';
 
 const HELP_MS = 7000;
@@ -65,7 +65,7 @@ export function ReadAloud({ id, text, runs, className, auto = false }: {
     return () => {
       clearTimeout(timer.current);
       // leaving the screen ends its own reading, and only that
-      if (getReading().answer === mine) stopAnswer();
+      if (getReading().answer === mine) stopAnswerSpeech();
     };
   }, [mine]);
 

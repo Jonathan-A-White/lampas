@@ -88,3 +88,37 @@ test('the bar is above the Talk sheet and its backdrop, and a tap on it plays th
   await expect(sheet).toBeVisible();
   await shot(page, 'tutor-waiting-talk');
 });
+
+// Leaving the screen he asked from keeps the answer that waits: the bar stays over the Reader and plays it on his tap (mw-5r3p30.323).
+test('the phone\'s Back out of the Verse view keeps the bar over the Reader, and a tap on it plays the answer', async ({ page }) => {
+  const fake = await start(page);
+  const view = await chooseAction(page, 28, 'Ask the tutor');
+  await typeQuestion(page, 'What does συνεργεῖ mean here?');
+  await awayAndBack(page, fake, SYNERGEI_ANSWER);
+  // the bar covers the Verse view's own '‹ Reader' (its header is under the bar's top 48 px), so Back is how he leaves
+  await page.goBack();
+  await expect(view).toHaveCount(0);
+  await expectBarOnTop(page);
+  expect(await spoken(page)).toHaveLength(0);
+  await shot(page, 'tutor-waiting-reader');
+
+  await page.getByRole('button', { name: BAR, exact: true }).click();
+  await expect(page.getByRole('button', { name: BAR, exact: true })).toHaveCount(0);
+  await expect.poll(async () => (await spoken(page)).length).toBeGreaterThan(0);
+});
+
+test('the phone\'s Back out of the Talk sheet keeps the bar, and a tap on it plays the answer', async ({ page }) => {
+  const fake = await start(page);
+  await openTalkAbout(page, 28);
+  const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
+  await sheet.getByRole('textbox', { name: 'Your message' }).fill('What does συνεργεῖ mean here?');
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+  await awayAndBack(page, fake, TALK_ANSWER);
+  await page.goBack();
+  await expect(sheet).toHaveCount(0);
+  await expectBarOnTop(page);
+  expect(await spoken(page)).toHaveLength(0);
+
+  await page.getByRole('button', { name: BAR, exact: true }).click();
+  await expect.poll(async () => (await spoken(page)).length).toBeGreaterThan(0);
+});
