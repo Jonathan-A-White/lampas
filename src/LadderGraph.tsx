@@ -1,10 +1,10 @@
 // src/LadderGraph.tsx — the whole path (mw-foy5mb.5, #/path, PROVISIONAL): the grammar ladder drawn as a graph to look at, reached from the Goal screen.
 // Each idea of ladder.ts is a node, each need an edge, laid out by depth (pathGraph.ts layoutPath: the ideas that need nothing at the top, an idea below
 // all it needs). A node's colour is ideaState's (goalProgress.ts), the one reading of his levels Learn uses; the state is also written on the node, so
-// colour is never the only sign. SVG, panned with one finger and zoomed with two (or the buttons); a tap on a node opens that idea's sheet. Nothing
+// colour is never the only sign. SVG, panned with one finger and zoomed with two (or the buttons: Pan, Zoom; focus on a node pans it into view); a tap on a node opens that idea's sheet. Nothing
 // heavier until a path passes about 150 nodes (the ladder has 133).
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type FocusEvent as ReactFocusEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import type { Chapter, GreekWord } from './data/chapter';
 import { ideaState, levelsOf, STATE_NAMES, type IdeaState } from './data/grammar/goalProgress';
 import { ideaOf, LADDER_PATH } from './data/grammar/ladder';
@@ -21,6 +21,10 @@ const MIN_SCALE = 0.15;
 const MAX_SCALE = 2.5;
 /** How far a finger moves before a touch is a pan and no longer a tap. */
 const TAP_SLOP = 8;
+/** A pan button moves the picture by this part of the frame. */
+const PAN_STEP = 0.4;
+/** A focused node must lie this far (px) inside the frame, or focus pans it to the middle. */
+const FOCUS_MARGIN = 8;
 const ORDER: readonly IdeaState[] = ['solid', 'learning', 'next', 'notYet'];
 
 // Three calm colours and the plain one: solid green, learning amber, next a dashed outline in the text colour, not yet quiet. Shape differs too (the dashes, the weight).
@@ -30,6 +34,15 @@ const PAINT: Record<IdeaState, { fill: string; stroke: string; dash?: string; wi
   next: { fill: 'var(--lp-surface)', stroke: 'var(--lp-fg)', dash: '6 4', width: 2 },
   notYet: { fill: 'var(--lp-surface)', stroke: 'var(--lp-line)', width: 1.5 },
 };
+
+const ROUND = 'size-12 rounded-xl border border-line bg-surface text-2xl font-medium active:bg-line';
+// the picture moves the other way to the view: 'Pan left' shows what lies to the left, so the picture slides right
+const PANS = [
+  { name: 'Pan up', arrow: '↑', dx: 0, dy: 1 },
+  { name: 'Pan down', arrow: '↓', dx: 0, dy: -1 },
+  { name: 'Pan left', arrow: '←', dx: 1, dy: 0 },
+  { name: 'Pan right', arrow: '→', dx: -1, dy: 0 },
+] as const;
 
 interface View {
   x: number;
@@ -179,6 +192,19 @@ export function LadderGraph() {
     else gesture.current = null;
   };
 
+  /** The buttons that pan: a step is part of the frame, and 'Pan left' shows what lies to the left (the picture moves right). */
+  const panBy = (dx: number, dy: number): void => {
+    const box = frame.current!.getBoundingClientRect();
+    setView((v) => (v ? { ...v, x: v.x + dx * box.width * PAN_STEP, y: v.y + dy * box.height * PAN_STEP } : v));
+  };
+  /** Focus on a node (Tab, or a screen reader's swipe) that is not wholly in the frame brings it to the middle, so a keyboard reader reaches every idea. */
+  const onFocusNode = (event: ReactFocusEvent<SVGGElement>, id: string): void => {
+    const box = frame.current!.getBoundingClientRect();
+    const at = event.currentTarget.getBoundingClientRect();
+    const inside = at.left >= box.left + FOCUS_MARGIN && at.right <= box.right - FOCUS_MARGIN && at.top >= box.top + FOCUS_MARGIN && at.bottom <= box.bottom - FOCUS_MARGIN;
+    if (!inside && view) setView(centreOn(id, view.k));
+  };
+
   const open = (id: string): void => {
     if (!moved.current) setIdeaId(id);
   };
@@ -238,6 +264,7 @@ export function LadderGraph() {
                     transform={`translate(${n.x} ${n.y})`}
                     onClick={() => open(n.id)}
                     onKeyDown={(event) => onKey(event, n.id)}
+                    onFocus={(event) => onFocusNode(event, n.id)}
                     className="cursor-pointer outline-none focus-visible:[&>rect]:stroke-[4]"
                   >
                     <rect width={n.width} height={NODE_H} rx="10" style={style(state)} />
@@ -261,16 +288,25 @@ export function LadderGraph() {
             </g>
           </svg>
         ) : null}
-        <div className="absolute left-3 flex gap-2" style={{ bottom: 'calc(var(--lp-bar-inset) + 0.75rem)' }}>
-          <button type="button" aria-label="Zoom in" onClick={() => zoomBy(1.4)} className="size-12 rounded-xl border border-line bg-surface text-2xl font-medium active:bg-line">
-            +
-          </button>
-          <button type="button" aria-label="Zoom out" onClick={() => zoomBy(1 / 1.4)} className="size-12 rounded-xl border border-line bg-surface text-2xl font-medium active:bg-line">
-            −
-          </button>
-          <button type="button" onClick={() => setView(centreOn(placeToLook(), 0.8))} className="min-h-12 rounded-xl border border-line bg-surface px-3 text-base font-medium text-accent active:bg-line">
-            Where I am
-          </button>
+        <div className="absolute left-3 flex flex-col gap-2" style={{ bottom: 'calc(var(--lp-bar-inset) + 0.75rem)' }}>
+          <div role="group" aria-label="Pan" className="flex gap-2">
+            {PANS.map(({ name, arrow, dx, dy }) => (
+              <button key={name} type="button" aria-label={name} onClick={() => panBy(dx, dy)} className={ROUND}>
+                {arrow}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <button type="button" aria-label="Zoom in" onClick={() => zoomBy(1.4)} className={ROUND}>
+              +
+            </button>
+            <button type="button" aria-label="Zoom out" onClick={() => zoomBy(1 / 1.4)} className={ROUND}>
+              −
+            </button>
+            <button type="button" onClick={() => setView(centreOn(placeToLook(), 0.8))} className="min-h-12 rounded-xl border border-line bg-surface px-3 text-base font-medium text-accent active:bg-line">
+              Where I am
+            </button>
+          </div>
         </div>
       </div>
       {ideaId ? (

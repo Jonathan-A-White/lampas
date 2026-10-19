@@ -122,3 +122,45 @@ test('a tap on a node opens that idea, and Back from the path returns to Goal', 
   await page.getByRole('button', { name: '‹ Goal' }).click();
   await expect(page.getByRole('heading', { name: 'Goal', level: 1 })).toBeVisible();
 });
+
+/** The ideas whose node lies wholly inside the graph's own box, and whether the focused node does. */
+const insideFrame = (page: Page) =>
+  page.evaluate(() => {
+    const frame = document.querySelector('[data-testid="ladder-graph"]')!.getBoundingClientRect();
+    const inside = (r: DOMRect) => r.left >= frame.left && r.right <= frame.right && r.top >= frame.top && r.bottom <= frame.bottom;
+    return [...document.querySelectorAll('[data-idea]')].filter((n) => inside(n.getBoundingClientRect())).map((n) => n.getAttribute('data-idea')!);
+  });
+
+test('from the keyboard: Tab brings each idea into the graph, and the pan buttons move it', async ({ page }) => {
+  await openGraph(page);
+  const frame = page.getByTestId('ladder-graph');
+  const ideas = page.locator('[data-idea]');
+  await page.getByRole('button', { name: '‹ Goal' }).focus();
+  await page.keyboard.press('Tab');
+  await expect(ideas.first()).toBeFocused();
+
+  // every idea, the first to the last, is wholly in the graph's box when Tab reaches it
+  const box = (await frame.boundingBox())!;
+  for (let i = 0; i < LADDER.length; i += 1) {
+    const focused = page.locator('[data-idea]:focus');
+    await expect(focused).toHaveCount(1);
+    const at = (await focused.boundingBox())!;
+    const id = await focused.getAttribute('data-idea');
+    expect(at.x, `${id} (${i}) left`).toBeGreaterThanOrEqual(box.x);
+    expect(at.x + at.width, `${id} (${i}) right`).toBeLessThanOrEqual(box.x + box.width);
+    expect(at.y, `${id} (${i}) top`).toBeGreaterThanOrEqual(box.y);
+    expect(at.y + at.height, `${id} (${i}) bottom`).toBeLessThanOrEqual(box.y + box.height);
+    await page.keyboard.press('Tab');
+  }
+
+  // the pan buttons come after the ideas and each moves what is in view
+  await page.getByRole('button', { name: 'Where I am' }).click();
+  for (const name of ['Pan up', 'Pan left', 'Pan down', 'Pan right']) {
+    const before = (await insideFrame(page)).join();
+    const world = await worldAt(page);
+    await page.getByRole('button', { name }).click();
+    expect(await worldAt(page), `${name} moves the picture`).not.toBe(world);
+    expect((await insideFrame(page)).join(), `${name} changes the ideas in view`).not.toBe(before);
+  }
+  await shot(page, 'ladder-graph-keyboard');
+});
