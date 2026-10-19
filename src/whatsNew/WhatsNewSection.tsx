@@ -1,6 +1,6 @@
 // src/whatsNew/WhatsNewSection.tsx: About's What's new: Check for updates, then every version with its lines, newest first.
 import { CheckForUpdates } from 'pwa-kit/whats-new';
-import { applyUpdate, useUpdateState } from '../services/appUpdate';
+import { applyUpdate, useUpdateState } from 'pwa-kit/app-update';
 import { useAppChangelog } from './useAppChangelog';
 import { Versions } from './Versions';
 

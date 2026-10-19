@@ -8,8 +8,9 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { fetchChangelog, versionLink } from 'pwa-kit/whats-new';
 import { About } from '../../src/About';
 import { APP_SEMVER, LAST_SEEN_VERSION_STORAGE_KEY, REPO, REPO_PUBLIC } from '../../src/config';
-import { startAppUpdates } from '../../src/services/appUpdate';
+import { startAppUpdates } from 'pwa-kit/app-update';
 import { UpdateBanner } from '../../src/UpdateBanner';
+import { hasNewsSince } from '../../src/whatsNew/hasNewsSince';
 import { WhatsNewOnUpdate } from '../../src/whatsNew/WhatsNewOnUpdate';
 import { fakeSetup, fakeWorker, type FakeWorker } from '../../tests/support/fake-registration';
 import {
@@ -49,13 +50,10 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
     stubChangelog(entries);
     waiting = fakeWorker();
     const setup = fakeSetup({ waiting });
-    stop = startAppUpdates({
-      container: setup.container,
-      registration: setup.registration,
-      reload: setup.reload,
-      changelog: () => fetchChangelog('/'),
-      version: APP_SEMVER,
-    }).stop;
+    stop = startAppUpdates(
+      { container: setup.container, registration: setup.registration, reload: setup.reload },
+      { version: APP_SEMVER, hasNewsSince: hasNewsSince(() => fetchChangelog('/')) },
+    ).stop;
     render(<UpdateBanner />);
   }
 

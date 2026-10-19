@@ -3,7 +3,8 @@
 // uses it. A build with a line to show keeps the banner and waits for his tap. An unreadable changelog keeps the banner.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ChangelogEntry } from 'pwa-kit/whats-new';
-import { getUpdateState, startAppUpdates, type AppUpdates, type UpdateState } from '../../src/services/appUpdate';
+import { getUpdateState, startAppUpdates, type AppUpdates, type UpdateState } from 'pwa-kit/app-update';
+import { hasNewsSince } from '../../src/whatsNew/hasNewsSince';
 import { fakeSetup, fakeWorker } from '../support/fake-registration';
 
 const RUNNING = '0.1.120';
@@ -40,7 +41,10 @@ afterEach(() => {
 });
 
 function start(setup: ReturnType<typeof fakeSetup>, changelog: () => Promise<ChangelogEntry[] | null>) {
-  updates = startAppUpdates({ container: setup.container, registration: setup.registration, reload: setup.reload, changelog, version: RUNNING });
+  updates = startAppUpdates(
+    { container: setup.container, registration: setup.registration, reload: setup.reload },
+    { version: RUNNING, hasNewsSince: hasNewsSince(changelog) },
+  );
 }
 
 describe('a waiting build with nothing new to show', () => {

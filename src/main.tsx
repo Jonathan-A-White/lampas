@@ -5,6 +5,7 @@ import 'pwa-kit/whats-new/styles.css';
 import 'voice-kit/speech/styles.css';
 import 'voice-kit/composer/styles.css';
 import { registerSW } from 'virtual:pwa-register';
+import { startAppUpdates } from 'pwa-kit/app-update';
 import { fetchChangelog } from 'pwa-kit/whats-new';
 import { App } from './App';
 import { restoreAppearance } from './appearance/appearanceSync';
@@ -14,9 +15,9 @@ import { LicenceProvider } from './gate/LicenceProvider';
 import { noteVisit } from './gate/licenceTip';
 import { restoreLastRoute } from './nav/lastRoute';
 import { restoreScrolls } from './nav/scrollMemory';
-import { startAppUpdates } from './services/appUpdate';
 import { startBookRequests } from './services/bookRequests';
 import { LicensedTips } from './tips/LicensedTips';
+import { hasNewsSince } from './whatsNew/hasNewsSince';
 import { installScrollGuard } from './ui/scrollGuard';
 
 installScrollGuard();
@@ -43,18 +44,15 @@ createRoot(document.getElementById('root')!).render(
 
 // vite.config.ts: registerType 'prompt', so a new build waits for his tap on the banner. The registration
 // goes to the update logic, which shows the banner, sends SKIP_WAITING on the tap, reloads once, and
-// looks for a new build (src/services/appUpdate.ts).
+// looks for a new build (pwa-kit/app-update).
 registerSW({
   immediate: true,
   onRegisteredSW(_url, registration) {
     if (registration) {
-      startAppUpdates({
-        container: navigator.serviceWorker,
-        registration,
-        reload: () => window.location.reload(),
-        changelog: () => fetchChangelog(import.meta.env.BASE_URL),
-        version: APP_SEMVER,
-      });
+      startAppUpdates(
+        { container: navigator.serviceWorker, registration, reload: () => window.location.reload() },
+        { version: APP_SEMVER, hasNewsSince: hasNewsSince(() => fetchChangelog(import.meta.env.BASE_URL)) },
+      );
     }
   },
 });

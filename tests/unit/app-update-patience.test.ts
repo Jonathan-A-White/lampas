@@ -2,7 +2,7 @@
 // 2026-10-18, class from TradeTracker mw-iy99ci.20): if the new worker has not taken over within the patience,
 // the page reloads anyway, once, whether or not a worker still waits.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { applyUpdate, getUpdateState, startAppUpdates, TAKE_OVER_PATIENCE_MS, type AppUpdates } from '../../src/services/appUpdate';
+import { applyUpdate, getUpdateState, startAppUpdates, TAKE_OVER_PATIENCE_MS, type AppUpdates } from 'pwa-kit/app-update';
 import { fakeSetup, fakeWorker } from '../support/fake-registration';
 
 let updates: AppUpdates | undefined;
