@@ -11,6 +11,8 @@ test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 interface Fs {
   requests: number;
   exits: number;
+  /** the phone ends full screen on its own: the element goes and `fullscreenchange` fires, with no call of the page's */
+  leaveByItself(): void;
 }
 declare global {
   interface Window {
@@ -20,12 +22,25 @@ declare global {
 
 type Mode = 'works' | 'rejects' | 'absent';
 
+/** The phone leaves full screen by its own doing (Android Back, the swipe Chrome's notice offers): no exitFullscreen call of the page's, only the change. */
+const leaveByItself = (page: Page) =>
+  page.evaluate(() => {
+    window.__fs.leaveByItself();
+  });
+
 /** Stands in for the Fullscreen API before the page's own scripts run. */
 async function fakeFullscreen(page: Page, mode: Mode) {
   await page.addInitScript((m: Mode) => {
-    const fs = { requests: 0, exits: 0 };
-    window.__fs = fs;
     let element: Element | null = null;
+    const fs = {
+      requests: 0,
+      exits: 0,
+      leaveByItself() {
+        element = null;
+        document.dispatchEvent(new Event('fullscreenchange'));
+      },
+    };
+    window.__fs = fs;
     Object.defineProperty(document, 'fullscreenElement', { configurable: true, get: () => element });
     if (m === 'absent') {
       // a phone with no Fullscreen API: neither method exists
@@ -90,7 +105,7 @@ async function openReader(page: Page, immersive: 'on' | 'off', mode: Mode = 'wor
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 }
 
-const counts = (page: Page) => page.evaluate(() => ({ ...window.__fs }));
+const counts = (page: Page) => page.evaluate(() => ({ requests: window.__fs.requests, exits: window.__fs.exits }));
 const fullScreen = (page: Page) => page.evaluate(() => document.fullscreenElement !== null);
 const scrollText = (page: Page, by: number) =>
   page.evaluate((px) => {
@@ -219,4 +234,48 @@ test('where the phone has no full-screen API, the Reader still works', async ({ 
   await page.getByRole('button', { name: 'Settings' }).click();
   await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
   expect(errors).toEqual([]);
+});
+
+// The phone ends full screen by itself (mw-5r3p30.330): the next tap or scroll asks again, without a trip out of the Reader or two two-finger taps.
+test('after the phone leaves full screen by itself, the next tap asks for it again', async ({ page }) => {
+  await openReader(page, 'on');
+  await tapText(page);
+  await expect.poll(() => counts(page)).toEqual({ requests: 1, exits: 0 });
+  await scrollText(page, 400);
+  await expect(page.locator('header').first()).toBeHidden();
+
+  await leaveByItself(page);
+  expect(await fullScreen(page)).toBe(false);
+  await page.waitForTimeout(300);
+  expect((await counts(page)).requests).toBe(1);
+
+  await tapText(page);
+  await expect.poll(() => counts(page)).toEqual({ requests: 2, exits: 0 });
+  expect(await fullScreen(page)).toBe(true);
+
+  // and asked for once more, not on every tap after it
+  await tapText(page);
+  await scrollText(page, 300);
+  await page.waitForTimeout(400);
+  expect((await counts(page)).requests).toBe(2);
+});
+
+test('after the phone leaves full screen by itself, the next scroll asks for it again', async ({ page }) => {
+  await openReader(page, 'on');
+  await scrollText(page, 400);
+  await expect.poll(() => counts(page)).toEqual({ requests: 1, exits: 0 });
+  await leaveByItself(page);
+  await scrollText(page, 300);
+  await expect.poll(() => counts(page)).toEqual({ requests: 2, exits: 0 });
+});
+
+test('a full screen the Reader leaves itself is not asked for again', async ({ page }) => {
+  await openReader(page, 'on');
+  await tapText(page);
+  await expect.poll(() => counts(page)).toEqual({ requests: 1, exits: 0 });
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect.poll(() => counts(page)).toEqual({ requests: 1, exits: 1 });
+  await page.waitForTimeout(400);
+  expect(await counts(page)).toEqual({ requests: 1, exits: 1 });
 });
