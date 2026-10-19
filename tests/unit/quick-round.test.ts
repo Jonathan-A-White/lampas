@@ -2,7 +2,7 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { fixturePath } from '../support/fixture-path';
 import { db } from '../../src/data/db';
-import { gapsOf, groupIsSolid, lettersText } from '../../src/data/grammar/inference';
+import { gapsOf, groupIsSolid, isSolid, lettersText } from '../../src/data/grammar/inference';
 import { LADDER, ITEM_GROUPS, ideaOf, itemName, itemsOf } from '../../src/data/grammar/ladder';
 import { ideaSound } from '../../src/data/grammar/lessons';
 import { pronunciationOf } from '../../src/speech/pronunciation';
@@ -204,6 +204,17 @@ describe('the gaps', () => {
     const only = learnNext(needs, fixturePath, allSolid(['diphthong-ou']))!;
     expect(only.gaps?.map((i) => i.id)).toEqual(['diphthong-ou']);
     expect(learnNext(needs, fixturePath, allSolid())!.idea.id).toBe('accents');
+  });
+});
+
+describe('a group he marked known by hand', () => {
+  it('counts for each of its items, the one reader isSolid being the rule', () => {
+    const levels = new Map<string, Level>([['alphabet', 'solid'], ['letter-omicron', 'notYet'], ['letter-xi', 'solid']]);
+    expect(isSolid(levels, 'letter-omicron')).toBe(true);
+    expect(isSolid(levels, 'diphthong-ou')).toBe(false);
+    expect(gapsOf(levels)).toEqual([]);
+    expect(groupIsSolid(levels, 'alphabet')).toBe(true);
+    expect(quickItems(levels, 1).some((q) => q.id.startsWith('letter-'))).toBe(false);
   });
 });
 

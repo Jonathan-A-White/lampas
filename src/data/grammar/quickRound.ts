@@ -9,6 +9,7 @@ import type { Random } from '../quiz';
 import { chosenPronunciation } from '../../speech/greek';
 import type { Pronunciation } from '../../speech/pronunciation';
 import { ITEM_GROUPS, ideaOf, itemFacet, itemsOf, type GrammarIdea } from './ladder';
+import { weakItems } from './inference';
 import { ideaChoice, ideaSound } from './lessons';
 import type { Level } from './needs';
 import type { GrammarQuestion } from './questions';
@@ -45,7 +46,7 @@ export interface QuickRound {
  * whole) is passed over. Modes alternate, from the seed, 'hear' and 'see'; a breathing is always seen.
  */
 export function quickItems(levels: ReadonlyMap<string, Level>, seed: number, claimed: ReadonlySet<string> = new Set()): QuickItem[] {
-  const weak = ITEM_GROUPS.filter((group) => !claimed.has(group)).flatMap((group) => itemsOf(group).filter((i) => levels.get(i.id) !== 'solid'));
+  const weak = ITEM_GROUPS.filter((group) => !claimed.has(group)).flatMap((group) => weakItems(levels, group));
   return weak.slice(0, QUICK_LIMIT).map((idea, n) => ({ id: idea.id, mode: idea.parent === 'breathings' || (n + seed) % 2 === 1 ? 'see' : 'hear' }));
 }
 

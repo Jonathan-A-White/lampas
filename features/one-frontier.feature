@@ -58,3 +58,9 @@ Feature: One frontier idea at a time
     When he taps "Stay here"
     Then he is then asked "You are learning The Greek alphabet. Switch to The noun?"
     And "alphabet" still holds the frontier
+
+  Scenario: The Greek alphabet marked known by hand while omicron is still Not yet leaves no letter for Learn next or the gaps list
+    Given he marked "alphabet" known by hand while "letter-omicron" is still Not yet and the other letters are solid
+    When Learn next and the gaps list are read
+    Then the gaps list names no letter of the alphabet
+    And Learn next names no letter of the alphabet
