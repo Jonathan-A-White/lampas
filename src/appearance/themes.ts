@@ -35,3 +35,12 @@ export const THEME_COLORS = { dark: '#0a0e17', light: '#f3f5f9', sepia: '#f4ecd8
 export function paletteOf(theme: Theme, phoneIsDark: boolean): keyof typeof THEME_COLORS {
   return theme === 'phone' ? (phoneIsDark ? 'dark' : 'light') : theme;
 }
+
+/** The bar's colour while the Immersive reader is open in the dark palette: the page is pure black there (src/index.css), so the bar is too (mw-5r3p30.595). */
+export const IMMERSIVE_DARK_BAR = '#000000';
+
+/** The colour of the browser's bar: the palette's, or pure black for the dark palette under an open Immersive reader. */
+export function barColourOf(theme: Theme, phoneIsDark: boolean, immersiveReader: boolean): string {
+  const palette = paletteOf(theme, phoneIsDark);
+  return palette === 'dark' && immersiveReader ? IMMERSIVE_DARK_BAR : THEME_COLORS[palette];
+}

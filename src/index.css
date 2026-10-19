@@ -606,6 +606,11 @@ textarea,
   }
 }
 
+/* The Talk band at the foot is the page's black too while the bars are shown (mw-5r3p30.595); --lp-reader-bg is set only in the two scopes above. */
+[data-talk-bar] {
+  background-color: var(--lp-reader-bg, var(--lp-surface));
+}
+
 @media (prefers-reduced-motion: reduce) {
   .away-box,
   .away-box[data-away],

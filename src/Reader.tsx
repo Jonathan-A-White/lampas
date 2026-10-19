@@ -12,6 +12,7 @@ import type { ReadHold } from './ReadCheck';
 import { VerseView } from './VerseView';
 import { useVerseAction } from './verse/action';
 import { Away } from './Away';
+import { setImmersiveReader } from './appearance/appearanceSync';
 import { useImmersive, useImmersiveSetting, useScrolledPercent } from './immersive';
 import { PlaceLine } from './PlaceLine';
 import { ImmersiveHint } from './ImmersiveHint';
@@ -138,6 +139,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   );
   // The Immersive reader (src/immersive.ts): the bars slide away while he scrolls the text down.
   const bars = useImmersive(immersive, main);
+  useEffect(() => {
+    setImmersiveReader(immersive);
+    return () => setImmersiveReader(false);
+  }, [immersive]);
   const percent = useScrolledPercent(immersive, main);
   const reading = useReading();
   const address = useAddress();
