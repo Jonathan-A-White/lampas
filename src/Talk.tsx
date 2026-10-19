@@ -37,7 +37,7 @@ import { stopOnTap } from './speech/tutorVoice';
 import { ReadAloud } from './speech/ReadAloud';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { answerRuns } from './speech/answerRuns';
-import { focusOnMount, focusQuietly } from './ui/focus';
+import { focusQuietly } from './ui/focus';
 import { HoldBar } from './ui/HoldBar';
 import { PendingQuestion } from './ui/PendingQuestion';
 import type { HoldHandlers } from './ui/holdPress';
@@ -49,6 +49,8 @@ import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import type { AskState } from './useAsks';
 import type { Voice } from './useVoice';
 import { WordSheet, type Lookup, type TermAsk, type WordHelp } from './WordSheet';
+import { GREEK_LANG } from './script/greekLang';
+import { announce, plainText } from './ui/live';
 
 /** The bar pinned at the bottom of the reader: Postern's big hold-to-talk bar (src/ui/HoldBar.tsx) labelled Talk. A tap opens
  * the sheet; a hold (half a second) opens it and listens, and what he says goes on release. It is the lowest bar, so it alone
@@ -156,7 +158,7 @@ function WordsLine({ lemmas, before, after }: { lemmas: string[]; before: string
       {lemmas.map((l, i) => (
         <span key={l}>
           {i > 0 ? (i === lemmas.length - 1 ? ' and ' : ', ') : ''}
-          <span lang="grc" className="font-greek text-lg">
+          <span {...GREEK_LANG} className="font-greek text-lg">
             {l}
           </span>
         </span>
@@ -438,20 +440,20 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
                     {found ? (
                       <button
                         type="button"
-                        lang="grc"
+                        {...GREEK_LANG}
                         onClick={() => onLook(lookupFor(scope, found))}
                         className="min-h-11 break-words rounded-lg px-1 text-left font-greek text-2xl text-accent active:bg-line"
                       >
                         {w.greek}
                       </button>
                     ) : (
-                      <span lang="grc" className="block min-h-11 break-words px-1 font-greek text-2xl leading-[44px]">
+                      <span {...GREEK_LANG} className="block min-h-11 break-words px-1 font-greek text-2xl leading-[44px]">
                         {w.greek}
                       </span>
                     )}
                   </dt>
                   <dd className="min-w-0 flex-1 break-words pt-2 text-base">
-                    <span lang="grc" className="font-greek text-lg">
+                    <span {...GREEK_LANG} className="font-greek text-lg">
                       {w.lemma}
                     </span>
                     <span className="text-muted"> — {w.note}</span>
@@ -566,6 +568,20 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
     keptTurns.current = turns;
   });
   const offersOpen = useRef<Set<number>>(new Set());
+  // The tutor's answer, when it arrives, is said to a screen reader through the app's one live region (src/ui/live.ts). The turns that were there when the sheet
+  // opened are not news, and neither is a turn that changes (an offer settled): only a newer last turn is announced.
+  const announced = useRef<number | null | undefined>(undefined);
+  useEffect(() => {
+    if (!turns) return;
+    const newest = turns[turns.length - 1];
+    if (announced.current === undefined) {
+      announced.current = newest?.id ?? null;
+      return;
+    }
+    if (newest?.id === undefined || newest.id === announced.current) return;
+    announced.current = newest.id;
+    announce(`The tutor says: ${plainText(newest.a)}`);
+  }, [turns]);
   useEffect(() => {
     if (waiting) offersOpen.current = new Set((keptTurns.current ?? []).filter((t) => t.id !== undefined && t.feedbackOffer && !t.feedbackSent && !t.feedbackWithdrawn).map((t) => t.id as number));
   }, [waiting]);
@@ -756,7 +772,6 @@ export function TalkSheet({ scope, talkRef: ref, state: liveState, voice, sugges
               ) : null}
               <button
                 type="button"
-                ref={focusOnMount}
                 onClick={onClose}
                 className="min-h-11 min-w-11 shrink-0 rounded-lg px-3 text-base font-medium text-accent"
               >

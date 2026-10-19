@@ -17,6 +17,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
+import { findStatusLine } from '../../tests/support/status';
 
 afterAll(() => {
   cleanup();
@@ -103,7 +104,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Reader is open on {string}', onThe);
     And('the Talk sheet is closed', sheetGone);
     And('the Reader says {string}', async (_, line: string) => {
-      expect(await screen.findByRole('status')).toHaveTextContent(line);
+      expect(await findStatusLine()).toHaveTextContent(line);
       expect(await screen.findByRole('button', { name: /Colossians 1/ })).toBeInTheDocument();
     });
     When("he taps the phone's Back", async () => {
@@ -171,7 +172,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Reader is open on {string}', onThe);
     And('the Talk sheet is closed', sheetGone);
     And('the Reader says {string}', async (_, line: string) => {
-      expect(await screen.findByRole('status')).toHaveTextContent(line);
+      expect(await findStatusLine()).toHaveTextContent(line);
     });
   });
 
@@ -240,7 +241,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the Reader is open on {string}', onThe);
     And('the Reader says {string}', async (_, line: string) => {
-      expect(await screen.findByRole('status')).toHaveTextContent(line);
+      expect(await findStatusLine()).toHaveTextContent(line);
     });
     When("he taps the phone's Back", async () => {
       window.history.back();

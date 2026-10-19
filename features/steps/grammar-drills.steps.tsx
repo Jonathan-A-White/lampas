@@ -322,7 +322,7 @@ describeFeature(feature, ({ Scenario }) => {
       const form = screen.getByTestId('grammar-form');
       expect(form.textContent).toBe(expected!.form);
       expect(form.className).toMatch(/text-[45]xl/);
-      expect(form.getAttribute('lang')).toBe('grc');
+      expect(form.getAttribute('lang')).toBe('el');
       expect(screen.getByTestId('tap-to-hear')).toBeTruthy();
       const english = optionButtons().map((b) => b.textContent);
       expect(english).toHaveLength(4);

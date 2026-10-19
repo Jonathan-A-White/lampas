@@ -7,6 +7,7 @@ import { KNEW_IT } from './review/kinds';
 import { SelfGrade } from './ui/SelfGrade';
 import { TapToHear } from './TapToHear';
 import { WordPicture } from './WordPicture';
+import { GREEK_LANG } from './script/greekLang';
 
 interface Props {
   question: Question;
@@ -24,7 +25,7 @@ export function Flashcard({ question, picked, onPick }: Props) {
         <div className="flex flex-wrap items-center justify-center gap-4">
           {shown ? <WordPicture lemma={question.lemma} size={80} testId="picture" /> : null}
           {/* always the dictionary form, never the form the chapter has */}
-          <p data-testid="prompt" data-lemma={question.lemma} lang="grc" className="min-w-0 break-words font-greek text-5xl">
+          <p data-testid="prompt" data-lemma={question.lemma} {...GREEK_LANG} className="min-w-0 break-words font-greek text-5xl">
             {question.lemma}
           </p>
         </div>

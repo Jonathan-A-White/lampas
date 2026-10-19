@@ -86,7 +86,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 in the Greek view', () => open('greek'));
     When('he taps the number of verse 22', tapNumber);
     Then('the Verse view is headed {string}', headed);
-    And('the Verse view shows the Greek of verse 22 in Greek type', showsVerse('greek', 'grc'));
+    And('the Verse view shows the Greek of verse 22 in Greek type', showsVerse('greek', 'el'));
     And('the verse comes before the control at the foot', verseBeforeRead);
   });
 
@@ -111,7 +111,7 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(await within(panel()).findByRole('button', { name, exact: true }));
     });
     Then('the Verse view is headed {string}', headed);
-    And('the Verse view shows the Greek of verse 22 in Greek type', showsVerse('greek', 'grc'));
+    And('the Verse view shows the Greek of verse 22 in Greek type', showsVerse('greek', 'el'));
   });
 
   const tapNumberOf = (n: number) => async () => {
@@ -132,7 +132,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Verse view\'s verse has the same words as the reader\'s line for verse 1', sameWords);
     And('the Verse view\'s verse has a Greek word woven in', async () => {
       await hasWoven();
-      expect(sheetVerse().querySelector('[data-woven]')).toHaveAttribute('lang', 'grc');
+      expect(sheetVerse().querySelector('[data-woven]')).toHaveAttribute('lang', 'el');
     });
     And('the Verse view\'s woven words are tappable like the reader\'s', async () => {
       await user.click(sheetVerse().querySelector('[data-woven]') as HTMLElement);

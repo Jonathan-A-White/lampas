@@ -28,7 +28,7 @@ async function put(page: Page, store: 'reviews' | 'settings', rows: object[]) {
   );
 }
 
-test('the Greek words of a Movable letters prompt are lang grc, in the Greek face, at the size of the choices', async ({ page }) => {
+test('the Greek words of a Movable letters prompt are lang el, in the Greek face, at the size of the choices', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/');
   await waitForDue(page);
@@ -41,7 +41,7 @@ test('the Greek words of a Movable letters prompt are lang grc, in the Greek fac
   await expect(prompt).toHaveAttribute('data-idea', 'movable-letters');
   await expect(prompt).toContainText('Which fits?');
 
-  const spans = prompt.locator('[lang="grc"]');
+  const spans = prompt.locator('[lang="el"]');
   expect(await spans.count()).toBeGreaterThan(0);
   const face = (el: Element) => getComputedStyle(el).fontFamily;
   const size = (el: Element) => parseFloat(getComputedStyle(el).fontSize);

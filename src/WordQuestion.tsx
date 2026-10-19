@@ -1,9 +1,12 @@
 // src/WordQuestion.tsx — one word question: the Greek word (with its picture and the form's verse), the Tap to hear bar,
 // four glosses to tap, and the line that says right or wrong. The Quick test and Review both draw their questions with it.
+import { useEffect } from 'react';
 import type { Question } from './data/quiz';
 import { TapToHear } from './TapToHear';
+import { announce } from './ui/live';
 import { useSettled } from './ui/settle';
 import { WordPicture } from './WordPicture';
+import { GREEK_LANG } from './script/greekLang';
 
 const OPTION_BASE = 'block min-h-14 w-full rounded-xl border px-4 py-3 text-left text-lg disabled:opacity-100';
 const OPTION_LOOK = {
@@ -31,12 +34,15 @@ export function WordQuestion({ question, index, picked, onPick }: Props) {
     if (option === question.gloss) return 'right';
     return option === picked ? 'wrong' : 'other';
   };
+  // the line under the options is not a live region: the result is said once, when he answers, through the app's one (src/ui/live.ts)
+  const feedback = !answered ? '' : picked === question.gloss ? 'Right.' : `Not quite. It means: ${question.gloss}`;
+  useEffect(() => announce(feedback), [feedback]);
   return (
     <>
       <div className="text-center">
         <div className="flex flex-wrap items-center justify-center gap-4">
           <WordPicture lemma={question.lemma} size={80} testId="picture" />
-          <p data-testid="prompt" data-lemma={question.lemma} lang="grc" className="min-w-0 break-words font-greek text-5xl">
+          <p data-testid="prompt" data-lemma={question.lemma} {...GREEK_LANG} className="min-w-0 break-words font-greek text-5xl">
             {question.prompt}
           </p>
         </div>
@@ -47,7 +53,7 @@ export function WordQuestion({ question, index, picked, onPick }: Props) {
         >
           {answered && question.form ? (
             <>
-              in {question.reference} as <span lang="grc">{question.form}</span>
+              in {question.reference} as <span {...GREEK_LANG}>{question.form}</span>
             </>
           ) : (
             ''
@@ -76,8 +82,8 @@ export function WordQuestion({ question, index, picked, onPick }: Props) {
           );
         })}
       </ul>
-      <p data-testid="feedback" role="status" className="mt-4 min-h-12 text-center text-lg">
-        {!answered ? '' : picked === question.gloss ? 'Right.' : `Not quite. It means: ${question.gloss}`}
+      <p data-testid="feedback" className="mt-4 min-h-12 text-center text-lg">
+        {feedback}
       </p>
     </>
   );

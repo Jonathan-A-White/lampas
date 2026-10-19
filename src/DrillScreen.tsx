@@ -17,6 +17,7 @@ import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { focusOnMount } from './ui/focus';
 import { NextBar } from './ui/NextBar';
 import { useSettled } from './ui/settle';
+import { GREEK_LANG } from './script/greekLang';
 
 interface Session {
   status: 'loading' | 'offer' | 'failed' | 'ready';
@@ -83,7 +84,7 @@ function VerseWithWord({ q }: { q: DrillQuestion }) {
     <p
       ref={box}
       data-testid="drill-verse"
-      lang="grc"
+      {...GREEK_LANG}
       className="relative max-h-[20dvh] overflow-y-auto overscroll-contain rounded-xl border border-line bg-surface px-3 py-2 font-greek text-2xl leading-snug"
     >
       {q.words.map((w, i) => (
@@ -221,7 +222,7 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
               <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
                 {s.missed.map((i) => (
                   <li key={i} data-missed={s.questions[i].lemma} className="px-3 py-2">
-                    <span lang="grc" className="block break-words font-greek text-2xl">{s.questions[i].form}</span>
+                    <span {...GREEK_LANG} className="block break-words font-greek text-2xl">{s.questions[i].form}</span>
                     <span className="block break-words text-sm text-muted">
                       {s.questions[i].reference}: {s.questions[i].parsing}
                     </span>
@@ -294,7 +295,7 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
         <p className="mt-1 text-sm text-muted">{question.reference}</p>
         <p data-testid="drill-step" data-step-id={step.id} className="mt-3 text-center text-xl font-semibold">
           What is the {step.label.toLowerCase()} of{' '}
-          <span lang="grc" className="font-greek text-2xl">
+          <span {...GREEK_LANG} className="font-greek text-2xl">
             {question.form}
           </span>
           ?

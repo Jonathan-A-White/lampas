@@ -15,6 +15,7 @@ import { fetchLicenceStatus } from '../../src/services/licenceCheck';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { LicenceProbe } from '../../tests/support/licence-probe';
 import { addMint, HOLDER, HOLDER_PUB, ISSUER_PUB, newChain, SITE_ISSUER, SITE_ISSUER_PUB } from '../../tests/support/licence-chain';
+import { statusLine } from '../../tests/support/status';
 
 afterAll(() => {
   cleanup();
@@ -142,7 +143,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('he taps Check again', () => tap('Check again'));
     Then('the Licence page says {string}', async (_, words: string) => {
-      await waitFor(() => expect(within(screen.getByRole('status')).getByText(words)).toBeInTheDocument());
+      await waitFor(() => expect(within(statusLine()).getByText(words)).toBeInTheDocument());
       expect(screen.getByTestId('licence-state').textContent).toBe('licensed');
     });
   });

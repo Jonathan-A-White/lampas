@@ -35,6 +35,7 @@ import { ReviewScreen } from './ReviewScreen';
 import { Today } from './today/Today';
 import { SettingsScreen } from './SettingsScreen';
 import { BarSlot, LampasSpeakingBar } from './speech/SpeakingBarSlot';
+import { LiveRegion } from './ui/LiveRegion';
 import { startSpeechSettingsSync } from './speech/settingsSync';
 import { startUsageLog } from './tips/usageLog';
 import { HearAnyWord } from './ui/HearAnyWord';
@@ -145,6 +146,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
       {/* the one bar for anything read aloud (voice-kit/speech): drawn into the highest BarSlot on screen, this one at the shell's foot when no screen has its own */}
       <BarSlot level={0} inset />
       <LampasSpeakingBar />
+      {/* the one polite live region: the tutor's answers, a grading result and the reading's marks are said to a screen reader through it (src/ui/live.ts) */}
+      <LiveRegion />
     </div>
   );
 }

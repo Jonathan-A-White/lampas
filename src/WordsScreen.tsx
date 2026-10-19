@@ -13,6 +13,7 @@ import { NO_SELECT, useLongPress } from './ui/longPress';
 import { focusOnMount } from './ui/focus';
 import { useSettleAround } from './ui/settle';
 import { WordPicture } from './WordPicture';
+import { GREEK_LANG } from './script/greekLang';
 
 const NEXT: Record<WordState, WordState> = { solid: 'learning', learning: 'dropped', dropped: 'learning' };
 
@@ -39,7 +40,7 @@ function WordRow({ word: w, onTap }: { word: Word; onTap: (w: Word) => void }) {
       >
         <WordPicture lemma={w.lemma} size={56} className={w.state === 'dropped' ? 'opacity-50' : ''} />
         <span className="min-w-0 flex-1">
-          <span lang="grc" className={`block break-words font-greek text-2xl ${w.state === 'dropped' ? 'text-muted' : ''}`}>
+          <span {...GREEK_LANG} className={`block break-words font-greek text-2xl ${w.state === 'dropped' ? 'text-muted' : ''}`}>
             {w.lemma}
           </span>
           <span className="block break-words text-sm text-muted">{w.gloss}</span>
@@ -141,7 +142,7 @@ export function WordsScreen() {
             className="w-full rounded-t-2xl border-t border-line bg-surface p-4 pb-[calc(1rem+var(--lp-bar-inset))]"
           >
             <h2 id="drop-title" className="text-lg font-semibold">
-              Drop <span lang="grc" className="font-greek text-2xl">{confirming}</span>?
+              Drop <span {...GREEK_LANG} className="font-greek text-2xl">{confirming}</span>?
             </h2>
             <p className="mt-1 text-muted">A dropped word is no longer tested. Tap it again to bring it back.</p>
             <div className="mt-4 grid grid-cols-2 gap-3">

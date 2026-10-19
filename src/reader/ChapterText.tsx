@@ -9,6 +9,7 @@ import { VersePlay } from '../speech/ReadControls';
 import type { Lookup } from '../WordSheet';
 import { READING_CLASS, textClass } from './textClass';
 import { VerseNumber, VerseText, type VerseProps, type VerseTalk } from './VerseText';
+import { langOf } from '../script/greekLang';
 
 /** Verse by verse: one verse per line, its number a button before it (a tap opens the Verse view, src/VerseView.tsx). */
 export function VerseLine(props: VerseProps) {
@@ -18,7 +19,7 @@ export function VerseLine(props: VerseProps) {
       data-verse={verse.n}
       data-selected={selected}
       data-reading={reading || undefined}
-      lang={view === 'greek' ? 'grc' : 'en'}
+      {...langOf(view === 'greek')}
       className={`mb-1 break-words rounded-xl px-2 leading-(--lp-leading) ${reading ? READING_CLASS : selected ? 'bg-accent/15' : ''} ${textClass(view)}`}
     >
       <VerseNumber
@@ -52,7 +53,7 @@ export function ParagraphView({ verses, view, woven, selected, reading, onSelect
   talk: VerseTalk;
 }) {
   return (
-    <p data-paragraph lang={view === 'greek' ? 'grc' : 'en'} className={`mb-2 break-words px-2 leading-(--lp-leading) ${textClass(view)}`}>
+    <p data-paragraph {...langOf(view === 'greek')} className={`mb-2 break-words px-2 leading-(--lp-leading) ${textClass(view)}`}>
       {verses.map((verse, i) => (
         <span key={verse.n} data-verse={verse.n} data-selected={selected === verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${reading === verse.n ? READING_CLASS : selected === verse.n ? 'bg-accent/15' : ''}`}>
           <VerseNumber

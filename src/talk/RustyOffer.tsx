@@ -3,6 +3,7 @@
 import type { TalkTurn } from '../data/db';
 import { RUSTY_BUTTON } from '../data/rusty';
 import { takeRustyOffer } from './rustyOffer';
+import { greekLang } from '../script/greekLang';
 
 export function RustyOffer({ turn }: { turn: TalkTurn }) {
   if (!turn.rustyOffer || turn.rustyChoice === 'declined') return null;
@@ -10,7 +11,7 @@ export function RustyOffer({ turn }: { turn: TalkTurn }) {
     <div data-rusty-offer className="mt-2 border-t border-line pt-2">
       <ul data-rusty-items className="flex flex-wrap items-baseline gap-x-4 text-lg">
         {turn.rustyOffer.items.map((item) => (
-          <li key={`${item.kind}:${item.id}`} lang={item.kind === 'word' ? 'grc' : undefined} className={item.kind === 'word' ? 'font-greek text-[length:var(--lp-greek-size)]' : undefined}>
+          <li key={`${item.kind}:${item.id}`} {...greekLang(item.kind === 'word')} className={item.kind === 'word' ? 'font-greek text-[length:var(--lp-greek-size)]' : undefined}>
             {item.title}
           </li>
         ))}

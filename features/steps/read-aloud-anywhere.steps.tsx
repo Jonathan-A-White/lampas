@@ -27,6 +27,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { APP_SEMVER, LAST_SEEN_VERSION_STORAGE_KEY } from '../../src/config';
 import { fixtureChangelog, stubChangelog, OLDER_VERSION, RUNNING_NEW } from '../../tests/support/changelog';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
+import { statusLine } from '../../tests/support/status';
 
 const feature = await loadFeature('features/read-aloud-anywhere.feature');
 const user = userEvent.setup();
@@ -144,7 +145,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline, BeforeEachScenario, After
     And('the Grammar sheet of {string} is open', openGrammarPlural);
     When('he taps Read aloud', () => user.click(readAloud()));
     Then('the help line about the missing Greek voice is shown', () => {
-      expect(screen.getByRole('status')).toHaveTextContent(noVoiceHelp('greek'));
+      expect(statusLine()).toHaveTextContent(noVoiceHelp('greek'));
     });
     And('the phone speaks {string} in {string}', (_, text: string, lang: string) => speaks(text, lang));
     And('the phone speaks nothing in {string}', (_, lang: string) => expect(spokenIn(lang)).toEqual([]));
@@ -155,7 +156,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline, BeforeEachScenario, After
     And('the Grammar sheet of {string} is open', openGrammarPlural);
     When('he taps Read aloud', () => user.click(readAloud()));
     Then('a line says there is no voice to read aloud with', () => {
-      expect(screen.getByRole('status')).toHaveTextContent('No voice on this phone to read aloud');
+      expect(statusLine()).toHaveTextContent('No voice on this phone to read aloud');
     });
   });
 

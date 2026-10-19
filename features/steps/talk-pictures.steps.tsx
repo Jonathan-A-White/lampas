@@ -265,7 +265,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('he taps the Greek word {string} in the answer', async (_, word: string) => {
       const button = await waitFor(() => {
-        const found = Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn] [data-answer-text] [lang="grc"]')).find((s) => s.textContent === word);
+        const found = Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn] [data-answer-text] [lang="el"]')).find((s) => s.textContent === word);
         const b = found?.closest('button');
         if (!b) throw new Error(`no Greek word button ${word}`);
         return b;

@@ -10,7 +10,7 @@ test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 const familyOf = (page: Page, selector: string) => page.locator(selector).first().evaluate((el) => getComputedStyle(el).fontFamily);
 const sizeOf = (page: Page, selector: string) => page.locator(selector).first().evaluate((el) => getComputedStyle(el).fontSize);
 const ENGLISH = '[data-verse="1"][lang="en"], [data-verse="1"] [lang="en"]';
-const GREEK = '[data-verse="1"][lang="grc"], [data-verse="1"] [lang="grc"]';
+const GREEK = '[data-verse="1"][lang="el"], [data-verse="1"] [lang="el"]';
 
 async function openReader(page: Page, hash = '') {
   await openUnlocked(page);

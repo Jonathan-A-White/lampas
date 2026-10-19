@@ -12,9 +12,13 @@
 // the sheet showed. Back to the entry before runs that undo. A move that closes the sheets above its owner (an example word tapped
 // on the Grammar or idea sheet) keeps their entries; the undo brings them back and they take their entries again instead of pushing.
 //
+// Focus goes with the sheet (mw-cwf538.3, for TalkBack and a keyboard): when a sheet opens, focus moves to its heading (a dialog's first h1 to h3), and when it
+// closes, back to what was focused when it opened (what he tapped), unless he has moved on and focus is somewhere else.
+//
 // A sheet that opens or closes swallows taps for the settle moment (src/ui/settle.ts useSettleAround, mw-i7xe0n.26): the second tap of a double
 // tap on Done would land on what lies under it (the Goal's Change, the sheet beneath's own Done), and the second of one on Drill it in the drill.
-import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { focusQuietly } from './focus';
 import { useSettleAround } from './settle';
 
 type SheetState = { sheet?: number } | null;
@@ -117,12 +121,24 @@ export function closeAllSheets(): void {
 /** The sheets mounted above `level`. */
 export const sheetsAbove = (level: number): number => mounted.filter((at) => at > level).length;
 
+/** Moves focus to the heading of the newest dialog on the page, which is the sheet that just mounted. A heading is not a control: it takes focus by script only (tabindex -1), and no ring is drawn on it. */
+function focusHeading(): void {
+  const dialogs = document.querySelectorAll<HTMLElement>('[role="dialog"], [role="alertdialog"]');
+  const heading = dialogs[dialogs.length - 1]?.querySelector<HTMLElement>('h1, h2, h3');
+  if (!heading) return;
+  heading.tabIndex = -1;
+  heading.style.outline = 'none';
+  focusQuietly(heading);
+}
+
 /** Back closes this sheet (calls `onClose`); closing it by other means removes its history entry. Call once in every sheet. Gives
  * a function that reads the sheet's level, for pushSheetStep. */
 export function useSheetBack(onClose: () => void): () => number {
   useSettleAround();
   const close = useRef(onClose);
   const levelRef = useRef(0);
+  // what had focus when the sheet was drawn for the first time: the tap that opened it (read while rendering, before the sheet's own focus moves)
+  const [opener] = useState(() => document.activeElement);
   const levelNow = useCallback(() => levelRef.current, []);
   useEffect(() => {
     close.current = onClose;
@@ -145,6 +161,7 @@ export function useSheetBack(onClose: () => void): () => number {
     closers.set(level, close);
     open += 1;
     tellWatchers();
+    focusHeading();
     const onPop = () => {
       if (depthOf() < level) close.current();
     };
@@ -155,12 +172,14 @@ export function useSheetBack(onClose: () => void): () => number {
       mounted.splice(mounted.indexOf(level), 1);
       closers.delete(level);
       tellWatchers();
+      // focus goes back to what opened the sheet, if it is still there and nothing else has taken focus since the sheet went
+      if (opener instanceof HTMLElement && opener !== document.body && opener.isConnected && (document.activeElement === null || document.activeElement === document.body)) focusQuietly(opener);
       if (suspending) return; // closed by a move inside the owner: the entry stays for the Back that brings it back
       if (depthOf() >= level) {
         settleAt = settleAt === null ? level - 1 : Math.min(settleAt, level - 1);
         queueMicrotask(settle);
       }
     };
-  }, []);
+  }, [opener]);
   return levelNow;
 }

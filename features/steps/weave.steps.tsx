@@ -177,7 +177,7 @@ describeFeature(feature, ({ Scenario }) => {
         expect(verse1.e[chunk].t).toBe(english);
         const el = chunkEl(1, chunk);
         expect(el).toHaveAttribute('data-woven');
-        expect(el).toHaveAttribute('lang', 'grc');
+        expect(el).toHaveAttribute('lang', 'el');
         expect(squash(el.textContent)).toBe(word.t);
       }
       // ἐν χριστῷ Ἰησοῦ together, in this order, in the verse's text

@@ -15,6 +15,7 @@ import { HoldBar } from '../../src/ui/HoldBar';
 import { HearAnyWord } from '../../src/ui/HearAnyWord';
 import { ENGLISH_VOICE, type FakeSynth, GREEK_VOICE, HEBREW_VOICE, stubSpeech } from '../../tests/support/fake-speech';
 import { asSpoken } from '../../tests/support/lone-word';
+import { statusLine } from '../../tests/support/status';
 
 const ANSWER = [
   'In Romans 8:28 the word **ἀγαθόν** means good; the Hebrew מֶלֶךְ and צֶדֶק speak of a king and of righteousness.',
@@ -104,7 +105,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     s.Then('the phone is told to speak {string} in {string}', (_, text: string, language: string) => spokenIn(text, language));
     s.And('the word is marked while it speaks', () => {
       // jsdom has no Custom Highlight API: the mark is a no-op there, and its proof is the Playwright spec
-      expect(document.querySelector('[role="status"]')).toBeNull();
+      expect(document.querySelector('[role="status"]:not([data-live-region])')).toBeNull();
     });
     s.And('no text is selected', () => expect(window.getSelection()?.toString() ?? '').toBe(''));
   });
@@ -138,7 +139,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       await user.click(fingerOn(word));
     });
     Then('nothing is spoken', () => expect(synth.spoken).toHaveLength(0));
-    And('the notice {string} is shown', (_, text: string) => expect(screen.getByRole('status').textContent).toContain(text));
+    And('the notice {string} is shown', (_, text: string) => expect(statusLine().textContent).toContain(text));
   });
 
   Scenario('A long press on an English word of a tutor answer says it in English', (s) => {
@@ -186,7 +187,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given('a tutor answer is on screen on a phone with only an English voice', () => draw([ENGLISH_VOICE], 'answer'));
     When('he long presses the word {string} of the answer', (_, word: string) => press(fingerOn(word), HOLD_MS));
     Then('nothing is spoken', () => expect(synth.spoken).toHaveLength(0));
-    And('the notice {string} is shown', (_, text: string) => expect(screen.getByRole('status').textContent).toContain(text));
+    And('the notice {string} is shown', (_, text: string) => expect(statusLine().textContent).toContain(text));
   });
 
   ScenarioOutline('A long press on a control with a press of its own is left to it', ({ Given, When, Then }, row: { control: string }) => {

@@ -118,7 +118,7 @@ test('On sets the English as a book: lines near 1.4, a serif, justified and hyph
 test('On sets the Greek tight, justified and hyphenated for Greek', async ({ page }) => {
   await openReader(page, 'on', { hash: '#/?b=rom&c=8&view=greek' });
   const g = await look(verse(page, 1));
-  expect(g.lang).toBe('grc');
+  expect(g.lang).toBe('el');
   expect(ratio(g)).toBeGreaterThanOrEqual(1.35);
   expect(ratio(g)).toBeLessThanOrEqual(1.45);
   expect(g.fontFamily).toContain('Gentium Plus');

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { publish } from '../events/bus';
 import { hasVoice, noVoiceHelp, speakWord, warmVoices } from '../speech/greek';
 import { pauseReading } from '../speech/readAloud';
+import { GREEK_LANG } from './greekLang';
 
 const HELP_MS = 7000;
 
@@ -37,7 +38,7 @@ export function GreekWord({ children }: { children?: ReactNode }) {
         onClick={hear}
         className="inline-block min-h-11 rounded-lg px-1 align-middle text-accent underline decoration-dotted underline-offset-4 active:bg-line"
       >
-        <span lang="grc" className="font-greek">
+        <span {...GREEK_LANG} className="font-greek">
           {word}
         </span>
       </button>

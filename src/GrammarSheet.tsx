@@ -9,11 +9,11 @@ import { grammarExamples } from './data/grammarExamples';
 import { proseOf } from './speech/proseOf';
 import { LessonReadAloud } from './speech/ReadAloud';
 import { BarSlot } from './speech/SpeakingBarSlot';
-import { focusOnMount } from './ui/focus';
 import { greekMarked } from './ui/GreekMarked';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { markTermKnown } from './useKnownTerms';
+import { GREEK_LANG } from './script/greekLang';
 
 const BUTTON = 'min-h-12 min-w-0 flex-1 rounded-xl border px-3 text-base font-medium short:flex-none';
 
@@ -55,7 +55,7 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onT
       >
         <div data-testid="grammar-handle" {...handle} className="flex min-h-12 shrink-0 touch-none items-center justify-between gap-3 px-4 pt-2 short:col-span-2">
           <span aria-hidden="true" className="mx-auto h-1.5 w-10 rounded-full bg-line" />
-          <button type="button" ref={focusOnMount} onClick={onClose} className="absolute right-2 top-1 min-h-11 min-w-11 rounded-lg px-3 text-base font-medium text-accent">
+          <button type="button" onClick={onClose} className="absolute right-2 top-1 min-h-11 min-w-11 rounded-lg px-3 text-base font-medium text-accent">
             Done
           </button>
         </div>
@@ -84,7 +84,7 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onT
                       onClick={() => onWord(example)}
                       className="flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-line px-3 py-1 text-left active:bg-line"
                     >
-                      <span lang="grc" className="font-greek text-2xl">
+                      <span {...GREEK_LANG} className="font-greek text-2xl">
                         {example.t}
                       </span>
                       <span data-testid="grammar-gloss" className="min-w-0 flex-1 break-words text-base text-muted">{exampleMeaning(chapter, verse, example)}</span>

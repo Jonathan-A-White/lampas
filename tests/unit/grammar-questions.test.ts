@@ -493,11 +493,11 @@ describe('the Greek in a concept card\'s prompt', () => {
     expect(greekPrompts.length).toBeGreaterThan(0);
   });
 
-  it('sits in lang grc elements in the Greek face (font-greek), the English around it outside them', () => {
+  it('sits in lang el elements in the Greek face (font-greek), the English around it outside them', () => {
     for (const question of greekPrompts) {
       const view = render(createElement(GrammarCard, { question, mode: 'choice', picked: null, onPick: () => {} }));
       const prompt = view.getByTestId('grammar-prompt');
-      const inGreekFace = Array.from(prompt.querySelectorAll('[lang="grc"].font-greek'));
+      const inGreekFace = Array.from(prompt.querySelectorAll('[lang="el"].font-greek'));
       const drawn = inGreekFace.map((el) => el.textContent ?? '').join(' ');
       // every Greek word of the prompt is inside a Greek-face run, and no run holds a word of English
       expect(drawn.match(GREEK)?.join(' '), question.ideaId).toBe(question.prompt.match(GREEK)?.join(' '));

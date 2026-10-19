@@ -743,7 +743,7 @@ describeFeature(feature, ({ Scenario }) => {
       const detail = panel().querySelector<HTMLElement>('[data-fix-detail]');
       expect(detail).not.toBeNull();
       expect(detail?.querySelector('[data-chunks]')).toHaveTextContent(chunks);
-      expect(detail?.querySelector('[data-chunks]')).toHaveAttribute('lang', 'grc');
+      expect(detail?.querySelector('[data-chunks]')).toHaveAttribute('lang', 'el');
       expect(within(detail as HTMLElement).getByRole('button', { name: 'Hear it' })).toBeInTheDocument();
     });
     And('the speaker says the word in Greek, el-GR', async () => {
@@ -780,7 +780,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the walk shows the whole Greek verse with the bar {string}', async (_, name: string) => {
       await waitFor(() => expect(walk()).toHaveTextContent(GREEK_28));
-      expect(walk().querySelector('[data-walk-verse]')).toHaveAttribute('lang', 'grc');
+      expect(walk().querySelector('[data-walk-verse]')).toHaveAttribute('lang', 'el');
       expect(screen.getByRole('button', { name, exact: true })).toBeInTheDocument();
     });
     When('he holds the bar {string} for 2 seconds and lets go', async (_, name: string) => {

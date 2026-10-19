@@ -15,6 +15,23 @@ test) and ends with a canary: a button that loses its accessible name must make 
   a tint (`bg-accent/10`, `bg-bad/15`); a dimmed text (opacity) is dimmed only as far as it keeps 4.5:1 (the Immersive reader's verse numbers: 0.75).
 - A new screen is added to `SCREENS` in the spec, with the steps that open it.
 
+## Under TalkBack (mw-cwf538.3)
+
+`tests/e2e/talkback-reading.spec.ts` holds the proof; the rules a new screen keeps:
+
+- **Greek is `lang="el"`, with `data-lang="grc"`.** Android's text to speech has a Greek voice under `el` and none under `grc`, so a span tagged `grc` is read in the phone's
+  own language. A Greek span spreads `GREEK_LANG` (`src/script/greekLang.ts`; `greekLang(bool)` and `langOf(bool)` for text that is Greek only sometimes); English text carries
+  no `lang` on its words. `tests/unit/greek-lang.test.ts` fails on a `lang="grc"` written by hand. A CSS rule or a test that selects Greek selects `[lang='el']`. (The tag could
+  not be tried on a real TalkBack from the Laptop; the choice is the Android voice list's.)
+- **What happens without a control is announced, once.** The app has one polite live region (`LiveRegion`, `role="status"`, `aria-live="polite"`, out of sight, mounted in
+  `App.tsx`) and `announce(text)` (`src/ui/live.ts`) says into it: the tutor's answer when it arrives (`Talk.tsx`), a Quick test or Review answer's result (`WordQuestion.tsx`) and
+  a Read-it-aloud verdict with its marked words (`ReadCheck.tsx`). Call it from an effect that runs once for the event, never from a render; a screen that draws again says
+  nothing. A line that only repeats the announcement is not a second `role="status"`. The region is a `role="status"` on every screen, so a test that wants a screen's own status
+  line takes it with `tests/support/status.ts` (jsdom) or `[role="status"]:not([data-live-region])` (Playwright).
+- **Focus goes with a sheet.** `useSheetBack` (`src/ui/sheetBack.ts`, called by every sheet) moves focus to the sheet's first heading (h1 to h3 of the newest dialog) when it opens
+  and back to what had focus when it closed, if nothing else has taken focus. A sheet needs a heading in its dialog (the word sheet's Greek word, or the English he tapped); a
+  Done button of such a sheet does not take focus on mount (`focusOnMount`): the heading does.
+
 ## Rules left out of the check
 
 An axe rule left out is listed here with its reason, and by id in `tests/support/axe-excluded.ts`; `tests/unit/accessibility-doc.test.ts` fails when the two lists differ.

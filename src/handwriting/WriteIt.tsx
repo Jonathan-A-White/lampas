@@ -15,6 +15,7 @@ import { recognize, type InkStroke } from './recognizer';
 import { STAGES, STAGE_NAMES, type WriteProgress, type WriteStage } from './progression';
 import { WHY_LINES, WRITE_PLAIN, WRITE_PRIMARY } from './writeText';
 import { WritingPad } from './WritingPad';
+import { GREEK_LANG } from '../script/greekLang';
 
 
 const GREEK = 'font-greek text-[length:var(--lp-greek-size)]';
@@ -30,7 +31,7 @@ export function WhyLine() {
 
 function Prompt({ stage, idea, glyph }: { stage: WriteProgress['stage']; idea: GrammarIdea; glyph: string }) {
   const letter = (
-    <span lang="grc" className="font-greek text-4xl">
+    <span {...GREEK_LANG} className="font-greek text-4xl">
       {glyph}
     </span>
   );
@@ -144,7 +145,7 @@ export function WriteIt({ idea, onSkip, onRight, afterRight }: {
               </p>
             ) : null}
             <p className="text-base text-muted">
-              This is how <span lang="grc" className={GREEK}>{glyph}</span> is written. Watch the strokes, then try again.
+              This is how <span {...GREEK_LANG} className={GREEK}>{glyph}</span> is written. Watch the strokes, then try again.
             </p>
           </div>
         ) : null}
