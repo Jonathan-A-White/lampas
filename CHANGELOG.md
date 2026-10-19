@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.341
+_2026-10-19_
+- Fixed: A section heading's passage keeps the Reader's paragraphs and spacing; sideways the Audible link and the omicron sound are in view, the tutor-answered bar can be tapped, and the reading ladder says "Number N of M".
+
 ## 0.1.340
 _2026-10-19_
 - Fixed: the back buttons at the top of a screen now step back, so the phone's Back leaves the screen instead of returning you to the one you just left.
