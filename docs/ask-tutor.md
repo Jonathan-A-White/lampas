@@ -184,7 +184,7 @@ His words (12 Oct 2026): a person is not always going forward; he takes a break,
   (`src/review/practise.ts`, `drawReviewRound`'s `chosen`). Nothing moves without the tap or the yes. The one-frontier rule (mw-i7xe0n.6) has not landed: when it does, only the worst item moves and the next is offered after it; Drill it has
   no screen yet, so the practice is a Review round.
 - **Welcome back** (`src/WelcomeBack.tsx`): opening the app when the latest day before today with any use (`lastUsageDayBefore`, the usage log) is 7 or more days ago, and some solid item is past its due date, draws a strip with the
-  most overdue (`overdueOf`, at most 5), **Refresh** (a Review round of just those) and **Not now** (put away for the day, localStorage `lampas.welcomeBackDay`; Refresh puts it away too).
+  most overdue (`overdueOf`, at most 5), **Refresh** (a Review round of just those) and **Not now** (put away for the day, localStorage `lampas.welcomeBackDay`; Refresh puts it away too). The strip is in the shell's flow and `relative z-60`, so the Verse view and the sheets do not cover it (`tests/e2e/shell-bars-over-views.spec.ts`).
 - Tests: `features/tutor-rust.feature`, `features/welcome-back.feature`, `tests/unit/rusty.test.ts`, `tests/unit/rusty-store.test.ts`, examples `grinds/examples/bible-talk/rusty-*.json` and `grinds/examples/verse-ask/rusty-mentioned.json`.
 
 ## Greek words he says aloud (mw-5r3p30.244)
