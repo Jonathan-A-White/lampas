@@ -1,7 +1,7 @@
 // src/today/Today.tsx — Today (#/today, mw-1fwagb.5, the grilling mw-6ww.126): the day's pieces in one list, each a tap into its drill or Logos: Review (n due, opens Review), the
 // reading plan's next chapter (Read in Logos, Read in Lampas, Listen in Audible), the day's Psalms and Proverbs (src/data/daily/psalmsProverbs.ts, each opens Logos), and today's
 // devotional (opens Logos at the day). A piece shows only while its Settings > Daily switch is On AND the settings it rests on are (Read in Logos needs Logos On, Listen in Audible an
-// Audio Bible). With Tick boxes On each piece has a box HE ticks (nothing ticks by itself, not even by opening the link); Off, Today is a plain list of links. A link tap is also kept as
+// Audio Bible). A tap on the plan's place opens src/plan/PlacePicker.tsx, where he says where he is (I'm at the Reader's chapter, or Pick a place), with Undo for a few seconds. With Tick boxes On each piece has a box HE ticks (nothing ticks by itself, not even by opening the link); Off, Today is a plain list of links. A link tap is also kept as
 // 'opened' for the local date (dailyStore.ts). With nothing On, Today explains what it could hold, each with a link to the Settings row that turns it on; once he changes a Daily row
 // that explanation is not shown again (an empty Today then names only where to choose). The day is the LOCAL date, read again when the app comes back to the front.
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -15,9 +15,11 @@ import { bookOf } from '../data/books';
 import { navigate, openReader } from '../nav/route';
 import { useScrollMemory } from '../nav/scrollMemory';
 import { chapterName } from '../plan/chapterName';
+import { PlacePicker } from '../plan/PlacePicker';
 import { SendOff } from '../plan/SendOff';
 import { StartPlan } from '../plan/StartPlan';
-import { readPlan, usePlan } from '../plan/usePlan';
+import { usePlan } from '../plan/usePlan';
+import { useMovePlace } from '../plan/useMovePlace';
 import { useSendOff } from '../plan/useSendOff';
 import { devotionalLink } from '../resources/logosDevotional';
 import { chapterLink, verseLink } from '../resources/logosBible';
@@ -97,6 +99,8 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
   const audioId = useSetting(audioBibleSetting);
   const sendOff = useSendOff();
   const [starting, setStarting] = useState(false);
+  const [placing, setPlacing] = useState(false);
+  const place = useMovePlace();
   if (!plan || !resources || bible === undefined || audioId === undefined) return null;
   const { started } = plan;
   const next = started?.next;
@@ -105,9 +109,16 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
     body = (
       <Piece id="plan" label="Reading plan" ticks={ticks}>
         <p className="px-3 text-base text-muted">{started ? 'Your plan is finished.' : 'No reading plan is started.'}</p>
-        <button type="button" onClick={() => setStarting(true)} className={`${ACTION} mx-1 my-1 self-start`}>
-          Start a plan
-        </button>
+        <div className="flex flex-wrap gap-2 px-1 py-1">
+          <button type="button" onClick={() => setStarting(true)} className={ACTION}>
+            Start a plan
+          </button>
+          {started ? (
+            <button type="button" onClick={() => setPlacing(true)} className={ACTION}>
+              Change where you are
+            </button>
+          ) : null}
+        </div>
       </Piece>
     );
   } else {
@@ -120,8 +131,10 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
     const opened = (): void => void markOpened(date, 'plan');
     body = (
       <Piece id="plan" label={name} ticks={ticks}>
-        <p className="px-3 text-lg font-medium">{`Next: ${name}`}</p>
-        <p className="px-3 text-sm text-muted">{`${started!.count.toLocaleString('en-US')} of ${started!.total.toLocaleString('en-US')} chapters done`}</p>
+        <button type="button" data-testid="plan-place" onClick={() => setPlacing(true)} className={LINK}>
+          <span className="text-lg font-medium">{`Next: ${name}`}</span>
+          <span className="text-sm text-muted">{`${started!.count.toLocaleString('en-US')} of ${started!.total.toLocaleString('en-US')} chapters done · Change where you are`}</span>
+        </button>
         <div className="flex flex-wrap gap-2 px-2 pb-1 pt-2">
           {logos ? (
             <a href={logos.url} data-fallback={logos.fallback} onClick={() => { opened(); armFallback(logos.fallback); }} className={ACTION}>
@@ -161,7 +174,16 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
     <section aria-label="Reading plan">
       <h2 className={HEADING}>Reading plan</h2>
       <List>{body}</List>
+      {place.said ? (
+        <div role="status" data-testid="plan-moved" className="mt-2 flex min-h-12 items-center gap-2 rounded-xl border border-line bg-surface pl-4">
+          <p className="min-w-0 flex-1 text-base">{place.said}</p>
+          <button type="button" onClick={place.undo} className="min-h-12 min-w-12 shrink-0 rounded-lg px-4 text-base font-medium text-accent">
+            Undo
+          </button>
+        </div>
+      ) : null}
       <SendOff send={sendOff} />
+      {placing ? <PlacePicker next={next} onMove={place.move} onClose={() => setPlacing(false)} /> : null}
       {starting ? <StartPlan onClose={() => setStarting(false)} /> : null}
     </section>
   );
@@ -275,17 +297,9 @@ export function Today() {
   const ready = !shown.includes(undefined) && tickBoxes !== undefined && day !== undefined;
   const none = ready && shown.every((s) => s === 'off');
   // what the tutor is told: the date, what is On and the pieces he opened today by name (this date's list only), so it can open by naming what he read
-  // the plan's chapter is read once, and only when he has opened the plan's link today (the name is not in the id)
-  const planOpened = day?.opened.includes('plan') ?? false;
-  const [planName, setPlanName] = useState<string | undefined>();
-  useEffect(() => {
-    if (!planOpened) return undefined;
-    let live = true;
-    void readPlan().then(({ started }) => live && setPlanName(started?.next ? chapterName(started.next) : undefined));
-    return () => {
-      live = false;
-    };
-  }, [planOpened]);
+  // the plan's next chapter (live: he can move it) names the plan piece he opened, and is told to the tutor as the plan's place (the name is not in the id)
+  const planNext = usePlan()?.started?.next;
+  const planName = planNext ? chapterName(planNext) : undefined;
   const devotionalChoice = useSetting(devotionalSetting);
   const devotionalDraw = useSetting(devotionalDrawSetting);
   const names = {
@@ -294,7 +308,7 @@ export function Today() {
   };
   useReportScreen({
     name: 'Today',
-    facts: ready ? todayFacts({ date, on: COULD_HOLD.filter((_, i) => shown[i] === 'on').map((p) => p.name), opened: openedTitles(day.opened, names) }) : [],
+    facts: ready ? todayFacts({ date, on: COULD_HOLD.filter((_, i) => shown[i] === 'on').map((p) => p.name), opened: openedTitles(day.opened, names), plan: plan === 'on' ? planName : undefined }) : [],
   });
   const ticks: Ticks = { on: tickBoxes === 'on', ticked: day?.ticked ?? [], date };
   return (

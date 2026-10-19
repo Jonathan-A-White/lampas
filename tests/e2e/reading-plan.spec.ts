@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { planOf } from '../../src/data/plans';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openToday, todayChip } from './today-chip';
@@ -236,3 +237,80 @@ for (const size of [
     await shot(page, `reading-plan-chips-${size.width}x${size.height}`);
   });
 }
+
+// He can set where he is (mw-5r3p30.623): a tap on the plan's place on Today offers "I'm at <the Reader's chapter>" and "Pick a place".
+const PETER_2 = [
+  { key: 'audioBible', value: 'word-of-promise' },
+  { key: 'readingPlan', value: 'on' },
+  planState(
+    { code: '1pe', chapter: 2 },
+    planOf('whole-bible')!
+      .chapters()
+      .slice(0, planOf('whole-bible')!.chapters().findIndex((c) => c.code === '1pe' && c.chapter === 2))
+      .map((c) => `${c.code}.${c.chapter}`),
+  ),
+];
+const place = (page: Page) => plan(page).getByTestId('plan-place');
+const whereSheet = (page: Page) => page.getByRole('dialog', { name: 'Where are you in the plan?' });
+
+test("with 1 John 2 open and the plan at 1 Peter 2, I'm at 1 John 2 moves the plan to 1 John 3, and Undo puts it back", async ({ page }) => {
+  await openWith(page, PETER_2);
+  await page.goto('/#/?b=1jn&c=2');
+  await expect(page.getByRole('heading', { name: '1 John 2', level: 1 })).toBeVisible();
+  await openToday(page);
+  await expect(plan(page)).toContainText('Next: 1 Peter 2');
+  await place(page).click();
+  await expect(whereSheet(page)).toBeVisible();
+  await shot(page, 'reading-plan-place-390x844');
+  await whereSheet(page).getByRole('button', { name: "I'm at 1 John 2" }).click();
+  await expect(whereSheet(page)).toHaveCount(0);
+  // 1 John 2 is the chapter he is reading now, so it counts as done and the next is the one after it
+  await expect(plan(page)).toContainText('Next: 1 John 3');
+  const moved = plan(page).locator('xpath=..').getByTestId('plan-moved');
+  await expect(moved).toBeVisible();
+  await shot(page, 'reading-plan-place-moved-390x844');
+  await moved.getByRole('button', { name: 'Undo' }).click();
+  await expect(plan(page)).toContainText('Next: 1 Peter 2');
+  await expect(moved).toHaveCount(0);
+});
+
+test('Pick a place, Psalms 23, Set here: the plan and the picker marks show Psalms 23 and what was done stays done', async ({ page }) => {
+  await openWith(page, PETER_2);
+  await openToday(page);
+  await place(page).click();
+  await whereSheet(page).getByRole('button', { name: 'Pick a place' }).click();
+  const picker = page.getByRole('dialog', { name: 'Pick a place' });
+  await picker.getByRole('button', { name: /^Psalms/ }).click();
+  await shot(page, 'reading-plan-place-picker-390x844');
+  await picker.getByRole('button', { name: 'Chapter 23', exact: true }).click();
+  const confirm = page.getByRole('dialog', { name: 'Set your place' });
+  await expect(confirm.getByRole('heading', { name: 'Psalms 23' })).toBeVisible();
+  await shot(page, 'reading-plan-place-confirm-390x844');
+  await confirm.getByRole('button', { name: 'Set here' }).click();
+  await expect(plan(page)).toContainText('Next: Psalms 23');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  // the Reader's chapter picker reads the same store
+  await backToReader(page);
+  await page.getByRole('heading', { name: 'Romans 8', level: 1 }).getByRole('button').click();
+  const chooser = page.getByRole('dialog', { name: 'Choose a chapter' });
+  await chooser.getByRole('button', { name: /^Psalms/ }).click();
+  const grid = chooser.getByRole('group', { name: 'Psalms chapters' });
+  await expect(grid.locator('[data-chapter="23"]')).toHaveAttribute('data-next', '');
+  await expect(grid.locator('[data-chapter="22"]')).toHaveAttribute('data-done', '');
+  await expect(grid.locator('[data-chapter="24"]')).toHaveAttribute('data-done', '');
+});
+
+test("the place picker takes a typed 'Ps 23'", async ({ page }) => {
+  await openWith(page, PETER_2);
+  await openToday(page);
+  await place(page).click();
+  await whereSheet(page).getByRole('button', { name: 'Pick a place' }).click();
+  const picker = page.getByRole('dialog', { name: 'Pick a place' });
+  await picker.getByRole('searchbox', { name: 'Search books' }).fill('Ps 23');
+  await picker.getByRole('button', { name: 'Go to Psalms 23' }).click();
+  const confirm = page.getByRole('dialog', { name: 'Set your place' });
+  await expect(confirm.getByRole('heading', { name: 'Psalms 23' })).toBeVisible();
+  await confirm.getByRole('button', { name: 'Set here' }).click();
+  await expect(plan(page)).toContainText('Next: Psalms 23');
+});

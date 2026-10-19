@@ -8,7 +8,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { setDeveloper } from '../../src/data/repositories';
-import { getReadingPlan, startPlan } from '../../src/data/repositories/readingPlan';
+import { getReadingPlan, nextChapter, startPlan } from '../../src/data/repositories/readingPlan';
 import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
@@ -212,6 +212,58 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(chipButtons().length).toBeGreaterThan(1));
       for (const chip of chipButtons()) expect(chip.getAttribute('aria-label') ?? '').not.toBe('');
     });
+  });
+
+  const tapPlace = async () => user.click(await within(await planPiece()).findByTestId('plan-place'));
+  const choose = async (_: unknown, name: string) => user.click(await within(await screen.findByRole('dialog', { name: 'Where are you in the plan?' })).findByRole('button', { name }));
+  const setHere = async () => user.click(await within(await screen.findByRole('dialog', { name: 'Set your place' })).findByRole('button', { name: 'Set here' }));
+  const names = async (_: unknown, title: string, name: string) => {
+    const sheet = await screen.findByRole('dialog', { name: title });
+    expect(within(sheet).getByRole('heading', { name })).toBeTruthy();
+  };
+
+  Scenario('He says he is at the chapter open in the Reader, and Undo puts the place back', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened with a reading plan started at Leviticus 4', lev4);
+    When('he opens Today from the Reader', openToday);
+    And("he taps the plan's place on Today", tapPlace);
+    And('he chooses {string} on the sheet', choose);
+    Then('the Reading plan piece says {string} and {string}', async (_, next: string, text: string) => planPieceSays(next, text));
+    When('he taps Undo on Today', async () => user.click(await screen.findByRole('button', { name: 'Undo' })));
+    Then('the Reading plan piece again says {string} and {string}', async (_, next: string, count: string) => planPieceSays(next, count));
+  });
+
+  Scenario('He picks a place, book then chapter, and Set here moves the plan to it', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened with a reading plan started at Leviticus 4', lev4);
+    When('he opens Today from the Reader', openToday);
+    And("he taps the plan's place on Today", tapPlace);
+    And('he chooses {string} on the sheet', choose);
+    And('he picks Psalms chapter 23 in the place picker', async () => {
+      const picker = await screen.findByRole('dialog', { name: 'Pick a place' });
+      await user.click(await within(picker).findByRole('button', { name: /^Psalms/ }));
+      await user.click(await within(picker).findByRole('button', { name: 'Chapter 23' }));
+    });
+    Then('the sheet {string} names {string}', names);
+    When('he taps Set here', setHere);
+    Then('the Reading plan piece says {string} and {string}', async (_, next: string, text: string) => planPieceSays(next, text));
+    And('the plan keeps its place in the store at Psalms 23', async () => {
+      await waitFor(async () => expect(await nextChapter()).toEqual({ code: 'psa', chapter: 23 }));
+      expect((await getReadingPlan())?.done).toContain('psa.22');
+    });
+  });
+
+  Scenario('The place picker takes a typed reference', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened with a reading plan started at Leviticus 4', lev4);
+    When('he opens Today from the Reader', openToday);
+    And("he taps the plan's place on Today", tapPlace);
+    And('he chooses {string} on the sheet', choose);
+    And('he types {string} in the place picker and takes the Go to row', async (_, text: string) => {
+      const picker = await screen.findByRole('dialog', { name: 'Pick a place' });
+      await user.type(within(picker).getByRole('searchbox', { name: 'Search books' }), text);
+      await user.click(await within(picker).findByRole('button', { name: 'Go to Psalms 23' }));
+    });
+    Then('the sheet {string} names {string}', names);
+    When('he taps Set here', setHere);
+    Then('the Reading plan piece says {string} and {string}', async (_, next: string, text: string) => planPieceSays(next, text));
   });
 
   Scenario('The Developer row resets the plan for the demo', ({ Given, When, And, Then }) => {
