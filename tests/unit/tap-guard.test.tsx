@@ -176,6 +176,54 @@ describe('a screen takes no tap in the moment after it changes, with no code of 
   });
 });
 
+describe('a link that leaves the app takes no tap in the moment after it is tapped (mw-5r3p30.457)', () => {
+  const link = (name: string) => screen.getByRole('link', { name });
+  const click = (name: string) => fireEvent.click(link(name));
+  function Links({ onOpen }: { onOpen: (name: string) => void }) {
+    useTapGuard();
+    const open = (e: { preventDefault: () => void }, name: string) => {
+      e.preventDefault(); // jsdom does not navigate; what counts is the click that reaches the link
+      onOpen(name);
+    };
+    return (
+      <>
+        <a href="https://github.com/x/commit/1" target="_blank" rel="noreferrer" onClick={(e) => open(e, 'tab')}>
+          tab
+        </a>
+        <a href="logos4:Bible;ref=Bible.Ro8.1" onClick={(e) => open(e, 'app')}>
+          app
+        </a>
+        <a href="#/settings" onClick={(e) => open(e, 'inside')}>
+          inside
+        </a>
+      </>
+    );
+  }
+
+  it.each(['tab', 'app'])('opens the %s link once for a double tap, and again for a tap after the moment', async (name) => {
+    const opened = vi.fn();
+    render(<Links onOpen={opened} />);
+    await wait(SETTLE_MS + 50);
+    click(name);
+    await wait(120);
+    click(name);
+    expect(opened).toHaveBeenCalledTimes(1);
+    await wait(SETTLE_MS);
+    click(name);
+    expect(opened).toHaveBeenCalledTimes(2);
+  });
+
+  it('leaves a link inside the app alone: a double tap on it is not held back', async () => {
+    const opened = vi.fn();
+    render(<Links onOpen={opened} />);
+    await wait(SETTLE_MS + 50);
+    click('inside');
+    await wait(120);
+    click('inside');
+    expect(opened).toHaveBeenCalledTimes(2);
+  });
+});
+
 describe('what a screen is', () => {
   it('is the route, the Verse view over the Reader, and a Paradigms table over the list', () => {
     expect(screenOf('#/')).toBe(screenOf('#/?b=rom&c=9&view=greek&weave=off'));
