@@ -14,6 +14,8 @@ import { setVerseAction } from './verse/action';
 const NAMES: Record<LadderLang, string> = { el: 'Greek', en: 'English' };
 const VIEWS: Record<LadderLang, ReaderView> = { el: 'greek', en: 'english' };
 const BUTTON = 'min-h-12 w-full rounded-xl border border-line px-3 text-lg font-medium';
+// Try again | Skip for now side by side: at 130 % text on a 360 px phone 'Skip for now' wraps at text-lg and the bar is a line taller than it need be (mw-5r3p30.642)
+const PAIR = 'min-h-12 w-full rounded-xl border border-line px-2 text-base font-medium';
 const LOADING = 'Loading the ladder…';
 
 /** Moves the Verse view to a ladder verse: on its own history entry (`here`, as the arrows do) or as a new Back step from another screen. */
@@ -114,11 +116,11 @@ export function LadderActions({ lang, here, verseKey, verdict, onTryAgain }: { l
       {/* side by side: the bar stands over the foot of the text, and two rows of it would hide the Next word card of a partial reading */}
       <div className="grid grid-cols-2 gap-2 has-[:only-child]:grid-cols-1">
         {verdict ? (
-          <button type="button" onClick={() => settled() && onTryAgain()} className={BUTTON}>
+          <button type="button" onClick={() => settled() && onTryAgain()} className={PAIR}>
             Try again
           </button>
         ) : null}
-        <button type="button" onClick={() => void move(true)} className={BUTTON}>
+        <button type="button" onClick={() => void move(true)} className={PAIR}>
           Skip for now
         </button>
       </div>
