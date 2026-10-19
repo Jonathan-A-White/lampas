@@ -477,13 +477,15 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
             Done
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-1 short:col-start-1 short:row-start-2 short:pb-[calc(0.75rem+var(--lp-end-inset))]">
-          <div className="flex items-start justify-between gap-2">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-1 short:col-start-1 short:row-start-2 short:grid short:grid-cols-[minmax(0,1fr)] short:content-start short:pb-[calc(0.75rem+var(--lp-end-inset))]">
+          {/* Sideways the box is a grid so 'How it sounds' (below) rises under the title: a letter's sound is what the sheet is for, and the examples, the card and the
+              tiles above it took the whole short box before it (mw-5r3p30.483); the title and the level keep the first place. */}
+          <div className="flex items-start justify-between gap-2 short:order-[-2]">
             <h2 className="min-w-0 break-words text-2xl font-bold">{titled(idea.title)}</h2>
             <LessonReadAloud id={`idea:${idea.id}`} text={lesson} ready={loaded !== null} />
           </div>
           {level ? (
-            <p data-testid="idea-level" className="mt-1 inline-block rounded-full border border-line px-3 py-1 text-sm text-muted">
+            <p data-testid="idea-level" className="mt-1 inline-block rounded-full border border-line px-3 py-1 text-sm text-muted short:order-[-2] short:w-fit">
               {level.level === 'solid' && level.how === 'drill' ? 'Proved by drill' : `${LEVEL_NAMES[level.level]} since`} {sinceText(level.since)}
             </p>
           ) : null}
@@ -527,12 +529,12 @@ export function IdeaSheet({ idea, onClose, onWord, onAsk, covered = false, books
           </p>
           {card.table ? <TableView table={card.table} /> : null}
           {sounds ? (
-            <>
+            <div data-testid="idea-sounds" className="short:order-[-1]">
               <Part>How it sounds</Part>
               <p data-testid="idea-text" className="mt-1 text-lg">
                 {greekMarked(sounds)}
               </p>
-            </>
+            </div>
           ) : null}
           {soundLessons.map((lesson) => (
             <button
