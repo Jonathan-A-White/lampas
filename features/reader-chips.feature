@@ -20,7 +20,7 @@ Feature: The Reader's top is one slim row of chips
     Given Lampas is opened on Romans 8 with 3 words due, the goal "1 John 1:1" and his seed words
     Then the chip "Due 3" is named "Due: 3"
     And the goal chip is named with the title, the solid words out of 16 and the ideas
-    And the chip "New 3" is named "New words: 3"
+    And the chip "New 3" is named "New 3 words"
 
   Scenario: A chip with nothing to show is not drawn, and the Plan chip is then alone in the row
     Given Lampas is opened on Romans 8 with nothing due, no goal and no new words

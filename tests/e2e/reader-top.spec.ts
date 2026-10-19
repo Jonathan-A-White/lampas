@@ -75,7 +75,7 @@ test('with Due 9, a goal and new words the chips are one slim row and the text s
   const ideas = (await neededIdeas('1 John 1:1')).length;
   await expect(goal).toHaveAccessibleName(new RegExp(`^Goal: 1 John 1:1, \\d+ of 16 words, \\d+ of ${ideas} ideas$`));
   await expect(news).toHaveText(/^New \d+$/);
-  await expect(news).toHaveAccessibleName(/^New words: \d+$/);
+  await expect(news).toHaveAccessibleName(/^New \d+ words$/);
 
   const row = page.getByTestId('reader-chips');
   const rowBox = await row.boundingBox();
