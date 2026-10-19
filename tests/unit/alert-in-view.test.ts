@@ -74,4 +74,35 @@ describe('the alert watcher', () => {
     await appear(box, wrap);
     expect(box.scrollTop).toBeGreaterThan(0);
   });
+
+  it('scrolls a div that becomes a message by taking the role (a pending card that turns into a failure)', async () => {
+    const { box, alert } = boxWithAlert(150, 190);
+    alert.removeAttribute('role');
+    box.append(alert);
+    stop = startAlertWatch();
+    alert.setAttribute('role', 'alert');
+    await Promise.resolve();
+    expect(box.scrollTop).toBeGreaterThan(0);
+  });
+
+  it('scrolls a message whose words are put into it after it is drawn', async () => {
+    const { box, alert } = boxWithAlert(150, 190);
+    box.append(alert);
+    stop = startAlertWatch();
+    alert.append(document.createElement('p'));
+    await Promise.resolve();
+    expect(box.scrollTop).toBeGreaterThan(0);
+  });
+
+  it('shows the buttons set right under the message too, the message first when both do not fit', async () => {
+    const { box, alert } = boxWithAlert(40, 80);
+    const retry = document.createElement('button');
+    retry.getBoundingClientRect = () => rect(90, 140);
+    box.append(retry);
+    await appear(box, alert);
+    box.insertBefore(alert, retry);
+    await Promise.resolve();
+    // the button's foot at 140 is 48 px past the box's 100 with its gap, but the message's top at 40 stays in the box: 32 px is all it can go
+    expect(box.scrollTop).toBe(32);
+  });
 });
