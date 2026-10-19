@@ -480,6 +480,10 @@ share one stream; the last to end closes it. features/tutor-live-stream.feature.
 The stream is used only when `GET /api/me` lists the `events` feature for the phone's key. At the time of writing Postern lists it only for cockpit keys and answers a
 Lampas licence's key 403 on `/api/events` (server/internal/api/handlers.go: `gate(cockpitKeys|mayorKey, ...)`), so the live app still polls every 3 s until Postern admits grist keys to the stream.
 
+## A question is never lost (mw-5r3p30.602)
+
+What each question is doing is kept apart from the screen that asked it (src/pending/pendingAsks.ts, in localStorage), for the Verse view's Ask and for every Bible talk (the Talk sheet, the round Ask button, Welcome, Share). A question that failed keeps its red box and Retry (and in the Ask box the question comes back into the field) when he leaves the page and returns or the page reloads. A question that had gone to the tutor and still waits is waited for again when the page is back and its verse view or talk sheet is opened: the same grist is waited for, none is sent a second time, and its answer is stored under it. A question that had not gone yet comes back as 'The page was closed before the question went' with Retry; the pictures of a talk message in flight are not kept, the question is. When the phone loses its network while a question waits, the box says 'You are offline. Check your connection and try again.' within a moment, with Retry, which waits for the answer to the grist that went. After Send, the Ask box keeps the question and the wait in view above the composer (sideways too), and a long question of his own does not push the first lines of the answer out of view. Tests: `tests/e2e/question-kept.spec.ts`, `tests/e2e/tutor-offline.spec.ts`.
+
 ## Tests
 
 `features/tutor-live-stream.feature`, `features/ask-tutor.feature` (the control, the request, the questions, what is kept), `tests/unit/ask-tutor.test.ts`, the `screen` blocks of
