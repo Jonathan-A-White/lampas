@@ -205,6 +205,8 @@ words with capitals and punctuation, the fillers, repeats and false starts taken
 (`TalkTurn.cleanQ`) and the Verse view's answer card (`TutorAnswer.cleanQuestion`, `[data-answer-question]`) show that in place of the raw
 transcript; the raw words stay kept as `q` / `question` (and `q` is what goes in the next request's history). An answer with no `question`, such as
 one kept before this, shows the raw words. While the answer is on its way the raw words show, as before. No table change (the fields are not indexed).
+A question he SPOKE (`wasSpoken` when it was sent, kept as `spoken` on the turn or the answer) whose cleaned question differs from his words also shows them under it as a
+muted `You said: ...` line (`src/ui/YouSaid.tsx`, `[data-you-said]`, mw-5r3p30.308), so the answer's 'I took "technia" as Τεκνία' has something to read against; a typed question never shows it.
 The model sometimes keeps a lone um, uh or er in the Verse view's cleaned question, so `src/services/fillers.ts` `withoutFillers` strips them (and the commas
 around them) before it is kept (mw-5r3p30.193; `umbrella` and `Uh-oh` are not touched); the Bible talk's `cleanQ` has no such guard yet.
 Checks: `tests/unit/fillers.test.ts`, `tests/unit/cleaned-question.test.ts`, `grinds/examples/*/cleaned-question.json`, and the scenarios "What he said is shown back cleaned up"

@@ -134,3 +134,35 @@ test('at the end of the chapter with an answer kept, the last answer scrolls ful
   expect(last.y + last.height).toBeLessThanOrEqual(composer.y);
   expect(overlaps(last, composer)).toBe(false);
 });
+
+const CLEANED = 'What does κέκληται mean?';
+
+test('a spoken question shows his own words under the cleaned heading as a muted "You said" line (mw-5r3p30.308)', async ({ page }) => {
+  const fake = makeFakePostern();
+  const view = await start(page, fake);
+  await pressBar(page);
+  await expect(composerOf(page).getByTestId('live-transcript')).toHaveText(SAID, { timeout: 15_000 });
+  await page.mouse.up();
+  await fake.answer({ status: 'answered', answer: { ...SYNERGEI_ANSWER, question: CLEANED } });
+
+  const card = view.locator('[data-answer]');
+  const heading = card.locator('[data-answer-question]');
+  await expect(heading).toHaveText(CLEANED);
+  const said = card.locator('[data-you-said]');
+  await expect(said).toHaveText(`You said: ${SAID}`);
+  await expect(said).toHaveClass(/text-muted/);
+  // the line is under the heading, before the answer
+  expect((await box(said)).y).toBeGreaterThanOrEqual((await box(heading)).y + (await box(heading)).height - 0.5);
+  expect((await box(said)).y).toBeLessThan((await box(card.locator('.leading-snug'))).y);
+  await shot(page, 'verse-ask-you-said');
+});
+
+test('a typed question shows no "You said" line, even when the tutor tidied it', async ({ page }) => {
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: { ...SYNERGEI_ANSWER, question: CLEANED } };
+  const view = await start(page, fake);
+  await typeQuestion(page, 'what does keklaytai mean');
+  const card = view.locator('[data-answer]');
+  await expect(card.locator('[data-answer-question]')).toHaveText(CLEANED);
+  await expect(card.locator('[data-you-said]')).toHaveCount(0);
+});

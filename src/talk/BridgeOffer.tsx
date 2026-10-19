@@ -20,7 +20,7 @@ export function BridgeOffer({ bridge, onTake }: { bridge: Bridge; onTake: () => 
       </ul>
       {bridge.many ? <p className="text-base text-muted">…and more behind them.</p> : null}
       <p className="mt-1 break-words text-base">{bridge.why}</p>
-      <button type="button" onClick={onTake} className="mt-1 min-h-11 rounded-lg border border-accent px-4 text-base font-medium text-accent active:bg-line">
+      <button type="button" data-bridge-take onClick={onTake} className="mt-1 min-h-11 rounded-lg border border-accent px-4 text-base font-medium text-accent active:bg-line">
         {bridgeButtonText(bridge)}
       </button>
     </div>

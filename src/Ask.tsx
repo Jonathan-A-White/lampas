@@ -22,6 +22,7 @@ import { BridgeIdeaHost, BridgeOffer } from './talk/BridgeOffer';
 import { openBridgeIdea } from './talk/offers';
 import { PendingQuestion } from './ui/PendingQuestion';
 import { revealTop } from './ui/reveal';
+import { YouSaid } from './ui/YouSaid';
 import { useElapsed } from './ui/useElapsed';
 import { GREEK_LANG } from './script/greekLang';
 
@@ -83,6 +84,7 @@ function AnswerCard({ answer }: { answer: TutorAnswer }) {
   return (
     <article data-answer onClick={stopOnTap} className="rounded-xl border border-line bg-surface p-3">
       <p data-answer-question className="break-words text-sm text-muted">{answer.cleanQuestion ?? answer.question}</p>
+      <YouSaid spoken={answer.spoken} said={answer.question} shown={answer.cleanQuestion} />
       <div className="mt-1 break-words text-lg leading-snug">
         <Markdown text={answer.answer} />
       </div>

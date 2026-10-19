@@ -2,8 +2,10 @@
 // 'Take me there: <title>'; the tap opens that idea's sheet over the talk and Done brings the talk back. Ends with a shot of each.
 import { expect, test } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
+import { honestSpeech } from '../support/honest-fakes';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
+import { expectInList } from './talk-list';
 import { openUnlocked } from './unlocked';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -46,4 +48,24 @@ test('a question he is not ready for is bridged to the idea he lacks and Take me
   await expect(idea).toHaveCount(0);
   await expect(sheet.getByRole('button', { name: 'Take me there: The Greek alphabet' })).toBeVisible();
   expect(fake.received[0].input).toMatchObject({ missing_foundations: { topic: 'The genitive case' } });
+});
+
+test('right after a bridged answer draws in a 1 John 1 talk, Take me there is inside the Talk list', async ({ page }) => {
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: ANSWER };
+  await routePostern(page, fake);
+  await honestSpeech(page, { msPerWord: 400 });
+  await openUnlocked(page);
+  await page.goto('/#/?b=1jn&c=1&view=english&weave=off');
+  await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  const sheet = page.getByRole('dialog', { name: 'Talk about 1 John 1' });
+  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Why is the genitive used here?');
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+
+  // the answer is being read aloud, so its speaking bar has taken room from the list
+  const take = sheet.getByRole('button', { name: 'Take me there: The Greek alphabet' });
+  await expect(take).toBeInViewport({ ratio: 1 });
+  await expect(page.getByRole('region', { name: 'Speaking', exact: true })).toBeVisible();
+  await expectInList(sheet, take, 'Take me there');
+  await shot(page, 'bridge-in-view');
 });

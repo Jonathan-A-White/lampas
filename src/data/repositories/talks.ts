@@ -46,6 +46,8 @@ export interface TurnChanges {
   rustyOffer?: RustyOffer;
   /** what he said, cleaned up by the tutor; shown in place of the raw words, which stay as `q` */
   cleanQ?: string;
+  /** the question was spoken, so the tutor's cleaned question shows his own words under it (mw-5r3p30.308) */
+  spoken?: boolean;
   /** the pictures he sent with it (mw-y3qno5.1), kept in their own table */
   pictures?: KeptPicture[];
 }
@@ -78,6 +80,7 @@ export async function addTurn(ref: string, q: string, a: string, words: AnswerWo
   if (done?.greekOffer) turn.greekOffer = done.greekOffer;
   if (done?.rustyOffer) turn.rustyOffer = done.rustyOffer;
   if (done?.cleanQ) turn.cleanQ = done.cleanQ;
+  if (done?.spoken) turn.spoken = true;
   return db.transaction('rw', db.talks, db.talkPictures, async () => {
     const id = (await db.talks.add(turn)) as number;
     if (done?.pictures?.length) {
