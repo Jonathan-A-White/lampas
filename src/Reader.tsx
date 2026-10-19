@@ -13,7 +13,7 @@ import { VerseView } from './VerseView';
 import { useVerseAction } from './verse/action';
 import { Away } from './Away';
 import { setImmersiveReader } from './appearance/appearanceSync';
-import { useImmersive, useImmersiveSetting, useScrolledPercent } from './immersive';
+import { moveBox, useImmersive, useImmersiveSetting, useScrolledPercent } from './immersive';
 import { PlaceLine } from './PlaceLine';
 import { ImmersiveHint } from './ImmersiveHint';
 import { ReaderControls } from './ReaderControls';
@@ -359,7 +359,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     const margin = 16;
     const bar = box.getBoundingClientRect();
     const rect = el.getBoundingClientRect();
-    if (rect.top < bar.top + margin || rect.bottom > bar.bottom - margin) box.scrollTop += rect.top - bar.top - margin;
+    if (rect.top < bar.top + margin || rect.bottom > bar.bottom - margin) moveBox(box, box.scrollTop + rect.top - bar.top - margin);
   }, [readingVerse, paging, showPage]);
 
   return (

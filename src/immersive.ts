@@ -5,6 +5,9 @@
 // does nothing. No gesture from a screen's edge: Android's gesture navigation owns the edges. The hook only decides `away`; src/Away.tsx draws the
 // sliding.
 //
+// Only his own scrolling counts (mw-5r3p30.480): the scroll the Reader makes to keep the verse being read aloud in view (moveBox) is the app moving the
+// text, as putting his saved place back is, so reading aloud leaves the bars as they are.
+//
 // Full screen (mw-5r3p30.296, once per visit mw-5r3p30.316): with it On, his first tap or scroll in the text asks the browser for full screen (the
 // Fullscreen API needs a gesture), so the phone's status and navigation bars go away too, and it STAYS: Chrome shows its own "To exit full screen"
 // notice every time a page enters full screen (no page can hide it or learn it was swiped away), so entering again after every two-finger tap would
@@ -44,6 +47,17 @@ let awayNow = false;
  * draw; without this that frame is drawn as if Immersive were Off, bars and all (mw-5r3p30.497). Forgotten with awayNow, so a visit after he has
  * switched it Off in Settings does not start On. */
 let onNow = false;
+
+/** The offset the app has just moved a box to, until the scroll event of that move is heard. */
+const movedTo = new WeakMap<HTMLElement, number>();
+
+/** Moves `box` to `top` as the app's own doing: the scroll event it brings is not him scrolling down, so the bars do not go away for it. */
+export function moveBox(box: HTMLElement, top: number): void {
+  const before = box.scrollTop;
+  box.scrollTop = top;
+  // the browser clamps and rounds the offset, so what it took is what the event will show; no move, no event to wait for
+  if (box.scrollTop !== before) movedTo.set(box, box.scrollTop);
+}
 
 /** Asks the browser to show the page full screen. False where it cannot or will not (no API, no gesture yet, refused). */
 async function enterFullScreen(): Promise<boolean> {
@@ -154,6 +168,12 @@ export function useImmersive(
       last = top;
       // the Reader putting his saved place back (a return from Settings, a reload) is not him scrolling down: the bars stay as they were (mw-5r3p30.471)
       if (isRestoringScroll(el)) {
+        down = 0;
+        return;
+      }
+      // so is the Reader following the voice (moveBox); this event is that move's, and the next one is his again
+      if (movedTo.get(el) === top) {
+        movedTo.delete(el);
         down = 0;
         return;
       }
