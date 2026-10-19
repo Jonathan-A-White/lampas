@@ -59,6 +59,7 @@ function ReadBar({ hold, name, label, recording }: { hold: ReadHold; name: strin
       label={label}
       listening={recording}
       disabled={hold.disabled}
+      keys
     />
   );
 }

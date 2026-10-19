@@ -32,6 +32,29 @@ test) and ends with a canary: a button that loses its accessible name must make 
   and back to what had focus when it closed, if nothing else has taken focus. A sheet needs a heading in its dialog (the word sheet's Greek word, or the English he tapped); a
   Done button of such a sheet does not take focus on mount (`focusOnMount`): the heading does.
 
+## Gesture-only actions (mw-cwf538.4)
+
+A gesture is never the only way to do something: each action below has a control with an accessible name that a keyboard or TalkBack reaches (TalkBack finds it by swiping to it and
+double tapping; a web page has no custom actions menu, so the control is a button). `tests/e2e/no-gesture-only.spec.ts` holds the proof, with no touch and no pointer gesture:
+it leaves and enters the Immersive reader, hears a word and turns a page, each by a control found by its name. `tests/unit/gesture-only-doc.test.ts` fails when a control named
+here is no longer in `src`. The buttons the Reader adds (`src/ReaderControls.tsx`) are clipped to one pixel high (`.reveal-on-focus`, `src/index.css`) until focus is inside them, and then a
+row at the top of the screen, so a sighted reader on a touch screen sees nothing new. They are not reachable under an open sheet (inert), and they sit in a group, `Reading controls`.
+
+| The gesture | Where | The control |
+| --- | --- | --- |
+| Tap with two fingers: shows the Immersive reader's bars, or puts them away (`src/immersive.ts`) | the Reader's text, Immersive reader On | `Put the bars away` / `Show the bars` (`ReaderControls`; it says the result to the live region) |
+| Going into and out of the Immersive reader (the card's own line says Settings > Immersive reader) | the Reader | `Leave immersive reading` / `Start immersive reading` (`ReaderControls`; the same setting as Settings > Immersive reader, which stays) |
+| Tap on the outer thirds of the text, or swipe left or right: turns a page (`src/reader/usePages.ts`) | the Reader, Settings > Reading > Turn pages | `Next page` / `Previous page` (`ReaderControls`; `aria-disabled` on the first and last page); the page is said by the place line |
+| Swipe left or right: the next or previous chapter (`src/reader/useChapterSwipe.ts`) | the Reader, Scroll | `‹ <chapter>` and `<chapter> ›` in the `Chapters` navigation at the foot of the text (`src/ChapterNav.tsx`), and the title's chapter picker |
+| Long press on a word of the Reader: says it (`src/ui/longPress.ts`) | the Reader's Greek and English words | open the word with Enter or a tap, then `Hear it` on the word sheet (`src/WordSheet.tsx`); the verse's `Hear the verse` button reads the whole verse |
+| Long press on a word in the Words list | Words | `Hear it` beside each word (`src/WordsScreen.tsx`) |
+| Long press on any word of prose (`src/ui/HearAnyWord.tsx`) | the tutor's answers, the sheets, About | a Greek or Hebrew word of an answer is a button that says it (`src/script/GreekWord.tsx`, `HebrewWord.tsx`); English prose is read by the screen reader itself |
+| Hold a bar to talk, to ask or to read (`src/ui/holdPress.ts`, `HoldBar.tsx`) | the Talk sheet, Hold to ask, the reading check's `Hold to read`, the Reading drill's `Hold to read <word>`, `Hold to say <word>`, the letter drill | Space or Enter held is the hold (`keys` on `HoldBar`; added to the reading check and the Reading drill here); the Reader's `Talk` bar opens the sheet on a tap; `Type a question` and the sheet's typed field take no voice |
+| Swipe down on a sheet's handle: closes it (`src/ui/sheetDrag.ts`) | every sheet | `Done` (or `Close`), Escape, and the phone's Back |
+| Pinch and drag the grammar ladder graph (`src/LadderGraph.tsx`) | The whole path | `Zoom in`, `Zoom out`, `Where I am`; every idea is a focusable button. **Not done:** no button pans the graph, and focus does not bring a node into view |
+| Draw a letter (`src/handwriting/WritingPad.tsx`) | Write it | drawing is the exercise itself; `Skip` takes the card with no cost |
+| Double tap | nowhere | Lampas has no double-tap action; a double tap on a control is guarded against (`src/ui/settle.ts`, `heldSpace.tsx`) |
+
 ## Rules left out of the check
 
 An axe rule left out is listed here with its reason, and by id in `tests/support/axe-excluded.ts`; `tests/unit/accessibility-doc.test.ts` fails when the two lists differ.

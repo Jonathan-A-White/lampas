@@ -87,6 +87,8 @@ export function useImmersiveSetting(): boolean {
 export interface Immersive {
   /** the bars are out of view */
   away: boolean;
+  /** shows the bars if away, puts them away if shown: what a two-finger tap does, for a control (src/ReaderControls.tsx) */
+  toggle(): void;
 }
 
 /** Decides whether the bars are away, from the scrolling of `box` and two-finger taps on it. With `enabled` false nothing is listened to and they are never away. */
@@ -102,6 +104,7 @@ export function useImmersive(
     awayNow = value;
     setAway(value);
   }, []);
+  const toggle = useCallback(() => set(!awayRef.current), [set]);
 
   useEffect(() => {
     const el = box.current;
@@ -232,7 +235,7 @@ export function useImmersive(
     };
   }, [enabled, box, set]);
 
-  return { away: enabled && away };
+  return { away: enabled && away, toggle };
 }
 
 /** How far through the text of `box` he has scrolled, 0 to 100 (a text that fits is all of it: 100). */

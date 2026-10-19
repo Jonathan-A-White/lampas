@@ -15,6 +15,7 @@ import { Away } from './Away';
 import { useImmersive, useImmersiveSetting, useScrolledPercent } from './immersive';
 import { PlaceLine } from './PlaceLine';
 import { ImmersiveHint } from './ImmersiveHint';
+import { ReaderControls } from './ReaderControls';
 import { ASK_BUTTON_GUTTER, ASK_BUTTON_ROOM, AskTutorButton, TALK_BAR_LIFT } from './AskTutor';
 import { useAiAllowed } from './gate/licenceContext';
 import { LicenceTip } from './gate/LicenceTip';
@@ -378,6 +379,16 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       {chapterReading || !tipOpen ? null : <TipCard onClose={() => setTipOpen(false)} />}
       </div>
       </Away>
+      {/* what a two-finger tap, a tap on the outer thirds and a swipe do, as buttons that show while focused (src/ReaderControls.tsx) */}
+      {chapter && !failed ? (
+        <ReaderControls
+          immersive={immersive}
+          away={away}
+          onBars={bars.toggle}
+          pages={paging ? { page: pages.page, count: pages.count, turn: pages.turn } : null}
+          inert={sheetOpen || viewUnit !== undefined}
+        />
+      ) : null}
       {notice ? <LinkNotice text={notice} elsewhere={link?.elsewhere} onDismiss={() => setNotice(null)} /> : null}
       {swipeEnd ? <SwipeNote end={swipeEnd} lastBook={BOOKS[BOOKS.length - 1].name} onDismiss={dismissSwipeNote} /> : null}
       <ReadingBar reading={reading} />
