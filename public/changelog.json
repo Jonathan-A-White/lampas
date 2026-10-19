@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.333",
+    "date": "2026-10-19",
+    "story": "mw-cwf538.4",
+    "kind": "new",
+    "text": "The Reader has buttons, found with a keyboard or TalkBack, for what used to be gestures only: bring back or put away the bars, leave or start immersive reading, and turn a page."
+  },
+  {
+    "version": "0.1.333",
+    "date": "2026-10-19",
+    "story": "mw-5r3p30.427",
+    "kind": "fixed",
+    "text": "'Link Logos in Settings' now opens Settings at Study resources even when you had left Settings scrolled down."
+  },
+  {
     "version": "0.1.331",
     "date": "2026-10-19",
     "story": "mw-cwf538.3",

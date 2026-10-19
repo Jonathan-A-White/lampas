@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.333
+_2026-10-19_
+- New: The Reader has buttons, found with a keyboard or TalkBack, for what used to be gestures only: bring back or put away the bars, leave or start immersive reading, and turn a page.
+- Fixed: 'Link Logos in Settings' now opens Settings at Study resources even when you had left Settings scrolled down.
+
 ## 0.1.331
 _2026-10-19_
 - New: Lampas now reads Greek in a Greek voice under TalkBack, says out loud the tutor's answers, quiz results and reading marks, and moves TalkBack into a sheet when it opens and back when it closes.
