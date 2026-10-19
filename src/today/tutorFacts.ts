@@ -22,12 +22,12 @@ export function openedTitles(opened: readonly string[], names: PieceNames): stri
   return titles;
 }
 
-/** The facts Today reports: the local date, what is On, the reading plan's next chapter when a plan is started (he can move it, src/plan/PlacePicker.tsx) and what he opened today ('nothing yet' before he opens one). */
-export function todayFacts({ date, on, opened, plan }: { date: string; on: readonly string[]; opened: readonly string[]; plan?: string }): ScreenFact[] {
+/** The facts Today reports: the local date, what is On, the reading plan's next chapter when a plan is started (he can move it, src/plan/PlacePicker.tsx), the chapters of it he read today as ranges ('1 Peter 1-5, 2 Peter 1-3', 'nothing yet'; mw-5r3p30.630) and what he opened today ('nothing yet' before he opens one). */
+export function todayFacts({ date, on, opened, plan, readToday }: { date: string; on: readonly string[]; opened: readonly string[]; plan?: string; readToday?: readonly string[] }): ScreenFact[] {
   return [
     { label: 'Date', value: date },
     { label: 'On Today', value: on.join(', ') || 'nothing' },
-    ...(plan ? [{ label: 'Reading plan', value: `Next: ${plan}` }] : []),
+    ...(plan ? [{ label: 'Reading plan', value: `Next: ${plan}` }, { label: 'Read today', value: readToday?.join(', ') || 'nothing yet' }] : []),
     { label: 'Opened today', value: opened.join(', ') || 'nothing yet' },
   ];
 }

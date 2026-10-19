@@ -1,4 +1,8 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { planOf } from '../../src/data/plans';
+import { EXCLUDED_RULES } from '../support/axe-excluded';
 import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
@@ -274,4 +278,107 @@ test('the tutor from Today knows the psalm he opened, and a screenshot is one ta
   const screen = fake.received[0].input.screen as { name: string; facts: { label: string; value: string }[] };
   expect(screen.name).toBe('Today');
   expect(screen.facts).toContainEqual({ label: 'Opened today', value: `Psalm ${TODAY.day}` });
+});
+
+// What he read today (mw-5r3p30.630): the plan keeps the day each chapter was marked, Today shows them above Next with a ticked box each, and a tick on Next marks it read.
+const STARTS = (JSON.parse(readFileSync('src/resources/audibleStarts.json', 'utf8')) as { chapters: Record<string, number> }).chapters;
+const PLAN_CHAPTERS = planOf('whole-bible')!.chapters();
+const keyOf = (c: { code: string; chapter: number }) => `${c.code}.${c.chapter}`;
+const INDEX_1PE_1 = PLAN_CHAPTERS.findIndex((c) => keyOf(c) === '1pe.1');
+const BEFORE_1PE_1 = PLAN_CHAPTERS.slice(0, INDEX_1PE_1).map(keyOf);
+/** the time to listen from the start of 1 Peter 1 to the start of 1 John 1, and five seconds more */
+const TO_1_JOHN = STARTS['1jn.1'] - STARTS['1pe.1'] + 5_000;
+const count = (done: number) => `${done.toLocaleString('en-US')} of ${PLAN_CHAPTERS.length.toLocaleString('en-US')} chapters done`;
+/** the plan at 1 Peter 1 with a listening session open there that began long enough ago to have reached 1 John 1 (the page clock is held at FIXED, so the day does not move) */
+const listeningAtPeter = [
+  { key: 'readingPlan', value: 'on' },
+  { key: 'audioBible', value: 'word-of-promise' },
+  { key: STATE, value: JSON.stringify({ planId: 'whole-bible', start: { code: '1pe', chapter: 1 }, done: BEFORE_1PE_1, session: { code: '1pe', chapter: 1, startedAt: FIXED - TO_1_JOHN } }) },
+];
+const readToday = (page: Page) => piece(page, 'Reading plan').getByTestId('plan-read-today').locator('[data-run-name]');
+
+test('Read today names what he marked read today, a tick on Next marks the next chapter, and an untick takes it back', async ({ page }) => {
+  await openToday(page, listeningAtPeter);
+  // back from Audible: he listened through 2 Peter 3 and is in 1 John 1
+  const sheet = page.getByRole('dialog', { name: 'Where did you get to?' });
+  await sheet.getByRole('button', { name: 'Stopped in: 1 John 1' }).click();
+  await expect(sheet).toHaveCount(0);
+
+  const plan = piece(page, 'Reading plan');
+  await expect(readToday(page)).toHaveText(['1 Peter 1-5', '2 Peter 1-3']);
+  for (const box of await plan.getByTestId('plan-read-today').getByRole('checkbox').all()) await expect(box).toHaveAttribute('aria-checked', 'true');
+  await expect(plan.getByTestId('plan-read-today').getByRole('checkbox', { name: 'Read today: 1 Peter 1-5', exact: true })).toBeVisible();
+  await expect(plan.getByTestId('plan-place')).toContainText('Next: 1 John 1');
+  await expect(plan.getByTestId('plan-place')).toContainText(count(INDEX_1PE_1 + 8));
+  await shot(page, 'today-plan-read');
+
+  // a tick on Next: 1 John 1 is read today and Next moves on, the count one more
+  const nextBox = plan.getByRole('checkbox', { name: 'Mark 1 John 1 read', exact: true });
+  await expect(nextBox).toHaveAttribute('aria-checked', 'false');
+  const size = await nextBox.boundingBox();
+  expect(size?.height).toBeGreaterThanOrEqual(43.5);
+  expect(size?.width).toBeGreaterThanOrEqual(43.5);
+  await nextBox.click();
+  await expect(readToday(page)).toHaveText(['1 Peter 1-5', '2 Peter 1-3', '1 John 1']);
+  await expect(plan.getByTestId('plan-place')).toContainText('Next: 1 John 2');
+  await expect(plan.getByTestId('plan-place')).toContainText(count(INDEX_1PE_1 + 9));
+  const kept1 = (await kept(page, STATE)) as { done: string[]; doneOn: Record<string, string> };
+  expect(kept1.done).toContain('1jn.1');
+  expect(kept1.doneOn['1jn.1']).toBe(TODAY.iso);
+  expect(Object.keys(kept1.doneOn)).toHaveLength(9);
+  await shot(page, 'today-plan-ticked');
+
+  // an untick in Read today: 1 John 1 leaves it and is Next again
+  await plan.getByRole('checkbox', { name: 'Read today: 1 John 1', exact: true }).click();
+  await expect(readToday(page)).toHaveText(['1 Peter 1-5', '2 Peter 1-3']);
+  await expect(plan.getByTestId('plan-place')).toContainText('Next: 1 John 1');
+  await expect(plan.getByTestId('plan-place')).toContainText(count(INDEX_1PE_1 + 8));
+  // the new boxes each have their name: axe finds no WCAG 2.1 A or AA violation on the plan piece with both kinds of box drawn
+  await nextBox.click();
+  await expect(readToday(page)).toHaveText(['1 Peter 1-5', '2 Peter 1-3', '1 John 1']);
+  const found = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).disableRules([...EXCLUDED_RULES]).include('[aria-label="Reading plan"]').analyze();
+  expect(found.violations.map((v) => v.id)).toEqual([]);
+  await plan.getByRole('checkbox', { name: 'Read today: 1 John 1', exact: true }).click();
+
+  // Undo puts the tick back
+  await page.getByTestId('plan-moved').getByRole('button', { name: 'Undo' }).click();
+  await expect(plan.getByTestId('plan-place')).toContainText('Next: 1 John 2');
+  await expect(readToday(page)).toHaveText(['1 Peter 1-5', '2 Peter 1-3', '1 John 1']);
+
+  // the next day starts with nothing read and Next where it was
+  await page.clock.setFixedTime(FIXED + DAY_MS);
+  await page.reload();
+  await expect(plan.getByTestId('plan-place')).toContainText('Next: 1 John 2');
+  await expect(plan.getByTestId('plan-read-today')).toHaveCount(0);
+  await expect(plan.getByTestId('plan-place')).toContainText(count(INDEX_1PE_1 + 9));
+});
+
+test('several ticks on Next make a range, and an untick of the range takes all its chapters back', async ({ page }) => {
+  await openToday(page, [{ key: 'readingPlan', value: 'on' }, { key: STATE, value: JSON.stringify({ planId: 'whole-bible', start: { code: '1jn', chapter: 1 }, done: PLAN_CHAPTERS.slice(0, INDEX_1PE_1 + 8).map(keyOf) }) }]);
+  const plan = piece(page, 'Reading plan');
+  await expect(plan.getByTestId('plan-read-today')).toHaveCount(0);
+  // chapters done before today are not read today
+  await plan.getByRole('checkbox', { name: 'Mark 1 John 1 read', exact: true }).click();
+  await plan.getByRole('checkbox', { name: 'Mark 1 John 2 read', exact: true }).click();
+  await expect(readToday(page)).toHaveText(['1 John 1-2']);
+  await expect(plan.getByTestId('plan-place')).toContainText('Next: 1 John 3');
+  await plan.getByRole('checkbox', { name: 'Read today: 1 John 1-2', exact: true }).click();
+  await expect(plan.getByTestId('plan-read-today')).toHaveCount(0);
+  await expect(plan.getByTestId('plan-place')).toContainText('Next: 1 John 1');
+});
+
+test('the tutor from Today is told the chapters read today', async ({ page }) => {
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: TALK_ANSWER };
+  await routePostern(page, fake);
+  await openToday(page, [{ key: 'readingPlan', value: 'on' }, { key: STATE, value: JSON.stringify({ planId: 'whole-bible', start: { code: '1jn', chapter: 1 }, done: PLAN_CHAPTERS.slice(0, INDEX_1PE_1 + 8).map(keyOf) }) }]);
+  await piece(page, 'Reading plan').getByRole('checkbox', { name: 'Mark 1 John 1 read', exact: true }).click();
+  await expect(readToday(page)).toHaveText(['1 John 1']);
+  await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
+  const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Today' });
+  await sheet.locator('[data-suggestion]').filter({ hasText: 'Talk about what I read' }).click();
+  await expect(sheet.locator('[data-turn]')).toHaveCount(1);
+  const screen = fake.received[0].input.screen as { facts: { label: string; value: string }[] };
+  expect(screen.facts).toContainEqual({ label: 'Read today', value: '1 John 1' });
+  expect(screen.facts).toContainEqual({ label: 'Reading plan', value: 'Next: 1 John 2' });
 });

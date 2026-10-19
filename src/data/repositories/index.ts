@@ -72,7 +72,7 @@ export type { ItemRef } from './rusty';
 export { addAnswer, listAnswers, verseRef } from './answers';
 export type { AnswerWord, TutorAnswer } from './answers';
 export { listOpenedParadigms, markParadigmOpened } from './paradigmsOpened';
-export { beginSession, endSession, getReadingPlan, markDoneBefore, markDoneThrough, markHeard, nextChapter, openSession, progress as planProgress, restorePlan, setPlace, setPlaceAfter, startPlan } from './readingPlan';
+export { beginSession, endSession, getReadingPlan, markChapterRead, markDoneBefore, markDoneThrough, markHeard, nextChapter, openSession, progress as planProgress, readOn, restorePlan, setPlace, setPlaceAfter, startPlan, unmarkChaptersRead } from './readingPlan';
 export type { EndedSession, Heard, ListeningSession, ReadingPlanState } from './readingPlan';
 export { STUDY_WAY_LINE_MAX, STUDY_WAY_MAX, deleteStudyWayLine, editStudyWayLine, keepStudyWayLine, listStudyWay } from './studyWay';
 export type { EditResult, KeepResult } from './studyWay';

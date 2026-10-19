@@ -9,7 +9,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { devotionalForDay, tickedDevotionals } from '../data/daily/devotionals';
 import { getDay, getExplained, localDate, markOpened, noteExplained, setTicked } from '../data/daily/dailyStore';
 import { dailyReadings } from '../data/daily/psalmsProverbs';
-import { countDue, getLogosBible, getStudyResources } from '../data/repositories';
+import { countDue, getLogosBible, getStudyResources, markChapterRead, unmarkChaptersRead } from '../data/repositories';
 import { useLatestLiveQuery } from '../data/useLatestLiveQuery';
 import { bookOf } from '../data/books';
 import { navigate, openReader } from '../nav/route';
@@ -30,6 +30,7 @@ import { dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyRevi
 import { openSetting } from '../settings/link';
 import { useSetting } from '../settings/store';
 import { useReportScreen } from '../tutor/screenContext';
+import { readRanges, readRuns } from './readToday';
 import { openedTitles, passageName, todayFacts } from './tutorFacts';
 import { useToday } from './useToday';
 
@@ -68,6 +69,17 @@ function Piece({ id, label, ticks, children }: { id: string; label: string; tick
   );
 }
 
+/** A small tick box: Read today's (ticked, an untick un-marks the run) and Next's (a tick marks the chapter read). */
+function TickBox({ label, checked, onToggle }: { label: string; checked: boolean; onToggle: () => void }) {
+  return (
+    <button type="button" role="checkbox" aria-checked={checked} aria-label={label} onClick={onToggle} className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-lg active:bg-line">
+      <span aria-hidden="true" className={`flex h-7 w-7 items-center justify-center rounded-md border-2 text-base ${checked ? 'border-accent bg-accent text-accent-fg' : 'border-line'}`}>
+        {checked ? '✓' : ''}
+      </span>
+    </button>
+  );
+}
+
 const List = ({ children }: { children: ReactNode }) => <ul className="divide-y divide-line rounded-xl border border-line bg-surface px-1">{children}</ul>;
 
 function ReviewPiece({ ticks }: { ticks: Ticks }) {
@@ -101,13 +113,30 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
   const [starting, setStarting] = useState(false);
   const [placing, setPlacing] = useState(false);
   const place = useMovePlace();
+  const runs = readRuns(plan?.started?.readOn(date) ?? []);
   if (!plan || !resources || bible === undefined || audioId === undefined) return null;
   const { started } = plan;
   const next = started?.next;
+  // what he read today (chapters marked done on this date), each run with a ticked box that un-marks it, above Next (mw-5r3p30.630)
+  const readToday: ReactNode =
+    runs.length > 0 ? (
+      <div data-testid="plan-read-today" className="px-1 pt-1">
+        <p className="px-2 text-sm font-medium text-muted">Read today</p>
+        <ul>
+          {runs.map((run) => (
+            <li key={`${run.code}.${run.chapters[0]!.chapter}`} data-run={run.name} className="flex items-center">
+              <TickBox label={`Read today: ${run.name}`} checked onToggle={() => place.move({ run: () => unmarkChaptersRead(run.chapters), said: `Unmarked ${run.name}.` })} />
+              <span data-run-name className="min-w-0 flex-1 text-lg">{run.name}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ) : null;
   let body: ReactNode;
   if (!next) {
     body = (
       <Piece id="plan" label="Reading plan" ticks={ticks}>
+        {readToday}
         <p className="px-3 text-base text-muted">{started ? 'Your plan is finished.' : 'No reading plan is started.'}</p>
         <div className="flex flex-wrap gap-2 px-1 py-1">
           <button type="button" onClick={() => setStarting(true)} className={ACTION}>
@@ -131,10 +160,14 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
     const opened = (): void => void markOpened(date, 'plan');
     body = (
       <Piece id="plan" label={name} ticks={ticks}>
-        <button type="button" data-testid="plan-place" onClick={() => setPlacing(true)} className={LINK}>
-          <span className="text-lg font-medium">{`Next: ${name}`}</span>
-          <span className="text-sm text-muted">{`${started!.count.toLocaleString('en-US')} of ${started!.total.toLocaleString('en-US')} chapters done · Change where you are`}</span>
-        </button>
+        {readToday}
+        <div className="flex items-stretch">
+          <TickBox label={`Mark ${name} read`} checked={false} onToggle={() => place.move({ run: () => markChapterRead(next, date), said: `Marked ${name} read.` })} />
+          <button type="button" data-testid="plan-place" onClick={() => setPlacing(true)} className={LINK}>
+            <span className="text-lg font-medium">{`Next: ${name}`}</span>
+            <span className="text-sm text-muted">{`${started!.count.toLocaleString('en-US')} of ${started!.total.toLocaleString('en-US')} chapters done · Change where you are`}</span>
+          </button>
+        </div>
         <div className="flex flex-wrap gap-2 px-2 pb-1 pt-2">
           {logos ? (
             <a href={logos.url} data-fallback={logos.fallback} onClick={() => { opened(); armFallback(logos.fallback); }} className={ACTION}>
@@ -298,7 +331,8 @@ export function Today() {
   const none = ready && shown.every((s) => s === 'off');
   // what the tutor is told: the date, what is On and the pieces he opened today by name (this date's list only), so it can open by naming what he read
   // the plan's next chapter (live: he can move it) names the plan piece he opened, and is told to the tutor as the plan's place (the name is not in the id)
-  const planNext = usePlan()?.started?.next;
+  const planView = usePlan()?.started;
+  const planNext = planView?.next;
   const planName = planNext ? chapterName(planNext) : undefined;
   const devotionalChoice = useSetting(devotionalSetting);
   const devotionalDraw = useSetting(devotionalDrawSetting);
@@ -308,7 +342,7 @@ export function Today() {
   };
   useReportScreen({
     name: 'Today',
-    facts: ready ? todayFacts({ date, on: COULD_HOLD.filter((_, i) => shown[i] === 'on').map((p) => p.name), opened: openedTitles(day.opened, names), plan: plan === 'on' ? planName : undefined }) : [],
+    facts: ready ? todayFacts({ date, on: COULD_HOLD.filter((_, i) => shown[i] === 'on').map((p) => p.name), opened: openedTitles(day.opened, names), plan: plan === 'on' ? planName : undefined, readToday: planView ? readRanges(planView.readOn(date)) : [] }) : [],
   });
   const ticks: Ticks = { on: tickBoxes === 'on', ticked: day?.ticked ?? [], date };
   return (
