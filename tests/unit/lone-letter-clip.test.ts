@@ -6,6 +6,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { act } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Chapter, Verse } from '../../src/data/chapter';
+import { chunkOrder, type WovenVerse } from '../../src/data/weave';
 import { clearBus } from '../../src/events/bus';
 import { isElided } from '../../src/speech/elision';
 import { loneLetterCuts, speak, speakWord, stopSpeaking } from '../../src/speech/greek';
@@ -164,5 +165,90 @@ describe('a verse read aloud never hands the voice a bare one-letter word (mw-5r
   it("κατ' and ἀπ' are kept as they are", () => {
     const handed = readAloud(chapterOf('public/data/luk/9.json'), { n: 1, g: [{ t: "κατ'" }, { t: "ἀπ'" }, { t: 'ἄλλο' }] } as unknown as Verse);
     expect(handed.flatMap(wordsHanded)).toEqual(expect.arrayContaining(["κατ'", "ἀπ'"]));
+  });
+});
+
+// A run of Greek that ends in δ' reached the voice bare: the runs of a verse are handed as one text, a run to a line, and joinElidedLetters joins within one
+// run only, so a woven chunk 'ὃς δ'' followed by an English chunk, or a stretch cut off by a one-vowel word (δ' ὁ), left δ' alone before a newline
+// ('Delta'). mw-5r3p30.657.
+describe('a δ\' that ends a run still never reaches the voice bare (mw-5r3p30.657)', () => {
+  const chapterOf = (file: string): Chapter => JSON.parse(readFileSync(file, 'utf8')) as Chapter;
+  const wordsHanded = (text: string): string[] => text.split(/\s+/).filter(Boolean);
+  const readPlan = (verse: Verse, view: 'greek' | 'english', woven: WovenVerse | null): string[] => {
+    startReading({ chapter: 1, plan: planOf([verse], view, woven ? [woven] : null), from: verse.n, continuous: false });
+    // the verse is a speech, a clip, a speech: each ends in turn
+    for (let i = 0; i < 6; i++) {
+      act(() => {
+        synth.finishAll();
+        audio.end();
+      });
+    }
+    const handed = said();
+    stopReading();
+    return handed;
+  };
+  const noBare = (handed: string[]): void => {
+    const words = handed.flatMap(wordsHanded);
+    expect(words.filter(bareLetter), `the voice was handed ${words.filter(bareLetter).join(' ')}`).toEqual([]);
+  };
+  const w = (...ts: string[]) => ts.map((t) => ({ t }));
+  /** 'whoever' (ὃς δ') | 'wishes' (ἂν) | 'loses': the first chunk is woven, so the Greek ends in δ' before an English chunk */
+  const verse = {
+    n: 1,
+    g: w('ὃς', "δ'", 'ἂν', 'ἀπολέσῃ'),
+    e: [{ t: 'whoever', g: [0, 1] }, { t: 'wishes', g: [2] }, { t: 'loses', g: [3] }],
+  } as unknown as Verse;
+  const wovenFirst = [{ words: verse.g.slice(0, 2), learning: false }, null, null] as WovenVerse;
+
+  it("a woven chunk 'ὃς δ'' before an English chunk: the voice is handed no bare δ'", () => {
+    const handed = readPlan(verse, 'english', wovenFirst);
+    noBare(handed);
+    expect(handed.join(' ')).toContain('wishes');
+    expect(audio.played).toEqual([DH_CLIP]);
+    expect(handed.indexOf('ὃς')).toBeLessThan(handed.findIndex((t) => t.includes('wishes')));
+  });
+
+  it("a Greek run that ends the verse in δ' (a line's end): no bare δ'", () => {
+    const ends = { n: 1, g: w('ὃς', "δ'"), e: [{ t: 'whoever', g: [0, 1] }] } as unknown as Verse;
+    noBare(readPlan(ends, 'greek', null));
+  });
+
+  it("δ' cut off from the word after it by a one-vowel word (δ' ὁ): no bare δ'", () => {
+    const cut = { n: 1, g: w('ὃς', "δ'", 'ὁ', 'λόγος'), e: [{ t: 'whoever', g: [0, 1, 2, 3] }] } as unknown as Verse;
+    noBare(readPlan(cut, 'greek', null));
+  });
+
+  it("the words shown are unchanged: the run's text still ends δ'", () => {
+    expect(runsOf(verse, 'english', wovenFirst).map((r) => r.text)).toEqual(["ὃς δ'", 'wishes loses']);
+  });
+
+  // the sweep over every plan kind: all Greek, English, woven in whole and woven by the chunk that holds δ' (alone, and with each side English)
+  /** `verse` woven at the chunks `at` returns true for (every chunk with Greek words that `at` takes) */
+  const wovenAt = (v: Verse, at: (i: number) => boolean): WovenVerse =>
+    v.e.map((chunk, i) => (at(i) && chunk.g.length > 0 ? { words: chunk.g.map((g) => v.g[g]), learning: false } : null)) as WovenVerse;
+  const holdingBare = (v: Verse) => v.g.some((word) => isElided(word.t) && bareLetter(word.t));
+  const chunkOfBare = (v: Verse): number => v.e.findIndex((chunk) => chunk.g.some((g) => isElided(v.g[g].t) && bareLetter(v.g[g].t)));
+  const swept: { name: string; chapter: Chapter; verse: Verse }[] = [];
+  for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder')) {
+    for (const file of readdirSync(`public/data/${book.name}`)) {
+      const chapter = chapterOf(`public/data/${book.name}/${file}`);
+      for (const v of chapter.verses) if (holdingBare(v)) swept.push({ name: `${book.name} ${file.replace('.json', '')}:${v.n}`, chapter, verse: v });
+    }
+  }
+
+  it.each(swept.map((s) => [s.name, s.verse] as const))('%s: every plan kind hands the voice no bare one-letter word', (_name, v) => {
+    const at = chunkOfBare(v);
+    const kinds: [string, 'greek' | 'english', WovenVerse | null][] = [
+      ['all Greek', 'greek', null],
+      ['English', 'english', null],
+      ['woven whole', 'english', wovenAt(v, () => true)],
+      ['woven at the δ\' chunk only', 'english', wovenAt(v, (i) => i === at)],
+      ['woven except the δ\' chunk', 'english', wovenAt(v, (i) => i !== at)],
+      ['woven in Greek order', 'english', Object.assign(wovenAt(v, (i) => i === at), { order: chunkOrder(v, 'greek') }) as WovenVerse],
+    ];
+    for (const [kind, view, woven] of kinds) {
+      const words = readPlan(v, view, woven).flatMap(wordsHanded);
+      expect(words.filter(bareLetter), `${kind}: the voice was handed ${words.filter(bareLetter).join(' ')}`).toEqual([]);
+    }
   });
 });

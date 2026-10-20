@@ -21,7 +21,7 @@ import {
 } from 'voice-kit/speech';
 import { useSpeech } from 'voice-kit/speech/react';
 import { ClipPlayer } from '../audio/clipPlayer';
-import { joinElidedLetters, withoutElision } from './elision';
+import { isElided, joinElidedLetters, withoutElision } from './elision';
 import { DEFAULT_RATE, DEFAULT_RATES, HEBREW_LANG, LANGUAGES, normaliseRate, type SettableLanguage, type SpeechLanguage, type SpeechRates } from './languages';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation, type Pronunciation } from './pronunciation';
 
@@ -336,12 +336,20 @@ export function loneLetterSpeech(text: string): { text: string } | { clip: strin
 
 /** Greek `text` cut at each word of ONE letter that loneLetterSpeech says (1 John 1:1's Ὃ ἦν … ὃ ἀκηκόαμεν: Ὃ | ἦν … | ὃ | ἀκηκόαμεν), each such word
  * as its loneLetterSpeech (`lone`) and each stretch between them as it is: a voice handed the word inside a sentence names it as it does the word alone
- * (mw-5r3p30.448). A word with no sound of its own (an elided δ') stays in its stretch. */
+ * (mw-5r3p30.448). A word with no sound of its own (an elided δ') stays in its stretch, joined to the word after it, unless it ends the stretch: then it is
+ * its clip, on every phone (mw-5r3p30.657). */
 export function loneLetterCuts(text: string): ({ text: string; lone: boolean } | { clip: string })[] {
   const cuts: ({ text: string; lone: boolean } | { clip: string })[] = [];
   let stretch: string[] = [];
   const flush = () => {
+    // an elided δ' that ends its stretch (the end of a run, or a one-letter word comes next) has no word after it to be joined to (joinElidedLetters), and
+    // a voice handed it on a line of its own names the letter: it plays its clip, the sound, in its place (mw-5r3p30.657)
+    const last = (stretch[stretch.length - 1] ?? '').replace(/[^\p{L}\p{M}'’ʼ᾽᾿]+$/u, '');
+    const ended = isElided(last) ? loneLetterSpeech(last) : null;
+    const clip = ended && 'clip' in ended ? ended : null;
+    if (clip) stretch.pop();
     if (stretch.length > 0) cuts.push({ text: stretch.join(' '), lone: false });
+    if (clip) cuts.push(clip);
     stretch = [];
   };
   for (const word of text.split(/\s+/).filter(Boolean)) {
