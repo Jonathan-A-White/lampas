@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.369",
+    "date": "2026-10-20",
+    "story": "mw-svw421.42",
+    "kind": "fixed",
+    "text": "Review no longer says a drill is due when that drill has no questions to ask."
+  },
+  {
+    "version": "0.1.369",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.670",
+    "kind": "fixed",
+    "text": "after you mark the Greek alphabet known, Settings > Grammar approach marks the first lesson after it as Next, not the letter Alpha."
+  },
+  {
     "version": "0.1.368",
     "date": "2026-10-20",
     "story": "mw-svw421.29",

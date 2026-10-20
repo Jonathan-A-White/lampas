@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.369
+_2026-10-20_
+- Fixed: Review no longer says a drill is due when that drill has no questions to ask.
+- Fixed: after you mark the Greek alphabet known, Settings > Grammar approach marks the first lesson after it as Next, not the letter Alpha.
+
 ## 0.1.368
 _2026-10-20_
 - Fixed: A table you miss a form of in Review now comes back tomorrow even when you get the other forms right in the same round.
