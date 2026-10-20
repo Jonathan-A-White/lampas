@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.375
+_2026-10-20_
+- New: In Choose a book you can type just the start of a book's name, like "ep 4:15", and it finds Ephesians 4:15; typing a name's letters in order, like "phlm", finds the book too.
+- Fixed: Sideways with the Immersive reader card showing, Turn pages now opens on page 1 with three lines of text instead of a sliver of 113 pages.
+
 ## 0.1.374
 _2026-10-20_
 - New: when your devotional is set to Random, asking the tutor for a different devotional now picks another one for today and keeps Random, and Settings has an Another button for it.

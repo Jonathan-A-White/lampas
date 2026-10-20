@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.375",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.683",
+    "kind": "new",
+    "text": "In Choose a book you can type just the start of a book's name, like \"ep 4:15\", and it finds Ephesians 4:15; typing a name's letters in order, like \"phlm\", finds the book too."
+  },
+  {
+    "version": "0.1.375",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.664",
+    "kind": "fixed",
+    "text": "Sideways with the Immersive reader card showing, Turn pages now opens on page 1 with three lines of text instead of a sliver of 113 pages."
+  },
+  {
     "version": "0.1.374",
     "date": "2026-10-20",
     "story": "mw-5r3p30.680",
