@@ -65,4 +65,4 @@ A setting declared once (`src/settings/definitions/`, docs/module-map.md R2: The
 
 The reader also reads its own state back from the address when it opens (a reopen, Back): `src/nav/route.ts` `readerOf`, and the reader publishes the verse the address names. The address is `#/?c=8&view=greek&weave=off&v=28` (docs: `src/nav/lastRoute.ts`).
 
-The view and the weave themselves still live in the settings store (`src/data/repositories/settings.ts`); the bus only tells others when they change.
+The view and the weave themselves still live in the settings store (`src/data/repositories/settings.ts`); the bus only tells others when they change. The header's English | Weave | Greek switch (mw-5r3p30.651) adds no event: Greek and English are `view-changed`, plain English under a Weave is the settings key `readerPlain` (read with a live query, nobody listens), and a long press on Weave flips the Order, which is `setting-changed` `{ key: 'weaveOrder' }`.

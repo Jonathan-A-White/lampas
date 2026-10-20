@@ -17,7 +17,8 @@ const WORD_ORDER_NAME: Record<WeaveOrder, string> = { english: 'English word ord
 /** English | Weave | Greek while the Weave is on (English | Greek with it Off): English is plain English, Weave the woven English, and a long press on
  * Weave flips the woven text between the English and the Greek word order (the Weave's Order setting) and says which in a toast (mw-5r3p30.651). */
 function ViewSwitch({ view, weave, weaveShown, weaveOrder }: { view: ReaderView; weave: Weave; weaveShown: boolean; weaveOrder: WeaveOrder }) {
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ text: string; top: number } | null>(null);
+  const box = useRef<HTMLDivElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
   const weaveOn = weave !== 'off';
@@ -27,7 +28,8 @@ function ViewSwitch({ view, weave, weaveShown, weaveOrder }: { view: ReaderView;
     const next: WeaveOrder = weaveOrder === 'greek' ? 'english' : 'greek';
     void setSetting(weaveOrderSetting, next);
     choose('weave');
-    setToast(WORD_ORDER_NAME[next]);
+    // the toast stands under the header, so it never hides the switch it speaks of
+    setToast({ text: WORD_ORDER_NAME[next], top: (box.current?.closest('header') ?? box.current)?.getBoundingClientRect().bottom ?? 0 });
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setToast(null), TOAST_MS);
   };
@@ -44,14 +46,14 @@ function ViewSwitch({ view, weave, weaveShown, weaveOrder }: { view: ReaderView;
   );
   return (
     <>
-      <div role="group" aria-label="Language" className="flex shrink-0 rounded-xl border border-line p-0.5">
+      <div ref={box} role="group" aria-label="Language" className="flex shrink-0 rounded-xl border border-line p-0.5">
         {button('english', 'English')}
         {weaveOn ? button('weave', 'Weave') : null}
         {button('greek', 'Greek')}
       </div>
       {toast ? (
-        <p role="status" className="pointer-events-none fixed inset-x-3 toast-top z-20 rounded-xl border border-line bg-surface px-4 py-3 text-base text-fg shadow-lg">
-          {toast}
+        <p role="status" style={{ top: toast.top + 8 }} className="pointer-events-none fixed inset-x-3 z-20 rounded-xl border border-line bg-surface px-4 py-3 text-base text-fg shadow-lg">
+          {toast.text}
         </p>
       ) : null}
     </>
