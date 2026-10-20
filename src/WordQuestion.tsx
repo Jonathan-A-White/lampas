@@ -7,6 +7,7 @@ import { announce } from './ui/live';
 import { useSettled } from './ui/settle';
 import { WordPicture } from './WordPicture';
 import { GREEK_LANG } from './script/greekLang';
+import { ReferenceLink } from './markdown/ReferenceCard';
 
 const OPTION_BASE = 'block min-h-14 w-full rounded-xl border px-4 py-3 text-left text-lg disabled:opacity-100';
 const OPTION_LOOK = {
@@ -49,11 +50,15 @@ export function WordQuestion({ question, index, picked, onPick }: Props) {
         <p
           data-testid={answered && question.form ? 'chapter-form' : undefined}
           data-form={answered ? question.form : undefined}
-          className="mt-1 min-h-6 text-sm text-muted"
+          className="mt-1 min-h-11 text-sm text-muted"
         >
           {answered && question.form ? (
             <>
-              in {question.reference} as <span {...GREEK_LANG}>{question.form}</span>
+              in{' '}
+              <ReferenceLink written={question.reference ?? ''} mark={question.form} className="inline-flex min-h-11 items-center px-1 text-accent underline underline-offset-4">
+                {question.reference}
+              </ReferenceLink>{' '}
+              as <span {...GREEK_LANG}>{question.form}</span>
             </>
           ) : (
             ''
