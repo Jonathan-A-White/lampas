@@ -40,6 +40,7 @@ import { ReadAloud } from './speech/ReadAloud';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { answerRuns } from './speech/answerRuns';
 import { focusQuietly } from './ui/focus';
+import { readDraft, talkDraftKey, writeDraft } from './ui/unsentDraft';
 import { HoldBar } from './ui/HoldBar';
 import { PendingQuestion } from './ui/PendingQuestion';
 import type { HoldHandlers } from './ui/holdPress';
@@ -530,7 +531,16 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, shar
   const titleId = useId();
   const countId = useId();
   const turns = useLiveQuery(() => listTurns(ref), [ref]);
-  const [text, setText] = useState(shared?.text ?? '');
+  // His unsent words are kept for this conversation, so Back or Done does not lose a long prayer (src/ui/unsentDraft.ts); a send, which empties the box, drops them
+  const draftKey = talkDraftKey(ref);
+  const [text, setText] = useState(() => shared?.text ?? readDraft(draftKey));
+  // the words that came in by Share are his to keep only once he has changed them: left as shared they go with the share (mw-y3qno5.2)
+  const sharedText = useRef(shared?.text);
+  useEffect(() => {
+    if (text === sharedText.current) return;
+    sharedText.current = undefined;
+    writeDraft(draftKey, text);
+  }, [draftKey, text]);
   // What the message is doing is kept apart from this sheet (src/pending/pendingAsks.ts): opened on a message that was left waiting, the sheet waits for it again.
   const resumeRef = useRef(onResume);
   useEffect(() => {
