@@ -121,21 +121,48 @@ export interface DragOptions {
   whileDown?: () => Promise<void>;
 }
 
+/** Waits, in real time, until the page has had `count` pointer events since the drag began: a move the browser sends late (it hands moves to the page
+ * with the next frame) would be timed by the page's clock after the next step of it. */
+async function pointerEventsSeen(page: Page, count: number): Promise<void> {
+  for (let tries = 0; tries < 200; tries++) {
+    if ((await page.evaluate(() => (window as unknown as { dragSeen?: number }).dragSeen ?? 0)) >= count) return;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  throw new Error(`the page never had pointer event ${count} of the drag`);
+}
+
 /** A finger (touch input to the browser) dragged from `from` to `to` in `ms` of the page's clock, the moves evenly spaced: unlike swipe, the page sees how
- * fast the finger went. The spec must call page.clock.install() before the page opens. */
+ * fast the finger went, each move handled before the page's clock runs on to the next. The finger comes to rest before it lifts, as swipe's does. The spec
+ * must call page.clock.install() before the page opens. */
 export async function drag(page: Page, from: Point, to: Point, { steps = 6, ms = 200, keepPaused = false, whileDown }: DragOptions = {}): Promise<void> {
   const at = (t: number) => ({ x: from[0] + (to[0] - from[0]) * t, y: from[1] + (to[1] - from[1]) * t });
+  await page.evaluate(() => {
+    const w = window as unknown as { dragSeen?: number; dragCounted?: boolean };
+    w.dragSeen = 0;
+    if (w.dragCounted) return;
+    w.dragCounted = true;
+    const count = () => {
+      w.dragSeen = (w.dragSeen ?? 0) + 1;
+    };
+    window.addEventListener('pointerdown', count, true);
+    window.addEventListener('pointermove', count, true);
+  });
   const cdp = await page.context().newCDPSession(page);
   const send = (type: 'touchStart' | 'touchMove' | 'touchEnd', touchPoints: { x: number; y: number }[]) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints });
   await pauseNow(page);
   let lifted = false;
   try {
     await send('touchStart', [at(0)]);
+    await pointerEventsSeen(page, 1);
     for (let i = 1; i <= steps; i++) {
       await page.clock.runFor(Math.round(ms / steps));
       await send('touchMove', [at(i / steps)]);
+      await pointerEventsSeen(page, i + 1);
     }
     if (whileDown) await whileDown();
+    // the finger comes to rest before it lifts, with no time passing on the page's clock: lifted at speed, Chrome flings and swallows the next tap
+    await page.waitForTimeout(80); // a real-time hold: Chrome's fling timing is the browser's, not the page's
+    await send('touchMove', [at(1)]);
     await send('touchEnd', []);
     lifted = true;
   } finally {

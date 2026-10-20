@@ -313,8 +313,12 @@ test('every way a page turns, and the turn across a chapter, draws the same page
   await tapAt(page, 0.15);
   await drawn({ at: 3 });
 
-  turns += (await toLastPage(page)) - 3;
-  await expect.poll(async () => (await turnsSeen(page)).length).toBe(turns);
+  // on to the last page by taps, each drawn
+  const { of } = await placeOf(page);
+  for (let n = 4; n <= of; n++) {
+    await tapAt(page, 0.85);
+    await drawn({ at: n });
+  }
   await tapAt(page, 0.85);
   await drawn({ title: 'Mark 13', at: 1 });
   await swipeText(page, 'right');
