@@ -509,6 +509,10 @@ function positionLessons(say: SoundWords): Record<string, SoundLesson> {
   // σ is a letter, not a pair, but it too is z before β, γ, δ, ζ, λ, μ, ν or ρ: its sheet says so, since its drill never offers z as a wrong choice
   const voiced = modernSoundRules(say).find((r) => r.ideaId === 'letter-sigma')!.sides[0];
   out['letter-sigma'] = { ...lessons['letter-sigma'], also: `${voiced.line}: ${voiced.examples[0]} is “${respellModern(voiced.examples[0])}”.` };
+  // χ has two sounds by the letter after it (mw-5r3p30.648): its sheet says so in one sentence with a word of each and the respelling Say it shows for it
+  const [hard, soft] = modernSoundRules(say).find((r) => r.ideaId === 'letter-chi')!.sides;
+  const saidIn = (side: SoundRuleSide, symbol: string) => `${symbol} in ${side.examples[0]}, “${respellModern(side.examples[0])}”`;
+  out['letter-chi'] = { ...lessons['letter-chi'], also: `χ has two sounds, by the letter after it: ${saidIn(hard, 'kh')} and ${saidIn(soft, 'hy')}.` };
   return { ...lessons, ...out };
 }
 

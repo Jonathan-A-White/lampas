@@ -192,6 +192,8 @@ evidence (`grammarEvidence`) in EACH scheme, stored under `<scheme>:<idea id>` (
 | σ | s; z before β γ δ ζ λ μ ν ρ | the z ends the syllable: `κόσμος` is `KOZ-mos`, `Ἰσραήλ` is `eez-ra-EEL` |
 | double consonants | said once | |
 
+χ's two sounds are held to three things at once by `tests/unit/chi-sounds.test.ts` (mw-5r3p30.648): the respelling, the Greek the voice is handed (`wordForm`: the η of ἀρχῇ and its χ stay together, `αρχή!`, so the voice's own rule applies) and the χ sheet's one sentence ('χ has two sounds, by the letter after it: kh in χάρις, “KHA-rees” and hy in χεῖρες, “HYEE-res”'), over every form of the text. The scheme's soft χ is the German ich-laut, [ç]; if a phone's voice says the ch of Bach for it (his report on ἀρχῇ, 2026-10-19), that is the voice's own letter rule, not the text it is handed, and the code cannot hear it: PROVISIONAL until he has heard another Greek voice say it.
+
 A hard g after a nasal is written `gh` when it opens the stressed syllable before e or i (`εὐαγγέλιον` is
 `ev-an-GHE-lee-on`, but `ἄγγελος` is `AN-ge-los`), so an English reader does not soften it to j.
 Breathing marks, the iota under a letter and elision marks say nothing. Syllables are cut after each vowel,
