@@ -110,7 +110,9 @@ describe('every bundled word', () => {
     const hardG = (respelt: string): string => respelt.replace(/ngh/g, 'ng');
     const disagree = words.filter((w) => {
       const said = greekWordSpeech(w).text;
-      return hardG(sounds(said.split('-').map(respellModern).join(''))) !== hardG(sounds(respellModern(w)));
+      // αυ, ευ or ηυ before its own v or f (εὐφράτης: 'ef-FRA-tees') is handed as εφφ, which the scheme reads as one f (mw-5r3p30.647: tests/unit/voice-au-eu.test.ts)
+      const once = (text: string): string => (/[αεη]υ/u.test(bare(w)) ? text.replace(/([vf])\1/gu, '$1') : text);
+      return once(hardG(sounds(said.split('-').map(respellModern).join('')))) !== once(hardG(sounds(respellModern(w))));
     });
     expect(disagree.slice(0, 10)).toEqual([]);
   });
@@ -119,7 +121,8 @@ describe('every bundled word', () => {
     const letters = (text: string): string => bare(text).replace(/[^\p{L}]/gu, '');
     const changed = words.filter((w) => {
       const said = greekWordSpeech(w).text;
-      return [...bare(w)].length > 1 && !hasMedialPair(w) && (letters(said) !== letters(w) || !said.endsWith('!'));
+      // a word with αυ, ευ or ηυ has the υ of its pair written β or φ (tests/unit/voice-au-eu.test.ts, mw-5r3p30.647)
+      return [...bare(w)].length > 1 && !hasMedialPair(w) && !/[αεη]υ/u.test(bare(w)) && (letters(said) !== letters(w) || !said.endsWith('!'));
     });
     expect(changed.slice(0, 10)).toEqual([]);
   });

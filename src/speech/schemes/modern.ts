@@ -358,7 +358,8 @@ const bareLetter = (c: string | undefined): string => (c ?? '').normalize('NFD')
  * 'ἀν-γκάλη'. A pair at the start of a word (no vowel before it), and γγ, γχ, γξ, which a voice says with their nasal, are left as they are.
  * PROVISIONAL until the Governor has heard it on his phone: espeak-ng's el says 'pˈadotˌe' for πάντοτε and 'pˈandˈote' for this form. */
 export function voiceFormModern(text: string): string {
-  return text.replace(/[\p{Script=Greek}\p{M}]+/gu, (word) => {
+  return text.replace(/[\p{Script=Greek}\p{M}]+/gu, (whole) => {
+    const word = pairsAsConsonant(whole);
     const chars = [...word.normalize('NFC')];
     let out = '';
     let seenVowel = false;
@@ -374,6 +375,34 @@ export function voiceFormModern(text: string): string {
     });
     return changed ? out : word;
   });
+}
+
+/** The word with the υ of each αυ, ευ and ηυ the scheme reads as ONE sound written as the β or φ that sound is (mw-5r3p30.647). A voice handed the letters
+ * reads the υ as a vowel of its own (his phone said ηὐλίζετο 'ee ee', not 'eev'); handed 'ηβλίζετο' it has no vowel there to read. The side (v before a vowel
+ * or a voiced consonant, f elsewhere) is the respelling's own, taken from spellingsModern, never decided again here. The υ's accent moves to the vowel before it
+ * (αὖ is ᾶβ), so the stress stays where it was; its breathing goes. A pair split by a diaeresis or with its first vowel stressed is two vowels (spellingsModern
+ * has no such unit) and is left as it is. */
+function pairsAsConsonant(word: string): string {
+  const pairs = spellingsModern(word).filter((u) => u.to - u.from === 2 && /^(a|e|ee)[vf]$/u.test(u.sound));
+  if (pairs.length === 0) return word;
+  // each Greek letter of the word (as lettersOf counts them) with the marks after it
+  const letters: { base: string; marks: string }[] = [];
+  for (const c of word.normalize('NFD')) {
+    const code = c.toLowerCase().codePointAt(0) ?? 0;
+    if (code >= 0x3b1 && code <= 0x3c9) letters.push({ base: c, marks: '' });
+    else if (letters.length > 0) letters[letters.length - 1].marks += c;
+    else letters.push({ base: c, marks: '' });
+  }
+  for (const { from, to, sound } of pairs) {
+    const first = letters[from];
+    const second = letters[to - 1];
+    const accent = [...second.marks].filter((m) => /[\u0300\u0301\u0342]/u.test(m)).join('');
+    const upper = second.base !== second.base.toLowerCase();
+    first.marks += accent;
+    second.base = sound.endsWith('v') ? (upper ? 'Β' : 'β') : upper ? 'Φ' : 'φ';
+    second.marks = '';
+  }
+  return letters.map((l) => l.base + l.marks).join('').normalize('NFC');
 }
 
 /** Greek text in monotonic marks, as Greece writes it today: an acute, grave or circumflex (oxia, varia, perispomeni) is the one tonos, the breathings and the

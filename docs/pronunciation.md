@@ -50,6 +50,11 @@ hands the voice the nasal at the end of the part before and the pair at the star
 voice says with their nasal, are left as they are. `src/speech/greek.ts` `greekVoiceForm` applies the chosen scheme's; nothing outside the
 scheme writes the rule (`tests/unit/voice-form.test.ts` holds every bundled word to it). PROVISIONAL until heard on the Governor's phone.
 
+The same form writes the υ of αυ, ευ and ηυ as the β or φ it is said as (mw-5r3p30.647): his phone said ηὐλίζετο 'ee ee', two vowels, because the voice was
+handed the letters; handed `ηβλίζετο` it says 'eev'. The side (v before a vowel or a voiced consonant, f elsewhere) is the respelling's own
+(`spellingsModern`), the υ's accent moves to the vowel before it (`εὔχομαι` is `έφχομαι`), and a pair split by a diaeresis or with its first vowel stressed
+stays two vowels. `tests/unit/voice-au-eu.test.ts` holds every bundled word with the pair to it.
+
 ### A word said alone (mw-5r3p30.357)
 
 `wordForm(word)` is what the scheme's voice is handed for a Greek word said ALONE (Tap to hear, a speaker, a long press, Sound it out, Settings >
