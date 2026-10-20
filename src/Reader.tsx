@@ -122,7 +122,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const [picking, setPicking] = useState(false);
   const closePicker = useCallback(() => setPicking(false), []);
   const settings = useReaderSettings() ?? NO_SETTINGS;
-  const { view, weave, solid, learning, layout, headings, readSpan } = settings;
+  const { view, weave, weaveShown, weaveOrder, solid, learning, layout, headings, readSpan } = settings;
   const immersive = useImmersiveSetting();
   const { chapter, failed, retry } = useChapter(BOOK, CHAPTER);
   // What the address said when the reader opened (a reopen, Back to an earlier place): the selected verse (the view and weave it names are
@@ -373,6 +373,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       <ReaderHeader
         title={TITLE}
         view={view}
+        weave={weave ?? 'off'}
+        weaveShown={weaveShown ?? false}
+        weaveOrder={weaveOrder ?? 'english'}
         chapterReading={chapterReading}
         reading={reading}
         from={selected}

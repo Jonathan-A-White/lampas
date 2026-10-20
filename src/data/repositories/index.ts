@@ -48,6 +48,8 @@ export {
   setLogosBible,
   setReadSpan,
   setReaderView,
+  chooseReaderLanguage,
+  getPlainEnglishUnder,
   setSectionHeadings,
   setSpeechRate,
   setTextSize,
@@ -62,7 +64,7 @@ export {
   setWeaveGrammar,
 } from './settings';
 export type { ReadSpan } from '../../speech/readSpan';
-export type { DeveloperMode, GrammarMove, Immersive, PickerGrammar, ReaderView, ReadingLayout, ReadTutor, SectionHeadings, Tips, VoiceLanguage, Weave, WeaveGrammar } from './settings';
+export type { DeveloperMode, GrammarMove, Immersive, PickerGrammar, ReaderLanguage, ReaderView, ReadingLayout, ReadTutor, SectionHeadings, Tips, VoiceLanguage, Weave, WeaveGrammar } from './settings';
 export { listResults, recordAnswer } from './results';
 export type { TestResult } from './results';
 export { countDue, ensureScheduled, listDue, recordReview, reviewsOf, scheduleSounds, seedScheduleIfFirstOpen, SOUND_KIND } from './reviews';

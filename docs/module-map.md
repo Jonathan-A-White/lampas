@@ -110,7 +110,7 @@ export interface ReaderTutor {
 export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk: UseTalk, voice: Voice): ReaderTutor;
 
 // src/reader/ReaderHeader.tsx — (d)
-export function ReaderHeader(props: { title: string; view: ReaderView | undefined; chapterReading: boolean; reading: ReadingState; from: number | null; canRead: boolean; inert: boolean; onPick(): void; onRead(): void }): ReactElement; // as built in R1c: reading, from and canRead feed the Play button
+export function ReaderHeader(props: { title: string; view: ReaderView | undefined; weave: Weave; weaveShown: boolean; weaveOrder: WeaveOrder; chapterReading: boolean; reading: ReadingState; from: number | null; canRead: boolean; inert: boolean; onPick(): void; onRead(): void }): ReactElement; // as built in R1c: reading, from and canRead feed the Play button
 
 // built in R1c to bring Reader.tsx under 450 lines: useChapter (the fetch), useWoven (the weave), useReadFrom (plan, readFrom, listenTo), ChapterFailed, LinkNotice, steps.ts (the Verse view's arrows)
 ```

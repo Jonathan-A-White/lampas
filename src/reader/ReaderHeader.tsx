@@ -1,27 +1,62 @@
 // src/reader/ReaderHeader.tsx — the Reader's header (docs/module-map.md R1, part d): the chapter's title (a button that opens the picker),
-// English | Greek, the Play button of Read aloud and the gear that opens Settings. While a reading the speaking bar does not hold waits for Pause
+// English | Weave | Greek, the Play button of Read aloud and the gear that opens Settings. While a reading the speaking bar does not hold waits for Pause
 // or Play, the header gives its room to those and Stop; the title stays for screen readers.
-import { setReaderView, type ReaderView } from '../data/repositories';
+import { useEffect, useRef, useState } from 'react';
+import { chooseReaderLanguage, type ReaderLanguage, type ReaderView, type Weave } from '../data/repositories';
 import { navigate } from '../nav/route';
+import { weaveOrderSetting } from '../settings/definitions';
+import type { WeaveOrder } from '../settings/definitions/weaveOrder';
+import { setSetting } from '../settings/store';
+import { NO_SELECT, useLongPress } from '../ui/longPress';
 import type { ReadingState } from '../speech/readAloud';
 import { ReadFromButton } from '../speech/ReadControls';
 
-function ViewSwitch({ view }: { view: ReaderView }) {
-  const choice = (value: ReaderView, label: string) => (
+const TOAST_MS = 2500;
+const WORD_ORDER_NAME: Record<WeaveOrder, string> = { english: 'English word order', greek: 'Greek word order' };
+
+/** English | Weave | Greek while the Weave is on (English | Greek with it Off): English is plain English, Weave the woven English, and a long press on
+ * Weave flips the woven text between the English and the Greek word order (the Weave's Order setting) and says which in a toast (mw-5r3p30.651). */
+function ViewSwitch({ view, weave, weaveShown, weaveOrder }: { view: ReaderView; weave: Weave; weaveShown: boolean; weaveOrder: WeaveOrder }) {
+  const [toast, setToast] = useState<{ text: string; top: number } | null>(null);
+  const box = useRef<HTMLDivElement>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const weaveOn = weave !== 'off';
+  const chosen: ReaderLanguage = view === 'greek' ? 'greek' : weaveOn && weaveShown ? 'weave' : 'english';
+  const choose = (value: ReaderLanguage) => void chooseReaderLanguage(value, weave);
+  const flip = () => {
+    const next: WeaveOrder = weaveOrder === 'greek' ? 'english' : 'greek';
+    void setSetting(weaveOrderSetting, next);
+    choose('weave');
+    // the toast stands under the header, so it never hides the switch it speaks of
+    setToast({ text: WORD_ORDER_NAME[next], top: (box.current?.closest('header') ?? box.current)?.getBoundingClientRect().bottom ?? 0 });
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setToast(null), TOAST_MS);
+  };
+  const press = useLongPress(() => choose('weave'), flip);
+  const button = (value: ReaderLanguage, label: string) => (
     <button
       type="button"
-      aria-pressed={view === value}
-      onClick={() => void setReaderView(value)}
-      className={`min-h-11 min-w-11 rounded-lg px-1 chrome-text font-medium ${view === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+      aria-pressed={chosen === value}
+      {...(value === 'weave' ? press : { onClick: () => choose(value) })}
+      className={`min-h-11 min-w-11 rounded-lg px-1 chrome-text font-medium ${value === 'weave' ? NO_SELECT : ''} ${chosen === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
     >
       {label}
     </button>
   );
   return (
-    <div role="group" aria-label="Language" className="flex shrink-0 rounded-xl border border-line p-0.5">
-      {choice('english', 'English')}
-      {choice('greek', 'Greek')}
-    </div>
+    <>
+      <div ref={box} role="group" aria-label="Language" className="flex shrink-0 rounded-xl border border-line p-0.5">
+        {button('english', 'English')}
+        {weaveOn ? button('weave', 'Weave') : null}
+        {button('greek', 'Greek')}
+      </div>
+      {toast ? (
+        <p role="status" style={{ top: toast.top + 8 }} className="pointer-events-none fixed inset-x-3 z-20 rounded-xl border border-line bg-surface px-4 py-3 text-base text-fg shadow-lg">
+          {toast.text}
+        </p>
+      ) : null}
+    </>
   );
 }
 
@@ -44,8 +79,12 @@ function ChevronIcon() {
 
 export interface ReaderHeaderProps {
   title: string;
-  /** undefined while the settings load: the English | Greek switch is not drawn */
+  /** undefined while the settings load: the English | Weave | Greek switch is not drawn */
   view: ReaderView | undefined;
+  weave: Weave;
+  /** the woven English is shown (useReaderSettings weaveShown) */
+  weaveShown: boolean;
+  weaveOrder: WeaveOrder;
   /** a chapter reading is under way (not a tutor answer being read) */
   chapterReading: boolean;
   reading: ReadingState;
@@ -82,7 +121,7 @@ function titleRoom(name: string): string {
   return `${(name.length * LETTER_EM * TITLE_MIN_REM).toFixed(2)}rem`;
 }
 
-export function ReaderHeader({ title, view, chapterReading, reading, from, canRead, inert, onPick, onRead }: ReaderHeaderProps) {
+export function ReaderHeader({ title, view, weave, weaveShown, weaveOrder, chapterReading, reading, from, canRead, inert, onPick, onRead }: ReaderHeaderProps) {
   const headerButtons = chapterReading && !reading.onBar;
   const { name, chapter } = partsOf(title);
   return (
@@ -107,7 +146,7 @@ export function ReaderHeader({ title, view, chapterReading, reading, from, canRe
         </button>
       </h1>
       {headerButtons ? <span className="flex-1" /> : null}
-      {view ? <ViewSwitch view={view} /> : null}
+      {view ? <ViewSwitch view={view} weave={weave} weaveShown={weaveShown} weaveOrder={weaveOrder} /> : null}
       {canRead ? <ReadFromButton from={from} reading={reading} onRead={onRead} /> : null}
       <button
         type="button"

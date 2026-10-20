@@ -9,6 +9,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   getLayout,
+  getPlainEnglishUnder,
   getReadSpan,
   getReaderView,
   getSectionHeadings,
@@ -39,6 +40,8 @@ export interface ReaderSettings {
   weaveGrammar: WeaveGrammar;
   /** the order the woven verse is laid out in (mw-5r3p30.250) */
   weaveOrder: WeaveOrder;
+  /** the woven English is shown: the Weave is on and he has not chosen plain English under it (the switch's English | Weave | Greek, mw-5r3p30.651) */
+  weaveShown: boolean;
   layout: ReadingLayout;
   headings: SectionHeadings;
   readSpan: ReadSpan;
@@ -53,6 +56,7 @@ export function useReaderSettings(): ReaderSettings | undefined {
   const weave = useLiveQuery(getWeave, []);
   const weaveGrammar = useLiveQuery(getWeaveGrammar, []);
   const weaveOrder = useSetting(weaveOrderSetting);
+  const plainUnder = useLiveQuery(getPlainEnglishUnder, []);
   const levels = useLiveQuery(listLevels, []);
   const solid = useLiveQuery(listSolidLemmas, []);
   const learning = useLiveQuery(listLearningLemmas, []);
@@ -89,9 +93,9 @@ export function useReaderSettings(): ReaderSettings | undefined {
   }, [headings]);
   return useMemo(
     () =>
-      view && weave && weaveGrammar && weaveOrder && levels && solid && learning && layout && headings && readSpan
-        ? { view, weave, weaveGrammar, weaveOrder, layout, headings, readSpan, solid, learning, levels }
+      view && weave && weaveGrammar && weaveOrder && plainUnder !== undefined && levels && solid && learning && layout && headings && readSpan
+        ? { view, weave, weaveGrammar, weaveOrder, weaveShown: weave !== 'off' && plainUnder !== weave, layout, headings, readSpan, solid, learning, levels }
         : undefined,
-    [view, weave, weaveGrammar, weaveOrder, levels, solid, learning, layout, headings, readSpan],
+    [view, weave, weaveGrammar, weaveOrder, plainUnder, levels, solid, learning, layout, headings, readSpan],
   );
 }

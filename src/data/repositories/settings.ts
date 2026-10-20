@@ -32,6 +32,32 @@ export async function setReaderView(view: ReaderView): Promise<void> {
   await db.settings.put({ key: READER_VIEW_KEY, value: view });
 }
 
+const READER_PLAIN_KEY = 'readerPlain';
+
+/** The Weave he had on when he chose plain English in the Reader's switch (English | Weave | Greek, mw-5r3p30.651), or null when he has not: plain
+ * English stands only under that Weave, so turning the Weave to another value brings the woven text back. */
+export async function getPlainEnglishUnder(): Promise<Weave | null> {
+  const row = await db.settings.get(READER_PLAIN_KEY);
+  return row?.value === 'solid' || row?.value === 'solid+learning' ? row.value : null;
+}
+
+export async function setPlainEnglishUnder(weave: Weave | null): Promise<void> {
+  await db.settings.put({ key: READER_PLAIN_KEY, value: weave ?? '' });
+}
+
+/** The three choices of the Reader's switch: plain English, the woven English, the Greek. */
+export type ReaderLanguage = 'english' | 'weave' | 'greek';
+
+/** Takes a choice of the Reader's switch: the view, and whether plain English stands under the Weave he has on (with the Weave Off there is no Weave choice). */
+export async function chooseReaderLanguage(choice: ReaderLanguage, weave: Weave): Promise<void> {
+  if (choice === 'greek') {
+    await setReaderView('greek');
+    return;
+  }
+  await setPlainEnglishUnder(choice === 'english' && weave !== 'off' ? weave : null);
+  await setReaderView('english');
+}
+
 export type { GrammarMove, Immersive, PickerGrammar, Tips, Weave, WeaveGrammar };
 
 // Theme, Weave and Tips are declared once (src/settings/definitions/): these are their old names over the store, until their callers move.
