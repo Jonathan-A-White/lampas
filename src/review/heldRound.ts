@@ -10,6 +10,8 @@ export interface RunningRound {
   right: number;
   /** the ideas of the grammar questions he has missed so far, one id for each miss (src/review/moreItems.ts) */
   missed: string[];
+  /** the outcome each schedule row has had in this round (src/review/rowOutcome.ts); a round kept before it existed has none */
+  outcomes?: Record<string, boolean>;
 }
 
 export const HELD_MS = 30 * 60 * 1000;

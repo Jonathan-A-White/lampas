@@ -86,6 +86,35 @@ const optionNamed = (form: string): HTMLElement => {
   return found;
 };
 
+async function putTableDue(_: unknown, id: string): Promise<void> {
+  const now = Date.now();
+  await db.reviews.put({ kind: 'paradigm', id, step: 0, rights: 0, due: now - 60_000, lastWhen: now - 3 * DAY, lapses: 0 });
+}
+async function openReview(): Promise<void> {
+  openAt('#/review');
+  await screen.findByRole('heading', { name: 'Review', level: 1 });
+}
+async function startReview(): Promise<void> {
+  await user.click(await screen.findByRole('button', { name: 'Start' }));
+  await screen.findByTestId('grammar-prompt');
+}
+/** Answers the whole round: cell i is answered with its right form when `rightAt(i)` says so, else with a wrong one. The right forms are those the round draws from the app's seed. */
+async function answerCells(rightAt: (i: number) => boolean): Promise<void> {
+  const questions = drawCellQuestions(paradigmById('article')!, levels, grammarRandom(mulberry32(seed)));
+  for (let i = 0; i < questions.length; i += 1) {
+    await waitFor(() => expect(prompt()).toBe(questions[i].prompt));
+    await user.click(optionNamed(rightAt(i) ? questions[i].right : questions[i].options.find((o) => o !== questions[i].right)!));
+    const next = await screen.findByTestId('next');
+    expect(next.textContent).toBe(i === questions.length - 1 ? 'Finish' : 'Next');
+    await user.click(next);
+  }
+  await screen.findByTestId('score');
+}
+async function expectEndCard(_: unknown, score: string, back: string): Promise<void> {
+  await waitFor(() => expect(screen.getByTestId('score')).toHaveTextContent(score.replace('Score ', '')));
+  expect(screen.getByTestId('comes-back')).toHaveTextContent(back);
+}
+
 const feature = await loadFeature('features/paradigm-drill.feature');
 
 describeFeature(feature, ({ Background, Scenario }) => {
@@ -203,6 +232,34 @@ describeFeature(feature, ({ Background, Scenario }) => {
         expect(options.length).toBe(4);
         for (const o of options) expect(forms.has(o)).toBe(true);
       }
+    });
+  });
+
+  Scenario('A miss on one cell is not forgotten by the right cells after it', ({ Given, When, And, Then }) => {
+    Given('the table {string} is on the schedule and due', putTableDue);
+    When('he opens Review', openReview);
+    And('he starts the review', startReview);
+    And('he answers the first cell wrongly and the other cells rightly', () => answerCells((i) => i !== 0));
+    Then('the end card says {string} and {string}', expectEndCard);
+    And('the review {string} {string} is due tomorrow with {int} lapse at step {int}', async (_, kind: string, id: string, lapses: number, step: number) => {
+      const row = await db.reviews.get([kind, id]);
+      expect(row?.lapses).toBe(lapses);
+      expect(row?.step).toBe(step);
+      // the miss's own gap (one day), not the three days a right answer after it would have given
+      expect(row!.due - row!.lastWhen).toBe(DAY);
+    });
+  });
+
+  Scenario('A round of right cells moves the table up one step at most', ({ Given, When, And, Then }) => {
+    Given('the table {string} is on the schedule and due', putTableDue);
+    When('he opens Review', openReview);
+    And('he starts the review', startReview);
+    And('he answers every cell rightly', () => answerCells(() => true));
+    Then('the end card says {string} and {string}', expectEndCard);
+    And('the review {string} {string} is at step {int} at most with no lapse', async (_, kind: string, id: string, step: number) => {
+      const row = await db.reviews.get([kind, id]);
+      expect(row?.step).toBeLessThanOrEqual(step);
+      expect(row?.lapses).toBe(0);
     });
   });
 

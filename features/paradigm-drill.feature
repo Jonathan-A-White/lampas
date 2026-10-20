@@ -29,6 +29,22 @@ Feature: A table can be drilled in Review
     And every cell asked is one of the 4 available article forms
     And every option is a form of the article
 
+  Scenario: A miss on one cell is not forgotten by the right cells after it
+    Given the table "article" is on the schedule and due
+    When he opens Review
+    And he starts the review
+    And he answers the first cell wrongly and the other cells rightly
+    Then the end card says "Score 2 of 3" and "1 comes back tomorrow, 0 later"
+    And the review "paradigm" "article" is due tomorrow with 1 lapse at step 0
+
+  Scenario: A round of right cells moves the table up one step at most
+    Given the table "article" is on the schedule and due
+    When he opens Review
+    And he starts the review
+    And he answers every cell rightly
+    Then the end card says "Score 3 of 3" and "1 comes back tomorrow, 0 later"
+    And the review "paradigm" "article" is at step 1 at most with no lapse
+
   Scenario: A table with no form available cannot be drilled
     Given he has no grammar level
     When he opens the table "The article"
