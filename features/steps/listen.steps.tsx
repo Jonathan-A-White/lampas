@@ -21,6 +21,7 @@ import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
+import { leaveSettings } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -297,7 +298,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he opens Settings', () => user.click(screen.getByRole('button', { name: 'Settings' })));
     Then('the passage is paused at verse {int}', pausedAt);
     When('he goes back to the reader', async () => {
-      await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+      await leaveSettings(user);
       await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
     });
     Then('the passage is still paused at verse {int}', pausedAt);

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { openGroup } from './settings-group';
 
 const scrollTop = (page: Page) => page.locator('[data-reader]').evaluate((el) => el.scrollTop);
 
@@ -20,6 +21,7 @@ test('closing the app and opening it again puts him back, and Back walks the pla
   await first.waitForTimeout(600);
 
   await first.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(first, 'Account');
   await first.getByRole('button', { name: 'Words', exact: true }).click();
   await expect(first.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeVisible();
   await first.getByRole('button', { name: 'Test', exact: true }).click();
@@ -35,6 +37,9 @@ test('closing the app and opening it again puts him back, and Back walks the pla
 
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeVisible();
+
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: 'Account', exact: true, level: 1 })).toBeVisible();
 
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();

@@ -18,6 +18,7 @@ import { TeachSheet } from '../../src/TeachSheet';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { pairsAsConsonant } from '../../tests/support/lone-word';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 const feature = await loadFeature('features/read-lessons.feature');
 const user = userEvent.setup();
@@ -92,6 +93,7 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
   async function openSettings(): Promise<void> {
     await user.click(screen.getByRole('button', { name: 'Settings' }));
     await screen.findByRole('heading', { name: 'Settings', level: 1 });
+    await openSettingsGroup(user, 'listening');
   }
   const readLessonsGroup = async (): Promise<HTMLElement> => screen.findByRole('group', { name: 'Read lessons to me' });
   const chosenIn = async (name: string): Promise<void> => {

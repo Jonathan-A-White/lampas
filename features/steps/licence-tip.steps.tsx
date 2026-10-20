@@ -284,8 +284,8 @@ describeFeature(feature, ({ Scenario }) => {
     Given('this phone has no licence and Settings is open', async () => {
       licensed = false;
       await fresh();
-      await draw('#/settings');
-      await screen.findByRole('group', { name: 'Theme' });
+      await draw('#/settings?group=tutor');
+      await screen.findByRole('group', { name: 'Tips' });
     });
     When('he taps {string} under {string}', async (_, words: string, label: string) => {
       const row = ROWS.find((r) => r.label === label);
@@ -301,7 +301,7 @@ describeFeature(feature, ({ Scenario }) => {
       });
     });
     Then('Settings is open with {string} showing {string}', async (_, label: string, words: string) => {
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await screen.findByRole('heading', { name: 'The tutor', level: 1 });
       const row = ROWS.find((r) => r.label === label);
       const el = await waitFor(() => {
         const found = document.querySelector<HTMLElement>(`[data-setting="${row?.key}"]`);

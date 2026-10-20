@@ -4,6 +4,7 @@ import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
+import { leaveSettings, openGroup } from './settings-group';
 
 const VIEWPORT = { width: 390, height: 844 };
 
@@ -36,12 +37,13 @@ test('the tutor\'s links at phone width: chips for the resources he switched on,
 
   // Strong's and Logos on in Settings (turning an app On only turns it On).
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
   await section.scrollIntoViewIfNeeded();
   await section.getByRole('switch', { name: "Strong's", exact: true }).click();
   await section.getByRole('switch', { name: 'Logos', exact: true }).click();
   await expect(section.getByRole('switch', { name: 'Logos', exact: true })).toHaveAttribute('aria-checked', 'true');
-  await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
+  await leaveSettings(page);
 
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
@@ -91,11 +93,12 @@ test('an Old Testament verse link opens in his Bible in Logos (LSB today) and ha
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
   await section.scrollIntoViewIfNeeded();
   await section.getByRole('switch', { name: 'Logos', exact: true }).click();
   await expect(section.getByRole('switch', { name: 'Logos', exact: true })).toHaveAttribute('aria-checked', 'true');
-  await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
+  await leaveSettings(page);
 
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });

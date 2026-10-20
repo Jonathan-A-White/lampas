@@ -2,6 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { leaveSettings, openGroup } from './settings-group';
 
 // The English font (Settings > Appearance > Font, mw-5r3p30.311): the computed font-family of English verse text changes with the choice, the Greek's
 // does not, the type size is the same, the choice survives a reload, the face really loads, and every woff2 is in the built worker's precache list.
@@ -21,7 +22,7 @@ async function openReader(page: Page, hash = '') {
 
 async function chooseFont(page: Page, name: RegExp) {
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  await openGroup(page, 'Reading');
   const group = page.getByRole('group', { name: 'Font', exact: true });
   await group.getByRole('button', { name }).click();
   await expect(group.getByRole('button', { name })).toHaveAttribute('aria-pressed', 'true');
@@ -34,7 +35,7 @@ test('a Font changes the face of the English text and leaves the Greek and the s
   expect(englishBefore).not.toContain('Atkinson Hyperlegible');
 
   await chooseFont(page, /^Atkinson Hyperlegible/);
-  await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
+  await leaveSettings(page);
   await expect(page.locator('[data-verse="1"]').first()).toBeVisible();
   expect(await familyOf(page, ENGLISH)).toContain('Atkinson Hyperlegible');
   expect(await sizeOf(page, ENGLISH)).toBe(englishSize);
@@ -57,7 +58,7 @@ test('the Greek family is the same with every font, and the choice outlives a re
   const greekBefore = await familyOf(page, GREEK);
   for (const [name, face] of [[/^Literata/, 'Literata'], [/^Lexend/, 'Lexend']] as const) {
     await chooseFont(page, name);
-    await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
+    await leaveSettings(page);
     expect(await familyOf(page, GREEK)).toBe(greekBefore);
     expect(await page.evaluate(() => getComputedStyle(document.body).fontFamily)).toContain(face);
   }

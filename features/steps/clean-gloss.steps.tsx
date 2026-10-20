@@ -14,6 +14,7 @@ import { db, type Word } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -78,6 +79,7 @@ async function keptBefore(words: Array<[lemma: string, gloss: string]>): Promise
 
 async function openWords(): Promise<void> {
   await user.click(await screen.findByRole('button', { name: 'Settings' }));
+  await openSettingsGroup(user, 'account');
   await user.click(await screen.findByRole('button', { name: 'Words' }));
   await screen.findByRole('heading', { name: 'Words' });
 }

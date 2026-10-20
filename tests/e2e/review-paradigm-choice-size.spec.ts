@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { openGroup } from './settings-group';
 
 // The four Greek forms of a table question in Review (a 'paradigm' card, mw-svw421.6) draw in the large Greek type, never smaller than the
 // English question above them (mw-svw421.30: text-lg beat text-3xl in the built CSS and drew them at 18 px). Held at the phone's width.
@@ -39,6 +40,7 @@ test('a Greek form on a Review table question draws at 28 px or more', async ({ 
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Account');
   await page.getByRole('button', { name: /^Paradigms/ }).click();
   await page.locator('[data-paradigm="article"]').click();
   await expect(page.getByRole('heading', { name: 'The article', level: 1 })).toBeVisible();

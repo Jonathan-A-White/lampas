@@ -23,6 +23,7 @@ import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } fr
 import { validate, type Schema } from '../../tests/support/schema-validate';
 import { seedHisWords } from '../../tests/support/his-words';
 import { instructionsOf } from '../../scripts/grind-parts';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -86,7 +87,7 @@ async function openSettings(): Promise<void> {
   await renderApp();
   await user.click(screen.getByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
-  await screen.findByRole('heading', { name: 'More', level: 2 });
+  await openSettingsGroup(user, 'tutor');
   await screen.findByRole('group', { name: 'Tips' });
 }
 
@@ -135,16 +136,9 @@ describeFeature(feature, ({ Scenario }) => {
     await openAsk();
   };
 
-  Scenario('Settings shows Ask by with Speaking and Typing and the search finds it', ({ Given, When, Then, And }) => {
+  Scenario('Settings shows Ask by with Speaking and Typing', ({ Given, Then }) => {
     Given('Lampas is opened on Settings with nothing chosen', openSettings);
     Then('Settings shows the group {string} with Speaking chosen', settingsAskBy);
-    When('he types {string} in the Settings search', async (_, text: string) => {
-      await user.type(await screen.findByRole('searchbox', { name: 'Search settings' }), text);
-    });
-    Then('the group {string} is still shown with Speaking chosen', settingsAskBy);
-    And('Settings has no group {string}', async (_, name: string) => {
-      await waitFor(() => expect(screen.queryByRole('group', { name })).toBeNull());
-    });
   });
 
   Scenario('Choosing Typing makes Ask the tutor type-first and it survives a reload', ({ Given, When, Then }) => {

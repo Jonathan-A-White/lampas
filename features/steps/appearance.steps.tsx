@@ -15,6 +15,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { setSpeechRate, speak, stopSpeaking } from '../../src/speech/greek';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
+import { ensureSettingsGroup, openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
 
 const GREEK: FakeVoice = { lang: 'el-GR', name: 'Greek (Greece)' };
 const ENGLISH: FakeVoice = { lang: 'en-US', name: 'English (US)' };
@@ -96,17 +97,21 @@ async function openSettings(): Promise<void> {
   });
   await user.click(await within(header).findByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettingsGroup(user, 'reading');
 }
 async function backToReader(): Promise<void> {
-  await user.click(await screen.findByRole('button', { name: '‹ Reader' }));
+  await leaveSettings(user);
   await waitForReader();
 }
 
 /** A Settings control draws once its saved value is read, which can be after the heading: wait for the group, then the button. */
-const choiceIn = async (group: string, label: string) =>
-  within(await screen.findByRole('group', { name: group })).findByRole('button', { name: label });
+const choiceIn = async (group: string, label: string) => {
+  await ensureSettingsGroup('reading');
+  return within(await screen.findByRole('group', { name: group })).findByRole('button', { name: label });
+};
 const pickChoice = async (group: string, label: string) => user.click(await choiceIn(group, label));
 const expectPressed = async (group: string, label: string) => {
+  await ensureSettingsGroup('reading');
   await screen.findByRole('group', { name: group });
   await waitFor(() =>
     expect(within(screen.getByRole('group', { name: group })).getByRole('button', { name: label })).toHaveAttribute('aria-pressed', 'true'),
@@ -114,13 +119,15 @@ const expectPressed = async (group: string, label: string) => {
 };
 const slider = (name: string) => screen.getByRole('slider', { name });
 const setSpeed = async (name: 'English speed' | 'Greek speed', value: string) => {
+  await ensureSettingsGroup('listening');
   await screen.findByRole('slider', { name });
   fireEvent.change(slider(name), { target: { value } });
   // the start-up sync has already published the saved speeds: wait for this one
   await waitFor(() => expect(latest('rates-changed')?.rates[name === 'English speed' ? 'english' : 'greek']).toBe(Number(value)));
 };
 /** A finger on a speed slider: Chrome moves the thumb at touch-down (pointerdown, then input), then either lifts (pointerup) or starts a scroll (pointercancel). */
-const touchSlider = (name: 'English speed' | 'Greek speed', value: number, ends: 'lifts' | 'scrolls') => {
+const touchSlider = async (name: 'English speed' | 'Greek speed', value: number, ends: 'lifts' | 'scrolls') => {
+  await ensureSettingsGroup('listening');
   const input = slider(name);
   fireEvent.pointerDown(input);
   fireEvent.change(input, { target: { value: String(value) } });
@@ -128,16 +135,19 @@ const touchSlider = (name: 'English speed' | 'Greek speed', value: number, ends:
   else fireEvent.pointerCancel(input);
 };
 const greekSpeedIs = async (shown: number, kept: number) => {
+  await ensureSettingsGroup('listening');
   await waitFor(() => expect(Number((slider('Greek speed') as HTMLInputElement).value)).toBe(shown));
   await waitFor(async () => expect(Number((await db.settings.get('rate.greek'))?.value)).toBe(kept));
 };
-const speedsAre = async (english: number, greek: number) =>
-  waitFor(() => {
+const speedsAre = async (english: number, greek: number) => {
+  await ensureSettingsGroup('listening');
+  await waitFor(() => {
     expect(Number((slider('English speed') as HTMLInputElement).value)).toBe(english);
     expect(Number((slider('Greek speed') as HTMLInputElement).value)).toBe(greek);
     // and the speaker has been told: a button tapped next speaks at these
     expect(latest('rates-changed')?.rates).toEqual({ english, greek });
   });
+};
 
 /** Back in the reader showing Greek (a verse's play button reads what is shown), taps the play button of verse 1 and
  * reads the rate the phone was told. */
@@ -265,7 +275,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on a phone whose colour scheme is dark, with nothing saved', () => openOnPhone(true));
     When('he sets the Greek speed to {number} in Settings', (_, value: number) => setSpeed('Greek speed', String(value)));
     And('a finger goes down at {number} on the Greek speed slider and the page scrolls instead', async (_, value: number) => {
-      touchSlider('Greek speed', value, 'scrolls');
+      await touchSlider('Greek speed', value, 'scrolls');
       // give a wrong save the time it would take
       await new Promise((resolve) => setTimeout(resolve, 50));
     });
@@ -290,7 +300,8 @@ describeFeature(feature, ({ Scenario }) => {
       setSpeechRate('english', 1);
       setSpeechRate('greek', 1);
       render(<App />);
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      // the address is the page he left Settings on (a group's page, mw-3ased2.1)
+      await waitFor(() => expect(document.querySelector('[data-settings-group]')).not.toBeNull());
     });
     Then('the Theme in Settings is Dark', () => expectPressed('Theme', 'Dark'));
     And('the Text size in Settings is Largest', () => expectPressed('Text size', 'Largest'));

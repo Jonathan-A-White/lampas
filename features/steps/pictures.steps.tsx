@@ -11,6 +11,7 @@ import { forgetChapters } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { mulberry32 } from '../../src/data/quiz';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -48,6 +49,7 @@ async function openLampasHolding(lemma: string): Promise<void> {
 
 async function openWords(): Promise<void> {
   await user.click(await screen.findByRole('button', { name: 'Settings' }));
+  await openSettingsGroup(user, 'account');
   await user.click(await screen.findByRole('button', { name: 'Words' }));
   await screen.findByRole('heading', { name: 'Words' });
   await waitFor(() => expect(document.querySelectorAll('[data-lemma]').length).toBeGreaterThan(0));
@@ -55,6 +57,7 @@ async function openWords(): Promise<void> {
 
 async function openQuickTest(): Promise<void> {
   await user.click(await screen.findByRole('button', { name: 'Settings' }));
+  await openSettingsGroup(user, 'account');
   await user.click(await screen.findByRole('button', { name: 'Words' }));
   await user.click(await screen.findByRole('button', { name: 'Test' }));
   await screen.findByRole('heading', { name: 'Quick test' });

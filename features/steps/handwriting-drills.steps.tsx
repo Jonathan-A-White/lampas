@@ -166,7 +166,7 @@ describeFeature(feature, ({ Scenario }) => {
   const NO_PEN = 'Lampas is opened on Romans 8 with the goal {string} and no pen seen';
   const PEN = 'Lampas is opened on Romans 8 with the goal {string} and a pen seen';
   const opensSettings = async () => {
-    window.location.hash = '#/settings';
+    window.location.hash = '#/settings?group=greek';
     await screen.findByRole('group', { name: 'Handwriting drills' });
   };
   const rowSays = async (_: unknown, text: string) => {

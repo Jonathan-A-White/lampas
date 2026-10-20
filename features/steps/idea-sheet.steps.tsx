@@ -708,7 +708,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
   });
   const chooseInSettings = async (_: unknown, choice: string, group: string): Promise<void> => {
-    window.location.hash = '#/settings';
+    window.location.hash = '#/settings?group=listening';
     const box = await screen.findByRole('group', { name: group });
     await user.click(within(box).getByRole('button', { name: choice, exact: true }));
     await waitFor(() => expect(within(box).getByRole('button', { name: choice, exact: true })).toHaveAttribute('aria-pressed', 'true'));
@@ -735,7 +735,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       await open(goal, undefined, false, accent);
     });
     Then('the group {string} in Settings has {string} chosen', async (_, group: string, choice: string) => {
-      window.location.hash = '#/settings';
+      window.location.hash = '#/settings?group=listening';
       const box = await screen.findByRole('group', { name: group });
       await waitFor(() => expect(within(box).getByRole('button', { name: choice, exact: true })).toHaveAttribute('aria-pressed', 'true'));
     });

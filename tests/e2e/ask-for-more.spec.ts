@@ -11,7 +11,7 @@ test('Ask for more leads with Ask the tutor, and a form fits the phone', async (
   await page.setViewportSize({ width: 390, height: 844 });
   await routePostern(page, makeFakePostern());
   await openUnlocked(page);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=account');
   await page.getByRole('button', { name: 'Ask for more' }).click();
   await expect(page.getByRole('heading', { name: 'Ask for more', level: 1 })).toBeVisible();
 

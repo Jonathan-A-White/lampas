@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { leaveSettings, openGroup } from './settings-group';
 
 async function openReader(page: Page) {
   await openUnlocked(page);
@@ -12,6 +13,7 @@ async function openReader(page: Page) {
 test('a learning word stands in Greek with its English in small grey beneath, the verse flow intact', async ({ page }) => {
   await openReader(page);
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Reading');
   const group = page.getByRole('group', { name: 'Weave', exact: true });
   const option = group.getByRole('button', { name: '+ Learning', exact: true });
   const box = await option.boundingBox();
@@ -20,7 +22,7 @@ test('a learning word stands in Greek with its English in small grey beneath, th
   expect((groupBox?.x ?? 0) + (groupBox?.width ?? 0)).toBeLessThanOrEqual(390);
   await option.click();
   await expect(option).toHaveAttribute('aria-pressed', 'true');
-  await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
+  await leaveSettings(page);
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-weave', 'solid+learning');
 
   // verse 18: "glory" is δόξα, lesson 10 of the seed, which he is still learning

@@ -17,6 +17,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { usageWritesSettled } from '../../src/tips/usageLog';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { findButton } from '../../tests/support/find-button';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { asSpoken } from '../../tests/support/lone-word';
@@ -67,6 +68,7 @@ async function openReader(): Promise<void> {
 
 async function openReviewFromSettings(): Promise<void> {
   await user.click(await findButton('Settings'));
+  await openSettingsGroup(user, 'account');
   await user.click(await screen.findByRole('button', { name: 'Review' }));
   await screen.findByRole('heading', { name: 'Review', level: 1 });
 }

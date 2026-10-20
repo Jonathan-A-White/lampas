@@ -24,6 +24,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { GRAMMAR, grammarRandom, gradedVersesOf } from '../../src/review/kinds';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -92,6 +93,7 @@ async function openReader(): Promise<void> {
 
 async function openReviewFromSettings(): Promise<void> {
   await user.click(await screen.findByRole('button', { name: 'Settings' }));
+  await openSettingsGroup(user, 'account');
   await user.click(await screen.findByRole('button', { name: 'Review' }));
   await screen.findByRole('heading', { name: 'Review', level: 1 });
 }

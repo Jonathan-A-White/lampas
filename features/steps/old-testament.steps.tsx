@@ -11,6 +11,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 const user = userEvent.setup();
 
@@ -63,13 +64,15 @@ async function openWith(settings: Record<string, string>): Promise<void> {
 const openSettings = async (): Promise<void> => {
   await user.click(screen.getByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettingsGroup(user, 'study');
 };
 
 const reopenAtSettings = async (): Promise<void> => {
   cleanup();
   clearBus();
   render(<App />);
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  // the Settings page he was on, the Study resources group's, is what reopens
+  await screen.findByRole('heading', { name: 'Study resources', level: 1 });
 };
 
 const openPicker = async (): Promise<void> => {

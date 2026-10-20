@@ -6,17 +6,17 @@ Feature: A double tap that changes the screen or opens a sheet does nothing with
   tap after that moment works as before.
 
   Scenario: A second tap on Settings' About row does not open the Preface
-    Given he is on "#/settings" and a screen ignores taps for a moment
+    Given he is on "#/settings?group=account" and a screen ignores taps for a moment
     When he taps "About" and at once taps "Preface"
     Then the address is "#/about"
 
   Scenario: A second tap on Settings' Paradigms row does not open a table
-    Given he is on "#/settings" and a screen ignores taps for a moment
+    Given he is on "#/settings?group=account" and a screen ignores taps for a moment
     When he taps "Paradigms" and at once taps "Noun endings"
     Then the address is "#/paradigms"
 
   Scenario: A second tap on Settings' About you row does not set his pace
-    Given he is on "#/settings" and a screen ignores taps for a moment
+    Given he is on "#/settings?group=account" and a screen ignores taps for a moment
     When he taps "About you" and at once taps "Slow"
     Then the address is "#/aboutyou"
     And no pace is marked

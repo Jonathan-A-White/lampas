@@ -17,7 +17,7 @@ test('Let the tutor help me fill this in at phone width: the button, a question 
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.setViewportSize(PHONE);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=greek');
   const open = page.getByRole('button', { name: 'Ask for another approach' });
   await open.scrollIntoViewIfNeeded();
   await open.click();

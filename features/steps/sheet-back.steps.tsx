@@ -337,7 +337,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       vi.unstubAllGlobals();
       window.localStorage.clear();
       window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
-      window.history.replaceState(null, '', '/#/settings');
+      window.history.replaceState(null, '', '/#/settings?group=greek');
       stubChapterFetch();
       await db.open();
       await db.settings.clear();
@@ -351,8 +351,8 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Ask for another approach' })).toBeNull());
     });
     And('the Settings screen is open', async () => {
-      await screen.findByRole('heading', { name: 'Settings' });
-      expect(window.location.hash).toBe('#/settings');
+      await screen.findByRole('heading', { name: 'Greek', level: 1 });
+      expect(window.location.hash).toBe('#/settings?group=greek');
     });
   });
 

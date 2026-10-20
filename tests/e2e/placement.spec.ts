@@ -52,7 +52,7 @@ const ITEMS = LADDER.filter((i) => i.glyphs || i.parent).map((i) => i.id);
 
 test('Place me in Settings > Goal opens the placement; a question fits the phone and a reload goes on', async ({ page }) => {
   await openWithGoal(page, '1 John 1:1');
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=greek');
   const place = page.getByRole('button', { name: 'Place me' });
   await expect(place).toBeVisible();
   const placeBox = await place.boundingBox();

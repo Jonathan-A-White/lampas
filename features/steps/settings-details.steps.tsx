@@ -10,6 +10,8 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
+import type { GroupId } from '../../src/settings/rows';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 const user = userEvent.setup();
 
@@ -22,7 +24,11 @@ afterAll(() => {
   db.close();
 });
 
-async function openSettings(seed: Record<string, string> = {}): Promise<void> {
+/** The Settings page the scenario is on, so `settled` waits for what that page draws. */
+let page: GroupId = 'study';
+
+async function openSettings(group: GroupId, seed: Record<string, string> = {}): Promise<void> {
+  page = group;
   cleanup();
   clearBus();
   forgetTrail();
@@ -41,15 +47,15 @@ async function openSettings(seed: Record<string, string> = {}): Promise<void> {
   await waitFor(async () => expect(await db.words.count()).toBe(63));
   await user.click(screen.getByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettingsGroup(user, group);
 }
 
 const switchOf = (name: string): Promise<HTMLElement> => screen.findByRole('switch', { name });
 const settled = async (): Promise<void> => {
   // the screen draws its groups from live queries: wait for the last section before claiming something is absent
-  await screen.findByRole('heading', { name: 'More', level: 2 });
-  await screen.findByRole('group', { name: 'New words a day' });
-  await screen.findByRole('group', { name: 'Weave' });
-  await screen.findByRole('group', { name: 'Tips' });
+  if (page === 'study') await screen.findByRole('heading', { name: 'Study resources', level: 2 });
+  if (page === 'reading') await screen.findByRole('group', { name: 'Weave' });
+  if (page === 'greek') await screen.findByRole('group', { name: 'New words a day' });
 };
 const noGroup = (name: string): void => expect(screen.queryByRole('group', { name })).toBeNull();
 
@@ -59,7 +65,6 @@ describeFeature(feature, ({ Scenario }) => {
   const turnsOn = async (_: unknown, name: string): Promise<void> => {
     await user.click(await switchOf(name));
   };
-  const openNothing = (): Promise<void> => openSettings();
   const heldAs = async (_: unknown, key: string, value: string): Promise<void> => {
     await waitFor(async () => expect((await db.settings.get(key))?.value).toBe(value));
   };
@@ -86,7 +91,7 @@ describeFeature(feature, ({ Scenario }) => {
   };
 
   Scenario('Accordance Off is its row and nothing else', ({ Given, Then, And }) => {
-    Given('Lampas is opened on Settings with nothing chosen', openNothing);
+    Given('Lampas is opened on Settings with nothing chosen', () => openSettings('study'));
     Then('Settings shows the switch {string} Off with its help {string}', async (_, name: string, help: string) => {
       await waitFor(async () => expect(await switchOf(name)).toHaveAttribute('aria-checked', 'false'));
       expect(screen.getByText(help)).toBeInTheDocument();
@@ -98,7 +103,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Turning Accordance On shows its details and Off hides them, keeping what was typed', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Settings with Accordance On and the Accordance resource {string}', async (_, typed: string) => {
-      await openSettings({ 'resource.accordance': 'on', 'resourceOption.accordance': typed });
+      await openSettings('study', { 'resource.accordance': 'on', 'resourceOption.accordance': typed });
     });
     Then('Settings has a field {string} holding {string}', field);
     When('he turns the switch {string} Off', turnsOn);
@@ -110,7 +115,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('Bible in Logos is shown only while Logos is On', ({ Given, When, Then }) => {
-    Given('Lampas is opened on Settings with nothing chosen', openNothing);
+    Given('Lampas is opened on Settings with nothing chosen', () => openSettings('study'));
     Then('Settings has no section {string}', async (_, name: string) => {
       await settled();
       expect(screen.queryByRole('heading', { name })).toBeNull();
@@ -129,7 +134,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario("The Weave's Grammar row is shown only while the Weave is not Off", ({ Given, When, Then }) => {
-    Given('Lampas is opened on Settings with nothing chosen', openNothing);
+    Given('Lampas is opened on Settings with nothing chosen', () => openSettings('reading'));
     Then('Settings has the group {string} and no group {string}', async (_, shown: string, hidden: string) => {
       await settled();
       await waitFor(() => noGroup(hidden));
@@ -147,7 +152,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('New words at and Move it are shown only while New words a day is not Off', ({ Given, When, Then }) => {
-    Given('Lampas is opened on Settings with nothing chosen', openNothing);
+    Given('Lampas is opened on Settings with nothing chosen', () => openSettings('greek'));
     Then('Settings has the groups {string}, {string} and {string}', async (_, a: string, b: string, c: string) => {
       for (const name of [a, b, c]) expect(await screen.findByRole('group', { name })).toBeInTheDocument();
     });

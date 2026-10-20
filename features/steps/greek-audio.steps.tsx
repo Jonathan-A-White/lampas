@@ -13,6 +13,7 @@ import { chosenPronunciation } from '../../src/speech/greek';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { asSpoken, pairsAsConsonant } from '../../tests/support/lone-word';
 import { queryStatusLine, statusLine } from '../../tests/support/status';
 
@@ -63,6 +64,7 @@ const tapPlay = async (n: number) => user.click(playButton(n));
 
 async function openWords(): Promise<void> {
   await user.click(await screen.findByRole('button', { name: 'Settings' }));
+  await openSettingsGroup(user, 'account');
   await user.click(await screen.findByRole('button', { name: 'Words' }));
   await screen.findByRole('heading', { name: 'Words' });
   await waitFor(() => expect(document.querySelectorAll('[data-lemma]').length).toBeGreaterThan(0));

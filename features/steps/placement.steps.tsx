@@ -192,7 +192,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Place me in Settings opens it', ({ Given, When, And, Then }) => {
     Given('his goal is {string} and he knows nothing yet', given);
-    When('he opens Settings', () => openAt('#/settings'));
+    When('he opens Settings', () => openAt('#/settings?group=greek'));
     And('he taps {string}', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
     Then('it says {string}', says);
   });
@@ -278,13 +278,14 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Go on another day returns to Settings when the placement was started there', ({ Given, When, And, Then }) => {
     Given('his goal is {string} and he knows nothing yet', given);
-    When('he opens Settings', () => openAt('#/settings'));
+    When('he opens Settings', () => openAt('#/settings?group=greek'));
     And('he taps {string}', tapped);
     And('he starts the placement', started);
     And('he answers {int} questions right', right);
     Then('it says {string}', says);
     When('he taps {string}', tapped);
     Then('Settings is open', async () => {
+      // a reopened placement has no Settings page behind it, so the way out lands on the home (a Back from the page it was started on returns to that page)
       await screen.findByRole('heading', { name: 'Settings', level: 1 });
     });
   });

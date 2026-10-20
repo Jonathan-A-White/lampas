@@ -1,13 +1,14 @@
 // The rows of Settings (src/settings/rows.ts): one list says what every row is called, its one-line hint, its longer help and what it
 // depends on; the screen draws exactly those rows, the search filters them and show-when-on reads their dependencies.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor } from '@testing-library/react';
+import { render, cleanup, waitFor } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { SETTINGS } from '../../src/settings/registry';
-import { ROWS, SECTIONS, foldText, rowOf, visibleRows, type Values } from '../../src/settings/rows';
+import { GROUPS, ROWS, SECTIONS, foldText, groupOf, rowOf, visibleRows, type Values } from '../../src/settings/rows';
+import { showSettingsGroup } from '../support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -115,14 +116,18 @@ describe('the Settings screen', () => {
       { key: 'developerMode', value: 'on' },
     ]);
     render(<SettingsScreen />);
-    await screen.findByRole('group', { name: 'Bible in Logos' });
-    await screen.findByRole('group', { name: 'Grammar' });
-    await screen.findByRole('group', { name: 'Move it' });
-    await screen.findByRole('radiogroup', { name: 'Greek pronunciation' });
-    expect(drawn()).toEqual(keys(ROWS));
-    for (const row of ROWS) {
-      expect(document.querySelector(`[data-setting="${row.key}"]`)?.textContent, row.key).toContain(row.hint);
+    // each group's page draws exactly its rows, in the order of the list
+    const seen: string[] = [];
+    for (const group of GROUPS) {
+      await showSettingsGroup(group.id);
+      const mine = ROWS.filter((row) => groupOf(row.section).id === group.id);
+      await waitFor(() => expect(drawn()).toEqual(keys(mine)));
+      for (const row of mine) {
+        expect(document.querySelector(`[data-setting="${row.key}"]`)?.textContent, row.key).toContain(row.hint);
+        seen.push(row.key);
+      }
     }
+    expect(seen.sort()).toEqual(keys(ROWS).sort());
     cleanup();
   });
 
@@ -134,9 +139,16 @@ describe('the Settings screen', () => {
       { key: 'newWordsADay', value: '0' },
     ]);
     render(<SettingsScreen />);
-    await screen.findByRole('group', { name: 'New words a day' });
-    await waitFor(() => expect(drawn()).toEqual(keys(visibleRows({ weave: 'off', newWordsADay: '0' }, ''))));
-    expect(drawn()).not.toContain('weaveGrammar');
+    const visible = visibleRows({ weave: 'off', newWordsADay: '0' }, '');
+    const shown: string[] = [];
+    for (const group of GROUPS) {
+      await showSettingsGroup(group.id);
+      const mine = visible.filter((row) => groupOf(row.section).id === group.id);
+      await waitFor(() => expect(drawn()).toEqual(keys(mine)));
+      shown.push(...drawn().map(String));
+    }
+    expect([...shown].sort()).toEqual(keys(visible).sort());
+    expect(shown).not.toContain('weaveGrammar');
     cleanup();
   });
 });

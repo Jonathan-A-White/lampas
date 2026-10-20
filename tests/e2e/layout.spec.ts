@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { leaveSettings, openGroup } from './settings-group';
 
 // 44 px is the floor; a word must clear it by a pixel so one font's metrics can shave a little and it still holds.
 const TAP_WITH_MARGIN = 45;
@@ -24,16 +25,16 @@ async function openReader(page: Page) {
 
 async function setInSettings(page: Page, group: string, label: string) {
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  await openGroup(page, 'Reading');
   await page.getByRole('group', { name: group }).getByRole('button', { name: label, exact: true }).click();
-  await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
+  await leaveSettings(page);
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 }
 
 test('Settings offers Layout and Section headings with 44 px choices, Verse by verse and On to begin with', async ({ page }) => {
   await openReader(page);
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  await openGroup(page, 'Reading');
   const layout = page.getByRole('group', { name: 'Layout', exact: true });
   const headings = page.getByRole('group', { name: 'Section headings' });
   await expect(layout.getByRole('button', { name: 'Verse by verse', exact: true })).toHaveAttribute('aria-pressed', 'true');
@@ -90,7 +91,7 @@ test('Paragraph runs the verses on with superscript numbers, every word and numb
   await number.click();
   await expect(page.locator('[data-verse="2"]')).toHaveAttribute('data-selected', 'true');
   await expect(page.getByRole('region', { name: 'Verse view' })).toBeVisible();
-  await page.getByRole('button', { name: '‹ Reader' }).click();
+  await leaveSettings(page);
   await expect(page.locator('[data-verse="2"]')).toHaveAttribute('data-selected', 'false');
 
   await page.getByRole('button', { name: 'Greek', exact: true }).click();

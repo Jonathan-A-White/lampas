@@ -103,8 +103,8 @@ test('closing the tip ends it for good', async ({ page }) => {
 
 test('a Settings row’s Needs a licence opens the Licence page and Back returns to that row', async ({ page }) => {
   await onVisit(page, 1);
-  await page.goto('/#/settings');
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  await page.goto('/#/settings?group=tutor');
+  await expect(page.getByRole('heading', { name: 'The tutor', exact: true, level: 1 })).toBeVisible();
   const rows = page.getByRole('button', { name: 'Needs a licence' });
   await expect(rows.first()).toBeVisible();
   const last = rows.last();
@@ -113,7 +113,7 @@ test('a Settings row’s Needs a licence opens the Licence page and Back returns
   await last.click();
   await expect(page.getByRole('heading', { name: 'Licence', exact: true, level: 1 })).toBeVisible();
   await page.goBack();
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'The tutor', exact: true, level: 1 })).toBeVisible();
   await expect(last).toBeInViewport();
   await expect.poll(async () => Math.abs(((await last.boundingBox())?.y ?? -999) - before.y)).toBeLessThan(2);
 });

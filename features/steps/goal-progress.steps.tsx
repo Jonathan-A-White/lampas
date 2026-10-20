@@ -56,6 +56,9 @@ async function openAt(hash: string): Promise<void> {
   render(<App />);
 }
 
+// Change opens Settings at the Goal section, which scrolls to it; jsdom has no layout to scroll
+Element.prototype.scrollIntoView = () => {};
+
 const openGoal = () => openAt('#/goal');
 
 async function putWord(lemma: string, state: WordState): Promise<void> {
@@ -384,7 +387,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he opens the Goal screen', opensGoal);
     And('he taps Change', taps('Change'));
     Then('the Settings screen is open', async () => {
-      expect(await screen.findByRole('heading', { name: 'Settings', level: 1 })).toBeInTheDocument();
+      expect(await screen.findByRole('heading', { name: 'Greek', level: 1 })).toBeInTheDocument();
       expect(screen.getByRole('group', { name: 'Goal' })).toBeInTheDocument();
     });
     When('he returns to the Goal screen', opensGoal);

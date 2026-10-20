@@ -12,6 +12,7 @@ import { db } from '../../src/data/db';
 import { clearBus, latest } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { leaveSettings, onSettingsPage, openSettingsGroup } from '../../tests/support/settings-pages';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verseData = (n: number): Verse => {
@@ -57,14 +58,15 @@ const paragraphOf = (n: number) => verseEl(n).closest('[data-paragraph]');
 async function openSettings(): Promise<void> {
   await user.click(screen.getByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettingsGroup(user, 'reading');
 }
 async function goBack(): Promise<void> {
-  await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+  await leaveSettings(user);
   await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
   await waitForVerses();
 }
 async function choose(group: 'Layout' | 'Section headings', label: string): Promise<void> {
-  if (!screen.queryByRole('heading', { name: 'Settings', level: 1 })) await openSettings();
+  if (!onSettingsPage()) await openSettings();
   // the control draws once its saved value is read, which can be after the Settings heading
   await user.click(await within(await screen.findByRole('group', { name: group })).findByRole('button', { name: label }));
 }
@@ -182,7 +184,7 @@ describeFeature(feature, ({ Scenario }) => {
       cleanup();
       clearBus();
       render(<App />);
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await screen.findByRole('heading', { name: 'Reading', level: 1 });
     });
     Then('Layout is set to {string} in Settings', async (_, label: string) => {
       const group = await screen.findByRole('group', { name: 'Layout' });

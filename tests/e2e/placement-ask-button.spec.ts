@@ -41,7 +41,7 @@ async function openPlacement(page: Page) {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await put(page, 'settings', [{ key: 'goal', value: '1 John 1:1' }]);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=greek');
   await page.getByRole('button', { name: 'Place me' }).click();
   await expect(page.getByTestId('placement-goal')).toBeVisible();
   await expect(page.locator(BUTTON)).toBeVisible();

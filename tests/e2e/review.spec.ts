@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { dueOnToday, reviewPiece, todayChip, waitForDue } from './today-chip';
+import { openGroup } from './settings-group';
 
 // The page never scrolls and never grows wider than the window.
 async function expectFitsPhone(page: Page) {
@@ -78,6 +79,7 @@ test('Review is reached from Settings and a reload keeps him on it', async ({ pa
   await openUnlocked(page);
   await page.goto('/');
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Account');
   await page.getByRole('button', { name: 'Review', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Review', exact: true, level: 1 })).toBeVisible();
   await page.reload();

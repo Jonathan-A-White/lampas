@@ -7,6 +7,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -30,6 +31,7 @@ async function openHome(): Promise<void> {
 async function openSettings(): Promise<void> {
   await user.click(screen.getByRole('button', { name: 'Settings', exact: true }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettingsGroup(user, 'account');
 }
 
 const credit = (name: string): HTMLElement => screen.getByText(new RegExp(name)).closest('li') as HTMLElement;

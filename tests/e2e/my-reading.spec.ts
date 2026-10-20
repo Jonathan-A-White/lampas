@@ -74,7 +74,7 @@ test('Developer mode: seven taps on the version number on About, its switch in S
   await expect(panel.getByRole('button', { name: 'Download my recording' })).toHaveCount(0);
 
   await findDeveloperMode(page);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=developer');
   const group = page.getByRole('group', { name: 'Developer mode' });
   await expect(group.getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
 

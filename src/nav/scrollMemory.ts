@@ -20,7 +20,10 @@ export function scrollAddress(hash: string): string {
     if (setting) return `#/settings?setting=${setting}`;
     // so is a link to a section (mw-5r3p30.427): the section scroll is its place, and it does not share (or overwrite) the offset of Settings opened by the gear
     const section = params.get('section');
-    return section ? `#/settings?section=${section}` : '#/settings';
+    if (section) return `#/settings?section=${section}`;
+    // and each group's page keeps its own place (mw-3ased2.1), apart from the home that lists the groups
+    const group = params.get('group');
+    return group ? `#/settings?group=${group}` : '#/settings';
   }
   if (pathOf(hash) !== '#/') return pathOf(hash);
   return readerHash({ ...readerOf(hash), verse: undefined });

@@ -395,11 +395,11 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     Given('Settings is open', async () => {
       cleanup();
       window.localStorage.clear();
-      window.location.hash = '#/settings';
+      window.location.hash = '#/settings?group=account';
       await db.open();
       await db.settings.clear();
       render(<SettingsScreen />);
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await screen.findByRole('heading', { name: 'Account', level: 1 });
     });
     When('he taps Your requests', async () => {
       await user.click(await screen.findByRole('button', { name: /^Your requests/ }));
@@ -436,11 +436,12 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     cleanup();
     vi.stubGlobal('fetch', () => Promise.resolve(new Response('{}', { status: 404 })));
     window.localStorage.clear();
-    window.history.replaceState(null, '', `/${hash}`);
+    // Settings opens on the Account page, where Your requests is
+    window.history.replaceState(null, '', hash === '#/about' ? `/${hash}` : `/${hash}?group=account`);
     await db.open();
     await db.settings.clear();
     render(<Screens />);
-    await screen.findByRole('heading', { name: hash === '#/about' ? 'About' : 'Settings', level: 1 });
+    await screen.findByRole('heading', { name: hash === '#/about' ? 'About' : 'Account', level: 1 });
   }
 
   const headerButton = async (): Promise<HTMLElement> => {
@@ -492,7 +493,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       await openFrom('#/settings');
       cleanup();
       render(<SettingsScreen />);
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await screen.findByRole('heading', { name: 'Account', level: 1 });
     });
     When('he double taps Your requests', async () => {
       before = window.history.length;

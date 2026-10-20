@@ -16,6 +16,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
+import { leaveSettings, openSettingsGroup } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -53,6 +54,7 @@ const group = (name: string): HTMLElement => screen.getByRole('group', { name })
 const pressed = (chip: string) => within(group('New words a day')).getByRole('button', { name: chip, exact: true });
 const openSettings = async () => {
   await user.click(await screen.findByRole('button', { name: 'Settings' }));
+  await openSettingsGroup(user, 'greek');
   await screen.findByRole('group', { name: 'New words a day' });
 };
 
@@ -104,7 +106,7 @@ describeFeature(feature, ({ Scenario }) => {
       await openSettings();
       await user.click(pressed('Off'));
       await waitFor(() => expect(pressed('Off')).toHaveAttribute('aria-pressed', 'true'));
-      await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+      await leaveSettings(user);
     });
     Then('the Reader shows no New words strip for pace', async () => {
       await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));

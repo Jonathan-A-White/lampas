@@ -42,7 +42,7 @@ async function openSettings(): Promise<void> {
   vi.unstubAllGlobals();
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
-  window.history.replaceState(null, '', '/#/settings');
+  window.history.replaceState(null, '', '/#/settings?group=greek');
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: { status: 'sent' } };

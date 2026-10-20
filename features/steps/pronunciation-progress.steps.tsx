@@ -46,7 +46,7 @@ async function solidIdeas(): Promise<string[]> {
 
 /** Opens Settings and taps the pronunciation with this label; waits until it is the saved one. */
 async function chooseInSettings(label: string): Promise<void> {
-  await openAt('#/settings');
+  await openAt('#/settings?group=listening');
   await user.click(await screen.findByRole('radio', { name: label }));
   const id = label === 'Modern Greek' ? 'modern' : 'erasmian';
   await waitFor(async () => expect((await db.settings.get('greekPronunciation'))?.value).toBe(id));

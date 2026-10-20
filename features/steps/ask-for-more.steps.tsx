@@ -102,7 +102,7 @@ const feature = await loadFeature('features/ask-for-more.feature');
 describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   Scenario('Settings shows Ask for more, and its page leads with Ask the tutor', ({ Given, Then, When, And }) => {
     Given('Settings is open in the app behind a fake Postern', async () => {
-      await openAt('#/settings');
+      await openAt('#/settings?group=account');
       await screen.findByRole('heading', { name: 'More', level: 2 });
     });
     Then('Settings > More has the row {string}', (_, label: string) => {

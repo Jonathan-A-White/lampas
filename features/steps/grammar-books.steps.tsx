@@ -19,6 +19,7 @@ import type { GrammarBook } from '../../src/resources/types';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { fixturePath } from '../../tests/support/fixture-path';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 const user = userEvent.setup();
 
@@ -169,6 +170,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he turns Logos on in Settings', async () => {
       await user.click(screen.getByRole('button', { name: 'Settings' }));
       await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettingsGroup(user, 'study');
       const logos = await screen.findByRole('switch', { name: 'Logos' });
       await user.click(logos);
       await waitFor(() => expect(logos).toHaveAttribute('aria-checked', 'true'));

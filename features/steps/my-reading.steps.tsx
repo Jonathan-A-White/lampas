@@ -179,8 +179,8 @@ const versionNumber = () => screen.getByTestId('build-version');
 const settingsGroup = () => screen.queryByRole('group', { name: 'Developer mode' });
 
 async function goToSettings(): Promise<void> {
-  window.location.hash = '#/settings';
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  window.location.hash = '#/settings?group=developer';
+  await screen.findByRole('heading', { name: 'Developer', level: 1 });
 }
 
 async function tapVersion(times: number): Promise<void> {
@@ -291,8 +291,11 @@ describeFeature(feature, ({ Scenario }) => {
       await tapVersion(times);
     });
     Then('Settings has no {string}', async (_, name: string) => {
-      await goToSettings();
-      await screen.findByRole('group', { name: 'Theme' });
+      // with Developer mode off the home does not list the Developer group (src/settings/rows.ts visibleGroups)
+      window.location.hash = '#/settings';
+      const groups = await screen.findByRole('list', { name: 'Settings groups' });
+      await within(groups).findByRole('button', { name: /^Reading/ });
+      expect(within(groups).queryByRole('button', { name: /^Developer/ })).toBeNull();
       expect(screen.queryByRole('group', { name })).toBeNull();
       expect(settingsGroup()).toBeNull();
     });
@@ -313,7 +316,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('Lampas is opened again on Settings', async () => {
       cleanup();
-      window.location.hash = '#/settings';
+      window.location.hash = '#/settings?group=developer';
       render(<App />);
     });
     Then('Settings has the switch {string} set to {string}', switchIs);

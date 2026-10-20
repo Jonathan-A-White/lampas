@@ -12,6 +12,7 @@ import { db } from '../../src/data/db';
 import { LONG_PRESS_MS } from '../../src/ui/longPress';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse1: Verse = chapter.verses[0];
@@ -55,8 +56,9 @@ const choice = (name: string): HTMLElement => within(switchEl()).getByRole('butt
 async function setWeaveSolid(): Promise<void> {
   await user.click(screen.getByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettingsGroup(user, 'reading');
   await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: 'Solid' }));
-  await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+  await leaveSettings(user);
   await waitForReader();
   await waitFor(() => expect(wovenIn(1).length).toBeGreaterThan(0));
 }

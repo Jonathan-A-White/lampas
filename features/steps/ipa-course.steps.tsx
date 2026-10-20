@@ -23,6 +23,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
 import { asSpoken } from '../../tests/support/spoken-word';
+import { GROUPS } from '../../src/settings/rows';
 
 const user = userEvent.setup();
 const SEED = 5;
@@ -201,7 +202,8 @@ describeFeature(feature, ({ Scenario }) => {
       expect(await db.settings.get('ipaCourse')).toBeUndefined();
     });
     And('the course is named on no other screen', async () => {
-      for (const [hash, title] of [['#/', ''], ['#/words', 'Words'], ['#/settings', 'Settings'], ['#/path', 'The whole path'], ['#/paradigms', 'Paradigms']] as const) {
+      const screens: [string, string][] = [['#/', ''], ['#/words', 'Words'], ['#/settings', 'Settings'], ...GROUPS.map((g): [string, string] => [`#/settings?group=${g.id}`, g.title]), ['#/path', 'The whole path'], ['#/paradigms', 'Paradigms']];
+      for (const [hash, title] of screens) {
         window.location.hash = hash;
         if (title) await screen.findByRole('heading', { name: title, level: 1 });
         else await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));

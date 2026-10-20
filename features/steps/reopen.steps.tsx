@@ -11,6 +11,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { readerOf } from '../../src/nav/route';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -71,8 +72,11 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened at the address {string}', (_, hash: string) => openAt(hash));
     When('he goes to the Words screen and then back', async () => {
       await user.click(await screen.findByRole('button', { name: 'Settings' }));
+      await openSettingsGroup(user, 'account');
       await user.click(await screen.findByRole('button', { name: 'Words' }));
       await screen.findByRole('heading', { name: 'Words', level: 1 });
+      window.history.back(); // the Account page
+      await screen.findByRole('heading', { name: 'Account', level: 1 });
       window.history.back(); // Settings
       await screen.findByRole('heading', { name: 'Settings', level: 1 });
       window.history.back();
@@ -89,6 +93,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8', () => openAt(''));
     When('he goes to the Words screen', async () => {
       await user.click(screen.getByRole('button', { name: 'Settings' }));
+      await openSettingsGroup(user, 'account');
       await user.click(await screen.findByRole('button', { name: 'Words' }));
     });
     Then('the address is {string}', (_, hash: string) => {

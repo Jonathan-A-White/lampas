@@ -11,6 +11,7 @@ import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { leaveSettings, openSettingsGroup } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -57,6 +58,7 @@ const placeLine = () => document.querySelector<HTMLElement>('[data-place-line]')
 
 async function openSettings(): Promise<HTMLElement> {
   await user.click(screen.getByRole('button', { name: 'Settings' }));
+  await openSettingsGroup(user, 'reading');
   return screen.findByRole('group', { name: 'Reading' });
 }
 
@@ -91,7 +93,7 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(within(group).getByRole('button', { name: 'Turn pages' })).toHaveAttribute('aria-pressed', 'true'));
     });
     And('he goes back to the Reader', async () => {
-      await user.click(await screen.findByRole('button', { name: '‹ Reader' }));
+      await leaveSettings(user);
       await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
     });
     Then('the chapter is laid out in pages', paged);

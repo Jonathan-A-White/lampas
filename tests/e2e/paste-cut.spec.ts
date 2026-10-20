@@ -9,7 +9,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 test('a paste past the limit of About you > Background keeps what fits and says the rest was cut', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await openUnlocked(page);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=account');
   await page.getByRole('button', { name: 'About you' }).click();
   const box = page.getByRole('textbox', { name: 'Background', exact: true });
   const max = Number(await box.getAttribute('maxlength'));

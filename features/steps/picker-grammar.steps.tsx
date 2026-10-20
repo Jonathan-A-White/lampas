@@ -30,6 +30,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { FIXTURE_CHAPTER, FIXTURE_FREQUENCY } from '../../tests/fixtures/frontier';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -87,6 +88,7 @@ async function finishRound(rightAnswer: boolean): Promise<void> {
   const off = subscribe('picker-level-moved', (e) => void moves.push(e));
   render(<App newRandom={() => mulberry32(7)} />);
   await user.click(await screen.findByRole('button', { name: 'Settings' }));
+  await openSettingsGroup(user, 'account');
   await user.click(await screen.findByRole('button', { name: 'Review' }));
   await user.click(await screen.findByRole('button', { name: 'Start' }));
   // the grammar idea is asked first; then the words, each answered by its first option or a flashcard
@@ -119,6 +121,7 @@ describeFeature(feature, ({ Scenario }) => {
       render(<App />);
       await user.click(await screen.findByRole('button', { name: 'Settings' }));
       await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettingsGroup(user, 'greek');
     });
     Then('New words at offers {string} and {string}, and {string} is chosen', async (_, a: string, b: string, chosen: string) => {
       await screen.findByRole('group', { name: 'New words at' });

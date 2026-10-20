@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { openGroup } from './settings-group';
 
 const VIEWPORT = { width: 390, height: 844 };
 
@@ -10,6 +11,7 @@ test('Works at phone width (mw-5r3p30.675): each work by its full title and auth
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Study resources');
 
   const list = page.getByRole('list', { name: 'Works in your Logos library' });
   await list.scrollIntoViewIfNeeded();

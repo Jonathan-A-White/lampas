@@ -6,8 +6,8 @@ test.use({ viewport: { width: 412, height: 915 } });
 
 test('About credits the data at phone width, reached from Settings', async ({ page }) => {
   await openUnlocked(page);
-  await page.goto('/#/settings');
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  await page.goto('/#/settings?group=account');
+  await expect(page.getByRole('heading', { name: 'Account', exact: true, level: 1 })).toBeVisible();
   const about = page.getByRole('button', { name: 'About', exact: true });
   await about.scrollIntoViewIfNeeded();
   const tap = await about.boundingBox();

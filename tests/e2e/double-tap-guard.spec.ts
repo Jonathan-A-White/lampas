@@ -198,9 +198,9 @@ test.describe('Settings rows', () => {
   test('mw-5r3p30.453: a double tap on the About row opens About, not the Preface', async ({ page }) => {
     // About has been open once, as on his phone, so its first draw (its credits) does not outlast the moment on a loaded host
     await open(page, '#/about', {}, () => page.locator('button[aria-label="Preface"]').waitFor());
-    // a new hash on the same page: the app moves to Settings without a reload
-    await page.goto('/#/settings');
-    await page.getByRole('heading', { name: 'Settings', exact: true, level: 1 }).waitFor();
+    // a new hash on the same page: the app moves to Settings' Account page (where About, Paradigms and About you are) without a reload
+    await page.goto('/#/settings?group=account');
+    await page.getByRole('heading', { name: 'Account', exact: true, level: 1 }).waitFor();
     const row = page.getByRole('button', { name: 'About', exact: true });
     await row.scrollIntoViewIfNeeded();
     await reads(page);
@@ -214,7 +214,7 @@ test.describe('Settings rows', () => {
   });
 
   test('mw-5r3p30.454: a double tap on the Paradigms row opens the list, not its first table', async ({ page }) => {
-    await open(page, '#/settings', {}, () => page.getByRole('heading', { name: 'Settings', exact: true, level: 1 }).first().waitFor());
+    await open(page, '#/settings?group=account', {}, () => page.getByRole('heading', { name: 'Account', exact: true, level: 1 }).first().waitFor());
     const row = page.getByRole('button', { name: /^Paradigms/ });
     await row.scrollIntoViewIfNeeded();
     await reads(page);
@@ -223,11 +223,15 @@ test.describe('Settings rows', () => {
   });
 
   test('mw-5r3p30.455: a double tap on the About you row sets no pace', async ({ page }) => {
-    await open(page, '#/settings', {}, () => page.getByRole('heading', { name: 'Settings', exact: true, level: 1 }).first().waitFor());
+    await open(page, '#/settings?group=account', {}, () => page.getByRole('heading', { name: 'Account', exact: true, level: 1 }).first().waitFor());
     const row = page.getByRole('button', { name: 'About you', exact: true });
     await row.scrollIntoViewIfNeeded();
     await reads(page);
-    await thumbDoubleTap(page, row, () => page.getByRole('button', { name: 'Slow', exact: true }).first().waitFor(), { selector: 'button[aria-pressed]' });
+    await thumbDoubleTap(page, row, () => page.getByRole('button', { name: 'Slow', exact: true }).first().waitFor(), {
+      selector: 'button[aria-pressed]',
+      // the About you row is near the top of the Account page, over the intro on About you: the second tap goes to the Slow button, scrolled into view
+      second: { selector: 'button[aria-pressed]', text: 'Slow' },
+    });
     await expect(page).toHaveURL(/#\/aboutyou$/);
     for (const pace of ['Quick', 'Steady', 'Slow']) await expect(page.getByRole('button', { name: pace, exact: true })).toHaveAttribute('aria-pressed', 'false');
   });

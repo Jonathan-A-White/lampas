@@ -36,7 +36,7 @@ test.beforeEach(async ({ page }) => {
 
 test('scrolling Settings with a thumb that starts on the Greek speed slider leaves the speed where it was, after a reload too', async ({ page }) => {
   await openUnlocked(page);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=listening');
   const greek = page.getByRole('slider', { name: 'Greek speed' });
   await expect(greek).toBeVisible();
   await greek.focus();
@@ -60,7 +60,7 @@ test('scrolling Settings with a thumb that starts on the Greek speed slider leav
 
 test('a tap on the Greek speed slider still sets the speed, and it is saved', async ({ page }) => {
   await openUnlocked(page);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=listening');
   const greek = page.getByRole('slider', { name: 'Greek speed' });
   await expect(greek).toBeVisible();
   await greek.scrollIntoViewIfNeeded();

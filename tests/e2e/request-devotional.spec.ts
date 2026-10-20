@@ -16,7 +16,7 @@ test('Request a devotional: the title goes to the factory as kind devotional, an
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.setViewportSize(PHONE);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=daily');
 
   const group = page.getByRole('group', { name: 'Request a devotional' });
   await group.scrollIntoViewIfNeeded();

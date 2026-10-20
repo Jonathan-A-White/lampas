@@ -238,7 +238,7 @@ for (const size of SIZES) {
     test('Ask for another approach: a failed send keeps its message and Retry in the sheet', async ({ page }) => {
       const fake = await putPostern(page);
       await openUnlocked(page);
-      await page.goto('/#/settings');
+      await page.goto('/#/settings?group=greek');
       await page.getByRole('button', { name: 'Ask for another approach' }).scrollIntoViewIfNeeded();
       await page.getByRole('button', { name: 'Ask for another approach' }).click();
       const sheet = page.getByRole('dialog', { name: 'Ask for another approach' });
@@ -255,7 +255,7 @@ for (const size of SIZES) {
     test('Ask for another approach: the tutor helping with the form, when it fails, keeps its message and Retry in its box', async ({ page }) => {
       const fake = await putPostern(page);
       await openUnlocked(page);
-      await page.goto('/#/settings');
+      await page.goto('/#/settings?group=greek');
       await page.getByRole('button', { name: 'Ask for another approach' }).scrollIntoViewIfNeeded();
       await page.getByRole('button', { name: 'Ask for another approach' }).click();
       const sheet = page.getByRole('dialog', { name: 'Ask for another approach' });
@@ -271,7 +271,7 @@ for (const size of SIZES) {
     test('Ask for another approach: a picture that cannot be added keeps its notice in the sheet', async ({ page }) => {
       await putPostern(page);
       await openUnlocked(page);
-      await page.goto('/#/settings');
+      await page.goto('/#/settings?group=greek');
       await page.getByRole('button', { name: 'Ask for another approach' }).scrollIntoViewIfNeeded();
       await page.getByRole('button', { name: 'Ask for another approach' }).click();
       const sheet = page.getByRole('dialog', { name: 'Ask for another approach' });

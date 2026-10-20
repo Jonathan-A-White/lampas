@@ -58,7 +58,7 @@ const seeded = (page: Page) =>
 
 /** The title of the lesson Settings > Grammar approach marks Next, once the list is drawn. */
 async function settingsNext(page: Page): Promise<string> {
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=greek');
   const next = page.locator('[data-approach-lessons] li:has([data-next]) [data-lesson-title]');
   await expect(next).toHaveCount(1);
   return (await next.textContent()) ?? '';
@@ -95,7 +95,7 @@ test('the Next badge in Settings > Grammar approach sits on the lesson the Goal 
   expect(named[11]).toBe('The singular');
 
   // the shot shows the badge on The singular
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=greek');
   await page.locator('[data-approach-lessons] li:has([data-next])').evaluate((el) => el.scrollIntoView({ block: 'center' }));
   await expect(page.locator('[data-approach-lessons] li:has([data-next]) [data-lesson-title]')).toHaveText('The singular');
   await shot(page, 'approach-next');

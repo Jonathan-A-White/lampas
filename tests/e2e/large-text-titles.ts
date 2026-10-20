@@ -195,7 +195,7 @@ export async function openAskApproach(page: Page): Promise<Locator> {
   fake.autoReply = { status: 'answered', answer: { status: 'sent' } };
   await routePostern(page, fake);
   await openUnlocked(page);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=greek');
   const open = page.getByRole('button', { name: 'Ask for another approach' });
   await open.scrollIntoViewIfNeeded();
   await open.click();

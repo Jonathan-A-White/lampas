@@ -18,6 +18,7 @@ import { chapterLink } from '../../src/resources/logosBible';
 import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { sheetEntriesGone } from '../../tests/support/sheet-history';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 const realEnv = { ...browserEnv };
 let timers: (() => void)[] = [];
@@ -232,6 +233,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he goes to the Test screen', async () => {
       await screen.findByRole('heading', { name: '1 John 1', level: 1 });
       await user.click(await screen.findByRole('button', { name: 'Settings' }));
+      await openSettingsGroup(user, 'account');
       await user.click(await screen.findByRole('button', { name: 'Words' }));
       await user.click(await screen.findByRole('button', { name: 'Test' }));
     });

@@ -8,6 +8,7 @@ import { describeFeature, loadFeature } from '@amiceli/vitest-cucumber';
 import { db } from '../../../src/data/db';
 import { type FakePostern } from '../../../tests/support/fake-postern';
 import { endScenario, open, openTalk, send, sheet, turnShows, turns, user } from './support';
+import { openSettingsGroup } from '../../../tests/support/settings-pages';
 
 const explaining = (f: FakePostern): void => {
   f.autoReply = {
@@ -80,6 +81,7 @@ describeFeature(
       });
       And('he opens the Words screen', async () => {
         await user.click(await screen.findByRole('button', { name: 'Settings' }));
+        await openSettingsGroup(user, 'account');
         await user.click(await screen.findByRole('button', { name: 'Words' }));
         await screen.findByRole('heading', { name: 'Words' });
       });

@@ -13,7 +13,7 @@ test('Ask for another book at phone width: the box and Send fit, offline it wait
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.setViewportSize(PHONE);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=study');
   await page.getByRole('switch', { name: 'Logos', exact: true }).click();
 
   const group = page.getByRole('group', { name: 'Ask for another book' });

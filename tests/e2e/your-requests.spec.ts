@@ -137,7 +137,7 @@ test('Settings has a Your requests row that opens the screen', async ({ page }) 
   const fake = makeFakePostern();
   await routePostern(page, fake);
   await openUnlocked(page);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=account');
   const row = page.getByRole('button', { name: /^Your requests/ });
   await row.scrollIntoViewIfNeeded();
   expect((await row.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
@@ -158,15 +158,15 @@ test('from About the back button reads ‹ About and returns there; a double tap
   await page.getByRole('button', { name: '‹ About' }).click();
   await expect(page).toHaveURL(/#\/about$/);
 
-  // Settings: a double tap on the row adds one history entry, a double tap on the back button stops on Settings (its own ‹ Reader sits at the same spot)
-  await page.goto('/#/settings');
+  // Settings: a double tap on the row adds one history entry, a double tap on the back button stops on the Settings page it came from (its own ‹ Settings sits at the same spot)
+  await page.goto('/#/settings?group=account');
   const before = await page.evaluate(() => history.length);
   await page.getByRole('button', { name: /^Your requests/ }).dblclick();
   await expect(page.getByRole('heading', { name: 'Your requests', level: 1 })).toBeVisible();
   expect(await page.evaluate(() => history.length)).toBe(before + 1);
   await page.getByRole('button', { name: '‹ Settings' }).dblclick();
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
-  await expect(page).toHaveURL(/#\/settings$/);
+  await expect(page.getByRole('heading', { name: 'Account', exact: true, level: 1 })).toBeVisible();
+  await expect(page).toHaveURL(/#\/settings\?group=account$/);
   await shot(page, 'your-requests-back-from-settings');
 });
 

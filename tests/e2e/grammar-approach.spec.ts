@@ -5,7 +5,7 @@ import { openUnlocked } from './unlocked';
 test('Settings > Grammar approach at phone width: the one path, the ladder, with no choice to make, and a phone that saved BMA Tutor reads as it', async ({ page }) => {
   await openUnlocked(page);
   // an old phone: the saved choice is the BMA Tutor path, which is no longer listed
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=greek');
   await page.evaluate(
     () =>
       new Promise<void>((resolve, reject) => {

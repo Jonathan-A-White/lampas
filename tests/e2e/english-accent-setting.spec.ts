@@ -23,7 +23,7 @@ for (const size of SIZES) {
   test(`the English accent setting has three 44 px choices and fits the screen at ${size.name}`, async ({ page }) => {
     await page.setViewportSize({ width: size.width, height: size.height });
     await openUnlocked(page);
-    await page.goto('/#/settings');
+    await page.goto('/#/settings?group=listening');
     const group = page.getByRole('group', { name: 'English accent' });
     await group.scrollIntoViewIfNeeded();
     await expect(group).toBeVisible();
