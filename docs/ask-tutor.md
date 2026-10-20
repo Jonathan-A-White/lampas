@@ -195,8 +195,7 @@ His words (12 Oct 2026): a person is not always going forward; he takes a break,
 ## Greek words he says aloud (mw-5r3p30.244)
 
 Hold to talk and Hold to ask use the phone's recogniser in en-US, so a Greek word he says arrives as English sound-alikes ('Tech N9ne' for
-τεκνίον). The words the recogniser handed over are remembered (src/speech/spoken.ts, noted by useVoice's release and by the Ask composer's
-transcriber); a question whose text is those words goes to bible-talk and verse-ask with `spoken: true` (buildTalkRequest, buildRequest), and a
+τεκνίον). The words the recogniser handed over are remembered (src/speech/spoken.ts, noted by speech/askTranscriber.ts, the transcriber of every hold: the Ask composer's and, through talk/useTalkHold.ts, the Talk sheet's bar, the Talk bar, Welcome and the letter drill); a question whose text is those words goes to bible-talk and verse-ask with `spoken: true` (buildTalkRequest, buildRequest), and a
 typed one, or one he edited after speaking, has no such field. `wasSpoken` is asked once, as the message is sent (`useTalk.say`, `useAsks.ask`), and forgets the words, so the same words typed after are his typing (mw-5r3p30.333); Retry sends the same text and so stays marked (the failed line in `pendingAsks` keeps `spoken`). Both grinds' instructions
 ('## Greek words said in English speech') tell the tutor to match the sound-alike to the passage's Greek words and lemmas, answer about the best
 match and say in one line which word it took ('I took "Tech N9ne" as τεκνίον.') rather than ask first (PROVISIONAL). Scenario:

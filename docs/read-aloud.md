@@ -68,8 +68,8 @@ Postern's and SpellForge's; its colours are Lampas's (`--bk-speech-*` in `src/in
 - **An interruption pauses, it does not end (mw-5r3p30.122).** A word, speaker or Tap to hear that speaks while a reading or a tutor's answer is under way (playing or
   paused) pauses it where it is (the package keeps the sentence, `greek.ts` `speakBeside`) and is said BESIDE it, straight to the phone's synthesiser: the bar stays,
   showing Resume, Restart and Stop, and Resume goes on from the sentence the answer was in (not from the start, not from the next). This covers the tapped Greek or Hebrew
-  word, the speaker beside a flagged word of the reading check, the word sheet's and the guide's Hear it, and a hold on a Talk bar to talk (`useVoice.press` and the Reader's
-  Talk bar `onPress` call `pauseReading`). The word has its own key for `useSpeakingKey` (its speaker shows Stop), `watchWordEnd`, `stopSpeaking` and a second tap, which end
+  word, the speaker beside a flagged word of the reading check, the word sheet's and the guide's Hear it, and a hold on a Talk bar to talk (a hold of any talk bar goes through `speech/askTranscriber.ts`, which pauses it or
+  a Listen, and the Reader's Talk bar tap calls `pauseReading`). The word has its own key for `useSpeakingKey` (its speaker shows Stop), `watchWordEnd`, `stopSpeaking` and a second tap, which end
   only the word. A second word cuts the first off; Resume tapped while a word still sounds goes on after it; Stop on the bar ends everything. The word sheet and the Hebrew
   guide, which sit over the screen's own bar, leave a `<BarSlot level={4}>` so Resume stays in view. Only a new question, the panel being left (below) or Stop ends an answer.
 - What the package lacks stays in `src/speech/greek.ts`: his **speed** for a language and the **voice he picked** (the package names a language and takes the phone's
