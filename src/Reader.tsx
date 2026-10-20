@@ -20,7 +20,7 @@ import { ReaderControls } from './ReaderControls';
 import { ASK_BUTTON_GUTTER, ASK_BUTTON_ROOM, AskTutorButton, TALK_BAR_LIFT } from './AskTutor';
 import { useAiAllowed } from './gate/licenceContext';
 import { LicenceTip } from './gate/LicenceTip';
-import { TalkBar, TalkSheet } from './Talk';
+import { ReaderTalkBar, TalkSheet } from './Talk';
 import { ErrorBoundary } from './ErrorBoundary';
 import type { Verse } from './data/chapter';
 import { getGrammarApproach, getGreekPronunciation, setReaderView, talkRef } from './data/repositories';
@@ -62,7 +62,8 @@ import { useReaderSettings, type ReaderSettings } from './reader/useReaderSettin
 import { useReaderTutor } from './reader/useReaderTutor';
 import { READER_SUGGESTIONS } from './tutor/screen';
 import { useTalk } from './useTalk';
-import { useVoice } from './useVoice';
+import { HOLD_AFTER_MS, useTalkHold } from './talk/useTalkHold';
+import type { BarHandlers } from 'voice-kit/composer';
 import { speakTutor, startAnswerWhenSeen } from './speech/tutorVoice';
 import { continueReading, getReading, isReadingOf, pauseReading, stopReading, updatePlan, useReading } from './speech/readAloud';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
@@ -207,12 +208,18 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const checks = useReadChecks(BOOK, CHAPTER, TITLE, view ?? 'english', pronunciation, undefined, chapter);
   // The conversation the Talk sheet is open on (kept current by useReaderTutor); an answer that comes while its sheet is open is read aloud.
   const openTalkRef = useRef<string | null>(null);
-  // Push-to-talk (src/useVoice.ts): what he says goes as the turn of the conversation the sheet is open on.
+  // Push-to-talk (voice-kit's useTalk through src/talk/useTalkHold.ts): what he says goes as the turn of the conversation the sheet is open on. Two holds, one
+  // settings object: `onBar` is the Talk bar and a verse number (a press under half a second is a tap there), `voice` the sheet's own bar (a hold from the first touch).
   const sayAbout = useRef<(message: string) => void>(() => {});
-  const voice = useVoice((message) => sayAbout.current(message));
+  const send = useCallback((message: string) => sayAbout.current(message), []);
+  const voice = useTalkHold(send);
+  // what the finger that began a hold on the Talk bar or a verse number is on: the sheet opens on it as the hold begins
+  const [holdAbout, setHoldAbout] = useState<number | null>(null);
+  const holdTalkRef = useRef<(about: number | null) => void>(() => {});
+  const onBar = useTalkHold(send, { holdDelayMs: HOLD_AFTER_MS, onBegin: () => holdTalkRef.current(holdAbout) });
   const holding = useRef(false);
   useEffect(() => {
-    holding.current = voice.listening;
+    holding.current = voice.listening || onBar.listening;
   });
   const closeTalk = useRef<() => void>(() => {});
   const talk = useTalk(BOOK, CHAPTER, (ref, id, answer, info) => {
@@ -265,15 +272,34 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   useEffect(() => {
     if (viewUnit) resumeAsk(viewUnit);
   }, [viewUnit, resumeAsk]);
-  const tutor = useReaderTutor(open, chapter, talk, voice, { request, viewUnit, openTalkRef });
+  // whichever hold is going on is dropped as one: the sheet closed, or another screen asked
+  const stopTalking = { abort: () => (voice.abort(), onBar.abort()) };
+  const tutor = useReaderTutor(open, chapter, talk, stopTalking, { request, viewUnit, openTalkRef });
   const { talkScope, talkKey, talkAbout, setTalkAbout, holdTalk } = tutor;
+  useEffect(() => {
+    holdTalkRef.current = holdTalk;
+  });
+  // The handlers of a press on the Talk bar (about = the selected verse) or on a verse number: a press longer than the hold's delay is the hold of the kit's bar, which opens
+  // the sheet on `about` as it begins; one that is let go sooner is the tap. A conversation still waiting for its answer is not listened to: the press only opens the sheet.
+  const pressOn = (about: number | null): BarHandlers => ({
+    ...onBar.bar,
+    onPointerDown: (e) => {
+      setHoldAbout(about);
+      if (!tutor.talkWaiting(about)) onBar.bar.onPointerDown(e);
+    },
+    onKeyDown: (e) => {
+      setHoldAbout(about);
+      if (!tutor.talkWaiting(about)) onBar.bar.onKeyDown(e);
+    },
+  });
   // The tutor (the Talk bar and sheet, the round Ask button, Teach's Ask the tutor) is the AI: not drawn without a licence (mw-8m9dyu.2).
   const ai = useAiAllowed();
   // The Talk sheet's own close (Done), which the answer's `go` calls before the Reader opens the other chapter.
   useEffect(() => {
     closeTalk.current = () => {
-      voice.abort();
+      stopTalking.abort();
       voice.clearNotice();
+      onBar.clearNotice();
       setTalkAbout(undefined);
     };
   });
@@ -292,7 +318,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     else if (box && el) box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
   }, [paging, showPage]);
   const closeTeach = useCallback(() => setTeaching(false), []);
-  const verseTalk: VerseTalk = { onHold: holdTalk, onRelease: () => void voice.release(), onDrop: voice.abort };
+  const verseTalk: VerseTalk = { handlers: pressOn, listening: onBar.listening };
   const woven = useWoven(chapter, settings);
   // The Verse view's verse or passage as the weave shows it to be read (mw-5r3p30.411): the words shown in Greek in Greek and the others in English, in the order drawn, each verse
   // of a passage after the one before. The reading check sends them as segments, so the mill scores each word in its own language. null when nothing is shown in Greek.
@@ -480,13 +506,12 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       {chapter && !failed && !viewUnit ? <LicenceTip /> : null}
       {chapter && !viewUnit && ai ? (
         <Away enabled={immersive} away={away}>
-          <TalkBar
-            hold={{
-              onPress: pauseReading,
-              onTap: () => setTalkAbout(selected),
-              onHold: () => holdTalk(selected),
-              onRelease: () => void voice.release(),
-              onDrop: voice.abort,
+          <ReaderTalkBar
+            hold={{ ...onBar, bar: pressOn(selected) }}
+            onPress={pauseReading}
+            onTap={() => {
+              pauseReading();
+              setTalkAbout(selected);
             }}
           />
         </Away>
@@ -498,7 +523,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           lift={TALK_BAR_LIFT}
           onClick={() => {
             stopReading();
-            voice.abort();
+            stopTalking.abort();
             setTalkAbout(null);
           }}
         />
@@ -510,6 +535,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           talkRef={talkKey ?? talkRef(BOOK, CHAPTER, talkAbout)}
           state={talk.states[talkKey ?? talkRef(BOOK, CHAPTER, talkAbout)]}
           voice={voice}
+          opened={onBar}
           onSay={(message, focus, pictures) => talk.say(talkScope, message, focus, pictures)}
           onResume={() => talk.resume(talkScope)}
           onHelp={tutor.helpWithWord}

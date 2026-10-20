@@ -120,7 +120,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('there is no Ask button, no second hold bar, no attach button and no camera button', () => {
       const view = viewEl();
       expect(within(view).queryByRole('button', { name: 'Ask', exact: true })).toBeNull();
-      expect(view.querySelectorAll('[data-hold-bar]')).toHaveLength(0);
+      expect(view.querySelectorAll('.lp-bar')).toHaveLength(0);
       expect(within(view).queryByRole('button', { name: /^Hold to ask$/ })).toBe(holdBarIn(view));
       expect(within(view).queryByRole('button', { name: 'Attach files' })).toBeNull();
       expect(within(view).queryByRole('button', { name: 'Take a photo' })).toBeNull();
@@ -179,14 +179,14 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(await screen.findByRole('button', { name: 'Talk' }));
       await screen.findByRole('dialog', { name: /^Talk about / });
     });
-    Then("the Talk sheet's Hold to talk bar is the wide bar", () => expect(talkBar()).not.toHaveAttribute('data-round'));
+    Then("the Talk sheet's Hold to talk bar is the wide bar", () => expect(talkBar()).not.toHaveClass('lp-bar-round'));
     When("he types {string} in the Talk sheet's message box", async (_, words: string) => {
       await user.type(messageBox(), words);
     });
-    Then("the Talk sheet's Hold to talk bar is a round mic button", () => expect(talkBar()).toHaveAttribute('data-round'));
+    Then("the Talk sheet's Hold to talk bar is a round mic button", () => expect(talkBar()).toHaveClass('lp-bar-round'));
     When("he clears the Talk sheet's message box", async () => {
       await user.clear(messageBox());
     });
-    Then("the Talk sheet's Hold to talk bar is the wide bar again", () => expect(talkBar()).not.toHaveAttribute('data-round'));
+    Then("the Talk sheet's Hold to talk bar is the wide bar again", () => expect(talkBar()).not.toHaveClass('lp-bar-round'));
   });
 });

@@ -60,7 +60,7 @@ async function expectNothingOn(page: Page, sheet: Locator): Promise<void> {
   const rects = await sheet.locator('[data-composer]').evaluate(
     (foot) =>
       Array.from(foot.querySelectorAll('button, textarea, img'))
-        .filter((el) => !el.matches('[data-hold-bar]'))
+        .filter((el) => !el.matches('.lp-bar'))
         .map((el) => el.getBoundingClientRect().toJSON() as Rect),
   );
   for (const r of rects) if (r.width > 0 && r.height > 0) expect(overlap(mine, r), 'a control overlaps Hold to talk').toBe(false);
@@ -74,7 +74,7 @@ async function expectNothingOn(page: Page, sheet: Locator): Promise<void> {
   for (const [x, y] of points) {
     const top = await page.evaluate(([px, py]) => {
       const el = document.elementFromPoint(px, py);
-      return el?.closest('[data-hold-bar]') ? 'bar' : `${el?.tagName} ${el?.getAttribute('aria-label') ?? el?.className}`;
+      return el?.closest('.lp-bar') ? 'bar' : `${el?.tagName} ${el?.getAttribute('aria-label') ?? el?.className}`;
     }, [x, y]);
     expect(top, `something covers Hold to talk at ${Math.round(x)},${Math.round(y)}`).toBe('bar');
   }

@@ -69,7 +69,7 @@ export function justTapped(key: string): boolean {
   return lastTap !== null && lastTap.key === key && performance.now() - lastTap.at < settle.ms;
 }
 
-/** What a swallowed tap never reaches the app as: its click, and the press that starts it (a hold bar begins on the press, src/ui/holdPress.ts). */
+/** What a swallowed tap never reaches the app as: its click, and the press that starts it (a hold-to-talk bar begins on the press, voice-kit's useBarPress). */
 const SWALLOWED = ['pointerdown', 'click'] as const;
 
 /**

@@ -47,7 +47,7 @@ test('holding the bar of Read it aloud on verse 28 sends the reading and marks t
   // the one hold bar of the Verse view, across the width of the phone
   expect(readBox?.height).toBeGreaterThanOrEqual(95.5);
   expect(readBox?.width).toBeGreaterThan(300);
-  await expect(page.locator('[data-hold-bar]')).toHaveCount(1);
+  await expect(page.locator('.lp-bar')).toHaveCount(1);
 
   // a quick press is only a tap
   await holdFor(page, read, 100);
@@ -129,7 +129,7 @@ test('holding the bar of Read it aloud in the Greek view sends the Greek, marks 
   // the one hold bar of the Verse view, across the width of the phone
   expect(readBox?.height).toBeGreaterThanOrEqual(95.5);
   expect(readBox?.width).toBeGreaterThan(300);
-  await expect(page.locator('[data-hold-bar]')).toHaveCount(1);
+  await expect(page.locator('.lp-bar')).toHaveCount(1);
 
   await holdFor(page, read, 1200);
   await expect(panel.locator('[data-fix]')).toHaveText(['συνεργεῖ', 'πρόθεσιν']);

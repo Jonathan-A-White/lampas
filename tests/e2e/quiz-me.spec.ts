@@ -52,7 +52,7 @@ test('Quiz me on a passage: the action fits the row, the button stands at the fo
   expect(box.height).toBeGreaterThanOrEqual(BAR_HEIGHT - 0.5);
   expect(box.width).toBeGreaterThan(VIEWPORT.width - 40);
   expect(box.y + box.height).toBeLessThanOrEqual(VIEWPORT.height);
-  await expect(page.locator('[data-hold-bar]')).toHaveCount(0);
+  await expect(page.locator('.lp-bar')).toHaveCount(0);
   await shot(page, 'quiz-me-view');
 
   await begin.click();

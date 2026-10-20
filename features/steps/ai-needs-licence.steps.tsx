@@ -135,7 +135,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(within(verseView()).queryByRole('button', { name: 'Read it aloud' })).toBeNull();
       expect(within(verseView()).queryByRole('region', { name: 'Reading check' })).toBeNull();
       expect(within(verseView()).queryByRole('button', { name: /^Hold to read/ })).toBeNull();
-      expect(document.querySelector('[data-hold-bar]')).toBeNull();
+      expect(document.querySelector('.lp-bar')).toBeNull();
       expect(document.querySelector('[data-ladder-start]')).toBeNull();
       expect(within(verseView()).queryByRole('button', { name: 'Reading ladder' })).toBeNull();
     });
@@ -155,7 +155,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('this phone has a licence and the Verse view of verse 28 is open, last left on Read it aloud', () => openVerseView(true, 'read'));
     Then('the Verse view has Read it aloud, a Hold to read bar and a Reading ladder', async () => {
       expect(within(verseView()).getByRole('button', { name: 'Read it aloud', pressed: true })).toBeInTheDocument();
-      await waitFor(() => expect(document.querySelector('[data-hold-bar]')).not.toBeNull());
+      await waitFor(() => expect(document.querySelector('.lp-bar')).not.toBeNull());
       expect(await within(verseView()).findByRole('button', { name: 'Reading ladder' })).toBeInTheDocument();
     });
   });

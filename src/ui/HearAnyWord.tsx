@@ -12,7 +12,7 @@ import { LONG_PRESS_MS, LONG_PRESS_SLOP_PX } from './longPress';
 import { wordAtPoint } from './wordAt';
 
 /** What has a press of its own, or takes typing: the app-wide long press leaves it alone. */
-const OWN_PRESS = 'button, a, input, textarea, select, label, summary, [role="button"], [role="slider"], [contenteditable="true"], [data-hold-bar]';
+const OWN_PRESS = 'button, a, input, textarea, select, label, summary, [role="button"], [role="slider"], [contenteditable="true"], .lp-bar';
 /** Where a notice stays on screen. */
 const NOTICE_MS = 4000;
 /** The longest a word stays marked if the phone never reports its speech ended. */

@@ -27,7 +27,6 @@ import {
 import { speakWord } from '../speech/greek';
 import type { NewWordAsk } from '../TeachSheet';
 import type { UseTalk } from '../useTalk';
-import type { Voice } from '../useVoice';
 import type { TermAsk, WordHelp } from '../WordSheet';
 
 export interface ReaderTutor {
@@ -44,7 +43,10 @@ export interface ReaderTutor {
   openQuiz(): void;
   /** the quiz of the unit the Verse view shows has a turn or a message on its way: the button then says Continue */
   quizStarted: boolean;
+  /** a hold begins on the Talk bar or a verse number: the sheet opens about `about` (null: the chapter) */
   holdTalk(about: number | null): void;
+  /** that conversation is waiting for its answer: a press on it only opens the sheet, and listens to nothing */
+  talkWaiting(about: number | null): boolean;
 }
 
 /** What the Reader shares with this hook besides the chapter and the talk. */
@@ -57,7 +59,7 @@ export interface ReaderTutorShared {
   openTalkRef: { current: string | null };
 }
 
-export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk: UseTalk, voice: Voice, shared: ReaderTutorShared): ReaderTutor {
+export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk: UseTalk, voice: { abort: () => void }, shared: ReaderTutorShared): ReaderTutor {
   const { book: BOOK, chapter: CHAPTER, title: TITLE } = open;
   const { request, viewUnit, openTalkRef } = shared;
   const { states, say } = talk;
@@ -107,15 +109,15 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
     say({ title: TITLE, chapter, verse }, request.question, request.focus);
   }, [request, chapter, say, TITLE]);
 
-  // A hold opens the sheet about `about` and listens, unless that conversation is still waiting for its answer.
-  const holdTalk = useCallback(
+  // A hold on the Talk bar or a verse number opens the sheet about `about`; the hold itself (voice-kit's bar) listens. A conversation still waiting for its answer
+  // is only shown (talkWaiting: the hold is not begun, the press opens the sheet as a tap does).
+  const holdTalk = useCallback((about: number | null) => setTalkAbout(about), [setTalkAbout]);
+  const talkWaiting = useCallback(
     (about: number | null) => {
-      setTalkAbout(about);
       const state = states[talkRef(BOOK, CHAPTER, about)];
-      if (state?.phase === 'sending' || state?.phase === 'waiting') return;
-      voice.press();
+      return state?.phase === 'sending' || state?.phase === 'waiting';
     },
-    [states, voice, setTalkAbout, BOOK, CHAPTER],
+    [states, BOOK, CHAPTER],
   );
 
   // The one way to ask the tutor about a verse from a sheet: drop what he was saying, open the Talk sheet on the verse and send the first
@@ -177,5 +179,5 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
     }
   }, [chapter, viewUnit, quizKey, quizTurns, states, voice, say, TITLE]);
 
-  return { talkScope, talkKey, talkAbout, setTalkAbout, helpWithWord, askAboutTerm, askAboutNewWord, openQuiz, quizStarted, holdTalk };
+  return { talkScope, talkKey, talkAbout, setTalkAbout, helpWithWord, askAboutTerm, askAboutNewWord, openQuiz, quizStarted, holdTalk, talkWaiting };
 }

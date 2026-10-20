@@ -27,7 +27,7 @@ export async function expectOneAskBar(page: Page, viewport: { width: number; hei
   await expect(composerOf(page)).toHaveCount(1);
   await expect(askBar(page)).toHaveCount(1);
   await expect(askBar(page)).toHaveText('Hold to ask');
-  await expect(page.locator('[data-hold-bar]')).toHaveCount(0);
+  await expect(page.locator('.lp-bar')).toHaveCount(0);
   const box = await askBar(page).boundingBox();
   if (!box) throw new Error('no bar');
   expect(box.height).toBeGreaterThanOrEqual(95.5);

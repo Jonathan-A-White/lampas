@@ -99,7 +99,7 @@ async function open({ speaks = false, tutor = false, recorder = false, hash = ''
 const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
 const queryView = () => screen.queryByRole('region', { name: 'Verse view' });
 /** The one bar at the view's foot: a HoldBar, or for Ask the tutor the Composer's Hold to ask bar. */
-const bars = () => [...Array.from(document.querySelectorAll<HTMLElement>('[data-hold-bar]')), ...holdBarsIn(document.body)];
+const bars = () => [...Array.from(document.querySelectorAll<HTMLElement>('.lp-bar')), ...holdBarsIn(document.body)];
 const foot = (): HTMLElement => viewEl().querySelector<HTMLElement>('[data-verse-bar]') as HTMLElement;
 const bar = () => {
   expect(bars()).toHaveLength(1);
@@ -133,8 +133,7 @@ describeFeature(feature, ({ Scenario }) => {
     await user.click(within(viewEl()).getByRole('button', { name: action, exact: true }));
   };
   const labelled = (_: unknown, label: string) => {
-    // a HoldBar is named by its aria-label; the composer's bar by the words on it
-    if (bar().hasAttribute('data-hold-bar')) expect(bar()).toHaveAttribute('aria-label', label);
+    // the bar says its words: a Read bar and the composer's alike
     expect(bar()).toHaveTextContent(label);
   };
   const oneBar = () => {

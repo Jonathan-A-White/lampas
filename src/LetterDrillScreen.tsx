@@ -19,9 +19,9 @@ import { WriteIt } from './handwriting/WriteIt';
 import { WRITE_PRIMARY } from './handwriting/writeText';
 import { speakSound } from './speech/greek';
 import { TapToHear } from './TapToHear';
-import { HoldBar } from './ui/HoldBar';
+import { HeldTalkBar } from './talk/Bars';
 import { useCanHear } from './useCanHear';
-import { useVoice } from './useVoice';
+import { useTalkHold } from './talk/useTalkHold';
 import { focusOnMount } from './ui/focus';
 import { FootBar } from './ui/NextBar';
 import { useSettled } from './ui/settle';
@@ -195,14 +195,17 @@ export function LetterDrillScreen({ onClose }: { onClose: () => void }) {
 /** The unavailable notices of the recogniser: the page may not listen, or the phone has no microphone or no recognition. Any other (nothing heard, no network) lets him try again. */
 const NO_MICROPHONE = new Set(['permission-denied', 'no-microphone', 'not-supported']);
 
+/** The words of the Say it bar. */
+const SAY_LABELS = { hold: 'Hold and say it', release: 'Let go when you have said it', starting: 'Starting the mic…', tryAgain: 'Hold and say it' };
+
 /** Say it's foot: the hold bar he says the letter into, and Skip; the words come back through `onHeard`, a refused microphone through `onNoMicrophone`. */
 function SayFoot({ onHeard, onSkip, onNoMicrophone }: { onHeard: (text: string) => void; onSkip: () => void; onNoMicrophone: () => void }) {
   // the letter he said is no question: its words are not kept to mark a question he types later as spoken (mw-5r3p30.333)
-  const voice = useVoice((text) => {
+  const voice = useTalkHold((text) => {
     forgetSpoken();
     onHeard(text);
   });
-  const refused = voice.notice !== undefined && NO_MICROPHONE.has(voice.notice.kind);
+  const refused = voice.failure !== undefined && NO_MICROPHONE.has(voice.failure);
   useEffect(() => {
     if (refused) onNoMicrophone();
   }, [refused, onNoMicrophone]);
@@ -210,7 +213,7 @@ function SayFoot({ onHeard, onSkip, onNoMicrophone }: { onHeard: (text: string) 
     <div className="flex flex-col items-center gap-2">
       {voice.notice && !refused ? (
         <p data-testid="say-notice" role="status" className="text-center text-base text-muted">
-          {voice.notice.message}
+          {voice.notice}
         </p>
       ) : null}
       {voice.listening && voice.transcript ? (
@@ -218,15 +221,7 @@ function SayFoot({ onHeard, onSkip, onNoMicrophone }: { onHeard: (text: string) 
           {voice.transcript}
         </p>
       ) : null}
-      <HoldBar
-        hold={{ onHold: voice.press, onRelease: () => void voice.release(), onDrop: voice.abort }}
-        holdMs={0}
-        name="Hold and say it"
-        label={voice.listening ? (voice.ready ? 'Let go when you have said it' : 'Starting the mic…') : 'Hold and say it'}
-        listening={voice.listening}
-        keys
-        compactWhenShort
-      />
+      <HeldTalkBar hold={voice} labels={SAY_LABELS} fit="compact" />
       <button type="button" onClick={onSkip} className={PLAIN}>
         Skip this one
       </button>

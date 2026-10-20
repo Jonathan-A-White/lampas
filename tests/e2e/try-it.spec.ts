@@ -23,7 +23,7 @@ test('Try it: hold to say πατήρ, hear the try then the Greek voice, and Aga
 
   const bar = lesson.getByRole('button', { name: 'Hold to say πατήρ', exact: true });
   await bar.scrollIntoViewIfNeeded();
-  await expect(bar).toHaveAttribute('data-hold-bar', '');
+  await expect(bar).toHaveClass(/(^|\s)lp-bar(\s|$)/);
   const box = (await bar.boundingBox())!;
   expect(box.height).toBeGreaterThanOrEqual(POSTERN_BAR_HEIGHT - 0.5);
   expect(box.x + box.width).toBeLessThanOrEqual(VIEWPORT.width);

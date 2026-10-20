@@ -1,7 +1,8 @@
-// src/speech/askTranscriber.ts — how the Ask the tutor composer (voice-kit/composer) turns a hold into words: the browser's recogniser, as the Composer
+// src/speech/askTranscriber.ts — how every hold-to-talk of Lampas turns a hold into words (Ask the tutor's composer, and the Talk sheet, Talk bar, Welcome and letter drill through
+// src/talk/useTalkHold.ts; voice-kit/composer): the browser's recogniser, as the Composer
 // does by default, but a hold first takes the voice from the page: a Listen is paused (and goes on by itself when the hold is over, readAloud.ts
 // interruptListen), any other reading is paused and waits for his Resume. Page audio can take the microphone from the recogniser, so nothing is read
-// aloud while he talks (the same rule as src/useVoice.ts, which the Talk sheet's and the Talk bar's holds follow).
+// aloud while he talks (one rule for every bar).
 import { browserSpeech, type Transcriber } from 'voice-kit/composer';
 import { interruptListen, pauseReading } from './readAloud';
 import { noteSpoken } from './spoken';

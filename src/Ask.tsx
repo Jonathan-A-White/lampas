@@ -16,6 +16,7 @@ import { CopyExchange } from './share/CopyExchange';
 import { answerRuns } from './speech/answerRuns';
 import { ReadAloud } from './speech/ReadAloud';
 import { askTranscriber } from './speech/askTranscriber';
+import { LAMPAS_TALK_SETTINGS } from './talkSettings';
 import { stopAnswerSpeech } from './speech/readAloud';
 import { askAnswerId, speakTutor, stopOnTap } from './speech/tutorVoice';
 import { BridgeIdeaHost, BridgeOffer } from './talk/BridgeOffer';
@@ -221,6 +222,7 @@ export function AskComposer({ book, chapter, verse, state, onAsk, prefill = null
       <Composer
         key={`${unitId(verse)}:${failed}`}
         mode={askBy === 'typing' ? 'type' : 'speak'}
+        settings={LAMPAS_TALK_SETTINGS}
         transcriber={askTranscriber}
         lang="en-US"
         appName="Lampas"

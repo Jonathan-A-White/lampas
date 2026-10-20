@@ -67,7 +67,8 @@ async function open(options: { recogniser?: boolean; speaks?: boolean; android?:
 const talkButton = () => screen.getByRole('button', { name: 'Talk', exact: true });
 const verseNumber = (n: number) => screen.getByRole('button', { name: `Verse ${n}`, exact: true });
 const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
-const holdInSheet = () => within(sheet()).getByRole('button', { name: 'Hold to talk' });
+/** The sheet's bar by whatever it says: voice-kit's bar is named by its words (Hold to talk, Starting the mic…, Release to send, Let go to keep it unsent). */
+const holdInSheet = () => within(sheet()).getByRole('button', { name: /^(Hold to talk|Starting the mic…|Release to send|Let go to keep it unsent)$/ });
 const turns = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn]'));
 const live = () => sheet().querySelector<HTMLElement>('[data-talk-live]');
 
@@ -104,13 +105,10 @@ const nothingSent = async () => {
   expect(sheet().querySelector('[data-talk-pending]')).toBeNull();
 };
 
-/** Postern's bar (TalkLineScreen.tsx: h-24 w-full max-w-xl rounded-3xl, a mic over the label): the shared component marks itself. */
+/** Postern's bar (TalkLineScreen.tsx: 96 px high, the sheet's width, a mic over the label): voice-kit's TalkBar, which Lampas sizes with `.lp-bar` (src/index.css; the height is proven in tests/e2e/hold-bar.spec.ts). */
 const expectBar = (el: HTMLElement, px: number): void => {
-  expect(el).toHaveAttribute('data-hold-bar');
-  expect(el.className).toContain('h-24');
+  expect(el).toHaveClass('bk-composer__bar', 'lp-bar');
   expect(px).toBe(96);
-  expect(el.className).toContain('w-full');
-  expect(el.className).toContain('rounded-3xl');
   expect(el.querySelector('svg')).not.toBeNull();
 };
 
@@ -261,7 +259,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he holds the Talk button', () => hold(talkButton()));
     Then('the Talk sheet is open, titled {string}, and the phone is not listening', (_, title: string) => expectOpenAndListening(title, false)());
     And('the sheet says this phone cannot turn speech into text, and the typed field is focused', async () => {
-      expect(await within(sheet()).findByRole('alert')).toHaveTextContent('This phone cannot turn speech into text');
+      expect(await within(sheet()).findByRole('alert')).toHaveTextContent('cannot turn speech into text');
       await waitFor(() => expect(document.activeElement).toBe(within(sheet()).getByRole('textbox', { name: 'Your message' })));
     });
   });

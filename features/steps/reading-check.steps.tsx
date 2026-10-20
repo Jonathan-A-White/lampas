@@ -406,7 +406,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the walk shows the whole verse with the bar {string}', async (_, name: string) => {
       await waitFor(() => expect(walk()).toHaveTextContent(ENGLISH_28));
       expect(screen.getByRole('button', { name, exact: true })).toBeInTheDocument();
-      expect(document.querySelectorAll('[data-hold-bar]')).toHaveLength(1);
+      expect(document.querySelectorAll('.lp-bar')).toHaveLength(1);
     });
     When('he holds the bar {string} for 2 seconds and lets go', async (_, name: string) => {
       await holdAndLetGo(screen.getByRole('button', { name, exact: true }), 2000);

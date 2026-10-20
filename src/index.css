@@ -853,6 +853,43 @@ textarea,
   --bk-composer-button-size: var(--lp-tap);
   --bk-composer-font-size: calc(1rem / var(--lp-scale));
 }
+/* The kit's hold-to-talk bar (voice-kit/composer TalkBar and HoldToTalkBar, src/talk/Bars.tsx) wherever Lampas draws it outside the Composer: the Talk sheet's foot, the
+ * Reader's Talk bar, Welcome, the letter drill, the reading check and the Try it step. Postern's bar: 96 px high, as wide as a phone up to 36 rem, in the palette in
+ * force and the phone's own type size; the alert colour while it listens. (Spelt with the kit's class too, since the kit's stylesheet is read after this one.) */
+.bk-composer__bar.lp-bar {
+  --bk-composer-accent: var(--lp-accent);
+  --bk-composer-accent-fg: var(--lp-accent-fg);
+  --bk-composer-listening: var(--lp-bad);
+  --bk-composer-danger: var(--lp-bad);
+  --bk-composer-on-strong: var(--lp-canvas);
+  --bk-composer-bar-height: 96px;
+  flex: none;
+  width: 100%;
+  max-width: 36rem;
+  margin-inline: auto;
+  font-size: calc(1rem / var(--lp-scale));
+  line-height: 1.5;
+}
+/* In a short window (a phone held sideways) a compact bar is a 56 px row, the icon beside the label (mw-5r3p30.182); a round one is a round mic button with no
+ * label, the field beside it needs the room (the accessible name stays, mw-5r3p30.468). */
+@media (max-height: 500px) {
+  .bk-composer__bar.lp-bar-compact,
+  .bk-composer__bar.lp-bar-round {
+    --bk-composer-bar-height: 56px;
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+  .bk-composer__bar.lp-bar-compact {
+    padding-inline: 0.75rem;
+  }
+  .bk-composer__bar.lp-bar-round {
+    width: 56px;
+    min-width: 56px;
+    padding: 0;
+    border-radius: 9999px;
+    font-size: 0;
+  }
+}
 [data-verse-bar] .bk-composer {
   border-top: 0;
   background: transparent;
@@ -877,7 +914,7 @@ textarea,
 
 /* Sideways (a short window) the composer's three stacked rows (his words or the hint, the 96 px bar, Type a question) plus the speaking bar left the scrolling box
  * 28 px, so a tutor's answer could not be read (mw-5r3p30.188). The bar is a 56 px row with Type a question beside it, and the hint line is not drawn (the bar says
- * Hold to ask); his live words and a notice still have their line. Same cut as the Talk bar's (HoldBar compactWhenShort). */
+ * Hold to ask); his live words and a notice still have their line. Same cut as the Talk bar's (src/talk/Bars.tsx compact). */
 @media (max-height: 500px) {
   [data-verse-bar] .bk-composer {
     --bk-composer-bar-height: 56px;

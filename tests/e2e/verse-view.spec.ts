@@ -36,9 +36,9 @@ async function start(page: Page, hash = '/#/?c=8&view=english&weave=off'): Promi
 
 /** The one hold bar: the lowest thing on the screen, Postern's height, the width of the phone less its padding. */
 async function expectOneBar(page: Page, label: string): Promise<void> {
-  const bars = page.locator('[data-hold-bar]');
+  const bars = page.locator('.lp-bar');
   await expect(bars).toHaveCount(1);
-  await expect(bars.first()).toHaveAttribute('aria-label', label);
+  await expect(bars.first()).toHaveText(label);
   const box = await bars.first().boundingBox();
   if (!box) throw new Error('no bar');
   expect(box.height).toBeGreaterThanOrEqual(BAR_HEIGHT - 0.5);
@@ -49,7 +49,7 @@ async function expectOneBar(page: Page, label: string): Promise<void> {
 
 /** Listen's foot: one Play button the size and place of the hold bars, and no hold bar. */
 async function expectPlay(page: Page, label: string): Promise<void> {
-  await expect(page.locator('[data-hold-bar]')).toHaveCount(0);
+  await expect(page.locator('.lp-bar')).toHaveCount(0);
   const play = page.locator('[data-verse-bar]').getByRole('button', { name: label, exact: true });
   await expect(play).toHaveCount(1);
   const box = await play.boundingBox();

@@ -11,7 +11,7 @@ import { About } from '../../src/About';
 import { clearBus } from '../../src/events/bus';
 import { Markdown } from '../../src/markdown/Markdown';
 import { stopOnTap } from '../../src/speech/tutorVoice';
-import { HoldBar } from '../../src/ui/HoldBar';
+import { RecordBar } from '../../src/talk/Bars';
 import { HearAnyWord } from '../../src/ui/HearAnyWord';
 import { ENGLISH_VOICE, type FakeSynth, GREEK_VOICE, HEBREW_VOICE, stubSpeech } from '../../tests/support/fake-speech';
 import { asSpoken } from '../../tests/support/lone-word';
@@ -47,7 +47,7 @@ function draw(voices: typeof ENGLISH_VOICE[], page: 'answer' | 'about'): void {
             A link
           </a>
           <input aria-label="A field" defaultValue="ἀγαθόν field" />
-          <HoldBar hold={{ onHold: () => (clicks.hold += 1), onRelease: () => {}, onDrop: () => {} }} name="Hold bar" label="Hold bar" />
+          <RecordBar label="Hold bar" listening={false} onPress={() => (clicks.hold += 1)} onRelease={() => {}} onAbort={() => {}} />
         </div>
       )}
     </>,

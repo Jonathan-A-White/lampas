@@ -14,7 +14,7 @@ import { speakTutor } from './speech/tutorVoice';
 import type { TalkScope } from './services/talk';
 import { TalkSheet } from './Talk';
 import { useTalk } from './useTalk';
-import { useVoice } from './useVoice';
+import { useTalkHold } from './talk/useTalkHold';
 
 /** The welcome talk's scope: a talk from a screen named Welcome, which is about no text. */
 const WELCOME_SCOPE: TalkScope = { title: 'Welcome', chapter: NO_CHAPTER, verse: null, screen: { name: 'Welcome', facts: [] }, welcome: true };
@@ -40,7 +40,7 @@ export function Welcome() {
 
   const turns = useLiveQuery(() => listTurns(WELCOME_REF), []);
   const sayAbout = useRef<(message: string) => void>(() => {});
-  const voice = useVoice((message) => sayAbout.current(message));
+  const voice = useTalkHold((message) => sayAbout.current(message));
   const open = useRef(false);
   const { states, say, resume } = useTalk('', 0, (_ref, id, answer) => {
     if (!open.current || voice.listening) return;

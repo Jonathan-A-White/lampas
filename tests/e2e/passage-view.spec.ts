@@ -80,7 +80,7 @@ test('Listen: the heading and range at the top, the passage big, the row of acti
   if (!rowBox) throw new Error('no row box');
   expect(rowBox.y + rowBox.height).toBeLessThanOrEqual(VIEWPORT.height - BAR_HEIGHT);
 
-  const bars = page.locator('[data-hold-bar]');
+  const bars = page.locator('.lp-bar');
   await expect(bars).toHaveCount(0);
   const play = view.locator('[data-verse-bar]').getByRole('button', { name: 'Play verses 1-11', exact: true });
   await expect(play).toHaveCount(1);
@@ -131,8 +131,8 @@ test('Read it aloud: the reading check for the passage above the one bar', async
   await expect(view.getByRole('heading', { name: 'Heirs with Christ, Romans 8:12-17' })).toBeVisible();
   await view.getByRole('button', { name: 'Read it aloud', exact: true }).click();
   await expect(view.getByRole('region', { name: 'Reading check' })).toBeVisible();
-  await expect(page.locator('[data-hold-bar]')).toHaveCount(1);
-  await expect(page.locator('[data-hold-bar]').first()).toHaveAttribute('aria-label', 'Hold to read verses 12-17');
+  await expect(page.locator('.lp-bar')).toHaveCount(1);
+  await expect(page.locator('.lp-bar').first()).toHaveText('Hold to read verses 12-17');
   await shot(page, 'passage-view-read');
 });
 
@@ -145,7 +145,7 @@ test('Listen: Play reads the passage on by itself, lights the verse being read a
   // the speaking bar takes over from Play: Pause, Restart and Stop, and no hold bar anywhere
   const bar = page.getByRole('region', { name: 'Speaking', exact: true });
   await expect(bar.getByRole('button')).toHaveText(['Pause', 'Restart', 'Stop']);
-  await expect(page.locator('[data-hold-bar]')).toHaveCount(0);
+  await expect(page.locator('.lp-bar')).toHaveCount(0);
   await expect(view.locator('[data-passage-verse="1"][data-reading]')).toHaveCount(1);
   // it moves verse to verse by itself; the verse lit starts inside the box (a verse taller than the box has its top at the box's top)
   const box = view.locator('[data-passage-box]');

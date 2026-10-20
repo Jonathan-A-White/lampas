@@ -167,7 +167,7 @@ describeFeature(feature, ({ Scenario }) => {
         expect(within(await lesson()).getByRole('button', { name: `Hear ${w}` })).toBeInTheDocument();
         expect(within(await lesson()).getByRole('button', { name: `Say ${w}` })).toBeInTheDocument();
       }
-      expect(within(await lesson()).getByTestId('try-bar')).toBeInTheDocument();
+      expect(within(await lesson()).getByRole('button', { name: /^Hold to say / })).toBeInTheDocument();
     });
     And('going on, the step {string} says it is only a stretch, and has a speaker and a recorder on its words', async (_, name: string) => {
       await nextUntil(name);
@@ -175,7 +175,7 @@ describeFeature(feature, ({ Scenario }) => {
       const words = wordsOf('stretch');
       expect(words.length).toBeGreaterThan(0);
       for (const w of words) expect(within(await lesson()).getByRole('button', { name: `Hear ${w}` })).toBeInTheDocument();
-      expect(within(await lesson()).getByTestId('try-bar')).toBeInTheDocument();
+      expect(within(await lesson()).getByRole('button', { name: /^Hold to say / })).toBeInTheDocument();
     });
     And('going on, the step {string} shows 1 John 1:2', async (_, name: string) => {
       await nextUntil(name);

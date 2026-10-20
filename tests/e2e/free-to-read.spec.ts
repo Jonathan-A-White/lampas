@@ -70,7 +70,7 @@ for (const [name, size] of [['upright', { width: 390, height: 844 }], ['sideways
     await expect(view.getByRole('button', { name: /^Hold to read/ })).toHaveCount(0);
     await expect(view.getByRole('button', { name: 'Reading ladder' })).toHaveCount(0);
     await expect(view.getByRole('region', { name: 'Reading check' })).toHaveCount(0);
-    await expect(page.locator('[data-hold-bar]')).toHaveCount(0);
+    await expect(page.locator('.lp-bar')).toHaveCount(0);
     await shot(page, `verse-view-no-licence-${name}`);
   });
 }

@@ -13,7 +13,7 @@ import { FAILURE_TITLES } from './services/tutor';
 import { plainQuotes, RESULT_HEADINGS, type ReadingView, type VerseReadAnswer } from './services/reading';
 import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
-import { HoldBar } from './ui/HoldBar';
+import { RecordBar } from './talk/Bars';
 import { NextBar } from './ui/NextBar';
 import { useSettled } from './ui/settle';
 import { useSheetBack } from './ui/sheetBack';
@@ -229,15 +229,14 @@ export function ReadingDrill({ offer, pronunciation, onClose }: { offer: DrillOf
         </div>
         {word !== undefined && verse ? (
           <div className="shrink-0 border-t border-line px-4 pb-[var(--lp-bar-inset)] pt-3">
-            <HoldBar
-              hold={{ onHold: () => checks.press(verse), onRelease: checks.release, onDrop: checks.drop }}
-              holdMs={0}
-              name={`Hold to read ${word}`}
+            <RecordBar
               label={recording ? 'Release to send' : `Hold to read ${word}`}
               listening={recording}
               disabled={sent}
-              compactWhenShort
-              keys
+              fit="compact"
+              onPress={() => checks.press(verse)}
+              onRelease={checks.release}
+              onAbort={checks.drop}
             />
           </div>
         ) : null}

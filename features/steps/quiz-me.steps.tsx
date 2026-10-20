@@ -75,7 +75,7 @@ async function open(): Promise<void> {
 
 const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
 const sheet = () => screen.getByRole('dialog');
-const bars = () => Array.from(document.querySelectorAll<HTMLElement>('[data-hold-bar]'));
+const bars = () => Array.from(document.querySelectorAll<HTMLElement>('.lp-bar'));
 const received = (i: number) => {
   const got = fake.received[i];
   if (!got) throw new Error(`the mill received no grist number ${i + 1}`);

@@ -1,11 +1,11 @@
 // src/reader/VerseText.tsx — how one verse's words are drawn (moved as is from src/Reader.tsx, module map R1a).
-import { Fragment, type ReactNode } from 'react';
+import type { BarHandlers } from 'voice-kit/composer';
+import { Fragment, useEffect, useRef, type ReactNode } from 'react';
 import { type EnglishChunk, type GreekWord, type Verse, englishRuns } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
 import { drawnOrder, type WovenVerse } from '../data/weave';
 import { publish } from '../events/bus';
 import { useAiAllowed } from '../gate/licenceContext';
-import { useHoldPress } from '../ui/holdPress';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
 import { speakWord } from '../speech/greek';
 import type { SpeechLanguage } from '../speech/languages';
@@ -87,11 +87,11 @@ function Tap({ onTap, onLongPress, still, lang, className, children, ...data }: 
   );
 }
 
-/** What a held verse number does: open the talk about that verse and listen, send on release, drop on a slide-away. */
+/** What a held verse number does: the handlers of voice-kit's bar for a press on verse `n` (src/Reader.tsx pressOn) open the talk about that verse as the hold begins, listen, send on release and drop on a slide-away. */
 export interface VerseTalk {
-  onHold: (n: number) => void;
-  onRelease: () => void;
-  onDrop: () => void;
+  handlers: (n: number) => BarHandlers;
+  /** a hold of the kit's bar is going on */
+  listening: boolean;
 }
 
 /** The button with a verse's number: a tap selects the verse, a hold (half a second) talks about it. */
@@ -103,13 +103,61 @@ export function VerseNumber({ n, selected, onSelect, talk, className, children }
   className: string;
   children: ReactNode;
 }) {
-  const press = useHoldPress({ onTap: onSelect, onHold: () => talk.onHold(n), onRelease: talk.onRelease, onDrop: talk.onDrop });
   // Holding the number talks to the tutor: with no licence it is a plain button that selects (mw-8m9dyu.2).
   const ai = useAiAllowed();
+  const listening = useRef(false);
+  useEffect(() => {
+    listening.current = talk.listening;
+  });
+  // the click that ends a hold is not a tap: the flag is cleared as a press begins, set as its hold has begun by the time the finger lifts
+  const held = useRef(false);
+  const guard = useRef<(() => void) | null>(null);
+  useEffect(() => () => guard.current?.(), []);
+  const handlers = ai ? talk.handlers(n) : null;
   return (
     <button
       type="button"
-      {...(ai ? press : { onClick: onSelect })}
+      {...(handlers ?? {})}
+      onPointerDown={
+        handlers
+          ? (e) => {
+              held.current = false;
+              // the page does not scroll under a finger that holds (React's touchmove is passive: a listener of our own, on while he presses)
+              guard.current?.();
+              const el = e.currentTarget;
+              const keepStill = (event: TouchEvent): void => {
+                if (listening.current && event.cancelable) event.preventDefault();
+              };
+              el.addEventListener('touchmove', keepStill, { passive: false });
+              guard.current = () => {
+                el.removeEventListener('touchmove', keepStill);
+                guard.current = null;
+              };
+              handlers.onPointerDown(e);
+            }
+          : undefined
+      }
+      onPointerUp={
+        handlers
+          ? () => {
+              if (listening.current) held.current = true;
+              guard.current?.();
+              handlers.onPointerUp();
+            }
+          : undefined
+      }
+      onPointerCancel={
+        handlers
+          ? () => {
+              guard.current?.();
+              handlers.onPointerCancel();
+            }
+          : undefined
+      }
+      onClick={() => {
+        if (held.current) held.current = false;
+        else onSelect();
+      }}
       data-verse-number
       aria-label={`Verse ${n}`}
       aria-pressed={selected}

@@ -28,7 +28,7 @@ import { stopSpeaking } from './speech/greek';
 import { stopAnswer, stopAnswerSpeech, stopReading } from './speech/readAloud';
 import { speakTutor, stopOnTap, verdictRuns, VERDICT_ID } from './speech/tutorVoice';
 import { SpeakButton } from './speech/SpeakButton';
-import { HoldBar } from './ui/HoldBar';
+import { RecordBar } from './talk/Bars';
 import { useElapsed } from './ui/useElapsed';
 import { focusQuietly } from './ui/focus';
 import { keepAboveStack, revealAboveStack, revealInScrollBox } from './ui/reveal';
@@ -50,19 +50,9 @@ export interface ReadHold {
   disabled: boolean;
 }
 
-/** Postern's bar (src/ui/HoldBar.tsx) as the reading check's hold: a hold from the first touch, so the first words are kept. */
-function ReadBar({ hold, name, label, recording }: { hold: ReadHold; name: string; label: string; recording: boolean }) {
-  return (
-    <HoldBar
-      hold={{ onHold: hold.onPress, onRelease: hold.onRelease, onDrop: hold.onDrop }}
-      holdMs={0}
-      name={name}
-      label={label}
-      listening={recording}
-      disabled={hold.disabled}
-      keys
-    />
-  );
+/** voice-kit's hold-to-talk bar (src/talk/Bars.tsx) as the reading check's hold: a hold from the first touch, so the first words are kept. */
+function ReadBar({ hold, label, recording }: { hold: ReadHold; label: string; recording: boolean }) {
+  return <RecordBar label={label} listening={recording} disabled={hold.disabled} onPress={hold.onPress} onRelease={hold.onRelease} onAbort={hold.onDrop} />;
 }
 
 /** What the reading is doing, in words: recording, the tap hint, dropped, sending, waiting, or failed with Retry. */
@@ -585,7 +575,7 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, weave
         ) : null}
       </section>
       {drilling ? <ReadingDrill offer={drilling} pronunciation={pronunciation} onClose={() => setDrilling(null)} /> : null}
-      {slot ? createPortal(<ReadBar hold={hold} name={idle} label={recording ? 'Release to send' : idle} recording={recording} />, slot) : null}
+      {slot ? createPortal(<ReadBar hold={hold} label={recording ? 'Release to send' : idle} recording={recording} />, slot) : null}
     </>
   );
 }

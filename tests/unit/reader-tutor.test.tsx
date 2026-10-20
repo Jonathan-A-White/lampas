@@ -10,7 +10,6 @@ import { clearBus, subscribe, type AppEvent } from '../../src/events/bus';
 import { useReaderTutor } from '../../src/reader/useReaderTutor';
 import { helpQuestion, newWordQuestion, quizMeQuestion, scopeTitle, termQuestion } from '../../src/services/talk';
 import type { UseTalk } from '../../src/useTalk';
-import type { Voice } from '../../src/useVoice';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { stubSpeech } from '../support/fake-speech';
 import { asSpoken } from '../support/lone-word';
@@ -25,8 +24,8 @@ beforeAll(async () => {
 
 beforeEach(() => clearBus());
 
-function fakeVoice(): Voice {
-  return { listening: false, ready: false, transcript: '', notice: undefined, typing: 0, press: vi.fn(), release: vi.fn(async () => {}), abort: vi.fn(), clearNotice: vi.fn() };
+function fakeVoice() {
+  return { abort: vi.fn() };
 }
 
 function fakeTalk(states: UseTalk['states'] = {}) {
@@ -124,18 +123,18 @@ describe('openQuiz', () => {
 });
 
 describe('holdTalk', () => {
-  it('opens the sheet on the verse and starts listening', () => {
-    const { tutor, voice, openTalkRef: openTalk } = setup();
+  it('opens the sheet on the verse (the kit\'s bar listens)', () => {
+    const { tutor, openTalkRef: openTalk } = setup();
     act(() => tutor.result.current.holdTalk(28));
-    expect(voice.press).toHaveBeenCalled();
     expect(tutor.result.current.talkScope?.verse?.n).toBe(28);
     expect(openTalk.current).toBe('rom.8.28');
+    expect(tutor.result.current.talkWaiting(28)).toBe(false);
   });
 
-  it('opens the sheet on the chapter for null, and listens unless that conversation is waiting for its answer', () => {
-    const { tutor, voice } = setup(fakeTalk({ 'rom.8': { phase: 'sending' } as never }));
+  it('opens the sheet on the chapter for null, and says that conversation is waiting for its answer, so the press does not listen', () => {
+    const { tutor } = setup(fakeTalk({ 'rom.8': { phase: 'sending' } as never }));
     act(() => tutor.result.current.holdTalk(null));
     expect(tutor.result.current.talkScope?.verse).toBeNull();
-    expect(voice.press).not.toHaveBeenCalled();
+    expect(tutor.result.current.talkWaiting(null)).toBe(true);
   });
 });

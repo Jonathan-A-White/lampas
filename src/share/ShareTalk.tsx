@@ -12,14 +12,14 @@ import { takeWaitingPictures } from '../talk/outbox';
 import { READER_SUGGESTIONS, suggestionsFor } from '../tutor/screen';
 import { TalkSheet } from '../Talk';
 import { useTalk } from '../useTalk';
-import { useVoice } from '../useVoice';
+import { useTalkHold } from '../talk/useTalkHold';
 import type { TermAsk, WordHelp } from '../WordSheet';
 import type { SharedContent } from './shared';
 
 /** The Talk sheet over `scope`, with the voice, the answers read aloud and the word sheet's help wired as the Reader and the Ask the tutor button wire them. */
 export function TalkHost({ scope, talkRef, book, chapter, shared, onClose }: { scope: TalkScope; talkRef: string; book: string; chapter: number; shared?: SharedContent; onClose: () => void }) {
   const sayAbout = useRef<(message: string) => void>(() => {});
-  const voice = useVoice((message) => sayAbout.current(message));
+  const voice = useTalkHold((message) => sayAbout.current(message));
   const openRef = useRef<string | null>(talkRef);
   const { states, say, resume } = useTalk(book, chapter, (ref, id, answer) => {
     if (openRef.current !== ref || voice.listening) return;

@@ -3,7 +3,7 @@
 // Again to hear both once more. Nothing leaves the phone: the clip is kept in memory by useTry and dropped when the step closes. With the microphone
 // refused the step says so and still plays the Greek voice.
 import { useState, type ReactNode } from 'react';
-import { HoldBar } from '../ui/HoldBar';
+import { RecordBar } from '../talk/Bars';
 import { useTry, type TryPhase } from './useTry';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border border-line px-4 text-lg font-medium text-accent active:bg-line';
@@ -22,15 +22,7 @@ function TryBar({ word }: { word: string }) {
   const { phase, detail, press, release, drop, again } = useTry(word);
   return (
     <>
-      <HoldBar
-        hold={{ onHold: press, onRelease: release, onDrop: drop }}
-        holdMs={0}
-        name={`Hold to say ${word}`}
-        label={phase === 'recording' ? 'Say it…' : `Hold to say ${word}`}
-        listening={phase === 'recording'}
-        keys
-        testId="try-bar"
-      />
+      <RecordBar label={phase === 'recording' ? 'Say it…' : `Hold to say ${word}`} listening={phase === 'recording'} onPress={press} onRelease={release} onAbort={drop} />
       {phase === 'denied' ? (
         <p role="alert" className="text-base">
           {detail} Here is the Greek voice instead.

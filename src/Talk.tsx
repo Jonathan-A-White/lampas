@@ -1,7 +1,7 @@
 // src/Talk.tsx — Bible talk: the Talk bar at the bottom of the reader and the bottom sheet it opens, a conversation about the
 // chapter or the selected verse. The sheet shows the turns so far (kept per chapter and per verse, src/data/repositories/talks.ts),
 // a field, Send and, last at the foot, Postern's hold-to-talk bar; what a message is doing is src/useTalk.ts's. He can talk instead of typing
-// (src/useVoice.ts): the Talk bar held for half a second, a verse number held, or the sheet's own hold-to-talk bar; his words
+// (src/talk/useTalkHold.ts over voice-kit's useTalk): the Talk bar held for half a second, a verse number held, or the sheet's own hold-to-talk bar; his words
 // show live while he holds and go on release. Each answer can be heard (read aloud through
 // src/speech/readAloud.ts, a Stop while it plays) and its Greek words open the word sheet.
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -42,9 +42,9 @@ import { BarSlot } from './speech/SpeakingBarSlot';
 import { answerRuns } from './speech/answerRuns';
 import { focusQuietly } from './ui/focus';
 import { readDraft, talkDraftKey, writeDraft } from './ui/unsentDraft';
-import { HoldBar } from './ui/HoldBar';
+import { HeldTalkBar } from './talk/Bars';
+import type { TalkHold } from './talk/useTalkHold';
 import { PendingQuestion } from './ui/PendingQuestion';
-import type { HoldHandlers } from './ui/holdPress';
 import { CopyExchange } from './share/CopyExchange';
 import { CopyText } from './share/CopyText';
 import { QuestionRow } from './talk/QuestionRow';
@@ -53,41 +53,31 @@ import type { SharedContent } from './share/shared';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { setPending, talkKey, type AskState } from './pending/pendingAsks';
-import type { Voice } from './useVoice';
 import { WordSheet, type Lookup, type TermAsk, type WordHelp } from './WordSheet';
 import { GREEK_LANG } from './script/greekLang';
 import { announce, plainText } from './ui/live';
 
-/** The bar pinned at the bottom of the reader: Postern's big hold-to-talk bar (src/ui/HoldBar.tsx) labelled Talk. A tap opens
+/** The bar pinned at the bottom of the reader: voice-kit's hold-to-talk bar (src/talk/Bars.tsx) labelled Talk. A tap opens
  * the sheet; a hold (half a second) opens it and listens, and what he says goes on release. It is the lowest bar, so it alone
  * keeps the safe-area inset. In a short window (a phone held sideways) the bar is a 56 px row (mw-5r3p30.182). */
-export function TalkBar({ hold }: { hold: HoldHandlers }) {
+export function ReaderTalkBar({ hold, onPress, onTap }: { hold: TalkHold; onPress: () => void; onTap: () => void }) {
   return (
     <div data-talk-bar className="shrink-0 border-t border-line bg-surface px-3 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))]">
-      <HoldBar hold={hold} name="Talk" label="Talk" compactWhenShort />
+      <HeldTalkBar hold={hold} onPress={onPress} onTap={onTap} labels={TALK_BAR_LABELS} fit="compact" />
     </div>
   );
 }
 
-/** What the sheet's bar says, as Postern's does: Hold to talk, Starting the mic…, Release to send. */
-const barLabel = (voice: Voice): string => (voice.listening ? (voice.ready ? 'Release to send' : 'Starting the mic…') : 'Hold to talk');
+/** The Reader's bar says Talk whatever it is doing, a finger slid off it too (it is the colour that changes, and the sheet over it says what to do). */
+const TALK_BAR_LABELS = { hold: 'Talk', release: 'Talk', starting: 'Talk', tryAgain: 'Talk', stop: 'Talk', drop: 'Talk' };
 
-/** Postern's bar at the foot of the sheet: listens from the first touch (or Space / Enter held) and sends on release. */
-function HoldToTalk({ voice, disabled, round }: { voice: Voice; disabled: boolean; round: boolean }) {
-  return (
-    <HoldBar
-      hold={{ onHold: voice.press, onRelease: () => void voice.release(), onDrop: voice.abort }}
-      holdMs={0}
-      name="Hold to talk"
-      label={barLabel(voice)}
-      listening={voice.listening}
-      disabled={disabled}
-      keys
-      compactWhenShort
-      roundWhenShort={round}
-    />
-  );
+/** What the sheet's bar says, as Postern's does: Hold to talk, Starting the mic…, Release to send (the kit's own words). */
+function HoldToTalk({ voice, disabled, round }: { voice: TalkHold; disabled: boolean; round: boolean }) {
+  return <HeldTalkBar hold={voice} disabled={disabled} fit={round ? 'round' : 'compact'} labels={SHEET_BAR_LABELS} />;
 }
+
+/** The sheet's bar keeps its name Hold to talk after a failed hold too, as the sheet's notice says why. */
+const SHEET_BAR_LABELS = { tryAgain: 'Hold to talk' };
 
 /** The speaker under an answer: reads it, or stops it while it is being read (a tutor's answer read by itself is read under the turn's id, so the button knows). */
 function AnswerSpeaker({ turn }: { turn: TalkTurn }) {
@@ -517,14 +507,16 @@ function Suggestions({ questions, onAsk, label }: { questions: string[]; onAsk: 
 }
 
 /** The sheet: the conversation `scope` names, the field, Send, and what the last message is doing. */
-export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, shared, onSay, onResume, onHelp, onAskTerm, onSkip, onClose }: {
+export function TalkSheet({ scope, talkRef: ref, state, voice, opened, suggestions, shared, onSay, onResume, onHelp, onAskTerm, onSkip, onClose }: {
   scope: TalkScope;
   /** the key the conversation is kept under (src/data/repositories/talks.ts talkRef) */
   talkRef: string;
   /** what the last message of this conversation is doing; undefined when it is done */
   state: AskState | undefined;
-  /** push-to-talk: his words live while he holds, and what went wrong */
-  voice: Voice;
+  /** push-to-talk: the sheet's own bar holds through this, and his words live while he holds, and what went wrong */
+  voice: TalkHold;
+  /** the hold that opened the sheet (the Reader's Talk bar or a verse number): its words show live too, and what went wrong with it */
+  opened?: TalkHold;
   /** questions fitted to where he asks from (src/tutor/screen.ts): shown as buttons while nothing has been said, a tap sends one */
   suggestions?: string[];
   /** what came in through Share > Lampas (mw-y3qno5.2): its pictures wait in the composer and its words in the field, as he opened the sheet, NOT sent */
@@ -577,6 +569,8 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, shar
   // The word sheet above this one takes the Escape.
   useEscapeToClose(onClose, lookup === null);
   useSheetBack(onClose);
+  const live = opened?.listening ? opened : voice;
+  const notice = voice.notice ?? opened?.notice;
   const busy = state?.phase === 'sending' || state?.phase === 'waiting';
   // Once there is a talk the suggestions he has not used are still offered, under the last answer (or the failure of the first question).
   const asked = new Set([...(turns ?? []).map((t) => t.q), ...(state ? [state.question] : [])]);
@@ -710,8 +704,8 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, shar
   // A phone with no recogniser sends a hold to the typed field.
   const field = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
-    if (voice.typing > 0) focusQuietly(field.current);
-  }, [voice.typing]);
+    if (voice.typing + (opened?.typing ?? 0) > 0) focusQuietly(field.current);
+  }, [voice.typing, opened?.typing]);
   // The box grows upward with his words, line by line (its CSS holds it between one or two lines and five, then it scrolls); it is measured again
   // when the window changes shape, since the same words take other lines in another width.
   useLayoutEffect(() => {
@@ -877,15 +871,15 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, shar
           </div>
           <BarSlot level={3} />
           <div data-composer className="shrink-0 space-y-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+var(--lp-bar-inset))] short:flex short:flex-wrap short:items-end short:gap-x-2 short:space-y-0 short:gap-y-2">
-            {voice.listening ? (
+            {live.listening ? (
               <div data-talk-live role="status" className="rounded-2xl border border-bad px-3 py-2 short:basis-full">
-                <p className="text-sm font-medium text-bad">{voice.ready ? 'Listening… let go to send, slide away to cancel' : 'Starting the microphone…'}</p>
-                <p className="min-h-7 break-words text-lg">{voice.transcript}</p>
+                <p className="text-sm font-medium text-bad">{live.ready ? 'Listening… let go to send, slide away to cancel' : 'Starting the microphone…'}</p>
+                <p className="min-h-7 break-words text-lg">{live.transcript}</p>
               </div>
             ) : null}
-            {voice.notice ? (
+            {notice ? (
               <p role="alert" className="break-words text-base text-bad short:basis-full">
-                {voice.notice.message}
+                {notice}
               </p>
             ) : null}
             <PictureControls box={box} disabled={busy} registerPicker={registerPicker} />

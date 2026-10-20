@@ -44,7 +44,7 @@ test("the Talk sheet's hold-to-talk bar is the last control at the foot, the she
 
   // the last control: nothing in the sheet sits lower, and the field and Send are above it
   for (const control of await sheet.locator('button, textarea').all()) {
-    if ((await control.getAttribute('data-hold-bar')) !== null) continue;
+    if ((await control.getAttribute('class'))?.split(' ').includes('lp-bar')) continue;
     if (!(await control.isVisible())) continue;
     const b = await box(control);
     expect(b.y + b.height).toBeLessThanOrEqual(barBox.y + 0.5);
@@ -65,7 +65,7 @@ test("the reader's foot Talk bar is Postern's bar", async ({ page }) => {
   await page.goto('/');
   const talk = page.getByRole('button', { name: 'Talk', exact: true });
   await expect(talk).toBeInViewport();
-  await expect(talk).toHaveAttribute('data-hold-bar', '');
+  await expect(talk).toHaveClass(/(^|\s)lp-bar(\s|$)/);
   const b = await box(talk);
   expect(b.height).toBeGreaterThanOrEqual(POSTERN_BAR_HEIGHT - 0.5);
   expect(b.width).toBeGreaterThan(300);
@@ -86,8 +86,8 @@ for (const [view, answer] of [['english', READING_ANSWER], ['greek', GREEK_READI
     const verseView = await chooseAction(page, 28, 'Read it aloud');
     const panel = verseView.getByRole('region', { name: 'Reading check' });
     const read = verseView.getByRole('button', { name: 'Hold to read verse 28', exact: true });
-    await expect(read).toHaveAttribute('data-hold-bar', '');
-    await expect(page.locator('[data-hold-bar]')).toHaveCount(1);
+    await expect(read).toHaveClass(/(^|\s)lp-bar(\s|$)/);
+    await expect(page.locator('.lp-bar')).toHaveCount(1);
     expect((await box(read)).height).toBeGreaterThanOrEqual(POSTERN_BAR_HEIGHT - 0.5);
     // the foot of the view, across its width, the lowest thing on the screen
     expect((await box(read)).y + (await box(read)).height).toBeLessThanOrEqual(VIEWPORT.height);
@@ -103,8 +103,8 @@ for (const [view, answer] of [['english', READING_ANSWER], ['greek', GREEK_READI
     }
     // the same one bar, now for the whole verse
     const again = verseView.getByRole('button', { name: 'Hold to read the whole verse again', exact: true });
-    await expect(again).toHaveAttribute('data-hold-bar', '');
-    await expect(page.locator('[data-hold-bar]')).toHaveCount(1);
+    await expect(again).toHaveClass(/(^|\s)lp-bar(\s|$)/);
+    await expect(page.locator('.lp-bar')).toHaveCount(1);
     expect((await box(again)).height).toBeGreaterThanOrEqual(POSTERN_BAR_HEIGHT - 0.5);
     if (view === 'english') await shot(page, 'read-whole-verse-bar');
   });

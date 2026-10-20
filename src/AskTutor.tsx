@@ -17,7 +17,7 @@ import type { Route } from './nav/route';
 import { openedByTutor } from './nav/readerRequest';
 import { useSheetOpen } from './ui/sheetBack';
 import { useTalk } from './useTalk';
-import { useVoice } from './useVoice';
+import { useTalkHold } from './talk/useTalkHold';
 import { takeWaitingPictures } from './talk/outbox';
 
 /** The button's name for a screen reader and the tests; it starts with the words on the control. */
@@ -105,7 +105,7 @@ function contextOf(name: string, reported: ScreenContext | null): ScreenContext 
  * (an answer is spoken only then); `onClosed` is what closing the sheet does besides stopping the voice. */
 function useScreenTalk(scope: TalkScope | null, open: boolean, onClosed: () => void) {
   const sayAbout = useRef<(message: string) => void>(() => {});
-  const voice = useVoice((message) => sayAbout.current(message));
+  const voice = useTalkHold((message) => sayAbout.current(message));
   const openRef = useRef<string | null>(null);
   const { states, say, resume } = useTalk('', 0, (ref, id, answer) => {
     if (openRef.current !== ref || voice.listening) return;
