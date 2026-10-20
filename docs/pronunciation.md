@@ -103,7 +103,7 @@ accent (`chosenAccent()`, American until the choice in Settings sets it with `ch
 
 A quiz choice is one short label (mw-5r3p30.355): `soundWords(...).choice('kh')` is 'kh, as in “chutzpah”' in American (a hint may give its own `choice`, as American's o: 'as in “or”, short'),
 a lesson's `choice` is that label for the idea, and `ideaChoice` (`lessons.ts`) is what `quickQuestion` (so Drill it's 'What sound does it make?') offers; the rule that goes
-with a sound ('before a, o, ou') stays in the lesson's `sound` and `text`. tests/unit/quick-round.test.ts holds every choice to 32 characters, no bracket, no 'before'/'after', no two alike.
+with a sound ('before α, ο, ω, ου or a consonant') stays in the lesson's `sound` and `text`. tests/unit/quick-round.test.ts holds every choice to 32 characters, no bracket, no 'before'/'after', no two alike.
 
 American keys the o to “or”, said short (PROVISIONAL, the Governor to confirm): the o of 'lot' is 'ah' to an American. Its r is 'a quick tap of
 the tongue, like the tt of “butter”', since an American never rolls one. Its χ is 'kh, as in “chutzpah”, the throaty ch' (mw-5r3p30.475, PROVISIONAL,
@@ -190,10 +190,10 @@ evidence (`grammarEvidence`) in EACH scheme, stored under `<scheme>:<idea id>` (
 | αι ει οι υι ου | e ee ee ee oo | not a pair when the first letter carries the accent or the second a diaeresis |
 | αυ ευ ηυ | av/af ev/ef eev/eef | v before a vowel or β γ δ ζ λ μ ν ρ, f before anything else or the end |
 | β δ θ ζ | v dh th z | |
-| γ | gh; y before e i (η ι υ αι ει οι υι ευ) | |
-| χ | kh before a, o, ou and a consonant; hy before e, i (η ι υ αι ει οι υι ευ) | χάρις is `KHA-rees`, χριστῷ `khree-STO`, χαίρετε `HYE-re-te` (the Governor's choice B, 2026-10-12) |
+| γ | gh before α, ο, ω, ου or a consonant; y before ε, ι, η, υ, αι, ει or οι | `modernLessons.ts` BACK and FRONT hold the two lists: the cards, the drill's rule lines and the tutor guide all read them (mw-i7xe0n.27) |
+| χ | kh before α, ο, ω, ου or a consonant; hy before ε, ι, η, υ, αι, ει or οι | χάρις is `KHA-rees`, χριστῷ `khree-STO`, χαίρετε `HYE-re-te` (the Governor's choice B, 2026-10-12) |
 | μπ ντ γκ γγ | mb nd ng(g) inside a word; b d g at its start | the n or m ends the syllable, the b d g opens the next |
-| γχ γξ | ng+kh (h), nks | `ἐλέγχω` is `e-LENG-kho` |
+| γχ γξ | ng+kh (hy before ε, ι, η, υ, αι, ει or οι), nks | `ἐλέγχω` is `e-LENG-kho` |
 | σ | s; z before β γ δ ζ λ μ ν ρ | the z ends the syllable: `κόσμος` is `KOZ-mos`, `Ἰσραήλ` is `eez-ra-EEL` |
 | double consonants | said once | |
 

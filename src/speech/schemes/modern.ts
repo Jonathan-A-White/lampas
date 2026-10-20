@@ -6,7 +6,7 @@ import type { Pronunciation, SoundGuide, SoundLesson, SoundRule, SoundRuleSide, 
 import type { SoundId } from '../sounds';
 import { isElided, withoutElision } from '../elision';
 import { ONSETS } from '../greekSyllables';
-import { BACK, modernLessons } from './modernLessons';
+import { BACK, FRONT, modernLessons } from './modernLessons';
 import { MODERN_HEARD_AS, MODERN_LETTER_NAMES } from './modernSpoken';
 
 interface Letter {
@@ -122,7 +122,7 @@ function tokensOf(letters: Letter[], reading: Reading = {}): Tok[] {
   const toks: Tok[] = [];
   const seenVowel = () => toks.some((t) => t.kind === 'vowel');
   const consonant = (text: string, key: string, extra: Partial<Tok> = {}) => toks.push({ kind: 'consonant', text, key, ...extra });
-  // χ is the ch of loch (kh) before a, o, ou and a consonant, and the softer hy before e and i (χαίρετε is HYE-re-te; mw-5r3p30.264)
+  // χ is the ch of loch (kh) before BACK, and the softer hy before FRONT (modernLessons.ts) (χαίρετε is HYE-re-te; mw-5r3p30.264)
   const kh = (i: number, rule: RuleId) => (decide(rule, vowelAt(letters, i)?.front ? 'soft' : 'hard', reading) === 'soft' ? 'hy' : 'kh');
   // μπ, ντ and γκ have their nasal inside a word and none at its start
   const inside = (rule: RuleId) => decide(rule, seenVowel() ? 'inside' : 'start', reading) === 'inside';
@@ -463,7 +463,6 @@ function sideIn(word: string, rule: RuleId): string | null {
   return sides.size === 1 ? [...sides][0] : null;
 }
 
-const FRONT = 'ε, ι, η, υ, αι, ει or οι';
 const VOICED_LIST = 'β, γ, δ, ζ, λ, μ, ν or ρ';
 
 /** The sounds of Modern Greek that change by the next letter (mw-i7xe0n.7), each with its two sides, the line a wrong pick shows, and New Testament words of
@@ -554,9 +553,9 @@ export const modernTutorGuide = (say: SoundWords): string =>
   `The vowels, each ${say.hintedBy}: ${['a', 'e', 'ee', 'o', 'oo'].map(say.asIn).join('; ')}. ` +
   'αυ and ευ are af and ef before θ κ ξ π σ τ φ χ ψ, and av and ev before a voiced consonant or a vowel (never "aw", never "ow"); ηυ is eef or eev the same way. ' +
   'αι is e; ει, οι, υι, η, ι and υ are ee; ου is oo; ω and ο are o. ' +
-  `β is v; δ is ${say.asIn('dh')}; γ is gh (or y before e or i); θ is ${say.asIn('th')}; φ is f; ρ is ${say.asIn('r')}; ` +
-  `χ is ${say.asIn('kh')}, before a, o, ou and a consonant, and the softer hy before e or i. ` +
-  'μπ, ντ and γκ are b, d and g at the start of a word and mb, nd and ng inside it; γγ is ng; γχ is ng plus kh (or hy before e or i); γξ is nks. ' +
+  `β is v; δ is ${say.asIn('dh')}; γ is gh (or y before ${FRONT}); θ is ${say.asIn('th')}; φ is f; ρ is ${say.asIn('r')}; ` +
+  `χ is ${say.asIn('kh')}, before ${BACK}, and the softer hy before ${FRONT}. ` +
+  `μπ, ντ and γκ are b, d and g at the start of a word and mb, nd and ng inside it; γγ is ng; γχ is ng plus kh (or hy before ${FRONT}); γξ is nks. ` +
   'σ is z before β γ δ ζ λ μ ν ρ. A doubled consonant is said once. Both breathings are silent, and the iota under a letter is not said.';
 
 export const MODERN: Pronunciation = {
