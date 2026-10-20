@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.354
+_2026-10-20_
+- Fixed: Reading a verse aloud no longer says the letter name "delta" for a word like δ' (Luke 9:24 and 24 other verses).
+
 ## 0.1.353
 _2026-10-20_
 - Fixed: the sounds that change by position (ευ, αυ, ηυ as v or f, and γκ, μπ, ντ, γχ) now say when each sound is used, and their drills ask about real words with the pair marked instead of the pair alone.

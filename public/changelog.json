@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.354",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.654",
+    "kind": "fixed",
+    "text": "Reading a verse aloud no longer says the letter name \"delta\" for a word like δ' (Luke 9:24 and 24 other verses)."
+  },
+  {
     "version": "0.1.353",
     "date": "2026-10-20",
     "story": "mw-5r3p30.646",
