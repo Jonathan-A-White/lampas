@@ -204,7 +204,7 @@ Feature: The idea sheet
   Scenario: The Phi sheet puts a short easy word before a hard cluster, even from further away
     Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
     When he opens the letter sheet of "phi" from the alphabet sheet
-    Then the idea sheet shows examples from "1 John 1"
+    Then the idea sheet shows examples from "1 John"
     And the idea sheet shows no example "ὀφθαλμοῖς"
     And the idea sheet does not list "ἐψηλάφησαν"
 

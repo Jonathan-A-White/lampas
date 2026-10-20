@@ -370,3 +370,24 @@ describe('no example of any letter or sound sheet is an elided or vowel-less for
       expect(wrong).toEqual([]);
     }, 300_000);
 });
+
+// ---- Four examples are four words, not four forms of one (mw-5r3p30.584: Omega showed ζωὴ, ζωῆς, ζωὴν) ----
+
+describe('the examples of a letter or a sound are of different words, by lemma, over 1 John 1:1 (mw-5r3p30.584)', () => {
+  for (const id of ['letter-omega', 'letter-zeta', 'letter-theta', 'letter-beta', 'consonant-pairs'])
+    it(`${id} lists ${SOUND_EXAMPLES} examples, no two of them sharing a lemma`, async () => {
+      const found = (await sheet(id)).examples;
+      expect(found).toHaveLength(SOUND_EXAMPLES);
+      const lemmas = found.map((e) => e.word.l.normalize('NFC'));
+      expect(new Set(lemmas).size, `${forms(found).join(', ')} -> ${lemmas.join(', ')}`).toBe(found.length);
+    });
+
+  it('every sound sheet over 1 John 1:1 repeats no lemma', async () => {
+    const repeated: string[] = [];
+    for (const id of SOUND_SHEETS.filter((s) => s !== 'syllables')) {
+      const lemmas = (await sheet(id)).examples.map((e) => e.word.l.normalize('NFC'));
+      if (new Set(lemmas).size !== lemmas.length) repeated.push(`${id}: ${lemmas.join(', ')}`);
+    }
+    expect(repeated).toEqual([]);
+  });
+});

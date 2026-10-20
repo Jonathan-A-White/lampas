@@ -502,10 +502,13 @@ interface Candidate {
   order: number;
 }
 
+/** The dictionary word a candidate is a form of (NFC), by which examples are told apart. */
+const lemmaOf = (c: Candidate): string => bare(c.example.word.l);
+
 /**
  * The examples of a letter or a sound for a passage (mw-5r3p30.351, his words: "a simpler word, what you've learned so far, rather than being from your goal"):
  * every candidate is a word that makes the sound the card teaches (ideaExamples). The search widens, the goal, its pericope, its chapter, its book, until there
- * are SOUND_EXAMPLES easy words. They are shown easy first (EASY_SCORE), the ones made of letters he has met first, then the nearest to the goal, the commonest
+ * are SOUND_EXAMPLES easy words of different lemmas (mw-5r3p30.584). They are shown easy first (EASY_SCORE), the ones made of letters he has met first, then the nearest to the goal, the commonest
  * in the New Testament, the shortest; a word too hard to say comes last, or not at all. `title` names the widest place an example came from. The ranking is PROVISIONAL.
  */
 async function soundExamplesFor(id: string, passage: IdeaPassage, load: ChapterLoader, ranking: ExampleRanking, scheme: Pronunciation): Promise<IdeaExamples> {
@@ -529,7 +532,7 @@ async function soundExamplesFor(id: string, passage: IdeaPassage, load: ChapterL
         candidates.push({ example, level, easy: score <= EASY_SCORE, score, unmet, uses: ranking.frequency?.get(example.word.l.normalize('NFC')) ?? 0, order: candidates.length });
       }
       level++;
-      if (candidates.filter((c) => c.easy).length >= SOUND_EXAMPLES) break;
+      if (new Set(candidates.filter((c) => c.easy).map(lemmaOf)).size >= SOUND_EXAMPLES) break;
     }
   } catch {
     // a chapter did not load (offline): what was found stands, and the result says the search stopped short
@@ -538,7 +541,9 @@ async function soundExamplesFor(id: string, passage: IdeaPassage, load: ChapterL
   const ranked = candidates.sort(
     (a, b) => Number(b.easy) - Number(a.easy) || a.unmet - b.unmet || a.level - b.level || b.uses - a.uses || a.score - b.score || a.order - b.order,
   );
-  const chosen = ranked.slice(0, SOUND_EXAMPLES);
+  // the best-ranked form of each word: two forms of one lemma are one example, so the sheet shows different words (mw-5r3p30.584)
+  const lemmas = new Set<string>();
+  const chosen = ranked.filter((c) => !lemmas.has(lemmaOf(c)) && lemmas.add(lemmaOf(c))).slice(0, SOUND_EXAMPLES);
   const widest = chosen.reduce((n, c) => Math.max(n, c.level), 0);
   return { title: chosen.length ? titles[widest] : passage.title, examples: chosen.map((c) => c.example), pairCase, ...(unreached ? { unreached } : {}) };
 }
