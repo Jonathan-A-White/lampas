@@ -35,6 +35,7 @@ import { useSendOff } from './plan/useSendOff';
 import { audioBibleSetting } from './settings/definitions';
 import { useSetting } from './settings/store';
 import { langOf } from './script/greekLang';
+import type { WovenReading } from './services/reading';
 
 /** Listen is a player: Play reads the verse or passage on to its end by itself. */
 export interface ListenPlayer {
@@ -66,8 +67,8 @@ export interface VerseViewProps {
   listen: ListenPlayer;
   checks: Pick<UseReadChecks, 'states'>;
   read: ReadHold;
-  /** some words of the verse are shown in Greek by the weave: the reading check says it can check English only */
-  weaveShown?: boolean;
+  /** the verse as the weave shows it to be read, when some of its words are shown in Greek: he reads the Greek in Greek and the English in English (services/reading.ts wovenReading) */
+  weave?: WovenReading | null;
   onRetryRead: () => void;
   /** the question in flight for this verse (Ask the tutor), and the way to send one (the composer at the foot, by voice or by hand) */
   ask: AskState | undefined;
@@ -92,7 +93,7 @@ function Arrow({ move, name, glyph }: { move: (() => void) | null; name: string;
 }
 
 export function VerseView(props: VerseViewProps) {
-  const { title, book, chapter, verse, view, immersive, text, previous, next, onClose, action, onAction, listen, checks, read, weaveShown, onRetryRead, ask, onAsk, prefill, onTalk, quiz, lesson } = props;
+  const { title, book, chapter, verse, view, immersive, text, previous, next, onClose, action, onAction, listen, checks, read, weave, onRetryRead, ask, onAsk, prefill, onTalk, quiz, lesson } = props;
   // the key of the lesson whose Check is open: moving to another passage leaves it closed
   const [checking, setChecking] = useState<string | null>(null);
   // The foot of the view, where the chosen action draws its bar.
@@ -200,7 +201,7 @@ export function VerseView(props: VerseViewProps) {
             </div>
           ) : null}
           {action === 'read' && ai ? (
-            <ReadCheckPanel key={unitId(verse)} verse={verse} view={view} book={book} chapter={chapter} checks={checks} hold={read} weaveShown={weaveShown} onRetry={onRetryRead} slot={slot} />
+            <ReadCheckPanel key={unitId(verse)} verse={verse} view={view} book={book} chapter={chapter} checks={checks} hold={read} weave={weave} onRetry={onRetryRead} slot={slot} />
           ) : null}
           {action === 'ask' && ai ? (
             <>

@@ -254,6 +254,8 @@ export interface VerseReading {
   next?: FixWord;
   /** a `partial` reading that reached past the reading of the same verse and language before it (true; absent otherwise) */
   further?: true;
+  /** the text it was scored against, kept only for a woven reading (mw-5r3p30.411): the weave of a later day may show other words in Greek, and its indexes would not stand where the weave of this one put them */
+  text?: string;
   /** the clip he recorded for this reading (not indexed; a reading kept before it existed has none) */
   clip?: { bytes: ArrayBuffer; mime: string };
 }

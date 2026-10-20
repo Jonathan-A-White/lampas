@@ -40,6 +40,7 @@ export async function keepVerseReading(
   now = Date.now(),
   clip?: Clip,
   reach?: Reach,
+  text?: string,
 ): Promise<void> {
   await db.transaction('rw', db.readings, db.readingHistory, db.missTally, async () => {
     // a partial reading that went past the reading of this verse in this language before it says so
@@ -53,6 +54,7 @@ export async function keepVerseReading(
       when: now,
       ...(reach ? { reached: reach.reached, total: reach.total, ...(reach.next ? { next: reach.next } : {}) } : {}),
       ...(further ? { further: true as const } : {}),
+      ...(text ? { text } : {}),
       ...(clip ? { clip } : {}),
     });
     await db.readingHistory.add({ ref, lang, verdict, words, at: now, ...(reach ? { reached: reach.reached, total: reach.total } : {}) });

@@ -55,7 +55,8 @@ import { ChapterFailed } from './reader/ChapterFailed';
 import { useChapter } from './reader/useChapter';
 import { useReadFrom } from './reader/useReadFrom';
 import { useWoven } from './reader/useWoven';
-import { wovenPlaces } from './services/reading';
+import { wovenReading } from './services/reading';
+import { pronunciationOf } from './speech/pronunciation';
 import { ReaderHeader } from './reader/ReaderHeader';
 import { useReaderSettings, type ReaderSettings } from './reader/useReaderSettings';
 import { useReaderTutor } from './reader/useReaderTutor';
@@ -293,17 +294,17 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const closeTeach = useCallback(() => setTeaching(false), []);
   const verseTalk: VerseTalk = { onHold: holdTalk, onRelease: () => void voice.release(), onDrop: voice.abort };
   const woven = useWoven(chapter, settings);
-  // The words of the Verse view's verse or passage the weave shows in Greek, as places in its English (a passage's verses one after another): the mill
-  // scores a reading in one language, so the reading check leaves them out of its answer and says it can check English only (mw-5r3p30.410).
-  const viewWoven = useMemo(() => {
-    if (!viewUnit || !chapter || !woven) return new Set<number>();
+  // The Verse view's verse or passage as the weave shows it to be read (mw-5r3p30.411): the words shown in Greek in Greek and the others in English, in the order drawn, each verse
+  // of a passage after the one before. The reading check sends them as segments, so the mill scores each word in its own language. null when nothing is shown in Greek.
+  const viewWeave = useMemo(() => {
+    if (!viewUnit || !chapter || !woven || view === 'greek') return null;
     const verses = viewPassage ? viewPassage.verses : [viewUnit];
-    return wovenPlaces(viewUnit, verses.flatMap((v) => woven[chapter.verses.indexOf(v)] ?? v.e.map(() => null)));
-  }, [viewUnit, viewPassage, chapter, woven]);
+    return wovenReading(verses, verses.map((v) => woven[chapter.verses.indexOf(v)] ?? null), pronunciationOf(pronunciation).scoringLang);
+  }, [viewUnit, viewPassage, chapter, woven, view, pronunciation]);
   // The Verse view's Read bar: the hold of the reading check for the verse the view shows.
   const readOf = (verse: Verse): ReadHold => {
     const phase = checks.states[unitId(verse)]?.phase;
-    return { onPress: () => checks.press(verse, viewWoven), onRelease: checks.release, onDrop: checks.drop, disabled: phase === 'sending' || phase === 'waiting' };
+    return { onPress: () => checks.press(verse, viewWeave), onRelease: checks.release, onDrop: checks.drop, disabled: phase === 'sending' || phase === 'waiting' };
   };
   const { plan, readFrom, listenTo, listenVerse, listenedView } = useReadFrom(BOOK, CHAPTER, chapter, view, woven, readSpan, viewUnit);
   const chapterReading = reading.status !== 'idle' && reading.answer === null;
@@ -561,7 +562,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           }}
           checks={checks}
           read={readOf(viewUnit)}
-          weaveShown={viewWoven.size > 0}
+          weave={viewWeave}
           onRetryRead={() => checks.retry(viewUnit)}
           ask={asks[unitId(viewUnit)]}
           onAsk={(verse, question) => {

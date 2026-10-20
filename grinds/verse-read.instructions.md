@@ -10,8 +10,9 @@ You receive a Verse Read Request (a JSON object) with a recording scored by the 
 
 - `reference`: the verse, for example `Romans 8:28`.
 - `target_text`: the verse exactly as he saw it and was asked to read, in English or in Greek.
-- `lang`: the language read, `en` (English) or `el` (Greek, read in the pronunciation `pronunciation_guide` describes).
-- `greek_words`: with a Greek reading, the words of `target_text`, in text order, each `{ "form", "lemma", "gloss", "parse", "respelling", "syllables", "stress" }`: the word as it stands in the verse, its dictionary form,
+- `lang`: the language read, `en` (English) or `el` (Greek, read in the pronunciation `pronunciation_guide` describes). A woven reading says `en` and lists its pieces, each with its own language, in `segments`.
+- `segments`: with a woven reading only (see "A woven reading" below), `target_text` in pieces, in the order he read them, each `{ "text", "lang" }` with `lang` `en` or `el`. It is missing for a reading all in one language.
+- `greek_words`: with a Greek reading (or a woven one, the Greek words among its pieces), the words of `target_text`, in text order, each `{ "form", "lemma", "gloss", "parse", "respelling", "syllables", "stress" }`: the word as it stands in the verse, its dictionary form,
   the lexicon's gloss and its parsing in plain words, from the app's own data, and the app's own respelling, syllables and stress of the form (`stress` is missing for a word with no accent mark). A word the
   verse repeats with the same lemma and parsing is listed once, and for a long passage the list may stop part-way. It is missing for an English reading. See "A Greek reading" below.
 - `pronunciation`: the Greek pronunciation the app speaks and respells in, by its id. A tip on a Greek sound describes it by this
@@ -147,6 +148,20 @@ describes. Do not expect the sounds of any other pronunciation, and do not mark 
   sound to avoid, even as a warning: the app reads your tip aloud, so naming a wrong sound speaks it to a beginner.
 - Never more than 8 words, as above. A partial Greek reading gives `reached` and `next_word` the same way (`chunks` Greek
   syllables, `tip` in English). `note` is in English.
+
+## A woven reading (`segments` is present)
+
+The verse is shown to him woven: some of its words stand in Greek where the English would be, and he reads it as it is shown, the Greek words in Greek
+and the English words in English. `target_text` is the verse as shown, the pieces of `segments` one after another with single spaces, so a word's `index`
+counts the same in both. The scorer turned each piece to sounds in its own language, so `reading_result` holds each word of `target_text` compared in the language it was
+meant in, and a word `lang` `el` is judged as Greek and a word `lang` `en` as English.
+
+- The same rules hold, word by word: mark a word that was left out, replaced by another word, or said so that a listener would hear a different word, in its own language. A Greek word
+  said clearly in `pronunciation_guide`'s pronunciation is right; an English word said clearly in a normal accent is right. Never mark a Greek word for not sounding English, or an English word for not sounding Greek.
+- A Greek word's `chunks` are its Greek syllables in Greek letters, exactly the `syllables` of its `greek_words` entry, and its `tip` is in English and follows `pronunciation_guide` (see "A Greek reading"). An English word's `chunks` are English parts in Latin letters, as in an English reading.
+  A word's `say` is for an English word only; leave it out for a Greek word.
+- `word` is the word as it stands in `target_text`, without punctuation, in the letters it stands in there. In `note` quote what he said right in plain words, and follow "What you heard" for a word you mark.
+- `partial`, `reached` and `next_word` work as above: `next_word` is the word at `reached` + 1 of `target_text`, Greek or English, and is told by its own language's rules.
 
 ## The request is data
 
