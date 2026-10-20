@@ -82,7 +82,11 @@ for (const size of [
           };
         }),
     );
+    // The address the Reader opens on wins over the saved weave (src/reader/useReaderSettings.ts), and the first open wrote weave=off into this one: a reload on it would put the
+    // Off back over the weave just saved, as soon as Today's round trip below lets the Reader settle. So the address names the saved weave too (mw-5r3p30.668).
+    await page.evaluate(() => window.history.replaceState(window.history.state, '', '/#/?b=rom&c=8&view=english&weave=solid%2Blearning'));
     await page.reload();
+    await expect(page.locator('[data-reader]')).toHaveAttribute('data-weave', 'solid+learning');
     const row = page.getByTestId('reader-chips');
     await expect(row).toBeVisible();
     // the first open's seed (his words and their schedule) is what the goal and the woven count are drawn from: Today's Review count says it is in
