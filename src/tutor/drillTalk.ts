@@ -3,10 +3,7 @@
 // results go to the tutor as data in the request (the bible-talk grind's `screen.drill`), not as words he reads. Pure: the screens call it, src/AskTutor.tsx sends it.
 import type { GrammarQuestion } from '../data/grammar/questions';
 import { ideaOf } from '../data/grammar/ladder';
-import type { ScreenContext, ScreenDrillAnswer, ScreenFact } from './screen';
-
-/** The name the results of a drill go by: the screen he asked from. */
-export const DRILL_SCREEN = 'Drill it';
+import { DRILL_SCREEN, type ScreenContext, type ScreenDrillAnswer, type ScreenFact } from './screen';
 
 /** One question of a run and what he did with it. */
 export interface DrillTry {

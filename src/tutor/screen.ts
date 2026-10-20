@@ -61,6 +61,9 @@ export const CREDIT_USE_MAX = 160;
 export const CREDIT_LICENCE_MAX = 60;
 export const CREDIT_LINK_MAX = 120;
 
+/** The name the results of a drill go by (src/tutor/drillTalk.ts): the screen he asked from, which is no route. */
+export const DRILL_SCREEN = 'Drill it';
+
 /** The most questions a drill's results send (Drill it asks at most 14) and the longest text of one (the input schema's limits). */
 export const MAX_DRILL_ANSWERS = 14;
 export const DRILL_ANSWER_MAX = { idea: 60, asked: 100, answer: 40, right_answer: 40 } as const;
@@ -155,7 +158,7 @@ const SUGGESTIONS: Record<string, string[]> = {
   Memory: ['What kind of notes can I keep here?', 'How do I move my notes to another phone?'],
   'Your requests': ['What happened to my idea?', 'What do the statuses mean?'],
   'Ask for more': ['What does Lampas have already?', 'What happens to what I ask for?'],
-  'Drill it': ['Why did I get these wrong?', 'What should I practise next?'],
+  [DRILL_SCREEN]: ['Why did I get these wrong?', 'What should I practise next?'],
   Import: ['What words should I add to my list?', 'How do I write a word list to import?'],
   Preface: ['Why does Lampas read the Byzantine text?', 'How does the Majority text differ from the critical text?'],
   'The Case for Byzantine Priority': ['What is Robinson arguing in this essay?', 'What does "Byzantine priority" mean?', 'What do the other scholars say against it?'],
