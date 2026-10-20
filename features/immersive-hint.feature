@@ -4,12 +4,18 @@ Feature: Immersive reader hint card
   it for now: it shows again the next time the Reader opens) and "Don't show this again" (switches the setting Immersive reader card to Off, so it
   never shows again, also after a reload). With Immersive reader Off it never shows. Settings > Immersive reader card (On | Off, shown while
   Immersive reader is On) brings it back. The card is in the page's flow above the text, so it never covers the round Ask button. How it looks at
-  390 px is proven by tests/e2e/immersive-hint.spec.ts (src/ImmersiveHint.tsx).
+  390 px is proven by tests/e2e/immersive-hint.spec.ts (src/ImmersiveHint.tsx). With Turn pages nothing scrolls, so the card's first line is
+  "Turn to the next page and the bars slide away." (mw-5r3p30.611; the turn putting them away is proven by tests/e2e/turn-pages.spec.ts).
 
   Scenario: Opening the Reader with Immersive reader On shows the card
     Given Lampas is opened on Romans 8 with Immersive reader On
     Then the hint card says how the bars slide away, how to bring them back and how to leave
     And the hint card has the buttons 'Got it' and "Don't show this again"
+
+  Scenario: With Turn pages the card says the next page puts the bars away, and nothing of scrolling
+    Given Lampas is opened on Romans 8 with Immersive reader On and Turn pages
+    Then the hint card says the next page puts the bars away, how to bring them back and how to leave
+    And the hint card says nothing of scrolling
 
   Scenario: Got it closes the card and it shows again the next time the Reader opens
     Given Lampas is opened on Romans 8 with Immersive reader On

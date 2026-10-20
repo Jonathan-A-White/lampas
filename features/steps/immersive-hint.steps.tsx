@@ -27,7 +27,7 @@ async function openReader(): Promise<void> {
   await screen.findByTestId('reader-chips');
 }
 
-async function open(immersive: 'on' | 'off'): Promise<void> {
+async function open(immersive: 'on' | 'off', readingMode: 'scroll' | 'pages' = 'scroll'): Promise<void> {
   cleanup();
   clearBus();
   forgetTrail();
@@ -40,6 +40,7 @@ async function open(immersive: 'on' | 'off'): Promise<void> {
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.reviews.clear(), db.talks.clear(), db.tips.clear()]);
   if (immersive === 'on') await db.settings.put({ key: 'immersiveReader', value: 'on' });
+  if (readingMode === 'pages') await db.settings.put({ key: 'readingMode', value: 'pages' });
   await openReader();
   await waitFor(() => expect(document.querySelector('[data-reader]')).toHaveAttribute('data-immersive', immersive));
 }
@@ -78,6 +79,23 @@ describeFeature(feature, ({ Scenario }) => {
     And("the hint card has the buttons 'Got it' and \"Don't show this again\"", () => {
       expect(cardButton('Got it')).toBeInTheDocument();
       expect(cardButton("Don't show this again")).toBeInTheDocument();
+    });
+  });
+
+  Scenario('With Turn pages the card says the next page puts the bars away, and nothing of scrolling', ({ Given, Then, And }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader On and Turn pages', async () => {
+      await open('on', 'pages');
+      await waitFor(() => expect(document.querySelector('[data-reader]')).toHaveAttribute('data-paging', 'pages'));
+    });
+    Then('the hint card says the next page puts the bars away, how to bring them back and how to leave', async () => {
+      await waitFor(() => expect(card()).not.toBeNull());
+      const text = card()?.textContent ?? '';
+      expect(text).toContain('Turn to the next page and the bars slide away.');
+      expect(text).toContain('Tap with two fingers to bring them back or put them away.');
+      expect(text).toContain('To leave immersive reading: Settings > Immersive reader.');
+    });
+    And('the hint card says nothing of scrolling', () => {
+      expect(card()?.textContent ?? '').not.toMatch(/scroll/i);
     });
   });
 

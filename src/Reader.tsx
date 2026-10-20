@@ -183,7 +183,12 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // changes the chapter. The page he is on is kept per chapter, so he comes back to it from any screen the Reader gives way to (mw-5r3p30.608).
   const paging = useSetting(readingModeSetting) === 'pages';
   useChapterSwipe(main, inner, BOOK, CHAPTER, sheetOpen || paging, setSwipeEnd);
-  const pages = usePages(paging && chapter !== null && !failed, main, inner, sheetOpen, `${BOOK}/${CHAPTER}`);
+  // with the Immersive reader On, turning to the next page puts the bars away, as scrolling down does (src/immersive.ts, mw-5r3p30.611)
+  const hideBars = bars.hide;
+  const onTurned = useCallback((by: 1 | -1) => {
+    if (by > 0) hideBars();
+  }, [hideBars]);
+  const pages = usePages(paging && chapter !== null && !failed, main, inner, sheetOpen, `${BOOK}/${CHAPTER}`, onTurned);
   const showPage = pages.show;
   const [linked, setLinked] = useState(() => (link?.word ? lemmaSheet(link.word) : null));
   const [prefill, setPrefill] = useState(() => (request?.action === 'ask' ? { verse: request.verse, text: request.question } : null));
@@ -408,7 +413,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       {notice ? <LinkNotice text={notice} elsewhere={link?.elsewhere} onDismiss={() => setNotice(null)} /> : null}
       {swipeEnd ? <SwipeNote end={swipeEnd} lastBook={BOOKS[BOOKS.length - 1].name} onDismiss={dismissSwipeNote} /> : null}
       <ReadingBar reading={reading} />
-      {chapter && !failed ? <ImmersiveHint enabled={immersive} away={away} /> : null}
+      {chapter && !failed ? <ImmersiveHint enabled={immersive} away={away} mode={paging ? 'pages' : 'scroll'} /> : null}
       <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} data-immersive={immersive ? 'on' : 'off'} data-paging={paging ? 'pages' : 'scroll'} style={chapter ? { marginBottom: away || !ai || paging ? 0 : `calc(${ASK_BUTTON_ROOM})`, marginRight: ai ? ASK_BUTTON_GUTTER : undefined, transition: immersive ? 'margin-bottom 200ms ease' : undefined } : undefined} className="screen min-h-0 flex-1 touch-pan-y px-1 pt-2">
         <div ref={inner} data-reader-text data-pages={paging ? '' : undefined}>
         {failed ? (

@@ -9,6 +9,8 @@
 // its verse), and so does Enter on a focused number (a click with no short press before it). The swipe's numbers are the chapter swipe's (src/reader/useChapterSwipe.ts), which is off while pages are on.
 // When the box changes size (text size, the hint card closed, the bars brought back) the pages are cut afresh and the page shown is the one where the
 // first verse that was in view begins, so no text is skipped.
+// A turn he makes (a tap, a swipe, the Next and Previous page buttons) is told to `onTurned`: with the Immersive reader On the next page puts the bars
+// away, as scrolling down does with Scroll (mw-5r3p30.611, src/Reader.tsx); a page the app shows for him (read aloud, a put-back) is not his turn.
 // The page he is on is kept per chapter (src/nav/scrollMemory.ts keepPage, mw-5r3p30.608): a Reader opened on the chapter again (back from Settings or any
 // screen it gave way to) cuts the pages and shows that page, or, cut otherwise (another text size), the page of the verse that began it, until he turns one.
 import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
@@ -40,10 +42,22 @@ interface Turner {
   show(el: Element): void;
 }
 
-/** Lays out the text of `box` in pages while `enabled`, and turns them by tap and swipe unless `blocked` (a sheet is open); the page is kept under `chapter`. */
-export function usePages(enabled: boolean, box: RefObject<HTMLElement | null>, inner: RefObject<HTMLElement | null>, blocked: boolean, chapter: string): Pages {
+/** Lays out the text of `box` in pages while `enabled`, and turns them by tap and swipe unless `blocked` (a sheet is open); the page is kept under `chapter`.
+ * `onTurned` hears each turn he makes, after the page has changed. */
+export function usePages(
+  enabled: boolean,
+  box: RefObject<HTMLElement | null>,
+  inner: RefObject<HTMLElement | null>,
+  blocked: boolean,
+  chapter: string,
+  onTurned?: (by: 1 | -1) => void,
+): Pages {
   const [place, setPlace] = useState({ page: 0, count: 1 });
   const turner = useRef<Turner | null>(null);
+  const turned = useRef(onTurned);
+  useEffect(() => {
+    turned.current = onTurned;
+  });
 
   // the pages are cut when the text is there and again whenever the box or the text changes
   useEffect(() => {
@@ -124,6 +138,7 @@ export function usePages(enabled: boolean, box: RefObject<HTMLElement | null>, i
         if (to < 0 || to >= count) return;
         kept = undefined;
         move(to);
+        turned.current?.(by);
       },
       show: (target) => {
         const first = target.getClientRects()[0];
