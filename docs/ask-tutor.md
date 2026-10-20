@@ -143,7 +143,7 @@ The tutor leaves three kinds of offer for a tap: **Send this to the makers** (`f
 He may say yes, no or 'read it back' instead, in Talk, spoken or typed. `src/talk/offers.ts` `pendingOfferOf(turns)` finds the newest turn of the talk with an
 offer nobody has settled; `useTalk.say` sends it with his next turn as `pending_offer` `{kind: 'feedback' | 'setting' | 'quiz-goal' | 'bridge' | 'greek' | 'rusty', text}` (the exact text it would
 send or do). The bible-talk grind, not a word list in the app, decides from his words and answers `offer_reply`: `confirm`, `decline` or `read_back`
-(`grinds/bible-talk.instructions/` "Answering an offer by voice"; five examples under `grinds/examples/bible-talk/offer-*.json`). `settleOffer` then does it:
+(`grinds/bible-talk.instructions/` "Answering an offer by voice"; five examples under `grinds/examples/bible-talk/offer-*.json`). `settleOffer` first reads the turn again from the store (`stillOffered`): an offer his tap has settled since the words were sent is left alone, so a late yes does not apply a setting twice or show a second Changed row, and a late no does not withdraw what he took (mw-5r3p30.328). It then does it:
 confirm does exactly what the tap does (feedback: `sendMakersOffer`, the one function the button calls too; a tap and a yes for the same turn share the one send in flight, so the makers get one grist, and the button is off while either is sending, `useOfferSending`; setting: `takeSettingOffer`, the change lands on the
 answer's turn with its Undo; quiz goal: keeps it), decline withdraws it (**Not sent**, **Not changed**, **Not kept**; nothing is sent), read_back changes nothing and the
 answer, which the app reads aloud like any answer, holds the text word for word. No `offer_reply`, or no offer waiting, is an ordinary question: the offer and its
@@ -163,7 +163,7 @@ briefly at his level first, so he is never refused.
   ('When he is not ready for the question') tell it to pick from `missing_foundations` only.
 - **What the app does with it** (`resolveBridge`): without the device's list the bridge is dropped (the model does not guess); the ideas shown are the tutor's that the device listed (three at most, else the first three of the
   device's list); the idea 'Take me there' opens is `missing_foundations.ideas[0]` whatever the model said. The turn keeps it (`TalkTurn.bridge`; a verse answer's `TutorAnswer.bridge`) and `src/talk/BridgeOffer.tsx` draws
-  the ideas, the why and **Take me there: <title>**. A tap, or a spoken yes (`pending_offer` of kind `bridge`, `settleOffer` -> `takeBridgeOffer`, the same function the button calls), opens that idea's sheet
+  the ideas, the why and **Take me there: <title>**. The block shows the bridge as it stands now (`liveBridge`, with his levels): an idea he has taken up since (Learning or solid) is no longer listed, the button moves on to the lowest idea still lacking, and when none is left the block is gone (mw-1vuvq6.11); a spoken yes carries the same text (`pendingOfferOf(turns, levels)`). A tap, or a spoken yes (`pending_offer` of kind `bridge`, `settleOffer` -> `takeBridgeOffer`, the same function the button calls), opens that idea's sheet
   (`src/IdeaSheet.tsx`) over the talk (`openBridgeIdea`, module state, so a tap and a yes for the same turn leave one sheet open). Done or the phone's Back closes it and the talk is there as it was; the
   button stays to open it again, and a yes to it on the talk's newest turn still carries `pending_offer` and opens it (`takenOfferOf` in `offers.ts`, the same for a taken Greek or rust offer; mw-1vuvq6.8). The talk is not a quiz (no bridge in Quiz me). The bridged idea becomes his frontier only if he starts it there (Got it).
 - Tests: `features/talk-bridge.feature`, `tests/unit/bridge.test.ts`, examples `grinds/examples/bible-talk/bridge-*.json` and `grinds/examples/verse-ask/bridge-quite-a-bit.json`.
@@ -192,7 +192,7 @@ His words (12 Oct 2026): a person is not always going forward; he takes a break,
 Hold to talk and Hold to ask use the phone's recogniser in en-US, so a Greek word he says arrives as English sound-alikes ('Tech N9ne' for
 τεκνίον). The words the recogniser handed over are remembered (src/speech/spoken.ts, noted by useVoice's release and by the Ask composer's
 transcriber); a question whose text is those words goes to bible-talk and verse-ask with `spoken: true` (buildTalkRequest, buildRequest), and a
-typed one, or one he edited after speaking, has no such field. Retry sends the same text and so stays marked. Both grinds' instructions
+typed one, or one he edited after speaking, has no such field. `wasSpoken` is asked once, as the message is sent (`useTalk.say`, `useAsks.ask`), and forgets the words, so the same words typed after are his typing (mw-5r3p30.333); Retry sends the same text and so stays marked (the failed line in `pendingAsks` keeps `spoken`). Both grinds' instructions
 ('## Greek words said in English speech') tell the tutor to match the sound-alike to the passage's Greek words and lemmas, answer about the best
 match and say in one line which word it took ('I took "Tech N9ne" as τεκνίον.') rather than ask first (PROVISIONAL). Scenario:
 grinds/examples/{bible-talk,verse-ask}/spoken-greek-word.json.

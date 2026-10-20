@@ -421,6 +421,43 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('A tapped setting offer and a spoken yes whose answer comes late show the change once', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers to change the Theme to Dark', () => openWith(SETTING_OFFER));
+    When('he taps the Ask the tutor control', taps);
+    And('he sends {string}', sends);
+    Then('the answer shows the button {string}', offerShown);
+    When('the tutor is slow to answer his next words', slowTutor);
+    And('he says {string}', sends);
+    And('the second bible-talk grist has reached the tutor with the pending offer of kind setting', async () => {
+      await waitFor(() => expect(talkGrists()).toHaveLength(2));
+      expect(pendingOf(2)).toEqual({ kind: 'setting', text: 'Change Theme: Dark' });
+    });
+    And('he taps Change Theme: Dark', async () => {
+      await user.click(await within(sheet()).findByRole('button', { name: 'Change Theme: Dark' }));
+    });
+    Then('the Theme is Dark', async () => {
+      await waitFor(async () => expect(await theme()).toBe('dark'));
+    });
+    And('the first turn shows the change {string} with an Undo button', async (_, text: string) => {
+      const change = await waitFor(() => {
+        const found = turn(1).querySelector('[data-talk-change]');
+        if (!found) throw new Error('no change row yet');
+        return found as HTMLElement;
+      });
+      expect(change.textContent).toContain(text);
+      expect(within(change).getByRole('button', { name: /^Undo/ })).toBeInTheDocument();
+    });
+    When("the tutor's answer to the yes comes at last as a yes", () => fake.answer({ status: 'answered', answer: { answer: 'Done: the theme is Dark.', words: [], offer_reply: 'confirm' } }));
+    Then('the talk shows exactly one {string} row, on the first turn', async (_, text: string) => {
+      await turnsShown(2);
+      await allAnswered();
+      const rows = Array.from(sheet().querySelectorAll<HTMLElement>('[data-talk-change]'));
+      expect(rows.map((row) => row.textContent)).toEqual([expect.stringContaining(text)]);
+      expect(turn(1).contains(rows[0])).toBe(true);
+      expect(await theme()).toBe('dark');
+    });
+  });
+
   Scenario('A tapped setting offer shows its change once, and after Undo only that it was put back', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers to change the Theme to Dark', () => openWith(SETTING_OFFER));
     When('he taps the Ask the tutor control', taps);

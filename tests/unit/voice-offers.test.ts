@@ -134,6 +134,36 @@ describe('what a reply does to the waiting offer', () => {
   });
 });
 
+describe('a reply that lands after his tap on the same offer (mw-5r3p30.328)', () => {
+  it('a yes to a setting offer he tapped applies nothing a second time', async () => {
+    const turn = await turnWith({ ...none, settingOffer: { key: 'theme', value: 'dark' } });
+    const waiting = pendingOfferOf([turn]);
+    // his tap: the one that settles the offer, as the button does
+    await settleOffer('confirm', waiting, scope);
+    await db.settings.put({ key: 'theme', value: 'light' });
+    const late = await settleOffer('confirm', waiting, scope);
+    expect(late).toEqual({ applied: [], refused: [] });
+    expect((await db.settings.get('theme'))?.value).toBe('light');
+  });
+
+  it('a no to an offer he tapped withdraws nothing he took', async () => {
+    const turn = await turnWith({ ...none, settingOffer: { key: 'theme', value: 'dark' } });
+    const waiting = pendingOfferOf([turn]);
+    await settleOffer('confirm', waiting, scope);
+    await settleOffer('decline', waiting, scope);
+    expect((await db.talks.get(turn.id!))?.settingChoice).toBe('taken');
+  });
+
+  it('a yes to the quiz goal he chose Just this time does not keep it as his goal', async () => {
+    const turn = await turnWith({ ...none, quizGoalOffer: 'learning Greek' });
+    const waiting = pendingOfferOf([turn]);
+    await db.talks.update(turn.id!, { quizGoalChoice: 'once' });
+    await settleOffer('confirm', waiting, scope);
+    expect(await getQuizGoal()).toBe('');
+    expect((await db.talks.get(turn.id!))?.quizGoalChoice).toBe('once');
+  });
+});
+
 describe('the grind', () => {
   const instructions = instructionsOf('bible-talk');
   it('carries the pending offer and the three replies, and speaks the text word for word on a read back', () => {
