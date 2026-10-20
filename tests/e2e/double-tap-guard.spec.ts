@@ -65,6 +65,10 @@ async function open(page: Page, hash: string, rows: Parameters<typeof put>[1] = 
   await page.addInitScript((ms) => window.localStorage.setItem('lampas.settleMs', ms), String(SETTLE_MS));
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  // The Reader writes its view and weave into the address once its settings have loaded (src/nav/readerAddress.ts), which on a loaded host can come after the heading
+  // is drawn: a Reader address opened before then has its view overwritten by the saved one (mw-5r3p30.666: 'view=greek' became 'view=english', and the passage drew
+  // English chunks). Only the Reader's own address is written, so the other screens' hashes are opened at once.
+  if (/^#\/(\?|$)/.test(hash)) await expect(page).toHaveURL(/#\/\?.*view=.*weave=/);
   if (Object.keys(rows).length > 0) await put(page, rows);
   await page.goto(`/${hash}`);
   // a write behind Dexie's back is not seen by its live queries: the app starts afresh
