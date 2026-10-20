@@ -1,7 +1,7 @@
 // src/services/talk.ts — the Bible talk: one thing he says, sent as a grist through Postern (bsv-kit/grist) and answered by
 // the mill's bible-talk grind (grinds/bible-talk.json). The wire work is the tutor's (src/services/tutor.ts askGrind); this
 // file is the kind's own: the request with the last turns of the conversation, the answer's shape, and the fit to a grist.
-import { markSupplied, wordGloss, wordLemma, wordParse, type Chapter, type Verse } from '../data/chapter';
+import { markSupplied, type Chapter, type Verse } from '../data/chapter';
 import { unitId } from '../data/passage';
 import { QUIZ_GOAL_MAX, type ReaderView } from '../data/repositories/settings';
 import { STUDY_WAY_LINE_MAX } from '../data/repositories/studyWay';
@@ -26,6 +26,7 @@ import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunc
 import { askGrind, type AskOptions } from './tutor';
 import { MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudget';
 import { solidWordsField } from './solidWords';
+import { GREEK_WORDS_BYTES, greekWordsFitting, type GreekWordEntry } from './greekWords';
 
 /** The kind the mill runs the grind under (grinds/bible-talk.json). */
 export const TALK_KIND = 'bible-talk';
@@ -34,7 +35,7 @@ export const TALK_KIND = 'bible-talk';
 export const MAX_TALK_CHARS = MAX_QUESTION_CHARS;
 /** How many earlier turns the grind is sent. */
 export const MAX_HISTORY_TURNS = 10;
-export { MAX_REQUEST_BYTES };
+export { MAX_REQUEST_BYTES, GREEK_WORDS_BYTES };
 /** A long answer in the history is cut to this many characters when the request is too big. */
 const CLIPPED_CHARS = 240;
 const CLIP_MARK = '…';
@@ -163,20 +164,6 @@ export function newWordQuestion(lemma: string, gloss: string, reference: string)
   return `Teach me the new word ${lemma}${gloss ? ` (${gloss})` : ''}, as it stands in ${reference}: what it means, how it sounds and one way to remember it.`;
 }
 
-/** One word of the text as the chapter data has it: the form as it stands, its lemma (NFC), the lexicon's gloss and the parsing in plain words. */
-export interface TalkGreekWord {
-  form: string;
-  lemma: string;
-  gloss: string;
-  parse: string;
-  /** the word as the app's pronunciation respells it ('ZVE-nee-te'), the stressed syllable in capitals (mw-5r3p30.568) */
-  respelling?: string;
-  /** the word cut into syllables by the app (speech/greekSyllables.ts), in order: a typed or spoken "how do I say it?" has no focus, so the tutor reads them from here and never counts */
-  syllables?: string[];
-  /** with `syllables`: the index (0 = the first) of the stressed syllable; absent when the word carries no accent */
-  stress?: number;
-}
-
 /** What the grind is sent (Bible Talk Request 1; grinds/bible-talk.input.schema.json). */
 export interface TalkRequest {
   reference: string;
@@ -184,7 +171,7 @@ export interface TalkRequest {
   greek?: string;
   english?: string;
   /** each distinct Greek word of `greek` with its dictionary form, gloss and parsing as the chapter data has them (mw-5r3p30.246): the tutor names a word's lemma from here, never from memory */
-  greek_words?: TalkGreekWord[];
+  greek_words?: GreekWordEntry[];
   question: string;
   /** present (true) only when the question was spoken to the phone's English recogniser (mw-5r3p30.244): a Greek word in it may have come as English sound-alikes */
   spoken?: true;
@@ -416,59 +403,6 @@ export const quizMeQuestion = (reference: string): string => `Quiz me on ${refer
 const greekOf = (v: Verse): string => v.g.map((w) => w.t).join(' ');
 const englishOf = (v: Verse): string => v.e.map(markSupplied).join(' ');
 
-/** The most the word list may weigh, as JSON in UTF-8: a verse of 25 words fits; a long passage's list stops part-way (the grind's instructions say so),
- * and buildTalkRequest makes it smaller still when the rest of the request leaves less room, so the record stays under MAX_REQUEST_BYTES. */
-export const GREEK_WORDS_BYTES = 4400;
-/** What the key `"greek_words":` and its comma take in the JSON. */
-const GREEK_WORDS_KEY_BYTES = 16;
-/** The most words of the list kept past its byte budget because the question names them. */
-const MAX_NAMED_WORDS = 5;
-
-const bare = (text: string): string => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
-
-/** The words of `question`, bare of accents, breathings and case, so "σβεννυτε" and a NFD-typed "σβέννυτε" both name σβέννυτε. */
-const wordsOfQuestion = (question: string): Set<string> => new Set(bare(question).split(/[^\p{L}]+/u).filter((t) => t !== ''));
-
-/** The words of `verses` with lemma, gloss and parse from `chapter`, in text order; a word that repeats with the same lemma and parsing is listed once.
- * Each carries the app's respelling, syllables and stress (mw-5r3p30.568). The list stops before the word that would take it over `maxBytes`,
- * except that a word `question` names (up to MAX_NAMED_WORDS) is always kept, so "how do I say σβέννυτε?" never reaches a tutor with no syllables.
- * A word with no lemma is left out: there is nothing to say of it. */
-function greekWordsOf(chapter: Chapter, verses: Verse[], question: string, pronunciation: GreekPronunciation, maxBytes: number): TalkGreekWord[] {
-  const data: Chapter = { ...chapter, lex: chapter.lex ?? {}, parse: chapter.parse ?? {} };
-  const scheme = pronunciationOf(pronunciation);
-  const named = wordsOfQuestion(question);
-  const seen = new Set<string>();
-  const entries: { word: TalkGreekWord; bytes: number; named: boolean }[] = [];
-  for (const w of verses.flatMap((v) => v.g)) {
-    const word: TalkGreekWord = { form: w.t, lemma: wordLemma(w), gloss: wordGloss(data, w), parse: wordParse(data, w) };
-    const key = `${word.form}|${word.lemma}|${word.parse}`;
-    if (!word.lemma || seen.has(key)) continue;
-    seen.add(key);
-    const syllables = greekSyllables(w.t);
-    const stress = stressedSyllable(syllables);
-    const full = { ...word, respelling: scheme.respell(w.t), syllables, ...(stress >= 0 ? { stress } : {}) };
-    entries.push({ word: full, bytes: new TextEncoder().encode(JSON.stringify(full)).length + 1, named: named.has(bare(w.t)) });
-  }
-  const keepNamed = new Set(entries.filter((e) => e.named).slice(0, MAX_NAMED_WORDS));
-  let held = [...keepNamed].reduce((sum, e) => sum + e.bytes, 0);
-  let bytes = 2;
-  let open = true;
-  const kept = new Set<(typeof entries)[number]>();
-  for (const e of entries) {
-    if (keepNamed.has(e)) {
-      kept.add(e);
-      held -= e.bytes;
-      bytes += e.bytes;
-    } else if (open && bytes + e.bytes + held <= maxBytes) {
-      kept.add(e);
-      bytes += e.bytes;
-    } else {
-      open = false;
-    }
-  }
-  return entries.filter((e) => kept.has(e)).map((e) => e.word);
-}
-
 /** The title of the sheet and the reference in the request: 'Romans 8', 'Romans 8:28' or, for a passage, 'Romans 8:1-11'. */
 export const scopeTitle = (scope: Pick<TalkScope, 'title' | 'verse'>): string => (scope.verse ? `${scope.title}:${unitId(scope.verse)}` : scope.title);
 
@@ -578,8 +512,7 @@ export function buildTalkRequest(
   };
   if (scope.screen) return request;
   // the words of the text weigh what the rest leaves of the record, without the history (which is cut first), up to GREEK_WORDS_BYTES
-  const room = MAX_REQUEST_BYTES - sizeOf({ ...request, history: [] }) - GREEK_WORDS_KEY_BYTES;
-  return { ...request, greek_words: greekWordsOf(scope.chapter, verses, request.question, pronunciation, Math.min(GREEK_WORDS_BYTES, room)) };
+  return { ...request, greek_words: greekWordsFitting(scope.chapter, verses, request.question, pronunciation, sizeOf({ ...request, history: [] })) };
 }
 
 /** Sends what he said and waits for the companion's answer. Throws a TutorError (src/services/tutor.ts). */

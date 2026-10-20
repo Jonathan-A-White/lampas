@@ -158,7 +158,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const [tipOpen, setTipOpen] = useState(false);
   const pace = usePace();
   const newWords = useNewWords(chapter, solid, learning, pace?.count);
-  const { asks, ask, resume: resumeAsk } = useAsks(BOOK, CHAPTER, TITLE);
+  const { asks, ask, resume: resumeAsk } = useAsks(BOOK, CHAPTER, TITLE, chapter);
   // A request from another screen (the Parsing drill's links) is met once, as the Reader opens: the Talk sheet on that verse,
   // or the Ask box on it holding the question.
   const [request] = useState(() => {
