@@ -21,7 +21,7 @@ test('an ask Lampas cannot meet is offered to the makers and one tap sends it', 
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.goto('/#/words');
-  await expect(page.getByRole('heading', { name: 'Words', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeVisible();
   await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Words' });
   await sheet.getByRole('textbox', { name: 'Your message' }).fill('Can this work with Olive Tree?');

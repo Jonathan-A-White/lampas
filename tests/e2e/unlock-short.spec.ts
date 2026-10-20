@@ -16,7 +16,7 @@ for (const { name, width, height } of SIZES) {
     await refuseChain(page);
     await seedDeviceKey(page);
     await page.goto('/#/unlock');
-    const heading = page.getByRole('heading', { name: 'Licence' });
+    const heading = page.getByRole('heading', { name: 'Licence', exact: true });
     await expect(heading).toBeVisible();
 
     await page.locator('main.screen').evaluate((el) => el.scrollTo(0, 0));

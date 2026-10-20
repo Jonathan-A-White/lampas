@@ -85,11 +85,11 @@ test('the Next badge in Settings > Grammar approach sits on the lesson the Goal 
     if (step === 11) break;
     await page.goto('/#/goal');
     await learnNext.click();
-    const sheet = page.getByRole('dialog', { name: 'Idea' });
+    const sheet = page.getByRole('dialog', { name: 'Idea', exact: true });
     await expect(sheet.getByRole('heading', { name: title, exact: true })).toBeVisible();
     await sheet.getByRole('button', { name: 'Mark known without a drill' }).click();
     await expect(sheet.getByTestId('idea-level')).toHaveText(/^Solid since today/);
-    await sheet.getByRole('button', { name: 'Done' }).click();
+    await sheet.getByRole('button', { name: 'Done', exact: true }).click();
   }
   expect(named[0]).toBe('The Greek alphabet');
   expect(named[11]).toBe('The singular');

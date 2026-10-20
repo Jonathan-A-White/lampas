@@ -55,7 +55,7 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
   await expect(section.getByRole('switch', { name: "Strong's", exact: true })).toHaveAttribute('aria-checked', 'true');
   await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
   await page.locator('[data-verse="28"]').getByRole('button', { name: 'work together', exact: true }).click();
-  const study = page.getByRole('dialog', { name: 'Word' }).getByRole('group', { name: 'Study' });
+  const study = page.getByRole('dialog', { name: 'Word', exact: true }).getByRole('group', { name: 'Study', exact: true });
   await expect(study).toBeInViewport();
   await expect(study.getByRole('link', { name: 'G4903', exact: true })).toHaveAttribute('href', 'https://www.stepbible.org/?q=strong=G4903');
   const logos = study.getByRole('link', { name: 'Open in Logos: BDAG', exact: true });
@@ -64,7 +64,7 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
   await expect(study.getByRole('link', { name: 'Open in Logos: Louw-Nida', exact: true })).toHaveAttribute('href', /^logosres:LLS:46\.30\.4;hw=/);
   await expect(study.getByRole('link', { name: 'Bible Word Study in Logos', exact: true })).toHaveAttribute('href', /^logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F[^;]+$/);
   await expect(study.getByText('G4903')).toHaveCount(1);
-  await expect(page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-strongs')).toHaveCount(0);
+  await expect(page.getByRole('dialog', { name: 'Word', exact: true }).getByTestId('sheet-strongs')).toHaveCount(0);
   const box = await logos.boundingBox();
   expect(box?.height).toBeGreaterThanOrEqual(43.5);
   const fits = await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
@@ -151,7 +151,7 @@ test('The Study links are equal tiles in two columns at 360 px, and an app that 
   await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
   await page.locator('[data-verse="1"]').getByRole('button', { name: 'condemnation', exact: true }).click();
 
-  const study = page.getByRole('dialog', { name: 'Word' }).getByRole('group', { name: 'Study', exact: true });
+  const study = page.getByRole('dialog', { name: 'Word', exact: true }).getByRole('group', { name: 'Study', exact: true });
   const logos = study.getByRole('group', { name: 'Logos', exact: true });
   const tiles = logos.getByRole('link');
   await expect(tiles).toHaveText(['BDAG', 'Lexham Theological Wordbook', 'Bible Word Study']);

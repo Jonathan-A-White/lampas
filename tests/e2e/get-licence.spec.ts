@@ -38,7 +38,7 @@ async function openLicencePage(page: Page): Promise<void> {
   await refuseChain(page);
   await seedDeviceKey(page);
   await page.goto('/#/unlock');
-  await expect(page.getByRole('heading', { name: 'Licence', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Licence', exact: true, level: 1 })).toBeVisible();
   await expect(page.getByRole('status').getByText('Not licensed')).toBeVisible();
 }
 
@@ -81,12 +81,12 @@ test('email, phone, two codes: Licensed. Tap Check again., then Check again show
 
   await expect(page.getByLabel('Email code')).toBeVisible();
   expect(said.start).toEqual([{ email: 'reader@example.com', phone: '+1 415 555 0101', deviceKey: SEED_PUBLIC_KEY }]);
-  await expect(page.getByRole('button', { name: 'Confirm' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Confirm', exact: true })).toBeDisabled();
   await page.getByLabel('Email code').fill('123456');
   await page.getByLabel('Phone code').fill('654321');
   await expectFitsPhone(page);
   await shot(page, 'get-licence-codes');
-  await page.getByRole('button', { name: 'Confirm' }).click();
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
 
   await expect(page.getByText('Licensed. Tap Check again.')).toBeVisible();
   expect(said.confirm).toEqual([{ registrationId: 'reg-1', emailCode: '123456', phoneCode: '654321' }]);
@@ -106,7 +106,7 @@ test('the 3-device refusal is shown verbatim', async ({ page }) => {
   await page.getByRole('button', { name: 'Send codes' }).click();
   await page.getByLabel('Email code').fill('123456');
   await page.getByLabel('Phone code').fill('654321');
-  await page.getByRole('button', { name: 'Confirm' }).click();
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
   await expect(page.getByRole('alert')).toHaveText('This licence already has 3 devices. Remove one first.');
   await expectFitsPhone(page);
   await shot(page, 'get-licence-3-devices');
@@ -129,7 +129,7 @@ test('a wrong code says how many tries are left', async ({ page }) => {
   await page.getByRole('button', { name: 'Send codes' }).click();
   await page.getByLabel('Email code').fill('111111');
   await page.getByLabel('Phone code').fill('222222');
-  await page.getByRole('button', { name: 'Confirm' }).click();
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
   await expect(page.getByRole('alert')).toHaveText('that code is not right (4 tries left)');
   await expect(page.getByLabel('Email code')).toHaveValue('111111');
 });

@@ -33,7 +33,7 @@ const within = (inner: Rect, outer: Rect): boolean => inner.y >= outer.y - 0.5 &
 async function openAbout(page: Page) {
   await openUnlocked(page);
   await page.goto('/#/about');
-  await expect(page.getByRole('heading', { name: 'About', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'About', exact: true, level: 1 })).toBeVisible();
   await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: About' });
   await expect(sheet).toBeVisible();

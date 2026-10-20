@@ -77,7 +77,7 @@ test('a double tap on Bible order leaves him on the share, and the switch does n
   await tapTwice(page, before, 0, { touch: true });
   await stillOnTheShare(page);
   await expect(page.getByRole('button', { name: 'Bible order' })).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByRole('group', { name: 'Genesis' })).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Genesis', exact: true })).toBeVisible();
   expect((await boxOf(page, 'Bible order')).y).toBeCloseTo(before.y, 0);
   await shot(page, 'share-steady-bible-order');
 

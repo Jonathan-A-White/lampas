@@ -32,12 +32,12 @@ test('the idea sheet of the genitive fits the phone, its slider and buttons clea
   await openUnlocked(page);
   await page.goto('/');
   await page.locator('[data-verse="2"]').getByRole('button', { name: 'of the', exact: true }).click();
-  await page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true }).click();
-  const learn = page.getByRole('dialog', { name: 'Grammar' }).getByRole('button', { name: 'Learn this idea' });
+  await page.getByRole('dialog', { name: 'Word', exact: true }).getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true }).click();
+  const learn = page.getByRole('dialog', { name: 'Grammar', exact: true }).getByRole('button', { name: 'Learn this idea' });
   expect((await learn.boundingBox())?.height).toBeGreaterThanOrEqual(47.5);
   await learn.click();
 
-  const idea = page.getByRole('dialog', { name: 'Idea' });
+  const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(idea).toBeVisible();
   await expect(idea.getByRole('heading', { name: 'The genitive case' })).toBeVisible();
   await expect(idea.getByTestId('idea-example')).toHaveCount(3);
@@ -83,9 +83,9 @@ test('the idea sheet of the genitive fits the phone, its slider and buttons clea
 
   await page.reload();
   await page.locator('[data-verse="2"]').getByRole('button', { name: 'of the', exact: true }).click();
-  await page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true }).click();
-  await page.getByRole('dialog', { name: 'Grammar' }).getByRole('button', { name: 'Learn this idea' }).click();
-  await expect(page.getByRole('dialog', { name: 'Idea' }).getByTestId('idea-level')).toHaveText('Frontier since today');
+  await page.getByRole('dialog', { name: 'Word', exact: true }).getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true }).click();
+  await page.getByRole('dialog', { name: 'Grammar', exact: true }).getByRole('button', { name: 'Learn this idea' }).click();
+  await expect(page.getByRole('dialog', { name: 'Idea', exact: true }).getByTestId('idea-level')).toHaveText('Frontier since today');
 });
 
 test('a tap on the middle of the "Your level" track leaves the level where it was, and a drag sets it', async ({ page }) => {
@@ -94,9 +94,9 @@ test('a tap on the middle of the "Your level" track leaves the level where it wa
   await openUnlocked(page);
   await page.goto('/');
   await page.locator('[data-verse="2"]').getByRole('button', { name: 'of the', exact: true }).click();
-  await page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true }).click();
-  await page.getByRole('dialog', { name: 'Grammar' }).getByRole('button', { name: 'Learn this idea' }).click();
-  const idea = page.getByRole('dialog', { name: 'Idea' });
+  await page.getByRole('dialog', { name: 'Word', exact: true }).getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true }).click();
+  await page.getByRole('dialog', { name: 'Grammar', exact: true }).getByRole('button', { name: 'Learn this idea' }).click();
+  const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
   const slider = idea.getByRole('slider', { name: 'Your level' });
   await expect(slider).toBeEnabled();
   await expect(slider).toHaveAttribute('aria-valuetext', 'Not yet');
@@ -132,7 +132,7 @@ test('Back from an idea\'s table brings its sheet back scrolled to where he tapp
   await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
   await page.getByTestId('ideas-bar').click();
   await page.getByTestId('ideas-list').getByRole('button', { name: 'The aorist tense', exact: true }).click();
-  const idea = page.getByRole('dialog', { name: 'Idea' });
+  const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(idea.getByRole('heading', { name: 'The aorist tense' })).toBeVisible();
   await expect(idea.getByTestId('idea-example').first()).toBeVisible();
 
@@ -143,11 +143,11 @@ test('Back from an idea\'s table brings its sheet back scrolled to where he tapp
   await expect(table).toBeInViewport({ ratio: 1 });
   expect(await textBox.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
   await table.click();
-  await expect(page.getByRole('dialog', { name: 'Idea' })).toHaveCount(0);
+  await expect(page.getByRole('dialog', { name: 'Idea', exact: true })).toHaveCount(0);
   await expect(page).toHaveURL(/#\/paradigms/);
 
   await page.goBack();
-  const back = page.getByRole('dialog', { name: 'Idea' });
+  const back = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(back.getByRole('heading', { name: 'The aorist tense' })).toBeVisible();
   const again = back.getByRole('button', { name: /^Table: Future and aorist/ });
   await expect(again).toBeVisible();

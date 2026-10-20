@@ -13,7 +13,7 @@ test('the reader header holds the chapter, English | Greek and the gear, in one 
 
   const header = page.locator('header').first();
   const title = await header.getByRole('heading', { name: 'Romans 8', level: 1 }).boundingBox();
-  const language = await header.getByRole('group', { name: 'Language' }).boundingBox();
+  const language = await header.getByRole('group', { name: 'Language', exact: true }).boundingBox();
   const gear = await header.getByRole('button', { name: 'Settings', exact: true }).boundingBox();
   const head = await header.boundingBox();
   if (!title || !language || !gear || !head) throw new Error('the header is missing a part');
@@ -26,7 +26,7 @@ test('the reader header holds the chapter, English | Greek and the gear, in one 
   expect(gear.x + gear.width).toBeLessThanOrEqual(390);
   expect(title.width).toBeGreaterThanOrEqual(90);
   // nothing else in the header, and no Weave switch or Words button in the reader's top
-  expect(await page.getByRole('group', { name: 'Weave' }).count()).toBe(0);
+  expect(await page.getByRole('group', { name: 'Weave', exact: true }).count()).toBe(0);
   expect(await header.getByRole('button', { name: 'Words', exact: true }).count()).toBe(0);
   expect(head.height).toBeLessThanOrEqual(72);
 
@@ -38,10 +38,10 @@ test('Settings at phone width: the weave, the voices, the Greek pronunciation, W
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   expect(new URL(page.url()).hash).toBe('#/settings');
 
-  const solid = page.getByRole('group', { name: 'Weave' }).getByRole('button', { name: 'Solid', exact: true });
+  const solid = page.getByRole('group', { name: 'Weave', exact: true }).getByRole('button', { name: 'Solid', exact: true });
   await expect(solid).toBeVisible();
   for (const control of [
     solid,
@@ -185,7 +185,7 @@ test('Settings > Daily: a switch per piece, the devotional picker and Tick boxes
   await openUnlocked(page);
   await page.goto('/#/settings');
   const daily = page.locator('section[data-section="daily"]');
-  await expect(daily.getByRole('heading', { name: 'Daily', level: 2 })).toBeVisible();
+  await expect(daily.getByRole('heading', { name: 'Daily', exact: true, level: 2 })).toBeVisible();
 
   // all four pieces and Tick boxes start On, and each switch is a 44 px target
   for (const name of ['Review', 'Plan chapter', 'Psalms and Proverbs', 'Devotional', 'Tick boxes']) {

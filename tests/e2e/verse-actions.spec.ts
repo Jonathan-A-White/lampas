@@ -26,7 +26,7 @@ for (const phone of PHONES) {
     test(`${phone.name}${share ? ' with Share' : ''}: every action is a 44 px target, no label is past two lines, nothing scrolls sideways`, async ({ page }) => {
       await start(page, phone, share);
       const view = await openVerseView(page, 1);
-      const row = view.getByRole('group', { name: 'Actions' });
+      const row = view.getByRole('group', { name: 'Actions', exact: true });
       const buttons = await row.getByRole('button').all();
       expect(buttons).toHaveLength(share ? 6 : 5);
       for (const button of buttons) {

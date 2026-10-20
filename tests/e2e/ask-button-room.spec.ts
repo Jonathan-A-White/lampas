@@ -89,7 +89,7 @@ test('Quick test at 412x915: the last answer scrolled to the end is clear of the
 test('Settings: no help line is ever behind the Ask the tutor button, from its top to its last line', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/settings');
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   expect(await expectNothingBehind(page, 'Settings')).toBeGreaterThan(1500);
   await shot(page, 'ask-button-room-settings');
 });
@@ -98,7 +98,7 @@ test('Settings sideways: the button has a gutter, nothing is behind it from top 
   await openUnlocked(page);
   await page.setViewportSize({ width: 740, height: 360 });
   await page.goto('/#/settings');
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   expect(await expectNothingBehind(page, 'Settings sideways')).toBeGreaterThan(1500);
 });
 

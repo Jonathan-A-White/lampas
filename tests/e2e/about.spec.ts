@@ -7,14 +7,14 @@ test.use({ viewport: { width: 412, height: 915 } });
 test('About credits the data at phone width, reached from Settings', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/settings');
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   const about = page.getByRole('button', { name: 'About', exact: true });
   await about.scrollIntoViewIfNeeded();
   const tap = await about.boundingBox();
   expect(tap?.height).toBeGreaterThanOrEqual(43.5);
   await about.click();
 
-  await expect(page.getByRole('heading', { name: 'About', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'About', exact: true, level: 1 })).toBeVisible();
   await expect(page.getByRole('blockquote')).toContainText('If I have seen further it is by standing on the shoulders of Giants.');
   await expect(page.getByRole('blockquote')).toContainText('Isaac Newton');
   const licence = page.getByRole('link', { name: 'CC BY 4.0', exact: true });
@@ -52,7 +52,7 @@ test.describe('at 390x844', () => {
   test('About: the Preface and Your requests buttons hold their description line clear of the bottom border (mw-5r3p30.222)', async ({ page }) => {
     await openUnlocked(page);
     await page.goto('/#/about');
-    await expect(page.getByRole('heading', { name: 'About', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'About', exact: true, level: 1 })).toBeVisible();
     for (const [name, id] of [
       ['Preface', 'preface-about'],
       ['Your requests', 'requests-about'],

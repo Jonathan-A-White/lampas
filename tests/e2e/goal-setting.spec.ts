@@ -9,9 +9,9 @@ test('Settings > Goal at phone width: three pickers, each 48 px tall, write Read
   await expect(group).toBeVisible();
   await expect(group.getByTestId('goal-now')).toHaveText('Goal: none');
 
-  const book = group.getByRole('combobox', { name: 'Book' });
-  const chapter = group.getByRole('combobox', { name: 'Chapter' });
-  const verse = group.getByRole('combobox', { name: 'Verse' });
+  const book = group.getByRole('combobox', { name: 'Book', exact: true });
+  const chapter = group.getByRole('combobox', { name: 'Chapter', exact: true });
+  const verse = group.getByRole('combobox', { name: 'Verse', exact: true });
   await expect(chapter).toBeDisabled();
   await expect(verse).toBeDisabled();
 
@@ -20,7 +20,7 @@ test('Settings > Goal at phone width: three pickers, each 48 px tall, write Read
   await verse.selectOption({ label: '1' });
   await expect(group.getByTestId('goal-now')).toHaveText('Read 1 John 1:1');
 
-  for (const picker of [book, chapter, verse, group.getByRole('button', { name: 'Clear' })]) {
+  for (const picker of [book, chapter, verse, group.getByRole('button', { name: 'Clear', exact: true })]) {
     const box = await picker.boundingBox();
     expect(box?.height).toBeGreaterThanOrEqual(47.5);
     expect(box?.x).toBeGreaterThanOrEqual(0);
@@ -32,8 +32,8 @@ test('Settings > Goal at phone width: three pickers, each 48 px tall, write Read
 
   await page.reload();
   await expect(page.getByRole('group', { name: 'Goal', exact: true }).getByTestId('goal-now')).toHaveText('Read 1 John 1:1');
-  await expect(page.getByRole('group', { name: 'Goal', exact: true }).getByRole('combobox', { name: 'Verse' })).toHaveValue('1');
+  await expect(page.getByRole('group', { name: 'Goal', exact: true }).getByRole('combobox', { name: 'Verse', exact: true })).toHaveValue('1');
   // the screen scrolls in its own box: bring the Goal to the top so the shot shows it
-  await page.getByRole('heading', { name: 'Goal', level: 2 }).evaluate((el) => el.scrollIntoView({ block: 'start' }));
+  await page.getByRole('heading', { name: 'Goal', exact: true, level: 2 }).evaluate((el) => el.scrollIntoView({ block: 'start' }));
   await shot(page, 'goal-setting');
 });

@@ -45,7 +45,7 @@ test('the speaker beside ἡ on The Greek alphabet hands the Greek voice ηη, a
   await page.reload();
   await page.getByTestId('ideas-bar').click();
   await page.getByTestId('ideas-list').getByRole('button', { name: 'The Greek alphabet' }).click();
-  const sheet = page.getByRole('dialog', { name: 'Idea' });
+  const sheet = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(sheet).toBeVisible();
   const speaker = sheet.getByRole('button', { name: 'Hear ἡ' });
   await speaker.scrollIntoViewIfNeeded();

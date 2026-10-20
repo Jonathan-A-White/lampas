@@ -39,7 +39,7 @@ async function openAlphabet(page: Page): Promise<Locator> {
   await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
   await page.getByTestId('ideas-bar').click();
   await page.getByTestId('ideas-list').getByRole('button', { name: 'The Greek alphabet', exact: true }).click();
-  const sheet = page.getByRole('dialog', { name: 'Idea' });
+  const sheet = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(sheet.getByRole('heading', { name: 'The Greek alphabet' })).toBeVisible();
   await expect(sheet.getByTestId('idea-example').first()).toBeVisible();
   return sheet;
@@ -63,8 +63,8 @@ test('the omicron sheet sideways shows the sound above the slider', async ({ pag
   const sheet = await openAlphabet(page);
   await sheet.getByRole('button', { name: 'About omicron' }).click();
   // the omicron sheet opens over the alphabet's: the topmost Idea dialog is the one he reads
-  const top = page.getByRole('dialog', { name: 'Idea' }).last();
-  await expect(top.getByRole('heading', { name: 'Omicron' })).toBeVisible();
+  const top = page.getByRole('dialog', { name: 'Idea', exact: true }).last();
+  await expect(top.getByRole('heading', { name: 'Omicron', exact: true })).toBeVisible();
   await shot(page, 'idea-sheet-landscape-omicron');
   const sound = top.getByTestId('idea-text');
   await expect(sound).toContainText('sounds like');

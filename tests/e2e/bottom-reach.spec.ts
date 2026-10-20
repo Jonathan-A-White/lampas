@@ -49,19 +49,19 @@ for (const phone of PHONES) for (const mode of MODES) {
       await openUnlocked(page);
       await page.goto('/#/settings');
       await withNavBar(page, mode.inset);
-      await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
       const about = page.getByRole('button', { name: 'About', exact: true });
       await expectReachable(page, about, '.screen');
       await shot(page, `bottom-settings-${phone.name}-${mode.name}`);
       await about.tap();
-      await expect(page.getByRole('heading', { name: 'About', level: 1 })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'About', exact: true, level: 1 })).toBeVisible();
     });
 
     test('Words scrolls its last word clear of the navigation bar', async ({ page }) => {
       await openUnlocked(page);
       await page.goto('/#/words');
       await withNavBar(page, mode.inset);
-      await expect(page.getByRole('heading', { name: 'Words', level: 1 })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeVisible();
       await expectReachable(page, page.locator('[data-lemma]').last(), '.screen');
       await shot(page, `bottom-words-${phone.name}-${mode.name}`);
     });
@@ -71,7 +71,7 @@ for (const phone of PHONES) for (const mode of MODES) {
       await page.goto('/#/?c=8&view=greek');
       await withNavBar(page, mode.inset);
       await page.locator('[data-verse="1"] [data-word="1"]').tap();
-      const sheet = page.getByRole('dialog', { name: 'Word' });
+      const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
       await expect(sheet).toBeVisible();
       const body = sheet.locator('div.overflow-y-auto').first();
       await expectReachable(page, body.locator(':scope > *').last(), 'div.overflow-y-auto');

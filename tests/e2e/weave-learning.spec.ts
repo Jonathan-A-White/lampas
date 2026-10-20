@@ -12,7 +12,7 @@ async function openReader(page: Page) {
 test('a learning word stands in Greek with its English in small grey beneath, the verse flow intact', async ({ page }) => {
   await openReader(page);
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  const group = page.getByRole('group', { name: 'Weave' });
+  const group = page.getByRole('group', { name: 'Weave', exact: true });
   const option = group.getByRole('button', { name: '+ Learning', exact: true });
   const box = await option.boundingBox();
   expect(box?.height).toBeGreaterThanOrEqual(43.5);

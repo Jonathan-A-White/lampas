@@ -27,9 +27,9 @@ test('the Reader shows the Today chip, Today shows Review with N due and opens i
   // his learning words are due on the first open
   const due = await dueOnToday(page);
   await reviewPiece(page).getByRole('button', { name: new RegExp(`^${due} due`) }).click();
-  await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Review', exact: true, level: 1 })).toBeVisible();
   await expect(page.getByTestId('due-today')).toHaveText(`Due today: ${due} ${due === 1 ? 'word' : 'words'}`);
-  const start = page.getByRole('button', { name: 'Start' });
+  const start = page.getByRole('button', { name: 'Start', exact: true });
   expect((await start.boundingBox())?.height).toBeGreaterThanOrEqual(48);
   await expectFitsPhone(page);
 
@@ -37,7 +37,7 @@ test('the Reader shows the Today chip, Today shows Review with N due and opens i
   await expect(page.getByTestId('prompt')).toBeVisible();
   for (let i = 0; i < 10; i += 1) {
     // a strong word (his solid words start on step 4) comes as a flashcard, a weak one as multiple choice
-    const show = page.getByRole('button', { name: 'Show' });
+    const show = page.getByRole('button', { name: 'Show', exact: true });
     if (await show.isVisible()) {
       await show.click();
       await page.getByRole('button', { name: 'I knew it' }).click();
@@ -68,7 +68,7 @@ test('the Today chip fits the Reader at 360 px and leaves the header as it was',
   expect(box && box.x + box.width).toBeLessThanOrEqual(360);
   expect(box?.height).toBeGreaterThanOrEqual(38);
   // the chip sits under the header, so the header's own buttons keep their room
-  expect((await page.getByRole('button', { name: 'Settings' }).boundingBox())?.width).toBeGreaterThanOrEqual(48);
+  expect((await page.getByRole('button', { name: 'Settings', exact: true }).boundingBox())?.width).toBeGreaterThanOrEqual(48);
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await expectFitsPhone(page);
   await context.close();
@@ -77,11 +77,11 @@ test('the Today chip fits the Reader at 360 px and leaves the header as it was',
 test('Review is reached from Settings and a reload keeps him on it', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/');
-  await page.getByRole('button', { name: 'Settings' }).click();
-  await page.getByRole('button', { name: 'Review' }).click();
-  await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await page.getByRole('button', { name: 'Review', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Review', exact: true, level: 1 })).toBeVisible();
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Review', exact: true, level: 1 })).toBeVisible();
 });
 
 // Every due word on step 3 or higher is asked as a flashcard: seed the schedule through raw IndexedDB, as the app wrote it.
@@ -115,7 +115,7 @@ test('a strong word is a flashcard: the lemma large, Show reveals the meaning, t
   await openUnlocked(page);
   await makeAllDueStrong(page);
   await page.goto('/#/review');
-  await page.getByRole('button', { name: 'Start' }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
   const prompt = page.getByTestId('prompt');
   await expect(prompt).toBeVisible();
   await expect(page.locator('[data-option]')).toHaveCount(0);
@@ -124,7 +124,7 @@ test('a strong word is a flashcard: the lemma large, Show reveals the meaning, t
   expect((await prompt.boundingBox())?.height).toBeGreaterThanOrEqual(48);
   const bar = page.getByTestId('tap-to-hear');
   expect((await bar.boundingBox())?.height).toBeGreaterThanOrEqual(48);
-  const show = page.getByRole('button', { name: 'Show' });
+  const show = page.getByRole('button', { name: 'Show', exact: true });
   expect((await show.boundingBox())?.height).toBeGreaterThanOrEqual(48);
   await expect(page.getByTestId('flash-gloss')).toHaveText('');
   await expect(page.getByTestId('picture')).toHaveCount(0);
@@ -153,14 +153,14 @@ const overlaps = (a: Box, b: Box) => a.x < b.x + b.width && b.x < a.x + a.width 
 test('the end card labels its score, so it is not read as the question counter', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/review');
-  await page.getByRole('button', { name: 'Start' }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('prompt')).toBeVisible();
   // in the round the counter under the title is a bare 'N of 10' with no label
-  await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Review', exact: true, level: 1 })).toBeVisible();
   await expect(page.getByText('1 of 10', { exact: true })).toBeVisible();
   await expect(page.getByTestId('score-label')).toHaveCount(0);
   for (let i = 0; i < 10; i += 1) {
-    const show = page.getByRole('button', { name: 'Show' });
+    const show = page.getByRole('button', { name: 'Show', exact: true });
     if (await show.isVisible()) {
       await show.click();
       await page.getByRole('button', { name: 'I knew it' }).click();
@@ -183,13 +183,13 @@ test('sideways (844x390) the round Ask button keeps clear of every answer option
   const page = await context.newPage();
   await openUnlocked(page);
   await page.goto('/#/review');
-  await page.getByRole('button', { name: 'Start' }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('prompt')).toBeVisible();
   const ask = page.locator('[data-ask-tutor]');
   await expect(ask).toBeVisible();
   let checked = 0;
   for (let i = 0; i < 10; i += 1) {
-    const show = page.getByRole('button', { name: 'Show' });
+    const show = page.getByRole('button', { name: 'Show', exact: true });
     if (await show.isVisible()) {
       await show.click();
       await page.getByRole('button', { name: 'I knew it' }).click();

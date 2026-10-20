@@ -105,7 +105,7 @@ const SCREENS: readonly Screen[] = [
     open: async (page) => {
       await openUnlocked(page);
       await page.goto('/#/settings');
-      await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeAttached();
+      await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeAttached();
     },
   },
   {
@@ -114,7 +114,7 @@ const SCREENS: readonly Screen[] = [
     open: async (page) => {
       await openUnlocked(page);
       await page.goto('/#/placement');
-      await expect(page.getByRole('heading', { name: 'Placement', level: 1 })).toBeAttached();
+      await expect(page.getByRole('heading', { name: 'Placement', exact: true, level: 1 })).toBeAttached();
     },
   },
 ];
@@ -148,7 +148,7 @@ const MORE_SCREENS: readonly Screen[] = [
     open: async (page) => {
       await openUnlocked(page);
       await page.goto('/#/words');
-      await expect(page.getByRole('heading', { name: 'Words', level: 1 })).toBeAttached();
+      await expect(page.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeAttached();
       await expect(page.locator('[data-lemma]').first()).toBeAttached();
     },
   },
@@ -169,7 +169,7 @@ const MORE_SCREENS: readonly Screen[] = [
       await openUnlocked(page);
       await page.goto('/#/?c=8&view=greek');
       await page.locator('[data-verse="1"] [data-word="1"]').click();
-      await expect(page.getByRole('dialog', { name: 'Word' })).toBeVisible();
+      await expect(page.getByRole('dialog', { name: 'Word', exact: true })).toBeVisible();
     },
   },
   {
@@ -179,8 +179,8 @@ const MORE_SCREENS: readonly Screen[] = [
       await openUnlocked(page);
       await page.goto('/');
       await page.locator('[data-verse="2"]').getByRole('button', { name: 'For', exact: true }).click();
-      await page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-parse').getByRole('button', { name: 'conjunction', exact: true }).click();
-      await expect(page.getByRole('dialog', { name: 'Grammar' }).getByRole('heading', { name: 'conjunction' })).toBeVisible();
+      await page.getByRole('dialog', { name: 'Word', exact: true }).getByTestId('sheet-parse').getByRole('button', { name: 'conjunction', exact: true }).click();
+      await expect(page.getByRole('dialog', { name: 'Grammar', exact: true }).getByRole('heading', { name: 'conjunction', exact: true })).toBeVisible();
     },
   },
   {
@@ -421,7 +421,7 @@ test('the whole path: its labels are twice their 100% size and inside their node
 test('the check fails on a label that is cut off', async ({ page }) => {
   await SCREENS[3].open(page);
   expect(await clipped(page)).toEqual([]);
-  await page.getByRole('heading', { name: 'Settings', level: 1 }).evaluate((el) => {
+  await page.getByRole('heading', { name: 'Settings', exact: true, level: 1 }).evaluate((el) => {
     el.setAttribute('style', 'display:block;width:20px;overflow:hidden;white-space:nowrap');
   });
   expect((await clipped(page)).some((line) => line.includes('Settings') && line.includes('cut off'))).toBe(true);

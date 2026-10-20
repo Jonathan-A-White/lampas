@@ -11,7 +11,7 @@ test('Order Greek puts the Reader\'s first words in the Greek order, one line of
   const verse1 = page.locator('[data-verse="1"] [data-text]');
   await expect(verse1).toBeVisible();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   // like Grammar, the Order row is drawn only while the Weave is not Off
   await expect(page.getByRole('group', { name: 'Order', exact: true })).toHaveCount(0);
   await page.getByRole('group', { name: 'Weave', exact: true }).getByRole('button', { name: 'Solid', exact: true }).click();

@@ -10,8 +10,8 @@ test('the Greek of the In Greek paragraph on the genitive Grammar sheet is lang 
   await openUnlocked(page);
   await page.goto('/');
   await page.locator('[data-verse="2"]').getByRole('button', { name: 'of the', exact: true }).click();
-  await page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true }).click();
-  const grammar = page.getByRole('dialog', { name: 'Grammar' });
+  await page.getByRole('dialog', { name: 'Word', exact: true }).getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true }).click();
+  const grammar = page.getByRole('dialog', { name: 'Grammar', exact: true });
   await expect(grammar).toBeVisible();
 
   const face = (el: Element) => getComputedStyle(el).fontFamily;

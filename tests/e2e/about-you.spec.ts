@@ -28,30 +28,30 @@ test('Settings > About you keeps age, pace and ways of learning, and Clear empti
   await page.getByRole('button', { name: 'About you' }).click();
   await expect(page.getByRole('heading', { name: 'About you', level: 1 })).toBeVisible();
 
-  const age = page.getByRole('textbox', { name: 'Age' });
+  const age = page.getByRole('textbox', { name: 'Age', exact: true });
   await insidePhone(age);
   await age.fill('34');
-  await page.getByRole('group', { name: 'Pace' }).getByRole('button', { name: 'Steady', exact: true }).click();
+  await page.getByRole('group', { name: 'Pace', exact: true }).getByRole('button', { name: 'Steady', exact: true }).click();
   const ways = page.getByRole('group', { name: 'Ways of learning' });
   await ways.getByRole('button', { name: 'Hearing', exact: true }).click();
   await ways.getByRole('button', { name: 'Doing', exact: true }).click();
-  for (const name of ['Steady', 'Quick', 'Slow']) await insidePhone(page.getByRole('group', { name: 'Pace' }).getByRole('button', { name, exact: true }));
+  for (const name of ['Steady', 'Quick', 'Slow']) await insidePhone(page.getByRole('group', { name: 'Pace', exact: true }).getByRole('button', { name, exact: true }));
   for (const name of ['Hearing', 'Seeing', 'Reading', 'Doing']) await insidePhone(ways.getByRole('button', { name, exact: true }));
-  await insidePhone(page.getByRole('textbox', { name: 'Background' }));
-  await insidePhone(page.getByRole('textbox', { name: 'Why' }));
+  await insidePhone(page.getByRole('textbox', { name: 'Background', exact: true }));
+  await insidePhone(page.getByRole('textbox', { name: 'Why', exact: true }));
   await insidePhone(page.getByRole('button', { name: 'Clear', exact: true }));
   await noSideways(page);
   await page.locator('main.screen').evaluate((el) => el.scrollTo(0, 0));
   await shot(page, 'about-you');
 
   await page.reload();
-  await expect(page.getByRole('textbox', { name: 'Age' })).toHaveValue('34');
-  await expect(page.getByRole('group', { name: 'Pace' }).getByRole('button', { name: 'Steady', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('textbox', { name: 'Age', exact: true })).toHaveValue('34');
+  await expect(page.getByRole('group', { name: 'Pace', exact: true }).getByRole('button', { name: 'Steady', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('group', { name: 'Ways of learning' }).getByRole('button', { name: 'Hearing', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('group', { name: 'Ways of learning' }).getByRole('button', { name: 'Seeing', exact: true })).toHaveAttribute('aria-pressed', 'false');
 
   await page.getByRole('button', { name: 'Clear', exact: true }).click();
-  await expect(page.getByRole('textbox', { name: 'Age' })).toHaveValue('');
-  await expect(page.getByRole('group', { name: 'Pace' }).getByRole('button', { pressed: true })).toHaveCount(0);
+  await expect(page.getByRole('textbox', { name: 'Age', exact: true })).toHaveValue('');
+  await expect(page.getByRole('group', { name: 'Pace', exact: true }).getByRole('button', { pressed: true })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Clear', exact: true })).toBeDisabled();
 });

@@ -12,7 +12,7 @@ async function openReader(page: Page) {
 test('the Weave switch swaps his solid words for Greek, big and tappable, at phone width', async ({ page }) => {
   await openReader(page);
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  const group = page.getByRole('group', { name: 'Weave' });
+  const group = page.getByRole('group', { name: 'Weave', exact: true });
   await expect(group).toBeVisible();
   for (const label of ['Off', 'Solid']) {
     const box = await group.getByRole('button', { name: label, exact: true }).boundingBox();

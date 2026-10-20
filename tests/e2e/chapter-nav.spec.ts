@@ -13,7 +13,7 @@ test('the foot of 1 John 1 offers 1 John 2, which opens from the top and is kept
   await page.locator('[data-reader]').evaluate((el) => {
     el.scrollTop = el.scrollHeight;
   });
-  const nav = page.getByRole('navigation', { name: 'Chapters' });
+  const nav = page.getByRole('navigation', { name: 'Chapters', exact: true });
   const next = nav.getByRole('button', { name: '1 John 2 ›' });
   await expect(next).toBeInViewport();
   await expect(nav.getByRole('button', { name: '‹ 2 Peter 3' })).toBeInViewport();
@@ -35,7 +35,7 @@ test('the foot of 1 John 1 offers 1 John 2, which opens from the top and is kept
   await page.locator('[data-reader]').evaluate((el) => {
     el.scrollTop = el.scrollHeight;
   });
-  await page.getByRole('navigation', { name: 'Chapters' }).getByRole('button', { name: '‹ 1 John 1' }).click();
+  await page.getByRole('navigation', { name: 'Chapters', exact: true }).getByRole('button', { name: '‹ 1 John 1' }).click();
   await expect(page.getByRole('heading', { name: '1 John 1', level: 1 })).toBeVisible();
 });
 
@@ -43,13 +43,13 @@ test('Romans 16 goes on to 1 Corinthians 1; Matthew 1 and Revelation 22 stop', a
   await openUnlocked(page);
   await page.goto('/#/?b=rom&c=16');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await page.getByRole('navigation', { name: 'Chapters' }).getByRole('button', { name: '1 Corinthians 1 ›' }).click();
+  await page.getByRole('navigation', { name: 'Chapters', exact: true }).getByRole('button', { name: '1 Corinthians 1 ›' }).click();
   await expect(page.getByRole('heading', { name: '1 Corinthians 1', level: 1 })).toBeVisible();
   await page.goto('/#/?b=mat&c=1');
   await expect(page.getByRole('heading', { name: 'Matthew 1', level: 1 })).toBeVisible();
   await expect(page.getByRole('button', { name: /^‹/ })).toHaveCount(0);
   await page.goto('/#/?b=rev&c=22');
   await expect(page.getByRole('heading', { name: 'Revelation 22', level: 1 })).toBeVisible();
-  await expect(page.getByRole('navigation', { name: 'Chapters' }).getByRole('button', { name: '‹ Revelation 21' })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Chapters', exact: true }).getByRole('button', { name: '‹ Revelation 21' })).toBeVisible();
   await expect(page.getByRole('button', { name: /›$/ })).toHaveCount(0);
 });

@@ -109,7 +109,7 @@ const SCREENS: readonly Screen[] = [
     open: async (page) => {
       await openUnlocked(page);
       await page.goto('/#/settings');
-      await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
     },
   },
   {
@@ -118,9 +118,9 @@ const SCREENS: readonly Screen[] = [
       await openUnlocked(page);
       await page.goto('/');
       await page.locator('[data-verse="2"]').getByRole('button', { name: 'of the', exact: true }).click();
-      await page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true }).click();
-      await page.getByRole('dialog', { name: 'Grammar' }).getByRole('button', { name: 'Learn this idea' }).click();
-      const idea = page.getByRole('dialog', { name: 'Idea' });
+      await page.getByRole('dialog', { name: 'Word', exact: true }).getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true }).click();
+      await page.getByRole('dialog', { name: 'Grammar', exact: true }).getByRole('button', { name: 'Learn this idea' }).click();
+      const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
       await expect(idea.getByRole('heading', { name: 'The genitive case' })).toBeVisible();
       await expect(idea.getByRole('slider', { name: 'Your level' })).toBeEnabled();
     },
@@ -130,7 +130,7 @@ const SCREENS: readonly Screen[] = [
     open: async (page) => {
       await openUnlocked(page);
       await page.goto('/#/placement');
-      await expect(page.getByRole('heading', { name: 'Placement', level: 1 })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Placement', exact: true, level: 1 })).toBeVisible();
     },
   },
 ];

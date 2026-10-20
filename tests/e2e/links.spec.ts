@@ -34,7 +34,7 @@ test('a reference past the end opens the nearest place with a one-line notice', 
 
 test('a Strong’s link opens the word sheet of νόμος', async ({ page }) => {
   await open(page, '#/?word=G3551');
-  const sheet = page.getByRole('dialog', { name: 'Word' });
+  const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
   await expect(sheet.getByTestId('sheet-word')).toHaveText('νόμος');
   await expect(sheet.getByTestId('sheet-gloss')).toHaveText('law');
   await shot(page, 'links-word');
@@ -59,6 +59,6 @@ test('Copy link in the Verse view puts the https link on the clipboard', async (
 test('Copy link on the word sheet puts the https link of the word on the clipboard', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page, '#/?word=G3551');
-  await page.getByRole('dialog', { name: 'Word' }).getByRole('button', { name: 'Copy link' }).click();
+  await page.getByRole('dialog', { name: 'Word', exact: true }).getByRole('button', { name: 'Copy link' }).click();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('https://lampas.allmymind.org/#/?word=G3551');
 });

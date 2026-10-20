@@ -15,16 +15,16 @@ test('every grammar word of the Parsing is a thumb-sized link; conjunction opens
   await page.goto('/');
   await page.locator('[data-verse="2"]').getByRole('button', { name: 'For', exact: true }).click();
 
-  const word = page.getByRole('dialog', { name: 'Word' });
+  const word = page.getByRole('dialog', { name: 'Word', exact: true });
   const link = word.getByTestId('sheet-parse').getByRole('button', { name: 'conjunction', exact: true });
   const box = await link.boundingBox();
   expect(box?.height).toBeGreaterThanOrEqual(43.5);
   expect(await link.evaluate((el) => getComputedStyle(el).textDecorationLine)).toBe('underline');
   await link.click();
 
-  const grammar = page.getByRole('dialog', { name: 'Grammar' });
+  const grammar = page.getByRole('dialog', { name: 'Grammar', exact: true });
   await expect(grammar).toBeVisible();
-  await expect(grammar.getByRole('heading', { name: 'conjunction' })).toBeVisible();
+  await expect(grammar.getByRole('heading', { name: 'conjunction', exact: true })).toBeVisible();
   await expect(grammar.getByTestId('grammar-example')).toHaveCount(3);
   const sheet = await grammar.boundingBox();
   expect((sheet?.x ?? 0) + (sheet?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
@@ -40,15 +40,15 @@ test('every grammar word of the Parsing is a thumb-sized link; conjunction opens
   await know.click();
   await expect(know).toHaveAttribute('aria-pressed', 'true');
   // Done on the Grammar sheet closes the word sheet under it too (mw-5r3p30.514)
-  await grammar.getByRole('button', { name: 'Done' }).click();
+  await grammar.getByRole('button', { name: 'Done', exact: true }).click();
   await expect(word).toBeHidden();
 
   await page.reload();
   await page.locator('[data-verse="2"]').getByRole('button', { name: 'For', exact: true }).click();
-  const again = page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-parse').getByRole('button', { name: 'conjunction', exact: true });
+  const again = page.getByRole('dialog', { name: 'Word', exact: true }).getByTestId('sheet-parse').getByRole('button', { name: 'conjunction', exact: true });
   expect(await again.evaluate((el) => getComputedStyle(el).textDecorationLine)).toBe('none');
   await again.click();
-  await page.getByRole('dialog', { name: 'Grammar' }).getByRole('button', { name: 'Ask the tutor' }).click();
+  await page.getByRole('dialog', { name: 'Grammar', exact: true }).getByRole('button', { name: 'Ask the tutor' }).click();
   const talk = page.getByRole('dialog', { name: 'Talk about Romans 8:2' });
   await expect(talk).toBeVisible();
   await expect(talk.locator('[data-turn]')).toContainText(GRAMMAR_TERM_ANSWER.answer);

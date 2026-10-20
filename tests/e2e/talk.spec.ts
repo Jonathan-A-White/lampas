@@ -75,13 +75,13 @@ test('the Talk bar sits at the bottom of the reader and opens a sheet that fits 
 
   // The Greek word opens the word sheet on top; Done closes it and the Talk sheet is still there.
   await word.click();
-  const wordSheet = page.getByRole('dialog', { name: 'Word' });
+  const wordSheet = page.getByRole('dialog', { name: 'Word', exact: true });
   await expect(wordSheet.getByTestId('sheet-lemma')).toHaveText('συνεργέω');
-  await wordSheet.getByRole('button', { name: 'Done' }).click();
+  await wordSheet.getByRole('button', { name: 'Done', exact: true }).click();
   await expect(wordSheet).toBeHidden();
   await expect(sheet).toBeVisible();
 
-  await sheet.getByRole('button', { name: 'Done' }).click();
+  await sheet.getByRole('button', { name: 'Done', exact: true }).click();
   await expect(sheet).toBeHidden();
   await expectFitsPhone(page);
 });

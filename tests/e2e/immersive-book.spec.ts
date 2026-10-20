@@ -231,7 +231,7 @@ test('Mark 12 in Dark with Immersive reader On: the phone\'s bar and the Talk ba
   await shot(page, 'immersive-black-bars');
   // Settings keeps its usual dark blue, bar included
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   await expect.poll(() => barColour(page)).toBe('0a0e17');
   await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
   await expect(page.locator('[data-verse="1"]')).toBeVisible();

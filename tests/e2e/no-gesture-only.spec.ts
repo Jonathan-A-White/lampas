@@ -85,7 +85,7 @@ test('with no gesture a word can be heard', async ({ page }) => {
   const word = page.locator('[data-verse="1"] [data-chunk="0"]');
   await word.focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('dialog', { name: 'Word' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Word', exact: true })).toBeVisible();
   const heard = page.getByRole('button', { name: 'Hear it', exact: true }).first();
   await heard.focus();
   await page.keyboard.press('Enter');
@@ -114,7 +114,7 @@ test('with no gesture a page can be turned, forward and back, and a chapter open
 
 test('with no gesture the chapter after this one opens (the swipe has its buttons)', async ({ page }) => {
   await openMark12(page, {});
-  const next = page.getByRole('navigation', { name: 'Chapters' }).getByRole('button', { name: /Mark 13/ });
+  const next = page.getByRole('navigation', { name: 'Chapters', exact: true }).getByRole('button', { name: /Mark 13/ });
   await next.focus();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: 'Mark 13', level: 1 })).toBeVisible();

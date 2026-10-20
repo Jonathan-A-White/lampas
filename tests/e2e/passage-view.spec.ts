@@ -59,7 +59,7 @@ test('Listen: the heading and range at the top, the passage big, the row of acti
   expect(await text.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(20);
   await expect(view.locator('[data-passage-verse]')).toHaveCount(11);
 
-  const row = view.getByRole('group', { name: 'Actions' });
+  const row = view.getByRole('group', { name: 'Actions', exact: true });
   const tops = new Set<number>();
   for (const button of await row.getByRole('button').all()) {
     const b = await button.boundingBox();
@@ -143,7 +143,7 @@ test('Listen: Play reads the passage on by itself, lights the verse being read a
   const view = page.getByRole('region', { name: 'Verse view' });
   await view.getByRole('button', { name: 'Play verses 1-11', exact: true }).click();
   // the speaking bar takes over from Play: Pause, Restart and Stop, and no hold bar anywhere
-  const bar = page.getByRole('region', { name: 'Speaking' });
+  const bar = page.getByRole('region', { name: 'Speaking', exact: true });
   await expect(bar.getByRole('button')).toHaveText(['Pause', 'Restart', 'Stop']);
   await expect(page.locator('[data-hold-bar]')).toHaveCount(0);
   await expect(view.locator('[data-passage-verse="1"][data-reading]')).toHaveCount(1);

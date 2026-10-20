@@ -64,7 +64,7 @@ for (const { name, size } of VIEWPORTS) {
     await page.getByTestId('ideas-bar').click();
     await page.getByTestId('ideas-list').getByRole('button', { name: 'The noun', exact: true }).click();
 
-    const idea = page.getByRole('dialog', { name: 'Idea' });
+    const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
     await expect(idea.getByRole('heading', { name: 'The noun' })).toBeVisible();
     await expect(idea.getByTestId('idea-loading')).toHaveCount(0);
     const slider = idea.getByRole('slider', { name: 'Your level' });
@@ -126,7 +126,7 @@ async function openIdea(page: Page, name = 'The noun') {
   await page.reload();
   await page.getByTestId('ideas-bar').click();
   await page.getByTestId('ideas-list').getByRole('button', { name, exact: true }).click();
-  const idea = page.getByRole('dialog', { name: 'Idea' });
+  const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(idea.getByTestId('idea-loading')).toHaveCount(0);
   return idea;
 }
@@ -204,7 +204,7 @@ test('a double tap on Drill it on a letter\'s sheet leaves the drill\'s first qu
   await expect(alphabet.getByRole('slider', { name: 'Your level' })).toBeEnabled();
   await page.waitForTimeout(SETTLE_MS + 100);
   await alphabet.getByRole('button', { name: 'About psi', exact: true }).click();
-  const psi = page.getByRole('dialog', { name: 'Idea' }).last();
+  const psi = page.getByRole('dialog', { name: 'Idea', exact: true }).last();
   await expect(psi.getByRole('button', { name: 'Drill it', exact: true })).toBeEnabled();
   for (const gap of [80, 120, 200]) {
     await page.waitForTimeout(SETTLE_MS + 100);

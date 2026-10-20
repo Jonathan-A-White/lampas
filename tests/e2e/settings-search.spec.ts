@@ -14,21 +14,21 @@ test('Settings search at phone width: a 48 px field at the top, "logos" leaves o
   expect(box?.height).toBeGreaterThanOrEqual(47.5);
   expect(await search.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
   // a detail is hidden while its setting is off: Bible in Logos is not here until Logos is On
-  await expect(page.getByRole('heading', { name: 'Appearance', level: 2 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Appearance', exact: true, level: 2 })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Bible in Logos', level: 2 })).toHaveCount(0);
 
   await search.fill('logos');
   await expect(page.getByRole('switch', { name: 'Logos', exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Appearance', level: 2 })).toHaveCount(0);
-  await expect(page.getByRole('group', { name: 'Theme' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Appearance', exact: true, level: 2 })).toHaveCount(0);
+  await expect(page.getByRole('group', { name: 'Theme', exact: true })).toHaveCount(0);
   await shot(page, 'settings-search-logos');
 
   await search.fill('zzzz');
   await expect(page.getByText('Nothing in Settings matches')).toBeVisible();
 
   await search.fill('');
-  await expect(page.getByRole('heading', { name: 'Appearance', level: 2 })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'More', level: 2 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Appearance', exact: true, level: 2 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'More', exact: true, level: 2 })).toBeVisible();
   await shot(page, 'settings-search-cleared');
 });
 

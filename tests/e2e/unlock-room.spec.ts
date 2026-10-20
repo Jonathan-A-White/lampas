@@ -11,7 +11,7 @@ async function openLicence(page: Page, height: number): Promise<{ main: Locator;
   await refuseChain(page);
   await seedDeviceKey(page);
   await page.goto('/#/unlock');
-  await expect(page.getByRole('heading', { name: 'Licence' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Licence', exact: true })).toBeVisible();
   const main = page.locator('main.screen');
   return { main, status: main.getByRole('status') };
 }
@@ -38,7 +38,7 @@ test('Licence page at 390x844: room above the status, centred, every part reacha
     status,
     page.getByRole('button', { name: 'Get a licence' }),
     page.getByRole('region', { name: 'This phone’s key' }),
-    page.getByRole('button', { name: 'Copy' }),
+    page.getByRole('button', { name: 'Copy', exact: true }),
     page.getByTestId('build-version'),
   ];
   for (const part of parts) {
@@ -96,7 +96,7 @@ test('Licence page of a site-licensed phone at 390x844: My devices and the key w
   expect(((await status.boundingBox())!).y - box.y).toBeGreaterThanOrEqual(24);
   expect(await main.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
   expect(await main.evaluate((el) => el.scrollTop)).toBe(0);
-  for (const part of [page.getByRole('region', { name: 'My devices' }), page.getByRole('region', { name: 'This phone’s key' }), page.getByRole('button', { name: 'Copy' })]) {
+  for (const part of [page.getByRole('region', { name: 'My devices' }), page.getByRole('region', { name: 'This phone’s key' }), page.getByRole('button', { name: 'Copy', exact: true })]) {
     await part.scrollIntoViewIfNeeded();
     const inside = (await part.boundingBox())!;
     const now = (await main.boundingBox())!;

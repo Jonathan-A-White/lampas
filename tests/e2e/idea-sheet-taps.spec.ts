@@ -11,7 +11,7 @@ import { openUnlocked } from './unlocked';
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
 const GAP_MS = 120;
-const ideas = (page: Page) => page.getByRole('dialog', { name: 'Idea' });
+const ideas = (page: Page) => page.getByRole('dialog', { name: 'Idea', exact: true });
 
 // tapTwice (tests/support/gesture.ts) times the two taps on the page's clock, so it is installed before the page opens.
 test.beforeEach(async ({ page }) => {
@@ -93,7 +93,7 @@ test('a double tap on Show N more shows the rest and opens nothing under the sec
   await page.waitForTimeout(SETTLE_MS);
   await expect(chi.locator('[data-testid="idea-example"]:visible')).toHaveCount(all);
   await expect(more).toHaveCount(0);
-  await expect(page.getByRole('dialog', { name: 'Word' })).toHaveCount(0);
+  await expect(page.getByRole('dialog', { name: 'Word', exact: true })).toHaveCount(0);
   await expect(ideas(page)).toHaveCount(2);
   await shot(page, 'idea-sheet-show-more-twice');
 });

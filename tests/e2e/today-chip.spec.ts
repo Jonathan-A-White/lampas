@@ -87,12 +87,12 @@ test('a piece switched off is not counted, and with Tick boxes off the chip says
   await expect(todayChip(page)).toHaveText('Today');
   await expect(todayChip(page)).toHaveAccessibleName('Today');
   await todayChip(page).click();
-  await expect(page.getByRole('heading', { name: 'Today', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Today', exact: true, level: 1 })).toBeVisible();
 });
 
 test('with every Daily piece off the Reader has no Today chip', async ({ page }) => {
   await openReader(page, DAILY.map((key) => ({ key, value: 'off' })));
-  await expect(page.getByTestId('new-words').or(page.getByTestId('weave-count')).or(page.getByRole('button', { name: 'Settings' })).first()).toBeVisible();
+  await expect(page.getByTestId('new-words').or(page.getByTestId('weave-count')).or(page.getByRole('button', { name: 'Settings', exact: true })).first()).toBeVisible();
   await expect(todayChip(page)).toHaveCount(0);
   await expect(page.getByRole('button', { name: /^Due:/ })).toHaveCount(0);
   await expect(page.getByTestId('plan-chip')).toHaveCount(0);

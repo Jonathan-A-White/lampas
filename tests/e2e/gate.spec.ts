@@ -6,7 +6,7 @@ test('a phone with no licence sees Unlock with its key, a Copy and nothing scrol
   await refuseChain(page);
   await seedDeviceKey(page);
   await page.goto('/#/unlock');
-  await expect(page.getByRole('heading', { name: 'Licence' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Licence', exact: true })).toBeVisible();
   await expect(page.getByTestId('device-key')).toHaveText(SEED_PUBLIC_KEY);
   await expect(page.getByRole('button', { name: 'Copy', exact: true })).toBeVisible();
 
@@ -24,7 +24,7 @@ test('a phone with no licence sees Unlock with its key, a Copy and nothing scrol
   expect(keyBox!.y + keyBox!.height).toBeLessThanOrEqual(copyBox!.y);
   expect(copyBox!.y + copyBox!.height).toBeLessThanOrEqual(height);
   await expect(page.getByTestId('build-version')).toHaveText(/^v\d+\.\d+\.\d+ · /);
-  await expect(page.getByRole('heading', { name: 'Lampas' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Lampas', exact: true })).toHaveCount(0);
 
   const { scrollWidth, clientWidth, scrollTop } = await page.evaluate(() => ({
     scrollWidth: document.documentElement.scrollWidth,

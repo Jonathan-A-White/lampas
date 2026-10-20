@@ -166,7 +166,7 @@ async function thumbDoubleTap(page: Page, target: Locator, drawn: () => Promise<
 }
 
 const IDEAS = '[role="dialog"][aria-label="Idea"]';
-const ideas = (page: Page) => page.getByRole('dialog', { name: 'Idea' });
+const ideas = (page: Page) => page.getByRole('dialog', { name: 'Idea', exact: true });
 const chapterName = (page: Page) => page.locator('header h1 button');
 const picker = (page: Page) => page.getByRole('dialog', { name: /^Choose a/ });
 const anyDialog = (page: Page) => page.locator('[role="dialog"], [role="alertdialog"]');
@@ -200,12 +200,12 @@ test.describe('Settings rows', () => {
     await open(page, '#/about', {}, () => page.locator('button[aria-label="Preface"]').waitFor());
     // a new hash on the same page: the app moves to Settings without a reload
     await page.goto('/#/settings');
-    await page.getByRole('heading', { name: 'Settings', level: 1 }).waitFor();
+    await page.getByRole('heading', { name: 'Settings', exact: true, level: 1 }).waitFor();
     const row = page.getByRole('button', { name: 'About', exact: true });
     await row.scrollIntoViewIfNeeded();
     await reads(page);
     // About's Preface is below the fold at this size: the second tap goes to it, scrolled into view on the page's clock held still
-    await thumbDoubleTap(page, row, () => page.getByRole('heading', { name: 'About', level: 1 }).first().waitFor(), {
+    await thumbDoubleTap(page, row, () => page.getByRole('heading', { name: 'About', exact: true, level: 1 }).first().waitFor(), {
       selector: 'button[aria-label="Preface"]',
       second: { selector: 'button[aria-label="Preface"]' },
     });
@@ -214,16 +214,16 @@ test.describe('Settings rows', () => {
   });
 
   test('mw-5r3p30.454: a double tap on the Paradigms row opens the list, not its first table', async ({ page }) => {
-    await open(page, '#/settings', {}, () => page.getByRole('heading', { name: 'Settings', level: 1 }).first().waitFor());
+    await open(page, '#/settings', {}, () => page.getByRole('heading', { name: 'Settings', exact: true, level: 1 }).first().waitFor());
     const row = page.getByRole('button', { name: /^Paradigms/ });
     await row.scrollIntoViewIfNeeded();
     await reads(page);
-    await thumbDoubleTap(page, row, () => page.getByRole('heading', { name: 'Paradigms', level: 1 }).first().waitFor(), { selector: '[data-paradigm]' });
+    await thumbDoubleTap(page, row, () => page.getByRole('heading', { name: 'Paradigms', exact: true, level: 1 }).first().waitFor(), { selector: '[data-paradigm]' });
     await expect(page).toHaveURL(/#\/paradigms$/);
   });
 
   test('mw-5r3p30.455: a double tap on the About you row sets no pace', async ({ page }) => {
-    await open(page, '#/settings', {}, () => page.getByRole('heading', { name: 'Settings', level: 1 }).first().waitFor());
+    await open(page, '#/settings', {}, () => page.getByRole('heading', { name: 'Settings', exact: true, level: 1 }).first().waitFor());
     const row = page.getByRole('button', { name: 'About you', exact: true });
     await row.scrollIntoViewIfNeeded();
     await reads(page);
@@ -273,7 +273,7 @@ test.describe('the Reader', () => {
     await reads(page);
     await thumbDoubleTap(page, heading, () => page.waitForFunction(() => /p=\d+/.test(location.hash), null, { polling: 'raf' }).then(() => {}), { selector: '[data-word]' });
     await expect(page).toHaveURL(/p=\d+/);
-    await expect(page.getByRole('dialog', { name: 'Word' })).toHaveCount(0);
+    await expect(page.getByRole('dialog', { name: 'Word', exact: true })).toHaveCount(0);
   });
 });
 
@@ -315,7 +315,7 @@ test.describe('the Goal screen and its idea sheets', () => {
     await alphabet.getByRole('button', { name: 'About xi' }).click();
     await expect(ideas(page)).toHaveCount(2);
     const xi = ideas(page).last();
-    await expect(xi.getByRole('heading', { name: 'Xi' })).toBeVisible();
+    await expect(xi.getByRole('heading', { name: 'Xi', exact: true })).toBeVisible();
     await expect(xi.getByTestId('idea-loading')).toHaveCount(0);
     await reads(page);
     await thumbDoubleTap(page, xi.getByRole('button', { name: 'Done', exact: true }), () => ideas(page).nth(1).waitFor({ state: 'detached' }), { selector: `${IDEAS} button` });
@@ -327,7 +327,7 @@ test.describe('the Goal screen and its idea sheets', () => {
 test('mw-svw421.19: a double tap on a Paradigms row opens its table and reveals no form', async ({ page }) => {
   const solid = ['article', 'noun', 'case-nominative', 'case-genitive', 'number-singular', 'number-plural', 'gender-masculine', 'gender-feminine'];
   await open(page, '#/paradigms', { grammarLevels: solid.map((id) => ({ id, level: 'solid', since: Date.now(), how: 'marked' })) }, () =>
-    expect(page.getByRole('heading', { name: 'Paradigms', level: 1 })).toBeVisible(),
+    expect(page.getByRole('heading', { name: 'Paradigms', exact: true, level: 1 })).toBeVisible(),
   );
   const row = page.locator('[data-paradigm="article"]');
   await reads(page);
@@ -348,7 +348,7 @@ test('mw-1vuvq6.10: a double tap on the bridge idea sheet\'s Done leaves the tal
     },
   };
   await routePostern(page, fake);
-  await open(page, '#/words', {}, () => page.getByRole('heading', { name: 'Words', level: 1 }).first().waitFor());
+  await open(page, '#/words', {}, () => page.getByRole('heading', { name: 'Words', exact: true, level: 1 }).first().waitFor());
   await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
   const talk = page.getByRole('dialog', { name: 'Ask the tutor: Words' });
   await reads(page);
@@ -369,7 +369,7 @@ test.describe('sideways', () => {
 
   test('mw-5r3p30.487: a double tap on the round Ask the tutor button opens the talk and does not start Hold to talk', async ({ page }) => {
     await honestMic(page);
-    await open(page, '#/about', {}, () => page.getByRole('heading', { name: 'About', level: 1 }).first().waitFor());
+    await open(page, '#/about', {}, () => page.getByRole('heading', { name: 'About', exact: true, level: 1 }).first().waitFor());
     const talk = page.getByRole('dialog', { name: /^Ask the tutor/ });
     await thumbDoubleTap(page, page.getByRole('button', { name: 'Ask the tutor about this screen' }), () => talk.first().waitFor(), { selector: '[name="Hold to talk"], button' });
     await expect(talk).toBeVisible();

@@ -42,6 +42,6 @@ test('the picker lists the Old Testament before Matthew, and an Old Testament ch
   await expect(choice.getByRole('link', { name: 'Read in Logos' })).toHaveAttribute('href', 'logosres:lgcystndrdbblsb;ref=Bible.Ps23');
   expect(await choice.getByRole('link', { name: 'Read in Logos' }).evaluate((el) => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(TAP);
   await shot(page, 'old-testament-psalms');
-  await picker.getByRole('button', { name: 'Done' }).click();
+  await picker.getByRole('button', { name: 'Done', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
 });

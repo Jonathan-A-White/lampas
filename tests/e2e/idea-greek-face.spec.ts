@@ -71,7 +71,7 @@ test('the Greek of the περί lesson, its heading and its phrases, is set in G
   await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
   await page.getByTestId('learn-next').click();
 
-  const idea = page.getByRole('dialog', { name: 'Idea' });
+  const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
   const heading = idea.getByRole('heading', { level: 2 });
   await expect(heading).toContainText('The preposition περί');
   const greekInHeading = heading.locator('[lang="el"]');

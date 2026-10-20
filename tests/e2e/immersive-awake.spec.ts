@@ -87,8 +87,8 @@ test('with Immersive reader On the Reader holds a screen wake lock, and leaving 
   await openReader(page, 'on');
   await expect.poll(async () => (await wake(page)).held).toBe(1);
 
-  await page.getByRole('button', { name: 'Settings' }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   await expect.poll(async () => (await wake(page)).held).toBe(0);
   expect((await wake(page)).requests).toBe(1);
 });

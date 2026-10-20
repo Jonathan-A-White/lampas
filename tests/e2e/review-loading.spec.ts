@@ -15,8 +15,8 @@ test('Review > Start says it is getting the questions while the passage loads', 
     await route.continue();
   });
   await page.goto('/#/review');
-  await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible();
-  await page.getByRole('button', { name: 'Start' }).click();
+  await expect(page.getByRole('heading', { name: 'Review', exact: true, level: 1 })).toBeVisible();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
 
   const loading = page.getByRole('status').filter({ hasText: 'Getting your questions…' });
   await expect(loading).toBeVisible();

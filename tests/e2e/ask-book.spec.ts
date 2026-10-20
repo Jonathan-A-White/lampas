@@ -14,7 +14,7 @@ test('Ask for another book at phone width: the box and Send fit, offline it wait
   await openUnlocked(page);
   await page.setViewportSize(PHONE);
   await page.goto('/#/settings');
-  await page.getByRole('switch', { name: 'Logos' }).click();
+  await page.getByRole('switch', { name: 'Logos', exact: true }).click();
 
   const group = page.getByRole('group', { name: 'Ask for another book' });
   const open = group.getByRole('button', { name: 'Ask for another book' });
@@ -23,7 +23,7 @@ test('Ask for another book at phone width: the box and Send fit, offline it wait
   await open.click();
   await expect(open).toHaveAttribute('aria-expanded', 'true');
   const box = group.getByRole('textbox', { name: 'Book title' });
-  const send = group.getByRole('button', { name: 'Send' });
+  const send = group.getByRole('button', { name: 'Send', exact: true });
   await expect(send).toBeDisabled();
 
   // Every control clears 48 px and fits the phone's width; the field does not make the phone zoom (16 px or more).

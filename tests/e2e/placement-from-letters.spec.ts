@@ -91,10 +91,10 @@ test('Start from the letters keeps what he has: the card says it, and Back to th
   await openGoal(page);
   // mark The Greek alphabet known without a drill on Learn next
   await page.getByTestId('learn-next').click();
-  const sheet = page.getByRole('dialog', { name: 'Idea' });
+  const sheet = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(sheet.getByRole('heading', { name: 'The Greek alphabet' })).toBeVisible();
   await sheet.getByRole('button', { name: 'Mark known without a drill' }).click();
-  await sheet.getByRole('button', { name: 'Done' }).click();
+  await sheet.getByRole('button', { name: 'Done', exact: true }).click();
   const legend = page.getByTestId('ideas-legend');
   await expect(legend).toHaveText(/^Solid 1 · Frontier 0 · Not yet \d+$/);
   const goalCounts = countsOf((await legend.textContent()) ?? '');

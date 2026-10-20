@@ -122,7 +122,7 @@ test('844 x 390: the answer is readable with the speaking bar showing, after Sto
   await expect(speaking).toBeVisible();
   await expectAnswerReadable(view, sideways);
   await shot(page, 'ask-fit-landscape-answer');
-  await speaking.getByRole('button', { name: 'Stop' }).click();
+  await speaking.getByRole('button', { name: 'Stop', exact: true }).click();
   await expectAnswerReadable(view, sideways);
   await shot(page, 'ask-fit-landscape-answer-stopped');
   // rotate upright and back to sideways with the answer open

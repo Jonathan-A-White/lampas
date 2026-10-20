@@ -18,7 +18,7 @@ test('the Words screen lists the seeded words by lesson at phone width', async (
   await page.goto('/');
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await page.getByRole('button', { name: 'Words', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Words', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeVisible();
   await expect(page.getByTestId('word-counts')).toHaveText('54 solid, 9 learning');
   await expect(page.getByRole('heading', { name: 'Lesson 1', level: 2, exact: true })).toBeVisible();
 
@@ -33,7 +33,7 @@ test('the Words screen lists the seeded words by lesson at phone width', async (
 test('the Import screen previews a pasted list and keeps Add in reach at phone width', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/import');
-  await expect(page.getByRole('heading', { name: 'Import', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Import', exact: true, level: 1 })).toBeVisible();
   await page.getByRole('textbox').fill('ἀνάστασις — resurrection\nπνεῦμα, spirit\nspirit');
   await expect(page.getByTestId('import-summary')).toHaveText('2 words to add');
 

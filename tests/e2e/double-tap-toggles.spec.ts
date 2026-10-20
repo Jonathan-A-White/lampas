@@ -61,14 +61,14 @@ test.describe('a double tap on a play or open toggle', () => {
     await openUnlocked(page);
     await settleAsOnHisPhone(page);
     await page.goto('/#/about');
-    await expect(page.getByRole('heading', { name: 'About', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'About', exact: true, level: 1 })).toBeVisible();
     await pageTime(page, SETTLE_MS + 100);
 
     const read = page.getByRole('banner').getByRole('button', { name: 'Read aloud', exact: true });
     await tapTwice(page, read, GAP_MS, { touch: true });
     await pageTime(page, SETTLE_MS + 100);
     await expect(read).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.getByRole('region', { name: 'Speaking' })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Speaking', exact: true })).toBeVisible();
   });
 
   test("ReadCheck: a double tap on 'Me' ends recording-playing, as one tap does", async ({ page }) => {

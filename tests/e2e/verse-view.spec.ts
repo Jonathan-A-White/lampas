@@ -70,7 +70,7 @@ test('Listen: the verse big, one row of actions on one line, and the one Play bu
   expect(await verse.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThan(lineSize);
 
   // the row of actions: every button inside the phone, on one line (or at most the height of two when the text size is large)
-  const row = view.getByRole('group', { name: 'Actions' });
+  const row = view.getByRole('group', { name: 'Actions', exact: true });
   const buttons = await row.getByRole('button').all();
   expect(buttons.length).toBeGreaterThanOrEqual(4);
   const tops = new Set<number>();

@@ -119,7 +119,7 @@ test('Go on the send-off sheet records the start time, then opens Audible', asyn
   const sheet = page.getByRole('dialog', { name: 'Off to Audible: Luke 15' });
   await expect(sheet).toBeVisible();
   await expect(sheet.getByText('When you are back, tell me where you got to.')).toBeVisible();
-  const go = sheet.getByRole('button', { name: 'Go' });
+  const go = sheet.getByRole('button', { name: 'Go', exact: true });
   await expect(sheet.getByRole('button')).toHaveCount(1);
   expect((await go.boundingBox())?.height).toBeGreaterThanOrEqual(48);
   expect((await go.boundingBox())?.width).toBeGreaterThan(300);
@@ -149,7 +149,7 @@ test('an Old Testament chapter in the picker goes through the same sheet', async
   const sheet = page.getByRole('dialog', { name: 'Off to Audible: Leviticus 3' });
   await expect(sheet).toBeVisible();
   await expect(picker).toBeVisible();
-  await sheet.getByRole('button', { name: 'Go' }).click();
+  await sheet.getByRole('button', { name: 'Go', exact: true }).click();
   await expect.poll(async () => (await opens(page)).length).toBe(1);
   expect((await opens(page))[0].session).toMatchObject({ code: 'lev', chapter: 3 });
 });

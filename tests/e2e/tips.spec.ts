@@ -39,7 +39,7 @@ test('the tip chip opens a card that sits under the header, fits the phone, and 
 
   await card.getByRole('button', { name: 'Show me' }).click();
   await expect(page).toHaveURL(/#\/review/);
-  await expect(page.getByRole('heading', { name: 'Review' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Review', exact: true })).toBeVisible();
 });
 
 test('Not now puts the card away and a reload the same day brings nothing back', async ({ page }) => {

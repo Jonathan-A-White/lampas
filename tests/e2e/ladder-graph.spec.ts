@@ -209,13 +209,13 @@ test('a tap on a node opens that idea, and Back from the path returns to Goal', 
   await expect(node).toBeVisible();
   const title = (await node.getAttribute('aria-label'))!.split(':')[0];
   await node.tap();
-  const sheet = page.getByRole('dialog', { name: 'Idea' });
+  const sheet = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(sheet).toBeVisible();
   await expect(sheet).toContainText(title);
   await page.goBack();
   await expect(sheet).toHaveCount(0);
   await page.getByRole('button', { name: '‹ Goal' }).click();
-  await expect(page.getByRole('heading', { name: 'Goal', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Goal', exact: true, level: 1 })).toBeVisible();
 });
 
 test('from the keyboard: Tab brings each idea into the graph', async ({ page }) => {

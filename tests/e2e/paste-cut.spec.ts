@@ -11,7 +11,7 @@ test('a paste past the limit of About you > Background keeps what fits and says 
   await openUnlocked(page);
   await page.goto('/#/settings');
   await page.getByRole('button', { name: 'About you' }).click();
-  const box = page.getByRole('textbox', { name: 'Background' });
+  const box = page.getByRole('textbox', { name: 'Background', exact: true });
   const max = Number(await box.getAttribute('maxlength'));
   expect(max).toBeGreaterThan(0);
   await page.evaluate((text) => navigator.clipboard.writeText(text), 'b'.repeat(max + 50));

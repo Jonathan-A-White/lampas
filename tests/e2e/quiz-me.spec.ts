@@ -29,7 +29,7 @@ test('Quiz me on a passage: the action fits the row, the button stands at the fo
   await expect(view).toBeVisible();
 
   // five actions on one line, each inside the phone and a thumb tall
-  const row = view.getByRole('group', { name: 'Actions' });
+  const row = view.getByRole('group', { name: 'Actions', exact: true });
   const tops = new Set<number>();
   const buttons = await row.getByRole('button').all();
   expect(buttons).toHaveLength(5);
@@ -70,6 +70,6 @@ test('Quiz me on a passage: the action fits the row, the button stands at the fo
   await shot(page, 'quiz-me-sheet');
 
   // Done returns to the Verse view, whose button now continues the quiz
-  await sheet.getByRole('button', { name: 'Done' }).click();
+  await sheet.getByRole('button', { name: 'Done', exact: true }).click();
   await expect(view.getByRole('button', { name: 'Continue the quiz', exact: true })).toBeVisible();
 });
