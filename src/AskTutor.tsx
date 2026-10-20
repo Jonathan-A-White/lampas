@@ -28,9 +28,12 @@ const SPEAKING_BAR_LIFT = 'var(--lp-tap) + 1.25rem';
 
 /** The round button. `lift` raises it above a pinned bar the screen has at its foot (the Reader's Talk bar, Import's Add bar); it also clears the
  * speaking bar while one is up. `away` (the Reader's Immersive reader, src/immersive.ts) slides it out of view: true or false makes the button slide,
- * and while it is true it is not in the tab order or the accessibility tree; undefined (every other screen) is the button as ever. */
-export function AskTutorButton({ onClick, lift = '0px', away }: { onClick: () => void; lift?: string; away?: boolean }) {
-  const hidden = useSheetOpen();
+ * and while it is true it is not in the tab order or the accessibility tree; undefined (every other screen) is the button as ever. `inDialog` is the button a
+ * full-screen dialog draws itself (DialogAskTutor): the dialog's own sheet does not hide it. */
+export function AskTutorButton({ onClick, lift = '0px', away, inDialog }: { onClick: () => void; lift?: string; away?: boolean; inDialog?: boolean }) {
+  // a full-screen dialog that draws its own button (the results of a drill) is itself a sheet that is open: it does not hide the button it carries
+  const sheetOpen = useSheetOpen();
+  const hidden = sheetOpen && !inDialog;
   const speaking = useBarShown();
   const allowed = useAiAllowed();
   if (hidden || !allowed) return null;
@@ -98,16 +101,9 @@ function contextOf(name: string, reported: ScreenContext | null): ScreenContext 
   return fitScreen(reported?.name === name ? reported : { name, facts: [] });
 }
 
-/** The button and the sheet for the screens but the Reader. */
-export function AskTutor({ route }: { route: Route }) {
-  // the route the sheet was opened on: it is closed once the screen changes
-  const [openOn, setOpenOn] = useState<Route | null>(null);
-  const ai = useAiAllowed();
-  const speaking = useBarShown();
-  useAskRoom(ai && route !== 'home' && route !== 'share' && route !== 'unlock', speaking || LIFT[route] !== undefined);
-  const open = openOn === route;
-  const reported = useScreenContext();
-  const name = route === 'home' || route === 'share' || route === 'unlock' ? undefined : SCREEN_NAMES[route];
+/** The talk of a screen's Ask the tutor: the conversation `scope` names (null when the screen has none), the voice, and what a sheet over it needs. `open` is whether its sheet is on screen
+ * (an answer is spoken only then); `onClosed` is what closing the sheet does besides stopping the voice. */
+function useScreenTalk(scope: TalkScope | null, open: boolean, onClosed: () => void) {
   const sayAbout = useRef<(message: string) => void>(() => {});
   const voice = useVoice((message) => sayAbout.current(message));
   const openRef = useRef<string | null>(null);
@@ -119,7 +115,6 @@ export function AskTutor({ route }: { route: Route }) {
     allowed: (ref) => openRef.current === ref,
     open: (place) => openedByTutor(place.book, place.chapter),
   });
-  const scope: TalkScope | null = name ? { title: name, chapter: NO_CHAPTER, verse: null, screen: contextOf(name, reported) } : null;
   const ref = scope ? scopeRef('', 0, scope) : null;
   useEffect(() => {
     openRef.current = open ? ref : null;
@@ -130,9 +125,24 @@ export function AskTutor({ route }: { route: Route }) {
   const close = useCallback(() => {
     voice.abort();
     voice.clearNotice();
-    setOpenOn(null);
-  }, [voice]);
-  if (!name || !scope || !ref || !ai) return null;
+    onClosed();
+  }, [voice, onClosed]);
+  return { ref, state: ref ? states[ref] : undefined, voice, say, resume, close };
+}
+
+/** The button and the sheet for the screens but the Reader. */
+export function AskTutor({ route }: { route: Route }) {
+  // the route the sheet was opened on: it is closed once the screen changes
+  const [openOn, setOpenOn] = useState<Route | null>(null);
+  const ai = useAiAllowed();
+  const speaking = useBarShown();
+  useAskRoom(ai && route !== 'home' && route !== 'share' && route !== 'unlock', speaking || LIFT[route] !== undefined);
+  const open = openOn === route;
+  const reported = useScreenContext();
+  const name = route === 'home' || route === 'share' || route === 'unlock' ? undefined : SCREEN_NAMES[route];
+  const scope: TalkScope | null = name ? { title: name, chapter: NO_CHAPTER, verse: null, screen: contextOf(name, reported) } : null;
+  const talk = useScreenTalk(scope, open, useCallback(() => setOpenOn(null), []));
+  if (!name || !scope || !talk.ref || !ai) return null;
   return (
     <>
       <AskTutorButton
@@ -145,15 +155,56 @@ export function AskTutor({ route }: { route: Route }) {
       {open ? (
         <TalkSheet
           scope={scope}
-          talkRef={ref}
-          state={states[ref]}
-          voice={voice}
+          talkRef={talk.ref}
+          state={talk.state}
+          voice={talk.voice}
           suggestions={suggestionsFor(name)}
-          onSay={(message, focus, pictures) => say(scope, message, focus, pictures)}
-          onResume={() => resume(scope)}
+          onSay={(message, focus, pictures) => talk.say(scope, message, focus, pictures)}
+          onResume={() => talk.resume(scope)}
           onHelp={() => {}}
           onAskTerm={() => {}}
-          onClose={close}
+          onClose={talk.close}
+        />
+      ) : null}
+    </>
+  );
+}
+
+/**
+ * The button and the sheet for a full-screen dialog that is no route (the results of a drill, mw-5r3p30.649): the dialog draws this inside itself, so the button and the sheet stand
+ * over it (a sheet drawn outside would be under the dialog). `screen` is what the dialog reports, `kept` the key the talk is kept under, one for each drill, so a drill's talk
+ * is never the last drill's. Drawn only where a licence allows the tutor; the button sits at the right end of the dialog's foot (FootBar `beside`), above the phone's bar.
+ */
+export function DialogAskTutor({ screen, kept, suggestions }: { screen: ScreenContext; kept: string; suggestions: string[] }) {
+  const [open, setOpen] = useState(false);
+  const ai = useAiAllowed();
+  const fitted = fitScreen(screen);
+  const scope: TalkScope = { title: fitted.name, chapter: NO_CHAPTER, verse: null, screen: fitted, kept };
+  const talk = useScreenTalk(scope, open, useCallback(() => setOpen(false), []));
+  if (!ai || !talk.ref) return null;
+  return (
+    <>
+      {open ? null : (
+        <AskTutorButton
+          inDialog
+          onClick={() => {
+            stopReading();
+            setOpen(true);
+          }}
+        />
+      )}
+      {open ? (
+        <TalkSheet
+          scope={scope}
+          talkRef={talk.ref}
+          state={talk.state}
+          voice={talk.voice}
+          suggestions={suggestions}
+          onSay={(message, focus, pictures) => talk.say(scope, message, focus, pictures)}
+          onResume={() => talk.resume(scope)}
+          onHelp={() => {}}
+          onAskTerm={() => {}}
+          onClose={talk.close}
         />
       ) : null}
     </>
