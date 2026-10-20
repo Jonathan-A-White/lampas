@@ -411,13 +411,14 @@ export interface PairCase {
 }
 
 /**
- * The easiest word of the passage where the letter idea `id` stands inside a pair the scheme reads as one sound (mw-5r3p30.351), with the pair, or undefined
+ * The easiest whole word (isWholeWord, mw-5r3p30.645) of the passage where the letter idea `id` stands inside a pair the scheme reads as one sound (mw-5r3p30.351), with the pair, or undefined
  * when `id` is no letter, the scheme does not say how it reads, or no word of the passage has such a case.
  */
 export function pairCaseOf(id: string, chapters: Chapter[], verse?: number, scheme: Pronunciation = chosenPronunciation()): PairCase | undefined {
   if (!LETTER_IDS.includes(id) || !scheme.spellings) return undefined;
   let best: { score: number; found: PairCase } | undefined;
   for (const { word, chapter, verse: n } of wordsOf(chapters, verse)) {
+    if (!isWholeWord(word.t)) continue;
     const clusters = clustersOf(word.t).filter((c) => c.letter);
     for (const unit of scheme.spellings(word.t)) {
       if (unit.to - unit.from < 2) continue;

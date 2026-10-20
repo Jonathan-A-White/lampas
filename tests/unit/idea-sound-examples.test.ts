@@ -3,7 +3,7 @@
 // ("ee") shows no τοῦ or λόγου; and what the sheet shows first is easy to say.
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadChapter, loadIndex, type BookIndex, type Chapter } from '../../src/data/chapter';
-import { EASY_SCORE, ideaExamples, ideaExamplesFor, ideaPassage, SOUND_EXAMPLES, type IdeaExample } from '../../src/data/grammar/ideaSheet';
+import { EASY_SCORE, ideaExamples, ideaExamplesFor, ideaPassage, isWholeWord, pairCaseOf, SOUND_EXAMPLES, type IdeaExample } from '../../src/data/grammar/ideaSheet';
 import { scoreWords } from '../../src/data/ladderScore';
 import { ideaText } from '../../src/data/grammar/lessons';
 import { clustersOf, foundationOf, LETTER_IDS } from '../../src/data/grammar/inference';
@@ -312,16 +312,13 @@ describe('the worked example and the tile words of a sound card make the sound i
 
 // ---- An example is a whole word the voice can say as a word (mw-5r3p30.583: Delta's first example was δ', which the phone says as the letter's name) ----
 
-/** A form the voice says as a word: it has a vowel and is no elided fragment (δ', ἀλλ', δι'); a lone consonant or a cut-off form is read as a letter name. */
-const sayable = (form: string): boolean => !/['’ʼ᾽]$/.test(form) && clustersOf(form).some((c) => c.letter && 'αεηιουω'.includes(c.base));
-
 describe('the Delta sheet over 1 John 1:1 hands the voice a word, never the elided δ\' (mw-5r3p30.583)', () => {
   it('lists no example that ends in an elision mark and none that is a lone consonant, and the first has a vowel after the δ', async () => {
     const found = forms((await sheet('letter-delta')).examples);
     expect(found.length).toBeGreaterThan(0);
     for (const form of found) {
       expect(form, form).not.toMatch(/['’]$/);
-      expect(sayable(form), form).toBe(true);
+      expect(isWholeWord(form), form).toBe(true);
     }
     expect(found).not.toContain("δ'");
     expect(found).not.toContain("δι'");
@@ -331,10 +328,10 @@ describe('the Delta sheet over 1 John 1:1 hands the voice a word, never the elid
   });
 
   it('the guard can fail: δ\' and a lone consonant are not sayable, δὲ is', () => {
-    expect(sayable("δ'")).toBe(false);
-    expect(sayable("ἀλλ'")).toBe(false);
-    expect(sayable('δ')).toBe(false);
-    expect(sayable('δὲ')).toBe(true);
+    expect(isWholeWord("δ'")).toBe(false);
+    expect(isWholeWord("ἀλλ'")).toBe(false);
+    expect(isWholeWord('δ')).toBe(false);
+    expect(isWholeWord('δὲ')).toBe(true);
   });
 });
 
@@ -352,7 +349,7 @@ describe('no example of any letter or sound sheet is an elided or vowel-less for
           for (const id of SOUND_SHEETS.filter((s) => s !== 'syllables')) {
             for (const example of (await ideaExamplesFor(id, passage, loadChapter)).examples) {
               shown++;
-              if (!sayable(example.word.t)) wrong.push(`${id}: ${code} ${n}: ${example.word.t}`);
+              if (!isWholeWord(example.word.t)) wrong.push(`${id}: ${code} ${n}: ${example.word.t}`);
             }
           }
         }
@@ -369,6 +366,52 @@ describe('no example of any letter or sound sheet is an elided or vowel-less for
       expect(shown).toBeGreaterThan(1000);
       expect(wrong).toEqual([]);
     }, 300_000);
+});
+
+describe('a letter sheet\'s pair line is headed by a whole word, never a cut-off one, over every chapter Lampas holds (mw-5r3p30.645: τοῦτ\' headed the Upsilon pair line)', () => {
+  const pairMemo = new Map<number, Promise<{ lines: number; wrong: string[] }>>();
+  function pairLines(slice: number) {
+    let done = pairMemo.get(slice);
+    if (!done) {
+      done = (async () => {
+        const wrong: string[] = [];
+        let lines = 0;
+        for (const [code, n] of sliceOf(slice)) {
+          const chapter = await loadChapter(code, n);
+          for (const letter of LADDER.filter((i) => i.glyphs)) {
+            const found = pairCaseOf(letter.id, [chapter], undefined, scheme);
+            if (!found) continue;
+            lines++;
+            if (!isWholeWord(found.word.t)) wrong.push(`${letter.id}: ${code} ${n}: ${found.word.t}`);
+          }
+        }
+        return { lines, wrong };
+      })();
+      pairMemo.set(slice, done);
+    }
+    return done;
+  }
+
+  for (let slice = 0; slice < SLICES; slice++)
+    it(`heads every pair line with a word that passes isWholeWord, chapters ${slice + 1} of ${SLICES}`, async () => {
+      const { lines, wrong } = await pairLines(slice);
+      expect(lines).toBeGreaterThan(50);
+      expect(wrong).toEqual([]);
+    }, 300_000);
+
+  it('the Upsilon pair line never reads τοῦτ\' over a chapter that holds it, and the next whole word heads it', async () => {
+    const wrong: string[] = [];
+    let held = 0;
+    for (const [code, n] of allChapters()) {
+      const chapter = await loadChapter(code, n);
+      if (!chapter.verses.some((v) => v.g.some((w) => /^τοῦτ['’ʼ᾽]$/.test(w.t)))) continue;
+      held++;
+      const found = pairCaseOf('letter-upsilon', [chapter], undefined, scheme);
+      if (found && !isWholeWord(found.word.t)) wrong.push(`${code} ${n}: ${found.word.t}`);
+    }
+    expect(held).toBeGreaterThan(0);
+    expect(wrong).toEqual([]);
+  }, 300_000);
 });
 
 // ---- Four examples are four words, not four forms of one (mw-5r3p30.584: Omega showed ζωὴ, ζωῆς, ζωὴν) ----
