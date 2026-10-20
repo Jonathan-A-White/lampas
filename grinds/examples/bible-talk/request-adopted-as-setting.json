@@ -30,6 +30,7 @@
     ]
   },
   "expect": {
+    "words": { "equals": [] },
     "answer": {
       "matches": "[Ss]etting|[Tt]heme"
     },

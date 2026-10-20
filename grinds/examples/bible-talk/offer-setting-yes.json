@@ -30,6 +30,7 @@
     }
   },
   "expect": {
+    "words": { "equals": [] },
     "offer_reply": {
       "equals": "confirm"
     },

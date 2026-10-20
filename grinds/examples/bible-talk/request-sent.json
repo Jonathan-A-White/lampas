@@ -29,6 +29,7 @@
     ]
   },
   "expect": {
+    "words": { "equals": [] },
     "answer": {
       "matches": "[Nn]ot (yet|answered|been answered)|[Nn]o answer|[Ww]aiting|ha(s|ve)n.t|ha(s|ve) not|[Yy]et to (answer|reply|respond)"
     },

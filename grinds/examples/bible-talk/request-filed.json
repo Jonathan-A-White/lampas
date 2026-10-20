@@ -29,6 +29,7 @@
     ]
   },
   "expect": {
+    "words": { "equals": [] },
     "answer": {
       "matches": "[Ff]iled|list|[Qq]ueue|[Ll]ogged|[Nn]oted|[Rr]ecorded|[Pp]lanned|[Tt]racked|[Bb]acklog"
     },

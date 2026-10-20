@@ -25,6 +25,7 @@
     }
   },
   "expect": {
+    "words": { "equals": [] },
     "feedback_offer": {
       "present": false
     },

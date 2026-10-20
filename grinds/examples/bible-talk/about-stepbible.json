@@ -195,6 +195,7 @@
     }
   },
   "expect": {
+    "words": { "equals": [] },
     "answer": {
       "matches": "TBESG[\\s\\S]*CC BY 4\\.0|CC BY 4\\.0[\\s\\S]*TBESG"
     },
