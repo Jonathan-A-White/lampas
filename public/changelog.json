@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.1.358",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.603",
+    "kind": "fixed",
+    "text": "The tutor's offers no longer show a change twice, a question you type is no longer treated as one you spoke, and the lesson you just started is no longer offered again."
+  },
+  {
+    "version": "0.1.358",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.649",
+    "kind": "new",
+    "text": "After a drill, the results screen has an Ask the tutor button, and the tutor knows each question, what you answered and which answers were right or wrong."
+  },
+  {
+    "version": "0.1.358",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.651",
+    "kind": "new",
+    "text": "The reader's switch now has English, Weave and Greek, and holding Weave flips the woven text between English and Greek word order."
+  },
+  {
+    "version": "0.1.358",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.643",
+    "kind": "fixed",
+    "text": "Asking the tutor on a verse how to say a Greek word now gives the app's own syllables and stress, instead of the tutor guessing them."
+  },
+  {
     "version": "0.1.357",
     "date": "2026-10-20",
     "story": "mw-svw421.39",

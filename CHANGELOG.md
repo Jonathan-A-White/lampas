@@ -1,5 +1,12 @@
 # What's new
 
+## 0.1.358
+_2026-10-20_
+- Fixed: The tutor's offers no longer show a change twice, a question you type is no longer treated as one you spoke, and the lesson you just started is no longer offered again.
+- New: After a drill, the results screen has an Ask the tutor button, and the tutor knows each question, what you answered and which answers were right or wrong.
+- New: The reader's switch now has English, Weave and Greek, and holding Weave flips the woven text between English and Greek word order.
+- Fixed: Asking the tutor on a verse how to say a Greek word now gives the app's own syllables and stress, instead of the tutor guessing them.
+
 ## 0.1.357
 _2026-10-20_
 - Fixed: Going back from a table to an idea's sheet now returns you to the place you were reading, not the top of the sheet.
