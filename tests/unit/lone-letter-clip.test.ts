@@ -5,8 +5,11 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { act } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Chapter, Verse } from '../../src/data/chapter';
 import { clearBus } from '../../src/events/bus';
+import { isElided } from '../../src/speech/elision';
 import { loneLetterCuts, speak, speakWord, stopSpeaking } from '../../src/speech/greek';
+import { planOf, runsOf, startReading, stopReading } from '../../src/speech/readAloud';
 import { MODERN, MODERN_LONE_CLIPS } from '../../src/speech/schemes/modern';
 import { stubAudio, type FakeAudio } from '../support/fake-audio';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../support/fake-speech';
@@ -106,5 +109,60 @@ describe('every elided form in the text and the lexicon is said by its clip or a
       expect(spoken.map(lettersOf).map((l) => l.join('').toLowerCase())).toEqual([lettersOf(form).join('').toLowerCase()]);
     }
     act(() => stopSpeaking());
+  });
+});
+
+// A verse read aloud: a one-consonant elided word (δ') inside a stretch of the reading used to arrive as a word of its own and the voice named the letter
+// ('oz Delta an'). The reading joins it to the word after it (δ'ἂν: said 'dan'); the words on screen stay as they are.
+describe('a verse read aloud never hands the voice a bare one-letter word (mw-5r3p30.654)', () => {
+  const chapterOf = (file: string): Chapter => JSON.parse(readFileSync(file, 'utf8')) as Chapter;
+  /** the words of `text` the voice is handed, as it splits them: by space or line */
+  const wordsHanded = (text: string): string[] => text.split(/\s+/).filter(Boolean);
+  const readAloud = (chapter: Chapter, verse: Verse): string[] => {
+    startReading({ chapter: chapter.chapter, plan: planOf([verse], 'greek', null), from: verse.n, continuous: false });
+    synth.finishAll();
+    const handed = said();
+    stopReading();
+    return handed;
+  };
+
+  it("Luke 9:24 'ὃς δ' ἂν ἀπολέσῃ': δ' goes joined to ἂν, and the words shown are unchanged", () => {
+    const chapter = chapterOf('public/data/luk/9.json');
+    const verse = chapter.verses.find((v) => v.n === 24) as Verse;
+    const shown = runsOf(verse, 'greek', null).map((r) => r.text);
+    expect(shown.join(' ')).toContain("ὃς δ' ἂν ἀπολέσῃ");
+    const handed = readAloud(chapter, verse).flatMap(wordsHanded);
+    expect(handed.filter(bareLetter)).toEqual([]);
+    expect(handed).toContain("δ'ἂν");
+    expect(handed).not.toContain("δ'");
+  });
+
+  /** every verse of the text that holds a word of one consonant and a mark of a dropped vowel (δ' δ᾽ τ' θ'), with its chapter */
+  function verses(): { name: string; chapter: Chapter; verse: Verse }[] {
+    const found: { name: string; chapter: Chapter; verse: Verse }[] = [];
+    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder')) {
+      for (const file of readdirSync(`public/data/${book.name}`)) {
+        const chapter = chapterOf(`public/data/${book.name}/${file}`);
+        for (const verse of chapter.verses) {
+          if (verse.g.some((w) => isElided(w.t) && bareLetter(w.t))) found.push({ name: `${book.name} ${file.replace('.json', '')}:${verse.n}`, chapter, verse });
+        }
+      }
+    }
+    return found;
+  }
+  const holding = verses();
+
+  it('finds the verses (25 places in the New Testament)', () => {
+    expect(holding.length).toBeGreaterThanOrEqual(20);
+  });
+
+  it.each(holding.map((h) => [h.name, h] as const))('%s: no bare one-letter word reaches the voice', (_name, { chapter, verse }) => {
+    const handed = readAloud(chapter, verse).flatMap(wordsHanded);
+    expect(handed.filter(bareLetter), `the voice was handed ${handed.filter(bareLetter).join(' ')}`).toEqual([]);
+  });
+
+  it("κατ' and ἀπ' are kept as they are", () => {
+    const handed = readAloud(chapterOf('public/data/luk/9.json'), { n: 1, g: [{ t: "κατ'" }, { t: "ἀπ'" }, { t: 'ἄλλο' }] } as unknown as Verse);
+    expect(handed.flatMap(wordsHanded)).toEqual(expect.arrayContaining(["κατ'", "ἀπ'"]));
   });
 });

@@ -21,7 +21,7 @@ import {
 } from 'voice-kit/speech';
 import { useSpeech } from 'voice-kit/speech/react';
 import { ClipPlayer } from '../audio/clipPlayer';
-import { withoutElision } from './elision';
+import { joinElidedLetters, withoutElision } from './elision';
 import { DEFAULT_RATE, DEFAULT_RATES, HEBREW_LANG, LANGUAGES, normaliseRate, type SettableLanguage, type SpeechLanguage, type SpeechRates } from './languages';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation, type Pronunciation } from './pronunciation';
 
@@ -480,8 +480,9 @@ function playWordPieces(pieces: Piece[], key: string, slowly: boolean): boolean 
 }
 
 /** What the Greek voice is handed for Greek text that is not one letter: the chosen pronunciation's voiceForm, so the voice says what the respelling
- * writes (mw-5r3p30.264: a Modern Greek voice keeps the nasal the respelling shows). The rule is the scheme's, never written here. */
-export const greekVoiceForm = (text: string): string => chosenPronunciation().voiceForm(text);
+ * writes (mw-5r3p30.264: a Modern Greek voice keeps the nasal the respelling shows). The rule is the scheme's, never written here. A word of one consonant and a
+ * mark of a dropped vowel (δ') is joined to the word after it first, or the voice names the letter (mw-5r3p30.654). */
+export const greekVoiceForm = (text: string): string => chosenPronunciation().voiceForm(joinElidedLetters(text));
 
 /** What is handed to the voice for a Greek word held alone (mw-5r3p30.226, .264, .357), always to the Greek voice: a capital letter is read by its name
  * ('capital ...'), so the word goes in lower case, in the scheme's wordForm (Modern Greek: monotonic marks and '!', so a final stress is not heard first),
