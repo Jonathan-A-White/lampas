@@ -8,6 +8,8 @@ import type { SoundLesson } from '../pronunciation';
 
 /** What makes χ, γ and γχ hard: Chi's card and the rule line a wrong pick shows (modern.ts soundRules) both name it, so they agree (mw-i7xe0n.24). */
 export const BACK = 'α, ο, ω, ου or a consonant';
+/** What makes χ, γ and γχ soft: the soft side of each card and the rule line a wrong pick shows (modern.ts soundRules) both name it, as BACK is shared (mw-i7xe0n.27). */
+export const FRONT = 'ε, ι, η, υ, αι, ει or οι';
 
 export function modernLessons(say: SoundWords): Readonly<Record<string, SoundLesson>> {
   /** In a lesson's prose: 'e as in pet'. */
@@ -21,7 +23,7 @@ export function modernLessons(say: SoundWords): Readonly<Record<string, SoundLes
   const letters: [string, SoundLesson][] = [
     ['alpha', one('a')],
     ['beta', one('v')],
-    ['gamma', { sound: `${keyed('gh')}; before e and i it is ${keyed('y')}`, choice: choice('gh'), sounds: ['gh', 'y'] }],
+    ['gamma', { sound: `${keyed('gh')}; before ${FRONT} it is ${keyed('y')}`, choice: choice('gh'), sounds: ['gh', 'y'] }],
     ['delta', one('dh')],
     ['epsilon', one('e')],
     ['zeta', one('z')],
@@ -40,7 +42,7 @@ export function modernLessons(say: SoundWords): Readonly<Record<string, SoundLes
     ['tau', one('t')],
     ['upsilon', { sound: keyed('ee'), choice: choice('ee'), sounds: ['ee'], also: 'In αυ, ευ and ηυ it is v or f (av or af, ev or ef, eev or eef).' }],
     ['phi', one('f')],
-    ['chi', { sound: `${keyed('kh')}, before ${BACK}; before e and i it is softer, ${asIn('hy')}`, choice: choice('kh'), sounds: ['kh', 'hy'] }],
+    ['chi', { sound: `${keyed('kh')}, before ${BACK}; before ${FRONT} it is softer, ${asIn('hy')}`, choice: choice('kh'), sounds: ['kh', 'hy'] }],
     ['psi', one('ps')],
     ['omega', { sound: `${keyed('o')}, the same as omicron`, choice: choice('o'), sounds: ['o'] }],
   ];
@@ -59,7 +61,7 @@ export function modernLessons(say: SoundWords): Readonly<Record<string, SoundLes
     ['nt', { sound: `${asIn('d')} at the start of a word, ${asIn('nd')} inside it`, choice: choice('d') }],
     ['gk', { sound: `${asIn('g')} at the start of a word, ${asIn('ng')} inside it`, choice: choice('g') }],
     ['gg', { sound: asIn('ng'), choice: choice('ng') }],
-    ['gch', { sound: `${asIn('ng')} plus ${asIn('kh')}, or ${asIn('hy')} before e and i`, choice: 'ngkh' }],
+    ['gch', { sound: `${asIn('ng')} plus ${asIn('kh')}, or ${asIn('hy')} before ${FRONT}`, choice: 'ngkh' }],
     ['gks', { sound: asIn('nks'), choice: choice('nks') }],
   ];
 
@@ -72,7 +74,7 @@ export function modernLessons(say: SoundWords): Readonly<Record<string, SoundLes
     text: `Some vowels pair up and make one sound, said the Modern Greek way: αι is the ${asIn('e')} (like ε), ει, οι and υι are the ${asIn('ee')}, and ου is the ${asIn('oo')}. In αυ, ευ and ηυ the υ is a ${asIn('v')} before a vowel or β, γ, δ, ζ, λ, μ, ν or ρ, and an ${asIn('f')} before any other letter or at the end of the word: Παῦλος is “PAV-los” and εὐαγγέλιον is “ev-an-GHE-lee-on”, but αὐτός is “af-TOS” and εὐθύς is “ef-THEES”. Marks you meet soon will show when two vowels are not a pair.`,
   };
   lessons['consonant-pairs'] = {
-    text: `Some consonants team up, said the Modern Greek way. In the middle of a word μπ is ${asIn('mb')}, ντ is ${asIn('nd')} and γκ is ${asIn('ng')}; at the start they are ${asIn('b')}, ${asIn('d')} and ${asIn('g')}. γγ is ${asIn('ng')}, γχ is ng plus ${asIn('kh')} (${asIn('hy')} before e and i), and γξ is ${asIn('nks')}. The letter σ is ${asIn('s')} but, before β, γ, δ, ζ, λ, μ, ν or ρ, it is ${asIn('z')}: κόσμος is “KOZ-mos” and Ἰσραήλ is “eez-ra-EEL”. A doubled consonant is said once.`,
+    text: `Some consonants team up, said the Modern Greek way. In the middle of a word μπ is ${asIn('mb')}, ντ is ${asIn('nd')} and γκ is ${asIn('ng')}; at the start they are ${asIn('b')}, ${asIn('d')} and ${asIn('g')}. γγ is ${asIn('ng')}, γχ is ng plus ${asIn('kh')} (${asIn('hy')} before ${FRONT}), and γξ is ${asIn('nks')}. The letter σ is ${asIn('s')} but, before β, γ, δ, ζ, λ, μ, ν or ρ, it is ${asIn('z')}: κόσμος is “KOZ-mos” and Ἰσραήλ is “eez-ra-EEL”. A doubled consonant is said once.`,
   };
   lessons.breathings = {
     text: 'A word that begins with a vowel carries a small mark over it. Modern Greek does not say either breathing: the rough breathing (ʽ) and the smooth breathing (᾿) are both silent, so ὁ is “o” and ἐν is “en”. You still need to know them, because they are part of the spelling and can make one word differ from another. Words that begin with ρ always take a rough breathing, and so does υ. It sits on the second vowel of a pair: οὗτος and αὐτός are said “OO-tos” and “af-TOS”, the breathing silent. Before a capital it stands in front of the letter, not over it: Ἰησοῦς is “ee-ee-SOOS”.',

@@ -79,7 +79,7 @@ describe('what the tutor is told of the sounds is the scheme\'s', () => {
     expect(examples.map(([word]) => word)).toEqual(['ταῦτα', 'Πάντοτε', 'χαίρετε']);
     for (const [word, said] of examples) expect(respellModern(word), word).toBe(said);
     expect(guide).toMatch(/^Modern Greek/);
-    for (const rule of ['αυ and ευ are af and ef', 'av and ev', 'αι is e', 'ει, οι, υι, η, ι and υ are ee', 'ου is oo', 'β is v', 'δ is dh', 'γ is gh', 'or y before e or i', 'never "aw"', 'Erasmian']) {
+    for (const rule of ['αυ and ευ are af and ef', 'av and ev', 'αι is e', 'ει, οι, υι, η, ι and υ are ee', 'ου is oo', 'β is v', 'δ is dh', 'γ is gh', 'or y before ε, ι, η, υ, αι, ει or οι', 'never "aw"', 'Erasmian']) {
       expect(guide, rule).toContain(rule);
     }
   });

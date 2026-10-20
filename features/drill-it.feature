@@ -66,7 +66,7 @@ Feature: Drill it on the idea sheet
     And an idea-taught event for "noun" with the outcome "known" was published
 
   # His words (Postern general 2026-10-14, mw-5r3p30.355), on Omicron's step 4: "comprehensive clean up needed". Every choice of 'What sound does it make?' is
-  # one short sound label of one shape; the rule of a letter (chi's 'before a, o, ou') stays on its sheet and in the Hint.
+  # one short sound label of one shape; the rule of a letter (chi's 'before α, ο, ω, ου or a consonant') stays on its sheet and in the Hint.
   Scenario: Omicron's sound step shows four short choices of one shape
     Given Lampas is opened on Romans 8 with the goal "1 John 1" and a fake Postern
     When he opens the letter sheet of "omicron" from the alphabet sheet

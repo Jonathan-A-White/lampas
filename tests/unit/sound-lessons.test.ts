@@ -48,10 +48,10 @@ describe('the sound lessons of the Modern Greek scheme', () => {
     const chi = ideaSound(ideaOf('letter-chi'), modern) ?? '';
     expect(chi).toContain(say.keyed('kh'));
     expect(chi).toContain(say.asIn('hy'));
-    expect(chi).toMatch(/before e and i/);
+    expect(chi).toContain('it is softer');
     expect(ideaText(ideaOf('letter-chi'), modern)).toContain(say.asIn('hy'));
     expect(chi).not.toMatch(/breathy h/);
-    // γ keeps its two: gh, and y before e and i
+    // γ keeps its two: gh, and y before the front letters (FRONT)
     expect(ideaSound(ideaOf('letter-gamma'), modern)).toContain(say.keyed('y'));
   });
 
