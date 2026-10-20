@@ -2,6 +2,7 @@
 // text, so the chapter picker opens the chapter in his own Logos library: the Logos app's own scheme first (`logosres:<Bible>;ref=Bible.<book><chapter>`),
 // with the https ref.ly address as the fallback, opened only when the phone cannot open the scheme (openApp.ts armFallback). docs/resources.md has the sources.
 import { otBookOf } from '../data/otBooks';
+import { resourceLink } from './logosRes';
 
 /** His Bible in Logos to start with: the Legacy Standard Bible (vault plans/lampas-logos-library-2026-10-08.csv). */
 export const DEFAULT_LOGOS_BIBLE = 'LLS:LGCYSTNDRDBBLSB';
@@ -31,7 +32,7 @@ export function chapterLink(code: string, chapter: number, resourceId: string): 
   if (!book || !Number.isInteger(chapter) || chapter < 1 || chapter > book.chapters) return undefined;
   const bible = schemeName(resourceId);
   const ref = `Bible.${book.logos}${chapter}`;
-  return { url: `logosres:${bible};ref=${ref}`, fallback: `https://ref.ly/logosres/${encodeURIComponent(bible)}?ref=${ref}` };
+  return resourceLink(bible, `ref=${ref}`);
 }
 
 /** The New Testament books' abbreviations in a Logos reference (Logos' own list, https://www.logos.com/bible-book-abbreviations, written like the Old Testament's in
@@ -45,10 +46,15 @@ const NT_LOGOS: Readonly<Record<string, string>> = {
  *  chapter link's form, `Bible.Ro8.31`); undefined for a book that is in neither list or a chapter or verse below 1. The tutor's verse links use it
  *  (src/resources/tutorLinks.ts). */
 export function verseLink(code: string, chapter: number, verse: number | undefined, resourceId: string): { url: string; fallback: string } | undefined {
+  const ref = bibleRef(code, chapter, verse);
+  return ref ? resourceLink(schemeName(resourceId), `ref=${ref}`) : undefined;
+}
+
+/** A place as a Logos reference (`Bible.Ro8.31`, `Bible.Ro8` for a whole chapter), for a book of either Testament by our code; undefined for a book that is in neither list
+ *  or a chapter or verse below 1. A commentary of his library opens at it too (src/resources/works.ts). */
+export function bibleRef(code: string, chapter: number, verse?: number): string | undefined {
   const book = NT_LOGOS[code] ?? otBookOf(code)?.logos;
   if (!book || !Number.isInteger(chapter) || chapter < 1) return undefined;
   if (verse !== undefined && (!Number.isInteger(verse) || verse < 1)) return undefined;
-  const bible = schemeName(resourceId);
-  const ref = `Bible.${book}${chapter}${verse === undefined ? '' : `.${verse}`}`;
-  return { url: `logosres:${bible};ref=${ref}`, fallback: `https://ref.ly/logosres/${encodeURIComponent(bible)}?ref=${ref}` };
+  return `Bible.${book}${chapter}${verse === undefined ? '' : `.${verse}`}`;
 }

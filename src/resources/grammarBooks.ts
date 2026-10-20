@@ -3,6 +3,7 @@
 // grammar approach he is on, never an approach of its own. Adding a book is one entry in GRAMMAR_BOOKS: Settings (Logos > Grammar books) and the
 // idea sheet read this list and nothing else. Every link is the Logos scheme first with the https ref.ly address as the fallback (src/resources/openApp.ts),
 // as the lexicon links are (logos.ts). docs/resources.md names each book's source and what is UNVERIFIED.
+import { resourceLink } from './logosRes';
 import type { BookSection, GrammarBook, StudyLink } from './types';
 
 const black: GrammarBook = {
@@ -66,8 +67,7 @@ export const sectionsFor = (book: GrammarBook, ideaId: string): BookSection[] =>
 export const bookLink = (book: GrammarBook, section: BookSection): StudyLink => ({
   label: `Open in Logos: ${book.short}, ${section.title}`,
   tile: section.title,
-  url: `logosres:${book.resource};ref=${section.ref}`,
-  fallback: `https://ref.ly/logosres/${encodeURIComponent(book.resource)}?ref=${section.ref.replace(/_/g, '+')}`,
+  ...resourceLink(book.resource, `ref=${section.ref}`, `ref=${section.ref.replace(/_/g, '+')}`),
 });
 
 export interface ReadMoreLine {
