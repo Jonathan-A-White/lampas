@@ -254,7 +254,7 @@ export function VerseView(props: VerseViewProps) {
         {slot && action === 'ask' && ai ? (
           createPortal(
             // voice-kit's Composer (mw-jtzpw0.3): the one Hold to ask bar with his words above it, and Type a question beneath
-            <AskComposer verse={verse} state={ask} onAsk={onAsk} prefill={prefill} />,
+            <AskComposer book={book} chapter={chapter} verse={verse} state={ask} onAsk={onAsk} prefill={prefill} />,
             slot,
           )
         ) : null}

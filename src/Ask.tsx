@@ -3,7 +3,7 @@
 // the failures; AnswerCards the kept answers (the tutor writes Markdown, src/markdown/). The questions in flight are src/useAsks.ts.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Composer, type ComposerLabels, type ComposerMessage } from 'voice-kit/composer';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type FormEvent } from 'react';
 import type { Verse } from './data/chapter';
 import { unitId } from './data/passage';
 import { listAnswers, verseRef, type TutorAnswer } from './data/repositories';
@@ -25,6 +25,7 @@ import { keepPlaced, revealFoot, revealLines } from './ui/keepInView';
 import { revealTop } from './ui/reveal';
 import { YouSaid } from './ui/YouSaid';
 import { useElapsed } from './ui/useElapsed';
+import { askDraftKey, readDraft, writeDraft } from './ui/unsentDraft';
 import { GREEK_LANG } from './script/greekLang';
 
 export function Waiting({ state }: { state: Extract<AskState, { phase: 'sending' | 'waiting' }> }) {
@@ -167,8 +168,11 @@ export function AskStatus({ verse, state, onAsk }: { verse: Verse; state: AskSta
 
 /** The composer for `verse` (or a passage, src/data/passage.ts): voice-kit's Composer, speak-first or, by the setting Ask by, type-first, drawn at the foot of the Verse view. Hold to ask streams
  * his words as he speaks and a release asks; Type a question brings out the field and Send asks. The tutor takes no photo or file, so there is no attach
- * or camera. A question that failed comes back into the field to be sent again. */
-export function AskComposer({ verse, state, onAsk, prefill = null }: {
+ * or camera. A question that failed comes back into the field to be sent again, and words typed or pasted and not sent are kept for the verse and put back when the
+ * composer opens again (src/ui/unsentDraft.ts, mw-5r3p30.495). */
+export function AskComposer({ book, chapter, verse, state, onAsk, prefill = null }: {
+  book: string;
+  chapter: number;
   verse: Verse;
   state: AskState | undefined;
   onAsk: (verse: Verse, question: string) => void;
@@ -179,15 +183,40 @@ export function AskComposer({ verse, state, onAsk, prefill = null }: {
   const busy = state?.phase === 'sending' || state?.phase === 'waiting';
   const failed = state?.phase === 'failed' ? state.question : '';
   const prefilled = verse.to === undefined && prefill?.verse === verse.n ? prefill.text : '';
+  // The Composer holds its words itself and says nothing of them until Send, so the draft is read off its field: from what he types or pastes (input bubbles
+  // up to the section), and, for words a hold left in the field, when the composer goes away. A sent question clears the draft and the field is not read again.
+  const draftKey = askDraftKey(book, chapter, unitId(verse));
+  const section = useRef<HTMLElement>(null);
+  const sent = useRef(false);
+  // a question that failed comes back into the field unsent, and is a draft again
+  useEffect(() => {
+    sent.current = false;
+  }, [failed]);
+  const keep = (field: HTMLTextAreaElement | null): void => {
+    if (field && !sent.current) writeDraft(draftKey, field.value);
+  };
+  const onInput = (e: FormEvent<HTMLElement>): void => {
+    if (e.target instanceof HTMLTextAreaElement) {
+      sent.current = false;
+      keep(e.target);
+    }
+  };
+  useEffect(() => {
+    const box = section.current;
+    return () => keep(box?.querySelector('textarea') ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draftKey]);
   const send = ({ text }: ComposerMessage): boolean => {
     const question = text.trim();
     if (!question || busy) return false;
     if (question.length > MAX_QUESTION_CHARS) throw new Error(`${question.length} of ${MAX_QUESTION_CHARS}: the question is too long to send. Shorten it; nothing has been cut.`);
     onAsk(verse, question);
+    sent.current = true;
+    writeDraft(draftKey, '');
     return true;
   };
   return (
-    <section aria-label="Ask the tutor" data-ask={unitId(verse)}>
+    <section ref={section} aria-label="Ask the tutor" data-ask={unitId(verse)} onInput={onInput}>
       {/* a failed question remounts the composer with it in the field */}
       <Composer
         key={`${unitId(verse)}:${failed}`}
@@ -196,7 +225,7 @@ export function AskComposer({ verse, state, onAsk, prefill = null }: {
         lang="en-US"
         appName="Lampas"
         labels={ASK_LABELS}
-        initialText={failed || prefilled}
+        initialText={failed || prefilled || readDraft(draftKey)}
         disabled={busy}
         onSend={send}
       />
